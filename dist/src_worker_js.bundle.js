@@ -1249,6 +1249,10 @@ class CombatUtilities {
         let bonusCritChance = source.combatDetails.combatStats.critRate;
         let bonusCritDamage = source.combatDetails.combatStats.critDamage;
 
+        if (bonusCritDamage != 0) {
+            bonusCritDamage = 0.10;
+        }
+
         if (combatStyle != "/combat_styles/magic") {
             hitChance =
                 Math.pow(sourceAccuracyRating, 1.4) /
