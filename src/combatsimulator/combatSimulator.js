@@ -176,7 +176,6 @@ class CombatSimulator extends EventTarget {
         if (!target) {
             return;
         }
-
         let attackResult = CombatUtilities.processAttack(event.source, target);
 
         this.simResult.addAttack(

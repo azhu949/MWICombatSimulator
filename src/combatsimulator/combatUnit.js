@@ -83,6 +83,8 @@ class CombatUnit {
             experienceRate: 0,
             foodSlots: 1,
             drinkSlots: 1,
+            critRate: 0,
+            critDamage: 0
         },
     };
     combatBuffs = {};
@@ -200,6 +202,8 @@ class CombatUnit {
         ).flatBoost;
         this.combatDetails.combatStats.dropRate += this.getBuffBoost("/buff_types/combat_drop_rate").ratioBoost;
         this.combatDetails.combatStats.experienceRate += this.getBuffBoost("/buff_types/wisdom").flatBoost;
+        this.combatDetails.combatStats.critRate += this.getBuffBoost("/buff_types/crit").flatBoost;
+        this.combatDetails.combatStats.critDamage += this.getBuffBoost("/buff_types/crit").flatBoost;
     }
 
     addBuff(buff, currentTime) {

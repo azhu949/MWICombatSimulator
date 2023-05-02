@@ -94,6 +94,8 @@ class Player extends CombatUnit {
             "dropRate",
             "dropQuantity",
             "experienceRate",
+            "critRate",
+            "critDamage",
         ].forEach((stat) => {
             this.combatDetails.combatStats[stat] = Object.values(this.equipment)
                 .filter((equipment) => equipment != null)

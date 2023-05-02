@@ -97,6 +97,7 @@ class Trigger {
             case "/combat_trigger_conditions/toughness_nature_resistance":
             case "/combat_trigger_conditions/toughness_water_resistance":
             case "/combat_trigger_conditions/vampirism":
+            case "/combat_trigger_conditions/critical_coffee":
             case "/combat_trigger_conditions/wisdom_coffee":
                 let buffHrid = "/buff_sources";
                 buffHrid += this.conditionHrid.slice(this.conditionHrid.lastIndexOf("/"));

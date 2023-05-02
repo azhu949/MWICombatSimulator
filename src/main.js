@@ -159,6 +159,61 @@ function updateEquipmentState() {
     });
 }
 
+document.getElementById("selectEquipment_set").onchange = changeEquipmentSetListener;
+
+    function changeEquipmentSetListener(){
+        let value = this.value
+        let optgroupType = this.options[this.selectedIndex].parentNode.label;
+
+        ["head", "body", "legs", "feet", "hands"].forEach((type) => {
+            let selectType = type;
+
+            let currentEquipment = document.getElementById("selectEquipment_" + selectType);
+            if (type === "feet") {
+                type = "_boots";
+            }
+            if (type === "hands") {
+                if(optgroupType === "RANGED") {
+                    type = "_bracers";
+                } else if (optgroupType === "MAGIC") {
+                    type = "_gloves";
+                } else {
+                    type = "_gauntlets";
+                }
+            }
+            if (type === "head") {
+                if(optgroupType === "RANGED") {
+                    type = "_hood";
+                } else if (optgroupType === "MAGIC") {
+                    type = "_hat";
+                } else {
+                    type = "_helmet";
+                }
+            }
+            if (type === "legs") {
+                if(optgroupType === "RANGED") {
+                    type = "_chaps";
+                } else if (optgroupType === "MAGIC") {
+                    type = "_robe_bottoms";
+                } else {
+                    type = "_plate_legs";
+                }
+            }
+            if (type === "body") {
+                if(optgroupType === "RANGED") {
+                    type = "_tunic";
+                } else if (optgroupType === "MAGIC") {
+                    type = "_robe_top";
+                } else {
+                    type = "_plate_body";
+                }
+            }
+            currentEquipment.value = "/items/" + value.toLowerCase() + type;
+        });
+        updateEquipmentState();
+        updateUI();
+    }
+
 // #endregion
 
 // #region Combat Stats
@@ -213,6 +268,8 @@ function updateCombatStatsUI() {
         "HPRegen",
         "MPRegen",
         "experienceRate",
+        "critRate",
+        "critDamage",
     ].forEach((stat) => {
         let element = document.getElementById("combatStat_" + stat);
         let value = (100 * player.combatDetails.combatStats[stat]).toLocaleString([], {

@@ -283,6 +283,37 @@
                                     />
                                 </div>
                             </div>
+                            <div class="row mb-2">
+                                <label for="selectEquipment_set" class="col-md-2 col-form-label">Presets</label>
+                                <div class="col-md-6">
+                                    <select id="selectEquipment_set" class="form-select">
+                                        <option value="">None</option>
+                                        <optgroup label="MELEE">
+                                            <option value="Cheese">Cheese</option>
+                                            <option value="Verdant">Verdant</option>
+                                            <option value="Azure">Azure</option>
+                                            <option value="Burble">Burble</option>
+                                            <option value="Crimson">Crimson</option>
+                                            <option value="Rainbow">Rainbow</option>
+                                            <option value="Holy">Holy</option>
+                                        </optgroup>
+                                        <optgroup label="MAGIC">
+                                            <option value="Cotton">Cotton</option>
+                                            <option value="Linen">Linen</option>
+                                            <option value="Bamboo">Bamboo</option>
+                                            <option value="Silk">Silk</option>
+                                            <option value="Radiant">Radiant</option>
+                                        </optgroup>
+                                        <optgroup label="RANGED">
+                                            <option value="Rough">Rough</option>
+                                            <option value="Reptile">Reptile</option>
+                                            <option value="Gobo">Gobo</option>
+                                            <option value="Beast">Beast</option>
+                                            <option value="Umbral">Umbral</option>
+                                        </optgroup>
+                                    </select>
+                                </div>
+                            </div>
                             <!-- #endregion -->
                         </div>
                     </div>
@@ -747,6 +778,14 @@
                     <div class="row">
                         <div class="col-md-8">Experience Rate:</div>
                         <div class="col-md-4" id="combatStat_experienceRate"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-8">Critical Rate:</div>
+                        <div class="col-md-4" id="combatStat_critRate"></div>
+                    </div>
+                    <div class="row">
+                        <div class="col-md-8">Critical Damage Bonus:</div>
+                        <div class="col-md-4" id="combatStat_critDamage"></div>
                     </div>
                     <!-- #endregion -->
                 </div>
@@ -1359,4 +1398,7 @@
         ></script>
         <script src="dist/bundle.js" type="module"></script>
     </body>
+    <footer>
+        <div style="text-align: center;"><p>Credit to KuganDev for the original version</p></div>
+    </footer>
 </html>

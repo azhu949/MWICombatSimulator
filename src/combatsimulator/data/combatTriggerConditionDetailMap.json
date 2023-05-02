@@ -253,5 +253,13 @@
         "isMultiTarget": false,
         "allowedComparatorHrids": ["/combat_trigger_comparators/is_active", "/combat_trigger_comparators/is_inactive"],
         "sortIndex": 15
+    },
+    "/combat_trigger_conditions/critical_coffee": {
+        "hrid": "/combat_trigger_conditions/critical_coffee",
+        "name": "Critical Coffee",
+        "isSingleTarget": true,
+        "isMultiTarget": false,
+        "allowedComparatorHrids": ["/combat_trigger_comparators/is_active", "/combat_trigger_comparators/is_inactive"],
+        "sortIndex": 99
     }
 }

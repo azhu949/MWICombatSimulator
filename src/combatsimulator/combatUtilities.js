@@ -117,6 +117,8 @@ class CombatUtilities {
 
         let hitChance = 1;
         let critChance = 0;
+        let bonusCritChance = source.combatDetails.combatStats.critRate;
+        let bonusCritDamage = source.combatDetails.combatStats.critDamage;
 
         if (combatStyle != "/combat_styles/magic") {
             hitChance =
@@ -125,7 +127,12 @@ class CombatUtilities {
         }
 
         if (combatStyle == "/combat_styles/ranged") {
-            critChance = 0.3 * hitChance;
+                critChance = 0.3 * hitChance;
+        }
+        if (critChance == 0) {
+            critChance = bonusCritChance;
+        } else {
+            critChance = critChance * (1 + bonusCritChance);
         }
 
         let baseDamageFlat = abilityEffect ? abilityEffect.damageFlat : 0;
@@ -135,6 +142,7 @@ class CombatUtilities {
         let sourceMaxDamage = sourceDamageMultiplier * (baseDamageRatio * sourceAutoAttackMaxDamage + baseDamageFlat);
 
         if (Math.random() < critChance) {
+            sourceMaxDamage = sourceMaxDamage * (1 + bonusCritDamage);
             sourceMinDamage = sourceMaxDamage;
         }
 
