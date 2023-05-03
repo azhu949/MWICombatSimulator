@@ -1313,7 +1313,7 @@ function getEquipmentSetFromUI() {
         equipmentSet.levels[skill] = Number(levelInput.value);
     });
 
-    ["head", "body", "legs", "feet", "hands", "weapon", "off_hand", "pouch"].forEach((type) => {
+    ["head", "body", "legs", "feet", "hands", "weapon", "off_hand", "pouch", "neck", "earrings", "ring"].forEach((type) => {
         let equipmentSelect = document.getElementById("selectEquipment_" + type);
         let enhancementLevelInput = document.getElementById("inputEquipmentEnhancementLevel_" + type);
 
