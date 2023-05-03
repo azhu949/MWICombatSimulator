@@ -1,6 +1,7 @@
 import Ability from "./ability";
 import CombatUnit from "./combatUnit";
 import combatMonsterDetailMap from "./data/combatMonsterDetailMap.json";
+import Drops from "./drops";
 
 class Monster extends CombatUnit {
     constructor(hrid) {
@@ -16,6 +17,9 @@ class Monster extends CombatUnit {
 
         for (let i = 0; i < gameMonster.abilities.length; i++) {
             this.abilities[i] = new Ability(gameMonster.abilities[i].abilityHrid, gameMonster.abilities[i].level);
+        }
+        for (let i = 0; i < gameMonster.dropTable.length; i++) {
+            this.dropTable[i] = new Drops(gameMonster.dropTable[i].itemHrid, gameMonster.dropTable[i].dropRate, gameMonster.dropTable[i].minCount, gameMonster.dropTable[i].maxCount);
         }
     }
 

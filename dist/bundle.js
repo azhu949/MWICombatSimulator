@@ -165,6 +165,7 @@ class CombatUnit {
     abilities = [null, null, null, null];
     food = [null, null, null];
     drinks = [null, null, null];
+    dropTable = [];
 
     // Calculated combat stats including temporary buffs
     combatDetails = {
@@ -1910,7 +1911,9 @@ function showSimulationResult(simResult) {
 
 function showKills(simResult) {
     let resultDiv = document.getElementById("simulationResultKills");
+    let dropsResultDiv = document.getElementById("simulationResultDrops");
     let newChildren = [];
+    let newDropChildren = [];
 
     let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
     let playerDeaths = simResult.deaths["player"] ?? 0;
@@ -1923,6 +1926,7 @@ function showKills(simResult) {
         .filter((enemy) => enemy != "player")
         .sort();
 
+    const totalDropMap = new Map()
     for (const monster of monsters) {
         let killsPerHour = (simResult.deaths[monster] / hoursSimulated).toFixed(1);
         let monsterRow = createRow(
@@ -1930,9 +1934,38 @@ function showKills(simResult) {
             [_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_11__[monster].name, killsPerHour]
         );
         newChildren.push(monsterRow);
+
+        const dropMap = new Map();
+        for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_11__[monster].dropTable) {
+            dropMap.set(drop.itemHrid.slice(drop.itemHrid.lastIndexOf("/") + 1).replaceAll("_", " "), {"dropRate": drop.dropRate, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount});
+        }
+        for (let i = 0; i < simResult.deaths[monster]; i++) {
+            let chance = Math.random();
+            for (let dropObject of dropMap.values()) {
+                if (chance <= dropObject.dropRate) {
+                    let amount = Math.floor(Math.random() * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin)
+                    dropObject.number = dropObject.number + amount;
+                }
+            }
+        }
+        for (let [name, dropObject] of  dropMap.entries()) {
+            if(totalDropMap.has(name)) {
+                totalDropMap.set(name, totalDropMap.get(name) + dropObject.number);
+            } else {
+                totalDropMap.set(name, dropObject.number);
+            }
+        }
+    }
+    for (let [name, dropAmount] of  totalDropMap.entries()) {
+        let dropRow = createRow(
+            ["col-md-6", "col-md-6 text-end"],
+            [name, dropAmount]
+        );
+        newDropChildren.push(dropRow);
     }
 
     resultDiv.replaceChildren(...newChildren);
+    dropsResultDiv.replaceChildren(...newDropChildren);
 }
 
 function showDeaths(simResult) {

@@ -15,6 +15,7 @@ class CombatUnit {
     abilities = [null, null, null, null];
     food = [null, null, null];
     drinks = [null, null, null];
+    dropTable = [];
 
     // Calculated combat stats including temporary buffs
     combatDetails = {

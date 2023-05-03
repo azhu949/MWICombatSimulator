@@ -813,6 +813,7 @@ class CombatUnit {
     abilities = [null, null, null, null];
     food = [null, null, null];
     drinks = [null, null, null];
+    dropTable = [];
 
     // Calculated combat stats including temporary buffs
     combatDetails = {
@@ -1537,6 +1538,31 @@ class Consumable {
 
 /***/ }),
 
+/***/ "./src/combatsimulator/drops.js":
+/*!**************************************!*\
+  !*** ./src/combatsimulator/drops.js ***!
+  \**************************************/
+/***/ ((__unused_webpack_module, __webpack_exports__, __webpack_require__) => {
+
+__webpack_require__.r(__webpack_exports__);
+/* harmony export */ __webpack_require__.d(__webpack_exports__, {
+/* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
+/* harmony export */ });
+class Drops {
+
+    constructor(itemHrid, dropRate, minCount, maxCount) {
+        this.itemHrid = itemHrid;
+        this.dropRate = dropRate;
+        this.minCount = minCount;
+        this.maxCount = maxCount;
+    }
+}
+
+/* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Drops);
+
+
+/***/ }),
+
 /***/ "./src/combatsimulator/equipment.js":
 /*!******************************************!*\
   !*** ./src/combatsimulator/equipment.js ***!
@@ -1965,6 +1991,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _ability__WEBPACK_IMPORTED_MODULE_0__ = __webpack_require__(/*! ./ability */ "./src/combatsimulator/ability.js");
 /* harmony import */ var _combatUnit__WEBPACK_IMPORTED_MODULE_1__ = __webpack_require__(/*! ./combatUnit */ "./src/combatsimulator/combatUnit.js");
 /* harmony import */ var _data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_2__ = __webpack_require__(/*! ./data/combatMonsterDetailMap.json */ "./src/combatsimulator/data/combatMonsterDetailMap.json");
+/* harmony import */ var _drops__WEBPACK_IMPORTED_MODULE_3__ = __webpack_require__(/*! ./drops */ "./src/combatsimulator/drops.js");
+
 
 
 
@@ -1983,6 +2011,9 @@ class Monster extends _combatUnit__WEBPACK_IMPORTED_MODULE_1__["default"] {
 
         for (let i = 0; i < gameMonster.abilities.length; i++) {
             this.abilities[i] = new _ability__WEBPACK_IMPORTED_MODULE_0__["default"](gameMonster.abilities[i].abilityHrid, gameMonster.abilities[i].level);
+        }
+        for (let i = 0; i < gameMonster.dropTable.length; i++) {
+            this.dropTable[i] = new _drops__WEBPACK_IMPORTED_MODULE_3__["default"](gameMonster.dropTable[i].itemHrid, gameMonster.dropTable[i].dropRate, gameMonster.dropTable[i].minCount, gameMonster.dropTable[i].maxCount);
         }
     }
 
