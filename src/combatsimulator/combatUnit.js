@@ -92,8 +92,16 @@ class CombatUnit {
     constructor() {}
 
     updateCombatDetails() {
-        this.combatDetails.combatStats.HPRegen = 0.01;
-        this.combatDetails.combatStats.MPRegen = 0.01;
+        if(this.combatDetails.combatStats.HPRegen === 0) {
+            this.combatDetails.combatStats.HPRegen = 0.01;
+        } else {
+            this.combatDetails.combatStats.HPRegen = 0.01 + this.combatDetails.combatStats.HPRegen;
+        }
+        if(this.combatDetails.combatStats.MPRegen === 0) {
+            this.combatDetails.combatStats.MPRegen = 0.01;
+        } else {
+            this.combatDetails.combatStats.MPRegen = 0.01 + this.combatDetails.combatStats.MPRegen;
+        }
 
         ["stamina", "intelligence", "attack", "power", "defense", "ranged", "magic"].forEach((stat) => {
             this.combatDetails[stat + "Level"] = this[stat + "Level"];

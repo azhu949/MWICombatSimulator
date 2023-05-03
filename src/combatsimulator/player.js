@@ -90,6 +90,8 @@ class Player extends CombatUnit {
             "maxHitpoints",
             "maxManapoints",
             "lifeSteal",
+            "HPRegen",
+            "MPRegen",
             "physicalReflectPower",
             "dropRate",
             "dropQuantity",

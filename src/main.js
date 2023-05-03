@@ -54,7 +54,7 @@ worker.onmessage = function (event) {
 // #region Equipment
 
 function initEquipmentSection() {
-    ["head", "body", "legs", "feet", "hands", "main_hand", "two_hand", "off_hand", "pouch"].forEach((type) => {
+    ["head", "body", "legs", "feet", "hands", "main_hand", "two_hand", "off_hand", "pouch", "neck", "earrings", "ring"].forEach((type) => {
         initEquipmentSelect(type);
         initEnhancementLevelInput(type);
     });
@@ -131,7 +131,7 @@ function enhancementLevelInputHandler() {
 }
 
 function updateEquipmentState() {
-    ["head", "body", "legs", "feet", "hands", "main_hand", "two_hand", "off_hand", "pouch"].forEach((type) => {
+    ["head", "body", "legs", "feet", "hands", "main_hand", "two_hand", "off_hand", "pouch", "neck", "earrings", "ring"].forEach((type) => {
         let equipmentType = "/equipment_types/" + type;
         let selectType = type;
         if (type == "main_hand" || type == "two_hand") {
@@ -264,17 +264,17 @@ function updateCombatStatsUI() {
         "fireAmplify",
         "healingAmplify",
         "lifeSteal",
-        "physicalReflectPower",
         "HPRegen",
         "MPRegen",
-        "experienceRate",
+        "physicalReflectPower",
         "critRate",
         "critDamage",
+        "experienceRate",
     ].forEach((stat) => {
         let element = document.getElementById("combatStat_" + stat);
         let value = (100 * player.combatDetails.combatStats[stat]).toLocaleString([], {
             minimumFractionDigits: 0,
-            maximumFractionDigits: 2,
+            maximumFractionDigits: 4,
         });
         element.innerHTML = value + "%";
     });
@@ -1353,7 +1353,7 @@ function loadEquipmentSetIntoUI(equipmentSet) {
         levelInput.value = equipmentSet.levels[skill] ?? 1;
     });
 
-    ["head", "body", "legs", "feet", "hands", "weapon", "off_hand", "pouch"].forEach((type) => {
+    ["head", "body", "legs", "feet", "hands", "weapon", "off_hand", "pouch", "neck", "earrings", "ring"].forEach((type) => {
         let equipmentSelect = document.getElementById("selectEquipment_" + type);
         let enhancementLevelInput = document.getElementById("inputEquipmentEnhancementLevel_" + type);
 
