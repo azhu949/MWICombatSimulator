@@ -556,7 +556,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -708,7 +708,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -10109,7 +10109,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -10261,7 +10261,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -10712,7 +10712,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -10864,7 +10864,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -25759,7 +25759,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -26060,7 +26060,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -26355,7 +26355,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -26507,7 +26507,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -35071,7 +35071,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -42870,7 +42870,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -43022,7 +43022,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -44497,7 +44497,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -44649,7 +44649,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -45550,7 +45550,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -45702,7 +45702,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -46303,7 +46303,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -46455,7 +46455,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -47204,7 +47204,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -47356,7 +47356,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -61945,7 +61945,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -62097,7 +62097,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -63297,7 +63297,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -63449,7 +63449,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -63744,7 +63744,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -63896,7 +63896,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
@@ -65606,155 +65606,155 @@
     },
     "sortIndex": 73
   },
-    "/items/super_magic_coffee": {
-      "hrid": "/items/super_magic_coffee",
-      "name": "Super Magic Coffee",
-      "description": "",
-      "categoryHrid": "/item_categories/drink",
-      "sellPrice": 75,
-      "isTradable": true,
-      "itemLevel": 0,
-      "enhancementCosts": null,
-      "equipmentDetail": {
-        "type": "",
-        "levelRequirements": null,
-        "combatStats": {
-          "combatStyleHrids": null,
-          "damageType": "",
-          "attackInterval": 0,
-          "stabAccuracy": 0,
-          "slashAccuracy": 0,
-          "smashAccuracy": 0,
-          "rangedAccuracy": 0,
-          "stabDamage": 0,
-          "slashDamage": 0,
-          "smashDamage": 0,
-          "rangedDamage": 0,
-          "magicDamage": 0,
-          "physicalAmplify": 0,
-          "waterAmplify": 0,
-          "natureAmplify": 0,
-          "fireAmplify": 0,
-          "healingAmplify": 0,
-          "stabEvasion": 0,
-          "slashEvasion": 0,
-          "smashEvasion": 0,
-          "rangedEvasion": 0,
-          "armor": 0,
-          "waterResistance": 0,
-          "natureResistance": 0,
-          "fireResistance": 0,
-          "maxHitpoints": 0,
-          "maxManapoints": 0,
-          "lifeSteal": 0,
-          "HPRegen": 0,
-          "MPRegen": 0,
-          "physicalReflectPower": 0,
-          "dropRate": 0,
-          "dropQuantity": 0,
-          "experienceRate": 0,
-          "critRate": 0,
-          "critDamage": 0,
-          "foodSlots": 0,
-          "drinkSlots": 0
-        },
-        "noncombatStats": {
-          "milkingSpeed": 0,
-          "foragingSpeed": 0,
-          "woodcuttingSpeed": 0,
-          "cheesesmithingSpeed": 0,
-          "craftingSpeed": 0,
-          "tailoringSpeed": 0,
-          "cookingSpeed": 0,
-          "brewingSpeed": 0,
-          "enhancingSuccess": 0
-        },
-        "combatEnhancementBonuses": {
-          "combatStyleHrids": null,
-          "damageType": "",
-          "attackInterval": 0,
-          "stabAccuracy": 0,
-          "slashAccuracy": 0,
-          "smashAccuracy": 0,
-          "rangedAccuracy": 0,
-          "stabDamage": 0,
-          "slashDamage": 0,
-          "smashDamage": 0,
-          "rangedDamage": 0,
-          "magicDamage": 0,
-          "physicalAmplify": 0,
-          "waterAmplify": 0,
-          "natureAmplify": 0,
-          "fireAmplify": 0,
-          "healingAmplify": 0,
-          "stabEvasion": 0,
-          "slashEvasion": 0,
-          "smashEvasion": 0,
-          "rangedEvasion": 0,
-          "armor": 0,
-          "waterResistance": 0,
-          "natureResistance": 0,
-          "fireResistance": 0,
-          "maxHitpoints": 0,
-          "maxManapoints": 0,
-          "lifeSteal": 0,
-          "HPRegen": 0,
-          "MPRegen": 0,
-          "physicalReflectPower": 0,
-          "dropRate": 0,
-          "dropQuantity": 0,
-          "experienceRate": 0,
-          "critRate": 0,
-          "critDamage": 0,
-          "foodSlots": 0,
-          "drinkSlots": 0
-        },
-        "noncombatEnhancementBonuses": {
-          "milkingSpeed": 0,
-          "foragingSpeed": 0,
-          "woodcuttingSpeed": 0,
-          "cheesesmithingSpeed": 0,
-          "craftingSpeed": 0,
-          "tailoringSpeed": 0,
-          "cookingSpeed": 0,
-          "brewingSpeed": 0,
-          "enhancingSuccess": 0
-        }
+  "/items/super_magic_coffee": {
+    "hrid": "/items/super_magic_coffee",
+    "name": "Super Magic Coffee",
+    "description": "",
+    "categoryHrid": "/item_categories/drink",
+    "sellPrice": 75,
+    "isTradable": true,
+    "itemLevel": 0,
+    "enhancementCosts": null,
+    "equipmentDetail": {
+      "type": "",
+      "levelRequirements": null,
+      "combatStats": {
+        "combatStyleHrids": null,
+        "damageType": "",
+        "attackInterval": 0,
+        "stabAccuracy": 0,
+        "slashAccuracy": 0,
+        "smashAccuracy": 0,
+        "rangedAccuracy": 0,
+        "stabDamage": 0,
+        "slashDamage": 0,
+        "smashDamage": 0,
+        "rangedDamage": 0,
+        "magicDamage": 0,
+        "physicalAmplify": 0,
+        "waterAmplify": 0,
+        "natureAmplify": 0,
+        "fireAmplify": 0,
+        "healingAmplify": 0,
+        "stabEvasion": 0,
+        "slashEvasion": 0,
+        "smashEvasion": 0,
+        "rangedEvasion": 0,
+        "armor": 0,
+        "waterResistance": 0,
+        "natureResistance": 0,
+        "fireResistance": 0,
+        "maxHitpoints": 0,
+        "maxManapoints": 0,
+        "lifeSteal": 0,
+        "HPRegen": 0,
+        "MPRegen": 0,
+        "physicalReflectPower": 0,
+        "dropRate": 0,
+        "dropQuantity": 0,
+        "experienceRate": 0,
+        "critRate": 0,
+        "critDamage": 0,
+        "foodSlots": 0,
+        "drinkSlots": 0
       },
-      "consumableDetail": {
-        "cooldownDuration": 60000000000,
-        "usableInActionTypeMap": { "/action_types/combat": true },
-        "hitpointRestore": 0,
-        "manapointRestore": 0,
-        "recoveryDuration": 0,
-        "buffs": [
-          {
-            "sourceHrid": "/buff_sources/magic_coffee",
-            "typeHrid": "/buff_types/magic_level",
-            "ratioBoost": 0.15,
-            "ratioBoostLevelBonus": 0,
-            "flatBoost": 2,
-            "flatBoostLevelBonus": 0,
-            "startTime": "0001-01-01T00:00:00Z",
-            "duration": 300000000000
-          }
-        ],
-        "defaultCombatTriggers": [
-          {
-            "dependencyHrid": "/combat_trigger_dependencies/self",
-            "conditionHrid": "/combat_trigger_conditions/magic_coffee",
-            "comparatorHrid": "/combat_trigger_comparators/is_inactive",
-            "value": 0
-          }
-        ]
+      "noncombatStats": {
+        "milkingSpeed": 0,
+        "foragingSpeed": 0,
+        "woodcuttingSpeed": 0,
+        "cheesesmithingSpeed": 0,
+        "craftingSpeed": 0,
+        "tailoringSpeed": 0,
+        "cookingSpeed": 0,
+        "brewingSpeed": 0,
+        "enhancingSuccess": 0
       },
-      "abilityBookDetail": {
-        "abilityHrid": "",
-        "levelRequirements": null,
-        "experienceGain": 0
+      "combatEnhancementBonuses": {
+        "combatStyleHrids": null,
+        "damageType": "",
+        "attackInterval": 0,
+        "stabAccuracy": 0,
+        "slashAccuracy": 0,
+        "smashAccuracy": 0,
+        "rangedAccuracy": 0,
+        "stabDamage": 0,
+        "slashDamage": 0,
+        "smashDamage": 0,
+        "rangedDamage": 0,
+        "magicDamage": 0,
+        "physicalAmplify": 0,
+        "waterAmplify": 0,
+        "natureAmplify": 0,
+        "fireAmplify": 0,
+        "healingAmplify": 0,
+        "stabEvasion": 0,
+        "slashEvasion": 0,
+        "smashEvasion": 0,
+        "rangedEvasion": 0,
+        "armor": 0,
+        "waterResistance": 0,
+        "natureResistance": 0,
+        "fireResistance": 0,
+        "maxHitpoints": 0,
+        "maxManapoints": 0,
+        "lifeSteal": 0,
+        "HPRegen": 0,
+        "MPRegen": 0,
+        "physicalReflectPower": 0,
+        "dropRate": 0,
+        "dropQuantity": 0,
+        "experienceRate": 0,
+        "critRate": 0,
+        "critDamage": 0,
+        "foodSlots": 0,
+        "drinkSlots": 0
       },
-      "sortIndex": 78
+      "noncombatEnhancementBonuses": {
+        "milkingSpeed": 0,
+        "foragingSpeed": 0,
+        "woodcuttingSpeed": 0,
+        "cheesesmithingSpeed": 0,
+        "craftingSpeed": 0,
+        "tailoringSpeed": 0,
+        "cookingSpeed": 0,
+        "brewingSpeed": 0,
+        "enhancingSuccess": 0
+      }
     },
+    "consumableDetail": {
+      "cooldownDuration": 60000000000,
+      "usableInActionTypeMap": { "/action_types/combat": true },
+      "hitpointRestore": 0,
+      "manapointRestore": 0,
+      "recoveryDuration": 0,
+      "buffs": [
+        {
+          "sourceHrid": "/buff_sources/magic_coffee",
+          "typeHrid": "/buff_types/magic_level",
+          "ratioBoost": 0.15,
+          "ratioBoostLevelBonus": 0,
+          "flatBoost": 2,
+          "flatBoostLevelBonus": 0,
+          "startTime": "0001-01-01T00:00:00Z",
+          "duration": 300000000000
+        }
+      ],
+      "defaultCombatTriggers": [
+        {
+          "dependencyHrid": "/combat_trigger_dependencies/self",
+          "conditionHrid": "/combat_trigger_conditions/magic_coffee",
+          "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+          "value": 0
+        }
+      ]
+    },
+    "abilityBookDetail": {
+      "abilityHrid": "",
+      "levelRequirements": null,
+      "experienceGain": 0
+    },
+    "sortIndex": 78
+  },
   "/items/super_milking_tea": {
     "hrid": "/items/super_milking_tea",
     "name": "Super Milking Tea",
@@ -65911,463 +65911,463 @@
     },
     "sortIndex": 49
   },
-    "/items/super_power_coffee": {
-      "hrid": "/items/super_power_coffee",
-      "name": "Super Power Coffee",
-      "description": "",
-      "categoryHrid": "/item_categories/drink",
-      "sellPrice": 75,
-      "isTradable": true,
-      "itemLevel": 0,
-      "enhancementCosts": null,
-      "equipmentDetail": {
-        "type": "",
-        "levelRequirements": null,
-        "combatStats": {
-          "combatStyleHrids": null,
-          "damageType": "",
-          "attackInterval": 0,
-          "stabAccuracy": 0,
-          "slashAccuracy": 0,
-          "smashAccuracy": 0,
-          "rangedAccuracy": 0,
-          "stabDamage": 0,
-          "slashDamage": 0,
-          "smashDamage": 0,
-          "rangedDamage": 0,
-          "magicDamage": 0,
-          "physicalAmplify": 0,
-          "waterAmplify": 0,
-          "natureAmplify": 0,
-          "fireAmplify": 0,
-          "healingAmplify": 0,
-          "stabEvasion": 0,
-          "slashEvasion": 0,
-          "smashEvasion": 0,
-          "rangedEvasion": 0,
-          "armor": 0,
-          "waterResistance": 0,
-          "natureResistance": 0,
-          "fireResistance": 0,
-          "maxHitpoints": 0,
-          "maxManapoints": 0,
-          "lifeSteal": 0,
-          "HPRegen": 0,
-          "MPRegen": 0,
-          "physicalReflectPower": 0,
-          "dropRate": 0,
-          "dropQuantity": 0,
-          "experienceRate": 0,
-          "critRate": 0,
-          "critDamage": 0,
-          "foodSlots": 0,
-          "drinkSlots": 0
-        },
-        "noncombatStats": {
-          "milkingSpeed": 0,
-          "foragingSpeed": 0,
-          "woodcuttingSpeed": 0,
-          "cheesesmithingSpeed": 0,
-          "craftingSpeed": 0,
-          "tailoringSpeed": 0,
-          "cookingSpeed": 0,
-          "brewingSpeed": 0,
-          "enhancingSuccess": 0
-        },
-        "combatEnhancementBonuses": {
-          "combatStyleHrids": null,
-          "damageType": "",
-          "attackInterval": 0,
-          "stabAccuracy": 0,
-          "slashAccuracy": 0,
-          "smashAccuracy": 0,
-          "rangedAccuracy": 0,
-          "stabDamage": 0,
-          "slashDamage": 0,
-          "smashDamage": 0,
-          "rangedDamage": 0,
-          "magicDamage": 0,
-          "physicalAmplify": 0,
-          "waterAmplify": 0,
-          "natureAmplify": 0,
-          "fireAmplify": 0,
-          "healingAmplify": 0,
-          "stabEvasion": 0,
-          "slashEvasion": 0,
-          "smashEvasion": 0,
-          "rangedEvasion": 0,
-          "armor": 0,
-          "waterResistance": 0,
-          "natureResistance": 0,
-          "fireResistance": 0,
-          "maxHitpoints": 0,
-          "maxManapoints": 0,
-          "lifeSteal": 0,
-          "HPRegen": 0,
-          "MPRegen": 0,
-          "physicalReflectPower": 0,
-          "dropRate": 0,
-          "dropQuantity": 0,
-          "experienceRate": 0,
-          "critRate": 0,
-          "critDamage": 0,
-          "foodSlots": 0,
-          "drinkSlots": 0
-        },
-        "noncombatEnhancementBonuses": {
-          "milkingSpeed": 0,
-          "foragingSpeed": 0,
-          "woodcuttingSpeed": 0,
-          "cheesesmithingSpeed": 0,
-          "craftingSpeed": 0,
-          "tailoringSpeed": 0,
-          "cookingSpeed": 0,
-          "brewingSpeed": 0,
-          "enhancingSuccess": 0
-        }
+  "/items/super_power_coffee": {
+    "hrid": "/items/super_power_coffee",
+    "name": "Super Power Coffee",
+    "description": "",
+    "categoryHrid": "/item_categories/drink",
+    "sellPrice": 75,
+    "isTradable": true,
+    "itemLevel": 0,
+    "enhancementCosts": null,
+    "equipmentDetail": {
+      "type": "",
+      "levelRequirements": null,
+      "combatStats": {
+        "combatStyleHrids": null,
+        "damageType": "",
+        "attackInterval": 0,
+        "stabAccuracy": 0,
+        "slashAccuracy": 0,
+        "smashAccuracy": 0,
+        "rangedAccuracy": 0,
+        "stabDamage": 0,
+        "slashDamage": 0,
+        "smashDamage": 0,
+        "rangedDamage": 0,
+        "magicDamage": 0,
+        "physicalAmplify": 0,
+        "waterAmplify": 0,
+        "natureAmplify": 0,
+        "fireAmplify": 0,
+        "healingAmplify": 0,
+        "stabEvasion": 0,
+        "slashEvasion": 0,
+        "smashEvasion": 0,
+        "rangedEvasion": 0,
+        "armor": 0,
+        "waterResistance": 0,
+        "natureResistance": 0,
+        "fireResistance": 0,
+        "maxHitpoints": 0,
+        "maxManapoints": 0,
+        "lifeSteal": 0,
+        "HPRegen": 0,
+        "MPRegen": 0,
+        "physicalReflectPower": 0,
+        "dropRate": 0,
+        "dropQuantity": 0,
+        "experienceRate": 0,
+        "critRate": 0,
+        "critDamage": 0,
+        "foodSlots": 0,
+        "drinkSlots": 0
       },
-      "consumableDetail": {
-        "cooldownDuration": 60000000000,
-        "usableInActionTypeMap": { "/action_types/combat": true },
-        "hitpointRestore": 0,
-        "manapointRestore": 0,
-        "recoveryDuration": 0,
-        "buffs": [
-          {
-            "sourceHrid": "/buff_sources/power_coffee",
-            "typeHrid": "/buff_types/power_level",
-            "ratioBoost": 0.15,
-            "ratioBoostLevelBonus": 0,
-            "flatBoost": 2,
-            "flatBoostLevelBonus": 0,
-            "startTime": "0001-01-01T00:00:00Z",
-            "duration": 300000000000
-          }
-        ],
-        "defaultCombatTriggers": [
-          {
-            "dependencyHrid": "/combat_trigger_dependencies/self",
-            "conditionHrid": "/combat_trigger_conditions/power_coffee",
-            "comparatorHrid": "/combat_trigger_comparators/is_inactive",
-            "value": 0
-          }
-        ]
+      "noncombatStats": {
+        "milkingSpeed": 0,
+        "foragingSpeed": 0,
+        "woodcuttingSpeed": 0,
+        "cheesesmithingSpeed": 0,
+        "craftingSpeed": 0,
+        "tailoringSpeed": 0,
+        "cookingSpeed": 0,
+        "brewingSpeed": 0,
+        "enhancingSuccess": 0
       },
-      "abilityBookDetail": {
-        "abilityHrid": "",
-        "levelRequirements": null,
-        "experienceGain": 0
+      "combatEnhancementBonuses": {
+        "combatStyleHrids": null,
+        "damageType": "",
+        "attackInterval": 0,
+        "stabAccuracy": 0,
+        "slashAccuracy": 0,
+        "smashAccuracy": 0,
+        "rangedAccuracy": 0,
+        "stabDamage": 0,
+        "slashDamage": 0,
+        "smashDamage": 0,
+        "rangedDamage": 0,
+        "magicDamage": 0,
+        "physicalAmplify": 0,
+        "waterAmplify": 0,
+        "natureAmplify": 0,
+        "fireAmplify": 0,
+        "healingAmplify": 0,
+        "stabEvasion": 0,
+        "slashEvasion": 0,
+        "smashEvasion": 0,
+        "rangedEvasion": 0,
+        "armor": 0,
+        "waterResistance": 0,
+        "natureResistance": 0,
+        "fireResistance": 0,
+        "maxHitpoints": 0,
+        "maxManapoints": 0,
+        "lifeSteal": 0,
+        "HPRegen": 0,
+        "MPRegen": 0,
+        "physicalReflectPower": 0,
+        "dropRate": 0,
+        "dropQuantity": 0,
+        "experienceRate": 0,
+        "critRate": 0,
+        "critDamage": 0,
+        "foodSlots": 0,
+        "drinkSlots": 0
       },
-      "sortIndex": 76
+      "noncombatEnhancementBonuses": {
+        "milkingSpeed": 0,
+        "foragingSpeed": 0,
+        "woodcuttingSpeed": 0,
+        "cheesesmithingSpeed": 0,
+        "craftingSpeed": 0,
+        "tailoringSpeed": 0,
+        "cookingSpeed": 0,
+        "brewingSpeed": 0,
+        "enhancingSuccess": 0
+      }
     },
-    "/items/super_ranged_coffee": {
-      "hrid": "/items/super_ranged_coffee",
-      "name": "Super Ranged Coffee",
-      "description": "",
-      "categoryHrid": "/item_categories/drink",
-      "sellPrice": 75,
-      "isTradable": true,
-      "itemLevel": 0,
-      "enhancementCosts": null,
-      "equipmentDetail": {
-        "type": "",
-        "levelRequirements": null,
-        "combatStats": {
-          "combatStyleHrids": null,
-          "damageType": "",
-          "attackInterval": 0,
-          "stabAccuracy": 0,
-          "slashAccuracy": 0,
-          "smashAccuracy": 0,
-          "rangedAccuracy": 0,
-          "stabDamage": 0,
-          "slashDamage": 0,
-          "smashDamage": 0,
-          "rangedDamage": 0,
-          "magicDamage": 0,
-          "physicalAmplify": 0,
-          "waterAmplify": 0,
-          "natureAmplify": 0,
-          "fireAmplify": 0,
-          "healingAmplify": 0,
-          "stabEvasion": 0,
-          "slashEvasion": 0,
-          "smashEvasion": 0,
-          "rangedEvasion": 0,
-          "armor": 0,
-          "waterResistance": 0,
-          "natureResistance": 0,
-          "fireResistance": 0,
-          "maxHitpoints": 0,
-          "maxManapoints": 0,
-          "lifeSteal": 0,
-          "HPRegen": 0,
-          "MPRegen": 0,
-          "physicalReflectPower": 0,
-          "dropRate": 0,
-          "dropQuantity": 0,
-          "experienceRate": 0,
-          "critRate": 0,
-          "critDamage": 0,
-          "foodSlots": 0,
-          "drinkSlots": 0
-        },
-        "noncombatStats": {
-          "milkingSpeed": 0,
-          "foragingSpeed": 0,
-          "woodcuttingSpeed": 0,
-          "cheesesmithingSpeed": 0,
-          "craftingSpeed": 0,
-          "tailoringSpeed": 0,
-          "cookingSpeed": 0,
-          "brewingSpeed": 0,
-          "enhancingSuccess": 0
-        },
-        "combatEnhancementBonuses": {
-          "combatStyleHrids": null,
-          "damageType": "",
-          "attackInterval": 0,
-          "stabAccuracy": 0,
-          "slashAccuracy": 0,
-          "smashAccuracy": 0,
-          "rangedAccuracy": 0,
-          "stabDamage": 0,
-          "slashDamage": 0,
-          "smashDamage": 0,
-          "rangedDamage": 0,
-          "magicDamage": 0,
-          "physicalAmplify": 0,
-          "waterAmplify": 0,
-          "natureAmplify": 0,
-          "fireAmplify": 0,
-          "healingAmplify": 0,
-          "stabEvasion": 0,
-          "slashEvasion": 0,
-          "smashEvasion": 0,
-          "rangedEvasion": 0,
-          "armor": 0,
-          "waterResistance": 0,
-          "natureResistance": 0,
-          "fireResistance": 0,
-          "maxHitpoints": 0,
-          "maxManapoints": 0,
-          "lifeSteal": 0,
-          "HPRegen": 0,
-          "MPRegen": 0,
-          "physicalReflectPower": 0,
-          "dropRate": 0,
-          "dropQuantity": 0,
-          "experienceRate": 0,
-          "critRate": 0,
-          "critDamage": 0,
-          "foodSlots": 0,
-          "drinkSlots": 0
-        },
-        "noncombatEnhancementBonuses": {
-          "milkingSpeed": 0,
-          "foragingSpeed": 0,
-          "woodcuttingSpeed": 0,
-          "cheesesmithingSpeed": 0,
-          "craftingSpeed": 0,
-          "tailoringSpeed": 0,
-          "cookingSpeed": 0,
-          "brewingSpeed": 0,
-          "enhancingSuccess": 0
+    "consumableDetail": {
+      "cooldownDuration": 60000000000,
+      "usableInActionTypeMap": { "/action_types/combat": true },
+      "hitpointRestore": 0,
+      "manapointRestore": 0,
+      "recoveryDuration": 0,
+      "buffs": [
+        {
+          "sourceHrid": "/buff_sources/power_coffee",
+          "typeHrid": "/buff_types/power_level",
+          "ratioBoost": 0.15,
+          "ratioBoostLevelBonus": 0,
+          "flatBoost": 2,
+          "flatBoostLevelBonus": 0,
+          "startTime": "0001-01-01T00:00:00Z",
+          "duration": 300000000000
         }
-      },
-      "consumableDetail": {
-        "cooldownDuration": 60000000000,
-        "usableInActionTypeMap": { "/action_types/combat": true },
-        "hitpointRestore": 0,
-        "manapointRestore": 0,
-        "recoveryDuration": 0,
-        "buffs": [
-          {
-            "sourceHrid": "/buff_sources/ranged_coffee",
-            "typeHrid": "/buff_types/ranged_level",
-            "ratioBoost": 0.15,
-            "ratioBoostLevelBonus": 0,
-            "flatBoost": 2,
-            "flatBoostLevelBonus": 0,
-            "startTime": "0001-01-01T00:00:00Z",
-            "duration": 300000000000
-          }
-        ],
-        "defaultCombatTriggers": [
-          {
-            "dependencyHrid": "/combat_trigger_dependencies/self",
-            "conditionHrid": "/combat_trigger_conditions/ranged_coffee",
-            "comparatorHrid": "/combat_trigger_comparators/is_inactive",
-            "value": 0
-          }
-        ]
-      },
-      "abilityBookDetail": {
-        "abilityHrid": "",
-        "levelRequirements": null,
-        "experienceGain": 0
-      },
-      "sortIndex": 77
-    },
-    "/items/super_stamina_coffee": {
-      "hrid": "/items/super_stamina_coffee",
-      "name": "Super Stamina Coffee",
-      "description": "",
-      "categoryHrid": "/item_categories/drink",
-      "sellPrice": 40,
-      "isTradable": true,
-      "itemLevel": 0,
-      "enhancementCosts": null,
-      "equipmentDetail": {
-        "type": "",
-        "levelRequirements": null,
-        "combatStats": {
-          "combatStyleHrids": null,
-          "damageType": "",
-          "attackInterval": 0,
-          "stabAccuracy": 0,
-          "slashAccuracy": 0,
-          "smashAccuracy": 0,
-          "rangedAccuracy": 0,
-          "stabDamage": 0,
-          "slashDamage": 0,
-          "smashDamage": 0,
-          "rangedDamage": 0,
-          "magicDamage": 0,
-          "physicalAmplify": 0,
-          "waterAmplify": 0,
-          "natureAmplify": 0,
-          "fireAmplify": 0,
-          "healingAmplify": 0,
-          "stabEvasion": 0,
-          "slashEvasion": 0,
-          "smashEvasion": 0,
-          "rangedEvasion": 0,
-          "armor": 0,
-          "waterResistance": 0,
-          "natureResistance": 0,
-          "fireResistance": 0,
-          "maxHitpoints": 0,
-          "maxManapoints": 0,
-          "lifeSteal": 0,
-          "HPRegen": 0,
-          "MPRegen": 0,
-          "physicalReflectPower": 0,
-          "dropRate": 0,
-          "dropQuantity": 0,
-          "experienceRate": 0,
-          "critRate": 0,
-          "critDamage": 0,
-          "foodSlots": 0,
-          "drinkSlots": 0
-        },
-        "noncombatStats": {
-          "milkingSpeed": 0,
-          "foragingSpeed": 0,
-          "woodcuttingSpeed": 0,
-          "cheesesmithingSpeed": 0,
-          "craftingSpeed": 0,
-          "tailoringSpeed": 0,
-          "cookingSpeed": 0,
-          "brewingSpeed": 0,
-          "enhancingSuccess": 0
-        },
-        "combatEnhancementBonuses": {
-          "combatStyleHrids": null,
-          "damageType": "",
-          "attackInterval": 0,
-          "stabAccuracy": 0,
-          "slashAccuracy": 0,
-          "smashAccuracy": 0,
-          "rangedAccuracy": 0,
-          "stabDamage": 0,
-          "slashDamage": 0,
-          "smashDamage": 0,
-          "rangedDamage": 0,
-          "magicDamage": 0,
-          "physicalAmplify": 0,
-          "waterAmplify": 0,
-          "natureAmplify": 0,
-          "fireAmplify": 0,
-          "healingAmplify": 0,
-          "stabEvasion": 0,
-          "slashEvasion": 0,
-          "smashEvasion": 0,
-          "rangedEvasion": 0,
-          "armor": 0,
-          "waterResistance": 0,
-          "natureResistance": 0,
-          "fireResistance": 0,
-          "maxHitpoints": 0,
-          "maxManapoints": 0,
-          "lifeSteal": 0,
-          "HPRegen": 0,
-          "MPRegen": 0,
-          "physicalReflectPower": 0,
-          "dropRate": 0,
-          "dropQuantity": 0,
-          "experienceRate": 0,
-          "critRate": 0,
-          "critDamage": 0,
-          "foodSlots": 0,
-          "drinkSlots": 0
-        },
-        "noncombatEnhancementBonuses": {
-          "milkingSpeed": 0,
-          "foragingSpeed": 0,
-          "woodcuttingSpeed": 0,
-          "cheesesmithingSpeed": 0,
-          "craftingSpeed": 0,
-          "tailoringSpeed": 0,
-          "cookingSpeed": 0,
-          "brewingSpeed": 0,
-          "enhancingSuccess": 0
+      ],
+      "defaultCombatTriggers": [
+        {
+          "dependencyHrid": "/combat_trigger_dependencies/self",
+          "conditionHrid": "/combat_trigger_conditions/power_coffee",
+          "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+          "value": 0
         }
-      },
-      "consumableDetail": {
-        "cooldownDuration": 60000000000,
-        "usableInActionTypeMap": { "/action_types/combat": true },
-        "hitpointRestore": 0,
-        "manapointRestore": 0,
-        "recoveryDuration": 0,
-        "buffs": [
-          {
-            "sourceHrid": "/buff_sources/stamina_coffee_max_hp",
-            "typeHrid": "/buff_types/stamina_level",
-            "ratioBoost": 0.15,
-            "ratioBoostLevelBonus": 0,
-            "flatBoost": 2,
-            "flatBoostLevelBonus": 0,
-            "startTime": "0001-01-01T00:00:00Z",
-            "duration": 300000000000
-          },
-          {
-            "sourceHrid": "/buff_sources/stamina_coffee_hp_regen",
-            "typeHrid": "/buff_types/hp_regen",
-            "ratioBoost": 0,
-            "ratioBoostLevelBonus": 0,
-            "flatBoost": 0.01,
-            "flatBoostLevelBonus": 0,
-            "startTime": "0001-01-01T00:00:00Z",
-            "duration": 300000000000
-          }
-        ],
-        "defaultCombatTriggers": [
-          {
-            "dependencyHrid": "/combat_trigger_dependencies/self",
-            "conditionHrid": "/combat_trigger_conditions/stamina_coffee_max_hp",
-            "comparatorHrid": "/combat_trigger_comparators/is_inactive",
-            "value": 0
-          }
-        ]
-      },
-      "abilityBookDetail": {
-        "abilityHrid": "",
-        "levelRequirements": null,
-        "experienceGain": 0
-      },
-      "sortIndex": 72
+      ]
     },
+    "abilityBookDetail": {
+      "abilityHrid": "",
+      "levelRequirements": null,
+      "experienceGain": 0
+    },
+    "sortIndex": 76
+  },
+  "/items/super_ranged_coffee": {
+    "hrid": "/items/super_ranged_coffee",
+    "name": "Super Ranged Coffee",
+    "description": "",
+    "categoryHrid": "/item_categories/drink",
+    "sellPrice": 75,
+    "isTradable": true,
+    "itemLevel": 0,
+    "enhancementCosts": null,
+    "equipmentDetail": {
+      "type": "",
+      "levelRequirements": null,
+      "combatStats": {
+        "combatStyleHrids": null,
+        "damageType": "",
+        "attackInterval": 0,
+        "stabAccuracy": 0,
+        "slashAccuracy": 0,
+        "smashAccuracy": 0,
+        "rangedAccuracy": 0,
+        "stabDamage": 0,
+        "slashDamage": 0,
+        "smashDamage": 0,
+        "rangedDamage": 0,
+        "magicDamage": 0,
+        "physicalAmplify": 0,
+        "waterAmplify": 0,
+        "natureAmplify": 0,
+        "fireAmplify": 0,
+        "healingAmplify": 0,
+        "stabEvasion": 0,
+        "slashEvasion": 0,
+        "smashEvasion": 0,
+        "rangedEvasion": 0,
+        "armor": 0,
+        "waterResistance": 0,
+        "natureResistance": 0,
+        "fireResistance": 0,
+        "maxHitpoints": 0,
+        "maxManapoints": 0,
+        "lifeSteal": 0,
+        "HPRegen": 0,
+        "MPRegen": 0,
+        "physicalReflectPower": 0,
+        "dropRate": 0,
+        "dropQuantity": 0,
+        "experienceRate": 0,
+        "critRate": 0,
+        "critDamage": 0,
+        "foodSlots": 0,
+        "drinkSlots": 0
+      },
+      "noncombatStats": {
+        "milkingSpeed": 0,
+        "foragingSpeed": 0,
+        "woodcuttingSpeed": 0,
+        "cheesesmithingSpeed": 0,
+        "craftingSpeed": 0,
+        "tailoringSpeed": 0,
+        "cookingSpeed": 0,
+        "brewingSpeed": 0,
+        "enhancingSuccess": 0
+      },
+      "combatEnhancementBonuses": {
+        "combatStyleHrids": null,
+        "damageType": "",
+        "attackInterval": 0,
+        "stabAccuracy": 0,
+        "slashAccuracy": 0,
+        "smashAccuracy": 0,
+        "rangedAccuracy": 0,
+        "stabDamage": 0,
+        "slashDamage": 0,
+        "smashDamage": 0,
+        "rangedDamage": 0,
+        "magicDamage": 0,
+        "physicalAmplify": 0,
+        "waterAmplify": 0,
+        "natureAmplify": 0,
+        "fireAmplify": 0,
+        "healingAmplify": 0,
+        "stabEvasion": 0,
+        "slashEvasion": 0,
+        "smashEvasion": 0,
+        "rangedEvasion": 0,
+        "armor": 0,
+        "waterResistance": 0,
+        "natureResistance": 0,
+        "fireResistance": 0,
+        "maxHitpoints": 0,
+        "maxManapoints": 0,
+        "lifeSteal": 0,
+        "HPRegen": 0,
+        "MPRegen": 0,
+        "physicalReflectPower": 0,
+        "dropRate": 0,
+        "dropQuantity": 0,
+        "experienceRate": 0,
+        "critRate": 0,
+        "critDamage": 0,
+        "foodSlots": 0,
+        "drinkSlots": 0
+      },
+      "noncombatEnhancementBonuses": {
+        "milkingSpeed": 0,
+        "foragingSpeed": 0,
+        "woodcuttingSpeed": 0,
+        "cheesesmithingSpeed": 0,
+        "craftingSpeed": 0,
+        "tailoringSpeed": 0,
+        "cookingSpeed": 0,
+        "brewingSpeed": 0,
+        "enhancingSuccess": 0
+      }
+    },
+    "consumableDetail": {
+      "cooldownDuration": 60000000000,
+      "usableInActionTypeMap": { "/action_types/combat": true },
+      "hitpointRestore": 0,
+      "manapointRestore": 0,
+      "recoveryDuration": 0,
+      "buffs": [
+        {
+          "sourceHrid": "/buff_sources/ranged_coffee",
+          "typeHrid": "/buff_types/ranged_level",
+          "ratioBoost": 0.15,
+          "ratioBoostLevelBonus": 0,
+          "flatBoost": 2,
+          "flatBoostLevelBonus": 0,
+          "startTime": "0001-01-01T00:00:00Z",
+          "duration": 300000000000
+        }
+      ],
+      "defaultCombatTriggers": [
+        {
+          "dependencyHrid": "/combat_trigger_dependencies/self",
+          "conditionHrid": "/combat_trigger_conditions/ranged_coffee",
+          "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+          "value": 0
+        }
+      ]
+    },
+    "abilityBookDetail": {
+      "abilityHrid": "",
+      "levelRequirements": null,
+      "experienceGain": 0
+    },
+    "sortIndex": 77
+  },
+  "/items/super_stamina_coffee": {
+    "hrid": "/items/super_stamina_coffee",
+    "name": "Super Stamina Coffee",
+    "description": "",
+    "categoryHrid": "/item_categories/drink",
+    "sellPrice": 40,
+    "isTradable": true,
+    "itemLevel": 0,
+    "enhancementCosts": null,
+    "equipmentDetail": {
+      "type": "",
+      "levelRequirements": null,
+      "combatStats": {
+        "combatStyleHrids": null,
+        "damageType": "",
+        "attackInterval": 0,
+        "stabAccuracy": 0,
+        "slashAccuracy": 0,
+        "smashAccuracy": 0,
+        "rangedAccuracy": 0,
+        "stabDamage": 0,
+        "slashDamage": 0,
+        "smashDamage": 0,
+        "rangedDamage": 0,
+        "magicDamage": 0,
+        "physicalAmplify": 0,
+        "waterAmplify": 0,
+        "natureAmplify": 0,
+        "fireAmplify": 0,
+        "healingAmplify": 0,
+        "stabEvasion": 0,
+        "slashEvasion": 0,
+        "smashEvasion": 0,
+        "rangedEvasion": 0,
+        "armor": 0,
+        "waterResistance": 0,
+        "natureResistance": 0,
+        "fireResistance": 0,
+        "maxHitpoints": 0,
+        "maxManapoints": 0,
+        "lifeSteal": 0,
+        "HPRegen": 0,
+        "MPRegen": 0,
+        "physicalReflectPower": 0,
+        "dropRate": 0,
+        "dropQuantity": 0,
+        "experienceRate": 0,
+        "critRate": 0,
+        "critDamage": 0,
+        "foodSlots": 0,
+        "drinkSlots": 0
+      },
+      "noncombatStats": {
+        "milkingSpeed": 0,
+        "foragingSpeed": 0,
+        "woodcuttingSpeed": 0,
+        "cheesesmithingSpeed": 0,
+        "craftingSpeed": 0,
+        "tailoringSpeed": 0,
+        "cookingSpeed": 0,
+        "brewingSpeed": 0,
+        "enhancingSuccess": 0
+      },
+      "combatEnhancementBonuses": {
+        "combatStyleHrids": null,
+        "damageType": "",
+        "attackInterval": 0,
+        "stabAccuracy": 0,
+        "slashAccuracy": 0,
+        "smashAccuracy": 0,
+        "rangedAccuracy": 0,
+        "stabDamage": 0,
+        "slashDamage": 0,
+        "smashDamage": 0,
+        "rangedDamage": 0,
+        "magicDamage": 0,
+        "physicalAmplify": 0,
+        "waterAmplify": 0,
+        "natureAmplify": 0,
+        "fireAmplify": 0,
+        "healingAmplify": 0,
+        "stabEvasion": 0,
+        "slashEvasion": 0,
+        "smashEvasion": 0,
+        "rangedEvasion": 0,
+        "armor": 0,
+        "waterResistance": 0,
+        "natureResistance": 0,
+        "fireResistance": 0,
+        "maxHitpoints": 0,
+        "maxManapoints": 0,
+        "lifeSteal": 0,
+        "HPRegen": 0,
+        "MPRegen": 0,
+        "physicalReflectPower": 0,
+        "dropRate": 0,
+        "dropQuantity": 0,
+        "experienceRate": 0,
+        "critRate": 0,
+        "critDamage": 0,
+        "foodSlots": 0,
+        "drinkSlots": 0
+      },
+      "noncombatEnhancementBonuses": {
+        "milkingSpeed": 0,
+        "foragingSpeed": 0,
+        "woodcuttingSpeed": 0,
+        "cheesesmithingSpeed": 0,
+        "craftingSpeed": 0,
+        "tailoringSpeed": 0,
+        "cookingSpeed": 0,
+        "brewingSpeed": 0,
+        "enhancingSuccess": 0
+      }
+    },
+    "consumableDetail": {
+      "cooldownDuration": 60000000000,
+      "usableInActionTypeMap": { "/action_types/combat": true },
+      "hitpointRestore": 0,
+      "manapointRestore": 0,
+      "recoveryDuration": 0,
+      "buffs": [
+        {
+          "sourceHrid": "/buff_sources/stamina_coffee_max_hp",
+          "typeHrid": "/buff_types/stamina_level",
+          "ratioBoost": 0.15,
+          "ratioBoostLevelBonus": 0,
+          "flatBoost": 2,
+          "flatBoostLevelBonus": 0,
+          "startTime": "0001-01-01T00:00:00Z",
+          "duration": 300000000000
+        },
+        {
+          "sourceHrid": "/buff_sources/stamina_coffee_hp_regen",
+          "typeHrid": "/buff_types/hp_regen",
+          "ratioBoost": 0,
+          "ratioBoostLevelBonus": 0,
+          "flatBoost": 0.01,
+          "flatBoostLevelBonus": 0,
+          "startTime": "0001-01-01T00:00:00Z",
+          "duration": 300000000000
+        }
+      ],
+      "defaultCombatTriggers": [
+        {
+          "dependencyHrid": "/combat_trigger_dependencies/self",
+          "conditionHrid": "/combat_trigger_conditions/stamina_coffee_max_hp",
+          "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+          "value": 0
+        }
+      ]
+    },
+    "abilityBookDetail": {
+      "abilityHrid": "",
+      "levelRequirements": null,
+      "experienceGain": 0
+    },
+    "sortIndex": 72
+  },
   "/items/super_tailoring_tea": {
     "hrid": "/items/super_tailoring_tea",
     "name": "Super Tailoring Tea",
@@ -66971,155 +66971,155 @@
     },
     "sortIndex": 88
   },
-    "/items/swiftness_coffee": {
-      "hrid": "/items/swiftness_coffee",
-      "name": "Swiftness Coffee",
-      "description": "",
-      "categoryHrid": "/item_categories/drink",
-      "sellPrice": 50,
-      "isTradable": true,
-      "itemLevel": 0,
-      "enhancementCosts": null,
-      "equipmentDetail": {
-        "type": "",
-        "levelRequirements": null,
-        "combatStats": {
-          "combatStyleHrids": null,
-          "damageType": "",
-          "attackInterval": 0,
-          "stabAccuracy": 0,
-          "slashAccuracy": 0,
-          "smashAccuracy": 0,
-          "rangedAccuracy": 0,
-          "stabDamage": 0,
-          "slashDamage": 0,
-          "smashDamage": 0,
-          "rangedDamage": 0,
-          "magicDamage": 0,
-          "physicalAmplify": 0,
-          "waterAmplify": 0,
-          "natureAmplify": 0,
-          "fireAmplify": 0,
-          "healingAmplify": 0,
-          "stabEvasion": 0,
-          "slashEvasion": 0,
-          "smashEvasion": 0,
-          "rangedEvasion": 0,
-          "armor": 0,
-          "waterResistance": 0,
-          "natureResistance": 0,
-          "fireResistance": 0,
-          "maxHitpoints": 0,
-          "maxManapoints": 0,
-          "lifeSteal": 0,
-          "HPRegen": 0,
-          "MPRegen": 0,
-          "physicalReflectPower": 0,
-          "dropRate": 0,
-          "dropQuantity": 0,
-          "experienceRate": 0,
-          "critRate": 0,
-          "critDamage": 0,
-          "foodSlots": 0,
-          "drinkSlots": 0
-        },
-        "noncombatStats": {
-          "milkingSpeed": 0,
-          "foragingSpeed": 0,
-          "woodcuttingSpeed": 0,
-          "cheesesmithingSpeed": 0,
-          "craftingSpeed": 0,
-          "tailoringSpeed": 0,
-          "cookingSpeed": 0,
-          "brewingSpeed": 0,
-          "enhancingSuccess": 0
-        },
-        "combatEnhancementBonuses": {
-          "combatStyleHrids": null,
-          "damageType": "",
-          "attackInterval": 0,
-          "stabAccuracy": 0,
-          "slashAccuracy": 0,
-          "smashAccuracy": 0,
-          "rangedAccuracy": 0,
-          "stabDamage": 0,
-          "slashDamage": 0,
-          "smashDamage": 0,
-          "rangedDamage": 0,
-          "magicDamage": 0,
-          "physicalAmplify": 0,
-          "waterAmplify": 0,
-          "natureAmplify": 0,
-          "fireAmplify": 0,
-          "healingAmplify": 0,
-          "stabEvasion": 0,
-          "slashEvasion": 0,
-          "smashEvasion": 0,
-          "rangedEvasion": 0,
-          "armor": 0,
-          "waterResistance": 0,
-          "natureResistance": 0,
-          "fireResistance": 0,
-          "maxHitpoints": 0,
-          "maxManapoints": 0,
-          "lifeSteal": 0,
-          "HPRegen": 0,
-          "MPRegen": 0,
-          "physicalReflectPower": 0,
-          "dropRate": 0,
-          "dropQuantity": 0,
-          "experienceRate": 0,
-          "critRate": 0,
-          "critDamage": 0,
-          "foodSlots": 0,
-          "drinkSlots": 0
-        },
-        "noncombatEnhancementBonuses": {
-          "milkingSpeed": 0,
-          "foragingSpeed": 0,
-          "woodcuttingSpeed": 0,
-          "cheesesmithingSpeed": 0,
-          "craftingSpeed": 0,
-          "tailoringSpeed": 0,
-          "cookingSpeed": 0,
-          "brewingSpeed": 0,
-          "enhancingSuccess": 0
-        }
+  "/items/swiftness_coffee": {
+    "hrid": "/items/swiftness_coffee",
+    "name": "Swiftness Coffee",
+    "description": "",
+    "categoryHrid": "/item_categories/drink",
+    "sellPrice": 50,
+    "isTradable": true,
+    "itemLevel": 0,
+    "enhancementCosts": null,
+    "equipmentDetail": {
+      "type": "",
+      "levelRequirements": null,
+      "combatStats": {
+        "combatStyleHrids": null,
+        "damageType": "",
+        "attackInterval": 0,
+        "stabAccuracy": 0,
+        "slashAccuracy": 0,
+        "smashAccuracy": 0,
+        "rangedAccuracy": 0,
+        "stabDamage": 0,
+        "slashDamage": 0,
+        "smashDamage": 0,
+        "rangedDamage": 0,
+        "magicDamage": 0,
+        "physicalAmplify": 0,
+        "waterAmplify": 0,
+        "natureAmplify": 0,
+        "fireAmplify": 0,
+        "healingAmplify": 0,
+        "stabEvasion": 0,
+        "slashEvasion": 0,
+        "smashEvasion": 0,
+        "rangedEvasion": 0,
+        "armor": 0,
+        "waterResistance": 0,
+        "natureResistance": 0,
+        "fireResistance": 0,
+        "maxHitpoints": 0,
+        "maxManapoints": 0,
+        "lifeSteal": 0,
+        "HPRegen": 0,
+        "MPRegen": 0,
+        "physicalReflectPower": 0,
+        "dropRate": 0,
+        "dropQuantity": 0,
+        "experienceRate": 0,
+        "critRate": 0,
+        "critDamage": 0,
+        "foodSlots": 0,
+        "drinkSlots": 0
       },
-      "consumableDetail": {
-        "cooldownDuration": 60000000000,
-        "usableInActionTypeMap": { "/action_types/combat": true },
-        "hitpointRestore": 0,
-        "manapointRestore": 0,
-        "recoveryDuration": 0,
-        "buffs": [
-          {
-            "sourceHrid": "/buff_sources/swiftness_coffee",
-            "typeHrid": "/buff_types/attack_speed",
-            "ratioBoost": 0.1,
-            "ratioBoostLevelBonus": 0,
-            "flatBoost": 0,
-            "flatBoostLevelBonus": 0,
-            "startTime": "0001-01-01T00:00:00Z",
-            "duration": 300000000000
-          }
-        ],
-        "defaultCombatTriggers": [
-          {
-            "dependencyHrid": "/combat_trigger_dependencies/self",
-            "conditionHrid": "/combat_trigger_conditions/swiftness_coffee",
-            "comparatorHrid": "/combat_trigger_comparators/is_inactive",
-            "value": 0
-          }
-        ]
+      "noncombatStats": {
+        "milkingSpeed": 0,
+        "foragingSpeed": 0,
+        "woodcuttingSpeed": 0,
+        "cheesesmithingSpeed": 0,
+        "craftingSpeed": 0,
+        "tailoringSpeed": 0,
+        "cookingSpeed": 0,
+        "brewingSpeed": 0,
+        "enhancingSuccess": 0
       },
-      "abilityBookDetail": {
-        "abilityHrid": "",
-        "levelRequirements": null,
-        "experienceGain": 0
+      "combatEnhancementBonuses": {
+        "combatStyleHrids": null,
+        "damageType": "",
+        "attackInterval": 0,
+        "stabAccuracy": 0,
+        "slashAccuracy": 0,
+        "smashAccuracy": 0,
+        "rangedAccuracy": 0,
+        "stabDamage": 0,
+        "slashDamage": 0,
+        "smashDamage": 0,
+        "rangedDamage": 0,
+        "magicDamage": 0,
+        "physicalAmplify": 0,
+        "waterAmplify": 0,
+        "natureAmplify": 0,
+        "fireAmplify": 0,
+        "healingAmplify": 0,
+        "stabEvasion": 0,
+        "slashEvasion": 0,
+        "smashEvasion": 0,
+        "rangedEvasion": 0,
+        "armor": 0,
+        "waterResistance": 0,
+        "natureResistance": 0,
+        "fireResistance": 0,
+        "maxHitpoints": 0,
+        "maxManapoints": 0,
+        "lifeSteal": 0,
+        "HPRegen": 0,
+        "MPRegen": 0,
+        "physicalReflectPower": 0,
+        "dropRate": 0,
+        "dropQuantity": 0,
+        "experienceRate": 0,
+        "critRate": 0,
+        "critDamage": 0,
+        "foodSlots": 0,
+        "drinkSlots": 0
       },
-      "sortIndex": 81
+      "noncombatEnhancementBonuses": {
+        "milkingSpeed": 0,
+        "foragingSpeed": 0,
+        "woodcuttingSpeed": 0,
+        "cheesesmithingSpeed": 0,
+        "craftingSpeed": 0,
+        "tailoringSpeed": 0,
+        "cookingSpeed": 0,
+        "brewingSpeed": 0,
+        "enhancingSuccess": 0
+      }
     },
+    "consumableDetail": {
+      "cooldownDuration": 60000000000,
+      "usableInActionTypeMap": { "/action_types/combat": true },
+      "hitpointRestore": 0,
+      "manapointRestore": 0,
+      "recoveryDuration": 0,
+      "buffs": [
+        {
+          "sourceHrid": "/buff_sources/swiftness_coffee",
+          "typeHrid": "/buff_types/attack_speed",
+          "ratioBoost": 0.1,
+          "ratioBoostLevelBonus": 0,
+          "flatBoost": 0,
+          "flatBoostLevelBonus": 0,
+          "startTime": "0001-01-01T00:00:00Z",
+          "duration": 300000000000
+        }
+      ],
+      "defaultCombatTriggers": [
+        {
+          "dependencyHrid": "/combat_trigger_dependencies/self",
+          "conditionHrid": "/combat_trigger_conditions/swiftness_coffee",
+          "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+          "value": 0
+        }
+      ]
+    },
+    "abilityBookDetail": {
+      "abilityHrid": "",
+      "levelRequirements": null,
+      "experienceGain": 0
+    },
+    "sortIndex": 81
+  },
   "/items/tailoring_tea": {
     "hrid": "/items/tailoring_tea",
     "name": "Tailoring Tea",
@@ -74265,155 +74265,155 @@
     },
     "sortIndex": 426
   },
-    "/items/wisdom_coffee": {
-      "hrid": "/items/wisdom_coffee",
-      "name": "Wisdom Coffee",
-      "description": "",
-      "categoryHrid": "/item_categories/drink",
-      "sellPrice": 30,
-      "isTradable": true,
-      "itemLevel": 0,
-      "enhancementCosts": null,
-      "equipmentDetail": {
-        "type": "",
-        "levelRequirements": null,
-        "combatStats": {
-          "combatStyleHrids": null,
-          "damageType": "",
-          "attackInterval": 0,
-          "stabAccuracy": 0,
-          "slashAccuracy": 0,
-          "smashAccuracy": 0,
-          "rangedAccuracy": 0,
-          "stabDamage": 0,
-          "slashDamage": 0,
-          "smashDamage": 0,
-          "rangedDamage": 0,
-          "magicDamage": 0,
-          "physicalAmplify": 0,
-          "waterAmplify": 0,
-          "natureAmplify": 0,
-          "fireAmplify": 0,
-          "healingAmplify": 0,
-          "stabEvasion": 0,
-          "slashEvasion": 0,
-          "smashEvasion": 0,
-          "rangedEvasion": 0,
-          "armor": 0,
-          "waterResistance": 0,
-          "natureResistance": 0,
-          "fireResistance": 0,
-          "maxHitpoints": 0,
-          "maxManapoints": 0,
-          "lifeSteal": 0,
-          "HPRegen": 0,
-          "MPRegen": 0,
-          "physicalReflectPower": 0,
-          "dropRate": 0,
-          "dropQuantity": 0,
-          "experienceRate": 0,
-          "critRate": 0,
-          "critDamage": 0,
-          "foodSlots": 0,
-          "drinkSlots": 0
-        },
-        "noncombatStats": {
-          "milkingSpeed": 0,
-          "foragingSpeed": 0,
-          "woodcuttingSpeed": 0,
-          "cheesesmithingSpeed": 0,
-          "craftingSpeed": 0,
-          "tailoringSpeed": 0,
-          "cookingSpeed": 0,
-          "brewingSpeed": 0,
-          "enhancingSuccess": 0
-        },
-        "combatEnhancementBonuses": {
-          "combatStyleHrids": null,
-          "damageType": "",
-          "attackInterval": 0,
-          "stabAccuracy": 0,
-          "slashAccuracy": 0,
-          "smashAccuracy": 0,
-          "rangedAccuracy": 0,
-          "stabDamage": 0,
-          "slashDamage": 0,
-          "smashDamage": 0,
-          "rangedDamage": 0,
-          "magicDamage": 0,
-          "physicalAmplify": 0,
-          "waterAmplify": 0,
-          "natureAmplify": 0,
-          "fireAmplify": 0,
-          "healingAmplify": 0,
-          "stabEvasion": 0,
-          "slashEvasion": 0,
-          "smashEvasion": 0,
-          "rangedEvasion": 0,
-          "armor": 0,
-          "waterResistance": 0,
-          "natureResistance": 0,
-          "fireResistance": 0,
-          "maxHitpoints": 0,
-          "maxManapoints": 0,
-          "lifeSteal": 0,
-          "HPRegen": 0,
-          "MPRegen": 0,
-          "physicalReflectPower": 0,
-          "dropRate": 0,
-          "dropQuantity": 0,
-          "experienceRate": 0,
-          "critRate": 0,
-          "critDamage": 0,
-          "foodSlots": 0,
-          "drinkSlots": 0
-        },
-        "noncombatEnhancementBonuses": {
-          "milkingSpeed": 0,
-          "foragingSpeed": 0,
-          "woodcuttingSpeed": 0,
-          "cheesesmithingSpeed": 0,
-          "craftingSpeed": 0,
-          "tailoringSpeed": 0,
-          "cookingSpeed": 0,
-          "brewingSpeed": 0,
-          "enhancingSuccess": 0
-        }
+  "/items/wisdom_coffee": {
+    "hrid": "/items/wisdom_coffee",
+    "name": "Wisdom Coffee",
+    "description": "",
+    "categoryHrid": "/item_categories/drink",
+    "sellPrice": 30,
+    "isTradable": true,
+    "itemLevel": 0,
+    "enhancementCosts": null,
+    "equipmentDetail": {
+      "type": "",
+      "levelRequirements": null,
+      "combatStats": {
+        "combatStyleHrids": null,
+        "damageType": "",
+        "attackInterval": 0,
+        "stabAccuracy": 0,
+        "slashAccuracy": 0,
+        "smashAccuracy": 0,
+        "rangedAccuracy": 0,
+        "stabDamage": 0,
+        "slashDamage": 0,
+        "smashDamage": 0,
+        "rangedDamage": 0,
+        "magicDamage": 0,
+        "physicalAmplify": 0,
+        "waterAmplify": 0,
+        "natureAmplify": 0,
+        "fireAmplify": 0,
+        "healingAmplify": 0,
+        "stabEvasion": 0,
+        "slashEvasion": 0,
+        "smashEvasion": 0,
+        "rangedEvasion": 0,
+        "armor": 0,
+        "waterResistance": 0,
+        "natureResistance": 0,
+        "fireResistance": 0,
+        "maxHitpoints": 0,
+        "maxManapoints": 0,
+        "lifeSteal": 0,
+        "HPRegen": 0,
+        "MPRegen": 0,
+        "physicalReflectPower": 0,
+        "dropRate": 0,
+        "dropQuantity": 0,
+        "experienceRate": 0,
+        "critRate": 0,
+        "critDamage": 0,
+        "foodSlots": 0,
+        "drinkSlots": 0
       },
-      "consumableDetail": {
-        "cooldownDuration": 60000000000,
-        "usableInActionTypeMap": { "/action_types/combat": true },
-        "hitpointRestore": 0,
-        "manapointRestore": 0,
-        "recoveryDuration": 0,
-        "buffs": [
-          {
-            "sourceHrid": "/buff_sources/wisdom_coffee",
-            "typeHrid": "/buff_types/wisdom",
-            "ratioBoost": 0,
-            "ratioBoostLevelBonus": 0,
-            "flatBoost": 0.12,
-            "flatBoostLevelBonus": 0,
-            "startTime": "0001-01-01T00:00:00Z",
-            "duration": 300000000000
-          }
-        ],
-        "defaultCombatTriggers": [
-          {
-            "dependencyHrid": "/combat_trigger_dependencies/self",
-            "conditionHrid": "/combat_trigger_conditions/wisdom_coffee",
-            "comparatorHrid": "/combat_trigger_comparators/is_inactive",
-            "value": 0
-          }
-        ]
+      "noncombatStats": {
+        "milkingSpeed": 0,
+        "foragingSpeed": 0,
+        "woodcuttingSpeed": 0,
+        "cheesesmithingSpeed": 0,
+        "craftingSpeed": 0,
+        "tailoringSpeed": 0,
+        "cookingSpeed": 0,
+        "brewingSpeed": 0,
+        "enhancingSuccess": 0
       },
-      "abilityBookDetail": {
-        "abilityHrid": "",
-        "levelRequirements": null,
-        "experienceGain": 0
+      "combatEnhancementBonuses": {
+        "combatStyleHrids": null,
+        "damageType": "",
+        "attackInterval": 0,
+        "stabAccuracy": 0,
+        "slashAccuracy": 0,
+        "smashAccuracy": 0,
+        "rangedAccuracy": 0,
+        "stabDamage": 0,
+        "slashDamage": 0,
+        "smashDamage": 0,
+        "rangedDamage": 0,
+        "magicDamage": 0,
+        "physicalAmplify": 0,
+        "waterAmplify": 0,
+        "natureAmplify": 0,
+        "fireAmplify": 0,
+        "healingAmplify": 0,
+        "stabEvasion": 0,
+        "slashEvasion": 0,
+        "smashEvasion": 0,
+        "rangedEvasion": 0,
+        "armor": 0,
+        "waterResistance": 0,
+        "natureResistance": 0,
+        "fireResistance": 0,
+        "maxHitpoints": 0,
+        "maxManapoints": 0,
+        "lifeSteal": 0,
+        "HPRegen": 0,
+        "MPRegen": 0,
+        "physicalReflectPower": 0,
+        "dropRate": 0,
+        "dropQuantity": 0,
+        "experienceRate": 0,
+        "critRate": 0,
+        "critDamage": 0,
+        "foodSlots": 0,
+        "drinkSlots": 0
       },
-      "sortIndex": 79
+      "noncombatEnhancementBonuses": {
+        "milkingSpeed": 0,
+        "foragingSpeed": 0,
+        "woodcuttingSpeed": 0,
+        "cheesesmithingSpeed": 0,
+        "craftingSpeed": 0,
+        "tailoringSpeed": 0,
+        "cookingSpeed": 0,
+        "brewingSpeed": 0,
+        "enhancingSuccess": 0
+      }
     },
+    "consumableDetail": {
+      "cooldownDuration": 60000000000,
+      "usableInActionTypeMap": { "/action_types/combat": true },
+      "hitpointRestore": 0,
+      "manapointRestore": 0,
+      "recoveryDuration": 0,
+      "buffs": [
+        {
+          "sourceHrid": "/buff_sources/wisdom_coffee",
+          "typeHrid": "/buff_types/wisdom",
+          "ratioBoost": 0,
+          "ratioBoostLevelBonus": 0,
+          "flatBoost": 0.12,
+          "flatBoostLevelBonus": 0,
+          "startTime": "0001-01-01T00:00:00Z",
+          "duration": 300000000000
+        }
+      ],
+      "defaultCombatTriggers": [
+        {
+          "dependencyHrid": "/combat_trigger_dependencies/self",
+          "conditionHrid": "/combat_trigger_conditions/wisdom_coffee",
+          "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+          "value": 0
+        }
+      ]
+    },
+    "abilityBookDetail": {
+      "abilityHrid": "",
+      "levelRequirements": null,
+      "experienceGain": 0
+    },
+    "sortIndex": 79
+  },
   "/items/wisdom_tea": {
     "hrid": "/items/wisdom_tea",
     "name": "Wisdom Tea",
@@ -75813,7 +75813,7 @@
       }
     },
     "consumableDetail": {
-      "cooldownDuration": 300000000000,
+      "cooldownDuration": 60000000000,
       "usableInActionTypeMap": {
         "/action_types/combat": true
       },
