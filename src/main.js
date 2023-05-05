@@ -1433,6 +1433,77 @@ function initErrorHandling() {
     });
 }
 
+function initImportExportModal() {
+        let exportSetButton = document.getElementById("buttonExportSet");
+        exportSetButton.addEventListener("click", (event) => {
+        let zoneSelect = document.getElementById("selectZone");
+        let simulationTimeInput = document.getElementById("inputSimulationTime");
+        let state = {
+            player: player,
+            food: food,
+            drinks: drinks,
+            abilities: abilities,
+            triggerMap: triggerMap,
+            zone: zoneSelect.value,
+            simulationTime: simulationTimeInput.value,
+        };
+        for (let i = 0; i < 4; i++) {
+            let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
+            state["abilityLevel" + i] = abilityLevelInput.value;
+        }
+        navigator.clipboard.writeText(JSON.stringify(state));
+        alert("Current set has been copied to clipboard.")
+    });
+
+    let importSetButton = document.getElementById("buttonImportSet");
+    importSetButton.addEventListener("click", (event) => {
+        let equipmentSet = document.getElementById("inputSet").value;
+        equipmentSet = JSON.parse(equipmentSet);
+        console.log(equipmentSet);
+        ["stamina", "intelligence", "attack", "power", "defense", "ranged", "magic"].forEach((skill) => {
+            let levelInput = document.getElementById("inputLevel_" + skill);
+            levelInput.value = equipmentSet.player[skill + "Level"];
+        });
+
+        ["head", "body", "legs", "feet", "hands", "off_hand", "pouch", "neck", "earrings", "ring"].forEach((type) => {
+            let equipmentSelect = document.getElementById("selectEquipment_" + type);
+            let enhancementLevelInput = document.getElementById("inputEquipmentEnhancementLevel_" + type);
+            if(equipmentSet.player.equipment["/equipment_types/" + type] != null) {
+                equipmentSelect.value = equipmentSet.player.equipment["/equipment_types/" + type].hrid;
+                enhancementLevelInput.value = equipmentSet.player.equipment["/equipment_types/" + type].enhancementLevel;
+            }
+        });
+
+        let weaponSelect = document.getElementById("selectEquipment_weapon");
+        if (equipmentSet.player.equipment["/equipment_types/two_hand"] != null) {
+            weaponSelect.value = equipmentSet.player.equipment["/equipment_types/two_hand"].hrid;
+        } else if (equipmentSet.player.equipment["/equipment_types/main_hand"] != null) {
+            weaponSelect.value = equipmentSet.player.equipment["/equipment_types/main_hand"].hrid;
+        }
+
+        for (let i = 0; i < 3; i++) {
+            let drinkSelect = document.getElementById("selectDrink_" + i);
+            drinkSelect.value = equipmentSet.drinks[i];
+            let foodSelect = document.getElementById("selectFood_" + i);
+            foodSelect.value = equipmentSet.food[i];
+        }
+
+        for (let i = 0; i < 4; i++) {
+            let abilitySelect = document.getElementById("selectAbility_" + i);
+            abilitySelect.value = equipmentSet.abilities[i];
+            let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
+            abilityLevelInput.value = equipmentSet["abilityLevel" + i];
+        }
+
+        let zoneSelect = document.getElementById("selectZone");
+        zoneSelect.value = equipmentSet["zone"];
+        let simulationDuration = document.getElementById("inputSimulationTime");
+        simulationDuration.value = equipmentSet["simulationTime"];
+        updateState();
+        updateUI();
+    });
+}
+
 function showErrorModal(error) {
     let zoneSelect = document.getElementById("selectZone");
     let simulationTimeInput = document.getElementById("inputSimulationTime");
@@ -1488,6 +1559,7 @@ initTriggerModal();
 initSimulationControls();
 initEquipmentSetsModal();
 initErrorHandling();
+initImportExportModal();
 
 updateState();
 updateUI();

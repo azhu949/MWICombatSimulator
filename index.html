@@ -701,6 +701,17 @@
                                         Equipment Sets
                                     </button>
                                 </div>
+                                <div class="col align-self-center">
+                                    <button
+                                            id="buttonImportExport"
+                                            class="btn btn-primary"
+                                            type="button"
+                                            data-bs-toggle="modal"
+                                            data-bs-target="#importExportModal"
+                                    >
+                                        Import/Export
+                                    </button>
+                                </div>
                             </div>
                             <!-- #endregion -->
                         </div>
@@ -1454,6 +1465,26 @@
                 </div>
             </div>
             <!-- äendregion -->
+        </div>
+        <div class="modal" id="importExportModal" tabindex="-1">
+            <!-- #region Error Modal -->
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h5 class="modal-title">Import / Export Set</h5>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                    </div>
+                    <div class="modal-body">
+                        <input type="text" id="inputSet" class="form-control" placeholder="Import set here" enabled />
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-primary" id="buttonImportSet">Import</button>
+                        <button type="button" class="btn btn-primary" id="buttonExportSet">Export</button>
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    </div>
+                </div>
+            </div>
+            <!-- endregion -->
         </div>
         <script
             src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.0/dist/js/bootstrap.bundle.min.js"
