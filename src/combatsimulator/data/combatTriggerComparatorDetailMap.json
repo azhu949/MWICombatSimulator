@@ -1,7 +1,7 @@
 {
     "/combat_trigger_comparators/greater_than_equal": {
         "hrid": "/combat_trigger_comparators/greater_than_equal",
-        "name": "\u003e=",
+        "name": ">=",
         "allowValue": true,
         "sortIndex": 1
     },
@@ -19,7 +19,7 @@
     },
     "/combat_trigger_comparators/less_than_equal": {
         "hrid": "/combat_trigger_comparators/less_than_equal",
-        "name": "\u003c=",
+        "name": "<=",
         "allowValue": true,
         "sortIndex": 2
     }

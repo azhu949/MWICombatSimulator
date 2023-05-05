@@ -267,9 +267,9 @@ function updateCombatStatsUI() {
         "HPRegen",
         "MPRegen",
         "physicalReflectPower",
-        "critRate",
-        "critDamage",
-        "experienceRate",
+        "criticalRate",
+        "criticalDamage",
+        "combatExperience",
     ].forEach((stat) => {
         let element = document.getElementById("combatStat_" + stat);
         let value = (100 * player.combatDetails.combatStats[stat]).toLocaleString([], {

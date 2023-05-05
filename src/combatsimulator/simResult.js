@@ -35,7 +35,7 @@ class SimResult {
             };
         }
 
-        this.experienceGained[unit.hrid][type] += experience * (1 + unit.combatDetails.combatStats.experienceRate);
+        this.experienceGained[unit.hrid][type] += experience * (1 + unit.combatDetails.combatStats.combatExperience);
     }
 
     addEncounterEnd() {

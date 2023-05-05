@@ -93,11 +93,11 @@ class Player extends CombatUnit {
             "HPRegen",
             "MPRegen",
             "physicalReflectPower",
-            "dropRate",
-            "dropQuantity",
-            "experienceRate",
-            "critRate",
-            "critDamage",
+            "combatDropRate",
+            "combatDropQuantity",
+            "combatExperience",
+            "criticalRate",
+            "criticalDamage",
         ].forEach((stat) => {
             this.combatDetails.combatStats[stat] = Object.values(this.equipment)
                 .filter((equipment) => equipment != null)

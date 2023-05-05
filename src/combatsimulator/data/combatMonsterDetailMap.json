@@ -24,6 +24,7 @@
             "totalWaterResistance": 1.6,
             "totalNatureResistance": 1.6,
             "totalFireResistance": 1.6,
+            "combatLevel": 20,
             "staminaLevel": 20,
             "intelligenceLevel": 20,
             "attackLevel": 20,
@@ -32,9 +33,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/slash"],
+                "combatStyleHrids": [
+                    "/combat_styles/slash"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3500000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -49,6 +54,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0.4,
                 "slashEvasion": 0.4,
                 "smashEvasion": 0.4,
@@ -57,20 +65,23 @@
                 "waterResistance": 0,
                 "natureResistance": 0,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/scratch", "level": 10 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/scratch",
+                "level": 10
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -126,6 +137,14 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.000488888888888889,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/aquahorse": {
@@ -153,6 +172,7 @@
             "totalWaterResistance": 53.5,
             "totalNatureResistance": 3.5,
             "totalFireResistance": 53.5,
+            "combatLevel": 41,
             "staminaLevel": 30,
             "intelligenceLevel": 60,
             "attackLevel": 0,
@@ -161,9 +181,13 @@
             "rangedLevel": 40,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/ranged"],
+                "combatStyleHrids": [
+                    "/combat_styles/ranged"
+                ],
                 "damageType": "/damage_types/water",
                 "attackInterval": 3000000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -178,6 +202,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -186,20 +213,23 @@
                 "waterResistance": 50,
                 "natureResistance": 0,
                 "fireResistance": 50,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/aqua_arrow", "level": 1 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/aqua_arrow",
+                "level": 1
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -220,6 +250,12 @@
                 "maxCount": 3
             },
             {
+                "itemHrid": "/items/pearl",
+                "dropRate": 0.0003,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
                 "itemHrid": "/items/aqua_essence",
                 "dropRate": 0.2,
                 "minCount": 1,
@@ -228,6 +264,14 @@
             {
                 "itemHrid": "/items/aqua_arrow",
                 "dropRate": 0.001,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.0006694444444444445,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -258,6 +302,7 @@
             "totalWaterResistance": 30,
             "totalNatureResistance": 30,
             "totalFireResistance": 10,
+            "combatLevel": 124,
             "staminaLevel": 120,
             "intelligenceLevel": 120,
             "attackLevel": 140,
@@ -266,9 +311,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/stab"],
+                "combatStyleHrids": [
+                    "/combat_styles/stab"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -283,6 +332,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0.3,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -291,20 +343,23 @@
                 "waterResistance": 20,
                 "natureResistance": 20,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/frenzy", "level": 4 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/frenzy",
+                "level": 4
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -356,7 +411,7 @@
             },
             {
                 "itemHrid": "/items/black_bear_fluff",
-                "dropRate": 0.002,
+                "dropRate": 0.001,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -369,6 +424,14 @@
             {
                 "itemHrid": "/items/frenzy",
                 "dropRate": 0.0006,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_treasure_chest",
+                "dropRate": 0.001317037037037037,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -399,6 +462,7 @@
             "totalWaterResistance": 48,
             "totalNatureResistance": 48,
             "totalFireResistance": 48,
+            "combatLevel": 88,
             "staminaLevel": 100,
             "intelligenceLevel": 100,
             "attackLevel": 0,
@@ -407,9 +471,13 @@
             "rangedLevel": 80,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/ranged"],
+                "combatStyleHrids": [
+                    "/combat_styles/ranged"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -424,6 +492,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -432,22 +503,26 @@
                 "waterResistance": 40,
                 "natureResistance": 40,
                 "fireResistance": 40,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
         "abilities": [
-            { "abilityHrid": "/abilities/quick_shot", "level": 10 },
-            { "abilityHrid": "/abilities/rain_of_arrows", "level": 1 }
+            {
+                "abilityHrid": "/abilities/quick_shot",
+                "level": 10
+            },
+            {
+                "abilityHrid": "/abilities/rain_of_arrows",
+                "level": 1
+            }
         ],
         "dropTable": [
             {
@@ -475,8 +550,14 @@
                 "maxCount": 3
             },
             {
+                "itemHrid": "/items/amber",
+                "dropRate": 0.0005,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
                 "itemHrid": "/items/centaur_hoof",
-                "dropRate": 0.002,
+                "dropRate": 0.001,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -495,6 +576,14 @@
             {
                 "itemHrid": "/items/rain_of_arrows",
                 "dropRate": 0.001,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_treasure_chest",
+                "dropRate": 0.0009688888888888889,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -525,6 +614,7 @@
             "totalWaterResistance": 54,
             "totalNatureResistance": 4,
             "totalFireResistance": 54,
+            "combatLevel": 31,
             "staminaLevel": 30,
             "intelligenceLevel": 30,
             "attackLevel": 25,
@@ -533,9 +623,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/smash"],
+                "combatStyleHrids": [
+                    "/combat_styles/smash"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3500000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -550,6 +644,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0.4,
                 "smashEvasion": -0.2,
@@ -558,20 +655,23 @@
                 "waterResistance": 50,
                 "natureResistance": 0,
                 "fireResistance": 50,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/smack", "level": 5 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/smack",
+                "level": 5
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -609,6 +709,14 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.0006416666666666667,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/elementalist": {
@@ -636,6 +744,7 @@
             "totalWaterResistance": 139,
             "totalNatureResistance": 139,
             "totalFireResistance": 139,
+            "combatLevel": 134,
             "staminaLevel": 140,
             "intelligenceLevel": 180,
             "attackLevel": 0,
@@ -644,9 +753,13 @@
             "rangedLevel": 0,
             "magicLevel": 140,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/magic"],
+                "combatStyleHrids": [
+                    "/combat_styles/magic"
+                ],
                 "damageType": "/damage_types/fire",
                 "attackInterval": 7000000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -661,6 +774,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0.3,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -669,23 +785,30 @@
                 "waterResistance": 90,
                 "natureResistance": 90,
                 "fireResistance": 90,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
         "abilities": [
-            { "abilityHrid": "/abilities/elemental_affinity", "level": 1 },
-            { "abilityHrid": "/abilities/ice_spear", "level": 10 },
-            { "abilityHrid": "/abilities/flame_blast", "level": 10 }
+            {
+                "abilityHrid": "/abilities/elemental_affinity",
+                "level": 1
+            },
+            {
+                "abilityHrid": "/abilities/ice_spear",
+                "level": 10
+            },
+            {
+                "abilityHrid": "/abilities/flame_blast",
+                "level": 10
+            }
         ],
         "dropTable": [
             {
@@ -714,7 +837,7 @@
             },
             {
                 "itemHrid": "/items/sorcerers_sole",
-                "dropRate": 0.002,
+                "dropRate": 0.001,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -748,6 +871,14 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_treasure_chest",
+                "dropRate": 0.0015644444444444445,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/eye": {
@@ -775,6 +906,7 @@
             "totalWaterResistance": 35.6,
             "totalNatureResistance": 35.6,
             "totalFireResistance": 35.6,
+            "combatLevel": 89,
             "staminaLevel": 89,
             "intelligenceLevel": 89,
             "attackLevel": 89,
@@ -783,9 +915,13 @@
             "rangedLevel": 0,
             "magicLevel": 89,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/slash"],
+                "combatStyleHrids": [
+                    "/combat_styles/slash"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 2800000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -800,6 +936,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": -0.25,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -808,20 +947,23 @@
                 "waterResistance": 0,
                 "natureResistance": 0,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/precision", "level": 1 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/precision",
+                "level": 1
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -913,6 +1055,14 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_treasure_chest",
+                "dropRate": 0.0008841111111111111,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/eyes": {
@@ -940,6 +1090,7 @@
             "totalWaterResistance": 40.4,
             "totalNatureResistance": 40.4,
             "totalFireResistance": 40.4,
+            "combatLevel": 101,
             "staminaLevel": 101,
             "intelligenceLevel": 101,
             "attackLevel": 101,
@@ -948,9 +1099,13 @@
             "rangedLevel": 0,
             "magicLevel": 101,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/slash"],
+                "combatStyleHrids": [
+                    "/combat_styles/slash"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 2800000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -965,6 +1120,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": -0.25,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -973,20 +1131,23 @@
                 "waterResistance": 0,
                 "natureResistance": 0,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/precision", "level": 1 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/precision",
+                "level": 1
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -1030,6 +1191,14 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_treasure_chest",
+                "dropRate": 0.0010352222222222223,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/flame_sorcerer": {
@@ -1057,6 +1226,7 @@
             "totalWaterResistance": 61.5,
             "totalNatureResistance": 91.5,
             "totalFireResistance": 91.5,
+            "combatLevel": 89,
             "staminaLevel": 90,
             "intelligenceLevel": 130,
             "attackLevel": 0,
@@ -1065,9 +1235,13 @@
             "rangedLevel": 0,
             "magicLevel": 90,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/magic"],
+                "combatStyleHrids": [
+                    "/combat_styles/magic"
+                ],
                 "damageType": "/damage_types/fire",
                 "attackInterval": 7000000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -1082,6 +1256,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0.2,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -1090,22 +1267,26 @@
                 "waterResistance": 30,
                 "natureResistance": 60,
                 "fireResistance": 60,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
         "abilities": [
-            { "abilityHrid": "/abilities/fireball", "level": 15 },
-            { "abilityHrid": "/abilities/flame_blast", "level": 1 }
+            {
+                "abilityHrid": "/abilities/fireball",
+                "level": 15
+            },
+            {
+                "abilityHrid": "/abilities/flame_blast",
+                "level": 1
+            }
         ],
         "dropTable": [
             {
@@ -1134,7 +1315,7 @@
             },
             {
                 "itemHrid": "/items/sorcerers_sole",
-                "dropRate": 0.001,
+                "dropRate": 0.0005,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -1156,23 +1337,31 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_treasure_chest",
+                "dropRate": 0.0008922222222222222,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/fly": {
         "hrid": "/combat_monsters/fly",
         "name": "Fly",
         "combatDetails": {
-            "currentHitpoints": 30,
-            "maxHitpoints": 30,
-            "currentManapoints": 30,
-            "maxManapoints": 30,
-            "stabAccuracyRating": 11,
-            "slashAccuracyRating": 11,
-            "smashAccuracyRating": 7.699999999999999,
+            "currentHitpoints": 50,
+            "maxHitpoints": 50,
+            "currentManapoints": 100,
+            "maxManapoints": 100,
+            "stabAccuracyRating": 15,
+            "slashAccuracyRating": 15,
+            "smashAccuracyRating": 7.5,
             "rangedAccuracyRating": 10,
-            "stabMaxDamage": 11,
-            "slashMaxDamage": 11,
-            "smashMaxDamage": 7.699999999999999,
+            "stabMaxDamage": 15,
+            "slashMaxDamage": 15,
+            "smashMaxDamage": 7.5,
             "rangedMaxDamage": 10,
             "magicMaxDamage": 10,
             "stabEvasionRating": 11,
@@ -1183,24 +1372,29 @@
             "totalWaterResistance": 0.1,
             "totalNatureResistance": 0.1,
             "totalFireResistance": 0.1,
-            "staminaLevel": -7,
-            "intelligenceLevel": -7,
-            "attackLevel": 1,
-            "powerLevel": 1,
+            "combatLevel": 1,
+            "staminaLevel": -5,
+            "intelligenceLevel": 0,
+            "attackLevel": 5,
+            "powerLevel": 5,
             "defenseLevel": 1,
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/smash"],
+                "combatStyleHrids": [
+                    "/combat_styles/smash"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 4000000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
-                "smashAccuracy": -0.3,
+                "smashAccuracy": -0.5,
                 "rangedAccuracy": 0,
                 "stabDamage": 0,
                 "slashDamage": 0,
-                "smashDamage": -0.3,
+                "smashDamage": -0.5,
                 "rangedDamage": 0,
                 "magicDamage": 0,
                 "physicalAmplify": 0,
@@ -1208,6 +1402,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -1216,15 +1413,13 @@
                 "waterResistance": 0,
                 "natureResistance": 0,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
@@ -1236,6 +1431,14 @@
                 "dropRate": 1,
                 "minCount": 8,
                 "maxCount": 40
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.00016749999999999998,
+                "minCount": 1,
+                "maxCount": 1
             }
         ]
     },
@@ -1264,6 +1467,7 @@
             "totalWaterResistance": 1.5,
             "totalNatureResistance": 1.5,
             "totalFireResistance": 1.5,
+            "combatLevel": 10,
             "staminaLevel": 5,
             "intelligenceLevel": 5,
             "attackLevel": 15,
@@ -1272,9 +1476,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/smash"],
+                "combatStyleHrids": [
+                    "/combat_styles/smash"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3200000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -1289,6 +1497,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -1297,20 +1508,23 @@
                 "waterResistance": 0,
                 "natureResistance": 0,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/smack", "level": 1 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/smack",
+                "level": 1
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -1348,6 +1562,14 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.0002916666666666667,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/gobo_boomy": {
@@ -1375,6 +1597,7 @@
             "totalWaterResistance": 49,
             "totalNatureResistance": 49,
             "totalFireResistance": 49,
+            "combatLevel": 56,
             "staminaLevel": 70,
             "intelligenceLevel": 70,
             "attackLevel": 0,
@@ -1383,9 +1606,13 @@
             "rangedLevel": 0,
             "magicLevel": 50,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/magic"],
+                "combatStyleHrids": [
+                    "/combat_styles/magic"
+                ],
                 "damageType": "/damage_types/fire",
                 "attackInterval": 8000000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -1400,6 +1627,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0.25,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -1408,20 +1638,23 @@
                 "waterResistance": 30,
                 "natureResistance": 30,
                 "fireResistance": 30,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/fireball", "level": 20 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/fireball",
+                "level": 20
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -1483,6 +1716,14 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.00128,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/gobo_shooty": {
@@ -1510,6 +1751,7 @@
             "totalWaterResistance": 56,
             "totalNatureResistance": 56,
             "totalFireResistance": 56,
+            "combatLevel": 48,
             "staminaLevel": 70,
             "intelligenceLevel": 20,
             "attackLevel": 0,
@@ -1518,9 +1760,13 @@
             "rangedLevel": 45,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/ranged"],
+                "combatStyleHrids": [
+                    "/combat_styles/ranged"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3200000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -1535,6 +1781,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -1543,20 +1792,23 @@
                 "waterResistance": 50,
                 "natureResistance": 50,
                 "fireResistance": 50,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/flame_arrow", "level": 1 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/flame_arrow",
+                "level": 1
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -1624,6 +1876,14 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.00124,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/gobo_slashy": {
@@ -1651,6 +1911,7 @@
             "totalWaterResistance": 6,
             "totalNatureResistance": 6,
             "totalFireResistance": 6,
+            "combatLevel": 46,
             "staminaLevel": 70,
             "intelligenceLevel": 20,
             "attackLevel": 40,
@@ -1659,9 +1920,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/slash"],
+                "combatStyleHrids": [
+                    "/combat_styles/slash"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3300000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0.9,
                 "smashAccuracy": 0,
@@ -1676,6 +1941,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -1684,20 +1952,23 @@
                 "waterResistance": 0,
                 "natureResistance": 0,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/cleave", "level": 1 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/cleave",
+                "level": 1
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -1765,6 +2036,14 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.00123,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/gobo_smashy": {
@@ -1792,6 +2071,7 @@
             "totalWaterResistance": 6,
             "totalNatureResistance": 6,
             "totalFireResistance": 6,
+            "combatLevel": 47,
             "staminaLevel": 70,
             "intelligenceLevel": 20,
             "attackLevel": 40,
@@ -1800,9 +2080,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/smash"],
+                "combatStyleHrids": [
+                    "/combat_styles/smash"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3700000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0.1,
@@ -1817,6 +2101,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -1825,20 +2112,23 @@
                 "waterResistance": 0,
                 "natureResistance": 0,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/berserk", "level": 1 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/berserk",
+                "level": 1
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -1906,6 +2196,14 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.0012350000000000002,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/gobo_stabby": {
@@ -1933,6 +2231,7 @@
             "totalWaterResistance": 6,
             "totalNatureResistance": 6,
             "totalFireResistance": 6,
+            "combatLevel": 44,
             "staminaLevel": 70,
             "intelligenceLevel": 20,
             "attackLevel": 40,
@@ -1941,9 +2240,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/stab"],
+                "combatStyleHrids": [
+                    "/combat_styles/stab"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 2500000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 2,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -1958,6 +2261,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -1966,20 +2272,23 @@
                 "waterResistance": 0,
                 "natureResistance": 0,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/pierce", "level": 1 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/pierce",
+                "level": 1
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -2041,6 +2350,14 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.00122,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/granite_golem": {
@@ -2068,6 +2385,7 @@
             "totalWaterResistance": 112,
             "totalNatureResistance": 62,
             "totalFireResistance": 112,
+            "combatLevel": 220,
             "staminaLevel": 170,
             "intelligenceLevel": 170,
             "attackLevel": 190,
@@ -2076,9 +2394,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/smash"],
+                "combatStyleHrids": [
+                    "/combat_styles/smash"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3200000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -2093,6 +2415,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": -0.2,
@@ -2101,22 +2426,26 @@
                 "waterResistance": 80,
                 "natureResistance": 30,
                 "fireResistance": 80,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
         "abilities": [
-            { "abilityHrid": "/abilities/sweep", "level": 20 },
-            { "abilityHrid": "/abilities/stunning_blow", "level": 10 }
+            {
+                "abilityHrid": "/abilities/sweep",
+                "level": 20
+            },
+            {
+                "abilityHrid": "/abilities/stunning_blow",
+                "level": 10
+            }
         ],
         "dropTable": [
             {
@@ -2138,8 +2467,26 @@
                 "maxCount": 2
             },
             {
+                "itemHrid": "/items/garnet",
+                "dropRate": 0.0004,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/jade",
+                "dropRate": 0.0004,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/amethyst",
+                "dropRate": 0.0004,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
                 "itemHrid": "/items/living_granite",
-                "dropRate": 0.001,
+                "dropRate": 0.0007,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -2158,6 +2505,14 @@
             {
                 "itemHrid": "/items/stunning_blow",
                 "dropRate": 0.001,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_treasure_chest",
+                "dropRate": 0.0014777777777777775,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -2188,6 +2543,7 @@
             "totalWaterResistance": 31,
             "totalNatureResistance": 31,
             "totalFireResistance": 11,
+            "combatLevel": 134,
             "staminaLevel": 130,
             "intelligenceLevel": 130,
             "attackLevel": 150,
@@ -2196,9 +2552,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/slash"],
+                "combatStyleHrids": [
+                    "/combat_styles/slash"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -2213,6 +2573,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0.3,
                 "smashEvasion": 0,
@@ -2221,20 +2584,23 @@
                 "waterResistance": 20,
                 "natureResistance": 20,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/frenzy", "level": 7 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/frenzy",
+                "level": 7
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -2286,7 +2652,7 @@
             },
             {
                 "itemHrid": "/items/grizzly_bear_fluff",
-                "dropRate": 0.002,
+                "dropRate": 0.001,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -2299,6 +2665,14 @@
             {
                 "itemHrid": "/items/frenzy",
                 "dropRate": 0.0008,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_treasure_chest",
+                "dropRate": 0.0014666666666666667,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -2329,6 +2703,7 @@
             "totalWaterResistance": 28,
             "totalNatureResistance": 28,
             "totalFireResistance": 8,
+            "combatLevel": 104,
             "staminaLevel": 110,
             "intelligenceLevel": 110,
             "attackLevel": 140,
@@ -2337,9 +2712,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/smash"],
+                "combatStyleHrids": [
+                    "/combat_styles/smash"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 2600000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -2354,6 +2733,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0.3,
@@ -2362,26 +2744,29 @@
                 "waterResistance": 20,
                 "natureResistance": 20,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/frenzy", "level": 1 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/frenzy",
+                "level": 1
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/sugar",
                 "dropRate": 1,
-                "minCount": 50,
-                "maxCount": 250
+                "minCount": 24,
+                "maxCount": 120
             },
             {
                 "itemHrid": "/items/apple_gummy",
@@ -2425,6 +2810,14 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_treasure_chest",
+                "dropRate": 0.0011266666666666667,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/ice_sorcerer": {
@@ -2452,6 +2845,7 @@
             "totalWaterResistance": 78,
             "totalNatureResistance": 48,
             "totalFireResistance": 78,
+            "combatLevel": 80,
             "staminaLevel": 80,
             "intelligenceLevel": 120,
             "attackLevel": 0,
@@ -2460,9 +2854,13 @@
             "rangedLevel": 0,
             "magicLevel": 80,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/magic"],
+                "combatStyleHrids": [
+                    "/combat_styles/magic"
+                ],
                 "damageType": "/damage_types/water",
                 "attackInterval": 7000000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -2477,6 +2875,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -2485,22 +2886,26 @@
                 "waterResistance": 50,
                 "natureResistance": 20,
                 "fireResistance": 50,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
         "abilities": [
-            { "abilityHrid": "/abilities/water_strike", "level": 15 },
-            { "abilityHrid": "/abilities/ice_spear", "level": 1 }
+            {
+                "abilityHrid": "/abilities/water_strike",
+                "level": 15
+            },
+            {
+                "abilityHrid": "/abilities/ice_spear",
+                "level": 1
+            }
         ],
         "dropTable": [
             {
@@ -2529,7 +2934,7 @@
             },
             {
                 "itemHrid": "/items/sorcerers_sole",
-                "dropRate": 0.001,
+                "dropRate": 0.0005,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -2548,6 +2953,14 @@
             {
                 "itemHrid": "/items/ice_spear",
                 "dropRate": 0.0008,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_treasure_chest",
+                "dropRate": 0.0007777777777777777,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -2578,6 +2991,7 @@
             "totalWaterResistance": 61,
             "totalNatureResistance": 61,
             "totalFireResistance": 11,
+            "combatLevel": 32,
             "staminaLevel": 40,
             "intelligenceLevel": 40,
             "attackLevel": 0,
@@ -2586,9 +3000,13 @@
             "rangedLevel": 0,
             "magicLevel": 30,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/magic"],
+                "combatStyleHrids": [
+                    "/combat_styles/magic"
+                ],
                 "damageType": "/damage_types/nature",
                 "attackInterval": 5000000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -2603,6 +3021,9 @@
                 "natureAmplify": 0.3,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -2611,22 +3032,26 @@
                 "waterResistance": 50,
                 "natureResistance": 50,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
         "abilities": [
-            { "abilityHrid": "/abilities/entangle", "level": 10 },
-            { "abilityHrid": "/abilities/heal", "level": 1 }
+            {
+                "abilityHrid": "/abilities/entangle",
+                "level": 10
+            },
+            {
+                "abilityHrid": "/abilities/heal",
+                "level": 1
+            }
         ],
         "dropTable": [
             {
@@ -2671,6 +3096,14 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.0007733333333333332,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/magnetic_golem": {
@@ -2698,6 +3131,7 @@
             "totalWaterResistance": 108,
             "totalNatureResistance": 58,
             "totalFireResistance": 108,
+            "combatLevel": 180,
             "staminaLevel": 130,
             "intelligenceLevel": 130,
             "attackLevel": 150,
@@ -2706,9 +3140,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/smash"],
+                "combatStyleHrids": [
+                    "/combat_styles/smash"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3200000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -2723,6 +3161,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": -0.2,
@@ -2731,20 +3172,23 @@
                 "waterResistance": 80,
                 "natureResistance": 30,
                 "fireResistance": 80,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/stunning_blow", "level": 1 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/stunning_blow",
+                "level": 1
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -2765,8 +3209,26 @@
                 "maxCount": 2
             },
             {
+                "itemHrid": "/items/garnet",
+                "dropRate": 0.0002,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/jade",
+                "dropRate": 0.0002,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/amethyst",
+                "dropRate": 0.0002,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
                 "itemHrid": "/items/magnet",
-                "dropRate": 0.0015,
+                "dropRate": 0.001,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -2779,6 +3241,14 @@
             {
                 "itemHrid": "/items/stunning_blow",
                 "dropRate": 0.0008,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_treasure_chest",
+                "dropRate": 0.001,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -2809,6 +3279,7 @@
             "totalWaterResistance": 65,
             "totalNatureResistance": 65,
             "totalFireResistance": 15,
+            "combatLevel": 46,
             "staminaLevel": 60,
             "intelligenceLevel": 60,
             "attackLevel": 0,
@@ -2817,9 +3288,13 @@
             "rangedLevel": 0,
             "magicLevel": 40,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/magic"],
+                "combatStyleHrids": [
+                    "/combat_styles/magic"
+                ],
                 "damageType": "/damage_types/nature",
                 "attackInterval": 5000000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -2834,6 +3309,9 @@
                 "natureAmplify": 0.3,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -2842,20 +3320,23 @@
                 "waterResistance": 50,
                 "natureResistance": 50,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/toxic_pollen", "level": 1 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/toxic_pollen",
+                "level": 1
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -2882,6 +3363,12 @@
                 "maxCount": 2
             },
             {
+                "itemHrid": "/items/amber",
+                "dropRate": 0.0003,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
                 "itemHrid": "/items/jungle_essence",
                 "dropRate": 0.2,
                 "minCount": 1,
@@ -2890,6 +3377,14 @@
             {
                 "itemHrid": "/items/toxic_pollen",
                 "dropRate": 0.0008,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.0010933333333333333,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -2920,6 +3415,7 @@
             "totalWaterResistance": 54.5,
             "totalNatureResistance": 4.5,
             "totalFireResistance": 54.5,
+            "combatLevel": 42,
             "staminaLevel": 38,
             "intelligenceLevel": 38,
             "attackLevel": 45,
@@ -2928,9 +3424,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/stab"],
+                "combatStyleHrids": [
+                    "/combat_styles/stab"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3200000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": -0.2,
                 "slashAccuracy": -0.2,
                 "smashAccuracy": 0,
@@ -2945,6 +3445,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -2953,20 +3456,23 @@
                 "waterResistance": 50,
                 "natureResistance": 0,
                 "fireResistance": 50,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/pierce", "level": 1 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/pierce",
+                "level": 1
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -3017,6 +3523,12 @@
                 "maxCount": 3
             },
             {
+                "itemHrid": "/items/pearl",
+                "dropRate": 0.0004,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
                 "itemHrid": "/items/aqua_essence",
                 "dropRate": 0.4,
                 "minCount": 3,
@@ -3025,6 +3537,14 @@
             {
                 "itemHrid": "/items/pierce",
                 "dropRate": 0.001,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.0007797777777777778,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -3055,6 +3575,7 @@
             "totalWaterResistance": 44,
             "totalNatureResistance": 44,
             "totalFireResistance": 44,
+            "combatLevel": 40,
             "staminaLevel": 40,
             "intelligenceLevel": 60,
             "attackLevel": 0,
@@ -3063,9 +3584,13 @@
             "rangedLevel": 0,
             "magicLevel": 40,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/magic"],
+                "combatStyleHrids": [
+                    "/combat_styles/magic"
+                ],
                 "damageType": "/damage_types/water",
                 "attackInterval": 7000000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -3080,6 +3605,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0.1,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -3088,22 +3616,26 @@
                 "waterResistance": 30,
                 "natureResistance": 30,
                 "fireResistance": 30,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
         "abilities": [
-            { "abilityHrid": "/abilities/water_strike", "level": 10 },
-            { "abilityHrid": "/abilities/fireball", "level": 10 }
+            {
+                "abilityHrid": "/abilities/water_strike",
+                "level": 10
+            },
+            {
+                "abilityHrid": "/abilities/fireball",
+                "level": 10
+            }
         ],
         "dropTable": [
             {
@@ -3126,7 +3658,7 @@
             },
             {
                 "itemHrid": "/items/sorcerers_sole",
-                "dropRate": 0.0005,
+                "dropRate": 0.0002,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -3145,6 +3677,14 @@
             {
                 "itemHrid": "/items/fireball",
                 "dropRate": 0.008,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.0007999999999999999,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -3175,6 +3715,7 @@
             "totalWaterResistance": 33,
             "totalNatureResistance": 33,
             "totalFireResistance": 13,
+            "combatLevel": 138,
             "staminaLevel": 150,
             "intelligenceLevel": 150,
             "attackLevel": 130,
@@ -3183,9 +3724,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/smash"],
+                "combatStyleHrids": [
+                    "/combat_styles/smash"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3500000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -3200,6 +3745,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0.3,
@@ -3208,20 +3756,23 @@
                 "waterResistance": 20,
                 "natureResistance": 20,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/toughness", "level": 10 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/toughness",
+                "level": 10
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -3291,7 +3842,7 @@
             },
             {
                 "itemHrid": "/items/panda_fluff",
-                "dropRate": 0.002,
+                "dropRate": 0.001,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -3304,6 +3855,14 @@
             {
                 "itemHrid": "/items/toughness",
                 "dropRate": 0.002,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_treasure_chest",
+                "dropRate": 0.0016874074074074074,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -3334,6 +3893,7 @@
             "totalWaterResistance": 33,
             "totalNatureResistance": 33,
             "totalFireResistance": 13,
+            "combatLevel": 146,
             "staminaLevel": 140,
             "intelligenceLevel": 140,
             "attackLevel": 160,
@@ -3342,9 +3902,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/smash"],
+                "combatStyleHrids": [
+                    "/combat_styles/smash"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -3359,6 +3923,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0.3,
@@ -3367,20 +3934,23 @@
                 "waterResistance": 20,
                 "natureResistance": 20,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/frenzy", "level": 10 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/frenzy",
+                "level": 10
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -3432,7 +4002,7 @@
             },
             {
                 "itemHrid": "/items/polar_bear_fluff",
-                "dropRate": 0.002,
+                "dropRate": 0.001,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -3448,16 +4018,24 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_treasure_chest",
+                "dropRate": 0.0009155555555555556,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/porcupine": {
         "hrid": "/combat_monsters/porcupine",
         "name": "Porcupine",
         "combatDetails": {
-            "currentHitpoints": 100,
-            "maxHitpoints": 100,
-            "currentManapoints": 100,
-            "maxManapoints": 100,
+            "currentHitpoints": 120,
+            "maxHitpoints": 120,
+            "currentManapoints": 120,
+            "maxManapoints": 120,
             "stabAccuracyRating": 10,
             "slashAccuracyRating": 10,
             "smashAccuracyRating": 10,
@@ -3475,17 +4053,22 @@
             "totalWaterResistance": 0.8,
             "totalNatureResistance": 0.8,
             "totalFireResistance": 0.8,
-            "staminaLevel": 0,
-            "intelligenceLevel": 0,
+            "combatLevel": 6,
+            "staminaLevel": 2,
+            "intelligenceLevel": 2,
             "attackLevel": 0,
             "powerLevel": 0,
             "defenseLevel": 8,
             "rangedLevel": 10,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/ranged"],
+                "combatStyleHrids": [
+                    "/combat_styles/ranged"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -3500,6 +4083,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -3508,20 +4094,23 @@
                 "waterResistance": 0,
                 "natureResistance": 0,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/quick_shot", "level": 1 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/quick_shot",
+                "level": 1
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -3553,44 +4142,57 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.00025177777777777774,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/rat": {
         "hrid": "/combat_monsters/rat",
         "name": "Jerry",
         "combatDetails": {
-            "currentHitpoints": 60,
-            "maxHitpoints": 60,
+            "currentHitpoints": 70,
+            "maxHitpoints": 70,
             "currentManapoints": 100,
             "maxManapoints": 100,
-            "stabAccuracyRating": 14,
-            "slashAccuracyRating": 14,
-            "smashAccuracyRating": 14,
+            "stabAccuracyRating": 15,
+            "slashAccuracyRating": 15,
+            "smashAccuracyRating": 15,
             "rangedAccuracyRating": 10,
-            "stabMaxDamage": 14,
-            "slashMaxDamage": 14,
-            "smashMaxDamage": 14,
+            "stabMaxDamage": 15,
+            "slashMaxDamage": 15,
+            "smashMaxDamage": 15,
             "rangedMaxDamage": 10,
             "magicMaxDamage": 10,
-            "stabEvasionRating": 14,
-            "slashEvasionRating": 14,
-            "smashEvasionRating": 14,
-            "rangedEvasionRating": 14,
-            "totalArmor": 0.8,
-            "totalWaterResistance": 0.4,
-            "totalNatureResistance": 0.4,
-            "totalFireResistance": 0.4,
-            "staminaLevel": -4,
+            "stabEvasionRating": 15,
+            "slashEvasionRating": 15,
+            "smashEvasionRating": 15,
+            "rangedEvasionRating": 15,
+            "totalArmor": 1,
+            "totalWaterResistance": 0.5,
+            "totalNatureResistance": 0.5,
+            "totalFireResistance": 0.5,
+            "combatLevel": 2,
+            "staminaLevel": -3,
             "intelligenceLevel": 0,
-            "attackLevel": 4,
-            "powerLevel": 4,
-            "defenseLevel": 4,
+            "attackLevel": 5,
+            "powerLevel": 5,
+            "defenseLevel": 5,
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/stab"],
+                "combatStyleHrids": [
+                    "/combat_styles/stab"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3500000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -3605,6 +4207,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -3613,20 +4218,23 @@
                 "waterResistance": 0,
                 "natureResistance": 0,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/poke", "level": 1 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/poke",
+                "level": 1
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -3676,6 +4284,14 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.00019077777777777778,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/sea_snail": {
@@ -3703,6 +4319,7 @@
             "totalWaterResistance": 52.8,
             "totalNatureResistance": 2.8000000000000003,
             "totalFireResistance": 52.8,
+            "combatLevel": 24,
             "staminaLevel": 25,
             "intelligenceLevel": 25,
             "attackLevel": 22,
@@ -3711,9 +4328,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/smash"],
+                "combatStyleHrids": [
+                    "/combat_styles/smash"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 4000000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -3728,6 +4349,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0.4,
                 "smashEvasion": -0.2,
@@ -3736,20 +4360,23 @@
                 "waterResistance": 50,
                 "natureResistance": 0,
                 "fireResistance": 50,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/toughness", "level": 1 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/toughness",
+                "level": 1
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -3799,14 +4426,22 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.0005600000000000001,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/skunk": {
         "hrid": "/combat_monsters/skunk",
         "name": "Skunk",
         "combatDetails": {
-            "currentHitpoints": 80,
-            "maxHitpoints": 80,
+            "currentHitpoints": 100,
+            "maxHitpoints": 100,
             "currentManapoints": 100,
             "maxManapoints": 100,
             "stabAccuracyRating": 18,
@@ -3826,7 +4461,8 @@
             "totalWaterResistance": 0.8,
             "totalNatureResistance": 0.8,
             "totalFireResistance": 0.8,
-            "staminaLevel": -2,
+            "combatLevel": 4,
+            "staminaLevel": 0,
             "intelligenceLevel": 0,
             "attackLevel": 8,
             "powerLevel": 8,
@@ -3834,9 +4470,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/slash"],
+                "combatStyleHrids": [
+                    "/combat_styles/slash"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3500000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -3851,6 +4491,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -3859,20 +4502,23 @@
                 "waterResistance": 0,
                 "natureResistance": 0,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/scratch", "level": 1 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/scratch",
+                "level": 1
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -3904,14 +4550,22 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.00022666666666666668,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/slimy": {
         "hrid": "/combat_monsters/slimy",
         "name": "Slimy",
         "combatDetails": {
-            "currentHitpoints": 120,
-            "maxHitpoints": 120,
+            "currentHitpoints": 140,
+            "maxHitpoints": 140,
             "currentManapoints": 200,
             "maxManapoints": 200,
             "stabAccuracyRating": 10,
@@ -3931,7 +4585,8 @@
             "totalWaterResistance": 4.6,
             "totalNatureResistance": 4.6,
             "totalFireResistance": 4.6,
-            "staminaLevel": 2,
+            "combatLevel": 9,
+            "staminaLevel": 4,
             "intelligenceLevel": 10,
             "attackLevel": 0,
             "powerLevel": 0,
@@ -3939,9 +4594,13 @@
             "rangedLevel": 0,
             "magicLevel": 12,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/magic"],
+                "combatStyleHrids": [
+                    "/combat_styles/magic"
+                ],
                 "damageType": "/damage_types/water",
                 "attackInterval": 6000000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -3956,6 +4615,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -3964,22 +4626,26 @@
                 "waterResistance": 0,
                 "natureResistance": 0,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
         "abilities": [
-            { "abilityHrid": "/abilities/water_strike", "level": 1 },
-            { "abilityHrid": "/abilities/minor_heal", "level": 1 }
+            {
+                "abilityHrid": "/abilities/water_strike",
+                "level": 1
+            },
+            {
+                "abilityHrid": "/abilities/minor_heal",
+                "level": 1
+            }
         ],
         "dropTable": [
             {
@@ -4012,6 +4678,14 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.00027866666666666665,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/snake": {
@@ -4039,6 +4713,7 @@
             "totalWaterResistance": 1.8,
             "totalNatureResistance": 1.8,
             "totalFireResistance": 1.8,
+            "combatLevel": 13,
             "staminaLevel": 10,
             "intelligenceLevel": 10,
             "attackLevel": 14,
@@ -4047,9 +4722,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/stab"],
+                "combatStyleHrids": [
+                    "/combat_styles/stab"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3200000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -4064,6 +4743,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": -0.3,
                 "smashEvasion": 0,
@@ -4072,20 +4754,23 @@
                 "waterResistance": 0,
                 "natureResistance": 0,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/poke", "level": 5 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/poke",
+                "level": 5
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -4107,7 +4792,7 @@
             },
             {
                 "itemHrid": "/items/snake_fang",
-                "dropRate": 0.04,
+                "dropRate": 0.015,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -4120,6 +4805,14 @@
             {
                 "itemHrid": "/items/poke",
                 "dropRate": 0.008,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.00035499999999999996,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -4150,6 +4843,7 @@
             "totalWaterResistance": 105,
             "totalNatureResistance": 55,
             "totalFireResistance": 105,
+            "combatLevel": 184,
             "staminaLevel": 150,
             "intelligenceLevel": 150,
             "attackLevel": 220,
@@ -4158,9 +4852,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/stab"],
+                "combatStyleHrids": [
+                    "/combat_styles/stab"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 2800000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -4175,6 +4873,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0.2,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": -0.2,
@@ -4183,22 +4884,26 @@
                 "waterResistance": 80,
                 "natureResistance": 30,
                 "fireResistance": 80,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0.2,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
         "abilities": [
-            { "abilityHrid": "/abilities/toughness", "level": 20 },
-            { "abilityHrid": "/abilities/spike_shell", "level": 1 }
+            {
+                "abilityHrid": "/abilities/toughness",
+                "level": 20
+            },
+            {
+                "abilityHrid": "/abilities/spike_shell",
+                "level": 1
+            }
         ],
         "dropTable": [
             {
@@ -4220,8 +4925,26 @@
                 "maxCount": 2
             },
             {
+                "itemHrid": "/items/garnet",
+                "dropRate": 0.0003,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/jade",
+                "dropRate": 0.0003,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/amethyst",
+                "dropRate": 0.0003,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
                 "itemHrid": "/items/stalactite_shard",
-                "dropRate": 0.001,
+                "dropRate": 0.0007,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -4240,6 +4963,14 @@
             {
                 "itemHrid": "/items/spike_shell",
                 "dropRate": 0.001,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_treasure_chest",
+                "dropRate": 0.0011522222222222222,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -4270,6 +5001,7 @@
             "totalWaterResistance": 2.2,
             "totalNatureResistance": 2.2,
             "totalFireResistance": 2.2,
+            "combatLevel": 17,
             "staminaLevel": 16,
             "intelligenceLevel": 16,
             "attackLevel": 18,
@@ -4278,9 +5010,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/smash"],
+                "combatStyleHrids": [
+                    "/combat_styles/smash"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -4295,6 +5031,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": -0.3,
@@ -4303,20 +5042,23 @@
                 "waterResistance": 0,
                 "natureResistance": 0,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/sweep", "level": 1 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/sweep",
+                "level": 1
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -4378,6 +5120,14 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.00043400000000000003,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/treant": {
@@ -4405,6 +5155,7 @@
             "totalWaterResistance": 74,
             "totalNatureResistance": 74,
             "totalFireResistance": 24,
+            "combatLevel": 68,
             "staminaLevel": 80,
             "intelligenceLevel": 80,
             "attackLevel": 0,
@@ -4413,9 +5164,13 @@
             "rangedLevel": 0,
             "magicLevel": 60,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/magic"],
+                "combatStyleHrids": [
+                    "/combat_styles/magic"
+                ],
                 "damageType": "/damage_types/nature",
                 "attackInterval": 5000000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -4430,6 +5185,9 @@
                 "natureAmplify": 0.3,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -4438,22 +5196,26 @@
                 "waterResistance": 50,
                 "natureResistance": 50,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
         "abilities": [
-            { "abilityHrid": "/abilities/entangle", "level": 10 },
-            { "abilityHrid": "/abilities/toxic_pollen", "level": 5 }
+            {
+                "abilityHrid": "/abilities/entangle",
+                "level": 10
+            },
+            {
+                "abilityHrid": "/abilities/toxic_pollen",
+                "level": 5
+            }
         ],
         "dropTable": [
             {
@@ -4461,12 +5223,6 @@
                 "dropRate": 1,
                 "minCount": 160,
                 "maxCount": 800
-            },
-            {
-                "itemHrid": "/items/jungle_essence",
-                "dropRate": 0.4,
-                "minCount": 2,
-                "maxCount": 6
             },
             {
                 "itemHrid": "/items/log",
@@ -4487,13 +5243,13 @@
                 "maxCount": 5
             },
             {
-                "itemHrid": "/items/ginkgo_log",
+                "itemHrid": "/items/purpleheart_log",
                 "dropRate": 0.06,
                 "minCount": 1,
                 "maxCount": 5
             },
             {
-                "itemHrid": "/items/purpleheart_log",
+                "itemHrid": "/items/ginkgo_log",
                 "dropRate": 0.03,
                 "minCount": 1,
                 "maxCount": 5
@@ -4517,6 +5273,18 @@
                 "maxCount": 5
             },
             {
+                "itemHrid": "/items/amber",
+                "dropRate": 0.0004,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/jungle_essence",
+                "dropRate": 0.4,
+                "minCount": 2,
+                "maxCount": 6
+            },
+            {
                 "itemHrid": "/items/entangle",
                 "dropRate": 0.01,
                 "minCount": 1,
@@ -4525,6 +5293,14 @@
             {
                 "itemHrid": "/items/toxic_pollen",
                 "dropRate": 0.001,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.001488888888888889,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -4555,6 +5331,7 @@
             "totalWaterResistance": 55.5,
             "totalNatureResistance": 5.5,
             "totalFireResistance": 55.5,
+            "combatLevel": 52,
             "staminaLevel": 60,
             "intelligenceLevel": 50,
             "attackLevel": 40,
@@ -4563,9 +5340,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/smash"],
+                "combatStyleHrids": [
+                    "/combat_styles/smash"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3500000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -4580,6 +5361,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0.4,
                 "smashEvasion": -0.2,
@@ -4588,20 +5372,23 @@
                 "waterResistance": 50,
                 "natureResistance": 0,
                 "fireResistance": 50,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/toughness", "level": 10 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/toughness",
+                "level": 10
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -4640,6 +5427,12 @@
                 "maxCount": 3
             },
             {
+                "itemHrid": "/items/pearl",
+                "dropRate": 0.0005,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
                 "itemHrid": "/items/turtle_shell",
                 "dropRate": 0.004,
                 "minCount": 1,
@@ -4654,6 +5447,14 @@
             {
                 "itemHrid": "/items/toughness",
                 "dropRate": 0.0015,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_treasure_chest",
+                "dropRate": 0.0011200000000000001,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -4684,6 +5485,7 @@
             "totalWaterResistance": 77,
             "totalNatureResistance": 77,
             "totalFireResistance": 77,
+            "combatLevel": 208,
             "staminaLevel": 210,
             "intelligenceLevel": 210,
             "attackLevel": 250,
@@ -4692,9 +5494,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/stab"],
+                "combatStyleHrids": [
+                    "/combat_styles/stab"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 2800000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -4709,6 +5515,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -4717,20 +5526,23 @@
                 "waterResistance": 60,
                 "natureResistance": 60,
                 "fireResistance": 60,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0.02,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/vampirism", "level": 1 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/vampirism",
+                "level": 1
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -4757,8 +5569,14 @@
                 "maxCount": 2
             },
             {
+                "itemHrid": "/items/moonstone",
+                "dropRate": 0.0004,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
                 "itemHrid": "/items/vampire_fang",
-                "dropRate": 0.001,
+                "dropRate": 0.0007,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -4771,6 +5589,14 @@
             {
                 "itemHrid": "/items/vampirism",
                 "dropRate": 0.0008,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_treasure_chest",
+                "dropRate": 0.0017122222222222224,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -4801,6 +5627,7 @@
             "totalWaterResistance": 45.2,
             "totalNatureResistance": 45.2,
             "totalFireResistance": 45.2,
+            "combatLevel": 113,
             "staminaLevel": 113,
             "intelligenceLevel": 113,
             "attackLevel": 113,
@@ -4809,9 +5636,13 @@
             "rangedLevel": 0,
             "magicLevel": 113,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/slash"],
+                "combatStyleHrids": [
+                    "/combat_styles/slash"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 2800000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -4826,6 +5657,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": -0.25,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -4834,20 +5668,23 @@
                 "waterResistance": 0,
                 "natureResistance": 0,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
-        "abilities": [{ "abilityHrid": "/abilities/precision", "level": 1 }],
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/precision",
+                "level": 1
+            }
+        ],
         "dropTable": [
             {
                 "itemHrid": "/items/coin",
@@ -4891,6 +5728,14 @@
                 "minCount": 1,
                 "maxCount": 1
             }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_treasure_chest",
+                "dropRate": 0.001197,
+                "minCount": 1,
+                "maxCount": 1
+            }
         ]
     },
     "/combat_monsters/werewolf": {
@@ -4918,6 +5763,7 @@
             "totalWaterResistance": 76,
             "totalNatureResistance": 76,
             "totalFireResistance": 76,
+            "combatLevel": 220,
             "staminaLevel": 240,
             "intelligenceLevel": 240,
             "attackLevel": 230,
@@ -4926,9 +5772,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/slash"],
+                "combatStyleHrids": [
+                    "/combat_styles/slash"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 2800000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -4943,6 +5793,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -4951,22 +5804,26 @@
                 "waterResistance": 60,
                 "natureResistance": 60,
                 "fireResistance": 60,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
         "abilities": [
-            { "abilityHrid": "/abilities/berserk", "level": 10 },
-            { "abilityHrid": "/abilities/maim", "level": 10 }
+            {
+                "abilityHrid": "/abilities/berserk",
+                "level": 10
+            },
+            {
+                "abilityHrid": "/abilities/maim",
+                "level": 10
+            }
         ],
         "dropTable": [
             {
@@ -4994,8 +5851,14 @@
                 "maxCount": 2
             },
             {
+                "itemHrid": "/items/moonstone",
+                "dropRate": 0.0005,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
                 "itemHrid": "/items/werewolf_claw",
-                "dropRate": 0.001,
+                "dropRate": 0.0007,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -5014,6 +5877,14 @@
             {
                 "itemHrid": "/items/maim",
                 "dropRate": 0.0008,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_treasure_chest",
+                "dropRate": 0.002022222222222222,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -5044,6 +5915,7 @@
             "totalWaterResistance": 15,
             "totalNatureResistance": 15,
             "totalFireResistance": 15,
+            "combatLevel": 172,
             "staminaLevel": 170,
             "intelligenceLevel": 170,
             "attackLevel": 180,
@@ -5052,9 +5924,13 @@
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
-                "combatStyleHrids": ["/combat_styles/slash"],
+                "combatStyleHrids": [
+                    "/combat_styles/slash"
+                ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3200000000,
+                "criticalRate": 0,
+                "criticalDamage": 0,
                 "stabAccuracy": 0,
                 "slashAccuracy": 0,
                 "smashAccuracy": 0,
@@ -5069,6 +5945,9 @@
                 "natureAmplify": 0,
                 "fireAmplify": 0,
                 "healingAmplify": 0,
+                "physicalReflectPower": 0,
+                "maxHitpoints": 0,
+                "maxManapoints": 0,
                 "stabEvasion": 0,
                 "slashEvasion": 0,
                 "smashEvasion": 0,
@@ -5077,22 +5956,26 @@
                 "waterResistance": 0,
                 "natureResistance": 0,
                 "fireResistance": 0,
-                "maxHitpoints": 0,
-                "maxManapoints": 0,
                 "lifeSteal": 0,
                 "HPRegen": 0.01,
                 "MPRegen": 0.01,
-                "physicalReflectPower": 0,
-                "dropRate": 0,
-                "dropQuantity": 0,
-                "experienceRate": 0,
+                "combatDropRate": 0,
+                "combatDropQuantity": 0,
+                "combatRareFind": 0,
+                "combatExperience": 0,
                 "foodSlots": 0,
                 "drinkSlots": 0
             }
         },
         "abilities": [
-            { "abilityHrid": "/abilities/toughness", "level": 10 },
-            { "abilityHrid": "/abilities/maim", "level": 1 }
+            {
+                "abilityHrid": "/abilities/toughness",
+                "level": 10
+            },
+            {
+                "abilityHrid": "/abilities/maim",
+                "level": 1
+            }
         ],
         "dropTable": [
             {
@@ -5152,6 +6035,14 @@
             {
                 "itemHrid": "/items/maim",
                 "dropRate": 0.0005,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_treasure_chest",
+                "dropRate": 0.0012244444444444442,
                 "minCount": 1,
                 "maxCount": 1
             }

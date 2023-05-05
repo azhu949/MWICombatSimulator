@@ -117,8 +117,8 @@ class CombatUtilities {
 
         let hitChance = 1;
         let critChance = 0;
-        let bonusCritChance = source.combatDetails.combatStats.critRate;
-        let bonusCritDamage = source.combatDetails.combatStats.critDamage;
+        let bonusCritChance = source.combatDetails.combatStats.criticalRate;
+        let bonusCritDamage = source.combatDetails.combatStats.criticalDamage;
 
         if (bonusCritDamage != 0) {
             bonusCritDamage = 0.10;
@@ -138,7 +138,6 @@ class CombatUtilities {
         } else {
             critChance = critChance * (1 + bonusCritChance);
         }
-
         let baseDamageFlat = abilityEffect ? abilityEffect.damageFlat : 0;
         let baseDamageRatio = abilityEffect ? abilityEffect.damageRatio : 1;
 

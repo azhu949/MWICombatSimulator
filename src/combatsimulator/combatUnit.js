@@ -51,6 +51,8 @@ class CombatUnit {
             combatStyleHrid: "/combat_styles/smash",
             damageType: "/damage_types/physical",
             attackInterval: 3000000000,
+            criticalRate: 0,
+            criticalDamage: 0,
             stabAccuracy: 0,
             slashAccuracy: 0,
             smashAccuracy: 0,
@@ -65,6 +67,9 @@ class CombatUnit {
             natureAmplify: 0,
             fireAmplify: 0,
             healingAmplify: 0,
+            physicalReflectPower: 0,
+            maxHitpoints: 0,
+            maxManapoints: 0,
             stabEvasion: 0,
             slashEvasion: 0,
             smashEvasion: 0,
@@ -73,19 +78,15 @@ class CombatUnit {
             waterResistance: 0,
             natureResistance: 0,
             fireResistance: 0,
-            maxHitpoints: 0,
-            maxManapoints: 0,
             lifeSteal: 0,
             HPRegen: 0.01,
             MPRegen: 0.01,
-            physicalReflectPower: 0,
-            dropRate: 0,
-            dropQuantity: 0,
-            experienceRate: 0,
+            combatDropRate: 0,
+            combatDropQuantity: 0,
+            combatRareFind: 0,
+            combatExperience: 0,
             foodSlots: 1,
-            drinkSlots: 1,
-            critRate: 0,
-            critDamage: 0
+            drinkSlots: 1
         },
     };
     combatBuffs = {};
@@ -209,10 +210,10 @@ class CombatUnit {
         this.combatDetails.combatStats.physicalReflectPower += this.getBuffBoost(
             "/buff_types/physical_reflect_power"
         ).flatBoost;
-        this.combatDetails.combatStats.dropRate += this.getBuffBoost("/buff_types/combat_drop_rate").ratioBoost;
-        this.combatDetails.combatStats.experienceRate += this.getBuffBoost("/buff_types/wisdom").flatBoost;
-        this.combatDetails.combatStats.critRate += this.getBuffBoost("/buff_types/crit").flatBoost;
-        this.combatDetails.combatStats.critDamage += this.getBuffBoost("/buff_types/crit").flatBoost;
+        this.combatDetails.combatStats.combatDropRate += this.getBuffBoost("/buff_types/combat_drop_rate").flatBoost;
+        this.combatDetails.combatStats.combatExperience += this.getBuffBoost("/buff_types/wisdom").flatBoost;
+        this.combatDetails.combatStats.criticalRate += this.getBuffBoost("/buff_types/crit").flatBoost;
+        this.combatDetails.combatStats.criticalDamage += this.getBuffBoost("/buff_types/crit").flatBoost;
     }
 
     addBuff(buff, currentTime) {
