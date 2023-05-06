@@ -21,6 +21,9 @@ class Monster extends CombatUnit {
         for (let i = 0; i < gameMonster.dropTable.length; i++) {
             this.dropTable[i] = new Drops(gameMonster.dropTable[i].itemHrid, gameMonster.dropTable[i].dropRate, gameMonster.dropTable[i].minCount, gameMonster.dropTable[i].maxCount);
         }
+        for (let i = 0; i < gameMonster.rareDropTable.length; i++) {
+            this.rareDropTable[i] = new Drops(gameMonster.rareDropTable[i].itemHrid, gameMonster.rareDropTable[i].dropRate, gameMonster.rareDropTable[i].minCount, gameMonster.rareDropTable[i].maxCount);
+        }
     }
 
     updateCombatDetails() {

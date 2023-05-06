@@ -757,8 +757,12 @@ function showKills(simResult) {
         newChildren.push(monsterRow);
 
         const dropMap = new Map();
+        const rareDropMap = new Map();
         for (const drop of combatMonsterDetailMap[monster].dropTable) {
             dropMap.set(drop.itemHrid.slice(drop.itemHrid.lastIndexOf("/") + 1).replaceAll("_", " "), {"dropRate": drop.dropRate, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount});
+        }
+        for (const drop of combatMonsterDetailMap[monster].rareDropTable) {
+            rareDropMap.set(drop.itemHrid.slice(drop.itemHrid.lastIndexOf("/") + 1).replaceAll("_", " "), {"dropRate": drop.dropRate, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount});
         }
         for (let i = 0; i < simResult.deaths[monster]; i++) {
             let chance = Math.random();
@@ -768,8 +772,21 @@ function showKills(simResult) {
                     dropObject.number = dropObject.number + amount;
                 }
             }
+            for (let dropObject of rareDropMap.values()) {
+                if (chance <= dropObject.dropRate) {
+                    let amount = Math.floor(Math.random() * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin)
+                    dropObject.number = dropObject.number + amount;
+                }
+            }
         }
         for (let [name, dropObject] of  dropMap.entries()) {
+            if(totalDropMap.has(name)) {
+                totalDropMap.set(name, totalDropMap.get(name) + dropObject.number);
+            } else {
+                totalDropMap.set(name, dropObject.number);
+            }
+        }
+        for (let [name, dropObject] of  rareDropMap.entries()) {
             if(totalDropMap.has(name)) {
                 totalDropMap.set(name, totalDropMap.get(name) + dropObject.number);
             } else {

@@ -16,6 +16,7 @@ class CombatUnit {
     food = [null, null, null];
     drinks = [null, null, null];
     dropTable = [];
+    rareDropTable = [];
 
     // Calculated combat stats including temporary buffs
     combatDetails = {

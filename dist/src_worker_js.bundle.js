@@ -814,6 +814,7 @@ class CombatUnit {
     food = [null, null, null];
     drinks = [null, null, null];
     dropTable = [];
+    rareDropTable = [];
 
     // Calculated combat stats including temporary buffs
     combatDetails = {
@@ -2014,6 +2015,9 @@ class Monster extends _combatUnit__WEBPACK_IMPORTED_MODULE_1__["default"] {
         }
         for (let i = 0; i < gameMonster.dropTable.length; i++) {
             this.dropTable[i] = new _drops__WEBPACK_IMPORTED_MODULE_3__["default"](gameMonster.dropTable[i].itemHrid, gameMonster.dropTable[i].dropRate, gameMonster.dropTable[i].minCount, gameMonster.dropTable[i].maxCount);
+        }
+        for (let i = 0; i < gameMonster.rareDropTable.length; i++) {
+            this.rareDropTable[i] = new _drops__WEBPACK_IMPORTED_MODULE_3__["default"](gameMonster.rareDropTable[i].itemHrid, gameMonster.rareDropTable[i].dropRate, gameMonster.rareDropTable[i].minCount, gameMonster.rareDropTable[i].maxCount);
         }
     }
 
