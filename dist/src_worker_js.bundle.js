@@ -1273,11 +1273,9 @@ class CombatUtilities {
         if (combatStyle == "/combat_styles/ranged") {
                 critChance = 0.3 * hitChance;
         }
-        if (critChance == 0) {
-            critChance = bonusCritChance;
-        } else {
-            critChance = critChance * (1 + bonusCritChance);
-        }
+
+        critChance = critChance + bonusCritChance;
+
         let baseDamageFlat = abilityEffect ? abilityEffect.damageFlat : 0;
         let baseDamageRatio = abilityEffect ? abilityEffect.damageRatio : 1;
 
