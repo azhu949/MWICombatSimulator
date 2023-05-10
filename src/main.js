@@ -1455,19 +1455,47 @@ function initImportExportModal() {
         exportSetButton.addEventListener("click", (event) => {
         let zoneSelect = document.getElementById("selectZone");
         let simulationTimeInput = document.getElementById("inputSimulationTime");
+        let equipmentArray = [];
+        for(const item in player.equipment) {
+            if(player.equipment[item] != null) {
+                equipmentArray.push({
+                    "itemLocationHrid": player.equipment[item].gameItem.equipmentDetail.type.replaceAll("equipment_types", "item_locations"),
+                    "itemHrid": player.equipment[item].hrid,
+                    "enhancementLevel": player.equipment[item].enhancementLevel
+                });
+            }
+        }
+        let playerArray = {"attackLevel": player.attackLevel,
+            "magicLevel": player.magicLevel,
+            "powerLevel": player.powerLevel,
+            "rangedLevel": player.rangedLevel,
+            "defenseLevel": player.defenseLevel,
+            "staminaLevel": player.staminaLevel,
+            "intelligenceLevel": player.intelligenceLevel,
+            "equipment": equipmentArray};
+        let abilitiesArray = [];
+            for (let i = 0; i < 4; i++) {
+                let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
+                let abilityName = document.getElementById("selectAbility_" + i);
+                abilitiesArray[i] = {"abilityHrid": abilityName.value, "level": abilityLevelInput.value};
+            }
+        let drinksArray = [];
+            for(let i = 0; i < drinks?.length; i++) {
+                drinksArray.push({"itemHrid": drinks[i]});
+            }
+        let foodArray = [];
+            for(let i = 0; i < food?.length; i++) {
+                foodArray.push({"itemHrid": food[i]});
+            }
         let state = {
-            player: player,
-            food: food,
-            drinks: drinks,
-            abilities: abilities,
+            player: playerArray,
+            food: foodArray,
+            drinks: drinksArray,
+            abilities: abilitiesArray,
             triggerMap: triggerMap,
             zone: zoneSelect.value,
             simulationTime: simulationTimeInput.value,
         };
-        for (let i = 0; i < 4; i++) {
-            let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
-            state["abilityLevel" + i] = abilityLevelInput.value;
-        }
         navigator.clipboard.writeText(JSON.stringify(state));
         alert("Current set has been copied to clipboard.")
     });
@@ -1476,7 +1504,6 @@ function initImportExportModal() {
     importSetButton.addEventListener("click", (event) => {
         let importSet = document.getElementById("inputSet").value;
         importSet = JSON.parse(importSet);
-        console.log(importSet);
         ["stamina", "intelligence", "attack", "power", "defense", "ranged", "magic"].forEach((skill) => {
             let levelInput = document.getElementById("inputLevel_" + skill);
             levelInput.value = importSet.player[skill + "Level"];
@@ -1485,31 +1512,56 @@ function initImportExportModal() {
         ["head", "body", "legs", "feet", "hands", "off_hand", "pouch", "neck", "earrings", "ring"].forEach((type) => {
             let equipmentSelect = document.getElementById("selectEquipment_" + type);
             let enhancementLevelInput = document.getElementById("inputEquipmentEnhancementLevel_" + type);
-            if(importSet.player.equipment["/equipment_types/" + type] != null) {
-                equipmentSelect.value = importSet.player.equipment["/equipment_types/" + type].hrid;
-                enhancementLevelInput.value = importSet.player.equipment["/equipment_types/" + type].enhancementLevel;
+            let currentEquipment = importSet.player.equipment.find(item => item.itemLocationHrid === "/item_locations/" + type);
+            if(currentEquipment !== undefined) {
+                equipmentSelect.value = currentEquipment.itemHrid;
+                enhancementLevelInput.value = currentEquipment.enhancementLevel;
+            } else {
+                equipmentSelect.value = "";
+                enhancementLevelInput.value = 0;
             }
         });
 
         let weaponSelect = document.getElementById("selectEquipment_weapon");
-        if (importSet.player.equipment["/equipment_types/two_hand"] != null) {
-            weaponSelect.value = importSet.player.equipment["/equipment_types/two_hand"].hrid;
-        } else if (importSet.player.equipment["/equipment_types/main_hand"] != null) {
-            weaponSelect.value = importSet.player.equipment["/equipment_types/main_hand"].hrid;
+        let weaponEnhancementLevelInput = document.getElementById("inputEquipmentEnhancementLevel_weapon");
+        let mainhandWeapon = importSet.player.equipment.find(item => item.itemLocationHrid === "/item_locations/main_hand");
+        let twohandWeapon = importSet.player.equipment.find(item => item.itemLocationHrid === "/item_locations/two_hand");
+        if(mainhandWeapon !== undefined) {
+            weaponSelect.value = mainhandWeapon.itemHrid;
+            weaponEnhancementLevelInput.value = mainhandWeapon.enhancementLevel;
+        } else if(twohandWeapon !== undefined) {
+            weaponSelect.value = twohandWeapon.itemHrid;
+            weaponEnhancementLevelInput.value = twohandWeapon.enhancementLevel;
+        } else {
+            weaponSelect.value = "";
+            weaponEnhancementLevelInput.value = 0;
         }
 
         for (let i = 0; i < 3; i++) {
             let drinkSelect = document.getElementById("selectDrink_" + i);
-            drinkSelect.value = importSet.drinks[i];
             let foodSelect = document.getElementById("selectFood_" + i);
-            foodSelect.value = importSet.food[i];
+            if(importSet.drinks[i] != null) {
+                drinkSelect.value = importSet.drinks[i].itemHrid;
+            } else {
+                drinkSelect.value = "";
+            }
+            if(importSet.food[i] != null) {
+                foodSelect.value = importSet.food[i].itemHrid;
+            } else {
+                foodSelect.value = "";
+            }
         }
 
         for (let i = 0; i < 4; i++) {
             let abilitySelect = document.getElementById("selectAbility_" + i);
-            abilitySelect.value = importSet.abilities[i];
             let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
-            abilityLevelInput.value = importSet["abilityLevel" + i];
+            if(importSet.abilities[i] != null ) {
+                abilitySelect.value = importSet.abilities[i].abilityHrid;
+                abilityLevelInput.value = String(importSet.abilities[i].level);
+            } else {
+                abilitySelect.value = "";
+                abilityLevelInput.value = "1";
+            }
         }
 
         let zoneSelect = document.getElementById("selectZone");
