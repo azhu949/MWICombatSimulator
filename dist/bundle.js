@@ -2670,8 +2670,8 @@ function initImportExportModal() {
             }
         let state = {
             player: playerArray,
-            food: foodArray,
-            drinks: drinksArray,
+            food: {"/action_types/combat": foodArray},
+            drinks: {"/action_types/combat": drinksArray},
             abilities: abilitiesArray,
             triggerMap: triggerMap,
             zone: zoneSelect.value,
@@ -2717,7 +2717,8 @@ function initImportExportModal() {
             weaponSelect.value = "";
             weaponEnhancementLevelInput.value = 0;
         }
-
+        importSet.drinks = importSet.drinks["/action_types/combat"];
+        importSet.food = importSet.food["/action_types/combat"];
         for (let i = 0; i < 3; i++) {
             let drinkSelect = document.getElementById("selectDrink_" + i);
             let foodSelect = document.getElementById("selectFood_" + i);
