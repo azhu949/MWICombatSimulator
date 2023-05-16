@@ -735,6 +735,8 @@ function showKills(simResult) {
     let dropsResultDiv = document.getElementById("simulationResultDrops");
     let newChildren = [];
     let newDropChildren = [];
+    let dropRateMultiplier = player.combatDetails.combatStats.combatDropRate + 1;
+    let rareFindMultiplier = player.combatDetails.combatStats.combatRareFind + 1;
 
     let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
     let playerDeaths = simResult.deaths["player"] ?? 0;
@@ -759,20 +761,21 @@ function showKills(simResult) {
         const dropMap = new Map();
         const rareDropMap = new Map();
         for (const drop of combatMonsterDetailMap[monster].dropTable) {
-            dropMap.set(drop.itemHrid.slice(drop.itemHrid.lastIndexOf("/") + 1).replaceAll("_", " "), {"dropRate": drop.dropRate, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount});
+            dropMap.set(drop.itemHrid.slice(drop.itemHrid.lastIndexOf("/") + 1).replaceAll("_", " "), {"dropRate": drop.dropRate * dropRateMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount});
         }
         for (const drop of combatMonsterDetailMap[monster].rareDropTable) {
-            rareDropMap.set(drop.itemHrid.slice(drop.itemHrid.lastIndexOf("/") + 1).replaceAll("_", " "), {"dropRate": drop.dropRate, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount});
+            rareDropMap.set(drop.itemHrid.slice(drop.itemHrid.lastIndexOf("/") + 1).replaceAll("_", " "), {"dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount});
         }
         for (let i = 0; i < simResult.deaths[monster]; i++) {
-            let chance = Math.random();
             for (let dropObject of dropMap.values()) {
+                let chance = Math.random();
                 if (chance <= dropObject.dropRate) {
                     let amount = Math.floor(Math.random() * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin)
                     dropObject.number = dropObject.number + amount;
                 }
             }
             for (let dropObject of rareDropMap.values()) {
+                let chance = Math.random();
                 if (chance <= dropObject.dropRate) {
                     let amount = Math.floor(Math.random() * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin)
                     dropObject.number = dropObject.number + amount;
