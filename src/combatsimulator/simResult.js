@@ -95,7 +95,7 @@ class SimResult {
     }
 
     setDropRateMultipliers(unit) {
-        this.dropRateMultiplier = unit.combatDetails.combatStats.combatDropRate;
+        this.dropRateMultiplier = 1 + unit.combatDetails.combatStats.combatDropRate;
     }
 }
 
