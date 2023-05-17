@@ -735,7 +735,7 @@ function showKills(simResult) {
     let dropsResultDiv = document.getElementById("simulationResultDrops");
     let newChildren = [];
     let newDropChildren = [];
-    let dropRateMultiplier = player.combatDetails.combatStats.combatDropRate + 1;
+    let dropRateMultiplier = (player.combatDetails.combatStats.combatDropRate + 1) * simResult.dropRateMultiplier;
     let rareFindMultiplier = player.combatDetails.combatStats.combatRareFind + 1;
 
     let hoursSimulated = simResult.simulatedTime / ONE_HOUR;

@@ -462,6 +462,10 @@ class CombatSimulator extends EventTarget {
             // console.log("Added buff:", buff);
             let checkBuffExpirationEvent = new CheckBuffExpirationEvent(this.simulationTime + buff.duration, source);
             this.eventQueue.addEvent(checkBuffExpirationEvent);
+            
+            if (buff.typeHrid === "/buff_types/combat_drop_rate") {
+                this.simResult.setDropRateMultipliers(source);
+            }
         }
 
         return true;

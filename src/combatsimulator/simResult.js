@@ -7,6 +7,7 @@ class SimResult {
         this.consumablesUsed = {};
         this.hitpointsGained = {};
         this.manapointsGained = {};
+        this.dropRateMultiplier = 1;
         this.playerRanOutOfMana = false;
     }
 
@@ -91,6 +92,10 @@ class SimResult {
         }
 
         this.manapointsGained[unit.hrid][source] += amount;
+    }
+
+    setDropRateMultipliers(unit) {
+        this.dropRateMultiplier = unit.combatDetails.combatStats.combatDropRate;
     }
 }
 

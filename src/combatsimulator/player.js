@@ -94,6 +94,7 @@ class Player extends CombatUnit {
             "MPRegen",
             "physicalReflectPower",
             "combatDropRate",
+            "combatRareFind",
             "combatDropQuantity",
             "combatExperience",
             "criticalRate",

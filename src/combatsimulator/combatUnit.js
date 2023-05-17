@@ -211,10 +211,11 @@ class CombatUnit {
         this.combatDetails.combatStats.physicalReflectPower += this.getBuffBoost(
             "/buff_types/physical_reflect_power"
         ).flatBoost;
-        this.combatDetails.combatStats.combatDropRate += this.getBuffBoost("/buff_types/combat_drop_rate").flatBoost;
         this.combatDetails.combatStats.combatExperience += this.getBuffBoost("/buff_types/wisdom").flatBoost;
         this.combatDetails.combatStats.criticalRate += this.getBuffBoost("/buff_types/crit").flatBoost;
         this.combatDetails.combatStats.criticalDamage += this.getBuffBoost("/buff_types/crit").flatBoost;
+
+        this.combatDetails.combatStats.combatDropRate = (1 + this.combatDetails.combatStats.combatDropRate) * this.getBuffBoost("/buff_types/combat_drop_rate").ratioBoost - 1;
     }
 
     addBuff(buff, currentTime) {
