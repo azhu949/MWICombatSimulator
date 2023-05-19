@@ -8,6 +8,7 @@ class SimResult {
         this.hitpointsGained = {};
         this.manapointsGained = {};
         this.dropRateMultiplier = 1;
+        this.rareFindMultiplier = 1;
         this.playerRanOutOfMana = false;
     }
 
@@ -96,6 +97,7 @@ class SimResult {
 
     setDropRateMultipliers(unit) {
         this.dropRateMultiplier = 1 + unit.combatDetails.combatStats.combatDropRate;
+        this.rareFindMultiplier = 1 + unit.combatDetails.combatStats.combatRareFind;
     }
 }
 
