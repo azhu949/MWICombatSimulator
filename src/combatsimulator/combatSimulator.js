@@ -27,7 +27,6 @@ class CombatSimulator extends EventTarget {
 
         this.eventQueue = new EventQueue();
         this.simResult = new SimResult();
-        this.simResult.setDropRateMultipliers(player);
     }
 
     async simulate(simulationTimeLimit) {
@@ -53,6 +52,7 @@ class CombatSimulator extends EventTarget {
         }
 
         this.simResult.simulatedTime = this.simulationTime;
+        this.simResult.setDropRateMultipliers(this.players[0]);
 
         return this.simResult;
     }
@@ -463,10 +463,6 @@ class CombatSimulator extends EventTarget {
             // console.log("Added buff:", buff);
             let checkBuffExpirationEvent = new CheckBuffExpirationEvent(this.simulationTime + buff.duration, source);
             this.eventQueue.addEvent(checkBuffExpirationEvent);
-            
-            if (buff.typeHrid === "/buff_types/combat_drop_rate" || buff.typeHrid === "/buff_types/combat_rare_find") {
-                this.simResult.setDropRateMultipliers(source);
-            }
         }
 
         return true;
