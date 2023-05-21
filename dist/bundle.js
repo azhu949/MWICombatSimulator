@@ -361,10 +361,12 @@ class CombatUnit {
         this.combatDetails.combatStats.physicalReflectPower += this.getBuffBoost(
             "/buff_types/physical_reflect_power"
         ).flatBoost;
-        this.combatDetails.combatStats.combatDropRate += this.getBuffBoost("/buff_types/combat_drop_rate").flatBoost;
         this.combatDetails.combatStats.combatExperience += this.getBuffBoost("/buff_types/wisdom").flatBoost;
         this.combatDetails.combatStats.criticalRate += this.getBuffBoost("/buff_types/crit").flatBoost;
         this.combatDetails.combatStats.criticalDamage += this.getBuffBoost("/buff_types/crit").flatBoost;
+
+        this.combatDetails.combatStats.combatDropRate += (1 + this.combatDetails.combatStats.combatDropRate) * this.getBuffBoost("/buff_types/combat_drop_rate").ratioBoost;
+        this.combatDetails.combatStats.combatRareFind += (1 + this.combatDetails.combatStats.combatRareFind) * this.getBuffBoost("/buff_types/combat_rare_find").ratioBoost;
     }
 
     addBuff(buff, currentTime) {
@@ -739,6 +741,7 @@ class Player extends _combatUnit__WEBPACK_IMPORTED_MODULE_1__["default"] {
             "MPRegen",
             "physicalReflectPower",
             "combatDropRate",
+            "combatRareFind",
             "combatDropQuantity",
             "combatExperience",
             "criticalRate",
@@ -1916,6 +1919,8 @@ function showKills(simResult) {
     let dropsResultDiv = document.getElementById("simulationResultDrops");
     let newChildren = [];
     let newDropChildren = [];
+    let dropRateMultiplier = simResult.dropRateMultiplier;
+    let rareFindMultiplier = simResult.rareFindMultiplier;
 
     let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
     let playerDeaths = simResult.deaths["player"] ?? 0;
@@ -1940,20 +1945,21 @@ function showKills(simResult) {
         const dropMap = new Map();
         const rareDropMap = new Map();
         for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_11__[monster].dropTable) {
-            dropMap.set(drop.itemHrid.slice(drop.itemHrid.lastIndexOf("/") + 1).replaceAll("_", " "), {"dropRate": drop.dropRate, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount});
+            dropMap.set(drop.itemHrid.slice(drop.itemHrid.lastIndexOf("/") + 1).replaceAll("_", " "), {"dropRate": drop.dropRate * dropRateMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount});
         }
         for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_11__[monster].rareDropTable) {
-            rareDropMap.set(drop.itemHrid.slice(drop.itemHrid.lastIndexOf("/") + 1).replaceAll("_", " "), {"dropRate": drop.dropRate, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount});
+            rareDropMap.set(drop.itemHrid.slice(drop.itemHrid.lastIndexOf("/") + 1).replaceAll("_", " "), {"dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount});
         }
         for (let i = 0; i < simResult.deaths[monster]; i++) {
-            let chance = Math.random();
             for (let dropObject of dropMap.values()) {
+                let chance = Math.random();
                 if (chance <= dropObject.dropRate) {
                     let amount = Math.floor(Math.random() * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin)
                     dropObject.number = dropObject.number + amount;
                 }
             }
             for (let dropObject of rareDropMap.values()) {
+                let chance = Math.random();
                 if (chance <= dropObject.dropRate) {
                     let amount = Math.floor(Math.random() * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin)
                     dropObject.number = dropObject.number + amount;

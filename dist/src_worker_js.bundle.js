@@ -215,6 +215,7 @@ class CombatSimulator extends EventTarget {
         }
 
         this.simResult.simulatedTime = this.simulationTime;
+        this.simResult.setDropRateMultipliers(this.players[0]);
 
         return this.simResult;
     }
@@ -1009,10 +1010,12 @@ class CombatUnit {
         this.combatDetails.combatStats.physicalReflectPower += this.getBuffBoost(
             "/buff_types/physical_reflect_power"
         ).flatBoost;
-        this.combatDetails.combatStats.combatDropRate += this.getBuffBoost("/buff_types/combat_drop_rate").flatBoost;
         this.combatDetails.combatStats.combatExperience += this.getBuffBoost("/buff_types/wisdom").flatBoost;
         this.combatDetails.combatStats.criticalRate += this.getBuffBoost("/buff_types/crit").flatBoost;
         this.combatDetails.combatStats.criticalDamage += this.getBuffBoost("/buff_types/crit").flatBoost;
+
+        this.combatDetails.combatStats.combatDropRate += (1 + this.combatDetails.combatStats.combatDropRate) * this.getBuffBoost("/buff_types/combat_drop_rate").ratioBoost;
+        this.combatDetails.combatStats.combatRareFind += (1 + this.combatDetails.combatStats.combatRareFind) * this.getBuffBoost("/buff_types/combat_rare_find").ratioBoost;
     }
 
     addBuff(buff, currentTime) {
@@ -2155,6 +2158,7 @@ class Player extends _combatUnit__WEBPACK_IMPORTED_MODULE_1__["default"] {
             "MPRegen",
             "physicalReflectPower",
             "combatDropRate",
+            "combatRareFind",
             "combatDropQuantity",
             "combatExperience",
             "criticalRate",
@@ -2204,6 +2208,8 @@ class SimResult {
         this.consumablesUsed = {};
         this.hitpointsGained = {};
         this.manapointsGained = {};
+        this.dropRateMultiplier = 1;
+        this.rareFindMultiplier = 1;
         this.playerRanOutOfMana = false;
     }
 
@@ -2288,6 +2294,11 @@ class SimResult {
         }
 
         this.manapointsGained[unit.hrid][source] += amount;
+    }
+
+    setDropRateMultipliers(unit) {
+        this.dropRateMultiplier = 1 + unit.combatDetails.combatStats.combatDropRate;
+        this.rareFindMultiplier = 1 + unit.combatDetails.combatStats.combatRareFind;
     }
 }
 
