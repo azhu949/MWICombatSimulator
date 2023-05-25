@@ -371,7 +371,7 @@ class CombatSimulator extends EventTarget {
         }
 
         // Could die from reflect damage
-        if (event.source.combatDetails.currentHitpoints == 0) {
+        if (event.source.combatDetails.currentHitpoints == 0 && attackResult.reflectDamageDone != 0) {
             this.eventQueue.clearEventsForUnit(event.source);
             this.simResult.addDeath(event.source);
         }
@@ -1309,18 +1309,19 @@ class CombatUtilities {
             let mitigatedDamage = Math.ceil(targetDamageTakenRatio * damageRoll);
             damageDone = Math.min(mitigatedDamage, target.combatDetails.currentHitpoints);
             target.combatDetails.currentHitpoints -= damageDone;
-        }
 
-        if (targetReflectPower > 0 && targetResistance > 0) {
-            let sourceDamageTakenRatio = 100 / (100 + sourceResistance);
-            if (sourceResistance < 0) {
-                sourceDamageTakenRatio = (100 - sourceResistance) / 100;
+            if (targetReflectPower > 0 && targetResistance > 0) {
+                let sourceDamageTakenRatio = 100 / (100 + sourceResistance);
+                if (sourceResistance < 0) {
+                    sourceDamageTakenRatio = (100 - sourceResistance) / 100;
+                }
+
+                let reflectDamage = Math.ceil(targetReflectPower * targetResistance);
+                mitigatedReflectDamage = Math.ceil(sourceDamageTakenRatio * reflectDamage);
+                reflectDamageDone = Math.min(mitigatedReflectDamage, source.combatDetails.currentHitpoints);
+                source.combatDetails.currentHitpoints -= reflectDamageDone;
             }
 
-            let reflectDamage = Math.ceil(targetReflectPower * targetResistance);
-            mitigatedReflectDamage = Math.ceil(sourceDamageTakenRatio * reflectDamage);
-            reflectDamageDone = Math.min(mitigatedReflectDamage, source.combatDetails.currentHitpoints);
-            source.combatDetails.currentHitpoints -= reflectDamageDone;
         }
 
         let lifeStealHeal = 0;

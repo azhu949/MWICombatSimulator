@@ -208,7 +208,7 @@ class CombatSimulator extends EventTarget {
         }
 
         // Could die from reflect damage
-        if (event.source.combatDetails.currentHitpoints == 0) {
+        if (event.source.combatDetails.currentHitpoints == 0 && attackResult.reflectDamageDone != 0) {
             this.eventQueue.clearEventsForUnit(event.source);
             this.simResult.addDeath(event.source);
         }
