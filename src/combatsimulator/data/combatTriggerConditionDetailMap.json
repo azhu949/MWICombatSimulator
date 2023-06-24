@@ -21,9 +21,20 @@
         ],
         "sortIndex": 25
     },
-    "/combat_trigger_conditions/critical_coffee": {
-        "hrid": "/combat_trigger_conditions/critical_coffee",
-        "name": "Critical Coffee",
+    "/combat_trigger_conditions/critical_coffee_damage": {
+        "hrid": "/combat_trigger_conditions/critical_coffee_damage",
+        "name": "Critical Coffee (Damage)",
+        "isSingleTarget": true,
+        "isMultiTarget": false,
+        "allowedComparatorHrids": [
+            "/combat_trigger_comparators/is_active",
+            "/combat_trigger_comparators/is_inactive"
+        ],
+        "sortIndex": 19
+    },
+    "/combat_trigger_conditions/critical_coffee_rate": {
+        "hrid": "/combat_trigger_conditions/critical_coffee_rate",
+        "name": "Critical Coffee (Rate)",
         "isSingleTarget": true,
         "isMultiTarget": false,
         "allowedComparatorHrids": [

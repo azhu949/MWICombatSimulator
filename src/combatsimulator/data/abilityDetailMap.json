@@ -60,7 +60,7 @@
                 "stunDuration": 0,
                 "buffs": [
                     {
-                        "sourceHrid": "/buff_sources/berserk",
+                        "uniqueHrid": "/buff_uniques/berserk",
                         "typeHrid": "/buff_types/physical_amplify",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
@@ -149,7 +149,7 @@
                 "stunDuration": 0,
                 "buffs": [
                     {
-                        "sourceHrid": "/buff_sources/elemental_affinity_water_amplify",
+                        "uniqueHrid": "/buff_uniques/elemental_affinity_water_amplify",
                         "typeHrid": "/buff_types/water_amplify",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
@@ -159,7 +159,7 @@
                         "duration": 15000000000
                     },
                     {
-                        "sourceHrid": "/buff_sources/elemental_affinity_nature_amplify",
+                        "uniqueHrid": "/buff_uniques/elemental_affinity_nature_amplify",
                         "typeHrid": "/buff_types/nature_amplify",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
@@ -169,7 +169,7 @@
                         "duration": 15000000000
                     },
                     {
-                        "sourceHrid": "/buff_sources/elemental_affinity_fire_amplify",
+                        "uniqueHrid": "/buff_uniques/elemental_affinity_fire_amplify",
                         "typeHrid": "/buff_types/fire_amplify",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
@@ -366,7 +366,7 @@
                 "stunDuration": 0,
                 "buffs": [
                     {
-                        "sourceHrid": "/buff_sources/frenzy",
+                        "uniqueHrid": "/buff_uniques/frenzy",
                         "typeHrid": "/buff_types/attack_speed",
                         "ratioBoost": 0.25,
                         "ratioBoostLevelBonus": 0.0025,
@@ -449,7 +449,7 @@
                 "stunDuration": 0,
                 "buffs": [
                     {
-                        "sourceHrid": "/buff_sources/ice_spear",
+                        "uniqueHrid": "/buff_uniques/ice_spear",
                         "typeHrid": "/buff_types/attack_speed",
                         "ratioBoost": -0.3,
                         "ratioBoostLevelBonus": -0.003,
@@ -640,7 +640,7 @@
                 "stunDuration": 0,
                 "buffs": [
                     {
-                        "sourceHrid": "/buff_sources/precision",
+                        "uniqueHrid": "/buff_uniques/precision",
                         "typeHrid": "/buff_types/accuracy",
                         "ratioBoost": 0.35,
                         "ratioBoostLevelBonus": 0.0035,
@@ -837,7 +837,7 @@
                 "stunDuration": 0,
                 "buffs": [
                     {
-                        "sourceHrid": "/buff_sources/spike_shell",
+                        "uniqueHrid": "/buff_uniques/spike_shell",
                         "typeHrid": "/buff_types/physical_reflect_power",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
@@ -962,7 +962,7 @@
                 "stunDuration": 0,
                 "buffs": [
                     {
-                        "sourceHrid": "/buff_sources/toughness_armor",
+                        "uniqueHrid": "/buff_uniques/toughness_armor",
                         "typeHrid": "/buff_types/armor",
                         "ratioBoost": 0.25,
                         "ratioBoostLevelBonus": 0.0025,
@@ -972,7 +972,7 @@
                         "duration": 15000000000
                     },
                     {
-                        "sourceHrid": "/buff_sources/toughness_water_resistance",
+                        "uniqueHrid": "/buff_uniques/toughness_water_resistance",
                         "typeHrid": "/buff_types/water_resistance",
                         "ratioBoost": 0.25,
                         "ratioBoostLevelBonus": 0.0025,
@@ -982,7 +982,7 @@
                         "duration": 15000000000
                     },
                     {
-                        "sourceHrid": "/buff_sources/toughness_nature_resistance",
+                        "uniqueHrid": "/buff_uniques/toughness_nature_resistance",
                         "typeHrid": "/buff_types/nature_resistance",
                         "ratioBoost": 0.25,
                         "ratioBoostLevelBonus": 0.0025,
@@ -992,7 +992,7 @@
                         "duration": 15000000000
                     },
                     {
-                        "sourceHrid": "/buff_sources/toughness_fire_resistance",
+                        "uniqueHrid": "/buff_uniques/toughness_fire_resistance",
                         "typeHrid": "/buff_types/fire_resistance",
                         "ratioBoost": 0.25,
                         "ratioBoostLevelBonus": 0.0025,
@@ -1039,17 +1039,17 @@
                 "stunDuration": 0,
                 "buffs": [
                     {
-                        "sourceHrid": "/buff_sources/toxic_pollen_armor",
+                        "uniqueHrid": "/buff_uniques/toxic_pollen_armor",
                         "typeHrid": "/buff_types/armor",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
                         "flatBoost": -15,
-                        "flatBoostLevelBonus": -0.2,
+                        "flatBoostLevelBonus": -0.15,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 10000000000
                     },
                     {
-                        "sourceHrid": "/buff_sources/toxic_pollen_water_resistance",
+                        "uniqueHrid": "/buff_uniques/toxic_pollen_water_resistance",
                         "typeHrid": "/buff_types/water_resistance",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
@@ -1059,17 +1059,17 @@
                         "duration": 10000000000
                     },
                     {
-                        "sourceHrid": "/buff_sources/toxic_pollen_nature_resistance",
+                        "uniqueHrid": "/buff_uniques/toxic_pollen_nature_resistance",
                         "typeHrid": "/buff_types/nature_resistance",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
                         "flatBoost": -25,
-                        "flatBoostLevelBonus": -0.2,
+                        "flatBoostLevelBonus": -0.25,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 10000000000
                     },
                     {
-                        "sourceHrid": "/buff_sources/toxic_pollen_fire_resistance",
+                        "uniqueHrid": "/buff_uniques/toxic_pollen_fire_resistance",
                         "typeHrid": "/buff_types/fire_resistance",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
@@ -1122,7 +1122,7 @@
                 "stunDuration": 0,
                 "buffs": [
                     {
-                        "sourceHrid": "/buff_sources/vampirism",
+                        "uniqueHrid": "/buff_uniques/vampirism",
                         "typeHrid": "/buff_types/life_steal",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,

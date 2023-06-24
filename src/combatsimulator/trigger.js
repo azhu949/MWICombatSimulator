@@ -97,9 +97,10 @@ class Trigger {
             case "/combat_trigger_conditions/stamina_coffee_hp_regen":
             case "/combat_trigger_conditions/stamina_coffee_max_hp":
             case "/combat_trigger_conditions/swiftness_coffee":
-            case "/combat_trigger_conditions/critical_coffee":
+            case "/combat_trigger_conditions/critical_coffee_damage":
+            case "/combat_trigger_conditions/critical_coffee_rate":
             case "/combat_trigger_conditions/wisdom_coffee":
-                let buffHrid = "/buff_sources";
+                let buffHrid = "/buff_uniques";
                 buffHrid += this.conditionHrid.slice(this.conditionHrid.lastIndexOf("/"));
                 return source.combatBuffs[buffHrid];
             case "/combat_trigger_conditions/current_hp":

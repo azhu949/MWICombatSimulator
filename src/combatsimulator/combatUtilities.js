@@ -120,10 +120,6 @@ class CombatUtilities {
         let bonusCritChance = source.combatDetails.combatStats.criticalRate;
         let bonusCritDamage = source.combatDetails.combatStats.criticalDamage;
 
-        if (bonusCritDamage != 0) {
-            bonusCritDamage = 0.10;
-        }
-
         if (combatStyle != "/combat_styles/magic") {
             hitChance =
                 Math.pow(sourceAccuracyRating, 1.4) /
@@ -131,7 +127,7 @@ class CombatUtilities {
         }
 
         if (combatStyle == "/combat_styles/ranged") {
-                critChance = 0.3 * hitChance;
+            critChance = 0.3 * hitChance;
         }
 
         critChance = critChance + bonusCritChance;
@@ -166,19 +162,18 @@ class CombatUtilities {
             let mitigatedDamage = Math.ceil(targetDamageTakenRatio * damageRoll);
             damageDone = Math.min(mitigatedDamage, target.combatDetails.currentHitpoints);
             target.combatDetails.currentHitpoints -= damageDone;
+        }
 
-            if (targetReflectPower > 0 && targetResistance > 0) {
-                let sourceDamageTakenRatio = 100 / (100 + sourceResistance);
-                if (sourceResistance < 0) {
-                    sourceDamageTakenRatio = (100 - sourceResistance) / 100;
-                }
-
-                let reflectDamage = Math.ceil(targetReflectPower * targetResistance);
-                mitigatedReflectDamage = Math.ceil(sourceDamageTakenRatio * reflectDamage);
-                reflectDamageDone = Math.min(mitigatedReflectDamage, source.combatDetails.currentHitpoints);
-                source.combatDetails.currentHitpoints -= reflectDamageDone;
+        if (targetReflectPower > 0 && targetResistance > 0) {
+            let sourceDamageTakenRatio = 100 / (100 + sourceResistance);
+            if (sourceResistance < 0) {
+                sourceDamageTakenRatio = (100 - sourceResistance) / 100;
             }
 
+            let reflectDamage = Math.ceil(targetReflectPower * targetResistance);
+            mitigatedReflectDamage = Math.ceil(sourceDamageTakenRatio * reflectDamage);
+            reflectDamageDone = Math.min(mitigatedReflectDamage, source.combatDetails.currentHitpoints);
+            source.combatDetails.currentHitpoints -= reflectDamageDone;
         }
 
         let lifeStealHeal = 0;
@@ -201,13 +196,9 @@ class CombatUtilities {
 
         switch (combatStyle) {
             case "/combat_styles/stab":
-                experienceGained.source.attack = this.calculateAttackExperience(damageDone, combatStyle);
-                break;
             case "/combat_styles/slash":
-                experienceGained.source.attack = this.calculateAttackExperience(damageDone, combatStyle);
-                experienceGained.source.power = this.calculatePowerExperience(damageDone, combatStyle);
-                break;
             case "/combat_styles/smash":
+                experienceGained.source.attack = this.calculateAttackExperience(damageDone, combatStyle);
                 experienceGained.source.power = this.calculatePowerExperience(damageDone, combatStyle);
                 break;
             case "/combat_styles/ranged":
@@ -268,9 +259,11 @@ class CombatUtilities {
     static calculateAttackExperience(damage, combatStyle) {
         switch (combatStyle) {
             case "/combat_styles/stab":
-                return 0.6 + 0.15 * damage;
+                return 0.54 + 0.135 * damage;
             case "/combat_styles/slash":
                 return 0.3 + 0.075 * damage;
+            case "/combat_styles/smash":
+                return 0.06 + 0.015 * damage;
             default:
                 return 0;
         }
@@ -278,10 +271,12 @@ class CombatUtilities {
 
     static calculatePowerExperience(damage, combatStyle) {
         switch (combatStyle) {
-            case "/combat_styles/smash":
-                return 0.6 + 0.15 * damage;
+            case "/combat_styles/stab":
+                return 0.06 + 0.015 * damage;
             case "/combat_styles/slash":
                 return 0.3 + 0.075 * damage;
+            case "/combat_styles/smash":
+                return 0.54 + 0.135 * damage;
             default:
                 return 0;
         }
