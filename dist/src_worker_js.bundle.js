@@ -216,6 +216,7 @@ class CombatSimulator extends EventTarget {
 
         this.simResult.simulatedTime = this.simulationTime;
         this.simResult.setDropRateMultipliers(this.players[0]);
+        this.simResult.setManaUsed(this.players[0]);
 
         return this.simResult;
     }
@@ -645,6 +646,14 @@ class CombatSimulator extends EventTarget {
 
         // console.log("Casting:", ability);
 
+        if (source.isPlayer) {
+            if (source.abilityManaCosts.has(ability.hrid)) {
+                source.abilityManaCosts.set(ability.hrid, source.abilityManaCosts.get(ability.hrid) + ability.manaCost);
+            } else {
+                source.abilityManaCosts.set(ability.hrid, ability.manaCost);
+            }
+        }
+
         source.combatDetails.currentManapoints -= ability.manaCost;
 
         let sourceIntelligenceExperience = _combatUtilities__WEBPACK_IMPORTED_MODULE_0__["default"].calculateIntelligenceExperience(ability.manaCost);
@@ -816,6 +825,7 @@ class CombatUnit {
     drinks = [null, null, null];
     dropTable = [];
     rareDropTable = [];
+    abilityManaCosts = new Map();
 
     // Calculated combat stats including temporary buffs
     combatDetails = {
@@ -2207,6 +2217,7 @@ class SimResult {
         this.dropRateMultiplier = 1;
         this.rareFindMultiplier = 1;
         this.playerRanOutOfMana = false;
+        this.manaUsed = {};
     }
 
     addDeath(unit) {
@@ -2295,6 +2306,12 @@ class SimResult {
     setDropRateMultipliers(unit) {
         this.dropRateMultiplier = 1 + unit.combatDetails.combatStats.combatDropRate;
         this.rareFindMultiplier = 1 + unit.combatDetails.combatStats.combatRareFind;
+    }
+
+    setManaUsed(unit) {
+        for (let [key, value] of unit.abilityManaCosts.entries()) {
+            this.manaUsed[key] = value;
+        }
     }
 }
 

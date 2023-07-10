@@ -17,6 +17,7 @@ class CombatUnit {
     drinks = [null, null, null];
     dropTable = [];
     rareDropTable = [];
+    abilityManaCosts = new Map();
 
     // Calculated combat stats including temporary buffs
     combatDetails = {

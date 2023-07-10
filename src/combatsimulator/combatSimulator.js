@@ -53,6 +53,7 @@ class CombatSimulator extends EventTarget {
 
         this.simResult.simulatedTime = this.simulationTime;
         this.simResult.setDropRateMultipliers(this.players[0]);
+        this.simResult.setManaUsed(this.players[0]);
 
         return this.simResult;
     }
@@ -481,6 +482,14 @@ class CombatSimulator extends EventTarget {
         }
 
         // console.log("Casting:", ability);
+
+        if (source.isPlayer) {
+            if (source.abilityManaCosts.has(ability.hrid)) {
+                source.abilityManaCosts.set(ability.hrid, source.abilityManaCosts.get(ability.hrid) + ability.manaCost);
+            } else {
+                source.abilityManaCosts.set(ability.hrid, ability.manaCost);
+            }
+        }
 
         source.combatDetails.currentManapoints -= ability.manaCost;
 

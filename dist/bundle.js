@@ -167,6 +167,7 @@ class CombatUnit {
     drinks = [null, null, null];
     dropTable = [];
     rareDropTable = [];
+    abilityManaCosts = new Map();
 
     // Calculated combat stats including temporary buffs
     combatDetails = {
@@ -1349,58 +1350,58 @@ function updateEquipmentState() {
 
 document.getElementById("selectEquipment_set").onchange = changeEquipmentSetListener;
 
-    function changeEquipmentSetListener(){
-        let value = this.value
-        let optgroupType = this.options[this.selectedIndex].parentNode.label;
+function changeEquipmentSetListener() {
+    let value = this.value
+    let optgroupType = this.options[this.selectedIndex].parentNode.label;
 
-        ["head", "body", "legs", "feet", "hands"].forEach((type) => {
-            let selectType = type;
+    ["head", "body", "legs", "feet", "hands"].forEach((type) => {
+        let selectType = type;
 
-            let currentEquipment = document.getElementById("selectEquipment_" + selectType);
-            if (type === "feet") {
-                type = "_boots";
+        let currentEquipment = document.getElementById("selectEquipment_" + selectType);
+        if (type === "feet") {
+            type = "_boots";
+        }
+        if (type === "hands") {
+            if (optgroupType === "RANGED") {
+                type = "_bracers";
+            } else if (optgroupType === "MAGIC") {
+                type = "_gloves";
+            } else {
+                type = "_gauntlets";
             }
-            if (type === "hands") {
-                if(optgroupType === "RANGED") {
-                    type = "_bracers";
-                } else if (optgroupType === "MAGIC") {
-                    type = "_gloves";
-                } else {
-                    type = "_gauntlets";
-                }
+        }
+        if (type === "head") {
+            if (optgroupType === "RANGED") {
+                type = "_hood";
+            } else if (optgroupType === "MAGIC") {
+                type = "_hat";
+            } else {
+                type = "_helmet";
             }
-            if (type === "head") {
-                if(optgroupType === "RANGED") {
-                    type = "_hood";
-                } else if (optgroupType === "MAGIC") {
-                    type = "_hat";
-                } else {
-                    type = "_helmet";
-                }
+        }
+        if (type === "legs") {
+            if (optgroupType === "RANGED") {
+                type = "_chaps";
+            } else if (optgroupType === "MAGIC") {
+                type = "_robe_bottoms";
+            } else {
+                type = "_plate_legs";
             }
-            if (type === "legs") {
-                if(optgroupType === "RANGED") {
-                    type = "_chaps";
-                } else if (optgroupType === "MAGIC") {
-                    type = "_robe_bottoms";
-                } else {
-                    type = "_plate_legs";
-                }
+        }
+        if (type === "body") {
+            if (optgroupType === "RANGED") {
+                type = "_tunic";
+            } else if (optgroupType === "MAGIC") {
+                type = "_robe_top";
+            } else {
+                type = "_plate_body";
             }
-            if (type === "body") {
-                if(optgroupType === "RANGED") {
-                    type = "_tunic";
-                } else if (optgroupType === "MAGIC") {
-                    type = "_robe_top";
-                } else {
-                    type = "_plate_body";
-                }
-            }
-            currentEquipment.value = "/items/" + value.toLowerCase() + type;
-        });
-        updateEquipmentState();
-        updateUI();
-    }
+        }
+        currentEquipment.value = "/items/" + value.toLowerCase() + type;
+    });
+    updateEquipmentState();
+    updateUI();
+}
 
 // #endregion
 
@@ -1912,6 +1913,7 @@ function showSimulationResult(simResult) {
     showDeaths(simResult);
     showExperienceGained(simResult);
     showConsumablesUsed(simResult);
+    showManaUsed(simResult);
     showHitpointsGained(simResult);
     showManapointsGained(simResult);
     showDamageDone(simResult);
@@ -1949,10 +1951,10 @@ function showKills(simResult) {
         const dropMap = new Map();
         const rareDropMap = new Map();
         for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_11__[monster].dropTable) {
-            dropMap.set(drop.itemHrid.slice(drop.itemHrid.lastIndexOf("/") + 1).replaceAll("_", " "), {"dropRate": drop.dropRate * dropRateMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount});
+            dropMap.set(drop.itemHrid.slice(drop.itemHrid.lastIndexOf("/") + 1).replaceAll("_", " "), { "dropRate": drop.dropRate * dropRateMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount });
         }
         for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_11__[monster].rareDropTable) {
-            rareDropMap.set(drop.itemHrid.slice(drop.itemHrid.lastIndexOf("/") + 1).replaceAll("_", " "), {"dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount});
+            rareDropMap.set(drop.itemHrid.slice(drop.itemHrid.lastIndexOf("/") + 1).replaceAll("_", " "), { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount });
         }
         for (let i = 0; i < simResult.deaths[monster]; i++) {
             for (let dropObject of dropMap.values()) {
@@ -1970,22 +1972,22 @@ function showKills(simResult) {
                 }
             }
         }
-        for (let [name, dropObject] of  dropMap.entries()) {
-            if(totalDropMap.has(name)) {
+        for (let [name, dropObject] of dropMap.entries()) {
+            if (totalDropMap.has(name)) {
                 totalDropMap.set(name, totalDropMap.get(name) + dropObject.number);
             } else {
                 totalDropMap.set(name, dropObject.number);
             }
         }
-        for (let [name, dropObject] of  rareDropMap.entries()) {
-            if(totalDropMap.has(name)) {
+        for (let [name, dropObject] of rareDropMap.entries()) {
+            if (totalDropMap.has(name)) {
                 totalDropMap.set(name, totalDropMap.get(name) + dropObject.number);
             } else {
                 totalDropMap.set(name, dropObject.number);
             }
         }
     }
-    for (let [name, dropAmount] of  totalDropMap.entries()) {
+    for (let [name, dropAmount] of totalDropMap.entries()) {
         let dropRow = createRow(
             ["col-md-6", "col-md-6 text-end"],
             [name, dropAmount.toLocaleString()]
@@ -2052,6 +2054,27 @@ function showConsumablesUsed(simResult) {
             [_combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[consumable].name, consumablesPerHour]
         );
         newChildren.push(consumableRow);
+    }
+
+    resultDiv.replaceChildren(...newChildren);
+}
+
+function showManaUsed(simResult) {
+    let resultDiv = document.getElementById("simulationResultManaUsed");
+    let newChildren = [];
+
+    let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
+    if (!simResult.manaUsed) {
+        resultDiv.replaceChildren(...newChildren);
+        return;
+    }
+    for (let ability in simResult.manaUsed) {
+        let manaPerHour = (simResult.manaUsed[ability] / hoursSimulated).toFixed(0);
+        let manaRow = createRow(
+            ["col-md-6", "col-md-6 text-end"],
+            [ability.split("/")[2].replaceAll("_", " "), manaPerHour]
+        );
+        newChildren.push(manaRow);
     }
 
     resultDiv.replaceChildren(...newChildren);
@@ -2642,13 +2665,13 @@ function initErrorHandling() {
 }
 
 function initImportExportModal() {
-        let exportSetButton = document.getElementById("buttonExportSet");
-        exportSetButton.addEventListener("click", (event) => {
+    let exportSetButton = document.getElementById("buttonExportSet");
+    exportSetButton.addEventListener("click", (event) => {
         let zoneSelect = document.getElementById("selectZone");
         let simulationTimeInput = document.getElementById("inputSimulationTime");
         let equipmentArray = [];
-        for(const item in player.equipment) {
-            if(player.equipment[item] != null) {
+        for (const item in player.equipment) {
+            if (player.equipment[item] != null) {
                 equipmentArray.push({
                     "itemLocationHrid": player.equipment[item].gameItem.equipmentDetail.type.replaceAll("equipment_types", "item_locations"),
                     "itemHrid": player.equipment[item].hrid,
@@ -2656,32 +2679,34 @@ function initImportExportModal() {
                 });
             }
         }
-        let playerArray = {"attackLevel": player.attackLevel,
+        let playerArray = {
+            "attackLevel": player.attackLevel,
             "magicLevel": player.magicLevel,
             "powerLevel": player.powerLevel,
             "rangedLevel": player.rangedLevel,
             "defenseLevel": player.defenseLevel,
             "staminaLevel": player.staminaLevel,
             "intelligenceLevel": player.intelligenceLevel,
-            "equipment": equipmentArray};
+            "equipment": equipmentArray
+        };
         let abilitiesArray = [];
-            for (let i = 0; i < 4; i++) {
-                let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
-                let abilityName = document.getElementById("selectAbility_" + i);
-                abilitiesArray[i] = {"abilityHrid": abilityName.value, "level": abilityLevelInput.value};
-            }
+        for (let i = 0; i < 4; i++) {
+            let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
+            let abilityName = document.getElementById("selectAbility_" + i);
+            abilitiesArray[i] = { "abilityHrid": abilityName.value, "level": abilityLevelInput.value };
+        }
         let drinksArray = [];
-            for(let i = 0; i < drinks?.length; i++) {
-                drinksArray.push({"itemHrid": drinks[i]});
-            }
+        for (let i = 0; i < drinks?.length; i++) {
+            drinksArray.push({ "itemHrid": drinks[i] });
+        }
         let foodArray = [];
-            for(let i = 0; i < food?.length; i++) {
-                foodArray.push({"itemHrid": food[i]});
-            }
+        for (let i = 0; i < food?.length; i++) {
+            foodArray.push({ "itemHrid": food[i] });
+        }
         let state = {
             player: playerArray,
-            food: {"/action_types/combat": foodArray},
-            drinks: {"/action_types/combat": drinksArray},
+            food: { "/action_types/combat": foodArray },
+            drinks: { "/action_types/combat": drinksArray },
             abilities: abilitiesArray,
             triggerMap: triggerMap,
             zone: zoneSelect.value,
@@ -2704,7 +2729,7 @@ function initImportExportModal() {
             let equipmentSelect = document.getElementById("selectEquipment_" + type);
             let enhancementLevelInput = document.getElementById("inputEquipmentEnhancementLevel_" + type);
             let currentEquipment = importSet.player.equipment.find(item => item.itemLocationHrid === "/item_locations/" + type);
-            if(currentEquipment !== undefined) {
+            if (currentEquipment !== undefined) {
                 equipmentSelect.value = currentEquipment.itemHrid;
                 enhancementLevelInput.value = currentEquipment.enhancementLevel;
             } else {
@@ -2717,10 +2742,10 @@ function initImportExportModal() {
         let weaponEnhancementLevelInput = document.getElementById("inputEquipmentEnhancementLevel_weapon");
         let mainhandWeapon = importSet.player.equipment.find(item => item.itemLocationHrid === "/item_locations/main_hand");
         let twohandWeapon = importSet.player.equipment.find(item => item.itemLocationHrid === "/item_locations/two_hand");
-        if(mainhandWeapon !== undefined) {
+        if (mainhandWeapon !== undefined) {
             weaponSelect.value = mainhandWeapon.itemHrid;
             weaponEnhancementLevelInput.value = mainhandWeapon.enhancementLevel;
-        } else if(twohandWeapon !== undefined) {
+        } else if (twohandWeapon !== undefined) {
             weaponSelect.value = twohandWeapon.itemHrid;
             weaponEnhancementLevelInput.value = twohandWeapon.enhancementLevel;
         } else {
@@ -2732,12 +2757,12 @@ function initImportExportModal() {
         for (let i = 0; i < 3; i++) {
             let drinkSelect = document.getElementById("selectDrink_" + i);
             let foodSelect = document.getElementById("selectFood_" + i);
-            if(importSet.drinks[i] != null) {
+            if (importSet.drinks[i] != null) {
                 drinkSelect.value = importSet.drinks[i].itemHrid;
             } else {
                 drinkSelect.value = "";
             }
-            if(importSet.food[i] != null) {
+            if (importSet.food[i] != null) {
                 foodSelect.value = importSet.food[i].itemHrid;
             } else {
                 foodSelect.value = "";
@@ -2747,7 +2772,7 @@ function initImportExportModal() {
         for (let i = 0; i < 4; i++) {
             let abilitySelect = document.getElementById("selectAbility_" + i);
             let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
-            if(importSet.abilities[i] != null ) {
+            if (importSet.abilities[i] != null) {
                 abilitySelect.value = importSet.abilities[i].abilityHrid;
                 abilityLevelInput.value = String(importSet.abilities[i].level);
             } else {
