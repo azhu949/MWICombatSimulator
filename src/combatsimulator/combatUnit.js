@@ -64,6 +64,7 @@ class CombatUnit {
             smashDamage: 0,
             rangedDamage: 0,
             magicDamage: 0,
+            taskDamage: 0,
             physicalAmplify: 0,
             waterAmplify: 0,
             natureAmplify: 0,

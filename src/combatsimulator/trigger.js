@@ -100,6 +100,11 @@ class Trigger {
             case "/combat_trigger_conditions/critical_coffee_damage":
             case "/combat_trigger_conditions/critical_coffee_rate":
             case "/combat_trigger_conditions/wisdom_coffee":
+            case "/combat_trigger_conditions/ice_spear":
+            case "/combat_trigger_conditions/toxic_pollen_armor":
+            case "/combat_trigger_conditions/toxic_pollen_fire_resistance":
+            case "/combat_trigger_conditions/toxic_pollen_nature_resistance":
+            case "/combat_trigger_conditions/toxic_pollen_water_resistance":
                 let buffHrid = "/buff_uniques";
                 buffHrid += this.conditionHrid.slice(this.conditionHrid.lastIndexOf("/"));
                 return source.combatBuffs[buffHrid];

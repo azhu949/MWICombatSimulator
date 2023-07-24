@@ -144,9 +144,11 @@ class CombatUtilities {
         }
 
         let damageRoll = CombatUtilities.randomInt(sourceMinDamage, sourceMaxDamage);
+        damageRoll *= (1 + source.combatDetails.combatStats.taskDamage);
         let maxPremitigatedDamage = Math.min(damageRoll, target.combatDetails.currentHitpoints);
 
         let damageDone = 0;
+        let reflectDamage = 0;
         let mitigatedReflectDamage = 0;
         let reflectDamageDone = 0;
 
@@ -170,7 +172,7 @@ class CombatUtilities {
                 sourceDamageTakenRatio = (100 - sourceResistance) / 100;
             }
 
-            let reflectDamage = Math.ceil(targetReflectPower * targetResistance);
+            reflectDamage = Math.ceil(targetReflectPower * targetResistance);
             mitigatedReflectDamage = Math.ceil(sourceDamageTakenRatio * reflectDamage);
             reflectDamageDone = Math.min(mitigatedReflectDamage, source.combatDetails.currentHitpoints);
             source.combatDetails.currentHitpoints -= reflectDamageDone;
@@ -216,6 +218,11 @@ class CombatUtilities {
 
         if (mitigatedReflectDamage > 0) {
             experienceGained.target.defense += this.calculateDefenseExperience(mitigatedReflectDamage);
+
+            let reflectDamagePrevented = reflectDamage - reflectDamageDone;
+
+            experienceGained.source.defense = this.calculateDefenseExperience(reflectDamagePrevented);
+            experienceGained.source.stamina = this.calculateStaminaExperience(reflectDamagePrevented, reflectDamageDone);
         }
 
         return { damageDone, didHit, reflectDamageDone, lifeStealHeal, experienceGained };

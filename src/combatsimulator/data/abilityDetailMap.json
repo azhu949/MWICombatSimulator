@@ -38,7 +38,7 @@
     "/abilities/berserk": {
         "hrid": "/abilities/berserk",
         "name": "Berserk",
-        "description": "Greatly increases physical damages for a short time",
+        "description": "Greatly increases physical damage temporarily",
         "manaCost": 60,
         "cooldownDuration": 30000000000,
         "hasSpecialEffects": false,
@@ -127,7 +127,7 @@
     "/abilities/elemental_affinity": {
         "hrid": "/abilities/elemental_affinity",
         "name": "Elemental Affinity",
-        "description": "Amplifies elemental damage for a short time",
+        "description": "Greatly increases elemental damage temporarily",
         "manaCost": 60,
         "cooldownDuration": 30000000000,
         "hasSpecialEffects": false,
@@ -344,7 +344,7 @@
     "/abilities/frenzy": {
         "hrid": "/abilities/frenzy",
         "name": "Frenzy",
-        "description": "Greatly increases attack speed for a short time",
+        "description": "Greatly increases attack speed temporarily",
         "manaCost": 60,
         "cooldownDuration": 30000000000,
         "hasSpecialEffects": false,
@@ -546,7 +546,7 @@
     "/abilities/pierce": {
         "hrid": "/abilities/pierce",
         "name": "Pierce",
-        "description": "Pierce the targeted enemy",
+        "description": "Pierces the targeted enemy",
         "manaCost": 30,
         "cooldownDuration": 20000000000,
         "hasSpecialEffects": false,
@@ -582,7 +582,7 @@
     "/abilities/poke": {
         "hrid": "/abilities/poke",
         "name": "Poke",
-        "description": "Poke the targeted enemy",
+        "description": "Pokes the targeted enemy",
         "manaCost": 20,
         "cooldownDuration": 15000000000,
         "hasSpecialEffects": false,
@@ -618,7 +618,7 @@
     "/abilities/precision": {
         "hrid": "/abilities/precision",
         "name": "Precision",
-        "description": "Greatly increases accuracy for a short time",
+        "description": "Greatly increases accuracy temporarily",
         "manaCost": 60,
         "cooldownDuration": 30000000000,
         "hasSpecialEffects": false,
@@ -665,7 +665,7 @@
     "/abilities/quick_shot": {
         "hrid": "/abilities/quick_shot",
         "name": "Quick Shot",
-        "description": "A quick shot at the targeted enemy",
+        "description": "Takes a quick shot at the targeted enemy",
         "manaCost": 20,
         "cooldownDuration": 15000000000,
         "hasSpecialEffects": false,
@@ -743,7 +743,7 @@
     "/abilities/scratch": {
         "hrid": "/abilities/scratch",
         "name": "Scratch",
-        "description": "Scratch the targeted enemy",
+        "description": "Scratches the targeted enemy",
         "manaCost": 20,
         "cooldownDuration": 15000000000,
         "hasSpecialEffects": false,
@@ -779,7 +779,7 @@
     "/abilities/smack": {
         "hrid": "/abilities/smack",
         "name": "Smack",
-        "description": "Smack the targeted enemy",
+        "description": "Smacks the targeted enemy",
         "manaCost": 20,
         "cooldownDuration": 15000000000,
         "hasSpecialEffects": false,
@@ -815,7 +815,7 @@
     "/abilities/spike_shell": {
         "hrid": "/abilities/spike_shell",
         "name": "Spike Shell",
-        "description": "Gains physical reflect power for a short time",
+        "description": "Gains physical reflect power temporarily",
         "manaCost": 60,
         "cooldownDuration": 30000000000,
         "hasSpecialEffects": false,
@@ -898,7 +898,7 @@
     "/abilities/sweep": {
         "hrid": "/abilities/sweep",
         "name": "Sweep",
-        "description": "Sweeping attack on all enemies",
+        "description": "Performs a sweeping attack on all enemies",
         "manaCost": 30,
         "cooldownDuration": 20000000000,
         "hasSpecialEffects": false,
@@ -940,7 +940,7 @@
     "/abilities/toughness": {
         "hrid": "/abilities/toughness",
         "name": "Toughness",
-        "description": "Greatly increases armor for a short time",
+        "description": "Greatly increases armor and resistances temporarily",
         "manaCost": 60,
         "cooldownDuration": 30000000000,
         "hasSpecialEffects": false,
@@ -1100,7 +1100,7 @@
     "/abilities/vampirism": {
         "hrid": "/abilities/vampirism",
         "name": "Vampirism",
-        "description": "Gains lifesteal for a short time",
+        "description": "Gains lifesteal temporarily",
         "manaCost": 60,
         "cooldownDuration": 30000000000,
         "hasSpecialEffects": false,

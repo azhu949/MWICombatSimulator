@@ -120,6 +120,17 @@
         ],
         "sortIndex": 26
     },
+    "/combat_trigger_conditions/ice_spear": {
+        "hrid": "/combat_trigger_conditions/ice_spear",
+        "name": "Ice Spear Debuff",
+        "isSingleTarget": true,
+        "isMultiTarget": false,
+        "allowedComparatorHrids": [
+            "/combat_trigger_comparators/is_active",
+            "/combat_trigger_comparators/is_inactive"
+        ],
+        "sortIndex": 32
+    },
     "/combat_trigger_conditions/intelligence_coffee_max_mp": {
         "hrid": "/combat_trigger_conditions/intelligence_coffee_max_mp",
         "name": "Intelligence Coffee (Max MP)",
@@ -272,7 +283,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 32
+        "sortIndex": 37
     },
     "/combat_trigger_conditions/swiftness_coffee": {
         "hrid": "/combat_trigger_conditions/swiftness_coffee",
@@ -328,6 +339,50 @@
             "/combat_trigger_comparators/is_inactive"
         ],
         "sortIndex": 21
+    },
+    "/combat_trigger_conditions/toxic_pollen_armor": {
+        "hrid": "/combat_trigger_conditions/toxic_pollen_armor",
+        "name": "Toxic Pollen Debuff (Armor)",
+        "isSingleTarget": true,
+        "isMultiTarget": false,
+        "allowedComparatorHrids": [
+            "/combat_trigger_comparators/is_active",
+            "/combat_trigger_comparators/is_inactive"
+        ],
+        "sortIndex": 33
+    },
+    "/combat_trigger_conditions/toxic_pollen_fire_resistance": {
+        "hrid": "/combat_trigger_conditions/toxic_pollen_fire_resistance",
+        "name": "Toxic Pollen Debuff (Fire Resistance)",
+        "isSingleTarget": true,
+        "isMultiTarget": false,
+        "allowedComparatorHrids": [
+            "/combat_trigger_comparators/is_active",
+            "/combat_trigger_comparators/is_inactive"
+        ],
+        "sortIndex": 36
+    },
+    "/combat_trigger_conditions/toxic_pollen_nature_resistance": {
+        "hrid": "/combat_trigger_conditions/toxic_pollen_nature_resistance",
+        "name": "Toxic Pollen Debuff (Nature Resistance)",
+        "isSingleTarget": true,
+        "isMultiTarget": false,
+        "allowedComparatorHrids": [
+            "/combat_trigger_comparators/is_active",
+            "/combat_trigger_comparators/is_inactive"
+        ],
+        "sortIndex": 35
+    },
+    "/combat_trigger_conditions/toxic_pollen_water_resistance": {
+        "hrid": "/combat_trigger_conditions/toxic_pollen_water_resistance",
+        "name": "Toxic Pollen Debuff (Water Resistance)",
+        "isSingleTarget": true,
+        "isMultiTarget": false,
+        "allowedComparatorHrids": [
+            "/combat_trigger_comparators/is_active",
+            "/combat_trigger_comparators/is_inactive"
+        ],
+        "sortIndex": 34
     },
     "/combat_trigger_conditions/vampirism": {
         "hrid": "/combat_trigger_conditions/vampirism",

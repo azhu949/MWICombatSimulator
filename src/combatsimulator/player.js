@@ -74,6 +74,7 @@ class Player extends CombatUnit {
             "smashDamage",
             "rangedDamage",
             "magicDamage",
+            "taskDamage",
             "physicalAmplify",
             "waterAmplify",
             "natureAmplify",

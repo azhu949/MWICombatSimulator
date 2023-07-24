@@ -3079,8 +3079,8 @@
         },
         "sortIndex": 45
     },
-    "/actions/cheesesmithing/black_bear_gloves": {
-        "hrid": "/actions/cheesesmithing/black_bear_gloves",
+    "/actions/cheesesmithing/black_bear_shoes": {
+        "hrid": "/actions/cheesesmithing/black_bear_shoes",
         "function": "/action_functions/production",
         "type": "/action_types/cheesesmithing",
         "category": "/action_categories/cheesesmithing/feet",
@@ -5891,8 +5891,8 @@
         },
         "sortIndex": 148
     },
-    "/actions/cheesesmithing/grizzly_bear_gloves": {
-        "hrid": "/actions/cheesesmithing/grizzly_bear_gloves",
+    "/actions/cheesesmithing/grizzly_bear_shoes": {
+        "hrid": "/actions/cheesesmithing/grizzly_bear_shoes",
         "function": "/action_functions/production",
         "type": "/action_types/cheesesmithing",
         "category": "/action_categories/cheesesmithing/feet",
@@ -6975,8 +6975,8 @@
         },
         "sortIndex": 56
     },
-    "/actions/cheesesmithing/polar_bear_gloves": {
-        "hrid": "/actions/cheesesmithing/polar_bear_gloves",
+    "/actions/cheesesmithing/polar_bear_shoes": {
+        "hrid": "/actions/cheesesmithing/polar_bear_shoes",
         "function": "/action_functions/production",
         "type": "/action_types/cheesesmithing",
         "category": "/action_categories/cheesesmithing/feet",
@@ -12625,6 +12625,50 @@
         },
         "sortIndex": 4
     },
+    "/actions/crafting/advanced_task_ring": {
+        "hrid": "/actions/crafting/advanced_task_ring",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/ring",
+        "name": "Advanced Task Ring",
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 1
+        },
+        "baseTimeCost": 10000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 10
+        },
+        "dropTable": null,
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_artisans_crate",
+                "dropRate": 0.00023379629629629632,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/basic_task_ring",
+        "inputItems": [
+            {
+                "itemHrid": "/items/task_crystal",
+                "count": 4
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_task_ring",
+                "count": 1
+            }
+        ],
+        "monsterSpawnInfo": {
+            "maxSpawnCount": 0,
+            "maxTotalStrength": 0,
+            "spawns": null
+        },
+        "sortIndex": 5
+    },
     "/actions/crafting/arcane_bow": {
         "hrid": "/actions/crafting/arcane_bow",
         "function": "/action_functions/production",
@@ -12667,7 +12711,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 70
+        "sortIndex": 73
     },
     "/actions/crafting/arcane_crossbow": {
         "hrid": "/actions/crafting/arcane_crossbow",
@@ -12711,7 +12755,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 66
+        "sortIndex": 69
     },
     "/actions/crafting/arcane_fire_staff": {
         "hrid": "/actions/crafting/arcane_fire_staff",
@@ -12755,7 +12799,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 71
+        "sortIndex": 74
     },
     "/actions/crafting/arcane_lumber": {
         "hrid": "/actions/crafting/arcane_lumber",
@@ -12799,7 +12843,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 65
+        "sortIndex": 68
     },
     "/actions/crafting/arcane_nature_staff": {
         "hrid": "/actions/crafting/arcane_nature_staff",
@@ -12843,7 +12887,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 69
+        "sortIndex": 72
     },
     "/actions/crafting/arcane_shield": {
         "hrid": "/actions/crafting/arcane_shield",
@@ -12887,7 +12931,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 68
+        "sortIndex": 71
     },
     "/actions/crafting/arcane_water_staff": {
         "hrid": "/actions/crafting/arcane_water_staff",
@@ -12931,7 +12975,51 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 67
+        "sortIndex": 70
+    },
+    "/actions/crafting/basic_task_ring": {
+        "hrid": "/actions/crafting/basic_task_ring",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/ring",
+        "name": "Basic Task Ring",
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 1
+        },
+        "baseTimeCost": 10000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 10
+        },
+        "dropTable": null,
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_artisans_crate",
+                "dropRate": 0.00023379629629629632,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/task_crystal",
+                "count": 1
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/basic_task_ring",
+                "count": 1
+            }
+        ],
+        "monsterSpawnInfo": {
+            "maxSpawnCount": 0,
+            "maxTotalStrength": 0,
+            "spawns": null
+        },
+        "sortIndex": 4
     },
     "/actions/crafting/birch_bow": {
         "hrid": "/actions/crafting/birch_bow",
@@ -12975,7 +13063,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 14
+        "sortIndex": 17
     },
     "/actions/crafting/birch_crossbow": {
         "hrid": "/actions/crafting/birch_crossbow",
@@ -13019,7 +13107,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 9
+        "sortIndex": 12
     },
     "/actions/crafting/birch_fire_staff": {
         "hrid": "/actions/crafting/birch_fire_staff",
@@ -13063,7 +13151,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 16
+        "sortIndex": 19
     },
     "/actions/crafting/birch_lumber": {
         "hrid": "/actions/crafting/birch_lumber",
@@ -13107,7 +13195,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 8
+        "sortIndex": 11
     },
     "/actions/crafting/birch_nature_staff": {
         "hrid": "/actions/crafting/birch_nature_staff",
@@ -13151,7 +13239,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 13
+        "sortIndex": 16
     },
     "/actions/crafting/birch_shield": {
         "hrid": "/actions/crafting/birch_shield",
@@ -13195,7 +13283,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 12
+        "sortIndex": 15
     },
     "/actions/crafting/birch_water_staff": {
         "hrid": "/actions/crafting/birch_water_staff",
@@ -13239,7 +13327,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 10
+        "sortIndex": 13
     },
     "/actions/crafting/cedar_bow": {
         "hrid": "/actions/crafting/cedar_bow",
@@ -13283,7 +13371,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 23
+        "sortIndex": 26
     },
     "/actions/crafting/cedar_crossbow": {
         "hrid": "/actions/crafting/cedar_crossbow",
@@ -13327,7 +13415,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 19
+        "sortIndex": 22
     },
     "/actions/crafting/cedar_fire_staff": {
         "hrid": "/actions/crafting/cedar_fire_staff",
@@ -13371,7 +13459,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 25
+        "sortIndex": 28
     },
     "/actions/crafting/cedar_lumber": {
         "hrid": "/actions/crafting/cedar_lumber",
@@ -13415,7 +13503,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 18
+        "sortIndex": 21
     },
     "/actions/crafting/cedar_nature_staff": {
         "hrid": "/actions/crafting/cedar_nature_staff",
@@ -13459,7 +13547,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 22
+        "sortIndex": 25
     },
     "/actions/crafting/cedar_shield": {
         "hrid": "/actions/crafting/cedar_shield",
@@ -13503,7 +13591,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 21
+        "sortIndex": 24
     },
     "/actions/crafting/cedar_water_staff": {
         "hrid": "/actions/crafting/cedar_water_staff",
@@ -13547,7 +13635,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 20
+        "sortIndex": 23
     },
     "/actions/crafting/crushed_amber": {
         "hrid": "/actions/crafting/crushed_amber",
@@ -13591,7 +13679,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 24
+        "sortIndex": 27
     },
     "/actions/crafting/crushed_amethyst": {
         "hrid": "/actions/crafting/crushed_amethyst",
@@ -13635,7 +13723,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 35
+        "sortIndex": 38
     },
     "/actions/crafting/crushed_garnet": {
         "hrid": "/actions/crafting/crushed_garnet",
@@ -13679,7 +13767,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 33
+        "sortIndex": 36
     },
     "/actions/crafting/crushed_jade": {
         "hrid": "/actions/crafting/crushed_jade",
@@ -13723,7 +13811,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 34
+        "sortIndex": 37
     },
     "/actions/crafting/crushed_moonstone": {
         "hrid": "/actions/crafting/crushed_moonstone",
@@ -13767,7 +13855,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 50
+        "sortIndex": 53
     },
     "/actions/crafting/crushed_pearl": {
         "hrid": "/actions/crafting/crushed_pearl",
@@ -13811,7 +13899,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 11
+        "sortIndex": 14
     },
     "/actions/crafting/earrings_of_armor": {
         "hrid": "/actions/crafting/earrings_of_armor",
@@ -13863,7 +13951,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 45
+        "sortIndex": 48
     },
     "/actions/crafting/earrings_of_gathering": {
         "hrid": "/actions/crafting/earrings_of_gathering",
@@ -13911,7 +13999,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 17
+        "sortIndex": 20
     },
     "/actions/crafting/earrings_of_rare_find": {
         "hrid": "/actions/crafting/earrings_of_rare_find",
@@ -13959,7 +14047,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 55
+        "sortIndex": 58
     },
     "/actions/crafting/earrings_of_regeneration": {
         "hrid": "/actions/crafting/earrings_of_regeneration",
@@ -14011,7 +14099,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 38
+        "sortIndex": 41
     },
     "/actions/crafting/earrings_of_resistance": {
         "hrid": "/actions/crafting/earrings_of_resistance",
@@ -14063,7 +14151,51 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 52
+        "sortIndex": 55
+    },
+    "/actions/crafting/expert_task_ring": {
+        "hrid": "/actions/crafting/expert_task_ring",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/ring",
+        "name": "Expert Task Ring",
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 1
+        },
+        "baseTimeCost": 10000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 10
+        },
+        "dropTable": null,
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_artisans_crate",
+                "dropRate": 0.00023379629629629632,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/advanced_task_ring",
+        "inputItems": [
+            {
+                "itemHrid": "/items/task_crystal",
+                "count": 16
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_task_ring",
+                "count": 1
+            }
+        ],
+        "monsterSpawnInfo": {
+            "maxSpawnCount": 0,
+            "maxTotalStrength": 0,
+            "spawns": null
+        },
+        "sortIndex": 6
     },
     "/actions/crafting/fighter_necklace": {
         "hrid": "/actions/crafting/fighter_necklace",
@@ -14111,7 +14243,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 39
+        "sortIndex": 42
     },
     "/actions/crafting/ginkgo_bow": {
         "hrid": "/actions/crafting/ginkgo_bow",
@@ -14155,7 +14287,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 48
+        "sortIndex": 51
     },
     "/actions/crafting/ginkgo_crossbow": {
         "hrid": "/actions/crafting/ginkgo_crossbow",
@@ -14199,7 +14331,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 41
+        "sortIndex": 44
     },
     "/actions/crafting/ginkgo_fire_staff": {
         "hrid": "/actions/crafting/ginkgo_fire_staff",
@@ -14243,7 +14375,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 51
+        "sortIndex": 54
     },
     "/actions/crafting/ginkgo_lumber": {
         "hrid": "/actions/crafting/ginkgo_lumber",
@@ -14287,7 +14419,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 40
+        "sortIndex": 43
     },
     "/actions/crafting/ginkgo_nature_staff": {
         "hrid": "/actions/crafting/ginkgo_nature_staff",
@@ -14331,7 +14463,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 46
+        "sortIndex": 49
     },
     "/actions/crafting/ginkgo_shield": {
         "hrid": "/actions/crafting/ginkgo_shield",
@@ -14375,7 +14507,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 44
+        "sortIndex": 47
     },
     "/actions/crafting/ginkgo_water_staff": {
         "hrid": "/actions/crafting/ginkgo_water_staff",
@@ -14419,7 +14551,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 42
+        "sortIndex": 45
     },
     "/actions/crafting/lumber": {
         "hrid": "/actions/crafting/lumber",
@@ -14507,7 +14639,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 64
+        "sortIndex": 67
     },
     "/actions/crafting/necklace_of_efficiency": {
         "hrid": "/actions/crafting/necklace_of_efficiency",
@@ -14559,7 +14691,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 26
+        "sortIndex": 29
     },
     "/actions/crafting/necklace_of_wisdom": {
         "hrid": "/actions/crafting/necklace_of_wisdom",
@@ -14611,7 +14743,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 56
+        "sortIndex": 59
     },
     "/actions/crafting/purpleheart_bow": {
         "hrid": "/actions/crafting/purpleheart_bow",
@@ -14655,7 +14787,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 32
+        "sortIndex": 35
     },
     "/actions/crafting/purpleheart_crossbow": {
         "hrid": "/actions/crafting/purpleheart_crossbow",
@@ -14699,7 +14831,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 28
+        "sortIndex": 31
     },
     "/actions/crafting/purpleheart_fire_staff": {
         "hrid": "/actions/crafting/purpleheart_fire_staff",
@@ -14743,7 +14875,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 36
+        "sortIndex": 39
     },
     "/actions/crafting/purpleheart_lumber": {
         "hrid": "/actions/crafting/purpleheart_lumber",
@@ -14787,7 +14919,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 27
+        "sortIndex": 30
     },
     "/actions/crafting/purpleheart_nature_staff": {
         "hrid": "/actions/crafting/purpleheart_nature_staff",
@@ -14831,7 +14963,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 31
+        "sortIndex": 34
     },
     "/actions/crafting/purpleheart_shield": {
         "hrid": "/actions/crafting/purpleheart_shield",
@@ -14875,7 +15007,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 30
+        "sortIndex": 33
     },
     "/actions/crafting/purpleheart_water_staff": {
         "hrid": "/actions/crafting/purpleheart_water_staff",
@@ -14919,7 +15051,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 29
+        "sortIndex": 32
     },
     "/actions/crafting/ranger_necklace": {
         "hrid": "/actions/crafting/ranger_necklace",
@@ -14967,7 +15099,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 47
+        "sortIndex": 50
     },
     "/actions/crafting/redwood_bow": {
         "hrid": "/actions/crafting/redwood_bow",
@@ -15011,7 +15143,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 62
+        "sortIndex": 65
     },
     "/actions/crafting/redwood_crossbow": {
         "hrid": "/actions/crafting/redwood_crossbow",
@@ -15055,7 +15187,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 58
+        "sortIndex": 61
     },
     "/actions/crafting/redwood_fire_staff": {
         "hrid": "/actions/crafting/redwood_fire_staff",
@@ -15099,7 +15231,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 63
+        "sortIndex": 66
     },
     "/actions/crafting/redwood_lumber": {
         "hrid": "/actions/crafting/redwood_lumber",
@@ -15143,7 +15275,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 57
+        "sortIndex": 60
     },
     "/actions/crafting/redwood_nature_staff": {
         "hrid": "/actions/crafting/redwood_nature_staff",
@@ -15187,7 +15319,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 61
+        "sortIndex": 64
     },
     "/actions/crafting/redwood_shield": {
         "hrid": "/actions/crafting/redwood_shield",
@@ -15231,7 +15363,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 60
+        "sortIndex": 63
     },
     "/actions/crafting/redwood_water_staff": {
         "hrid": "/actions/crafting/redwood_water_staff",
@@ -15275,7 +15407,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 59
+        "sortIndex": 62
     },
     "/actions/crafting/ring_of_armor": {
         "hrid": "/actions/crafting/ring_of_armor",
@@ -15327,7 +15459,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 43
+        "sortIndex": 46
     },
     "/actions/crafting/ring_of_gathering": {
         "hrid": "/actions/crafting/ring_of_gathering",
@@ -15375,7 +15507,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 15
+        "sortIndex": 18
     },
     "/actions/crafting/ring_of_rare_find": {
         "hrid": "/actions/crafting/ring_of_rare_find",
@@ -15423,7 +15555,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 54
+        "sortIndex": 57
     },
     "/actions/crafting/ring_of_regeneration": {
         "hrid": "/actions/crafting/ring_of_regeneration",
@@ -15475,7 +15607,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 37
+        "sortIndex": 40
     },
     "/actions/crafting/ring_of_resistance": {
         "hrid": "/actions/crafting/ring_of_resistance",
@@ -15527,7 +15659,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 49
+        "sortIndex": 52
     },
     "/actions/crafting/wizard_necklace": {
         "hrid": "/actions/crafting/wizard_necklace",
@@ -15575,7 +15707,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 53
+        "sortIndex": 56
     },
     "/actions/crafting/wooden_bow": {
         "hrid": "/actions/crafting/wooden_bow",
@@ -15619,7 +15751,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 6
+        "sortIndex": 9
     },
     "/actions/crafting/wooden_crossbow": {
         "hrid": "/actions/crafting/wooden_crossbow",
@@ -15707,7 +15839,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 7
+        "sortIndex": 10
     },
     "/actions/crafting/wooden_nature_staff": {
         "hrid": "/actions/crafting/wooden_nature_staff",
@@ -15751,7 +15883,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 5
+        "sortIndex": 8
     },
     "/actions/crafting/wooden_shield": {
         "hrid": "/actions/crafting/wooden_shield",
@@ -15795,7 +15927,7 @@
             "maxTotalStrength": 0,
             "spawns": null
         },
-        "sortIndex": 4
+        "sortIndex": 7
     },
     "/actions/crafting/wooden_water_staff": {
         "hrid": "/actions/crafting/wooden_water_staff",
@@ -20110,12 +20242,12 @@
         },
         "sortIndex": 12
     },
-    "/actions/tailoring/sights_bracers": {
-        "hrid": "/actions/tailoring/sights_bracers",
+    "/actions/tailoring/sighted_bracers": {
+        "hrid": "/actions/tailoring/sighted_bracers",
         "function": "/action_functions/production",
         "type": "/action_types/tailoring",
         "category": "/action_categories/tailoring/hands",
-        "name": "Sights Bracers",
+        "name": "Sighted Bracers",
         "levelRequirement": {
             "skillHrid": "/skills/tailoring",
             "level": 60
@@ -20143,7 +20275,7 @@
         ],
         "outputItems": [
             {
-                "itemHrid": "/items/sights_bracers",
+                "itemHrid": "/items/sighted_bracers",
                 "count": 1
             }
         ],
