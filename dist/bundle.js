@@ -1224,6 +1224,10 @@ let abilities = [null, null, null, null];
 let triggerMap = {};
 let modalTriggers = [];
 
+window.revenue = 0;
+window.expenses = 0;
+window.profit = 0;
+
 // #region Worker
 
 worker.onmessage = function (event) {
@@ -1917,6 +1921,10 @@ function initZones() {
 // #region Simulation Result
 
 function showSimulationResult(simResult) {
+    let expensesModalTable = document.querySelector("#expensesTable > tbody");
+    expensesModalTable.innerHTML = '<tr><th>Item</th><th>Price</th><th>Amount</th><th>Total</th></tr>';
+    let revenueModalTable = document.querySelector("#revenueTable > tbody");
+    revenueModalTable.innerHTML = '<tr><th>Item</th><th>Price</th><th>Amount</th><th>Total</th></tr>';
     showKills(simResult);
     showDeaths(simResult);
     showExperienceGained(simResult);
@@ -1926,6 +1934,9 @@ function showSimulationResult(simResult) {
     showManapointsGained(simResult);
     showDamageDone(simResult);
     showDamageTaken(simResult);
+    window.profit = window.revenue - window.expenses;
+    document.getElementById('profitSpan').innerText = window.profit.toLocaleString();
+    document.getElementById('profitPreview').innerText = window.profit.toLocaleString();
 }
 
 function showKills(simResult) {
@@ -1959,10 +1970,10 @@ function showKills(simResult) {
         const dropMap = new Map();
         const rareDropMap = new Map();
         for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_11__[monster].dropTable) {
-            dropMap.set(drop.itemHrid.slice(drop.itemHrid.lastIndexOf("/") + 1).replaceAll("_", " "), { "dropRate": drop.dropRate * dropRateMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount });
+            dropMap.set(_combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[drop.itemHrid]['name'], { "dropRate": drop.dropRate * dropRateMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount });
         }
         for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_11__[monster].rareDropTable) {
-            rareDropMap.set(drop.itemHrid.slice(drop.itemHrid.lastIndexOf("/") + 1).replaceAll("_", " "), { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount });
+            rareDropMap.set(_combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[drop.itemHrid]['name'], { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount });
         }
         for (let i = 0; i < simResult.deaths[monster]; i++) {
             for (let dropObject of dropMap.values()) {
@@ -1995,13 +2006,42 @@ function showKills(simResult) {
             }
         }
     }
+
+    let revenueModalTable = document.querySelector("#revenueTable > tbody");
+    let total = 0;
     for (let [name, dropAmount] of totalDropMap.entries()) {
         let dropRow = createRow(
             ["col-md-6", "col-md-6 text-end"],
             [name, dropAmount.toLocaleString()]
         );
         newDropChildren.push(dropRow);
+
+        let tableRow = '<tr><td>';
+        tableRow += name;
+        tableRow += '</td><td contenteditable="true">';
+        let price = 0;
+        if (window.prices) {
+            let item = window.prices[name];
+            if (item['bid'] !== -1) {
+                price += item['bid'];
+            } else if (item['ask'] !== -1) {
+                price += item['ask'];
+            } else {
+                price += item['vendor'];
+            }
+        }
+        tableRow += price;
+        tableRow += '</td><td>';
+        tableRow += dropAmount;
+        tableRow += '</td><td>';
+        tableRow += price * dropAmount;
+        tableRow += '</td></tr>';
+        revenueModalTable.innerHTML += tableRow;
+        total += price * dropAmount;
     }
+
+    document.getElementById('revenueSpan').innerText = total.toLocaleString();
+    window.revenue = total;
 
     resultDiv.replaceChildren(...newChildren);
     dropsResultDiv.replaceChildren(...newDropChildren);
@@ -2055,6 +2095,8 @@ function showConsumablesUsed(simResult) {
 
     let consumablesUsed = Object.entries(simResult.consumablesUsed["player"]).sort((a, b) => b[1] - a[1]);
 
+    let expensesModalTable = document.querySelector("#expensesTable > tbody");
+    let total = 0;
     for (const [consumable, amount] of consumablesUsed) {
         let consumablesPerHour = (amount / hoursSimulated).toFixed(0);
         let consumableRow = createRow(
@@ -2062,7 +2104,33 @@ function showConsumablesUsed(simResult) {
             [_combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[consumable].name, consumablesPerHour]
         );
         newChildren.push(consumableRow);
+
+        let tableRow = '<tr><td>';
+        tableRow += _combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[consumable].name;
+        tableRow += '</td><td contenteditable="true">';
+        let price = 0;
+        if (window.prices) {
+            let item = window.prices[_combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[consumable].name];
+            if (item['ask'] !== -1) {
+                price = item['ask'];
+            } else if (item['bid'] !== -1) {
+                price = item['bid'];
+            } else {
+                price = item['vendor'];
+            }
+        }
+        tableRow += price;
+        tableRow += '</td><td>';
+        tableRow += amount;
+        tableRow += '</td><td>';
+        tableRow += price * amount;
+        tableRow += '</td></tr>';
+        expensesModalTable.innerHTML += tableRow;
+        total += price * amount;
     }
+
+    document.getElementById('expensesSpan').innerText = total.toLocaleString();
+    window.expenses = total;
 
     resultDiv.replaceChildren(...newChildren);
 }
@@ -2825,6 +2893,56 @@ function showErrorModal(error) {
     let errorModal = new bootstrap.Modal(document.getElementById("errorModal"));
     errorModal.show();
 }
+
+window.prices;
+
+async function fetchPrices() {
+    try {
+        const response = await fetch('https://raw.githubusercontent.com/holychikenz/MWIApi/main/milkyapi.json');
+        if (!response.ok) {
+            throw new Error('Error fetching');
+        }
+        const pricesJson = await response.json();
+        window.prices = pricesJson['market'];
+        window.prices["Coin"]["bid"] = 1;
+        window.prices["Coin"]["ask"] = 1;
+        window.prices["Coin"]["vendor"] = 1;
+    } catch (error) {
+        console.error(error);
+    }
+}
+
+document.getElementById("buttonGetPrices").onclick = async () => {
+    await fetchPrices();
+};
+
+document.addEventListener("input", (e) => {
+    let element = e.target;
+    if (element.tagName == "TD" && element.parentNode.parentNode.parentNode.classList.value.includes('profit-table')) {
+        let tableId = element.parentNode.parentNode.parentNode.id;
+        let row = element.parentNode.querySelectorAll('td');
+        let amount = row[2];
+        let total = row[3];
+        if (tableId == 'revenueTable') {
+            window.revenue -= total.innerText;
+        } else {
+            window.expenses -= total.innerText;
+        }
+        let newPrice = element.innerText;
+        let newTotal = newPrice * amount.innerText;
+        total.innerText = newTotal;
+        if (tableId == 'revenueTable') {
+            window.revenue += newTotal;
+            document.getElementById('revenueSpan').innerText = window.revenue.toLocaleString();
+        } else {
+            window.expenses += newTotal;
+            document.getElementById('expensesSpan').innerText = window.expenses.toLocaleString();
+        }
+        window.profit = window.revenue - window.expenses;
+        document.getElementById('profitPreview').innerText = window.profit.toLocaleString();
+        document.getElementById('profitSpan').innerText = window.profit.toLocaleString();
+    }
+});
 
 // #endregion
 

@@ -346,6 +346,19 @@
                         </div>
                         <div class="row pt-3">
                             <div class="col-md-auto">
+                                <button id="buttonGetPrices" class="btn btn-primary" type="button">
+                                    Get Prices
+                                </button>
+                            </div>
+                            <div class="col-md-auto">
+                                <button id="buttonEditPrices" class="btn btn-primary" type="button"
+                                    data-bs-toggle="modal" data-bs-target="#editPricesModal">
+                                    Edit Prices
+                                </button>
+                            </div>
+                        </div>
+                        <div class="row pt-3">
+                            <div class="col-md-auto">
                                 <button id="buttonPatchNotes" class="btn btn-primary" type="button"
                                     data-bs-toggle="modal" data-bs-target="#patchNotesModal">
                                     Patch Notes
@@ -963,6 +976,9 @@
                             </div>
                         </div>
                         <div class="row pt-2">
+                            <b>Profit: <span id="profitPreview"></span></b>
+                        </div>
+                        <div class="row pt-2">
                             <b>Drops (Total)</b>
                         </div>
                         <div class="row" id="simulationResultDrops"></div>
@@ -1231,6 +1247,22 @@
                 <div class="modal-body">
                     <div class="container-fluid">
                         <div class="row">
+                            <!--<div class="col-12 mb-4">
+                                <h6>July 25th, 2023</h6>
+                                <ul>
+                                    <li>Updated so it works with the current test server game data</li>
+                                    <ul>
+                                        <li>Added new skills/monsters</li>
+                                        <li>And other small things that changed in the game data...</li>
+                                    </ul>
+                                </ul>
+                            </div>-->
+                            <div class="col-12 mb-4">
+                                <h6>July 25th, 2023</h6>
+                                <ul>
+                                    <li>Added profit tracking</li>
+                                </ul>
+                            </div>
                             <div class="col-12 mb-4">
                                 <h6>July 24th, 2023</h6>
                                 <ul>
@@ -1266,6 +1298,56 @@
                                     <li>Updated EXP calculation for new Mace/Spear distribution</li>
                                     <li>Added patch notes button</li>
                                 </ul>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                </div>
+            </div>
+        </div>
+        <!-- #endregion -->
+    </div>
+    <div class="modal" id="editPricesModal" tabindex="-1">
+        <!-- #region Prices Modal -->
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title">Edit Prices</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row">
+                            <div class="col-12 mb-4">
+                                <h3>Profit: <span id="profitSpan"></span></h3>
+                            </div>
+                            <div class="col-12 mb-4">
+                                <h3>Expenses: <span id="expensesSpan"></span></h3>
+                                <table class="table table-bordered table-striped profit-table" id="expensesTable">
+                                    <tbody>
+                                        <tr>
+                                            <th>Item</th>
+                                            <th>Price</th>
+                                            <th>Amount</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </tbody>
+                                </table>
+                            </div>
+                            <div class="col-12 mb-4">
+                                <h3>Revenue: <span id="revenueSpan"></span></h3>
+                                <table class="table table-bordered table-striped profit-table" id="revenueTable">
+                                    <tbody>
+                                        <tr>
+                                            <th>Item</th>
+                                            <th>Price</th>
+                                            <th>Amount</th>
+                                            <th>Total</th>
+                                        </tr>
+                                    </tbody>
+                                </table>
                             </div>
                         </div>
                     </div>
