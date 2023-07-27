@@ -18,8 +18,12 @@
                 "baseDamageRatioLevelBonus": 0.006,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": null
@@ -33,7 +37,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 10
+        "sortIndex": 11
     },
     "/abilities/berserk": {
         "hrid": "/abilities/berserk",
@@ -54,8 +58,12 @@
                 "baseDamageRatioLevelBonus": 0,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": [
@@ -80,7 +88,47 @@
                 "value": 0
             }
         ],
-        "sortIndex": 23
+        "sortIndex": 30
+    },
+    "/abilities/blinding_shot": {
+        "hrid": "/abilities/blinding_shot",
+        "name": "Blinding Shot",
+        "description": "Takes a shot at the targeted enemy, temporarily blinding them",
+        "manaCost": 40,
+        "cooldownDuration": 20000000000,
+        "hasSpecialEffects": false,
+        "abilityEffects": [
+            {
+                "targetType": "enemy",
+                "effectType": "/ability_effect_types/damage",
+                "combatStyleHrid": "/combat_styles/ranged",
+                "damageType": "/damage_types/physical",
+                "baseDamageFlat": 30,
+                "baseDamageFlatLevelBonus": 0.3,
+                "baseDamageRatio": 0.7,
+                "baseDamageRatioLevelBonus": 0.007,
+                "bonusAccuracyRatio": 0,
+                "bonusAccuracyRatioLevelBonus": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0.6,
+                "blindDuration": 5000000000,
+                "silenceChance": 0,
+                "silenceDuration": 0,
+                "stunChance": 0,
+                "stunDuration": 0,
+                "buffs": null
+            }
+        ],
+        "defaultCombatTriggers": [
+            {
+                "dependencyHrid": "/combat_trigger_dependencies/targeted_enemy",
+                "conditionHrid": "/combat_trigger_conditions/current_hp",
+                "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+                "value": 1
+            }
+        ],
+        "sortIndex": 14
     },
     "/abilities/cleave": {
         "hrid": "/abilities/cleave",
@@ -101,8 +149,12 @@
                 "baseDamageRatioLevelBonus": 0.003,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": null
@@ -143,8 +195,12 @@
                 "baseDamageRatioLevelBonus": 0,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": [
@@ -189,7 +245,58 @@
                 "value": 0
             }
         ],
-        "sortIndex": 27
+        "sortIndex": 34
+    },
+    "/abilities/elusiveness": {
+        "hrid": "/abilities/elusiveness",
+        "name": "Elusiveness",
+        "description": "Greatly increases evasion temporarily",
+        "manaCost": 60,
+        "cooldownDuration": 30000000000,
+        "hasSpecialEffects": false,
+        "abilityEffects": [
+            {
+                "targetType": "self",
+                "effectType": "/ability_effect_types/buff",
+                "combatStyleHrid": "",
+                "damageType": "",
+                "baseDamageFlat": 0,
+                "baseDamageFlatLevelBonus": 0,
+                "baseDamageRatio": 0,
+                "baseDamageRatioLevelBonus": 0,
+                "bonusAccuracyRatio": 0,
+                "bonusAccuracyRatioLevelBonus": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
+                "stunChance": 0,
+                "stunDuration": 0,
+                "buffs": [
+                    {
+                        "uniqueHrid": "/buff_uniques/elusiveness",
+                        "typeHrid": "/buff_types/evasion",
+                        "ratioBoost": 0.35,
+                        "ratioBoostLevelBonus": 0.0035,
+                        "flatBoost": 0,
+                        "flatBoostLevelBonus": 0,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": 15000000000
+                    }
+                ]
+            }
+        ],
+        "defaultCombatTriggers": [
+            {
+                "dependencyHrid": "/combat_trigger_dependencies/self",
+                "conditionHrid": "/combat_trigger_conditions/elusiveness",
+                "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+                "value": 0
+            }
+        ],
+        "sortIndex": 28
     },
     "/abilities/entangle": {
         "hrid": "/abilities/entangle",
@@ -210,8 +317,12 @@
                 "baseDamageRatioLevelBonus": 0.005,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0.4,
                 "stunDuration": 3000000000,
                 "buffs": null
@@ -225,7 +336,53 @@
                 "value": 1
             }
         ],
-        "sortIndex": 14
+        "sortIndex": 19
+    },
+    "/abilities/fire_storm": {
+        "hrid": "/abilities/fire_storm",
+        "name": "Firestorm",
+        "description": "Casts a firestorm at all enemies",
+        "manaCost": 60,
+        "cooldownDuration": 15000000000,
+        "hasSpecialEffects": false,
+        "abilityEffects": [
+            {
+                "targetType": "all enemies",
+                "effectType": "/ability_effect_types/damage",
+                "combatStyleHrid": "/combat_styles/magic",
+                "damageType": "/damage_types/fire",
+                "baseDamageFlat": 20,
+                "baseDamageFlatLevelBonus": 0.2,
+                "baseDamageRatio": 0.5,
+                "baseDamageRatioLevelBonus": 0.005,
+                "bonusAccuracyRatio": 0,
+                "bonusAccuracyRatioLevelBonus": 0,
+                "damageOverTimeRatio": 1,
+                "damageOverTimeDuration": 10000000000,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
+                "stunChance": 0,
+                "stunDuration": 0,
+                "buffs": null
+            }
+        ],
+        "defaultCombatTriggers": [
+            {
+                "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+                "conditionHrid": "/combat_trigger_conditions/number_of_active_units",
+                "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+                "value": 1
+            },
+            {
+                "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+                "conditionHrid": "/combat_trigger_conditions/current_hp",
+                "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+                "value": 1
+            }
+        ],
+        "sortIndex": 23
     },
     "/abilities/fireball": {
         "hrid": "/abilities/fireball",
@@ -246,8 +403,12 @@
                 "baseDamageRatioLevelBonus": 0.006,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": null
@@ -261,7 +422,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 15
+        "sortIndex": 21
     },
     "/abilities/flame_arrow": {
         "hrid": "/abilities/flame_arrow",
@@ -282,8 +443,12 @@
                 "baseDamageRatioLevelBonus": 0.006,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": null
@@ -297,7 +462,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 11
+        "sortIndex": 12
     },
     "/abilities/flame_blast": {
         "hrid": "/abilities/flame_blast",
@@ -318,8 +483,12 @@
                 "baseDamageRatioLevelBonus": 0.0065,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": null
@@ -339,7 +508,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 18
+        "sortIndex": 22
     },
     "/abilities/frenzy": {
         "hrid": "/abilities/frenzy",
@@ -360,8 +529,12 @@
                 "baseDamageRatioLevelBonus": 0,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": [
@@ -386,7 +559,64 @@
                 "value": 0
             }
         ],
-        "sortIndex": 24
+        "sortIndex": 31
+    },
+    "/abilities/frost_surge": {
+        "hrid": "/abilities/frost_surge",
+        "name": "Frost Surge",
+        "description": "Casts forst surge at all enemies",
+        "manaCost": 60,
+        "cooldownDuration": 15000000000,
+        "hasSpecialEffects": false,
+        "abilityEffects": [
+            {
+                "targetType": "all enemies",
+                "effectType": "/ability_effect_types/damage",
+                "combatStyleHrid": "/combat_styles/magic",
+                "damageType": "/damage_types/water",
+                "baseDamageFlat": 30,
+                "baseDamageFlatLevelBonus": 0.3,
+                "baseDamageRatio": 0.75,
+                "baseDamageRatioLevelBonus": 0.0075,
+                "bonusAccuracyRatio": 0,
+                "bonusAccuracyRatioLevelBonus": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
+                "stunChance": 0,
+                "stunDuration": 0,
+                "buffs": [
+                    {
+                        "uniqueHrid": "/buff_uniques/frost_surge",
+                        "typeHrid": "/buff_types/evasion",
+                        "ratioBoost": -0.2,
+                        "ratioBoostLevelBonus": -0.002,
+                        "flatBoost": 0,
+                        "flatBoostLevelBonus": 0,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": 8000000000
+                    }
+                ]
+            }
+        ],
+        "defaultCombatTriggers": [
+            {
+                "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+                "conditionHrid": "/combat_trigger_conditions/number_of_active_units",
+                "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+                "value": 1
+            },
+            {
+                "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+                "conditionHrid": "/combat_trigger_conditions/current_hp",
+                "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+                "value": 1
+            }
+        ],
+        "sortIndex": 18
     },
     "/abilities/heal": {
         "hrid": "/abilities/heal",
@@ -407,8 +637,12 @@
                 "baseDamageRatioLevelBonus": 0.005,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": null
@@ -422,7 +656,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 20
+        "sortIndex": 25
     },
     "/abilities/ice_spear": {
         "hrid": "/abilities/ice_spear",
@@ -443,16 +677,20 @@
                 "baseDamageRatioLevelBonus": 0.0095,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": [
                     {
                         "uniqueHrid": "/buff_uniques/ice_spear",
                         "typeHrid": "/buff_types/attack_speed",
-                        "ratioBoost": -0.3,
-                        "ratioBoostLevelBonus": -0.003,
+                        "ratioBoost": -0.25,
+                        "ratioBoostLevelBonus": -0.0025,
                         "flatBoost": 0,
                         "flatBoostLevelBonus": 0,
                         "startTime": "0001-01-01T00:00:00Z",
@@ -469,7 +707,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 16
+        "sortIndex": 17
     },
     "/abilities/maim": {
         "hrid": "/abilities/maim",
@@ -490,8 +728,12 @@
                 "baseDamageRatioLevelBonus": 0.005,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 1,
-                "bleedDuration": 15000000000,
+                "damageOverTimeRatio": 1,
+                "damageOverTimeDuration": 15000000000,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": null
@@ -505,7 +747,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 7
+        "sortIndex": 6
     },
     "/abilities/minor_heal": {
         "hrid": "/abilities/minor_heal",
@@ -526,8 +768,12 @@
                 "baseDamageRatioLevelBonus": 0.003,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": null
@@ -541,7 +787,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 19
+        "sortIndex": 24
     },
     "/abilities/pierce": {
         "hrid": "/abilities/pierce",
@@ -562,8 +808,12 @@
                 "baseDamageRatioLevelBonus": 0.007,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": null
@@ -577,7 +827,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 4
+        "sortIndex": 2
     },
     "/abilities/poke": {
         "hrid": "/abilities/poke",
@@ -598,8 +848,12 @@
                 "baseDamageRatioLevelBonus": 0.004,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": null
@@ -634,8 +888,12 @@
                 "baseDamageRatioLevelBonus": 0,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": [
@@ -660,7 +918,58 @@
                 "value": 0
             }
         ],
-        "sortIndex": 22
+        "sortIndex": 29
+    },
+    "/abilities/puncture": {
+        "hrid": "/abilities/puncture",
+        "name": "Puncture",
+        "description": "Punctures the targeted enemy's armor, dealing damage and temporarily reducing its armor",
+        "manaCost": 45,
+        "cooldownDuration": 20000000000,
+        "hasSpecialEffects": false,
+        "abilityEffects": [
+            {
+                "targetType": "enemy",
+                "effectType": "/ability_effect_types/damage",
+                "combatStyleHrid": "/combat_styles/stab",
+                "damageType": "/damage_types/physical",
+                "baseDamageFlat": 30,
+                "baseDamageFlatLevelBonus": 0.3,
+                "baseDamageRatio": 0.8,
+                "baseDamageRatioLevelBonus": 0.008,
+                "bonusAccuracyRatio": 0,
+                "bonusAccuracyRatioLevelBonus": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
+                "stunChance": 0,
+                "stunDuration": 0,
+                "buffs": [
+                    {
+                        "uniqueHrid": "/buff_uniques/puncture",
+                        "typeHrid": "/buff_types/armor",
+                        "ratioBoost": -0.2,
+                        "ratioBoostLevelBonus": -0.002,
+                        "flatBoost": 0,
+                        "flatBoostLevelBonus": 0,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": 10000000000
+                    }
+                ]
+            }
+        ],
+        "defaultCombatTriggers": [
+            {
+                "dependencyHrid": "/combat_trigger_dependencies/targeted_enemy",
+                "conditionHrid": "/combat_trigger_conditions/current_hp",
+                "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+                "value": 1
+            }
+        ],
+        "sortIndex": 3
     },
     "/abilities/quick_shot": {
         "hrid": "/abilities/quick_shot",
@@ -681,8 +990,12 @@
                 "baseDamageRatioLevelBonus": 0.004,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": null
@@ -696,7 +1009,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 9
+        "sortIndex": 10
     },
     "/abilities/rain_of_arrows": {
         "hrid": "/abilities/rain_of_arrows",
@@ -717,8 +1030,12 @@
                 "baseDamageRatioLevelBonus": 0.003,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": null
@@ -738,7 +1055,47 @@
                 "value": 1
             }
         ],
-        "sortIndex": 12
+        "sortIndex": 13
+    },
+    "/abilities/rejuvenate": {
+        "hrid": "/abilities/rejuvenate",
+        "name": "Rejuvenate",
+        "description": "Heals all allies",
+        "manaCost": 90,
+        "cooldownDuration": 20000000000,
+        "hasSpecialEffects": false,
+        "abilityEffects": [
+            {
+                "targetType": "all allies",
+                "effectType": "/ability_effect_types/heal",
+                "combatStyleHrid": "/combat_styles/magic",
+                "damageType": "",
+                "baseDamageFlat": 20,
+                "baseDamageFlatLevelBonus": 0.2,
+                "baseDamageRatio": 0.4,
+                "baseDamageRatioLevelBonus": 0.004,
+                "bonusAccuracyRatio": 0,
+                "bonusAccuracyRatioLevelBonus": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
+                "stunChance": 0,
+                "stunDuration": 0,
+                "buffs": null
+            }
+        ],
+        "defaultCombatTriggers": [
+            {
+                "dependencyHrid": "/combat_trigger_dependencies/all_allies",
+                "conditionHrid": "/combat_trigger_conditions/missing_hp",
+                "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+                "value": 1
+            }
+        ],
+        "sortIndex": 26
     },
     "/abilities/scratch": {
         "hrid": "/abilities/scratch",
@@ -759,8 +1116,12 @@
                 "baseDamageRatioLevelBonus": 0.004,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": null
@@ -774,7 +1135,47 @@
                 "value": 1
             }
         ],
-        "sortIndex": 2
+        "sortIndex": 4
+    },
+    "/abilities/silencing_shot": {
+        "hrid": "/abilities/silencing_shot",
+        "name": "Silencing Shot",
+        "description": "Takes a shot at the targeted enemy, temporarily silencing them",
+        "manaCost": 40,
+        "cooldownDuration": 20000000000,
+        "hasSpecialEffects": false,
+        "abilityEffects": [
+            {
+                "targetType": "enemy",
+                "effectType": "/ability_effect_types/damage",
+                "combatStyleHrid": "/combat_styles/ranged",
+                "damageType": "/damage_types/physical",
+                "baseDamageFlat": 30,
+                "baseDamageFlatLevelBonus": 0.3,
+                "baseDamageRatio": 0.7,
+                "baseDamageRatioLevelBonus": 0.007,
+                "bonusAccuracyRatio": 0,
+                "bonusAccuracyRatioLevelBonus": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0.6,
+                "silenceDuration": 5000000000,
+                "stunChance": 0,
+                "stunDuration": 0,
+                "buffs": null
+            }
+        ],
+        "defaultCombatTriggers": [
+            {
+                "dependencyHrid": "/combat_trigger_dependencies/targeted_enemy",
+                "conditionHrid": "/combat_trigger_conditions/current_hp",
+                "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+                "value": 1
+            }
+        ],
+        "sortIndex": 15
     },
     "/abilities/smack": {
         "hrid": "/abilities/smack",
@@ -795,8 +1196,12 @@
                 "baseDamageRatioLevelBonus": 0.004,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": null
@@ -810,7 +1215,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 3
+        "sortIndex": 7
     },
     "/abilities/spike_shell": {
         "hrid": "/abilities/spike_shell",
@@ -831,8 +1236,12 @@
                 "baseDamageRatioLevelBonus": 0,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": [
@@ -857,7 +1266,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 25
+        "sortIndex": 32
     },
     "/abilities/stunning_blow": {
         "hrid": "/abilities/stunning_blow",
@@ -878,8 +1287,12 @@
                 "baseDamageRatioLevelBonus": 0.008,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0.7,
                 "stunDuration": 3000000000,
                 "buffs": null
@@ -893,7 +1306,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 8
+        "sortIndex": 9
     },
     "/abilities/sweep": {
         "hrid": "/abilities/sweep",
@@ -914,8 +1327,12 @@
                 "baseDamageRatioLevelBonus": 0.003,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": null
@@ -935,7 +1352,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 6
+        "sortIndex": 8
     },
     "/abilities/toughness": {
         "hrid": "/abilities/toughness",
@@ -956,8 +1373,12 @@
                 "baseDamageRatioLevelBonus": 0,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": [
@@ -1012,7 +1433,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 21
+        "sortIndex": 27
     },
     "/abilities/toxic_pollen": {
         "hrid": "/abilities/toxic_pollen",
@@ -1033,8 +1454,12 @@
                 "baseDamageRatioLevelBonus": 0.004,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": [
@@ -1095,7 +1520,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 17
+        "sortIndex": 20
     },
     "/abilities/vampirism": {
         "hrid": "/abilities/vampirism",
@@ -1116,8 +1541,12 @@
                 "baseDamageRatioLevelBonus": 0,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": [
@@ -1142,7 +1571,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 26
+        "sortIndex": 33
     },
     "/abilities/water_strike": {
         "hrid": "/abilities/water_strike",
@@ -1163,8 +1592,12 @@
                 "baseDamageRatioLevelBonus": 0.006,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
-                "bleedRatio": 0,
-                "bleedDuration": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
                 "stunChance": 0,
                 "stunDuration": 0,
                 "buffs": null
@@ -1178,6 +1611,6 @@
                 "value": 1
             }
         ],
-        "sortIndex": 13
+        "sortIndex": 16
     }
 }

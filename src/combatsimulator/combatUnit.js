@@ -2,6 +2,10 @@ class CombatUnit {
     isPlayer;
     isStunned = false;
     stunExpireTime = null;
+    isBlinded = false;
+    blindExpireTime = null;
+    isSilenced = false;
+    silenceExpireTime = null;
 
     // Base levels which don't change after initialization
     staminaLevel = 1;
@@ -89,7 +93,14 @@ class CombatUnit {
             combatRareFind: 0,
             combatExperience: 0,
             foodSlots: 1,
-            drinkSlots: 1
+            drinkSlots: 1,
+            armorPenetration: 0,
+            waterPenetration: 0,
+            naturePenetration: 0,
+            firePenetration: 0,
+            abilityHaste: 0,
+            tenacity: 0,
+            manaLeech: 0
         },
     };
     combatBuffs = {};
@@ -134,8 +145,13 @@ class CombatUnit {
                 (10 + this.combatDetails.powerLevel) *
                 (1 + this.combatDetails.combatStats[style + "Damage"]) *
                 (1 + damageRatioBoost);
-            this.combatDetails[style + "EvasionRating"] =
-                (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats[style + "Evasion"]);
+            let baseEvasion = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats[style + "Evasion"]);
+            this.combatDetails[style + "EvasionRating"] = baseEvasion;
+            let evasionBoosts = this.getBuffBoosts("/buff_types/evasion");
+            for (const boost of evasionBoosts) {
+                this.combatDetails[style + "EvasionRating"] += boost.flatBoost;
+                this.combatDetails[style + "EvasionRating"] += baseEvasion * boost.ratioBoost;
+            }
         });
 
         this.combatDetails.rangedAccuracyRating =
@@ -146,8 +162,14 @@ class CombatUnit {
             (10 + this.combatDetails.rangedLevel) *
             (1 + this.combatDetails.combatStats.rangedDamage) *
             (1 + damageRatioBoost);
-        this.combatDetails.rangedEvasionRating =
-            (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats.rangedEvasion);
+
+        let baseRangedEvasion = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats.rangedEvasion);
+        this.combatDetails.rangedEvasionRating = baseRangedEvasion;
+        let evasionBoosts = this.getBuffBoosts("/buff_types/evasion");
+        for (const boost of evasionBoosts) {
+            this.combatDetails.rangedEvasionRating += boost.flatBoost;
+            this.combatDetails.rangedEvasionRating += baseRangedEvasion * boost.ratioBoost;
+        }
 
         this.combatDetails.magicMaxDamage =
             (10 + this.combatDetails.magicLevel) *
@@ -273,6 +295,10 @@ class CombatUnit {
     reset(currentTime = 0) {
         this.isStunned = false;
         this.stunExpireTime = null;
+        this.isBlinded = false;
+        this.blindExpireTime = null;
+        this.isSilenced = false;
+        this.silenceExpireTime = null;
 
         this.clearBuffs();
         this.updateCombatDetails();
@@ -286,13 +312,19 @@ class CombatUnit {
         this.food.filter((food) => food != null).forEach((food) => (food.lastUsed = Number.MIN_SAFE_INTEGER));
         this.drinks.filter((drink) => drink != null).forEach((drink) => (drink.lastUsed = Number.MIN_SAFE_INTEGER));
 
+        let haste = this.combatDetails.combatStats.abilityHaste;
+
         this.abilities
             .filter((ability) => ability != null)
             .forEach((ability) => {
                 if (this.isPlayer) {
                     ability.lastUsed = Number.MIN_SAFE_INTEGER;
                 } else {
-                    ability.lastUsed = currentTime - Math.floor(Math.random() * ability.cooldownDuration);
+                    let cooldownDuration = ability.cooldownDuration;
+                    if (haste > 0) {
+                        cooldownDuration = cooldownDuration * 100 / (100 + haste);
+                    }
+                    ability.lastUsed = currentTime - Math.floor(Math.random() * cooldownDuration);
                 }
             });
     }
