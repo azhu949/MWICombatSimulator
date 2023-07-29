@@ -25,12 +25,8 @@ class Ability {
                 damageType: effect.damageType,
                 damageFlat: effect.baseDamageFlat + (this.level - 1) * effect.baseDamageFlatLevelBonus,
                 damageRatio: effect.baseDamageRatio + (this.level - 1) * effect.baseDamageRatioLevelBonus,
-                damageOverTimeRatio: effect.damageOverTimeRatio,
-                damageOverTimeDuration: effect.damageOverTimeDuration,
-                blindChance: effect.blindChance,
-                blindDuration: effect.blindDuration,
-                silenceChance: effect.silenceChance,
-                silenceDuration: effect.silenceDuration,
+                bleedRatio: effect.bleedRatio,
+                bleedDuration: effect.bleedDuration,
                 stunChance: effect.stunChance,
                 stunDuration: effect.stunDuration,
                 buffs: null,
@@ -74,17 +70,7 @@ class Ability {
             return false;
         }
 
-        if (source.isSilenced) {
-            return false;
-        }
-
-        let haste = source.combatDetails.combatStats.abilityHaste;
-        let cooldownDuration = this.cooldownDuration;
-        if (haste > 0) {
-            cooldownDuration = cooldownDuration * 100 / (100 + haste);
-        }
-
-        if (this.lastUsed + cooldownDuration > currentTime) {
+        if (this.lastUsed + this.cooldownDuration > currentTime) {
             return false;
         }
 

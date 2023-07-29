@@ -47,9 +47,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 37
     },
@@ -97,9 +95,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 10
     },
@@ -151,9 +147,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 43
     },
@@ -201,9 +195,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 9
     },
@@ -251,9 +243,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 13
     },
@@ -301,9 +291,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 7
     },
@@ -351,9 +339,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 15
     },
@@ -405,9 +391,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 40
     },
@@ -455,9 +439,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 8
     },
@@ -509,9 +491,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 32
     },
@@ -559,9 +539,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 12
     },
@@ -609,9 +587,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 3
     },
@@ -663,9 +639,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 5
     },
@@ -717,9 +691,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 11
     },
@@ -767,9 +739,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 4
     },
@@ -821,9 +791,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 26
     },
@@ -871,9 +839,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 20
     },
@@ -921,9 +887,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 1
     },
@@ -971,9 +935,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 14
     },
@@ -1025,9 +987,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 25
     },
@@ -1075,9 +1035,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 16
     },
@@ -1125,9 +1083,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 2
     },
@@ -1179,9 +1135,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 31
     },
@@ -1233,9 +1187,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 30
     },
@@ -1287,9 +1239,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 35
     },
@@ -1341,9 +1291,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 28
     },
@@ -1395,9 +1343,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 38
     },
@@ -1449,9 +1395,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 29
     },
@@ -1503,9 +1447,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 34
     },
@@ -1557,9 +1499,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 23
     },
@@ -1611,9 +1551,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 24
     },
@@ -1665,9 +1603,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 42
     },
@@ -1719,9 +1655,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 21
     },
@@ -1773,9 +1707,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 36
     },
@@ -1827,9 +1759,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 39
     },
@@ -1881,9 +1811,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 22
     },
@@ -1935,9 +1863,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 41
     },
@@ -1989,9 +1915,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 27
     },
@@ -2043,9 +1967,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 33
     },
@@ -2093,9 +2015,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 19
     },
@@ -2147,9 +2067,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 18
     },
@@ -2201,9 +2119,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 17
     },
@@ -2251,9 +2167,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 6
     },
@@ -2297,9 +2211,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 42
     },
@@ -2347,9 +2259,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 46
     },
@@ -2393,9 +2303,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 59
     },
@@ -2439,9 +2347,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 63
     },
@@ -2485,9 +2391,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 41
     },
@@ -2535,9 +2439,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 51
     },
@@ -2581,9 +2483,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 57
     },
@@ -2627,9 +2527,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 44
     },
@@ -2677,9 +2575,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 50
     },
@@ -2727,9 +2623,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 48
     },
@@ -2773,9 +2667,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 58
     },
@@ -2823,9 +2715,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 55
     },
@@ -2869,9 +2759,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 52
     },
@@ -2915,9 +2803,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 62
     },
@@ -2961,9 +2847,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 60
     },
@@ -3007,9 +2891,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 54
     },
@@ -3057,9 +2939,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 47
     },
@@ -3103,9 +2983,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 53
     },
@@ -3153,9 +3031,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 49
     },
@@ -3199,9 +3075,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 45
     },
@@ -3245,9 +3119,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 110
     },
@@ -3291,9 +3163,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 67
     },
@@ -3341,9 +3211,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 70
     },
@@ -3387,9 +3255,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 82
     },
@@ -3433,9 +3299,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 85
     },
@@ -3479,9 +3343,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 66
     },
@@ -3529,9 +3391,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 75
     },
@@ -3575,9 +3435,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 80
     },
@@ -3621,9 +3479,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 68
     },
@@ -3671,9 +3527,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 74
     },
@@ -3721,9 +3575,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 72
     },
@@ -3767,9 +3619,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 81
     },
@@ -3817,9 +3667,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 79
     },
@@ -3863,9 +3711,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 76
     },
@@ -3909,9 +3755,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 84
     },
@@ -3955,9 +3799,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 83
     },
@@ -4001,9 +3843,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 78
     },
@@ -4051,9 +3891,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 71
     },
@@ -4097,9 +3935,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 77
     },
@@ -4147,9 +3983,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 73
     },
@@ -4193,9 +4027,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 69
     },
@@ -4239,9 +4071,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 1
     },
@@ -4285,9 +4115,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 2
     },
@@ -4335,9 +4163,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 5
     },
@@ -4381,9 +4207,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 17
     },
@@ -4427,9 +4251,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 22
     },
@@ -4477,9 +4299,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 10
     },
@@ -4523,9 +4343,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 15
     },
@@ -4569,9 +4387,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 3
     },
@@ -4619,9 +4435,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 9
     },
@@ -4669,9 +4483,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 7
     },
@@ -4715,9 +4527,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 16
     },
@@ -4765,9 +4575,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 14
     },
@@ -4811,9 +4619,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 11
     },
@@ -4857,9 +4663,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 19
     },
@@ -4903,9 +4707,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 18
     },
@@ -4949,9 +4751,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 13
     },
@@ -4999,9 +4799,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 6
     },
@@ -5045,9 +4843,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 12
     },
@@ -5095,9 +4891,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 8
     },
@@ -5141,9 +4935,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 4
     },
@@ -5187,9 +4979,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 87
     },
@@ -5237,9 +5027,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 90
     },
@@ -5283,9 +5071,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 102
     },
@@ -5329,9 +5115,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 107
     },
@@ -5375,9 +5159,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 86
     },
@@ -5425,9 +5207,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 95
     },
@@ -5471,9 +5251,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 100
     },
@@ -5517,9 +5295,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 88
     },
@@ -5567,9 +5343,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 94
     },
@@ -5617,9 +5391,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 92
     },
@@ -5663,9 +5435,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 101
     },
@@ -5713,9 +5483,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 99
     },
@@ -5759,9 +5527,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 96
     },
@@ -5805,9 +5571,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 106
     },
@@ -5851,9 +5615,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 103
     },
@@ -5897,9 +5659,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 98
     },
@@ -5947,9 +5707,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 91
     },
@@ -5993,9 +5751,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 97
     },
@@ -6043,9 +5799,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 93
     },
@@ -6089,9 +5843,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 89
     },
@@ -6135,9 +5887,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 148
     },
@@ -6181,9 +5931,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 111
     },
@@ -6227,9 +5975,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 133
     },
@@ -6277,9 +6023,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 136
     },
@@ -6323,9 +6067,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 153
     },
@@ -6369,9 +6111,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 156
     },
@@ -6415,9 +6155,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 132
     },
@@ -6465,9 +6203,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 141
     },
@@ -6511,9 +6247,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 151
     },
@@ -6557,9 +6291,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 134
     },
@@ -6607,9 +6339,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 140
     },
@@ -6657,9 +6387,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 138
     },
@@ -6703,9 +6431,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 152
     },
@@ -6753,9 +6479,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 145
     },
@@ -6799,9 +6523,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 142
     },
@@ -6845,9 +6567,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 155
     },
@@ -6891,9 +6611,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 154
     },
@@ -6937,9 +6655,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 144
     },
@@ -6987,9 +6703,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 137
     },
@@ -7033,9 +6747,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 143
     },
@@ -7083,9 +6795,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 139
     },
@@ -7129,9 +6839,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 135
     },
@@ -7175,9 +6883,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 146
     },
@@ -7221,9 +6927,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 115
     },
@@ -7267,9 +6971,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 56
     },
@@ -7313,9 +7015,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 112
     },
@@ -7359,9 +7059,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 109
     },
@@ -7409,9 +7107,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 116
     },
@@ -7455,9 +7151,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 128
     },
@@ -7501,9 +7195,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 131
     },
@@ -7547,9 +7239,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 108
     },
@@ -7597,9 +7287,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 121
     },
@@ -7643,9 +7331,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 126
     },
@@ -7689,9 +7375,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 113
     },
@@ -7739,9 +7423,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 120
     },
@@ -7789,9 +7471,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 118
     },
@@ -7835,9 +7515,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 127
     },
@@ -7885,9 +7563,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 125
     },
@@ -7931,9 +7607,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 122
     },
@@ -7977,9 +7651,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 130
     },
@@ -8023,9 +7695,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 129
     },
@@ -8069,9 +7739,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 124
     },
@@ -8119,9 +7787,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 117
     },
@@ -8165,9 +7831,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 123
     },
@@ -8215,9 +7879,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 119
     },
@@ -8261,9 +7923,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 114
     },
@@ -8307,9 +7967,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 61
     },
@@ -8357,9 +8015,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 35
     },
@@ -8407,9 +8063,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 157
     },
@@ -8453,9 +8107,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 147
     },
@@ -8499,9 +8151,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 65
     },
@@ -8545,9 +8195,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 64
     },
@@ -8595,9 +8243,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 149
     },
@@ -8641,9 +8287,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 21
     },
@@ -8691,9 +8335,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 25
     },
@@ -8737,9 +8379,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 38
     },
@@ -8783,9 +8423,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 43
     },
@@ -8829,9 +8467,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 20
     },
@@ -8879,9 +8515,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 30
     },
@@ -8925,9 +8559,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 36
     },
@@ -8971,9 +8603,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 23
     },
@@ -9021,9 +8651,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 29
     },
@@ -9071,9 +8699,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 27
     },
@@ -9117,9 +8743,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 37
     },
@@ -9167,9 +8791,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 34
     },
@@ -9213,9 +8835,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 31
     },
@@ -9259,9 +8879,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 40
     },
@@ -9305,9 +8923,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 39
     },
@@ -9351,9 +8967,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 33
     },
@@ -9401,9 +9015,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 26
     },
@@ -9447,9 +9059,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 32
     },
@@ -9497,9 +9107,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 28
     },
@@ -9543,9 +9151,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 24
     },
@@ -9589,9 +9195,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 104
     },
@@ -9635,9 +9239,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 105
     },
@@ -9685,46 +9287,9 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 150
-    },
-    "/actions/combat/abyssal_imp": {
-        "hrid": "/actions/combat/abyssal_imp",
-        "function": "/action_functions/combat",
-        "type": "/action_types/combat",
-        "category": "/action_categories/combat/infernal_abyss",
-        "name": "Abyssal Imp",
-        "levelRequirement": {
-            "skillHrid": "",
-            "level": 0
-        },
-        "baseTimeCost": 3000000000,
-        "experienceGain": {
-            "skillHrid": "",
-            "value": 0
-        },
-        "dropTable": null,
-        "rareDropTable": null,
-        "upgradeItemHrid": "",
-        "inputItems": null,
-        "outputItems": null,
-        "monsterSpawnInfo": {
-            "maxSpawnCount": 1,
-            "maxTotalStrength": 1,
-            "spawns": [
-                {
-                    "combatMonsterHrid": "/monsters/abyssal_imp",
-                    "rate": 1,
-                    "strength": 1
-                }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
-        },
-        "sortIndex": 52
     },
     "/actions/combat/alligator": {
         "hrid": "/actions/combat/alligator",
@@ -9751,13 +9316,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/alligator",
+                    "combatMonsterHrid": "/combat_monsters/alligator",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 10
     },
@@ -9786,35 +9349,31 @@
             "maxTotalStrength": 250,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/sea_snail",
+                    "combatMonsterHrid": "/combat_monsters/sea_snail",
                     "rate": 1,
                     "strength": 40
                 },
                 {
-                    "combatMonsterHrid": "/monsters/crab",
+                    "combatMonsterHrid": "/combat_monsters/crab",
                     "rate": 1,
                     "strength": 60
                 },
                 {
-                    "combatMonsterHrid": "/monsters/aquahorse",
+                    "combatMonsterHrid": "/combat_monsters/aquahorse",
                     "rate": 1,
                     "strength": 70
                 },
                 {
-                    "combatMonsterHrid": "/monsters/nom_nom",
+                    "combatMonsterHrid": "/combat_monsters/nom_nom",
                     "rate": 1,
                     "strength": 70
                 },
                 {
-                    "combatMonsterHrid": "/monsters/turtle",
+                    "combatMonsterHrid": "/combat_monsters/turtle",
                     "rate": 1,
                     "strength": 100
                 }
-            ],
-            "bossFightMonsters": [
-                "/monsters/marine_huntress"
-            ],
-            "battlesPerBoss": 2
+            ]
         },
         "sortIndex": 17
     },
@@ -9843,13 +9402,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/aquahorse",
+                    "combatMonsterHrid": "/combat_monsters/aquahorse",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 14
     },
@@ -9878,35 +9435,31 @@
             "maxTotalStrength": 250,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/gummy_bear",
+                    "combatMonsterHrid": "/combat_monsters/gummy_bear",
                     "rate": 1,
                     "strength": 60
                 },
                 {
-                    "combatMonsterHrid": "/monsters/panda",
+                    "combatMonsterHrid": "/combat_monsters/panda",
                     "rate": 1,
                     "strength": 90
                 },
                 {
-                    "combatMonsterHrid": "/monsters/black_bear",
+                    "combatMonsterHrid": "/combat_monsters/black_bear",
                     "rate": 1,
                     "strength": 80
                 },
                 {
-                    "combatMonsterHrid": "/monsters/grizzly_bear",
+                    "combatMonsterHrid": "/combat_monsters/grizzly_bear",
                     "rate": 1,
                     "strength": 90
                 },
                 {
-                    "combatMonsterHrid": "/monsters/polar_bear",
+                    "combatMonsterHrid": "/combat_monsters/polar_bear",
                     "rate": 1,
                     "strength": 100
                 }
-            ],
-            "bossFightMonsters": [
-                "/monsters/red_panda"
-            ],
-            "battlesPerBoss": 2
+            ]
         },
         "sortIndex": 43
     },
@@ -9935,13 +9488,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/black_bear",
+                    "combatMonsterHrid": "/combat_monsters/black_bear",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 40
     },
@@ -9970,13 +9521,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/centaur_archer",
+                    "combatMonsterHrid": "/combat_monsters/centaur_archer",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 21
     },
@@ -10005,13 +9554,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/crab",
+                    "combatMonsterHrid": "/combat_monsters/crab",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 13
     },
@@ -10040,13 +9587,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/elementalist",
+                    "combatMonsterHrid": "/combat_monsters/elementalist",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 36
     },
@@ -10075,13 +9620,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/eye",
+                    "combatMonsterHrid": "/combat_monsters/eye",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 29
     },
@@ -10110,13 +9653,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/eyes",
+                    "combatMonsterHrid": "/combat_monsters/eyes",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 30
     },
@@ -10145,13 +9686,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/flame_sorcerer",
+                    "combatMonsterHrid": "/combat_monsters/flame_sorcerer",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 35
     },
@@ -10180,13 +9719,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/fly",
+                    "combatMonsterHrid": "/combat_monsters/fly",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 1
     },
@@ -10215,13 +9752,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/frog",
+                    "combatMonsterHrid": "/combat_monsters/frog",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 7
     },
@@ -10250,13 +9785,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/gobo_boomy",
+                    "combatMonsterHrid": "/combat_monsters/gobo_boomy",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 27
     },
@@ -10285,35 +9818,31 @@
             "maxTotalStrength": 200,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/gobo_stabby",
+                    "combatMonsterHrid": "/combat_monsters/gobo_stabby",
                     "rate": 1,
                     "strength": 100
                 },
                 {
-                    "combatMonsterHrid": "/monsters/gobo_slashy",
+                    "combatMonsterHrid": "/combat_monsters/gobo_slashy",
                     "rate": 1,
                     "strength": 100
                 },
                 {
-                    "combatMonsterHrid": "/monsters/gobo_smashy",
+                    "combatMonsterHrid": "/combat_monsters/gobo_smashy",
                     "rate": 1,
                     "strength": 100
                 },
                 {
-                    "combatMonsterHrid": "/monsters/gobo_shooty",
+                    "combatMonsterHrid": "/combat_monsters/gobo_shooty",
                     "rate": 1,
                     "strength": 100
                 },
                 {
-                    "combatMonsterHrid": "/monsters/gobo_boomy",
+                    "combatMonsterHrid": "/combat_monsters/gobo_boomy",
                     "rate": 1,
                     "strength": 100
                 }
-            ],
-            "bossFightMonsters": [
-                "/monsters/gobo_chieftain"
-            ],
-            "battlesPerBoss": 2
+            ]
         },
         "sortIndex": 28
     },
@@ -10342,13 +9871,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/gobo_shooty",
+                    "combatMonsterHrid": "/combat_monsters/gobo_shooty",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 26
     },
@@ -10377,13 +9904,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/gobo_slashy",
+                    "combatMonsterHrid": "/combat_monsters/gobo_slashy",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 24
     },
@@ -10412,13 +9937,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/gobo_smashy",
+                    "combatMonsterHrid": "/combat_monsters/gobo_smashy",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 25
     },
@@ -10447,13 +9970,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/gobo_stabby",
+                    "combatMonsterHrid": "/combat_monsters/gobo_stabby",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 23
     },
@@ -10482,25 +10003,21 @@
             "maxTotalStrength": 250,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/magnetic_golem",
+                    "combatMonsterHrid": "/combat_monsters/magnetic_golem",
                     "rate": 1,
                     "strength": 70
                 },
                 {
-                    "combatMonsterHrid": "/monsters/stalactite_golem",
+                    "combatMonsterHrid": "/combat_monsters/stalactite_golem",
                     "rate": 1,
                     "strength": 85
                 },
                 {
-                    "combatMonsterHrid": "/monsters/granite_golem",
+                    "combatMonsterHrid": "/combat_monsters/granite_golem",
                     "rate": 1,
                     "strength": 100
                 }
-            ],
-            "bossFightMonsters": [
-                "/monsters/crystal_colossus"
-            ],
-            "battlesPerBoss": 2
+            ]
         },
         "sortIndex": 47
     },
@@ -10529,13 +10046,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/granite_golem",
+                    "combatMonsterHrid": "/combat_monsters/granite_golem",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 46
     },
@@ -10564,13 +10079,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/grizzly_bear",
+                    "combatMonsterHrid": "/combat_monsters/grizzly_bear",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 41
     },
@@ -10599,13 +10112,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/gummy_bear",
+                    "combatMonsterHrid": "/combat_monsters/gummy_bear",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 38
     },
@@ -10634,97 +10145,13 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/ice_sorcerer",
+                    "combatMonsterHrid": "/combat_monsters/ice_sorcerer",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 34
-    },
-    "/actions/combat/infernal_abyss": {
-        "hrid": "/actions/combat/infernal_abyss",
-        "function": "/action_functions/combat",
-        "type": "/action_types/combat",
-        "category": "/action_categories/combat/infernal_abyss",
-        "name": "Infernal Abyss",
-        "levelRequirement": {
-            "skillHrid": "",
-            "level": 0
-        },
-        "baseTimeCost": 3000000000,
-        "experienceGain": {
-            "skillHrid": "",
-            "value": 0
-        },
-        "dropTable": null,
-        "rareDropTable": null,
-        "upgradeItemHrid": "",
-        "inputItems": null,
-        "outputItems": null,
-        "monsterSpawnInfo": {
-            "maxSpawnCount": 3,
-            "maxTotalStrength": 250,
-            "spawns": [
-                {
-                    "combatMonsterHrid": "/monsters/abyssal_imp",
-                    "rate": 1,
-                    "strength": 70
-                },
-                {
-                    "combatMonsterHrid": "/monsters/soul_hunter",
-                    "rate": 1,
-                    "strength": 85
-                },
-                {
-                    "combatMonsterHrid": "/monsters/infernal_warlock",
-                    "rate": 1,
-                    "strength": 100
-                }
-            ],
-            "bossFightMonsters": [
-                "/monsters/demonic_overlord"
-            ],
-            "battlesPerBoss": 2
-        },
-        "sortIndex": 55
-    },
-    "/actions/combat/infernal_warlock": {
-        "hrid": "/actions/combat/infernal_warlock",
-        "function": "/action_functions/combat",
-        "type": "/action_types/combat",
-        "category": "/action_categories/combat/infernal_abyss",
-        "name": "Infernal Warlock",
-        "levelRequirement": {
-            "skillHrid": "",
-            "level": 0
-        },
-        "baseTimeCost": 3000000000,
-        "experienceGain": {
-            "skillHrid": "",
-            "value": 0
-        },
-        "dropTable": null,
-        "rareDropTable": null,
-        "upgradeItemHrid": "",
-        "inputItems": null,
-        "outputItems": null,
-        "monsterSpawnInfo": {
-            "maxSpawnCount": 1,
-            "maxTotalStrength": 1,
-            "spawns": [
-                {
-                    "combatMonsterHrid": "/monsters/infernal_warlock",
-                    "rate": 1,
-                    "strength": 1
-                }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
-        },
-        "sortIndex": 54
     },
     "/actions/combat/jungle_planet": {
         "hrid": "/actions/combat/jungle_planet",
@@ -10751,30 +10178,26 @@
             "maxTotalStrength": 250,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/jungle_sprite",
+                    "combatMonsterHrid": "/combat_monsters/jungle_sprite",
                     "rate": 1,
                     "strength": 50
                 },
                 {
-                    "combatMonsterHrid": "/monsters/myconid",
+                    "combatMonsterHrid": "/combat_monsters/myconid",
                     "rate": 1,
                     "strength": 65
                 },
                 {
-                    "combatMonsterHrid": "/monsters/treant",
+                    "combatMonsterHrid": "/combat_monsters/treant",
                     "rate": 1,
                     "strength": 80
                 },
                 {
-                    "combatMonsterHrid": "/monsters/centaur_archer",
+                    "combatMonsterHrid": "/combat_monsters/centaur_archer",
                     "rate": 1,
                     "strength": 100
                 }
-            ],
-            "bossFightMonsters": [
-                "/monsters/luna_empress"
-            ],
-            "battlesPerBoss": 2
+            ]
         },
         "sortIndex": 22
     },
@@ -10803,13 +10226,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/jungle_sprite",
+                    "combatMonsterHrid": "/combat_monsters/jungle_sprite",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 18
     },
@@ -10838,13 +10259,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/magnetic_golem",
+                    "combatMonsterHrid": "/combat_monsters/magnetic_golem",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 44
     },
@@ -10873,13 +10292,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/myconid",
+                    "combatMonsterHrid": "/combat_monsters/myconid",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 19
     },
@@ -10908,13 +10325,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/nom_nom",
+                    "combatMonsterHrid": "/combat_monsters/nom_nom",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 15
     },
@@ -10943,13 +10358,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/novice_sorcerer",
+                    "combatMonsterHrid": "/combat_monsters/novice_sorcerer",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 33
     },
@@ -10978,13 +10391,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/panda",
+                    "combatMonsterHrid": "/combat_monsters/panda",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 39
     },
@@ -11013,25 +10424,21 @@
             "maxTotalStrength": 250,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/eye",
+                    "combatMonsterHrid": "/combat_monsters/eye",
                     "rate": 1,
                     "strength": 70
                 },
                 {
-                    "combatMonsterHrid": "/monsters/eyes",
+                    "combatMonsterHrid": "/combat_monsters/eyes",
                     "rate": 1,
                     "strength": 85
                 },
                 {
-                    "combatMonsterHrid": "/monsters/veyes",
+                    "combatMonsterHrid": "/combat_monsters/veyes",
                     "rate": 1,
                     "strength": 100
                 }
-            ],
-            "bossFightMonsters": [
-                "/monsters/the_watcher"
-            ],
-            "battlesPerBoss": 2
+            ]
         },
         "sortIndex": 32
     },
@@ -11060,13 +10467,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/polar_bear",
+                    "combatMonsterHrid": "/combat_monsters/polar_bear",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 42
     },
@@ -11095,13 +10500,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/porcupine",
+                    "combatMonsterHrid": "/combat_monsters/porcupine",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 4
     },
@@ -11130,13 +10533,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/rat",
+                    "combatMonsterHrid": "/combat_monsters/rat",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 2
     },
@@ -11165,13 +10566,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/sea_snail",
+                    "combatMonsterHrid": "/combat_monsters/sea_snail",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 12
     },
@@ -11200,13 +10599,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/skunk",
+                    "combatMonsterHrid": "/combat_monsters/skunk",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 3
     },
@@ -11235,13 +10632,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/slimy",
+                    "combatMonsterHrid": "/combat_monsters/slimy",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 5
     },
@@ -11270,33 +10665,31 @@
             "maxTotalStrength": 250,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/fly",
+                    "combatMonsterHrid": "/combat_monsters/fly",
                     "rate": 1,
                     "strength": 30
                 },
                 {
-                    "combatMonsterHrid": "/monsters/rat",
+                    "combatMonsterHrid": "/combat_monsters/rat",
                     "rate": 1,
                     "strength": 50
                 },
                 {
-                    "combatMonsterHrid": "/monsters/skunk",
+                    "combatMonsterHrid": "/combat_monsters/skunk",
                     "rate": 1,
                     "strength": 70
                 },
                 {
-                    "combatMonsterHrid": "/monsters/porcupine",
+                    "combatMonsterHrid": "/combat_monsters/porcupine",
                     "rate": 1,
                     "strength": 80
                 },
                 {
-                    "combatMonsterHrid": "/monsters/slimy",
+                    "combatMonsterHrid": "/combat_monsters/slimy",
                     "rate": 1,
                     "strength": 100
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 6
     },
@@ -11325,13 +10718,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/snake",
+                    "combatMonsterHrid": "/combat_monsters/snake",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 8
     },
@@ -11360,67 +10751,28 @@
             "maxTotalStrength": 250,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/novice_sorcerer",
+                    "combatMonsterHrid": "/combat_monsters/novice_sorcerer",
                     "rate": 1,
                     "strength": 30
                 },
                 {
-                    "combatMonsterHrid": "/monsters/ice_sorcerer",
+                    "combatMonsterHrid": "/combat_monsters/ice_sorcerer",
                     "rate": 1,
                     "strength": 55
                 },
                 {
-                    "combatMonsterHrid": "/monsters/flame_sorcerer",
+                    "combatMonsterHrid": "/combat_monsters/flame_sorcerer",
                     "rate": 1,
                     "strength": 60
                 },
                 {
-                    "combatMonsterHrid": "/monsters/elementalist",
+                    "combatMonsterHrid": "/combat_monsters/elementalist",
                     "rate": 1,
                     "strength": 100
                 }
-            ],
-            "bossFightMonsters": [
-                "/monsters/cryomancer"
-            ],
-            "battlesPerBoss": 2
+            ]
         },
         "sortIndex": 37
-    },
-    "/actions/combat/soul_hunter": {
-        "hrid": "/actions/combat/soul_hunter",
-        "function": "/action_functions/combat",
-        "type": "/action_types/combat",
-        "category": "/action_categories/combat/infernal_abyss",
-        "name": "Soul Hunter",
-        "levelRequirement": {
-            "skillHrid": "",
-            "level": 0
-        },
-        "baseTimeCost": 3000000000,
-        "experienceGain": {
-            "skillHrid": "",
-            "value": 0
-        },
-        "dropTable": null,
-        "rareDropTable": null,
-        "upgradeItemHrid": "",
-        "inputItems": null,
-        "outputItems": null,
-        "monsterSpawnInfo": {
-            "maxSpawnCount": 1,
-            "maxTotalStrength": 1,
-            "spawns": [
-                {
-                    "combatMonsterHrid": "/monsters/soul_hunter",
-                    "rate": 1,
-                    "strength": 1
-                }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
-        },
-        "sortIndex": 53
     },
     "/actions/combat/stalactite_golem": {
         "hrid": "/actions/combat/stalactite_golem",
@@ -11447,13 +10799,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/stalactite_golem",
+                    "combatMonsterHrid": "/combat_monsters/stalactite_golem",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 45
     },
@@ -11482,30 +10832,26 @@
             "maxTotalStrength": 250,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/frog",
+                    "combatMonsterHrid": "/combat_monsters/frog",
                     "rate": 1,
                     "strength": 40
                 },
                 {
-                    "combatMonsterHrid": "/monsters/snake",
+                    "combatMonsterHrid": "/combat_monsters/snake",
                     "rate": 1,
                     "strength": 50
                 },
                 {
-                    "combatMonsterHrid": "/monsters/swampy",
+                    "combatMonsterHrid": "/combat_monsters/swampy",
                     "rate": 1,
                     "strength": 80
                 },
                 {
-                    "combatMonsterHrid": "/monsters/alligator",
+                    "combatMonsterHrid": "/combat_monsters/alligator",
                     "rate": 1,
                     "strength": 100
                 }
-            ],
-            "bossFightMonsters": [
-                "/monsters/giant_shoebill"
-            ],
-            "battlesPerBoss": 2
+            ]
         },
         "sortIndex": 11
     },
@@ -11534,13 +10880,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/swampy",
+                    "combatMonsterHrid": "/combat_monsters/swampy",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 9
     },
@@ -11569,13 +10913,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/treant",
+                    "combatMonsterHrid": "/combat_monsters/treant",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 20
     },
@@ -11604,13 +10946,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/turtle",
+                    "combatMonsterHrid": "/combat_monsters/turtle",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 16
     },
@@ -11639,25 +10979,21 @@
             "maxTotalStrength": 250,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/zombie",
+                    "combatMonsterHrid": "/combat_monsters/zombie",
                     "rate": 1,
                     "strength": 70
                 },
                 {
-                    "combatMonsterHrid": "/monsters/vampire",
+                    "combatMonsterHrid": "/combat_monsters/vampire",
                     "rate": 1,
                     "strength": 85
                 },
                 {
-                    "combatMonsterHrid": "/monsters/werewolf",
+                    "combatMonsterHrid": "/combat_monsters/werewolf",
                     "rate": 1,
                     "strength": 100
                 }
-            ],
-            "bossFightMonsters": [
-                "/monsters/dusk_revenant"
-            ],
-            "battlesPerBoss": 2
+            ]
         },
         "sortIndex": 51
     },
@@ -11686,13 +11022,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/vampire",
+                    "combatMonsterHrid": "/combat_monsters/vampire",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 49
     },
@@ -11721,13 +11055,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/veyes",
+                    "combatMonsterHrid": "/combat_monsters/veyes",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 31
     },
@@ -11756,13 +11088,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/werewolf",
+                    "combatMonsterHrid": "/combat_monsters/werewolf",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 50
     },
@@ -11791,13 +11121,11 @@
             "maxTotalStrength": 1,
             "spawns": [
                 {
-                    "combatMonsterHrid": "/monsters/zombie",
+                    "combatMonsterHrid": "/combat_monsters/zombie",
                     "rate": 1,
                     "strength": 1
                 }
-            ],
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            ]
         },
         "sortIndex": 48
     },
@@ -11845,9 +11173,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 7
     },
@@ -11899,9 +11225,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 8
     },
@@ -11961,9 +11285,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 10
     },
@@ -12019,9 +11341,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 9
     },
@@ -12081,9 +11401,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 6
     },
@@ -12139,9 +11457,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 5
     },
@@ -12197,9 +11513,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 2
     },
@@ -12251,9 +11565,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 1
     },
@@ -12301,9 +11613,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 23
     },
@@ -12355,9 +11665,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 24
     },
@@ -12401,9 +11709,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 3
     },
@@ -12463,9 +11769,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 22
     },
@@ -12521,9 +11825,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 21
     },
@@ -12583,9 +11885,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 18
     },
@@ -12641,9 +11941,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 17
     },
@@ -12691,9 +11989,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 11
     },
@@ -12745,9 +12041,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 12
     },
@@ -12795,9 +12089,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 19
     },
@@ -12849,9 +12141,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 20
     },
@@ -12899,9 +12189,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 15
     },
@@ -12953,9 +12241,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 16
     },
@@ -13015,9 +12301,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 26
     },
@@ -13073,9 +12357,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 25
     },
@@ -13123,9 +12405,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 27
     },
@@ -13177,9 +12457,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 28
     },
@@ -13239,9 +12517,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 14
     },
@@ -13297,9 +12573,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 13
     },
@@ -13347,9 +12621,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 4
     },
@@ -13393,9 +12665,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 5
     },
@@ -13439,9 +12709,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 73
     },
@@ -13485,9 +12753,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 69
     },
@@ -13531,9 +12797,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 74
     },
@@ -13577,9 +12841,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 68
     },
@@ -13623,9 +12885,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 72
     },
@@ -13669,9 +12929,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 71
     },
@@ -13715,9 +12973,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 70
     },
@@ -13761,9 +13017,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 4
     },
@@ -13807,9 +13061,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 17
     },
@@ -13853,9 +13105,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 12
     },
@@ -13899,9 +13149,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 19
     },
@@ -13945,9 +13193,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 11
     },
@@ -13991,9 +13237,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 16
     },
@@ -14037,9 +13281,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 15
     },
@@ -14083,9 +13325,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 13
     },
@@ -14129,9 +13369,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 26
     },
@@ -14175,9 +13413,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 22
     },
@@ -14221,9 +13457,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 28
     },
@@ -14267,9 +13501,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 21
     },
@@ -14313,9 +13545,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 25
     },
@@ -14359,9 +13589,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 24
     },
@@ -14405,9 +13633,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 23
     },
@@ -14451,9 +13677,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 27
     },
@@ -14497,9 +13721,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 38
     },
@@ -14543,9 +13765,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 36
     },
@@ -14589,9 +13809,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 37
     },
@@ -14635,9 +13853,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 53
     },
@@ -14681,9 +13897,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 14
     },
@@ -14735,9 +13949,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 48
     },
@@ -14785,9 +13997,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 20
     },
@@ -14835,9 +14045,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 58
     },
@@ -14889,9 +14097,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 41
     },
@@ -14943,9 +14149,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 55
     },
@@ -14989,9 +14193,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 6
     },
@@ -15039,9 +14241,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 42
     },
@@ -15085,9 +14285,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 51
     },
@@ -15131,9 +14329,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 44
     },
@@ -15177,9 +14373,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 54
     },
@@ -15223,9 +14417,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 43
     },
@@ -15269,9 +14461,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 49
     },
@@ -15315,9 +14505,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 47
     },
@@ -15361,9 +14549,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 45
     },
@@ -15407,9 +14593,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 1
     },
@@ -15453,9 +14637,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 67
     },
@@ -15507,9 +14689,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 29
     },
@@ -15561,9 +14741,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 59
     },
@@ -15607,9 +14785,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 35
     },
@@ -15653,9 +14829,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 31
     },
@@ -15699,9 +14873,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 39
     },
@@ -15745,9 +14917,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 30
     },
@@ -15791,9 +14961,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 34
     },
@@ -15837,9 +15005,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 33
     },
@@ -15883,9 +15049,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 32
     },
@@ -15933,9 +15097,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 50
     },
@@ -15979,9 +15141,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 65
     },
@@ -16025,9 +15185,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 61
     },
@@ -16071,9 +15229,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 66
     },
@@ -16117,9 +15273,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 60
     },
@@ -16163,9 +15317,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 64
     },
@@ -16209,9 +15361,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 63
     },
@@ -16255,9 +15405,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 62
     },
@@ -16309,9 +15457,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 46
     },
@@ -16359,9 +15505,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 18
     },
@@ -16409,9 +15553,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 57
     },
@@ -16463,9 +15605,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 40
     },
@@ -16517,9 +15657,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 52
     },
@@ -16567,9 +15705,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 56
     },
@@ -16613,9 +15749,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 9
     },
@@ -16659,9 +15793,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 2
     },
@@ -16705,9 +15837,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 10
     },
@@ -16751,9 +15881,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 8
     },
@@ -16797,9 +15925,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 7
     },
@@ -16843,9 +15969,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 3
     },
@@ -16872,9 +15996,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 0
     },
@@ -16915,9 +16037,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 7
     },
@@ -16958,9 +16078,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 8
     },
@@ -17019,9 +16137,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 33
     },
@@ -17062,9 +16178,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 18
     },
@@ -17105,9 +16219,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 11
     },
@@ -17148,9 +16260,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 6
     },
@@ -17209,9 +16319,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 19
     },
@@ -17252,9 +16360,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 23
     },
@@ -17295,9 +16401,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 4
     },
@@ -17338,9 +16442,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 26
     },
@@ -17381,9 +16483,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 1
     },
@@ -17424,9 +16524,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 22
     },
@@ -17485,9 +16583,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 5
     },
@@ -17528,9 +16624,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 27
     },
@@ -17571,9 +16665,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 9
     },
@@ -17614,9 +16706,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 17
     },
@@ -17657,9 +16747,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 25
     },
@@ -17712,9 +16800,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 14
     },
@@ -17755,9 +16841,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 20
     },
@@ -17810,9 +16894,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 28
     },
@@ -17853,9 +16935,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 12
     },
@@ -17896,9 +16976,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 21
     },
@@ -17939,9 +17017,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 16
     },
@@ -17982,9 +17058,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 32
     },
@@ -18025,9 +17099,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 13
     },
@@ -18086,9 +17158,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 10
     },
@@ -18147,9 +17217,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 24
     },
@@ -18190,9 +17258,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 29
     },
@@ -18233,9 +17299,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 31
     },
@@ -18276,9 +17340,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 30
     },
@@ -18319,9 +17381,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 15
     },
@@ -18362,9 +17422,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 3
     },
@@ -18405,9 +17463,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 2
     },
@@ -18448,9 +17504,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 3
     },
@@ -18491,9 +17545,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 4
     },
@@ -18534,9 +17586,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 1
     },
@@ -18577,9 +17627,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 5
     },
@@ -18620,9 +17668,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 7
     },
@@ -18663,9 +17709,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 6
     },
@@ -18706,9 +17750,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 2
     },
@@ -18752,9 +17794,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 30
     },
@@ -18798,9 +17838,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 28
     },
@@ -18844,9 +17882,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 32
     },
@@ -18890,9 +17926,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 34
     },
@@ -18936,9 +17970,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 36
     },
@@ -18982,9 +18014,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 39
     },
@@ -19028,9 +18058,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 46
     },
@@ -19074,9 +18102,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 48
     },
@@ -19120,9 +18146,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 53
     },
@@ -19166,9 +18190,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 51
     },
@@ -19212,9 +18234,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 44
     },
@@ -19258,9 +18278,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 58
     },
@@ -19304,9 +18322,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 55
     },
@@ -19350,9 +18366,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 4
     },
@@ -19396,9 +18410,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 2
     },
@@ -19442,9 +18454,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 6
     },
@@ -19488,9 +18498,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 9
     },
@@ -19534,9 +18542,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 11
     },
@@ -19580,9 +18586,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 13
     },
@@ -19626,9 +18630,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 43
     },
@@ -19672,9 +18674,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 42
     },
@@ -19726,9 +18726,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 57
     },
@@ -19772,9 +18770,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 29
     },
@@ -19818,9 +18814,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 31
     },
@@ -19864,9 +18858,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 35
     },
@@ -19910,9 +18902,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 33
     },
@@ -19956,9 +18946,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 27
     },
@@ -20002,9 +18990,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 38
     },
@@ -20048,9 +19034,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 41
     },
@@ -20094,9 +19078,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 40
     },
@@ -20148,9 +19130,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 37
     },
@@ -20194,9 +19174,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 17
     },
@@ -20240,9 +19218,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 15
     },
@@ -20286,9 +19262,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 19
     },
@@ -20332,9 +19306,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 21
     },
@@ -20378,9 +19350,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 23
     },
@@ -20424,9 +19394,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 26
     },
@@ -20478,9 +19446,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 24
     },
@@ -20524,9 +19490,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 63
     },
@@ -20570,9 +19534,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 61
     },
@@ -20616,9 +19578,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 65
     },
@@ -20662,9 +19622,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 67
     },
@@ -20708,9 +19666,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 69
     },
@@ -20754,9 +19710,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 71
     },
@@ -20800,9 +19754,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 16
     },
@@ -20846,9 +19798,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 18
     },
@@ -20892,9 +19842,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 22
     },
@@ -20938,9 +19886,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 20
     },
@@ -20984,9 +19930,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 14
     },
@@ -21030,9 +19974,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 25
     },
@@ -21076,9 +20018,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 3
     },
@@ -21122,9 +20062,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 5
     },
@@ -21168,9 +20106,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 10
     },
@@ -21214,9 +20150,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 8
     },
@@ -21260,9 +20194,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 1
     },
@@ -21306,9 +20238,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 12
     },
@@ -21352,9 +20282,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 50
     },
@@ -21398,9 +20326,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 47
     },
@@ -21444,9 +20370,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 45
     },
@@ -21490,9 +20414,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 49
     },
@@ -21536,9 +20458,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 52
     },
@@ -21582,9 +20502,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 54
     },
@@ -21628,9 +20546,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 59
     },
@@ -21682,9 +20598,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 7
     },
@@ -21728,9 +20642,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 56
     },
@@ -21774,9 +20686,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 62
     },
@@ -21820,9 +20730,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 64
     },
@@ -21866,9 +20774,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 68
     },
@@ -21912,9 +20818,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 66
     },
@@ -21958,9 +20862,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 60
     },
@@ -22004,9 +20906,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 70
     },
@@ -22047,9 +20947,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 7
     },
@@ -22090,9 +20988,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 2
     },
@@ -22133,9 +21029,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 3
     },
@@ -22176,9 +21070,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 5
     },
@@ -22219,9 +21111,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 4
     },
@@ -22262,9 +21152,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 6
     },
@@ -22305,9 +21193,7 @@
         "monsterSpawnInfo": {
             "maxSpawnCount": 0,
             "maxTotalStrength": 0,
-            "spawns": null,
-            "bossFightMonsters": null,
-            "battlesPerBoss": 0
+            "spawns": null
         },
         "sortIndex": 1
     }

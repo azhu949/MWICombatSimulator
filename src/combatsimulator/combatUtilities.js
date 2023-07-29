@@ -86,36 +86,29 @@ class CombatUtilities {
 
         let sourceDamageMultiplier = 1;
         let sourceResistance = 0;
-        let sourcePenetration = 0;
         let targetResistance = 0;
         let targetReflectPower = 0;
-        let targetPenetration = 0;
 
         switch (damageType) {
             case "/damage_types/physical":
                 sourceDamageMultiplier = 1 + source.combatDetails.combatStats.physicalAmplify;
                 sourceResistance = source.combatDetails.totalArmor;
-                sourcePenetration = source.combatDetails.combatStats.armorPenetration;
                 targetResistance = target.combatDetails.totalArmor;
                 targetReflectPower = target.combatDetails.combatStats.physicalReflectPower;
-                targetPenetration = target.combatDetails.combatStats.armorPenetration;
                 break;
             case "/damage_types/water":
                 sourceDamageMultiplier = 1 + source.combatDetails.combatStats.waterAmplify;
                 sourceResistance = source.combatDetails.totalWaterResistance;
-                sourcePenetration = source.combatDetails.combatStats.waterPenetration;
                 targetResistance = target.combatDetails.totalWaterResistance;
                 break;
             case "/damage_types/nature":
                 sourceDamageMultiplier = 1 + source.combatDetails.combatStats.natureAmplify;
                 sourceResistance = source.combatDetails.totalNatureResistance;
-                sourcePenetration = source.combatDetails.combatStats.naturePenetration;
                 targetResistance = target.combatDetails.totalNatureResistance;
                 break;
             case "/damage_types/fire":
                 sourceDamageMultiplier = 1 + source.combatDetails.combatStats.fireAmplify;
                 sourceResistance = source.combatDetails.totalFireResistance;
-                sourcePenetration = source.combatDetails.combatStats.firePenetration;
                 targetResistance = target.combatDetails.totalFireResistance;
                 break;
             default:
@@ -162,15 +155,10 @@ class CombatUtilities {
         let didHit = false;
         if (Math.random() < hitChance) {
             didHit = true;
-            let penetratedTargetResistance = targetResistance;
 
-            if (sourcePenetration > 0) {
-                penetratedTargetResistance = targetResistance * (1 - sourcePenetration);
-            }
-
-            let targetDamageTakenRatio = 100 / (100 + penetratedTargetResistance);
-            if (penetratedTargetResistance < 0) {
-                targetDamageTakenRatio = (100 - penetratedTargetResistance) / 100;
+            let targetDamageTakenRatio = 100 / (100 + targetResistance);
+            if (targetResistance < 0) {
+                targetDamageTakenRatio = (100 - targetResistance) / 100;
             }
 
             let mitigatedDamage = Math.ceil(targetDamageTakenRatio * damageRoll);
@@ -179,15 +167,9 @@ class CombatUtilities {
         }
 
         if (targetReflectPower > 0 && targetResistance > 0) {
-            let penetratedSourceResistance = sourceResistance
-
-            if (targetPenetration > 0) {
-                penetratedSourceResistance = sourceResistance * (1 - targetPenetration);
-            }
-
-            let sourceDamageTakenRatio = 100 / (100 + penetratedSourceResistance);
-            if (penetratedSourceResistance < 0) {
-                sourceDamageTakenRatio = (100 - penetratedSourceResistance) / 100;
+            let sourceDamageTakenRatio = 100 / (100 + sourceResistance);
+            if (sourceResistance < 0) {
+                sourceDamageTakenRatio = (100 - sourceResistance) / 100;
             }
 
             reflectDamage = Math.ceil(targetReflectPower * targetResistance);
@@ -199,11 +181,6 @@ class CombatUtilities {
         let lifeStealHeal = 0;
         if (!abilityEffect && didHit && source.combatDetails.combatStats.lifeSteal > 0) {
             lifeStealHeal = source.addHitpoints(Math.floor(source.combatDetails.combatStats.lifeSteal * damageDone));
-        }
-
-        let manaLeechMana = 0;
-        if (!abilityEffect && didHit && source.combatDetails.combatStats.manaLeech > 0) {
-            manaLeechMana = source.addManapoints(Math.floor(source.combatDetails.combatStats.manaLeech * damageDone));
         }
 
         let experienceGained = {
@@ -248,7 +225,7 @@ class CombatUtilities {
             experienceGained.source.stamina = this.calculateStaminaExperience(reflectDamagePrevented, reflectDamageDone);
         }
 
-        return { damageDone, didHit, reflectDamageDone, lifeStealHeal, manaLeechMana, experienceGained };
+        return { damageDone, didHit, reflectDamageDone, lifeStealHeal, experienceGained };
     }
 
     static processHeal(source, abilityEffect) {

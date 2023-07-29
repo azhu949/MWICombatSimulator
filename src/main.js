@@ -274,14 +274,7 @@ function updateCombatStatsUI() {
         "criticalRate",
         "criticalDamage",
         "combatExperience",
-        "taskDamage",
-        "armorPenetration",
-        "waterPenetration",
-        "naturePenetration",
-        "firePenetration",
-        "abilityHaste",
-        "tenacity",
-        "manaLeech"
+        "taskDamage"
     ].forEach((stat) => {
         let element = document.getElementById("combatStat_" + stat);
         let value = (100 * player.combatDetails.combatStats[stat]).toLocaleString([], {
@@ -1053,8 +1046,6 @@ function showManapointsGained(simResult) {
             case "regen":
                 sourceText = "Regen";
                 break;
-            case "manaLeech":
-                sourceText = "Mana Leech"
             default:
                 sourceText = itemDetailMap[source].name;
                 break;
@@ -1219,8 +1210,8 @@ function createDamageTable(resultDiv, damageDone, secondsSimulated) {
             case "autoAttack":
                 abilityText = "Auto Attack";
                 break;
-            case "damageOverTime":
-                abilityText = "Damage Over Time";
+            case "bleed":
+                abilityText = "Bleed";
                 break;
             case "physicalReflect":
                 abilityText = "Physical Reflect";

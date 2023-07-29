@@ -7,16 +7,9 @@ class Zone {
 
         let gameZone = actionDetailMap[this.hrid];
         this.monsterSpawnInfo = gameZone.monsterSpawnInfo;
-        this.encountersKilled = 0;
     }
 
     getRandomEncounter() {
-
-        if (this.monsterSpawnInfo.bossFightMonsters && this.encountersKilled == this.monsterSpawnInfo.battlesPerBoss) {
-            this.encountersKilled = 1;
-            return this.monsterSpawnInfo.bossFightMonsters.map((hrid) => new Monster(hrid));
-        }
-
         let totalWeight = this.monsterSpawnInfo.spawns.reduce((prev, cur) => prev + cur.rate, 0);
 
         let encounterHrids = [];
@@ -40,7 +33,7 @@ class Zone {
                 }
             }
         }
-        this.encountersKilled++;
+
         return encounterHrids.map((hrid) => new Monster(hrid));
     }
 }
