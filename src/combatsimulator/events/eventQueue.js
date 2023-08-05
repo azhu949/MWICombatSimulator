@@ -32,13 +32,16 @@ class EventQueue {
     }
 
     clearMatching(fn) {
+        let cleared = false;
         let heapEvents = this.minHeap.toArray();
 
         for (const event of heapEvents) {
             if (fn(event)) {
                 this.minHeap.remove(event);
+                cleared = true;
             }
         }
+        return cleared;
     }
 }
 

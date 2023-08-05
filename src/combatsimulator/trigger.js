@@ -105,6 +105,10 @@ class Trigger {
             case "/combat_trigger_conditions/toxic_pollen_fire_resistance":
             case "/combat_trigger_conditions/toxic_pollen_nature_resistance":
             case "/combat_trigger_conditions/toxic_pollen_water_resistance":
+            case "/combat_trigger_conditions/puncture":
+            case "/combat_trigger_conditions/frost_surge":
+            case "/combat_trigger_conditions/elusiveness":
+            case "/combat_trigger_conditions/channeling_coffee":
                 let buffHrid = "/buff_uniques";
                 buffHrid += this.conditionHrid.slice(this.conditionHrid.lastIndexOf("/"));
                 return source.combatBuffs[buffHrid];
@@ -120,6 +124,10 @@ class Trigger {
                 // Replicate the game's behaviour of "stun status active" triggers activating
                 // immediately after the stun has worn off
                 return source.isStunned || source.stunExpireTime == currentTime;
+            case "/combat_trigger_conditions/blind_status":
+                return source.isBlinded || source.blindExpireTime == currentTime;
+            case "/combat_trigger_conditions/silence_status":
+                return source.isSilenced || source.silenceExpireTime == currentTime;
             default:
                 throw new Error("Unknown conditionHrid in trigger: " + this.conditionHrid);
         }

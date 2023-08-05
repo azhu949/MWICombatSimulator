@@ -6,6 +6,28 @@
         .form-control {
             min-width: 3.60rem
         }
+
+        body.dark-mode {
+            background-color: #333;
+            color: #f0f0f0;
+        }
+
+        body.dark-mode header {
+            background-color: #666;
+        }
+
+        body.dark-mode input[type="number"],
+        body.dark-mode .form-select,
+        body.dark-mode .input-group-text,
+        body.dark-mode .accordion-button,
+        body.dark-mode .accordion-collapse,
+        body.dark-mode .modal-content,
+        body.dark-mode textarea {
+            background-color: #444;
+            color: #f0f0f0;
+            border: 1px solid #999;
+            /* Add other relevant styles for form controls in dark mode */
+        }
     </style>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -496,6 +518,13 @@
                                     Import/Export
                                 </button>
                             </div>
+                            <div class="col align-self-center pt-1">
+                                Dark Mode:
+                                <label class="switch">
+                                    <input type="checkbox" id="darkModeToggle">
+                                    <span class="slider round"></span>
+                                </label>
+                            </div>
                         </div>
                         <!-- #endregion -->
                     </div>
@@ -555,6 +584,10 @@
                     <div class="col-md-4" id="combatStat_rangedAccuracyRating"></div>
                 </div>
                 <div class="row">
+                    <div class="col-md-8">Magic Accuracy:</div>
+                    <div class="col-md-4" id="combatStat_magicAccuracyRating"></div>
+                </div>
+                <div class="row">
                     <div class="col-md-8">Ranged Damage:</div>
                     <div class="col-md-4" id="combatStat_rangedMaxDamage"></div>
                 </div>
@@ -597,6 +630,10 @@
                 <div class="row">
                     <div class="col-md-8">Ranged Evasion:</div>
                     <div class="col-md-4" id="combatStat_rangedEvasionRating"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">Magic Evasion:</div>
+                    <div class="col-md-4" id="combatStat_magicEvasionRating"></div>
                 </div>
                 <div class="row">
                     <div class="col-md-8">Armor:</div>
@@ -645,6 +682,38 @@
                 <div class="row">
                     <div class="col-md-8">Task Damage Bonus:</div>
                     <div class="col-md-4" id="combatStat_taskDamage"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">Armor Penetration:</div>
+                    <div class="col-md-4" id="combatStat_armorPenetration"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">Water Penetration:</div>
+                    <div class="col-md-4" id="combatStat_waterPenetration"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">Nature Penetration:</div>
+                    <div class="col-md-4" id="combatStat_naturePenetration"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">Fire Penetration:</div>
+                    <div class="col-md-4" id="combatStat_firePenetration"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">Ability Haste:</div>
+                    <div class="col-md-4" id="combatStat_abilityHaste"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">Tenacity:</div>
+                    <div class="col-md-4" id="combatStat_tenacity"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">Mana Leech:</div>
+                    <div class="col-md-4" id="combatStat_manaLeech"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">Cast Speed:</div>
+                    <div class="col-md-4" id="combatStat_castSpeed"></div>
                 </div>
                 <!-- #endregion -->
             </div>
@@ -830,6 +899,33 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="row d-none" id="simulationResultDamageDoneAccordionEnemy6">
+                            <div class="col">
+                                <div class="accordion">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button id="buttonSimulationResultDamageDoneAccordionEnemy6"
+                                                class="accordion-button collapsed" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#collapseDamageDone6"
+                                                style="padding: 0.5em">
+                                                <b>Damage Done (Enemy 6)</b>
+                                            </button>
+                                        </h2>
+                                        <div id="collapseDamageDone6" class="accordion-collapse collapse">
+                                            <div class="accordion-body">
+                                                <div class="row">
+                                                    <div class="col-md-5"><b>Source</b></div>
+                                                    <div class="col-md-3 text-end"><b>Hitchance</b></div>
+                                                    <div class="col-md-2 text-end"><b>DPS</b></div>
+                                                    <div class="col-md-2 text-end"><b>%</b></div>
+                                                </div>
+                                                <div id="simulationResultDamageDoneEnemy6"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
                         <div class="row pt-2">
                             <b>Damage Taken (Total)</b>
                         </div>
@@ -969,6 +1065,33 @@
                                                     <div class="col-md-2 text-end"><b>%</b></div>
                                                 </div>
                                                 <div id="simulationResultDamageTakenEnemy5"></div>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row d-none" id="simulationResultDamageTakenAccordionEnemy6">
+                            <div class="col">
+                                <div class="accordion">
+                                    <div class="accordion-item">
+                                        <h2 class="accordion-header">
+                                            <button id="buttonSimulationResultDamageTakenAccordionEnemy6"
+                                                class="accordion-button collapsed" type="button"
+                                                data-bs-toggle="collapse" data-bs-target="#collapseDamageTaken6"
+                                                style="padding: 0.5em">
+                                                <b>Damage Taken (Enemy 6)</b>
+                                            </button>
+                                        </h2>
+                                        <div id="collapseDamageTaken6" class="accordion-collapse collapse">
+                                            <div class="accordion-body">
+                                                <div class="row">
+                                                    <div class="col-md-5"><b>Source</b></div>
+                                                    <div class="col-md-3 text-end"><b>Hitchance</b></div>
+                                                    <div class="col-md-2 text-end"><b>DPS</b></div>
+                                                    <div class="col-md-2 text-end"><b>%</b></div>
+                                                </div>
+                                                <div id="simulationResultDamageTakenEnemy6"></div>
                                             </div>
                                         </div>
                                     </div>
@@ -1248,9 +1371,51 @@
                     <div class="container-fluid">
                         <div class="row">
                             <div class="col-12 mb-4">
+                                <h6>August 3rd, 2023</h6>
+                                <ul>
+                                    <li>Updated so it works with the current test server game data</li>
+                                    <ul>
+                                        <li>Added new items</li>
+                                        <li>Casting changes</li>
+                                        <li>Fixed Tenacity and Ability Haste</li>
+                                        <li>Added Dark Mode</li>
+                                        <li>And other small things that changed in the game data...</li>
+                                    </ul>
+                                </ul>
+                            </div>
+                            <div class="col-12 mb-4">
+                                <h6>August 1st, 2023</h6>
+                                <ul>
+                                    <li>Updated so it works with the current test server game data</li>
+                                    <ul>
+                                        <li>Added new skills</li>
+                                        <li>Added Magic Accuracy/Evasion</li>
+                                        <li>Updated Magic Resistance Formula</li>
+                                        <li>Added skill accuracy bonus</li>
+                                        <li>Multiple Boosts Fix</li>
+                                        <li>XP Formula Changes</li>
+                                        <li>And other small things that changed in the game data...</li>
+                                    </ul>
+                                </ul>
+                            </div>
+                            <div class="col-12 mb-4">
                                 <h6>July 30th, 2023</h6>
                                 <ul>
                                     <li>Added link to test version</li>
+                                </ul>
+                            </div>
+                            <div class="col-12 mb-4">
+                                <h6>July 26th, 2023</h6>
+                                <ul>
+                                    <li>Updated so it works with the current test server game data</li>
+                                    <ul>
+                                        <li>Added new skills/monsters</li>
+                                        <li>Added XP to bleeds</li>
+                                        <li>Added Silence/Blind</li>
+                                        <li>Added evasion boosts</li>
+                                        <li>Added Mana Leech, Tenacity, Ability Haste, Penetration</li>
+                                        <li>And other small things that changed in the game data...</li>
+                                    </ul>
                                 </ul>
                             </div>
                             <div class="col-12 mb-4">
