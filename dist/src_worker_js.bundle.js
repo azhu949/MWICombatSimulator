@@ -467,7 +467,7 @@ class CombatSimulator extends EventTarget {
         source.abilities
             .filter((ability) => ability != null)
             .forEach((ability) => {
-                if (!usedAbility && ability.shouldTrigger(this.simulationTime, source, target, friendlies, enemies) && this.canUseAbility(source, ability)) {
+                if (!usedAbility && ability.shouldTrigger(this.simulationTime, source, target, friendlies, enemies) && this.canUseAbility(source, ability, true)) {
                     let castDuration = ability.castDuration;
                     castDuration /= (1 + source.combatDetails.combatStats.castSpeed)
                     let abilityCastEndEvent = new _events_abilityCastEndEvent__WEBPACK_IMPORTED_MODULE_15__["default"](this.simulationTime + castDuration, source, ability);
@@ -493,14 +493,17 @@ class CombatSimulator extends EventTarget {
             source.abilities
                 .filter((ability) => ability != null)
                 .forEach((ability) => {
-                    let haste = source.combatDetails.abilityHaste;
-                    let cooldownDuration = ability.cooldownDuration;
-                    if (haste > 0) {
-                        cooldownDuration = cooldownDuration * 100 / (100 + haste);
-                    }
+                    // TODO account for regen tick
+                    if (this.canUseAbility(source, ability, false)) {
+                        let haste = source.combatDetails.abilityHaste;
+                        let cooldownDuration = ability.cooldownDuration;
+                        if (haste > 0) {
+                            cooldownDuration = cooldownDuration * 100 / (100 + haste);
+                        }
 
-                    if (ability.lastUsed + cooldownDuration <= source.blindExpireTime && ability.lastUsed + cooldownDuration < nextCast) {
-                        nextCast = ability.lastUsed + cooldownDuration;
+                        if (ability.lastUsed + cooldownDuration <= source.blindExpireTime && ability.lastUsed + cooldownDuration < nextCast) {
+                            nextCast = ability.lastUsed + cooldownDuration;
+                        }
                     }
                 });
 
@@ -745,13 +748,13 @@ class CombatSimulator extends EventTarget {
         return true;
     }
 
-    canUseAbility(source, ability) {
+    canUseAbility(source, ability, oomCheck) {
         if (source.combatDetails.currentHitpoints <= 0) {
             return false;
         }
 
         if (source.combatDetails.currentManapoints < ability.manaCost) {
-            if (source.isPlayer) {
+            if (source.isPlayer && oomCheck) {
                 this.simResult.playerRanOutOfMana = true;
             }
             return false;
@@ -761,7 +764,8 @@ class CombatSimulator extends EventTarget {
 
     tryUseAbility(source, ability) {
 
-        if (!this.canUseAbility(source, ability)) {
+        if (!this.canUseAbility(source, ability, true)) {
+            // console.log("Falseeeeeee");
             return false;
         }
 
@@ -1143,7 +1147,7 @@ class CombatUnit {
             (1 + this.combatDetails.combatStats.magicDamage) *
             (1 + damageRatioBoost);
 
-        let baseMagicEvasion = (10 + ((this.combatDetails.defenseLevel + this.combatDetails.magicLevel) / 2)) * (1 + this.combatDetails.combatStats.magicEvasion);
+        let baseMagicEvasion = (10 + ((this.combatDetails.defenseLevel + this.combatDetails.rangedLevel) / 2)) * (1 + this.combatDetails.combatStats.magicEvasion);
         this.combatDetails.magicEvasionRating = baseMagicEvasion;
         for (const boost of evasionBoosts) {
             this.combatDetails.magicEvasionRating += boost.flatBoost;

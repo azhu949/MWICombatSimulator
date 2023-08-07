@@ -185,7 +185,7 @@ class CombatUnit {
             (1 + this.combatDetails.combatStats.magicDamage) *
             (1 + damageRatioBoost);
 
-        let baseMagicEvasion = (10 + ((this.combatDetails.defenseLevel + this.combatDetails.magicLevel) / 2)) * (1 + this.combatDetails.combatStats.magicEvasion);
+        let baseMagicEvasion = (10 + ((this.combatDetails.defenseLevel + this.combatDetails.rangedLevel) / 2)) * (1 + this.combatDetails.combatStats.magicEvasion);
         this.combatDetails.magicEvasionRating = baseMagicEvasion;
         for (const boost of evasionBoosts) {
             this.combatDetails.magicEvasionRating += boost.flatBoost;
