@@ -2316,7 +2316,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/fire",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -2887,7 +2887,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/nature",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -3287,7 +3287,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/water",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -11797,7 +11797,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/fire",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -12368,7 +12368,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/nature",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -12768,7 +12768,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/water",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -19864,7 +19864,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/fire",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -20435,7 +20435,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/nature",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -20835,7 +20835,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/water",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -43274,7 +43274,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/water",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -44854,7 +44854,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/fire",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -45425,7 +45425,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/nature",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -45825,7 +45825,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/water",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -46026,7 +46026,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/fire",
-        "attackInterval": 8000000000,
+        "attackInterval": 7000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -55698,7 +55698,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/fire",
-        "attackInterval": 6000000000,
+        "attackInterval": 5000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -69800,7 +69800,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/fire",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -70371,7 +70371,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/nature",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -70771,7 +70771,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/water",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -78489,7 +78489,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/fire",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -79060,7 +79060,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/nature",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -79460,7 +79460,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/water",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -108193,7 +108193,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/fire",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -108394,7 +108394,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/nature",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
@@ -108794,7 +108794,7 @@
           "/combat_styles/magic"
         ],
         "damageType": "/damage_types/water",
-        "attackInterval": 7000000000,
+        "attackInterval": 6000000000,
         "castSpeed": 0,
         "abilityHaste": 0,
         "criticalRate": 0,
