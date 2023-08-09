@@ -1656,11 +1656,11 @@ class CombatUtilities {
     static calculateAttackExperience(damage, damagePrevented, combatStyle) {
         switch (combatStyle) {
             case "/combat_styles/stab":
-                return 0.54 + 0.1125 * (damage + 0.3 * damagePrevented);
+                return 0.54 + 0.1125 * (damage + 0.35 * damagePrevented);
             case "/combat_styles/slash":
-                return 0.3 + 0.0625 * (damage + 0.3 * damagePrevented)
+                return 0.3 + 0.0625 * (damage + 0.35 * damagePrevented)
             case "/combat_styles/smash":
-                return 0.06 + 0.0125 * (damage + 0.3 * damagePrevented)
+                return 0.06 + 0.0125 * (damage + 0.35 * damagePrevented)
             default:
                 return 0;
         }
@@ -1669,11 +1669,11 @@ class CombatUtilities {
     static calculatePowerExperience(damage, damagePrevented, combatStyle) {
         switch (combatStyle) {
             case "/combat_styles/stab":
-                return 0.06 + 0.0125 * (damage + 0.3 * damagePrevented)
+                return 0.06 + 0.0125 * (damage + 0.35 * damagePrevented)
             case "/combat_styles/slash":
-                return 0.3 + 0.0625 * (damage + 0.3 * damagePrevented)
+                return 0.3 + 0.0625 * (damage + 0.35 * damagePrevented)
             case "/combat_styles/smash":
-                return 0.54 + 0.1125 * (damage + 0.3 * damagePrevented);
+                return 0.54 + 0.1125 * (damage + 0.35 * damagePrevented);
             default:
                 return 0;
         }
@@ -1684,11 +1684,11 @@ class CombatUtilities {
     }
 
     static calculateRangedExperience(damage, damagePrevented) {
-        return 0.4 + 0.083375 * (damage + 0.3 * damagePrevented)
+        return 0.4 + 0.083375 * (damage + 0.35 * damagePrevented)
     }
 
     static calculateMagicExperience(damage, damagePrevented) {
-        return 0.4 + 0.083375 * (damage + 0.3 * damagePrevented)
+        return 0.4 + 0.083375 * (damage + 0.35 * damagePrevented)
     }
 }
 
