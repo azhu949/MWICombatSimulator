@@ -317,6 +317,7 @@ class CombatSimulator extends EventTarget {
         this.players[0].combatDetails.currentHitpoints = this.players[0].combatDetails.maxHitpoints;
         this.players[0].combatDetails.currentManapoints = this.players[0].combatDetails.maxManapoints;
         this.players[0].clearBuffs();
+        this.players[0].clearCCs();
         this.startAttacks();
     }
 
@@ -1242,6 +1243,15 @@ class CombatUnit {
         this.updateCombatDetails();
     }
 
+    clearCCs() {
+        this.isStunned = false;
+        this.stunExpireTime = null;
+        this.isSilenced = false;
+        this.silenceExpireTime = null;
+        this.isBlinded = false;
+        this.blindExpireTime = null;
+    }
+
     getBuffBoosts(type) {
         let boosts = [];
         Object.values(this.combatBuffs)
@@ -1270,13 +1280,7 @@ class CombatUnit {
     }
 
     reset(currentTime = 0) {
-        this.isStunned = false;
-        this.stunExpireTime = null;
-        this.isBlinded = false;
-        this.blindExpireTime = null;
-        this.isSilenced = false;
-        this.silenceExpireTime = null;
-
+        this.clearCCs();
         this.clearBuffs();
         this.updateCombatDetails();
         this.resetCooldowns(currentTime);

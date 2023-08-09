@@ -134,6 +134,7 @@ class CombatSimulator extends EventTarget {
         this.players[0].combatDetails.currentHitpoints = this.players[0].combatDetails.maxHitpoints;
         this.players[0].combatDetails.currentManapoints = this.players[0].combatDetails.maxManapoints;
         this.players[0].clearBuffs();
+        this.players[0].clearCCs();
         this.startAttacks();
     }
 
