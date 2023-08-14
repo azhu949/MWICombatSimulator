@@ -1059,6 +1059,7 @@ function showManapointsGained(simResult) {
                 break;
             case "manaLeech":
                 sourceText = "Mana Leech"
+                break;
             default:
                 sourceText = itemDetailMap[source].name;
                 break;
@@ -1673,6 +1674,8 @@ function initImportExportModal() {
                 abilityLevelInput.value = "1";
             }
         }
+
+        triggerMap = importSet.triggerMap;
 
         let zoneSelect = document.getElementById("selectZone");
         zoneSelect.value = importSet["zone"];

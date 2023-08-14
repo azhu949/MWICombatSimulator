@@ -2339,6 +2339,7 @@ function showManapointsGained(simResult) {
                 break;
             case "manaLeech":
                 sourceText = "Mana Leech"
+                break;
             default:
                 sourceText = _combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[source].name;
                 break;
@@ -2953,6 +2954,8 @@ function initImportExportModal() {
                 abilityLevelInput.value = "1";
             }
         }
+
+        triggerMap = importSet.triggerMap;
 
         let zoneSelect = document.getElementById("selectZone");
         zoneSelect.value = importSet["zone"];
