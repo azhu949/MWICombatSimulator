@@ -1091,15 +1091,23 @@ function showDamageDone(simResult) {
     let totalDamageDone = {};
     let enemyIndex = 1;
 
-    let secondsSimulated = simResult.simulatedTime / ONE_SECOND;
+    let totalSecondsSimulated = simResult.simulatedTime / ONE_SECOND;
 
     for (let i = 1; i < 7; i++) {
         let accordion = document.getElementById("simulationResultDamageDoneAccordionEnemy" + i);
         hideElement(accordion);
     }
 
+    let bossTimeHeadingDiv = document.getElementById("simulationBossTimeHeading");
+    bossTimeHeadingDiv.classList.add("d-none");
+    let bossTimeDiv = document.getElementById("simulationBossTime");
+    bossTimeDiv.classList.add("d-none");
+
     for (const [target, abilities] of Object.entries(simResult.attacks["player"])) {
         let targetDamageDone = {};
+
+        const i = simResult.timeSpentAlive.findIndex(e => e.name === target);
+        let aliveSecondsSimulated = simResult.timeSpentAlive[i].timeSpentAlive / ONE_SECOND;
 
         for (const [ability, abilityCasts] of Object.entries(abilities)) {
             let casts = Object.values(abilityCasts).reduce((prev, cur) => prev + cur, 0);
@@ -1127,7 +1135,7 @@ function showDamageDone(simResult) {
         }
 
         let resultDiv = document.getElementById("simulationResultDamageDoneEnemy" + enemyIndex);
-        createDamageTable(resultDiv, targetDamageDone, secondsSimulated);
+        createDamageTable(resultDiv, targetDamageDone, aliveSecondsSimulated);
 
         let resultAccordion = document.getElementById("simulationResultDamageDoneAccordionEnemy" + enemyIndex);
         showElement(resultAccordion);
@@ -1138,18 +1146,29 @@ function showDamageDone(simResult) {
         let targetName = combatMonsterDetailMap[target].name;
         resultAccordionButton.innerHTML = "<b>Damage Done (" + targetName + ")</b>";
 
+        if (simResult.bossFightMonsters.includes(target)) {
+            let hoursSpentOnBoss = (aliveSecondsSimulated / 60 / 60).toFixed(2);
+            let percentSpentOnBoss = (aliveSecondsSimulated / totalSecondsSimulated * 100).toFixed(2);
+
+            let bossRow = createRow(["col-md-6", "col-md-6 text-end"], [targetName, hoursSpentOnBoss + "h(" + percentSpentOnBoss + "%)"]);
+            bossTimeDiv.replaceChildren(bossRow);
+
+            bossTimeHeadingDiv.classList.remove("d-none");
+            bossTimeDiv.classList.remove("d-none");
+        }
+
         enemyIndex++;
     }
 
     let totalResultDiv = document.getElementById("simulationResultTotalDamageDone");
-    createDamageTable(totalResultDiv, totalDamageDone, secondsSimulated);
+    createDamageTable(totalResultDiv, totalDamageDone, totalSecondsSimulated);
 }
 
 function showDamageTaken(simResult) {
     let totalDamageTaken = {};
     let enemyIndex = 1;
 
-    let secondsSimulated = simResult.simulatedTime / ONE_SECOND;
+    let totalSecondsSimulated = simResult.simulatedTime / ONE_SECOND;
 
     for (let i = 1; i < 7; i++) {
         let accordion = document.getElementById("simulationResultDamageTakenAccordionEnemy" + i);
@@ -1161,6 +1180,8 @@ function showDamageTaken(simResult) {
             continue;
         }
 
+        const i = simResult.timeSpentAlive.findIndex(e => e.name === source);
+        let aliveSecondsSimulated = simResult.timeSpentAlive[i].timeSpentAlive / ONE_SECOND;
         let sourceDamageTaken = {};
 
         for (const [ability, abilityCasts] of Object.entries(targets["player"])) {
@@ -1189,7 +1210,7 @@ function showDamageTaken(simResult) {
         }
 
         let resultDiv = document.getElementById("simulationResultDamageTakenEnemy" + enemyIndex);
-        createDamageTable(resultDiv, sourceDamageTaken, secondsSimulated);
+        createDamageTable(resultDiv, sourceDamageTaken, aliveSecondsSimulated);
 
         let resultAccordion = document.getElementById("simulationResultDamageTakenAccordionEnemy" + enemyIndex);
         showElement(resultAccordion);
@@ -1204,7 +1225,7 @@ function showDamageTaken(simResult) {
     }
 
     let totalResultDiv = document.getElementById("simulationResultTotalDamageTaken");
-    createDamageTable(totalResultDiv, totalDamageTaken, secondsSimulated);
+    createDamageTable(totalResultDiv, totalDamageTaken, totalSecondsSimulated);
 }
 
 function createDamageTable(resultDiv, damageDone, secondsSimulated) {

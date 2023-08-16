@@ -11,6 +11,8 @@ class SimResult {
         this.rareFindMultiplier = 1;
         this.playerRanOutOfMana = false;
         this.manaUsed = {};
+        this.timeSpentAlive = [];
+        this.bossFightMonsters = [];
     }
 
     addDeath(unit) {
@@ -19,6 +21,22 @@ class SimResult {
         }
 
         this.deaths[unit.hrid] += 1;
+    }
+
+    updateTimeSpentAlive(name, alive, time) {
+        const i = this.timeSpentAlive.findIndex(e => e.name === name);
+        if (alive) {
+            if (i !== -1) {
+                this.timeSpentAlive[i].alive = true;
+                this.timeSpentAlive[i].spawnedAt = time;
+            } else {
+                this.timeSpentAlive.push({ name: name, timeSpentAlive: 0, spawnedAt: time, alive: true });
+            }
+        } else {
+            const timeAlive = time - this.timeSpentAlive[i].spawnedAt;
+            this.timeSpentAlive[i].alive = false;
+            this.timeSpentAlive[i].timeSpentAlive += timeAlive;
+        }
     }
 
     addExperienceGain(unit, type, experience) {
