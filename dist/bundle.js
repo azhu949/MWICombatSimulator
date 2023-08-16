@@ -97,7 +97,7 @@ class Ability {
             return false;
         }
 
-        let haste = source.combatDetails.abilityHaste;
+        let haste = source.combatDetails.combatStats.abilityHaste;
         let cooldownDuration = this.cooldownDuration;
         if (haste > 0) {
             cooldownDuration = cooldownDuration * 100 / (100 + haste);
@@ -1537,12 +1537,18 @@ function updateCombatStatsUI() {
         "totalArmor",
         "totalWaterResistance",
         "totalNatureResistance",
-        "totalFireResistance",
-        "abilityHaste",
-        "tenacity",
+        "totalFireResistance"
     ].forEach((stat) => {
         let element = document.getElementById("combatStat_" + stat);
         element.innerHTML = Math.floor(player.combatDetails[stat]);
+    });
+
+    [
+        "abilityHaste",
+        "tenacity"
+    ].forEach((stat) => {
+        let element = document.getElementById("combatStat_" + stat);
+        element.innerHTML = Math.floor(player.combatDetails.combatStats[stat]);
     });
 
     [

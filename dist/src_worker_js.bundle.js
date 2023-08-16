@@ -97,7 +97,7 @@ class Ability {
             return false;
         }
 
-        let haste = source.combatDetails.abilityHaste;
+        let haste = source.combatDetails.combatStats.abilityHaste;
         let cooldownDuration = this.cooldownDuration;
         if (haste > 0) {
             cooldownDuration = cooldownDuration * 100 / (100 + haste);
@@ -473,7 +473,14 @@ class CombatSimulator extends EventTarget {
                     castDuration /= (1 + source.combatDetails.combatStats.castSpeed)
                     let abilityCastEndEvent = new _events_abilityCastEndEvent__WEBPACK_IMPORTED_MODULE_15__["default"](this.simulationTime + castDuration, source, ability);
                     this.eventQueue.addEvent(abilityCastEndEvent);
-                    // console.log("used " + (this.simulationTime / 1000000000));
+                    /*-if (source.isPlayer) {
+                        let haste = source.combatDetails.combatStats.abilityHaste;
+                        let cooldownDuration = ability.cooldownDuration;
+                        if (haste > 0) {
+                            cooldownDuration = cooldownDuration * 100 / (100 + haste);
+                        }
+                        // console.log((this.simulationTime / 1000000000) + " Casting " + ability.hrid + " Cast time " + (castDuration / 1e9) + " Off CD at " + ((this.simulationTime + cooldownDuration + castDuration) / 1e9) + " CD " + ((cooldownDuration) / 1e9));
+                    }*/
                     usedAbility = true;
                 }
             });
@@ -496,7 +503,7 @@ class CombatSimulator extends EventTarget {
                 .forEach((ability) => {
                     // TODO account for regen tick
                     if (this.canUseAbility(source, ability, false)) {
-                        let haste = source.combatDetails.abilityHaste;
+                        let haste = source.combatDetails.combatStats.abilityHaste;
                         let cooldownDuration = ability.cooldownDuration;
                         if (haste > 0) {
                             cooldownDuration = cooldownDuration * 100 / (100 + haste);
@@ -787,13 +794,17 @@ class CombatSimulator extends EventTarget {
 
         ability.lastUsed = this.simulationTime;
 
-        let haste = source.combatDetails.abilityHaste;
+        let haste = source.combatDetails.combatStats.abilityHaste;
         let cooldownDuration = ability.cooldownDuration;
         if (haste > 0) {
             cooldownDuration = cooldownDuration * 100 / (100 + haste);
         }
 
-        // console.log("Use ability " + (this.simulationTime / 1000000000) + ability.hrid);
+        /*-if (source.isPlayer) {
+            let castDuration = ability.castDuration;
+            castDuration /= (1 + source.combatDetails.combatStats.castSpeed)
+            // console.log((this.simulationTime / 1000000000) + " Used ability " + ability.hrid + " Cast time " + (castDuration / 1e9));
+        }*/
         this.addNextAttackEvent(source);
 
         for (const abilityEffect of ability.abilityEffects) {

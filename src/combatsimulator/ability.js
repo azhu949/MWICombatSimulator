@@ -80,7 +80,7 @@ class Ability {
             return false;
         }
 
-        let haste = source.combatDetails.abilityHaste;
+        let haste = source.combatDetails.combatStats.abilityHaste;
         let cooldownDuration = this.cooldownDuration;
         if (haste > 0) {
             cooldownDuration = cooldownDuration * 100 / (100 + haste);

@@ -257,12 +257,18 @@ function updateCombatStatsUI() {
         "totalArmor",
         "totalWaterResistance",
         "totalNatureResistance",
-        "totalFireResistance",
-        "abilityHaste",
-        "tenacity",
+        "totalFireResistance"
     ].forEach((stat) => {
         let element = document.getElementById("combatStat_" + stat);
         element.innerHTML = Math.floor(player.combatDetails[stat]);
+    });
+
+    [
+        "abilityHaste",
+        "tenacity"
+    ].forEach((stat) => {
+        let element = document.getElementById("combatStat_" + stat);
+        element.innerHTML = Math.floor(player.combatDetails.combatStats[stat]);
     });
 
     [
