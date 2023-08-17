@@ -1702,7 +1702,9 @@ function initImportExportModal() {
             }
         }
 
-        triggerMap = importSet.triggerMap;
+        if (importSet.triggerMap) {
+            triggerMap = importSet.triggerMap;
+        }
 
         let zoneSelect = document.getElementById("selectZone");
         zoneSelect.value = importSet["zone"];
