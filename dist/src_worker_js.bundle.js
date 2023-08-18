@@ -526,8 +526,12 @@ class CombatSimulator extends EventTarget {
                             cooldownDuration = cooldownDuration * 100 / (100 + haste);
                         }
 
-                        if (ability.lastUsed + cooldownDuration <= source.blindExpireTime && ability.lastUsed + cooldownDuration < nextCast) {
-                            nextCast = ability.lastUsed + cooldownDuration;
+                        let abilityNextCastTime = ability.lastUsed + cooldownDuration;
+
+                        if (abilityNextCastTime <= source.blindExpireTime && abilityNextCastTime < nextCast) {
+                            if (ability.shouldTrigger(abilityNextCastTime, source, target, friendlies, enemies)) {
+                                nextCast = abilityNextCastTime;
+                            }
                         }
                     }
                 });
