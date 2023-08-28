@@ -13551,7 +13551,7 @@
             "skillHrid": "/skills/cooking",
             "level": 1
         },
-        "baseTimeCost": 7000000000,
+        "baseTimeCost": 6000000000,
         "experienceGain": {
             "skillHrid": "/skills/cooking",
             "value": 5
@@ -13560,7 +13560,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/small_artisans_crate",
-                "dropRate": 0.0001636574074074074,
+                "dropRate": 0.00014027777777777777,
                 "minCount": 1,
                 "maxCount": 1
             }
