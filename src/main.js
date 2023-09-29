@@ -29,8 +29,10 @@ let triggerMap = {};
 let modalTriggers = [];
 
 window.revenue = 0;
+window.noRngRevenue = 0;
 window.expenses = 0;
 window.profit = 0;
+window.noRngProfit = 0;
 
 // #region Worker
 
@@ -745,6 +747,8 @@ function showSimulationResult(simResult) {
     expensesModalTable.innerHTML = '<tr><th>Item</th><th>Price</th><th>Amount</th><th>Total</th></tr>';
     let revenueModalTable = document.querySelector("#revenueTable > tbody");
     revenueModalTable.innerHTML = '<tr><th>Item</th><th>Price</th><th>Amount</th><th>Total</th></tr>';
+    let noRngRevenueModalTable = document.querySelector("#noRngRevenueTable > tbody");
+    noRngRevenueModalTable.innerHTML = '<tr><th>Item</th><th>Price</th><th>Amount</th><th>Total</th></tr>';
     showKills(simResult);
     showDeaths(simResult);
     showExperienceGained(simResult);
@@ -757,13 +761,18 @@ function showSimulationResult(simResult) {
     window.profit = window.revenue - window.expenses;
     document.getElementById('profitSpan').innerText = window.profit.toLocaleString();
     document.getElementById('profitPreview').innerText = window.profit.toLocaleString();
+    window.noRngProfit = window.noRngRevenue - window.expenses;
+    document.getElementById('noRngProfitSpan').innerText = window.noRngProfit.toLocaleString();
+    document.getElementById('noRngProfitPreview').innerText = window.noRngProfit.toLocaleString();
 }
 
 function showKills(simResult) {
     let resultDiv = document.getElementById("simulationResultKills");
     let dropsResultDiv = document.getElementById("simulationResultDrops");
+    let noRngDropsResultDiv = document.getElementById("noRngDrops");
     let newChildren = [];
     let newDropChildren = [];
+    let newNoRngDropChildren = [];
     let dropRateMultiplier = simResult.dropRateMultiplier;
     let rareFindMultiplier = simResult.rareFindMultiplier;
 
@@ -778,7 +787,8 @@ function showKills(simResult) {
         .filter((enemy) => enemy != "player")
         .sort();
 
-    const totalDropMap = new Map()
+    const totalDropMap = new Map();
+    const noRngTotalDropMap = new Map();
     for (const monster of monsters) {
         let killsPerHour = (simResult.deaths[monster] / hoursSimulated).toFixed(1);
         let monsterRow = createRow(
@@ -790,11 +800,19 @@ function showKills(simResult) {
         const dropMap = new Map();
         const rareDropMap = new Map();
         for (const drop of combatMonsterDetailMap[monster].dropTable) {
-            dropMap.set(itemDetailMap[drop.itemHrid]['name'], { "dropRate": drop.dropRate * dropRateMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount });
+            dropMap.set(itemDetailMap[drop.itemHrid]['name'], { "dropRate": drop.dropRate * dropRateMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
         }
         for (const drop of combatMonsterDetailMap[monster].rareDropTable) {
-            rareDropMap.set(itemDetailMap[drop.itemHrid]['name'], { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount });
+            rareDropMap.set(itemDetailMap[drop.itemHrid]['name'], { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
         }
+
+        for (let dropObject of dropMap.values()) {
+            dropObject.noRngDropAmount += simResult.deaths[monster] * dropObject.dropRate * ((dropObject.dropMax + dropObject.dropMin) / 2);
+        }
+        for (let dropObject of rareDropMap.values()) {
+            dropObject.noRngDropAmount += simResult.deaths[monster] * dropObject.dropRate * ((dropObject.dropMax + dropObject.dropMin) / 2);
+        }
+
         for (let i = 0; i < simResult.deaths[monster]; i++) {
             for (let dropObject of dropMap.values()) {
                 let chance = Math.random();
@@ -817,12 +835,22 @@ function showKills(simResult) {
             } else {
                 totalDropMap.set(name, dropObject.number);
             }
+            if (noRngTotalDropMap.has(name)) {
+                noRngTotalDropMap.set(name, noRngTotalDropMap.get(name) + dropObject.noRngDropAmount);
+            } else {
+                noRngTotalDropMap.set(name, dropObject.noRngDropAmount);
+            }
         }
         for (let [name, dropObject] of rareDropMap.entries()) {
             if (totalDropMap.has(name)) {
                 totalDropMap.set(name, totalDropMap.get(name) + dropObject.number);
             } else {
                 totalDropMap.set(name, dropObject.number);
+            }
+            if (noRngTotalDropMap.has(name)) {
+                noRngTotalDropMap.set(name, noRngTotalDropMap.get(name) + dropObject.noRngDropAmount);
+            } else {
+                noRngTotalDropMap.set(name, dropObject.noRngDropAmount);
             }
         }
     }
@@ -836,19 +864,30 @@ function showKills(simResult) {
         );
         newDropChildren.push(dropRow);
 
-        let tableRow = '<tr><td>';
+        let tableRow = '<tr class="' + name.replace(/\s+/g, '') + '"><td>';
         tableRow += name;
         tableRow += '</td><td contenteditable="true">';
-        let price = 0;
+        let price = -1;
+        let revenueSetting = document.getElementById('selectPrices_drops').value;
         if (window.prices) {
             let item = window.prices[name];
-            if (!item) {
-            } else if (item['bid'] !== -1) {
-                price += item['bid'];
-            } else if (item['ask'] !== -1) {
-                price += item['ask'];
-            } else {
-                price += item['vendor'];
+            if (item) {
+                if (revenueSetting == 'bid') {
+                    if (item['bid'] !== -1) {
+                        price = item['bid'];
+                    } else if (item['ask'] !== -1) {
+                        price = item['ask'];
+                    }
+                } else if (revenueSetting == 'ask') {
+                    if (item['ask'] !== -1) {
+                        price = item['ask'];
+                    } else if (item['bid'] !== -1) {
+                        price = item['bid'];
+                    }
+                }
+                if (price == -1) {
+                    price = item['vendor'];
+                }
             }
         }
         tableRow += price;
@@ -861,11 +900,64 @@ function showKills(simResult) {
         total += price * dropAmount;
     }
 
+
+
+    let noRngRevenueModalTable = document.querySelector("#noRngRevenueTable > tbody");
+    let noRngTotal = 0;
+    for (let [name, dropAmount] of noRngTotalDropMap.entries()) {
+        let noRngDropRow = createRow(
+            ["col-md-6", "col-md-6 text-end"],
+            [name, dropAmount.toLocaleString()]
+        );
+        newNoRngDropChildren.push(noRngDropRow);
+
+        let tableRow = '<tr class="' + name.replace(/\s+/g, '') + '"><td>';
+        tableRow += name;
+        tableRow += '</td><td contenteditable="true">';
+        let price = -1;
+        let revenueSetting = document.getElementById('selectPrices_drops').value;
+        if (window.prices) {
+            let item = window.prices[name];
+            if (item) {
+                if (revenueSetting == 'bid') {
+                    if (item['bid'] !== -1) {
+                        price = item['bid'];
+                    } else if (item['ask'] !== -1) {
+                        price = item['ask'];
+                    }
+                } else if (revenueSetting == 'ask') {
+                    if (item['ask'] !== -1) {
+                        price = item['ask'];
+                    } else if (item['bid'] !== -1) {
+                        price = item['bid'];
+                    }
+                }
+                if (price == -1) {
+                    price = item['vendor'];
+                }
+            }
+        }
+        tableRow += price;
+        tableRow += '</td><td>';
+        tableRow += dropAmount;
+        tableRow += '</td><td>';
+        tableRow += price * dropAmount;
+        tableRow += '</td></tr>';
+        noRngRevenueModalTable.innerHTML += tableRow;
+        noRngTotal += price * dropAmount;
+    }
+
     document.getElementById('revenueSpan').innerText = total.toLocaleString();
     window.revenue = total;
+    document.getElementById('noRngRevenueSpan').innerText = noRngTotal.toLocaleString();
+    window.noRngRevenue = noRngTotal;
+
+    let resultAccordion = document.getElementById("noRngDropsAccordion");
+    showElement(resultAccordion);
 
     resultDiv.replaceChildren(...newChildren);
     dropsResultDiv.replaceChildren(...newDropChildren);
+    noRngDropsResultDiv.replaceChildren(...newNoRngDropChildren);
 }
 
 function showDeaths(simResult) {
@@ -926,18 +1018,30 @@ function showConsumablesUsed(simResult) {
         );
         newChildren.push(consumableRow);
 
-        let tableRow = '<tr><td>';
+        let tableRow = '<tr class="' + itemDetailMap[consumable].name.replace(/\s+/g, '') + '"><td>';
         tableRow += itemDetailMap[consumable].name;
         tableRow += '</td><td contenteditable="true">';
-        let price = 0;
+        let price = -1;
+        let expensesSetting = document.getElementById('selectPrices_consumables').value;
         if (window.prices) {
             let item = window.prices[itemDetailMap[consumable].name];
-            if (item['ask'] !== -1) {
-                price = item['ask'];
-            } else if (item['bid'] !== -1) {
-                price = item['bid'];
-            } else {
-                price = item['vendor'];
+            if (item) {
+                if (expensesSetting == 'bid') {
+                    if (item['bid'] !== -1) {
+                        price = item['bid'];
+                    } else if (item['ask'] !== -1) {
+                        price = item['ask'];
+                    }
+                } else if (expensesSetting == 'ask') {
+                    if (item['ask'] !== -1) {
+                        price = item['ask'];
+                    } else if (item['bid'] !== -1) {
+                        price = item['bid'];
+                    }
+                }
+                if (price == -1) {
+                    price = item['vendor'];
+                }
             }
         }
         tableRow += price;
@@ -1633,8 +1737,11 @@ function initImportExportModal() {
             zone: zoneSelect.value,
             simulationTime: simulationTimeInput.value,
         };
-        navigator.clipboard.writeText(JSON.stringify(state));
-        alert("Current set has been copied to clipboard.")
+        try {
+            navigator.clipboard.writeText(JSON.stringify(state)).then(() => alert("Current set has been copied to clipboard."));
+        } catch (err) {
+            alert('Error copying to clipboard: ' + err);
+        }
     });
 
     let importSetButton = document.getElementById("buttonImportSet");
@@ -1749,7 +1856,7 @@ async function fetchPrices() {
     try {
         const response = await fetch('https://raw.githubusercontent.com/holychikenz/MWIApi/main/milkyapi.json');
         if (!response.ok) {
-            throw new Error('Error fetching');
+            throw new Error('Error fetching prices');
         }
         const pricesJson = await response.json();
         window.prices = pricesJson['market'];
@@ -1770,28 +1877,80 @@ document.addEventListener("input", (e) => {
     if (element.tagName == "TD" && element.parentNode.parentNode.parentNode.classList.value.includes('profit-table')) {
         let tableId = element.parentNode.parentNode.parentNode.id;
         let row = element.parentNode.querySelectorAll('td');
-        let amount = row[2];
-        let total = row[3];
-        if (tableId == 'revenueTable') {
-            window.revenue -= total.innerText;
-        } else {
-            window.expenses -= total.innerText;
-        }
+        let item = row[0].innerText;
         let newPrice = element.innerText;
-        let newTotal = newPrice * amount.innerText;
-        total.innerText = newTotal;
-        if (tableId == 'revenueTable') {
-            window.revenue += newTotal;
-            document.getElementById('revenueSpan').innerText = window.revenue.toLocaleString();
+
+        let revenueSetting = document.getElementById('selectPrices_drops').value;
+        let expensesSetting = document.getElementById('selectPrices_consumables').value;
+
+        let expensesDifference = 0;
+        let revenueDifference = 0;
+        let noRngRevenueDifference = 0;
+
+        if (tableId == 'expensesTable') {
+            expensesDifference = updateTable('expensesTable', item, newPrice);
+            if (revenueSetting == expensesSetting) {
+                revenueDifference = updateTable('revenueTable', item, newPrice);
+                noRngRevenueDifference = updateTable('noRngRevenueTable', item, newPrice);
+            }
+            if (window.prices) {
+                if (expensesSetting == 'bid') {
+                    window.prices[item]['bid'] = newPrice;
+                } else {
+                    window.prices[item]['ask'] = newPrice;
+                }
+            }
         } else {
-            window.expenses += newTotal;
-            document.getElementById('expensesSpan').innerText = window.expenses.toLocaleString();
+            revenueDifference = updateTable('revenueTable', item, newPrice);
+            noRngRevenueDifference = updateTable('noRngRevenueTable', item, newPrice);
+            if (revenueSetting == expensesSetting) {
+                expensesDifference = updateTable('expensesTable', item, newPrice);
+            }
+            if (window.prices) {
+                if (revenueSetting == 'bid') {
+                    window.prices[item]['bid'] = newPrice;
+                } else {
+                    window.prices[item]['ask'] = newPrice;
+                }
+            }
         }
+
+        window.expenses += expensesDifference;
+        document.getElementById('expensesSpan').innerText = window.expenses.toLocaleString();
+        window.revenue += revenueDifference;
+        document.getElementById('revenueSpan').innerText = window.revenue.toLocaleString();
+        window.noRngRevenue += noRngRevenueDifference;
+        document.getElementById('noRngRevenueSpan').innerText = window.noRngRevenue.toLocaleString();
+
         window.profit = window.revenue - window.expenses;
         document.getElementById('profitPreview').innerText = window.profit.toLocaleString();
         document.getElementById('profitSpan').innerText = window.profit.toLocaleString();
+        window.noRngProfit = window.noRngRevenue - window.expenses;
+        document.getElementById('noRngProfitSpan').innerText = window.noRngProfit.toLocaleString();
+        document.getElementById('noRngProfitPreview').innerText = window.noRngProfit.toLocaleString();
     }
 });
+
+function updateTable(tableId, item, price) {
+    let row = document.querySelector('#' + tableId + ' .' + item.replace(/\s+/g, ''));
+    if (row == null) {
+        return 0;
+    }
+
+    row = row.querySelectorAll('td');
+    let priceTd = row[1];
+    let amountTd = row[2];
+    let totalTd = row[3];
+    let oldTotal = totalTd.innerText;
+    let newTotal = price * amountTd.innerText;
+
+    if (priceTd.innerText != price) {
+        priceTd.innerText = price;
+    }
+    totalTd.innerText = newTotal;
+
+    return newTotal - oldTotal;
+}
 
 // #endregion
 
