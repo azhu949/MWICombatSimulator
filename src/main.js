@@ -2,8 +2,10 @@ import Equipment from "./combatsimulator/equipment.js";
 import Player from "./combatsimulator/player.js";
 import abilityDetailMap from "./combatsimulator/data/abilityDetailMap.json";
 import itemDetailMap from "./combatsimulator/data/itemDetailMap.json";
+import houseRoomDetailMap from "./combatsimulator/data/houseRoomDetailMap.json";
 import Ability from "./combatsimulator/ability.js";
 import Consumable from "./combatsimulator/consumable.js";
+import HouseRoom from "./combatsimulator/houseRoom"
 import combatTriggerDependencyDetailMap from "./combatsimulator/data/combatTriggerDependencyDetailMap.json";
 import combatTriggerConditionDetailMap from "./combatsimulator/data/combatTriggerConditionDetailMap.json";
 import combatTriggerComparatorDetailMap from "./combatsimulator/data/combatTriggerComparatorDetailMap.json";
@@ -87,6 +89,51 @@ function initEquipmentSelect(equipmentType) {
     selectElement.addEventListener("change", (event) => {
         equipmentSelectHandler(event, equipmentType);
     });
+}
+
+function initHouseRoomsModal() {
+    let houseRoomsList = document.getElementById("houseRoomsList");
+    let newChildren = [];
+    let houseRooms = Object.values(houseRoomDetailMap).sort((a, b) => a.sortIndex - b.sortIndex);
+    player.houseRooms = {};
+
+    for (const room of Object.values(houseRooms)) {
+        player.houseRooms[room.hrid] = 0;
+
+        let row = createElement("div", "row mb-2");
+
+        let nameCol = createElement("div", "col-md-4 offset-md-3 align-self-center", room.name);
+        row.appendChild(nameCol);
+
+        let levelCol = createElement("div", "col-md-2");
+        let levelInput = createHouseInput(room.hrid);
+
+        levelInput.addEventListener("input", function (e) {
+            let inputValue = e.target.value;
+            const hrid = e.target.dataset.houseHrid;
+            player.houseRooms[hrid] = parseInt(inputValue);
+        });
+
+        levelCol.appendChild(levelInput);
+        row.appendChild(levelCol);
+
+        newChildren.push(row);
+    }
+
+    houseRoomsList.replaceChildren(...newChildren);
+}
+
+function createHouseInput(hrid) {
+    let levelInput = document.createElement("input");
+    levelInput.className = "form-control";
+    levelInput.type = "number";
+    levelInput.placeholder = 0;
+    levelInput.min = 0;
+    levelInput.max = 8;
+    levelInput.step = 1;
+    levelInput.dataset.houseHrid = hrid;
+
+    return levelInput;
 }
 
 function initEnhancementLevelInput(equipmentType) {
@@ -1594,6 +1641,7 @@ function getEquipmentSetFromUI() {
         drinks: {},
         abilities: {},
         triggerMap: {},
+        houseRooms: {},
     };
 
     ["stamina", "intelligence", "attack", "power", "defense", "ranged", "magic"].forEach((skill) => {
@@ -1632,6 +1680,8 @@ function getEquipmentSetFromUI() {
 
     equipmentSet.triggerMap = triggerMap;
 
+    equipmentSet.houseRooms = player.houseRooms;
+
     return equipmentSet;
 }
 
@@ -1668,6 +1718,25 @@ function loadEquipmentSetIntoUI(equipmentSet) {
     }
 
     triggerMap = equipmentSet.triggerMap;
+
+    if (equipmentSet.houseRooms) {
+        for (const room in equipmentSet.houseRooms) {
+            const field = document.querySelector('[data-house-hrid="' + room + '"]');
+            if (equipmentSet.houseRooms[room]) {
+                field.value = equipmentSet.houseRooms[room];
+            } else {
+                field.value = '';
+            }
+        }
+        player.houseRooms = equipmentSet.houseRooms;
+    } else {
+        let houseRooms = Object.values(houseRoomDetailMap);
+        for (const room of Object.values(houseRooms)) {
+            const field = document.querySelector('[data-house-hrid="' + room.hrid + '"]');
+            field.value = '';
+            player.houseRooms[room.hrid] = 0;
+        }
+    }
 
     updateState();
     updateUI();
@@ -1736,6 +1805,7 @@ function initImportExportModal() {
             triggerMap: triggerMap,
             zone: zoneSelect.value,
             simulationTime: simulationTimeInput.value,
+            houseRooms: player.houseRooms
         };
         try {
             navigator.clipboard.writeText(JSON.stringify(state)).then(() => alert("Current set has been copied to clipboard."));
@@ -1811,6 +1881,25 @@ function initImportExportModal() {
 
         if (importSet.triggerMap) {
             triggerMap = importSet.triggerMap;
+        }
+
+        if (importSet.houseRooms) {
+            for (const room in importSet.houseRooms) {
+                const field = document.querySelector('[data-house-hrid="' + room + '"]');
+                if (importSet.houseRooms[room]) {
+                    field.value = importSet.houseRooms[room];
+                } else {
+                    field.value = '';
+                }
+            }
+            player.houseRooms = importSet.houseRooms;
+        } else {
+            let houseRooms = Object.values(houseRoomDetailMap);
+            for (const room of Object.values(houseRooms)) {
+                const field = document.querySelector('[data-house-hrid="' + room.hrid + '"]');
+                field.value = '';
+                player.houseRooms[room.hrid] = 0;
+            }
         }
 
         let zoneSelect = document.getElementById("selectZone");
@@ -1983,6 +2072,7 @@ darkModeToggle.addEventListener('change', () => {
 });
 
 initEquipmentSection();
+initHouseRoomsModal();
 initLevelSection();
 initFoodSection();
 initDrinksSection();

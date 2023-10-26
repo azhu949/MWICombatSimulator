@@ -2,6 +2,7 @@ import Ability from "./ability";
 import CombatUnit from "./combatUnit";
 import Consumable from "./consumable";
 import Equipment from "./equipment";
+import HouseRoom from "./houseRoom";
 
 class Player extends CombatUnit {
     equipment = {
@@ -41,6 +42,11 @@ class Player extends CombatUnit {
         player.food = dto.food.map((food) => (food ? Consumable.createFromDTO(food) : null));
         player.drinks = dto.drinks.map((drink) => (drink ? Consumable.createFromDTO(drink) : null));
         player.abilities = dto.abilities.map((ability) => (ability ? Ability.createFromDTO(ability) : null));
+        Object.entries(dto.houseRooms).forEach(houseRoom => {
+            if (houseRoom[1] > 0) {
+                player.houseRooms.push(new HouseRoom(houseRoom[0], houseRoom[1]))
+            }
+        });
 
         return player;
     }

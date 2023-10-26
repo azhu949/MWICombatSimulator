@@ -10052,7 +10052,7 @@
             "bossFightMonsters": [
                 "/monsters/marine_huntress"
             ],
-            "battlesPerBoss": 2
+            "battlesPerBoss": 10
         },
         "sortIndex": 17
     },
@@ -10144,7 +10144,7 @@
             "bossFightMonsters": [
                 "/monsters/red_panda"
             ],
-            "battlesPerBoss": 2
+            "battlesPerBoss": 10
         },
         "sortIndex": 43
     },
@@ -10551,7 +10551,7 @@
             "bossFightMonsters": [
                 "/monsters/gobo_chieftain"
             ],
-            "battlesPerBoss": 2
+            "battlesPerBoss": 10
         },
         "sortIndex": 28
     },
@@ -10738,7 +10738,7 @@
             "bossFightMonsters": [
                 "/monsters/crystal_colossus"
             ],
-            "battlesPerBoss": 2
+            "battlesPerBoss": 10
         },
         "sortIndex": 47
     },
@@ -10925,7 +10925,7 @@
             "bossFightMonsters": [
                 "/monsters/demonic_overlord"
             ],
-            "battlesPerBoss": 2
+            "battlesPerBoss": 10
         },
         "sortIndex": 55
     },
@@ -11012,7 +11012,7 @@
             "bossFightMonsters": [
                 "/monsters/luna_empress"
             ],
-            "battlesPerBoss": 2
+            "battlesPerBoss": 10
         },
         "sortIndex": 22
     },
@@ -11269,7 +11269,7 @@
             "bossFightMonsters": [
                 "/monsters/the_watcher"
             ],
-            "battlesPerBoss": 2
+            "battlesPerBoss": 10
         },
         "sortIndex": 32
     },
@@ -11621,7 +11621,7 @@
             "bossFightMonsters": [
                 "/monsters/chronofrost_sorcerer"
             ],
-            "battlesPerBoss": 2
+            "battlesPerBoss": 10
         },
         "sortIndex": 37
     },
@@ -11743,7 +11743,7 @@
             "bossFightMonsters": [
                 "/monsters/giant_shoebill"
             ],
-            "battlesPerBoss": 2
+            "battlesPerBoss": 10
         },
         "sortIndex": 11
     },
@@ -11895,7 +11895,7 @@
             "bossFightMonsters": [
                 "/monsters/dusk_revenant"
             ],
-            "battlesPerBoss": 2
+            "battlesPerBoss": 10
         },
         "sortIndex": 51
     },

@@ -133,6 +133,7 @@ class CombatSimulator extends EventTarget {
     }
 
     processCombatStartEvent(event) {
+        this.players[0].generateHouseBuffs();
         this.players[0].reset(this.simulationTime);
         let regenTickEvent = new RegenTickEvent(this.simulationTime + REGEN_TICK_INTERVAL);
         this.eventQueue.addEvent(regenTickEvent);
@@ -329,6 +330,9 @@ class CombatSimulator extends EventTarget {
                 this.simulationTime + source.combatDetails.combatStats.attackInterval,
                 source
             );
+            /*-if (source.isPlayer) {
+                console.log("next attack " + ((this.simulationTime + source.combatDetails.combatStats.attackInterval) / 1e9))
+            }*/
             this.eventQueue.addEvent(autoAttackEvent);
         } else {
             let nextCast = Number.MAX_SAFE_INTEGER;
@@ -358,6 +362,9 @@ class CombatSimulator extends EventTarget {
                     source.blindExpireTime + source.combatDetails.combatStats.attackInterval,
                     source
                 );
+                /*-if (source.isPlayer) {
+                    console.log("next attack " + ((source.blindExpireTime + source.combatDetails.combatStats.attackInterval) / 1e9))
+                }*/
                 this.eventQueue.addEvent(autoAttackEvent);
             } else {
                 let awaitCooldownEvent = new AwaitCooldownEvent(
@@ -735,7 +742,7 @@ class CombatSimulator extends EventTarget {
             if (attackResult.didHit && abilityEffect.stunChance > 0 && Math.random() < (abilityEffect.stunChance * 100 / (100 + target.combatDetails.combatStats.tenacity))) {
                 target.isStunned = true;
                 target.stunExpireTime = this.simulationTime + abilityEffect.stunDuration;
-                this.eventQueue.clearMatching((event) => (event.type == AutoAttackEvent.type || event.type == AbilityCastEndEvent.type) && event.source == target);
+                this.eventQueue.clearMatching((event) => (event.type == AutoAttackEvent.type || event.type == AbilityCastEndEvent.type || event.type == StunExpirationEvent.type) && event.source == target);
                 let stunExpirationEvent = new StunExpirationEvent(target.stunExpireTime, target);
                 this.eventQueue.addEvent(stunExpirationEvent);
             }
@@ -743,6 +750,7 @@ class CombatSimulator extends EventTarget {
             if (attackResult.didHit && abilityEffect.blindChance > 0 && Math.random() < (abilityEffect.blindChance * 100 / (100 + target.combatDetails.combatStats.tenacity))) {
                 target.isBlinded = true;
                 target.blindExpireTime = this.simulationTime + abilityEffect.blindDuration;
+                this.eventQueue.clearMatching((event) => event.type == BlindExpirationEvent.type && event.source == target)
                 if (this.eventQueue.clearMatching((event) => event.type == AutoAttackEvent.type && event.source == target)) {
                     // console.log("Blind " + (this.simulationTime / 1000000000));
                     this.addNextAttackEvent(target);
@@ -754,6 +762,7 @@ class CombatSimulator extends EventTarget {
             if (attackResult.didHit && abilityEffect.silenceChance > 0 && Math.random() < (abilityEffect.silenceChance * 100 / (100 + target.combatDetails.combatStats.tenacity))) {
                 target.isSilenced = true;
                 target.silenceExpireTime = this.simulationTime + abilityEffect.silenceDuration;
+                this.eventQueue.clearMatching((event) => event.type == SilenceExpirationEvent.type && event.source == target)
                 if (this.eventQueue.clearMatching((event) => event.type == AbilityCastEndEvent.type && event.source == target)) {
                     // console.log("Silence " + (this.simulationTime / 1000000000));
                     this.addNextAttackEvent(target);

@@ -19,6 +19,7 @@ class CombatUnit {
     abilities = [null, null, null, null];
     food = [null, null, null];
     drinks = [null, null, null];
+    houseRooms = [];
     dropTable = [];
     rareDropTable = [];
     abilityManaCosts = new Map();
@@ -109,6 +110,7 @@ class CombatUnit {
         },
     };
     combatBuffs = {};
+    houseBuffs = {};
 
     constructor() { }
 
@@ -187,7 +189,7 @@ class CombatUnit {
             (1 + this.combatDetails.combatStats.magicDamage) *
             (1 + damageRatioBoost);
 
-        let baseMagicEvasion = (10 + ((this.combatDetails.defenseLevel + this.combatDetails.rangedLevel) / 2)) * (1 + this.combatDetails.combatStats.magicEvasion);
+        let baseMagicEvasion = (10 + (this.combatDetails.defenseLevel * 0.75 + this.combatDetails.rangedLevel * 0.25)) * (1 + this.combatDetails.combatStats.magicEvasion);
         this.combatDetails.magicEvasionRating = baseMagicEvasion;
         for (const boost of evasionBoosts) {
             this.combatDetails.magicEvasionRating += boost.flatBoost;
@@ -199,12 +201,15 @@ class CombatUnit {
         this.combatDetails.combatStats.natureAmplify += this.getBuffBoost("/buff_types/nature_amplify").flatBoost;
         this.combatDetails.combatStats.fireAmplify += this.getBuffBoost("/buff_types/fire_amplify").flatBoost;
 
+        if (this.isPlayer) {
+            this.combatDetails.combatStats.attackInterval /= (1 + (this.combatDetails.attackLevel / 2000));
+        }
         let attackIntervalBoosts = this.getBuffBoosts("/buff_types/attack_speed");
         let attackIntervalRatioBoost = attackIntervalBoosts
             .map((boost) => boost.ratioBoost)
             .reduce((prev, cur) => prev + cur, 0);
-        this.combatDetails.combatStats.attackInterval =
-            this.combatDetails.combatStats.attackInterval * (1 / (1 + attackIntervalRatioBoost));
+        this.combatDetails.combatStats.attackInterval /= (1 + attackIntervalRatioBoost);
+
 
         let baseArmor = 0.2 * this.combatDetails.defenseLevel + this.combatDetails.combatStats.armor;
         this.combatDetails.totalArmor = baseArmor;
@@ -256,7 +261,9 @@ class CombatUnit {
         this.combatDetails.combatStats.castSpeed += this.getBuffBoost("/buff_types/cast_speed").flatBoost;
 
         this.combatDetails.combatStats.combatDropRate += (1 + this.combatDetails.combatStats.combatDropRate) * this.getBuffBoost("/buff_types/combat_drop_rate").ratioBoost;
-        this.combatDetails.combatStats.combatRareFind += (1 + this.combatDetails.combatStats.combatRareFind) * this.getBuffBoost("/buff_types/combat_rare_find").ratioBoost;
+        let combatRareFindBoosts = this.getBuffBoost("/buff_types/rare_find");
+        this.combatDetails.combatStats.combatRareFind += combatRareFindBoosts.flatBoost;
+        this.combatDetails.combatStats.combatRareFind += (1 + this.combatDetails.combatStats.combatRareFind) * combatRareFindBoosts.ratioBoost;
     }
 
     addBuff(buff, currentTime) {
@@ -264,6 +271,24 @@ class CombatUnit {
         this.combatBuffs[buff.uniqueHrid] = buff;
 
         this.updateCombatDetails();
+    }
+
+    addHouseBuff(buff) {
+        if (this.houseBuffs[buff.typeHrid]) {
+            this.houseBuffs[buff.typeHrid].flatBoost += buff.flatBoost;
+            this.houseBuffs[buff.typeHrid].ratioBoost += buff.ratioBoost;
+        } else {
+            this.houseBuffs[buff.typeHrid] = buff;
+        }
+    }
+
+    generateHouseBuffs() {
+        for (let i = 0; i < this.houseRooms.length; i++) {
+            const houseRoom = this.houseRooms[i];
+            houseRoom.buffs.forEach(buff => {
+                this.addHouseBuff(buff);
+            });
+        }
     }
 
     removeExpiredBuffs(currentTime) {
@@ -278,7 +303,7 @@ class CombatUnit {
     }
 
     clearBuffs() {
-        this.combatBuffs = {};
+        this.combatBuffs = this.houseBuffs;
         this.updateCombatDetails();
     }
 

@@ -43,6 +43,8 @@ class Monster extends CombatUnit {
             this.combatDetails.combatStats[key] = value;
         }
 
+        this.combatDetails.combatStats.attackInterval = gameMonster.combatDetails.attackInterval;
+
         super.updateCombatDetails();
     }
 }
