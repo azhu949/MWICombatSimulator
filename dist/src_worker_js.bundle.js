@@ -1316,7 +1316,7 @@ class CombatUnit {
     }
 
     clearBuffs() {
-        this.combatBuffs = this.houseBuffs;
+        this.combatBuffs = structuredClone(this.houseBuffs);
         this.updateCombatDetails();
     }
 
