@@ -168,7 +168,7 @@ class CombatUtilities {
             didHit = true;
             let penetratedTargetResistance = targetResistance;
 
-            if (sourcePenetration > 0) {
+            if (sourcePenetration > 0 && targetResistance > 0) {
                 penetratedTargetResistance = targetResistance / (1 + sourcePenetration);
             }
 
@@ -185,7 +185,7 @@ class CombatUtilities {
         if (targetReflectPower > 0 && targetResistance > 0) {
             let penetratedSourceResistance = sourceResistance
 
-            if (targetPenetration > 0) {
+            if (targetPenetration > 0 && sourceResistance > 0) {
                 penetratedSourceResistance = sourceResistance / (1 + targetPenetration);
             }
 
