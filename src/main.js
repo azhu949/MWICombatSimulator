@@ -1118,9 +1118,11 @@ function showManaUsed(simResult) {
     }
     for (let ability in simResult.manaUsed) {
         let manaPerHour = (simResult.manaUsed[ability] / hoursSimulated).toFixed(0);
+        let castsPerHour = (manaPerHour / abilityDetailMap[ability].manaCost);
+        castsPerHour = " (" + castsPerHour + ")";
         let manaRow = createRow(
             ["col-md-6", "col-md-6 text-end"],
-            [ability.split("/")[2].replaceAll("_", " "), manaPerHour]
+            [ability.split("/")[2].replaceAll("_", " ") + castsPerHour, manaPerHour]
         );
         newChildren.push(manaRow);
     }

@@ -426,10 +426,12 @@ class CombatUnit {
         this.combatDetails.combatStats.criticalDamage += this.getBuffBoost("/buff_types/critical_damage").flatBoost;
         this.combatDetails.combatStats.castSpeed += this.getBuffBoost("/buff_types/cast_speed").flatBoost;
 
-        this.combatDetails.combatStats.combatDropRate += (1 + this.combatDetails.combatStats.combatDropRate) * this.getBuffBoost("/buff_types/combat_drop_rate").ratioBoost;
+        let combatDropRateBoosts = this.getBuffBoost("/buff_types/combat_drop_rate");
+        this.combatDetails.combatStats.combatDropRate += (1 + this.combatDetails.combatStats.combatDropRate) * combatDropRateBoosts.ratioBoost;
+        this.combatDetails.combatStats.combatDropRate += combatDropRateBoosts.flatBoost;
         let combatRareFindBoosts = this.getBuffBoost("/buff_types/rare_find");
-        this.combatDetails.combatStats.combatRareFind += combatRareFindBoosts.flatBoost;
         this.combatDetails.combatStats.combatRareFind += (1 + this.combatDetails.combatStats.combatRareFind) * combatRareFindBoosts.ratioBoost;
+        this.combatDetails.combatStats.combatRareFind += combatRareFindBoosts.flatBoost;
     }
 
     addBuff(buff, currentTime) {
@@ -2489,9 +2491,11 @@ function showManaUsed(simResult) {
     }
     for (let ability in simResult.manaUsed) {
         let manaPerHour = (simResult.manaUsed[ability] / hoursSimulated).toFixed(0);
+        let castsPerHour = (manaPerHour / _combatsimulator_data_abilityDetailMap_json__WEBPACK_IMPORTED_MODULE_2__[ability].manaCost);
+        castsPerHour = " (" + castsPerHour + ")";
         let manaRow = createRow(
             ["col-md-6", "col-md-6 text-end"],
-            [ability.split("/")[2].replaceAll("_", " "), manaPerHour]
+            [ability.split("/")[2].replaceAll("_", " ") + castsPerHour, manaPerHour]
         );
         newChildren.push(manaRow);
     }

@@ -260,10 +260,12 @@ class CombatUnit {
         this.combatDetails.combatStats.criticalDamage += this.getBuffBoost("/buff_types/critical_damage").flatBoost;
         this.combatDetails.combatStats.castSpeed += this.getBuffBoost("/buff_types/cast_speed").flatBoost;
 
-        this.combatDetails.combatStats.combatDropRate += (1 + this.combatDetails.combatStats.combatDropRate) * this.getBuffBoost("/buff_types/combat_drop_rate").ratioBoost;
+        let combatDropRateBoosts = this.getBuffBoost("/buff_types/combat_drop_rate");
+        this.combatDetails.combatStats.combatDropRate += (1 + this.combatDetails.combatStats.combatDropRate) * combatDropRateBoosts.ratioBoost;
+        this.combatDetails.combatStats.combatDropRate += combatDropRateBoosts.flatBoost;
         let combatRareFindBoosts = this.getBuffBoost("/buff_types/rare_find");
-        this.combatDetails.combatStats.combatRareFind += combatRareFindBoosts.flatBoost;
         this.combatDetails.combatStats.combatRareFind += (1 + this.combatDetails.combatStats.combatRareFind) * combatRareFindBoosts.ratioBoost;
+        this.combatDetails.combatStats.combatRareFind += combatRareFindBoosts.flatBoost;
     }
 
     addBuff(buff, currentTime) {
