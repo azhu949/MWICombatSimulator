@@ -2491,7 +2491,7 @@ function showManaUsed(simResult) {
     }
     for (let ability in simResult.manaUsed) {
         let manaPerHour = (simResult.manaUsed[ability] / hoursSimulated).toFixed(0);
-        let castsPerHour = (manaPerHour / _combatsimulator_data_abilityDetailMap_json__WEBPACK_IMPORTED_MODULE_2__[ability].manaCost);
+        let castsPerHour = (manaPerHour / _combatsimulator_data_abilityDetailMap_json__WEBPACK_IMPORTED_MODULE_2__[ability].manaCost).toFixed(2);
         castsPerHour = " (" + castsPerHour + ")";
         let manaRow = createRow(
             ["col-md-6", "col-md-6 text-end"],
