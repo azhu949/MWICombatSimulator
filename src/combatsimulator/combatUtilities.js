@@ -259,7 +259,7 @@ class CombatUtilities {
         return { damageDone, didHit, reflectDamageDone, lifeStealHeal, manaLeechMana, experienceGained };
     }
 
-    static processHeal(source, abilityEffect) {
+    static processHeal(source, abilityEffect, target) {
         if (abilityEffect.combatStyleHrid != "/combat_styles/magic") {
             throw new Error("Heal ability effect not supported for combat style: " + abilityEffect.combatStyleHrid);
         }
@@ -274,9 +274,43 @@ class CombatUtilities {
         let maxHeal = healingAmplify * (baseHealRatio * magicMaxDamage + baseHealFlat);
 
         let heal = this.randomInt(minHeal, maxHeal);
-        let amountHealed = source.addHitpoints(heal);
+        let amountHealed = target.addHitpoints(heal);
 
         return amountHealed;
+    }
+
+    static processRevive(source, abilityEffect, target) {
+        if (abilityEffect.combatStyleHrid != "/combat_styles/magic") {
+            throw new Error("Heal ability effect not supported for combat style: " + abilityEffect.combatStyleHrid);
+        }
+
+        let healingAmplify = 1 + source.combatDetails.combatStats.healingAmplify;
+        let magicMaxDamage = source.combatDetails.magicMaxDamage;
+
+        let baseHealFlat = abilityEffect.damageFlat;
+        let baseHealRatio = abilityEffect.damageRatio;
+
+        let minHeal = healingAmplify * (1 + baseHealFlat);
+        let maxHeal = healingAmplify * (baseHealRatio * magicMaxDamage + baseHealFlat);
+
+        let heal = this.randomInt(minHeal, maxHeal);
+        let amountHealed = target.addHitpoints(heal);
+        target.combatDetails.currentManapoints = target.combatDetails.maxManapoints;
+        target.clearCCs();
+        target.clearBuffs();
+
+        return amountHealed;
+    }
+
+    static processSpendHp(source, abilityEffect) {
+        let currentHp = source.combatDetails.currentHitpoints;
+        let spendHpRatio = abilityEffect.spendHpRatio;
+
+        let spentHp = Math.floor(currentHp * spendHpRatio);
+
+        source.combatDetails.currentHitpoints -= spentHp;
+
+        return spentHp;
     }
 
     static calculateTickValue(totalValue, totalTicks, currentTick) {
@@ -330,6 +364,10 @@ class CombatUtilities {
 
     static calculateMagicExperience(damage, damagePrevented) {
         return 0.4 + 0.083375 * (damage + 0.35 * damagePrevented)
+    }
+
+    static calculateHealingExperience(healed) {
+        return CombatUtilities.calculateMagicExperience(healed, 0) * 2;
     }
 }
 

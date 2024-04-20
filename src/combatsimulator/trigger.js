@@ -62,6 +62,15 @@ class Trigger {
             case "/combat_trigger_conditions/number_of_active_units":
                 dependencyValue = dependency.filter((unit) => unit.combatDetails.currentHitpoints > 0).length;
                 break;
+            case "/combat_trigger_conditions/number_of_dead_units":
+                dependencyValue = dependency.filter((unit) => unit.combatDetails.currentHitpoints <= 0).length;
+                break;
+            case "/combat_trigger_conditions/lowest_hp_percentage":
+                dependencyValue = dependency.reduce((prev, curr) => {
+                    let currentHpPercentage = curr.combatDetails.currentHitpoints / curr.combatDetails.maxHitpoints;
+                    return currentHpPercentage < prev ? currentHpPercentage : prev;
+                }, 2) * 100;
+                break;
             default:
                 dependencyValue = dependency
                     .map((unit) => this.getDependencyValue(unit, currentTime))
@@ -109,6 +118,27 @@ class Trigger {
             case "/combat_trigger_conditions/frost_surge":
             case "/combat_trigger_conditions/elusiveness":
             case "/combat_trigger_conditions/channeling_coffee":
+            case "/combat_trigger_conditions/aqua_aura_water_amplify":
+            case "/combat_trigger_conditions/aqua_aura_water_resistance":
+            case "/combat_trigger_conditions/critical_aura":
+            case "/combat_trigger_conditions/fierce_aura_armor":
+            case "/combat_trigger_conditions/fierce_aura_physical_amplify":
+            case "/combat_trigger_conditions/flame_aura_fire_amplify":
+            case "/combat_trigger_conditions/flame_aura_fire_resistance":
+            case "/combat_trigger_conditions/insanity_attack_speed":
+            case "/combat_trigger_conditions/insanity_cast_speed":
+            case "/combat_trigger_conditions/insanity_damage":
+            case "/combat_trigger_conditions/invincible_armor":
+            case "/combat_trigger_conditions/invincible_fire_resistance":
+            case "/combat_trigger_conditions/invincible_nature_resistance":
+            case "/combat_trigger_conditions/invincible_water_resistance":
+            case "/combat_trigger_conditions/provoke":
+            case "/combat_trigger_conditions/speed_aura_attack_speed":
+            case "/combat_trigger_conditions/speed_aura_cast_speed":
+            case "/combat_trigger_conditions/sylvan_aura_healing_amplify":
+            case "/combat_trigger_conditions/sylvan_aura_nature_amplify":
+            case "/combat_trigger_conditions/sylvan_aura_nature_resistance":
+            case "/combat_trigger_conditions/taunt":
                 let buffHrid = "/buff_uniques";
                 buffHrid += this.conditionHrid.slice(this.conditionHrid.lastIndexOf("/"));
                 return source.combatBuffs[buffHrid];

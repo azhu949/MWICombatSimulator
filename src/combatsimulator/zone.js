@@ -9,13 +9,14 @@ class Zone {
         this.monsterSpawnInfo = gameZone.monsterSpawnInfo;
         this.encountersKilled = 0;
         this.monsterSpawnInfo.battlesPerBoss = 10;
+        this.buffs = gameZone.buffs;
     }
 
     getRandomEncounter() {
 
-        if (this.monsterSpawnInfo.bossFightMonsters && this.encountersKilled == this.monsterSpawnInfo.battlesPerBoss) {
+        if (this.monsterSpawnInfo.bossSpawns && this.encountersKilled == this.monsterSpawnInfo.battlesPerBoss) {
             this.encountersKilled = 1;
-            return this.monsterSpawnInfo.bossFightMonsters.map((hrid) => new Monster(hrid));
+            return this.monsterSpawnInfo.bossSpawns.map((monster) => new Monster(monster.combatMonsterHrid, monster.isElite));
         }
 
         let totalWeight = this.monsterSpawnInfo.spawns.reduce((prev, cur) => prev + cur.rate, 0);
@@ -33,7 +34,7 @@ class Zone {
                     totalStrength += spawn.strength;
 
                     if (totalStrength <= this.monsterSpawnInfo.maxTotalStrength) {
-                        encounterHrids.push(spawn.combatMonsterHrid);
+                        encounterHrids.push({ 'hrid': spawn.combatMonsterHrid, 'isElite': spawn.isElite });
                     } else {
                         break outer;
                     }
@@ -42,7 +43,7 @@ class Zone {
             }
         }
         this.encountersKilled++;
-        return encounterHrids.map((hrid) => new Monster(hrid));
+        return encounterHrids.map((hrid) => new Monster(hrid.hrid, hrid.isElite));
     }
 }
 

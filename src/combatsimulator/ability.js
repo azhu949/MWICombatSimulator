@@ -15,6 +15,7 @@ class Ability {
         this.manaCost = gameAbility.manaCost;
         this.cooldownDuration = gameAbility.cooldownDuration;
         this.castDuration = gameAbility.castDuration;
+        this.isSpecialAbility = gameAbility.isSpecialAbility;
 
         this.abilityEffects = [];
 
@@ -35,6 +36,7 @@ class Ability {
                 silenceDuration: effect.silenceDuration,
                 stunChance: effect.stunChance,
                 stunDuration: effect.stunDuration,
+                spendHpRatio: effect.spendHpRatio,
                 buffs: null,
             };
             if (effect.buffs) {

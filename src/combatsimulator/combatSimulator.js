@@ -65,9 +65,13 @@ class CombatSimulator extends EventTarget {
         this.simResult.setDropRateMultipliers(this.players[0]);
         this.simResult.setManaUsed(this.players[0]);
 
-        if (this.zone.monsterSpawnInfo.bossFightMonsters) {
-            this.simResult.bossFightMonsters = this.zone.monsterSpawnInfo.bossFightMonsters;
+        if (this.zone.monsterSpawnInfo.bossSpawns) {
+            for (const boss in this.zone.monsterSpawnInfo.bossSpawns) {
+                this.simResult.bossSpawns.push(boss.combatMonsterHrid);
+            }
         }
+
+        this.simResult.isElite = this.zone.monsterSpawnInfo.spawns[0].isElite;
 
         return this.simResult;
     }
@@ -133,7 +137,7 @@ class CombatSimulator extends EventTarget {
     }
 
     processCombatStartEvent(event) {
-        this.players[0].generateHouseBuffs();
+        this.players[0].generatePermanentBuffs();
         this.players[0].reset(this.simulationTime);
         let regenTickEvent = new RegenTickEvent(this.simulationTime + REGEN_TICK_INTERVAL);
         this.eventQueue.addEvent(regenTickEvent);
@@ -331,7 +335,7 @@ class CombatSimulator extends EventTarget {
                 source
             );
             /*-if (source.isPlayer) {
-                console.log("next attack " + ((this.simulationTime + source.combatDetails.combatStats.attackInterval) / 1e9))
+                // console.log("next attack " + ((this.simulationTime + source.combatDetails.combatStats.attackInterval) / 1e9))
             }*/
             this.eventQueue.addEvent(autoAttackEvent);
         } else {
@@ -363,7 +367,7 @@ class CombatSimulator extends EventTarget {
                     source
                 );
                 /*-if (source.isPlayer) {
-                    console.log("next attack " + ((source.blindExpireTime + source.combatDetails.combatStats.attackInterval) / 1e9))
+                    // console.log("next attack " + ((source.blindExpireTime + source.combatDetails.combatStats.attackInterval) / 1e9))
                 }*/
                 this.eventQueue.addEvent(autoAttackEvent);
             } else {
@@ -666,8 +670,14 @@ class CombatSimulator extends EventTarget {
                 case "/ability_effect_types/heal":
                     this.processAbilityHealEffect(source, ability, abilityEffect);
                     break;
+                case "/ability_effect_types/spend_hp":
+                    this.processAbilitySpendHpEffect(source, ability, abilityEffect);
+                    break;
+                case "/ability_effect_types/revive":
+                    this.processAbilityReviveEffect(source, ability, abilityEffect);
+                    break;
                 default:
-                    throw new Error("Unsupported effect type for ability: " + ability.hrid);
+                    throw new Error("Unsupported effect type for ability: " + ability.hrid + " effectType: " + abilityEffect.effectType);
             }
         }
 
@@ -686,6 +696,18 @@ class CombatSimulator extends EventTarget {
     }
 
     processAbilityBuffEffect(source, ability, abilityEffect) {
+        if (abilityEffect.targetType == "all allies") {
+            let targets = source.isPlayer ? this.players : this.enemies;
+            for (const target of targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0)) {
+                for (const buff of abilityEffect.buffs) {
+                    target.addBuff(buff, this.simulationTime);
+                    let checkBuffExpirationEvent = new CheckBuffExpirationEvent(this.simulationTime + buff.duration, target);
+                    this.eventQueue.addEvent(checkBuffExpirationEvent);
+                }
+            }
+            return;
+        }
+
         if (abilityEffect.targetType != "self") {
             throw new Error("Unsupported target type for buff ability effect: " + ability.hrid);
         }
@@ -801,15 +823,89 @@ class CombatSimulator extends EventTarget {
     }
 
     processAbilityHealEffect(source, ability, abilityEffect) {
+
+        if (abilityEffect.targetType == "all allies") {
+            let targets = source.isPlayer ? this.players : this.enemies;
+            for (const target of targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0)) {
+                let amountHealed = CombatUtilities.processHeal(source, abilityEffect, target);
+                let experienceGained = CombatUtilities.calculateHealingExperience(amountHealed);
+
+                this.simResult.addHitpointsGained(target, ability.hrid, amountHealed);
+                this.simResult.addExperienceGain(source, "magic", experienceGained);
+            }
+            return;
+        }
+
+        if (abilityEffect.targetType == "lowest HP ally") {
+            let targets = source.isPlayer ? this.players : this.enemies;
+            let healTarget;
+            for (const target of targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0)) {
+                if (!healTarget) {
+                    healTarget = target;
+                    continue;
+                }
+                if (target.combatDetails.currentHitpoints < healTarget.combatDetails.currentHitpoints) {
+                    healTarget = target;
+                }
+            }
+
+            if (healTarget) {
+                let amountHealed = CombatUtilities.processHeal(source, abilityEffect, healTarget);
+                let experienceGained = CombatUtilities.calculateHealingExperience(amountHealed);
+
+                this.simResult.addHitpointsGained(healTarget, ability.hrid, amountHealed);
+                this.simResult.addExperienceGain(source, "magic", experienceGained);
+            }
+            return;
+        }
+
         if (abilityEffect.targetType != "self") {
             throw new Error("Unsupported target type for heal ability effect: " + ability.hrid);
         }
 
-        let amountHealed = CombatUtilities.processHeal(source, abilityEffect);
-        let experienceGained = CombatUtilities.calculateMagicExperience(amountHealed, 0);
+        let amountHealed = CombatUtilities.processHeal(source, abilityEffect, source);
+        let experienceGained = CombatUtilities.calculateHealingExperience(amountHealed);
 
         this.simResult.addHitpointsGained(source, ability.hrid, amountHealed);
         this.simResult.addExperienceGain(source, "magic", experienceGained);
+    }
+
+    processAbilityReviveEffect(source, ability, abilityEffect) {
+        if (abilityEffect.targetType != "a dead ally") {
+            throw new Error("Unsupported target type for revive ability effect: " + ability.hrid);
+        }
+
+        let targets = source.isPlayer ? this.players : this.enemies;
+        let reviveTarget = targets.find((unit) => unit && unit.combatDetails.currentHitpoints <= 0);
+
+        if (reviveTarget) {
+            let amountHealed = CombatUtilities.processRevive(source, abilityEffect, reviveTarget);
+            let experienceGained = CombatUtilities.calculateHealingExperience(amountHealed);
+
+            this.simResult.addHitpointsGained(reviveTarget, ability.hrid, amountHealed);
+            this.simResult.addExperienceGain(source, "magic", experienceGained);
+
+            this.addNextAttackEvent(reviveTarget);
+
+            if (!source.isPlayer) {
+                this.simResult.updateTimeSpentAlive(reviveTarget.hrid, true, this.simulationTime);
+            }
+
+            // console.log(source.hrid + " revived " + reviveTarget.hrid + " with " + amountHealed + " HP.");
+        }
+        return;
+    }
+
+    processAbilitySpendHpEffect(source, ability, abilityEffect) {
+        if (abilityEffect.targetType != "self") {
+            throw new Error("Unsupported target type for spend hp ability effect: " + ability.hrid);
+        }
+
+        let hpSpent = CombatUtilities.processSpendHp(source, abilityEffect);
+        let experienceGained = CombatUtilities.calculateStaminaExperience(0, hpSpent);
+
+        this.simResult.addHitpointsSpent(source, ability.hrid, hpSpent);
+        this.simResult.addExperienceGain(source, "stamina", experienceGained);
     }
 }
 

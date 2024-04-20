@@ -306,7 +306,8 @@ function updateCombatStatsUI() {
         "totalArmor",
         "totalWaterResistance",
         "totalNatureResistance",
-        "totalFireResistance"
+        "totalFireResistance",
+        "totalThreat"
     ].forEach((stat) => {
         let element = document.getElementById("combatStat_" + stat);
         element.innerHTML = Math.floor(player.combatDetails[stat]);
@@ -472,13 +473,19 @@ function updateDrinksUI() {
 // #region Abilities
 
 function initAbilitiesSection() {
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
         let selectElement = document.getElementById("selectAbility_" + i);
         let inputElement = document.getElementById("inputAbilityLevel_" + i);
 
         inputElement.value = 1;
 
-        let gameAbilities = Object.values(abilityDetailMap).sort((a, b) => a.sortIndex - b.sortIndex);
+        let gameAbilities;
+        if (i == 0) {
+            gameAbilities = Object.values(abilityDetailMap).filter(x => x.isSpecialAbility).sort((a, b) => a.sortIndex - b.sortIndex);
+        } else {
+            gameAbilities = Object.values(abilityDetailMap).filter(x => !x.isSpecialAbility).sort((a, b) => a.sortIndex - b.sortIndex);
+        }
+
 
         for (const ability of Object.values(gameAbilities)) {
             selectElement.add(new Option(ability.name, ability.hrid));
@@ -494,7 +501,7 @@ function abilitySelectHandler() {
 }
 
 function updateAbilityState() {
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
         let abilitySelect = document.getElementById("selectAbility_" + i);
         abilities[i] = abilitySelect.value;
         if (abilities[i] && !triggerMap[abilities[i]]) {
@@ -505,7 +512,7 @@ function updateAbilityState() {
 }
 
 function updateAbilityUI() {
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
         let selectElement = document.getElementById("selectAbility_" + i);
         let inputElement = document.getElementById("inputAbilityLevel_" + i);
         let triggerButton = document.getElementById("buttonAbilityTrigger_" + i);
@@ -800,6 +807,7 @@ function showSimulationResult(simResult) {
     showDeaths(simResult);
     showExperienceGained(simResult);
     showConsumablesUsed(simResult);
+    showHpSpent(simResult);
     showManaUsed(simResult);
     showHitpointsGained(simResult);
     showManapointsGained(simResult);
@@ -847,9 +855,15 @@ function showKills(simResult) {
         const dropMap = new Map();
         const rareDropMap = new Map();
         for (const drop of combatMonsterDetailMap[monster].dropTable) {
-            dropMap.set(itemDetailMap[drop.itemHrid]['name'], { "dropRate": drop.dropRate * dropRateMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
+            if (!simResult.isElite && drop.isEliteOnly) {
+                continue;
+            }
+            dropMap.set(itemDetailMap[drop.itemHrid]['name'], { "dropRate": Math.min(1, drop.dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
         }
         for (const drop of combatMonsterDetailMap[monster].rareDropTable) {
+            if (!simResult.isElite && drop.isEliteOnly) {
+                continue;
+            }
             rareDropMap.set(itemDetailMap[drop.itemHrid]['name'], { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
         }
 
@@ -1040,6 +1054,26 @@ function showExperienceGained(simResult) {
     });
 
     resultDiv.replaceChildren(...newChildren);
+}
+
+function showHpSpent(simResult) {
+    let hpSpentHeadingDiv = document.getElementById("simulationHpSpentHeading");
+    hpSpentHeadingDiv.classList.add("d-none");
+    let hpSpentDiv = document.getElementById("simulationHpSpent");
+    hpSpentDiv.classList.add("d-none");
+
+    if (simResult.hitpointsSpent["player"]) {
+        let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
+        let hpSpentSources = [];
+        for (const source of Object.keys(simResult.hitpointsSpent["player"])) {
+            let hpSpentPerHour = (simResult.hitpointsSpent["player"][source] / hoursSimulated).toFixed(2);
+            let hpSpentRow = createRow(["col-md-6", "col-md-6 text-end"], [abilityDetailMap[source].name, hpSpentPerHour]);
+            hpSpentSources.push(hpSpentRow);
+        }
+        hpSpentDiv.replaceChildren(...hpSpentSources);
+        hpSpentHeadingDiv.classList.remove("d-none");
+        hpSpentDiv.classList.remove("d-none");
+    }
 }
 
 function showConsumablesUsed(simResult) {
@@ -1299,7 +1333,7 @@ function showDamageDone(simResult) {
         let targetName = combatMonsterDetailMap[target].name;
         resultAccordionButton.innerHTML = "<b>Damage Done (" + targetName + ")</b>";
 
-        if (simResult.bossFightMonsters.includes(target)) {
+        if (simResult.bossSpawns.includes(target)) {
             let hoursSpentOnBoss = (aliveSecondsSimulated / 60 / 60).toFixed(2);
             let percentSpentOnBoss = (aliveSecondsSimulated / totalSecondsSimulated * 100).toFixed(2);
 
@@ -1487,7 +1521,7 @@ function startSimulation() {
         }
     }
 
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
         if (abilities[i] && player.intelligenceLevel >= abilitySlotsLevelRequirementList[i + 1]) {
             let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
             let ability = new Ability(abilities[i], Number(abilityLevelInput.value), triggerMap[abilities[i]]);
@@ -1671,7 +1705,7 @@ function getEquipmentSetFromUI() {
         equipmentSet.drinks[i] = drinkSelect.value;
     }
 
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
         let abilitySelect = document.getElementById("selectAbility_" + i);
         let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
         equipmentSet.abilities[i] = {
@@ -1711,9 +1745,15 @@ function loadEquipmentSetIntoUI(equipmentSet) {
         drinkSelect.value = equipmentSet.drinks[i];
     }
 
-    for (let i = 0; i < 4; i++) {
-        let abilitySelect = document.getElementById("selectAbility_" + i);
-        let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
+    let hasSpecial = false;
+    if (equipmentSet.abilities && Object.keys(equipmentSet.abilities).length == 5) {
+        hasSpecial = true;
+    }
+
+    for (let i = 0; i < (hasSpecial ? 5 : 4); i++) {
+        let abilitySlot = hasSpecial ? i : (i + 1);
+        let abilitySelect = document.getElementById("selectAbility_" + abilitySlot);
+        let abilityLevelInput = document.getElementById("inputAbilityLevel_" + abilitySlot);
 
         abilitySelect.value = equipmentSet.abilities[i].ability;
         abilityLevelInput.value = equipmentSet.abilities[i].level;
@@ -1786,7 +1826,7 @@ function initImportExportModal() {
             "equipment": equipmentArray
         };
         let abilitiesArray = [];
-        for (let i = 0; i < 4; i++) {
+        for (let i = 0; i < 5; i++) {
             let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
             let abilityName = document.getElementById("selectAbility_" + i);
             abilitiesArray[i] = { "abilityHrid": abilityName.value, "level": abilityLevelInput.value };
@@ -1869,9 +1909,15 @@ function initImportExportModal() {
             }
         }
 
-        for (let i = 0; i < 4; i++) {
-            let abilitySelect = document.getElementById("selectAbility_" + i);
-            let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
+        let hasSpecial = false;
+        if (importSet.abilities && Object.keys(importSet.abilities).length == 5) {
+            hasSpecial = true;
+        }
+
+        for (let i = 0; i < (hasSpecial ? 5 : 4); i++) {
+            let abilitySlot = hasSpecial ? i : (i + 1);
+            let abilitySelect = document.getElementById("selectAbility_" + abilitySlot);
+            let abilityLevelInput = document.getElementById("inputAbilityLevel_" + abilitySlot);
             if (importSet.abilities[i] != null) {
                 abilitySelect.value = importSet.abilities[i].abilityHrid;
                 abilityLevelInput.value = String(importSet.abilities[i].level);
@@ -1929,7 +1975,7 @@ function showErrorModal(error) {
         simulationTime: simulationTimeInput.value,
     };
 
-    for (let i = 0; i < 4; i++) {
+    for (let i = 0; i < 5; i++) {
         let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
         state["abilityLevel" + i] = abilityLevelInput.value;
     }

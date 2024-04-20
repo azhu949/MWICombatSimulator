@@ -58,6 +58,7 @@ class CombatUnit {
         totalFireResistance: 0.4,
         abilityHaste: 0,
         tenacity: 0,
+        totalThreat: 100,
         combatStats: {
             combatStyleHrid: "/combat_styles/smash",
             damageType: "/damage_types/physical",
@@ -106,11 +107,13 @@ class CombatUnit {
             naturePenetration: 0,
             firePenetration: 0,
             manaLeech: 0,
-            castSpeed: 0
+            castSpeed: 0,
+            threat: 0
         },
     };
     combatBuffs = {};
-    houseBuffs = {};
+    permanentBuffs = {};
+    zoneBuffs = {};
 
     constructor() { }
 
@@ -266,6 +269,10 @@ class CombatUnit {
         let combatRareFindBoosts = this.getBuffBoost("/buff_types/rare_find");
         this.combatDetails.combatStats.combatRareFind += (1 + this.combatDetails.combatStats.combatRareFind) * combatRareFindBoosts.ratioBoost;
         this.combatDetails.combatStats.combatRareFind += combatRareFindBoosts.flatBoost;
+
+        let threatBoosts = this.getBuffBoost("/buff_types/threat");
+        this.combatDetails.totalThreat += this.combatDetails.totalThreat * threatBoosts.ratioBoost;
+        this.combatDetails.totalThreat += threatBoosts.flatBoost;
     }
 
     addBuff(buff, currentTime) {
@@ -275,20 +282,25 @@ class CombatUnit {
         this.updateCombatDetails();
     }
 
-    addHouseBuff(buff) {
-        if (this.houseBuffs[buff.typeHrid]) {
-            this.houseBuffs[buff.typeHrid].flatBoost += buff.flatBoost;
-            this.houseBuffs[buff.typeHrid].ratioBoost += buff.ratioBoost;
+    addPermanentBuff(buff) {
+        if (this.permanentBuffs[buff.typeHrid]) {
+            this.permanentBuffs[buff.typeHrid].flatBoost += buff.flatBoost;
+            this.permanentBuffs[buff.typeHrid].ratioBoost += buff.ratioBoost;
         } else {
-            this.houseBuffs[buff.typeHrid] = buff;
+            this.permanentBuffs[buff.typeHrid] = buff;
         }
     }
 
-    generateHouseBuffs() {
+    generatePermanentBuffs() {
         for (let i = 0; i < this.houseRooms.length; i++) {
             const houseRoom = this.houseRooms[i];
             houseRoom.buffs.forEach(buff => {
-                this.addHouseBuff(buff);
+                this.addPermanentBuff(buff);
+            });
+        }
+        if (this.zoneBuffs) {
+            this.zoneBuffs.forEach(buff => {
+                this.addPermanentBuff(buff);
             });
         }
     }
@@ -305,7 +317,7 @@ class CombatUnit {
     }
 
     clearBuffs() {
-        this.combatBuffs = structuredClone(this.houseBuffs);
+        this.combatBuffs = structuredClone(this.permanentBuffs);
         this.updateCombatDetails();
     }
 
