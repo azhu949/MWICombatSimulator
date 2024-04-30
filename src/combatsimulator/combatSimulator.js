@@ -66,7 +66,7 @@ class CombatSimulator extends EventTarget {
         this.simResult.setManaUsed(this.players[0]);
 
         if (this.zone.monsterSpawnInfo.bossSpawns) {
-            for (const boss in this.zone.monsterSpawnInfo.bossSpawns) {
+            for (const boss of this.zone.monsterSpawnInfo.bossSpawns) {
                 this.simResult.bossSpawns.push(boss.combatMonsterHrid);
             }
         }
