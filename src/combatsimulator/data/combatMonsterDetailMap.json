@@ -186,7 +186,7 @@
             {
                 "abilityHrid": "/abilities/quick_aid",
                 "level": 1,
-                "isEliteOnly": true
+                "isEliteOnly": false
             },
             {
                 "abilityHrid": "/abilities/firestorm",
@@ -229,6 +229,13 @@
                 "isEliteOnly": false
             },
             {
+                "itemHrid": "/items/quick_aid",
+                "dropRate": 0.0005,
+                "minCount": 1,
+                "maxCount": 1,
+                "isEliteOnly": false
+            },
+            {
                 "itemHrid": "/items/firestorm",
                 "dropRate": 0.0005,
                 "minCount": 1,
@@ -241,13 +248,6 @@
                 "minCount": 1,
                 "maxCount": 1,
                 "isEliteOnly": false
-            },
-            {
-                "itemHrid": "/items/quick_aid",
-                "dropRate": 0.001,
-                "minCount": 1,
-                "maxCount": 1,
-                "isEliteOnly": true
             }
         ],
         "rareDropTable": [
@@ -8068,6 +8068,11 @@
                 "isEliteOnly": true
             },
             {
+                "abilityHrid": "/abilities/rejuvenate",
+                "level": 1,
+                "isEliteOnly": false
+            },
+            {
                 "abilityHrid": "/abilities/elusiveness",
                 "level": 30,
                 "isEliteOnly": false
@@ -8080,11 +8085,6 @@
             {
                 "abilityHrid": "/abilities/toxic_pollen",
                 "level": 15,
-                "isEliteOnly": false
-            },
-            {
-                "abilityHrid": "/abilities/entangle",
-                "level": 30,
                 "isEliteOnly": false
             }
         ],
@@ -8118,6 +8118,13 @@
                 "isEliteOnly": false
             },
             {
+                "itemHrid": "/items/rejuvenate",
+                "dropRate": 0.0025,
+                "minCount": 1,
+                "maxCount": 1,
+                "isEliteOnly": false
+            },
+            {
                 "itemHrid": "/items/elusiveness",
                 "dropRate": 0.01,
                 "minCount": 1,
@@ -8134,13 +8141,6 @@
             {
                 "itemHrid": "/items/toxic_pollen",
                 "dropRate": 0.005,
-                "minCount": 1,
-                "maxCount": 1,
-                "isEliteOnly": false
-            },
-            {
-                "itemHrid": "/items/entangle",
-                "dropRate": 0.05,
                 "minCount": 1,
                 "maxCount": 1,
                 "isEliteOnly": false
@@ -9416,6 +9416,11 @@
         },
         "abilities": [
             {
+                "abilityHrid": "/abilities/quick_aid",
+                "level": 1,
+                "isEliteOnly": true
+            },
+            {
                 "abilityHrid": "/abilities/water_strike",
                 "level": 10,
                 "isEliteOnly": false
@@ -9456,6 +9461,13 @@
                 "minCount": 1,
                 "maxCount": 3,
                 "isEliteOnly": false
+            },
+            {
+                "itemHrid": "/items/quick_aid",
+                "dropRate": 0.001,
+                "minCount": 1,
+                "maxCount": 1,
+                "isEliteOnly": true
             },
             {
                 "itemHrid": "/items/water_strike",
