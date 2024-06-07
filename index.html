@@ -28,6 +28,12 @@
             border: 1px solid #999;
             /* Add other relevant styles for form controls in dark mode */
         }
+
+        body.dark-mode #expensesTable,
+        body.dark-mode #revenueTable,
+        body.dark-mode #noRngRevenueTable {
+            color: #f0f0f0;
+        }
     </style>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -262,6 +268,18 @@
                             </div>
                             <div class="col-md-4">
                                 <input type="number" id="inputEquipmentEnhancementLevel_pouch" class="form-control"
+                                    value="0" min="0" max="20" required />
+                            </div>
+                        </div>
+                        <div class="row mb-2">
+                            <label for="selectEquipment_back" class="col-md-2 col-form-label">Back</label>
+                            <div class="col-md-6">
+                                <select id="selectEquipment_back" class="form-select">
+                                    <option value="">Empty</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="number" id="inputEquipmentEnhancementLevel_back" class="form-control"
                                     value="0" min="0" max="20" required />
                             </div>
                         </div>
@@ -764,6 +782,26 @@
                 <div class="row">
                     <div class="col-md-8">Threat:</div>
                     <div class="col-md-4" id="combatStat_totalThreat"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">Parry:</div>
+                    <div class="col-md-4" id="combatStat_parry"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">Mayhem:</div>
+                    <div class="col-md-4" id="combatStat_mayhem"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">Pierce:</div>
+                    <div class="col-md-4" id="combatStat_pierce"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">Curse:</div>
+                    <div class="col-md-4" id="combatStat_curse"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8">Attack Speed:</div>
+                    <div class="col-md-4" id="combatStat_attackSpeed"></div>
                 </div>
                 <!-- #endregion -->
             </div>
@@ -1452,15 +1490,90 @@
                     <div class="container-fluid">
                         <div class="row">
                             <div class="col-12 mb-4">
-                                <h6>May 6th, 2024</h6>
+                                <h6>June 7th, 2024</h6>
                                 <ul>
                                     <li>Updated game data</li>
+                                    <li>Fixed base threat display</li>
+                                </ul>
+                            </div>
+                            <div class="col-12 mb-4">
+                                <h6>June 3rd, 2024</h6>
+                                <ul>
+                                    <li>Updated game data</li>
+                                    <li>Fixed some dark mode CSS</li>
+                                </ul>
+                            </div>
+                            <div class="col-12 mb-4">
+                                <h6>June 3rd, 2024</h6>
+                                <ul>
+                                    <li>Updated game data</li>
+                                    <li>Added Attack Speed</li>
+                                    <li>Removed Promote Special Ability since players can't get it</li>
+                                    <li>Enemy ability cooldowns randomly started somewhere between having No CD(Instant
+                                        Cast) and being on Max CD. They now start somewhere between Half of Max CD and
+                                        Max CD. They always wait at least half of the CD to cast now. This means
+                                        enemy ability damage is now lower.</li>
+                                </ul>
+                            </div>
+                            <div class="col-12 mb-4">
+                                <h6>May 31st, 2024</h6>
+                                <ul>
+                                    <li>Updated game data</li>
+                                </ul>
+                            </div>
+                            <div class="col-12 mb-4">
+                                <h6>May 31st, 2024</h6>
+                                <ul>
+                                    <li>Updated game data</li>
+                                    <li>Added Back slot</li>
+                                    <li>Added new skills and their effects</li>
+                                </ul>
+                            </div>
+                            <div class="col-12 mb-4">
+                                <h6>May 2nd, 2024</h6>
+                                <ul>
+                                    <li>Updated game data</li>
+                                </ul>
+                            </div>
+                            <div class="col-12 mb-4">
+                                <h6>May 1st, 2024</h6>
+                                <ul>
+                                    <li>Fixed 2h bug</li>
+                                    <li>Fixed bug with enemy dying to DoT and having nothing to attack</li>
+                                </ul>
+                            </div>
+                            <div class="col-12 mb-4">
+                                <h6>May 1st, 2024</h6>
+                                <ul>
+                                    <li>Updated game data</li>
+                                    <li>Added new auto attack multiplier</li>
+                                </ul>
+                            </div>
+                            <div class="col-12 mb-4">
+                                <h6>Apr 30th, 2024</h6>
+                                <ul>
+                                    <li>Added the 3 remaining weapon special effects</li>
                                 </ul>
                             </div>
                             <div class="col-12 mb-4">
                                 <h6>Apr 30th, 2024</h6>
                                 <ul>
                                     <li>Fixed time spent on boss</li>
+                                </ul>
+                            </div>
+                            <div class="col-12 mb-4">
+                                <h6>Apr 27th, 2024</h6>
+                                <ul>
+                                    <li>Updated game data</li>
+                                    <li>Added Dookie Bow and Dung Crossbow for this patch only</li>
+                                </ul>
+                            </div>
+                            <div class="col-12 mb-4">
+                                <h6>Apr 26th, 2024</h6>
+                                <ul>
+                                    <li>Updated game data</li>
+                                    <li>Changed spawns and loot to match the game's new Elite Tier system</li>
+                                    <li>Added Pierce</li>
                                 </ul>
                             </div>
                             <div class="col-12 mb-4">

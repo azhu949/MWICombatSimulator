@@ -139,6 +139,11 @@ class Trigger {
             case "/combat_trigger_conditions/sylvan_aura_nature_amplify":
             case "/combat_trigger_conditions/sylvan_aura_nature_resistance":
             case "/combat_trigger_conditions/taunt":
+            case "/combat_trigger_conditions/crippling_slash":
+            case "/combat_trigger_conditions/mana_spring":
+            case "/combat_trigger_conditions/pestilent_shot_hp_regen":
+            case "/combat_trigger_conditions/pestilent_shot_mp_regen":
+            case "/combat_trigger_conditions/smoke_burst":
                 let buffHrid = "/buff_uniques";
                 buffHrid += this.conditionHrid.slice(this.conditionHrid.lastIndexOf("/"));
                 return source.combatBuffs[buffHrid];
@@ -158,6 +163,8 @@ class Trigger {
                 return source.isBlinded || source.blindExpireTime == currentTime;
             case "/combat_trigger_conditions/silence_status":
                 return source.isSilenced || source.silenceExpireTime == currentTime;
+            case "/combat_trigger_conditions/curse":
+                return source.combatDetails.combatStats.damageTaken > 0 || source.curseExpireTime == currentTime;
             default:
                 throw new Error("Unknown conditionHrid in trigger: " + this.conditionHrid);
         }

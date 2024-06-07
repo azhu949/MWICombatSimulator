@@ -13,7 +13,7 @@ class SimResult {
         this.manaUsed = {};
         this.timeSpentAlive = [];
         this.bossSpawns = [];
-        this.isElite = false;
+        this.eliteTier = 0;
         this.hitpointsSpent = {};
     }
 

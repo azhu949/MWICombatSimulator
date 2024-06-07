@@ -6,6 +6,7 @@ class CombatUnit {
     blindExpireTime = null;
     isSilenced = false;
     silenceExpireTime = null;
+    curseExpiretime = null;
 
     // Base levels which don't change after initialization
     staminaLevel = 1;
@@ -63,6 +64,7 @@ class CombatUnit {
             combatStyleHrid: "/combat_styles/smash",
             damageType: "/damage_types/physical",
             attackInterval: 3000000000,
+            autoAttackDamage: 0,
             criticalRate: 0,
             criticalDamage: 0,
             stabAccuracy: 0,
@@ -108,7 +110,13 @@ class CombatUnit {
             firePenetration: 0,
             manaLeech: 0,
             castSpeed: 0,
-            threat: 0
+            threat: 100,
+            parry: 0,
+            mayhem: 0,
+            pierce: 0,
+            curse: 0,
+            damageTaken: 0,
+            attackSpeed: 0
         },
     };
     combatBuffs = {};
@@ -207,12 +215,12 @@ class CombatUnit {
         if (this.isPlayer) {
             this.combatDetails.combatStats.attackInterval /= (1 + (this.combatDetails.attackLevel / 2000));
         }
+        let baseAttackSpeed = this.combatDetails.combatStats.attackSpeed;
         let attackIntervalBoosts = this.getBuffBoosts("/buff_types/attack_speed");
         let attackIntervalRatioBoost = attackIntervalBoosts
             .map((boost) => boost.ratioBoost)
             .reduce((prev, cur) => prev + cur, 0);
-        this.combatDetails.combatStats.attackInterval /= (1 + attackIntervalRatioBoost);
-
+        this.combatDetails.combatStats.attackInterval /= (1 + (baseAttackSpeed + attackIntervalRatioBoost));
 
         let baseArmor = 0.2 * this.combatDetails.defenseLevel + this.combatDetails.combatStats.armor;
         this.combatDetails.totalArmor = baseArmor;
@@ -252,9 +260,15 @@ class CombatUnit {
             this.combatDetails.totalFireResistance += baseFireResistance * boost.ratioBoost;
         }
 
+        let hpRegenBoosts = this.getBuffBoost("/buff_types/hp_regen");
+        this.combatDetails.combatStats.HPRegen += this.combatDetails.combatStats.HPRegen * hpRegenBoosts.ratioBoost;
+        this.combatDetails.combatStats.HPRegen += hpRegenBoosts.flatBoost;
+
+        let mpRegenBoosts = this.getBuffBoost("/buff_types/mp_regen");
+        this.combatDetails.combatStats.MPRegen += this.combatDetails.combatStats.MPRegen * mpRegenBoosts.ratioBoost;
+        this.combatDetails.combatStats.MPRegen += mpRegenBoosts.flatBoost;
+
         this.combatDetails.combatStats.lifeSteal += this.getBuffBoost("/buff_types/life_steal").flatBoost;
-        this.combatDetails.combatStats.HPRegen += this.getBuffBoost("/buff_types/hp_regen").flatBoost;
-        this.combatDetails.combatStats.MPRegen += this.getBuffBoost("/buff_types/mp_regen").flatBoost;
         this.combatDetails.combatStats.physicalReflectPower += this.getBuffBoost(
             "/buff_types/physical_reflect_power"
         ).flatBoost;
@@ -270,9 +284,11 @@ class CombatUnit {
         this.combatDetails.combatStats.combatRareFind += (1 + this.combatDetails.combatStats.combatRareFind) * combatRareFindBoosts.ratioBoost;
         this.combatDetails.combatStats.combatRareFind += combatRareFindBoosts.flatBoost;
 
+        let baseThreat = 100 + this.combatDetails.combatStats.threat;
+        this.combatDetails.totalThreat = baseThreat;
         let threatBoosts = this.getBuffBoost("/buff_types/threat");
-        this.combatDetails.totalThreat += this.combatDetails.totalThreat * threatBoosts.ratioBoost;
-        this.combatDetails.totalThreat += threatBoosts.flatBoost;
+        this.combatDetails.combatStats.threat += baseThreat * threatBoosts.ratioBoost;
+        this.combatDetails.combatStats.threat += threatBoosts.flatBoost;
     }
 
     addBuff(buff, currentTime) {
@@ -328,6 +344,8 @@ class CombatUnit {
         this.silenceExpireTime = null;
         this.isBlinded = false;
         this.blindExpireTime = null;
+        this.combatDetails.combatStats.damageTaken = 0;
+        this.curseExpireTime = null;
     }
 
     getBuffBoosts(type) {
@@ -383,7 +401,7 @@ class CombatUnit {
                     if (haste > 0) {
                         cooldownDuration = cooldownDuration * 100 / (100 + haste);
                     }
-                    ability.lastUsed = currentTime - Math.floor(Math.random() * cooldownDuration);
+                    ability.lastUsed = currentTime - Math.floor(cooldownDuration * 0.5) + Math.floor(Math.random() * cooldownDuration * 0.5);
                 }
             });
     }

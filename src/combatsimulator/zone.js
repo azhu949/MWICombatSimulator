@@ -6,7 +6,7 @@ class Zone {
         this.hrid = hrid;
 
         let gameZone = actionDetailMap[this.hrid];
-        this.monsterSpawnInfo = gameZone.monsterSpawnInfo;
+        this.monsterSpawnInfo = gameZone.combatZoneInfo.fightInfo;
         this.encountersKilled = 0;
         this.monsterSpawnInfo.battlesPerBoss = 10;
         this.buffs = gameZone.buffs;
@@ -16,25 +16,25 @@ class Zone {
 
         if (this.monsterSpawnInfo.bossSpawns && this.encountersKilled == this.monsterSpawnInfo.battlesPerBoss) {
             this.encountersKilled = 1;
-            return this.monsterSpawnInfo.bossSpawns.map((monster) => new Monster(monster.combatMonsterHrid, monster.isElite));
+            return this.monsterSpawnInfo.bossSpawns.map((monster) => new Monster(monster.combatMonsterHrid, monster.eliteTier));
         }
 
-        let totalWeight = this.monsterSpawnInfo.spawns.reduce((prev, cur) => prev + cur.rate, 0);
+        let totalWeight = this.monsterSpawnInfo.randomSpawnInfo.spawns.reduce((prev, cur) => prev + cur.rate, 0);
 
         let encounterHrids = [];
         let totalStrength = 0;
 
-        outer: for (let i = 0; i < this.monsterSpawnInfo.maxSpawnCount; i++) {
+        outer: for (let i = 0; i < this.monsterSpawnInfo.randomSpawnInfo.maxSpawnCount; i++) {
             let randomWeight = totalWeight * Math.random();
             let cumulativeWeight = 0;
 
-            for (const spawn of this.monsterSpawnInfo.spawns) {
+            for (const spawn of this.monsterSpawnInfo.randomSpawnInfo.spawns) {
                 cumulativeWeight += spawn.rate;
                 if (randomWeight <= cumulativeWeight) {
                     totalStrength += spawn.strength;
 
-                    if (totalStrength <= this.monsterSpawnInfo.maxTotalStrength) {
-                        encounterHrids.push({ 'hrid': spawn.combatMonsterHrid, 'isElite': spawn.isElite });
+                    if (totalStrength <= this.monsterSpawnInfo.randomSpawnInfo.maxTotalStrength) {
+                        encounterHrids.push({ 'hrid': spawn.combatMonsterHrid, 'eliteTier': spawn.eliteTier });
                     } else {
                         break outer;
                     }
@@ -43,7 +43,7 @@ class Zone {
             }
         }
         this.encountersKilled++;
-        return encounterHrids.map((hrid) => new Monster(hrid.hrid, hrid.isElite));
+        return encounterHrids.map((hrid) => new Monster(hrid.hrid, hrid.eliteTier));
     }
 }
 

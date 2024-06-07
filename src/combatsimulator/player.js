@@ -15,6 +15,7 @@ class Player extends CombatUnit {
         "/equipment_types/two_hand": null,
         "/equipment_types/off_hand": null,
         "/equipment_types/pouch": null,
+        "/equipment_types/back": null,
     };
 
     constructor() {
@@ -58,12 +59,16 @@ class Player extends CombatUnit {
             this.combatDetails.combatStats.damageType = this.equipment["/equipment_types/main_hand"].getDamageType();
             this.combatDetails.combatStats.attackInterval =
                 this.equipment["/equipment_types/main_hand"].getCombatStat("attackInterval");
+            this.combatDetails.combatStats.autoAttackDamage =
+                this.equipment["/equipment_types/main_hand"].getCombatStat("autoAttackDamage");
         } else if (this.equipment["/equipment_types/two_hand"]) {
             this.combatDetails.combatStats.combatStyleHrid =
                 this.equipment["/equipment_types/two_hand"].getCombatStyle();
             this.combatDetails.combatStats.damageType = this.equipment["/equipment_types/two_hand"].getDamageType();
             this.combatDetails.combatStats.attackInterval =
                 this.equipment["/equipment_types/two_hand"].getCombatStat("attackInterval");
+            this.combatDetails.combatStats.autoAttackDamage =
+                this.equipment["/equipment_types/two_hand"].getCombatStat("autoAttackDamage");
         } else {
             this.combatDetails.combatStats.combatStyleHrid = "/combat_styles/smash";
             this.combatDetails.combatStats.damageType = "/damage_types/physical";
@@ -116,7 +121,12 @@ class Player extends CombatUnit {
             "tenacity",
             "manaLeech",
             "castSpeed",
-            "threat"
+            "threat",
+            "parry",
+            "mayhem",
+            "pierce",
+            "curse",
+            "attackSpeed"
         ].forEach((stat) => {
             this.combatDetails.combatStats[stat] = Object.values(this.equipment)
                 .filter((equipment) => equipment != null)
