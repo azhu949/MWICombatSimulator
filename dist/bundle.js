@@ -3463,9 +3463,40 @@ async function fetchPrices() {
         }
         const pricesJson = await response.json();
         window.prices = pricesJson['market'];
-        window.prices["Coin"]["bid"] = 1;
-        window.prices["Coin"]["ask"] = 1;
-        window.prices["Coin"]["vendor"] = 1;
+        window.prices["Coin"] = { "ask": 1, "bid": 1, "vendor": 1 }
+        window.prices["Small Treasure Chest"] = {
+            "ask": (7500 + 3750 + 0.6 * window.prices["Pearl"]["ask"] + 0.4 * window.prices["Amber"]["ask"]
+                + 0.15 * window.prices["Garnet"]["ask"] + 0.15 * window.prices["Jade"]["ask"]
+                + 0.15 * window.prices["Amethyst"]["ask"]),
+            "bid": (7500 + 3750 + 0.6 * window.prices["Pearl"]["bid"] + 0.4 * window.prices["Amber"]["bid"]
+                + 0.15 * window.prices["Garnet"]["bid"] + 0.15 * window.prices["Jade"]["bid"]
+                + 0.15 * window.prices["Amethyst"]["bid"]),
+            "vendor": (7500 + 3750 + 0.6 * window.prices["Pearl"]["vendor"] + 0.4 * window.prices["Amber"]["vendor"]
+                + 0.15 * window.prices["Garnet"]["vendor"] + 0.15 * window.prices["Jade"]["vendor"]
+                + 0.15 * window.prices["Amethyst"]["vendor"])
+        }
+        window.prices["Medium Treasure Chest"] = {
+            "ask": (18000 + 9000 + 0.6 * 1.5 * window.prices["Pearl"]["ask"] + 0.4 * 1.5 * window.prices["Amber"]["ask"]
+                + 0.3 * 1.5 * window.prices["Garnet"]["ask"] + 0.3 * 1.5 * window.prices["Jade"]["ask"]
+                + 0.3 * 1.5 * window.prices["Amethyst"]["ask"] + 0.15 * window.prices["Moonstone"]["ask"]),
+            "bid": (18000 + 9000 + 0.6 * 1.5 * window.prices["Pearl"]["bid"] + 0.4 * 1.5 * window.prices["Amber"]["bid"]
+                + 0.3 * 1.5 * window.prices["Garnet"]["bid"] + 0.3 * 1.5 * window.prices["Jade"]["bid"]
+                + 0.3 * 1.5 * window.prices["Amethyst"]["bid"] + 0.15 * window.prices["Moonstone"]["bid"]),
+            "vendor": (18000 + 9000 + 0.6 * 1.5 * window.prices["Pearl"]["vendor"] + 0.4 * 1.5 * window.prices["Amber"]["vendor"]
+                + 0.3 * 1.5 * window.prices["Garnet"]["vendor"] + 0.3 * 1.5 * window.prices["Jade"]["vendor"]
+                + 0.3 * 1.5 * window.prices["Amethyst"]["vendor"] + 0.15 * window.prices["Moonstone"]["vendor"])
+        }
+        window.prices["Large Treasure Chest"] = {
+            "ask": (45000 + 22500 + 0.6 * 2 * window.prices["Pearl"]["ask"] + 0.4 * 2 * window.prices["Amber"]["ask"]
+                + 0.4 * 2 * window.prices["Garnet"]["ask"] + 0.4 * 2 * window.prices["Jade"]["ask"]
+                + 0.4 * 2 * window.prices["Amethyst"]["ask"] + 0.4 * 1.5 * window.prices["Moonstone"]["ask"]),
+            "bid": (45000 + 22500 + 0.6 * 2 * window.prices["Pearl"]["bid"] + 0.4 * 2 * window.prices["Amber"]["bid"]
+                + 0.4 * 2 * window.prices["Garnet"]["bid"] + 0.4 * 2 * window.prices["Jade"]["bid"]
+                + 0.4 * 2 * window.prices["Amethyst"]["bid"] + 0.4 * 1.5 * window.prices["Moonstone"]["bid"]),
+            "vendor": (45000 + 22500 + 0.6 * 2 * window.prices["Pearl"]["vendor"] + 0.4 * 2 * window.prices["Amber"]["vendor"]
+                + 0.4 * 2 * window.prices["Garnet"]["vendor"] + 0.4 * 2 * window.prices["Jade"]["vendor"]
+                + 0.4 * 2 * window.prices["Amethyst"]["vendor"] + 0.4 * 1.5 * window.prices["Moonstone"]["vendor"])
+        }
     } catch (error) {
         console.error(error);
     }
@@ -3577,11 +3608,19 @@ const body = document.body;
 
 if (localStorage.getItem('darkModeEnabled') === 'true') {
     body.classList.add('dark-mode');
+    const tables = document.getElementsByClassName('profit-table');
+    for (const table of tables) {
+        table.classList.toggle('table-striped');
+    }
     darkModeToggle.checked = true;
 }
 
 darkModeToggle.addEventListener('change', () => {
     body.classList.toggle('dark-mode');
+    const tables = document.getElementsByClassName('profit-table');
+    for (const table of tables) {
+        table.classList.toggle('table-striped');
+    }
     localStorage.setItem('darkModeEnabled', darkModeToggle.checked);
 });
 
