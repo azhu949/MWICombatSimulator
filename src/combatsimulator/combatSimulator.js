@@ -201,7 +201,10 @@ class CombatSimulator extends EventTarget {
             return;
         }
 
-        for (let target of targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0)) {
+        const aliveTargets = targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0);
+
+        for (let i = 0; i < aliveTargets.length; i++) {
+            let target = aliveTargets[i];
             let source = event.source;
 
             if (target.combatDetails.combatStats.parry > Math.random()) {
@@ -212,7 +215,9 @@ class CombatSimulator extends EventTarget {
 
             let attackResult = CombatUtilities.processAttack(source, target);
 
-            if (attackResult.didHit && source.combatDetails.combatStats.curse > 0 && Math.random() < (100 / (100 + target.combatDetails.combatStats.tenacity))) {
+            let mayhem = source.combatDetails.combatStats.mayhem > Math.random();
+
+            if (attackResult.didHit && source.combatDetails.combatStats.curse > 0) {
                 target.curseExpireTime = this.simulationTime + 15000000000;
                 if (target.combatDetails.combatStats.damageTaken < 0.1) {
                     target.combatDetails.combatStats.damageTaken += 0.01;
@@ -222,12 +227,14 @@ class CombatSimulator extends EventTarget {
                 this.eventQueue.addEvent(curseExpirationEvent);
             }
 
-            this.simResult.addAttack(
-                source,
-                target,
-                "autoAttack",
-                attackResult.didHit ? attackResult.damageDone : "miss"
-            );
+            if (!mayhem || (mayhem && attackResult.didHit) || (mayhem && i == (aliveTargets.length - 1))) {
+                this.simResult.addAttack(
+                    source,
+                    target,
+                    "autoAttack",
+                    attackResult.didHit ? attackResult.damageDone : "miss"
+                );
+            }
 
             if (attackResult.lifeStealHeal > 0) {
                 this.simResult.addHitpointsGained(source, "lifesteal", attackResult.lifeStealHeal);
@@ -239,6 +246,15 @@ class CombatSimulator extends EventTarget {
 
             if (attackResult.reflectDamageDone > 0) {
                 this.simResult.addAttack(target, source, "physicalReflect", attackResult.reflectDamageDone);
+            }
+
+            if (mayhem && !attackResult.didHit && i < (aliveTargets.length - 1)) {
+                attackResult.experienceGained.source = {
+                    attack: 0,
+                    power: 0,
+                    ranged: 0,
+                    magic: 0
+                }
             }
 
             for (const [skill, xp] of Object.entries(attackResult.experienceGained.source)) {
@@ -267,7 +283,7 @@ class CombatSimulator extends EventTarget {
                 break;
             }
 
-            if (!attackResult.didHit && source.combatDetails.combatStats.mayhem > Math.random()) {
+            if (mayhem && !attackResult.didHit) {
                 continue;
             }
 

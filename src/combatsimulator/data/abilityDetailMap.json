@@ -1466,9 +1466,9 @@
     "/abilities/penetrating_shot": {
         "hrid": "/abilities/penetrating_shot",
         "name": "Penetrating Shot",
-        "description": "Shoots the targeted enemy. on each successful hit, will pierce and hit the next enemy",
+        "description": "Shoots the targeted enemy. On each successful hit, will pierce and hit the next enemy",
         "isSpecialAbility": false,
-        "manaCost": 50,
+        "manaCost": 55,
         "cooldownDuration": 20000000000,
         "castDuration": 800000000,
         "abilityEffects": [
@@ -1509,9 +1509,9 @@
     "/abilities/penetrating_strike": {
         "hrid": "/abilities/penetrating_strike",
         "name": "Penetrating Strike",
-        "description": "Strikes the targeted enemy. on each successful hit, will pierce and hit the next enemy.",
+        "description": "Strikes the targeted enemy. On each successful hit, will pierce and hit the next enemy.",
         "isSpecialAbility": false,
-        "manaCost": 60,
+        "manaCost": 55,
         "cooldownDuration": 20000000000,
         "castDuration": 500000000,
         "abilityEffects": [
@@ -1752,7 +1752,7 @@
         "description": "Tremendously increases threat rating",
         "isSpecialAbility": false,
         "manaCost": 150,
-        "cooldownDuration": 65000000000,
+        "cooldownDuration": 60000000000,
         "castDuration": 200000000,
         "abilityEffects": [
             {
@@ -1785,19 +1785,12 @@
                         "flatBoost": 0,
                         "flatBoostLevelBonus": 0,
                         "startTime": "0001-01-01T00:00:00Z",
-                        "duration": 60000000000
+                        "duration": 65000000000
                     }
                 ]
             }
         ],
-        "defaultCombatTriggers": [
-            {
-                "dependencyHrid": "/combat_trigger_dependencies/self",
-                "conditionHrid": "/combat_trigger_conditions/provoke",
-                "comparatorHrid": "/combat_trigger_comparators/is_inactive",
-                "value": 0
-            }
-        ],
+        "defaultCombatTriggers": [],
         "sortIndex": 36
     },
     "/abilities/puncture": {
@@ -1870,8 +1863,8 @@
                 "damageType": "",
                 "baseDamageFlat": 40,
                 "baseDamageFlatLevelBonus": 0.4,
-                "baseDamageRatio": 0.25,
-                "baseDamageRatioLevelBonus": 0.0025,
+                "baseDamageRatio": 0.3,
+                "baseDamageRatioLevelBonus": 0.003,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
@@ -2005,8 +1998,8 @@
                 "damageType": "",
                 "baseDamageFlat": 30,
                 "baseDamageFlatLevelBonus": 0.3,
-                "baseDamageRatio": 0.25,
-                "baseDamageRatioLevelBonus": 0.0025,
+                "baseDamageRatio": 0.2,
+                "baseDamageRatioLevelBonus": 0.002,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
@@ -2292,8 +2285,8 @@
                     {
                         "uniqueHrid": "/buff_uniques/speed_aura_attack_speed",
                         "typeHrid": "/buff_types/attack_speed",
-                        "ratioBoost": 0.03,
-                        "ratioBoostLevelBonus": 0.0006,
+                        "ratioBoost": 0.04,
+                        "ratioBoostLevelBonus": 0.0008,
                         "flatBoost": 0,
                         "flatBoostLevelBonus": 0,
                         "startTime": "0001-01-01T00:00:00Z",
@@ -2304,8 +2297,8 @@
                         "typeHrid": "/buff_types/cast_speed",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
-                        "flatBoost": 0.03,
-                        "flatBoostLevelBonus": 0.0006,
+                        "flatBoost": 0.04,
+                        "flatBoostLevelBonus": 0.0008,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 120000000000
                     }
@@ -2591,7 +2584,7 @@
         "description": "Greatly increases threat rating",
         "isSpecialAbility": false,
         "manaCost": 120,
-        "cooldownDuration": 65000000000,
+        "cooldownDuration": 60000000000,
         "castDuration": 200000000,
         "abilityEffects": [
             {
@@ -2624,19 +2617,12 @@
                         "flatBoost": 0,
                         "flatBoostLevelBonus": 0,
                         "startTime": "0001-01-01T00:00:00Z",
-                        "duration": 60000000000
+                        "duration": 65000000000
                     }
                 ]
             }
         ],
-        "defaultCombatTriggers": [
-            {
-                "dependencyHrid": "/combat_trigger_dependencies/self",
-                "conditionHrid": "/combat_trigger_conditions/taunt",
-                "comparatorHrid": "/combat_trigger_comparators/is_inactive",
-                "value": 0
-            }
-        ],
+        "defaultCombatTriggers": [],
         "sortIndex": 35
     },
     "/abilities/toughness": {

@@ -7062,6 +7062,10 @@
                 "count": 30
             },
             {
+                "itemHrid": "/items/gobo_defender",
+                "count": 2
+            },
+            {
                 "itemHrid": "/items/vision_shield",
                 "count": 10
             }
@@ -17039,6 +17043,10 @@
             {
                 "itemHrid": "/items/bishops_scroll",
                 "count": 10
+            },
+            {
+                "itemHrid": "/items/watchful_relic",
+                "count": 1
             },
             {
                 "itemHrid": "/items/tome_of_the_elements",
