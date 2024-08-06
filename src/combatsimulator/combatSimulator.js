@@ -29,9 +29,8 @@ class CombatSimulator extends EventTarget {
         super();
         this.players = [player];
         this.zone = zone;
-
         this.eventQueue = new EventQueue();
-        this.simResult = new SimResult();
+        this.simResult = new SimResult(zone.hrid);
     }
 
     async simulate(simulationTimeLimit) {
@@ -80,7 +79,7 @@ class CombatSimulator extends EventTarget {
     reset() {
         this.simulationTime = 0;
         this.eventQueue.clear();
-        this.simResult = new SimResult();
+        this.simResult = new SimResult(this.zone.hrid);
     }
 
     async processEvent(event) {
@@ -167,7 +166,7 @@ class CombatSimulator extends EventTarget {
         this.enemies.forEach((enemy) => {
             enemy.reset(this.simulationTime);
             this.simResult.updateTimeSpentAlive(enemy.hrid, true, this.simulationTime);
-            // console.log(enemy.hrid, "spawned");
+            //console.log(enemy.hrid, "spawned");
         });
 
         this.startAttacks();

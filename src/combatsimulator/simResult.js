@@ -1,5 +1,5 @@
 class SimResult {
-    constructor() {
+    constructor(zoneName) {
         this.deaths = {};
         this.experienceGained = {};
         this.encounters = 0;
@@ -15,6 +15,7 @@ class SimResult {
         this.bossSpawns = [];
         this.eliteTier = 0;
         this.hitpointsSpent = {};
+        this.zoneName = zoneName;
     }
 
     addDeath(unit) {

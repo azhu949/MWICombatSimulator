@@ -50,18 +50,18 @@
             overflow-x: auto;
         }
 
-        #allZonesData th {
+        th {
         cursor: pointer; 
         position: relative;
         padding: 10px;
         background-color: #f8f9fa; 
         }
 
-        #allZonesData th:not(:first-child) {
+        th:not(:first-child) {
             cursor: pointer; 
         }
 
-        #allZonesData th:not(:first-child):hover {
+        th:not(:first-child):hover {
             background-color: #e9ecef; 
             color: #000; 
         }
@@ -76,14 +76,14 @@
             margin-left: 5px;
         }
 
-        body.dark-mode #allZonesData th,
-        body.dark-mode #allZonesData td {
-            border: 1px solid #555; 
-            padding: 8px; 
+        body.dark-mode th,
+        body.dark-mode td {
+            border: 1px solid #555; /* Table border color for dark mode */
+            padding: 8px; /* Padding inside table cells */
         }
 
-        body.dark-mode #allZonesData th {
-            background-color: #444; 
+        body.dark-mode th {
+            background-color: #444; /* Header background color in tables for dark mode */
         }
     </style>
     <meta charset="utf-8" />
@@ -2155,7 +2155,8 @@
 </body>
 <footer>
     <div style="text-align: center;">
-        <p>Credit to KuganDev, Vlad (mwisim) and AmVoidGuy<br>
+        <p>Credit to KuganDev and AmVoidGuy for the original versions<br>
+            <a href="https://mwisim.github.io/test/">Test Server Version</a>
         </p>
     </div>
 </footer>
