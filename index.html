@@ -96,6 +96,17 @@
 
 <body class="p-3">
     <div class="container-fluid">
+        <ul class="nav nav-tabs" id="playerTab" role="tablist">
+            <li class="nav-item">
+                <a class="nav-link active" id="player1-tab" data-bs-toggle="tab" href="#player1" role="tab" aria-controls="player1" aria-selected="true">Player 1</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="player2-tab" data-bs-toggle="tab" href="#player2" role="tab" aria-controls="player2" aria-selected="false">Player 2</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="player3-tab" data-bs-toggle="tab" href="#player3" role="tab" aria-controls="player3" aria-selected="false">Player 3</a>
+            </li>
+        </ul>
         <div class="row">
             <div class="col-md-5">
                 <div class="row mb-3">
@@ -1595,7 +1606,7 @@
                 </div>
                 <div class="modal-body">
                     <!-- Tabs Navigation -->
-                    <ul class="nav nav-tabs" id="myTab" role="tablist">
+                    <ul class="nav nav-tabs" id="importTab" role="tablist">
                         <li class="nav-item" role="presentation">
                             <a class="nav-link active" id="group-combat-tab" data-bs-toggle="tab" href="#group-combat" role="tab" aria-controls="group-combat" aria-selected="true">Group Combat</a>
                         </li>
@@ -1607,6 +1618,8 @@
                     <div class="tab-content" id="myTabContent">
                         <div class="tab-pane fade show active" id="group-combat" role="tabpanel" aria-labelledby="group-combat-tab">
                             <!-- Group Combat Content -->
+                            <input type="text" id="inputSetGroupCombatAll" class="form-control mt-2" placeholder="All players import" /> 
+                            <p style="margin: 0; text-align: center;">OR</p>
                             <input type="text" id="inputSetGroupCombatplayer1" class="form-control mt-2" placeholder="Player 1 import" />
                             <input type="text" id="inputSetGroupCombatplayer2" class="form-control mt-2" placeholder="Player 2 import" />
                             <input type="text" id="inputSetGroupCombatplayer3" class="form-control mt-2" placeholder="Player 3 import" />                            
@@ -1619,7 +1632,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" id="buttonImportSet">Import</button>
-                    <button type="button" class="btn btn-primary" id="buttonExportSet">Export</button>
+                    <button type="button" class="btn btn-primary" id="buttonExportSet">Export Group</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>

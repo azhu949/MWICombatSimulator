@@ -13,7 +13,7 @@ import abilitySlotsLevelRequirementList from "./combatsimulator/data/abilitySlot
 import actionDetailMap from "./combatsimulator/data/actionDetailMap.json";
 import combatMonsterDetailMap from "./combatsimulator/data/combatMonsterDetailMap.json";
 import damageTypeDetailMap from "./combatsimulator/data/damageTypeDetailMap.json";
-import combatStyleDetailMap from "./combatsimulator/data/combatStyleDetailMap.json"
+import combatStyleDetailMap from "./combatsimulator/data/combatStyleDetailMap.json";
 
 const ONE_SECOND = 1e9;
 const ONE_HOUR = 60 * 60 * ONE_SECOND;
@@ -30,6 +30,12 @@ let abilities = [null, null, null, null];
 let triggerMap = {};
 let modalTriggers = [];
 
+let currentPlayerTabId = '1';
+let playerDataMap = {
+    "1": {},
+    "2": "{\"player\":{\"attackLevel\":1,\"magicLevel\":1,\"powerLevel\":1,\"rangedLevel\":1,\"defenseLevel\":1,\"staminaLevel\":1,\"intelligenceLevel\":1,\"equipment\":[]},\"food\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"drinks\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"abilities\":[{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"}],\"triggerMap\":{},\"zone\":\"/actions/combat/fly\",\"simulationTime\":\"100\",\"houseRooms\":{\"/house_rooms/dairy_barn\":0,\"/house_rooms/garden\":0,\"/house_rooms/log_shed\":0,\"/house_rooms/forge\":0,\"/house_rooms/workshop\":0,\"/house_rooms/sewing_parlor\":0,\"/house_rooms/kitchen\":0,\"/house_rooms/brewery\":0,\"/house_rooms/laboratory\":0,\"/house_rooms/dining_room\":0,\"/house_rooms/library\":0,\"/house_rooms/dojo\":0,\"/house_rooms/gym\":0,\"/house_rooms/armory\":0,\"/house_rooms/archery_range\":0,\"/house_rooms/mystical_study\":0}}",
+    "3": "{\"player\":{\"attackLevel\":1,\"magicLevel\":1,\"powerLevel\":1,\"rangedLevel\":1,\"defenseLevel\":1,\"staminaLevel\":1,\"intelligenceLevel\":1,\"equipment\":[]},\"food\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"drinks\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"abilities\":[{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"}],\"triggerMap\":{},\"zone\":\"/actions/combat/fly\",\"simulationTime\":\"100\",\"houseRooms\":{\"/house_rooms/dairy_barn\":0,\"/house_rooms/garden\":0,\"/house_rooms/log_shed\":0,\"/house_rooms/forge\":0,\"/house_rooms/workshop\":0,\"/house_rooms/sewing_parlor\":0,\"/house_rooms/kitchen\":0,\"/house_rooms/brewery\":0,\"/house_rooms/laboratory\":0,\"/house_rooms/dining_room\":0,\"/house_rooms/library\":0,\"/house_rooms/dojo\":0,\"/house_rooms/gym\":0,\"/house_rooms/armory\":0,\"/house_rooms/archery_range\":0,\"/house_rooms/mystical_study\":0}}"
+};
 window.revenue = 0;
 window.noRngRevenue = 0;
 window.expenses = 0;
@@ -1628,6 +1634,19 @@ function createElement(tagName, className, innerHTML = "") {
 
 // #region Simulation Controls
 
+function onTabChange(event) {
+    const nextPlayerTabId = event.target.getAttribute('href').substring(7); 
+    savePreviousPlayer(currentPlayerTabId);
+    updateNextPlayer(nextPlayerTabId);
+    currentPlayerTabId = nextPlayerTabId;
+    updateState();
+    updateUI();
+}
+
+document.querySelectorAll('#playerTab .nav-link').forEach(tab => {
+    tab.addEventListener('shown.bs.tab', onTabChange);
+});
+
 function initSimulationControls() {
     let simulationTimeInput = document.getElementById("inputSimulationTime");
     simulationTimeInput.value = 100;
@@ -1962,84 +1981,120 @@ function initErrorHandling() {
 function initImportExportModal() {
     let exportSetButton = document.getElementById("buttonExportSet");
     exportSetButton.addEventListener("click", (event) => {
-        let zoneSelect = document.getElementById("selectZone");
-        let simulationTimeInput = document.getElementById("inputSimulationTime");
-        let equipmentArray = [];
-        for (const item in player.equipment) {
-            if (player.equipment[item] != null) {
-                equipmentArray.push({
-                    "itemLocationHrid": player.equipment[item].gameItem.equipmentDetail.type.replaceAll("equipment_types", "item_locations"),
-                    "itemHrid": player.equipment[item].hrid,
-                    "enhancementLevel": player.equipment[item].enhancementLevel
-                });
-            }
-        }
-        let playerArray = {
-            "attackLevel": player.attackLevel,
-            "magicLevel": player.magicLevel,
-            "powerLevel": player.powerLevel,
-            "rangedLevel": player.rangedLevel,
-            "defenseLevel": player.defenseLevel,
-            "staminaLevel": player.staminaLevel,
-            "intelligenceLevel": player.intelligenceLevel,
-            "equipment": equipmentArray
-        };
-        let abilitiesArray = [];
-        for (let i = 0; i < 5; i++) {
-            let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
-            let abilityName = document.getElementById("selectAbility_" + i);
-            abilitiesArray[i] = { "abilityHrid": abilityName.value, "level": abilityLevelInput.value };
-        }
-        let drinksArray = [];
-        for (let i = 0; i < drinks?.length; i++) {
-            drinksArray.push({ "itemHrid": drinks[i] });
-        }
-        let foodArray = [];
-        for (let i = 0; i < food?.length; i++) {
-            foodArray.push({ "itemHrid": food[i] });
-        }
-        let state = {
-            player: playerArray,
-            food: { "/action_types/combat": foodArray },
-            drinks: { "/action_types/combat": drinksArray },
-            abilities: abilitiesArray,
-            triggerMap: triggerMap,
-            zone: zoneSelect.value,
-            simulationTime: simulationTimeInput.value,
-            houseRooms: player.houseRooms
-        };
-        try {
-            navigator.clipboard.writeText(JSON.stringify(state)).then(() => alert("Current set has been copied to clipboard."));
-        } catch (err) {
-            alert('Error copying to clipboard: ' + err);
+        savePreviousPlayer(currentPlayerTabId);
+        const activeTab = document.querySelector('#importTab .nav-link.active');
+        if (activeTab.id === 'group-combat-tab') {
+            doGroupExport();
+        } else if (activeTab.id === 'solo-tab') {
+            doSoloExport();
         }
     });
 
     let importSetButton = document.getElementById("buttonImportSet");
     importSetButton.addEventListener("click", (event) => {
-        const activeTab = document.querySelector('#myTab .nav-link.active');
+        const activeTab = document.querySelector('#importTab .nav-link.active');
         if (activeTab.id === 'group-combat-tab') {
-            console.log("GROUP IN 5 MINS");
+            doGroupImport();
         } else if (activeTab.id === 'solo-tab') {
             doSoloImport();
         }
         updateState();
         updateUI();
+        resetImportInputs();
     });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    const tabLinks = document.querySelectorAll('#myTab .nav-link');
-    const content = document.querySelector('#content');
+function resetImportInputs() {
+    document.getElementById('inputSetGroupCombatAll').value = '';
+    document.getElementById('inputSetGroupCombatplayer1').value = '';
+    document.getElementById('inputSetGroupCombatplayer2').value = '';
+    document.getElementById('inputSetGroupCombatplayer3').value = '';
+    document.getElementById('inputSetSolo').value = '';
+}
 
-    tabLinks.forEach(link => {
-        link.addEventListener('click', function() {
-            const activeTab = this.getAttribute('aria-controls');
-            console.log(content);
-            console.log(activeTab);
-        });
-    });
-});
+function doGroupExport() {
+    try {
+        navigator.clipboard.writeText(JSON.stringify(playerDataMap)).then(() => alert("Current Group has been copied to clipboard."));
+    } catch (err) {
+        alert('Error copying to clipboard: ' + err);
+    }
+}
+
+function doSoloExport() {
+    let zoneSelect = document.getElementById("selectZone");
+    let simulationTimeInput = document.getElementById("inputSimulationTime");
+    let equipmentArray = [];
+    for (const item in player.equipment) {
+        if (player.equipment[item] != null) {
+            equipmentArray.push({
+                "itemLocationHrid": player.equipment[item].gameItem.equipmentDetail.type.replaceAll("equipment_types", "item_locations"),
+                "itemHrid": player.equipment[item].hrid,
+                "enhancementLevel": player.equipment[item].enhancementLevel
+            });
+        }
+    }
+    let playerArray = {
+        "attackLevel": player.attackLevel,
+        "magicLevel": player.magicLevel,
+        "powerLevel": player.powerLevel,
+        "rangedLevel": player.rangedLevel,
+        "defenseLevel": player.defenseLevel,
+        "staminaLevel": player.staminaLevel,
+        "intelligenceLevel": player.intelligenceLevel,
+        "equipment": equipmentArray
+    };
+    let abilitiesArray = [];
+    for (let i = 0; i < 5; i++) {
+        let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
+        let abilityName = document.getElementById("selectAbility_" + i);
+        abilitiesArray[i] = { "abilityHrid": abilityName.value, "level": abilityLevelInput.value };
+    }
+    let drinksArray = [];
+    for (let i = 0; i < drinks?.length; i++) {
+        drinksArray.push({ "itemHrid": drinks[i] });
+    }
+    let foodArray = [];
+    for (let i = 0; i < food?.length; i++) {
+        foodArray.push({ "itemHrid": food[i] });
+    }
+    let state = {
+        player: playerArray,
+        food: { "/action_types/combat": foodArray },
+        drinks: { "/action_types/combat": drinksArray },
+        abilities: abilitiesArray,
+        triggerMap: triggerMap,
+        zone: zoneSelect.value,
+        simulationTime: simulationTimeInput.value,
+        houseRooms: player.houseRooms
+    };
+    try {
+        navigator.clipboard.writeText(JSON.stringify(state)).then(() => alert("Current set has been copied to clipboard."));
+    } catch (err) {
+        alert('Error copying to clipboard: ' + err);
+    }
+}
+
+function setPlayerData(playerId, inputElementId) {
+    const inputElement = document.getElementById(inputElementId);
+    const value = inputElement ? inputElement.value.trim() : "";
+
+    // Only set the value in the map if it's not null, undefined, or empty
+    if (value) {
+        playerDataMap[playerId] = value;
+    }
+}
+
+function doGroupImport() {
+    const value = document.getElementById("inputSetGroupCombatAll")?.value || "";
+    if (!value.trim()) {
+        setPlayerData("1", "inputSetGroupCombatplayer1");
+        setPlayerData("2", "inputSetGroupCombatplayer2");
+        setPlayerData("3", "inputSetGroupCombatplayer3");
+    } else {
+        playerDataMap = JSON.parse(value);
+    }
+    updateNextPlayer(currentPlayerTabId);
+}
 
 function doSoloImport() {
     let importSet = document.getElementById("inputSetSolo").value;
@@ -2138,6 +2193,155 @@ function doSoloImport() {
     zoneSelect.value = importSet["zone"];
     let simulationDuration = document.getElementById("inputSimulationTime");
     simulationDuration.value = importSet["simulationTime"];
+}
+
+function savePreviousPlayer(playerId) {
+    let zoneSelect = document.getElementById("selectZone");
+    let simulationTimeInput = document.getElementById("inputSimulationTime");
+    let equipmentArray = [];
+    for (const item in player.equipment) {
+        if (player.equipment[item] != null) {
+            equipmentArray.push({
+                "itemLocationHrid": player.equipment[item].gameItem.equipmentDetail.type.replaceAll("equipment_types", "item_locations"),
+                "itemHrid": player.equipment[item].hrid,
+                "enhancementLevel": player.equipment[item].enhancementLevel
+            });
+        }
+    }
+    let playerArray = {
+        "attackLevel": player.attackLevel,
+        "magicLevel": player.magicLevel,
+        "powerLevel": player.powerLevel,
+        "rangedLevel": player.rangedLevel,
+        "defenseLevel": player.defenseLevel,
+        "staminaLevel": player.staminaLevel,
+        "intelligenceLevel": player.intelligenceLevel,
+        "equipment": equipmentArray
+    };
+    let abilitiesArray = [];
+    for (let i = 0; i < 5; i++) {
+        let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
+        let abilityName = document.getElementById("selectAbility_" + i);
+        abilitiesArray[i] = { "abilityHrid": abilityName.value, "level": abilityLevelInput.value };
+    }
+    let drinksArray = [];
+    for (let i = 0; i < drinks?.length; i++) {
+        drinksArray.push({ "itemHrid": drinks[i] });
+    }
+    let foodArray = [];
+    for (let i = 0; i < food?.length; i++) {
+        foodArray.push({ "itemHrid": food[i] });
+    }
+    let state = {
+        player: playerArray,
+        food: { "/action_types/combat": foodArray },
+        drinks: { "/action_types/combat": drinksArray },
+        abilities: abilitiesArray,
+        triggerMap: triggerMap,
+        zone: zoneSelect.value,
+        simulationTime: simulationTimeInput.value,
+        houseRooms: player.houseRooms
+    };
+    try {
+        playerDataMap[playerId] = JSON.stringify(state);
+    } catch (err) {
+        alert('Error copying to clipboard: ' + err);
+    }
+}
+
+function updateNextPlayer(currentPlayerNumber) {
+    let playerImportData = playerDataMap[currentPlayerNumber];
+    console.log(playerImportData);
+    let importSet = JSON.parse(playerImportData);
+    ["stamina", "intelligence", "attack", "power", "defense", "ranged", "magic"].forEach((skill) => {
+        let levelInput = document.getElementById("inputLevel_" + skill);
+        levelInput.value = importSet.player[skill + "Level"];
+    });
+
+    ["head", "body", "legs", "feet", "hands", "off_hand", "pouch", "neck", "earrings", "ring", "back"].forEach((type) => {
+        let equipmentSelect = document.getElementById("selectEquipment_" + type);
+        let enhancementLevelInput = document.getElementById("inputEquipmentEnhancementLevel_" + type);
+        let currentEquipment = importSet.player.equipment.find(item => item.itemLocationHrid === "/item_locations/" + type);
+        if (currentEquipment !== undefined) {
+            equipmentSelect.value = currentEquipment.itemHrid;
+            enhancementLevelInput.value = currentEquipment.enhancementLevel;
+        } else {
+            equipmentSelect.value = "";
+            enhancementLevelInput.value = 0;
+        }
+    });
+
+    let weaponSelect = document.getElementById("selectEquipment_weapon");
+    let weaponEnhancementLevelInput = document.getElementById("inputEquipmentEnhancementLevel_weapon");
+    let mainhandWeapon = importSet.player.equipment.find(item => item.itemLocationHrid === "/item_locations/main_hand");
+    let twohandWeapon = importSet.player.equipment.find(item => item.itemLocationHrid === "/item_locations/two_hand");
+    if (mainhandWeapon !== undefined) {
+        weaponSelect.value = mainhandWeapon.itemHrid;
+        weaponEnhancementLevelInput.value = mainhandWeapon.enhancementLevel;
+    } else if (twohandWeapon !== undefined) {
+        weaponSelect.value = twohandWeapon.itemHrid;
+        weaponEnhancementLevelInput.value = twohandWeapon.enhancementLevel;
+    } else {
+        weaponSelect.value = "";
+        weaponEnhancementLevelInput.value = 0;
+    }
+    importSet.drinks = importSet.drinks["/action_types/combat"];
+    importSet.food = importSet.food["/action_types/combat"];
+    for (let i = 0; i < 3; i++) {
+        let drinkSelect = document.getElementById("selectDrink_" + i);
+        let foodSelect = document.getElementById("selectFood_" + i);
+        if (importSet.drinks[i] != null) {
+            drinkSelect.value = importSet.drinks[i].itemHrid;
+        } else {
+            drinkSelect.value = "";
+        }
+        if (importSet.food[i] != null) {
+            foodSelect.value = importSet.food[i].itemHrid;
+        } else {
+            foodSelect.value = "";
+        }
+    }
+
+    let hasSpecial = false;
+    if (importSet.abilities && Object.keys(importSet.abilities).length == 5) {
+        hasSpecial = true;
+    }
+
+    for (let i = 0; i < (hasSpecial ? 5 : 4); i++) {
+        let abilitySlot = hasSpecial ? i : (i + 1);
+        let abilitySelect = document.getElementById("selectAbility_" + abilitySlot);
+        let abilityLevelInput = document.getElementById("inputAbilityLevel_" + abilitySlot);
+        if (importSet.abilities[i] != null) {
+            abilitySelect.value = importSet.abilities[i].abilityHrid;
+            abilityLevelInput.value = String(importSet.abilities[i].level);
+        } else {
+            abilitySelect.value = "";
+            abilityLevelInput.value = "1";
+        }
+    }
+
+    if (importSet.triggerMap) {
+        triggerMap = importSet.triggerMap;
+    }
+
+    if (importSet.houseRooms) {
+        for (const room in importSet.houseRooms) {
+            const field = document.querySelector('[data-house-hrid="' + room + '"]');
+            if (importSet.houseRooms[room]) {
+                field.value = importSet.houseRooms[room];
+            } else {
+                field.value = '';
+            }
+        }
+        player.houseRooms = importSet.houseRooms;
+    } else {
+        let houseRooms = Object.values(houseRoomDetailMap);
+        for (const room of Object.values(houseRooms)) {
+            const field = document.querySelector('[data-house-hrid="' + room.hrid + '"]');
+            field.value = '';
+            player.houseRooms[room.hrid] = 0;
+        }
+    }
 }
 
 function showErrorModal(error) {
