@@ -212,12 +212,13 @@ const ENEMY_RESPAWN_INTERVAL = 3 * ONE_SECOND;
 const PLAYER_RESPAWN_INTERVAL = 150 * ONE_SECOND;
 
 class CombatSimulator extends EventTarget {
-    constructor(player, zone) {
+    constructor(players, zone) {
         super();
-        this.players = [player];
+        this.players = players;
         this.zone = zone;
         this.eventQueue = new _events_eventQueue__WEBPACK_IMPORTED_MODULE_8__["default"]();
         this.simResult = new _simResult__WEBPACK_IMPORTED_MODULE_15__["default"](zone.hrid);
+        this.allPlayersDead = false;
     }
 
     async simulate(simulationTimeLimit) {
@@ -250,7 +251,9 @@ class CombatSimulator extends EventTarget {
 
         this.simResult.simulatedTime = this.simulationTime;
         this.simResult.setDropRateMultipliers(this.players[0]);
-        this.simResult.setManaUsed(this.players[0]);
+        for(let i = 0; i < this.players.length; i++) {
+            this.simResult.setManaUsed(this.players[i]);
+        }
 
         if (this.zone.monsterSpawnInfo.bossSpawns) {
             for (const boss of this.zone.monsterSpawnInfo.bossSpawns) {
@@ -327,8 +330,10 @@ class CombatSimulator extends EventTarget {
     }
 
     processCombatStartEvent(event) {
-        this.players[0].generatePermanentBuffs();
-        this.players[0].reset(this.simulationTime);
+        for(let i = 0; i < this.players.length; i++) {
+            this.players[i].generatePermanentBuffs();
+            this.players[i].reset(this.simulationTime);
+        }
         let regenTickEvent = new _events_regenTickEvent__WEBPACK_IMPORTED_MODULE_10__["default"](this.simulationTime + REGEN_TICK_INTERVAL);
         this.eventQueue.addEvent(regenTickEvent);
 
@@ -336,11 +341,17 @@ class CombatSimulator extends EventTarget {
     }
 
     processPlayerRespawnEvent(event) {
-        this.players[0].combatDetails.currentHitpoints = this.players[0].combatDetails.maxHitpoints;
-        this.players[0].combatDetails.currentManapoints = this.players[0].combatDetails.maxManapoints;
-        this.players[0].clearBuffs();
-        this.players[0].clearCCs();
-        this.startAttacks();
+        let respawningPlayer = this.players.find(player => player.hrid === event.hrid);
+        respawningPlayer.combatDetails.currentHitpoints = respawningPlayer.combatDetails.maxHitpoints;
+        respawningPlayer.combatDetails.currentManapoints = respawningPlayer.combatDetails.maxManapoints;
+        respawningPlayer.clearBuffs();
+        respawningPlayer.clearCCs();
+        if(this.allPlayersDead) {
+            this.allPlayersDead = false;
+            this.startAttacks();
+        } else {
+            this.addNextAttackEvent(respawningPlayer);
+        }
     }
 
     processEnemyRespawnEvent(event) {
@@ -360,7 +371,7 @@ class CombatSimulator extends EventTarget {
     }
 
     startAttacks() {
-        let units = [this.players[0]];
+        let units = [...this.players];
         if (this.enemies) {
             units.push(...this.enemies);
         }
@@ -391,6 +402,21 @@ class CombatSimulator extends EventTarget {
 
         for (let i = 0; i < aliveTargets.length; i++) {
             let target = aliveTargets[i];
+            if(!event.source.isPlayer && aliveTargets.length > 1)  {
+                let cumulativeThreat = 0;
+                let cumulativeRanges = [];
+                aliveTargets.forEach(player => {
+                    let playerThreat = player.combatDetails.totalThreat;
+                    cumulativeThreat += playerThreat;
+                    cumulativeRanges.push({
+                        player: player,
+                        rangeStart: cumulativeThreat - playerThreat,
+                        rangeEnd: cumulativeThreat
+                    });
+                });
+                let randomValueHit = Math.random() * cumulativeThreat;
+                target = cumulativeRanges.find(range => randomValueHit >= range.rangeStart && randomValueHit < range.rangeEnd).player;
+            }
             let source = event.source;
 
             if (target.combatDetails.combatStats.parry > Math.random()) {
@@ -501,19 +527,23 @@ class CombatSimulator extends EventTarget {
             // console.log("encounter end " + (this.simulationTime / 1000000000))
         }
 
+    this.players.forEach(player => {
+        if ((player.combatDetails.currentHitpoints <= 0) && !this.eventQueue.containsEventOfTypeAndHrid(_events_playerRespawnEvent__WEBPACK_IMPORTED_MODULE_9__["default"].type, player.hrid)) {
+            let playerRespawnEvent = new _events_playerRespawnEvent__WEBPACK_IMPORTED_MODULE_9__["default"](this.simulationTime + PLAYER_RESPAWN_INTERVAL, player.hrid);
+            this.eventQueue.addEvent(playerRespawnEvent);
+            //console.log(player.hrid + " died at " + (this.simulationTime / 1000000000));
+        }
+    });
+
         if (
-            !this.players.some((player) => player.combatDetails.currentHitpoints > 0) &&
-            !this.eventQueue.containsEventOfType(_events_playerRespawnEvent__WEBPACK_IMPORTED_MODULE_9__["default"].type)
+            !this.players.some((player) => player.combatDetails.currentHitpoints > 0)
         ) {
             this.eventQueue.clearEventsOfType(_events_autoAttackEvent__WEBPACK_IMPORTED_MODULE_1__["default"].type);
             this.eventQueue.clearEventsOfType(_events_abilityCastEndEvent__WEBPACK_IMPORTED_MODULE_16__["default"].type);
-            // 120 seconds respawn and 30 seconds traveling to battle
-            let playerRespawnEvent = new _events_playerRespawnEvent__WEBPACK_IMPORTED_MODULE_9__["default"](this.simulationTime + PLAYER_RESPAWN_INTERVAL);
-            this.eventQueue.addEvent(playerRespawnEvent);
-            // console.log("Player died");
-
+            //console.log("All Players died");
             encounterEnded = true;
-        }
+            this.allPlayersDead = true;
+        } 
 
         return encounterEnded;
     }
@@ -1016,7 +1046,28 @@ class CombatSimulator extends EventTarget {
                     }
                 }
             } else {
-                let attackResult = _combatUtilities__WEBPACK_IMPORTED_MODULE_0__["default"].processAttack(source, target, abilityEffect);
+                let attackResult = null;
+                if(!source.isPlayer) {
+                    targets = targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0);
+                }
+                if(!source.isPlayer && targets.length > 1 && abilityEffect.targetType == "enemy")  {
+                    let cumulativeThreat = 0;
+                    let cumulativeRanges = [];
+                    targets.forEach(player => {
+                        let playerThreat = player.combatDetails.totalThreat;
+                        cumulativeThreat += playerThreat;
+                        cumulativeRanges.push({
+                            player: player,
+                            rangeStart: cumulativeThreat - playerThreat,
+                            rangeEnd: cumulativeThreat
+                        });
+                    });
+                    let randomValueHit = Math.random() * cumulativeThreat;
+                    targets = cumulativeRanges.find(range => randomValueHit >= range.rangeStart && randomValueHit < range.rangeEnd).player;
+                    attackResult = _combatUtilities__WEBPACK_IMPORTED_MODULE_0__["default"].processAttack(source, targets, abilityEffect);
+                } else { 
+                    attackResult = _combatUtilities__WEBPACK_IMPORTED_MODULE_0__["default"].processAttack(source, target, abilityEffect);
+                }
 
                 if (attackResult.didHit && abilityEffect.buffs) {
                     for (const buff of abilityEffect.buffs) {
@@ -2597,6 +2648,11 @@ class EventQueue {
         return heapEvents.some((event) => event.type == type);
     }
 
+    containsEventOfTypeAndHrid(type, hrid) {
+        let heapEvents = this.minHeap.toArray();
+        return heapEvents.some((event) => event.type == type && event.hrid == hrid);
+    }
+
     clear() {
         this.minHeap = new heap_js__WEBPACK_IMPORTED_MODULE_0__["default"]((a, b) => a.time - b.time);
     }
@@ -2644,8 +2700,9 @@ __webpack_require__.r(__webpack_exports__);
 class PlayerRespawnEvent extends _combatEvent__WEBPACK_IMPORTED_MODULE_0__["default"] {
     static type = "playerRespawn";
 
-    constructor(time) {
+    constructor(time, hrid) {
         super(PlayerRespawnEvent.type, time);
+        this.hrid = hrid;
     }
 }
 
@@ -2946,6 +3003,7 @@ class Player extends _combatUnit__WEBPACK_IMPORTED_MODULE_1__["default"] {
         player.defenseLevel = dto.defenseLevel;
         player.rangedLevel = dto.rangedLevel;
         player.magicLevel = dto.magicLevel;
+        player.hrid = dto.hrid;
 
         for (const [key, value] of Object.entries(dto.equipment)) {
             player.equipment[key] = value ? _equipment__WEBPACK_IMPORTED_MODULE_3__["default"].createFromDTO(value) : null;
@@ -3196,8 +3254,9 @@ class SimResult {
     }
 
     setManaUsed(unit) {
+        this.manaUsed[unit.hrid] = {};
         for (let [key, value] of unit.abilityManaCosts.entries()) {
-            this.manaUsed[key] = value;
+            this.manaUsed[unit.hrid][key] = value;
         }
     }
 
@@ -3502,7 +3561,6 @@ __webpack_require__.r(__webpack_exports__);
 
 
 
-var player;
 
 class SimulationManager {
     constructor() {
@@ -3524,12 +3582,16 @@ class SimulationManager {
 onmessage = async function (event) {
     switch (event.data.type) {
         case "start_simulation":
-            player = _combatsimulator_player__WEBPACK_IMPORTED_MODULE_1__["default"].createFromDTO(event.data.player);
+            let playersData = event.data.players;
+            let players = [];
             let zone = new _combatsimulator_zone__WEBPACK_IMPORTED_MODULE_2__["default"](event.data.zoneHrid);
-            player.zoneBuffs = zone.buffs;
+            for (let i = 0; i < playersData.length; i++) {
+                let currentPlayer = _combatsimulator_player__WEBPACK_IMPORTED_MODULE_1__["default"].createFromDTO(structuredClone(playersData[i]));
+                currentPlayer.zoneBuffs = zone.buffs;
+                players.push(currentPlayer);
+            }
             let simulationTimeLimit = event.data.simulationTimeLimit;
-
-            let combatSimulator = new _combatsimulator_combatSimulator__WEBPACK_IMPORTED_MODULE_0__["default"](player, zone);
+            let combatSimulator = new _combatsimulator_combatSimulator__WEBPACK_IMPORTED_MODULE_0__["default"](players, zone);
             combatSimulator.addEventListener("progress", (event) => {
                 this.postMessage({ type: "simulation_progress", progress: event.detail });
             });
@@ -3548,10 +3610,14 @@ onmessage = async function (event) {
             for (let i = 0; i < zoneHrids.length; i++) {
                 const zoneInstance = new _combatsimulator_zone__WEBPACK_IMPORTED_MODULE_2__["default"](zoneHrids[i]);
                 if (zoneInstance.monsterSpawnInfo.randomSpawnInfo.spawns) {
-                    const clonedPlayerDTO = structuredClone(event.data.player);
-                    var newPlayer = _combatsimulator_player__WEBPACK_IMPORTED_MODULE_1__["default"].createFromDTO(clonedPlayerDTO);
-                    newPlayer.zoneBuffs = zoneInstance.buffs;
-                    let simulation = new _combatsimulator_combatSimulator__WEBPACK_IMPORTED_MODULE_0__["default"](newPlayer, zoneInstance);
+                    let players = [];
+                    let playersData = event.data.players;
+                    for (let i = 0; i < playersData.length; i++) {
+                        let currentPlayer = _combatsimulator_player__WEBPACK_IMPORTED_MODULE_1__["default"].createFromDTO(structuredClone(playersData[i]));
+                        currentPlayer.zoneBuffs = zoneInstance.buffs;
+                        players.push(currentPlayer);
+                    }
+                    let simulation = new _combatsimulator_combatSimulator__WEBPACK_IMPORTED_MODULE_0__["default"](players, zoneInstance);
                     if(i == 0) {
                         simulation.addEventListener("progress", (event) => {
                             this.postMessage({ type: "simulation_progress", progress: event.detail });

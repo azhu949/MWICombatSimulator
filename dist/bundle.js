@@ -858,6 +858,7 @@ class Player extends _combatUnit__WEBPACK_IMPORTED_MODULE_1__["default"] {
         player.defenseLevel = dto.defenseLevel;
         player.rangedLevel = dto.rangedLevel;
         player.magicLevel = dto.magicLevel;
+        player.hrid = dto.hrid;
 
         for (const [key, value] of Object.entries(dto.equipment)) {
             player.equipment[key] = value ? _equipment__WEBPACK_IMPORTED_MODULE_3__["default"].createFromDTO(value) : null;
@@ -1473,12 +1474,20 @@ let progressbar = document.getElementById("simulationProgressBar");
 let worker = new Worker(new URL(/* worker import */ __webpack_require__.p + __webpack_require__.u("src_worker_js"), __webpack_require__.b));
 
 let player = new _combatsimulator_player_js__WEBPACK_IMPORTED_MODULE_1__["default"]();
+let selectedPlayers = [];
 let main_food = [null, null, null];
 let main_drinks = [null, null, null];
 let main_abilities = [null, null, null, null];
 let triggerMap = {};
 let modalTriggers = [];
+let currentSimResults = {};
 
+let currentPlayerTabId = '1';
+let playerDataMap = {
+    "1": {},
+    "2": "{\"player\":{\"attackLevel\":1,\"magicLevel\":1,\"powerLevel\":1,\"rangedLevel\":1,\"defenseLevel\":1,\"staminaLevel\":1,\"intelligenceLevel\":1,\"equipment\":[]},\"food\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"drinks\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"abilities\":[{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"}],\"triggerMap\":{},\"zone\":\"/actions/combat/fly\",\"simulationTime\":\"100\",\"houseRooms\":{\"/house_rooms/dairy_barn\":0,\"/house_rooms/garden\":0,\"/house_rooms/log_shed\":0,\"/house_rooms/forge\":0,\"/house_rooms/workshop\":0,\"/house_rooms/sewing_parlor\":0,\"/house_rooms/kitchen\":0,\"/house_rooms/brewery\":0,\"/house_rooms/laboratory\":0,\"/house_rooms/dining_room\":0,\"/house_rooms/library\":0,\"/house_rooms/dojo\":0,\"/house_rooms/gym\":0,\"/house_rooms/armory\":0,\"/house_rooms/archery_range\":0,\"/house_rooms/mystical_study\":0}}",
+    "3": "{\"player\":{\"attackLevel\":1,\"magicLevel\":1,\"powerLevel\":1,\"rangedLevel\":1,\"defenseLevel\":1,\"staminaLevel\":1,\"intelligenceLevel\":1,\"equipment\":[]},\"food\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"drinks\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"abilities\":[{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"}],\"triggerMap\":{},\"zone\":\"/actions/combat/fly\",\"simulationTime\":\"100\",\"houseRooms\":{\"/house_rooms/dairy_barn\":0,\"/house_rooms/garden\":0,\"/house_rooms/log_shed\":0,\"/house_rooms/forge\":0,\"/house_rooms/workshop\":0,\"/house_rooms/sewing_parlor\":0,\"/house_rooms/kitchen\":0,\"/house_rooms/brewery\":0,\"/house_rooms/laboratory\":0,\"/house_rooms/dining_room\":0,\"/house_rooms/library\":0,\"/house_rooms/dojo\":0,\"/house_rooms/gym\":0,\"/house_rooms/armory\":0,\"/house_rooms/archery_range\":0,\"/house_rooms/mystical_study\":0}}"
+};
 window.revenue = 0;
 window.noRngRevenue = 0;
 window.expenses = 0;
@@ -2260,22 +2269,27 @@ function initZones() {
 // #region Simulation Result
 
 function showSimulationResult(simResult) {
+    currentSimResults = simResult;
     let expensesModalTable = document.querySelector("#expensesTable > tbody");
     expensesModalTable.innerHTML = '<tr><th>Item</th><th>Price</th><th>Amount</th><th>Total</th></tr>';
     let revenueModalTable = document.querySelector("#revenueTable > tbody");
     revenueModalTable.innerHTML = '<tr><th>Item</th><th>Price</th><th>Amount</th><th>Total</th></tr>';
     let noRngRevenueModalTable = document.querySelector("#noRngRevenueTable > tbody");
     noRngRevenueModalTable.innerHTML = '<tr><th>Item</th><th>Price</th><th>Amount</th><th>Total</th></tr>';
-    showKills(simResult);
-    showDeaths(simResult);
-    showExperienceGained(simResult);
-    showConsumablesUsed(simResult);
-    showHpSpent(simResult);
-    showManaUsed(simResult);
-    showHitpointsGained(simResult);
-    showManapointsGained(simResult);
-    showDamageDone(simResult);
-    showDamageTaken(simResult);
+    let playerToDisplay = "player1";
+    if (selectedPlayers.includes(parseInt(currentPlayerTabId))) {
+        playerToDisplay = "player" + currentPlayerTabId;
+    }
+    showKills(simResult, playerToDisplay);
+    showDeaths(simResult, playerToDisplay);
+    showExperienceGained(simResult, playerToDisplay);
+    showConsumablesUsed(simResult, playerToDisplay);
+    showHpSpent(simResult, playerToDisplay);
+    showManaUsed(simResult, playerToDisplay);
+    showHitpointsGained(simResult, playerToDisplay);
+    showManapointsGained(simResult, playerToDisplay);
+    showDamageDone(simResult, playerToDisplay);
+    showDamageTaken(simResult, playerToDisplay);
     window.profit = window.revenue - window.expenses;
     document.getElementById('profitSpan').innerText = window.profit.toLocaleString();
     document.getElementById('profitPreview').innerText = window.profit.toLocaleString();
@@ -2292,33 +2306,36 @@ function showAllSimulationResults(simResults){
 function manipulateSimResultsDataForDisplay(simResults){
     let displaySimResults = [];
     for (let i = 0; i < simResults.length; i++) {
-        let simResult = simResults[i];
-        let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
-        let zoneName = simResult.zoneName.slice(16).replaceAll("_", " ");
-        let encountersPerHour = (simResult.encounters / hoursSimulated).toFixed(1);
-        let playerDeaths = simResult.deaths["player"] ?? 0;
-        let deathsPerHour = (playerDeaths / hoursSimulated).toFixed(2);
+        for(let j = 0; j < selectedPlayers.length; j++){
+            let playerToDisplay = "player" + selectedPlayers[j].toString();
+            let simResult = simResults[i];
+            let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
+            let zoneName = simResult.zoneName.slice(16).replaceAll("_", " ");
+            let encountersPerHour = (simResult.encounters / hoursSimulated).toFixed(1);
+            let playerDeaths = simResult.deaths[playerToDisplay] ?? 0;
+            let deathsPerHour = (playerDeaths / hoursSimulated).toFixed(2);
 
-        let totalExperience = Object.values(simResult.experienceGained["player"]).reduce((prev, cur) => prev + cur, 0);
-        let totalExperiencePerHour = (totalExperience / hoursSimulated).toFixed(0);
-    
-        let experiencePerHour = {};
-        const skills = ["Stamina", "Intelligence", "Attack", "Power", "Defense", "Ranged", "Magic"];
-        skills.forEach((skill) => {
-            const skillLower = skill.toLowerCase();
-            let experience = simResult.experienceGained["player"][skillLower] ?? 0;
-            let experiencePerHourValue = 0;
-            if (experience != 0) {
-                experiencePerHourValue = (experience / hoursSimulated).toFixed(0);
-            }
-            experiencePerHour[skill] = experiencePerHourValue;
-        });
-        let displaySimRow = {"ZoneName": zoneName, "Encounters": encountersPerHour, "Deaths": deathsPerHour,
-                             "TotalExperience": totalExperiencePerHour, "Stamina": experiencePerHour["Stamina"], 
-                             "Intelligence": experiencePerHour["Intelligence"], "Attack": experiencePerHour["Attack"],
-                             "Magic": experiencePerHour["Magic"], "Ranged": experiencePerHour["Ranged"],
-                             "Power": experiencePerHour["Power"], "Defense": experiencePerHour["Defense"]};
-        displaySimResults.push(displaySimRow);
+            let totalExperience = Object.values(simResult.experienceGained[playerToDisplay]).reduce((prev, cur) => prev + cur, 0);
+            let totalExperiencePerHour = (totalExperience / hoursSimulated).toFixed(0);
+        
+            let experiencePerHour = {};
+            const skills = ["Stamina", "Intelligence", "Attack", "Power", "Defense", "Ranged", "Magic"];
+            skills.forEach((skill) => {
+                const skillLower = skill.toLowerCase();
+                let experience = simResult.experienceGained[playerToDisplay][skillLower] ?? 0;
+                let experiencePerHourValue = 0;
+                if (experience != 0) {
+                    experiencePerHourValue = (experience / hoursSimulated).toFixed(0);
+                }
+                experiencePerHour[skill] = experiencePerHourValue;
+            });
+            let displaySimRow = {"ZoneName": zoneName, "Player": playerToDisplay, "Encounters": encountersPerHour, "Deaths": deathsPerHour,
+                                "TotalExperience": totalExperiencePerHour, "Stamina": experiencePerHour["Stamina"], 
+                                "Intelligence": experiencePerHour["Intelligence"], "Attack": experiencePerHour["Attack"],
+                                "Magic": experiencePerHour["Magic"], "Ranged": experiencePerHour["Ranged"],
+                                "Power": experiencePerHour["Power"], "Defense": experiencePerHour["Defense"]};
+            displaySimResults.push(displaySimRow);
+        }
     }
     return displaySimResults;
 }
@@ -2373,6 +2390,7 @@ function updateSortIndicators(tableId, columnIndex, direction) {
 
 document.querySelectorAll('#allZonesData th').forEach((header, index) => {
     if (index === 0) return; 
+    if (index === 1) return;
 
     header.addEventListener('click', () => {
         if (currentSortColumn === index) {
@@ -2412,7 +2430,7 @@ document.getElementById('buttonExportResults').addEventListener('click', functio
     document.body.removeChild(downloadLink);
 });
 
-function showKills(simResult) {
+function showKills(simResult, playerToDisplay) {
     let resultDiv = document.getElementById("simulationResultKills");
     let dropsResultDiv = document.getElementById("simulationResultDrops");
     let noRngDropsResultDiv = document.getElementById("noRngDrops");
@@ -2423,14 +2441,14 @@ function showKills(simResult) {
     let rareFindMultiplier = simResult.rareFindMultiplier;
 
     let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
-    let playerDeaths = simResult.deaths["player"] ?? 0;
+    let playerDeaths = simResult.deaths[playerToDisplay] ?? 0;
     let encountersPerHour = (simResult.encounters / hoursSimulated).toFixed(1);
 
     let encountersRow = createRow(["col-md-6", "col-md-6 text-end"], ["Encounters", encountersPerHour]);
     newChildren.push(encountersRow);
 
     let monsters = Object.keys(simResult.deaths)
-        .filter((enemy) => enemy != "player")
+        .filter(enemy => enemy !== "player1" && enemy !== "player2" && enemy !== "player3")
         .sort();
 
     const totalDropMap = new Map();
@@ -2612,30 +2630,30 @@ function showKills(simResult) {
     noRngDropsResultDiv.replaceChildren(...newNoRngDropChildren);
 }
 
-function showDeaths(simResult) {
+function showDeaths(simResult, playerToDisplay) {
     let resultDiv = document.getElementById("simulationResultPlayerDeaths");
 
     let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
-    let playerDeaths = simResult.deaths["player"] ?? 0;
+    let playerDeaths = simResult.deaths[playerToDisplay] ?? 0;
     let deathsPerHour = (playerDeaths / hoursSimulated).toFixed(2);
 
     let deathRow = createRow(["col-md-6", "col-md-6 text-end"], ["Player", deathsPerHour]);
     resultDiv.replaceChildren(deathRow);
 }
 
-function showExperienceGained(simResult) {
+function showExperienceGained(simResult, playerToDisplay) {
     let resultDiv = document.getElementById("simulationResultExperienceGain");
     let newChildren = [];
 
     let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
 
-    let totalExperience = Object.values(simResult.experienceGained["player"]).reduce((prev, cur) => prev + cur, 0);
+    let totalExperience = Object.values(simResult.experienceGained[playerToDisplay]).reduce((prev, cur) => prev + cur, 0);
     let totalExperiencePerHour = (totalExperience / hoursSimulated).toFixed(0);
     let totalRow = createRow(["col-md-6", "col-md-6 text-end"], ["Total", totalExperiencePerHour]);
     newChildren.push(totalRow);
 
     ["Stamina", "Intelligence", "Attack", "Power", "Defense", "Ranged", "Magic"].forEach((skill) => {
-        let experience = simResult.experienceGained["player"][skill.toLowerCase()] ?? 0;
+        let experience = simResult.experienceGained[playerToDisplay][skill.toLowerCase()] ?? 0;
         if (experience == 0) {
             return;
         }
@@ -2647,17 +2665,17 @@ function showExperienceGained(simResult) {
     resultDiv.replaceChildren(...newChildren);
 }
 
-function showHpSpent(simResult) {
+function showHpSpent(simResult, playerToDisplay) {
     let hpSpentHeadingDiv = document.getElementById("simulationHpSpentHeading");
     hpSpentHeadingDiv.classList.add("d-none");
     let hpSpentDiv = document.getElementById("simulationHpSpent");
     hpSpentDiv.classList.add("d-none");
 
-    if (simResult.hitpointsSpent["player"]) {
+    if (simResult.hitpointsSpent[playerToDisplay]) {
         let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
         let hpSpentSources = [];
-        for (const source of Object.keys(simResult.hitpointsSpent["player"])) {
-            let hpSpentPerHour = (simResult.hitpointsSpent["player"][source] / hoursSimulated).toFixed(2);
+        for (const source of Object.keys(simResult.hitpointsSpent[playerToDisplay])) {
+            let hpSpentPerHour = (simResult.hitpointsSpent[playerToDisplay][source] / hoursSimulated).toFixed(2);
             let hpSpentRow = createRow(["col-md-6", "col-md-6 text-end"], [_combatsimulator_data_abilityDetailMap_json__WEBPACK_IMPORTED_MODULE_2__[source].name, hpSpentPerHour]);
             hpSpentSources.push(hpSpentRow);
         }
@@ -2667,18 +2685,18 @@ function showHpSpent(simResult) {
     }
 }
 
-function showConsumablesUsed(simResult) {
+function showConsumablesUsed(simResult, playerToDisplay) {
     let resultDiv = document.getElementById("simulationResultConsumablesUsed");
     let newChildren = [];
 
     let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
 
-    if (!simResult.consumablesUsed["player"]) {
+    if (!simResult.consumablesUsed[playerToDisplay]) {
         resultDiv.replaceChildren(...newChildren);
         return;
     }
 
-    let consumablesUsed = Object.entries(simResult.consumablesUsed["player"]).sort((a, b) => b[1] - a[1]);
+    let consumablesUsed = Object.entries(simResult.consumablesUsed[playerToDisplay]).sort((a, b) => b[1] - a[1]);
 
     let expensesModalTable = document.querySelector("#expensesTable > tbody");
     let total = 0;
@@ -2732,19 +2750,25 @@ function showConsumablesUsed(simResult) {
     resultDiv.replaceChildren(...newChildren);
 }
 
-function showManaUsed(simResult) {
+function showManaUsed(simResult, playerToDisplay) {
     let resultDiv = document.getElementById("simulationResultManaUsed");
     let newChildren = [];
 
     let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
-    if (!simResult.manaUsed) {
+
+    if (!simResult.manaUsed || !simResult.manaUsed[playerToDisplay]) {
         resultDiv.replaceChildren(...newChildren);
         return;
     }
-    for (let ability in simResult.manaUsed) {
-        let manaPerHour = (simResult.manaUsed[ability] / hoursSimulated).toFixed(0);
+
+    let playerManaUsed = simResult.manaUsed[playerToDisplay];
+
+    for (let ability in playerManaUsed) {
+        let manaUsed = playerManaUsed[ability];
+        let manaPerHour = (manaUsed / hoursSimulated).toFixed(0);
         let castsPerHour = (manaPerHour / _combatsimulator_data_abilityDetailMap_json__WEBPACK_IMPORTED_MODULE_2__[ability].manaCost).toFixed(2);
         castsPerHour = " (" + castsPerHour + ")";
+        
         let manaRow = createRow(
             ["col-md-6", "col-md-6 text-end"],
             [ability.split("/")[2].replaceAll("_", " ") + castsPerHour, manaPerHour]
@@ -2755,18 +2779,18 @@ function showManaUsed(simResult) {
     resultDiv.replaceChildren(...newChildren);
 }
 
-function showHitpointsGained(simResult) {
+function showHitpointsGained(simResult, playerToDisplay) {
     let resultDiv = document.getElementById("simulationResultHealthRestored");
     let newChildren = [];
 
     let secondsSimulated = simResult.simulatedTime / ONE_SECOND;
 
-    if (!simResult.hitpointsGained["player"]) {
+    if (!simResult.hitpointsGained[playerToDisplay]) {
         resultDiv.replaceChildren(...newChildren);
         return;
     }
 
-    let hitpointsGained = Object.entries(simResult.hitpointsGained["player"]).sort((a, b) => b[1] - a[1]);
+    let hitpointsGained = Object.entries(simResult.hitpointsGained[playerToDisplay]).sort((a, b) => b[1] - a[1]);
 
     let totalHitpointsGained = hitpointsGained.reduce((prev, cur) => prev + cur[1], 0);
     let totalHitpointsPerSecond = (totalHitpointsGained / secondsSimulated).toFixed(2);
@@ -2810,18 +2834,18 @@ function showHitpointsGained(simResult) {
     resultDiv.replaceChildren(...newChildren);
 }
 
-function showManapointsGained(simResult) {
+function showManapointsGained(simResult, playerToDisplay) {
     let resultDiv = document.getElementById("simulationResultManaRestored");
     let newChildren = [];
 
     let secondsSimulated = simResult.simulatedTime / ONE_SECOND;
 
-    if (!simResult.manapointsGained["player"]) {
+    if (!simResult.manapointsGained[playerToDisplay]) {
         resultDiv.replaceChildren(...newChildren);
         return;
     }
 
-    let manapointsGained = Object.entries(simResult.manapointsGained["player"]).sort((a, b) => b[1] - a[1]);
+    let manapointsGained = Object.entries(simResult.manapointsGained[playerToDisplay]).sort((a, b) => b[1] - a[1]);
 
     let totalManapointsGained = manapointsGained.reduce((prev, cur) => prev + cur[1], 0);
     let totalManapointsPerSecond = (totalManapointsGained / secondsSimulated).toFixed(2);
@@ -2865,7 +2889,7 @@ function showManapointsGained(simResult) {
     resultDiv.replaceChildren(...newChildren);
 }
 
-function showDamageDone(simResult) {
+function showDamageDone(simResult, playerToDisplay) {
     let totalDamageDone = {};
     let enemyIndex = 1;
 
@@ -2881,7 +2905,7 @@ function showDamageDone(simResult) {
     let bossTimeDiv = document.getElementById("simulationBossTime");
     bossTimeDiv.classList.add("d-none");
 
-    for (const [target, abilities] of Object.entries(simResult.attacks["player"])) {
+    for (const [target, abilities] of Object.entries(simResult.attacks[playerToDisplay])) {
         let targetDamageDone = {};
 
         const i = simResult.timeSpentAlive.findIndex(e => e.name === target);
@@ -2942,7 +2966,7 @@ function showDamageDone(simResult) {
     createDamageTable(totalResultDiv, totalDamageDone, totalSecondsSimulated);
 }
 
-function showDamageTaken(simResult) {
+function showDamageTaken(simResult, playerToDisplay) {
     let totalDamageTaken = {};
     let enemyIndex = 1;
 
@@ -2954,36 +2978,37 @@ function showDamageTaken(simResult) {
     }
 
     for (const [source, targets] of Object.entries(simResult.attacks)) {
-        if (source == "player") {
+        const validSources = ["player1", "player2", "player3"];
+        if (validSources.includes(source)) {
             continue;
         }
-
         const i = simResult.timeSpentAlive.findIndex(e => e.name === source);
         let aliveSecondsSimulated = simResult.timeSpentAlive[i].timeSpentAlive / ONE_SECOND;
         let sourceDamageTaken = {};
+        if (targets[playerToDisplay] && Object.keys(targets[playerToDisplay]).length > 0) {
+            for (const [ability, abilityCasts] of Object.entries(targets[playerToDisplay])) {
+                let casts = Object.values(abilityCasts).reduce((prev, cur) => prev + cur, 0);
+                let misses = abilityCasts["miss"] ?? 0;
+                let damage = Object.entries(abilityCasts)
+                    .filter((entry) => entry[0] != "miss")
+                    .reduce((prev, cur) => prev + Number(cur[0]) * cur[1], 0);
 
-        for (const [ability, abilityCasts] of Object.entries(targets["player"])) {
-            let casts = Object.values(abilityCasts).reduce((prev, cur) => prev + cur, 0);
-            let misses = abilityCasts["miss"] ?? 0;
-            let damage = Object.entries(abilityCasts)
-                .filter((entry) => entry[0] != "miss")
-                .reduce((prev, cur) => prev + Number(cur[0]) * cur[1], 0);
-
-            sourceDamageTaken[ability] = {
-                casts,
-                misses,
-                damage,
-            };
-            if (totalDamageTaken[ability]) {
-                totalDamageTaken[ability].casts += casts;
-                totalDamageTaken[ability].misses += misses;
-                totalDamageTaken[ability].damage += damage;
-            } else {
-                totalDamageTaken[ability] = {
+                sourceDamageTaken[ability] = {
                     casts,
                     misses,
                     damage,
                 };
+                if (totalDamageTaken[ability]) {
+                    totalDamageTaken[ability].casts += casts;
+                    totalDamageTaken[ability].misses += misses;
+                    totalDamageTaken[ability].damage += damage;
+                } else {
+                    totalDamageTaken[ability] = {
+                        casts,
+                        misses,
+                        damage,
+                    };
+                }
             }
         }
 
@@ -3077,6 +3102,22 @@ function createElement(tagName, className, innerHTML = "") {
 
 // #region Simulation Controls
 
+function onTabChange(event) {
+    const nextPlayerTabId = event.target.getAttribute('href').substring(7); 
+    savePreviousPlayer(currentPlayerTabId);
+    updateNextPlayer(nextPlayerTabId);
+    currentPlayerTabId = nextPlayerTabId;
+    updateState();
+    updateUI();
+    if(Object.keys(currentSimResults).length !== 0) {
+        showSimulationResult(currentSimResults);
+    }
+}
+
+document.querySelectorAll('#playerTab .nav-link').forEach(tab => {
+    tab.addEventListener('shown.bs.tab', onTabChange);
+});
+
 function initSimulationControls() {
     let simulationTimeInput = document.getElementById("inputSimulationTime");
     simulationTimeInput.value = 100;
@@ -3087,40 +3128,70 @@ function initSimulationControls() {
             invalidElements.forEach((element) => element.reportValidity());
             return;
         }
+        let simPlayer1 = document.getElementById('player1').checked;
+        let simPlayer2 = document.getElementById('player2').checked;
+        let simPlayer3 = document.getElementById('player3').checked;
+        if (!simPlayer1 && !simPlayer2 && !simPlayer3) {
+            alert("You need to select at least one player to sim.");
+            return;
+        }
+        selectedPlayers = [];
+        savePreviousPlayer(currentPlayerTabId);
+        currentSimResults = {};
+        if (simPlayer1) {
+            selectedPlayers.push(1);
+        }
+        if (simPlayer2) {
+            selectedPlayers.push(2);
+        }
+        if (simPlayer3) {
+            selectedPlayers.push(3);
+        }
         buttonStartSimulation.disabled = true;
-        startSimulation();
+        startSimulation(selectedPlayers);
     });
 }
 
-function startSimulation() {
+function startSimulation(selectedPlayers) {
+    let playersToSim = [];
+    for (let j = 1; j < 4; j++) {
+        if (selectedPlayers.includes(j)) {
+            updateNextPlayer(j);
+            updateState();
+            updateUI();
+            player.hrid = "player" + j.toString();
+            for (let i = 0; i < 3; i++) {
+                if (main_food[i] && i < player.combatDetails.combatStats.foodSlots) {
+                    let consumable = new _combatsimulator_consumable_js__WEBPACK_IMPORTED_MODULE_6__["default"](main_food[i], triggerMap[main_food[i]]);
+                    player.food[i] = consumable;
+                } else {
+                    player.food[i] = null;
+                }
+
+                if (main_drinks[i] && i < player.combatDetails.combatStats.drinkSlots) {
+                    let consumable = new _combatsimulator_consumable_js__WEBPACK_IMPORTED_MODULE_6__["default"](main_drinks[i], triggerMap[main_drinks[i]]);
+                    player.drinks[i] = consumable;
+                } else {
+                    player.drinks[i] = null;
+                }
+            }
+
+            for (let i = 0; i < 5; i++) {
+                if (main_abilities[i] && player.intelligenceLevel >= _combatsimulator_data_abilitySlotsLevelRequirementList_json__WEBPACK_IMPORTED_MODULE_11__[i + 1]) {
+                    let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
+                    let ability = new _combatsimulator_ability_js__WEBPACK_IMPORTED_MODULE_5__["default"](main_abilities[i], Number(abilityLevelInput.value), triggerMap[main_abilities[i]]);
+                    player.abilities[i] = ability;
+                } else {
+                    player.abilities[i] = null;
+                }
+            }
+
+                playersToSim.push(structuredClone(player));
+        }
+    }
+    updateNextPlayer(currentPlayerTabId);
     updateState();
     updateUI();
-
-    for (let i = 0; i < 3; i++) {
-        if (main_food[i] && i < player.combatDetails.combatStats.foodSlots) {
-            let consumable = new _combatsimulator_consumable_js__WEBPACK_IMPORTED_MODULE_6__["default"](main_food[i], triggerMap[main_food[i]]);
-            player.food[i] = consumable;
-        } else {
-            player.food[i] = null;
-        }
-
-        if (main_drinks[i] && i < player.combatDetails.combatStats.drinkSlots) {
-            let consumable = new _combatsimulator_consumable_js__WEBPACK_IMPORTED_MODULE_6__["default"](main_drinks[i], triggerMap[main_drinks[i]]);
-            player.drinks[i] = consumable;
-        } else {
-            player.drinks[i] = null;
-        }
-    }
-
-    for (let i = 0; i < 5; i++) {
-        if (main_abilities[i] && player.intelligenceLevel >= _combatsimulator_data_abilitySlotsLevelRequirementList_json__WEBPACK_IMPORTED_MODULE_11__[i + 1]) {
-            let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
-            let ability = new _combatsimulator_ability_js__WEBPACK_IMPORTED_MODULE_5__["default"](main_abilities[i], Number(abilityLevelInput.value), triggerMap[main_abilities[i]]);
-            player.abilities[i] = ability;
-        } else {
-            player.abilities[i] = null;
-        }
-    }
     let simAllZonesToggle = document.getElementById("simAllToggle");
     let zoneSelect = document.getElementById("selectZone");
     let simulationTimeInput = document.getElementById("inputSimulationTime");
@@ -3128,7 +3199,7 @@ function startSimulation() {
     if(!simAllZonesToggle.checked) {
         let workerMessage = {
             type: "start_simulation",
-            player: player,
+            players: playersToSim,
             zoneHrid: zoneSelect.value,
             simulationTimeLimit: simulationTimeLimit,
         };
@@ -3140,7 +3211,7 @@ function startSimulation() {
         .map(action => action.hrid);
         let workerMessage = {
             type: "start_simulation_all_zones",
-            player: player,
+            players: playersToSim,
             zones: zoneHrids,
             simulationTimeLimit: simulationTimeLimit,
         };
@@ -3411,84 +3482,120 @@ function initErrorHandling() {
 function initImportExportModal() {
     let exportSetButton = document.getElementById("buttonExportSet");
     exportSetButton.addEventListener("click", (event) => {
-        let zoneSelect = document.getElementById("selectZone");
-        let simulationTimeInput = document.getElementById("inputSimulationTime");
-        let equipmentArray = [];
-        for (const item in player.equipment) {
-            if (player.equipment[item] != null) {
-                equipmentArray.push({
-                    "itemLocationHrid": player.equipment[item].gameItem.equipmentDetail.type.replaceAll("equipment_types", "item_locations"),
-                    "itemHrid": player.equipment[item].hrid,
-                    "enhancementLevel": player.equipment[item].enhancementLevel
-                });
-            }
-        }
-        let playerArray = {
-            "attackLevel": player.attackLevel,
-            "magicLevel": player.magicLevel,
-            "powerLevel": player.powerLevel,
-            "rangedLevel": player.rangedLevel,
-            "defenseLevel": player.defenseLevel,
-            "staminaLevel": player.staminaLevel,
-            "intelligenceLevel": player.intelligenceLevel,
-            "equipment": equipmentArray
-        };
-        let abilitiesArray = [];
-        for (let i = 0; i < 5; i++) {
-            let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
-            let abilityName = document.getElementById("selectAbility_" + i);
-            abilitiesArray[i] = { "abilityHrid": abilityName.value, "level": abilityLevelInput.value };
-        }
-        let drinksArray = [];
-        for (let i = 0; i < main_drinks?.length; i++) {
-            drinksArray.push({ "itemHrid": main_drinks[i] });
-        }
-        let foodArray = [];
-        for (let i = 0; i < main_food?.length; i++) {
-            foodArray.push({ "itemHrid": main_food[i] });
-        }
-        let state = {
-            player: playerArray,
-            food: { "/action_types/combat": foodArray },
-            drinks: { "/action_types/combat": drinksArray },
-            abilities: abilitiesArray,
-            triggerMap: triggerMap,
-            zone: zoneSelect.value,
-            simulationTime: simulationTimeInput.value,
-            houseRooms: player.houseRooms
-        };
-        try {
-            navigator.clipboard.writeText(JSON.stringify(state)).then(() => alert("Current set has been copied to clipboard."));
-        } catch (err) {
-            alert('Error copying to clipboard: ' + err);
+        savePreviousPlayer(currentPlayerTabId);
+        const activeTab = document.querySelector('#importTab .nav-link.active');
+        if (activeTab.id === 'group-combat-tab') {
+            doGroupExport();
+        } else if (activeTab.id === 'solo-tab') {
+            doSoloExport();
         }
     });
 
     let importSetButton = document.getElementById("buttonImportSet");
     importSetButton.addEventListener("click", (event) => {
-        const activeTab = document.querySelector('#myTab .nav-link.active');
+        const activeTab = document.querySelector('#importTab .nav-link.active');
         if (activeTab.id === 'group-combat-tab') {
-            console.log("GROUP IN 5 MINS");
+            doGroupImport();
         } else if (activeTab.id === 'solo-tab') {
             doSoloImport();
         }
         updateState();
         updateUI();
+        resetImportInputs();
     });
 }
 
-document.addEventListener('DOMContentLoaded', function() {
-    const tabLinks = document.querySelectorAll('#myTab .nav-link');
-    const content = document.querySelector('#content');
+function resetImportInputs() {
+    document.getElementById('inputSetGroupCombatAll').value = '';
+    document.getElementById('inputSetGroupCombatplayer1').value = '';
+    document.getElementById('inputSetGroupCombatplayer2').value = '';
+    document.getElementById('inputSetGroupCombatplayer3').value = '';
+    document.getElementById('inputSetSolo').value = '';
+}
 
-    tabLinks.forEach(link => {
-        link.addEventListener('click', function() {
-            const activeTab = this.getAttribute('aria-controls');
-            console.log(content);
-            console.log(activeTab);
-        });
-    });
-});
+function doGroupExport() {
+    try {
+        navigator.clipboard.writeText(JSON.stringify(playerDataMap)).then(() => alert("Current Group has been copied to clipboard."));
+    } catch (err) {
+        alert('Error copying to clipboard: ' + err);
+    }
+}
+
+function doSoloExport() {
+    let zoneSelect = document.getElementById("selectZone");
+    let simulationTimeInput = document.getElementById("inputSimulationTime");
+    let equipmentArray = [];
+    for (const item in player.equipment) {
+        if (player.equipment[item] != null) {
+            equipmentArray.push({
+                "itemLocationHrid": player.equipment[item].gameItem.equipmentDetail.type.replaceAll("equipment_types", "item_locations"),
+                "itemHrid": player.equipment[item].hrid,
+                "enhancementLevel": player.equipment[item].enhancementLevel
+            });
+        }
+    }
+    let playerArray = {
+        "attackLevel": player.attackLevel,
+        "magicLevel": player.magicLevel,
+        "powerLevel": player.powerLevel,
+        "rangedLevel": player.rangedLevel,
+        "defenseLevel": player.defenseLevel,
+        "staminaLevel": player.staminaLevel,
+        "intelligenceLevel": player.intelligenceLevel,
+        "equipment": equipmentArray
+    };
+    let abilitiesArray = [];
+    for (let i = 0; i < 5; i++) {
+        let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
+        let abilityName = document.getElementById("selectAbility_" + i);
+        abilitiesArray[i] = { "abilityHrid": abilityName.value, "level": abilityLevelInput.value };
+    }
+    let drinksArray = [];
+    for (let i = 0; i < main_drinks?.length; i++) {
+        drinksArray.push({ "itemHrid": main_drinks[i] });
+    }
+    let foodArray = [];
+    for (let i = 0; i < main_food?.length; i++) {
+        foodArray.push({ "itemHrid": main_food[i] });
+    }
+    let state = {
+        player: playerArray,
+        food: { "/action_types/combat": foodArray },
+        drinks: { "/action_types/combat": drinksArray },
+        abilities: abilitiesArray,
+        triggerMap: triggerMap,
+        zone: zoneSelect.value,
+        simulationTime: simulationTimeInput.value,
+        houseRooms: player.houseRooms
+    };
+    try {
+        navigator.clipboard.writeText(JSON.stringify(state)).then(() => alert("Current set has been copied to clipboard."));
+    } catch (err) {
+        alert('Error copying to clipboard: ' + err);
+    }
+}
+
+function setPlayerData(playerId, inputElementId) {
+    const inputElement = document.getElementById(inputElementId);
+    const value = inputElement ? inputElement.value.trim() : "";
+
+    // Only set the value in the map if it's not null, undefined, or empty
+    if (value) {
+        playerDataMap[playerId] = value;
+    }
+}
+
+function doGroupImport() {
+    const value = document.getElementById("inputSetGroupCombatAll")?.value || "";
+    if (!value.trim()) {
+        setPlayerData("1", "inputSetGroupCombatplayer1");
+        setPlayerData("2", "inputSetGroupCombatplayer2");
+        setPlayerData("3", "inputSetGroupCombatplayer3");
+    } else {
+        playerDataMap = JSON.parse(value);
+    }
+    updateNextPlayer(currentPlayerTabId);
+}
 
 function doSoloImport() {
     let importSet = document.getElementById("inputSetSolo").value;
@@ -3587,6 +3694,154 @@ function doSoloImport() {
     zoneSelect.value = importSet["zone"];
     let simulationDuration = document.getElementById("inputSimulationTime");
     simulationDuration.value = importSet["simulationTime"];
+}
+
+function savePreviousPlayer(playerId) {
+    let zoneSelect = document.getElementById("selectZone");
+    let simulationTimeInput = document.getElementById("inputSimulationTime");
+    let equipmentArray = [];
+    for (const item in player.equipment) {
+        if (player.equipment[item] != null) {
+            equipmentArray.push({
+                "itemLocationHrid": player.equipment[item].gameItem.equipmentDetail.type.replaceAll("equipment_types", "item_locations"),
+                "itemHrid": player.equipment[item].hrid,
+                "enhancementLevel": player.equipment[item].enhancementLevel
+            });
+        }
+    }
+    let playerArray = {
+        "attackLevel": player.attackLevel,
+        "magicLevel": player.magicLevel,
+        "powerLevel": player.powerLevel,
+        "rangedLevel": player.rangedLevel,
+        "defenseLevel": player.defenseLevel,
+        "staminaLevel": player.staminaLevel,
+        "intelligenceLevel": player.intelligenceLevel,
+        "equipment": equipmentArray
+    };
+    let abilitiesArray = [];
+    for (let i = 0; i < 5; i++) {
+        let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
+        let abilityName = document.getElementById("selectAbility_" + i);
+        abilitiesArray[i] = { "abilityHrid": abilityName.value, "level": abilityLevelInput.value };
+    }
+    let drinksArray = [];
+    for (let i = 0; i < main_drinks?.length; i++) {
+        drinksArray.push({ "itemHrid": main_drinks[i] });
+    }
+    let foodArray = [];
+    for (let i = 0; i < main_food?.length; i++) {
+        foodArray.push({ "itemHrid": main_food[i] });
+    }
+    let state = {
+        player: playerArray,
+        food: { "/action_types/combat": foodArray },
+        drinks: { "/action_types/combat": drinksArray },
+        abilities: abilitiesArray,
+        triggerMap: triggerMap,
+        zone: zoneSelect.value,
+        simulationTime: simulationTimeInput.value,
+        houseRooms: player.houseRooms
+    };
+    try {
+        playerDataMap[playerId] = JSON.stringify(state);
+    } catch (err) {
+        alert('Error copying to clipboard: ' + err);
+    }
+}
+
+function updateNextPlayer(currentPlayerNumber) {
+    let playerImportData = playerDataMap[currentPlayerNumber];
+    let importSet = JSON.parse(playerImportData);
+    ["stamina", "intelligence", "attack", "power", "defense", "ranged", "magic"].forEach((skill) => {
+        let levelInput = document.getElementById("inputLevel_" + skill);
+        levelInput.value = importSet.player[skill + "Level"];
+    });
+
+    ["head", "body", "legs", "feet", "hands", "off_hand", "pouch", "neck", "earrings", "ring", "back"].forEach((type) => {
+        let equipmentSelect = document.getElementById("selectEquipment_" + type);
+        let enhancementLevelInput = document.getElementById("inputEquipmentEnhancementLevel_" + type);
+        let currentEquipment = importSet.player.equipment.find(item => item.itemLocationHrid === "/item_locations/" + type);
+        if (currentEquipment !== undefined) {
+            equipmentSelect.value = currentEquipment.itemHrid;
+            enhancementLevelInput.value = currentEquipment.enhancementLevel;
+        } else {
+            equipmentSelect.value = "";
+            enhancementLevelInput.value = 0;
+        }
+    });
+
+    let weaponSelect = document.getElementById("selectEquipment_weapon");
+    let weaponEnhancementLevelInput = document.getElementById("inputEquipmentEnhancementLevel_weapon");
+    let mainhandWeapon = importSet.player.equipment.find(item => item.itemLocationHrid === "/item_locations/main_hand");
+    let twohandWeapon = importSet.player.equipment.find(item => item.itemLocationHrid === "/item_locations/two_hand");
+    if (mainhandWeapon !== undefined) {
+        weaponSelect.value = mainhandWeapon.itemHrid;
+        weaponEnhancementLevelInput.value = mainhandWeapon.enhancementLevel;
+    } else if (twohandWeapon !== undefined) {
+        weaponSelect.value = twohandWeapon.itemHrid;
+        weaponEnhancementLevelInput.value = twohandWeapon.enhancementLevel;
+    } else {
+        weaponSelect.value = "";
+        weaponEnhancementLevelInput.value = 0;
+    }
+    importSet.drinks = importSet.drinks["/action_types/combat"];
+    importSet.food = importSet.food["/action_types/combat"];
+    for (let i = 0; i < 3; i++) {
+        let drinkSelect = document.getElementById("selectDrink_" + i);
+        let foodSelect = document.getElementById("selectFood_" + i);
+        if (importSet.drinks[i] != null) {
+            drinkSelect.value = importSet.drinks[i].itemHrid;
+        } else {
+            drinkSelect.value = "";
+        }
+        if (importSet.food[i] != null) {
+            foodSelect.value = importSet.food[i].itemHrid;
+        } else {
+            foodSelect.value = "";
+        }
+    }
+
+    let hasSpecial = false;
+    if (importSet.abilities && Object.keys(importSet.abilities).length == 5) {
+        hasSpecial = true;
+    }
+
+    for (let i = 0; i < (hasSpecial ? 5 : 4); i++) {
+        let abilitySlot = hasSpecial ? i : (i + 1);
+        let abilitySelect = document.getElementById("selectAbility_" + abilitySlot);
+        let abilityLevelInput = document.getElementById("inputAbilityLevel_" + abilitySlot);
+        if (importSet.abilities[i] != null) {
+            abilitySelect.value = importSet.abilities[i].abilityHrid;
+            abilityLevelInput.value = String(importSet.abilities[i].level);
+        } else {
+            abilitySelect.value = "";
+            abilityLevelInput.value = "1";
+        }
+    }
+
+    if (importSet.triggerMap) {
+        triggerMap = importSet.triggerMap;
+    }
+
+    if (importSet.houseRooms) {
+        for (const room in importSet.houseRooms) {
+            const field = document.querySelector('[data-house-hrid="' + room + '"]');
+            if (importSet.houseRooms[room]) {
+                field.value = importSet.houseRooms[room];
+            } else {
+                field.value = '';
+            }
+        }
+        player.houseRooms = importSet.houseRooms;
+    } else {
+        let houseRooms = Object.values(_combatsimulator_data_houseRoomDetailMap_json__WEBPACK_IMPORTED_MODULE_4__);
+        for (const room of Object.values(houseRooms)) {
+            const field = document.querySelector('[data-house-hrid="' + room.hrid + '"]');
+            field.value = '';
+            player.houseRooms[room.hrid] = 0;
+        }
+    }
 }
 
 function showErrorModal(error) {
