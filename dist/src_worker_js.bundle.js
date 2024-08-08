@@ -1559,7 +1559,11 @@ class CombatUnit {
         let baseThreat = 100 + this.combatDetails.combatStats.threat;
         this.combatDetails.totalThreat = baseThreat;
         let threatBoosts = this.getBuffBoost("/buff_types/threat");
-        this.combatDetails.combatStats.threat += baseThreat * threatBoosts.ratioBoost;
+        if(threatBoosts.ratioBoost !== 0) {
+            this.combatDetails.combatStats.threat += baseThreat * threatBoosts.ratioBoost;               
+        } else {
+            this.combatDetails.combatStats.threat = baseThreat;   
+        }
         this.combatDetails.combatStats.threat += threatBoosts.flatBoost;
     }
 
