@@ -995,7 +995,7 @@ class CombatSimulator extends EventTarget {
                 throw new Error("Unsupported target type for damage ability effect: " + ability.hrid);
         }
 
-        for (const target of targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0)) {
+        for (let target of targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0)) {
             if (target.combatDetails.combatStats.parry > Math.random()) {
                 let tempTarget = source;
                 let tempSource = target;
@@ -1046,10 +1046,7 @@ class CombatSimulator extends EventTarget {
                     }
                 }
             } else {
-                let attackResult = null;
-                if(!source.isPlayer) {
-                    targets = targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0);
-                }
+                targets = targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0);
                 if(!source.isPlayer && targets.length > 1 && abilityEffect.targetType == "enemy")  {
                     let cumulativeThreat = 0;
                     let cumulativeRanges = [];
@@ -1063,11 +1060,10 @@ class CombatSimulator extends EventTarget {
                         });
                     });
                     let randomValueHit = Math.random() * cumulativeThreat;
-                    targets = cumulativeRanges.find(range => randomValueHit >= range.rangeStart && randomValueHit < range.rangeEnd).player;
-                    attackResult = _combatUtilities__WEBPACK_IMPORTED_MODULE_0__["default"].processAttack(source, targets, abilityEffect);
-                } else { 
-                    attackResult = _combatUtilities__WEBPACK_IMPORTED_MODULE_0__["default"].processAttack(source, target, abilityEffect);
-                }
+                    target = cumulativeRanges.find(range => randomValueHit >= range.rangeStart && randomValueHit < range.rangeEnd).player;
+                } 
+                
+                let attackResult = _combatUtilities__WEBPACK_IMPORTED_MODULE_0__["default"].processAttack(source, target, abilityEffect);
 
                 if (attackResult.didHit && abilityEffect.buffs) {
                     for (const buff of abilityEffect.buffs) {
