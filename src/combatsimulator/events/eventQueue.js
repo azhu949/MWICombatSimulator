@@ -19,6 +19,11 @@ class EventQueue {
         return heapEvents.some((event) => event.type == type);
     }
 
+    containsEventOfTypeAndHrid(type, hrid) {
+        let heapEvents = this.minHeap.toArray();
+        return heapEvents.some((event) => event.type == type && event.hrid == hrid);
+    }
+
     clear() {
         this.minHeap = new Heap((a, b) => a.time - b.time);
     }

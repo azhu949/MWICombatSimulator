@@ -2,7 +2,6 @@ import CombatSimulator from "./combatsimulator/combatSimulator";
 import Player from "./combatsimulator/player";
 import Zone from "./combatsimulator/zone";
 
-var player;
 
 class SimulationManager {
     constructor() {
@@ -24,12 +23,16 @@ class SimulationManager {
 onmessage = async function (event) {
     switch (event.data.type) {
         case "start_simulation":
-            player = Player.createFromDTO(event.data.player);
+            let playersData = event.data.players;
+            let players = [];
             let zone = new Zone(event.data.zoneHrid);
-            player.zoneBuffs = zone.buffs;
+            for (let i = 0; i < playersData.length; i++) {
+                let currentPlayer = Player.createFromDTO(structuredClone(playersData[i]));
+                currentPlayer.zoneBuffs = zone.buffs;
+                players.push(currentPlayer);
+            }
             let simulationTimeLimit = event.data.simulationTimeLimit;
-
-            let combatSimulator = new CombatSimulator(player, zone);
+            let combatSimulator = new CombatSimulator(players, zone);
             combatSimulator.addEventListener("progress", (event) => {
                 this.postMessage({ type: "simulation_progress", progress: event.detail });
             });
@@ -48,10 +51,14 @@ onmessage = async function (event) {
             for (let i = 0; i < zoneHrids.length; i++) {
                 const zoneInstance = new Zone(zoneHrids[i]);
                 if (zoneInstance.monsterSpawnInfo.randomSpawnInfo.spawns) {
-                    const clonedPlayerDTO = structuredClone(event.data.player);
-                    var newPlayer = Player.createFromDTO(clonedPlayerDTO);
-                    newPlayer.zoneBuffs = zoneInstance.buffs;
-                    let simulation = new CombatSimulator(newPlayer, zoneInstance);
+                    let players = [];
+                    let playersData = event.data.players;
+                    for (let i = 0; i < playersData.length; i++) {
+                        let currentPlayer = Player.createFromDTO(structuredClone(playersData[i]));
+                        currentPlayer.zoneBuffs = zoneInstance.buffs;
+                        players.push(currentPlayer);
+                    }
+                    let simulation = new CombatSimulator(players, zoneInstance);
                     if(i == 0) {
                         simulation.addEventListener("progress", (event) => {
                             this.postMessage({ type: "simulation_progress", progress: event.detail });

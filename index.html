@@ -57,11 +57,11 @@
         background-color: #f8f9fa; 
         }
 
-        #allZonesData th:not(:first-child) {
+        #allZonesData th:not(:nth-child(-n+2)) {
             cursor: pointer; 
         }
 
-        #allZonesData th:not(:first-child):hover {
+        #allZonesData th:not(:nth-child(-n+2)):hover {
             background-color: #e9ecef; 
             color: #000; 
         }
@@ -84,6 +84,13 @@
 
         body.dark-mode #allZonesData th {
             background-color: #444; 
+        }
+
+        .outlined-box {
+            border: 1px solid #ccc; /* Border color */
+            border-radius: 4px; /* Rounded corners */
+            padding: 15px; /* Padding inside the box */
+            box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional shadow for better visibility */
         }
     </style>
     <meta charset="utf-8" />
@@ -1518,12 +1525,39 @@
                                 </div>
                             </div>
                         </div>
-                        <div class="col align-self-center pt-1">
-                            Sim All Zones:
-                            <label class="switch">
-                                <input type="checkbox" id="simAllToggle">
-                                <span class="slider round"></span>
-                            </label>
+                        <div class="row">
+                            <div class="col-md-8 pt-1">
+                                <div class="outlined-box">
+                                    <h6>Select Players</h6>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="player1">
+                                        <label class="form-check-label" for="player1">
+                                            Player 1
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="player2">
+                                        <label class="form-check-label" for="player2">
+                                            Player 2
+                                        </label>
+                                    </div>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="player3">
+                                        <label class="form-check-label" for="player3">
+                                            Player 3
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-4 d-flex align-items-center">
+                                <div class="checkbox-container">
+                                    Sim All Zones:
+                                    <label class="switch">
+                                        <input type="checkbox" id="simAllToggle">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
@@ -1538,7 +1572,7 @@
     <div class="modal" id="allSimsModal" tabindex="-1">
         <!-- #region Start Simulation Modal -->
         <div class="modal-dialog">
-            <div class="modal-content" style="width: 1100px; margin-left: -300px;">
+            <div class="modal-content" style="width: 1200px; margin-left: -350px;">
                 <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
                     <h5 class="modal-title" style="margin: 0;">Simulate All Zones Results</h5>
                     <div style="display: flex; gap: 10px;">
@@ -1551,6 +1585,7 @@
                         <thead>
                             <tr>
                                 <th>Zone Name</th>
+                                <th>Player</th>
                                 <th>Encounters</th>
                                 <th>Deaths</th>
                                 <th>Total Experience</th>
@@ -1632,7 +1667,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" id="buttonImportSet">Import</button>
-                    <button type="button" class="btn btn-primary" id="buttonExportSet">Export Group</button>
+                    <button type="button" class="btn btn-primary" id="buttonExportSet">Export Group/Solo</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
                 </div>
             </div>
@@ -1650,6 +1685,14 @@
                 <div class="modal-body">
                     <div class="container-fluid">
                         <div class="row">
+                            <div class="col-12 mb-4">
+                                <h6>August 7th, 2024</h6>
+                                <ul>
+                                    <li>Group combat or something..</li>
+                                    <li>Sim all zones functionality</li>
+                                    <li>Other small UI changes</li>
+                                </ul>
+                            </div>
                             <div class="col-12 mb-4">
                                 <h6>June 26th, 2024</h6>
                                 <ul>

@@ -123,8 +123,9 @@ class SimResult {
     }
 
     setManaUsed(unit) {
+        this.manaUsed[unit.hrid] = {};
         for (let [key, value] of unit.abilityManaCosts.entries()) {
-            this.manaUsed[key] = value;
+            this.manaUsed[unit.hrid][key] = value;
         }
     }
 

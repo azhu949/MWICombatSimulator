@@ -35,6 +35,7 @@ class Player extends CombatUnit {
         player.defenseLevel = dto.defenseLevel;
         player.rangedLevel = dto.rangedLevel;
         player.magicLevel = dto.magicLevel;
+        player.hrid = dto.hrid;
 
         for (const [key, value] of Object.entries(dto.equipment)) {
             player.equipment[key] = value ? Equipment.createFromDTO(value) : null;

@@ -25,12 +25,13 @@ const ENEMY_RESPAWN_INTERVAL = 3 * ONE_SECOND;
 const PLAYER_RESPAWN_INTERVAL = 150 * ONE_SECOND;
 
 class CombatSimulator extends EventTarget {
-    constructor(player, zone) {
+    constructor(players, zone) {
         super();
-        this.players = [player];
+        this.players = players;
         this.zone = zone;
         this.eventQueue = new EventQueue();
         this.simResult = new SimResult(zone.hrid);
+        this.allPlayersDead = false;
     }
 
     async simulate(simulationTimeLimit) {
@@ -63,7 +64,9 @@ class CombatSimulator extends EventTarget {
 
         this.simResult.simulatedTime = this.simulationTime;
         this.simResult.setDropRateMultipliers(this.players[0]);
-        this.simResult.setManaUsed(this.players[0]);
+        for(let i = 0; i < this.players.length; i++) {
+            this.simResult.setManaUsed(this.players[i]);
+        }
 
         if (this.zone.monsterSpawnInfo.bossSpawns) {
             for (const boss of this.zone.monsterSpawnInfo.bossSpawns) {
@@ -140,8 +143,10 @@ class CombatSimulator extends EventTarget {
     }
 
     processCombatStartEvent(event) {
-        this.players[0].generatePermanentBuffs();
-        this.players[0].reset(this.simulationTime);
+        for(let i = 0; i < this.players.length; i++) {
+            this.players[i].generatePermanentBuffs();
+            this.players[i].reset(this.simulationTime);
+        }
         let regenTickEvent = new RegenTickEvent(this.simulationTime + REGEN_TICK_INTERVAL);
         this.eventQueue.addEvent(regenTickEvent);
 
@@ -149,11 +154,17 @@ class CombatSimulator extends EventTarget {
     }
 
     processPlayerRespawnEvent(event) {
-        this.players[0].combatDetails.currentHitpoints = this.players[0].combatDetails.maxHitpoints;
-        this.players[0].combatDetails.currentManapoints = this.players[0].combatDetails.maxManapoints;
-        this.players[0].clearBuffs();
-        this.players[0].clearCCs();
-        this.startAttacks();
+        let respawningPlayer = this.players.find(player => player.hrid === event.hrid);
+        respawningPlayer.combatDetails.currentHitpoints = respawningPlayer.combatDetails.maxHitpoints;
+        respawningPlayer.combatDetails.currentManapoints = respawningPlayer.combatDetails.maxManapoints;
+        respawningPlayer.clearBuffs();
+        respawningPlayer.clearCCs();
+        if(this.allPlayersDead) {
+            this.allPlayersDead = false;
+            this.startAttacks();
+        } else {
+            this.addNextAttackEvent(respawningPlayer);
+        }
     }
 
     processEnemyRespawnEvent(event) {
@@ -173,7 +184,7 @@ class CombatSimulator extends EventTarget {
     }
 
     startAttacks() {
-        let units = [this.players[0]];
+        let units = [...this.players];
         if (this.enemies) {
             units.push(...this.enemies);
         }
@@ -204,6 +215,21 @@ class CombatSimulator extends EventTarget {
 
         for (let i = 0; i < aliveTargets.length; i++) {
             let target = aliveTargets[i];
+            if(!event.source.isPlayer && aliveTargets.length > 1)  {
+                let cumulativeThreat = 0;
+                let cumulativeRanges = [];
+                aliveTargets.forEach(player => {
+                    let playerThreat = player.combatDetails.totalThreat;
+                    cumulativeThreat += playerThreat;
+                    cumulativeRanges.push({
+                        player: player,
+                        rangeStart: cumulativeThreat - playerThreat,
+                        rangeEnd: cumulativeThreat
+                    });
+                });
+                let randomValueHit = Math.random() * cumulativeThreat;
+                target = cumulativeRanges.find(range => randomValueHit >= range.rangeStart && randomValueHit < range.rangeEnd).player;
+            }
             let source = event.source;
 
             if (target.combatDetails.combatStats.parry > Math.random()) {
@@ -314,19 +340,23 @@ class CombatSimulator extends EventTarget {
             // console.log("encounter end " + (this.simulationTime / 1000000000))
         }
 
+    this.players.forEach(player => {
+        if ((player.combatDetails.currentHitpoints <= 0) && !this.eventQueue.containsEventOfTypeAndHrid(PlayerRespawnEvent.type, player.hrid)) {
+            let playerRespawnEvent = new PlayerRespawnEvent(this.simulationTime + PLAYER_RESPAWN_INTERVAL, player.hrid);
+            this.eventQueue.addEvent(playerRespawnEvent);
+            //console.log(player.hrid + " died at " + (this.simulationTime / 1000000000));
+        }
+    });
+
         if (
-            !this.players.some((player) => player.combatDetails.currentHitpoints > 0) &&
-            !this.eventQueue.containsEventOfType(PlayerRespawnEvent.type)
+            !this.players.some((player) => player.combatDetails.currentHitpoints > 0)
         ) {
             this.eventQueue.clearEventsOfType(AutoAttackEvent.type);
             this.eventQueue.clearEventsOfType(AbilityCastEndEvent.type);
-            // 120 seconds respawn and 30 seconds traveling to battle
-            let playerRespawnEvent = new PlayerRespawnEvent(this.simulationTime + PLAYER_RESPAWN_INTERVAL);
-            this.eventQueue.addEvent(playerRespawnEvent);
-            // console.log("Player died");
-
+            //console.log("All Players died");
             encounterEnded = true;
-        }
+            this.allPlayersDead = true;
+        } 
 
         return encounterEnded;
     }
@@ -829,7 +859,28 @@ class CombatSimulator extends EventTarget {
                     }
                 }
             } else {
-                let attackResult = CombatUtilities.processAttack(source, target, abilityEffect);
+                let attackResult = null;
+                if(!source.isPlayer) {
+                    targets = targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0);
+                }
+                if(!source.isPlayer && targets.length > 1 && abilityEffect.targetType == "enemy")  {
+                    let cumulativeThreat = 0;
+                    let cumulativeRanges = [];
+                    targets.forEach(player => {
+                        let playerThreat = player.combatDetails.totalThreat;
+                        cumulativeThreat += playerThreat;
+                        cumulativeRanges.push({
+                            player: player,
+                            rangeStart: cumulativeThreat - playerThreat,
+                            rangeEnd: cumulativeThreat
+                        });
+                    });
+                    let randomValueHit = Math.random() * cumulativeThreat;
+                    targets = cumulativeRanges.find(range => randomValueHit >= range.rangeStart && randomValueHit < range.rangeEnd).player;
+                    attackResult = CombatUtilities.processAttack(source, targets, abilityEffect);
+                } else { 
+                    attackResult = CombatUtilities.processAttack(source, target, abilityEffect);
+                }
 
                 if (attackResult.didHit && abilityEffect.buffs) {
                     for (const buff of abilityEffect.buffs) {

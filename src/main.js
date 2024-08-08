@@ -24,11 +24,13 @@ let progressbar = document.getElementById("simulationProgressBar");
 let worker = new Worker(new URL("worker.js", import.meta.url));
 
 let player = new Player();
+let selectedPlayers = [];
 let food = [null, null, null];
 let drinks = [null, null, null];
 let abilities = [null, null, null, null];
 let triggerMap = {};
 let modalTriggers = [];
+let currentSimResults = {};
 
 let currentPlayerTabId = '1';
 let playerDataMap = {
@@ -817,22 +819,27 @@ function initZones() {
 // #region Simulation Result
 
 function showSimulationResult(simResult) {
+    currentSimResults = simResult;
     let expensesModalTable = document.querySelector("#expensesTable > tbody");
     expensesModalTable.innerHTML = '<tr><th>Item</th><th>Price</th><th>Amount</th><th>Total</th></tr>';
     let revenueModalTable = document.querySelector("#revenueTable > tbody");
     revenueModalTable.innerHTML = '<tr><th>Item</th><th>Price</th><th>Amount</th><th>Total</th></tr>';
     let noRngRevenueModalTable = document.querySelector("#noRngRevenueTable > tbody");
     noRngRevenueModalTable.innerHTML = '<tr><th>Item</th><th>Price</th><th>Amount</th><th>Total</th></tr>';
-    showKills(simResult);
-    showDeaths(simResult);
-    showExperienceGained(simResult);
-    showConsumablesUsed(simResult);
-    showHpSpent(simResult);
-    showManaUsed(simResult);
-    showHitpointsGained(simResult);
-    showManapointsGained(simResult);
-    showDamageDone(simResult);
-    showDamageTaken(simResult);
+    let playerToDisplay = "player1";
+    if (selectedPlayers.includes(parseInt(currentPlayerTabId))) {
+        playerToDisplay = "player" + currentPlayerTabId;
+    }
+    showKills(simResult, playerToDisplay);
+    showDeaths(simResult, playerToDisplay);
+    showExperienceGained(simResult, playerToDisplay);
+    showConsumablesUsed(simResult, playerToDisplay);
+    showHpSpent(simResult, playerToDisplay);
+    showManaUsed(simResult, playerToDisplay);
+    showHitpointsGained(simResult, playerToDisplay);
+    showManapointsGained(simResult, playerToDisplay);
+    showDamageDone(simResult, playerToDisplay);
+    showDamageTaken(simResult, playerToDisplay);
     window.profit = window.revenue - window.expenses;
     document.getElementById('profitSpan').innerText = window.profit.toLocaleString();
     document.getElementById('profitPreview').innerText = window.profit.toLocaleString();
@@ -849,33 +856,36 @@ function showAllSimulationResults(simResults){
 function manipulateSimResultsDataForDisplay(simResults){
     let displaySimResults = [];
     for (let i = 0; i < simResults.length; i++) {
-        let simResult = simResults[i];
-        let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
-        let zoneName = simResult.zoneName.slice(16).replaceAll("_", " ");
-        let encountersPerHour = (simResult.encounters / hoursSimulated).toFixed(1);
-        let playerDeaths = simResult.deaths["player"] ?? 0;
-        let deathsPerHour = (playerDeaths / hoursSimulated).toFixed(2);
+        for(let j = 0; j < selectedPlayers.length; j++){
+            let playerToDisplay = "player" + selectedPlayers[j].toString();
+            let simResult = simResults[i];
+            let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
+            let zoneName = simResult.zoneName.slice(16).replaceAll("_", " ");
+            let encountersPerHour = (simResult.encounters / hoursSimulated).toFixed(1);
+            let playerDeaths = simResult.deaths[playerToDisplay] ?? 0;
+            let deathsPerHour = (playerDeaths / hoursSimulated).toFixed(2);
 
-        let totalExperience = Object.values(simResult.experienceGained["player"]).reduce((prev, cur) => prev + cur, 0);
-        let totalExperiencePerHour = (totalExperience / hoursSimulated).toFixed(0);
-    
-        let experiencePerHour = {};
-        const skills = ["Stamina", "Intelligence", "Attack", "Power", "Defense", "Ranged", "Magic"];
-        skills.forEach((skill) => {
-            const skillLower = skill.toLowerCase();
-            let experience = simResult.experienceGained["player"][skillLower] ?? 0;
-            let experiencePerHourValue = 0;
-            if (experience != 0) {
-                experiencePerHourValue = (experience / hoursSimulated).toFixed(0);
-            }
-            experiencePerHour[skill] = experiencePerHourValue;
-        });
-        let displaySimRow = {"ZoneName": zoneName, "Encounters": encountersPerHour, "Deaths": deathsPerHour,
-                             "TotalExperience": totalExperiencePerHour, "Stamina": experiencePerHour["Stamina"], 
-                             "Intelligence": experiencePerHour["Intelligence"], "Attack": experiencePerHour["Attack"],
-                             "Magic": experiencePerHour["Magic"], "Ranged": experiencePerHour["Ranged"],
-                             "Power": experiencePerHour["Power"], "Defense": experiencePerHour["Defense"]};
-        displaySimResults.push(displaySimRow);
+            let totalExperience = Object.values(simResult.experienceGained[playerToDisplay]).reduce((prev, cur) => prev + cur, 0);
+            let totalExperiencePerHour = (totalExperience / hoursSimulated).toFixed(0);
+        
+            let experiencePerHour = {};
+            const skills = ["Stamina", "Intelligence", "Attack", "Power", "Defense", "Ranged", "Magic"];
+            skills.forEach((skill) => {
+                const skillLower = skill.toLowerCase();
+                let experience = simResult.experienceGained[playerToDisplay][skillLower] ?? 0;
+                let experiencePerHourValue = 0;
+                if (experience != 0) {
+                    experiencePerHourValue = (experience / hoursSimulated).toFixed(0);
+                }
+                experiencePerHour[skill] = experiencePerHourValue;
+            });
+            let displaySimRow = {"ZoneName": zoneName, "Player": playerToDisplay, "Encounters": encountersPerHour, "Deaths": deathsPerHour,
+                                "TotalExperience": totalExperiencePerHour, "Stamina": experiencePerHour["Stamina"], 
+                                "Intelligence": experiencePerHour["Intelligence"], "Attack": experiencePerHour["Attack"],
+                                "Magic": experiencePerHour["Magic"], "Ranged": experiencePerHour["Ranged"],
+                                "Power": experiencePerHour["Power"], "Defense": experiencePerHour["Defense"]};
+            displaySimResults.push(displaySimRow);
+        }
     }
     return displaySimResults;
 }
@@ -930,6 +940,7 @@ function updateSortIndicators(tableId, columnIndex, direction) {
 
 document.querySelectorAll('#allZonesData th').forEach((header, index) => {
     if (index === 0) return; 
+    if (index === 1) return;
 
     header.addEventListener('click', () => {
         if (currentSortColumn === index) {
@@ -969,7 +980,7 @@ document.getElementById('buttonExportResults').addEventListener('click', functio
     document.body.removeChild(downloadLink);
 });
 
-function showKills(simResult) {
+function showKills(simResult, playerToDisplay) {
     let resultDiv = document.getElementById("simulationResultKills");
     let dropsResultDiv = document.getElementById("simulationResultDrops");
     let noRngDropsResultDiv = document.getElementById("noRngDrops");
@@ -980,14 +991,14 @@ function showKills(simResult) {
     let rareFindMultiplier = simResult.rareFindMultiplier;
 
     let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
-    let playerDeaths = simResult.deaths["player"] ?? 0;
+    let playerDeaths = simResult.deaths[playerToDisplay] ?? 0;
     let encountersPerHour = (simResult.encounters / hoursSimulated).toFixed(1);
 
     let encountersRow = createRow(["col-md-6", "col-md-6 text-end"], ["Encounters", encountersPerHour]);
     newChildren.push(encountersRow);
 
     let monsters = Object.keys(simResult.deaths)
-        .filter((enemy) => enemy != "player")
+        .filter(enemy => enemy !== "player1" && enemy !== "player2" && enemy !== "player3")
         .sort();
 
     const totalDropMap = new Map();
@@ -1169,30 +1180,30 @@ function showKills(simResult) {
     noRngDropsResultDiv.replaceChildren(...newNoRngDropChildren);
 }
 
-function showDeaths(simResult) {
+function showDeaths(simResult, playerToDisplay) {
     let resultDiv = document.getElementById("simulationResultPlayerDeaths");
 
     let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
-    let playerDeaths = simResult.deaths["player"] ?? 0;
+    let playerDeaths = simResult.deaths[playerToDisplay] ?? 0;
     let deathsPerHour = (playerDeaths / hoursSimulated).toFixed(2);
 
     let deathRow = createRow(["col-md-6", "col-md-6 text-end"], ["Player", deathsPerHour]);
     resultDiv.replaceChildren(deathRow);
 }
 
-function showExperienceGained(simResult) {
+function showExperienceGained(simResult, playerToDisplay) {
     let resultDiv = document.getElementById("simulationResultExperienceGain");
     let newChildren = [];
 
     let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
 
-    let totalExperience = Object.values(simResult.experienceGained["player"]).reduce((prev, cur) => prev + cur, 0);
+    let totalExperience = Object.values(simResult.experienceGained[playerToDisplay]).reduce((prev, cur) => prev + cur, 0);
     let totalExperiencePerHour = (totalExperience / hoursSimulated).toFixed(0);
     let totalRow = createRow(["col-md-6", "col-md-6 text-end"], ["Total", totalExperiencePerHour]);
     newChildren.push(totalRow);
 
     ["Stamina", "Intelligence", "Attack", "Power", "Defense", "Ranged", "Magic"].forEach((skill) => {
-        let experience = simResult.experienceGained["player"][skill.toLowerCase()] ?? 0;
+        let experience = simResult.experienceGained[playerToDisplay][skill.toLowerCase()] ?? 0;
         if (experience == 0) {
             return;
         }
@@ -1204,17 +1215,17 @@ function showExperienceGained(simResult) {
     resultDiv.replaceChildren(...newChildren);
 }
 
-function showHpSpent(simResult) {
+function showHpSpent(simResult, playerToDisplay) {
     let hpSpentHeadingDiv = document.getElementById("simulationHpSpentHeading");
     hpSpentHeadingDiv.classList.add("d-none");
     let hpSpentDiv = document.getElementById("simulationHpSpent");
     hpSpentDiv.classList.add("d-none");
 
-    if (simResult.hitpointsSpent["player"]) {
+    if (simResult.hitpointsSpent[playerToDisplay]) {
         let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
         let hpSpentSources = [];
-        for (const source of Object.keys(simResult.hitpointsSpent["player"])) {
-            let hpSpentPerHour = (simResult.hitpointsSpent["player"][source] / hoursSimulated).toFixed(2);
+        for (const source of Object.keys(simResult.hitpointsSpent[playerToDisplay])) {
+            let hpSpentPerHour = (simResult.hitpointsSpent[playerToDisplay][source] / hoursSimulated).toFixed(2);
             let hpSpentRow = createRow(["col-md-6", "col-md-6 text-end"], [abilityDetailMap[source].name, hpSpentPerHour]);
             hpSpentSources.push(hpSpentRow);
         }
@@ -1224,18 +1235,18 @@ function showHpSpent(simResult) {
     }
 }
 
-function showConsumablesUsed(simResult) {
+function showConsumablesUsed(simResult, playerToDisplay) {
     let resultDiv = document.getElementById("simulationResultConsumablesUsed");
     let newChildren = [];
 
     let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
 
-    if (!simResult.consumablesUsed["player"]) {
+    if (!simResult.consumablesUsed[playerToDisplay]) {
         resultDiv.replaceChildren(...newChildren);
         return;
     }
 
-    let consumablesUsed = Object.entries(simResult.consumablesUsed["player"]).sort((a, b) => b[1] - a[1]);
+    let consumablesUsed = Object.entries(simResult.consumablesUsed[playerToDisplay]).sort((a, b) => b[1] - a[1]);
 
     let expensesModalTable = document.querySelector("#expensesTable > tbody");
     let total = 0;
@@ -1289,19 +1300,25 @@ function showConsumablesUsed(simResult) {
     resultDiv.replaceChildren(...newChildren);
 }
 
-function showManaUsed(simResult) {
+function showManaUsed(simResult, playerToDisplay) {
     let resultDiv = document.getElementById("simulationResultManaUsed");
     let newChildren = [];
 
     let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
-    if (!simResult.manaUsed) {
+
+    if (!simResult.manaUsed || !simResult.manaUsed[playerToDisplay]) {
         resultDiv.replaceChildren(...newChildren);
         return;
     }
-    for (let ability in simResult.manaUsed) {
-        let manaPerHour = (simResult.manaUsed[ability] / hoursSimulated).toFixed(0);
+
+    let playerManaUsed = simResult.manaUsed[playerToDisplay];
+
+    for (let ability in playerManaUsed) {
+        let manaUsed = playerManaUsed[ability];
+        let manaPerHour = (manaUsed / hoursSimulated).toFixed(0);
         let castsPerHour = (manaPerHour / abilityDetailMap[ability].manaCost).toFixed(2);
         castsPerHour = " (" + castsPerHour + ")";
+        
         let manaRow = createRow(
             ["col-md-6", "col-md-6 text-end"],
             [ability.split("/")[2].replaceAll("_", " ") + castsPerHour, manaPerHour]
@@ -1312,18 +1329,18 @@ function showManaUsed(simResult) {
     resultDiv.replaceChildren(...newChildren);
 }
 
-function showHitpointsGained(simResult) {
+function showHitpointsGained(simResult, playerToDisplay) {
     let resultDiv = document.getElementById("simulationResultHealthRestored");
     let newChildren = [];
 
     let secondsSimulated = simResult.simulatedTime / ONE_SECOND;
 
-    if (!simResult.hitpointsGained["player"]) {
+    if (!simResult.hitpointsGained[playerToDisplay]) {
         resultDiv.replaceChildren(...newChildren);
         return;
     }
 
-    let hitpointsGained = Object.entries(simResult.hitpointsGained["player"]).sort((a, b) => b[1] - a[1]);
+    let hitpointsGained = Object.entries(simResult.hitpointsGained[playerToDisplay]).sort((a, b) => b[1] - a[1]);
 
     let totalHitpointsGained = hitpointsGained.reduce((prev, cur) => prev + cur[1], 0);
     let totalHitpointsPerSecond = (totalHitpointsGained / secondsSimulated).toFixed(2);
@@ -1367,18 +1384,18 @@ function showHitpointsGained(simResult) {
     resultDiv.replaceChildren(...newChildren);
 }
 
-function showManapointsGained(simResult) {
+function showManapointsGained(simResult, playerToDisplay) {
     let resultDiv = document.getElementById("simulationResultManaRestored");
     let newChildren = [];
 
     let secondsSimulated = simResult.simulatedTime / ONE_SECOND;
 
-    if (!simResult.manapointsGained["player"]) {
+    if (!simResult.manapointsGained[playerToDisplay]) {
         resultDiv.replaceChildren(...newChildren);
         return;
     }
 
-    let manapointsGained = Object.entries(simResult.manapointsGained["player"]).sort((a, b) => b[1] - a[1]);
+    let manapointsGained = Object.entries(simResult.manapointsGained[playerToDisplay]).sort((a, b) => b[1] - a[1]);
 
     let totalManapointsGained = manapointsGained.reduce((prev, cur) => prev + cur[1], 0);
     let totalManapointsPerSecond = (totalManapointsGained / secondsSimulated).toFixed(2);
@@ -1422,7 +1439,7 @@ function showManapointsGained(simResult) {
     resultDiv.replaceChildren(...newChildren);
 }
 
-function showDamageDone(simResult) {
+function showDamageDone(simResult, playerToDisplay) {
     let totalDamageDone = {};
     let enemyIndex = 1;
 
@@ -1438,7 +1455,7 @@ function showDamageDone(simResult) {
     let bossTimeDiv = document.getElementById("simulationBossTime");
     bossTimeDiv.classList.add("d-none");
 
-    for (const [target, abilities] of Object.entries(simResult.attacks["player"])) {
+    for (const [target, abilities] of Object.entries(simResult.attacks[playerToDisplay])) {
         let targetDamageDone = {};
 
         const i = simResult.timeSpentAlive.findIndex(e => e.name === target);
@@ -1499,7 +1516,7 @@ function showDamageDone(simResult) {
     createDamageTable(totalResultDiv, totalDamageDone, totalSecondsSimulated);
 }
 
-function showDamageTaken(simResult) {
+function showDamageTaken(simResult, playerToDisplay) {
     let totalDamageTaken = {};
     let enemyIndex = 1;
 
@@ -1511,36 +1528,37 @@ function showDamageTaken(simResult) {
     }
 
     for (const [source, targets] of Object.entries(simResult.attacks)) {
-        if (source == "player") {
+        const validSources = ["player1", "player2", "player3"];
+        if (validSources.includes(source)) {
             continue;
         }
-
         const i = simResult.timeSpentAlive.findIndex(e => e.name === source);
         let aliveSecondsSimulated = simResult.timeSpentAlive[i].timeSpentAlive / ONE_SECOND;
         let sourceDamageTaken = {};
+        if (targets[playerToDisplay] && Object.keys(targets[playerToDisplay]).length > 0) {
+            for (const [ability, abilityCasts] of Object.entries(targets[playerToDisplay])) {
+                let casts = Object.values(abilityCasts).reduce((prev, cur) => prev + cur, 0);
+                let misses = abilityCasts["miss"] ?? 0;
+                let damage = Object.entries(abilityCasts)
+                    .filter((entry) => entry[0] != "miss")
+                    .reduce((prev, cur) => prev + Number(cur[0]) * cur[1], 0);
 
-        for (const [ability, abilityCasts] of Object.entries(targets["player"])) {
-            let casts = Object.values(abilityCasts).reduce((prev, cur) => prev + cur, 0);
-            let misses = abilityCasts["miss"] ?? 0;
-            let damage = Object.entries(abilityCasts)
-                .filter((entry) => entry[0] != "miss")
-                .reduce((prev, cur) => prev + Number(cur[0]) * cur[1], 0);
-
-            sourceDamageTaken[ability] = {
-                casts,
-                misses,
-                damage,
-            };
-            if (totalDamageTaken[ability]) {
-                totalDamageTaken[ability].casts += casts;
-                totalDamageTaken[ability].misses += misses;
-                totalDamageTaken[ability].damage += damage;
-            } else {
-                totalDamageTaken[ability] = {
+                sourceDamageTaken[ability] = {
                     casts,
                     misses,
                     damage,
                 };
+                if (totalDamageTaken[ability]) {
+                    totalDamageTaken[ability].casts += casts;
+                    totalDamageTaken[ability].misses += misses;
+                    totalDamageTaken[ability].damage += damage;
+                } else {
+                    totalDamageTaken[ability] = {
+                        casts,
+                        misses,
+                        damage,
+                    };
+                }
             }
         }
 
@@ -1641,6 +1659,9 @@ function onTabChange(event) {
     currentPlayerTabId = nextPlayerTabId;
     updateState();
     updateUI();
+    if(Object.keys(currentSimResults).length !== 0) {
+        showSimulationResult(currentSimResults);
+    }
 }
 
 document.querySelectorAll('#playerTab .nav-link').forEach(tab => {
@@ -1657,40 +1678,70 @@ function initSimulationControls() {
             invalidElements.forEach((element) => element.reportValidity());
             return;
         }
+        let simPlayer1 = document.getElementById('player1').checked;
+        let simPlayer2 = document.getElementById('player2').checked;
+        let simPlayer3 = document.getElementById('player3').checked;
+        if (!simPlayer1 && !simPlayer2 && !simPlayer3) {
+            alert("You need to select at least one player to sim.");
+            return;
+        }
+        selectedPlayers = [];
+        savePreviousPlayer(currentPlayerTabId);
+        currentSimResults = {};
+        if (simPlayer1) {
+            selectedPlayers.push(1);
+        }
+        if (simPlayer2) {
+            selectedPlayers.push(2);
+        }
+        if (simPlayer3) {
+            selectedPlayers.push(3);
+        }
         buttonStartSimulation.disabled = true;
-        startSimulation();
+        startSimulation(selectedPlayers);
     });
 }
 
-function startSimulation() {
+function startSimulation(selectedPlayers) {
+    let playersToSim = [];
+    for (let j = 1; j < 4; j++) {
+        if (selectedPlayers.includes(j)) {
+            updateNextPlayer(j);
+            updateState();
+            updateUI();
+            player.hrid = "player" + j.toString();
+            for (let i = 0; i < 3; i++) {
+                if (food[i] && i < player.combatDetails.combatStats.foodSlots) {
+                    let consumable = new Consumable(food[i], triggerMap[food[i]]);
+                    player.food[i] = consumable;
+                } else {
+                    player.food[i] = null;
+                }
+
+                if (drinks[i] && i < player.combatDetails.combatStats.drinkSlots) {
+                    let consumable = new Consumable(drinks[i], triggerMap[drinks[i]]);
+                    player.drinks[i] = consumable;
+                } else {
+                    player.drinks[i] = null;
+                }
+            }
+
+            for (let i = 0; i < 5; i++) {
+                if (abilities[i] && player.intelligenceLevel >= abilitySlotsLevelRequirementList[i + 1]) {
+                    let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
+                    let ability = new Ability(abilities[i], Number(abilityLevelInput.value), triggerMap[abilities[i]]);
+                    player.abilities[i] = ability;
+                } else {
+                    player.abilities[i] = null;
+                }
+            }
+
+                playersToSim.push(structuredClone(player));
+        }
+    }
+    updateNextPlayer(currentPlayerTabId);
     updateState();
     updateUI();
-
-    for (let i = 0; i < 3; i++) {
-        if (food[i] && i < player.combatDetails.combatStats.foodSlots) {
-            let consumable = new Consumable(food[i], triggerMap[food[i]]);
-            player.food[i] = consumable;
-        } else {
-            player.food[i] = null;
-        }
-
-        if (drinks[i] && i < player.combatDetails.combatStats.drinkSlots) {
-            let consumable = new Consumable(drinks[i], triggerMap[drinks[i]]);
-            player.drinks[i] = consumable;
-        } else {
-            player.drinks[i] = null;
-        }
-    }
-
-    for (let i = 0; i < 5; i++) {
-        if (abilities[i] && player.intelligenceLevel >= abilitySlotsLevelRequirementList[i + 1]) {
-            let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
-            let ability = new Ability(abilities[i], Number(abilityLevelInput.value), triggerMap[abilities[i]]);
-            player.abilities[i] = ability;
-        } else {
-            player.abilities[i] = null;
-        }
-    }
     let simAllZonesToggle = document.getElementById("simAllToggle");
     let zoneSelect = document.getElementById("selectZone");
     let simulationTimeInput = document.getElementById("inputSimulationTime");
@@ -1698,7 +1749,7 @@ function startSimulation() {
     if(!simAllZonesToggle.checked) {
         let workerMessage = {
             type: "start_simulation",
-            player: player,
+            players: playersToSim,
             zoneHrid: zoneSelect.value,
             simulationTimeLimit: simulationTimeLimit,
         };
@@ -1710,7 +1761,7 @@ function startSimulation() {
         .map(action => action.hrid);
         let workerMessage = {
             type: "start_simulation_all_zones",
-            player: player,
+            players: playersToSim,
             zones: zoneHrids,
             simulationTimeLimit: simulationTimeLimit,
         };
@@ -2251,7 +2302,6 @@ function savePreviousPlayer(playerId) {
 
 function updateNextPlayer(currentPlayerNumber) {
     let playerImportData = playerDataMap[currentPlayerNumber];
-    console.log(playerImportData);
     let importSet = JSON.parse(playerImportData);
     ["stamina", "intelligence", "attack", "power", "defense", "ranged", "magic"].forEach((skill) => {
         let levelInput = document.getElementById("inputLevel_" + skill);
