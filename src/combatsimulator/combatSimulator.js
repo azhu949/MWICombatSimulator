@@ -219,7 +219,7 @@ class CombatSimulator extends EventTarget {
                 let cumulativeThreat = 0;
                 let cumulativeRanges = [];
                 aliveTargets.forEach(player => {
-                    let playerThreat = player.combatDetails.totalThreat;
+                    let playerThreat = player.combatDetails.combatStats.threat;
                     cumulativeThreat += playerThreat;
                     cumulativeRanges.push({
                         player: player,
@@ -864,7 +864,7 @@ class CombatSimulator extends EventTarget {
                     let cumulativeThreat = 0;
                     let cumulativeRanges = [];
                     targets.forEach(player => {
-                        let playerThreat = player.combatDetails.totalThreat;
+                        let playerThreat = player.combatDetails.combatStats.threat;
                         cumulativeThreat += playerThreat;
                         cumulativeRanges.push({
                             player: player,
