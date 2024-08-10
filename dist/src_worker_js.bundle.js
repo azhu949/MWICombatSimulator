@@ -212,6 +212,7 @@ const DOT_TICK_INTERVAL = 5 * ONE_SECOND;
 const REGEN_TICK_INTERVAL = 10 * ONE_SECOND;
 const ENEMY_RESPAWN_INTERVAL = 3 * ONE_SECOND;
 const PLAYER_RESPAWN_INTERVAL = 150 * ONE_SECOND;
+let tempDungeonCount = 0;
 
 class CombatSimulator extends EventTarget {
     constructor(players, zone) {
@@ -375,6 +376,14 @@ class CombatSimulator extends EventTarget {
             this.enemies = this.zone.getRandomEncounter();
         } else {
             this.enemies = this.zone.getNextWave();
+            let currentDungeonCount = this.zone.dungeonsCompleted;
+            if(currentDungeonCount > tempDungeonCount) {
+                tempDungeonCount = currentDungeonCount;
+                for(let i = 0; i < this.players.length; i++) {
+                    this.players[i].combatDetails.currentHitpoints = this.players[i].combatDetails.maxHitpoints;
+                    this.players[i].combatDetails.currentManapoints = this.players[i].combatDetails.maxManapoints;
+                }
+            }
         }
 
         this.enemies.forEach((enemy) => {
@@ -3542,6 +3551,7 @@ class Zone {
         this.buffs = gameZone.buffs;
         this.isDungeon = gameZone.combatZoneInfo.isDungeon;
         this.dungeonsCompleted = 0;
+        this.finalWave = false;
     }
 
     getRandomEncounter() {
@@ -3579,13 +3589,13 @@ class Zone {
     }
 
     getNextWave() {
+        if(this.encountersKilled > this.dungeonSpawnInfo.maxWaves) {
+            this.dungeonsCompleted++;
+            this.encountersKilled = 0;
+        }
         if (this.dungeonSpawnInfo.fixedSpawnsMap.hasOwnProperty(this.encountersKilled.toString())) {
             let currentMonsters = this.dungeonSpawnInfo.fixedSpawnsMap[(this.encountersKilled).toString()];
             this.encountersKilled++;
-            if(this.encountersKilled > this.dungeonSpawnInfo.maxWaves) {
-                this.encountersKilled = 0;
-                this.dungeonsCompleted++;
-            }
             return currentMonsters.map((monster) => new _monster__WEBPACK_IMPORTED_MODULE_1__["default"](monster.combatMonsterHrid, monster.eliteTier));
         } else {
             let monsterSpawns = {};

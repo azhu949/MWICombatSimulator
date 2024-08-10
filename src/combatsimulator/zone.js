@@ -13,6 +13,7 @@ class Zone {
         this.buffs = gameZone.buffs;
         this.isDungeon = gameZone.combatZoneInfo.isDungeon;
         this.dungeonsCompleted = 0;
+        this.finalWave = false;
     }
 
     getRandomEncounter() {
@@ -50,13 +51,13 @@ class Zone {
     }
 
     getNextWave() {
+        if(this.encountersKilled > this.dungeonSpawnInfo.maxWaves) {
+            this.dungeonsCompleted++;
+            this.encountersKilled = 0;
+        }
         if (this.dungeonSpawnInfo.fixedSpawnsMap.hasOwnProperty(this.encountersKilled.toString())) {
             let currentMonsters = this.dungeonSpawnInfo.fixedSpawnsMap[(this.encountersKilled).toString()];
             this.encountersKilled++;
-            if(this.encountersKilled > this.dungeonSpawnInfo.maxWaves) {
-                this.encountersKilled = 0;
-                this.dungeonsCompleted++;
-            }
             return currentMonsters.map((monster) => new Monster(monster.combatMonsterHrid, monster.eliteTier));
         } else {
             let monsterSpawns = {};

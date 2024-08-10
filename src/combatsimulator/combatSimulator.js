@@ -24,6 +24,7 @@ const DOT_TICK_INTERVAL = 5 * ONE_SECOND;
 const REGEN_TICK_INTERVAL = 10 * ONE_SECOND;
 const ENEMY_RESPAWN_INTERVAL = 3 * ONE_SECOND;
 const PLAYER_RESPAWN_INTERVAL = 150 * ONE_SECOND;
+let tempDungeonCount = 0;
 
 class CombatSimulator extends EventTarget {
     constructor(players, zone) {
@@ -187,6 +188,14 @@ class CombatSimulator extends EventTarget {
             this.enemies = this.zone.getRandomEncounter();
         } else {
             this.enemies = this.zone.getNextWave();
+            let currentDungeonCount = this.zone.dungeonsCompleted;
+            if(currentDungeonCount > tempDungeonCount) {
+                tempDungeonCount = currentDungeonCount;
+                for(let i = 0; i < this.players.length; i++) {
+                    this.players[i].combatDetails.currentHitpoints = this.players[i].combatDetails.maxHitpoints;
+                    this.players[i].combatDetails.currentManapoints = this.players[i].combatDetails.maxManapoints;
+                }
+            }
         }
 
         this.enemies.forEach((enemy) => {
