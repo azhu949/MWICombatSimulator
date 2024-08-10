@@ -25,11 +25,15 @@ class Monster extends CombatUnit {
             }
             this.abilities[i] = new Ability(gameMonster.abilities[i].abilityHrid, gameMonster.abilities[i].level);
         }
+        if(gameMonster.dropTable)
         for (let i = 0; i < gameMonster.dropTable.length; i++) {
             this.dropTable[i] = new Drops(gameMonster.dropTable[i].itemHrid, gameMonster.dropTable[i].dropRate, gameMonster.dropTable[i].minCount, gameMonster.dropTable[i].maxCount, gameMonster.dropTable[i].eliteTier);
         }
         for (let i = 0; i < gameMonster.rareDropTable.length; i++) {
-            this.rareDropTable[i] = new Drops(gameMonster.rareDropTable[i].itemHrid, gameMonster.rareDropTable[i].dropRate, gameMonster.rareDropTable[i].minCount, gameMonster.rareDropTable[i].maxCount, gameMonster.dropTable[i].eliteTier);
+            let dropTableItem = (gameMonster.dropTable && i < gameMonster.dropTable.length) ? gameMonster.dropTable[i] : null;
+            let eliteTier = dropTableItem?.eliteTier ?? gameMonster.rareDropTable[i].minEliteTier;
+
+            this.rareDropTable[i] = new Drops(gameMonster.rareDropTable[i].itemHrid, gameMonster.rareDropTable[i].dropRate, gameMonster.rareDropTable[i].minCount, eliteTier);
         }
     }
 

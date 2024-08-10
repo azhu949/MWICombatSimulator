@@ -16,6 +16,9 @@ class SimResult {
         this.eliteTier = 0;
         this.hitpointsSpent = {};
         this.zoneName = zoneName;
+        this.isDungeon = false;
+        this.dungeonsCompleted = 0;
+        this.maxWaveReached = 0;
     }
 
     addDeath(unit) {

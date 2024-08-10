@@ -36,7 +36,9 @@ let currentPlayerTabId = '1';
 let playerDataMap = {
     "1": {},
     "2": "{\"player\":{\"attackLevel\":1,\"magicLevel\":1,\"powerLevel\":1,\"rangedLevel\":1,\"defenseLevel\":1,\"staminaLevel\":1,\"intelligenceLevel\":1,\"equipment\":[]},\"food\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"drinks\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"abilities\":[{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"}],\"triggerMap\":{},\"zone\":\"/actions/combat/fly\",\"simulationTime\":\"100\",\"houseRooms\":{\"/house_rooms/dairy_barn\":0,\"/house_rooms/garden\":0,\"/house_rooms/log_shed\":0,\"/house_rooms/forge\":0,\"/house_rooms/workshop\":0,\"/house_rooms/sewing_parlor\":0,\"/house_rooms/kitchen\":0,\"/house_rooms/brewery\":0,\"/house_rooms/laboratory\":0,\"/house_rooms/dining_room\":0,\"/house_rooms/library\":0,\"/house_rooms/dojo\":0,\"/house_rooms/gym\":0,\"/house_rooms/armory\":0,\"/house_rooms/archery_range\":0,\"/house_rooms/mystical_study\":0}}",
-    "3": "{\"player\":{\"attackLevel\":1,\"magicLevel\":1,\"powerLevel\":1,\"rangedLevel\":1,\"defenseLevel\":1,\"staminaLevel\":1,\"intelligenceLevel\":1,\"equipment\":[]},\"food\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"drinks\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"abilities\":[{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"}],\"triggerMap\":{},\"zone\":\"/actions/combat/fly\",\"simulationTime\":\"100\",\"houseRooms\":{\"/house_rooms/dairy_barn\":0,\"/house_rooms/garden\":0,\"/house_rooms/log_shed\":0,\"/house_rooms/forge\":0,\"/house_rooms/workshop\":0,\"/house_rooms/sewing_parlor\":0,\"/house_rooms/kitchen\":0,\"/house_rooms/brewery\":0,\"/house_rooms/laboratory\":0,\"/house_rooms/dining_room\":0,\"/house_rooms/library\":0,\"/house_rooms/dojo\":0,\"/house_rooms/gym\":0,\"/house_rooms/armory\":0,\"/house_rooms/archery_range\":0,\"/house_rooms/mystical_study\":0}}"
+    "3": "{\"player\":{\"attackLevel\":1,\"magicLevel\":1,\"powerLevel\":1,\"rangedLevel\":1,\"defenseLevel\":1,\"staminaLevel\":1,\"intelligenceLevel\":1,\"equipment\":[]},\"food\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"drinks\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"abilities\":[{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"}],\"triggerMap\":{},\"zone\":\"/actions/combat/fly\",\"simulationTime\":\"100\",\"houseRooms\":{\"/house_rooms/dairy_barn\":0,\"/house_rooms/garden\":0,\"/house_rooms/log_shed\":0,\"/house_rooms/forge\":0,\"/house_rooms/workshop\":0,\"/house_rooms/sewing_parlor\":0,\"/house_rooms/kitchen\":0,\"/house_rooms/brewery\":0,\"/house_rooms/laboratory\":0,\"/house_rooms/dining_room\":0,\"/house_rooms/library\":0,\"/house_rooms/dojo\":0,\"/house_rooms/gym\":0,\"/house_rooms/armory\":0,\"/house_rooms/archery_range\":0,\"/house_rooms/mystical_study\":0}}",
+    "4": "{\"player\":{\"attackLevel\":1,\"magicLevel\":1,\"powerLevel\":1,\"rangedLevel\":1,\"defenseLevel\":1,\"staminaLevel\":1,\"intelligenceLevel\":1,\"equipment\":[]},\"food\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"drinks\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"abilities\":[{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"}],\"triggerMap\":{},\"zone\":\"/actions/combat/fly\",\"simulationTime\":\"100\",\"houseRooms\":{\"/house_rooms/dairy_barn\":0,\"/house_rooms/garden\":0,\"/house_rooms/log_shed\":0,\"/house_rooms/forge\":0,\"/house_rooms/workshop\":0,\"/house_rooms/sewing_parlor\":0,\"/house_rooms/kitchen\":0,\"/house_rooms/brewery\":0,\"/house_rooms/laboratory\":0,\"/house_rooms/dining_room\":0,\"/house_rooms/library\":0,\"/house_rooms/dojo\":0,\"/house_rooms/gym\":0,\"/house_rooms/armory\":0,\"/house_rooms/archery_range\":0,\"/house_rooms/mystical_study\":0}}",
+    "5": "{\"player\":{\"attackLevel\":1,\"magicLevel\":1,\"powerLevel\":1,\"rangedLevel\":1,\"defenseLevel\":1,\"staminaLevel\":1,\"intelligenceLevel\":1,\"equipment\":[]},\"food\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"drinks\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"abilities\":[{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"}],\"triggerMap\":{},\"zone\":\"/actions/combat/fly\",\"simulationTime\":\"100\",\"houseRooms\":{\"/house_rooms/dairy_barn\":0,\"/house_rooms/garden\":0,\"/house_rooms/log_shed\":0,\"/house_rooms/forge\":0,\"/house_rooms/workshop\":0,\"/house_rooms/sewing_parlor\":0,\"/house_rooms/kitchen\":0,\"/house_rooms/brewery\":0,\"/house_rooms/laboratory\":0,\"/house_rooms/dining_room\":0,\"/house_rooms/library\":0,\"/house_rooms/dojo\":0,\"/house_rooms/gym\":0,\"/house_rooms/armory\":0,\"/house_rooms/archery_range\":0,\"/house_rooms/mystical_study\":0}}"
 };
 window.revenue = 0;
 window.noRngRevenue = 0;
@@ -51,6 +53,7 @@ worker.onmessage = function (event) {
         case "simulation_result":
             progressbar.style.width = "100%";
             progressbar.innerHTML = "100%";
+            console.log("SIM RESULTS: ", event.data.simResult);
             showSimulationResult(event.data.simResult);
             buttonStartSimulation.disabled = false;
             document.getElementById('buttonShowAllSimData').style.display = 'none';
@@ -502,7 +505,7 @@ function initAbilitiesSection() {
 
         let gameAbilities;
         if (i == 0) {
-            gameAbilities = Object.values(abilityDetailMap).filter(x => x.isSpecialAbility && x.name !== "Promote").sort((a, b) => a.sortIndex - b.sortIndex);
+            gameAbilities = Object.values(abilityDetailMap).filter(x => x.isSpecialAbility).sort((a, b) => a.sortIndex - b.sortIndex);
         } else {
             gameAbilities = Object.values(abilityDetailMap).filter(x => !x.isSpecialAbility).sort((a, b) => a.sortIndex - b.sortIndex);
         }
@@ -814,6 +817,18 @@ function initZones() {
     }
 }
 
+function initDungeons() {
+    let dungeonSelect = document.getElementById("selectDungeon");
+
+    let gameDungeons = Object.values(actionDetailMap)
+        .filter((action) => action.type == "/action_types/combat" && action.category == "/action_categories/combat/dungeons")
+        .sort((a, b) => a.sortIndex - b.sortIndex);
+
+    for (const dungeon of Object.values(gameDungeons)) {
+        dungeonSelect.add(new Option(dungeon.name, dungeon.hrid));
+    }
+}
+
 // #endregion
 
 // #region Simulation Result
@@ -838,8 +853,10 @@ function showSimulationResult(simResult) {
     showManaUsed(simResult, playerToDisplay);
     showHitpointsGained(simResult, playerToDisplay);
     showManapointsGained(simResult, playerToDisplay);
-    showDamageDone(simResult, playerToDisplay);
-    showDamageTaken(simResult, playerToDisplay);
+    if(!simResult.isDungeon) {
+        showDamageDone(simResult, playerToDisplay);
+        showDamageTaken(simResult, playerToDisplay);
+    }
     window.profit = window.revenue - window.expenses;
     document.getElementById('profitSpan').innerText = window.profit.toLocaleString();
     document.getElementById('profitPreview').innerText = window.profit.toLocaleString();
@@ -992,13 +1009,24 @@ function showKills(simResult, playerToDisplay) {
 
     let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
     let playerDeaths = simResult.deaths[playerToDisplay] ?? 0;
-    let encountersPerHour = (simResult.encounters / hoursSimulated).toFixed(1);
+    let encountersPerHour = 0;
+    let encountersRow = null;
+    if(simResult.isDungeon) {
+        let wavesCompletedRow = createRow(["col-md-6", "col-md-6 text-end"], ["Max Wave Reached", simResult.maxWaveReached]);
+        newChildren.push(wavesCompletedRow);
+        let totalDungeonsRow = createRow(["col-md-6", "col-md-6 text-end"], ["Total Dungeons", simResult.dungeonsCompleted]);
+        newChildren.push(totalDungeonsRow);
+        encountersPerHour = (simResult.dungeonsCompleted / hoursSimulated).toFixed(1);
+        encountersRow = createRow(["col-md-6", "col-md-6 text-end"], ["Dungeons / hr", encountersPerHour]);
+    } else {
+        encountersPerHour = (simResult.encounters / hoursSimulated).toFixed(1);
+        encountersRow = createRow(["col-md-6", "col-md-6 text-end"], ["Encounters", encountersPerHour]);
+    }
 
-    let encountersRow = createRow(["col-md-6", "col-md-6 text-end"], ["Encounters", encountersPerHour]);
     newChildren.push(encountersRow);
 
     let monsters = Object.keys(simResult.deaths)
-        .filter(enemy => enemy !== "player1" && enemy !== "player2" && enemy !== "player3")
+        .filter(enemy => enemy !== "player1" && enemy !== "player2" && enemy !== "player3" && enemy !== "player4" && enemy !== "player5")
         .sort();
 
     const totalDropMap = new Map();
@@ -1013,12 +1041,14 @@ function showKills(simResult, playerToDisplay) {
 
         const dropMap = new Map();
         const rareDropMap = new Map();
+        if(combatMonsterDetailMap[monster].dropTable)
         for (const drop of combatMonsterDetailMap[monster].dropTable) {
             if (drop.minEliteTier > simResult.eliteTier) {
                 continue;
             }
             dropMap.set(itemDetailMap[drop.itemHrid]['name'], { "dropRate": Math.min(1, drop.dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
         }
+        if(combatMonsterDetailMap[monster].rareDropTable)
         for (const drop of combatMonsterDetailMap[monster].rareDropTable) {
             if (drop.minEliteTier > simResult.eliteTier) {
                 continue;
@@ -1528,7 +1558,7 @@ function showDamageTaken(simResult, playerToDisplay) {
     }
 
     for (const [source, targets] of Object.entries(simResult.attacks)) {
-        const validSources = ["player1", "player2", "player3"];
+        const validSources = ["player1", "player2", "player3", "player4", "player5"];
         if (validSources.includes(source)) {
             continue;
         }
@@ -1652,6 +1682,49 @@ function createElement(tagName, className, innerHTML = "") {
 
 // #region Simulation Controls
 
+document.addEventListener('DOMContentLoaded', function() {
+    const simDungeonToggle = document.getElementById('simDungeonToggle');
+    const playerContainer = document.querySelector('.outlined-box');
+
+    function addPlayers() {
+        const player4 = document.createElement('div');
+        player4.classList.add('form-check');
+        player4.innerHTML = `
+            <input class="form-check-input player-checkbox" type="checkbox" id="player4">
+            <label class="form-check-label" for="player4">
+                Player 4
+            </label>
+        `;
+
+        const player5 = document.createElement('div');
+        player5.classList.add('form-check');
+        player5.innerHTML = `
+            <input class="form-check-input player-checkbox" type="checkbox" id="player5">
+            <label class="form-check-label" for="player5">
+                Player 5
+            </label>
+        `;
+
+        playerContainer.appendChild(player4);
+        playerContainer.appendChild(player5);
+    }
+
+    function removePlayers() {
+        const player4 = document.getElementById('player4');
+        const player5 = document.getElementById('player5');
+        if (player4) player4.parentElement.remove();
+        if (player5) player5.parentElement.remove();
+    }
+
+    simDungeonToggle.addEventListener('change', function() {
+        if (simDungeonToggle.checked) {
+            addPlayers();
+        } else {
+            removePlayers();
+        }
+    });
+});
+
 function onTabChange(event) {
     const nextPlayerTabId = event.target.getAttribute('href').substring(7); 
     savePreviousPlayer(currentPlayerTabId);
@@ -1678,24 +1751,20 @@ function initSimulationControls() {
             invalidElements.forEach((element) => element.reportValidity());
             return;
         }
-        let simPlayer1 = document.getElementById('player1').checked;
-        let simPlayer2 = document.getElementById('player2').checked;
-        let simPlayer3 = document.getElementById('player3').checked;
-        if (!simPlayer1 && !simPlayer2 && !simPlayer3) {
+        savePreviousPlayer(currentPlayerTabId); 
+
+        const simDungeonToggle = document.getElementById("simDungeonToggle");
+        const checkboxes = document.querySelectorAll('.player-checkbox');
+        checkboxes.forEach(checkbox => {
+            if (checkbox.checked) {
+                const playerNumber = parseInt(checkbox.id.replace('player', ''));
+                selectedPlayers.push(playerNumber);
+            }
+        });
+
+        if (selectedPlayers.length === 0) {
             alert("You need to select at least one player to sim.");
             return;
-        }
-        selectedPlayers = [];
-        savePreviousPlayer(currentPlayerTabId);
-        currentSimResults = {};
-        if (simPlayer1) {
-            selectedPlayers.push(1);
-        }
-        if (simPlayer2) {
-            selectedPlayers.push(2);
-        }
-        if (simPlayer3) {
-            selectedPlayers.push(3);
         }
         buttonStartSimulation.disabled = true;
         startSimulation(selectedPlayers);
@@ -1704,7 +1773,7 @@ function initSimulationControls() {
 
 function startSimulation(selectedPlayers) {
     let playersToSim = [];
-    for (let j = 1; j < 4; j++) {
+    for (let j = 1; j < 6; j++) {
         if (selectedPlayers.includes(j)) {
             updateNextPlayer(j);
             updateState();
@@ -1743,14 +1812,20 @@ function startSimulation(selectedPlayers) {
     updateState();
     updateUI();
     let simAllZonesToggle = document.getElementById("simAllToggle");
+    let simDungeonToggle = document.getElementById("simDungeonToggle");
     let zoneSelect = document.getElementById("selectZone");
+    let dungeonSelect = document.getElementById("selectDungeon");
     let simulationTimeInput = document.getElementById("inputSimulationTime");
     let simulationTimeLimit = Number(simulationTimeInput.value) * ONE_HOUR;
     if(!simAllZonesToggle.checked) {
+        let zoneHrid = zoneSelect.value;
+        if (simDungeonToggle.checked) {
+            zoneHrid = dungeonSelect.value;
+        }
         let workerMessage = {
             type: "start_simulation",
             players: playersToSim,
-            zoneHrid: zoneSelect.value,
+            zoneHrid: zoneHrid,
             simulationTimeLimit: simulationTimeLimit,
         };
         worker.postMessage(workerMessage);
@@ -2141,6 +2216,8 @@ function doGroupImport() {
         setPlayerData("1", "inputSetGroupCombatplayer1");
         setPlayerData("2", "inputSetGroupCombatplayer2");
         setPlayerData("3", "inputSetGroupCombatplayer3");
+        setPlayerData("4", "inputSetGroupCombatplayer4");
+        setPlayerData("5", "inputSetGroupCombatplayer5");
     } else {
         playerDataMap = JSON.parse(value);
     }
@@ -2600,6 +2677,7 @@ initFoodSection();
 initDrinksSection();
 initAbilitiesSection();
 initZones();
+initDungeons();
 initTriggerModal();
 initSimulationControls();
 initEquipmentSetsModal();

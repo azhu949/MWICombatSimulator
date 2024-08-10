@@ -185,6 +185,8 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _simResult__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./simResult */ "./src/combatsimulator/simResult.js");
 /* harmony import */ var _events_abilityCastEndEvent__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./events/abilityCastEndEvent */ "./src/combatsimulator/events/abilityCastEndEvent.js");
 /* harmony import */ var _events_awaitCooldownEvent__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./events/awaitCooldownEvent */ "./src/combatsimulator/events/awaitCooldownEvent.js");
+/* harmony import */ var _monster__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./monster */ "./src/combatsimulator/monster.js");
+
 
 
 
@@ -248,7 +250,15 @@ class CombatSimulator extends EventTarget {
                 this.simResult.updateTimeSpentAlive(this.simResult.timeSpentAlive[i].name, false, simulationTimeLimit);
             }
         }
-
+        this.simResult.isDungeon = this.zone.isDungeon;
+        if(this.simResult.isDungeon) {
+            this.simResult.dungeonsCompleted = this.zone.dungeonsCompleted;
+            if(this.simResult.dungeonsCompleted < 1) {
+                this.simResult.maxWaveReached = this.zone.encountersKilled - 1;
+            } else {
+                this.simResult.maxWaveReached = this.zone.dungeonSpawnInfo.maxWaves;
+            }
+        }
         this.simResult.simulatedTime = this.simulationTime;
         this.simResult.setDropRateMultipliers(this.players[0]);
         for(let i = 0; i < this.players.length; i++) {
@@ -261,7 +271,9 @@ class CombatSimulator extends EventTarget {
             }
         }
 
-        this.simResult.eliteTier = this.zone.monsterSpawnInfo.randomSpawnInfo.spawns[0].eliteTier;
+        if(!this.zone.isDungeon) {
+            this.simResult.eliteTier = this.zone.monsterSpawnInfo.randomSpawnInfo.spawns[0].eliteTier;
+        }
 
         return this.simResult;
     }
@@ -359,7 +371,11 @@ class CombatSimulator extends EventTarget {
     }
 
     startNewEncounter() {
-        this.enemies = this.zone.getRandomEncounter();
+        if(!this.zone.isDungeon) {
+            this.enemies = this.zone.getRandomEncounter();
+        } else {
+            this.enemies = this.zone.getNextWave();
+        }
 
         this.enemies.forEach((enemy) => {
             enemy.reset(this.simulationTime);
@@ -894,7 +910,7 @@ class CombatSimulator extends EventTarget {
         }
 
         // console.log("Casting:", ability);
-
+        
         if (source.isPlayer) {
             if (source.abilityManaCosts.has(ability.hrid)) {
                 source.abilityManaCosts.set(ability.hrid, source.abilityManaCosts.get(ability.hrid) + ability.manaCost);
@@ -939,6 +955,11 @@ class CombatSimulator extends EventTarget {
                     break;
                 case "/ability_effect_types/revive":
                     this.processAbilityReviveEffect(source, ability, abilityEffect);
+                    break;
+                case "/ability_effect_types/promote":
+                    this.eventQueue.clearEventsForUnit(source);
+                    source = this.processAbilityPromoteEffect(source, ability, abilityEffect);
+                    this.addNextAttackEvent(source);
                     break;
                 default:
                     throw new Error("Unsupported effect type for ability: " + ability.hrid + " effectType: " + abilityEffect.effectType);
@@ -1240,6 +1261,12 @@ class CombatSimulator extends EventTarget {
             // console.log(source.hrid + " revived " + reviveTarget.hrid + " with " + amountHealed + " HP.");
         }
         return;
+    }
+
+    processAbilityPromoteEffect(source, ability, abilityEffect) {
+            const promotionHrids = ["/monsters/enchanted_rook", "/monsters/enchanted_knight", "/monsters/enchanted_bishop"];
+            let randomPromotionIndex = Math.floor(Math.random() * promotionHrids.length);
+            return new _monster__WEBPACK_IMPORTED_MODULE_18__["default"](promotionHrids[randomPromotionIndex], source.eliteTier);
     }
 
     processAbilitySpendHpEffect(source, ability, abilityEffect) {
@@ -2877,11 +2904,15 @@ class Monster extends _combatUnit__WEBPACK_IMPORTED_MODULE_1__["default"] {
             }
             this.abilities[i] = new _ability__WEBPACK_IMPORTED_MODULE_0__["default"](gameMonster.abilities[i].abilityHrid, gameMonster.abilities[i].level);
         }
+        if(gameMonster.dropTable)
         for (let i = 0; i < gameMonster.dropTable.length; i++) {
             this.dropTable[i] = new _drops__WEBPACK_IMPORTED_MODULE_3__["default"](gameMonster.dropTable[i].itemHrid, gameMonster.dropTable[i].dropRate, gameMonster.dropTable[i].minCount, gameMonster.dropTable[i].maxCount, gameMonster.dropTable[i].eliteTier);
         }
         for (let i = 0; i < gameMonster.rareDropTable.length; i++) {
-            this.rareDropTable[i] = new _drops__WEBPACK_IMPORTED_MODULE_3__["default"](gameMonster.rareDropTable[i].itemHrid, gameMonster.rareDropTable[i].dropRate, gameMonster.rareDropTable[i].minCount, gameMonster.rareDropTable[i].maxCount, gameMonster.dropTable[i].eliteTier);
+            let dropTableItem = (gameMonster.dropTable && i < gameMonster.dropTable.length) ? gameMonster.dropTable[i] : null;
+            let eliteTier = dropTableItem?.eliteTier ?? gameMonster.rareDropTable[i].minEliteTier;
+
+            this.rareDropTable[i] = new _drops__WEBPACK_IMPORTED_MODULE_3__["default"](gameMonster.rareDropTable[i].itemHrid, gameMonster.rareDropTable[i].dropRate, gameMonster.rareDropTable[i].minCount, eliteTier);
         }
     }
 
@@ -3147,6 +3178,9 @@ class SimResult {
         this.eliteTier = 0;
         this.hitpointsSpent = {};
         this.zoneName = zoneName;
+        this.isDungeon = false;
+        this.dungeonsCompleted = 0;
+        this.maxWaveReached = 0;
     }
 
     addDeath(unit) {
@@ -3502,9 +3536,12 @@ class Zone {
 
         let gameZone = _data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_0__[this.hrid];
         this.monsterSpawnInfo = gameZone.combatZoneInfo.fightInfo;
+        this.dungeonSpawnInfo = gameZone.combatZoneInfo.dungeonInfo;
         this.encountersKilled = 0;
         this.monsterSpawnInfo.battlesPerBoss = 10;
         this.buffs = gameZone.buffs;
+        this.isDungeon = gameZone.combatZoneInfo.isDungeon;
+        this.dungeonsCompleted = 0;
     }
 
     getRandomEncounter() {
@@ -3539,6 +3576,56 @@ class Zone {
         }
         this.encountersKilled++;
         return encounterHrids.map((hrid) => new _monster__WEBPACK_IMPORTED_MODULE_1__["default"](hrid.hrid, hrid.eliteTier));
+    }
+
+    getNextWave() {
+        if (this.dungeonSpawnInfo.fixedSpawnsMap.hasOwnProperty(this.encountersKilled.toString())) {
+            let currentMonsters = this.dungeonSpawnInfo.fixedSpawnsMap[(this.encountersKilled).toString()];
+            this.encountersKilled++;
+            if(this.encountersKilled > this.dungeonSpawnInfo.maxWaves) {
+                this.encountersKilled = 0;
+                this.dungeonsCompleted++;
+            }
+            return currentMonsters.map((monster) => new _monster__WEBPACK_IMPORTED_MODULE_1__["default"](monster.combatMonsterHrid, monster.eliteTier));
+        } else {
+            let monsterSpawns = {};
+            const waveKeys = Object.keys(this.dungeonSpawnInfo.randomSpawnInfoMap).map(Number).sort((a, b) => a - b);
+            if (this.encountersKilled > waveKeys[waveKeys.length - 1]) {
+                monsterSpawns = this.dungeonSpawnInfo.randomSpawnInfoMap[waveKeys[waveKeys.length - 1]];
+            } else {
+                for (let i = 0; i < waveKeys.length - 1; i++) {
+                    if (this.encountersKilled >= waveKeys[i] && this.encountersKilled <= waveKeys[i + 1]) {
+                        monsterSpawns = this.dungeonSpawnInfo.randomSpawnInfoMap[waveKeys[i]];
+                        break;
+                    }
+                }
+            }
+            let totalWeight = monsterSpawns.spawns.reduce((prev, cur) => prev + cur.rate, 0);
+
+            let encounterHrids = [];
+            let totalStrength = 0;
+    
+            outer: for (let i = 0; i < monsterSpawns.maxSpawnCount; i++) {
+                let randomWeight = totalWeight * Math.random();
+                let cumulativeWeight = 0;
+    
+                for (const spawn of monsterSpawns.spawns) {
+                    cumulativeWeight += spawn.rate;
+                    if (randomWeight <= cumulativeWeight) {
+                        totalStrength += spawn.strength;
+    
+                        if (totalStrength <= monsterSpawns.maxTotalStrength) {
+                            encounterHrids.push({ 'hrid': spawn.combatMonsterHrid, 'eliteTier': spawn.eliteTier });
+                        } else {
+                            break outer;
+                        }
+                        break;
+                    }
+                }
+            }
+            this.encountersKilled++;
+            return encounterHrids.map((hrid) => new _monster__WEBPACK_IMPORTED_MODULE_1__["default"](hrid.hrid, hrid.eliteTier));
+        }
     }
 }
 

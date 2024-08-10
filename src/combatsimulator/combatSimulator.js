@@ -16,6 +16,7 @@ import CurseExpirationEvent from "./events/curseExpirationEvent";
 import SimResult from "./simResult";
 import AbilityCastEndEvent from "./events/abilityCastEndEvent";
 import AwaitCooldownEvent from "./events/awaitCooldownEvent";
+import Monster from "./monster";
 
 const ONE_SECOND = 1e9;
 const HOT_TICK_INTERVAL = 5 * ONE_SECOND;
@@ -61,7 +62,15 @@ class CombatSimulator extends EventTarget {
                 this.simResult.updateTimeSpentAlive(this.simResult.timeSpentAlive[i].name, false, simulationTimeLimit);
             }
         }
-
+        this.simResult.isDungeon = this.zone.isDungeon;
+        if(this.simResult.isDungeon) {
+            this.simResult.dungeonsCompleted = this.zone.dungeonsCompleted;
+            if(this.simResult.dungeonsCompleted < 1) {
+                this.simResult.maxWaveReached = this.zone.encountersKilled - 1;
+            } else {
+                this.simResult.maxWaveReached = this.zone.dungeonSpawnInfo.maxWaves;
+            }
+        }
         this.simResult.simulatedTime = this.simulationTime;
         this.simResult.setDropRateMultipliers(this.players[0]);
         for(let i = 0; i < this.players.length; i++) {
@@ -74,7 +83,9 @@ class CombatSimulator extends EventTarget {
             }
         }
 
-        this.simResult.eliteTier = this.zone.monsterSpawnInfo.randomSpawnInfo.spawns[0].eliteTier;
+        if(!this.zone.isDungeon) {
+            this.simResult.eliteTier = this.zone.monsterSpawnInfo.randomSpawnInfo.spawns[0].eliteTier;
+        }
 
         return this.simResult;
     }
@@ -172,7 +183,11 @@ class CombatSimulator extends EventTarget {
     }
 
     startNewEncounter() {
-        this.enemies = this.zone.getRandomEncounter();
+        if(!this.zone.isDungeon) {
+            this.enemies = this.zone.getRandomEncounter();
+        } else {
+            this.enemies = this.zone.getNextWave();
+        }
 
         this.enemies.forEach((enemy) => {
             enemy.reset(this.simulationTime);
@@ -707,7 +722,7 @@ class CombatSimulator extends EventTarget {
         }
 
         // console.log("Casting:", ability);
-
+        
         if (source.isPlayer) {
             if (source.abilityManaCosts.has(ability.hrid)) {
                 source.abilityManaCosts.set(ability.hrid, source.abilityManaCosts.get(ability.hrid) + ability.manaCost);
@@ -752,6 +767,11 @@ class CombatSimulator extends EventTarget {
                     break;
                 case "/ability_effect_types/revive":
                     this.processAbilityReviveEffect(source, ability, abilityEffect);
+                    break;
+                case "/ability_effect_types/promote":
+                    this.eventQueue.clearEventsForUnit(source);
+                    source = this.processAbilityPromoteEffect(source, ability, abilityEffect);
+                    this.addNextAttackEvent(source);
                     break;
                 default:
                     throw new Error("Unsupported effect type for ability: " + ability.hrid + " effectType: " + abilityEffect.effectType);
@@ -1053,6 +1073,12 @@ class CombatSimulator extends EventTarget {
             // console.log(source.hrid + " revived " + reviveTarget.hrid + " with " + amountHealed + " HP.");
         }
         return;
+    }
+
+    processAbilityPromoteEffect(source, ability, abilityEffect) {
+            const promotionHrids = ["/monsters/enchanted_rook", "/monsters/enchanted_knight", "/monsters/enchanted_bishop"];
+            let randomPromotionIndex = Math.floor(Math.random() * promotionHrids.length);
+            return new Monster(promotionHrids[randomPromotionIndex], source.eliteTier);
     }
 
     processAbilitySpendHpEffect(source, ability, abilityEffect) {

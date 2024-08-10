@@ -113,6 +113,12 @@
             <li class="nav-item">
                 <a class="nav-link" id="player3-tab" data-bs-toggle="tab" href="#player3" role="tab" aria-controls="player3" aria-selected="false">Player 3</a>
             </li>
+            <li class="nav-item">
+                <a class="nav-link" id="player4-tab" data-bs-toggle="tab" href="#player4" role="tab" aria-controls="player4" aria-selected="false">Player 4</a>
+            </li>
+            <li class="nav-item">
+                <a class="nav-link" id="player5-tab" data-bs-toggle="tab" href="#player5" role="tab" aria-controls="player5" aria-selected="false">Player 5</a>
+            </li>
         </ul>
         <div class="row">
             <div class="col-md-5">
@@ -1516,6 +1522,13 @@
                             </div>
                         </div>
                         <div class="row">
+                            <label for="selectDungeon" class="col-md-3 col-form-label">Dungeon</label>
+                            <div class="col-md">
+                                <select id="selectDungeon" class="form-select">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
                             <label for="inputSimulationTime" class="col-md-3 col-form-label">Duration</label>
                             <div class="col-md">
                                 <div class="input-group">
@@ -1530,19 +1543,19 @@
                                 <div class="outlined-box">
                                     <h6>Select Players</h6>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="player1">
+                                        <input class="form-check-input player-checkbox" type="checkbox" id="player1">
                                         <label class="form-check-label" for="player1">
                                             Player 1
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="player2">
+                                        <input class="form-check-input player-checkbox" type="checkbox" id="player2">
                                         <label class="form-check-label" for="player2">
                                             Player 2
                                         </label>
                                     </div>
                                     <div class="form-check">
-                                        <input class="form-check-input" type="checkbox" id="player3">
+                                        <input class="form-check-input player-checkbox" type="checkbox" id="player3">
                                         <label class="form-check-label" for="player3">
                                             Player 3
                                         </label>
@@ -1554,6 +1567,13 @@
                                     Sim All Zones:
                                     <label class="switch">
                                         <input type="checkbox" id="simAllToggle">
+                                        <span class="slider round"></span>
+                                    </label>
+                                </div>
+                                <div class="checkbox-container">
+                                    Sim Dungeon:
+                                    <label class="switch">
+                                        <input type="checkbox" id="simDungeonToggle">
                                         <span class="slider round"></span>
                                     </label>
                                 </div>
@@ -1658,6 +1678,8 @@
                             <input type="text" id="inputSetGroupCombatplayer1" class="form-control mt-2" placeholder="Player 1 import" />
                             <input type="text" id="inputSetGroupCombatplayer2" class="form-control mt-2" placeholder="Player 2 import" />
                             <input type="text" id="inputSetGroupCombatplayer3" class="form-control mt-2" placeholder="Player 3 import" />                            
+                            <input type="text" id="inputSetGroupCombatplayer2" class="form-control mt-2" placeholder="Player 4 import" />
+                            <input type="text" id="inputSetGroupCombatplayer3" class="form-control mt-2" placeholder="Player 5 import" />   
                         </div>
                         <div class="tab-pane fade" id="solo" role="tabpanel" aria-labelledby="solo-tab">
                             <!-- Solo Content -->
@@ -1685,6 +1707,13 @@
                 <div class="modal-body">
                     <div class="container-fluid">
                         <div class="row">
+                            <div class="col-12 mb-4">
+                                <h6>August 9th, 2024</h6>
+                                <ul>
+                                    <li>Dungeons</li>
+                                    <li>Still missing some UI elements and probably some bugs</li>
+                                </ul>
+                            </div>
                             <div class="col-12 mb-4">
                                 <h6>August 7th, 2024</h6>
                                 <ul>
