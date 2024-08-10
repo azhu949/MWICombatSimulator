@@ -2307,10 +2307,8 @@ function showSimulationResult(simResult) {
     showManaUsed(simResult, playerToDisplay);
     showHitpointsGained(simResult, playerToDisplay);
     showManapointsGained(simResult, playerToDisplay);
-    if(!simResult.isDungeon) {
-        showDamageDone(simResult, playerToDisplay);
-        showDamageTaken(simResult, playerToDisplay);
-    }
+    showDamageDone(simResult, playerToDisplay);
+    showDamageTaken(simResult, playerToDisplay);
     window.profit = window.revenue - window.expenses;
     document.getElementById('profitSpan').innerText = window.profit.toLocaleString();
     document.getElementById('profitPreview').innerText = window.profit.toLocaleString();
