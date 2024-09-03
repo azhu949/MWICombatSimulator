@@ -2458,6 +2458,7 @@ function showKills(simResult, playerToDisplay) {
     let newNoRngDropChildren = [];
     let dropRateMultiplier = simResult.dropRateMultiplier;
     let rareFindMultiplier = simResult.rareFindMultiplier;
+    let numberOfPlayers = simResult.numberOfPlayers;
 
     let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
     let playerDeaths = simResult.deaths[playerToDisplay] ?? 0;
@@ -2509,10 +2510,10 @@ function showKills(simResult, playerToDisplay) {
         }
 
         for (let dropObject of dropMap.values()) {
-            dropObject.noRngDropAmount += simResult.deaths[monster] * dropObject.dropRate * ((dropObject.dropMax + dropObject.dropMin) / 2);
+            dropObject.noRngDropAmount += simResult.deaths[monster] * dropObject.dropRate * ((dropObject.dropMax + dropObject.dropMin) / 2) / numberOfPlayers;
         }
         for (let dropObject of rareDropMap.values()) {
-            dropObject.noRngDropAmount += simResult.deaths[monster] * dropObject.dropRate * ((dropObject.dropMax + dropObject.dropMin) / 2);
+            dropObject.noRngDropAmount += simResult.deaths[monster] * dropObject.dropRate * ((dropObject.dropMax + dropObject.dropMin) / 2) / numberOfPlayers;
         }
 
         for (let i = 0; i < simResult.deaths[monster]; i++) {
@@ -2533,9 +2534,9 @@ function showKills(simResult, playerToDisplay) {
         }
         for (let [name, dropObject] of dropMap.entries()) {
             if (totalDropMap.has(name)) {
-                totalDropMap.set(name, totalDropMap.get(name) + dropObject.number);
+                totalDropMap.set(name, Math.round((totalDropMap.get(name) + dropObject.number) / numberOfPlayers));
             } else {
-                totalDropMap.set(name, dropObject.number);
+                totalDropMap.set(name, Math.round(dropObject.number / numberOfPlayers));
             }
             if (noRngTotalDropMap.has(name)) {
                 noRngTotalDropMap.set(name, noRngTotalDropMap.get(name) + dropObject.noRngDropAmount);
@@ -2914,7 +2915,7 @@ function showManapointsGained(simResult, playerToDisplay) {
         newChildren.push(row);
     }
 
-    let ranOutOfManaText = simResult.playerRanOutOfMana ? "Yes" : "No";
+    let ranOutOfManaText = simResult.playerRanOutOfMana[playerToDisplay] ? "Yes" : "No";
     let ranOutOfManaRow = createRow(["col-md-6", "col-md-6 text-end"], ["Ran out of mana", ranOutOfManaText]);
     newChildren.push(ranOutOfManaRow);
 
@@ -3168,12 +3169,27 @@ document.addEventListener('DOMContentLoaded', function() {
         if (player5) player5.parentElement.remove();
     }
 
+    function updatePlayerNames() {
+        const tabLinks = document.querySelectorAll('#playerTab .nav-link');
+        tabLinks.forEach((tabLink, index) => {
+            const label = document.querySelector(`label[for="player${index + 1}"]`);
+            if (label) {
+                label.textContent = tabLink.textContent.trim();
+            }
+        });  
+    }
+
     simDungeonToggle.addEventListener('change', function() {
         if (simDungeonToggle.checked) {
             addPlayers();
         } else {
             removePlayers();
         }
+        updatePlayerNames();
+    });
+
+    document.getElementById('buttonSimulationSetup').addEventListener('click', function() {
+        updatePlayerNames();
     });
 });
 
@@ -3207,6 +3223,7 @@ function initSimulationControls() {
 
         const simDungeonToggle = document.getElementById("simDungeonToggle");
         const checkboxes = document.querySelectorAll('.player-checkbox');
+        selectedPlayers = [];
         checkboxes.forEach(checkbox => {
             if (checkbox.checked) {
                 const playerNumber = parseInt(checkbox.id.replace('player', ''));

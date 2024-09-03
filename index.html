@@ -105,19 +105,19 @@
     <div class="container-fluid">
         <ul class="nav nav-tabs" id="playerTab" role="tablist">
             <li class="nav-item">
-                <a class="nav-link active" id="player1-tab" data-bs-toggle="tab" href="#player1" role="tab" aria-controls="player1" aria-selected="true">Player 1</a>
+                <a contenteditable="true" class="nav-link active" id="player1-tab" data-bs-toggle="tab" href="#player1" role="tab" aria-controls="player1" aria-selected="true">Player 1</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="player2-tab" data-bs-toggle="tab" href="#player2" role="tab" aria-controls="player2" aria-selected="false">Player 2</a>
+                <a contenteditable="true" class="nav-link" id="player2-tab" data-bs-toggle="tab" href="#player2" role="tab" aria-controls="player2" aria-selected="false">Player 2</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="player3-tab" data-bs-toggle="tab" href="#player3" role="tab" aria-controls="player3" aria-selected="false">Player 3</a>
+                <a contenteditable="true" class="nav-link" id="player3-tab" data-bs-toggle="tab" href="#player3" role="tab" aria-controls="player3" aria-selected="false">Player 3</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="player4-tab" data-bs-toggle="tab" href="#player4" role="tab" aria-controls="player4" aria-selected="false">Player 4</a>
+                <a contenteditable="true" class="nav-link" id="player4-tab" data-bs-toggle="tab" href="#player4" role="tab" aria-controls="player4" aria-selected="false">Player 4</a>
             </li>
             <li class="nav-item">
-                <a class="nav-link" id="player5-tab" data-bs-toggle="tab" href="#player5" role="tab" aria-controls="player5" aria-selected="false">Player 5</a>
+                <a contenteditable="true" class="nav-link" id="player5-tab" data-bs-toggle="tab" href="#player5" role="tab" aria-controls="player5" aria-selected="false">Player 5</a>
             </li>
         </ul>
         <div class="row">
@@ -2568,24 +2568,24 @@
                             <div class="col-md-8 pt-1">
                                 <div class="outlined-box">
                                     <h6>Select Players</h6>
-                                    <div class="form-check">
-                                        <input class="form-check-input player-checkbox" type="checkbox" id="player1">
-                                        <label class="form-check-label" for="player1">
-                                            Player 1
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input player-checkbox" type="checkbox" id="player2">
-                                        <label class="form-check-label" for="player2">
-                                            Player 2
-                                        </label>
-                                    </div>
-                                    <div class="form-check">
-                                        <input class="form-check-input player-checkbox" type="checkbox" id="player3">
-                                        <label class="form-check-label" for="player3">
-                                            Player 3
-                                        </label>
-                                    </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input player-checkbox" type="checkbox" id="player1">
+                                            <label class="form-check-label" for="player1">
+                                                Player 1
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input player-checkbox" type="checkbox" id="player2">
+                                            <label class="form-check-label" for="player2">
+                                                Player 2
+                                            </label>
+                                        </div>
+                                        <div class="form-check">
+                                            <input class="form-check-input player-checkbox" type="checkbox" id="player3">
+                                            <label class="form-check-label" for="player3">
+                                                Player 3
+                                            </label>
+                                        </div>
                                 </div>
                             </div>
                             <div class="col-md-4 d-flex align-items-center">
@@ -2733,6 +2733,15 @@
                 <div class="modal-body">
                     <div class="container-fluid">
                         <div class="row">
+                            <div class="col-12 mb-4">
+                                <h6>September 3rd, 2024</h6>
+                                <ul>
+                                    <li>Fixed bug with players being simmed when not selected</li>
+                                    <li>Fixed bug with players incorrectly saying they went out of mana</li>
+                                    <li>You can now rename players locally</li>
+                                    <li>Item drops are now more accurate based on number of players</li>
+                                </ul>
+                            </div>
                             <div class="col-12 mb-4">
                                 <h6>August 10th, 2024</h6>
                                 <ul>

@@ -32,7 +32,7 @@ class CombatSimulator extends EventTarget {
         this.players = players;
         this.zone = zone;
         this.eventQueue = new EventQueue();
-        this.simResult = new SimResult(zone.hrid);
+        this.simResult = new SimResult(zone.hrid, players.length);
         this.allPlayersDead = false;
     }
 
@@ -94,7 +94,7 @@ class CombatSimulator extends EventTarget {
     reset() {
         this.simulationTime = 0;
         this.eventQueue.clear();
-        this.simResult = new SimResult(this.zone.hrid);
+        this.simResult = new SimResult(this.zone.hrid, this.players.length);
     }
 
     async processEvent(event) {
@@ -716,7 +716,7 @@ class CombatSimulator extends EventTarget {
 
         if (source.combatDetails.currentManapoints < ability.manaCost) {
             if (source.isPlayer && oomCheck) {
-                this.simResult.playerRanOutOfMana = true;
+                this.simResult.playerRanOutOfMana[source.hrid] = true;
             }
             return false;
         }

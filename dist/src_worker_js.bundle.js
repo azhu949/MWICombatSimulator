@@ -220,7 +220,7 @@ class CombatSimulator extends EventTarget {
         this.players = players;
         this.zone = zone;
         this.eventQueue = new _events_eventQueue__WEBPACK_IMPORTED_MODULE_8__["default"]();
-        this.simResult = new _simResult__WEBPACK_IMPORTED_MODULE_15__["default"](zone.hrid);
+        this.simResult = new _simResult__WEBPACK_IMPORTED_MODULE_15__["default"](zone.hrid, players.length);
         this.allPlayersDead = false;
     }
 
@@ -282,7 +282,7 @@ class CombatSimulator extends EventTarget {
     reset() {
         this.simulationTime = 0;
         this.eventQueue.clear();
-        this.simResult = new _simResult__WEBPACK_IMPORTED_MODULE_15__["default"](this.zone.hrid);
+        this.simResult = new _simResult__WEBPACK_IMPORTED_MODULE_15__["default"](this.zone.hrid, this.players.length);
     }
 
     async processEvent(event) {
@@ -904,7 +904,7 @@ class CombatSimulator extends EventTarget {
 
         if (source.combatDetails.currentManapoints < ability.manaCost) {
             if (source.isPlayer && oomCheck) {
-                this.simResult.playerRanOutOfMana = true;
+                this.simResult.playerRanOutOfMana[source.hrid] = true;
             }
             return false;
         }
@@ -3170,7 +3170,7 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony export */   "default": () => (__WEBPACK_DEFAULT_EXPORT__)
 /* harmony export */ });
 class SimResult {
-    constructor(zoneName) {
+    constructor(zoneName, numberOfPlayers) {
         this.deaths = {};
         this.experienceGained = {};
         this.encounters = 0;
@@ -3180,7 +3180,12 @@ class SimResult {
         this.manapointsGained = {};
         this.dropRateMultiplier = 1;
         this.rareFindMultiplier = 1;
-        this.playerRanOutOfMana = false;
+        this.playerRanOutOfMana = {"player1" : false,
+                                   "player2" : false,
+                                   "player3" : false,
+                                   "player4" : false,
+                                   "player5" : false
+        };
         this.manaUsed = {};
         this.timeSpentAlive = [];
         this.bossSpawns = [];
@@ -3190,6 +3195,7 @@ class SimResult {
         this.isDungeon = false;
         this.dungeonsCompleted = 0;
         this.maxWaveReached = 0;
+        this.numberOfPlayers = numberOfPlayers;
     }
 
     addDeath(unit) {
