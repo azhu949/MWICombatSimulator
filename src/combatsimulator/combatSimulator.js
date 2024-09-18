@@ -13,6 +13,7 @@ import StunExpirationEvent from "./events/stunExpirationEvent";
 import BlindExpirationEvent from "./events/blindExpirationEvent";
 import SilenceExpirationEvent from "./events/silenceExpirationEvent";
 import CurseExpirationEvent from "./events/curseExpirationEvent";
+import WeakenExpirationEvent from "./events/weakenExpirationEvent";
 import SimResult from "./simResult";
 import AbilityCastEndEvent from "./events/abilityCastEndEvent";
 import AwaitCooldownEvent from "./events/awaitCooldownEvent";
@@ -138,6 +139,9 @@ class CombatSimulator extends EventTarget {
                 break;
             case CurseExpirationEvent.type:
                 this.processCurseExpirationEvent(event);
+                break;
+            case WeakenExpirationEvent.type:
+                this.processWeakenExpirationEvent(event);
                 break;
             case AbilityCastEndEvent.type:
                 this.tryUseAbility(event.source, event.ability);
@@ -276,6 +280,19 @@ class CombatSimulator extends EventTarget {
                 this.eventQueue.addEvent(curseExpirationEvent);
             }
 
+            if (target.combatDetails.combatStats.weaken > 0) {
+                source.isWeakened = true;
+                source.weakenExpireTime = this.simulationTime + 15000000000;
+                let currentWeakenEvent = this.eventQueue.getMatching((event) => event.type == WeakenExpirationEvent.type && event.source == source);
+                let weakenAmount = 0;
+                if (currentWeakenEvent)
+                    weakenAmount = currentWeakenEvent.weakenAmount;
+                this.eventQueue.clearMatching((event) => event.type == WeakenExpirationEvent.type && event.source == source);
+                let weakenExpirationEvent = new WeakenExpirationEvent(source.weakenExpireTime, weakenAmount, source);
+                source.weakenPercentage = weakenExpirationEvent.weakenAmount * 2 / 100;
+                this.eventQueue.addEvent(weakenExpirationEvent);
+            }
+
             if (!mayhem || (mayhem && attackResult.didHit) || (mayhem && i == (aliveTargets.length - 1))) {
                 this.simResult.addAttack(
                     source,
@@ -294,7 +311,7 @@ class CombatSimulator extends EventTarget {
             }
 
             if (attackResult.reflectDamageDone > 0) {
-                this.simResult.addAttack(target, source, "physicalReflect", attackResult.reflectDamageDone);
+                this.simResult.addAttack(target, source, attackResult.thornType, attackResult.reflectDamageDone);
             }
 
             if (mayhem && !attackResult.didHit && i < (aliveTargets.length - 1)) {
@@ -608,6 +625,11 @@ class CombatSimulator extends EventTarget {
         event.source.damageTaken = 0;
     }
 
+    processWeakenExpirationEvent(event) {
+        event.source.isWeakened = false;
+        event.source.weakenPercentage = 0;
+    }
+
     checkTriggers() {
         let triggeredSomething;
 
@@ -731,7 +753,7 @@ class CombatSimulator extends EventTarget {
         }
 
         // console.log("Casting:", ability);
-        
+
         if (source.isPlayer) {
             if (source.abilityManaCosts.has(ability.hrid)) {
                 source.abilityManaCosts.set(ability.hrid, source.abilityManaCosts.get(ability.hrid) + ability.manaCost);
@@ -860,7 +882,7 @@ class CombatSimulator extends EventTarget {
                 }
 
                 if (attackResult.reflectDamageDone > 0) {
-                    this.simResult.addAttack(tempTarget, tempSource, "physicalReflect", attackResult.reflectDamageDone);
+                    this.simResult.addAttack(tempTarget, tempSource, attackResult.thornType, attackResult.reflectDamageDone);
                 }
 
                 for (const [skill, xp] of Object.entries(attackResult.experienceGained.source)) {
@@ -972,6 +994,19 @@ class CombatSimulator extends EventTarget {
                     this.eventQueue.addEvent(curseExpirationEvent);
                 }
 
+                if (target.combatDetails.combatStats.weaken > 0) {
+                    source.isWeakened = true;
+                    source.weakenExpireTime = this.simulationTime + 15000000000;
+                    let currentWeakenEvent = this.eventQueue.getMatching((event) => event.type == WeakenExpirationEvent.type && event.source == source);
+                    let weakenAmount = 0;
+                    if (currentWeakenEvent)
+                        weakenAmount = currentWeakenEvent.weakenAmount;
+                    this.eventQueue.clearMatching((event) => event.type == WeakenExpirationEvent.type && event.source == source);
+                    let weakenExpirationEvent = new WeakenExpirationEvent(source.weakenExpireTime, weakenAmount, source);
+                    source.weakenPercentage = weakenExpirationEvent.weakenAmount * 2 / 100;
+                    this.eventQueue.addEvent(weakenExpirationEvent);
+                }
+
                 this.simResult.addAttack(
                     source,
                     target,
@@ -980,7 +1015,7 @@ class CombatSimulator extends EventTarget {
                 );
 
                 if (attackResult.reflectDamageDone > 0) {
-                    this.simResult.addAttack(target, source, "physicalReflect", attackResult.reflectDamageDone);
+                    this.simResult.addAttack(target, source, attackResult.thornType, attackResult.reflectDamageDone);
                 }
 
                 for (const [skill, xp] of Object.entries(attackResult.experienceGained.source)) {

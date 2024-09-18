@@ -103,7 +103,8 @@ class Player extends CombatUnit {
             "lifeSteal",
             "HPRegen",
             "MPRegen",
-            "physicalReflectPower",
+            "physicalThorns",
+            "elementalThorns",
             "combatDropRate",
             "combatRareFind",
             "combatDropQuantity",
@@ -123,6 +124,7 @@ class Player extends CombatUnit {
             "mayhem",
             "pierce",
             "curse",
+            "weaken",
             "attackSpeed",
             "autoAttackDamage"
         ].forEach((stat) => {

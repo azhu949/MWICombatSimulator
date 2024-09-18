@@ -104,7 +104,61 @@
                 "value": 0
             }
         ],
-        "sortIndex": 49
+        "sortIndex": 50
+    },
+    "/abilities/arcane_reflection": {
+        "hrid": "/abilities/arcane_reflection",
+        "name": "Arcane Reflection",
+        "description": "Gains elemental thorns temporarily",
+        "isSpecialAbility": false,
+        "manaCost": 65,
+        "cooldownDuration": 30000000000,
+        "castDuration": 300000000,
+        "abilityEffects": [
+            {
+                "targetType": "self",
+                "effectType": "/ability_effect_types/buff",
+                "combatStyleHrid": "",
+                "damageType": "",
+                "baseDamageFlat": 0,
+                "baseDamageFlatLevelBonus": 0,
+                "baseDamageRatio": 0,
+                "baseDamageRatioLevelBonus": 0,
+                "bonusAccuracyRatio": 0,
+                "bonusAccuracyRatioLevelBonus": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "pierceChance": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
+                "stunChance": 0,
+                "stunDuration": 0,
+                "spendHpRatio": 0,
+                "buffs": [
+                    {
+                        "uniqueHrid": "/buff_uniques/arcane_reflection",
+                        "typeHrid": "/buff_types/elemental_thorns",
+                        "ratioBoost": 0,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 0.2,
+                        "flatBoostLevelBonus": 0.002,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": 20000000000
+                    }
+                ]
+            }
+        ],
+        "defaultCombatTriggers": [
+            {
+                "dependencyHrid": "/combat_trigger_dependencies/self",
+                "conditionHrid": "/combat_trigger_conditions/arcane_reflection",
+                "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+                "value": 0
+            }
+        ],
+        "sortIndex": 44
     },
     "/abilities/berserk": {
         "hrid": "/abilities/berserk",
@@ -315,7 +369,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 53
+        "sortIndex": 54
     },
     "/abilities/elemental_affinity": {
         "hrid": "/abilities/elemental_affinity",
@@ -550,7 +604,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 48
+        "sortIndex": 49
     },
     "/abilities/fireball": {
         "hrid": "/abilities/fireball",
@@ -749,7 +803,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 51
+        "sortIndex": 52
     },
     "/abilities/flame_blast": {
         "hrid": "/abilities/flame_blast",
@@ -1149,7 +1203,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 46
+        "sortIndex": 47
     },
     "/abilities/invincible": {
         "hrid": "/abilities/invincible",
@@ -1243,7 +1297,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 47
+        "sortIndex": 48
     },
     "/abilities/maim": {
         "hrid": "/abilities/maim",
@@ -1744,7 +1798,7 @@
             }
         ],
         "defaultCombatTriggers": [],
-        "sortIndex": 54
+        "sortIndex": 55
     },
     "/abilities/provoke": {
         "hrid": "/abilities/provoke",
@@ -2066,7 +2120,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 45
+        "sortIndex": 46
     },
     "/abilities/scratch": {
         "hrid": "/abilities/scratch",
@@ -2313,12 +2367,12 @@
                 "value": 0
             }
         ],
-        "sortIndex": 52
+        "sortIndex": 53
     },
     "/abilities/spike_shell": {
         "hrid": "/abilities/spike_shell",
         "name": "Spike Shell",
-        "description": "Gains physical reflect power temporarily",
+        "description": "Gains physical thorns temporarily",
         "isSpecialAbility": false,
         "manaCost": 65,
         "cooldownDuration": 30000000000,
@@ -2348,7 +2402,7 @@
                 "buffs": [
                     {
                         "uniqueHrid": "/buff_uniques/spike_shell",
-                        "typeHrid": "/buff_types/physical_reflect_power",
+                        "typeHrid": "/buff_types/physical_thorns",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
                         "flatBoost": 0.2,
@@ -2576,7 +2630,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 50
+        "sortIndex": 51
     },
     "/abilities/taunt": {
         "hrid": "/abilities/taunt",
@@ -2851,7 +2905,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 44
+        "sortIndex": 45
     },
     "/abilities/water_strike": {
         "hrid": "/abilities/water_strike",

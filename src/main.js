@@ -53,9 +53,9 @@ worker.onmessage = function (event) {
         case "simulation_result":
             progressbar.style.width = "100%";
             progressbar.innerHTML = "100%";
-            console.log("SIM RESULTS: ", event.data.simResult);
+            //console.log("SIM RESULTS: ", event.data.simResult);
             showSimulationResult(event.data.simResult);
-            buttonStartSimulation.disabled = false;
+                        buttonStartSimulation.disabled = false;
             document.getElementById('buttonShowAllSimData').style.display = 'none';
             break;
         case "simulation_progress":
@@ -349,7 +349,8 @@ function updateCombatStatsUI() {
         "lifeSteal",
         "HPRegen",
         "MPRegen",
-        "physicalReflectPower",
+        "physicalThorns",
+        "elementalThorns",
         "criticalRate",
         "criticalDamage",
         "combatExperience",
@@ -364,6 +365,7 @@ function updateCombatStatsUI() {
         "mayhem",
         "pierce",
         "curse",
+        "weaken",
         "attackSpeed"
     ].forEach((stat) => {
         let element = document.getElementById("combatStat_" + stat);
@@ -1636,8 +1638,11 @@ function createDamageTable(resultDiv, damageDone, secondsSimulated) {
             case "damageOverTime":
                 abilityText = "Damage Over Time";
                 break;
-            case "physicalReflect":
-                abilityText = "Physical Reflect";
+            case "physicalThorns":
+                abilityText = "Physical Thorns";
+                break;
+            case "elementalThorns":
+                abilityText = "Elemental Thorns";
                 break;
             default:
                 abilityText = abilityDetailMap[ability].name;
