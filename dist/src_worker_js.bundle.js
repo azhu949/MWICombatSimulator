@@ -1291,6 +1291,7 @@ class CombatSimulator extends EventTarget {
         let reviveTarget = targets.find((unit) => unit && unit.combatDetails.currentHitpoints <= 0);
 
         if (reviveTarget) {
+            this.eventQueue.clearMatching((event) => event.type == _events_playerRespawnEvent__WEBPACK_IMPORTED_MODULE_9__["default"].type && event.hrid == reviveTarget.hrid);
             let amountHealed = _combatUtilities__WEBPACK_IMPORTED_MODULE_0__["default"].processRevive(source, abilityEffect, reviveTarget);
             let experienceGained = _combatUtilities__WEBPACK_IMPORTED_MODULE_0__["default"].calculateHealingExperience(amountHealed);
 
