@@ -141,6 +141,10 @@ class CombatUtilities {
             sourceAccuracyRating *= (1 + abilityEffect.bonusAccuracyRatio);
         }
 
+        if (source.isWeakened) {
+            sourceAccuracyRating = sourceAccuracyRating - (source.weakenPercentage * sourceAccuracyRating);
+        }
+
         hitChance =
             Math.pow(sourceAccuracyRating, 1.4) /
             (Math.pow(sourceAccuracyRating, 1.4) + Math.pow(targetEvasionRating, 1.4));
@@ -167,9 +171,6 @@ class CombatUtilities {
         damageRoll *= (1 + target.combatDetails.combatStats.damageTaken);
         if (!abilityEffect) {
             damageRoll += damageRoll * source.combatDetails.combatStats.autoAttackDamage;
-        }
-        if (source.isWeakened) {
-            damageRoll = damageRoll - (source.weakenPercentage * damageRoll);
         }
         let maxPremitigatedDamage = Math.min(damageRoll, target.combatDetails.currentHitpoints);
 
