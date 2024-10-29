@@ -2485,7 +2485,8 @@ function showKills(simResult, playerToDisplay) {
         let totalDungeonsRow = createRow(["col-md-6", "col-md-6 text-end"], ["Total Dungeons", simResult.dungeonsCompleted]);
         newChildren.push(totalDungeonsRow);
         encountersPerHour = (simResult.dungeonsCompleted / hoursSimulated).toFixed(1);
-        encountersRow = createRow(["col-md-6", "col-md-6 text-end"], ["Dungeons / hr", encountersPerHour]);
+        let averageTime = (hoursSimulated * 60 / simResult.dungeonsCompleted).toFixed(1);
+        encountersRow = createRow(["col-md-6", "col-md-6 text-end"], ["Average Time", averageTime]);
     } else {
         encountersPerHour = (simResult.encounters / hoursSimulated).toFixed(1);
         encountersRow = createRow(["col-md-6", "col-md-6 text-end"], ["Encounters", encountersPerHour]);
