@@ -504,9 +504,9 @@
         "name": "Entangle",
         "description": "Entangles the targeted enemy, dealing damage with chance to stun",
         "isSpecialAbility": false,
-        "manaCost": 30,
-        "cooldownDuration": 12000000000,
-        "castDuration": 2000000000,
+        "manaCost": 10,
+        "cooldownDuration": 0,
+        "castDuration": 3000000000,
         "abilityEffects": [
             {
                 "targetType": "enemy",
@@ -515,8 +515,8 @@
                 "damageType": "/damage_types/nature",
                 "baseDamageFlat": 10,
                 "baseDamageFlatLevelBonus": 0.1,
-                "baseDamageRatio": 0.9,
-                "baseDamageRatioLevelBonus": 0.009,
+                "baseDamageRatio": 0.5,
+                "baseDamageRatioLevelBonus": 0.0025,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
@@ -526,8 +526,8 @@
                 "blindDuration": 0,
                 "silenceChance": 0,
                 "silenceDuration": 0,
-                "stunChance": 0.4,
-                "stunDuration": 3000000000,
+                "stunChance": 0.1,
+                "stunDuration": 2000000000,
                 "spendHpRatio": 0,
                 "buffs": null
             }
