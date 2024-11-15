@@ -20,12 +20,12 @@ class Equipment {
 
     getCombatStat(combatStat) {
         let multiplier = enhancementLevelTotalMultiplierTable[this.enhancementLevel];
-
-        let stat =
-            this.gameItem.equipmentDetail.combatStats[combatStat] +
-            multiplier * this.gameItem.equipmentDetail.combatEnhancementBonuses[combatStat];
-
-        return stat;
+        if(this.gameItem.equipmentDetail.combatStats[combatStat]) {
+            let enhancementBonus = this.gameItem.equipmentDetail.combatEnhancementBonuses[combatStat] || 0;
+            let stat = this.gameItem.equipmentDetail.combatStats[combatStat] + multiplier * enhancementBonus;
+            return stat;
+        }
+        return 0;
     }
 
     getCombatStyle() {

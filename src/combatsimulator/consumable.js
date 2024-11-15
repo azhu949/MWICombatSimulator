@@ -15,6 +15,7 @@ class Consumable {
         this.hitpointRestore = gameConsumable.consumableDetail.hitpointRestore;
         this.manapointRestore = gameConsumable.consumableDetail.manapointRestore;
         this.recoveryDuration = gameConsumable.consumableDetail.recoveryDuration;
+        this.catagoryHrid = gameConsumable.categoryHrid;
 
         this.buffs = [];
         if (gameConsumable.consumableDetail.buffs) {
@@ -53,8 +54,18 @@ class Consumable {
         if (source.isStunned) {
             return false;
         }
+        let consumableHaste;
+        if (this.catagoryHrid.includes("food")) {
+            consumableHaste = source.combatDetails.combatStats.foodHaste
+        } else {
+            consumableHaste = source.combatDetails.combatStats.drinkConcentration;
+        }
+        let cooldownDuration = this.cooldownDuration;
+        if (consumableHaste > 0) {
+            cooldownDuration = cooldownDuration / (1 + consumableHaste);
+        }
 
-        if (this.lastUsed + this.cooldownDuration > currentTime) {
+        if (this.lastUsed + cooldownDuration > currentTime) {
             return false;
         }
 

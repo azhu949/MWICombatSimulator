@@ -693,7 +693,13 @@ class CombatSimulator extends EventTarget {
         }
 
         consumable.lastUsed = this.simulationTime;
-        let cooldownReadyEvent = new CooldownReadyEvent(this.simulationTime + consumable.cooldownDuration);
+        let consumeCooldown = consumable.cooldownDuration;
+        if(source.combatDetails.combatStats.drinkConcentration > 0 && consumable.catagoryHrid.includes("drink")) {
+            consumeCooldown = consumeCooldown / (1 + source.combatDetails.combatStats.drinkConcentration);
+        } else if(source.combatDetails.combatStats.foodHaste > 0 && consumable.catagoryHrid.includes("food")) {
+            consumeCooldown = consumeCooldown / (1 + source.combatDetails.combatStats.foodHaste);
+        }
+        let cooldownReadyEvent = new CooldownReadyEvent(this.simulationTime + consumeCooldown);
         this.eventQueue.addEvent(cooldownReadyEvent);
 
         this.simResult.addConsumableUse(source, consumable);
@@ -722,9 +728,14 @@ class CombatSimulator extends EventTarget {
         }
 
         for (const buff of consumable.buffs) {
-            source.addBuff(buff, this.simulationTime);
-            // console.log("Added buff:", buff);
-            let checkBuffExpirationEvent = new CheckBuffExpirationEvent(this.simulationTime + buff.duration, source);
+            let currentBuff = structuredClone(buff);
+            if(source.combatDetails.combatStats.drinkConcentration > 0 && consumable.catagoryHrid.includes("drink")) {
+                currentBuff.ratioBoost *= (1 + source.combatDetails.combatStats.drinkConcentration);
+                currentBuff.duration = currentBuff.duration / (1 + source.combatDetails.combatStats.drinkConcentration);
+            }
+            source.addBuff(currentBuff, this.simulationTime);
+            // console.log("Added buff:", currentBuff);
+            let checkBuffExpirationEvent = new CheckBuffExpirationEvent(this.simulationTime + currentBuff.duration, source);
             this.eventQueue.addEvent(checkBuffExpirationEvent);
         }
 

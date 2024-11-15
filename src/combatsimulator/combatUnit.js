@@ -120,6 +120,8 @@ class CombatUnit {
             pierce: 0,
             curse: 0,
             weaken: 0,
+            foodHaste: 0,
+            drinkConcentration: 0,
             damageTaken: 0,
             attackSpeed: 0
         },
