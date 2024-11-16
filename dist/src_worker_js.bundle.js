@@ -920,6 +920,7 @@ class CombatSimulator extends EventTarget {
             let currentBuff = structuredClone(buff);
             if(source.combatDetails.combatStats.drinkConcentration > 0 && consumable.catagoryHrid.includes("drink")) {
                 currentBuff.ratioBoost *= (1 + source.combatDetails.combatStats.drinkConcentration);
+                currentBuff.flatBoost *= (1 + source.combatDetails.combatStats.drinkConcentration);
                 currentBuff.duration = currentBuff.duration / (1 + source.combatDetails.combatStats.drinkConcentration);
             }
             source.addBuff(currentBuff, this.simulationTime);
