@@ -426,7 +426,7 @@
                 }
             ]
         },
-        "sortIndex": 15
+        "sortIndex": 16
     },
     "/house_rooms/armory": {
         "hrid": "/house_rooms/armory",
@@ -863,7 +863,7 @@
                 }
             ]
         },
-        "sortIndex": 14
+        "sortIndex": 15
     },
     "/house_rooms/brewery": {
         "hrid": "/house_rooms/brewery",
@@ -1760,7 +1760,7 @@
                 }
             ]
         },
-        "sortIndex": 10
+        "sortIndex": 11
     },
     "/house_rooms/dojo": {
         "hrid": "/house_rooms/dojo",
@@ -2039,7 +2039,7 @@
                 }
             ]
         },
-        "sortIndex": 12
+        "sortIndex": 13
     },
     "/house_rooms/forge": {
         "hrid": "/house_rooms/forge",
@@ -2950,7 +2950,7 @@
                 }
             ]
         },
-        "sortIndex": 13
+        "sortIndex": 14
     },
     "/house_rooms/kitchen": {
         "hrid": "/house_rooms/kitchen",
@@ -3312,28 +3312,18 @@
     "/house_rooms/laboratory": {
         "hrid": "/house_rooms/laboratory",
         "name": "Laboratory",
-        "skillHrid": "/skills/enhancing",
+        "skillHrid": "/skills/alchemy",
         "usableInActionTypeMap": {
-            "/action_types/enhancing": true
+            "/action_types/alchemy": true
         },
         "actionBuffs": [
             {
-                "uniqueHrid": "/buff_uniques/house_action_speed",
-                "typeHrid": "/buff_types/action_speed",
+                "uniqueHrid": "/buff_uniques/house_efficiency",
+                "typeHrid": "/buff_types/efficiency",
                 "ratioBoost": 0,
                 "ratioBoostLevelBonus": 0,
-                "flatBoost": 0.01,
-                "flatBoostLevelBonus": 0.01,
-                "startTime": "0001-01-01T00:00:00Z",
-                "duration": 0
-            },
-            {
-                "uniqueHrid": "/buff_uniques/house_enhancing_success",
-                "typeHrid": "/buff_types/enhancing_success",
-                "ratioBoost": 0.0005,
-                "ratioBoostLevelBonus": 0.0005,
-                "flatBoost": 0,
-                "flatBoostLevelBonus": 0,
+                "flatBoost": 0.015,
+                "flatBoostLevelBonus": 0.015,
                 "startTime": "0001-01-01T00:00:00Z",
                 "duration": 0
             }
@@ -3371,11 +3361,19 @@
                     "count": 75
                 },
                 {
-                    "itemHrid": "/items/swamp_essence",
-                    "count": 750
+                    "itemHrid": "/items/milking_essence",
+                    "count": 100
                 },
                 {
-                    "itemHrid": "/items/cheese_enhancer",
+                    "itemHrid": "/items/foraging_essence",
+                    "count": 100
+                },
+                {
+                    "itemHrid": "/items/woodcutting_essence",
+                    "count": 100
+                },
+                {
+                    "itemHrid": "/items/cheese_alembic",
                     "count": 6
                 }
             ],
@@ -3393,19 +3391,23 @@
                     "count": 150
                 },
                 {
-                    "itemHrid": "/items/swamp_essence",
-                    "count": 1500
+                    "itemHrid": "/items/cheesesmithing_essence",
+                    "count": 200
                 },
                 {
-                    "itemHrid": "/items/aqua_essence",
-                    "count": 1500
+                    "itemHrid": "/items/crafting_essence",
+                    "count": 200
                 },
                 {
-                    "itemHrid": "/items/cheese_enhancer",
+                    "itemHrid": "/items/tailoring_essence",
+                    "count": 200
+                },
+                {
+                    "itemHrid": "/items/cheese_alembic",
                     "count": 9
                 },
                 {
-                    "itemHrid": "/items/verdant_enhancer",
+                    "itemHrid": "/items/verdant_alembic",
                     "count": 9
                 }
             ],
@@ -3423,19 +3425,19 @@
                     "count": 300
                 },
                 {
-                    "itemHrid": "/items/aqua_essence",
-                    "count": 3000
+                    "itemHrid": "/items/cooking_essence",
+                    "count": 500
                 },
                 {
-                    "itemHrid": "/items/jungle_essence",
-                    "count": 3000
+                    "itemHrid": "/items/brewing_essence",
+                    "count": 500
                 },
                 {
-                    "itemHrid": "/items/verdant_enhancer",
+                    "itemHrid": "/items/verdant_alembic",
                     "count": 12
                 },
                 {
-                    "itemHrid": "/items/azure_enhancer",
+                    "itemHrid": "/items/azure_alembic",
                     "count": 12
                 }
             ],
@@ -3453,23 +3455,23 @@
                     "count": 600
                 },
                 {
-                    "itemHrid": "/items/jungle_essence",
-                    "count": 6000
+                    "itemHrid": "/items/alchemy_essence",
+                    "count": 1000
                 },
                 {
-                    "itemHrid": "/items/gobo_essence",
-                    "count": 6000
+                    "itemHrid": "/items/enhancing_essence",
+                    "count": 1000
                 },
                 {
-                    "itemHrid": "/items/azure_enhancer",
+                    "itemHrid": "/items/azure_alembic",
                     "count": 15
                 },
                 {
-                    "itemHrid": "/items/burble_enhancer",
+                    "itemHrid": "/items/burble_alembic",
                     "count": 15
                 },
                 {
-                    "itemHrid": "/items/enhancing_tea",
+                    "itemHrid": "/items/alchemy_tea",
                     "count": 1000
                 }
             ],
@@ -3487,19 +3489,23 @@
                     "count": 1200
                 },
                 {
-                    "itemHrid": "/items/gobo_essence",
-                    "count": 12000
+                    "itemHrid": "/items/milking_essence",
+                    "count": 1600
                 },
                 {
-                    "itemHrid": "/items/eyessence",
-                    "count": 12000
+                    "itemHrid": "/items/foraging_essence",
+                    "count": 1600
                 },
                 {
-                    "itemHrid": "/items/burble_enhancer",
+                    "itemHrid": "/items/woodcutting_essence",
+                    "count": 1600
+                },
+                {
+                    "itemHrid": "/items/burble_alembic",
                     "count": 18
                 },
                 {
-                    "itemHrid": "/items/crimson_enhancer",
+                    "itemHrid": "/items/crimson_alembic",
                     "count": 18
                 }
             ],
@@ -3517,19 +3523,23 @@
                     "count": 2400
                 },
                 {
-                    "itemHrid": "/items/eyessence",
-                    "count": 24000
+                    "itemHrid": "/items/cheesesmithing_essence",
+                    "count": 3200
                 },
                 {
-                    "itemHrid": "/items/sorcerer_essence",
-                    "count": 24000
+                    "itemHrid": "/items/crafting_essence",
+                    "count": 3200
                 },
                 {
-                    "itemHrid": "/items/crimson_enhancer",
+                    "itemHrid": "/items/tailoring_essence",
+                    "count": 3200
+                },
+                {
+                    "itemHrid": "/items/crimson_alembic",
                     "count": 21
                 },
                 {
-                    "itemHrid": "/items/rainbow_enhancer",
+                    "itemHrid": "/items/rainbow_alembic",
                     "count": 21
                 }
             ],
@@ -3547,19 +3557,19 @@
                     "count": 4800
                 },
                 {
-                    "itemHrid": "/items/sorcerer_essence",
-                    "count": 48000
+                    "itemHrid": "/items/cooking_essence",
+                    "count": 8000
                 },
                 {
-                    "itemHrid": "/items/bear_essence",
-                    "count": 48000
+                    "itemHrid": "/items/brewing_essence",
+                    "count": 8000
                 },
                 {
-                    "itemHrid": "/items/rainbow_enhancer",
+                    "itemHrid": "/items/rainbow_alembic",
                     "count": 24
                 },
                 {
-                    "itemHrid": "/items/holy_enhancer",
+                    "itemHrid": "/items/holy_alembic",
                     "count": 24
                 }
             ],
@@ -3573,15 +3583,19 @@
                     "count": 12000
                 },
                 {
-                    "itemHrid": "/items/bear_essence",
-                    "count": 120000
+                    "itemHrid": "/items/alchemy_essence",
+                    "count": 12000
                 },
                 {
-                    "itemHrid": "/items/holy_enhancer",
+                    "itemHrid": "/items/enhancing_essence",
+                    "count": 12000
+                },
+                {
+                    "itemHrid": "/items/holy_alembic",
                     "count": 60
                 },
                 {
-                    "itemHrid": "/items/super_enhancing_tea",
+                    "itemHrid": "/items/super_alchemy_tea",
                     "count": 2000
                 }
             ]
@@ -3969,7 +3983,7 @@
                 }
             ]
         },
-        "sortIndex": 11
+        "sortIndex": 12
     },
     "/house_rooms/log_shed": {
         "hrid": "/house_rooms/log_shed",
@@ -4723,7 +4737,286 @@
                 }
             ]
         },
-        "sortIndex": 16
+        "sortIndex": 17
+    },
+    "/house_rooms/observatory": {
+        "hrid": "/house_rooms/observatory",
+        "name": "Observatory",
+        "skillHrid": "/skills/enhancing",
+        "usableInActionTypeMap": {
+            "/action_types/enhancing": true
+        },
+        "actionBuffs": [
+            {
+                "uniqueHrid": "/buff_uniques/house_action_speed",
+                "typeHrid": "/buff_types/action_speed",
+                "ratioBoost": 0,
+                "ratioBoostLevelBonus": 0,
+                "flatBoost": 0.01,
+                "flatBoostLevelBonus": 0.01,
+                "startTime": "0001-01-01T00:00:00Z",
+                "duration": 0
+            },
+            {
+                "uniqueHrid": "/buff_uniques/house_enhancing_success",
+                "typeHrid": "/buff_types/enhancing_success",
+                "ratioBoost": 0.0005,
+                "ratioBoostLevelBonus": 0.0005,
+                "flatBoost": 0,
+                "flatBoostLevelBonus": 0,
+                "startTime": "0001-01-01T00:00:00Z",
+                "duration": 0
+            }
+        ],
+        "globalBuffs": [
+            {
+                "uniqueHrid": "/buff_uniques/house_experience",
+                "typeHrid": "/buff_types/wisdom",
+                "ratioBoost": 0,
+                "ratioBoostLevelBonus": 0,
+                "flatBoost": 0.0005,
+                "flatBoostLevelBonus": 0.0005,
+                "startTime": "0001-01-01T00:00:00Z",
+                "duration": 0
+            },
+            {
+                "uniqueHrid": "/buff_uniques/house_rare_find",
+                "typeHrid": "/buff_types/rare_find",
+                "ratioBoost": 0,
+                "ratioBoostLevelBonus": 0,
+                "flatBoost": 0.002,
+                "flatBoostLevelBonus": 0.002,
+                "startTime": "0001-01-01T00:00:00Z",
+                "duration": 0
+            }
+        ],
+        "upgradeCostsMap": {
+            "1": [
+                {
+                    "itemHrid": "/items/coin",
+                    "count": 500000
+                },
+                {
+                    "itemHrid": "/items/lumber",
+                    "count": 75
+                },
+                {
+                    "itemHrid": "/items/swamp_essence",
+                    "count": 750
+                },
+                {
+                    "itemHrid": "/items/cheese_enhancer",
+                    "count": 6
+                }
+            ],
+            "2": [
+                {
+                    "itemHrid": "/items/coin",
+                    "count": 2000000
+                },
+                {
+                    "itemHrid": "/items/lumber",
+                    "count": 150
+                },
+                {
+                    "itemHrid": "/items/birch_lumber",
+                    "count": 150
+                },
+                {
+                    "itemHrid": "/items/swamp_essence",
+                    "count": 1500
+                },
+                {
+                    "itemHrid": "/items/aqua_essence",
+                    "count": 1500
+                },
+                {
+                    "itemHrid": "/items/cheese_enhancer",
+                    "count": 9
+                },
+                {
+                    "itemHrid": "/items/verdant_enhancer",
+                    "count": 9
+                }
+            ],
+            "3": [
+                {
+                    "itemHrid": "/items/coin",
+                    "count": 5000000
+                },
+                {
+                    "itemHrid": "/items/birch_lumber",
+                    "count": 300
+                },
+                {
+                    "itemHrid": "/items/cedar_lumber",
+                    "count": 300
+                },
+                {
+                    "itemHrid": "/items/aqua_essence",
+                    "count": 3000
+                },
+                {
+                    "itemHrid": "/items/jungle_essence",
+                    "count": 3000
+                },
+                {
+                    "itemHrid": "/items/verdant_enhancer",
+                    "count": 12
+                },
+                {
+                    "itemHrid": "/items/azure_enhancer",
+                    "count": 12
+                }
+            ],
+            "4": [
+                {
+                    "itemHrid": "/items/coin",
+                    "count": 12000000
+                },
+                {
+                    "itemHrid": "/items/cedar_lumber",
+                    "count": 600
+                },
+                {
+                    "itemHrid": "/items/purpleheart_lumber",
+                    "count": 600
+                },
+                {
+                    "itemHrid": "/items/jungle_essence",
+                    "count": 6000
+                },
+                {
+                    "itemHrid": "/items/gobo_essence",
+                    "count": 6000
+                },
+                {
+                    "itemHrid": "/items/azure_enhancer",
+                    "count": 15
+                },
+                {
+                    "itemHrid": "/items/burble_enhancer",
+                    "count": 15
+                },
+                {
+                    "itemHrid": "/items/enhancing_tea",
+                    "count": 1000
+                }
+            ],
+            "5": [
+                {
+                    "itemHrid": "/items/coin",
+                    "count": 25000000
+                },
+                {
+                    "itemHrid": "/items/purpleheart_lumber",
+                    "count": 1200
+                },
+                {
+                    "itemHrid": "/items/ginkgo_lumber",
+                    "count": 1200
+                },
+                {
+                    "itemHrid": "/items/gobo_essence",
+                    "count": 12000
+                },
+                {
+                    "itemHrid": "/items/eyessence",
+                    "count": 12000
+                },
+                {
+                    "itemHrid": "/items/burble_enhancer",
+                    "count": 18
+                },
+                {
+                    "itemHrid": "/items/crimson_enhancer",
+                    "count": 18
+                }
+            ],
+            "6": [
+                {
+                    "itemHrid": "/items/coin",
+                    "count": 50000000
+                },
+                {
+                    "itemHrid": "/items/ginkgo_lumber",
+                    "count": 2400
+                },
+                {
+                    "itemHrid": "/items/redwood_lumber",
+                    "count": 2400
+                },
+                {
+                    "itemHrid": "/items/eyessence",
+                    "count": 24000
+                },
+                {
+                    "itemHrid": "/items/sorcerer_essence",
+                    "count": 24000
+                },
+                {
+                    "itemHrid": "/items/crimson_enhancer",
+                    "count": 21
+                },
+                {
+                    "itemHrid": "/items/rainbow_enhancer",
+                    "count": 21
+                }
+            ],
+            "7": [
+                {
+                    "itemHrid": "/items/coin",
+                    "count": 90000000
+                },
+                {
+                    "itemHrid": "/items/redwood_lumber",
+                    "count": 4800
+                },
+                {
+                    "itemHrid": "/items/arcane_lumber",
+                    "count": 4800
+                },
+                {
+                    "itemHrid": "/items/sorcerer_essence",
+                    "count": 48000
+                },
+                {
+                    "itemHrid": "/items/bear_essence",
+                    "count": 48000
+                },
+                {
+                    "itemHrid": "/items/rainbow_enhancer",
+                    "count": 24
+                },
+                {
+                    "itemHrid": "/items/holy_enhancer",
+                    "count": 24
+                }
+            ],
+            "8": [
+                {
+                    "itemHrid": "/items/coin",
+                    "count": 160000000
+                },
+                {
+                    "itemHrid": "/items/arcane_lumber",
+                    "count": 12000
+                },
+                {
+                    "itemHrid": "/items/bear_essence",
+                    "count": 120000
+                },
+                {
+                    "itemHrid": "/items/holy_enhancer",
+                    "count": 60
+                },
+                {
+                    "itemHrid": "/items/super_enhancing_tea",
+                    "count": 2000
+                }
+            ]
+        },
+        "sortIndex": 10
     },
     "/house_rooms/sewing_parlor": {
         "hrid": "/house_rooms/sewing_parlor",
