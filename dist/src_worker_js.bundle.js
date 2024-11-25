@@ -3069,6 +3069,69 @@ class Monster extends _combatUnit__WEBPACK_IMPORTED_MODULE_1__["default"] {
                     this.combatDetails.combatStats[key] = value;
                 }
 
+                [
+                    "stabAccuracy",
+                    "slashAccuracy",
+                    "smashAccuracy",
+                    "rangedAccuracy",
+                    "magicAccuracy",
+                    "stabDamage",
+                    "slashDamage",
+                    "smashDamage",
+                    "rangedDamage",
+                    "magicDamage",
+                    "taskDamage",
+                    "physicalAmplify",
+                    "waterAmplify",
+                    "natureAmplify",
+                    "fireAmplify",
+                    "healingAmplify",
+                    "stabEvasion",
+                    "slashEvasion",
+                    "smashEvasion",
+                    "rangedEvasion",
+                    "magicEvasion",
+                    "armor",
+                    "waterResistance",
+                    "natureResistance",
+                    "fireResistance",
+                    "maxHitpoints",
+                    "maxManapoints",
+                    "lifeSteal",
+                    "HPRegen",
+                    "MPRegen",
+                    "physicalThorns",
+                    "elementalThorns",
+                    "combatDropRate",
+                    "combatRareFind",
+                    "combatDropQuantity",
+                    "combatExperience",
+                    "criticalRate",
+                    "criticalDamage",
+                    "armorPenetration",
+                    "waterPenetration",
+                    "naturePenetration",
+                    "firePenetration",
+                    "abilityHaste",
+                    "tenacity",
+                    "manaLeech",
+                    "castSpeed",
+                    "threat",
+                    "parry",
+                    "mayhem",
+                    "pierce",
+                    "curse",
+                    "weaken",
+                    "attackSpeed",
+                    "foodHaste",
+                    "drinkConcentration",
+                    "autoAttackDamage"
+                ].forEach((stat) => {
+                    if (gameMonster.combatDetails.combatStats[stat] == null) {
+                        this.combatDetails.combatStats[stat] = 0;
+                    }
+                });
+
                 this.combatDetails.combatStats.attackInterval = gameMonster.elite2CombatDetails.attackInterval;
                 break;
             case 1:
@@ -3085,6 +3148,69 @@ class Monster extends _combatUnit__WEBPACK_IMPORTED_MODULE_1__["default"] {
                 for (const [key, value] of Object.entries(gameMonster.elite1CombatDetails.combatStats)) {
                     this.combatDetails.combatStats[key] = value;
                 }
+
+                [
+                    "stabAccuracy",
+                    "slashAccuracy",
+                    "smashAccuracy",
+                    "rangedAccuracy",
+                    "magicAccuracy",
+                    "stabDamage",
+                    "slashDamage",
+                    "smashDamage",
+                    "rangedDamage",
+                    "magicDamage",
+                    "taskDamage",
+                    "physicalAmplify",
+                    "waterAmplify",
+                    "natureAmplify",
+                    "fireAmplify",
+                    "healingAmplify",
+                    "stabEvasion",
+                    "slashEvasion",
+                    "smashEvasion",
+                    "rangedEvasion",
+                    "magicEvasion",
+                    "armor",
+                    "waterResistance",
+                    "natureResistance",
+                    "fireResistance",
+                    "maxHitpoints",
+                    "maxManapoints",
+                    "lifeSteal",
+                    "HPRegen",
+                    "MPRegen",
+                    "physicalThorns",
+                    "elementalThorns",
+                    "combatDropRate",
+                    "combatRareFind",
+                    "combatDropQuantity",
+                    "combatExperience",
+                    "criticalRate",
+                    "criticalDamage",
+                    "armorPenetration",
+                    "waterPenetration",
+                    "naturePenetration",
+                    "firePenetration",
+                    "abilityHaste",
+                    "tenacity",
+                    "manaLeech",
+                    "castSpeed",
+                    "threat",
+                    "parry",
+                    "mayhem",
+                    "pierce",
+                    "curse",
+                    "weaken",
+                    "attackSpeed",
+                    "foodHaste",
+                    "drinkConcentration",
+                    "autoAttackDamage"
+                ].forEach((stat) => {
+                    if (gameMonster.combatDetails.combatStats[stat] == null) {
+                        this.combatDetails.combatStats[stat] = 0;
+                    }
+                });
 
                 this.combatDetails.combatStats.attackInterval = gameMonster.elite1CombatDetails.attackInterval;
                 break;
@@ -3103,6 +3229,69 @@ class Monster extends _combatUnit__WEBPACK_IMPORTED_MODULE_1__["default"] {
                     this.combatDetails.combatStats[key] = value;
                 }
 
+                [
+                    "stabAccuracy",
+                    "slashAccuracy",
+                    "smashAccuracy",
+                    "rangedAccuracy",
+                    "magicAccuracy",
+                    "stabDamage",
+                    "slashDamage",
+                    "smashDamage",
+                    "rangedDamage",
+                    "magicDamage",
+                    "taskDamage",
+                    "physicalAmplify",
+                    "waterAmplify",
+                    "natureAmplify",
+                    "fireAmplify",
+                    "healingAmplify",
+                    "stabEvasion",
+                    "slashEvasion",
+                    "smashEvasion",
+                    "rangedEvasion",
+                    "magicEvasion",
+                    "armor",
+                    "waterResistance",
+                    "natureResistance",
+                    "fireResistance",
+                    "maxHitpoints",
+                    "maxManapoints",
+                    "lifeSteal",
+                    "HPRegen",
+                    "MPRegen",
+                    "physicalThorns",
+                    "elementalThorns",
+                    "combatDropRate",
+                    "combatRareFind",
+                    "combatDropQuantity",
+                    "combatExperience",
+                    "criticalRate",
+                    "criticalDamage",
+                    "armorPenetration",
+                    "waterPenetration",
+                    "naturePenetration",
+                    "firePenetration",
+                    "abilityHaste",
+                    "tenacity",
+                    "manaLeech",
+                    "castSpeed",
+                    "threat",
+                    "parry",
+                    "mayhem",
+                    "pierce",
+                    "curse",
+                    "weaken",
+                    "attackSpeed",
+                    "foodHaste",
+                    "drinkConcentration",
+                    "autoAttackDamage"
+                ].forEach((stat) => {
+                    if (gameMonster.combatDetails.combatStats[stat] == null) {
+                        this.combatDetails.combatStats[stat] = 0;
+                    }
+                });
+                
                 this.combatDetails.combatStats.attackInterval = gameMonster.combatDetails.attackInterval;
                 break;
         }
