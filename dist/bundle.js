@@ -4008,7 +4008,7 @@ window.prices;
 
 async function fetchPrices() {
     try {
-        const response = await fetch('http://43.129.194.214:5500/apijson');
+        const response = await fetch('https://ghp.ci/https://raw.githubusercontent.com/holychikenz/MWIApi/main/milkyapi.json');
         if (!response.ok) {
             throw new Error('Error fetching prices');
         }
