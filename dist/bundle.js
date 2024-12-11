@@ -2380,11 +2380,17 @@ function manipulateSimResultsDataForDisplay(simResults){
                 }
                 experiencePerHour[skill] = experiencePerHourValue;
             });
+            showKills(simResult, playerToDisplay);
+            showConsumablesUsed(simResult, playerToDisplay);
+
             let displaySimRow = {"ZoneName": zoneName, "Player": playerToDisplay, "Encounters": encountersPerHour, "Deaths": deathsPerHour,
                                 "TotalExperience": totalExperiencePerHour, "Stamina": experiencePerHour["Stamina"], 
                                 "Intelligence": experiencePerHour["Intelligence"], "Attack": experiencePerHour["Attack"],
                                 "Magic": experiencePerHour["Magic"], "Ranged": experiencePerHour["Ranged"],
-                                "Power": experiencePerHour["Power"], "Defense": experiencePerHour["Defense"]};
+                                "Power": experiencePerHour["Power"], "Defense": experiencePerHour["Defense"], 
+                                "noRngRevenue": window.noRngRevenue.toFixed(2), "expenses": window.expenses.toFixed(2),
+                                "noRngProfit": (window.noRngRevenue - window.expenses).toFixed(2)
+                            };
             displaySimResults.push(displaySimRow);
         }
     }
