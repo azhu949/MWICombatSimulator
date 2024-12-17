@@ -4014,7 +4014,11 @@ window.prices;
 
 async function fetchPrices() {
     try {
-        const response = await fetch('https://gitdl.cn/https://raw.githubusercontent.com/holychikenz/MWIApi/main/milkyapi.json');
+        const response = await fetch('https://gitdl.cn/https://raw.githubusercontent.com/holychikenz/MWIApi/main/milkyapi.json'
+            , {
+                mode: 'no-cors'
+              }
+        );
         if (!response.ok) {
             throw new Error('Error fetching prices');
         }
