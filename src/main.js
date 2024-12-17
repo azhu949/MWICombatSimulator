@@ -2534,7 +2534,7 @@ async function fetchPrices() {
     try {
         const response = await fetch('https://ghproxy.net/https://raw.githubusercontent.com/holychikenz/MWIApi/refs/heads/main/milkyapi.json'
             , {
-                mode: 'no-cors'
+                mode: 'cors'
               }
         );
         if (!response.ok) {
