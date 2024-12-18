@@ -2388,8 +2388,9 @@ function manipulateSimResultsDataForDisplay(simResults){
                                 "Intelligence": experiencePerHour["Intelligence"], "Attack": experiencePerHour["Attack"],
                                 "Magic": experiencePerHour["Magic"], "Ranged": experiencePerHour["Ranged"],
                                 "Power": experiencePerHour["Power"], "Defense": experiencePerHour["Defense"], 
-                                "noRngRevenue": window.noRngRevenue.toFixed(2), "expenses": window.expenses.toFixed(2),
-                                "noRngProfit": (window.noRngRevenue - window.expenses).toFixed(2)
+                                "noRngRevenue": window.noRngRevenue.toLocaleString('en-US', {maximumFractionDigits: 2}),
+                                "expenses": window.expenses.toLocaleString('en-US', {maximumFractionDigits: 2}),
+                                "noRngProfit": (window.noRngRevenue - window.expenses).toLocaleString('en-US', {maximumFractionDigits: 2})
                             };
             displaySimResults.push(displaySimRow);
         }
