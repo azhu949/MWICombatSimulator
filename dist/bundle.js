@@ -3368,7 +3368,7 @@ function startSimulation(selectedPlayers) {
         worker.postMessage(workerMessage);
     } else {
         let zoneHrids = Object.values(_combatsimulator_data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_12__)
-        .filter((action) => action.type == "/action_types/combat" && action.category != "/action_categories/combat/dungeons")
+        .filter((action) => action.type == "/action_types/combat" && action.category != "/action_categories/combat/dungeons" && action.combatZoneInfo.fightInfo.battlesPerBoss === 10)
         .sort((a, b) => a.sortIndex - b.sortIndex)
         .map(action => action.hrid);
         let workerMessage = {
