@@ -2411,6 +2411,32 @@ function updateAllSimsModal(data) {
         
         tableBody.appendChild(row);
     });
+
+    const table = document.getElementById('allZonesData');
+    const rows = table.getElementsByTagName('tr');
+    const numCols = rows[0].cells.length;
+  
+    // 遍历每一列
+    for (let col = 4; col < numCols; col++) {
+      let max = -Infinity;
+      let maxCell = null;
+  
+      // 找到最大值及其单元格
+      for (let row = 1; row < rows.length; row++) {
+        const cell = rows[row].cells[col];
+        const value = parseFloat(cell.textContent);
+        if (value > max) {
+          max = value;
+          maxCell = cell;
+        }
+      }
+  
+      // 将最大值单元格的背景色设置为绿色
+      if (maxCell && max != 0) {
+        maxCell.style.backgroundColor = 'green';
+        maxCell.style.color = 'white'; // 设置文字颜色为白色以提高可读性
+      }
+    }
 }
 
 let currentSortColumn = null;
