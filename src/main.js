@@ -899,14 +899,19 @@ function manipulateSimResultsDataForDisplay(simResults){
                 experiencePerHour[skill] = experiencePerHourValue;
             });
             getDropProfit(simResult, playerToDisplay);
-            let profit = simResult["profit"];
+            let noRngRevenue = simResult["noRngRevenue"];
             let noRngProfit = simResult["noRngProfit"];
+            let expenses = simResult["expenses"];
 
             let displaySimRow = {"ZoneName": zoneName, "Player": playerToDisplay, "Encounters": encountersPerHour, "Deaths": deathsPerHour,
                                 "TotalExperience": totalExperiencePerHour, "Stamina": experiencePerHour["Stamina"], 
                                 "Intelligence": experiencePerHour["Intelligence"], "Attack": experiencePerHour["Attack"],
                                 "Magic": experiencePerHour["Magic"], "Ranged": experiencePerHour["Ranged"],
-                                "Power": experiencePerHour["Power"], "Defense": experiencePerHour["Defense"], "Profit": profit, "NoRNGProfit": noRngProfit};
+                                "Power": experiencePerHour["Power"], "Defense": experiencePerHour["Defense"], 
+                                "noRngRevenue": noRngRevenue,
+                                "expenses": expenses,
+                                "noRngProfit": noRngProfit
+                            };
             displaySimResults.push(displaySimRow);
         }
     }
@@ -990,34 +995,7 @@ function getDropProfit(simResult, playerToDisplay) {
             }
         }
     }
-    let total = 0;
-    for (let [name, dropAmount] of totalDropMap.entries()) {
-        let price = -1;
-        let revenueSetting = document.getElementById('selectPrices_drops').value;
-        if (window.prices) {
-            let item = window.prices[name];
-            if (item) {
-                if (revenueSetting == 'bid') {
-                    if (item['bid'] !== -1) {
-                        price = item['bid'];
-                    } else if (item['ask'] !== -1) {
-                        price = item['ask'];
-                    }
-                } else if (revenueSetting == 'ask') {
-                    if (item['ask'] !== -1) {
-                        price = item['ask'];
-                    } else if (item['bid'] !== -1) {
-                        price = item['bid'];
-                    }
-                }
-                if (price == -1) {
-                    price = item['vendor'];
-                }
-            }
-        }
-        total += price * dropAmount;
-    }
-
+    
     let noRngTotal = 0;
     for (let [name, dropAmount] of noRngTotalDropMap.entries()) {
         let price = -1;
@@ -1082,8 +1060,9 @@ function getDropProfit(simResult, playerToDisplay) {
         expenses += price * amount;
     }
 
-    simResult["profit"] = (total - expenses).toLocaleString();
-    simResult["noRngProfit"] = (noRngTotal - expenses).toLocaleString();
+    simResult["noRngRevenue"] = (noRngTotal).toLocaleString('en-US', {minimumFractionDigits: 2,maximumFractionDigits: 2});
+    simResult["expenses"] = (expenses).toLocaleString('en-US', {minimumFractionDigits: 2,maximumFractionDigits: 2});
+    simResult["noRngProfit"] = (noRngTotal - expenses).toLocaleString('en-US', {minimumFractionDigits: 2,maximumFractionDigits: 2});
 }
 
 function updateAllSimsModal(data) {
@@ -1100,6 +1079,32 @@ function updateAllSimsModal(data) {
         
         tableBody.appendChild(row);
     });
+
+    const table = document.getElementById('allZonesData');
+    const rows = table.getElementsByTagName('tr');
+    const numCols = rows[0].cells.length;
+  
+    // 遍历每一列
+    for (let col = 4; col < numCols; col++) {
+      let max = -Infinity;
+      let maxCell = null;
+  
+      // 找到最大值及其单元格
+      for (let row = 1; row < rows.length; row++) {
+        const cell = rows[row].cells[col];
+        const value = parseFloat(cell.textContent.replace(/,/g, ''));
+        if (value > max) {
+          max = value;
+          maxCell = cell;
+        }
+      }
+  
+      // 将最大值单元格的背景色设置为绿色
+      if (maxCell && max != 0) {
+        maxCell.style.backgroundColor = 'green';
+        maxCell.style.color = 'white'; // 设置文字颜色为白色以提高可读性
+      }
+    }
 }
 
 let currentSortColumn = null;
@@ -1197,7 +1202,8 @@ function showKills(simResult, playerToDisplay) {
         let totalDungeonsRow = createRow(["col-md-6", "col-md-6 text-end"], ["Total Dungeons", simResult.dungeonsCompleted]);
         newChildren.push(totalDungeonsRow);
         encountersPerHour = (simResult.dungeonsCompleted / hoursSimulated).toFixed(1);
-        encountersRow = createRow(["col-md-6", "col-md-6 text-end"], ["Dungeons / hr", encountersPerHour]);
+        let averageTime = (hoursSimulated * 60 / simResult.dungeonsCompleted).toFixed(1);
+        encountersRow = createRow(["col-md-6", "col-md-6 text-end"], ["Average Time", averageTime]);
     } else {
         encountersPerHour = (simResult.encounters / hoursSimulated).toFixed(1);
         encountersRow = createRow(["col-md-6", "col-md-6 text-end"], ["Encounters", encountersPerHour]);
@@ -2037,7 +2043,7 @@ function startSimulation(selectedPlayers) {
         worker.postMessage(workerMessage);
     } else {
         let zoneHrids = Object.values(actionDetailMap)
-        .filter((action) => action.type == "/action_types/combat" && action.category != "/action_categories/combat/dungeons")
+        .filter((action) => action.type == "/action_types/combat" && action.category != "/action_categories/combat/dungeons" && action.combatZoneInfo.fightInfo.battlesPerBoss === 10)
         .sort((a, b) => a.sortIndex - b.sortIndex)
         .map(action => action.hrid);
         let workerMessage = {
@@ -2709,7 +2715,11 @@ window.prices;
 
 async function fetchPrices() {
     try {
-        const response = await fetch('https://raw.githubusercontent.com/holychikenz/MWIApi/main/milkyapi.json');
+        const response = await fetch('https://ghproxy.net/https://raw.githubusercontent.com/holychikenz/MWIApi/refs/heads/main/milkyapi.json'
+            , {
+                mode: 'cors'
+              }
+        );
         if (!response.ok) {
             throw new Error('Error fetching prices');
         }
