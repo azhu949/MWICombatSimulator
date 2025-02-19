@@ -2723,6 +2723,10 @@ async function fetchPrices() {
         if (!response.ok) {
             throw new Error('Error fetching prices');
         }
+
+        let btn = document.querySelector('#buttonGetPrices');
+        btn.style.backgroundColor = 'green';
+
         const pricesJson = await response.json();
         window.prices = pricesJson['market'];
         window.prices["Coin"] = { "ask": 1, "bid": 1, "vendor": 1 }
