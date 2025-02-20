@@ -4203,6 +4203,7 @@ async function fetchPrices() {
               }
         );
         if (!response.ok) {
+            console.log('Error fetching prices');
             throw new Error('Error fetching prices');
         }
 
