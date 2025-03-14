@@ -622,7 +622,7 @@
                         <!-- #region Simulation Controls -->
                         <div class="row mb-2 pt-3">
                             <div class="col-md-auto">
-                                <button id="buttonSimulationSetup" class="btn btn-primary" type="button"
+                                <button id="buttonSimulationSetup" class="btn btn-primary" type="button" data-i18n="common:controls.startSimulation"
                                 data-bs-toggle="modal" data-bs-target="#startSimulationModal">
                                     Start Simulation
                                 </button>
@@ -648,7 +648,9 @@
                                 </button>
                             </div>
                             <div class="col align-self-center pt-1">
+                                <div data-i18n="common:controls.darkMode">
                                 Dark Mode:
+                                </div>
                                 <label class="switch">
                                     <input type="checkbox" id="darkModeToggle">
                                     <span class="slider round"></span>
@@ -2565,33 +2567,33 @@
                     <div class="container-fluid">
                         <div id="simulationSettings"></div>
                         <div class="row">
-                            <label for="selectZone" class="col-md-3 col-form-label">Zone</label>
+                            <label for="selectZone" class="col-md-3 col-form-label"  data-i18n="party.selectZone">Zone</label>
                             <div class="col-md">
                                 <select id="selectZone" class="form-select">
                                 </select>
                             </div>
                         </div>
                         <div class="row">
-                            <label for="selectDungeon" class="col-md-3 col-form-label">Dungeon</label>
+                            <label for="selectDungeon" class="col-md-3 col-form-label" data-i18n="shopCategoryNames./shop_categories/dungeon">Dungeon</label>
                             <div class="col-md">
                                 <select id="selectDungeon" class="form-select">
                                 </select>
                             </div>
                         </div>
                         <div class="row">
-                            <label for="inputSimulationTime" class="col-md-3 col-form-label">Duration</label>
+                            <label for="inputSimulationTime" class="col-md-3 col-form-label" data-i18n="skillActionDetail.duration">Duration</label>
                             <div class="col-md">
                                 <div class="input-group">
                                     <input type="number" id="inputSimulationTime" class="form-control" value="100"
                                         min="1" max="2500" required />
-                                    <span class="input-group-text">hours</span>
+                                    <span class="input-group-text" data-i18n="settingsPanel.hours">hours</span>
                                 </div>
                             </div>
                         </div>
                         <div class="row">
                             <div class="col-md-6 pt-1">
                                 <div class="outlined-box">
-                                    <h6>Select Players</h6>
+                                    <h6 data-i18n="common:selectPlayer">Select Players</h6>
                                         <div class="form-check">
                                             <input class="form-check-input player-checkbox" type="checkbox" id="player1">
                                             <label class="form-check-label" for="player1">
@@ -2615,14 +2617,14 @@
                             <div class="col-md-6 pt-1">
                                 <div class="outlined-box">
                                     <div class="checkbox-container">
-                                        Sim All Zones:
+                                        <span data-i18n="common:simAllZones">Sim All Zones</span>:
                                         <label class="switch">
                                             <input type="checkbox" id="simAllToggle">
                                             <span class="slider round"></span>
                                         </label>
                                     </div>
                                     <div class="checkbox-container">
-                                        Sim Dungeon:
+                                        <span data-i18n="common:simDungeon">Sim Dungeon</span>:
                                         <label class="switch">
                                             <input type="checkbox" id="simDungeonToggle">
                                             <span class="slider round"></span>

@@ -1537,6 +1537,7 @@ worker.onmessage = function (event) {
             progressbar.innerHTML = "100%";
             //console.log("SIM RESULTS: ", event.data.simResult);
             showSimulationResult(event.data.simResult);
+            updateContent();
                         buttonStartSimulation.disabled = false;
             document.getElementById('buttonShowAllSimData').style.display = 'none';
             break;
@@ -1552,6 +1553,7 @@ worker.onmessage = function (event) {
             progressbar.style.width = "100%";
             progressbar.innerHTML = "100%"; 
             showAllSimulationResults(event.data.simResults); 
+            updateContent();
             buttonStartSimulation.disabled = false;
             document.getElementById('buttonShowAllSimData').style.display = 'block';
             break;
