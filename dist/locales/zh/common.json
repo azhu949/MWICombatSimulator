@@ -75,5 +75,6 @@
     "zoneName": "区域名称",
     "immportexportSet": "导入/导出方案",
     "groupCombat": "组队",
-    "solo": "单人"
+    "solo": "单人",
+    "or": "或"
 }

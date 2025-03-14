@@ -75,5 +75,6 @@
     "zoneName": "Zone Name",
     "immportexportSet": "Import/Export Set",
     "groupCombat": "Group Combat",
-    "solo": "Solo"
+    "solo": "Solo",
+    "or": "OR"
 }
