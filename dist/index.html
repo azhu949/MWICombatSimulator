@@ -641,13 +641,13 @@
                                     Equipment Sets
                                 </button>
                             </div>
-                            <div class="col align-self-center">
+                            <div class="col-md-auto">
                                 <button id="buttonImportExport" class="btn btn-primary" type="button"
                                     data-bs-toggle="modal" data-bs-target="#importExportModal" data-i18n="common:controls.importExport">
                                     Import/Export
                                 </button>
                             </div>
-                            <div class="col align-self-center pt-1">
+                            <div class="col-md-auto">
                                 <div data-i18n="common:controls.darkMode">
                                 Dark Mode:
                                 </div>
@@ -658,9 +658,9 @@
                             </div>
                         </div>
                         <div class="row mb-2 pt-3">
-                            <div class="col align-self-center">
+                            <div class="col-md-auto">
                                 <button id="buttonShowAllSimData" class="btn btn-primary" type="button"
-                                    data-bs-toggle="modal" data-bs-target="#allSimsModal" style="display: none;">
+                                    data-bs-toggle="modal" data-bs-target="#allSimsModal" style="display: none;" data-i18n="common:allZonesData">
                                     All Zones Data
                                 </button>
                             </div>
@@ -2560,7 +2560,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Simulation Settings</h5>
+                    <h5 class="modal-title" data-i18n="common:simulationSettings">Simulation Settings</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -2637,8 +2637,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="buttonStartSimulation" data-bs-dismiss="modal">Start Simulation</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="buttonStartSimulation" data-bs-dismiss="modal" data-i18n="common:controls.startSimulation">Start Simulation</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="common:controls.close">Close</button>
                 </div>
             </div>
         </div>
@@ -2649,9 +2649,9 @@
         <div class="modal-dialog" style="width: 100%; max-width: 1800px;">
             <div class="modal-content">
                 <div class="modal-header" style="display: flex; justify-content: space-between; align-items: center;">
-                    <h5 class="modal-title" style="margin: 0;">Simulate All Zones Results</h5>
+                    <h5 class="modal-title" style="margin: 0;" data-i18n="common:simulateAllZonesResults">Simulate All Zones Results</h5>
                     <div style="display: flex; gap: 10px;">
-                        <button type="button" class="btn btn-primary" id="buttonExportResults" data-bs-dismiss="modal">Export To CSV</button>
+                        <button type="button" class="btn btn-primary" id="buttonExportResults" data-bs-dismiss="modal" data-i18n="common:exportToCSV">Export To CSV</button>
                         <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                     </div>
                 </div>
@@ -2659,21 +2659,21 @@
                     <table id="allZonesData">
                         <thead>
                             <tr>
-                                <th>Zone Name</th>
-                                <th>Player</th>
-                                <th>Encounters</th>
-                                <th>Deaths</th>
-                                <th>Total Experience</th>
-                                <th>Stamina</th>
-                                <th>Intelligence</th>
-                                <th>Attack</th>
-                                <th>Magic</th>
-                                <th>Ranged</th>
-                                <th>Power</th>
-                                <th>Defense</th>
-                                <th>noRngRevenue</th>
-                                <th>expenses</th>
-                                <th>noRngProfit</th>
+                                <th data-i18n="common:zoneName">Zone Name</th>
+                                <th data-i18n="common:player">Player</th>
+                                <th data-i18n="common:simulationResults.encounters">Encounters</th>
+                                <th data-i18n="common:simulationResults.deathPerHour">Deaths</th>
+                                <th data-i18n="common:simulationResults.totalExperience">Total Experience</th>
+                                <th data-i18n="skillNames./skills/stamina">Stamina</th>
+                                <th data-i18n="skillNames./skills/intelligence">Intelligence</th>
+                                <th data-i18n="skillNames./skills/attack">Attack</th>
+                                <th data-i18n="skillNames./skills/magic">Magic</th>
+                                <th data-i18n="skillNames./skills/ranged">Ranged</th>
+                                <th data-i18n="skillNames./skills/power">Power</th>
+                                <th data-i18n="skillNames./skills/defense">Defense</th>
+                                <th data-i18n="common:noRNGRevenue">noRngRevenue</th>
+                                <th data-i18n="common:expense">expenses</th>
+                                <th data-i18n="common:noRNGProfit">noRngProfit</th>
                             </tr>
                         </thead>
                         <tbody>
@@ -2682,8 +2682,8 @@
                     </table>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-primary" id="buttonExportResults" data-bs-dismiss="modal">Export To CSV</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" id="buttonExportResults" data-bs-dismiss="modal" data-i18n="common:exportToCSV">Export To CSV</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="common:controls.close">Close</button>
                 </div>
             </div>
         </div>
@@ -2703,7 +2703,7 @@
                 </div>
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" id="buttonCopyError">Copy to clipboard</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="common:controls.close">Close</button>
                 </div>
             </div>
         </div>
@@ -2714,17 +2714,17 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Import / Export Set</h5>
+                    <h5 class="modal-title" data-i18n="common:immportexportSet">Import / Export Set</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <!-- Tabs Navigation -->
                     <ul class="nav nav-tabs" id="importTab" role="tablist">
                         <li class="nav-item" role="presentation">
-                            <a class="nav-link active" id="group-combat-tab" data-bs-toggle="tab" href="#group-combat" role="tab" aria-controls="group-combat" aria-selected="true">Group Combat</a>
+                            <a class="nav-link active" id="group-combat-tab" data-bs-toggle="tab" href="#group-combat" role="tab" aria-controls="group-combat" aria-selected="true" data-i18n="common:groupCombat">Group Combat</a>
                         </li>
                         <li class="nav-item" role="presentation">
-                            <a class="nav-link" id="solo-tab" data-bs-toggle="tab" href="#solo" role="tab" aria-controls="solo" aria-selected="false">Solo</a>
+                            <a class="nav-link" id="solo-tab" data-bs-toggle="tab" href="#solo" role="tab" aria-controls="solo" aria-selected="false" data-i18n="common:solo">Solo</a>
                         </li>
                     </ul>
                     <!-- Tabs Content -->
@@ -2748,7 +2748,7 @@
                 <div class="modal-footer">
                     <button type="button" class="btn btn-primary" id="buttonImportSet">Import</button>
                     <button type="button" class="btn btn-primary" id="buttonExportSet">Export Group/Solo</button>
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="common:controls.close">Close</button>
                 </div>
             </div>
         </div>
@@ -3109,7 +3109,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="common:controls.close">Close</button>
                 </div>
             </div>
         </div>
@@ -3175,7 +3175,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="common:controls.close">Close</button>
                 </div>
             </div>
         </div>
@@ -3195,7 +3195,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="common:controls.close">Close</button>
                 </div>
             </div>
         </div>

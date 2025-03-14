@@ -62,9 +62,19 @@
         "damageTaken": "承受伤害",
         "damageOverTime": "持续伤害",
         "source": "来源",
-        "hitChance": "命中率"
+        "hitChance": "命中率",
+        "totalExperience": "总经验"
     },
     "selectPlayer": "选择玩家",
-    "simAllZones": "批量所有区域",
-    "simDungeon": "模拟地下城"
+    "simAllZones": "模拟所有星球",
+    "simDungeon": "模拟地下城",
+    "simulationSettings": "模拟配置",
+    "allZonesData": "批量模拟数据",
+    "simulateAllZonesResults" : "批量模拟结果",
+    "exportToCSV" : "导出为CSV",
+    "zoneName": "区域名称",
+    "immportexportSet": "导入/导出配置",
+    "groupCombat": "组队",
+    "solo": "单人",
+    "or": "或"
 }

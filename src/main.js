@@ -904,7 +904,7 @@ function manipulateSimResultsDataForDisplay(simResults){
             let playerToDisplay = "player" + selectedPlayers[j].toString();
             let simResult = simResults[i];
             let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
-            let zoneName = simResult.zoneName.slice(16).replaceAll("_", " ");
+            let zoneName = simResult.zoneName;
             let encountersPerHour = (simResult.encounters / hoursSimulated).toFixed(1);
             let playerDeaths = simResult.deaths[playerToDisplay] ?? 0;
             let deathsPerHour = (playerDeaths / hoursSimulated).toFixed(2);
@@ -1099,6 +1099,9 @@ function updateAllSimsModal(data) {
         Object.keys(item).forEach(key => {
             const cell = document.createElement('td');
             cell.textContent = item[key];
+            if (key === 'ZoneName') {
+                cell.setAttribute("data-i18n", "actionNames."+item[key]);
+            }
             row.appendChild(cell);
         });
         
@@ -2133,8 +2136,6 @@ function initEquipmentSetsModal() {
 function equipmentSetsModalShownHandler() {
     resetNewEquipmentSetControls();
     updateEquipmentSetList();
-
-    updateContent();
 }
 
 function resetNewEquipmentSetControls() {
@@ -2184,6 +2185,8 @@ function updateEquipmentSetList() {
 
     let equipmentSetList = document.getElementById("equipmentSetList");
     equipmentSetList.replaceChildren(...newChildren);
+
+    updateContent();
 }
 
 function equipmentSetNameChangedHandler(event) {
@@ -2595,10 +2598,15 @@ function doSoloImport() {
         }
     }
 
-    let zoneSelect = document.getElementById("selectZone");
-    zoneSelect.value = importSet["zone"];
-    let simulationDuration = document.getElementById("inputSimulationTime");
-    simulationDuration.value = importSet["simulationTime"];
+    if ("zone" in importSet) {
+        let zoneSelect = document.getElementById("selectZone");
+        zoneSelect.value = importSet["zone"];
+    }
+        
+    if ("simulationTime" in importSet) {
+        let simulationDuration = document.getElementById("inputSimulationTime");
+        simulationDuration.value = importSet["simulationTime"];
+    }
 }
 
 function savePreviousPlayer(playerId) {

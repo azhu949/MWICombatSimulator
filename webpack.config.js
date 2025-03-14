@@ -22,6 +22,8 @@ module.exports = {
     new CopyWebpackPlugin({
       patterns: [
         { from: path.resolve(__dirname, 'index.html'), to: 'index.html' }, // Correctly copy to dist/index.html
+        { from: path.resolve(__dirname, 'js'), to: 'js' },
+        { from: path.resolve(__dirname, 'locales'), to: 'locales' }
       ],
     }),
   ],

@@ -62,9 +62,19 @@
         "damageTaken": "Damage Taken",
         "damageOverTime": "damageOverTime",
         "source": "Source",
-        "hitChance": "Hitchance"
+        "hitChance": "Hitchance",
+        "totalExperience": "Total Experience"
     },
     "selectPlayer": "SelectPlayer",
     "simAllZones": "Sim All Zones",
-    "simDungeon": "Sim Dungeon"
+    "simDungeon": "Sim Dungeon",
+    "simulationSettings": "Simulation Settings",
+    "allZonesData": "All Zones Data",
+    "simulateAllZonesResults" : "Simulate All Zones Results",
+    "exportToCSV" : "Export To CSV",
+    "zoneName": "Zone Name",
+    "immportexportSet": "Import/Export Set",
+    "groupCombat": "Group Combat",
+    "solo": "Solo",
+    "or": "OR"
 }
