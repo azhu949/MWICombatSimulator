@@ -1,5 +1,5 @@
 import itemDetailMap from "./data/itemDetailMap.json";
-import enhancementLevelTotalMultiplierTable from "./data/enhancementLevelTotalMultiplierTable.json";
+import enhancementLevelTotalMultiplierTable from "./data/enhancementLevelTotalBonusMultiplierTable.json";
 
 class Equipment {
     constructor(hrid, enhancementLevel) {

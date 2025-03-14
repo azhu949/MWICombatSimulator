@@ -353,14 +353,14 @@
     },
     "/combat_trigger_conditions/invincible_fire_resistance": {
         "hrid": "/combat_trigger_conditions/invincible_fire_resistance",
-        "name": "Invincible (Tenacity)",
+        "name": "Invincible (Fire Resistance)",
         "isSingleTarget": true,
         "isMultiTarget": false,
         "allowedComparatorHrids": [
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 47
+        "sortIndex": 46
     },
     "/combat_trigger_conditions/invincible_nature_resistance": {
         "hrid": "/combat_trigger_conditions/invincible_nature_resistance",
@@ -372,6 +372,17 @@
             "/combat_trigger_comparators/is_inactive"
         ],
         "sortIndex": 45
+    },
+    "/combat_trigger_conditions/invincible_tenacity": {
+        "hrid": "/combat_trigger_conditions/invincible_tenacity",
+        "name": "Invincible (Tenacity)",
+        "isSingleTarget": true,
+        "isMultiTarget": false,
+        "allowedComparatorHrids": [
+            "/combat_trigger_comparators/is_active",
+            "/combat_trigger_comparators/is_inactive"
+        ],
+        "sortIndex": 47
     },
     "/combat_trigger_conditions/invincible_water_resistance": {
         "hrid": "/combat_trigger_conditions/invincible_water_resistance",

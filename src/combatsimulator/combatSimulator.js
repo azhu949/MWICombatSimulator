@@ -589,12 +589,12 @@ class CombatSimulator extends EventTarget {
                 continue;
             }
 
-            let hitpointRegen = Math.floor(unit.combatDetails.maxHitpoints * unit.combatDetails.combatStats.HPRegen);
+            let hitpointRegen = Math.floor(unit.combatDetails.maxHitpoints * unit.combatDetails.combatStats.hpRegenPer10);
             let hitpointsAdded = unit.addHitpoints(hitpointRegen);
             this.simResult.addHitpointsGained(unit, "regen", hitpointsAdded);
             // console.log("Added hitpoints:", hitpointsAdded);
 
-            let manapointRegen = Math.floor(unit.combatDetails.maxManapoints * unit.combatDetails.combatStats.MPRegen);
+            let manapointRegen = Math.floor(unit.combatDetails.maxManapoints * unit.combatDetails.combatStats.mpRegenPer10);
             let manapointsAdded = unit.addManapoints(manapointRegen);
             this.simResult.addManapointsGained(unit, "regen", manapointsAdded);
             // console.log("Added manapoints:", manapointsAdded);
@@ -837,7 +837,7 @@ class CombatSimulator extends EventTarget {
     }
 
     processAbilityBuffEffect(source, ability, abilityEffect) {
-        if (abilityEffect.targetType == "all allies") {
+        if (abilityEffect.targetType == "allAllies") {
             let targets = source.isPlayer ? this.players : this.enemies;
             for (const target of targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0)) {
                 for (const buff of abilityEffect.buffs) {
@@ -865,7 +865,7 @@ class CombatSimulator extends EventTarget {
         let targets;
         switch (abilityEffect.targetType) {
             case "enemy":
-            case "all enemies":
+            case "allEnemies":
                 targets = source.isPlayer ? this.enemies : this.players;
                 break;
             default:
@@ -1060,7 +1060,7 @@ class CombatSimulator extends EventTarget {
 
     processAbilityHealEffect(source, ability, abilityEffect) {
 
-        if (abilityEffect.targetType == "all allies") {
+        if (abilityEffect.targetType == "allAllies") {
             let targets = source.isPlayer ? this.players : this.enemies;
             for (const target of targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0)) {
                 let amountHealed = CombatUtilities.processHeal(source, abilityEffect, target);
@@ -1072,7 +1072,7 @@ class CombatSimulator extends EventTarget {
             return;
         }
 
-        if (abilityEffect.targetType == "lowest HP ally") {
+        if (abilityEffect.targetType == "lowestHpAlly") {
             let targets = source.isPlayer ? this.players : this.enemies;
             let healTarget;
             for (const target of targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0)) {
@@ -1107,7 +1107,7 @@ class CombatSimulator extends EventTarget {
     }
 
     processAbilityReviveEffect(source, ability, abilityEffect) {
-        if (abilityEffect.targetType != "a dead ally") {
+        if (abilityEffect.targetType != "deadAlly") {
             throw new Error("Unsupported target type for revive ability effect: " + ability.hrid);
         }
 

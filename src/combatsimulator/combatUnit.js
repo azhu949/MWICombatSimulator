@@ -100,8 +100,8 @@ class CombatUnit {
             natureResistance: 0,
             fireResistance: 0,
             lifeSteal: 0,
-            HPRegen: 0.01,
-            MPRegen: 0.01,
+            hpRegenPer10: 0.01,
+            mpRegenPer10: 0.01,
             combatDropRate: 0,
             combatDropQuantity: 0,
             combatRareFind: 0,
@@ -134,15 +134,15 @@ class CombatUnit {
 
     updateCombatDetails() {
         if (this.isPlayer) {
-            if (this.combatDetails.combatStats.HPRegen === 0) {
-                this.combatDetails.combatStats.HPRegen = 0.01;
+            if (this.combatDetails.combatStats.hpRegenPer10 === 0) {
+                this.combatDetails.combatStats.hpRegenPer10 = 0.01;
             } else {
-                this.combatDetails.combatStats.HPRegen = 0.01 + this.combatDetails.combatStats.HPRegen;
+                this.combatDetails.combatStats.hpRegenPer10 = 0.01 + this.combatDetails.combatStats.hpRegenPer10;
             }
-            if (this.combatDetails.combatStats.MPRegen === 0) {
-                this.combatDetails.combatStats.MPRegen = 0.01;
+            if (this.combatDetails.combatStats.mpRegenPer10 === 0) {
+                this.combatDetails.combatStats.mpRegenPer10 = 0.01;
             } else {
-                this.combatDetails.combatStats.MPRegen = 0.01 + this.combatDetails.combatStats.MPRegen;
+                this.combatDetails.combatStats.mpRegenPer10 = 0.01 + this.combatDetails.combatStats.mpRegenPer10;
             }
         }
 
@@ -268,12 +268,12 @@ class CombatUnit {
         }
 
         let hpRegenBoosts = this.getBuffBoost("/buff_types/hp_regen");
-        this.combatDetails.combatStats.HPRegen += this.combatDetails.combatStats.HPRegen * hpRegenBoosts.ratioBoost;
-        this.combatDetails.combatStats.HPRegen += hpRegenBoosts.flatBoost;
+        this.combatDetails.combatStats.hpRegenPer10 += this.combatDetails.combatStats.hpRegenPer10 * hpRegenBoosts.ratioBoost;
+        this.combatDetails.combatStats.hpRegenPer10 += hpRegenBoosts.flatBoost;
 
         let mpRegenBoosts = this.getBuffBoost("/buff_types/mp_regen");
-        this.combatDetails.combatStats.MPRegen += this.combatDetails.combatStats.MPRegen * mpRegenBoosts.ratioBoost;
-        this.combatDetails.combatStats.MPRegen += mpRegenBoosts.flatBoost;
+        this.combatDetails.combatStats.mpRegenPer10 += this.combatDetails.combatStats.mpRegenPer10 * mpRegenBoosts.ratioBoost;
+        this.combatDetails.combatStats.mpRegenPer10 += mpRegenBoosts.flatBoost;
 
         this.combatDetails.combatStats.lifeSteal += this.getBuffBoost("/buff_types/life_steal").flatBoost;
         this.combatDetails.combatStats.physicalThorns += this.getBuffBoost(

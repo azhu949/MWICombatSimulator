@@ -3,7 +3,7 @@
         "hrid": "/actions/alchemy/coinify",
         "function": "/action_functions/alchemy",
         "type": "/action_types/alchemy",
-        "category": "",
+        "category": "/action_categories/alchemy/alchemy",
         "name": "Coinify",
         "levelRequirement": {
             "skillHrid": "/skills/alchemy",
@@ -29,7 +29,7 @@
         "hrid": "/actions/alchemy/decompose",
         "function": "/action_functions/alchemy",
         "type": "/action_types/alchemy",
-        "category": "",
+        "category": "/action_categories/alchemy/alchemy",
         "name": "Decompose",
         "levelRequirement": {
             "skillHrid": "/skills/alchemy",
@@ -55,7 +55,7 @@
         "hrid": "/actions/alchemy/transmute",
         "function": "/action_functions/alchemy",
         "type": "/action_types/alchemy",
-        "category": "",
+        "category": "/action_categories/alchemy/alchemy",
         "name": "Transmute",
         "levelRequirement": {
             "skillHrid": "/skills/alchemy",
@@ -6125,6 +6125,726 @@
         "buffs": null,
         "sortIndex": 72
     },
+    "/actions/cheesesmithing/celestial_alembic": {
+        "hrid": "/actions/cheesesmithing/celestial_alembic",
+        "function": "/action_functions/production",
+        "type": "/action_types/cheesesmithing",
+        "category": "/action_categories/cheesesmithing/tool",
+        "name": "Celestial Alembic",
+        "levelRequirement": {
+            "skillHrid": "/skills/cheesesmithing",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cheesesmithing",
+            "value": 100000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "/items/holy_alembic",
+        "inputItems": [
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/branch_of_insight",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/sunstone",
+                "count": 5
+            },
+            {
+                "itemHrid": "/items/moonstone",
+                "count": 25
+            },
+            {
+                "itemHrid": "/items/star_fragment",
+                "count": 100
+            },
+            {
+                "itemHrid": "/items/alchemy_essence",
+                "count": 180000
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/celestial_alembic",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 172
+    },
+    "/actions/cheesesmithing/celestial_brush": {
+        "hrid": "/actions/cheesesmithing/celestial_brush",
+        "function": "/action_functions/production",
+        "type": "/action_types/cheesesmithing",
+        "category": "/action_categories/cheesesmithing/tool",
+        "name": "Celestial Brush",
+        "levelRequirement": {
+            "skillHrid": "/skills/cheesesmithing",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cheesesmithing",
+            "value": 100000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "/items/holy_brush",
+        "inputItems": [
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/branch_of_insight",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/sunstone",
+                "count": 5
+            },
+            {
+                "itemHrid": "/items/moonstone",
+                "count": 25
+            },
+            {
+                "itemHrid": "/items/star_fragment",
+                "count": 100
+            },
+            {
+                "itemHrid": "/items/milking_essence",
+                "count": 180000
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/celestial_brush",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 164
+    },
+    "/actions/cheesesmithing/celestial_chisel": {
+        "hrid": "/actions/cheesesmithing/celestial_chisel",
+        "function": "/action_functions/production",
+        "type": "/action_types/cheesesmithing",
+        "category": "/action_categories/cheesesmithing/tool",
+        "name": "Celestial Chisel",
+        "levelRequirement": {
+            "skillHrid": "/skills/cheesesmithing",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cheesesmithing",
+            "value": 100000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "/items/holy_chisel",
+        "inputItems": [
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/branch_of_insight",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/sunstone",
+                "count": 5
+            },
+            {
+                "itemHrid": "/items/moonstone",
+                "count": 25
+            },
+            {
+                "itemHrid": "/items/star_fragment",
+                "count": 100
+            },
+            {
+                "itemHrid": "/items/crafting_essence",
+                "count": 180000
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/celestial_chisel",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 168
+    },
+    "/actions/cheesesmithing/celestial_enhancer": {
+        "hrid": "/actions/cheesesmithing/celestial_enhancer",
+        "function": "/action_functions/production",
+        "type": "/action_types/cheesesmithing",
+        "category": "/action_categories/cheesesmithing/tool",
+        "name": "Celestial Enhancer",
+        "levelRequirement": {
+            "skillHrid": "/skills/cheesesmithing",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cheesesmithing",
+            "value": 100000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "/items/holy_enhancer",
+        "inputItems": [
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/branch_of_insight",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/sunstone",
+                "count": 5
+            },
+            {
+                "itemHrid": "/items/moonstone",
+                "count": 25
+            },
+            {
+                "itemHrid": "/items/star_fragment",
+                "count": 100
+            },
+            {
+                "itemHrid": "/items/enhancing_essence",
+                "count": 180000
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/celestial_enhancer",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 173
+    },
+    "/actions/cheesesmithing/celestial_hammer": {
+        "hrid": "/actions/cheesesmithing/celestial_hammer",
+        "function": "/action_functions/production",
+        "type": "/action_types/cheesesmithing",
+        "category": "/action_categories/cheesesmithing/tool",
+        "name": "Celestial Hammer",
+        "levelRequirement": {
+            "skillHrid": "/skills/cheesesmithing",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cheesesmithing",
+            "value": 100000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "/items/holy_hammer",
+        "inputItems": [
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/branch_of_insight",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/sunstone",
+                "count": 5
+            },
+            {
+                "itemHrid": "/items/moonstone",
+                "count": 25
+            },
+            {
+                "itemHrid": "/items/star_fragment",
+                "count": 100
+            },
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "count": 180000
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/celestial_hammer",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 167
+    },
+    "/actions/cheesesmithing/celestial_hatchet": {
+        "hrid": "/actions/cheesesmithing/celestial_hatchet",
+        "function": "/action_functions/production",
+        "type": "/action_types/cheesesmithing",
+        "category": "/action_categories/cheesesmithing/tool",
+        "name": "Celestial Hatchet",
+        "levelRequirement": {
+            "skillHrid": "/skills/cheesesmithing",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cheesesmithing",
+            "value": 100000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "/items/holy_hatchet",
+        "inputItems": [
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/branch_of_insight",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/sunstone",
+                "count": 5
+            },
+            {
+                "itemHrid": "/items/moonstone",
+                "count": 25
+            },
+            {
+                "itemHrid": "/items/star_fragment",
+                "count": 100
+            },
+            {
+                "itemHrid": "/items/woodcutting_essence",
+                "count": 180000
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/celestial_hatchet",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 166
+    },
+    "/actions/cheesesmithing/celestial_needle": {
+        "hrid": "/actions/cheesesmithing/celestial_needle",
+        "function": "/action_functions/production",
+        "type": "/action_types/cheesesmithing",
+        "category": "/action_categories/cheesesmithing/tool",
+        "name": "Celestial Needle",
+        "levelRequirement": {
+            "skillHrid": "/skills/cheesesmithing",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cheesesmithing",
+            "value": 100000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "/items/holy_needle",
+        "inputItems": [
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/branch_of_insight",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/sunstone",
+                "count": 5
+            },
+            {
+                "itemHrid": "/items/moonstone",
+                "count": 25
+            },
+            {
+                "itemHrid": "/items/star_fragment",
+                "count": 100
+            },
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "count": 180000
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/celestial_needle",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 169
+    },
+    "/actions/cheesesmithing/celestial_pot": {
+        "hrid": "/actions/cheesesmithing/celestial_pot",
+        "function": "/action_functions/production",
+        "type": "/action_types/cheesesmithing",
+        "category": "/action_categories/cheesesmithing/tool",
+        "name": "Celestial Pot",
+        "levelRequirement": {
+            "skillHrid": "/skills/cheesesmithing",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cheesesmithing",
+            "value": 100000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "/items/holy_pot",
+        "inputItems": [
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/branch_of_insight",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/sunstone",
+                "count": 5
+            },
+            {
+                "itemHrid": "/items/moonstone",
+                "count": 25
+            },
+            {
+                "itemHrid": "/items/star_fragment",
+                "count": 100
+            },
+            {
+                "itemHrid": "/items/brewing_essence",
+                "count": 180000
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/celestial_pot",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 171
+    },
+    "/actions/cheesesmithing/celestial_shears": {
+        "hrid": "/actions/cheesesmithing/celestial_shears",
+        "function": "/action_functions/production",
+        "type": "/action_types/cheesesmithing",
+        "category": "/action_categories/cheesesmithing/tool",
+        "name": "Celestial Shears",
+        "levelRequirement": {
+            "skillHrid": "/skills/cheesesmithing",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cheesesmithing",
+            "value": 100000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "/items/holy_shears",
+        "inputItems": [
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/branch_of_insight",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/sunstone",
+                "count": 5
+            },
+            {
+                "itemHrid": "/items/moonstone",
+                "count": 25
+            },
+            {
+                "itemHrid": "/items/star_fragment",
+                "count": 100
+            },
+            {
+                "itemHrid": "/items/foraging_essence",
+                "count": 180000
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/celestial_shears",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 165
+    },
+    "/actions/cheesesmithing/celestial_spatula": {
+        "hrid": "/actions/cheesesmithing/celestial_spatula",
+        "function": "/action_functions/production",
+        "type": "/action_types/cheesesmithing",
+        "category": "/action_categories/cheesesmithing/tool",
+        "name": "Celestial Spatula",
+        "levelRequirement": {
+            "skillHrid": "/skills/cheesesmithing",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cheesesmithing",
+            "value": 100000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "/items/holy_spatula",
+        "inputItems": [
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/branch_of_insight",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/sunstone",
+                "count": 5
+            },
+            {
+                "itemHrid": "/items/moonstone",
+                "count": 25
+            },
+            {
+                "itemHrid": "/items/star_fragment",
+                "count": 100
+            },
+            {
+                "itemHrid": "/items/cooking_essence",
+                "count": 180000
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/celestial_spatula",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 170
+    },
     "/actions/cheesesmithing/chaotic_flail": {
         "hrid": "/actions/cheesesmithing/chaotic_flail",
         "function": "/action_functions/production",
@@ -6183,7 +6903,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 172
+        "sortIndex": 182
     },
     "/actions/cheesesmithing/cheese": {
         "hrid": "/actions/cheesesmithing/cheese",
@@ -7355,7 +8075,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 164
+        "sortIndex": 174
     },
     "/actions/cheesesmithing/colossus_plate_legs": {
         "hrid": "/actions/cheesesmithing/colossus_plate_legs",
@@ -7407,7 +8127,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 165
+        "sortIndex": 175
     },
     "/actions/cheesesmithing/crimson_alembic": {
         "hrid": "/actions/cheesesmithing/crimson_alembic",
@@ -8579,7 +9299,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 166
+        "sortIndex": 176
     },
     "/actions/cheesesmithing/demonic_plate_legs": {
         "hrid": "/actions/cheesesmithing/demonic_plate_legs",
@@ -8631,7 +9351,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 167
+        "sortIndex": 177
     },
     "/actions/cheesesmithing/dodocamel_gauntlets": {
         "hrid": "/actions/cheesesmithing/dodocamel_gauntlets",
@@ -8695,7 +9415,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 169
+        "sortIndex": 179
     },
     "/actions/cheesesmithing/granite_bludgeon": {
         "hrid": "/actions/cheesesmithing/granite_bludgeon",
@@ -8811,7 +9531,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 171
+        "sortIndex": 181
     },
     "/actions/cheesesmithing/grizzly_bear_shoes": {
         "hrid": "/actions/cheesesmithing/grizzly_bear_shoes",
@@ -9155,6 +9875,13 @@
             }
         ],
         "rareDropTable": [
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "dropRate": 3e-05,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            },
             {
                 "itemHrid": "/items/large_artisans_crate",
                 "dropRate": 0.00038194444444444446,
@@ -10047,7 +10774,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 170
+        "sortIndex": 180
     },
     "/actions/cheesesmithing/magnetic_gloves": {
         "hrid": "/actions/cheesesmithing/magnetic_gloves",
@@ -10547,6 +11274,13 @@
             }
         ],
         "rareDropTable": [
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "dropRate": 1e-05,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            },
             {
                 "itemHrid": "/items/medium_artisans_crate",
                 "dropRate": 0.0004012345679012346,
@@ -11435,7 +12169,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 173
+        "sortIndex": 183
     },
     "/actions/cheesesmithing/snail_shell_helmet": {
         "hrid": "/actions/cheesesmithing/snail_shell_helmet",
@@ -11526,12 +12260,12 @@
         "upgradeItemHrid": "",
         "inputItems": [
             {
-                "itemHrid": "/items/verdant_cheese",
-                "count": 30
-            },
-            {
                 "itemHrid": "/items/snake_fang",
                 "count": 5
+            },
+            {
+                "itemHrid": "/items/verdant_cheese",
+                "count": 30
             }
         ],
         "outputItems": [
@@ -11599,7 +12333,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 168
+        "sortIndex": 178
     },
     "/actions/cheesesmithing/stalactite_spear": {
         "hrid": "/actions/cheesesmithing/stalactite_spear",
@@ -13103,7 +13837,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -13154,7 +13888,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -13205,7 +13939,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -13287,7 +14021,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -13390,7 +14124,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -13441,7 +14175,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -13523,7 +14257,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -13626,7 +14360,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -13677,7 +14411,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -13728,7 +14462,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14035,7 +14769,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14086,7 +14820,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14137,7 +14871,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14582,7 +15316,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14633,7 +15367,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14684,7 +15418,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14735,7 +15469,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14786,7 +15520,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14837,7 +15571,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14888,7 +15622,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14970,7 +15704,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15073,7 +15807,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15124,7 +15858,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15175,7 +15909,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15226,7 +15960,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15277,7 +16011,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15347,7 +16081,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15438,7 +16172,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15489,7 +16223,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15540,7 +16274,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15591,7 +16325,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15642,7 +16376,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15712,7 +16446,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15803,7 +16537,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15854,7 +16588,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15930,7 +16664,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16027,7 +16761,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16078,7 +16812,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16129,7 +16863,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16180,7 +16914,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16231,7 +16965,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16282,7 +17016,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16333,7 +17067,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16403,7 +17137,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16494,7 +17228,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16545,7 +17279,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16596,7 +17330,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16647,7 +17381,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16698,7 +17432,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17213,7 +17947,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17264,7 +17998,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17315,7 +18049,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17390,7 +18124,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17486,7 +18220,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17537,7 +18271,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17613,7 +18347,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17710,7 +18444,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17761,7 +18495,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17812,7 +18546,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17888,7 +18622,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17985,7 +18719,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18036,7 +18770,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18087,7 +18821,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18138,7 +18872,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18208,7 +18942,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18299,7 +19033,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18350,7 +19084,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18401,7 +19135,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18452,7 +19186,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 3000000000,
+        "baseTimeCost": 15000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -20447,6 +21181,13 @@
             }
         ],
         "rareDropTable": [
+            {
+                "itemHrid": "/items/branch_of_insight",
+                "dropRate": 3e-05,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            },
             {
                 "itemHrid": "/items/large_artisans_crate",
                 "dropRate": 0.00038194444444444446,
@@ -24648,6 +25389,13 @@
         ],
         "rareDropTable": [
             {
+                "itemHrid": "/items/branch_of_insight",
+                "dropRate": 1e-05,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            },
+            {
                 "itemHrid": "/items/medium_artisans_crate",
                 "dropRate": 0.0004012345679012346,
                 "minCount": 1,
@@ -26017,7 +26765,7 @@
         "hrid": "/actions/enhancing/enhance",
         "function": "/action_functions/enhancing",
         "type": "/action_types/enhancing",
-        "category": "",
+        "category": "/action_categories/enhancing/enhance",
         "name": "Enhance",
         "levelRequirement": {
             "skillHrid": "/skills/enhancing",
@@ -26194,6 +26942,13 @@
             }
         ],
         "rareDropTable": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "dropRate": 3e-05,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            },
             {
                 "itemHrid": "/items/large_meteorite_cache",
                 "dropRate": 0.00038194444444444446,
@@ -26566,6 +27321,13 @@
         ],
         "rareDropTable": [
             {
+                "itemHrid": "/items/thread_of_expertise",
+                "dropRate": 1e-05,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            },
+            {
                 "itemHrid": "/items/medium_meteorite_cache",
                 "dropRate": 0.0004012345679012346,
                 "minCount": 1,
@@ -26787,6 +27549,13 @@
         ],
         "rareDropTable": [
             {
+                "itemHrid": "/items/thread_of_expertise",
+                "dropRate": 1e-05,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            },
+            {
                 "itemHrid": "/items/medium_meteorite_cache",
                 "dropRate": 0.0004012345679012346,
                 "minCount": 1,
@@ -26936,6 +27705,13 @@
             }
         ],
         "rareDropTable": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "dropRate": 1e-05,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            },
             {
                 "itemHrid": "/items/medium_meteorite_cache",
                 "dropRate": 0.0004012345679012346,
@@ -27114,6 +27890,13 @@
             }
         ],
         "rareDropTable": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "dropRate": 1e-05,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            },
             {
                 "itemHrid": "/items/medium_meteorite_cache",
                 "dropRate": 0.0004012345679012346,
@@ -27314,6 +28097,13 @@
             }
         ],
         "rareDropTable": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "dropRate": 3e-05,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            },
             {
                 "itemHrid": "/items/large_meteorite_cache",
                 "dropRate": 0.00038194444444444446,
@@ -27557,6 +28347,13 @@
         ],
         "rareDropTable": [
             {
+                "itemHrid": "/items/thread_of_expertise",
+                "dropRate": 3e-05,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            },
+            {
                 "itemHrid": "/items/large_meteorite_cache",
                 "dropRate": 0.00038194444444444446,
                 "minCount": 1,
@@ -27607,6 +28404,13 @@
         ],
         "rareDropTable": [
             {
+                "itemHrid": "/items/thread_of_expertise",
+                "dropRate": 3e-05,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            },
+            {
                 "itemHrid": "/items/large_meteorite_cache",
                 "dropRate": 0.00038194444444444446,
                 "minCount": 1,
@@ -27656,6 +28460,13 @@
             }
         ],
         "rareDropTable": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "dropRate": 3e-05,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            },
             {
                 "itemHrid": "/items/large_meteorite_cache",
                 "dropRate": 0.00038194444444444446,
@@ -27826,7 +28637,7 @@
         "hrid": "/actions/milking/azure_cow",
         "function": "/action_functions/gathering",
         "type": "/action_types/milking",
-        "category": "",
+        "category": "/action_categories/milking/cows",
         "name": "Azure Cow",
         "levelRequirement": {
             "skillHrid": "/skills/milking",
@@ -27876,7 +28687,7 @@
         "hrid": "/actions/milking/burble_cow",
         "function": "/action_functions/gathering",
         "type": "/action_types/milking",
-        "category": "",
+        "category": "/action_categories/milking/cows",
         "name": "Burble Cow",
         "levelRequirement": {
             "skillHrid": "/skills/milking",
@@ -27926,7 +28737,7 @@
         "hrid": "/actions/milking/cow",
         "function": "/action_functions/gathering",
         "type": "/action_types/milking",
-        "category": "",
+        "category": "/action_categories/milking/cows",
         "name": "Cow",
         "levelRequirement": {
             "skillHrid": "/skills/milking",
@@ -27976,7 +28787,7 @@
         "hrid": "/actions/milking/crimson_cow",
         "function": "/action_functions/gathering",
         "type": "/action_types/milking",
-        "category": "",
+        "category": "/action_categories/milking/cows",
         "name": "Crimson Cow",
         "levelRequirement": {
             "skillHrid": "/skills/milking",
@@ -28026,7 +28837,7 @@
         "hrid": "/actions/milking/holy_cow",
         "function": "/action_functions/gathering",
         "type": "/action_types/milking",
-        "category": "",
+        "category": "/action_categories/milking/cows",
         "name": "Holy Cow",
         "levelRequirement": {
             "skillHrid": "/skills/milking",
@@ -28057,6 +28868,13 @@
         ],
         "rareDropTable": [
             {
+                "itemHrid": "/items/butter_of_proficiency",
+                "dropRate": 3e-05,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            },
+            {
                 "itemHrid": "/items/large_meteorite_cache",
                 "dropRate": 0.00038194444444444446,
                 "minCount": 1,
@@ -28076,7 +28894,7 @@
         "hrid": "/actions/milking/unicow",
         "function": "/action_functions/gathering",
         "type": "/action_types/milking",
-        "category": "",
+        "category": "/action_categories/milking/cows",
         "name": "Unicow",
         "levelRequirement": {
             "skillHrid": "/skills/milking",
@@ -28107,6 +28925,13 @@
         ],
         "rareDropTable": [
             {
+                "itemHrid": "/items/butter_of_proficiency",
+                "dropRate": 1e-05,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            },
+            {
                 "itemHrid": "/items/medium_meteorite_cache",
                 "dropRate": 0.0004012345679012346,
                 "minCount": 1,
@@ -28126,7 +28951,7 @@
         "hrid": "/actions/milking/verdant_cow",
         "function": "/action_functions/gathering",
         "type": "/action_types/milking",
-        "category": "",
+        "category": "/action_categories/milking/cows",
         "name": "Verdant Cow",
         "levelRequirement": {
             "skillHrid": "/skills/milking",
@@ -28226,7 +29051,143 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 88
+        "sortIndex": 108
+    },
+    "/actions/tailoring/alchemists_bottoms": {
+        "hrid": "/actions/tailoring/alchemists_bottoms",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/legs",
+        "name": "Alchemist's Bottoms",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 70000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/branch_of_insight",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/alchemy_essence",
+                "count": 140000
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 200
+            },
+            {
+                "itemHrid": "/items/radiant_fabric",
+                "count": 200
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/alchemists_bottoms",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 101
+    },
+    "/actions/tailoring/alchemists_top": {
+        "hrid": "/actions/tailoring/alchemists_top",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/body",
+        "name": "Alchemist's Top",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 70000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/alchemy_essence",
+                "count": 140000
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 200
+            },
+            {
+                "itemHrid": "/items/radiant_fabric",
+                "count": 200
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/alchemists_top",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 100
     },
     "/actions/tailoring/bamboo_boots": {
         "hrid": "/actions/tailoring/bamboo_boots",
@@ -28852,6 +29813,142 @@
         "buffs": null,
         "sortIndex": 62
     },
+    "/actions/tailoring/brewers_bottoms": {
+        "hrid": "/actions/tailoring/brewers_bottoms",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/legs",
+        "name": "Brewer's Bottoms",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 70000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/branch_of_insight",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/brewing_essence",
+                "count": 140000
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 200
+            },
+            {
+                "itemHrid": "/items/radiant_fabric",
+                "count": 200
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/brewers_bottoms",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 99
+    },
+    "/actions/tailoring/brewers_top": {
+        "hrid": "/actions/tailoring/brewers_top",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/body",
+        "name": "Brewer's Top",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 70000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/brewing_essence",
+                "count": 140000
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 200
+            },
+            {
+                "itemHrid": "/items/radiant_fabric",
+                "count": 200
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/brewers_top",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 98
+    },
     "/actions/tailoring/centaur_boots": {
         "hrid": "/actions/tailoring/centaur_boots",
         "function": "/action_functions/production",
@@ -28903,6 +30000,278 @@
         "maxPartySize": 0,
         "buffs": null,
         "sortIndex": 59
+    },
+    "/actions/tailoring/cheesemakers_bottoms": {
+        "hrid": "/actions/tailoring/cheesemakers_bottoms",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/legs",
+        "name": "Cheesemaker's Bottoms",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 70000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/branch_of_insight",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "count": 140000
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 200
+            },
+            {
+                "itemHrid": "/items/radiant_fabric",
+                "count": 200
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/cheesemakers_bottoms",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 91
+    },
+    "/actions/tailoring/cheesemakers_top": {
+        "hrid": "/actions/tailoring/cheesemakers_top",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/body",
+        "name": "Cheesemaker's Top",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 70000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "count": 140000
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 200
+            },
+            {
+                "itemHrid": "/items/radiant_fabric",
+                "count": 200
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/cheesemakers_top",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 90
+    },
+    "/actions/tailoring/chefs_bottoms": {
+        "hrid": "/actions/tailoring/chefs_bottoms",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/legs",
+        "name": "Chef's Bottoms",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 70000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/branch_of_insight",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/cooking_essence",
+                "count": 140000
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 200
+            },
+            {
+                "itemHrid": "/items/radiant_fabric",
+                "count": 200
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/chefs_bottoms",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 97
+    },
+    "/actions/tailoring/chefs_top": {
+        "hrid": "/actions/tailoring/chefs_top",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/body",
+        "name": "Chef's Top",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 70000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/cooking_essence",
+                "count": 140000
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 200
+            },
+            {
+                "itemHrid": "/items/radiant_fabric",
+                "count": 200
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/chefs_top",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 96
     },
     "/actions/tailoring/chrono_gloves": {
         "hrid": "/actions/tailoring/chrono_gloves",
@@ -29336,6 +30705,278 @@
         "buffs": null,
         "sortIndex": 13
     },
+    "/actions/tailoring/crafters_bottoms": {
+        "hrid": "/actions/tailoring/crafters_bottoms",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/legs",
+        "name": "Crafter's Bottoms",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 70000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/branch_of_insight",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/crafting_essence",
+                "count": 140000
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 200
+            },
+            {
+                "itemHrid": "/items/radiant_fabric",
+                "count": 200
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/crafters_bottoms",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 93
+    },
+    "/actions/tailoring/crafters_top": {
+        "hrid": "/actions/tailoring/crafters_top",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/body",
+        "name": "Crafter's Top",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 70000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/crafting_essence",
+                "count": 140000
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 200
+            },
+            {
+                "itemHrid": "/items/radiant_fabric",
+                "count": 200
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/crafters_top",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 92
+    },
+    "/actions/tailoring/dairyhands_bottoms": {
+        "hrid": "/actions/tailoring/dairyhands_bottoms",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/legs",
+        "name": "Dairyhand's Bottoms",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 70000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/branch_of_insight",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/milking_essence",
+                "count": 140000
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 200
+            },
+            {
+                "itemHrid": "/items/radiant_fabric",
+                "count": 200
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/dairyhands_bottoms",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 85
+    },
+    "/actions/tailoring/dairyhands_top": {
+        "hrid": "/actions/tailoring/dairyhands_top",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/body",
+        "name": "Dairyhand's Top",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 70000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/milking_essence",
+                "count": 140000
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 200
+            },
+            {
+                "itemHrid": "/items/radiant_fabric",
+                "count": 200
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/dairyhands_top",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 84
+    },
     "/actions/tailoring/enchanted_gloves": {
         "hrid": "/actions/tailoring/enchanted_gloves",
         "function": "/action_functions/production",
@@ -29403,6 +31044,142 @@
         "maxPartySize": 0,
         "buffs": null,
         "sortIndex": 73
+    },
+    "/actions/tailoring/enhancers_bottoms": {
+        "hrid": "/actions/tailoring/enhancers_bottoms",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/legs",
+        "name": "Enhancer's Bottoms",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 70000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/branch_of_insight",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/enhancing_essence",
+                "count": 140000
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 200
+            },
+            {
+                "itemHrid": "/items/radiant_fabric",
+                "count": 200
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/enhancers_bottoms",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 103
+    },
+    "/actions/tailoring/enhancers_top": {
+        "hrid": "/actions/tailoring/enhancers_top",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/body",
+        "name": "Enhancer's Top",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 70000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/enhancing_essence",
+                "count": 140000
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 200
+            },
+            {
+                "itemHrid": "/items/radiant_fabric",
+                "count": 200
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/enhancers_top",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 102
     },
     "/actions/tailoring/flaming_robe_bottoms": {
         "hrid": "/actions/tailoring/flaming_robe_bottoms",
@@ -29576,6 +31353,142 @@
         "buffs": null,
         "sortIndex": 74
     },
+    "/actions/tailoring/foragers_bottoms": {
+        "hrid": "/actions/tailoring/foragers_bottoms",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/legs",
+        "name": "Forager's Bottoms",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 70000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/branch_of_insight",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/foraging_essence",
+                "count": 140000
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 200
+            },
+            {
+                "itemHrid": "/items/radiant_fabric",
+                "count": 200
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/foragers_bottoms",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 87
+    },
+    "/actions/tailoring/foragers_top": {
+        "hrid": "/actions/tailoring/foragers_top",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/body",
+        "name": "Forager's Top",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 70000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/foraging_essence",
+                "count": 140000
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 200
+            },
+            {
+                "itemHrid": "/items/radiant_fabric",
+                "count": 200
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/foragers_top",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 86
+    },
     "/actions/tailoring/giant_pouch": {
         "hrid": "/actions/tailoring/giant_pouch",
         "function": "/action_functions/production",
@@ -29673,7 +31586,7 @@
         "upgradeItemHrid": "/items/giant_pouch",
         "inputItems": [
             {
-                "itemHrid": "/items/gluttonous_stone",
+                "itemHrid": "/items/gluttonous_energy",
                 "count": 10
             },
             {
@@ -29698,7 +31611,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 86
+        "sortIndex": 106
     },
     "/actions/tailoring/gobo_boots": {
         "hrid": "/actions/tailoring/gobo_boots",
@@ -30122,7 +32035,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 85
+        "sortIndex": 105
     },
     "/actions/tailoring/guzzling_pouch": {
         "hrid": "/actions/tailoring/guzzling_pouch",
@@ -30161,7 +32074,7 @@
         "upgradeItemHrid": "/items/giant_pouch",
         "inputItems": [
             {
-                "itemHrid": "/items/guzzling_stone",
+                "itemHrid": "/items/guzzling_energy",
                 "count": 10
             },
             {
@@ -30186,7 +32099,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 87
+        "sortIndex": 107
     },
     "/actions/tailoring/icy_robe_bottoms": {
         "hrid": "/actions/tailoring/icy_robe_bottoms",
@@ -30664,6 +32577,142 @@
         "buffs": null,
         "sortIndex": 26
     },
+    "/actions/tailoring/lumberjacks_bottoms": {
+        "hrid": "/actions/tailoring/lumberjacks_bottoms",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/legs",
+        "name": "Lumberjack's Bottoms",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 70000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/branch_of_insight",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/woodcutting_essence",
+                "count": 140000
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 200
+            },
+            {
+                "itemHrid": "/items/radiant_fabric",
+                "count": 200
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/lumberjacks_bottoms",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 89
+    },
+    "/actions/tailoring/lumberjacks_top": {
+        "hrid": "/actions/tailoring/lumberjacks_top",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/body",
+        "name": "Lumberjack's Top",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 70000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/woodcutting_essence",
+                "count": 140000
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 200
+            },
+            {
+                "itemHrid": "/items/radiant_fabric",
+                "count": 200
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/lumberjacks_top",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 88
+    },
     "/actions/tailoring/luna_robe_bottoms": {
         "hrid": "/actions/tailoring/luna_robe_bottoms",
         "function": "/action_functions/production",
@@ -30822,7 +32871,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 89
+        "sortIndex": 109
     },
     "/actions/tailoring/marine_chaps": {
         "hrid": "/actions/tailoring/marine_chaps",
@@ -31067,6 +33116,13 @@
         ],
         "rareDropTable": [
             {
+                "itemHrid": "/items/thread_of_expertise",
+                "dropRate": 2.5e-05,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            },
+            {
                 "itemHrid": "/items/large_artisans_crate",
                 "dropRate": 0.00031597222222222226,
                 "minCount": 1,
@@ -31300,12 +33356,12 @@
         "buffs": null,
         "sortIndex": 81
     },
-    "/actions/tailoring/red_chefs_hat": {
-        "hrid": "/actions/tailoring/red_chefs_hat",
+    "/actions/tailoring/red_culinary_hat": {
+        "hrid": "/actions/tailoring/red_culinary_hat",
         "function": "/action_functions/production",
         "type": "/action_types/tailoring",
         "category": "/action_categories/tailoring/head",
-        "name": "Red Chef's Hat",
+        "name": "Red Culinary Hat",
         "levelRequirement": {
             "skillHrid": "/skills/tailoring",
             "level": 70
@@ -31359,7 +33415,7 @@
         ],
         "outputItems": [
             {
-                "itemHrid": "/items/red_chefs_hat",
+                "itemHrid": "/items/red_culinary_hat",
                 "count": 1
             }
         ],
@@ -31782,7 +33838,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 84
+        "sortIndex": 104
     },
     "/actions/tailoring/rough_boots": {
         "hrid": "/actions/tailoring/rough_boots",
@@ -32154,7 +34210,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 96
+        "sortIndex": 116
     },
     "/actions/tailoring/royal_fire_robe_bottoms_from_nature": {
         "hrid": "/actions/tailoring/royal_fire_robe_bottoms_from_nature",
@@ -32210,7 +34266,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 98
+        "sortIndex": 118
     },
     "/actions/tailoring/royal_fire_robe_bottoms_from_water": {
         "hrid": "/actions/tailoring/royal_fire_robe_bottoms_from_water",
@@ -32266,7 +34322,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 97
+        "sortIndex": 117
     },
     "/actions/tailoring/royal_fire_robe_top": {
         "hrid": "/actions/tailoring/royal_fire_robe_top",
@@ -32326,7 +34382,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 105
+        "sortIndex": 125
     },
     "/actions/tailoring/royal_fire_robe_top_from_nature": {
         "hrid": "/actions/tailoring/royal_fire_robe_top_from_nature",
@@ -32382,7 +34438,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 107
+        "sortIndex": 127
     },
     "/actions/tailoring/royal_fire_robe_top_from_water": {
         "hrid": "/actions/tailoring/royal_fire_robe_top_from_water",
@@ -32438,7 +34494,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 106
+        "sortIndex": 126
     },
     "/actions/tailoring/royal_nature_robe_bottoms": {
         "hrid": "/actions/tailoring/royal_nature_robe_bottoms",
@@ -32494,7 +34550,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 93
+        "sortIndex": 113
     },
     "/actions/tailoring/royal_nature_robe_bottoms_from_fire": {
         "hrid": "/actions/tailoring/royal_nature_robe_bottoms_from_fire",
@@ -32546,7 +34602,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 95
+        "sortIndex": 115
     },
     "/actions/tailoring/royal_nature_robe_bottoms_from_water": {
         "hrid": "/actions/tailoring/royal_nature_robe_bottoms_from_water",
@@ -32598,7 +34654,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 94
+        "sortIndex": 114
     },
     "/actions/tailoring/royal_nature_robe_top": {
         "hrid": "/actions/tailoring/royal_nature_robe_top",
@@ -32654,7 +34710,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 102
+        "sortIndex": 122
     },
     "/actions/tailoring/royal_nature_robe_top_from_fire": {
         "hrid": "/actions/tailoring/royal_nature_robe_top_from_fire",
@@ -32706,7 +34762,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 104
+        "sortIndex": 124
     },
     "/actions/tailoring/royal_nature_robe_top_from_water": {
         "hrid": "/actions/tailoring/royal_nature_robe_top_from_water",
@@ -32758,7 +34814,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 103
+        "sortIndex": 123
     },
     "/actions/tailoring/royal_water_robe_bottoms": {
         "hrid": "/actions/tailoring/royal_water_robe_bottoms",
@@ -32818,7 +34874,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 90
+        "sortIndex": 110
     },
     "/actions/tailoring/royal_water_robe_bottoms_from_fire": {
         "hrid": "/actions/tailoring/royal_water_robe_bottoms_from_fire",
@@ -32874,7 +34930,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 92
+        "sortIndex": 112
     },
     "/actions/tailoring/royal_water_robe_bottoms_from_nature": {
         "hrid": "/actions/tailoring/royal_water_robe_bottoms_from_nature",
@@ -32930,7 +34986,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 91
+        "sortIndex": 111
     },
     "/actions/tailoring/royal_water_robe_top": {
         "hrid": "/actions/tailoring/royal_water_robe_top",
@@ -32990,7 +35046,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 99
+        "sortIndex": 119
     },
     "/actions/tailoring/royal_water_robe_top_from_fire": {
         "hrid": "/actions/tailoring/royal_water_robe_top_from_fire",
@@ -33046,7 +35102,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 101
+        "sortIndex": 121
     },
     "/actions/tailoring/royal_water_robe_top_from_nature": {
         "hrid": "/actions/tailoring/royal_water_robe_top_from_nature",
@@ -33102,7 +35158,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 100
+        "sortIndex": 120
     },
     "/actions/tailoring/shoebill_shoes": {
         "hrid": "/actions/tailoring/shoebill_shoes",
@@ -33648,6 +35704,142 @@
         "buffs": null,
         "sortIndex": 60
     },
+    "/actions/tailoring/tailors_bottoms": {
+        "hrid": "/actions/tailoring/tailors_bottoms",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/legs",
+        "name": "Tailor's Bottoms",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 70000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/branch_of_insight",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "count": 140000
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 200
+            },
+            {
+                "itemHrid": "/items/radiant_fabric",
+                "count": 200
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/tailors_bottoms",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 95
+    },
+    "/actions/tailoring/tailors_top": {
+        "hrid": "/actions/tailoring/tailors_top",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/body",
+        "name": "Tailor's Top",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 90
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 70000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.31666666666666665,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/thread_of_expertise",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/butter_of_proficiency",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "count": 140000
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 200
+            },
+            {
+                "itemHrid": "/items/radiant_fabric",
+                "count": 200
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/tailors_top",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 94
+    },
     "/actions/tailoring/umbral_boots": {
         "hrid": "/actions/tailoring/umbral_boots",
         "function": "/action_functions/production",
@@ -33883,6 +36075,13 @@
         ],
         "rareDropTable": [
             {
+                "itemHrid": "/items/thread_of_expertise",
+                "dropRate": 2.5e-05,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            },
+            {
                 "itemHrid": "/items/large_artisans_crate",
                 "dropRate": 0.00031597222222222226,
                 "minCount": 1,
@@ -33964,7 +36163,7 @@
         "hrid": "/actions/woodcutting/arcane_tree",
         "function": "/action_functions/gathering",
         "type": "/action_types/woodcutting",
-        "category": "",
+        "category": "/action_categories/woodcutting/trees",
         "name": "Arcane Tree",
         "levelRequirement": {
             "skillHrid": "/skills/woodcutting",
@@ -33995,6 +36194,13 @@
         ],
         "rareDropTable": [
             {
+                "itemHrid": "/items/branch_of_insight",
+                "dropRate": 3e-05,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            },
+            {
                 "itemHrid": "/items/large_meteorite_cache",
                 "dropRate": 0.00038194444444444446,
                 "minCount": 1,
@@ -34014,7 +36220,7 @@
         "hrid": "/actions/woodcutting/birch_tree",
         "function": "/action_functions/gathering",
         "type": "/action_types/woodcutting",
-        "category": "",
+        "category": "/action_categories/woodcutting/trees",
         "name": "Birch Tree",
         "levelRequirement": {
             "skillHrid": "/skills/woodcutting",
@@ -34064,7 +36270,7 @@
         "hrid": "/actions/woodcutting/cedar_tree",
         "function": "/action_functions/gathering",
         "type": "/action_types/woodcutting",
-        "category": "",
+        "category": "/action_categories/woodcutting/trees",
         "name": "Cedar Tree",
         "levelRequirement": {
             "skillHrid": "/skills/woodcutting",
@@ -34114,7 +36320,7 @@
         "hrid": "/actions/woodcutting/ginkgo_tree",
         "function": "/action_functions/gathering",
         "type": "/action_types/woodcutting",
-        "category": "",
+        "category": "/action_categories/woodcutting/trees",
         "name": "Ginkgo Tree",
         "levelRequirement": {
             "skillHrid": "/skills/woodcutting",
@@ -34164,7 +36370,7 @@
         "hrid": "/actions/woodcutting/purpleheart_tree",
         "function": "/action_functions/gathering",
         "type": "/action_types/woodcutting",
-        "category": "",
+        "category": "/action_categories/woodcutting/trees",
         "name": "Purpleheart Tree",
         "levelRequirement": {
             "skillHrid": "/skills/woodcutting",
@@ -34214,7 +36420,7 @@
         "hrid": "/actions/woodcutting/redwood_tree",
         "function": "/action_functions/gathering",
         "type": "/action_types/woodcutting",
-        "category": "",
+        "category": "/action_categories/woodcutting/trees",
         "name": "Redwood Tree",
         "levelRequirement": {
             "skillHrid": "/skills/woodcutting",
@@ -34245,6 +36451,13 @@
         ],
         "rareDropTable": [
             {
+                "itemHrid": "/items/branch_of_insight",
+                "dropRate": 1e-05,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            },
+            {
                 "itemHrid": "/items/medium_meteorite_cache",
                 "dropRate": 0.0004012345679012346,
                 "minCount": 1,
@@ -34264,7 +36477,7 @@
         "hrid": "/actions/woodcutting/tree",
         "function": "/action_functions/gathering",
         "type": "/action_types/woodcutting",
-        "category": "",
+        "category": "/action_categories/woodcutting/trees",
         "name": "Tree",
         "levelRequirement": {
             "skillHrid": "/skills/woodcutting",

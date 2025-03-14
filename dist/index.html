@@ -103,6 +103,10 @@
     <title>MWI Combat Simulator</title>
     <link rel="icon" href="data:," />
     <link rel="stylesheet" href="https://s4.zstatic.net/ajax/libs/bootstrap/5.2.0/css/bootstrap.min.css" integrity="sha512-XWTTruHZEYJsxV3W/lSXG1n3Q39YIWOstqvmFsdNEEQfHoZ6vm6E9GK2OrF6DSJSpIbRbi+Nn0WDPID9O7xB2Q==" crossorigin="anonymous" referrerpolicy="no-referrer" />
+    <script src="https://s4.zstatic.net/ajax/libs/i18next/21.6.10/i18next.min.js" integrity="sha512-4WlJJ18bTOvB8ask0iufUvS/N3NDs2NJUKXGeK9CGoFayxUASLGsiBAvMtO+dfdp+MNzaOZLStxIwc2rZz5hSg==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://s4.zstatic.net/ajax/libs/jquery-i18next/1.2.1/jquery-i18next.min.js" integrity="sha512-79RgNpOyaf8AvNEUdanuk1x6g53UPoB6Fh2uogMkOMGADBG6B0DCzxc+dDktXkVPg2rlxGvPeAFKoZxTycVooQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://s4.zstatic.net/ajax/libs/i18next-browser-languagedetector/6.1.3/i18nextBrowserLanguageDetector.min.js" integrity="sha512-w/1n/omCK6/QXznOMYrp+arhVcWM87ioNqNkpWyFYhDFBgLNiwUG9Omp/YGPwy5Q/p7lktUI1eXZX3nN/TDDAA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
+    <script src="https://s4.zstatic.net/ajax/libs/i18next-http-backend/1.3.2/i18nextHttpBackend.min.js" integrity="sha512-6KSl9S4uqyiqhlImZ5pcEQKCU7Mk/nyr+nJQAZe9ZY9en6cUmQKG/b3v1Db/1fOiV5zdOjjwWQ/S90p7eDLxgA==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
 </head>
 
 <body class="p-3">
@@ -130,52 +134,52 @@
                     <div class="col-md-4">
                         <!-- #region Levels -->
                         <div class="row mb-3">
-                            <b>Levels</b>
+                            <b data-i18n="sharableProfile.skills">Levels</b>
                         </div>
                         <div class="row mb-2">
-                            <label for="inputLevel_stamina" class="col-md-6 col-form-label">Stamina</label>
+                            <label for="inputLevel_stamina" class="col-md-6 col-form-label" data-i18n="skillNames./skills/stamina">Stamina</label>
                             <div class="col-md-6">
                                 <input type="number" id="inputLevel_stamina" class="form-control" value="1" min="1"
                                     max="400" required />
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <label for="inputLevel_intelligence" class="col-md-6 col-form-label">Intelligence</label>
+                            <label for="inputLevel_intelligence" class="col-md-6 col-form-label" data-i18n="skillNames./skills/intelligence">Intelligence</label>
                             <div class="col-md-6">
                                 <input type="number" id="inputLevel_intelligence" class="form-control" value="1" min="1"
                                     max="400" required />
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <label for="inputLevel_attack" class="col-md-6 col-form-label">Attack</label>
+                            <label for="inputLevel_attack" class="col-md-6 col-form-label" data-i18n="skillNames./skills/attack">Attack</label>
                             <div class="col-md-6">
                                 <input type="number" id="inputLevel_attack" class="form-control" value="1" min="1"
                                     max="400" required />
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <label for="inputLevel_power" class="col-md-6 col-form-label">Power</label>
+                            <label for="inputLevel_power" class="col-md-6 col-form-label" data-i18n="skillNames./skills/power">Power</label>
                             <div class="col-md-6">
                                 <input type="number" id="inputLevel_power" class="form-control" value="1" min="1"
                                     max="400" required />
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <label for="inputLevel_defense" class="col-md-6 col-form-label">Defense</label>
+                            <label for="inputLevel_defense" class="col-md-6 col-form-label" data-i18n="skillNames./skills/defense">Defense</label>
                             <div class="col-md-6">
                                 <input type="number" id="inputLevel_defense" class="form-control" value="1" min="1"
                                     max="400" required />
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <label for="inputLevel_ranged" class="col-md-6 col-form-label">Ranged</label>
+                            <label for="inputLevel_ranged" class="col-md-6 col-form-label" data-i18n="skillNames./skills/ranged">Ranged</label>
                             <div class="col-md-6">
                                 <input type="number" id="inputLevel_ranged" class="form-control" value="1" min="1"
                                     max="400" required />
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <label for="inputLevel_magic" class="col-md-6 col-form-label">Magic</label>
+                            <label for="inputLevel_magic" class="col-md-6 col-form-label" data-i18n="skillNames./skills/magic">Magic</label>
                             <div class="col-md-6">
                                 <input type="number" id="inputLevel_magic" class="form-control" value="1" min="1"
                                     max="400" required />
@@ -183,30 +187,30 @@
                         </div>
                         <div class="row mb-2">
                             <button id="buttonHouseRoomsModal" class="btn btn-primary" type="button"
-                                data-bs-toggle="modal" data-bs-target="#houseRoomsModal">
+                                data-bs-toggle="modal" data-bs-target="#houseRoomsModal" data-i18n="characterManagement.house">
                                 House Rooms
                             </button>
                         </div>
                         <!-- #endregion -->
                         <div class="row">
-                            <b>Price Settings</b>
+                            <b data-i18n="common:priceSettings.title">Price Settings</b>
                         </div>
                         <div class="row">
-                            <label for="selectPrices_consumables" class="col-md-12 col-form-label">Consumable
+                            <label for="selectPrices_consumables" class="col-md-12 col-form-label" data-i18n="common:priceSettings.consumablePrices">Consumable
                                 Prices</label>
                             <div class="col-md-12 mb-2">
                                 <select id="selectPrices_consumables" class="form-select">
-                                    <option default value="ask">Ask (SO)</option>
-                                    <option value="bid">Bid (BO)</option>
+                                    <option default value="ask" data-i18n="marketplacePanel.bestAskPrice">Ask (SO)</option>
+                                    <option value="bid" data-i18n="marketplacePanel.bestBidPrice">Bid (BO)</option>
                                 </select>
                             </div>
                         </div>
                         <div class="row">
-                            <label for="selectPrices_drops" class="col-md-12 col-form-label">Drop Prices</label>
+                            <label for="selectPrices_drops" class="col-md-12 col-form-label" data-i18n="common:priceSettings.dropPrices">Drop Prices</label>
                             <div class="col-md-12">
                                 <select id="selectPrices_drops" class="form-select">
-                                    <option default value="bid">Bid (BO)</option>
-                                    <option value="ask">Ask (SO)</option>
+                                    <option default value="bid" data-i18n="marketplacePanel.bestBidPrice">Bid (BO)</option>
+                                    <option value="ask" data-i18n="marketplacePanel.bestAskPrice">Ask (SO)</option>
                                 </select>
                             </div>
                         </div>
@@ -214,15 +218,15 @@
                     <div class="col-md-8">
                         <!-- #region Equipment -->
                         <div class="row mb-3">
-                            <div class="col-md-2"><b>Slot</b></div>
-                            <div class="col-md-6"><b>Item</b></div>
-                            <div class="col-md-4"><b>Enhancement Level</b></div>
+                            <div class="col-md-2"><b data-i18n="settingsPanel.slots">Slot</b></div>
+                            <div class="col-md-6"><b data-i18n="marketplacePanel.item">Item</b></div>
+                            <div class="col-md-4"><b data-i18n="marketplacePanel.enhancementLevel">Enhancement Level</b></div>
                         </div>
                         <div class="row mb-2">
-                            <label for="selectEquipment_head" class="col-md-2 col-form-label">Head</label>
+                            <label for="selectEquipment_head" class="col-md-2 col-form-label" data-i18n="characterItemsUtil.head">Head</label>
                             <div class="col-md-6">
                                 <select id="selectEquipment_head" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -231,10 +235,10 @@
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <label for="selectEquipment_neck" class="col-md-2 col-form-label">Neck</label>
+                            <label for="selectEquipment_neck" class="col-md-2 col-form-label" data-i18n="characterItemsUtil.neck">Neck</label>
                             <div class="col-md-6">
                                 <select id="selectEquipment_neck" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -243,10 +247,10 @@
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <label for="selectEquipment_earrings" class="col-md-2 col-form-label">Earrings</label>
+                            <label for="selectEquipment_earrings" class="col-md-2 col-form-label" data-i18n="characterItemsUtil.earrings">Earrings</label>
                             <div class="col-md-6">
                                 <select id="selectEquipment_earrings" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -255,10 +259,10 @@
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <label for="selectEquipment_body" class="col-md-2 col-form-label">Body</label>
+                            <label for="selectEquipment_body" class="col-md-2 col-form-label" data-i18n="characterItemsUtil.body">Body</label>
                             <div class="col-md-6">
                                 <select id="selectEquipment_body" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -267,10 +271,10 @@
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <label for="selectEquipment_legs" class="col-md-2 col-form-label">Legs</label>
+                            <label for="selectEquipment_legs" class="col-md-2 col-form-label" data-i18n="characterItemsUtil.legs">Legs</label>
                             <div class="col-md-6">
                                 <select id="selectEquipment_legs" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -279,10 +283,10 @@
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <label for="selectEquipment_feet" class="col-md-2 col-form-label">Feet</label>
+                            <label for="selectEquipment_feet" class="col-md-2 col-form-label" data-i18n="characterItemsUtil.feet">Feet</label>
                             <div class="col-md-6">
                                 <select id="selectEquipment_feet" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -291,10 +295,10 @@
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <label for="selectEquipment_hands" class="col-md-2 col-form-label">Hands</label>
+                            <label for="selectEquipment_hands" class="col-md-2 col-form-label" data-i18n="characterItemsUtil.hands">Hands</label>
                             <div class="col-md-6">
                                 <select id="selectEquipment_hands" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -303,10 +307,10 @@
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <label for="selectEquipment_ring" class="col-md-2 col-form-label">Ring</label>
+                            <label for="selectEquipment_ring" class="col-md-2 col-form-label" data-i18n="characterItemsUtil.ring">Ring</label>
                             <div class="col-md-6">
                                 <select id="selectEquipment_ring" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -315,10 +319,10 @@
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <label for="selectEquipment_weapon" class="col-md-2 col-form-label">Weapon</label>
+                            <label for="selectEquipment_weapon" class="col-md-2 col-form-label" data-i18n="characterItemsUtil.mainHand">Weapon</label>
                             <div class="col-md-6">
                                 <select id="selectEquipment_weapon" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -327,10 +331,10 @@
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <label for="selectEquipment_off_hand" class="col-md-2 col-form-label">Offhand</label>
+                            <label for="selectEquipment_off_hand" class="col-md-2 col-form-label" data-i18n="characterItemsUtil.offHand">Offhand</label>
                             <div class="col-md-6">
                                 <select id="selectEquipment_off_hand" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -339,10 +343,10 @@
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <label for="selectEquipment_pouch" class="col-md-2 col-form-label">Pouch</label>
+                            <label for="selectEquipment_pouch" class="col-md-2 col-form-label" data-i18n="characterItemsUtil.pouch">Pouch</label>
                             <div class="col-md-6">
                                 <select id="selectEquipment_pouch" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -351,10 +355,10 @@
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <label for="selectEquipment_back" class="col-md-2 col-form-label">Back</label>
+                            <label for="selectEquipment_back" class="col-md-2 col-form-label" data-i18n="characterItemsUtil.back">Back</label>
                             <div class="col-md-6">
                                 <select id="selectEquipment_back" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col-md-4">
@@ -400,12 +404,12 @@
                     <div class="col-md-5">
                         <!-- #region Food -->
                         <div class="row mb-3">
-                            <b>Food</b>
+                            <b data-i18n="consumableSlot.food">Food</b>
                         </div>
                         <div class="row mb-2">
                             <div class="col">
                                 <select id="selectFood_0" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col-md-auto">
@@ -419,7 +423,7 @@
                         <div class="row mb-2">
                             <div class="col">
                                 <select id="selectFood_1" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col-md-auto">
@@ -433,7 +437,7 @@
                         <div class="row mb-3">
                             <div class="col">
                                 <select id="selectFood_2" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col-md-auto">
@@ -447,12 +451,12 @@
                         <!-- #endregion -->
                         <!-- #region Drinks and Patch Notes -->
                         <div class="row mb-3">
-                            <b>Drinks</b>
+                            <b data-i18n="consumableSlot.drink">Drinks</b>
                         </div>
                         <div class="row mb-2">
                             <div class="col">
                                 <select id="selectDrink_0" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col-md-auto">
@@ -466,7 +470,7 @@
                         <div class="row mb-2">
                             <div class="col">
                                 <select id="selectDrink_1" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col-md-auto">
@@ -480,7 +484,7 @@
                         <div class="row mb-2">
                             <div class="col">
                                 <select id="selectDrink_2" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col-md-auto">
@@ -493,13 +497,13 @@
                         </div>
                         <div class="row pt-3">
                             <div class="col-md-auto">
-                                <button id="buttonGetPrices" class="btn btn-primary" type="button">
+                                <button id="buttonGetPrices" class="btn btn-primary" type="button" data-i18n="common:getPrices">
                                     Get Prices
                                 </button>
                             </div>
                             <div class="col-md-auto">
                                 <button id="buttonEditPrices" class="btn btn-primary" type="button"
-                                    data-bs-toggle="modal" data-bs-target="#editPricesModal">
+                                    data-bs-toggle="modal" data-bs-target="#editPricesModal" data-i18n="common:editPrices">
                                     Edit Prices
                                 </button>
                             </div>
@@ -507,7 +511,7 @@
                         <div class="row pt-3">
                             <div class="col-md-auto">
                                 <button id="buttonPatchNotes" class="btn btn-primary" type="button"
-                                    data-bs-toggle="modal" data-bs-target="#patchNotesModal">
+                                    data-bs-toggle="modal" data-bs-target="#patchNotesModal" data-i18n="common:patchNotes">
                                     Patch Notes
                                 </button>
                             </div>
@@ -518,16 +522,16 @@
                         <!-- #region Abilities -->
                         <div class="row mb-3">
                             <div class="col-md-6">
-                                <b>Abilities</b>
+                                <b data-i18n="characterManagement.abilities">Abilities</b>
                             </div>
                             <div class="col">
-                                <b>Level</b>
+                                <b data-i18n="leaderboardPanel.level">Level</b>
                             </div>
                         </div>
                         <div class="row mb-2">
                             <div class="col-md-6">
                                 <select id="selectAbility_0" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col">
@@ -545,7 +549,7 @@
                         <div class="row mb-2">
                             <div class="col-md-6">
                                 <select id="selectAbility_1" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col">
@@ -563,7 +567,7 @@
                         <div class="row mb-2">
                             <div class="col-md-6">
                                 <select id="selectAbility_2" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col">
@@ -581,7 +585,7 @@
                         <div class="row mb-2">
                             <div class="col-md-6">
                                 <select id="selectAbility_3" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col">
@@ -599,7 +603,7 @@
                         <div class="row mb-3">
                             <div class="col-md-6">
                                 <select id="selectAbility_4" class="form-select">
-                                    <option value="">Empty</option>
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
                             <div class="col">
@@ -633,13 +637,13 @@
                         <div class="row">
                             <div class="col-md-auto">
                                 <button id="buttonEquipmentSets" class="btn btn-primary" type="button"
-                                    data-bs-toggle="modal" data-bs-target="#equipmentSetsModal">
+                                    data-bs-toggle="modal" data-bs-target="#equipmentSetsModal" data-i18n="common:controls.equipmentSets">
                                     Equipment Sets
                                 </button>
                             </div>
                             <div class="col align-self-center">
                                 <button id="buttonImportExport" class="btn btn-primary" type="button"
-                                    data-bs-toggle="modal" data-bs-target="#importExportModal">
+                                    data-bs-toggle="modal" data-bs-target="#importExportModal" data-i18n="common:controls.importExport">
                                     Import/Export
                                 </button>
                             </div>
@@ -666,281 +670,281 @@
             <div class="col-md-2">
                 <!-- #region Combat stats -->
                 <div class="row mb-3">
-                    <b>Combat Stats</b>
+                    <b data-i18n="equipmentPanel.combatStats">Combat Stats</b>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Max HP:</div>
+                    <div class="col-md-8" data-i18n="combatStats.maxHitpoints">Max HP:</div>
                     <div class="col-md-4" id="combatStat_maxHitpoints"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Max MP:</div>
+                    <div class="col-md-8" data-i18n="combatStats.maxManapoints">Max MP:</div>
                     <div class="col-md-4" id="combatStat_maxManapoints"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Combat Style:</div>
+                    <div class="col-md-8" data-i18n="combatStats.combatStyleHrids">Combat Style:</div>
                     <div class="col-md-4" id="combatStat_combatStyleHrid"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Damage Type:</div>
+                    <div class="col-md-8" data-i18n="combatStats.damageType">Damage Type:</div>
                     <div class="col-md-4" id="combatStat_damageType"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Attack Interval:</div>
+                    <div class="col-md-8" data-i18n="combatStats.attackInterval">Attack Interval:</div>
                     <div class="col-md-4" id="combatStat_attackInterval"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Stab Accuracy:</div>
+                    <div class="col-md-8" data-i18n="combatStats.stabAccuracy">Stab Accuracy:</div>
                     <div class="col-md-4" id="combatStat_stabAccuracyRating"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Stab Damage:</div>
+                    <div class="col-md-8" data-i18n="combatStats.stabDamage">Stab Damage:</div>
                     <div class="col-md-4" id="combatStat_stabMaxDamage"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Slash Accuracy:</div>
+                    <div class="col-md-8" data-i18n="combatStats.slashAccuracy">Slash Accuracy:</div>
                     <div class="col-md-4" id="combatStat_slashAccuracyRating"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Slash Damage:</div>
+                    <div class="col-md-8" data-i18n="combatStats.slashDamage">Slash Damage:</div>
                     <div class="col-md-4" id="combatStat_slashMaxDamage"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Smash Accuracy:</div>
+                    <div class="col-md-8" data-i18n="combatStats.smashAccuracy">Smash Accuracy:</div>
                     <div class="col-md-4" id="combatStat_smashAccuracyRating"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Smash Damage:</div>
+                    <div class="col-md-8" data-i18n="combatStats.smashDamage">Smash Damage:</div>
                     <div class="col-md-4" id="combatStat_smashMaxDamage"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Ranged Accuracy:</div>
+                    <div class="col-md-8" data-i18n="combatStats.rangedAccuracy">Ranged Accuracy:</div>
                     <div class="col-md-4" id="combatStat_rangedAccuracyRating"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Magic Accuracy:</div>
+                    <div class="col-md-8" data-i18n="combatStats.magicAccuracy">Magic Accuracy:</div>
                     <div class="col-md-4" id="combatStat_magicAccuracyRating"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Ranged Damage:</div>
+                    <div class="col-md-8" data-i18n="combatStats.rangedDamage">Ranged Damage:</div>
                     <div class="col-md-4" id="combatStat_rangedMaxDamage"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Magic Damage:</div>
+                    <div class="col-md-8" data-i18n="combatStats.magicDamage">Magic Damage:</div>
                     <div class="col-md-4" id="combatStat_magicMaxDamage"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Physical Amplify:</div>
+                    <div class="col-md-8" data-i18n="combatStats.physicalAmplify">Physical Amplify:</div>
                     <div class="col-md-4" id="combatStat_physicalAmplify"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Water Amplify:</div>
+                    <div class="col-md-8" data-i18n="combatStats.waterAmplify">Water Amplify:</div>
                     <div class="col-md-4" id="combatStat_waterAmplify"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Nature Amplify:</div>
+                    <div class="col-md-8" data-i18n="combatStats.natureAmplify">Nature Amplify:</div>
                     <div class="col-md-4" id="combatStat_natureAmplify"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Fire Amplify:</div>
+                    <div class="col-md-8" data-i18n="combatStats.fireAmplify">Fire Amplify:</div>
                     <div class="col-md-4" id="combatStat_fireAmplify"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Healing Amplify:</div>
+                    <div class="col-md-8" data-i18n="combatStats.healingAmplify">Healing Amplify:</div>
                     <div class="col-md-4" id="combatStat_healingAmplify"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Stab Evasion:</div>
+                    <div class="col-md-8" data-i18n="combatStats.stabEvasion">Stab Evasion:</div>
                     <div class="col-md-4" id="combatStat_stabEvasionRating"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Slash Evasion:</div>
+                    <div class="col-md-8" data-i18n="combatStats.slashEvasion">Slash Evasion:</div>
                     <div class="col-md-4" id="combatStat_slashEvasionRating"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Smash Evasion:</div>
+                    <div class="col-md-8" data-i18n="combatStats.smashEvasion">Smash Evasion:</div>
                     <div class="col-md-4" id="combatStat_smashEvasionRating"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Ranged Evasion:</div>
+                    <div class="col-md-8" data-i18n="combatStats.rangedEvasion">Ranged Evasion:</div>
                     <div class="col-md-4" id="combatStat_rangedEvasionRating"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Magic Evasion:</div>
+                    <div class="col-md-8" data-i18n="combatStats.magicEvasion">Magic Evasion:</div>
                     <div class="col-md-4" id="combatStat_magicEvasionRating"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Armor:</div>
+                    <div class="col-md-8" data-i18n="combatStats.armor">Armor:</div>
                     <div class="col-md-4" id="combatStat_totalArmor"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Water Resistance:</div>
+                    <div class="col-md-8" data-i18n="combatStats.waterResistance">Water Resistance:</div>
                     <div class="col-md-4" id="combatStat_totalWaterResistance"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Nature Resistance:</div>
+                    <div class="col-md-8" data-i18n="combatStats.natureResistance">Nature Resistance:</div>
                     <div class="col-md-4" id="combatStat_totalNatureResistance"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Fire Resistance:</div>
+                    <div class="col-md-8" data-i18n="combatStats.fireResistance">Fire Resistance:</div>
                     <div class="col-md-4" id="combatStat_totalFireResistance"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Life Steal:</div>
+                    <div class="col-md-8" data-i18n="combatStats.lifeSteal">Life Steal:</div>
                     <div class="col-md-4" id="combatStat_lifeSteal"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Physical Thorns:</div>
+                    <div class="col-md-8" data-i18n="combatStats.physicalThorns">Physical Thorns:</div>
                     <div class="col-md-4" id="combatStat_physicalThorns"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Elemental Thorns:</div>
+                    <div class="col-md-8" data-i18n="combatStats.elementalThorns">Elemental Thorns:</div>
                     <div class="col-md-4" id="combatStat_elementalThorns"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">HP Regen:</div>
-                    <div class="col-md-4" id="combatStat_HPRegen"></div>
+                    <div class="col-md-8" data-i18n="combatStats.hpRegenPer10">HP Regen:</div>
+                    <div class="col-md-4" id="combatStat_hpRegenPer10"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">MP Regen:</div>
-                    <div class="col-md-4" id="combatStat_MPRegen"></div>
+                    <div class="col-md-8" data-i18n="combatStats.mpRegenPer10">MP Regen:</div>
+                    <div class="col-md-4" id="combatStat_mpRegenPer10"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Experience Rate:</div>
+                    <div class="col-md-8" data-i18n="combatStats.combatExperience">Experience Rate:</div>
                     <div class="col-md-4" id="combatStat_combatExperience"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Critical Rate:</div>
+                    <div class="col-md-8" data-i18n="combatStats.criticalRate">Critical Rate:</div>
                     <div class="col-md-4" id="combatStat_criticalRate"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Critical Damage Bonus:</div>
+                    <div class="col-md-8" data-i18n="combatStats.criticalDamage">Critical Damage Bonus:</div>
                     <div class="col-md-4" id="combatStat_criticalDamage"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Task Damage Bonus:</div>
+                    <div class="col-md-8" data-i18n="combatStats.taskDamage">Task Damage Bonus:</div>
                     <div class="col-md-4" id="combatStat_taskDamage"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Armor Penetration:</div>
+                    <div class="col-md-8" data-i18n="combatStats.armorPenetration">Armor Penetration:</div>
                     <div class="col-md-4" id="combatStat_armorPenetration"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Water Penetration:</div>
+                    <div class="col-md-8"data-i18n="combatStats.waterPenetration">Water Penetration:</div>
                     <div class="col-md-4" id="combatStat_waterPenetration"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Nature Penetration:</div>
+                    <div class="col-md-8" data-i18n="combatStats.naturePenetration">Nature Penetration:</div>
                     <div class="col-md-4" id="combatStat_naturePenetration"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Fire Penetration:</div>
+                    <div class="col-md-8" data-i18n="combatStats.firePenetration">Fire Penetration:</div>
                     <div class="col-md-4" id="combatStat_firePenetration"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Ability Haste:</div>
+                    <div class="col-md-8" data-i18n="combatStats.abilityHaste">Ability Haste:</div>
                     <div class="col-md-4" id="combatStat_abilityHaste"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Tenacity:</div>
+                    <div class="col-md-8" data-i18n="combatStats.tenacity">Tenacity:</div>
                     <div class="col-md-4" id="combatStat_tenacity"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Mana Leech:</div>
+                    <div class="col-md-8" data-i18n="combatStats.manaLeech">Mana Leech:</div>
                     <div class="col-md-4" id="combatStat_manaLeech"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Cast Speed:</div>
+                    <div class="col-md-8" data-i18n="combatStats.castSpeed">Cast Speed:</div>
                     <div class="col-md-4" id="combatStat_castSpeed"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Threat:</div>
+                    <div class="col-md-8" data-i18n="combatStats.threat">Threat:</div>
                     <div class="col-md-4" id="combatStat_totalThreat"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Parry:</div>
+                    <div class="col-md-8" data-i18n="combatStats.parry">Parry:</div>
                     <div class="col-md-4" id="combatStat_parry"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Mayhem:</div>
+                    <div class="col-md-8" data-i18n="combatStats.mayhem">Mayhem:</div>
                     <div class="col-md-4" id="combatStat_mayhem"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Pierce:</div>
+                    <div class="col-md-8" data-i18n="combatStats.pierce">Pierce:</div>
                     <div class="col-md-4" id="combatStat_pierce"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Curse:</div>
+                    <div class="col-md-8" data-i18n="combatStats.curse">Curse:</div>
                     <div class="col-md-4" id="combatStat_curse"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Weaken:</div>
+                    <div class="col-md-8" data-i18n="combatStats.weaken">Weaken:</div>
                     <div class="col-md-4" id="combatStat_weaken"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Attack Speed:</div>
+                    <div class="col-md-8" data-i18n="combatStats.attackSpeed">Attack Speed:</div>
                     <div class="col-md-4" id="combatStat_attackSpeed"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Drink Concentration:</div>
+                    <div class="col-md-8" data-i18n="combatStats.drinkConcentration">Drink Concentration:</div>
                     <div class="col-md-4" id="combatStat_drinkConcentration"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8">Food Haste:</div>
+                    <div class="col-md-8" data-i18n="combatStats.foodHaste">Food Haste:</div>
                     <div class="col-md-4" id="combatStat_foodHaste"></div>
                 </div>
                 <!-- #endregion -->
             </div>
             <div class="col-md-5">
                 <div class="row mb-3">
-                    <b>Simulation Results</b>
+                    <b data-i18n="common:simulationResults.title">Simulation Results</b>
                 </div>
                 <div class="row">
                     <!-- #region Simulation Results -->
                     <div class="col-md-5">
                         <div class="row">
-                            <b>Kills per hour</b>
+                            <b data-i18n="common:simulationResults.killPerHour">Kills per hour</b>
                         </div>
                         <div id="simulationResultKills" class="mb-2"></div>
                         <div class="row" id="simulationBossTimeHeading">
-                            <b>Time spent on boss</b>
+                            <b data-i18n="common:simulationResults.timeSpentOnBoss">Time spent on boss</b>
                         </div>
                         <div id="simulationBossTime" class="mb-2"></div>
                         <div class="row">
-                            <b>Deaths per hour</b>
+                            <b data-i18n="common:simulationResults.deathPerHour">Deaths per hour</b>
                         </div>
                         <div id="simulationResultPlayerDeaths" class="mb-2"></div>
                         <div class="row">
-                            <b>XP per hour</b>
+                            <b data-i18n="common:simulationResults.xpPerHour">XP per hour</b>
                         </div>
                         <div id="simulationResultExperienceGain" class="mb-2"></div>
                         <div class="row" id="simulationHpSpentHeading">
-                            <b>HP Spent per hour</b>
+                            <b data-i18n="common:simulationResults.hpSpentPerHour">HP Spent per hour</b>
                         </div>
                         <div id="simulationHpSpent" class="mb-2"></div>
                         <div class="row">
-                            <b>Consumables used per hour</b>
+                            <b data-i18n="common:simulationResults.consumablesUsedPerHour">Consumables used per hour</b>
                         </div>
                         <div id="simulationResultConsumablesUsed" class="mb-2"></div>
                         <div class="row">
-                            <b>Mana used per hour (Casts/h)</b>
+                            <b data-i18n="common:simulationResults.manaUsedPerHour">Mana used per hour (Casts/h)</b>
                         </div>
                         <div id="simulationResultManaUsed" class="mb-2"></div>
                         <div class="row">
-                            <b>Health restored per second</b>
+                            <b data-i18n="common:simulationResults.healthRestoredPerHour">Health restored per second</b>
                         </div>
                         <div id="simulationResultHealthRestored" class="mb-2"></div>
                         <div class="row">
-                            <b>Mana restored per second</b>
+                            <b data-i18n="common:simulationResults.manaRestoredPerHour">Mana restored per second</b>
                         </div>
                         <div id="simulationResultManaRestored"></div>
                     </div>
                     <div class="col-md-7" id="simulationResultColumn2">
                         <div class="row">
-                            <b>Damage Done (Total)</b>
+                            <b data-i18n="common:simulationResults.damageDoneTotal">Damage Done (Total)</b>
                         </div>
                         <div class="row">
-                            <div class="col-md-5"><b>Source</b></div>
-                            <div class="col-md-3 text-end"><b>Hitchance</b></div>
+                            <div class="col-md-5"><b data-i18n="common:simulationResults.source">Source</b></div>
+                            <div class="col-md-3 text-end"><b data-i18n="common:simulationResults.hitChance">Hitchance</b></div>
                             <div class="col-md-2 text-end"><b>DPS</b></div>
                             <div class="col-md-2 text-end"><b>%</b></div>
                         </div>
@@ -960,8 +964,8 @@
                                         <div id="collapseDamageDone1" class="accordion-collapse collapse">
                                             <div class="accordion-body">
                                                 <div class="row">
-                                                    <div class="col-md-5"><b>Source</b></div>
-                                                    <div class="col-md-3 text-end"><b>Hitchance</b></div>
+                                                    <div class="col-md-5"><b data-i18n="common:simulationResults.source">Source</b></div>
+                                                    <div class="col-md-3 text-end"><b data-i18n="common:simulationResults.hitChance">Hitchance</b></div>
                                                     <div class="col-md-2 text-end"><b>DPS</b></div>
                                                     <div class="col-md-2 text-end"><b>%</b></div>
                                                 </div>
@@ -987,8 +991,8 @@
                                         <div id="collapseDamageDone2" class="accordion-collapse collapse">
                                             <div class="accordion-body">
                                                 <div class="row">
-                                                    <div class="col-md-5"><b>Source</b></div>
-                                                    <div class="col-md-3 text-end"><b>Hitchance</b></div>
+                                                    <div class="col-md-5"><b data-i18n="common:simulationResults.source">Source</b></div>
+                                                    <div class="col-md-3 text-end"><b data-i18n="common:simulationResults.hitChance">Hitchance</b></div>
                                                     <div class="col-md-2 text-end"><b>DPS</b></div>
                                                     <div class="col-md-2 text-end"><b>%</b></div>
                                                 </div>
@@ -1014,8 +1018,8 @@
                                         <div id="collapseDamageDone3" class="accordion-collapse collapse">
                                             <div class="accordion-body">
                                                 <div class="row">
-                                                    <div class="col-md-5"><b>Source</b></div>
-                                                    <div class="col-md-3 text-end"><b>Hitchance</b></div>
+                                                    <div class="col-md-5"><b data-i18n="common:simulationResults.source">Source</b></div>
+                                                    <div class="col-md-3 text-end"><b data-i18n="common:simulationResults.hitChance">Hitchance</b></div>
                                                     <div class="col-md-2 text-end"><b>DPS</b></div>
                                                     <div class="col-md-2 text-end"><b>%</b></div>
                                                 </div>
@@ -1041,8 +1045,8 @@
                                         <div id="collapseDamageDone4" class="accordion-collapse collapse">
                                             <div class="accordion-body">
                                                 <div class="row">
-                                                    <div class="col-md-5"><b>Source</b></div>
-                                                    <div class="col-md-3 text-end"><b>Hitchance</b></div>
+                                                    <div class="col-md-5"><b data-i18n="common:simulationResults.source">Source</b></div>
+                                                    <div class="col-md-3 text-end"><b data-i18n="common:simulationResults.hitChance">Hitchance</b></div>
                                                     <div class="col-md-2 text-end"><b>DPS</b></div>
                                                     <div class="col-md-2 text-end"><b>%</b></div>
                                                 </div>
@@ -1068,8 +1072,8 @@
                                         <div id="collapseDamageDone5" class="accordion-collapse collapse">
                                             <div class="accordion-body">
                                                 <div class="row">
-                                                    <div class="col-md-5"><b>Source</b></div>
-                                                    <div class="col-md-3 text-end"><b>Hitchance</b></div>
+                                                    <div class="col-md-5"><b data-i18n="common:simulationResults.source">Source</b></div>
+                                                    <div class="col-md-3 text-end"><b data-i18n="common:simulationResults.hitChance">Hitchance</b></div>
                                                     <div class="col-md-2 text-end"><b>DPS</b></div>
                                                     <div class="col-md-2 text-end"><b>%</b></div>
                                                 </div>
@@ -1095,8 +1099,8 @@
                                         <div id="collapseDamageDone6" class="accordion-collapse collapse">
                                             <div class="accordion-body">
                                                 <div class="row">
-                                                    <div class="col-md-5"><b>Source</b></div>
-                                                    <div class="col-md-3 text-end"><b>Hitchance</b></div>
+                                                    <div class="col-md-5"><b data-i18n="common:simulationResults.source">Source</b></div>
+                                                    <div class="col-md-3 text-end"><b data-i18n="common:simulationResults.hitChance">Hitchance</b></div>
                                                     <div class="col-md-2 text-end"><b>DPS</b></div>
                                                     <div class="col-md-2 text-end"><b>%</b></div>
                                                 </div>
@@ -1621,11 +1625,11 @@
                             </div>
                         </div>                        
                         <div class="row pt-2">
-                            <b>Damage Taken (Total)</b>
+                            <b data-i18n="common:simulationResults.damageTakenTotal">Damage Taken (Total)</b>
                         </div>
                         <div class="row">
-                            <div class="col-md-5"><b>Source</b></div>
-                            <div class="col-md-3 text-end"><b>Hitchance</b></div>
+                            <div class="col-md-5"><b data-i18n="common:simulationResults.source">Source</b></div>
+                            <div class="col-md-3 text-end"><b data-i18n="common:simulationResults.hitChance">Hitchance</b></div>
                             <div class="col-md-2 text-end"><b>DPS</b></div>
                             <div class="col-md-2 text-end"><b>%</b></div>
                         </div>
@@ -1645,8 +1649,8 @@
                                         <div id="collapseDamageTaken1" class="accordion-collapse collapse">
                                             <div class="accordion-body">
                                                 <div class="row">
-                                                    <div class="col-md-5"><b>Source</b></div>
-                                                    <div class="col-md-3 text-end"><b>Hitchance</b></div>
+                                                    <div class="col-md-5"><b data-i18n="common:simulationResults.source">Source</b></div>
+                                                    <div class="col-md-3 text-end"><b data-i18n="common:simulationResults.hitChance">Hitchance</b></div>
                                                     <div class="col-md-2 text-end"><b>DPS</b></div>
                                                     <div class="col-md-2 text-end"><b>%</b></div>
                                                 </div>
@@ -1672,8 +1676,8 @@
                                         <div id="collapseDamageTaken2" class="accordion-collapse collapse">
                                             <div class="accordion-body">
                                                 <div class="row">
-                                                    <div class="col-md-5"><b>Source</b></div>
-                                                    <div class="col-md-3 text-end"><b>Hitchance</b></div>
+                                                    <div class="col-md-5"><b data-i18n="common:simulationResults.source">Source</b></div>
+                                                    <div class="col-md-3 text-end"><b data-i18n="common:simulationResults.hitChance">Hitchance</b></div>
                                                     <div class="col-md-2 text-end"><b>DPS</b></div>
                                                     <div class="col-md-2 text-end"><b>%</b></div>
                                                 </div>
@@ -1699,8 +1703,8 @@
                                         <div id="collapseDamageTaken3" class="accordion-collapse collapse">
                                             <div class="accordion-body">
                                                 <div class="row">
-                                                    <div class="col-md-5"><b>Source</b></div>
-                                                    <div class="col-md-3 text-end"><b>Hitchance</b></div>
+                                                    <div class="col-md-5"><b data-i18n="common:simulationResults.source">Source</b></div>
+                                                    <div class="col-md-3 text-end"><b data-i18n="common:simulationResults.hitChance">Hitchance</b></div>
                                                     <div class="col-md-2 text-end"><b>DPS</b></div>
                                                     <div class="col-md-2 text-end"><b>%</b></div>
                                                 </div>
@@ -1726,8 +1730,8 @@
                                         <div id="collapseDamageTaken4" class="accordion-collapse collapse">
                                             <div class="accordion-body">
                                                 <div class="row">
-                                                    <div class="col-md-5"><b>Source</b></div>
-                                                    <div class="col-md-3 text-end"><b>Hitchance</b></div>
+                                                    <div class="col-md-5"><b data-i18n="common:simulationResults.source">Source</b></div>
+                                                    <div class="col-md-3 text-end"><b data-i18n="common:simulationResults.hitChance">Hitchance</b></div>
                                                     <div class="col-md-2 text-end"><b>DPS</b></div>
                                                     <div class="col-md-2 text-end"><b>%</b></div>
                                                 </div>
@@ -1753,8 +1757,8 @@
                                         <div id="collapseDamageTaken5" class="accordion-collapse collapse">
                                             <div class="accordion-body">
                                                 <div class="row">
-                                                    <div class="col-md-5"><b>Source</b></div>
-                                                    <div class="col-md-3 text-end"><b>Hitchance</b></div>
+                                                    <div class="col-md-5"><b data-i18n="common:simulationResults.source">Source</b></div>
+                                                    <div class="col-md-3 text-end"><b data-i18n="common:simulationResults.hitChance">Hitchance</b></div>
                                                     <div class="col-md-2 text-end"><b>DPS</b></div>
                                                     <div class="col-md-2 text-end"><b>%</b></div>
                                                 </div>
@@ -1780,8 +1784,8 @@
                                         <div id="collapseDamageTaken6" class="accordion-collapse collapse">
                                             <div class="accordion-body">
                                                 <div class="row">
-                                                    <div class="col-md-5"><b>Source</b></div>
-                                                    <div class="col-md-3 text-end"><b>Hitchance</b></div>
+                                                    <div class="col-md-5"><b data-i18n="common:simulationResults.source">Source</b></div>
+                                                    <div class="col-md-3 text-end"><b data-i18n="common:simulationResults.hitChance">Hitchance</b></div>
                                                     <div class="col-md-2 text-end"><b>DPS</b></div>
                                                     <div class="col-md-2 text-end"><b>%</b></div>
                                                 </div>
@@ -2306,13 +2310,13 @@
                             </div>
                         </div>                        
                         <div class="row pt-2">
-                            <b>Profit: <span id="profitPreview"></span></b>
+                            <b><span data-i18n="common:profit">Profit</span>: <span id="profitPreview"></span></b>
                         </div>
                         <div class="row pt-2">
-                            <b>No RNG Profit: <span id="noRngProfitPreview"></span></b>
+                            <b><span data-i18n="common:noRNGProfit">No RNG Profit</span>: <span id="noRngProfitPreview"></span></b>
                         </div>
                         <div class="row pt-2">
-                            <b>Drops (Total)</b>
+                            <b data-i18n="common:dropTotal">Drops (Total)</b>
                         </div>
                         <div class="row" id="simulationResultDrops"></div>
                         <div class="row pt-2 d-none" id="noRngDropsAccordion">
@@ -2323,7 +2327,7 @@
                                             <button id="buttonNoRngDropsAccordion" class="accordion-button collapsed"
                                                 type="button" data-bs-toggle="collapse"
                                                 data-bs-target="#collapseNoRngDrops" style="padding: 0.5em">
-                                                <b>No RNG Drops</b>
+                                                <b data-i18n="common:noRNGDrops">No RNG Drops</b>
                                             </button>
                                         </h2>
                                         <div id="collapseNoRngDrops" class="accordion-collapse collapse">
@@ -2353,7 +2357,7 @@
                     <input type="hidden" id="inputModalTriggerTarget" />
                     <div class="container-fluid">
                         <div class="row mb-2">
-                            <div class="col" id="triggerStartText">Activate when:</div>
+                            <div class="col" id="triggerStartText" data-i18n="combatTriggersSetting.activateWhen">Activate when:</div>
                         </div>
                         <div class="row mb-2" id="modalTrigger_0">
                             <div class="col-md-10">
@@ -2390,7 +2394,7 @@
                             <div class="col-md-10">
                                 <div class="row mb-2">
                                     <div class="col">
-                                        <b>AND</b>
+                                        <b data-i18n="combatTriggersSetting.and">AND</b>
                                     </div>
                                 </div>
                                 <div class="row mb-2">
@@ -2426,7 +2430,7 @@
                             <div class="col-md-10">
                                 <div class="row mb-2">
                                     <div class="col">
-                                        <b>AND</b>
+                                        <b data-i18n="combatTriggersSetting.and">AND</b>
                                     </div>
                                 </div>
                                 <div class="row mb-2">
@@ -2462,7 +2466,7 @@
                             <div class="col-md-10">
                                 <div class="row mb-2">
                                     <div class="col">
-                                        <b>AND</b>
+                                        <b data-i18n="combatTriggersSetting.and">AND</b>
                                     </div>
                                 </div>
                                 <div class="row mb-2">
@@ -2496,12 +2500,12 @@
                         </div>
                         <div class="row pt-2">
                             <div class="col-md-6 text-center">
-                                <button type="button" class="btn btn-primary" id="buttonAddTrigger">
+                                <button type="button" class="btn btn-primary" id="buttonAddTrigger" data-i18n="combatTriggersSetting.addCondition">
                                     Add condition
                                 </button>
                             </div>
                             <div class="col-md-6 text-center">
-                                <button type="button" class="btn btn-primary" id="buttonDefaultTrigger">
+                                <button type="button" class="btn btn-primary" id="buttonDefaultTrigger" data-i18n="combatTriggersSetting.resetDefault">
                                     Set to default
                                 </button>
                             </div>
@@ -2509,8 +2513,8 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Cancel</button>
-                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="buttonTriggerModalSave">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="modalProvider.cancel">Cancel</button>
+                    <button type="button" class="btn btn-primary" data-bs-dismiss="modal" id="buttonTriggerModalSave" data-i18n="combatTriggersSetting.save">
                         Save
                     </button>
                 </div>
@@ -2523,19 +2527,19 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Equipment Sets</h5>
+                    <h5 class="modal-title" data-i18n="common:controls.equipmentSets">Equipment Sets</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="container-fluid">
                         <div id="equipmentSetList"></div>
                         <div class="row">
-                            <label for="inputEquipmentSetName" class="col-md-auto col-form-label">Name</label>
+                            <label for="inputEquipmentSetName" class="col-md-auto col-form-label" data-i18n="common:controls.name">Name</label>
                             <div class="col">
                                 <input type="text" id="inputEquipmentSetName" class="form-control" />
                             </div>
                             <div class="col-md-auto">
-                                <button type="button" id="buttonCreateNewEquipmentSet" class="btn btn-primary">
+                                <button type="button" id="buttonCreateNewEquipmentSet" class="btn btn-primary" data-i18n="common:controls.create">
                                     Create
                                 </button>
                             </div>
@@ -2543,7 +2547,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="common:controls.close">Close</button>
                 </div>
             </div>
         </div>
@@ -3114,53 +3118,53 @@
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Edit Prices</h5>
+                    <h5 class="modal-title" data-i18n="common:editPrices">Edit Prices</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="container-fluid">
                         <div class="row">
                             <div class="col-12 mb-4">
-                                <h3>Profit: <span id="profitSpan"></span></h3>
+                                <h3><span data-i18n="common:profit">Profit</span>: <span id="profitSpan"></span></h3>
                             </div>
                             <div class="col-12 mb-4">
-                                <h3>No RNG Profit: <span id="noRngProfitSpan"></span></h3>
+                                <h3><span data-i18n="common:noRNGProfit">No RNG Profit</span>: <span id="noRngProfitSpan"></span></h3>
                             </div>
                             <div class="col-12 mb-4">
-                                <h3>Expenses: <span id="expensesSpan"></span></h3>
+                                <h3><span data-i18n="common:expense">Expenses</span>: <span id="expensesSpan"></span></h3>
                                 <table class="table table-bordered table-striped profit-table" id="expensesTable">
                                     <tbody>
                                         <tr>
-                                            <th>Item</th>
-                                            <th>Price</th>
-                                            <th>Amount</th>
-                                            <th>Total</th>
+                                            <th data-i18n="marketplacePanel.item">Item</th>
+                                            <th data-i18n="marketplacePanel.price">Price</th>
+                                            <th data-i18n="common:amount">Amount</th>
+                                            <th data-i18n="common:total">Total</th>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                             <div class="col-12 mb-4">
-                                <h3>Revenue: <span id="revenueSpan"></span></h3>
+                                <h3><span data-i18n="common:revenue">Revenue</span>: <span id="revenueSpan"></span></h3>
                                 <table class="table table-bordered table-striped profit-table" id="revenueTable">
                                     <tbody>
                                         <tr>
-                                            <th>Item</th>
-                                            <th>Price</th>
-                                            <th>Amount</th>
-                                            <th>Total</th>
+                                            <th data-i18n="marketplacePanel.item">Item</th>
+                                            <th data-i18n="marketplacePanel.price">Price</th>
+                                            <th data-i18n="common:amount">Amount</th>
+                                            <th data-i18n="common:total">Total</th>
                                         </tr>
                                     </tbody>
                                 </table>
                             </div>
                             <div class="col-12 mb-4">
-                                <h3>No RNG Revenue: <span id="noRngRevenueSpan"></span></h3>
+                                <h3><span data-i18n="common:noRNGRevenue">No RNG Revenue</span>: <span id="noRngRevenueSpan"></span></h3>
                                 <table class="table table-bordered table-striped profit-table" id="noRngRevenueTable">
                                     <tbody>
                                         <tr>
-                                            <th>Item</th>
-                                            <th>Price</th>
-                                            <th>Amount</th>
-                                            <th>Total</th>
+                                            <th data-i18n="marketplacePanel.item">Item</th>
+                                            <th data-i18n="marketplacePanel.price">Price</th>
+                                            <th data-i18n="common:amount">Amount</th>
+                                            <th data-i18n="common:total">Total</th>
                                         </tr>
                                     </tbody>
                                 </table>
@@ -3180,7 +3184,7 @@
         <div class="modal-dialog">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">House Rooms</h5>
+                    <h5 class="modal-title" data-i18n="characterManagement.house">House Rooms</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
@@ -3195,6 +3199,7 @@
         </div>
         <!-- #endregion -->
     </div>
+    <script src="js/i18n.js"></script>
     <script src="https://s4.zstatic.net/ajax/libs/bootstrap/5.2.0/js/bootstrap.bundle.min.js" integrity="sha512-9GacT4119eY3AcosfWtHMsT5JyZudrexyEVzTBWV3viP/YfB9e2pEy3N7WXL3SV6ASXpTU0vzzSxsbfsuUH4sQ==" crossorigin="anonymous" referrerpolicy="no-referrer"></script>
     <script src="bundle.js" type="module"></script>
 </body>

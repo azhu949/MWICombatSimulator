@@ -47,8 +47,8 @@
                 "waterResistance": 20,
                 "natureResistance": 50,
                 "fireResistance": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -96,8 +96,8 @@
                 "waterResistance": 20,
                 "natureResistance": 50,
                 "fireResistance": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -145,8 +145,8 @@
                 "waterResistance": 20,
                 "natureResistance": 50,
                 "fireResistance": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -277,8 +277,8 @@
                 "natureResistance": 50,
                 "fireResistance": 50,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -328,8 +328,8 @@
                 "natureResistance": 50,
                 "fireResistance": 50,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -379,8 +379,8 @@
                 "natureResistance": 50,
                 "fireResistance": 50,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -470,8 +470,8 @@
                 "stabEvasion": 0.4,
                 "slashEvasion": 0.4,
                 "smashEvasion": 0.4,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -520,8 +520,8 @@
                 "stabEvasion": 0.4,
                 "slashEvasion": 0.4,
                 "smashEvasion": 0.4,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -570,8 +570,8 @@
                 "stabEvasion": 0.4,
                 "slashEvasion": 0.4,
                 "smashEvasion": 0.4,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -701,8 +701,8 @@
                 "attackInterval": 3000000000,
                 "waterResistance": 20,
                 "fireResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -747,8 +747,8 @@
                 "attackInterval": 3000000000,
                 "waterResistance": 20,
                 "fireResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -793,8 +793,8 @@
                 "attackInterval": 3000000000,
                 "waterResistance": 20,
                 "fireResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -904,8 +904,8 @@
                 "stabEvasion": 0.3,
                 "waterResistance": 10,
                 "natureResistance": 10,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -951,8 +951,8 @@
                 "stabEvasion": 0.3,
                 "waterResistance": 10,
                 "natureResistance": 10,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -998,8 +998,8 @@
                 "stabEvasion": 0.3,
                 "waterResistance": 10,
                 "natureResistance": 10,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -1145,8 +1145,8 @@
                 "slashEvasion": 0.5,
                 "smashEvasion": 0.5,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -1193,8 +1193,8 @@
                 "slashEvasion": 0.5,
                 "smashEvasion": 0.5,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -1241,8 +1241,8 @@
                 "slashEvasion": 0.5,
                 "smashEvasion": 0.5,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -1324,8 +1324,8 @@
                 "waterResistance": 30,
                 "natureResistance": 30,
                 "fireResistance": 30,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -1371,8 +1371,8 @@
                 "waterResistance": 30,
                 "natureResistance": 30,
                 "fireResistance": 30,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -1418,8 +1418,8 @@
                 "waterResistance": 30,
                 "natureResistance": 30,
                 "fireResistance": 30,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -1570,8 +1570,8 @@
                 "waterResistance": 50,
                 "natureResistance": 20,
                 "fireResistance": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -1620,8 +1620,8 @@
                 "waterResistance": 50,
                 "natureResistance": 20,
                 "fireResistance": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -1670,8 +1670,8 @@
                 "waterResistance": 50,
                 "natureResistance": 20,
                 "fireResistance": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -1844,8 +1844,8 @@
                 "smashEvasion": -0.2,
                 "waterResistance": 20,
                 "fireResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -1892,8 +1892,8 @@
                 "smashEvasion": -0.2,
                 "waterResistance": 20,
                 "fireResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -1940,8 +1940,8 @@
                 "smashEvasion": -0.2,
                 "waterResistance": 20,
                 "fireResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -2052,8 +2052,8 @@
                 "rangedEvasion": 0.4,
                 "waterResistance": 40,
                 "fireResistance": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -2100,8 +2100,8 @@
                 "rangedEvasion": 0.4,
                 "waterResistance": 40,
                 "fireResistance": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -2148,8 +2148,8 @@
                 "rangedEvasion": 0.4,
                 "waterResistance": 40,
                 "fireResistance": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -2330,8 +2330,8 @@
                 "waterResistance": 20,
                 "natureResistance": 50,
                 "fireResistance": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -2379,8 +2379,8 @@
                 "waterResistance": 20,
                 "natureResistance": 50,
                 "fireResistance": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -2428,8 +2428,8 @@
                 "waterResistance": 20,
                 "natureResistance": 50,
                 "fireResistance": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -2589,8 +2589,8 @@
                 "natureResistance": 80,
                 "fireResistance": 80,
                 "tenacity": 100,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01,
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01,
                 "curse": 0.04
             }
         },
@@ -2639,8 +2639,8 @@
                 "natureResistance": 80,
                 "fireResistance": 80,
                 "tenacity": 100,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01,
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01,
                 "curse": 0.04
             }
         },
@@ -2689,8 +2689,8 @@
                 "natureResistance": 80,
                 "fireResistance": 80,
                 "tenacity": 100,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01,
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01,
                 "curse": 0.04
             }
         },
@@ -2783,8 +2783,8 @@
                 "natureResistance": 20,
                 "fireResistance": 20,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -2835,8 +2835,8 @@
                 "natureResistance": 20,
                 "fireResistance": 20,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -2887,8 +2887,8 @@
                 "natureResistance": 20,
                 "fireResistance": 20,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -2976,8 +2976,8 @@
                 "natureResistance": 50,
                 "fireResistance": 50,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -3024,8 +3024,8 @@
                 "natureResistance": 50,
                 "fireResistance": 50,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -3072,8 +3072,8 @@
                 "natureResistance": 50,
                 "fireResistance": 50,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -3241,8 +3241,8 @@
                 "waterResistance": 40,
                 "natureResistance": 40,
                 "fireResistance": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -3291,8 +3291,8 @@
                 "waterResistance": 40,
                 "natureResistance": 40,
                 "fireResistance": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -3341,8 +3341,8 @@
                 "waterResistance": 40,
                 "natureResistance": 40,
                 "fireResistance": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -3510,8 +3510,8 @@
                 "natureResistance": 150,
                 "fireResistance": 100,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -3565,8 +3565,8 @@
                 "natureResistance": 150,
                 "fireResistance": 100,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -3620,8 +3620,8 @@
                 "natureResistance": 150,
                 "fireResistance": 100,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -3706,8 +3706,8 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
                 "tenacity": 100,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -3751,8 +3751,8 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
                 "tenacity": 100,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -3796,8 +3796,8 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
                 "tenacity": 100,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -3884,8 +3884,8 @@
                 "rangedEvasion": 1,
                 "armor": 100,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -3931,8 +3931,8 @@
                 "rangedEvasion": 1,
                 "armor": 100,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -3978,8 +3978,8 @@
                 "rangedEvasion": 1,
                 "armor": 100,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -4064,8 +4064,8 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -4109,8 +4109,8 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -4154,8 +4154,8 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -4243,8 +4243,8 @@
                 "natureResistance": 50,
                 "fireResistance": 50,
                 "tenacity": 100,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -4296,8 +4296,8 @@
                 "natureResistance": 50,
                 "fireResistance": 50,
                 "tenacity": 100,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -4349,8 +4349,8 @@
                 "natureResistance": 50,
                 "fireResistance": 50,
                 "tenacity": 100,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -4441,8 +4441,8 @@
                 "natureResistance": 50,
                 "fireResistance": 50,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -4492,8 +4492,8 @@
                 "natureResistance": 50,
                 "fireResistance": 50,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -4543,8 +4543,8 @@
                 "natureResistance": 50,
                 "fireResistance": 50,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -4630,8 +4630,8 @@
                 "attackInterval": 3000000000,
                 "stabEvasion": -0.25,
                 "rangedEvasion": -0.25,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -4676,8 +4676,8 @@
                 "attackInterval": 3000000000,
                 "stabEvasion": -0.25,
                 "rangedEvasion": -0.25,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -4722,8 +4722,8 @@
                 "attackInterval": 3000000000,
                 "stabEvasion": -0.25,
                 "rangedEvasion": -0.25,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -4895,8 +4895,8 @@
                 "attackInterval": 3000000000,
                 "stabEvasion": -0.25,
                 "rangedEvasion": -0.25,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -4941,8 +4941,8 @@
                 "attackInterval": 3000000000,
                 "stabEvasion": -0.25,
                 "rangedEvasion": -0.25,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -4987,8 +4987,8 @@
                 "attackInterval": 3000000000,
                 "stabEvasion": -0.25,
                 "rangedEvasion": -0.25,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -5107,8 +5107,8 @@
                 "waterResistance": 10,
                 "natureResistance": 40,
                 "fireResistance": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -5156,8 +5156,8 @@
                 "waterResistance": 10,
                 "natureResistance": 40,
                 "fireResistance": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -5205,8 +5205,8 @@
                 "waterResistance": 10,
                 "natureResistance": 40,
                 "fireResistance": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -5334,8 +5334,8 @@
                 "attackInterval": 4000000000,
                 "smashAccuracy": -0.5,
                 "smashDamage": -0.5,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -5380,8 +5380,8 @@
                 "attackInterval": 4000000000,
                 "smashAccuracy": -0.5,
                 "smashDamage": -0.5,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -5426,8 +5426,8 @@
                 "attackInterval": 4000000000,
                 "smashAccuracy": -0.5,
                 "smashDamage": -0.5,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [],
@@ -5500,8 +5500,8 @@
                 ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3200000000,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -5544,8 +5544,8 @@
                 ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3200000000,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -5588,8 +5588,8 @@
                 ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3200000000,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -5696,8 +5696,8 @@
                 ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -5740,8 +5740,8 @@
                 ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -5784,8 +5784,8 @@
                 ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -5935,8 +5935,8 @@
                 "waterResistance": 15,
                 "natureResistance": 15,
                 "fireResistance": 15,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -5986,8 +5986,8 @@
                 "waterResistance": 15,
                 "natureResistance": 15,
                 "fireResistance": 15,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -6037,8 +6037,8 @@
                 "waterResistance": 15,
                 "natureResistance": 15,
                 "fireResistance": 15,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -6187,8 +6187,8 @@
                 "attackInterval": 3200000000,
                 "armorPenetration": 0.2,
                 "armor": 10,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -6233,8 +6233,8 @@
                 "attackInterval": 3200000000,
                 "armorPenetration": 0.2,
                 "armor": 10,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -6279,8 +6279,8 @@
                 "attackInterval": 3200000000,
                 "armorPenetration": 0.2,
                 "armor": 10,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -6454,8 +6454,8 @@
                 "waterResistance": 30,
                 "natureResistance": 30,
                 "fireResistance": 30,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -6503,8 +6503,8 @@
                 "waterResistance": 30,
                 "natureResistance": 30,
                 "fireResistance": 30,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -6552,8 +6552,8 @@
                 "waterResistance": 30,
                 "natureResistance": 30,
                 "fireResistance": 30,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -6697,8 +6697,8 @@
                 "attackInterval": 3300000000,
                 "slashAccuracy": 0.9,
                 "slashDamage": 0.9,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -6743,8 +6743,8 @@
                 "attackInterval": 3300000000,
                 "slashAccuracy": 0.9,
                 "slashDamage": 0.9,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -6789,8 +6789,8 @@
                 "attackInterval": 3300000000,
                 "slashAccuracy": 0.9,
                 "slashDamage": 0.9,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -6934,8 +6934,8 @@
                 "attackInterval": 3700000000,
                 "smashAccuracy": 0.1,
                 "smashDamage": 1.65,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -6980,8 +6980,8 @@
                 "attackInterval": 3700000000,
                 "smashAccuracy": 0.1,
                 "smashDamage": 1.65,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -7026,8 +7026,8 @@
                 "attackInterval": 3700000000,
                 "smashAccuracy": 0.1,
                 "smashDamage": 1.65,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -7171,8 +7171,8 @@
                 "attackInterval": 2500000000,
                 "stabAccuracy": 2,
                 "stabDamage": 0.1,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -7217,8 +7217,8 @@
                 "attackInterval": 2500000000,
                 "stabAccuracy": 2,
                 "stabDamage": 0.1,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -7263,8 +7263,8 @@
                 "attackInterval": 2500000000,
                 "stabAccuracy": 2,
                 "stabDamage": 0.1,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -7403,8 +7403,8 @@
                 "rangedEvasion": 0.4,
                 "waterResistance": 40,
                 "fireResistance": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -7451,8 +7451,8 @@
                 "rangedEvasion": 0.4,
                 "waterResistance": 40,
                 "fireResistance": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -7499,8 +7499,8 @@
                 "rangedEvasion": 0.4,
                 "waterResistance": 40,
                 "fireResistance": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -7605,7 +7605,7 @@
             },
             {
                 "itemHrid": "/items/invincible",
-                "dropRate": 0.00005,
+                "dropRate": 5e-05,
                 "minCount": 1,
                 "maxCount": 1,
                 "minEliteTier": 1
@@ -7672,8 +7672,8 @@
                 "natureResistance": 300,
                 "fireResistance": 300,
                 "tenacity": 100,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -7724,8 +7724,8 @@
                 "natureResistance": 300,
                 "fireResistance": 300,
                 "tenacity": 100,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -7776,8 +7776,8 @@
                 "natureResistance": 300,
                 "fireResistance": 300,
                 "tenacity": 100,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -7864,8 +7864,8 @@
                 "slashEvasion": 0.3,
                 "waterResistance": 10,
                 "natureResistance": 10,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -7911,8 +7911,8 @@
                 "slashEvasion": 0.3,
                 "waterResistance": 10,
                 "natureResistance": 10,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -7958,8 +7958,8 @@
                 "slashEvasion": 0.3,
                 "waterResistance": 10,
                 "natureResistance": 10,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -8104,8 +8104,8 @@
                 "smashEvasion": 0.3,
                 "waterResistance": 10,
                 "natureResistance": 10,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -8151,8 +8151,8 @@
                 "smashEvasion": 0.3,
                 "waterResistance": 10,
                 "natureResistance": 10,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -8198,8 +8198,8 @@
                 "smashEvasion": 0.3,
                 "waterResistance": 10,
                 "natureResistance": 10,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -8325,8 +8325,8 @@
                 "waterResistance": 40,
                 "natureResistance": 10,
                 "fireResistance": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -8374,8 +8374,8 @@
                 "waterResistance": 40,
                 "natureResistance": 10,
                 "fireResistance": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -8423,8 +8423,8 @@
                 "waterResistance": 40,
                 "natureResistance": 10,
                 "fireResistance": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -8556,8 +8556,8 @@
                 "waterResistance": 20,
                 "natureResistance": 50,
                 "fireResistance": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -8606,8 +8606,8 @@
                 "waterResistance": 20,
                 "natureResistance": 50,
                 "fireResistance": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -8656,8 +8656,8 @@
                 "waterResistance": 20,
                 "natureResistance": 50,
                 "fireResistance": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -8729,7 +8729,7 @@
             },
             {
                 "itemHrid": "/items/flame_aura",
-                "dropRate": 0.00005,
+                "dropRate": 5e-05,
                 "minCount": 1,
                 "maxCount": 1,
                 "minEliteTier": 1
@@ -8794,8 +8794,8 @@
                 "natureResistance": 200,
                 "fireResistance": 100,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -8844,8 +8844,8 @@
                 "natureResistance": 200,
                 "fireResistance": 100,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -8894,8 +8894,8 @@
                 "natureResistance": 200,
                 "fireResistance": 100,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -8980,8 +8980,8 @@
                 "natureResistance": 100,
                 "fireResistance": 100,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01,
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01,
                 "curse": 0.04
             }
         },
@@ -9031,8 +9031,8 @@
                 "natureResistance": 100,
                 "fireResistance": 100,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01,
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01,
                 "curse": 0.04
             }
         },
@@ -9082,8 +9082,8 @@
                 "natureResistance": 100,
                 "fireResistance": 100,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01,
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01,
                 "curse": 0.04
             }
         },
@@ -9172,8 +9172,8 @@
                 "natureAmplify": 0.3,
                 "waterResistance": 20,
                 "natureResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -9220,8 +9220,8 @@
                 "natureAmplify": 0.3,
                 "waterResistance": 20,
                 "natureResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -9268,8 +9268,8 @@
                 "natureAmplify": 0.3,
                 "waterResistance": 20,
                 "natureResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -9406,8 +9406,8 @@
                 "waterResistance": 20,
                 "natureResistance": 20,
                 "tenacity": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -9456,8 +9456,8 @@
                 "waterResistance": 20,
                 "natureResistance": 20,
                 "tenacity": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -9506,8 +9506,8 @@
                 "waterResistance": 20,
                 "natureResistance": 20,
                 "tenacity": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -9674,8 +9674,8 @@
                 "natureResistance": 80,
                 "fireResistance": 80,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -9723,8 +9723,8 @@
                 "natureResistance": 80,
                 "fireResistance": 80,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -9772,8 +9772,8 @@
                 "natureResistance": 80,
                 "fireResistance": 80,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -9861,8 +9861,8 @@
                 "rangedEvasion": 0.4,
                 "waterResistance": 40,
                 "fireResistance": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -9909,8 +9909,8 @@
                 "rangedEvasion": 0.4,
                 "waterResistance": 40,
                 "fireResistance": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -9957,8 +9957,8 @@
                 "rangedEvasion": 0.4,
                 "waterResistance": 40,
                 "fireResistance": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -10093,8 +10093,8 @@
                 "natureResistance": 200,
                 "fireResistance": 200,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -10144,8 +10144,8 @@
                 "natureResistance": 200,
                 "fireResistance": 200,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -10195,8 +10195,8 @@
                 "natureResistance": 200,
                 "fireResistance": 200,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -10284,8 +10284,8 @@
                 "waterResistance": 20,
                 "fireResistance": 20,
                 "tenacity": 30,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -10332,8 +10332,8 @@
                 "waterResistance": 20,
                 "fireResistance": 20,
                 "tenacity": 30,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -10380,8 +10380,8 @@
                 "waterResistance": 20,
                 "fireResistance": 20,
                 "tenacity": 30,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -10535,8 +10535,8 @@
                 "natureAmplify": 0.3,
                 "waterResistance": 20,
                 "natureResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -10583,8 +10583,8 @@
                 "natureAmplify": 0.3,
                 "waterResistance": 20,
                 "natureResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -10631,8 +10631,8 @@
                 "natureAmplify": 0.3,
                 "waterResistance": 20,
                 "natureResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -10750,8 +10750,8 @@
                 "slashAccuracy": -0.2,
                 "waterResistance": 20,
                 "fireResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -10798,8 +10798,8 @@
                 "slashAccuracy": -0.2,
                 "waterResistance": 20,
                 "fireResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -10846,8 +10846,8 @@
                 "slashAccuracy": -0.2,
                 "waterResistance": 20,
                 "fireResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -10994,8 +10994,8 @@
                 "waterResistance": 20,
                 "natureResistance": 20,
                 "fireResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -11043,8 +11043,8 @@
                 "waterResistance": 20,
                 "natureResistance": 20,
                 "fireResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -11092,8 +11092,8 @@
                 "waterResistance": 20,
                 "natureResistance": 20,
                 "fireResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -11216,8 +11216,8 @@
                 "armor": 12,
                 "waterResistance": 10,
                 "natureResistance": 10,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -11264,8 +11264,8 @@
                 "armor": 12,
                 "waterResistance": 10,
                 "natureResistance": 10,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -11312,8 +11312,8 @@
                 "armor": 12,
                 "waterResistance": 10,
                 "natureResistance": 10,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -11479,8 +11479,8 @@
                 "smashEvasion": 0.3,
                 "waterResistance": 10,
                 "natureResistance": 10,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -11526,8 +11526,8 @@
                 "smashEvasion": 0.3,
                 "waterResistance": 10,
                 "natureResistance": 10,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -11573,8 +11573,8 @@
                 "smashEvasion": 0.3,
                 "waterResistance": 10,
                 "natureResistance": 10,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -11716,8 +11716,8 @@
                 ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -11760,8 +11760,8 @@
                 ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -11804,8 +11804,8 @@
                 ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -11913,8 +11913,8 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -11958,8 +11958,8 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -12003,8 +12003,8 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -12083,8 +12083,8 @@
                 ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3500000000,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -12127,8 +12127,8 @@
                 ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3500000000,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -12171,8 +12171,8 @@
                 ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3500000000,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -12304,8 +12304,8 @@
                 "armor": 20,
                 "waterResistance": 10,
                 "natureResistance": 10,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -12352,8 +12352,8 @@
                 "armor": 20,
                 "waterResistance": 10,
                 "natureResistance": 10,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -12400,8 +12400,8 @@
                 "armor": 20,
                 "waterResistance": 10,
                 "natureResistance": 10,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -12567,8 +12567,8 @@
                 "smashEvasion": -0.2,
                 "waterResistance": 20,
                 "fireResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -12615,8 +12615,8 @@
                 "smashEvasion": -0.2,
                 "waterResistance": 20,
                 "fireResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -12663,8 +12663,8 @@
                 "smashEvasion": -0.2,
                 "waterResistance": 20,
                 "fireResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -12785,8 +12785,8 @@
                 ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3500000000,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -12829,8 +12829,8 @@
                 ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3500000000,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -12873,8 +12873,8 @@
                 ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3500000000,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -12982,8 +12982,8 @@
                 "damageType": "/damage_types/water",
                 "attackInterval": 3000000000,
                 "autoAttackDamage": -0.5,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -13027,8 +13027,8 @@
                 "damageType": "/damage_types/water",
                 "attackInterval": 3000000000,
                 "autoAttackDamage": -0.5,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -13072,8 +13072,8 @@
                 "damageType": "/damage_types/water",
                 "attackInterval": 3000000000,
                 "autoAttackDamage": -0.5,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -13186,8 +13186,8 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3200000000,
                 "slashEvasion": -0.3,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -13231,8 +13231,8 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3200000000,
                 "slashEvasion": -0.3,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -13276,8 +13276,8 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3200000000,
                 "slashEvasion": -0.3,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -13389,8 +13389,8 @@
                 "natureResistance": 50,
                 "fireResistance": 50,
                 "manaLeech": 0.02,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -13438,8 +13438,8 @@
                 "natureResistance": 50,
                 "fireResistance": 50,
                 "manaLeech": 0.02,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -13487,8 +13487,8 @@
                 "natureResistance": 50,
                 "fireResistance": 50,
                 "manaLeech": 0.02,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -13567,7 +13567,7 @@
             },
             {
                 "itemHrid": "/items/critical_aura",
-                "dropRate": 0.00005,
+                "dropRate": 5e-05,
                 "minCount": 1,
                 "maxCount": 1,
                 "minEliteTier": 1
@@ -13631,8 +13631,8 @@
                 "rangedEvasion": 0.4,
                 "waterResistance": 40,
                 "fireResistance": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -13680,8 +13680,8 @@
                 "rangedEvasion": 0.4,
                 "waterResistance": 40,
                 "fireResistance": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -13729,8 +13729,8 @@
                 "rangedEvasion": 0.4,
                 "waterResistance": 40,
                 "fireResistance": 40,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -13823,7 +13823,7 @@
             },
             {
                 "itemHrid": "/items/fierce_aura",
-                "dropRate": 0.00005,
+                "dropRate": 5e-05,
                 "minCount": 1,
                 "maxCount": 1,
                 "minEliteTier": 1
@@ -13883,8 +13883,8 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
                 "smashEvasion": -0.3,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -13928,8 +13928,8 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
                 "smashEvasion": -0.3,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -13973,8 +13973,8 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
                 "smashEvasion": -0.3,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -14111,8 +14111,8 @@
                 "attackInterval": 3500000000,
                 "stabEvasion": -0.25,
                 "rangedEvasion": -0.25,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -14157,8 +14157,8 @@
                 "attackInterval": 3500000000,
                 "stabEvasion": -0.25,
                 "rangedEvasion": -0.25,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -14203,8 +14203,8 @@
                 "attackInterval": 3500000000,
                 "stabEvasion": -0.25,
                 "rangedEvasion": -0.25,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -14364,8 +14364,8 @@
                 "armor": 10,
                 "waterResistance": 20,
                 "natureResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -14413,8 +14413,8 @@
                 "armor": 10,
                 "waterResistance": 20,
                 "natureResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -14462,8 +14462,8 @@
                 "armor": 10,
                 "waterResistance": 20,
                 "natureResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -14584,7 +14584,7 @@
             },
             {
                 "itemHrid": "/items/sylvan_aura",
-                "dropRate": 0.00002,
+                "dropRate": 2e-05,
                 "minCount": 1,
                 "maxCount": 1,
                 "minEliteTier": 1
@@ -14647,8 +14647,8 @@
                 "smashEvasion": -0.2,
                 "waterResistance": 20,
                 "fireResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -14695,8 +14695,8 @@
                 "smashEvasion": -0.2,
                 "waterResistance": 20,
                 "fireResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -14743,8 +14743,8 @@
                 "smashEvasion": -0.2,
                 "waterResistance": 20,
                 "fireResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -14895,8 +14895,8 @@
                 "natureResistance": 50,
                 "fireResistance": 50,
                 "lifeSteal": 0.02,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -14943,8 +14943,8 @@
                 "natureResistance": 50,
                 "fireResistance": 50,
                 "lifeSteal": 0.02,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -14991,8 +14991,8 @@
                 "natureResistance": 50,
                 "fireResistance": 50,
                 "lifeSteal": 0.02,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -15078,7 +15078,7 @@
             },
             {
                 "itemHrid": "/items/fierce_aura",
-                "dropRate": 0.00005,
+                "dropRate": 5e-05,
                 "minCount": 1,
                 "maxCount": 1,
                 "minEliteTier": 1
@@ -15139,8 +15139,8 @@
                 "attackInterval": 3000000000,
                 "stabEvasion": -0.25,
                 "rangedEvasion": -0.25,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -15185,8 +15185,8 @@
                 "attackInterval": 3000000000,
                 "stabEvasion": -0.25,
                 "rangedEvasion": -0.25,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -15231,8 +15231,8 @@
                 "attackInterval": 3000000000,
                 "stabEvasion": -0.25,
                 "rangedEvasion": -0.25,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -15349,8 +15349,8 @@
                 "waterResistance": 50,
                 "natureResistance": 50,
                 "fireResistance": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -15396,8 +15396,8 @@
                 "waterResistance": 50,
                 "natureResistance": 50,
                 "fireResistance": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -15443,8 +15443,8 @@
                 "waterResistance": 50,
                 "natureResistance": 50,
                 "fireResistance": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -15530,7 +15530,7 @@
             },
             {
                 "itemHrid": "/items/insanity",
-                "dropRate": 0.00005,
+                "dropRate": 5e-05,
                 "minCount": 1,
                 "maxCount": 1,
                 "minEliteTier": 1
@@ -15592,8 +15592,8 @@
                 "waterResistance": 20,
                 "natureResistance": 20,
                 "fireResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -15639,8 +15639,8 @@
                 "waterResistance": 20,
                 "natureResistance": 20,
                 "fireResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -15686,8 +15686,8 @@
                 "waterResistance": 20,
                 "natureResistance": 20,
                 "fireResistance": 20,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
@@ -15849,8 +15849,8 @@
                 "rangedEvasion": 0.5,
                 "armor": 50,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite1CombatDetails": {
@@ -15896,8 +15896,8 @@
                 "rangedEvasion": 0.5,
                 "armor": 50,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "elite2CombatDetails": {
@@ -15943,8 +15943,8 @@
                 "rangedEvasion": 0.5,
                 "armor": 50,
                 "tenacity": 50,
-                "HPRegen": 0.01,
-                "MPRegen": 0.01
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
             }
         },
         "abilities": [
