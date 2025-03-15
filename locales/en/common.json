@@ -76,5 +76,7 @@
     "immportexportSet": "Import/Export Set",
     "groupCombat": "Group Combat",
     "solo": "Solo",
-    "or": "OR"
+    "or": "OR",
+    "import": "Import",
+    "exportGroupSolo": "Export Group/Solo"
 }
