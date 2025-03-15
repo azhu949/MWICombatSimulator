@@ -1,0 +1,1206 @@
+{
+    "/items/bag_of_10_cowbells": [
+        {
+            "itemHrid": "/items/cowbell",
+            "dropRate": 1,
+            "minCount": 10,
+            "maxCount": 10,
+            "minEliteTier": 0
+        }
+    ],
+    "/items/chimerical_chest": [
+        {
+            "itemHrid": "/items/chimerical_essence",
+            "dropRate": 1,
+            "minCount": 400,
+            "maxCount": 800,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/chimerical_essence",
+            "dropRate": 0.05,
+            "minCount": 2000,
+            "maxCount": 4000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/chimerical_token",
+            "dropRate": 1,
+            "minCount": 250,
+            "maxCount": 500,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/chimerical_token",
+            "dropRate": 0.05,
+            "minCount": 1500,
+            "maxCount": 3000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/large_treasure_chest",
+            "dropRate": 0.3,
+            "minCount": 1,
+            "maxCount": 5,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/jade",
+            "dropRate": 0.6,
+            "minCount": 5,
+            "maxCount": 20,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/sunstone",
+            "dropRate": 0.5,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/crippling_slash",
+            "dropRate": 0.5,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/pestilent_shot",
+            "dropRate": 0.5,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/griffin_leather",
+            "dropRate": 0.1,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/manticore_sting",
+            "dropRate": 0.06,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/jackalope_antler",
+            "dropRate": 0.05,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/dodocamel_plume",
+            "dropRate": 0.02,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/griffin_talon",
+            "dropRate": 0.02,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/chimerical_chest_key",
+            "dropRate": 0.02,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/chimerical_quiver",
+            "dropRate": 0.03,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/griffin_tunic",
+            "dropRate": 0.003,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/griffin_chaps",
+            "dropRate": 0.003,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/manticore_shield",
+            "dropRate": 0.003,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/jackalope_staff",
+            "dropRate": 0.002,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/dodocamel_gauntlets",
+            "dropRate": 0.0015,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/griffin_bulwark",
+            "dropRate": 0.0005,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        }
+    ],
+    "/items/enchanted_chest": [
+        {
+            "itemHrid": "/items/enchanted_essence",
+            "dropRate": 1,
+            "minCount": 400,
+            "maxCount": 800,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/enchanted_essence",
+            "dropRate": 0.05,
+            "minCount": 2000,
+            "maxCount": 4000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/enchanted_token",
+            "dropRate": 1,
+            "minCount": 250,
+            "maxCount": 500,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/enchanted_token",
+            "dropRate": 0.05,
+            "minCount": 1500,
+            "maxCount": 3000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/large_treasure_chest",
+            "dropRate": 0.3,
+            "minCount": 1,
+            "maxCount": 7,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/amethyst",
+            "dropRate": 0.6,
+            "minCount": 5,
+            "maxCount": 20,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/sunstone",
+            "dropRate": 0.5,
+            "minCount": 1,
+            "maxCount": 5,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/crippling_slash",
+            "dropRate": 0.5,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/penetrating_shot",
+            "dropRate": 0.5,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/arcane_reflection",
+            "dropRate": 0.5,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/mana_spring",
+            "dropRate": 0.5,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/knights_ingot",
+            "dropRate": 0.04,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/bishops_scroll",
+            "dropRate": 0.04,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/royal_cloth",
+            "dropRate": 0.04,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/regal_jewel",
+            "dropRate": 0.02,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/sundering_jewel",
+            "dropRate": 0.02,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/enchanted_chest_key",
+            "dropRate": 0.02,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/enchanted_cloak",
+            "dropRate": 0.04,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/knights_aegis",
+            "dropRate": 0.002,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/bishops_codex",
+            "dropRate": 0.002,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/royal_water_robe_top",
+            "dropRate": 0.0004,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/royal_water_robe_bottoms",
+            "dropRate": 0.0004,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/royal_nature_robe_top",
+            "dropRate": 0.0004,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/royal_nature_robe_bottoms",
+            "dropRate": 0.0004,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/royal_fire_robe_top",
+            "dropRate": 0.0004,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/royal_fire_robe_bottoms",
+            "dropRate": 0.0004,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/regal_sword",
+            "dropRate": 0.0005,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/sundering_crossbow",
+            "dropRate": 0.0005,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        }
+    ],
+    "/items/large_artisans_crate": [
+        {
+            "itemHrid": "/items/coin",
+            "dropRate": 1,
+            "minCount": 30000,
+            "maxCount": 60000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/coin",
+            "dropRate": 0.1,
+            "minCount": 150000,
+            "maxCount": 300000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/cowbell",
+            "dropRate": 0.1,
+            "minCount": 5,
+            "maxCount": 10,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/cowbell",
+            "dropRate": 0.01,
+            "minCount": 40,
+            "maxCount": 80,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/shard_of_protection",
+            "dropRate": 1,
+            "minCount": 5,
+            "maxCount": 10,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/mirror_of_protection",
+            "dropRate": 0.01,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/pearl",
+            "dropRate": 0.2,
+            "minCount": 1,
+            "maxCount": 3,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/amber",
+            "dropRate": 0.1333,
+            "minCount": 1,
+            "maxCount": 3,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/garnet",
+            "dropRate": 0.1333,
+            "minCount": 1,
+            "maxCount": 3,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/jade",
+            "dropRate": 0.1333,
+            "minCount": 1,
+            "maxCount": 3,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/amethyst",
+            "dropRate": 0.1333,
+            "minCount": 1,
+            "maxCount": 3,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/moonstone",
+            "dropRate": 0.1333,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        }
+    ],
+    "/items/large_meteorite_cache": [
+        {
+            "itemHrid": "/items/coin",
+            "dropRate": 1,
+            "minCount": 30000,
+            "maxCount": 60000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/coin",
+            "dropRate": 0.1,
+            "minCount": 150000,
+            "maxCount": 300000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/cowbell",
+            "dropRate": 0.1,
+            "minCount": 5,
+            "maxCount": 10,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/cowbell",
+            "dropRate": 0.01,
+            "minCount": 40,
+            "maxCount": 80,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/star_fragment",
+            "dropRate": 1,
+            "minCount": 30,
+            "maxCount": 60,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/star_fragment",
+            "dropRate": 0.1,
+            "minCount": 150,
+            "maxCount": 300,
+            "minEliteTier": 0
+        }
+    ],
+    "/items/large_treasure_chest": [
+        {
+            "itemHrid": "/items/coin",
+            "dropRate": 1,
+            "minCount": 30000,
+            "maxCount": 60000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/coin",
+            "dropRate": 0.1,
+            "minCount": 150000,
+            "maxCount": 300000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/cowbell",
+            "dropRate": 0.1,
+            "minCount": 5,
+            "maxCount": 10,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/cowbell",
+            "dropRate": 0.01,
+            "minCount": 40,
+            "maxCount": 80,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/pearl",
+            "dropRate": 0.6,
+            "minCount": 1,
+            "maxCount": 3,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/amber",
+            "dropRate": 0.4,
+            "minCount": 1,
+            "maxCount": 3,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/garnet",
+            "dropRate": 0.4,
+            "minCount": 1,
+            "maxCount": 3,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/jade",
+            "dropRate": 0.4,
+            "minCount": 1,
+            "maxCount": 3,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/amethyst",
+            "dropRate": 0.4,
+            "minCount": 1,
+            "maxCount": 3,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/moonstone",
+            "dropRate": 0.4,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        }
+    ],
+    "/items/medium_artisans_crate": [
+        {
+            "itemHrid": "/items/coin",
+            "dropRate": 1,
+            "minCount": 12000,
+            "maxCount": 24000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/coin",
+            "dropRate": 0.1,
+            "minCount": 60000,
+            "maxCount": 120000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/cowbell",
+            "dropRate": 0.1,
+            "minCount": 3,
+            "maxCount": 5,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/cowbell",
+            "dropRate": 0.01,
+            "minCount": 20,
+            "maxCount": 40,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/shard_of_protection",
+            "dropRate": 1,
+            "minCount": 2,
+            "maxCount": 5,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/shard_of_protection",
+            "dropRate": 0.05,
+            "minCount": 10,
+            "maxCount": 25,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/pearl",
+            "dropRate": 0.2,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/amber",
+            "dropRate": 0.1333,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/garnet",
+            "dropRate": 0.1,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/jade",
+            "dropRate": 0.1,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/amethyst",
+            "dropRate": 0.1,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/moonstone",
+            "dropRate": 0.05,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        }
+    ],
+    "/items/medium_meteorite_cache": [
+        {
+            "itemHrid": "/items/coin",
+            "dropRate": 1,
+            "minCount": 12000,
+            "maxCount": 24000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/coin",
+            "dropRate": 0.1,
+            "minCount": 60000,
+            "maxCount": 120000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/cowbell",
+            "dropRate": 0.1,
+            "minCount": 3,
+            "maxCount": 5,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/cowbell",
+            "dropRate": 0.01,
+            "minCount": 20,
+            "maxCount": 40,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/star_fragment",
+            "dropRate": 1,
+            "minCount": 12,
+            "maxCount": 24,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/star_fragment",
+            "dropRate": 0.1,
+            "minCount": 60,
+            "maxCount": 120,
+            "minEliteTier": 0
+        }
+    ],
+    "/items/medium_treasure_chest": [
+        {
+            "itemHrid": "/items/coin",
+            "dropRate": 1,
+            "minCount": 12000,
+            "maxCount": 24000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/coin",
+            "dropRate": 0.1,
+            "minCount": 60000,
+            "maxCount": 120000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/cowbell",
+            "dropRate": 0.1,
+            "minCount": 3,
+            "maxCount": 5,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/cowbell",
+            "dropRate": 0.01,
+            "minCount": 20,
+            "maxCount": 40,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/pearl",
+            "dropRate": 0.6,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/amber",
+            "dropRate": 0.4,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/garnet",
+            "dropRate": 0.3,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/jade",
+            "dropRate": 0.3,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/amethyst",
+            "dropRate": 0.3,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/moonstone",
+            "dropRate": 0.15,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        }
+    ],
+    "/items/purples_gift": [
+        {
+            "itemHrid": "/items/coin",
+            "dropRate": 1,
+            "minCount": 30000,
+            "maxCount": 60000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/coin",
+            "dropRate": 0.1,
+            "minCount": 150000,
+            "maxCount": 300000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/task_token",
+            "dropRate": 1,
+            "minCount": 5,
+            "maxCount": 10,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/task_token",
+            "dropRate": 0.1,
+            "minCount": 25,
+            "maxCount": 50,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/task_crystal",
+            "dropRate": 0.1,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/small_meteorite_cache",
+            "dropRate": 1,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/small_artisans_crate",
+            "dropRate": 1,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/small_treasure_chest",
+            "dropRate": 1,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/medium_meteorite_cache",
+            "dropRate": 0.3,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/medium_artisans_crate",
+            "dropRate": 0.3,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/medium_treasure_chest",
+            "dropRate": 0.3,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/large_meteorite_cache",
+            "dropRate": 0.1,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/large_artisans_crate",
+            "dropRate": 0.1,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/large_treasure_chest",
+            "dropRate": 0.1,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/purples_gift",
+            "dropRate": 0.02,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        }
+    ],
+    "/items/sinister_chest": [
+        {
+            "itemHrid": "/items/sinister_essence",
+            "dropRate": 1,
+            "minCount": 400,
+            "maxCount": 800,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/sinister_essence",
+            "dropRate": 0.05,
+            "minCount": 2000,
+            "maxCount": 4000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/sinister_token",
+            "dropRate": 1,
+            "minCount": 250,
+            "maxCount": 500,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/sinister_token",
+            "dropRate": 0.05,
+            "minCount": 1500,
+            "maxCount": 3000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/large_treasure_chest",
+            "dropRate": 0.3,
+            "minCount": 1,
+            "maxCount": 6,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/garnet",
+            "dropRate": 0.6,
+            "minCount": 5,
+            "maxCount": 20,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/sunstone",
+            "dropRate": 0.5,
+            "minCount": 1,
+            "maxCount": 3,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/penetrating_strike",
+            "dropRate": 0.5,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/pestilent_shot",
+            "dropRate": 0.5,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/smoke_burst",
+            "dropRate": 0.5,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/acrobats_ribbon",
+            "dropRate": 0.04,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/magicians_cloth",
+            "dropRate": 0.04,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/chaotic_chain",
+            "dropRate": 0.02,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/cursed_ball",
+            "dropRate": 0.02,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/sinister_chest_key",
+            "dropRate": 0.02,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/sinister_cape",
+            "dropRate": 0.04,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/acrobatic_hood",
+            "dropRate": 0.002,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/magicians_hat",
+            "dropRate": 0.002,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/chaotic_flail",
+            "dropRate": 0.0005,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/cursed_bow",
+            "dropRate": 0.0005,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        }
+    ],
+    "/items/small_artisans_crate": [
+        {
+            "itemHrid": "/items/coin",
+            "dropRate": 1,
+            "minCount": 5000,
+            "maxCount": 10000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/coin",
+            "dropRate": 0.1,
+            "minCount": 25000,
+            "maxCount": 50000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/cowbell",
+            "dropRate": 0.1,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/cowbell",
+            "dropRate": 0.01,
+            "minCount": 8,
+            "maxCount": 15,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/shard_of_protection",
+            "dropRate": 1,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/shard_of_protection",
+            "dropRate": 0.05,
+            "minCount": 5,
+            "maxCount": 10,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/pearl",
+            "dropRate": 0.2,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/amber",
+            "dropRate": 0.1333,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/garnet",
+            "dropRate": 0.05,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/jade",
+            "dropRate": 0.05,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/amethyst",
+            "dropRate": 0.05,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        }
+    ],
+    "/items/small_meteorite_cache": [
+        {
+            "itemHrid": "/items/coin",
+            "dropRate": 1,
+            "minCount": 5000,
+            "maxCount": 10000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/coin",
+            "dropRate": 0.1,
+            "minCount": 25000,
+            "maxCount": 50000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/cowbell",
+            "dropRate": 0.1,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/cowbell",
+            "dropRate": 0.01,
+            "minCount": 8,
+            "maxCount": 15,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/star_fragment",
+            "dropRate": 1,
+            "minCount": 5,
+            "maxCount": 10,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/star_fragment",
+            "dropRate": 0.1,
+            "minCount": 25,
+            "maxCount": 50,
+            "minEliteTier": 0
+        }
+    ],
+    "/items/small_treasure_chest": [
+        {
+            "itemHrid": "/items/coin",
+            "dropRate": 1,
+            "minCount": 5000,
+            "maxCount": 10000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/coin",
+            "dropRate": 0.1,
+            "minCount": 25000,
+            "maxCount": 50000,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/cowbell",
+            "dropRate": 0.1,
+            "minCount": 1,
+            "maxCount": 2,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/cowbell",
+            "dropRate": 0.01,
+            "minCount": 8,
+            "maxCount": 15,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/pearl",
+            "dropRate": 0.6,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/amber",
+            "dropRate": 0.4,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/garnet",
+            "dropRate": 0.15,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/jade",
+            "dropRate": 0.15,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        },
+        {
+            "itemHrid": "/items/amethyst",
+            "dropRate": 0.15,
+            "minCount": 1,
+            "maxCount": 1,
+            "minEliteTier": 0
+        }
+    ]
+}

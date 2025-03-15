@@ -74,7 +74,9 @@
     "exportToCSV" : "导出为CSV",
     "zoneName": "区域名称",
     "immportexportSet": "导入/导出方案",
-    "groupCombat": "组队",
+    "groupCombat": "组队多人",
     "solo": "单人",
-    "or": "或"
+    "or": "或",
+    "import": "导入",
+    "exportGroupSolo": "导出"
 }

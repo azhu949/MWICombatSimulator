@@ -14,6 +14,7 @@ import actionDetailMap from "./combatsimulator/data/actionDetailMap.json";
 import combatMonsterDetailMap from "./combatsimulator/data/combatMonsterDetailMap.json";
 import damageTypeDetailMap from "./combatsimulator/data/damageTypeDetailMap.json";
 import combatStyleDetailMap from "./combatsimulator/data/combatStyleDetailMap.json";
+import openableLootDropMap from "./combatsimulator/data/openableLootDropMap.json";
 
 const ONE_SECOND = 1e9;
 const ONE_HOUR = 60 * 60 * ONE_SECOND;
@@ -961,14 +962,14 @@ function getDropProfit(simResult, playerToDisplay) {
                 if (drop.minEliteTier > simResult.eliteTier) {
                     continue;
                 }
-                dropMap.set(itemDetailMap[drop.itemHrid]['name'], { "dropRate": Math.min(1, drop.dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
+                dropMap.set(drop.itemHrid, { "dropRate": Math.min(1, drop.dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
             }
             if(combatMonsterDetailMap[monster].rareDropTable)
             for (const drop of combatMonsterDetailMap[monster].rareDropTable) {
                 if (drop.minEliteTier > simResult.eliteTier) {
                     continue;
                 }
-                rareDropMap.set(itemDetailMap[drop.itemHrid]['name'], { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
+                rareDropMap.set(drop.itemHrid, { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
             }
 
             for (let dropObject of dropMap.values()) {
@@ -1062,7 +1063,7 @@ function getDropProfit(simResult, playerToDisplay) {
         let price = -1;
         let expensesSetting = document.getElementById('selectPrices_consumables').value;
         if (window.prices) {
-            let item = window.prices[itemDetailMap[consumable].name];
+            let item = window.prices[consumable];
             if (item) {
                 if (expensesSetting == 'bid') {
                     if (item['bid'] !== -1) {
@@ -1337,7 +1338,7 @@ function showKills(simResult, playerToDisplay) {
         let price = -1;
         let revenueSetting = document.getElementById('selectPrices_drops').value;
         if (window.prices) {
-            let item = window.prices[itemDetailMap[name]['name']];
+            let item = window.prices[name];
             if (item) {
                 if (revenueSetting == 'bid') {
                     if (item['bid'] !== -1) {
@@ -1385,7 +1386,7 @@ function showKills(simResult, playerToDisplay) {
         let price = -1;
         let revenueSetting = document.getElementById('selectPrices_drops').value;
         if (window.prices) {
-            let item = window.prices[itemDetailMap[name]['name']];
+            let item = window.prices[name];
             if (item) {
                 if (revenueSetting == 'bid') {
                     if (item['bid'] !== -1) {
@@ -1511,13 +1512,13 @@ function showConsumablesUsed(simResult, playerToDisplay) {
         consumableRow.firstElementChild.setAttribute("data-i18n", "itemNames."+consumable);
         newChildren.push(consumableRow);
 
-        let tableRow = '<tr class="' + itemDetailMap[consumable].name.replace(/\s+/g, '') + '"><td data-i18n="itemNames.';
+        let tableRow = '<tr class="' + consumable + '"><td data-i18n="itemNames.';
         tableRow += consumable;
         tableRow += '"></td><td contenteditable="true">';
         let price = -1;
         let expensesSetting = document.getElementById('selectPrices_consumables').value;
         if (window.prices) {
-            let item = window.prices[itemDetailMap[consumable].name];
+            let item = window.prices[consumable];
             if (item) {
                 if (expensesSetting == 'bid') {
                     if (item['bid'] !== -1) {
@@ -2008,6 +2009,8 @@ function onTabChange(event) {
     if(Object.keys(currentSimResults).length !== 0) {
         showSimulationResult(currentSimResults);
     }
+
+    updateContent();
 }
 
 document.querySelectorAll('#playerTab .nav-link').forEach(tab => {
@@ -2803,41 +2806,55 @@ async function fetchPrices() {
         btn.style.backgroundColor = 'green';
 
         const pricesJson = await response.json();
-        window.prices = pricesJson['market'];
-        window.prices["Coin"] = { "ask": 1, "bid": 1, "vendor": 1 }
-        window.prices["Small Treasure Chest"] = {
-            "ask": (7500 + 3750 + 0.6 * window.prices["Pearl"]["ask"] + 0.4 * window.prices["Amber"]["ask"]
-                + 0.15 * window.prices["Garnet"]["ask"] + 0.15 * window.prices["Jade"]["ask"]
-                + 0.15 * window.prices["Amethyst"]["ask"]),
-            "bid": (7500 + 3750 + 0.6 * window.prices["Pearl"]["bid"] + 0.4 * window.prices["Amber"]["bid"]
-                + 0.15 * window.prices["Garnet"]["bid"] + 0.15 * window.prices["Jade"]["bid"]
-                + 0.15 * window.prices["Amethyst"]["bid"]),
-            "vendor": (7500 + 3750 + 0.6 * window.prices["Pearl"]["vendor"] + 0.4 * window.prices["Amber"]["vendor"]
-                + 0.15 * window.prices["Garnet"]["vendor"] + 0.15 * window.prices["Jade"]["vendor"]
-                + 0.15 * window.prices["Amethyst"]["vendor"])
+
+        const priceTmp = pricesJson['market'];
+        window.prices = {};
+        for (const item in itemDetailMap)
+        {
+            if (itemDetailMap[item].name in priceTmp)
+            {
+                window.prices[itemDetailMap[item].hrid] = priceTmp[itemDetailMap[item].name];
+            }
         }
-        window.prices["Medium Treasure Chest"] = {
-            "ask": (18000 + 9000 + 0.6 * 1.5 * window.prices["Pearl"]["ask"] + 0.4 * 1.5 * window.prices["Amber"]["ask"]
-                + 0.3 * 1.5 * window.prices["Garnet"]["ask"] + 0.3 * 1.5 * window.prices["Jade"]["ask"]
-                + 0.3 * 1.5 * window.prices["Amethyst"]["ask"] + 0.15 * window.prices["Moonstone"]["ask"]),
-            "bid": (18000 + 9000 + 0.6 * 1.5 * window.prices["Pearl"]["bid"] + 0.4 * 1.5 * window.prices["Amber"]["bid"]
-                + 0.3 * 1.5 * window.prices["Garnet"]["bid"] + 0.3 * 1.5 * window.prices["Jade"]["bid"]
-                + 0.3 * 1.5 * window.prices["Amethyst"]["bid"] + 0.15 * window.prices["Moonstone"]["bid"]),
-            "vendor": (18000 + 9000 + 0.6 * 1.5 * window.prices["Pearl"]["vendor"] + 0.4 * 1.5 * window.prices["Amber"]["vendor"]
-                + 0.3 * 1.5 * window.prices["Garnet"]["vendor"] + 0.3 * 1.5 * window.prices["Jade"]["vendor"]
-                + 0.3 * 1.5 * window.prices["Amethyst"]["vendor"] + 0.15 * window.prices["Moonstone"]["vendor"])
-        }
-        window.prices["Large Treasure Chest"] = {
-            "ask": (45000 + 22500 + 0.6 * 2 * window.prices["Pearl"]["ask"] + 0.4 * 2 * window.prices["Amber"]["ask"]
-                + 0.4 * 2 * window.prices["Garnet"]["ask"] + 0.4 * 2 * window.prices["Jade"]["ask"]
-                + 0.4 * 2 * window.prices["Amethyst"]["ask"] + 0.4 * 1.5 * window.prices["Moonstone"]["ask"]),
-            "bid": (45000 + 22500 + 0.6 * 2 * window.prices["Pearl"]["bid"] + 0.4 * 2 * window.prices["Amber"]["bid"]
-                + 0.4 * 2 * window.prices["Garnet"]["bid"] + 0.4 * 2 * window.prices["Jade"]["bid"]
-                + 0.4 * 2 * window.prices["Amethyst"]["bid"] + 0.4 * 1.5 * window.prices["Moonstone"]["bid"]),
-            "vendor": (45000 + 22500 + 0.6 * 2 * window.prices["Pearl"]["vendor"] + 0.4 * 2 * window.prices["Amber"]["vendor"]
-                + 0.4 * 2 * window.prices["Garnet"]["vendor"] + 0.4 * 2 * window.prices["Jade"]["vendor"]
-                + 0.4 * 2 * window.prices["Amethyst"]["vendor"] + 0.4 * 1.5 * window.prices["Moonstone"]["vendor"])
-        }
+
+        window.prices["/items/coin"] = { "ask": 1, "bid": 1, "vendor": 1 };
+
+        window.prices["/items/small_treasure_chest"] = {
+            "ask": openableLootDropMap["/items/small_treasure_chest"].map((item) => {
+                return item.itemHrid in window.prices ? window.prices[item.itemHrid].ask * item.dropRate * (item.maxCount + item.minCount) / 2 : 0;
+            }).reduce((a, b) => a + b, 0),
+            "bid": openableLootDropMap["/items/small_treasure_chest"].map((item) => {
+                return item.itemHrid in window.prices ? window.prices[item.itemHrid].bid * item.dropRate * (item.maxCount + item.minCount) / 2 : 0;
+            }).reduce((a, b) => a + b, 0),
+            "vendor": openableLootDropMap["/items/small_treasure_chest"].map((item) => {
+                return item.itemHrid in window.prices? window.prices[item.itemHrid].vendor : 0;
+            }).reduce((a, b) => a + b, 0),
+        };
+
+        window.prices["/items/medium_treasure_chest"] = {
+            "ask": openableLootDropMap["/items/medium_treasure_chest"].map((item) => {
+                return item.itemHrid in window.prices ? window.prices[item.itemHrid].ask * item.dropRate * (item.maxCount + item.minCount) / 2 : 0;
+            }).reduce((a, b) => a + b, 0),
+            "bid": openableLootDropMap["/items/medium_treasure_chest"].map((item) => {
+                return item.itemHrid in window.prices ? window.prices[item.itemHrid].bid * item.dropRate * (item.maxCount + item.minCount) / 2 : 0;
+            }).reduce((a, b) => a + b, 0),
+            "vendor": openableLootDropMap["/items/medium_treasure_chest"].map((item) => {
+                return item.itemHrid in window.prices? window.prices[item.itemHrid].vendor : 0;
+            }).reduce((a, b) => a + b, 0),
+        };
+
+        window.prices["/items/large_treasure_chest"] = {
+            "ask": openableLootDropMap["/items/large_treasure_chest"].map((item) => {
+                return item.itemHrid in window.prices ? window.prices[item.itemHrid].ask * item.dropRate * (item.maxCount + item.minCount) / 2 : 0;
+            }).reduce((a, b) => a + b, 0),
+            "bid": openableLootDropMap["/items/large_treasure_chest"].map((item) => {
+                return item.itemHrid in window.prices ? window.prices[item.itemHrid].bid * item.dropRate * (item.maxCount + item.minCount) / 2 : 0;
+            }).reduce((a, b) => a + b, 0),
+            "vendor": openableLootDropMap["/items/large_treasure_chest"].map((item) => {
+                return item.itemHrid in window.prices? window.prices[item.itemHrid].vendor : 0;
+            }).reduce((a, b) => a + b, 0),
+        };
+
     } catch (error) {
         console.error(error);
     }
@@ -2852,7 +2869,7 @@ document.addEventListener("input", (e) => {
     if (element.tagName == "TD" && element.parentNode.parentNode.parentNode.classList.value.includes('profit-table')) {
         let tableId = element.parentNode.parentNode.parentNode.id;
         let row = element.parentNode.querySelectorAll('td');
-        let item = row[0].innerText;
+        let item = row[0].getAttribute('data-i18n').split('.')[1];
         let newPrice = element.innerText;
 
         let revenueSetting = document.getElementById('selectPrices_drops').value;
@@ -2907,7 +2924,7 @@ document.addEventListener("input", (e) => {
 });
 
 function updateTable(tableId, item, price) {
-    let row = document.querySelector('#' + tableId + ' .' + item.replace(/\s+/g, ''));
+    let row = document.querySelector('#' + tableId + ' .' + CSS.escape(item));
     if (row == null) {
         return 0;
     }
