@@ -9041,7 +9041,7 @@ document.addEventListener('DOMContentLoaded', function() {
                 escapeValue: !1
             },
             detection: {
-                order: ['querystring', 'navigator', 'localStorage'],
+                order: ['querystring', 'localStorage', 'navigator'],
                 lookupQuerystring: 'lng',
                 lookupLocalStorage: 'i18nextLng',
                 caches: ['localStorage']
