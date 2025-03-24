@@ -23,7 +23,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 0
+        "sortIndex": 1
     },
     "/actions/alchemy/decompose": {
         "hrid": "/actions/alchemy/decompose",
@@ -49,7 +49,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 0
+        "sortIndex": 2
     },
     "/actions/alchemy/transmute": {
         "hrid": "/actions/alchemy/transmute",
@@ -75,7 +75,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 0
+        "sortIndex": 3
     },
     "/actions/brewing/alchemy_tea": {
         "hrid": "/actions/brewing/alchemy_tea",
@@ -13837,7 +13837,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -13888,7 +13888,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -13939,7 +13939,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14021,7 +14021,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14124,7 +14124,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14175,7 +14175,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14257,7 +14257,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14360,7 +14360,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14411,7 +14411,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14462,7 +14462,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14505,22 +14505,58 @@
                                 "combatMonsterHrid": "/monsters/rat",
                                 "eliteTier": 2,
                                 "rate": 1,
-                                "strength": 50
+                                "strength": 40
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/skunk",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 40
                             },
                             {
                                 "combatMonsterHrid": "/monsters/porcupine",
                                 "eliteTier": 2,
                                 "rate": 1,
-                                "strength": 50
+                                "strength": 40
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/slimy",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 40
                             },
                             {
                                 "combatMonsterHrid": "/monsters/frog",
                                 "eliteTier": 2,
                                 "rate": 1,
-                                "strength": 60
+                                "strength": 45
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/snake",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 45
                             },
                             {
                                 "combatMonsterHrid": "/monsters/swampy",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 50
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/alligator",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 50
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/sea_snail",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 55
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/crab",
                                 "eliteTier": 2,
                                 "rate": 1,
                                 "strength": 60
@@ -14529,13 +14565,19 @@
                                 "combatMonsterHrid": "/monsters/aquahorse",
                                 "eliteTier": 2,
                                 "rate": 1,
-                                "strength": 70
+                                "strength": 65
                             },
                             {
                                 "combatMonsterHrid": "/monsters/jungle_sprite",
                                 "eliteTier": 2,
                                 "rate": 1,
-                                "strength": 70
+                                "strength": 60
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/myconid",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 65
                             }
                         ]
                     },
@@ -14544,25 +14586,25 @@
                         "maxTotalStrength": 300,
                         "spawns": [
                             {
-                                "combatMonsterHrid": "/monsters/rat",
-                                "eliteTier": 2,
-                                "rate": 1,
-                                "strength": 50
-                            },
-                            {
-                                "combatMonsterHrid": "/monsters/porcupine",
-                                "eliteTier": 2,
-                                "rate": 1,
-                                "strength": 50
-                            },
-                            {
-                                "combatMonsterHrid": "/monsters/frog",
-                                "eliteTier": 2,
-                                "rate": 1,
-                                "strength": 60
-                            },
-                            {
                                 "combatMonsterHrid": "/monsters/swampy",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 50
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/alligator",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 50
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/sea_snail",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 55
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/crab",
                                 "eliteTier": 2,
                                 "rate": 1,
                                 "strength": 60
@@ -14571,13 +14613,73 @@
                                 "combatMonsterHrid": "/monsters/aquahorse",
                                 "eliteTier": 2,
                                 "rate": 1,
+                                "strength": 65
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/nom_nom",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 65
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/turtle",
+                                "eliteTier": 2,
+                                "rate": 1,
                                 "strength": 70
                             },
                             {
                                 "combatMonsterHrid": "/monsters/jungle_sprite",
                                 "eliteTier": 2,
                                 "rate": 1,
-                                "strength": 70
+                                "strength": 60
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/myconid",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 65
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/centaur_archer",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/gobo_stabby",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/gobo_slashy",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/gobo_smashy",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/gobo_shooty",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/gobo_boomy",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/eye",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
                             },
                             {
                                 "combatMonsterHrid": "/monsters/butterjerry",
@@ -14595,13 +14697,31 @@
                                 "combatMonsterHrid": "/monsters/aquahorse",
                                 "eliteTier": 2,
                                 "rate": 1,
+                                "strength": 65
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/nom_nom",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 65
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/turtle",
+                                "eliteTier": 2,
+                                "rate": 1,
                                 "strength": 70
                             },
                             {
                                 "combatMonsterHrid": "/monsters/jungle_sprite",
                                 "eliteTier": 2,
                                 "rate": 1,
-                                "strength": 70
+                                "strength": 60
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/myconid",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 65
                             },
                             {
                                 "combatMonsterHrid": "/monsters/centaur_archer",
@@ -14610,10 +14730,52 @@
                                 "strength": 80
                             },
                             {
-                                "combatMonsterHrid": "/monsters/gummy_bear",
+                                "combatMonsterHrid": "/monsters/gobo_stabby",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/gobo_slashy",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/gobo_smashy",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/gobo_shooty",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/gobo_boomy",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/eye",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/eyes",
                                 "eliteTier": 2,
                                 "rate": 1,
                                 "strength": 90
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/veyes",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 110
                             },
                             {
                                 "combatMonsterHrid": "/monsters/butterjerry",
@@ -14769,7 +14931,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14820,7 +14982,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14871,7 +15033,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -14911,24 +15073,6 @@
                         "maxTotalStrength": 250,
                         "spawns": [
                             {
-                                "combatMonsterHrid": "/monsters/eye",
-                                "eliteTier": 2,
-                                "rate": 1,
-                                "strength": 50
-                            },
-                            {
-                                "combatMonsterHrid": "/monsters/eyes",
-                                "eliteTier": 2,
-                                "rate": 1,
-                                "strength": 50
-                            },
-                            {
-                                "combatMonsterHrid": "/monsters/veyes",
-                                "eliteTier": 2,
-                                "rate": 1,
-                                "strength": 50
-                            },
-                            {
                                 "combatMonsterHrid": "/monsters/novice_sorcerer",
                                 "eliteTier": 2,
                                 "rate": 1,
@@ -14945,6 +15089,18 @@
                                 "eliteTier": 2,
                                 "rate": 1,
                                 "strength": 60
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/panda",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 70
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/black_bear",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 70
                             },
                             {
                                 "combatMonsterHrid": "/monsters/magnetic_golem",
@@ -14965,30 +15121,6 @@
                         "maxTotalStrength": 300,
                         "spawns": [
                             {
-                                "combatMonsterHrid": "/monsters/eye",
-                                "eliteTier": 2,
-                                "rate": 1,
-                                "strength": 50
-                            },
-                            {
-                                "combatMonsterHrid": "/monsters/eyes",
-                                "eliteTier": 2,
-                                "rate": 1,
-                                "strength": 50
-                            },
-                            {
-                                "combatMonsterHrid": "/monsters/veyes",
-                                "eliteTier": 2,
-                                "rate": 1,
-                                "strength": 50
-                            },
-                            {
-                                "combatMonsterHrid": "/monsters/novice_sorcerer",
-                                "eliteTier": 2,
-                                "rate": 1,
-                                "strength": 50
-                            },
-                            {
                                 "combatMonsterHrid": "/monsters/ice_sorcerer",
                                 "eliteTier": 2,
                                 "rate": 1,
@@ -14999,6 +15131,36 @@
                                 "eliteTier": 2,
                                 "rate": 1,
                                 "strength": 60
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/elementalist",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/panda",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 70
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/black_bear",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 70
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/grizzly_bear",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 75
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/polar_bear",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
                             },
                             {
                                 "combatMonsterHrid": "/monsters/magnetic_golem",
@@ -15037,40 +15199,46 @@
                         "maxTotalStrength": 400,
                         "spawns": [
                             {
-                                "combatMonsterHrid": "/monsters/eye",
-                                "eliteTier": 2,
-                                "rate": 1,
-                                "strength": 50
-                            },
-                            {
-                                "combatMonsterHrid": "/monsters/eyes",
-                                "eliteTier": 2,
-                                "rate": 1,
-                                "strength": 50
-                            },
-                            {
-                                "combatMonsterHrid": "/monsters/veyes",
-                                "eliteTier": 2,
-                                "rate": 1,
-                                "strength": 50
-                            },
-                            {
-                                "combatMonsterHrid": "/monsters/novice_sorcerer",
-                                "eliteTier": 2,
-                                "rate": 1,
-                                "strength": 50
-                            },
-                            {
                                 "combatMonsterHrid": "/monsters/ice_sorcerer",
                                 "eliteTier": 2,
-                                "rate": 1,
+                                "rate": 0.5,
                                 "strength": 60
                             },
                             {
                                 "combatMonsterHrid": "/monsters/flame_sorcerer",
                                 "eliteTier": 2,
-                                "rate": 1,
+                                "rate": 0.5,
                                 "strength": 60
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/elementalist",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/panda",
+                                "eliteTier": 2,
+                                "rate": 0.5,
+                                "strength": 70
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/black_bear",
+                                "eliteTier": 2,
+                                "rate": 0.5,
+                                "strength": 70
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/grizzly_bear",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 75
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/polar_bear",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
                             },
                             {
                                 "combatMonsterHrid": "/monsters/magnetic_golem",
@@ -15316,7 +15484,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15367,7 +15535,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15418,7 +15586,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15469,7 +15637,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15520,7 +15688,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15571,7 +15739,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15622,7 +15790,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15704,7 +15872,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15807,7 +15975,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15858,7 +16026,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15909,7 +16077,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -15960,7 +16128,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16011,7 +16179,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16081,7 +16249,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16172,7 +16340,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16223,7 +16391,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16274,7 +16442,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16325,7 +16493,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16376,7 +16544,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16446,7 +16614,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16537,7 +16705,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16588,7 +16756,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16664,7 +16832,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16761,7 +16929,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16812,7 +16980,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16863,7 +17031,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16914,7 +17082,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -16965,7 +17133,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17016,7 +17184,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17057,6 +17225,447 @@
         "buffs": null,
         "sortIndex": 46
     },
+    "/actions/combat/pirate_cove": {
+        "hrid": "/actions/combat/pirate_cove",
+        "function": "/action_functions/combat",
+        "type": "/action_types/combat",
+        "category": "/action_categories/combat/dungeons",
+        "name": "Pirate Cove",
+        "levelRequirement": {
+            "skillHrid": "",
+            "level": 0
+        },
+        "baseTimeCost": 3000000000,
+        "experienceGain": {
+            "skillHrid": "",
+            "value": 0
+        },
+        "dropTable": null,
+        "essenceDropTable": null,
+        "rareDropTable": null,
+        "upgradeItemHrid": "",
+        "inputItems": null,
+        "outputItems": null,
+        "combatZoneInfo": {
+            "isDungeon": true,
+            "fightInfo": {
+                "randomSpawnInfo": {
+                    "maxSpawnCount": 0,
+                    "maxTotalStrength": 0,
+                    "spawns": null
+                },
+                "bossSpawns": null,
+                "battlesPerBoss": 0
+            },
+            "dungeonInfo": {
+                "keyItemHrid": "/items/pirate_entry_key",
+                "rewardDropTable": [
+                    {
+                        "itemHrid": "/items/pirate_chest",
+                        "dropRate": 1,
+                        "minCount": 1,
+                        "maxCount": 1,
+                        "minEliteTier": 0
+                    }
+                ],
+                "maxWaves": 70,
+                "randomSpawnInfoMap": {
+                    "0": {
+                        "maxSpawnCount": 4,
+                        "maxTotalStrength": 270,
+                        "spawns": [
+                            {
+                                "combatMonsterHrid": "/monsters/eye",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 50
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/eyes",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 55
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/veyes",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 60
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/zombie",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/magnetic_golem",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/abyssal_imp",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
+                            }
+                        ]
+                    },
+                    "20": {
+                        "maxSpawnCount": 5,
+                        "maxTotalStrength": 350,
+                        "spawns": [
+                            {
+                                "combatMonsterHrid": "/monsters/eyes",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 55
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/veyes",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 60
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/zombie",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/vampire",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 90
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/magnetic_golem",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/stalactite_golem",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 90
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/abyssal_imp",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/soul_hunter",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 90
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/squawker",
+                                "eliteTier": 0,
+                                "rate": 2,
+                                "strength": 150
+                            }
+                        ]
+                    },
+                    "45": {
+                        "maxSpawnCount": 5,
+                        "maxTotalStrength": 450,
+                        "spawns": [
+                            {
+                                "combatMonsterHrid": "/monsters/veyes",
+                                "eliteTier": 2,
+                                "rate": 0.5,
+                                "strength": 60
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/zombie",
+                                "eliteTier": 2,
+                                "rate": 0.5,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/vampire",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 90
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/werewolf",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 110
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/magnetic_golem",
+                                "eliteTier": 2,
+                                "rate": 0.5,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/stalactite_golem",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 90
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/granite_golem",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 110
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/abyssal_imp",
+                                "eliteTier": 2,
+                                "rate": 0.5,
+                                "strength": 80
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/soul_hunter",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 90
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/infernal_warlock",
+                                "eliteTier": 2,
+                                "rate": 1,
+                                "strength": 110
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/squawker",
+                                "eliteTier": 0,
+                                "rate": 2,
+                                "strength": 150
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/melee_pirate",
+                                "eliteTier": 0,
+                                "rate": 0.5,
+                                "strength": 250
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/ranged_pirate",
+                                "eliteTier": 0,
+                                "rate": 0.5,
+                                "strength": 250
+                            },
+                            {
+                                "combatMonsterHrid": "/monsters/magic_pirate",
+                                "eliteTier": 0,
+                                "rate": 0.5,
+                                "strength": 250
+                            }
+                        ]
+                    }
+                },
+                "fixedSpawnsMap": {
+                    "5": [
+                        {
+                            "combatMonsterHrid": "/monsters/squawker",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        }
+                    ],
+                    "10": [
+                        {
+                            "combatMonsterHrid": "/monsters/squawker",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        },
+                        {
+                            "combatMonsterHrid": "/monsters/squawker",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        }
+                    ],
+                    "15": [
+                        {
+                            "combatMonsterHrid": "/monsters/melee_pirate",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        }
+                    ],
+                    "20": [
+                        {
+                            "combatMonsterHrid": "/monsters/ranged_pirate",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        }
+                    ],
+                    "25": [
+                        {
+                            "combatMonsterHrid": "/monsters/magic_pirate",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        }
+                    ],
+                    "30": [
+                        {
+                            "combatMonsterHrid": "/monsters/melee_pirate",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        },
+                        {
+                            "combatMonsterHrid": "/monsters/ranged_pirate",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        }
+                    ],
+                    "35": [
+                        {
+                            "combatMonsterHrid": "/monsters/ranged_pirate",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        },
+                        {
+                            "combatMonsterHrid": "/monsters/magic_pirate",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        }
+                    ],
+                    "40": [
+                        {
+                            "combatMonsterHrid": "/monsters/magic_pirate",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        },
+                        {
+                            "combatMonsterHrid": "/monsters/melee_pirate",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        }
+                    ],
+                    "45": [
+                        {
+                            "combatMonsterHrid": "/monsters/melee_pirate",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        },
+                        {
+                            "combatMonsterHrid": "/monsters/squawker",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        },
+                        {
+                            "combatMonsterHrid": "/monsters/ranged_pirate",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        }
+                    ],
+                    "50": [
+                        {
+                            "combatMonsterHrid": "/monsters/ranged_pirate",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        },
+                        {
+                            "combatMonsterHrid": "/monsters/squawker",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        },
+                        {
+                            "combatMonsterHrid": "/monsters/magic_pirate",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        }
+                    ],
+                    "55": [
+                        {
+                            "combatMonsterHrid": "/monsters/magic_pirate",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        },
+                        {
+                            "combatMonsterHrid": "/monsters/squawker",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        },
+                        {
+                            "combatMonsterHrid": "/monsters/melee_pirate",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        }
+                    ],
+                    "60": [
+                        {
+                            "combatMonsterHrid": "/monsters/melee_pirate",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        },
+                        {
+                            "combatMonsterHrid": "/monsters/ranged_pirate",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        },
+                        {
+                            "combatMonsterHrid": "/monsters/magic_pirate",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        }
+                    ],
+                    "65": [
+                        {
+                            "combatMonsterHrid": "/monsters/pirate_captain",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        }
+                    ],
+                    "70": [
+                        {
+                            "combatMonsterHrid": "/monsters/the_kraken",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        }
+                    ]
+                }
+            }
+        },
+        "maxPartySize": 5,
+        "buffs": [
+            {
+                "uniqueHrid": "/buff_uniques/experience_action_buff",
+                "typeHrid": "/buff_types/wisdom",
+                "ratioBoost": 0,
+                "ratioBoostLevelBonus": 0,
+                "flatBoost": 0.2,
+                "flatBoostLevelBonus": 0,
+                "startTime": "0001-01-01T00:00:00Z",
+                "duration": 0
+            }
+        ],
+        "sortIndex": 70
+    },
     "/actions/combat/planet_of_the_eyes": {
         "hrid": "/actions/combat/planet_of_the_eyes",
         "function": "/action_functions/combat",
@@ -17067,7 +17676,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17137,7 +17746,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17228,7 +17837,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17279,7 +17888,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17330,7 +17939,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17381,7 +17990,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17432,7 +18041,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17947,7 +18556,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -17998,7 +18607,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18049,7 +18658,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18124,7 +18733,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18220,7 +18829,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18271,7 +18880,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18347,7 +18956,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18444,7 +19053,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18495,7 +19104,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18546,7 +19155,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18622,7 +19231,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18719,7 +19328,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18770,7 +19379,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18821,7 +19430,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18872,7 +19481,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -18942,7 +19551,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -19033,7 +19642,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -19084,7 +19693,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -19135,7 +19744,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -19186,7 +19795,7 @@
             "skillHrid": "",
             "level": 0
         },
-        "baseTimeCost": 15000000000,
+        "baseTimeCost": 3000000000,
         "experienceGain": {
             "skillHrid": "",
             "value": 0
@@ -22455,7 +23064,7 @@
                 "count": 1
             },
             {
-                "itemHrid": "/items/brown_key_fragment",
+                "itemHrid": "/items/white_key_fragment",
                 "count": 1
             }
         ],
@@ -23447,7 +24056,7 @@
         "upgradeItemHrid": "",
         "inputItems": [
             {
-                "itemHrid": "/items/white_key_fragment",
+                "itemHrid": "/items/brown_key_fragment",
                 "count": 1
             },
             {
