@@ -375,6 +375,7 @@ function updateCombatStatsUI() {
         "curse",
         "weaken",
         "attackSpeed",
+        "autoAttackDamage",
         "drinkConcentration",
         "foodHaste"
     ].forEach((stat) => {
