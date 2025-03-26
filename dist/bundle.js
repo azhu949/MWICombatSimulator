@@ -2439,8 +2439,8 @@ function manipulateSimResultsDataForDisplay(simResults){
 }
 
 function getDropProfit(simResult, playerToDisplay) {
-    let dropRateMultiplier = simResult.dropRateMultiplier;
-    let rareFindMultiplier = simResult.rareFindMultiplier;
+    let dropRateMultiplier = simResult.dropRateMultiplier[playerToDisplay];
+    let rareFindMultiplier = simResult.rareFindMultiplier[playerToDisplay];
     let numberOfPlayers = simResult.numberOfPlayers;
        let monsters = Object.keys(simResult.deaths)
         .filter(enemy => enemy !== "player1" && enemy !== "player2" && enemy !== "player3" && enemy !== "player4" && enemy !== "player5")
@@ -2711,8 +2711,8 @@ function showKills(simResult, playerToDisplay) {
     let newChildren = [];
     let newDropChildren = [];
     let newNoRngDropChildren = [];
-    let dropRateMultiplier = simResult.dropRateMultiplier;
-    let rareFindMultiplier = simResult.rareFindMultiplier;
+    let dropRateMultiplier = simResult.dropRateMultiplier[playerToDisplay];
+    let rareFindMultiplier = simResult.rareFindMultiplier[playerToDisplay];
     let numberOfPlayers = simResult.numberOfPlayers;
 
     let hoursSimulated = simResult.simulatedTime / ONE_HOUR;

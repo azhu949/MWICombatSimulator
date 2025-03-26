@@ -7,13 +7,14 @@ class SimResult {
         this.consumablesUsed = {};
         this.hitpointsGained = {};
         this.manapointsGained = {};
-        this.dropRateMultiplier = 1;
-        this.rareFindMultiplier = 1;
-        this.playerRanOutOfMana = {"player1" : false,
-                                   "player2" : false,
-                                   "player3" : false,
-                                   "player4" : false,
-                                   "player5" : false
+        this.dropRateMultiplier = {};
+        this.rareFindMultiplier = {};
+        this.playerRanOutOfMana = {
+            "player1" : false,
+            "player2" : false,
+            "player3" : false,
+            "player4" : false,
+            "player5" : false
         };
         this.manaUsed = {};
         this.timeSpentAlive = [];
@@ -127,8 +128,14 @@ class SimResult {
     }
 
     setDropRateMultipliers(unit) {
-        this.dropRateMultiplier = 1 + unit.combatDetails.combatStats.combatDropRate;
-        this.rareFindMultiplier = 1 + unit.combatDetails.combatStats.combatRareFind;
+        if (!this.dropRateMultiplier[unit.hrid]) {
+            this.dropRateMultiplier[unit.hrid] = {};
+        }
+        this.dropRateMultiplier[unit.hrid] = 1 + unit.combatDetails.combatStats.combatDropRate;
+        if (!this.rareFindMultiplier[unit.hrid]) {
+            this.rareFindMultiplier[unit.hrid] = {};
+        }
+        this.rareFindMultiplier[unit.hrid] = 1 + unit.combatDetails.combatStats.combatRareFind;
     }
 
     setManaUsed(unit) {
