@@ -63,7 +63,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 73
+        "sortIndex": 75
     },
     "/combat_trigger_conditions/channeling_coffee": {
         "hrid": "/combat_trigger_conditions/channeling_coffee",
@@ -85,11 +85,11 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 61
+        "sortIndex": 62
     },
     "/combat_trigger_conditions/critical_aura": {
         "hrid": "/combat_trigger_conditions/critical_aura",
-        "name": "CriticalAura",
+        "name": "Critical Aura",
         "isSingleTarget": true,
         "isMultiTarget": false,
         "allowedComparatorHrids": [
@@ -151,7 +151,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 72
+        "sortIndex": 74
     },
     "/combat_trigger_conditions/defense_coffee": {
         "hrid": "/combat_trigger_conditions/defense_coffee",
@@ -252,6 +252,17 @@
         ],
         "sortIndex": 56
     },
+    "/combat_trigger_conditions/fracturing_impact": {
+        "hrid": "/combat_trigger_conditions/fracturing_impact",
+        "name": "Fracturing Impact Debuff",
+        "isSingleTarget": true,
+        "isMultiTarget": false,
+        "allowedComparatorHrids": [
+            "/combat_trigger_comparators/is_active",
+            "/combat_trigger_comparators/is_inactive"
+        ],
+        "sortIndex": 63
+    },
     "/combat_trigger_conditions/frenzy": {
         "hrid": "/combat_trigger_conditions/frenzy",
         "name": "Frenzy",
@@ -272,7 +283,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 65
+        "sortIndex": 67
     },
     "/combat_trigger_conditions/ice_spear": {
         "hrid": "/combat_trigger_conditions/ice_spear",
@@ -283,7 +294,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 64
+        "sortIndex": 66
     },
     "/combat_trigger_conditions/insanity_attack_speed": {
         "hrid": "/combat_trigger_conditions/insanity_attack_speed",
@@ -428,6 +439,17 @@
         ],
         "sortIndex": 16
     },
+    "/combat_trigger_conditions/maim": {
+        "hrid": "/combat_trigger_conditions/maim",
+        "name": "Maim Debuff",
+        "isSingleTarget": true,
+        "isMultiTarget": false,
+        "allowedComparatorHrids": [
+            "/combat_trigger_comparators/is_active",
+            "/combat_trigger_comparators/is_inactive"
+        ],
+        "sortIndex": 61
+    },
     "/combat_trigger_conditions/mana_spring": {
         "hrid": "/combat_trigger_conditions/mana_spring",
         "name": "Mana Spring",
@@ -492,7 +514,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 62
+        "sortIndex": 64
     },
     "/combat_trigger_conditions/pestilent_shot_mp_regen": {
         "hrid": "/combat_trigger_conditions/pestilent_shot_mp_regen",
@@ -503,7 +525,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 63
+        "sortIndex": 65
     },
     "/combat_trigger_conditions/power_coffee": {
         "hrid": "/combat_trigger_conditions/power_coffee",
@@ -569,7 +591,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 74
+        "sortIndex": 76
     },
     "/combat_trigger_conditions/smoke_burst": {
         "hrid": "/combat_trigger_conditions/smoke_burst",
@@ -580,7 +602,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 70
+        "sortIndex": 72
     },
     "/combat_trigger_conditions/speed_aura_attack_speed": {
         "hrid": "/combat_trigger_conditions/speed_aura_attack_speed",
@@ -646,7 +668,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 75
+        "sortIndex": 77
     },
     "/combat_trigger_conditions/swiftness_coffee": {
         "hrid": "/combat_trigger_conditions/swiftness_coffee",
@@ -756,7 +778,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 66
+        "sortIndex": 68
     },
     "/combat_trigger_conditions/toxic_pollen_fire_resistance": {
         "hrid": "/combat_trigger_conditions/toxic_pollen_fire_resistance",
@@ -767,7 +789,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 69
+        "sortIndex": 71
     },
     "/combat_trigger_conditions/toxic_pollen_nature_resistance": {
         "hrid": "/combat_trigger_conditions/toxic_pollen_nature_resistance",
@@ -778,7 +800,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 68
+        "sortIndex": 70
     },
     "/combat_trigger_conditions/toxic_pollen_water_resistance": {
         "hrid": "/combat_trigger_conditions/toxic_pollen_water_resistance",
@@ -789,7 +811,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 67
+        "sortIndex": 69
     },
     "/combat_trigger_conditions/vampirism": {
         "hrid": "/combat_trigger_conditions/vampirism",
@@ -811,7 +833,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 71
+        "sortIndex": 73
     },
     "/combat_trigger_conditions/wisdom_coffee": {
         "hrid": "/combat_trigger_conditions/wisdom_coffee",

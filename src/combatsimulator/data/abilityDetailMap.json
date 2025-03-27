@@ -21,6 +21,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -40,7 +43,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 13
+        "sortIndex": 15
     },
     "/abilities/aqua_aura": {
         "hrid": "/abilities/aqua_aura",
@@ -64,6 +67,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -104,7 +110,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 50
+        "sortIndex": 53
     },
     "/abilities/arcane_reflection": {
         "hrid": "/abilities/arcane_reflection",
@@ -128,6 +134,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -158,7 +167,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 44
+        "sortIndex": 47
     },
     "/abilities/berserk": {
         "hrid": "/abilities/berserk",
@@ -182,6 +191,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -212,7 +224,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 40
+        "sortIndex": 43
     },
     "/abilities/cleave": {
         "hrid": "/abilities/cleave",
@@ -236,6 +248,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -266,25 +281,28 @@
     "/abilities/crippling_slash": {
         "hrid": "/abilities/crippling_slash",
         "name": "Crippling Slash",
-        "description": "Slashes the targeted enemy and reduce their damage",
+        "description": "Slashes all enemies and reduce their damage",
         "isSpecialAbility": false,
-        "manaCost": 50,
+        "manaCost": 55,
         "cooldownDuration": 20000000000,
         "castDuration": 500000000,
         "abilityEffects": [
             {
-                "targetType": "enemy",
+                "targetType": "allEnemies",
                 "effectType": "/ability_effect_types/damage",
                 "combatStyleHrid": "/combat_styles/slash",
                 "damageType": "/damage_types/physical",
-                "baseDamageFlat": 30,
+                "baseDamageFlat": 20,
                 "baseDamageFlatLevelBonus": 0.2,
-                "baseDamageRatio": 1,
-                "baseDamageRatioLevelBonus": 0.01,
+                "baseDamageRatio": 0.6,
+                "baseDamageRatioLevelBonus": 0.006,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -297,8 +315,8 @@
                     {
                         "uniqueHrid": "/buff_uniques/crippling_slash",
                         "typeHrid": "/buff_types/damage",
-                        "ratioBoost": -0.15,
-                        "ratioBoostLevelBonus": -0.0015,
+                        "ratioBoost": -0.12,
+                        "ratioBoostLevelBonus": -0.0012,
                         "flatBoost": 0,
                         "flatBoostLevelBonus": 0,
                         "startTime": "0001-01-01T00:00:00Z",
@@ -339,6 +357,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -369,7 +390,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 54
+        "sortIndex": 57
     },
     "/abilities/elemental_affinity": {
         "hrid": "/abilities/elemental_affinity",
@@ -393,6 +414,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -443,7 +467,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 42
+        "sortIndex": 45
     },
     "/abilities/elusiveness": {
         "hrid": "/abilities/elusiveness",
@@ -467,6 +491,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -497,7 +524,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 38
+        "sortIndex": 41
     },
     "/abilities/entangle": {
         "hrid": "/abilities/entangle",
@@ -521,6 +548,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -540,7 +570,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 24
+        "sortIndex": 26
     },
     "/abilities/fierce_aura": {
         "hrid": "/abilities/fierce_aura",
@@ -564,6 +594,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -604,7 +637,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 49
+        "sortIndex": 52
     },
     "/abilities/fireball": {
         "hrid": "/abilities/fireball",
@@ -628,6 +661,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -647,7 +683,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 27
+        "sortIndex": 30
     },
     "/abilities/firestorm": {
         "hrid": "/abilities/firestorm",
@@ -671,6 +707,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 1,
                 "damageOverTimeDuration": 10000000000,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -696,7 +735,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 29
+        "sortIndex": 32
     },
     "/abilities/flame_arrow": {
         "hrid": "/abilities/flame_arrow",
@@ -720,6 +759,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -739,7 +781,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 14
+        "sortIndex": 16
     },
     "/abilities/flame_aura": {
         "hrid": "/abilities/flame_aura",
@@ -763,6 +805,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -803,7 +848,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 52
+        "sortIndex": 55
     },
     "/abilities/flame_blast": {
         "hrid": "/abilities/flame_blast",
@@ -827,6 +872,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -852,7 +900,70 @@
                 "value": 1
             }
         ],
-        "sortIndex": 28
+        "sortIndex": 31
+    },
+    "/abilities/fracturing_impact": {
+        "hrid": "/abilities/fracturing_impact",
+        "name": "Fracturing Impact",
+        "description": "Attacks all enemies, dealing damage and increases their damage taken",
+        "isSpecialAbility": false,
+        "manaCost": 55,
+        "cooldownDuration": 20000000000,
+        "castDuration": 500000000,
+        "abilityEffects": [
+            {
+                "targetType": "allEnemies",
+                "effectType": "/ability_effect_types/damage",
+                "combatStyleHrid": "/combat_styles/smash",
+                "damageType": "/damage_types/physical",
+                "baseDamageFlat": 20,
+                "baseDamageFlatLevelBonus": 0.2,
+                "baseDamageRatio": 0.6,
+                "baseDamageRatioLevelBonus": 0.006,
+                "bonusAccuracyRatio": 0,
+                "bonusAccuracyRatioLevelBonus": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
+                "pierceChance": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
+                "stunChance": 0,
+                "stunDuration": 0,
+                "spendHpRatio": 0,
+                "buffs": [
+                    {
+                        "uniqueHrid": "/buff_uniques/fracturing_impact",
+                        "typeHrid": "/buff_types/damage_taken",
+                        "ratioBoost": 0,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 0.05,
+                        "flatBoostLevelBonus": 0.0005,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": 12000000000
+                    }
+                ]
+            }
+        ],
+        "defaultCombatTriggers": [
+            {
+                "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+                "conditionHrid": "/combat_trigger_conditions/number_of_active_units",
+                "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+                "value": 1
+            },
+            {
+                "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+                "conditionHrid": "/combat_trigger_conditions/current_hp",
+                "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+                "value": 1
+            }
+        ],
+        "sortIndex": 12
     },
     "/abilities/frenzy": {
         "hrid": "/abilities/frenzy",
@@ -876,6 +987,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -906,7 +1020,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 41
+        "sortIndex": 44
     },
     "/abilities/frost_surge": {
         "hrid": "/abilities/frost_surge",
@@ -930,6 +1044,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -966,7 +1083,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 22
+        "sortIndex": 24
     },
     "/abilities/heal": {
         "hrid": "/abilities/heal",
@@ -990,6 +1107,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -1009,7 +1129,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 32
+        "sortIndex": 35
     },
     "/abilities/ice_spear": {
         "hrid": "/abilities/ice_spear",
@@ -1033,6 +1153,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -1063,7 +1186,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 21
+        "sortIndex": 23
     },
     "/abilities/impale": {
         "hrid": "/abilities/impale",
@@ -1087,6 +1210,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -1130,6 +1256,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -1184,6 +1313,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -1203,7 +1335,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 47
+        "sortIndex": 50
     },
     "/abilities/invincible": {
         "hrid": "/abilities/invincible",
@@ -1227,6 +1359,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -1297,7 +1432,53 @@
                 "value": 0
             }
         ],
-        "sortIndex": 48
+        "sortIndex": 51
+    },
+    "/abilities/life_drain": {
+        "hrid": "/abilities/life_drain",
+        "name": "Life Drain",
+        "description": "Drains the life force of the targeted enemy, dealing damage and healing the caster",
+        "isSpecialAbility": false,
+        "manaCost": 80,
+        "cooldownDuration": 18000000000,
+        "castDuration": 2000000000,
+        "abilityEffects": [
+            {
+                "targetType": "enemy",
+                "effectType": "/ability_effect_types/damage",
+                "combatStyleHrid": "/combat_styles/magic",
+                "damageType": "/damage_types/nature",
+                "baseDamageFlat": 30,
+                "baseDamageFlatLevelBonus": 0.3,
+                "baseDamageRatio": 1.8,
+                "baseDamageRatioLevelBonus": 0.018,
+                "bonusAccuracyRatio": 0,
+                "bonusAccuracyRatioLevelBonus": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0.1,
+                "pierceChance": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
+                "stunChance": 0,
+                "stunDuration": 0,
+                "spendHpRatio": 0,
+                "buffs": null
+            }
+        ],
+        "defaultCombatTriggers": [
+            {
+                "dependencyHrid": "/combat_trigger_dependencies/targeted_enemy",
+                "conditionHrid": "/combat_trigger_conditions/current_hp",
+                "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+                "value": 1
+            }
+        ],
+        "sortIndex": 29
     },
     "/abilities/maim": {
         "hrid": "/abilities/maim",
@@ -1313,14 +1494,17 @@
                 "effectType": "/ability_effect_types/damage",
                 "combatStyleHrid": "/combat_styles/slash",
                 "damageType": "/damage_types/physical",
-                "baseDamageFlat": 20,
-                "baseDamageFlatLevelBonus": 0.2,
+                "baseDamageFlat": 30,
+                "baseDamageFlatLevelBonus": 0.3,
                 "baseDamageRatio": 0.65,
                 "baseDamageRatioLevelBonus": 0.0065,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 1,
                 "damageOverTimeDuration": 15000000000,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -1329,7 +1513,18 @@
                 "stunChance": 0,
                 "stunDuration": 0,
                 "spendHpRatio": 0,
-                "buffs": null
+                "buffs": [
+                    {
+                        "uniqueHrid": "/buff_uniques/maim",
+                        "typeHrid": "/buff_types/damage_taken",
+                        "ratioBoost": 0,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 0.08,
+                        "flatBoostLevelBonus": 0.0008,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": 12000000000
+                    }
+                ]
             }
         ],
         "defaultCombatTriggers": [
@@ -1364,6 +1559,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -1387,6 +1585,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -1423,7 +1624,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 23
+        "sortIndex": 25
     },
     "/abilities/minor_heal": {
         "hrid": "/abilities/minor_heal",
@@ -1447,6 +1648,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -1466,7 +1670,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 31
+        "sortIndex": 34
     },
     "/abilities/natures_veil": {
         "hrid": "/abilities/natures_veil",
@@ -1490,6 +1694,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0.5,
                 "blindDuration": 5000000000,
@@ -1515,7 +1722,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 26
+        "sortIndex": 28
     },
     "/abilities/penetrating_shot": {
         "hrid": "/abilities/penetrating_shot",
@@ -1539,6 +1746,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 1,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -1558,7 +1768,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 19
+        "sortIndex": 21
     },
     "/abilities/penetrating_strike": {
         "hrid": "/abilities/penetrating_strike",
@@ -1582,6 +1792,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 1,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -1625,6 +1838,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -1665,7 +1881,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 18
+        "sortIndex": 20
     },
     "/abilities/poke": {
         "hrid": "/abilities/poke",
@@ -1689,6 +1905,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -1732,6 +1951,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -1762,7 +1984,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 39
+        "sortIndex": 42
     },
     "/abilities/promote": {
         "hrid": "/abilities/promote",
@@ -1786,6 +2008,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -1798,7 +2023,7 @@
             }
         ],
         "defaultCombatTriggers": [],
-        "sortIndex": 55
+        "sortIndex": 58
     },
     "/abilities/provoke": {
         "hrid": "/abilities/provoke",
@@ -1822,6 +2047,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -1845,7 +2073,7 @@
             }
         ],
         "defaultCombatTriggers": [],
-        "sortIndex": 36
+        "sortIndex": 39
     },
     "/abilities/puncture": {
         "hrid": "/abilities/puncture",
@@ -1869,6 +2097,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -1923,6 +2154,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -1942,7 +2176,7 @@
                 "value": 75
             }
         ],
-        "sortIndex": 33
+        "sortIndex": 36
     },
     "/abilities/quick_shot": {
         "hrid": "/abilities/quick_shot",
@@ -1966,6 +2200,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -1985,7 +2222,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 12
+        "sortIndex": 14
     },
     "/abilities/rain_of_arrows": {
         "hrid": "/abilities/rain_of_arrows",
@@ -2009,6 +2246,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -2034,7 +2274,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 15
+        "sortIndex": 17
     },
     "/abilities/rejuvenate": {
         "hrid": "/abilities/rejuvenate",
@@ -2058,6 +2298,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -2077,7 +2320,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 34
+        "sortIndex": 37
     },
     "/abilities/revive": {
         "hrid": "/abilities/revive",
@@ -2101,6 +2344,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -2120,7 +2366,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 46
+        "sortIndex": 49
     },
     "/abilities/scratch": {
         "hrid": "/abilities/scratch",
@@ -2144,6 +2390,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -2164,6 +2413,52 @@
             }
         ],
         "sortIndex": 5
+    },
+    "/abilities/shield_bash": {
+        "hrid": "/abilities/shield_bash",
+        "name": "Shield Bash",
+        "description": "Bashes the targeted enemy with a shield, dealing extra damage based on attacker's armor",
+        "isSpecialAbility": false,
+        "manaCost": 35,
+        "cooldownDuration": 12000000000,
+        "castDuration": 500000000,
+        "abilityEffects": [
+            {
+                "targetType": "enemy",
+                "effectType": "/ability_effect_types/damage",
+                "combatStyleHrid": "/combat_styles/smash",
+                "damageType": "/damage_types/physical",
+                "baseDamageFlat": 10,
+                "baseDamageFlatLevelBonus": 0.1,
+                "baseDamageRatio": 0.3,
+                "baseDamageRatioLevelBonus": 0.003,
+                "bonusAccuracyRatio": 0,
+                "bonusAccuracyRatioLevelBonus": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0.5,
+                "armorDamageRatioLevelBonus": 0.005,
+                "hpDrainRatio": 0,
+                "pierceChance": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
+                "stunChance": 0,
+                "stunDuration": 0,
+                "spendHpRatio": 0,
+                "buffs": null
+            }
+        ],
+        "defaultCombatTriggers": [
+            {
+                "dependencyHrid": "/combat_trigger_dependencies/targeted_enemy",
+                "conditionHrid": "/combat_trigger_conditions/current_hp",
+                "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+                "value": 1
+            }
+        ],
+        "sortIndex": 13
     },
     "/abilities/silencing_shot": {
         "hrid": "/abilities/silencing_shot",
@@ -2187,6 +2482,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -2206,7 +2504,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 16
+        "sortIndex": 18
     },
     "/abilities/smack": {
         "hrid": "/abilities/smack",
@@ -2230,6 +2528,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -2273,6 +2574,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -2303,7 +2607,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 30
+        "sortIndex": 33
     },
     "/abilities/speed_aura": {
         "hrid": "/abilities/speed_aura",
@@ -2327,6 +2631,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -2367,7 +2674,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 53
+        "sortIndex": 56
     },
     "/abilities/spike_shell": {
         "hrid": "/abilities/spike_shell",
@@ -2391,6 +2698,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -2421,7 +2731,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 43
+        "sortIndex": 46
     },
     "/abilities/steady_shot": {
         "hrid": "/abilities/steady_shot",
@@ -2445,6 +2755,9 @@
                 "bonusAccuracyRatioLevelBonus": 0.01,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -2464,7 +2777,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 17
+        "sortIndex": 19
     },
     "/abilities/stunning_blow": {
         "hrid": "/abilities/stunning_blow",
@@ -2481,13 +2794,16 @@
                 "combatStyleHrid": "/combat_styles/smash",
                 "damageType": "/damage_types/physical",
                 "baseDamageFlat": 30,
-                "baseDamageFlatLevelBonus": 0.2,
+                "baseDamageFlatLevelBonus": 0.3,
                 "baseDamageRatio": 1,
                 "baseDamageRatioLevelBonus": 0.01,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -2531,6 +2847,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -2580,6 +2899,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -2630,7 +2952,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 51
+        "sortIndex": 54
     },
     "/abilities/taunt": {
         "hrid": "/abilities/taunt",
@@ -2654,6 +2976,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -2677,7 +3002,7 @@
             }
         ],
         "defaultCombatTriggers": [],
-        "sortIndex": 35
+        "sortIndex": 38
     },
     "/abilities/toughness": {
         "hrid": "/abilities/toughness",
@@ -2701,6 +3026,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -2761,7 +3089,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 37
+        "sortIndex": 40
     },
     "/abilities/toxic_pollen": {
         "hrid": "/abilities/toxic_pollen",
@@ -2785,6 +3113,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -2851,7 +3182,7 @@
                 "value": 1
             }
         ],
-        "sortIndex": 25
+        "sortIndex": 27
     },
     "/abilities/vampirism": {
         "hrid": "/abilities/vampirism",
@@ -2875,6 +3206,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -2905,7 +3239,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 45
+        "sortIndex": 48
     },
     "/abilities/water_strike": {
         "hrid": "/abilities/water_strike",
@@ -2929,6 +3263,9 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
                 "blindDuration": 0,
@@ -2948,6 +3285,6 @@
                 "value": 1
             }
         ],
-        "sortIndex": 20
+        "sortIndex": 22
     }
 }
