@@ -31,6 +31,7 @@ class Ability {
                 damageOverTimeRatio: effect.damageOverTimeRatio,
                 damageOverTimeDuration: effect.damageOverTimeDuration,
                 armorDamageRatio : effect.armorDamageRatio + (this.level - 1) * effect.armorDamageRatioLevelBonus,
+                hpDrainRatio: effect.hpDrainRatio,
                 pierceChance: effect.pierceChance,
                 blindChance: effect.blindChance,
                 blindDuration: effect.blindDuration,

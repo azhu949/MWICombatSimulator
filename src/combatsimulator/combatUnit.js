@@ -124,7 +124,8 @@ class CombatUnit {
             drinkConcentration: 0,
             damageTaken: 0,
             attackSpeed: 0,
-            armorDamageRatio: 0
+            armorDamageRatio: 0,
+            hpDrainRatio: 0
         },
     };
     combatBuffs = {};

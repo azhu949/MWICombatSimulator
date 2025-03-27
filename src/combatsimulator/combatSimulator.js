@@ -942,6 +942,10 @@ class CombatSimulator extends EventTarget {
                 } 
                 
                 let attackResult = CombatUtilities.processAttack(source, target, abilityEffect);
+                
+                if (attackResult.hpDrain > 0) {
+                    this.simResult.addHitpointsGained(source, ability.hrid, attackResult.hpDrain);                    
+                }
 
                 if (attackResult.didHit && abilityEffect.buffs) {
                     for (const buff of abilityEffect.buffs) {

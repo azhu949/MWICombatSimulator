@@ -223,6 +223,11 @@ class CombatUtilities {
             lifeStealHeal = source.addHitpoints(Math.floor(source.combatDetails.combatStats.lifeSteal * damageDone));
         }
 
+        let hpDrain = 0;
+        if (abilityEffect && didHit && abilityEffect.hpDrainRatio > 0) {
+            hpDrain = target.addHitpoints(Math.floor(abilityEffect.hpDrainRatio * damageDone));
+        }
+
         let manaLeechMana = 0;
         if (!abilityEffect && didHit && source.combatDetails.combatStats.manaLeech > 0) {
             manaLeechMana = source.addManapoints(Math.floor(source.combatDetails.combatStats.manaLeech * damageDone));
@@ -274,7 +279,7 @@ class CombatUtilities {
             experienceGained.source.stamina = this.calculateStaminaExperience(reflectDamagePrevented, reflectDamageDone);
         }
 
-        return { damageDone, didHit, reflectDamageDone, thornType, lifeStealHeal, manaLeechMana, experienceGained };
+        return { damageDone, didHit, reflectDamageDone, thornType, lifeStealHeal, hpDrain, manaLeechMana, experienceGained };
     }
 
     static processHeal(source, abilityEffect, target) {
