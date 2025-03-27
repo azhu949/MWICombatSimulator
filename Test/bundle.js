@@ -48,6 +48,7 @@ class Ability {
                 damageOverTimeRatio: effect.damageOverTimeRatio,
                 damageOverTimeDuration: effect.damageOverTimeDuration,
                 armorDamageRatio : effect.armorDamageRatio + (this.level - 1) * effect.armorDamageRatioLevelBonus,
+                hpDrainRatio: effect.hpDrainRatio,
                 pierceChance: effect.pierceChance,
                 blindChance: effect.blindChance,
                 blindDuration: effect.blindDuration,
@@ -294,7 +295,8 @@ class CombatUnit {
             drinkConcentration: 0,
             damageTaken: 0,
             attackSpeed: 0,
-            armorDamageRatio: 0
+            armorDamageRatio: 0,
+            hpDrainRatio: 0
         },
     };
     combatBuffs = {};

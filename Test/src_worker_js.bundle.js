@@ -48,6 +48,7 @@ class Ability {
                 damageOverTimeRatio: effect.damageOverTimeRatio,
                 damageOverTimeDuration: effect.damageOverTimeDuration,
                 armorDamageRatio : effect.armorDamageRatio + (this.level - 1) * effect.armorDamageRatioLevelBonus,
+                hpDrainRatio: effect.hpDrainRatio,
                 pierceChance: effect.pierceChance,
                 blindChance: effect.blindChance,
                 blindDuration: effect.blindDuration,
@@ -1131,6 +1132,10 @@ class CombatSimulator extends EventTarget {
                 } 
                 
                 let attackResult = _combatUtilities__WEBPACK_IMPORTED_MODULE_0__["default"].processAttack(source, target, abilityEffect);
+                
+                if (attackResult.hpDrain > 0) {
+                    this.simResult.addHitpointsGained(source, ability.hrid, attackResult.hpDrain);                    
+                }
 
                 if (attackResult.didHit && abilityEffect.buffs) {
                     for (const buff of abilityEffect.buffs) {
@@ -1483,7 +1488,8 @@ class CombatUnit {
             drinkConcentration: 0,
             damageTaken: 0,
             attackSpeed: 0,
-            armorDamageRatio: 0
+            armorDamageRatio: 0,
+            hpDrainRatio: 0
         },
     };
     combatBuffs = {};
@@ -2052,6 +2058,11 @@ class CombatUtilities {
             lifeStealHeal = source.addHitpoints(Math.floor(source.combatDetails.combatStats.lifeSteal * damageDone));
         }
 
+        let hpDrain = 0;
+        if (abilityEffect && didHit && abilityEffect.hpDrainRatio > 0) {
+            hpDrain = target.addHitpoints(Math.floor(abilityEffect.hpDrainRatio * damageDone));
+        }
+
         let manaLeechMana = 0;
         if (!abilityEffect && didHit && source.combatDetails.combatStats.manaLeech > 0) {
             manaLeechMana = source.addManapoints(Math.floor(source.combatDetails.combatStats.manaLeech * damageDone));
@@ -2103,7 +2114,7 @@ class CombatUtilities {
             experienceGained.source.stamina = this.calculateStaminaExperience(reflectDamagePrevented, reflectDamageDone);
         }
 
-        return { damageDone, didHit, reflectDamageDone, thornType, lifeStealHeal, manaLeechMana, experienceGained };
+        return { damageDone, didHit, reflectDamageDone, thornType, lifeStealHeal, hpDrain, manaLeechMana, experienceGained };
     }
 
     static processHeal(source, abilityEffect, target) {
