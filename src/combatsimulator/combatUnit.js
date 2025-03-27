@@ -123,7 +123,8 @@ class CombatUnit {
             foodHaste: 0,
             drinkConcentration: 0,
             damageTaken: 0,
-            attackSpeed: 0
+            attackSpeed: 0,
+            armorDamageRatio: 0
         },
     };
     combatBuffs = {};
