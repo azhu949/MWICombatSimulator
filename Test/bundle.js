@@ -47,6 +47,7 @@ class Ability {
                 bonusAccuracyRatio: effect.bonusAccuracyRatio + (this.level - 1) * effect.bonusAccuracyRatioLevelBonus,
                 damageOverTimeRatio: effect.damageOverTimeRatio,
                 damageOverTimeDuration: effect.damageOverTimeDuration,
+                armorDamageRatio : effect.armorDamageRatio + (this.level - 1) * effect.armorDamageRatioLevelBonus,
                 pierceChance: effect.pierceChance,
                 blindChance: effect.blindChance,
                 blindDuration: effect.blindDuration,
@@ -292,7 +293,8 @@ class CombatUnit {
             foodHaste: 0,
             drinkConcentration: 0,
             damageTaken: 0,
-            attackSpeed: 0
+            attackSpeed: 0,
+            armorDamageRatio: 0
         },
     };
     combatBuffs = {};

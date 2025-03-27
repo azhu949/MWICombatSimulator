@@ -47,6 +47,7 @@ class Ability {
                 bonusAccuracyRatio: effect.bonusAccuracyRatio + (this.level - 1) * effect.bonusAccuracyRatioLevelBonus,
                 damageOverTimeRatio: effect.damageOverTimeRatio,
                 damageOverTimeDuration: effect.damageOverTimeDuration,
+                armorDamageRatio : effect.armorDamageRatio + (this.level - 1) * effect.armorDamageRatioLevelBonus,
                 pierceChance: effect.pierceChance,
                 blindChance: effect.blindChance,
                 blindDuration: effect.blindDuration,
@@ -1481,7 +1482,8 @@ class CombatUnit {
             foodHaste: 0,
             drinkConcentration: 0,
             damageTaken: 0,
-            attackSpeed: 0
+            attackSpeed: 0,
+            armorDamageRatio: 0
         },
     };
     combatBuffs = {};
@@ -1985,8 +1987,10 @@ class CombatUtilities {
         let baseDamageFlat = abilityEffect ? abilityEffect.damageFlat : 0;
         let baseDamageRatio = abilityEffect ? abilityEffect.damageRatio : 1;
 
-        let sourceMinDamage = sourceDamageMultiplier * (1 + baseDamageFlat);
-        let sourceMaxDamage = sourceDamageMultiplier * (baseDamageRatio * sourceAutoAttackMaxDamage + baseDamageFlat);
+        let armorDamageRatioFlat = abilityEffect ? abilityEffect.armorDamageRatio * source.combatDetails.combatStats.armor : 0;
+
+        let sourceMinDamage = sourceDamageMultiplier * (1 + baseDamageFlat + armorDamageRatioFlat);
+        let sourceMaxDamage = sourceDamageMultiplier * (baseDamageRatio * sourceAutoAttackMaxDamage + baseDamageFlat + armorDamageRatioFlat);
 
         if (Math.random() < critChance) {
             sourceMaxDamage = sourceMaxDamage * (1 + bonusCritDamage);
