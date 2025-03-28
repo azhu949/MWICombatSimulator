@@ -225,7 +225,8 @@ class CombatUtilities {
 
         let hpDrain = 0;
         if (abilityEffect && didHit && abilityEffect.hpDrainRatio > 0) {
-            hpDrain = target.addHitpoints(Math.floor(abilityEffect.hpDrainRatio * damageDone));
+            let healingAmplify = 1 + source.combatDetails.combatStats.healingAmplify;
+            hpDrain = source.addHitpoints(Math.floor(abilityEffect.hpDrainRatio * damageDone * healingAmplify));
         }
 
         let manaLeechMana = 0;
