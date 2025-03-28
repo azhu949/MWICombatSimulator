@@ -273,12 +273,10 @@ class CombatSimulator extends EventTarget {
             let mayhem = source.combatDetails.combatStats.mayhem > Math.random();
 
             if (attackResult.didHit && source.combatDetails.combatStats.curse > 0) {
-                target.curseExpireTime = this.simulationTime + 15000000000;
-                if (target.combatDetails.combatStats.damageTaken < 0.1) {
-                    target.combatDetails.combatStats.damageTaken += 0.01;
-                }
+                let curseExpireTime = this.simulationTime + 15000000000;
+                target.addCurse(source.combatDetails.combatStats.curse);
                 this.eventQueue.clearMatching((event) => event.type == CurseExpirationEvent.type && event.source == target)
-                let curseExpirationEvent = new CurseExpirationEvent(target.curseExpireTime, target);
+                let curseExpirationEvent = new CurseExpirationEvent(curseExpireTime, target);
                 this.eventQueue.addEvent(curseExpirationEvent);
             }
 
@@ -624,7 +622,7 @@ class CombatSimulator extends EventTarget {
     }
 
     processCurseExpirationEvent(event) {
-        event.source.damageTaken = 0;
+        event.source.curseValue = 0;
     }
 
     processWeakenExpirationEvent(event) {
@@ -1003,12 +1001,10 @@ class CombatSimulator extends EventTarget {
                 }
 
                 if (attackResult.didHit && source.combatDetails.combatStats.curse > 0 && Math.random() < (100 / (100 + target.combatDetails.combatStats.tenacity))) {
-                    target.curseExpireTime = this.simulationTime + 15000000000;
-                    if (target.combatDetails.combatStats.damageTaken < 0.1) {
-                        target.combatDetails.combatStats.damageTaken += 0.01;
-                    }
+                    let curseExpireTime = this.simulationTime + 15000000000;
+                    target.addCurse(source.combatDetails.combatStats.curse);
                     this.eventQueue.clearMatching((event) => event.type == CurseExpirationEvent.type && event.source == target)
-                    let curseExpirationEvent = new CurseExpirationEvent(target.curseExpireTime, target);
+                    let curseExpirationEvent = new CurseExpirationEvent(curseExpireTime, target);
                     this.eventQueue.addEvent(curseExpirationEvent);
                 }
 
