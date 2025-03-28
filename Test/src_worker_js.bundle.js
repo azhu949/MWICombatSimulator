@@ -2008,7 +2008,7 @@ class CombatUtilities {
         let baseDamageFlat = abilityEffect ? abilityEffect.damageFlat : 0;
         let baseDamageRatio = abilityEffect ? abilityEffect.damageRatio : 1;
 
-        let armorDamageRatioFlat = abilityEffect ? abilityEffect.armorDamageRatio * source.combatDetails.combatStats.armor : 0;
+        let armorDamageRatioFlat = abilityEffect ? abilityEffect.armorDamageRatio * source.combatDetails.totalArmor : 0;
 
         let sourceMinDamage = sourceDamageMultiplier * (1 + baseDamageFlat + armorDamageRatioFlat);
         let sourceMaxDamage = sourceDamageMultiplier * (baseDamageRatio * sourceAutoAttackMaxDamage + baseDamageFlat + armorDamageRatioFlat);
@@ -2075,7 +2075,8 @@ class CombatUtilities {
 
         let hpDrain = 0;
         if (abilityEffect && didHit && abilityEffect.hpDrainRatio > 0) {
-            hpDrain = target.addHitpoints(Math.floor(abilityEffect.hpDrainRatio * damageDone));
+            let healingAmplify = 1 + source.combatDetails.combatStats.healingAmplify;
+            hpDrain = source.addHitpoints(Math.floor(abilityEffect.hpDrainRatio * damageDone * healingAmplify));
         }
 
         let manaLeechMana = 0;
