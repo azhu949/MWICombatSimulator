@@ -463,12 +463,10 @@ class CombatSimulator extends EventTarget {
             let mayhem = source.combatDetails.combatStats.mayhem > Math.random();
 
             if (attackResult.didHit && source.combatDetails.combatStats.curse > 0) {
-                target.curseExpireTime = this.simulationTime + 15000000000;
-                if (target.combatDetails.combatStats.damageTaken < 0.1) {
-                    target.combatDetails.combatStats.damageTaken += 0.01;
-                }
+                let curseExpireTime = this.simulationTime + 15000000000;
+                target.addCurse(source.combatDetails.combatStats.curse);
                 this.eventQueue.clearMatching((event) => event.type == _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"].type && event.source == target)
-                let curseExpirationEvent = new _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"](target.curseExpireTime, target);
+                let curseExpirationEvent = new _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"](curseExpireTime, target);
                 this.eventQueue.addEvent(curseExpirationEvent);
             }
 
@@ -814,7 +812,7 @@ class CombatSimulator extends EventTarget {
     }
 
     processCurseExpirationEvent(event) {
-        event.source.damageTaken = 0;
+        event.source.curseValue = 0;
     }
 
     processWeakenExpirationEvent(event) {
@@ -1193,12 +1191,10 @@ class CombatSimulator extends EventTarget {
                 }
 
                 if (attackResult.didHit && source.combatDetails.combatStats.curse > 0 && Math.random() < (100 / (100 + target.combatDetails.combatStats.tenacity))) {
-                    target.curseExpireTime = this.simulationTime + 15000000000;
-                    if (target.combatDetails.combatStats.damageTaken < 0.1) {
-                        target.combatDetails.combatStats.damageTaken += 0.01;
-                    }
+                    let curseExpireTime = this.simulationTime + 15000000000;
+                    target.addCurse(source.combatDetails.combatStats.curse);
                     this.eventQueue.clearMatching((event) => event.type == _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"].type && event.source == target)
-                    let curseExpirationEvent = new _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"](target.curseExpireTime, target);
+                    let curseExpirationEvent = new _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"](curseExpireTime, target);
                     this.eventQueue.addEvent(curseExpirationEvent);
                 }
 
@@ -1370,7 +1366,7 @@ class CombatUnit {
     blindExpireTime = null;
     isSilenced = false;
     silenceExpireTime = null;
-    curseExpiretime = null;
+    curseValue = 0;
     isWeakened = false;
     weakenExpireTime = null;
     weakenPercentage = 0;
@@ -1564,6 +1560,16 @@ class CombatUnit {
             this.combatDetails.rangedEvasionRating += baseRangedEvasion * boost.ratioBoost;
         }
 
+        let baseDamageTaken = this.curseValue;
+        this.combatDetails.combatStats.damageTaken = baseDamageTaken;
+        let damageTakens = this.getBuffBoosts("/buff_types/damage_taken");
+        for (const boost of damageTakens) {
+            this.combatDetails.combatStats.damageTaken += boost.flatBoost;
+        }
+        // if (this.combatDetails.combatStats.damageTaken > 0) {
+        //     console.log("Damage taken: " + this.combatDetails.combatStats.damageTaken);
+        // }
+
         this.combatDetails.magicAccuracyRating =
             (10 + this.combatDetails.magicLevel) *
             (1 + this.combatDetails.combatStats.magicAccuracy) *
@@ -1671,6 +1677,15 @@ class CombatUnit {
         this.combatDetails.combatStats.threat += threatBoosts.flatBoost;
     }
 
+    addCurse(curse) {
+        if (this.curseValue >= 0.1) {
+            return;
+        }
+
+        this.curseValue += curse;
+        this.updateCombatDetails();
+    }
+
     addBuff(buff, currentTime) {
         buff.startTime = currentTime;
         this.combatBuffs[buff.uniqueHrid] = buff;
@@ -1725,7 +1740,7 @@ class CombatUnit {
         this.isBlinded = false;
         this.blindExpireTime = null;
         this.combatDetails.combatStats.damageTaken = 0;
-        this.curseExpireTime = null;
+        this.curseValue = 0; // max 0.1
     }
 
     getBuffBoosts(type) {
@@ -3818,6 +3833,8 @@ class Trigger {
             case "/combat_trigger_conditions/pestilent_shot_mp_regen":
             case "/combat_trigger_conditions/smoke_burst":
             case "/combat_trigger_conditions/arcane_reflection":
+            case "/combat_trigger_conditions/fracturing_impact":
+            case "/combat_trigger_conditions/maim":
                 let buffHrid = "/buff_uniques";
                 buffHrid += this.conditionHrid.slice(this.conditionHrid.lastIndexOf("/"));
                 return source.combatBuffs[buffHrid];
@@ -3838,7 +3855,7 @@ class Trigger {
             case "/combat_trigger_conditions/silence_status":
                 return source.isSilenced || source.silenceExpireTime == currentTime;
             case "/combat_trigger_conditions/curse":
-                return source.combatDetails.combatStats.damageTaken > 0 || source.curseExpireTime == currentTime;
+                return source.curseValue > 0;
             case "/combat_trigger_conditions/weaken":
                 return source.isWeakened || source.weakenExpireTime == currentTime;
             default:
