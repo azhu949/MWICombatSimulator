@@ -1575,8 +1575,8 @@ function showManaUsed(simResult, playerToDisplay) {
         castsPerHour = " (" + castsPerHour + ")";
         
         let manaRow = createRow(
-            ["col-md-6", "col-md-6 text-end"],
-            [ability.split("/")[2].replaceAll("_", " ") + castsPerHour, manaPerHour]
+            ["col-md-6", "col-md-2", "col-md-4 text-end"],
+            [ability.split("/")[2].replaceAll("_", " "), castsPerHour, manaPerHour]
         );
         manaRow.firstElementChild.setAttribute("data-i18n", "abilityNames."+ability);
         newChildren.push(manaRow);
