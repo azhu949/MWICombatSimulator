@@ -1627,6 +1627,10 @@ function showHitpointsGained(simResult, playerToDisplay) {
                 sourceText = "Life Steal";
                 sourceFullHrid = "combatStats.lifeSteal";
                 break;
+            case "bloom":
+                sourceText = "Bloom";
+                sourceFullHrid = "combatStats.bloom";
+                break;
             default:
                 if (itemDetailMap[source]) {
                     sourceText = itemDetailMap[source].name;
@@ -1894,6 +1898,10 @@ function createDamageTable(resultDiv, damageDone, secondsSimulated) {
             case "elementalThorns":
                 abilityText = "Elemental Thorns";
                 abilityFullHrid = "combatStats.elementalThorns";
+                break;
+            case 'blaze':
+                abilityText = "Blaze";
+                abilityFullHrid = "combatStats.blaze";
                 break;
             default:
                 abilityText = abilityDetailMap[ability].name;

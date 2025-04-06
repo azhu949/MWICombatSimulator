@@ -147,6 +147,8 @@ class Trigger {
             case "/combat_trigger_conditions/arcane_reflection":
             case "/combat_trigger_conditions/fracturing_impact":
             case "/combat_trigger_conditions/maim":
+            case "/combat_trigger_conditions/fury_accuracy":
+            case "/combat_trigger_conditions/fury_damage":
                 let buffHrid = "/buff_uniques";
                 buffHrid += this.conditionHrid.slice(this.conditionHrid.lastIndexOf("/"));
                 return source.combatBuffs[buffHrid];
