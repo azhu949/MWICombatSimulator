@@ -63,7 +63,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 75
+        "sortIndex": 77
     },
     "/combat_trigger_conditions/channeling_coffee": {
         "hrid": "/combat_trigger_conditions/channeling_coffee",
@@ -151,7 +151,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 74
+        "sortIndex": 76
     },
     "/combat_trigger_conditions/defense_coffee": {
         "hrid": "/combat_trigger_conditions/defense_coffee",
@@ -284,6 +284,28 @@
             "/combat_trigger_comparators/is_inactive"
         ],
         "sortIndex": 67
+    },
+    "/combat_trigger_conditions/fury_accuracy": {
+        "hrid": "/combat_trigger_conditions/fury_accuracy",
+        "name": "Fury (Accuracy)",
+        "isSingleTarget": true,
+        "isMultiTarget": false,
+        "allowedComparatorHrids": [
+            "/combat_trigger_comparators/is_active",
+            "/combat_trigger_comparators/is_inactive"
+        ],
+        "sortIndex": 74
+    },
+    "/combat_trigger_conditions/fury_damage": {
+        "hrid": "/combat_trigger_conditions/fury_damage",
+        "name": "Fury (Damage)",
+        "isSingleTarget": true,
+        "isMultiTarget": false,
+        "allowedComparatorHrids": [
+            "/combat_trigger_comparators/is_active",
+            "/combat_trigger_comparators/is_inactive"
+        ],
+        "sortIndex": 75
     },
     "/combat_trigger_conditions/ice_spear": {
         "hrid": "/combat_trigger_conditions/ice_spear",
@@ -591,7 +613,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 76
+        "sortIndex": 78
     },
     "/combat_trigger_conditions/smoke_burst": {
         "hrid": "/combat_trigger_conditions/smoke_burst",
@@ -668,7 +690,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 77
+        "sortIndex": 79
     },
     "/combat_trigger_conditions/swiftness_coffee": {
         "hrid": "/combat_trigger_conditions/swiftness_coffee",

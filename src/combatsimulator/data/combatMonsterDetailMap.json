@@ -9677,7 +9677,8 @@
                 "fireResistance": 100,
                 "tenacity": 50,
                 "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "mpRegenPer10": 0.01,
+                "ripple": 0.25
             }
         },
         "elite1CombatDetails": {
@@ -9728,7 +9729,8 @@
                 "fireResistance": 100,
                 "tenacity": 50,
                 "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "mpRegenPer10": 0.01,
+                "ripple": 0.25
             }
         },
         "elite2CombatDetails": {
@@ -9779,7 +9781,8 @@
                 "fireResistance": 100,
                 "tenacity": 50,
                 "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "mpRegenPer10": 0.01,
+                "ripple": 0.25
             }
         },
         "abilities": [
@@ -14384,12 +14387,14 @@
                 ],
                 "damageType": "/damage_types/nature",
                 "attackInterval": 3000000000,
+                "autoAttackDamage": -0.5,
                 "stabEvasion": 1.5,
                 "slashEvasion": 1.5,
                 "smashEvasion": 1.5,
                 "tenacity": 50,
                 "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "mpRegenPer10": 0.01,
+                "bloom": 0.4
             }
         },
         "elite1CombatDetails": {
@@ -14432,12 +14437,14 @@
                 ],
                 "damageType": "/damage_types/nature",
                 "attackInterval": 3000000000,
+                "autoAttackDamage": -0.5,
                 "stabEvasion": 1.5,
                 "slashEvasion": 1.5,
                 "smashEvasion": 1.5,
                 "tenacity": 50,
                 "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "mpRegenPer10": 0.01,
+                "bloom": 0.4
             }
         },
         "elite2CombatDetails": {
@@ -14480,12 +14487,14 @@
                 ],
                 "damageType": "/damage_types/nature",
                 "attackInterval": 3000000000,
+                "autoAttackDamage": -0.5,
                 "stabEvasion": 1.5,
                 "slashEvasion": 1.5,
                 "smashEvasion": 1.5,
                 "tenacity": 50,
                 "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "mpRegenPer10": 0.01,
+                "bloom": 0.4
             }
         },
         "abilities": [
@@ -15054,7 +15063,8 @@
                 "fireResistance": 100,
                 "tenacity": 50,
                 "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "mpRegenPer10": 0.01,
+                "ripple": 0.25
             }
         },
         "elite1CombatDetails": {
@@ -15104,7 +15114,8 @@
                 "fireResistance": 100,
                 "tenacity": 50,
                 "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "mpRegenPer10": 0.01,
+                "ripple": 0.25
             }
         },
         "elite2CombatDetails": {
@@ -15154,7 +15165,8 @@
                 "fireResistance": 100,
                 "tenacity": 50,
                 "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "mpRegenPer10": 0.01,
+                "ripple": 0.25
             }
         },
         "abilities": [

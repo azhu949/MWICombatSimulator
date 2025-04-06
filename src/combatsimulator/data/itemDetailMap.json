@@ -36,7 +36,7 @@
                 }
             ]
         },
-        "sortIndex": 712
+        "sortIndex": 730
     },
     "/items/acrobatic_hood": {
         "hrid": "/items/acrobatic_hood",
@@ -134,7 +134,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 304
+        "sortIndex": 309
     },
     "/items/acrobats_ribbon": {
         "hrid": "/items/acrobats_ribbon",
@@ -192,7 +192,7 @@
                 }
             ]
         },
-        "sortIndex": 679
+        "sortIndex": 691
     },
     "/items/advanced_task_badge": {
         "hrid": "/items/advanced_task_badge",
@@ -243,7 +243,7 @@
                 "taskSpeed": 0.010000000000000002
             }
         },
-        "sortIndex": 480
+        "sortIndex": 492
     },
     "/items/alchemists_bottoms": {
         "hrid": "/items/alchemists_bottoms",
@@ -337,7 +337,7 @@
                 "alchemyExperience": 0.0008
             }
         },
-        "sortIndex": 371
+        "sortIndex": 379
     },
     "/items/alchemists_top": {
         "hrid": "/items/alchemists_top",
@@ -431,7 +431,7 @@
                 "alchemyRareFind": 0.003
             }
         },
-        "sortIndex": 331
+        "sortIndex": 336
     },
     "/items/alchemy_essence": {
         "hrid": "/items/alchemy_essence",
@@ -519,7 +519,7 @@
                 }
             ]
         },
-        "sortIndex": 701
+        "sortIndex": 719
     },
     "/items/alchemy_tea": {
         "hrid": "/items/alchemy_tea",
@@ -683,7 +683,7 @@
                 }
             ]
         },
-        "sortIndex": 719
+        "sortIndex": 738
     },
     "/items/amethyst": {
         "hrid": "/items/amethyst",
@@ -757,7 +757,167 @@
                 }
             ]
         },
-        "sortIndex": 722
+        "sortIndex": 741
+    },
+    "/items/anchorbound_plate_body": {
+        "hrid": "/items/anchorbound_plate_body",
+        "name": "Anchorbound Plate Body",
+        "description": "",
+        "categoryHrid": "/item_categories/equipment",
+        "sellPrice": 4500000,
+        "isTradable": true,
+        "itemLevel": 95,
+        "enhancementCosts": [
+            {
+                "itemHrid": "/items/pirate_essence",
+                "count": 16
+            },
+            {
+                "itemHrid": "/items/holy_cheese",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/coin",
+                "count": 4815
+            }
+        ],
+        "protectionItemHrids": [
+            "/items/damaged_anchor"
+        ],
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "equipmentDetail": {
+            "type": "/equipment_types/body",
+            "levelRequirements": [
+                {
+                    "skillHrid": "/skills/defense",
+                    "level": 95
+                }
+            ],
+            "combatStats": {
+                "autoAttackDamage": 0.08,
+                "stabAccuracy": 0.15,
+                "slashAccuracy": 0.15,
+                "smashAccuracy": 0.15,
+                "magicAccuracy": -0.3,
+                "maxHitpoints": 250,
+                "stabEvasion": 0.6,
+                "slashEvasion": 0.6,
+                "smashEvasion": 0.6,
+                "rangedEvasion": 0.6,
+                "magicEvasion": 0.3,
+                "armor": 48,
+                "waterResistance": 36,
+                "natureResistance": 18,
+                "fireResistance": 36,
+                "tenacity": 48
+            },
+            "noncombatStats": {},
+            "combatEnhancementBonuses": {
+                "autoAttackDamage": 0.0016,
+                "stabAccuracy": 0.003,
+                "slashAccuracy": 0.003,
+                "smashAccuracy": 0.003,
+                "maxHitpoints": 5,
+                "stabEvasion": 0.012,
+                "slashEvasion": 0.012,
+                "smashEvasion": 0.012,
+                "rangedEvasion": 0.012,
+                "magicEvasion": 0.006,
+                "armor": 0.96,
+                "waterResistance": 0.72,
+                "natureResistance": 0.36,
+                "fireResistance": 0.72,
+                "tenacity": 0.96
+            },
+            "noncombatEnhancementBonuses": {}
+        },
+        "sortIndex": 342
+    },
+    "/items/anchorbound_plate_legs": {
+        "hrid": "/items/anchorbound_plate_legs",
+        "name": "Anchorbound Plate Legs",
+        "description": "",
+        "categoryHrid": "/item_categories/equipment",
+        "sellPrice": 4000000,
+        "isTradable": true,
+        "itemLevel": 95,
+        "enhancementCosts": [
+            {
+                "itemHrid": "/items/pirate_essence",
+                "count": 14
+            },
+            {
+                "itemHrid": "/items/holy_cheese",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/coin",
+                "count": 4815
+            }
+        ],
+        "protectionItemHrids": [
+            "/items/damaged_anchor"
+        ],
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "equipmentDetail": {
+            "type": "/equipment_types/legs",
+            "levelRequirements": [
+                {
+                    "skillHrid": "/skills/defense",
+                    "level": 95
+                }
+            ],
+            "combatStats": {
+                "autoAttackDamage": 0.08,
+                "stabAccuracy": 0.12,
+                "slashAccuracy": 0.12,
+                "smashAccuracy": 0.12,
+                "magicAccuracy": -0.24,
+                "maxHitpoints": 200,
+                "stabEvasion": 0.5,
+                "slashEvasion": 0.5,
+                "smashEvasion": 0.5,
+                "rangedEvasion": 0.5,
+                "magicEvasion": 0.25,
+                "armor": 40,
+                "waterResistance": 30,
+                "natureResistance": 15,
+                "fireResistance": 30,
+                "tenacity": 36
+            },
+            "noncombatStats": {},
+            "combatEnhancementBonuses": {
+                "autoAttackDamage": 0.0016,
+                "stabAccuracy": 0.0024,
+                "slashAccuracy": 0.0024,
+                "smashAccuracy": 0.0024,
+                "maxHitpoints": 4,
+                "stabEvasion": 0.01,
+                "slashEvasion": 0.01,
+                "smashEvasion": 0.01,
+                "rangedEvasion": 0.01,
+                "magicEvasion": 0.005,
+                "armor": 0.8,
+                "waterResistance": 0.6,
+                "natureResistance": 0.3,
+                "fireResistance": 0.6,
+                "tenacity": 0.72
+            },
+            "noncombatEnhancementBonuses": {}
+        },
+        "sortIndex": 384
     },
     "/items/apple": {
         "hrid": "/items/apple",
@@ -815,7 +975,7 @@
                 }
             ]
         },
-        "sortIndex": 619
+        "sortIndex": 631
     },
     "/items/apple_gummy": {
         "hrid": "/items/apple_gummy",
@@ -1202,7 +1362,7 @@
                 }
             ]
         },
-        "sortIndex": 704
+        "sortIndex": 722
     },
     "/items/arabica_coffee_bean": {
         "hrid": "/items/arabica_coffee_bean",
@@ -1260,7 +1420,7 @@
                 }
             ]
         },
-        "sortIndex": 625
+        "sortIndex": 637
     },
     "/items/arcane_bow": {
         "hrid": "/items/arcane_bow",
@@ -1410,7 +1570,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 249
+        "sortIndex": 253
     },
     "/items/arcane_fire_staff": {
         "hrid": "/items/arcane_fire_staff",
@@ -1488,7 +1648,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 270
+        "sortIndex": 274
     },
     "/items/arcane_log": {
         "hrid": "/items/arcane_log",
@@ -1546,7 +1706,7 @@
                 }
             ]
         },
-        "sortIndex": 582
+        "sortIndex": 594
     },
     "/items/arcane_lumber": {
         "hrid": "/items/arcane_lumber",
@@ -1604,7 +1764,7 @@
                 }
             ]
         },
-        "sortIndex": 589
+        "sortIndex": 601
     },
     "/items/arcane_nature_staff": {
         "hrid": "/items/arcane_nature_staff",
@@ -1682,7 +1842,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 263
+        "sortIndex": 267
     },
     "/items/arcane_reflection": {
         "hrid": "/items/arcane_reflection",
@@ -1838,7 +1998,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 296
+        "sortIndex": 300
     },
     "/items/arcane_water_staff": {
         "hrid": "/items/arcane_water_staff",
@@ -1916,7 +2076,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 256
+        "sortIndex": 260
     },
     "/items/artisan_tea": {
         "hrid": "/items/artisan_tea",
@@ -2136,7 +2296,7 @@
                 "alchemySpeed": 0.006
             }
         },
-        "sortIndex": 549
+        "sortIndex": 561
     },
     "/items/azure_boots": {
         "hrid": "/items/azure_boots",
@@ -2200,7 +2360,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 435
+        "sortIndex": 447
     },
     "/items/azure_brush": {
         "hrid": "/items/azure_brush",
@@ -2261,7 +2421,7 @@
                 "milkingSpeed": 0.006
             }
         },
-        "sortIndex": 485
+        "sortIndex": 497
     },
     "/items/azure_buckler": {
         "hrid": "/items/azure_buckler",
@@ -2315,7 +2475,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 285
+        "sortIndex": 289
     },
     "/items/azure_bulwark": {
         "hrid": "/items/azure_bulwark",
@@ -2459,7 +2619,7 @@
                 }
             ]
         },
-        "sortIndex": 571
+        "sortIndex": 583
     },
     "/items/azure_chisel": {
         "hrid": "/items/azure_chisel",
@@ -2520,7 +2680,7 @@
                 "craftingSpeed": 0.006
             }
         },
-        "sortIndex": 517
+        "sortIndex": 529
     },
     "/items/azure_enhancer": {
         "hrid": "/items/azure_enhancer",
@@ -2573,7 +2733,7 @@
                 "enhancingSuccess": 0.00024
             }
         },
-        "sortIndex": 557
+        "sortIndex": 569
     },
     "/items/azure_gauntlets": {
         "hrid": "/items/azure_gauntlets",
@@ -2637,7 +2797,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 411
+        "sortIndex": 423
     },
     "/items/azure_hammer": {
         "hrid": "/items/azure_hammer",
@@ -2698,7 +2858,7 @@
                 "cheesesmithingSpeed": 0.006
             }
         },
-        "sortIndex": 509
+        "sortIndex": 521
     },
     "/items/azure_hatchet": {
         "hrid": "/items/azure_hatchet",
@@ -2759,7 +2919,7 @@
                 "woodcuttingSpeed": 0.006
             }
         },
-        "sortIndex": 501
+        "sortIndex": 513
     },
     "/items/azure_helmet": {
         "hrid": "/items/azure_helmet",
@@ -2823,7 +2983,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 308
+        "sortIndex": 313
     },
     "/items/azure_mace": {
         "hrid": "/items/azure_mace",
@@ -2891,7 +3051,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 238
+        "sortIndex": 242
     },
     "/items/azure_milk": {
         "hrid": "/items/azure_milk",
@@ -2970,7 +3130,7 @@
                 }
             ]
         },
-        "sortIndex": 564
+        "sortIndex": 576
     },
     "/items/azure_needle": {
         "hrid": "/items/azure_needle",
@@ -3023,7 +3183,7 @@
                 "tailoringSpeed": 0.006
             }
         },
-        "sortIndex": 525
+        "sortIndex": 537
     },
     "/items/azure_plate_body": {
         "hrid": "/items/azure_plate_body",
@@ -3087,7 +3247,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 348
+        "sortIndex": 356
     },
     "/items/azure_plate_legs": {
         "hrid": "/items/azure_plate_legs",
@@ -3151,7 +3311,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 387
+        "sortIndex": 398
     },
     "/items/azure_pot": {
         "hrid": "/items/azure_pot",
@@ -3204,7 +3364,7 @@
                 "brewingSpeed": 0.006
             }
         },
-        "sortIndex": 541
+        "sortIndex": 553
     },
     "/items/azure_shears": {
         "hrid": "/items/azure_shears",
@@ -3265,7 +3425,7 @@
                 "foragingSpeed": 0.006
             }
         },
-        "sortIndex": 493
+        "sortIndex": 505
     },
     "/items/azure_spatula": {
         "hrid": "/items/azure_spatula",
@@ -3318,7 +3478,7 @@
                 "cookingSpeed": 0.006
             }
         },
-        "sortIndex": 533
+        "sortIndex": 545
     },
     "/items/azure_spear": {
         "hrid": "/items/azure_spear",
@@ -3386,7 +3546,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 231
+        "sortIndex": 235
     },
     "/items/azure_sword": {
         "hrid": "/items/azure_sword",
@@ -3450,7 +3610,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 224
+        "sortIndex": 228
     },
     "/items/bag_of_10_cowbells": {
         "hrid": "/items/bag_of_10_cowbells",
@@ -3531,7 +3691,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 447
+        "sortIndex": 459
     },
     "/items/bamboo_branch": {
         "hrid": "/items/bamboo_branch",
@@ -3589,7 +3749,7 @@
                 }
             ]
         },
-        "sortIndex": 602
+        "sortIndex": 614
     },
     "/items/bamboo_fabric": {
         "hrid": "/items/bamboo_fabric",
@@ -3647,7 +3807,7 @@
                 }
             ]
         },
-        "sortIndex": 607
+        "sortIndex": 619
     },
     "/items/bamboo_gloves": {
         "hrid": "/items/bamboo_gloves",
@@ -3718,7 +3878,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 423
+        "sortIndex": 435
     },
     "/items/bamboo_hat": {
         "hrid": "/items/bamboo_hat",
@@ -3789,7 +3949,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 320
+        "sortIndex": 325
     },
     "/items/bamboo_robe_bottoms": {
         "hrid": "/items/bamboo_robe_bottoms",
@@ -3860,7 +4020,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 399
+        "sortIndex": 410
     },
     "/items/bamboo_robe_top": {
         "hrid": "/items/bamboo_robe_top",
@@ -3931,7 +4091,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 360
+        "sortIndex": 368
     },
     "/items/basic_task_badge": {
         "hrid": "/items/basic_task_badge",
@@ -3978,7 +4138,7 @@
                 "taskSpeed": 0.005000000000000001
             }
         },
-        "sortIndex": 479
+        "sortIndex": 491
     },
     "/items/bear_essence": {
         "hrid": "/items/bear_essence",
@@ -4017,7 +4177,7 @@
                 }
             ]
         },
-        "sortIndex": 709
+        "sortIndex": 727
     },
     "/items/beast_boots": {
         "hrid": "/items/beast_boots",
@@ -4087,7 +4247,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 443
+        "sortIndex": 455
     },
     "/items/beast_bracers": {
         "hrid": "/items/beast_bracers",
@@ -4157,7 +4317,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 419
+        "sortIndex": 431
     },
     "/items/beast_chaps": {
         "hrid": "/items/beast_chaps",
@@ -4227,7 +4387,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 395
+        "sortIndex": 406
     },
     "/items/beast_hide": {
         "hrid": "/items/beast_hide",
@@ -4299,7 +4459,7 @@
                 }
             ]
         },
-        "sortIndex": 593
+        "sortIndex": 605
     },
     "/items/beast_hood": {
         "hrid": "/items/beast_hood",
@@ -4369,7 +4529,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 316
+        "sortIndex": 321
     },
     "/items/beast_leather": {
         "hrid": "/items/beast_leather",
@@ -4441,7 +4601,7 @@
                 }
             ]
         },
-        "sortIndex": 598
+        "sortIndex": 610
     },
     "/items/beast_tunic": {
         "hrid": "/items/beast_tunic",
@@ -4511,7 +4671,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 356
+        "sortIndex": 364
     },
     "/items/berserk": {
         "hrid": "/items/berserk",
@@ -4694,7 +4854,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 244
+        "sortIndex": 248
     },
     "/items/birch_fire_staff": {
         "hrid": "/items/birch_fire_staff",
@@ -4757,7 +4917,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 265
+        "sortIndex": 269
     },
     "/items/birch_log": {
         "hrid": "/items/birch_log",
@@ -4836,7 +4996,7 @@
                 }
             ]
         },
-        "sortIndex": 577
+        "sortIndex": 589
     },
     "/items/birch_lumber": {
         "hrid": "/items/birch_lumber",
@@ -4915,7 +5075,7 @@
                 }
             ]
         },
-        "sortIndex": 584
+        "sortIndex": 596
     },
     "/items/birch_nature_staff": {
         "hrid": "/items/birch_nature_staff",
@@ -4978,7 +5138,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 258
+        "sortIndex": 262
     },
     "/items/birch_shield": {
         "hrid": "/items/birch_shield",
@@ -5042,7 +5202,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 291
+        "sortIndex": 295
     },
     "/items/birch_water_staff": {
         "hrid": "/items/birch_water_staff",
@@ -5105,7 +5265,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 251
+        "sortIndex": 255
     },
     "/items/bishops_codex": {
         "hrid": "/items/bishops_codex",
@@ -5228,7 +5388,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 282
+        "sortIndex": 286
     },
     "/items/bishops_scroll": {
         "hrid": "/items/bishops_scroll",
@@ -5293,7 +5453,7 @@
                 }
             ]
         },
-        "sortIndex": 685
+        "sortIndex": 697
     },
     "/items/black_bear_fluff": {
         "hrid": "/items/black_bear_fluff",
@@ -5351,7 +5511,7 @@
                 }
             ]
         },
-        "sortIndex": 660
+        "sortIndex": 672
     },
     "/items/black_bear_shoes": {
         "hrid": "/items/black_bear_shoes",
@@ -5426,7 +5586,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 428
+        "sortIndex": 440
     },
     "/items/black_tea_leaf": {
         "hrid": "/items/black_tea_leaf",
@@ -5491,7 +5651,7 @@
                 }
             ]
         },
-        "sortIndex": 632
+        "sortIndex": 644
     },
     "/items/blackberry": {
         "hrid": "/items/blackberry",
@@ -5556,7 +5716,7 @@
                 }
             ]
         },
-        "sortIndex": 614
+        "sortIndex": 626
     },
     "/items/blackberry_cake": {
         "hrid": "/items/blackberry_cake",
@@ -5710,6 +5870,74 @@
         },
         "sortIndex": 42
     },
+    "/items/blazing_trident": {
+        "hrid": "/items/blazing_trident",
+        "name": "Blazing Trident",
+        "description": "",
+        "categoryHrid": "/item_categories/equipment",
+        "sellPrice": 5000000,
+        "isTradable": true,
+        "itemLevel": 95,
+        "enhancementCosts": [
+            {
+                "itemHrid": "/items/pirate_essence",
+                "count": 18
+            },
+            {
+                "itemHrid": "/items/arcane_lumber",
+                "count": 9
+            },
+            {
+                "itemHrid": "/items/crushed_amethyst",
+                "count": 1
+            },
+            {
+                "itemHrid": "/items/coin",
+                "count": 4815
+            }
+        ],
+        "protectionItemHrids": [
+            "/items/kraken_fang"
+        ],
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "equipmentDetail": {
+            "type": "/equipment_types/main_hand",
+            "levelRequirements": [
+                {
+                    "skillHrid": "/skills/magic",
+                    "level": 95
+                }
+            ],
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/magic"
+                ],
+                "damageType": "/damage_types/fire",
+                "attackInterval": 3500000000,
+                "autoAttackDamage": -0.5,
+                "magicAccuracy": 0.85,
+                "magicDamage": 0.5,
+                "fireAmplify": 0.3,
+                "firePenetration": 0.1,
+                "blaze": 0.25
+            },
+            "noncombatStats": {},
+            "combatEnhancementBonuses": {
+                "magicAccuracy": 0.017,
+                "magicDamage": 0.01,
+                "fireAmplify": 0.006,
+                "firePenetration": 0.002
+            },
+            "noncombatEnhancementBonuses": {}
+        },
+        "sortIndex": 225
+    },
     "/items/blessed_tea": {
         "hrid": "/items/blessed_tea",
         "name": "Blessed Tea",
@@ -5789,6 +6017,76 @@
             "defaultCombatTriggers": null
         },
         "sortIndex": 105
+    },
+    "/items/blooming_trident": {
+        "hrid": "/items/blooming_trident",
+        "name": "Blooming Trident",
+        "description": "",
+        "categoryHrid": "/item_categories/equipment",
+        "sellPrice": 5000000,
+        "isTradable": true,
+        "itemLevel": 95,
+        "enhancementCosts": [
+            {
+                "itemHrid": "/items/pirate_essence",
+                "count": 18
+            },
+            {
+                "itemHrid": "/items/arcane_lumber",
+                "count": 9
+            },
+            {
+                "itemHrid": "/items/crushed_amethyst",
+                "count": 1
+            },
+            {
+                "itemHrid": "/items/coin",
+                "count": 4815
+            }
+        ],
+        "protectionItemHrids": [
+            "/items/kraken_fang"
+        ],
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "equipmentDetail": {
+            "type": "/equipment_types/main_hand",
+            "levelRequirements": [
+                {
+                    "skillHrid": "/skills/magic",
+                    "level": 95
+                }
+            ],
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/magic"
+                ],
+                "damageType": "/damage_types/nature",
+                "attackInterval": 3500000000,
+                "autoAttackDamage": -0.5,
+                "magicAccuracy": 0.85,
+                "magicDamage": 0.5,
+                "natureAmplify": 0.3,
+                "healingAmplify": 0.36,
+                "naturePenetration": 0.1,
+                "bloom": 0.4
+            },
+            "noncombatStats": {},
+            "combatEnhancementBonuses": {
+                "magicAccuracy": 0.017,
+                "magicDamage": 0.01,
+                "natureAmplify": 0.006,
+                "healingAmplify": 0.0072,
+                "naturePenetration": 0.002
+            },
+            "noncombatEnhancementBonuses": {}
+        },
+        "sortIndex": 224
     },
     "/items/blue_key_fragment": {
         "hrid": "/items/blue_key_fragment",
@@ -5878,7 +6176,7 @@
                 }
             ]
         },
-        "sortIndex": 613
+        "sortIndex": 625
     },
     "/items/blueberry_cake": {
         "hrid": "/items/blueberry_cake",
@@ -6076,7 +6374,7 @@
                 }
             ]
         },
-        "sortIndex": 690
+        "sortIndex": 708
     },
     "/items/brewers_bottoms": {
         "hrid": "/items/brewers_bottoms",
@@ -6170,7 +6468,7 @@
                 "brewingExperience": 0.0008
             }
         },
-        "sortIndex": 370
+        "sortIndex": 378
     },
     "/items/brewers_top": {
         "hrid": "/items/brewers_top",
@@ -6264,7 +6562,7 @@
                 "brewingRareFind": 0.003
             }
         },
-        "sortIndex": 330
+        "sortIndex": 335
     },
     "/items/brewing_essence": {
         "hrid": "/items/brewing_essence",
@@ -6352,7 +6650,7 @@
                 }
             ]
         },
-        "sortIndex": 700
+        "sortIndex": 718
     },
     "/items/brewing_tea": {
         "hrid": "/items/brewing_tea",
@@ -6541,7 +6839,7 @@
                 "alchemySpeed": 0.009000000000000001
             }
         },
-        "sortIndex": 550
+        "sortIndex": 562
     },
     "/items/burble_boots": {
         "hrid": "/items/burble_boots",
@@ -6605,7 +6903,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 436
+        "sortIndex": 448
     },
     "/items/burble_brush": {
         "hrid": "/items/burble_brush",
@@ -6666,7 +6964,7 @@
                 "milkingSpeed": 0.009000000000000001
             }
         },
-        "sortIndex": 486
+        "sortIndex": 498
     },
     "/items/burble_buckler": {
         "hrid": "/items/burble_buckler",
@@ -6720,7 +7018,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 286
+        "sortIndex": 290
     },
     "/items/burble_bulwark": {
         "hrid": "/items/burble_bulwark",
@@ -6850,7 +7148,7 @@
                 }
             ]
         },
-        "sortIndex": 572
+        "sortIndex": 584
     },
     "/items/burble_chisel": {
         "hrid": "/items/burble_chisel",
@@ -6911,7 +7209,7 @@
                 "craftingSpeed": 0.009000000000000001
             }
         },
-        "sortIndex": 518
+        "sortIndex": 530
     },
     "/items/burble_enhancer": {
         "hrid": "/items/burble_enhancer",
@@ -6964,7 +7262,7 @@
                 "enhancingSuccess": 0.00035999999999999997
             }
         },
-        "sortIndex": 558
+        "sortIndex": 570
     },
     "/items/burble_gauntlets": {
         "hrid": "/items/burble_gauntlets",
@@ -7028,7 +7326,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 412
+        "sortIndex": 424
     },
     "/items/burble_hammer": {
         "hrid": "/items/burble_hammer",
@@ -7089,7 +7387,7 @@
                 "cheesesmithingSpeed": 0.009000000000000001
             }
         },
-        "sortIndex": 510
+        "sortIndex": 522
     },
     "/items/burble_hatchet": {
         "hrid": "/items/burble_hatchet",
@@ -7150,7 +7448,7 @@
                 "woodcuttingSpeed": 0.009000000000000001
             }
         },
-        "sortIndex": 502
+        "sortIndex": 514
     },
     "/items/burble_helmet": {
         "hrid": "/items/burble_helmet",
@@ -7214,7 +7512,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 309
+        "sortIndex": 314
     },
     "/items/burble_mace": {
         "hrid": "/items/burble_mace",
@@ -7282,7 +7580,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 239
+        "sortIndex": 243
     },
     "/items/burble_milk": {
         "hrid": "/items/burble_milk",
@@ -7347,7 +7645,7 @@
                 }
             ]
         },
-        "sortIndex": 565
+        "sortIndex": 577
     },
     "/items/burble_needle": {
         "hrid": "/items/burble_needle",
@@ -7400,7 +7698,7 @@
                 "tailoringSpeed": 0.009000000000000001
             }
         },
-        "sortIndex": 526
+        "sortIndex": 538
     },
     "/items/burble_plate_body": {
         "hrid": "/items/burble_plate_body",
@@ -7464,7 +7762,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 349
+        "sortIndex": 357
     },
     "/items/burble_plate_legs": {
         "hrid": "/items/burble_plate_legs",
@@ -7528,7 +7826,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 388
+        "sortIndex": 399
     },
     "/items/burble_pot": {
         "hrid": "/items/burble_pot",
@@ -7581,7 +7879,7 @@
                 "brewingSpeed": 0.009000000000000001
             }
         },
-        "sortIndex": 542
+        "sortIndex": 554
     },
     "/items/burble_shears": {
         "hrid": "/items/burble_shears",
@@ -7642,7 +7940,7 @@
                 "foragingSpeed": 0.009000000000000001
             }
         },
-        "sortIndex": 494
+        "sortIndex": 506
     },
     "/items/burble_spatula": {
         "hrid": "/items/burble_spatula",
@@ -7695,7 +7993,7 @@
                 "cookingSpeed": 0.009000000000000001
             }
         },
-        "sortIndex": 534
+        "sortIndex": 546
     },
     "/items/burble_spear": {
         "hrid": "/items/burble_spear",
@@ -7763,7 +8061,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 232
+        "sortIndex": 236
     },
     "/items/burble_sword": {
         "hrid": "/items/burble_sword",
@@ -7827,7 +8125,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 225
+        "sortIndex": 229
     },
     "/items/burble_tea_leaf": {
         "hrid": "/items/burble_tea_leaf",
@@ -7892,7 +8190,7 @@
                 }
             ]
         },
-        "sortIndex": 633
+        "sortIndex": 645
     },
     "/items/burning_key_fragment": {
         "hrid": "/items/burning_key_fragment",
@@ -7977,7 +8275,7 @@
                 }
             ]
         },
-        "sortIndex": 688
+        "sortIndex": 706
     },
     "/items/catalyst_of_coinification": {
         "hrid": "/items/catalyst_of_coinification",
@@ -8028,7 +8326,7 @@
                 }
             ]
         },
-        "sortIndex": 637
+        "sortIndex": 649
     },
     "/items/catalyst_of_decomposition": {
         "hrid": "/items/catalyst_of_decomposition",
@@ -8079,7 +8377,7 @@
                 }
             ]
         },
-        "sortIndex": 638
+        "sortIndex": 650
     },
     "/items/catalyst_of_transmutation": {
         "hrid": "/items/catalyst_of_transmutation",
@@ -8130,7 +8428,7 @@
                 }
             ]
         },
-        "sortIndex": 639
+        "sortIndex": 651
     },
     "/items/catalytic_tea": {
         "hrid": "/items/catalytic_tea",
@@ -8330,7 +8628,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 245
+        "sortIndex": 249
     },
     "/items/cedar_fire_staff": {
         "hrid": "/items/cedar_fire_staff",
@@ -8393,7 +8691,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 266
+        "sortIndex": 270
     },
     "/items/cedar_log": {
         "hrid": "/items/cedar_log",
@@ -8472,7 +8770,7 @@
                 }
             ]
         },
-        "sortIndex": 578
+        "sortIndex": 590
     },
     "/items/cedar_lumber": {
         "hrid": "/items/cedar_lumber",
@@ -8551,7 +8849,7 @@
                 }
             ]
         },
-        "sortIndex": 585
+        "sortIndex": 597
     },
     "/items/cedar_nature_staff": {
         "hrid": "/items/cedar_nature_staff",
@@ -8614,7 +8912,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 259
+        "sortIndex": 263
     },
     "/items/cedar_shield": {
         "hrid": "/items/cedar_shield",
@@ -8678,7 +8976,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 292
+        "sortIndex": 296
     },
     "/items/cedar_water_staff": {
         "hrid": "/items/cedar_water_staff",
@@ -8741,7 +9039,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 252
+        "sortIndex": 256
     },
     "/items/celestial_alembic": {
         "hrid": "/items/celestial_alembic",
@@ -8841,7 +9139,7 @@
                 "alchemyExperience": 0.0008
             }
         },
-        "sortIndex": 546
+        "sortIndex": 558
     },
     "/items/celestial_brush": {
         "hrid": "/items/celestial_brush",
@@ -8945,7 +9243,7 @@
                 "milkingExperience": 0.0008
             }
         },
-        "sortIndex": 482
+        "sortIndex": 494
     },
     "/items/celestial_chisel": {
         "hrid": "/items/celestial_chisel",
@@ -9049,7 +9347,7 @@
                 "craftingExperience": 0.0008
             }
         },
-        "sortIndex": 514
+        "sortIndex": 526
     },
     "/items/celestial_enhancer": {
         "hrid": "/items/celestial_enhancer",
@@ -9149,7 +9447,7 @@
                 "enhancingExperience": 0.0008
             }
         },
-        "sortIndex": 554
+        "sortIndex": 566
     },
     "/items/celestial_hammer": {
         "hrid": "/items/celestial_hammer",
@@ -9253,7 +9551,7 @@
                 "cheesesmithingExperience": 0.0008
             }
         },
-        "sortIndex": 506
+        "sortIndex": 518
     },
     "/items/celestial_hatchet": {
         "hrid": "/items/celestial_hatchet",
@@ -9357,7 +9655,7 @@
                 "woodcuttingExperience": 0.0008
             }
         },
-        "sortIndex": 498
+        "sortIndex": 510
     },
     "/items/celestial_needle": {
         "hrid": "/items/celestial_needle",
@@ -9457,7 +9755,7 @@
                 "tailoringExperience": 0.0008
             }
         },
-        "sortIndex": 522
+        "sortIndex": 534
     },
     "/items/celestial_pot": {
         "hrid": "/items/celestial_pot",
@@ -9557,7 +9855,7 @@
                 "brewingExperience": 0.0008
             }
         },
-        "sortIndex": 538
+        "sortIndex": 550
     },
     "/items/celestial_shears": {
         "hrid": "/items/celestial_shears",
@@ -9661,7 +9959,7 @@
                 "foragingExperience": 0.0008
             }
         },
-        "sortIndex": 490
+        "sortIndex": 502
     },
     "/items/celestial_spatula": {
         "hrid": "/items/celestial_spatula",
@@ -9761,7 +10059,7 @@
                 "cookingExperience": 0.0008
             }
         },
-        "sortIndex": 530
+        "sortIndex": 542
     },
     "/items/centaur_boots": {
         "hrid": "/items/centaur_boots",
@@ -9840,7 +10138,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 431
+        "sortIndex": 443
     },
     "/items/centaur_hoof": {
         "hrid": "/items/centaur_hoof",
@@ -9884,7 +10182,7 @@
                 }
             ]
         },
-        "sortIndex": 648
+        "sortIndex": 660
     },
     "/items/channeling_coffee": {
         "hrid": "/items/channeling_coffee",
@@ -10022,7 +10320,7 @@
                 }
             ]
         },
-        "sortIndex": 681
+        "sortIndex": 693
     },
     "/items/chaotic_flail": {
         "hrid": "/items/chaotic_flail",
@@ -10117,7 +10415,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 216
+        "sortIndex": 217
     },
     "/items/cheese": {
         "hrid": "/items/cheese",
@@ -10175,7 +10473,7 @@
                 }
             ]
         },
-        "sortIndex": 569
+        "sortIndex": 581
     },
     "/items/cheese_alembic": {
         "hrid": "/items/cheese_alembic",
@@ -10224,7 +10522,7 @@
                 "alchemySpeed": 0.003
             }
         },
-        "sortIndex": 547
+        "sortIndex": 559
     },
     "/items/cheese_boots": {
         "hrid": "/items/cheese_boots",
@@ -10284,7 +10582,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 433
+        "sortIndex": 445
     },
     "/items/cheese_brush": {
         "hrid": "/items/cheese_brush",
@@ -10341,7 +10639,7 @@
                 "milkingSpeed": 0.003
             }
         },
-        "sortIndex": 483
+        "sortIndex": 495
     },
     "/items/cheese_buckler": {
         "hrid": "/items/cheese_buckler",
@@ -10391,7 +10689,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 283
+        "sortIndex": 287
     },
     "/items/cheese_bulwark": {
         "hrid": "/items/cheese_bulwark",
@@ -10509,7 +10807,7 @@
                 "craftingSpeed": 0.003
             }
         },
-        "sortIndex": 515
+        "sortIndex": 527
     },
     "/items/cheese_enhancer": {
         "hrid": "/items/cheese_enhancer",
@@ -10558,7 +10856,7 @@
                 "enhancingSuccess": 0.00012
             }
         },
-        "sortIndex": 555
+        "sortIndex": 567
     },
     "/items/cheese_gauntlets": {
         "hrid": "/items/cheese_gauntlets",
@@ -10618,7 +10916,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 409
+        "sortIndex": 421
     },
     "/items/cheese_hammer": {
         "hrid": "/items/cheese_hammer",
@@ -10675,7 +10973,7 @@
                 "cheesesmithingSpeed": 0.003
             }
         },
-        "sortIndex": 507
+        "sortIndex": 519
     },
     "/items/cheese_hatchet": {
         "hrid": "/items/cheese_hatchet",
@@ -10732,7 +11030,7 @@
                 "woodcuttingSpeed": 0.003
             }
         },
-        "sortIndex": 499
+        "sortIndex": 511
     },
     "/items/cheese_helmet": {
         "hrid": "/items/cheese_helmet",
@@ -10792,7 +11090,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 306
+        "sortIndex": 311
     },
     "/items/cheese_mace": {
         "hrid": "/items/cheese_mace",
@@ -10856,7 +11154,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 236
+        "sortIndex": 240
     },
     "/items/cheese_needle": {
         "hrid": "/items/cheese_needle",
@@ -10905,7 +11203,7 @@
                 "tailoringSpeed": 0.003
             }
         },
-        "sortIndex": 523
+        "sortIndex": 535
     },
     "/items/cheese_plate_body": {
         "hrid": "/items/cheese_plate_body",
@@ -10965,7 +11263,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 346
+        "sortIndex": 354
     },
     "/items/cheese_plate_legs": {
         "hrid": "/items/cheese_plate_legs",
@@ -11025,7 +11323,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 385
+        "sortIndex": 396
     },
     "/items/cheese_pot": {
         "hrid": "/items/cheese_pot",
@@ -11074,7 +11372,7 @@
                 "brewingSpeed": 0.003
             }
         },
-        "sortIndex": 539
+        "sortIndex": 551
     },
     "/items/cheese_shears": {
         "hrid": "/items/cheese_shears",
@@ -11131,7 +11429,7 @@
                 "foragingSpeed": 0.003
             }
         },
-        "sortIndex": 491
+        "sortIndex": 503
     },
     "/items/cheese_spatula": {
         "hrid": "/items/cheese_spatula",
@@ -11180,7 +11478,7 @@
                 "cookingSpeed": 0.003
             }
         },
-        "sortIndex": 531
+        "sortIndex": 543
     },
     "/items/cheese_spear": {
         "hrid": "/items/cheese_spear",
@@ -11244,7 +11542,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 229
+        "sortIndex": 233
     },
     "/items/cheese_sword": {
         "hrid": "/items/cheese_sword",
@@ -11304,7 +11602,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 222
+        "sortIndex": 226
     },
     "/items/cheesemakers_bottoms": {
         "hrid": "/items/cheesemakers_bottoms",
@@ -11398,7 +11696,7 @@
                 "cheesesmithingExperience": 0.0008
             }
         },
-        "sortIndex": 366
+        "sortIndex": 374
     },
     "/items/cheesemakers_top": {
         "hrid": "/items/cheesemakers_top",
@@ -11492,7 +11790,7 @@
                 "cheesesmithingRareFind": 0.003
             }
         },
-        "sortIndex": 326
+        "sortIndex": 331
     },
     "/items/cheesesmithing_essence": {
         "hrid": "/items/cheesesmithing_essence",
@@ -11580,7 +11878,7 @@
                 }
             ]
         },
-        "sortIndex": 696
+        "sortIndex": 714
     },
     "/items/cheesesmithing_tea": {
         "hrid": "/items/cheesesmithing_tea",
@@ -11757,7 +12055,7 @@
                 "cookingExperience": 0.0008
             }
         },
-        "sortIndex": 369
+        "sortIndex": 377
     },
     "/items/chefs_top": {
         "hrid": "/items/chefs_top",
@@ -11851,7 +12149,7 @@
                 "cookingRareFind": 0.003
             }
         },
-        "sortIndex": 329
+        "sortIndex": 334
     },
     "/items/chimerical_chest": {
         "hrid": "/items/chimerical_chest",
@@ -11934,7 +12232,7 @@
                 }
             ]
         },
-        "sortIndex": 713
+        "sortIndex": 731
     },
     "/items/chimerical_quiver": {
         "hrid": "/items/chimerical_quiver",
@@ -12016,7 +12314,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 298
+        "sortIndex": 302
     },
     "/items/chimerical_token": {
         "hrid": "/items/chimerical_token",
@@ -12121,7 +12419,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 408
+        "sortIndex": 420
     },
     "/items/chrono_sphere": {
         "hrid": "/items/chrono_sphere",
@@ -12186,7 +12484,7 @@
                 }
             ]
         },
-        "sortIndex": 657
+        "sortIndex": 669
     },
     "/items/cleave": {
         "hrid": "/items/cleave",
@@ -12356,7 +12654,7 @@
                 }
             ]
         },
-        "sortIndex": 603
+        "sortIndex": 615
     },
     "/items/coin": {
         "hrid": "/items/coin",
@@ -12475,7 +12773,7 @@
                 "woodcuttingEfficiency": 0.002
             }
         },
-        "sortIndex": 426
+        "sortIndex": 438
     },
     "/items/colossus_core": {
         "hrid": "/items/colossus_core",
@@ -12533,7 +12831,7 @@
                 }
             ]
         },
-        "sortIndex": 667
+        "sortIndex": 679
     },
     "/items/colossus_plate_body": {
         "hrid": "/items/colossus_plate_body",
@@ -12600,7 +12898,7 @@
                 }
             ],
             "combatStats": {
-                "autoAttackDamage": 0.07,
+                "autoAttackDamage": 0.06,
                 "stabAccuracy": 0.12,
                 "slashAccuracy": 0.12,
                 "smashAccuracy": 0.12,
@@ -12617,7 +12915,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "autoAttackDamage": 0.0014000000000000002,
+                "autoAttackDamage": 0.0012,
                 "stabAccuracy": 0.0024,
                 "slashAccuracy": 0.0024,
                 "smashAccuracy": 0.0024,
@@ -12633,7 +12931,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 335
+        "sortIndex": 340
     },
     "/items/colossus_plate_legs": {
         "hrid": "/items/colossus_plate_legs",
@@ -12700,7 +12998,7 @@
                 }
             ],
             "combatStats": {
-                "autoAttackDamage": 0.07,
+                "autoAttackDamage": 0.06,
                 "stabAccuracy": 0.1,
                 "slashAccuracy": 0.1,
                 "smashAccuracy": 0.1,
@@ -12717,7 +13015,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "autoAttackDamage": 0.0014000000000000002,
+                "autoAttackDamage": 0.0012,
                 "stabAccuracy": 0.002,
                 "slashAccuracy": 0.002,
                 "smashAccuracy": 0.002,
@@ -12733,7 +13031,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 374
+        "sortIndex": 382
     },
     "/items/cooking_essence": {
         "hrid": "/items/cooking_essence",
@@ -12821,7 +13119,7 @@
                 }
             ]
         },
-        "sortIndex": 699
+        "sortIndex": 717
     },
     "/items/cooking_tea": {
         "hrid": "/items/cooking_tea",
@@ -12913,6 +13211,102 @@
         },
         "sortIndex": 71
     },
+    "/items/corsair_crest": {
+        "hrid": "/items/corsair_crest",
+        "name": "Corsair Crest",
+        "description": "Material used in smithing Corsair Helmet",
+        "categoryHrid": "/item_categories/resource",
+        "sellPrice": 40000,
+        "isTradable": true,
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "sortIndex": 701
+    },
+    "/items/corsair_helmet": {
+        "hrid": "/items/corsair_helmet",
+        "name": "Corsair Helmet",
+        "description": "",
+        "categoryHrid": "/item_categories/equipment",
+        "sellPrice": 3500000,
+        "isTradable": true,
+        "itemLevel": 95,
+        "enhancementCosts": [
+            {
+                "itemHrid": "/items/pirate_essence",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/holy_cheese",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/coin",
+                "count": 4815
+            }
+        ],
+        "protectionItemHrids": [
+            "/items/corsair_crest"
+        ],
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "equipmentDetail": {
+            "type": "/equipment_types/head",
+            "levelRequirements": [
+                {
+                    "skillHrid": "/skills/defense",
+                    "level": 95
+                }
+            ],
+            "combatStats": {
+                "autoAttackDamage": 0.03,
+                "criticalRate": 0.04,
+                "stabAccuracy": 0.15,
+                "slashAccuracy": 0.15,
+                "smashAccuracy": 0.15,
+                "magicAccuracy": -0.12,
+                "maxHitpoints": 100,
+                "stabEvasion": 0.3,
+                "slashEvasion": 0.3,
+                "smashEvasion": 0.3,
+                "rangedEvasion": 0.3,
+                "armor": 18,
+                "waterResistance": 10,
+                "natureResistance": 10,
+                "fireResistance": 10,
+                "tenacity": 20
+            },
+            "noncombatStats": {},
+            "combatEnhancementBonuses": {
+                "autoAttackDamage": 0.0006,
+                "criticalRate": 0.0008,
+                "stabAccuracy": 0.003,
+                "slashAccuracy": 0.003,
+                "smashAccuracy": 0.003,
+                "maxHitpoints": 2,
+                "stabEvasion": 0.006,
+                "slashEvasion": 0.006,
+                "smashEvasion": 0.006,
+                "rangedEvasion": 0.006,
+                "armor": 0.36,
+                "waterResistance": 0.2,
+                "natureResistance": 0.2,
+                "fireResistance": 0.2,
+                "tenacity": 0.4
+            },
+            "noncombatEnhancementBonuses": {}
+        },
+        "sortIndex": 308
+    },
     "/items/cotton": {
         "hrid": "/items/cotton",
         "name": "Cotton",
@@ -12976,7 +13370,7 @@
                 }
             ]
         },
-        "sortIndex": 600
+        "sortIndex": 612
     },
     "/items/cotton_boots": {
         "hrid": "/items/cotton_boots",
@@ -13043,7 +13437,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 445
+        "sortIndex": 457
     },
     "/items/cotton_fabric": {
         "hrid": "/items/cotton_fabric",
@@ -13108,7 +13502,7 @@
                 }
             ]
         },
-        "sortIndex": 605
+        "sortIndex": 617
     },
     "/items/cotton_gloves": {
         "hrid": "/items/cotton_gloves",
@@ -13175,7 +13569,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 421
+        "sortIndex": 433
     },
     "/items/cotton_hat": {
         "hrid": "/items/cotton_hat",
@@ -13242,7 +13636,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 318
+        "sortIndex": 323
     },
     "/items/cotton_robe_bottoms": {
         "hrid": "/items/cotton_robe_bottoms",
@@ -13309,7 +13703,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 397
+        "sortIndex": 408
     },
     "/items/cotton_robe_top": {
         "hrid": "/items/cotton_robe_top",
@@ -13376,7 +13770,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 358
+        "sortIndex": 366
     },
     "/items/cowbell": {
         "hrid": "/items/cowbell",
@@ -13435,7 +13829,7 @@
                 }
             ]
         },
-        "sortIndex": 644
+        "sortIndex": 656
     },
     "/items/crafters_bottoms": {
         "hrid": "/items/crafters_bottoms",
@@ -13529,7 +13923,7 @@
                 "craftingExperience": 0.0008
             }
         },
-        "sortIndex": 367
+        "sortIndex": 375
     },
     "/items/crafters_top": {
         "hrid": "/items/crafters_top",
@@ -13623,7 +14017,7 @@
                 "craftingRareFind": 0.003
             }
         },
-        "sortIndex": 327
+        "sortIndex": 332
     },
     "/items/crafting_essence": {
         "hrid": "/items/crafting_essence",
@@ -13711,7 +14105,7 @@
                 }
             ]
         },
-        "sortIndex": 697
+        "sortIndex": 715
     },
     "/items/crafting_tea": {
         "hrid": "/items/crafting_tea",
@@ -13847,7 +14241,7 @@
                 "alchemySpeed": 0.012
             }
         },
-        "sortIndex": 551
+        "sortIndex": 563
     },
     "/items/crimson_boots": {
         "hrid": "/items/crimson_boots",
@@ -13911,7 +14305,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 437
+        "sortIndex": 449
     },
     "/items/crimson_brush": {
         "hrid": "/items/crimson_brush",
@@ -13972,7 +14366,7 @@
                 "milkingSpeed": 0.012
             }
         },
-        "sortIndex": 487
+        "sortIndex": 499
     },
     "/items/crimson_buckler": {
         "hrid": "/items/crimson_buckler",
@@ -14026,7 +14420,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 287
+        "sortIndex": 291
     },
     "/items/crimson_bulwark": {
         "hrid": "/items/crimson_bulwark",
@@ -14170,7 +14564,7 @@
                 }
             ]
         },
-        "sortIndex": 573
+        "sortIndex": 585
     },
     "/items/crimson_chisel": {
         "hrid": "/items/crimson_chisel",
@@ -14231,7 +14625,7 @@
                 "craftingSpeed": 0.012
             }
         },
-        "sortIndex": 519
+        "sortIndex": 531
     },
     "/items/crimson_enhancer": {
         "hrid": "/items/crimson_enhancer",
@@ -14284,7 +14678,7 @@
                 "enhancingSuccess": 0.00048
             }
         },
-        "sortIndex": 559
+        "sortIndex": 571
     },
     "/items/crimson_gauntlets": {
         "hrid": "/items/crimson_gauntlets",
@@ -14348,7 +14742,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 413
+        "sortIndex": 425
     },
     "/items/crimson_hammer": {
         "hrid": "/items/crimson_hammer",
@@ -14409,7 +14803,7 @@
                 "cheesesmithingSpeed": 0.012
             }
         },
-        "sortIndex": 511
+        "sortIndex": 523
     },
     "/items/crimson_hatchet": {
         "hrid": "/items/crimson_hatchet",
@@ -14470,7 +14864,7 @@
                 "woodcuttingSpeed": 0.012
             }
         },
-        "sortIndex": 503
+        "sortIndex": 515
     },
     "/items/crimson_helmet": {
         "hrid": "/items/crimson_helmet",
@@ -14534,7 +14928,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 310
+        "sortIndex": 315
     },
     "/items/crimson_mace": {
         "hrid": "/items/crimson_mace",
@@ -14602,7 +14996,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 240
+        "sortIndex": 244
     },
     "/items/crimson_milk": {
         "hrid": "/items/crimson_milk",
@@ -14681,7 +15075,7 @@
                 }
             ]
         },
-        "sortIndex": 566
+        "sortIndex": 578
     },
     "/items/crimson_needle": {
         "hrid": "/items/crimson_needle",
@@ -14734,7 +15128,7 @@
                 "tailoringSpeed": 0.012
             }
         },
-        "sortIndex": 527
+        "sortIndex": 539
     },
     "/items/crimson_plate_body": {
         "hrid": "/items/crimson_plate_body",
@@ -14798,7 +15192,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 350
+        "sortIndex": 358
     },
     "/items/crimson_plate_legs": {
         "hrid": "/items/crimson_plate_legs",
@@ -14862,7 +15256,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 389
+        "sortIndex": 400
     },
     "/items/crimson_pot": {
         "hrid": "/items/crimson_pot",
@@ -14915,7 +15309,7 @@
                 "brewingSpeed": 0.012
             }
         },
-        "sortIndex": 543
+        "sortIndex": 555
     },
     "/items/crimson_shears": {
         "hrid": "/items/crimson_shears",
@@ -14976,7 +15370,7 @@
                 "foragingSpeed": 0.012
             }
         },
-        "sortIndex": 495
+        "sortIndex": 507
     },
     "/items/crimson_spatula": {
         "hrid": "/items/crimson_spatula",
@@ -15029,7 +15423,7 @@
                 "cookingSpeed": 0.012
             }
         },
-        "sortIndex": 535
+        "sortIndex": 547
     },
     "/items/crimson_spear": {
         "hrid": "/items/crimson_spear",
@@ -15097,7 +15491,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 233
+        "sortIndex": 237
     },
     "/items/crimson_sword": {
         "hrid": "/items/crimson_sword",
@@ -15161,7 +15555,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 226
+        "sortIndex": 230
     },
     "/items/crippling_slash": {
         "hrid": "/items/crippling_slash",
@@ -15499,7 +15893,7 @@
                 }
             ]
         },
-        "sortIndex": 727
+        "sortIndex": 746
     },
     "/items/crushed_amethyst": {
         "hrid": "/items/crushed_amethyst",
@@ -15573,7 +15967,7 @@
                 }
             ]
         },
-        "sortIndex": 730
+        "sortIndex": 749
     },
     "/items/crushed_garnet": {
         "hrid": "/items/crushed_garnet",
@@ -15647,7 +16041,7 @@
                 }
             ]
         },
-        "sortIndex": 728
+        "sortIndex": 747
     },
     "/items/crushed_jade": {
         "hrid": "/items/crushed_jade",
@@ -15721,7 +16115,7 @@
                 }
             ]
         },
-        "sortIndex": 729
+        "sortIndex": 748
     },
     "/items/crushed_moonstone": {
         "hrid": "/items/crushed_moonstone",
@@ -15795,7 +16189,7 @@
                 }
             ]
         },
-        "sortIndex": 731
+        "sortIndex": 750
     },
     "/items/crushed_pearl": {
         "hrid": "/items/crushed_pearl",
@@ -15869,7 +16263,7 @@
                 }
             ]
         },
-        "sortIndex": 726
+        "sortIndex": 745
     },
     "/items/crushed_philosophers_stone": {
         "hrid": "/items/crushed_philosophers_stone",
@@ -15915,7 +16309,7 @@
                 }
             ]
         },
-        "sortIndex": 733
+        "sortIndex": 752
     },
     "/items/crushed_sunstone": {
         "hrid": "/items/crushed_sunstone",
@@ -15961,7 +16355,7 @@
                 }
             ]
         },
-        "sortIndex": 732
+        "sortIndex": 751
     },
     "/items/cupcake": {
         "hrid": "/items/cupcake",
@@ -16088,7 +16482,7 @@
                 }
             ]
         },
-        "sortIndex": 682
+        "sortIndex": 694
     },
     "/items/cursed_bow": {
         "hrid": "/items/cursed_bow",
@@ -16273,7 +16667,7 @@
                 "milkingExperience": 0.0008
             }
         },
-        "sortIndex": 363
+        "sortIndex": 371
     },
     "/items/dairyhands_top": {
         "hrid": "/items/dairyhands_top",
@@ -16367,7 +16761,23 @@
                 "milkingRareFind": 0.003
             }
         },
-        "sortIndex": 323
+        "sortIndex": 328
+    },
+    "/items/damaged_anchor": {
+        "hrid": "/items/damaged_anchor",
+        "name": "Damaged Anchor",
+        "description": "Material used in smithing Anchorbound Plate Body or Legs",
+        "categoryHrid": "/item_categories/resource",
+        "sellPrice": 40000,
+        "isTradable": true,
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "sortIndex": 702
     },
     "/items/dark_key_fragment": {
         "hrid": "/items/dark_key_fragment",
@@ -16530,7 +16940,7 @@
                 }
             ]
         },
-        "sortIndex": 673
+        "sortIndex": 685
     },
     "/items/demonic_plate_body": {
         "hrid": "/items/demonic_plate_body",
@@ -16597,7 +17007,7 @@
                 }
             ],
             "combatStats": {
-                "autoAttackDamage": 0.07,
+                "autoAttackDamage": 0.06,
                 "magicAccuracy": -0.3,
                 "stabDamage": 0.12,
                 "slashDamage": 0.12,
@@ -16612,7 +17022,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "autoAttackDamage": 0.0014000000000000002,
+                "autoAttackDamage": 0.0012,
                 "stabDamage": 0.0024,
                 "slashDamage": 0.0024,
                 "smashDamage": 0.003,
@@ -16626,7 +17036,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 336
+        "sortIndex": 341
     },
     "/items/demonic_plate_legs": {
         "hrid": "/items/demonic_plate_legs",
@@ -16693,7 +17103,7 @@
                 }
             ],
             "combatStats": {
-                "autoAttackDamage": 0.07,
+                "autoAttackDamage": 0.06,
                 "magicAccuracy": -0.24,
                 "stabDamage": 0.1,
                 "slashDamage": 0.1,
@@ -16708,7 +17118,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "autoAttackDamage": 0.0014000000000000002,
+                "autoAttackDamage": 0.0012,
                 "stabDamage": 0.002,
                 "slashDamage": 0.002,
                 "smashDamage": 0.0024,
@@ -16722,7 +17132,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 375
+        "sortIndex": 383
     },
     "/items/dodocamel_gauntlets": {
         "hrid": "/items/dodocamel_gauntlets",
@@ -16812,7 +17222,8 @@
                 "armor": 20,
                 "waterResistance": 8,
                 "natureResistance": 8,
-                "fireResistance": 8
+                "fireResistance": 8,
+                "tenacity": 15
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
@@ -16830,11 +17241,12 @@
                 "armor": 0.4,
                 "waterResistance": 0.16,
                 "natureResistance": 0.16,
-                "fireResistance": 0.16
+                "fireResistance": 0.16,
+                "tenacity": 0.3
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 406
+        "sortIndex": 417
     },
     "/items/dodocamel_plume": {
         "hrid": "/items/dodocamel_plume",
@@ -16899,7 +17311,7 @@
                 }
             ]
         },
-        "sortIndex": 677
+        "sortIndex": 689
     },
     "/items/donut": {
         "hrid": "/items/donut",
@@ -17033,7 +17445,7 @@
                 }
             ]
         },
-        "sortIndex": 623
+        "sortIndex": 635
     },
     "/items/dragon_fruit_gummy": {
         "hrid": "/items/dragon_fruit_gummy",
@@ -17259,7 +17671,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 465
+        "sortIndex": 477
     },
     "/items/earrings_of_critical_strike": {
         "hrid": "/items/earrings_of_critical_strike",
@@ -17311,7 +17723,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 469
+        "sortIndex": 481
     },
     "/items/earrings_of_essence_find": {
         "hrid": "/items/earrings_of_essence_find",
@@ -17363,7 +17775,7 @@
                 "skillingEssenceFind": 0.015
             }
         },
-        "sortIndex": 464
+        "sortIndex": 476
     },
     "/items/earrings_of_gathering": {
         "hrid": "/items/earrings_of_gathering",
@@ -17415,7 +17827,7 @@
                 "gatheringQuantity": 0.002
             }
         },
-        "sortIndex": 463
+        "sortIndex": 475
     },
     "/items/earrings_of_rare_find": {
         "hrid": "/items/earrings_of_rare_find",
@@ -17471,7 +17883,7 @@
                 "skillingRareFind": 0.008
             }
         },
-        "sortIndex": 468
+        "sortIndex": 480
     },
     "/items/earrings_of_regeneration": {
         "hrid": "/items/earrings_of_regeneration",
@@ -17533,7 +17945,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 466
+        "sortIndex": 478
     },
     "/items/earrings_of_resistance": {
         "hrid": "/items/earrings_of_resistance",
@@ -17597,7 +18009,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 467
+        "sortIndex": 479
     },
     "/items/efficiency_tea": {
         "hrid": "/items/efficiency_tea",
@@ -17729,7 +18141,7 @@
                 }
             ]
         },
-        "sortIndex": 610
+        "sortIndex": 622
     },
     "/items/elemental_affinity": {
         "hrid": "/items/elemental_affinity",
@@ -17913,7 +18325,7 @@
                 }
             ]
         },
-        "sortIndex": 636
+        "sortIndex": 648
     },
     "/items/enchanted_chest": {
         "hrid": "/items/enchanted_chest",
@@ -18018,7 +18430,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 299
+        "sortIndex": 303
     },
     "/items/enchanted_entry_key": {
         "hrid": "/items/enchanted_entry_key",
@@ -18074,7 +18486,7 @@
                 }
             ]
         },
-        "sortIndex": 715
+        "sortIndex": 733
     },
     "/items/enchanted_gloves": {
         "hrid": "/items/enchanted_gloves",
@@ -18179,7 +18591,7 @@
                 "alchemyEfficiency": 0.002
             }
         },
-        "sortIndex": 402
+        "sortIndex": 413
     },
     "/items/enchanted_token": {
         "hrid": "/items/enchanted_token",
@@ -18281,7 +18693,7 @@
                 "enhancingExperience": 0.0008
             }
         },
-        "sortIndex": 372
+        "sortIndex": 380
     },
     "/items/enhancers_top": {
         "hrid": "/items/enhancers_top",
@@ -18375,7 +18787,7 @@
                 "enhancingRareFind": 0.003
             }
         },
-        "sortIndex": 332
+        "sortIndex": 337
     },
     "/items/enhancing_essence": {
         "hrid": "/items/enhancing_essence",
@@ -18463,7 +18875,7 @@
                 }
             ]
         },
-        "sortIndex": 702
+        "sortIndex": 720
     },
     "/items/enhancing_tea": {
         "hrid": "/items/enhancing_tea",
@@ -18702,7 +19114,7 @@
                 }
             ]
         },
-        "sortIndex": 628
+        "sortIndex": 640
     },
     "/items/expert_task_badge": {
         "hrid": "/items/expert_task_badge",
@@ -18753,7 +19165,7 @@
                 "taskSpeed": 0.015
             }
         },
-        "sortIndex": 481
+        "sortIndex": 493
     },
     "/items/eye_of_the_watcher": {
         "hrid": "/items/eye_of_the_watcher",
@@ -18804,7 +19216,7 @@
                 }
             ]
         },
-        "sortIndex": 653
+        "sortIndex": 665
     },
     "/items/eye_watch": {
         "hrid": "/items/eye_watch",
@@ -18915,7 +19327,7 @@
                 "tailoringEfficiency": 0.002
             }
         },
-        "sortIndex": 271
+        "sortIndex": 275
     },
     "/items/eyessence": {
         "hrid": "/items/eyessence",
@@ -18954,7 +19366,7 @@
                 }
             ]
         },
-        "sortIndex": 707
+        "sortIndex": 725
     },
     "/items/fierce_aura": {
         "hrid": "/items/fierce_aura",
@@ -19110,7 +19522,7 @@
                 }
             ]
         },
-        "sortIndex": 629
+        "sortIndex": 641
     },
     "/items/fighter_necklace": {
         "hrid": "/items/fighter_necklace",
@@ -19172,7 +19584,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 457
+        "sortIndex": 469
     },
     "/items/fireball": {
         "hrid": "/items/fireball",
@@ -19699,7 +20111,7 @@
                 }
             ]
         },
-        "sortIndex": 655
+        "sortIndex": 667
     },
     "/items/flaming_robe_bottoms": {
         "hrid": "/items/flaming_robe_bottoms",
@@ -19779,7 +20191,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 380
+        "sortIndex": 391
     },
     "/items/flaming_robe_top": {
         "hrid": "/items/flaming_robe_top",
@@ -19859,7 +20271,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 341
+        "sortIndex": 349
     },
     "/items/flax": {
         "hrid": "/items/flax",
@@ -19931,7 +20343,7 @@
                 }
             ]
         },
-        "sortIndex": 601
+        "sortIndex": 613
     },
     "/items/fluffy_red_hat": {
         "hrid": "/items/fluffy_red_hat",
@@ -20052,7 +20464,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 303
+        "sortIndex": 307
     },
     "/items/foragers_bottoms": {
         "hrid": "/items/foragers_bottoms",
@@ -20146,7 +20558,7 @@
                 "foragingExperience": 0.0008
             }
         },
-        "sortIndex": 364
+        "sortIndex": 372
     },
     "/items/foragers_top": {
         "hrid": "/items/foragers_top",
@@ -20240,7 +20652,7 @@
                 "foragingRareFind": 0.003
             }
         },
-        "sortIndex": 324
+        "sortIndex": 329
     },
     "/items/foraging_essence": {
         "hrid": "/items/foraging_essence",
@@ -20328,7 +20740,7 @@
                 }
             ]
         },
-        "sortIndex": 694
+        "sortIndex": 712
     },
     "/items/foraging_tea": {
         "hrid": "/items/foraging_tea",
@@ -20566,7 +20978,7 @@
                 }
             ]
         },
-        "sortIndex": 658
+        "sortIndex": 670
     },
     "/items/frost_staff": {
         "hrid": "/items/frost_staff",
@@ -20653,7 +21065,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 219
+        "sortIndex": 220
     },
     "/items/frost_surge": {
         "hrid": "/items/frost_surge",
@@ -20753,6 +21165,76 @@
         },
         "sortIndex": 155
     },
+    "/items/furious_spear": {
+        "hrid": "/items/furious_spear",
+        "name": "Furious Spear",
+        "description": "",
+        "categoryHrid": "/item_categories/equipment",
+        "sellPrice": 5000000,
+        "isTradable": true,
+        "itemLevel": 95,
+        "enhancementCosts": [
+            {
+                "itemHrid": "/items/enchanted_essence",
+                "count": 18
+            },
+            {
+                "itemHrid": "/items/holy_cheese",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/arcane_log",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/crushed_garnet",
+                "count": 1
+            },
+            {
+                "itemHrid": "/items/coin",
+                "count": 4815
+            }
+        ],
+        "protectionItemHrids": [
+            "/items/regal_jewel",
+            "/items/sundering_jewel"
+        ],
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "equipmentDetail": {
+            "type": "/equipment_types/main_hand",
+            "levelRequirements": [
+                {
+                    "skillHrid": "/skills/attack",
+                    "level": 95
+                }
+            ],
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/stab"
+                ],
+                "damageType": "/damage_types/physical",
+                "attackInterval": 2800000000,
+                "stabAccuracy": 2.1,
+                "stabDamage": 1,
+                "armorPenetration": 0.1,
+                "fury": 0.03
+            },
+            "noncombatStats": {},
+            "combatEnhancementBonuses": {
+                "stabAccuracy": 0.042,
+                "stabDamage": 0.02,
+                "armorPenetration": 0.002
+            },
+            "noncombatEnhancementBonuses": {}
+        },
+        "sortIndex": 215
+    },
     "/items/garnet": {
         "hrid": "/items/garnet",
         "name": "Garnet",
@@ -20825,7 +21307,7 @@
                 }
             ]
         },
-        "sortIndex": 720
+        "sortIndex": 739
     },
     "/items/gathering_tea": {
         "hrid": "/items/gathering_tea",
@@ -20957,7 +21439,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 333
+        "sortIndex": 338
     },
     "/items/giant_pouch": {
         "hrid": "/items/giant_pouch",
@@ -21026,7 +21508,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 453
+        "sortIndex": 465
     },
     "/items/ginkgo_bow": {
         "hrid": "/items/ginkgo_bow",
@@ -21146,7 +21628,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 247
+        "sortIndex": 251
     },
     "/items/ginkgo_fire_staff": {
         "hrid": "/items/ginkgo_fire_staff",
@@ -21209,7 +21691,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 268
+        "sortIndex": 272
     },
     "/items/ginkgo_log": {
         "hrid": "/items/ginkgo_log",
@@ -21288,7 +21770,7 @@
                 }
             ]
         },
-        "sortIndex": 580
+        "sortIndex": 592
     },
     "/items/ginkgo_lumber": {
         "hrid": "/items/ginkgo_lumber",
@@ -21367,7 +21849,7 @@
                 }
             ]
         },
-        "sortIndex": 587
+        "sortIndex": 599
     },
     "/items/ginkgo_nature_staff": {
         "hrid": "/items/ginkgo_nature_staff",
@@ -21430,7 +21912,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 261
+        "sortIndex": 265
     },
     "/items/ginkgo_shield": {
         "hrid": "/items/ginkgo_shield",
@@ -21494,7 +21976,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 294
+        "sortIndex": 298
     },
     "/items/ginkgo_water_staff": {
         "hrid": "/items/ginkgo_water_staff",
@@ -21557,7 +22039,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 254
+        "sortIndex": 258
     },
     "/items/gluttonous_energy": {
         "hrid": "/items/gluttonous_energy",
@@ -21596,7 +22078,7 @@
                 }
             ]
         },
-        "sortIndex": 691
+        "sortIndex": 709
     },
     "/items/gluttonous_pouch": {
         "hrid": "/items/gluttonous_pouch",
@@ -21689,7 +22171,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 454
+        "sortIndex": 466
     },
     "/items/gobo_boomstick": {
         "hrid": "/items/gobo_boomstick",
@@ -21818,7 +22300,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 442
+        "sortIndex": 454
     },
     "/items/gobo_bracers": {
         "hrid": "/items/gobo_bracers",
@@ -21888,7 +22370,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 418
+        "sortIndex": 430
     },
     "/items/gobo_chaps": {
         "hrid": "/items/gobo_chaps",
@@ -21958,7 +22440,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 394
+        "sortIndex": 405
     },
     "/items/gobo_defender": {
         "hrid": "/items/gobo_defender",
@@ -22031,7 +22513,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 274
+        "sortIndex": 278
     },
     "/items/gobo_essence": {
         "hrid": "/items/gobo_essence",
@@ -22077,7 +22559,7 @@
                 }
             ]
         },
-        "sortIndex": 706
+        "sortIndex": 724
     },
     "/items/gobo_hide": {
         "hrid": "/items/gobo_hide",
@@ -22135,7 +22617,7 @@
                 }
             ]
         },
-        "sortIndex": 592
+        "sortIndex": 604
     },
     "/items/gobo_hood": {
         "hrid": "/items/gobo_hood",
@@ -22205,7 +22687,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 315
+        "sortIndex": 320
     },
     "/items/gobo_leather": {
         "hrid": "/items/gobo_leather",
@@ -22263,7 +22745,7 @@
                 }
             ]
         },
-        "sortIndex": 597
+        "sortIndex": 609
     },
     "/items/gobo_rag": {
         "hrid": "/items/gobo_rag",
@@ -22300,7 +22782,7 @@
                 }
             ]
         },
-        "sortIndex": 650
+        "sortIndex": 662
     },
     "/items/gobo_shooter": {
         "hrid": "/items/gobo_shooter",
@@ -22598,7 +23080,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 355
+        "sortIndex": 363
     },
     "/items/goggles": {
         "hrid": "/items/goggles",
@@ -22642,7 +23124,7 @@
                 }
             ]
         },
-        "sortIndex": 651
+        "sortIndex": 663
     },
     "/items/golem_essence": {
         "hrid": "/items/golem_essence",
@@ -22681,7 +23163,7 @@
                 }
             ]
         },
-        "sortIndex": 710
+        "sortIndex": 728
     },
     "/items/gourmet_tea": {
         "hrid": "/items/gourmet_tea",
@@ -22931,7 +23413,7 @@
                 }
             ]
         },
-        "sortIndex": 631
+        "sortIndex": 643
     },
     "/items/griffin_bulwark": {
         "hrid": "/items/griffin_bulwark",
@@ -23155,7 +23637,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 378
+        "sortIndex": 388
     },
     "/items/griffin_leather": {
         "hrid": "/items/griffin_leather",
@@ -23220,7 +23702,7 @@
                 }
             ]
         },
-        "sortIndex": 674
+        "sortIndex": 686
     },
     "/items/griffin_talon": {
         "hrid": "/items/griffin_talon",
@@ -23285,7 +23767,7 @@
                 }
             ]
         },
-        "sortIndex": 678
+        "sortIndex": 690
     },
     "/items/griffin_tunic": {
         "hrid": "/items/griffin_tunic",
@@ -23399,7 +23881,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 339
+        "sortIndex": 346
     },
     "/items/grizzly_bear_fluff": {
         "hrid": "/items/grizzly_bear_fluff",
@@ -23457,7 +23939,7 @@
                 }
             ]
         },
-        "sortIndex": 661
+        "sortIndex": 673
     },
     "/items/grizzly_bear_shoes": {
         "hrid": "/items/grizzly_bear_shoes",
@@ -23532,7 +24014,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 429
+        "sortIndex": 441
     },
     "/items/gummy": {
         "hrid": "/items/gummy",
@@ -23640,7 +24122,7 @@
                 }
             ]
         },
-        "sortIndex": 692
+        "sortIndex": 710
     },
     "/items/guzzling_pouch": {
         "hrid": "/items/guzzling_pouch",
@@ -23737,7 +24219,7 @@
                 "drinkConcentration": 0.002
             }
         },
-        "sortIndex": 455
+        "sortIndex": 467
     },
     "/items/heal": {
         "hrid": "/items/heal",
@@ -23903,7 +24385,7 @@
                 "alchemySpeed": 0.018000000000000002
             }
         },
-        "sortIndex": 553
+        "sortIndex": 565
     },
     "/items/holy_boots": {
         "hrid": "/items/holy_boots",
@@ -23982,7 +24464,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 439
+        "sortIndex": 451
     },
     "/items/holy_brush": {
         "hrid": "/items/holy_brush",
@@ -24058,7 +24540,7 @@
                 "milkingSpeed": 0.018000000000000002
             }
         },
-        "sortIndex": 489
+        "sortIndex": 501
     },
     "/items/holy_buckler": {
         "hrid": "/items/holy_buckler",
@@ -24127,7 +24609,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 289
+        "sortIndex": 293
     },
     "/items/holy_bulwark": {
         "hrid": "/items/holy_bulwark",
@@ -24265,7 +24747,7 @@
                 }
             ]
         },
-        "sortIndex": 575
+        "sortIndex": 587
     },
     "/items/holy_chisel": {
         "hrid": "/items/holy_chisel",
@@ -24341,7 +24823,7 @@
                 "craftingSpeed": 0.018000000000000002
             }
         },
-        "sortIndex": 521
+        "sortIndex": 533
     },
     "/items/holy_enhancer": {
         "hrid": "/items/holy_enhancer",
@@ -24409,7 +24891,7 @@
                 "enhancingSuccess": 0.0007199999999999999
             }
         },
-        "sortIndex": 561
+        "sortIndex": 573
     },
     "/items/holy_gauntlets": {
         "hrid": "/items/holy_gauntlets",
@@ -24488,7 +24970,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 415
+        "sortIndex": 427
     },
     "/items/holy_hammer": {
         "hrid": "/items/holy_hammer",
@@ -24564,7 +25046,7 @@
                 "cheesesmithingSpeed": 0.018000000000000002
             }
         },
-        "sortIndex": 513
+        "sortIndex": 525
     },
     "/items/holy_hatchet": {
         "hrid": "/items/holy_hatchet",
@@ -24640,7 +25122,7 @@
                 "woodcuttingSpeed": 0.018000000000000002
             }
         },
-        "sortIndex": 505
+        "sortIndex": 517
     },
     "/items/holy_helmet": {
         "hrid": "/items/holy_helmet",
@@ -24719,7 +25201,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 312
+        "sortIndex": 317
     },
     "/items/holy_mace": {
         "hrid": "/items/holy_mace",
@@ -24802,7 +25284,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 242
+        "sortIndex": 246
     },
     "/items/holy_milk": {
         "hrid": "/items/holy_milk",
@@ -24860,7 +25342,7 @@
                 }
             ]
         },
-        "sortIndex": 568
+        "sortIndex": 580
     },
     "/items/holy_needle": {
         "hrid": "/items/holy_needle",
@@ -24928,7 +25410,7 @@
                 "tailoringSpeed": 0.018000000000000002
             }
         },
-        "sortIndex": 529
+        "sortIndex": 541
     },
     "/items/holy_plate_body": {
         "hrid": "/items/holy_plate_body",
@@ -25007,7 +25489,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 352
+        "sortIndex": 360
     },
     "/items/holy_plate_legs": {
         "hrid": "/items/holy_plate_legs",
@@ -25086,7 +25568,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 391
+        "sortIndex": 402
     },
     "/items/holy_pot": {
         "hrid": "/items/holy_pot",
@@ -25154,7 +25636,7 @@
                 "brewingSpeed": 0.018000000000000002
             }
         },
-        "sortIndex": 545
+        "sortIndex": 557
     },
     "/items/holy_shears": {
         "hrid": "/items/holy_shears",
@@ -25230,7 +25712,7 @@
                 "foragingSpeed": 0.018000000000000002
             }
         },
-        "sortIndex": 497
+        "sortIndex": 509
     },
     "/items/holy_spatula": {
         "hrid": "/items/holy_spatula",
@@ -25298,7 +25780,7 @@
                 "cookingSpeed": 0.018000000000000002
             }
         },
-        "sortIndex": 537
+        "sortIndex": 549
     },
     "/items/holy_spear": {
         "hrid": "/items/holy_spear",
@@ -25381,7 +25863,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 235
+        "sortIndex": 239
     },
     "/items/holy_sword": {
         "hrid": "/items/holy_sword",
@@ -25460,7 +25942,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 228
+        "sortIndex": 232
     },
     "/items/ice_spear": {
         "hrid": "/items/ice_spear",
@@ -25616,7 +26098,7 @@
                 }
             ]
         },
-        "sortIndex": 654
+        "sortIndex": 666
     },
     "/items/icy_robe_bottoms": {
         "hrid": "/items/icy_robe_bottoms",
@@ -25696,7 +26178,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 379
+        "sortIndex": 390
     },
     "/items/icy_robe_top": {
         "hrid": "/items/icy_robe_top",
@@ -25776,7 +26258,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 340
+        "sortIndex": 348
     },
     "/items/impale": {
         "hrid": "/items/impale",
@@ -25965,7 +26447,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 220
+        "sortIndex": 221
     },
     "/items/infernal_ember": {
         "hrid": "/items/infernal_ember",
@@ -26009,7 +26491,7 @@
                 }
             ]
         },
-        "sortIndex": 672
+        "sortIndex": 684
     },
     "/items/insanity": {
         "hrid": "/items/insanity",
@@ -26345,7 +26827,7 @@
                 }
             ]
         },
-        "sortIndex": 676
+        "sortIndex": 688
     },
     "/items/jackalope_staff": {
         "hrid": "/items/jackalope_staff",
@@ -26432,7 +26914,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 221
+        "sortIndex": 222
     },
     "/items/jade": {
         "hrid": "/items/jade",
@@ -26506,7 +26988,7 @@
                 }
             ]
         },
-        "sortIndex": 721
+        "sortIndex": 740
     },
     "/items/jungle_essence": {
         "hrid": "/items/jungle_essence",
@@ -26552,7 +27034,7 @@
                 }
             ]
         },
-        "sortIndex": 705
+        "sortIndex": 723
     },
     "/items/knights_aegis": {
         "hrid": "/items/knights_aegis",
@@ -26660,7 +27142,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 276
+        "sortIndex": 280
     },
     "/items/knights_ingot": {
         "hrid": "/items/knights_ingot",
@@ -26725,7 +27207,187 @@
                 }
             ]
         },
-        "sortIndex": 684
+        "sortIndex": 696
+    },
+    "/items/kraken_chaps": {
+        "hrid": "/items/kraken_chaps",
+        "name": "Kraken Chaps",
+        "description": "",
+        "categoryHrid": "/item_categories/equipment",
+        "sellPrice": 4000000,
+        "isTradable": true,
+        "itemLevel": 95,
+        "enhancementCosts": [
+            {
+                "itemHrid": "/items/pirate_essence",
+                "count": 14
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/coin",
+                "count": 4815
+            }
+        ],
+        "protectionItemHrids": [
+            "/items/kraken_leather"
+        ],
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "equipmentDetail": {
+            "type": "/equipment_types/legs",
+            "levelRequirements": [
+                {
+                    "skillHrid": "/skills/ranged",
+                    "level": 95
+                }
+            ],
+            "combatStats": {
+                "criticalRate": 0.03,
+                "rangedAccuracy": 0.56,
+                "magicAccuracy": -0.2,
+                "rangedDamage": 0.12,
+                "stabEvasion": 0.52,
+                "slashEvasion": 0.52,
+                "smashEvasion": 0.52,
+                "rangedEvasion": 0.66,
+                "magicEvasion": 0.38,
+                "waterResistance": 32,
+                "natureResistance": 25,
+                "fireResistance": 32,
+                "tenacity": 15
+            },
+            "noncombatStats": {},
+            "combatEnhancementBonuses": {
+                "criticalRate": 0.0006,
+                "rangedAccuracy": 0.011200000000000002,
+                "rangedDamage": 0.0024,
+                "stabEvasion": 0.010400000000000001,
+                "slashEvasion": 0.010400000000000001,
+                "smashEvasion": 0.010400000000000001,
+                "rangedEvasion": 0.013200000000000002,
+                "magicEvasion": 0.0076,
+                "waterResistance": 0.64,
+                "natureResistance": 0.5,
+                "fireResistance": 0.64,
+                "tenacity": 0.3
+            },
+            "noncombatEnhancementBonuses": {}
+        },
+        "sortIndex": 389
+    },
+    "/items/kraken_fang": {
+        "hrid": "/items/kraken_fang",
+        "name": "Kraken Fang",
+        "description": "Material used in smithing Rippling, Blooming, or Blazing Trident",
+        "categoryHrid": "/item_categories/resource",
+        "sellPrice": 100000,
+        "isTradable": true,
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "sortIndex": 705
+    },
+    "/items/kraken_leather": {
+        "hrid": "/items/kraken_leather",
+        "name": "Kraken Leather",
+        "description": "Material used in smithing Kraken Tunic or Chaps",
+        "categoryHrid": "/item_categories/resource",
+        "sellPrice": 40000,
+        "isTradable": true,
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "sortIndex": 704
+    },
+    "/items/kraken_tunic": {
+        "hrid": "/items/kraken_tunic",
+        "name": "Kraken Tunic",
+        "description": "",
+        "categoryHrid": "/item_categories/equipment",
+        "sellPrice": 4500000,
+        "isTradable": true,
+        "itemLevel": 95,
+        "enhancementCosts": [
+            {
+                "itemHrid": "/items/pirate_essence",
+                "count": 16
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/coin",
+                "count": 4815
+            }
+        ],
+        "protectionItemHrids": [
+            "/items/kraken_leather"
+        ],
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "equipmentDetail": {
+            "type": "/equipment_types/body",
+            "levelRequirements": [
+                {
+                    "skillHrid": "/skills/ranged",
+                    "level": 95
+                }
+            ],
+            "combatStats": {
+                "criticalRate": 0.03,
+                "rangedAccuracy": 0.7,
+                "magicAccuracy": -0.25,
+                "rangedDamage": 0.15,
+                "stabEvasion": 0.63,
+                "slashEvasion": 0.63,
+                "smashEvasion": 0.63,
+                "rangedEvasion": 0.77,
+                "magicEvasion": 0.44,
+                "waterResistance": 40,
+                "natureResistance": 30,
+                "fireResistance": 40,
+                "tenacity": 20
+            },
+            "noncombatStats": {},
+            "combatEnhancementBonuses": {
+                "criticalRate": 0.0006,
+                "rangedAccuracy": 0.013999999999999999,
+                "rangedDamage": 0.003,
+                "stabEvasion": 0.0126,
+                "slashEvasion": 0.0126,
+                "smashEvasion": 0.0126,
+                "rangedEvasion": 0.0154,
+                "magicEvasion": 0.0088,
+                "waterResistance": 0.8,
+                "natureResistance": 0.6,
+                "fireResistance": 0.8,
+                "tenacity": 0.4
+            },
+            "noncombatEnhancementBonuses": {}
+        },
+        "sortIndex": 347
     },
     "/items/large_artisans_crate": {
         "hrid": "/items/large_artisans_crate",
@@ -26812,7 +27474,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 452
+        "sortIndex": 464
     },
     "/items/large_treasure_chest": {
         "hrid": "/items/large_treasure_chest",
@@ -26886,7 +27548,7 @@
                 }
             ]
         },
-        "sortIndex": 627
+        "sortIndex": 639
     },
     "/items/life_drain": {
         "hrid": "/items/life_drain",
@@ -26984,7 +27646,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 446
+        "sortIndex": 458
     },
     "/items/linen_fabric": {
         "hrid": "/items/linen_fabric",
@@ -27056,7 +27718,7 @@
                 }
             ]
         },
-        "sortIndex": 606
+        "sortIndex": 618
     },
     "/items/linen_gloves": {
         "hrid": "/items/linen_gloves",
@@ -27127,7 +27789,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 422
+        "sortIndex": 434
     },
     "/items/linen_hat": {
         "hrid": "/items/linen_hat",
@@ -27198,7 +27860,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 319
+        "sortIndex": 324
     },
     "/items/linen_robe_bottoms": {
         "hrid": "/items/linen_robe_bottoms",
@@ -27269,7 +27931,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 398
+        "sortIndex": 409
     },
     "/items/linen_robe_top": {
         "hrid": "/items/linen_robe_top",
@@ -27340,7 +28002,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 359
+        "sortIndex": 367
     },
     "/items/living_granite": {
         "hrid": "/items/living_granite",
@@ -27391,7 +28053,7 @@
                 }
             ]
         },
-        "sortIndex": 666
+        "sortIndex": 678
     },
     "/items/log": {
         "hrid": "/items/log",
@@ -27449,7 +28111,7 @@
                 }
             ]
         },
-        "sortIndex": 576
+        "sortIndex": 588
     },
     "/items/lucky_coffee": {
         "hrid": "/items/lucky_coffee",
@@ -27587,7 +28249,7 @@
                 }
             ]
         },
-        "sortIndex": 583
+        "sortIndex": 595
     },
     "/items/lumberjacks_bottoms": {
         "hrid": "/items/lumberjacks_bottoms",
@@ -27681,7 +28343,7 @@
                 "woodcuttingExperience": 0.0008
             }
         },
-        "sortIndex": 365
+        "sortIndex": 373
     },
     "/items/lumberjacks_top": {
         "hrid": "/items/lumberjacks_top",
@@ -27775,7 +28437,7 @@
                 "woodcuttingRareFind": 0.003
             }
         },
-        "sortIndex": 325
+        "sortIndex": 330
     },
     "/items/luna_robe_bottoms": {
         "hrid": "/items/luna_robe_bottoms",
@@ -27861,7 +28523,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 381
+        "sortIndex": 392
     },
     "/items/luna_robe_top": {
         "hrid": "/items/luna_robe_top",
@@ -27947,7 +28609,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 342
+        "sortIndex": 350
     },
     "/items/luna_wing": {
         "hrid": "/items/luna_wing",
@@ -27998,7 +28660,167 @@
                 }
             ]
         },
-        "sortIndex": 649
+        "sortIndex": 661
+    },
+    "/items/maelstrom_plate_body": {
+        "hrid": "/items/maelstrom_plate_body",
+        "name": "Maelstrom Plate Body",
+        "description": "",
+        "categoryHrid": "/item_categories/equipment",
+        "sellPrice": 4500000,
+        "isTradable": true,
+        "itemLevel": 95,
+        "enhancementCosts": [
+            {
+                "itemHrid": "/items/pirate_essence",
+                "count": 16
+            },
+            {
+                "itemHrid": "/items/holy_cheese",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/coin",
+                "count": 4815
+            }
+        ],
+        "protectionItemHrids": [
+            "/items/maelstrom_plating"
+        ],
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "equipmentDetail": {
+            "type": "/equipment_types/body",
+            "levelRequirements": [
+                {
+                    "skillHrid": "/skills/defense",
+                    "level": 95
+                }
+            ],
+            "combatStats": {
+                "autoAttackDamage": 0.1,
+                "magicAccuracy": -0.3,
+                "stabDamage": 0.22,
+                "slashDamage": 0.22,
+                "smashDamage": 0.25,
+                "stabEvasion": 0.48,
+                "slashEvasion": 0.48,
+                "smashEvasion": 0.48,
+                "rangedEvasion": 0.48,
+                "armor": 12,
+                "waterResistance": 12,
+                "fireResistance": 12
+            },
+            "noncombatStats": {},
+            "combatEnhancementBonuses": {
+                "autoAttackDamage": 0.002,
+                "stabDamage": 0.0044,
+                "slashDamage": 0.0044,
+                "smashDamage": 0.005,
+                "stabEvasion": 0.0096,
+                "slashEvasion": 0.0096,
+                "smashEvasion": 0.0096,
+                "rangedEvasion": 0.0096,
+                "armor": 0.24,
+                "waterResistance": 0.24,
+                "fireResistance": 0.24
+            },
+            "noncombatEnhancementBonuses": {}
+        },
+        "sortIndex": 343
+    },
+    "/items/maelstrom_plate_legs": {
+        "hrid": "/items/maelstrom_plate_legs",
+        "name": "Maelstrom Plate Legs",
+        "description": "",
+        "categoryHrid": "/item_categories/equipment",
+        "sellPrice": 4000000,
+        "isTradable": true,
+        "itemLevel": 95,
+        "enhancementCosts": [
+            {
+                "itemHrid": "/items/pirate_essence",
+                "count": 14
+            },
+            {
+                "itemHrid": "/items/holy_cheese",
+                "count": 6
+            },
+            {
+                "itemHrid": "/items/coin",
+                "count": 4815
+            }
+        ],
+        "protectionItemHrids": [
+            "/items/maelstrom_plating"
+        ],
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "equipmentDetail": {
+            "type": "/equipment_types/legs",
+            "levelRequirements": [
+                {
+                    "skillHrid": "/skills/defense",
+                    "level": 95
+                }
+            ],
+            "combatStats": {
+                "autoAttackDamage": 0.1,
+                "magicAccuracy": -0.24,
+                "stabDamage": 0.18,
+                "slashDamage": 0.18,
+                "smashDamage": 0.2,
+                "stabEvasion": 0.42,
+                "slashEvasion": 0.42,
+                "smashEvasion": 0.42,
+                "rangedEvasion": 0.42,
+                "armor": 10,
+                "waterResistance": 10,
+                "fireResistance": 10
+            },
+            "noncombatStats": {},
+            "combatEnhancementBonuses": {
+                "autoAttackDamage": 0.002,
+                "stabDamage": 0.0036,
+                "slashDamage": 0.0036,
+                "smashDamage": 0.004,
+                "stabEvasion": 0.0084,
+                "slashEvasion": 0.0084,
+                "smashEvasion": 0.0084,
+                "rangedEvasion": 0.0084,
+                "armor": 0.2,
+                "waterResistance": 0.2,
+                "fireResistance": 0.2
+            },
+            "noncombatEnhancementBonuses": {}
+        },
+        "sortIndex": 385
+    },
+    "/items/maelstrom_plating": {
+        "hrid": "/items/maelstrom_plating",
+        "name": "Maelstrom Plating",
+        "description": "Material used in smithing Maelstrom Plate Body or Legs",
+        "categoryHrid": "/item_categories/resource",
+        "sellPrice": 40000,
+        "isTradable": true,
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "sortIndex": 703
     },
     "/items/magic_coffee": {
         "hrid": "/items/magic_coffee",
@@ -28136,7 +28958,7 @@
                 }
             ]
         },
-        "sortIndex": 680
+        "sortIndex": 692
     },
     "/items/magicians_hat": {
         "hrid": "/items/magicians_hat",
@@ -28231,7 +29053,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 305
+        "sortIndex": 310
     },
     "/items/magnet": {
         "hrid": "/items/magnet",
@@ -28282,7 +29104,7 @@
                 }
             ]
         },
-        "sortIndex": 664
+        "sortIndex": 676
     },
     "/items/magnetic_gloves": {
         "hrid": "/items/magnetic_gloves",
@@ -28369,7 +29191,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 405
+        "sortIndex": 416
     },
     "/items/magnifying_glass": {
         "hrid": "/items/magnifying_glass",
@@ -28413,7 +29235,7 @@
                 }
             ]
         },
-        "sortIndex": 652
+        "sortIndex": 664
     },
     "/items/maim": {
         "hrid": "/items/maim",
@@ -28678,7 +29500,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 278
+        "sortIndex": 282
     },
     "/items/manticore_sting": {
         "hrid": "/items/manticore_sting",
@@ -28743,7 +29565,7 @@
                 }
             ]
         },
-        "sortIndex": 675
+        "sortIndex": 687
     },
     "/items/marine_chaps": {
         "hrid": "/items/marine_chaps",
@@ -28822,7 +29644,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 376
+        "sortIndex": 386
     },
     "/items/marine_scale": {
         "hrid": "/items/marine_scale",
@@ -28880,7 +29702,7 @@
                 }
             ]
         },
-        "sortIndex": 646
+        "sortIndex": 658
     },
     "/items/marine_tunic": {
         "hrid": "/items/marine_tunic",
@@ -28959,7 +29781,95 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 337
+        "sortIndex": 344
+    },
+    "/items/marksman_bracers": {
+        "hrid": "/items/marksman_bracers",
+        "name": "Marksman Bracers",
+        "description": "",
+        "categoryHrid": "/item_categories/equipment",
+        "sellPrice": 3000000,
+        "isTradable": true,
+        "itemLevel": 95,
+        "enhancementCosts": [
+            {
+                "itemHrid": "/items/pirate_essence",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 4
+            },
+            {
+                "itemHrid": "/items/coin",
+                "count": 4815
+            }
+        ],
+        "protectionItemHrids": [
+            "/items/marksman_brooch"
+        ],
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "equipmentDetail": {
+            "type": "/equipment_types/hands",
+            "levelRequirements": [
+                {
+                    "skillHrid": "/skills/ranged",
+                    "level": 95
+                }
+            ],
+            "combatStats": {
+                "criticalDamage": 0.12,
+                "rangedAccuracy": 0.2,
+                "magicAccuracy": -0.08,
+                "rangedDamage": 0.08,
+                "stabEvasion": 0.25,
+                "slashEvasion": 0.25,
+                "smashEvasion": 0.25,
+                "rangedEvasion": 0.3,
+                "magicEvasion": 0.2,
+                "waterResistance": 10,
+                "natureResistance": 10,
+                "fireResistance": 10
+            },
+            "noncombatStats": {},
+            "combatEnhancementBonuses": {
+                "criticalDamage": 0.0024,
+                "rangedAccuracy": 0.004,
+                "rangedDamage": 0.0016,
+                "stabEvasion": 0.005,
+                "slashEvasion": 0.005,
+                "smashEvasion": 0.005,
+                "rangedEvasion": 0.006,
+                "magicEvasion": 0.004,
+                "waterResistance": 0.2,
+                "natureResistance": 0.2,
+                "fireResistance": 0.2
+            },
+            "noncombatEnhancementBonuses": {}
+        },
+        "sortIndex": 419
+    },
+    "/items/marksman_brooch": {
+        "hrid": "/items/marksman_brooch",
+        "name": "Marksman Brooch",
+        "description": "Material used in smithing Marksman Bracers",
+        "categoryHrid": "/item_categories/resource",
+        "sellPrice": 40000,
+        "isTradable": true,
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "sortIndex": 700
     },
     "/items/marsberry": {
         "hrid": "/items/marsberry",
@@ -29024,7 +29934,7 @@
                 }
             ]
         },
-        "sortIndex": 617
+        "sortIndex": 629
     },
     "/items/marsberry_cake": {
         "hrid": "/items/marsberry_cake",
@@ -29277,7 +30187,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 451
+        "sortIndex": 463
     },
     "/items/medium_treasure_chest": {
         "hrid": "/items/medium_treasure_chest",
@@ -29344,7 +30254,7 @@
                 }
             ]
         },
-        "sortIndex": 562
+        "sortIndex": 574
     },
     "/items/milking_essence": {
         "hrid": "/items/milking_essence",
@@ -29432,7 +30342,7 @@
                 }
             ]
         },
-        "sortIndex": 693
+        "sortIndex": 711
     },
     "/items/milking_tea": {
         "hrid": "/items/milking_tea",
@@ -29650,7 +30560,7 @@
                 }
             ]
         },
-        "sortIndex": 735
+        "sortIndex": 754
     },
     "/items/mooberry": {
         "hrid": "/items/mooberry",
@@ -29715,7 +30625,7 @@
                 }
             ]
         },
-        "sortIndex": 616
+        "sortIndex": 628
     },
     "/items/mooberry_cake": {
         "hrid": "/items/mooberry_cake",
@@ -29932,7 +30842,7 @@
                 }
             ]
         },
-        "sortIndex": 634
+        "sortIndex": 646
     },
     "/items/moonstone": {
         "hrid": "/items/moonstone",
@@ -30006,7 +30916,7 @@
                 }
             ]
         },
-        "sortIndex": 723
+        "sortIndex": 742
     },
     "/items/natures_veil": {
         "hrid": "/items/natures_veil",
@@ -30164,7 +31074,7 @@
                 "skillingEfficiency": 0.002
             }
         },
-        "sortIndex": 456
+        "sortIndex": 468
     },
     "/items/necklace_of_speed": {
         "hrid": "/items/necklace_of_speed",
@@ -30222,7 +31132,7 @@
                 "skillingSpeed": 0.004
             }
         },
-        "sortIndex": 461
+        "sortIndex": 473
     },
     "/items/necklace_of_wisdom": {
         "hrid": "/items/necklace_of_wisdom",
@@ -30286,7 +31196,7 @@
                 "skillingExperience": 0.003
             }
         },
-        "sortIndex": 460
+        "sortIndex": 472
     },
     "/items/orange": {
         "hrid": "/items/orange",
@@ -30351,7 +31261,7 @@
                 }
             ]
         },
-        "sortIndex": 620
+        "sortIndex": 632
     },
     "/items/orange_gummy": {
         "hrid": "/items/orange_gummy",
@@ -30607,7 +31517,7 @@
                 }
             ]
         },
-        "sortIndex": 659
+        "sortIndex": 671
     },
     "/items/panda_gloves": {
         "hrid": "/items/panda_gloves",
@@ -30686,7 +31596,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 404
+        "sortIndex": 415
     },
     "/items/peach": {
         "hrid": "/items/peach",
@@ -30751,7 +31661,7 @@
                 }
             ]
         },
-        "sortIndex": 622
+        "sortIndex": 634
     },
     "/items/peach_gummy": {
         "hrid": "/items/peach_gummy",
@@ -30977,7 +31887,7 @@
                 }
             ]
         },
-        "sortIndex": 718
+        "sortIndex": 737
     },
     "/items/penetrating_shot": {
         "hrid": "/items/penetrating_shot",
@@ -31306,7 +32216,7 @@
                 "skillingRareFind": 0.008
             }
         },
-        "sortIndex": 470
+        "sortIndex": 482
     },
     "/items/philosophers_necklace": {
         "hrid": "/items/philosophers_necklace",
@@ -31410,7 +32320,7 @@
                 "skillingExperience": 0.003
             }
         },
-        "sortIndex": 462
+        "sortIndex": 474
     },
     "/items/philosophers_ring": {
         "hrid": "/items/philosophers_ring",
@@ -31508,7 +32418,7 @@
                 "skillingRareFind": 0.008
             }
         },
-        "sortIndex": 478
+        "sortIndex": 490
     },
     "/items/philosophers_stone": {
         "hrid": "/items/philosophers_stone",
@@ -31547,7 +32457,7 @@
                 }
             ]
         },
-        "sortIndex": 725
+        "sortIndex": 744
     },
     "/items/pincer_gloves": {
         "hrid": "/items/pincer_gloves",
@@ -31630,7 +32540,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 403
+        "sortIndex": 414
     },
     "/items/pirate_chest": {
         "hrid": "/items/pirate_chest",
@@ -31673,6 +32583,22 @@
             "transmuteDropTable": null
         },
         "sortIndex": 38
+    },
+    "/items/pirate_essence": {
+        "hrid": "/items/pirate_essence",
+        "name": "Pirate Essence",
+        "description": "Used for enhancing special equipment from the Pirate Cove",
+        "categoryHrid": "/item_categories/resource",
+        "sellPrice": 600,
+        "isTradable": true,
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "sortIndex": 734
     },
     "/items/pirate_token": {
         "hrid": "/items/pirate_token",
@@ -31746,7 +32672,7 @@
                 }
             ]
         },
-        "sortIndex": 621
+        "sortIndex": 633
     },
     "/items/plum_gummy": {
         "hrid": "/items/plum_gummy",
@@ -32040,7 +32966,7 @@
                 }
             ]
         },
-        "sortIndex": 662
+        "sortIndex": 674
     },
     "/items/polar_bear_shoes": {
         "hrid": "/items/polar_bear_shoes",
@@ -32115,7 +33041,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 430
+        "sortIndex": 442
     },
     "/items/power_coffee": {
         "hrid": "/items/power_coffee",
@@ -32316,7 +33242,7 @@
                 }
             ]
         },
-        "sortIndex": 640
+        "sortIndex": 652
     },
     "/items/processing_tea": {
         "hrid": "/items/processing_tea",
@@ -32718,7 +33644,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 246
+        "sortIndex": 250
     },
     "/items/purpleheart_fire_staff": {
         "hrid": "/items/purpleheart_fire_staff",
@@ -32781,7 +33707,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 267
+        "sortIndex": 271
     },
     "/items/purpleheart_log": {
         "hrid": "/items/purpleheart_log",
@@ -32846,7 +33772,7 @@
                 }
             ]
         },
-        "sortIndex": 579
+        "sortIndex": 591
     },
     "/items/purpleheart_lumber": {
         "hrid": "/items/purpleheart_lumber",
@@ -32911,7 +33837,7 @@
                 }
             ]
         },
-        "sortIndex": 586
+        "sortIndex": 598
     },
     "/items/purpleheart_nature_staff": {
         "hrid": "/items/purpleheart_nature_staff",
@@ -32974,7 +33900,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 260
+        "sortIndex": 264
     },
     "/items/purpleheart_shield": {
         "hrid": "/items/purpleheart_shield",
@@ -33038,7 +33964,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 293
+        "sortIndex": 297
     },
     "/items/purpleheart_water_staff": {
         "hrid": "/items/purpleheart_water_staff",
@@ -33101,7 +34027,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 253
+        "sortIndex": 257
     },
     "/items/purples_gift": {
         "hrid": "/items/purples_gift",
@@ -33378,7 +34304,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 449
+        "sortIndex": 461
     },
     "/items/radiant_fabric": {
         "hrid": "/items/radiant_fabric",
@@ -33443,7 +34369,7 @@
                 }
             ]
         },
-        "sortIndex": 609
+        "sortIndex": 621
     },
     "/items/radiant_fiber": {
         "hrid": "/items/radiant_fiber",
@@ -33508,7 +34434,7 @@
                 }
             ]
         },
-        "sortIndex": 604
+        "sortIndex": 616
     },
     "/items/radiant_gloves": {
         "hrid": "/items/radiant_gloves",
@@ -33594,7 +34520,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 425
+        "sortIndex": 437
     },
     "/items/radiant_hat": {
         "hrid": "/items/radiant_hat",
@@ -33680,7 +34606,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 322
+        "sortIndex": 327
     },
     "/items/radiant_robe_bottoms": {
         "hrid": "/items/radiant_robe_bottoms",
@@ -33766,7 +34692,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 401
+        "sortIndex": 412
     },
     "/items/radiant_robe_top": {
         "hrid": "/items/radiant_robe_top",
@@ -33852,7 +34778,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 362
+        "sortIndex": 370
     },
     "/items/rain_of_arrows": {
         "hrid": "/items/rain_of_arrows",
@@ -34003,7 +34929,7 @@
                 "alchemySpeed": 0.015
             }
         },
-        "sortIndex": 552
+        "sortIndex": 564
     },
     "/items/rainbow_boots": {
         "hrid": "/items/rainbow_boots",
@@ -34067,7 +34993,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 438
+        "sortIndex": 450
     },
     "/items/rainbow_brush": {
         "hrid": "/items/rainbow_brush",
@@ -34128,7 +35054,7 @@
                 "milkingSpeed": 0.015
             }
         },
-        "sortIndex": 488
+        "sortIndex": 500
     },
     "/items/rainbow_buckler": {
         "hrid": "/items/rainbow_buckler",
@@ -34182,7 +35108,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 288
+        "sortIndex": 292
     },
     "/items/rainbow_bulwark": {
         "hrid": "/items/rainbow_bulwark",
@@ -34326,7 +35252,7 @@
                 }
             ]
         },
-        "sortIndex": 574
+        "sortIndex": 586
     },
     "/items/rainbow_chisel": {
         "hrid": "/items/rainbow_chisel",
@@ -34387,7 +35313,7 @@
                 "craftingSpeed": 0.015
             }
         },
-        "sortIndex": 520
+        "sortIndex": 532
     },
     "/items/rainbow_enhancer": {
         "hrid": "/items/rainbow_enhancer",
@@ -34440,7 +35366,7 @@
                 "enhancingSuccess": 0.0006
             }
         },
-        "sortIndex": 560
+        "sortIndex": 572
     },
     "/items/rainbow_gauntlets": {
         "hrid": "/items/rainbow_gauntlets",
@@ -34504,7 +35430,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 414
+        "sortIndex": 426
     },
     "/items/rainbow_hammer": {
         "hrid": "/items/rainbow_hammer",
@@ -34565,7 +35491,7 @@
                 "cheesesmithingSpeed": 0.015
             }
         },
-        "sortIndex": 512
+        "sortIndex": 524
     },
     "/items/rainbow_hatchet": {
         "hrid": "/items/rainbow_hatchet",
@@ -34626,7 +35552,7 @@
                 "woodcuttingSpeed": 0.015
             }
         },
-        "sortIndex": 504
+        "sortIndex": 516
     },
     "/items/rainbow_helmet": {
         "hrid": "/items/rainbow_helmet",
@@ -34690,7 +35616,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 311
+        "sortIndex": 316
     },
     "/items/rainbow_mace": {
         "hrid": "/items/rainbow_mace",
@@ -34758,7 +35684,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 241
+        "sortIndex": 245
     },
     "/items/rainbow_milk": {
         "hrid": "/items/rainbow_milk",
@@ -34837,7 +35763,7 @@
                 }
             ]
         },
-        "sortIndex": 567
+        "sortIndex": 579
     },
     "/items/rainbow_needle": {
         "hrid": "/items/rainbow_needle",
@@ -34890,7 +35816,7 @@
                 "tailoringSpeed": 0.015
             }
         },
-        "sortIndex": 528
+        "sortIndex": 540
     },
     "/items/rainbow_plate_body": {
         "hrid": "/items/rainbow_plate_body",
@@ -34954,7 +35880,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 351
+        "sortIndex": 359
     },
     "/items/rainbow_plate_legs": {
         "hrid": "/items/rainbow_plate_legs",
@@ -35018,7 +35944,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 390
+        "sortIndex": 401
     },
     "/items/rainbow_pot": {
         "hrid": "/items/rainbow_pot",
@@ -35071,7 +35997,7 @@
                 "brewingSpeed": 0.015
             }
         },
-        "sortIndex": 544
+        "sortIndex": 556
     },
     "/items/rainbow_shears": {
         "hrid": "/items/rainbow_shears",
@@ -35132,7 +36058,7 @@
                 "foragingSpeed": 0.015
             }
         },
-        "sortIndex": 496
+        "sortIndex": 508
     },
     "/items/rainbow_spatula": {
         "hrid": "/items/rainbow_spatula",
@@ -35185,7 +36111,7 @@
                 "cookingSpeed": 0.015
             }
         },
-        "sortIndex": 536
+        "sortIndex": 548
     },
     "/items/rainbow_spear": {
         "hrid": "/items/rainbow_spear",
@@ -35253,7 +36179,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 234
+        "sortIndex": 238
     },
     "/items/rainbow_sword": {
         "hrid": "/items/rainbow_sword",
@@ -35317,7 +36243,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 227
+        "sortIndex": 231
     },
     "/items/ranged_coffee": {
         "hrid": "/items/ranged_coffee",
@@ -35451,7 +36377,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 458
+        "sortIndex": 470
     },
     "/items/red_culinary_hat": {
         "hrid": "/items/red_culinary_hat",
@@ -35556,7 +36482,7 @@
                 "brewingEfficiency": 0.002
             }
         },
-        "sortIndex": 300
+        "sortIndex": 304
     },
     "/items/red_panda_fluff": {
         "hrid": "/items/red_panda_fluff",
@@ -35621,7 +36547,7 @@
                 }
             ]
         },
-        "sortIndex": 663
+        "sortIndex": 675
     },
     "/items/red_tea_leaf": {
         "hrid": "/items/red_tea_leaf",
@@ -35686,7 +36612,7 @@
                 }
             ]
         },
-        "sortIndex": 635
+        "sortIndex": 647
     },
     "/items/redwood_bow": {
         "hrid": "/items/redwood_bow",
@@ -35806,7 +36732,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 248
+        "sortIndex": 252
     },
     "/items/redwood_fire_staff": {
         "hrid": "/items/redwood_fire_staff",
@@ -35869,7 +36795,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 269
+        "sortIndex": 273
     },
     "/items/redwood_log": {
         "hrid": "/items/redwood_log",
@@ -35948,7 +36874,7 @@
                 }
             ]
         },
-        "sortIndex": 581
+        "sortIndex": 593
     },
     "/items/redwood_lumber": {
         "hrid": "/items/redwood_lumber",
@@ -36027,7 +36953,7 @@
                 }
             ]
         },
-        "sortIndex": 588
+        "sortIndex": 600
     },
     "/items/redwood_nature_staff": {
         "hrid": "/items/redwood_nature_staff",
@@ -36090,7 +37016,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 262
+        "sortIndex": 266
     },
     "/items/redwood_shield": {
         "hrid": "/items/redwood_shield",
@@ -36154,7 +37080,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 295
+        "sortIndex": 299
     },
     "/items/redwood_water_staff": {
         "hrid": "/items/redwood_water_staff",
@@ -36217,7 +37143,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 255
+        "sortIndex": 259
     },
     "/items/regal_jewel": {
         "hrid": "/items/regal_jewel",
@@ -36282,7 +37208,7 @@
                 }
             ]
         },
-        "sortIndex": 686
+        "sortIndex": 698
     },
     "/items/regal_sword": {
         "hrid": "/items/regal_sword",
@@ -36381,7 +37307,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 215
+        "sortIndex": 216
     },
     "/items/rejuvenate": {
         "hrid": "/items/rejuvenate",
@@ -36549,7 +37475,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 441
+        "sortIndex": 453
     },
     "/items/reptile_bracers": {
         "hrid": "/items/reptile_bracers",
@@ -36619,7 +37545,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 417
+        "sortIndex": 429
     },
     "/items/reptile_chaps": {
         "hrid": "/items/reptile_chaps",
@@ -36689,7 +37615,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 393
+        "sortIndex": 404
     },
     "/items/reptile_hide": {
         "hrid": "/items/reptile_hide",
@@ -36761,7 +37687,7 @@
                 }
             ]
         },
-        "sortIndex": 591
+        "sortIndex": 603
     },
     "/items/reptile_hood": {
         "hrid": "/items/reptile_hood",
@@ -36831,7 +37757,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 314
+        "sortIndex": 319
     },
     "/items/reptile_leather": {
         "hrid": "/items/reptile_leather",
@@ -36903,7 +37829,7 @@
                 }
             ]
         },
-        "sortIndex": 596
+        "sortIndex": 608
     },
     "/items/reptile_tunic": {
         "hrid": "/items/reptile_tunic",
@@ -36973,7 +37899,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 354
+        "sortIndex": 362
     },
     "/items/revenant_anima": {
         "hrid": "/items/revenant_anima",
@@ -37024,7 +37950,7 @@
                 }
             ]
         },
-        "sortIndex": 670
+        "sortIndex": 682
     },
     "/items/revenant_chaps": {
         "hrid": "/items/revenant_chaps",
@@ -37120,7 +38046,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 377
+        "sortIndex": 387
     },
     "/items/revenant_tunic": {
         "hrid": "/items/revenant_tunic",
@@ -37216,7 +38142,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 338
+        "sortIndex": 345
     },
     "/items/revive": {
         "hrid": "/items/revive",
@@ -37367,7 +38293,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 473
+        "sortIndex": 485
     },
     "/items/ring_of_critical_strike": {
         "hrid": "/items/ring_of_critical_strike",
@@ -37419,7 +38345,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 477
+        "sortIndex": 489
     },
     "/items/ring_of_essence_find": {
         "hrid": "/items/ring_of_essence_find",
@@ -37471,7 +38397,7 @@
                 "skillingEssenceFind": 0.015
             }
         },
-        "sortIndex": 472
+        "sortIndex": 484
     },
     "/items/ring_of_gathering": {
         "hrid": "/items/ring_of_gathering",
@@ -37523,7 +38449,7 @@
                 "gatheringQuantity": 0.002
             }
         },
-        "sortIndex": 471
+        "sortIndex": 483
     },
     "/items/ring_of_rare_find": {
         "hrid": "/items/ring_of_rare_find",
@@ -37579,7 +38505,7 @@
                 "skillingRareFind": 0.008
             }
         },
-        "sortIndex": 476
+        "sortIndex": 488
     },
     "/items/ring_of_regeneration": {
         "hrid": "/items/ring_of_regeneration",
@@ -37641,7 +38567,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 474
+        "sortIndex": 486
     },
     "/items/ring_of_resistance": {
         "hrid": "/items/ring_of_resistance",
@@ -37705,7 +38631,75 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 475
+        "sortIndex": 487
+    },
+    "/items/rippling_trident": {
+        "hrid": "/items/rippling_trident",
+        "name": "Rippling Trident",
+        "description": "",
+        "categoryHrid": "/item_categories/equipment",
+        "sellPrice": 5000000,
+        "isTradable": true,
+        "itemLevel": 95,
+        "enhancementCosts": [
+            {
+                "itemHrid": "/items/pirate_essence",
+                "count": 18
+            },
+            {
+                "itemHrid": "/items/arcane_lumber",
+                "count": 9
+            },
+            {
+                "itemHrid": "/items/crushed_amethyst",
+                "count": 1
+            },
+            {
+                "itemHrid": "/items/coin",
+                "count": 4815
+            }
+        ],
+        "protectionItemHrids": [
+            "/items/kraken_fang"
+        ],
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "equipmentDetail": {
+            "type": "/equipment_types/main_hand",
+            "levelRequirements": [
+                {
+                    "skillHrid": "/skills/magic",
+                    "level": 95
+                }
+            ],
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/magic"
+                ],
+                "damageType": "/damage_types/water",
+                "attackInterval": 3500000000,
+                "autoAttackDamage": -0.5,
+                "magicAccuracy": 0.85,
+                "magicDamage": 0.5,
+                "waterAmplify": 0.3,
+                "waterPenetration": 0.1,
+                "ripple": 0.2
+            },
+            "noncombatStats": {},
+            "combatEnhancementBonuses": {
+                "magicAccuracy": 0.017,
+                "magicDamage": 0.01,
+                "waterAmplify": 0.006,
+                "waterPenetration": 0.002
+            },
+            "noncombatEnhancementBonuses": {}
+        },
+        "sortIndex": 223
     },
     "/items/robusta_coffee_bean": {
         "hrid": "/items/robusta_coffee_bean",
@@ -37770,7 +38764,7 @@
                 }
             ]
         },
-        "sortIndex": 626
+        "sortIndex": 638
     },
     "/items/rough_boots": {
         "hrid": "/items/rough_boots",
@@ -37836,7 +38830,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 440
+        "sortIndex": 452
     },
     "/items/rough_bracers": {
         "hrid": "/items/rough_bracers",
@@ -37902,7 +38896,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 416
+        "sortIndex": 428
     },
     "/items/rough_chaps": {
         "hrid": "/items/rough_chaps",
@@ -37968,7 +38962,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 392
+        "sortIndex": 403
     },
     "/items/rough_hide": {
         "hrid": "/items/rough_hide",
@@ -38033,7 +39027,7 @@
                 }
             ]
         },
-        "sortIndex": 590
+        "sortIndex": 602
     },
     "/items/rough_hood": {
         "hrid": "/items/rough_hood",
@@ -38099,7 +39093,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 313
+        "sortIndex": 318
     },
     "/items/rough_leather": {
         "hrid": "/items/rough_leather",
@@ -38164,7 +39158,7 @@
                 }
             ]
         },
-        "sortIndex": 595
+        "sortIndex": 607
     },
     "/items/rough_tunic": {
         "hrid": "/items/rough_tunic",
@@ -38230,7 +39224,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 353
+        "sortIndex": 361
     },
     "/items/royal_cloth": {
         "hrid": "/items/royal_cloth",
@@ -38295,7 +39289,7 @@
                 }
             ]
         },
-        "sortIndex": 683
+        "sortIndex": 695
     },
     "/items/royal_fire_robe_bottoms": {
         "hrid": "/items/royal_fire_robe_bottoms",
@@ -38398,7 +39392,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 384
+        "sortIndex": 395
     },
     "/items/royal_fire_robe_top": {
         "hrid": "/items/royal_fire_robe_top",
@@ -38501,7 +39495,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 345
+        "sortIndex": 353
     },
     "/items/royal_nature_robe_bottoms": {
         "hrid": "/items/royal_nature_robe_bottoms",
@@ -38602,7 +39596,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 383
+        "sortIndex": 394
     },
     "/items/royal_nature_robe_top": {
         "hrid": "/items/royal_nature_robe_top",
@@ -38703,7 +39697,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 344
+        "sortIndex": 352
     },
     "/items/royal_water_robe_bottoms": {
         "hrid": "/items/royal_water_robe_bottoms",
@@ -38806,7 +39800,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 382
+        "sortIndex": 393
     },
     "/items/royal_water_robe_top": {
         "hrid": "/items/royal_water_robe_top",
@@ -38909,7 +39903,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 343
+        "sortIndex": 351
     },
     "/items/scratch": {
         "hrid": "/items/scratch",
@@ -39044,7 +40038,7 @@
                 }
             ]
         },
-        "sortIndex": 734
+        "sortIndex": 753
     },
     "/items/shield_bash": {
         "hrid": "/items/shield_bash",
@@ -39115,7 +40109,7 @@
                 }
             ]
         },
-        "sortIndex": 642
+        "sortIndex": 654
     },
     "/items/shoebill_shoes": {
         "hrid": "/items/shoebill_shoes",
@@ -39233,7 +40227,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 427
+        "sortIndex": 439
     },
     "/items/sighted_bracers": {
         "hrid": "/items/sighted_bracers",
@@ -39314,7 +40308,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 407
+        "sortIndex": 418
     },
     "/items/silencing_shot": {
         "hrid": "/items/silencing_shot",
@@ -39483,7 +40477,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 448
+        "sortIndex": 460
     },
     "/items/silk_fabric": {
         "hrid": "/items/silk_fabric",
@@ -39555,7 +40549,7 @@
                 }
             ]
         },
-        "sortIndex": 608
+        "sortIndex": 620
     },
     "/items/silk_gloves": {
         "hrid": "/items/silk_gloves",
@@ -39626,7 +40620,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 424
+        "sortIndex": 436
     },
     "/items/silk_hat": {
         "hrid": "/items/silk_hat",
@@ -39697,7 +40691,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 321
+        "sortIndex": 326
     },
     "/items/silk_robe_bottoms": {
         "hrid": "/items/silk_robe_bottoms",
@@ -39768,7 +40762,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 400
+        "sortIndex": 411
     },
     "/items/silk_robe_top": {
         "hrid": "/items/silk_robe_top",
@@ -39839,7 +40833,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 361
+        "sortIndex": 369
     },
     "/items/sinister_cape": {
         "hrid": "/items/sinister_cape",
@@ -39925,7 +40919,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 297
+        "sortIndex": 301
     },
     "/items/sinister_chest": {
         "hrid": "/items/sinister_chest",
@@ -40008,7 +41002,7 @@
                 }
             ]
         },
-        "sortIndex": 714
+        "sortIndex": 732
     },
     "/items/sinister_token": {
         "hrid": "/items/sinister_token",
@@ -40182,7 +41176,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 450
+        "sortIndex": 462
     },
     "/items/small_treasure_chest": {
         "hrid": "/items/small_treasure_chest",
@@ -40319,7 +41313,7 @@
                 }
             ]
         },
-        "sortIndex": 643
+        "sortIndex": 655
     },
     "/items/snail_shell_helmet": {
         "hrid": "/items/snail_shell_helmet",
@@ -40392,7 +41386,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 301
+        "sortIndex": 305
     },
     "/items/snake_fang": {
         "hrid": "/items/snake_fang",
@@ -40429,7 +41423,7 @@
                 }
             ]
         },
-        "sortIndex": 641
+        "sortIndex": 653
     },
     "/items/snake_fang_dirk": {
         "hrid": "/items/snake_fang_dirk",
@@ -40512,7 +41506,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 272
+        "sortIndex": 276
     },
     "/items/sorcerer_boots": {
         "hrid": "/items/sorcerer_boots",
@@ -40590,7 +41584,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 432
+        "sortIndex": 444
     },
     "/items/sorcerer_essence": {
         "hrid": "/items/sorcerer_essence",
@@ -40629,7 +41623,7 @@
                 }
             ]
         },
-        "sortIndex": 708
+        "sortIndex": 726
     },
     "/items/sorcerers_sole": {
         "hrid": "/items/sorcerers_sole",
@@ -40687,7 +41681,7 @@
                 }
             ]
         },
-        "sortIndex": 656
+        "sortIndex": 668
     },
     "/items/soul_fragment": {
         "hrid": "/items/soul_fragment",
@@ -40731,7 +41725,7 @@
                 }
             ]
         },
-        "sortIndex": 671
+        "sortIndex": 683
     },
     "/items/soul_hunter_crossbow": {
         "hrid": "/items/soul_hunter_crossbow",
@@ -40815,7 +41809,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 217
+        "sortIndex": 218
     },
     "/items/spaceberry": {
         "hrid": "/items/spaceberry",
@@ -40873,7 +41867,7 @@
                 }
             ]
         },
-        "sortIndex": 618
+        "sortIndex": 630
     },
     "/items/spaceberry_cake": {
         "hrid": "/items/spaceberry_cake",
@@ -41083,7 +42077,7 @@
                 }
             ]
         },
-        "sortIndex": 630
+        "sortIndex": 642
     },
     "/items/speed_aura": {
         "hrid": "/items/speed_aura",
@@ -41388,7 +42382,7 @@
                 }
             ]
         },
-        "sortIndex": 665
+        "sortIndex": 677
     },
     "/items/stalactite_spear": {
         "hrid": "/items/stalactite_spear",
@@ -41609,7 +42603,7 @@
                 }
             ]
         },
-        "sortIndex": 717
+        "sortIndex": 736
     },
     "/items/star_fruit": {
         "hrid": "/items/star_fruit",
@@ -41667,7 +42661,7 @@
                 }
             ]
         },
-        "sortIndex": 624
+        "sortIndex": 636
     },
     "/items/star_fruit_gummy": {
         "hrid": "/items/star_fruit_gummy",
@@ -42021,7 +43015,7 @@
                 }
             ]
         },
-        "sortIndex": 615
+        "sortIndex": 627
     },
     "/items/strawberry_cake": {
         "hrid": "/items/strawberry_cake",
@@ -42322,7 +43316,7 @@
                 }
             ]
         },
-        "sortIndex": 612
+        "sortIndex": 624
     },
     "/items/sundering_crossbow": {
         "hrid": "/items/sundering_crossbow",
@@ -42413,7 +43407,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 218
+        "sortIndex": 219
     },
     "/items/sundering_jewel": {
         "hrid": "/items/sundering_jewel",
@@ -42478,7 +43472,7 @@
                 }
             ]
         },
-        "sortIndex": 687
+        "sortIndex": 699
     },
     "/items/sunstone": {
         "hrid": "/items/sunstone",
@@ -42524,7 +43518,7 @@
                 }
             ]
         },
-        "sortIndex": 724
+        "sortIndex": 743
     },
     "/items/super_alchemy_tea": {
         "hrid": "/items/super_alchemy_tea",
@@ -44230,7 +45224,7 @@
                 }
             ]
         },
-        "sortIndex": 703
+        "sortIndex": 721
     },
     "/items/sweep": {
         "hrid": "/items/sweep",
@@ -44587,7 +45581,7 @@
                 }
             ]
         },
-        "sortIndex": 698
+        "sortIndex": 716
     },
     "/items/tailoring_tea": {
         "hrid": "/items/tailoring_tea",
@@ -44764,7 +45758,7 @@
                 "tailoringExperience": 0.0008
             }
         },
-        "sortIndex": 368
+        "sortIndex": 376
     },
     "/items/tailors_top": {
         "hrid": "/items/tailors_top",
@@ -44858,7 +45852,7 @@
                 "tailoringRareFind": 0.003
             }
         },
-        "sortIndex": 328
+        "sortIndex": 333
     },
     "/items/task_crystal": {
         "hrid": "/items/task_crystal",
@@ -44873,7 +45867,7 @@
             "transmuteSuccessRate": 0,
             "transmuteDropTable": null
         },
-        "sortIndex": 716
+        "sortIndex": 735
     },
     "/items/task_token": {
         "hrid": "/items/task_token",
@@ -44990,7 +45984,7 @@
                 }
             ]
         },
-        "sortIndex": 689
+        "sortIndex": 707
     },
     "/items/tome_of_healing": {
         "hrid": "/items/tome_of_healing",
@@ -45049,7 +46043,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 279
+        "sortIndex": 283
     },
     "/items/tome_of_the_elements": {
         "hrid": "/items/tome_of_the_elements",
@@ -45114,7 +46108,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 280
+        "sortIndex": 284
     },
     "/items/toughness": {
         "hrid": "/items/toughness",
@@ -45319,7 +46313,7 @@
                 }
             ]
         },
-        "sortIndex": 647
+        "sortIndex": 659
     },
     "/items/treant_shield": {
         "hrid": "/items/treant_shield",
@@ -45394,7 +46388,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 277
+        "sortIndex": 281
     },
     "/items/turtle_shell": {
         "hrid": "/items/turtle_shell",
@@ -45445,7 +46439,7 @@
                 }
             ]
         },
-        "sortIndex": 645
+        "sortIndex": 657
     },
     "/items/turtle_shell_body": {
         "hrid": "/items/turtle_shell_body",
@@ -45518,7 +46512,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 334
+        "sortIndex": 339
     },
     "/items/turtle_shell_legs": {
         "hrid": "/items/turtle_shell_legs",
@@ -45591,7 +46585,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 373
+        "sortIndex": 381
     },
     "/items/twilight_essence": {
         "hrid": "/items/twilight_essence",
@@ -45630,7 +46624,7 @@
                 }
             ]
         },
-        "sortIndex": 711
+        "sortIndex": 729
     },
     "/items/ultra_alchemy_tea": {
         "hrid": "/items/ultra_alchemy_tea",
@@ -47256,7 +48250,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 444
+        "sortIndex": 456
     },
     "/items/umbral_bracers": {
         "hrid": "/items/umbral_bracers",
@@ -47341,7 +48335,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 420
+        "sortIndex": 432
     },
     "/items/umbral_chaps": {
         "hrid": "/items/umbral_chaps",
@@ -47426,7 +48420,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 396
+        "sortIndex": 407
     },
     "/items/umbral_hide": {
         "hrid": "/items/umbral_hide",
@@ -47491,7 +48485,7 @@
                 }
             ]
         },
-        "sortIndex": 594
+        "sortIndex": 606
     },
     "/items/umbral_hood": {
         "hrid": "/items/umbral_hood",
@@ -47576,7 +48570,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 317
+        "sortIndex": 322
     },
     "/items/umbral_leather": {
         "hrid": "/items/umbral_leather",
@@ -47641,7 +48635,7 @@
                 }
             ]
         },
-        "sortIndex": 599
+        "sortIndex": 611
     },
     "/items/umbral_tunic": {
         "hrid": "/items/umbral_tunic",
@@ -47726,7 +48720,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 357
+        "sortIndex": 365
     },
     "/items/vampire_fang": {
         "hrid": "/items/vampire_fang",
@@ -47770,7 +48764,7 @@
                 }
             ]
         },
-        "sortIndex": 668
+        "sortIndex": 680
     },
     "/items/vampire_fang_dirk": {
         "hrid": "/items/vampire_fang_dirk",
@@ -47869,7 +48863,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 275
+        "sortIndex": 279
     },
     "/items/vampiric_bow": {
         "hrid": "/items/vampiric_bow",
@@ -48074,7 +49068,7 @@
                 "alchemySpeed": 0.0045000000000000005
             }
         },
-        "sortIndex": 548
+        "sortIndex": 560
     },
     "/items/verdant_boots": {
         "hrid": "/items/verdant_boots",
@@ -48138,7 +49132,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 434
+        "sortIndex": 446
     },
     "/items/verdant_brush": {
         "hrid": "/items/verdant_brush",
@@ -48199,7 +49193,7 @@
                 "milkingSpeed": 0.0045000000000000005
             }
         },
-        "sortIndex": 484
+        "sortIndex": 496
     },
     "/items/verdant_buckler": {
         "hrid": "/items/verdant_buckler",
@@ -48253,7 +49247,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 284
+        "sortIndex": 288
     },
     "/items/verdant_bulwark": {
         "hrid": "/items/verdant_bulwark",
@@ -48397,7 +49391,7 @@
                 }
             ]
         },
-        "sortIndex": 570
+        "sortIndex": 582
     },
     "/items/verdant_chisel": {
         "hrid": "/items/verdant_chisel",
@@ -48458,7 +49452,7 @@
                 "craftingSpeed": 0.0045000000000000005
             }
         },
-        "sortIndex": 516
+        "sortIndex": 528
     },
     "/items/verdant_enhancer": {
         "hrid": "/items/verdant_enhancer",
@@ -48511,7 +49505,7 @@
                 "enhancingSuccess": 0.00017999999999999998
             }
         },
-        "sortIndex": 556
+        "sortIndex": 568
     },
     "/items/verdant_gauntlets": {
         "hrid": "/items/verdant_gauntlets",
@@ -48575,7 +49569,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 410
+        "sortIndex": 422
     },
     "/items/verdant_hammer": {
         "hrid": "/items/verdant_hammer",
@@ -48636,7 +49630,7 @@
                 "cheesesmithingSpeed": 0.0045000000000000005
             }
         },
-        "sortIndex": 508
+        "sortIndex": 520
     },
     "/items/verdant_hatchet": {
         "hrid": "/items/verdant_hatchet",
@@ -48697,7 +49691,7 @@
                 "woodcuttingSpeed": 0.0045000000000000005
             }
         },
-        "sortIndex": 500
+        "sortIndex": 512
     },
     "/items/verdant_helmet": {
         "hrid": "/items/verdant_helmet",
@@ -48761,7 +49755,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 307
+        "sortIndex": 312
     },
     "/items/verdant_mace": {
         "hrid": "/items/verdant_mace",
@@ -48829,7 +49823,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 237
+        "sortIndex": 241
     },
     "/items/verdant_milk": {
         "hrid": "/items/verdant_milk",
@@ -48908,7 +49902,7 @@
                 }
             ]
         },
-        "sortIndex": 563
+        "sortIndex": 575
     },
     "/items/verdant_needle": {
         "hrid": "/items/verdant_needle",
@@ -48961,7 +49955,7 @@
                 "tailoringSpeed": 0.0045000000000000005
             }
         },
-        "sortIndex": 524
+        "sortIndex": 536
     },
     "/items/verdant_plate_body": {
         "hrid": "/items/verdant_plate_body",
@@ -49025,7 +50019,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 347
+        "sortIndex": 355
     },
     "/items/verdant_plate_legs": {
         "hrid": "/items/verdant_plate_legs",
@@ -49089,7 +50083,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 386
+        "sortIndex": 397
     },
     "/items/verdant_pot": {
         "hrid": "/items/verdant_pot",
@@ -49142,7 +50136,7 @@
                 "brewingSpeed": 0.0045000000000000005
             }
         },
-        "sortIndex": 540
+        "sortIndex": 552
     },
     "/items/verdant_shears": {
         "hrid": "/items/verdant_shears",
@@ -49203,7 +50197,7 @@
                 "foragingSpeed": 0.0045000000000000005
             }
         },
-        "sortIndex": 492
+        "sortIndex": 504
     },
     "/items/verdant_spatula": {
         "hrid": "/items/verdant_spatula",
@@ -49256,7 +50250,7 @@
                 "cookingSpeed": 0.0045000000000000005
             }
         },
-        "sortIndex": 532
+        "sortIndex": 544
     },
     "/items/verdant_spear": {
         "hrid": "/items/verdant_spear",
@@ -49324,7 +50318,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 230
+        "sortIndex": 234
     },
     "/items/verdant_sword": {
         "hrid": "/items/verdant_sword",
@@ -49388,7 +50382,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 223
+        "sortIndex": 227
     },
     "/items/vision_helmet": {
         "hrid": "/items/vision_helmet",
@@ -49467,7 +50461,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 302
+        "sortIndex": 306
     },
     "/items/vision_shield": {
         "hrid": "/items/vision_shield",
@@ -49536,7 +50530,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 273
+        "sortIndex": 277
     },
     "/items/watchful_relic": {
         "hrid": "/items/watchful_relic",
@@ -49643,7 +50637,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 281
+        "sortIndex": 285
     },
     "/items/water_strike": {
         "hrid": "/items/water_strike",
@@ -49771,7 +50765,7 @@
                 }
             ]
         },
-        "sortIndex": 669
+        "sortIndex": 681
     },
     "/items/werewolf_slasher": {
         "hrid": "/items/werewolf_slasher",
@@ -49908,7 +50902,7 @@
                 }
             ]
         },
-        "sortIndex": 611
+        "sortIndex": 623
     },
     "/items/white_key_fragment": {
         "hrid": "/items/white_key_fragment",
@@ -50163,7 +51157,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 459
+        "sortIndex": 471
     },
     "/items/woodcutting_essence": {
         "hrid": "/items/woodcutting_essence",
@@ -50251,7 +51245,7 @@
                 }
             ]
         },
-        "sortIndex": 695
+        "sortIndex": 713
     },
     "/items/woodcutting_tea": {
         "hrid": "/items/woodcutting_tea",
@@ -50446,7 +51440,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 243
+        "sortIndex": 247
     },
     "/items/wooden_fire_staff": {
         "hrid": "/items/wooden_fire_staff",
@@ -50505,7 +51499,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 264
+        "sortIndex": 268
     },
     "/items/wooden_nature_staff": {
         "hrid": "/items/wooden_nature_staff",
@@ -50564,7 +51558,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 257
+        "sortIndex": 261
     },
     "/items/wooden_shield": {
         "hrid": "/items/wooden_shield",
@@ -50624,7 +51618,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 290
+        "sortIndex": 294
     },
     "/items/wooden_water_staff": {
         "hrid": "/items/wooden_water_staff",
@@ -50683,7 +51677,7 @@
             },
             "noncombatEnhancementBonuses": {}
         },
-        "sortIndex": 250
+        "sortIndex": 254
     },
     "/items/yogurt": {
         "hrid": "/items/yogurt",
