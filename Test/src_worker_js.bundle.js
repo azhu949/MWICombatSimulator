@@ -1246,6 +1246,10 @@ class CombatSimulator extends EventTarget {
                 throw new Error("Unsupported target type for damage ability effect: " + ability.hrid);
         }
 
+        if (!targets) {
+            return;
+        }
+
         for (let target of targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0)) {
             if (target.combatDetails.combatStats.parry > Math.random()) {
                 let tempTarget = source;
