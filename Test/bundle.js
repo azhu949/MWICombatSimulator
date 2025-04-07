@@ -2529,6 +2529,99 @@ function initDungeons() {
 
 // #region Simulation Result
 
+function createDamageDoneAccordion(enemyIndex) {
+    const accordionDiv = createElement('div', 'row d-none', '', `simulationResultDamageDoneAccordionEnemy${enemyIndex}`);
+    
+    const colDiv = createElement('div', 'col');
+    const accordionMainDiv = createElement('div', 'accordion');
+    const accordionItemDiv = createElement('div', 'accordion-item');
+    
+    const headerH2 = createElement('h2', 'accordion-header');
+    const button = createElement('button', 'accordion-button collapsed', 
+        `<b>Damage Done (Enemy ${enemyIndex})</b>`, 
+        `buttonSimulationResultDamageDoneAccordionEnemy${enemyIndex}`
+    );
+    button.setAttribute('type', 'button');
+    button.setAttribute('data-bs-toggle', 'collapse');
+    button.setAttribute('data-bs-target', `#collapseDamageDone${enemyIndex}`);
+    button.style.padding = '0.5em';
+    
+    const collapseDiv = createElement('div', 'accordion-collapse collapse', '', `collapseDamageDone${enemyIndex}`);
+    const accordionBodyDiv = createElement('div', 'accordion-body');
+    
+    const headerRow = createElement('div', 'row');
+    headerRow.innerHTML = `
+        <div class="col-md-5"><b data-i18n="common:simulationResults.source">Source</b></div>
+        <div class="col-md-3 text-end"><b data-i18n="common:simulationResults.hitChance">Hitchance</b></div>
+        <div class="col-md-2 text-end"><b>DPS</b></div>
+        <div class="col-md-2 text-end"><b>%</b></div>
+    `;
+    
+    const resultDiv = createElement('div', '', '', `simulationResultDamageDoneEnemy${enemyIndex}`);
+    
+    accordionBodyDiv.appendChild(headerRow);
+    accordionBodyDiv.appendChild(resultDiv);
+    collapseDiv.appendChild(accordionBodyDiv);
+    headerH2.appendChild(button);
+    accordionItemDiv.appendChild(headerH2);
+    accordionItemDiv.appendChild(collapseDiv);
+    accordionMainDiv.appendChild(accordionItemDiv);
+    colDiv.appendChild(accordionMainDiv);
+    accordionDiv.appendChild(colDiv);
+    
+    return accordionDiv;
+}
+function createDamageTakenAccordion(enemyIndex) {
+    const accordionDiv = createElement('div', 'row d-none', '', `simulationResultDamageTakenAccordionEnemy${enemyIndex}`);
+    
+    const colDiv = createElement('div', 'col');
+    const accordionMainDiv = createElement('div', 'accordion');
+    const accordionItemDiv = createElement('div', 'accordion-item');
+    
+    const headerH2 = createElement('h2', 'accordion-header');
+    const button = createElement('button', 'accordion-button collapsed', 
+        `<b>Damage Taken (Enemy ${enemyIndex})</b>`, 
+        `buttonSimulationResultDamageTakenAccordionEnemy${enemyIndex}`
+    );
+    button.setAttribute('type', 'button');
+    button.setAttribute('data-bs-toggle', 'collapse');
+    button.setAttribute('data-bs-target', `#collapseDamageTaken${enemyIndex}`);
+    button.style.padding = '0.5em';
+    
+    const collapseDiv = createElement('div', 'accordion-collapse collapse', '', `collapseDamageTaken${enemyIndex}`);
+    const accordionBodyDiv = createElement('div', 'accordion-body');
+    
+    const headerRow = createElement('div', 'row');
+    headerRow.innerHTML = `
+        <div class="col-md-5"><b data-i18n="common:simulationResults.source">Source</b></div>
+        <div class="col-md-3 text-end"><b data-i18n="common:simulationResults.hitChance">Hitchance</b></div>
+        <div class="col-md-2 text-end"><b>DPS</b></div>
+        <div class="col-md-2 text-end"><b>%</b></div>
+    `;
+    
+    const resultDiv = createElement('div', '', '', `simulationResultDamageTakenEnemy${enemyIndex}`);
+    
+    accordionBodyDiv.appendChild(headerRow);
+    accordionBodyDiv.appendChild(resultDiv);
+    collapseDiv.appendChild(accordionBodyDiv);
+    headerH2.appendChild(button);
+    accordionItemDiv.appendChild(headerH2);
+    accordionItemDiv.appendChild(collapseDiv);
+    accordionMainDiv.appendChild(accordionItemDiv);
+    colDiv.appendChild(accordionMainDiv);
+    accordionDiv.appendChild(colDiv);
+    
+    return accordionDiv;
+}
+
+
+function initDamageDoneTaken() {
+    for (let i = 64; i > 0; i-- ) {
+        document.getElementById("simulationResultTotalDamageDone").insertAdjacentElement('afterend', createDamageDoneAccordion(i));
+        document.getElementById("simulationResultTotalDamageTaken").insertAdjacentElement('afterend', createDamageTakenAccordion(i));
+    }
+}
+
 function showSimulationResult(simResult) {
     currentSimResults = simResult;
     let expensesModalTable = document.querySelector("#expensesTable > tbody");
@@ -3385,7 +3478,7 @@ function showDamageDone(simResult, playerToDisplay) {
 
     let totalSecondsSimulated = simResult.simulatedTime / ONE_SECOND;
 
-    for (let i = 1; i < 7; i++) {
+    for (let i = 1; i < 64; i++) {
         let accordion = document.getElementById("simulationResultDamageDoneAccordionEnemy" + i);
         hideElement(accordion);
     }
@@ -3463,7 +3556,7 @@ function showDamageTaken(simResult, playerToDisplay) {
 
     let totalSecondsSimulated = simResult.simulatedTime / ONE_SECOND;
 
-    for (let i = 1; i < 7; i++) {
+    for (let i = 1; i < 64; i++) {
         let accordion = document.getElementById("simulationResultDamageTakenAccordionEnemy" + i);
         hideElement(accordion);
     }
@@ -3596,11 +3689,11 @@ function createRow(columnClassNames, columnValues) {
     return row;
 }
 
-function createElement(tagName, className, innerHTML = "") {
+function createElement(tagName, className, innerHTML = "", id = "") {
     let element = document.createElement(tagName);
     element.className = className;
     element.innerHTML = innerHTML;
-
+    if (id) element.id = id;
     return element;
 }
 
@@ -4694,6 +4787,7 @@ initSimulationControls();
 initEquipmentSetsModal();
 initErrorHandling();
 initImportExportModal();
+initDamageDoneTaken();
 
 updateState();
 updateUI();
