@@ -202,8 +202,8 @@ const Oa = {
                         login: "Login"
                     },
                     serverError: {
-                        title: "Server Temporarily Offline",
-                        message: "The game server is currently offline due to a game update, maintenance, or server issue. Please refresh to try again in 5-10 minutes."
+                        title: "Unable To Reach Server",
+                        message: "You are currently unable to reach the game server. This could be due to the game updating, server maintenance, or a network issue (such as firewall) between you and the server. Please refresh to try again in 5-10 minutes."
                     },
                     thirdPartyCookieMessage: {
                         title: "Login",
@@ -855,8 +855,9 @@ const Oa = {
                     unfriend: "Unfriend",
                     activity: "Activity",
                     status: "Status",
-                    hidden: "Hidden",
+                    daysAgo: "{{days}} ago",
                     online: "Online",
+                    hidden: "Hidden",
                     offline: "Offline",
                     playerNamePlaceholder: "Player Name",
                     addFriend: "Add Friend",
@@ -991,6 +992,9 @@ const Oa = {
                     tradeChat: "Trade Chat:",
                     recruitChat: "Recruit Chat:",
                     beginnerChat: "Beginner Chat:",
+                    totalLevelMessage: "Total Level Message:",
+                    skillLevelMessage: "Skill Level Message:",
+                    communityBuffMessage: "Community Buff Message:",
                     profanityFilter: "Profanity Filter:",
                     chatURLWarning: "Chat URL Warning:",
                     cssAnimation: "CSS Animation:",
@@ -1186,7 +1190,7 @@ const Oa = {
                     curse: "Curse: On hit, increases enemy's damage taken by {{value}} for 15s, stacking up to 5 times.",
                     pierce: "Pierce: On successful auto-attack, {{value}} chance to auto-attack next enemy. Can chain multiple times.",
                     ripple: "Ripple: On ability cast, {{value}} chance to reduce all ability cooldowns by 2s.",
-                    bloom: "Bloom: On ability cast, {{value}} chance to heal lowest HP% ally for 10+20% magic damage.",
+                    bloom: "Bloom: On ability cast, {{value}} chance to heal lowest HP% ally for 10HP+15% magic damage.",
                     blaze: "Blaze: On ability cast, {{value}} chance to attack all enemies for 30% magic damage."
                 },
                 itemSelector: {
@@ -1340,6 +1344,26 @@ const Oa = {
                     contributor: "{{name}}: {{minutes}} minutes",
                     moreContributors: "(+{{count}} more contributors)"
                 },
+                systemChatMessage: {
+                    communityBuffAdded: "{{name}} has added {{minutes}} minutes of community buff: $t(communityBuffTypeNames.{{buffHrid}})!",
+                    characterLeveledUp: "{{name}} has reached {{level}} $t(skillNames.{{skillHrid}})!",
+                    guildLeveledUp: "Guild has reached level {{level}}!",
+                    guildNoticeUpdated: "Guild notice message has been updated by {{name}}.",
+                    guildMemberPromoted: "{{name}} has been promoted by {{actor}} to $t(guildCharacterRoleNames.{{role}}).",
+                    guildMemberDemoted: "{{name}} has been demoted by {{actor}} to $t(guildCharacterRoleNames.{{role}}).",
+                    guildMemberJoined: "{{name}} has joined the guild!",
+                    guildMemberLeft: "{{name}} has left the guild.",
+                    guildMemberKicked: "{{name}} has been kicked by {{actor}}.",
+                    partyMemberJoined: "{{name}} has joined the party.",
+                    partyMemberLeft: "{{name}} has left the party.",
+                    partyMemberKicked: "{{name}} has been kicked from the party.",
+                    partyMemberReady: "{{name}} is ready.",
+                    partyMemberNotReady: "{{name}} is not ready.",
+                    partyBattleStarted: "Battle started: $t(actionNames.{{actionHrid}})",
+                    partyBattleEnded: "Battle ended: $t(actionNames.{{actionHrid}})",
+                    partyKeyCount: "Key counts: {{keyCountString}}",
+                    partyWaveFailed: "Party failed on wave {{wave}}."
+                },
                 infoNotification: {
                     addedFriend: "Added friend: {{0}}",
                     removedFriend: "Removed friend: {{0}}",
@@ -1470,7 +1494,7 @@ const Oa = {
                     loadoutsTitle: "Loadouts",
                     loadoutsContent: 'Loadouts allow you to save your current equipment, consumables, and abilities to be automatically loaded later with actions.Loadouts can be tied to a single skill or "All Skills."Selecting "All Skills" will only save equipment.\nSetting a loadout as default will auto-select the loadout when choosing any action in the skill(s) the loadout is associated with.',
                     enhancingProtectionTitle: "Enhancing Protection",
-                    enhancingProtectionContent: "If the item's enhancement level exceeds the set minimum protection level, one protection item is used per attempt to ensure only one enhancement level is lost on failure.One protection item is consumed per failure.",
+                    enhancingProtectionContent: "One protection item is consumed on failure to ensure that only 1 enhancement level is lost instead of being reset to 0.",
                     alchemyCatalystTitle: "Alchemy Catalyst",
                     alchemyCatalystContent: "Catalyst increases success rate.One catalyst is consumed per success."
                 },
@@ -4789,8 +4813,8 @@ const Oa = {
                         login: "\u767b\u5f55"
                     },
                     serverError: {
-                        title: "\u670d\u52a1\u5668\u6682\u65f6\u79bb\u7ebf",
-                        message: "\u6e38\u620f\u670d\u52a1\u5668\u5f53\u524d\u56e0\u66f4\u65b0\u3001\u7ef4\u62a4\u6216\u670d\u52a1\u5668\u95ee\u9898\u800c\u79bb\u7ebf\u3002\u8bf7\u5237\u65b0\u9875\u9762\u5e76\u57285-10\u5206\u949f\u540e\u91cd\u8bd5\u3002"
+                        title: "\u65e0\u6cd5\u8fde\u63a5\u5230\u670d\u52a1\u5668",
+                        message: "\u4f60\u5f53\u524d\u65e0\u6cd5\u8fde\u63a5\u5230\u6e38\u620f\u670d\u52a1\u5668\u3002\u8fd9\u53ef\u80fd\u662f\u7531\u4e8e\u6e38\u620f\u6b63\u5728\u66f4\u65b0\u3001\u670d\u52a1\u5668\u7ef4\u62a4\uff0c\u6216\u8005\u4f60\u548c\u670d\u52a1\u5668\u4e4b\u95f4\u5b58\u5728\u7f51\u7edc\u95ee\u9898\uff08\u4f8b\u5982\u9632\u706b\u5899\uff09\u3002\u8bf75-10\u5206\u949f\u540e\u5237\u65b0\u9875\u9762\u518d\u8bd5\u3002"
                     },
                     thirdPartyCookieMessage: {
                         title: "\u767b\u5f55",
@@ -5442,8 +5466,9 @@ const Oa = {
                     unfriend: "\u53d6\u6d88\u597d\u53cb",
                     activity: "\u6d3b\u52a8",
                     status: "\u72b6\u6001",
-                    hidden: "\u9690\u85cf",
+                    daysAgo: "{{days}}\u524d",
                     online: "\u5728\u7ebf",
+                    hidden: "\u9690\u85cf",
                     offline: "\u79bb\u7ebf",
                     playerNamePlaceholder: "\u73a9\u5bb6\u540d\u79f0",
                     addFriend: "\u6dfb\u52a0\u597d\u53cb",
@@ -5578,6 +5603,9 @@ const Oa = {
                     tradeChat: "\u4ea4\u6613\u804a\u5929:",
                     recruitChat: "\u62db\u52df\u804a\u5929:",
                     beginnerChat: "\u65b0\u624b\u804a\u5929:",
+                    totalLevelMessage: "\u603b\u7b49\u7ea7\u6d88\u606f:",
+                    skillLevelMessage: "\u4e13\u4e1a\u7b49\u7ea7\u6d88\u606f:",
+                    communityBuffMessage: "\u793e\u533a\u589e\u76ca\u6d88\u606f:",
                     profanityFilter: "\u5c4f\u853d\u4e0d\u826f\u8bed\u8a00:",
                     chatURLWarning: "\u804a\u5929URL\u786e\u8ba4:",
                     cssAnimation: "CSS\u52a8\u753b:",
@@ -5773,7 +5801,7 @@ const Oa = {
                     pierce: "\u7a7f\u900f: \u5728\u81ea\u52a8\u653b\u51fb\u547d\u4e2d\u540e\uff0c\u6709{{value}}\u51e0\u7387\u81ea\u52a8\u653b\u51fb\u4e0b\u4e00\u4e2a\u654c\u4eba\uff0c\u53ef\u591a\u6b21\u8fde\u7eed\u89e6\u53d1\u3002",
                     curse: "\u8bc5\u5492: \u547d\u4e2d\u654c\u4eba\u65f6\uff0c\u4f7f\u5176\u53d7\u5230\u7684\u4f24\u5bb3\u589e\u52a0{{value}}\uff0c\u6301\u7eed15\u79d2\uff0c\u6700\u591a\u53e0\u52a05\u6b21\u3002",
                     ripple: "\u6d9f\u6f2a: \u65bd\u653e\u6280\u80fd\u65f6\uff0c{{value}}\u51e0\u7387\u51cf\u5c11\u6240\u6709\u6280\u80fd\u51b7\u5374\u65f6\u95f42\u79d2\u3002",
-                    bloom: "\u7efd\u653e: \u65bd\u653e\u6280\u80fd\u65f6\uff0c{{value}}\u51e0\u7387\u6cbb\u7597HP%\u6700\u4f4e\u7684\u961f\u53cb10+20%\u9b54\u6cd5\u4f24\u5bb3\u3002",
+                    bloom: "\u7efd\u653e: \u65bd\u653e\u6280\u80fd\u65f6\uff0c{{value}}\u51e0\u7387\u6cbb\u7597HP%\u6700\u4f4e\u7684\u961f\u53cb10HP+15%\u9b54\u6cd5\u4f24\u5bb3\u3002",
                     blaze: "\u70bd\u7130: \u65bd\u653e\u6280\u80fd\u65f6\uff0c{{value}}\u51e0\u7387\u653b\u51fb\u6240\u6709\u654c\u4eba30%\u9b54\u6cd5\u4f24\u5bb3\u3002"
                 },
                 itemSelector: {
@@ -5927,6 +5955,26 @@ const Oa = {
                     contributor: "{{name}}: {{minutes}} \u5206\u949f",
                     moreContributors: "(+{{count}} \u66f4\u591a\u8d21\u732e\u8005)"
                 },
+                systemChatMessage: {
+                    communityBuffAdded: "{{name}} \u6dfb\u52a0\u4e86{{minutes}}\u5206\u949f\u7684\u793e\u533a\u589e\u76ca: $t(communityBuffTypeNames.{{buffHrid}})!",
+                    characterLeveledUp: "{{name}} \u8fbe\u5230{{level}}$t(skillNames.{{skillHrid}})!",
+                    guildLeveledUp: "\u516c\u4f1a\u8fbe\u5230{{level}}\u7ea7!",
+                    guildNoticeUpdated: "{{name}} \u66f4\u65b0\u4e86\u516c\u4f1a\u516c\u544a\u4fe1\u606f\u3002",
+                    guildMemberPromoted: "{{name}} \u88ab {{actor}} \u63d0\u5347\u4e3a$t(guildCharacterRoleNames.{{role}})\u3002",
+                    guildMemberDemoted: "{{name}} \u88ab {{actor}} \u964d\u7ea7\u4e3a$t(guildCharacterRoleNames.{{role}})\u3002",
+                    guildMemberJoined: "{{name}} \u52a0\u5165\u4e86\u516c\u4f1a\uff01",
+                    guildMemberLeft: "{{name}} \u79bb\u5f00\u4e86\u516c\u4f1a\u3002",
+                    guildMemberKicked: "{{name}} \u88ab {{actor}} \u8e22\u51fa\u516c\u4f1a\u3002",
+                    partyMemberJoined: "{{name}} \u52a0\u5165\u4e86\u961f\u4f0d\u3002",
+                    partyMemberLeft: "{{name}} \u79bb\u5f00\u4e86\u961f\u4f0d\u3002",
+                    partyMemberKicked: "{{name}} \u88ab\u8e22\u51fa\u961f\u4f0d\u3002",
+                    partyMemberReady: "{{name}} \u5df2\u51c6\u5907\u597d\u3002",
+                    partyMemberNotReady: "{{name}} \u672a\u51c6\u5907\u597d\u3002",
+                    partyBattleStarted: "\u6218\u6597\u5f00\u59cb: $t(actionNames.{{actionHrid}})",
+                    partyBattleEnded: "\u6218\u6597\u7ed3\u675f: $t(actionNames.{{actionHrid}})",
+                    partyKeyCount: "\u94a5\u5319\u6570\u91cf: {{keyCountString}}",
+                    partyWaveFailed: "\u961f\u4f0d\u5728\u7b2c{{wave}}\u6ce2\u5931\u8d25\u3002"
+                },
                 infoNotification: {
                     addedFriend: "\u5df2\u6dfb\u52a0\u597d\u53cb: {{0}}",
                     removedFriend: "\u5df2\u5220\u9664\u597d\u53cb: {{0}}",
@@ -6057,7 +6105,7 @@ const Oa = {
                     loadoutsTitle: "\u914d\u88c5",
                     loadoutsContent: '\u914d\u88c5\u5141\u8bb8\u4f60\u4fdd\u5b58\u5f53\u524d\u7684\u88c5\u5907\u3001\u6d88\u8017\u54c1\u548c\u6280\u80fd\uff0c\u4ee5\u4fbf\u7a0d\u540e\u4e0e\u884c\u52a8\u4e00\u8d77\u81ea\u52a8\u52a0\u8f7d\u3002\u914d\u88c5\u53ef\u4ee5\u7ed1\u5b9a\u5230\u5355\u4e2a\u4e13\u4e1a\u6216"\u6240\u6709\u4e13\u4e1a"\u3002\u9009\u62e9"\u6240\u6709\u4e13\u4e1a"\u5c06\u53ea\u4fdd\u5b58\u88c5\u5907\u3002\n\u5c06\u914d\u88c5\u8bbe\u7f6e\u4e3a\u9ed8\u8ba4\u65f6\uff0c\u5728\u9009\u62e9\u4e0e\u914d\u88c5\u5173\u8054\u7684\u4e13\u4e1a\u4e2d\u7684\u4efb\u4f55\u884c\u52a8\u65f6\u4f1a\u81ea\u52a8\u9009\u62e9\u8be5\u914d\u88c5\u3002',
                     enhancingProtectionTitle: "\u5f3a\u5316\u4fdd\u62a4",
-                    enhancingProtectionContent: "\u5982\u679c\u7269\u54c1\u7684\u5f3a\u5316\u7b49\u7ea7\u8d85\u8fc7\u8bbe\u5b9a\u7684\u6700\u4f4e\u4fdd\u62a4\u7b49\u7ea7\uff0c\u6bcf\u6b21\u5c1d\u8bd5\u5c06\u4f7f\u7528\u4fdd\u62a4\u9053\u5177\uff0c\u4ee5\u786e\u4fdd\u5931\u8d25\u65f6\u53ea\u635f\u5931\u4e00\u4e2a\u5f3a\u5316\u7b49\u7ea7\u3002\u4ec5\u5728\u5931\u8d25\u65f6\u6d88\u8017\u4e00\u4e2a\u4fdd\u62a4\u9053\u5177\u3002",
+                    enhancingProtectionContent: "\u5f3a\u5316\u5931\u8d25\u65f6\u6d88\u8017\u4e00\u4e2a\u4fdd\u62a4\u9053\u5177\u4ee5\u786e\u4fdd\u53ea\u635f\u59311\u7ea7\u5f3a\u5316\uff0c\u800c\u4e0d\u662f\u91cd\u7f6e\u4e3a0\u7ea7\u3002",
                     alchemyCatalystTitle: "\u70bc\u91d1\u50ac\u5316\u5242",
                     alchemyCatalystContent: "\u50ac\u5316\u5242\u589e\u52a0\u6210\u529f\u7387\u3002\u4ec5\u5728\u6210\u529f\u65f6\u6d88\u8017\u4e00\u4e2a\u50ac\u5316\u5242\u3002"
                 },
