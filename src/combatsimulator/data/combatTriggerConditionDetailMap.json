@@ -63,7 +63,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 77
+        "sortIndex": 78
     },
     "/combat_trigger_conditions/channeling_coffee": {
         "hrid": "/combat_trigger_conditions/channeling_coffee",
@@ -151,7 +151,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 76
+        "sortIndex": 77
     },
     "/combat_trigger_conditions/defense_coffee": {
         "hrid": "/combat_trigger_conditions/defense_coffee",
@@ -294,7 +294,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 74
+        "sortIndex": 75
     },
     "/combat_trigger_conditions/fury_damage": {
         "hrid": "/combat_trigger_conditions/fury_damage",
@@ -305,7 +305,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 75
+        "sortIndex": 76
     },
     "/combat_trigger_conditions/ice_spear": {
         "hrid": "/combat_trigger_conditions/ice_spear",
@@ -613,11 +613,11 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 78
+        "sortIndex": 79
     },
-    "/combat_trigger_conditions/smoke_burst": {
-        "hrid": "/combat_trigger_conditions/smoke_burst",
-        "name": "Smoke Burst Debuff",
+    "/combat_trigger_conditions/smoke_burst_accuracy": {
+        "hrid": "/combat_trigger_conditions/smoke_burst_accuracy",
+        "name": "Smoke Burst Debuff (Accuracy)",
         "isSingleTarget": true,
         "isMultiTarget": false,
         "allowedComparatorHrids": [
@@ -625,6 +625,17 @@
             "/combat_trigger_comparators/is_inactive"
         ],
         "sortIndex": 72
+    },
+    "/combat_trigger_conditions/smoke_burst_evasion": {
+        "hrid": "/combat_trigger_conditions/smoke_burst_evasion",
+        "name": "Smoke Burst Debuff (Evasion)",
+        "isSingleTarget": true,
+        "isMultiTarget": false,
+        "allowedComparatorHrids": [
+            "/combat_trigger_comparators/is_active",
+            "/combat_trigger_comparators/is_inactive"
+        ],
+        "sortIndex": 73
     },
     "/combat_trigger_conditions/speed_aura_attack_speed": {
         "hrid": "/combat_trigger_conditions/speed_aura_attack_speed",
@@ -690,7 +701,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 79
+        "sortIndex": 80
     },
     "/combat_trigger_conditions/swiftness_coffee": {
         "hrid": "/combat_trigger_conditions/swiftness_coffee",
@@ -855,7 +866,7 @@
             "/combat_trigger_comparators/is_active",
             "/combat_trigger_comparators/is_inactive"
         ],
-        "sortIndex": 73
+        "sortIndex": 74
     },
     "/combat_trigger_conditions/wisdom_coffee": {
         "hrid": "/combat_trigger_conditions/wisdom_coffee",

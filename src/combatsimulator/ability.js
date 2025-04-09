@@ -72,7 +72,7 @@ const abilityFromCombatStat = {
                 "damageType": "",
                 "baseDamageFlat": 10,
                 "baseDamageFlatLevelBonus": 0,
-                "baseDamageRatio": 0.2,
+                "baseDamageRatio": 0.15,
                 "baseDamageRatioLevelBonus": 0,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,

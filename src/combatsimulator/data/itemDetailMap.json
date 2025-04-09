@@ -801,9 +801,9 @@
             ],
             "combatStats": {
                 "autoAttackDamage": 0.08,
-                "stabAccuracy": 0.15,
-                "slashAccuracy": 0.15,
-                "smashAccuracy": 0.15,
+                "stabAccuracy": 0.18,
+                "slashAccuracy": 0.18,
+                "smashAccuracy": 0.18,
                 "magicAccuracy": -0.3,
                 "maxHitpoints": 250,
                 "stabEvasion": 0.6,
@@ -815,14 +815,15 @@
                 "waterResistance": 36,
                 "natureResistance": 18,
                 "fireResistance": 36,
-                "tenacity": 48
+                "tenacity": 48,
+                "threat": 25
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "autoAttackDamage": 0.0016,
-                "stabAccuracy": 0.003,
-                "slashAccuracy": 0.003,
-                "smashAccuracy": 0.003,
+                "stabAccuracy": 0.0036,
+                "slashAccuracy": 0.0036,
+                "smashAccuracy": 0.0036,
                 "maxHitpoints": 5,
                 "stabEvasion": 0.012,
                 "slashEvasion": 0.012,
@@ -833,7 +834,8 @@
                 "waterResistance": 0.72,
                 "natureResistance": 0.36,
                 "fireResistance": 0.72,
-                "tenacity": 0.96
+                "tenacity": 0.96,
+                "threat": 0.5
             },
             "noncombatEnhancementBonuses": {}
         },
@@ -881,9 +883,9 @@
             ],
             "combatStats": {
                 "autoAttackDamage": 0.08,
-                "stabAccuracy": 0.12,
-                "slashAccuracy": 0.12,
-                "smashAccuracy": 0.12,
+                "stabAccuracy": 0.15,
+                "slashAccuracy": 0.15,
+                "smashAccuracy": 0.15,
                 "magicAccuracy": -0.24,
                 "maxHitpoints": 200,
                 "stabEvasion": 0.5,
@@ -895,14 +897,15 @@
                 "waterResistance": 30,
                 "natureResistance": 15,
                 "fireResistance": 30,
-                "tenacity": 36
+                "tenacity": 36,
+                "threat": 25
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "autoAttackDamage": 0.0016,
-                "stabAccuracy": 0.0024,
-                "slashAccuracy": 0.0024,
-                "smashAccuracy": 0.0024,
+                "stabAccuracy": 0.003,
+                "slashAccuracy": 0.003,
+                "smashAccuracy": 0.003,
                 "maxHitpoints": 4,
                 "stabEvasion": 0.01,
                 "slashEvasion": 0.01,
@@ -913,7 +916,8 @@
                 "waterResistance": 0.6,
                 "natureResistance": 0.3,
                 "fireResistance": 0.6,
-                "tenacity": 0.72
+                "tenacity": 0.72,
+                "threat": 0.5
             },
             "noncombatEnhancementBonuses": {}
         },
@@ -6074,7 +6078,7 @@
                 "natureAmplify": 0.3,
                 "healingAmplify": 0.36,
                 "naturePenetration": 0.1,
-                "bloom": 0.4
+                "bloom": 0.35
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
@@ -12259,7 +12263,7 @@
                 "count": 2000
             },
             {
-                "itemHrid": "/items/bear_essence",
+                "itemHrid": "/items/eyessence",
                 "count": 2000
             },
             {
@@ -13279,6 +13283,7 @@
                 "slashEvasion": 0.3,
                 "smashEvasion": 0.3,
                 "rangedEvasion": 0.3,
+                "magicEvasion": 0.1,
                 "armor": 18,
                 "waterResistance": 10,
                 "natureResistance": 10,
@@ -13297,6 +13302,7 @@
                 "slashEvasion": 0.006,
                 "smashEvasion": 0.006,
                 "rangedEvasion": 0.006,
+                "magicEvasion": 0.002,
                 "armor": 0.36,
                 "waterResistance": 0.2,
                 "natureResistance": 0.2,
@@ -17207,7 +17213,7 @@
                 }
             ],
             "combatStats": {
-                "autoAttackDamage": 0.08,
+                "autoAttackDamage": 0.06,
                 "stabAccuracy": 0.08,
                 "slashAccuracy": 0.08,
                 "smashAccuracy": 0.08,
@@ -17227,7 +17233,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "autoAttackDamage": 0.0016,
+                "autoAttackDamage": 0.0012,
                 "stabAccuracy": 0.0016,
                 "slashAccuracy": 0.0016,
                 "smashAccuracy": 0.0016,
@@ -18367,7 +18373,7 @@
                 "count": 8
             },
             {
-                "itemHrid": "/items/eyessence",
+                "itemHrid": "/items/bear_essence",
                 "count": 2000
             },
             {
@@ -20434,7 +20440,6 @@
                 }
             ],
             "combatStats": {
-                "autoAttackDamage": 0.02,
                 "criticalRate": 0.04,
                 "stabEvasion": 0.3,
                 "slashEvasion": 0.3,
@@ -20449,7 +20454,6 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "autoAttackDamage": 0.0004,
                 "criticalRate": 0.0008,
                 "stabEvasion": 0.006,
                 "slashEvasion": 0.006,
@@ -28705,9 +28709,9 @@
             "combatStats": {
                 "autoAttackDamage": 0.1,
                 "magicAccuracy": -0.3,
-                "stabDamage": 0.22,
-                "slashDamage": 0.22,
-                "smashDamage": 0.25,
+                "stabDamage": 0.25,
+                "slashDamage": 0.25,
+                "smashDamage": 0.28,
                 "stabEvasion": 0.48,
                 "slashEvasion": 0.48,
                 "smashEvasion": 0.48,
@@ -28719,9 +28723,9 @@
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "autoAttackDamage": 0.002,
-                "stabDamage": 0.0044,
-                "slashDamage": 0.0044,
-                "smashDamage": 0.005,
+                "stabDamage": 0.005,
+                "slashDamage": 0.005,
+                "smashDamage": 0.005600000000000001,
                 "stabEvasion": 0.0096,
                 "slashEvasion": 0.0096,
                 "smashEvasion": 0.0096,
@@ -28777,9 +28781,9 @@
             "combatStats": {
                 "autoAttackDamage": 0.1,
                 "magicAccuracy": -0.24,
-                "stabDamage": 0.18,
-                "slashDamage": 0.18,
-                "smashDamage": 0.2,
+                "stabDamage": 0.2,
+                "slashDamage": 0.2,
+                "smashDamage": 0.22,
                 "stabEvasion": 0.42,
                 "slashEvasion": 0.42,
                 "smashEvasion": 0.42,
@@ -28791,9 +28795,9 @@
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "autoAttackDamage": 0.002,
-                "stabDamage": 0.0036,
-                "slashDamage": 0.0036,
-                "smashDamage": 0.004,
+                "stabDamage": 0.004,
+                "slashDamage": 0.004,
+                "smashDamage": 0.0044,
                 "stabEvasion": 0.0084,
                 "slashEvasion": 0.0084,
                 "smashEvasion": 0.0084,
@@ -29825,7 +29829,7 @@
             ],
             "combatStats": {
                 "criticalDamage": 0.12,
-                "rangedAccuracy": 0.2,
+                "rangedAccuracy": 0.24,
                 "magicAccuracy": -0.08,
                 "rangedDamage": 0.08,
                 "stabEvasion": 0.25,
@@ -29840,7 +29844,7 @@
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "criticalDamage": 0.0024,
-                "rangedAccuracy": 0.004,
+                "rangedAccuracy": 0.0048,
                 "rangedDamage": 0.0016,
                 "stabEvasion": 0.005,
                 "slashEvasion": 0.005,
@@ -38688,7 +38692,7 @@
                 "magicDamage": 0.5,
                 "waterAmplify": 0.3,
                 "waterPenetration": 0.1,
-                "ripple": 0.2
+                "ripple": 0.18
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
