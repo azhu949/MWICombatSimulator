@@ -488,7 +488,9 @@ class CombatSimulator extends EventTarget {
     processCombatStartEvent(event) {
         // console.log("Combat Start " + (this.simulationTime / 1000000000));
         for (let i = 0; i < this.players.length; i++) {
-            this.players[i].generatePermanentBuffs();
+            if (event.time == 0) { // First combat start event
+                this.players[i].generatePermanentBuffs();
+            }
             this.players[i].reset(this.simulationTime);
         }
         let regenTickEvent = new _events_regenTickEvent__WEBPACK_IMPORTED_MODULE_10__["default"](this.simulationTime + REGEN_TICK_INTERVAL);
