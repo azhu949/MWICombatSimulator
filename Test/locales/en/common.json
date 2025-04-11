@@ -63,7 +63,11 @@
         "damageOverTime": "damageOverTime",
         "source": "Source",
         "hitChance": "Hitchance",
-        "totalExperience": "Total Experience"
+        "totalExperience": "Total Experience",
+        "maxWaveReached" : "Max Wave Reached",
+        "dungeonsCompleted": "Dungeons Completed",
+        "dungeonsFailed": "Dungeons Failed",
+        "averageTime": "Average Time"
     },
     "selectPlayer": "SelectPlayer",
     "simAllZones": "Sim All Zones",

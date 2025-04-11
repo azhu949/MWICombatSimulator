@@ -1719,7 +1719,7 @@ worker.onmessage = function (event) {
             //console.log("SIM RESULTS: ", event.data.simResult);
             showSimulationResult(event.data.simResult);
             updateContent();
-                        buttonStartSimulation.disabled = false;
+            buttonStartSimulation.disabled = false;
             document.getElementById('buttonShowAllSimData').style.display = 'none';
             break;
         case "simulation_progress":
@@ -1732,8 +1732,8 @@ worker.onmessage = function (event) {
             break;
         case "simulation_result_allZones":
             progressbar.style.width = "100%";
-            progressbar.innerHTML = "100%"; 
-            showAllSimulationResults(event.data.simResults); 
+            progressbar.innerHTML = "100%";
+            showAllSimulationResults(event.data.simResults);
             updateContent();
             buttonStartSimulation.disabled = false;
             document.getElementById('buttonShowAllSimData').style.display = 'block';
@@ -1768,7 +1768,7 @@ function initEquipmentSelect(equipmentType) {
 
     for (const equipment of Object.values(gameEquipment)) {
         let opt = new Option(equipment.name, equipment.hrid);
-        opt.setAttribute("data-i18n", "itemNames."+equipment.hrid);
+        opt.setAttribute("data-i18n", "itemNames." + equipment.hrid);
         selectElement.add(opt);
     }
 
@@ -1789,7 +1789,7 @@ function initHouseRoomsModal() {
         let row = createElement("div", "row mb-2");
 
         let nameCol = createElement("div", "col-md-4 offset-md-3 align-self-center", room.name);
-        nameCol.setAttribute("data-i18n", "houseRoomNames."+room.hrid);
+        nameCol.setAttribute("data-i18n", "houseRoomNames." + room.hrid);
         row.appendChild(nameCol);
 
         let levelCol = createElement("div", "col-md-2");
@@ -1963,12 +1963,12 @@ function updateCombatStatsUI() {
 
     let combatStyleElement = document.getElementById("combatStat_combatStyleHrid");
     let combatStyle = player.combatDetails.combatStats.combatStyleHrid;
-    combatStyleElement.setAttribute("data-i18n", "combatStyleNames."+combatStyle);
+    combatStyleElement.setAttribute("data-i18n", "combatStyleNames." + combatStyle);
     combatStyleElement.innerHTML = _combatsimulator_data_combatStyleDetailMap_json__WEBPACK_IMPORTED_MODULE_15__[combatStyle].name;
 
     let damageTypeElement = document.getElementById("combatStat_damageType");
     let damageType = _combatsimulator_data_damageTypeDetailMap_json__WEBPACK_IMPORTED_MODULE_14__[player.combatDetails.combatStats.damageType];
-    damageTypeElement.setAttribute("data-i18n", "damageTypeNames."+damageType.hrid);
+    damageTypeElement.setAttribute("data-i18n", "damageTypeNames." + damageType.hrid);
     damageTypeElement.innerHTML = damageType.name;
 
     let attackIntervalElement = document.getElementById("combatStat_attackInterval");
@@ -2092,7 +2092,7 @@ function initFoodSection() {
 
         for (const food of Object.values(gameFoods)) {
             let opt = new Option(food.name, food.hrid);
-            opt.setAttribute("data-i18n", "itemNames."+food.hrid);
+            opt.setAttribute("data-i18n", "itemNames." + food.hrid);
             element.add(opt);
         }
 
@@ -2141,7 +2141,7 @@ function initDrinksSection() {
 
         for (const drink of Object.values(gameDrinks)) {
             let opt = new Option(drink.name, drink.hrid);
-            opt.setAttribute("data-i18n", "itemNames."+drink.hrid);
+            opt.setAttribute("data-i18n", "itemNames." + drink.hrid);
             element.add(opt);
         }
 
@@ -2196,7 +2196,7 @@ function initAbilitiesSection() {
 
         for (const ability of Object.values(gameAbilities)) {
             let opt = new Option(ability.name, ability.hrid);
-            opt.setAttribute("data-i18n", "abilityNames."+ability.hrid);
+            opt.setAttribute("data-i18n", "abilityNames." + ability.hrid);
             selectElement.add(opt);
         }
 
@@ -2443,7 +2443,7 @@ function fillTriggerDependencySelect(element) {
         (a, b) => a.sortIndex - b.sortIndex
     )) {
         let opt = new Option(dependency.name, dependency.hrid);
-        opt.setAttribute("data-i18n", "combatTriggerDependencyNames."+dependency.hrid);
+        opt.setAttribute("data-i18n", "combatTriggerDependencyNames." + dependency.hrid);
         element.add(opt);
     }
 }
@@ -2463,7 +2463,7 @@ function fillTriggerConditionSelect(element, dependencyHrid) {
 
     for (const condition of Object.values(conditions).sort((a, b) => a.sortIndex - b.sortIndex)) {
         let opt = new Option(condition.name, condition.hrid);
-        opt.setAttribute("data-i18n", "combatTriggerConditionNames."+condition.hrid);
+        opt.setAttribute("data-i18n", "combatTriggerConditionNames." + condition.hrid);
         element.add(opt);
     }
 }
@@ -2478,7 +2478,7 @@ function fillTriggerComparatorSelect(element, conditionHrid) {
 
     for (const comparator of Object.values(comparators).sort((a, b) => a.sortIndex - b.sortIndex)) {
         let opt = new Option(comparator.name, comparator.hrid);
-        opt.setAttribute("data-i18n", "combatTriggerComparatorNames."+comparator.hrid);
+        opt.setAttribute("data-i18n", "combatTriggerComparatorNames." + comparator.hrid);
         element.add(opt);
     }
 }
@@ -2507,7 +2507,7 @@ function initZones() {
 
     for (const zone of Object.values(gameZones)) {
         let opt = new Option(zone.name, zone.hrid);
-        opt.setAttribute("data-i18n", "actionNames."+zone.hrid);
+        opt.setAttribute("data-i18n", "actionNames." + zone.hrid);
         zoneSelect.add(opt);
     }
 }
@@ -2521,7 +2521,7 @@ function initDungeons() {
 
     for (const dungeon of Object.values(gameDungeons)) {
         let opt = new Option(dungeon.name, dungeon.hrid);
-        opt.setAttribute("data-i18n", "actionNames."+dungeon.hrid);
+        opt.setAttribute("data-i18n", "actionNames." + dungeon.hrid);
         dungeonSelect.add(opt);
     }
 }
@@ -2532,24 +2532,24 @@ function initDungeons() {
 
 function createDamageDoneAccordion(enemyIndex) {
     const accordionDiv = createElement('div', 'row d-none', '', `simulationResultDamageDoneAccordionEnemy${enemyIndex}`);
-    
+
     const colDiv = createElement('div', 'col');
     const accordionMainDiv = createElement('div', 'accordion');
     const accordionItemDiv = createElement('div', 'accordion-item');
-    
+
     const headerH2 = createElement('h2', 'accordion-header');
-    const button = createElement('button', 'accordion-button collapsed', 
-        `<b>Damage Done (Enemy ${enemyIndex})</b>`, 
+    const button = createElement('button', 'accordion-button collapsed',
+        `<b>Damage Done (Enemy ${enemyIndex})</b>`,
         `buttonSimulationResultDamageDoneAccordionEnemy${enemyIndex}`
     );
     button.setAttribute('type', 'button');
     button.setAttribute('data-bs-toggle', 'collapse');
     button.setAttribute('data-bs-target', `#collapseDamageDone${enemyIndex}`);
     button.style.padding = '0.5em';
-    
+
     const collapseDiv = createElement('div', 'accordion-collapse collapse', '', `collapseDamageDone${enemyIndex}`);
     const accordionBodyDiv = createElement('div', 'accordion-body');
-    
+
     const headerRow = createElement('div', 'row');
     headerRow.innerHTML = `
         <div class="col-md-5"><b data-i18n="common:simulationResults.source">Source</b></div>
@@ -2557,9 +2557,9 @@ function createDamageDoneAccordion(enemyIndex) {
         <div class="col-md-2 text-end"><b>DPS</b></div>
         <div class="col-md-2 text-end"><b>%</b></div>
     `;
-    
+
     const resultDiv = createElement('div', '', '', `simulationResultDamageDoneEnemy${enemyIndex}`);
-    
+
     accordionBodyDiv.appendChild(headerRow);
     accordionBodyDiv.appendChild(resultDiv);
     collapseDiv.appendChild(accordionBodyDiv);
@@ -2569,29 +2569,29 @@ function createDamageDoneAccordion(enemyIndex) {
     accordionMainDiv.appendChild(accordionItemDiv);
     colDiv.appendChild(accordionMainDiv);
     accordionDiv.appendChild(colDiv);
-    
+
     return accordionDiv;
 }
 function createDamageTakenAccordion(enemyIndex) {
     const accordionDiv = createElement('div', 'row d-none', '', `simulationResultDamageTakenAccordionEnemy${enemyIndex}`);
-    
+
     const colDiv = createElement('div', 'col');
     const accordionMainDiv = createElement('div', 'accordion');
     const accordionItemDiv = createElement('div', 'accordion-item');
-    
+
     const headerH2 = createElement('h2', 'accordion-header');
-    const button = createElement('button', 'accordion-button collapsed', 
-        `<b>Damage Taken (Enemy ${enemyIndex})</b>`, 
+    const button = createElement('button', 'accordion-button collapsed',
+        `<b>Damage Taken (Enemy ${enemyIndex})</b>`,
         `buttonSimulationResultDamageTakenAccordionEnemy${enemyIndex}`
     );
     button.setAttribute('type', 'button');
     button.setAttribute('data-bs-toggle', 'collapse');
     button.setAttribute('data-bs-target', `#collapseDamageTaken${enemyIndex}`);
     button.style.padding = '0.5em';
-    
+
     const collapseDiv = createElement('div', 'accordion-collapse collapse', '', `collapseDamageTaken${enemyIndex}`);
     const accordionBodyDiv = createElement('div', 'accordion-body');
-    
+
     const headerRow = createElement('div', 'row');
     headerRow.innerHTML = `
         <div class="col-md-5"><b data-i18n="common:simulationResults.source">Source</b></div>
@@ -2599,9 +2599,9 @@ function createDamageTakenAccordion(enemyIndex) {
         <div class="col-md-2 text-end"><b>DPS</b></div>
         <div class="col-md-2 text-end"><b>%</b></div>
     `;
-    
+
     const resultDiv = createElement('div', '', '', `simulationResultDamageTakenEnemy${enemyIndex}`);
-    
+
     accordionBodyDiv.appendChild(headerRow);
     accordionBodyDiv.appendChild(resultDiv);
     collapseDiv.appendChild(accordionBodyDiv);
@@ -2611,13 +2611,13 @@ function createDamageTakenAccordion(enemyIndex) {
     accordionMainDiv.appendChild(accordionItemDiv);
     colDiv.appendChild(accordionMainDiv);
     accordionDiv.appendChild(colDiv);
-    
+
     return accordionDiv;
 }
 
 
 function initDamageDoneTaken() {
-    for (let i = 64; i > 0; i-- ) {
+    for (let i = 64; i > 0; i--) {
         document.getElementById("simulationResultTotalDamageDone").insertAdjacentElement('afterend', createDamageDoneAccordion(i));
         document.getElementById("simulationResultTotalDamageTaken").insertAdjacentElement('afterend', createDamageTakenAccordion(i));
     }
@@ -2653,15 +2653,15 @@ function showSimulationResult(simResult) {
     document.getElementById('noRngProfitPreview').innerText = window.noRngProfit.toLocaleString();
 }
 
-function showAllSimulationResults(simResults){
+function showAllSimulationResults(simResults) {
     let displaySimResults = manipulateSimResultsDataForDisplay(simResults);
     updateAllSimsModal(displaySimResults);
 }
 
-function manipulateSimResultsDataForDisplay(simResults){
+function manipulateSimResultsDataForDisplay(simResults) {
     let displaySimResults = [];
     for (let i = 0; i < simResults.length; i++) {
-        for(let j = 0; j < selectedPlayers.length; j++){
+        for (let j = 0; j < selectedPlayers.length; j++) {
             let playerToDisplay = "player" + selectedPlayers[j].toString();
             let simResult = simResults[i];
             let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
@@ -2672,7 +2672,7 @@ function manipulateSimResultsDataForDisplay(simResults){
 
             let totalExperience = Object.values(simResult.experienceGained[playerToDisplay]).reduce((prev, cur) => prev + cur, 0);
             let totalExperiencePerHour = (totalExperience / hoursSimulated).toFixed(0);
-        
+
             let experiencePerHour = {};
             const skills = ["Stamina", "Intelligence", "Attack", "Power", "Defense", "Ranged", "Magic"];
             skills.forEach((skill) => {
@@ -2689,15 +2689,16 @@ function manipulateSimResultsDataForDisplay(simResults){
             let noRngProfit = simResult["noRngProfit"];
             let expenses = simResult["expenses"];
 
-            let displaySimRow = {"ZoneName": zoneName, "Player": playerToDisplay, "Encounters": encountersPerHour, "Deaths": deathsPerHour,
-                                "TotalExperience": totalExperiencePerHour, "Stamina": experiencePerHour["Stamina"], 
-                                "Intelligence": experiencePerHour["Intelligence"], "Attack": experiencePerHour["Attack"],
-                                "Magic": experiencePerHour["Magic"], "Ranged": experiencePerHour["Ranged"],
-                                "Power": experiencePerHour["Power"], "Defense": experiencePerHour["Defense"], 
-                                "noRngRevenue": noRngRevenue,
-                                "expenses": expenses,
-                                "noRngProfit": noRngProfit
-                            };
+            let displaySimRow = {
+                "ZoneName": zoneName, "Player": playerToDisplay, "Encounters": encountersPerHour, "Deaths": deathsPerHour,
+                "TotalExperience": totalExperiencePerHour, "Stamina": experiencePerHour["Stamina"],
+                "Intelligence": experiencePerHour["Intelligence"], "Attack": experiencePerHour["Attack"],
+                "Magic": experiencePerHour["Magic"], "Ranged": experiencePerHour["Ranged"],
+                "Power": experiencePerHour["Power"], "Defense": experiencePerHour["Defense"],
+                "noRngRevenue": noRngRevenue,
+                "expenses": expenses,
+                "noRngProfit": noRngProfit
+            };
             displaySimResults.push(displaySimRow);
         }
     }
@@ -2708,7 +2709,7 @@ function getDropProfit(simResult, playerToDisplay) {
     let dropRateMultiplier = simResult.dropRateMultiplier;
     let rareFindMultiplier = simResult.rareFindMultiplier;
     let numberOfPlayers = simResult.numberOfPlayers;
-       let monsters = Object.keys(simResult.deaths)
+    let monsters = Object.keys(simResult.deaths)
         .filter(enemy => enemy !== "player1" && enemy !== "player2" && enemy !== "player3" && enemy !== "player4" && enemy !== "player5")
         .sort();
 
@@ -2717,20 +2718,20 @@ function getDropProfit(simResult, playerToDisplay) {
     for (const monster of monsters) {
         const dropMap = new Map();
         const rareDropMap = new Map();
-        if(_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].dropTable) {
+        if (_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].dropTable) {
             for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].dropTable) {
                 if (drop.minEliteTier > simResult.eliteTier) {
                     continue;
                 }
                 dropMap.set(drop.itemHrid, { "dropRate": Math.min(1, drop.dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
             }
-            if(_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].rareDropTable)
-            for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].rareDropTable) {
-                if (drop.minEliteTier > simResult.eliteTier) {
-                    continue;
+            if (_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].rareDropTable)
+                for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].rareDropTable) {
+                    if (drop.minEliteTier > simResult.eliteTier) {
+                        continue;
+                    }
+                    rareDropMap.set(drop.itemHrid, { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
                 }
-                rareDropMap.set(drop.itemHrid, { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
-            }
 
             for (let dropObject of dropMap.values()) {
                 dropObject.noRngDropAmount += simResult.deaths[monster] * dropObject.dropRate * ((dropObject.dropMax + dropObject.dropMin) / 2) / numberOfPlayers;
@@ -2781,7 +2782,7 @@ function getDropProfit(simResult, playerToDisplay) {
             }
         }
     }
-    
+
     let noRngTotal = 0;
     for (let [name, dropAmount] of noRngTotalDropMap.entries()) {
         let price = -1;
@@ -2813,9 +2814,9 @@ function getDropProfit(simResult, playerToDisplay) {
     let consumablesUsed = simResult.consumablesUsed?.[playerToDisplay];
 
     if (consumablesUsed) {
-      consumablesUsed = Object.entries(consumablesUsed).sort((a, b) => b[1] - a[1]);
+        consumablesUsed = Object.entries(consumablesUsed).sort((a, b) => b[1] - a[1]);
     } else {
-      consumablesUsed = []; 
+        consumablesUsed = [];
     }
 
     let expenses = 0;
@@ -2846,58 +2847,58 @@ function getDropProfit(simResult, playerToDisplay) {
         expenses += price * amount;
     }
 
-    simResult["noRngRevenue"] = (noRngTotal).toLocaleString('en-US', {minimumFractionDigits: 2,maximumFractionDigits: 2});
-    simResult["expenses"] = (expenses).toLocaleString('en-US', {minimumFractionDigits: 2,maximumFractionDigits: 2});
-    simResult["noRngProfit"] = (noRngTotal - expenses).toLocaleString('en-US', {minimumFractionDigits: 2,maximumFractionDigits: 2});
+    simResult["noRngRevenue"] = (noRngTotal).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    simResult["expenses"] = (expenses).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
+    simResult["noRngProfit"] = (noRngTotal - expenses).toLocaleString('en-US', { minimumFractionDigits: 2, maximumFractionDigits: 2 });
 }
 
 function updateAllSimsModal(data) {
     const tableBody = document.getElementById('allZonesData').getElementsByTagName('tbody')[0];
-    tableBody.innerHTML = ''; 
+    tableBody.innerHTML = '';
     data.forEach(item => {
         const row = document.createElement('tr');
-        
+
         Object.keys(item).forEach(key => {
             const cell = document.createElement('td');
             cell.textContent = item[key];
             if (key === 'ZoneName') {
-                cell.setAttribute("data-i18n", "actionNames."+item[key]);
+                cell.setAttribute("data-i18n", "actionNames." + item[key]);
             }
             row.appendChild(cell);
         });
-        
+
         tableBody.appendChild(row);
     });
 
     const table = document.getElementById('allZonesData');
     const rows = table.getElementsByTagName('tr');
     const numCols = rows[0].cells.length;
-  
+
     // 遍历每一列
     for (let col = 4; col < numCols; col++) {
-      let max = -Infinity;
-      let maxCell = null;
-  
-      // 找到最大值及其单元格
-      for (let row = 1; row < rows.length; row++) {
-        const cell = rows[row].cells[col];
-        const value = parseFloat(cell.textContent.replace(/,/g, ''));
-        if (value > max) {
-          max = value;
-          maxCell = cell;
+        let max = -Infinity;
+        let maxCell = null;
+
+        // 找到最大值及其单元格
+        for (let row = 1; row < rows.length; row++) {
+            const cell = rows[row].cells[col];
+            const value = parseFloat(cell.textContent.replace(/,/g, ''));
+            if (value > max) {
+                max = value;
+                maxCell = cell;
+            }
         }
-      }
-  
-      // 将最大值单元格的背景色设置为绿色
-      if (maxCell && max != 0) {
-        maxCell.style.backgroundColor = 'green';
-        maxCell.style.color = 'white'; // 设置文字颜色为白色以提高可读性
-      }
+
+        // 将最大值单元格的背景色设置为绿色
+        if (maxCell && max != 0) {
+            maxCell.style.backgroundColor = 'green';
+            maxCell.style.color = 'white'; // 设置文字颜色为白色以提高可读性
+        }
     }
 }
 
 let currentSortColumn = null;
-let currentSortDirection = 'desc'; 
+let currentSortDirection = 'desc';
 
 function sortTable(tableId, columnIndex, direction) {
     const table = document.getElementById(tableId);
@@ -2908,7 +2909,7 @@ function sortTable(tableId, columnIndex, direction) {
         const cellA = rowA.children[columnIndex].textContent.trim();
         const cellB = rowB.children[columnIndex].textContent.trim();
 
-        const valueA = parseFloat(cellA.replace(/,/g, '')); 
+        const valueA = parseFloat(cellA.replace(/,/g, ''));
         const valueB = parseFloat(cellB.replace(/,/g, ''));
 
         return direction === 'asc' ? valueA - valueB : valueB - valueA;
@@ -2929,7 +2930,7 @@ function updateSortIndicators(tableId, columnIndex, direction) {
 }
 
 document.querySelectorAll('#allZonesData th').forEach((header, index) => {
-    if (index === 0) return; 
+    if (index === 0) return;
     if (index === 1) return;
 
     header.addEventListener('click', () => {
@@ -2943,7 +2944,7 @@ document.querySelectorAll('#allZonesData th').forEach((header, index) => {
     });
 });
 
-document.getElementById('buttonExportResults').addEventListener('click', function() {
+document.getElementById('buttonExportResults').addEventListener('click', function () {
     var table = document.getElementById('allZonesData');
     var csv = [];
     var rows = table.querySelectorAll('tr');
@@ -2952,8 +2953,8 @@ document.getElementById('buttonExportResults').addEventListener('click', functio
         var row = rows[i];
         var cols = row.querySelectorAll('th, td');
         var csvRow = [];
-        
-        cols.forEach(function(col) {
+
+        cols.forEach(function (col) {
             csvRow.push('"' + col.innerText.replace(/"/g, '""') + '"');
         });
 
@@ -2985,14 +2986,22 @@ function showKills(simResult, playerToDisplay) {
     let playerDeaths = simResult.deaths[playerToDisplay] ?? 0;
     let encountersPerHour = 0;
     let encountersRow = null;
-    if(simResult.isDungeon) {
+    if (simResult.isDungeon) {
         let wavesCompletedRow = createRow(["col-md-6", "col-md-6 text-end"], ["Max Wave Reached", simResult.maxWaveReached]);
+        wavesCompletedRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.maxWaveReached");
         newChildren.push(wavesCompletedRow);
-        let totalDungeonsRow = createRow(["col-md-6", "col-md-6 text-end"], ["Total Dungeons", simResult.dungeonsCompleted]);
-        newChildren.push(totalDungeonsRow);
+        let completedDungeonsRow = createRow(["col-md-6", "col-md-6 text-end"], ["Completed Dungeons", simResult.dungeonsCompleted]);
+        completedDungeonsRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.dungeonsCompleted");
+        newChildren.push(completedDungeonsRow);
+        if (simResult.dungeonsFailed > 0) {
+            let failedDungeonsRow = createRow(["col-md-6", "col-md-6 text-end"], ["Failed Dungeons", simResult.dungeonsFailed]);
+            failedDungeonsRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.dungeonsFailed");
+            newChildren.push(failedDungeonsRow);
+        }
         encountersPerHour = (simResult.dungeonsCompleted / hoursSimulated).toFixed(1);
         let averageTime = (hoursSimulated * 60 / simResult.dungeonsCompleted).toFixed(1);
         encountersRow = createRow(["col-md-6", "col-md-6 text-end"], ["Average Time", averageTime]);
+        encountersRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.averageTime");
     } else {
         encountersPerHour = (simResult.encounters / hoursSimulated).toFixed(1);
         encountersRow = createRow(["col-md-6", "col-md-6 text-end"], ["Encounters", encountersPerHour]);
@@ -3013,25 +3022,25 @@ function showKills(simResult, playerToDisplay) {
             ["col-md-6", "col-md-6 text-end"],
             [_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].name, killsPerHour]
         );
-        monsterRow.firstElementChild.setAttribute("data-i18n", "monsterNames."+monster);
+        monsterRow.firstElementChild.setAttribute("data-i18n", "monsterNames." + monster);
         newChildren.push(monsterRow);
 
         const dropMap = new Map();
         const rareDropMap = new Map();
-        if(_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].dropTable)
-        for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].dropTable) {
-            if (drop.minEliteTier > simResult.eliteTier) {
-                continue;
+        if (_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].dropTable)
+            for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].dropTable) {
+                if (drop.minEliteTier > simResult.eliteTier) {
+                    continue;
+                }
+                dropMap.set(drop.itemHrid, { "dropRate": Math.min(1, drop.dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
             }
-            dropMap.set(drop.itemHrid, { "dropRate": Math.min(1, drop.dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
-        }
-        if(_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].rareDropTable)
-        for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].rareDropTable) {
-            if (drop.minEliteTier > simResult.eliteTier) {
-                continue;
+        if (_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].rareDropTable)
+            for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].rareDropTable) {
+                if (drop.minEliteTier > simResult.eliteTier) {
+                    continue;
+                }
+                rareDropMap.set(drop.itemHrid, { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
             }
-            rareDropMap.set(drop.itemHrid, { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
-        }
 
         for (let dropObject of dropMap.values()) {
             dropObject.noRngDropAmount += simResult.deaths[monster] * dropObject.dropRate * ((dropObject.dropMax + dropObject.dropMin) / 2) / numberOfPlayers;
@@ -3089,7 +3098,7 @@ function showKills(simResult, playerToDisplay) {
             ["col-md-6", "col-md-6 text-end"],
             [name, dropAmount.toLocaleString()]
         );
-        dropRow.firstElementChild.setAttribute("data-i18n", "itemNames."+name);
+        dropRow.firstElementChild.setAttribute("data-i18n", "itemNames." + name);
         newDropChildren.push(dropRow);
 
         let tableRow = '<tr class="' + name.replace(/\s+/g, '') + '"><td data-i18n="itemNames.';
@@ -3137,7 +3146,7 @@ function showKills(simResult, playerToDisplay) {
             ["col-md-6", "col-md-6 text-end"],
             [name, dropAmount.toLocaleString()]
         );
-        noRngDropRow.firstElementChild.setAttribute("data-i18n", "itemNames."+name);
+        noRngDropRow.firstElementChild.setAttribute("data-i18n", "itemNames." + name);
         newNoRngDropChildren.push(noRngDropRow);
 
         let tableRow = '<tr class="' + name.replace(/\s+/g, '') + '"><td data-i18n="itemNames.';
@@ -3220,7 +3229,7 @@ function showExperienceGained(simResult, playerToDisplay) {
         }
         let experiencePerHour = (experience / hoursSimulated).toFixed(0);
         let experienceRow = createRow(["col-md-6", "col-md-6 text-end"], [skill, experiencePerHour]);
-        experienceRow.firstElementChild.setAttribute("data-i18n", "leaderboardCategoryNames."+skill.toLowerCase());
+        experienceRow.firstElementChild.setAttribute("data-i18n", "leaderboardCategoryNames." + skill.toLowerCase());
         newChildren.push(experienceRow);
     });
 
@@ -3239,7 +3248,7 @@ function showHpSpent(simResult, playerToDisplay) {
         for (const source of Object.keys(simResult.hitpointsSpent[playerToDisplay])) {
             let hpSpentPerHour = (simResult.hitpointsSpent[playerToDisplay][source] / hoursSimulated).toFixed(2);
             let hpSpentRow = createRow(["col-md-6", "col-md-6 text-end"], [_combatsimulator_data_abilityDetailMap_json__WEBPACK_IMPORTED_MODULE_2__[source].name, hpSpentPerHour]);
-            hpSpentRow.firstElementChild.setAttribute("data-i18n", "abilityNames."+source);
+            hpSpentRow.firstElementChild.setAttribute("data-i18n", "abilityNames." + source);
             hpSpentSources.push(hpSpentRow);
         }
         hpSpentDiv.replaceChildren(...hpSpentSources);
@@ -3269,7 +3278,7 @@ function showConsumablesUsed(simResult, playerToDisplay) {
             ["col-md-6", "col-md-6 text-end"],
             [_combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[consumable].name, consumablesPerHour]
         );
-        consumableRow.firstElementChild.setAttribute("data-i18n", "itemNames."+consumable);
+        consumableRow.firstElementChild.setAttribute("data-i18n", "itemNames." + consumable);
         newChildren.push(consumableRow);
 
         let tableRow = '<tr class="' + consumable + '"><td data-i18n="itemNames.';
@@ -3332,12 +3341,12 @@ function showManaUsed(simResult, playerToDisplay) {
         let manaPerHour = (manaUsed / hoursSimulated).toFixed(0);
         let castsPerHour = (manaPerHour / _combatsimulator_data_abilityDetailMap_json__WEBPACK_IMPORTED_MODULE_2__[ability].manaCost).toFixed(2);
         castsPerHour = " (" + castsPerHour + ")";
-        
+
         let manaRow = createRow(
             ["col-md-6", "col-md-2", "col-md-4 text-end"],
             [ability.split("/")[2].replaceAll("_", " "), castsPerHour, manaPerHour]
         );
-        manaRow.firstElementChild.setAttribute("data-i18n", "abilityNames."+ability);
+        manaRow.firstElementChild.setAttribute("data-i18n", "abilityNames." + ability);
         newChildren.push(manaRow);
     }
 
@@ -3389,10 +3398,10 @@ function showHitpointsGained(simResult, playerToDisplay) {
             default:
                 if (_combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[source]) {
                     sourceText = _combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[source].name;
-                    sourceFullHrid = "itemNames."+source;
+                    sourceFullHrid = "itemNames." + source;
                 } else if (_combatsimulator_data_abilityDetailMap_json__WEBPACK_IMPORTED_MODULE_2__[source]) {
                     sourceText = _combatsimulator_data_abilityDetailMap_json__WEBPACK_IMPORTED_MODULE_2__[source].name;
-                    sourceFullHrid = "abilityNames."+source;
+                    sourceFullHrid = "abilityNames." + source;
                 }
                 break;
         }
@@ -3450,7 +3459,7 @@ function showManapointsGained(simResult, playerToDisplay) {
                 break;
             default:
                 sourceText = _combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[source].name;
-                sourceFullHrid = "itemNames."+source;
+                sourceFullHrid = "itemNames." + source;
                 break;
         }
         let manapointsPerSecond = (amount / secondsSimulated).toFixed(2);
@@ -3467,7 +3476,7 @@ function showManapointsGained(simResult, playerToDisplay) {
     let ranOutOfManaText = simResult.playerRanOutOfMana[playerToDisplay] ? "Yes" : "No";
     let ranOutOfManaRow = createRow(["col-md-6", "col-md-6 text-end"], ["Ran out of mana", ranOutOfManaText]);
     ranOutOfManaRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.ranOutOfMana");
-    ranOutOfManaRow.lastElementChild.setAttribute("data-i18n", "common:simulationResults."+ranOutOfManaText);
+    ranOutOfManaRow.lastElementChild.setAttribute("data-i18n", "common:simulationResults." + ranOutOfManaText);
     newChildren.push(ranOutOfManaRow);
 
     resultDiv.replaceChildren(...newChildren);
@@ -3530,14 +3539,14 @@ function showDamageDone(simResult, playerToDisplay) {
             "buttonSimulationResultDamageDoneAccordionEnemy" + enemyIndex
         );
         let targetName = _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[target].name;
-        resultAccordionButton.innerHTML = "<b><span data-i18n=\"common:simulationResults.damageDone\">Damage Done</span> (" + "<span data-i18n=\"monsterNames." + target +"\">" + targetName + "</span>" + ")</b>";
+        resultAccordionButton.innerHTML = "<b><span data-i18n=\"common:simulationResults.damageDone\">Damage Done</span> (" + "<span data-i18n=\"monsterNames." + target + "\">" + targetName + "</span>" + ")</b>";
 
         if (simResult.bossSpawns.includes(target)) {
             let hoursSpentOnBoss = (aliveSecondsSimulated / 60 / 60).toFixed(2);
             let percentSpentOnBoss = (aliveSecondsSimulated / totalSecondsSimulated * 100).toFixed(2);
 
             let bossRow = createRow(["col-md-6", "col-md-6 text-end"], [targetName, hoursSpentOnBoss + "h(" + percentSpentOnBoss + "%)"]);
-            bossRow.firstElementChild.setAttribute("data-i18n", "monsterNames."+target);
+            bossRow.firstElementChild.setAttribute("data-i18n", "monsterNames." + target);
             bossTimeDiv.replaceChildren(bossRow);
 
             bossTimeHeadingDiv.classList.remove("d-none");
@@ -3545,6 +3554,26 @@ function showDamageDone(simResult, playerToDisplay) {
         }
 
         enemyIndex++;
+    }
+
+    if (simResult.isDungeon) {
+        let newChildren = [];
+        for (const waveName of simResult.bossSpawns) {
+            // waveName is something like "#15,/monsters/jackalope,/monsters/butterjerry"
+            let waveNumber = waveName.split(",")[0];
+            const idx = simResult.timeSpentAlive.findIndex(e => e.name === waveNumber);
+            if (idx == -1 || simResult.timeSpentAlive[idx].count == 0) {
+                continue;
+            }
+            let aliveSecondsSimulated = simResult.timeSpentAlive[idx].timeSpentAlive / ONE_SECOND / simResult.timeSpentAlive[idx].count;
+            let bossRow = createRow(["col-md-6", "col-md-2", "col-md-4 text-end"], [waveNumber, simResult.timeSpentAlive[idx].count, aliveSecondsSimulated.toFixed(1) + "s"]);
+            newChildren.push(bossRow);
+        }
+        if (newChildren.length > 0) {
+            bossTimeHeadingDiv.classList.remove("d-none");
+            bossTimeDiv.classList.remove("d-none");
+            bossTimeDiv.replaceChildren(...newChildren);
+        }
     }
 
     let totalResultDiv = document.getElementById("simulationResultTotalDamageDone");
@@ -3607,7 +3636,7 @@ function showDamageTaken(simResult, playerToDisplay) {
             "buttonSimulationResultDamageTakenAccordionEnemy" + enemyIndex
         );
         let sourceName = _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[source].name;
-        resultAccordionButton.innerHTML = "<b><span data-i18n=\"common:simulationResults.damageTaken\">Damage Taken</span> (" + "<span data-i18n=\"monsterNames." + source +"\">" + sourceName + "</span>" + ")</b>";
+        resultAccordionButton.innerHTML = "<b><span data-i18n=\"common:simulationResults.damageTaken\">Damage Taken</span> (" + "<span data-i18n=\"monsterNames." + source + "\">" + sourceName + "</span>" + ")</b>";
 
         enemyIndex++;
     }
@@ -3660,7 +3689,7 @@ function createDamageTable(resultDiv, damageDone, secondsSimulated) {
                 break;
             default:
                 abilityText = _combatsimulator_data_abilityDetailMap_json__WEBPACK_IMPORTED_MODULE_2__[ability].name;
-                abilityFullHrid = "abilityNames."+ability;
+                abilityFullHrid = "abilityNames." + ability;
                 break;
         }
 
@@ -3702,7 +3731,7 @@ function createElement(tagName, className, innerHTML = "", id = "") {
 
 // #region Simulation Controls
 
-document.addEventListener('DOMContentLoaded', function() {
+document.addEventListener('DOMContentLoaded', function () {
     const simDungeonToggle = document.getElementById('simDungeonToggle');
     const playerContainer = document.querySelector('.outlined-box');
 
@@ -3743,15 +3772,15 @@ document.addEventListener('DOMContentLoaded', function() {
             if (label) {
                 label.textContent = tabLink.textContent.trim();
             }
-        });  
+        });
     }
 
     function updatePlayersCheckbox(isCheck) {
         const boxes = playerContainer.querySelectorAll('.player-checkbox');
-        boxes.forEach((checkBox) => {checkBox.checked = isCheck});
+        boxes.forEach((checkBox) => { checkBox.checked = isCheck });
     }
 
-    simDungeonToggle.addEventListener('change', function() {
+    simDungeonToggle.addEventListener('change', function () {
         if (simDungeonToggle.checked) {
             addPlayers();
             updatePlayersCheckbox(true);
@@ -3762,19 +3791,19 @@ document.addEventListener('DOMContentLoaded', function() {
         updatePlayerNames();
     });
 
-    document.getElementById('buttonSimulationSetup').addEventListener('click', function() {
+    document.getElementById('buttonSimulationSetup').addEventListener('click', function () {
         updatePlayerNames();
     });
 });
 
 function onTabChange(event) {
-    const nextPlayerTabId = event.target.getAttribute('href').substring(7); 
+    const nextPlayerTabId = event.target.getAttribute('href').substring(7);
     savePreviousPlayer(currentPlayerTabId);
     updateNextPlayer(nextPlayerTabId);
     currentPlayerTabId = nextPlayerTabId;
     updateState();
     updateUI();
-    if(Object.keys(currentSimResults).length !== 0) {
+    if (Object.keys(currentSimResults).length !== 0) {
         showSimulationResult(currentSimResults);
     }
 
@@ -3795,7 +3824,7 @@ function initSimulationControls() {
             invalidElements.forEach((element) => element.reportValidity());
             return;
         }
-        savePreviousPlayer(currentPlayerTabId); 
+        savePreviousPlayer(currentPlayerTabId);
 
         const simDungeonToggle = document.getElementById("simDungeonToggle");
         const checkboxes = document.querySelectorAll('.player-checkbox');
@@ -3850,7 +3879,7 @@ function startSimulation(selectedPlayers) {
                 }
             }
 
-                playersToSim.push(structuredClone(player));
+            playersToSim.push(structuredClone(player));
         }
     }
     updateNextPlayer(currentPlayerTabId);
@@ -3862,7 +3891,7 @@ function startSimulation(selectedPlayers) {
     let dungeonSelect = document.getElementById("selectDungeon");
     let simulationTimeInput = document.getElementById("inputSimulationTime");
     let simulationTimeLimit = Number(simulationTimeInput.value) * ONE_HOUR;
-    if(!simAllZonesToggle.checked) {
+    if (!simAllZonesToggle.checked) {
         let zoneHrid = zoneSelect.value;
         if (simDungeonToggle.checked) {
             zoneHrid = dungeonSelect.value;
@@ -3876,9 +3905,9 @@ function startSimulation(selectedPlayers) {
         worker.postMessage(workerMessage);
     } else {
         let zoneHrids = Object.values(_combatsimulator_data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_12__)
-        .filter((action) => action.type == "/action_types/combat" && action.category != "/action_categories/combat/dungeons" && action.combatZoneInfo.fightInfo.battlesPerBoss === 10)
-        .sort((a, b) => a.sortIndex - b.sortIndex)
-        .map(action => action.hrid);
+            .filter((action) => action.type == "/action_types/combat" && action.category != "/action_categories/combat/dungeons" && action.combatZoneInfo.fightInfo.battlesPerBoss === 10)
+            .sort((a, b) => a.sortIndex - b.sortIndex)
+            .map(action => action.hrid);
         let workerMessage = {
             type: "start_simulation_all_zones",
             players: playersToSim,
@@ -4373,7 +4402,7 @@ function doSoloImport() {
         let zoneSelect = document.getElementById("selectZone");
         zoneSelect.value = importSet["zone"];
     }
-        
+
     if ("simulationTime" in importSet) {
         let simulationDuration = document.getElementById("inputSimulationTime");
         simulationDuration.value = importSet["simulationTime"];
@@ -4563,7 +4592,7 @@ async function fetchPrices() {
         const response = await fetch('https://ghproxy.net/https://raw.githubusercontent.com/holychikenz/MWIApi/refs/heads/main/milkyapi.json'
             , {
                 mode: 'cors'
-              }
+            }
         );
         if (!response.ok) {
             console.log('Error fetching prices');
@@ -4577,10 +4606,8 @@ async function fetchPrices() {
 
         const priceTmp = pricesJson['market'];
         window.prices = {};
-        for (const item in _combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__)
-        {
-            if (_combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[item].name in priceTmp)
-            {
+        for (const item in _combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__) {
+            if (_combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[item].name in priceTmp) {
                 window.prices[_combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[item].hrid] = priceTmp[_combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[item].name];
             }
         }
@@ -4595,7 +4622,7 @@ async function fetchPrices() {
                 return item.itemHrid in window.prices ? window.prices[item.itemHrid].bid * item.dropRate * (item.maxCount + item.minCount) / 2 : 0;
             }).reduce((a, b) => a + b, 0),
             "vendor": _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_16__["/items/small_treasure_chest"].map((item) => {
-                return item.itemHrid in window.prices? window.prices[item.itemHrid].vendor : 0;
+                return item.itemHrid in window.prices ? window.prices[item.itemHrid].vendor : 0;
             }).reduce((a, b) => a + b, 0),
         };
 
@@ -4607,7 +4634,7 @@ async function fetchPrices() {
                 return item.itemHrid in window.prices ? window.prices[item.itemHrid].bid * item.dropRate * (item.maxCount + item.minCount) / 2 : 0;
             }).reduce((a, b) => a + b, 0),
             "vendor": _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_16__["/items/medium_treasure_chest"].map((item) => {
-                return item.itemHrid in window.prices? window.prices[item.itemHrid].vendor : 0;
+                return item.itemHrid in window.prices ? window.prices[item.itemHrid].vendor : 0;
             }).reduce((a, b) => a + b, 0),
         };
 
@@ -4619,7 +4646,7 @@ async function fetchPrices() {
                 return item.itemHrid in window.prices ? window.prices[item.itemHrid].bid * item.dropRate * (item.maxCount + item.minCount) / 2 : 0;
             }).reduce((a, b) => a + b, 0),
             "vendor": _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_16__["/items/large_treasure_chest"].map((item) => {
-                return item.itemHrid in window.prices? window.prices[item.itemHrid].vendor : 0;
+                return item.itemHrid in window.prices ? window.prices[item.itemHrid].vendor : 0;
             }).reduce((a, b) => a + b, 0),
         };
 
@@ -4753,21 +4780,21 @@ darkModeToggle.addEventListener('change', () => {
 });
 
 function updateContent() {
-    document.querySelectorAll('[data-i18n]').forEach(function(element) {
+    document.querySelectorAll('[data-i18n]').forEach(function (element) {
         const key = element.getAttribute('data-i18n');
         if (key) {
             element.textContent = i18next.t(key);
         }
     });
-    
-    document.querySelectorAll('[data-i18n-placeholder]').forEach(function(element) {
+
+    document.querySelectorAll('[data-i18n-placeholder]').forEach(function (element) {
         const key = element.getAttribute('data-i18n-placeholder');
         if (key) {
             element.placeholder = i18next.t(key);
         }
     });
-    
-    document.querySelectorAll('option[data-i18n]').forEach(function(element) {
+
+    document.querySelectorAll('option[data-i18n]').forEach(function (element) {
         const key = element.getAttribute('data-i18n');
         if (key) {
             element.textContent = i18next.t(key);

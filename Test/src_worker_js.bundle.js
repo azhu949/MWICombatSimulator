@@ -324,6 +324,8 @@ const DOT_TICK_INTERVAL = 3 * ONE_SECOND;
 const REGEN_TICK_INTERVAL = 10 * ONE_SECOND;
 const ENEMY_RESPAWN_INTERVAL = 3 * ONE_SECOND;
 const PLAYER_RESPAWN_INTERVAL = 150 * ONE_SECOND;
+const RESTART_INTERVAL = 15 * ONE_SECOND;
+
 let tempDungeonCount = 0;
 
 class CombatSimulator extends EventTarget {
@@ -358,33 +360,55 @@ class CombatSimulator extends EventTarget {
             }
         }
 
-        for (let i = 0; i < this.simResult.timeSpentAlive.length; i++) {
-            if (this.simResult.timeSpentAlive[i].alive == true) {
-                this.simResult.updateTimeSpentAlive(this.simResult.timeSpentAlive[i].name, false, simulationTimeLimit);
-            }
-        }
+        // for (let i = 0; i < this.simResult.timeSpentAlive.length; i++) {
+        //     if (this.simResult.timeSpentAlive[i].alive == true) {
+        //         this.simResult.updateTimeSpentAlive(this.simResult.timeSpentAlive[i].name, false, simulationTimeLimit);
+        //     }
+        // }
+
         this.simResult.isDungeon = this.zone.isDungeon;
-        if(this.simResult.isDungeon) {
+        if (this.simResult.isDungeon) {
+            console.log("Timeout now at wave #" + (this.zone.encountersKilled - 1));
+
             this.simResult.dungeonsCompleted = this.zone.dungeonsCompleted;
-            if(this.simResult.dungeonsCompleted < 1) {
-                this.simResult.maxWaveReached = this.zone.encountersKilled - 1;
+            this.simResult.dungeonsFailed = this.zone.dungeonsFailed;
+            if (this.simResult.dungeonsCompleted < 1) {
+                this.simResult.maxWaveReached = 0;
+                for (let i = 0; i <= this.zone.dungeonSpawnInfo.maxWaves; i++) {
+                    let waveName = "#" + i.toString();
+                    const idx = this.simResult.timeSpentAlive.findIndex(e => e.name === waveName);
+                    if (idx == -1 || this.simResult.timeSpentAlive[idx].count == 0) {
+                        break;
+                    }
+                    this.simResult.maxWaveReached = i;
+                }
             } else {
                 this.simResult.maxWaveReached = this.zone.dungeonSpawnInfo.maxWaves;
             }
         }
         this.simResult.simulatedTime = this.simulationTime;
         this.simResult.setDropRateMultipliers(this.players[0]);
-        for(let i = 0; i < this.players.length; i++) {
+        for (let i = 0; i < this.players.length; i++) {
             this.simResult.setManaUsed(this.players[i]);
         }
 
+        if (this.zone.isDungeon) {
+            Object.entries(this.zone.dungeonSpawnInfo.fixedSpawnsMap).forEach(([wave, monsters]) => {
+                let waveName = "#" + wave.toString();
+                monsters.forEach(monster => {
+                    waveName += ',' + monster.combatMonsterHrid;
+                });
+                this.simResult.bossSpawns.push(waveName);
+            });
+
+        }
         if (this.zone.monsterSpawnInfo.bossSpawns) {
             for (const boss of this.zone.monsterSpawnInfo.bossSpawns) {
                 this.simResult.bossSpawns.push(boss.combatMonsterHrid);
             }
         }
 
-        if(!this.zone.isDungeon) {
+        if (!this.zone.isDungeon) {
             this.simResult.eliteTier = this.zone.monsterSpawnInfo.randomSpawnInfo.spawns[0].eliteTier;
         }
 
@@ -462,7 +486,8 @@ class CombatSimulator extends EventTarget {
     }
 
     processCombatStartEvent(event) {
-        for(let i = 0; i < this.players.length; i++) {
+        // console.log("Combat Start " + (this.simulationTime / 1000000000));
+        for (let i = 0; i < this.players.length; i++) {
             this.players[i].generatePermanentBuffs();
             this.players[i].reset(this.simulationTime);
         }
@@ -473,12 +498,13 @@ class CombatSimulator extends EventTarget {
     }
 
     processPlayerRespawnEvent(event) {
+        // console.log("Player " + event.hrid + " respawn at " + + (this.simulationTime / 1000000000));
         let respawningPlayer = this.players.find(player => player.hrid === event.hrid);
         respawningPlayer.combatDetails.currentHitpoints = respawningPlayer.combatDetails.maxHitpoints;
         respawningPlayer.combatDetails.currentManapoints = respawningPlayer.combatDetails.maxManapoints;
         respawningPlayer.clearBuffs();
         respawningPlayer.clearCCs();
-        if(this.allPlayersDead) {
+        if (this.allPlayersDead) {
             this.allPlayersDead = false;
             this.startAttacks();
         } else {
@@ -491,14 +517,20 @@ class CombatSimulator extends EventTarget {
     }
 
     startNewEncounter() {
-        if(!this.zone.isDungeon) {
+        if (this.allPlayersDead) {
+            this.allPlayersDead = false;
+            this.zone.failWave();
+        }
+
+        if (!this.zone.isDungeon) {
             this.enemies = this.zone.getRandomEncounter();
         } else {
             this.enemies = this.zone.getNextWave();
+            this.simResult.updateTimeSpentAlive("#" + (this.zone.encountersKilled - 1).toString(), true, this.simulationTime);
             let currentDungeonCount = this.zone.dungeonsCompleted;
-            if(currentDungeonCount > tempDungeonCount) {
+            if (currentDungeonCount > tempDungeonCount) {
                 tempDungeonCount = currentDungeonCount;
-                for(let i = 0; i < this.players.length; i++) {
+                for (let i = 0; i < this.players.length; i++) {
                     this.players[i].combatDetails.currentHitpoints = this.players[i].combatDetails.maxHitpoints;
                     this.players[i].combatDetails.currentManapoints = this.players[i].combatDetails.maxManapoints;
                 }
@@ -546,7 +578,7 @@ class CombatSimulator extends EventTarget {
 
         for (let i = 0; i < aliveTargets.length; i++) {
             let target = aliveTargets[i];
-            if(!event.source.isPlayer && aliveTargets.length > 1)  {
+            if (!event.source.isPlayer && aliveTargets.length > 1) {
                 let cumulativeThreat = 0;
                 let cumulativeRanges = [];
                 aliveTargets.forEach(player => {
@@ -721,6 +753,9 @@ class CombatSimulator extends EventTarget {
             this.eventQueue.addEvent(enemyRespawnEvent);
             this.enemies = null;
 
+            if (this.zone.isDungeon) {
+                this.simResult.updateTimeSpentAlive("#" + (this.zone.encountersKilled - 1).toString(), false, this.simulationTime);
+            }
             this.simResult.addEncounterEnd();
             // console.log("All enemies died");
 
@@ -728,23 +763,35 @@ class CombatSimulator extends EventTarget {
             // console.log("encounter end " + (this.simulationTime / 1000000000))
         }
 
-    this.players.forEach(player => {
-        if ((player.combatDetails.currentHitpoints <= 0) && !this.eventQueue.containsEventOfTypeAndHrid(_events_playerRespawnEvent__WEBPACK_IMPORTED_MODULE_9__["default"].type, player.hrid)) {
-            let playerRespawnEvent = new _events_playerRespawnEvent__WEBPACK_IMPORTED_MODULE_9__["default"](this.simulationTime + PLAYER_RESPAWN_INTERVAL, player.hrid);
-            this.eventQueue.addEvent(playerRespawnEvent);
-            //console.log(player.hrid + " died at " + (this.simulationTime / 1000000000));
-        }
-    });
+        this.players.forEach(player => {
+            if ((player.combatDetails.currentHitpoints <= 0) && !this.eventQueue.containsEventOfTypeAndHrid(_events_playerRespawnEvent__WEBPACK_IMPORTED_MODULE_9__["default"].type, player.hrid)) {
+                if (!this.zone.isDungeon) {
+                    let playerRespawnEvent = new _events_playerRespawnEvent__WEBPACK_IMPORTED_MODULE_9__["default"](this.simulationTime + PLAYER_RESPAWN_INTERVAL, player.hrid);
+                    this.eventQueue.addEvent(playerRespawnEvent);
+                }
+                // console.log(player.hrid + " died at " + (this.simulationTime / 1000000000));
+            }
+        });
 
         if (
             !this.players.some((player) => player.combatDetails.currentHitpoints > 0)
         ) {
-            this.eventQueue.clearEventsOfType(_events_autoAttackEvent__WEBPACK_IMPORTED_MODULE_1__["default"].type);
-            this.eventQueue.clearEventsOfType(_events_abilityCastEndEvent__WEBPACK_IMPORTED_MODULE_18__["default"].type);
-            //console.log("All Players died");
+            if (this.zone.isDungeon) {
+                this.eventQueue.clear();
+                this.enemies = null;
+
+                console.log("All Players died at wave #" + (this.zone.encountersKilled - 1) + "!");
+
+                let combatStartEvent = new _events_combatStartEvent__WEBPACK_IMPORTED_MODULE_4__["default"](this.simulationTime + RESTART_INTERVAL);
+                this.eventQueue.addEvent(combatStartEvent);
+            } else {
+                this.eventQueue.clearEventsOfType(_events_autoAttackEvent__WEBPACK_IMPORTED_MODULE_1__["default"].type);
+                this.eventQueue.clearEventsOfType(_events_abilityCastEndEvent__WEBPACK_IMPORTED_MODULE_18__["default"].type);
+            }
+            // console.log("All Players died");
             encounterEnded = true;
             this.allPlayersDead = true;
-        } 
+        }
 
         return encounterEnded;
     }
@@ -1046,9 +1093,9 @@ class CombatSimulator extends EventTarget {
 
         consumable.lastUsed = this.simulationTime;
         let consumeCooldown = consumable.cooldownDuration;
-        if(source.combatDetails.combatStats.drinkConcentration > 0 && consumable.catagoryHrid.includes("drink")) {
+        if (source.combatDetails.combatStats.drinkConcentration > 0 && consumable.catagoryHrid.includes("drink")) {
             consumeCooldown = consumeCooldown / (1 + source.combatDetails.combatStats.drinkConcentration);
-        } else if(source.combatDetails.combatStats.foodHaste > 0 && consumable.catagoryHrid.includes("food")) {
+        } else if (source.combatDetails.combatStats.foodHaste > 0 && consumable.catagoryHrid.includes("food")) {
             consumeCooldown = consumeCooldown / (1 + source.combatDetails.combatStats.foodHaste);
         }
         let cooldownReadyEvent = new _events_cooldownReadyEvent__WEBPACK_IMPORTED_MODULE_6__["default"](this.simulationTime + consumeCooldown);
@@ -1081,7 +1128,7 @@ class CombatSimulator extends EventTarget {
 
         for (const buff of consumable.buffs) {
             let currentBuff = structuredClone(buff);
-            if(source.combatDetails.combatStats.drinkConcentration > 0 && consumable.catagoryHrid.includes("drink")) {
+            if (source.combatDetails.combatStats.drinkConcentration > 0 && consumable.catagoryHrid.includes("drink")) {
                 currentBuff.ratioBoost *= (1 + source.combatDetails.combatStats.drinkConcentration);
                 currentBuff.flatBoost *= (1 + source.combatDetails.combatStats.drinkConcentration);
                 currentBuff.duration = currentBuff.duration / (1 + source.combatDetails.combatStats.drinkConcentration);
@@ -1149,11 +1196,11 @@ class CombatSimulator extends EventTarget {
         let todoAbilities = [ability];
 
         if (source.combatDetails.combatStats.blaze > 0 && Math.random() < source.combatDetails.combatStats.blaze) {
-            todoAbilities.push( new _ability__WEBPACK_IMPORTED_MODULE_21__["default"]("blaze"));
+            todoAbilities.push(new _ability__WEBPACK_IMPORTED_MODULE_21__["default"]("blaze"));
         }
 
         if (source.combatDetails.combatStats.bloom > 0 && Math.random() < source.combatDetails.combatStats.bloom) {
-            todoAbilities.push( new _ability__WEBPACK_IMPORTED_MODULE_21__["default"]("bloom"));
+            todoAbilities.push(new _ability__WEBPACK_IMPORTED_MODULE_21__["default"]("bloom"));
         }
 
         for (const todoAbility of todoAbilities) {
@@ -1302,7 +1349,7 @@ class CombatSimulator extends EventTarget {
                 }
             } else {
                 targets = targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0);
-                if(!source.isPlayer && targets.length > 1 && abilityEffect.targetType == "enemy")  {
+                if (!source.isPlayer && targets.length > 1 && abilityEffect.targetType == "enemy") {
                     let cumulativeThreat = 0;
                     let cumulativeRanges = [];
                     targets.forEach(player => {
@@ -1316,12 +1363,12 @@ class CombatSimulator extends EventTarget {
                     });
                     let randomValueHit = Math.random() * cumulativeThreat;
                     target = cumulativeRanges.find(range => randomValueHit >= range.rangeStart && randomValueHit < range.rangeEnd).player;
-                } 
-                
+                }
+
                 let attackResult = _combatUtilities__WEBPACK_IMPORTED_MODULE_0__["default"].processAttack(source, target, abilityEffect);
-                
+
                 if (attackResult.hpDrain > 0) {
-                    this.simResult.addHitpointsGained(source, ability.hrid, attackResult.hpDrain);                    
+                    this.simResult.addHitpointsGained(source, ability.hrid, attackResult.hpDrain);
                 }
 
                 if (attackResult.didHit && abilityEffect.buffs) {
@@ -1514,9 +1561,9 @@ class CombatSimulator extends EventTarget {
     }
 
     processAbilityPromoteEffect(source, ability, abilityEffect) {
-            const promotionHrids = ["/monsters/enchanted_rook", "/monsters/enchanted_knight", "/monsters/enchanted_bishop"];
-            let randomPromotionIndex = Math.floor(Math.random() * promotionHrids.length);
-            return new _monster__WEBPACK_IMPORTED_MODULE_20__["default"](promotionHrids[randomPromotionIndex], source.eliteTier);
+        const promotionHrids = ["/monsters/enchanted_rook", "/monsters/enchanted_knight", "/monsters/enchanted_bishop"];
+        let randomPromotionIndex = Math.floor(Math.random() * promotionHrids.length);
+        return new _monster__WEBPACK_IMPORTED_MODULE_20__["default"](promotionHrids[randomPromotionIndex], source.eliteTier);
     }
 
     processAbilitySpendHpEffect(source, ability, abilityEffect) {
@@ -3809,6 +3856,7 @@ class SimResult {
         this.zoneName = zoneName;
         this.isDungeon = false;
         this.dungeonsCompleted = 0;
+        this.dungeonsFailed = 0;
         this.maxWaveReached = 0;
         this.numberOfPlayers = numberOfPlayers;
     }
@@ -3828,12 +3876,13 @@ class SimResult {
                 this.timeSpentAlive[i].alive = true;
                 this.timeSpentAlive[i].spawnedAt = time;
             } else {
-                this.timeSpentAlive.push({ name: name, timeSpentAlive: 0, spawnedAt: time, alive: true });
+                this.timeSpentAlive.push({ name: name, timeSpentAlive: 0, spawnedAt: time, alive: true, count: 0 });
             }
         } else {
             const timeAlive = time - this.timeSpentAlive[i].spawnedAt;
             this.timeSpentAlive[i].alive = false;
             this.timeSpentAlive[i].timeSpentAlive += timeAlive;
+            this.timeSpentAlive[i].count += 1;
         }
     }
 
@@ -4180,6 +4229,7 @@ class Zone {
         this.buffs = gameZone.buffs;
         this.isDungeon = gameZone.combatZoneInfo.isDungeon;
         this.dungeonsCompleted = 0;
+        this.dungeonsFailed = 0;
         this.finalWave = false;
     }
 
@@ -4217,11 +4267,17 @@ class Zone {
         return encounterHrids.map((hrid) => new _monster__WEBPACK_IMPORTED_MODULE_1__["default"](hrid.hrid, hrid.eliteTier));
     }
 
+    failWave() {
+        this.dungeonsFailed++;
+        this.encountersKilled = 0;
+    }
+
     getNextWave() {
-        if(this.encountersKilled > this.dungeonSpawnInfo.maxWaves) {
+        if (this.encountersKilled > this.dungeonSpawnInfo.maxWaves) {
             this.dungeonsCompleted++;
             this.encountersKilled = 0;
         }
+        // console.log("Wave #" + this.encountersKilled);
         if (this.dungeonSpawnInfo.fixedSpawnsMap.hasOwnProperty(this.encountersKilled.toString())) {
             let currentMonsters = this.dungeonSpawnInfo.fixedSpawnsMap[(this.encountersKilled).toString()];
             this.encountersKilled++;
@@ -4243,16 +4299,16 @@ class Zone {
 
             let encounterHrids = [];
             let totalStrength = 0;
-    
+
             outer: for (let i = 0; i < monsterSpawns.maxSpawnCount; i++) {
                 let randomWeight = totalWeight * Math.random();
                 let cumulativeWeight = 0;
-    
+
                 for (const spawn of monsterSpawns.spawns) {
                     cumulativeWeight += spawn.rate;
                     if (randomWeight <= cumulativeWeight) {
                         totalStrength += spawn.strength;
-    
+
                         if (totalStrength <= monsterSpawns.maxTotalStrength) {
                             encounterHrids.push({ 'hrid': spawn.combatMonsterHrid, 'eliteTier': spawn.eliteTier });
                         } else {
