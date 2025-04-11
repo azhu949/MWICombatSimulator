@@ -1326,16 +1326,20 @@ function showKills(simResult, playerToDisplay) {
     let encountersRow = null;
     if (simResult.isDungeon) {
         let wavesCompletedRow = createRow(["col-md-6", "col-md-6 text-end"], ["Max Wave Reached", simResult.maxWaveReached]);
+        wavesCompletedRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.maxWaveReached");
         newChildren.push(wavesCompletedRow);
         let completedDungeonsRow = createRow(["col-md-6", "col-md-6 text-end"], ["Completed Dungeons", simResult.dungeonsCompleted]);
+        completedDungeonsRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.dungeonsCompleted");
         newChildren.push(completedDungeonsRow);
         if (simResult.dungeonsFailed > 0) {
             let failedDungeonsRow = createRow(["col-md-6", "col-md-6 text-end"], ["Failed Dungeons", simResult.dungeonsFailed]);
+            failedDungeonsRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.dungeonsFailed");
             newChildren.push(failedDungeonsRow);
         }
         encountersPerHour = (simResult.dungeonsCompleted / hoursSimulated).toFixed(1);
         let averageTime = (hoursSimulated * 60 / simResult.dungeonsCompleted).toFixed(1);
         encountersRow = createRow(["col-md-6", "col-md-6 text-end"], ["Average Time", averageTime]);
+        encountersRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.averageTime");
     } else {
         encountersPerHour = (simResult.encounters / hoursSimulated).toFixed(1);
         encountersRow = createRow(["col-md-6", "col-md-6 text-end"], ["Encounters", encountersPerHour]);
@@ -1900,7 +1904,7 @@ function showDamageDone(simResult, playerToDisplay) {
                 continue;
             }
             let aliveSecondsSimulated = simResult.timeSpentAlive[idx].timeSpentAlive / ONE_SECOND / simResult.timeSpentAlive[idx].count;
-            let bossRow = createRow(["col-md-6", "col-md-2", "col-md-4 text-end"], [waveNumber, simResult.timeSpentAlive[idx].count, aliveSecondsSimulated.toFixed(2) + "s"]);
+            let bossRow = createRow(["col-md-6", "col-md-2", "col-md-4 text-end"], [waveNumber, simResult.timeSpentAlive[idx].count, aliveSecondsSimulated.toFixed(1) + "s"]);
             newChildren.push(bossRow);
         }
         if (newChildren.length > 0) {

@@ -71,6 +71,8 @@ class CombatSimulator extends EventTarget {
 
         this.simResult.isDungeon = this.zone.isDungeon;
         if (this.simResult.isDungeon) {
+            console.log("Timeout now at wave #" + (this.zone.encountersKilled - 1));
+
             this.simResult.dungeonsCompleted = this.zone.dungeonsCompleted;
             this.simResult.dungeonsFailed = this.zone.dungeonsFailed;
             if (this.simResult.dungeonsCompleted < 1) {
