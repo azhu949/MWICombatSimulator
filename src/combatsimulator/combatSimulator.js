@@ -482,10 +482,10 @@ class CombatSimulator extends EventTarget {
             !this.players.some((player) => player.combatDetails.currentHitpoints > 0)
         ) {
             if (this.zone.isDungeon) {
+                console.log("All Players died at wave #" + (this.zone.encountersKilled - 1) + " with ememies: " + this.enemies.map(enemy => (enemy.hrid+"("+(enemy.combatDetails.currentHitpoints*100/enemy.combatDetails.maxHitpoints).toFixed(2)+"%)")).join(", "));
+
                 this.eventQueue.clear();
                 this.enemies = null;
-
-                console.log("All Players died at wave #" + (this.zone.encountersKilled - 1) + "!");
 
                 let combatStartEvent = new CombatStartEvent(this.simulationTime + RESTART_INTERVAL);
                 this.eventQueue.addEvent(combatStartEvent);
