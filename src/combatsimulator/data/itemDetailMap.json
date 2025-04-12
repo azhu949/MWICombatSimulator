@@ -787,7 +787,24 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/damaged_anchor",
+                    "count": 10
+                },
+                {
+                    "itemHrid": "/items/holy_plate_body",
+                    "count": 10
+                },
+                {
+                    "itemHrid": "/items/griffin_tunic",
+                    "count": 1
+                },
+                {
+                    "itemHrid": "/items/colossus_plate_body",
+                    "count": 1
+                }
+            ],
             "transmuteSuccessRate": 0,
             "transmuteDropTable": null
         },
@@ -869,7 +886,24 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/damaged_anchor",
+                    "count": 8
+                },
+                {
+                    "itemHrid": "/items/holy_plate_legs",
+                    "count": 10
+                },
+                {
+                    "itemHrid": "/items/griffin_chaps",
+                    "count": 1
+                },
+                {
+                    "itemHrid": "/items/colossus_plate_legs",
+                    "count": 1
+                }
+            ],
             "transmuteSuccessRate": 0,
             "transmuteDropTable": null
         },
@@ -5309,10 +5343,6 @@
                     "count": 10
                 },
                 {
-                    "itemHrid": "/items/watchful_relic",
-                    "count": 1
-                },
-                {
                     "itemHrid": "/items/tome_of_the_elements",
                     "count": 5
                 },
@@ -5327,6 +5357,10 @@
                 {
                     "itemHrid": "/items/amethyst",
                     "count": 100
+                },
+                {
+                    "itemHrid": "/items/watchful_relic",
+                    "count": 1
                 }
             ],
             "transmuteSuccessRate": 0.5,
@@ -5906,7 +5940,24 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/kraken_fang",
+                    "count": 20
+                },
+                {
+                    "itemHrid": "/items/arcane_fire_staff",
+                    "count": 60
+                },
+                {
+                    "itemHrid": "/items/amethyst",
+                    "count": 100
+                },
+                {
+                    "itemHrid": "/items/infernal_battlestaff",
+                    "count": 1
+                }
+            ],
             "transmuteSuccessRate": 0,
             "transmuteDropTable": null
         },
@@ -6054,7 +6105,24 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/kraken_fang",
+                    "count": 20
+                },
+                {
+                    "itemHrid": "/items/arcane_nature_staff",
+                    "count": 60
+                },
+                {
+                    "itemHrid": "/items/amethyst",
+                    "count": 100
+                },
+                {
+                    "itemHrid": "/items/jackalope_staff",
+                    "count": 1
+                }
+            ],
             "transmuteSuccessRate": 0,
             "transmuteDropTable": null
         },
@@ -10369,11 +10437,15 @@
                 },
                 {
                     "itemHrid": "/items/holy_mace",
-                    "count": 100
+                    "count": 60
                 },
                 {
                     "itemHrid": "/items/garnet",
                     "count": 100
+                },
+                {
+                    "itemHrid": "/items/granite_bludgeon",
+                    "count": 1
                 }
             ],
             "transmuteSuccessRate": 0.5,
@@ -13259,7 +13331,24 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/corsair_crest",
+                    "count": 10
+                },
+                {
+                    "itemHrid": "/items/holy_helmet",
+                    "count": 30
+                },
+                {
+                    "itemHrid": "/items/vision_helmet",
+                    "count": 10
+                },
+                {
+                    "itemHrid": "/items/fluffy_red_hat",
+                    "count": 1
+                }
+            ],
             "transmuteSuccessRate": 0,
             "transmuteDropTable": null
         },
@@ -16529,11 +16618,15 @@
                 },
                 {
                     "itemHrid": "/items/arcane_bow",
-                    "count": 100
+                    "count": 60
                 },
                 {
                     "itemHrid": "/items/jade",
                     "count": 100
+                },
+                {
+                    "itemHrid": "/items/vampiric_bow",
+                    "count": 1
                 }
             ],
             "transmuteSuccessRate": 0.5,
@@ -21206,7 +21299,28 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/regal_jewel",
+                    "count": 10
+                },
+                {
+                    "itemHrid": "/items/sundering_jewel",
+                    "count": 10
+                },
+                {
+                    "itemHrid": "/items/holy_spear",
+                    "count": 60
+                },
+                {
+                    "itemHrid": "/items/garnet",
+                    "count": 100
+                },
+                {
+                    "itemHrid": "/items/stalactite_spear",
+                    "count": 1
+                }
+            ],
             "transmuteSuccessRate": 0,
             "transmuteDropTable": null
         },
@@ -23462,11 +23576,15 @@
                 },
                 {
                     "itemHrid": "/items/holy_bulwark",
-                    "count": 100
+                    "count": 60
                 },
                 {
                     "itemHrid": "/items/amber",
                     "count": 100
+                },
+                {
+                    "itemHrid": "/items/spiked_bulwark",
+                    "count": 1
                 }
             ],
             "transmuteSuccessRate": 0.5,
@@ -27241,7 +27359,20 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/kraken_leather",
+                    "count": 8
+                },
+                {
+                    "itemHrid": "/items/umbral_chaps",
+                    "count": 30
+                },
+                {
+                    "itemHrid": "/items/revenant_chaps",
+                    "count": 1
+                }
+            ],
             "transmuteSuccessRate": 0,
             "transmuteDropTable": null
         },
@@ -27258,9 +27389,9 @@
                 "rangedAccuracy": 0.56,
                 "magicAccuracy": -0.2,
                 "rangedDamage": 0.12,
-                "stabEvasion": 0.52,
-                "slashEvasion": 0.52,
-                "smashEvasion": 0.52,
+                "stabEvasion": 0.5,
+                "slashEvasion": 0.5,
+                "smashEvasion": 0.5,
                 "rangedEvasion": 0.66,
                 "magicEvasion": 0.38,
                 "waterResistance": 32,
@@ -27273,9 +27404,9 @@
                 "criticalRate": 0.0006,
                 "rangedAccuracy": 0.011200000000000002,
                 "rangedDamage": 0.0024,
-                "stabEvasion": 0.010400000000000001,
-                "slashEvasion": 0.010400000000000001,
-                "smashEvasion": 0.010400000000000001,
+                "stabEvasion": 0.01,
+                "slashEvasion": 0.01,
+                "smashEvasion": 0.01,
                 "rangedEvasion": 0.013200000000000002,
                 "magicEvasion": 0.0076,
                 "waterResistance": 0.64,
@@ -27347,7 +27478,20 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/kraken_leather",
+                    "count": 10
+                },
+                {
+                    "itemHrid": "/items/umbral_tunic",
+                    "count": 30
+                },
+                {
+                    "itemHrid": "/items/revenant_tunic",
+                    "count": 1
+                }
+            ],
             "transmuteSuccessRate": 0,
             "transmuteDropTable": null
         },
@@ -27364,9 +27508,9 @@
                 "rangedAccuracy": 0.7,
                 "magicAccuracy": -0.25,
                 "rangedDamage": 0.15,
-                "stabEvasion": 0.63,
-                "slashEvasion": 0.63,
-                "smashEvasion": 0.63,
+                "stabEvasion": 0.6,
+                "slashEvasion": 0.6,
+                "smashEvasion": 0.6,
                 "rangedEvasion": 0.77,
                 "magicEvasion": 0.44,
                 "waterResistance": 40,
@@ -27379,9 +27523,9 @@
                 "criticalRate": 0.0006,
                 "rangedAccuracy": 0.013999999999999999,
                 "rangedDamage": 0.003,
-                "stabEvasion": 0.0126,
-                "slashEvasion": 0.0126,
-                "smashEvasion": 0.0126,
+                "stabEvasion": 0.012,
+                "slashEvasion": 0.012,
+                "smashEvasion": 0.012,
                 "rangedEvasion": 0.0154,
                 "magicEvasion": 0.0088,
                 "waterResistance": 0.8,
@@ -28694,7 +28838,20 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/maelstrom_plating",
+                    "count": 10
+                },
+                {
+                    "itemHrid": "/items/holy_plate_body",
+                    "count": 30
+                },
+                {
+                    "itemHrid": "/items/demonic_plate_body",
+                    "count": 1
+                }
+            ],
             "transmuteSuccessRate": 0,
             "transmuteDropTable": null
         },
@@ -28766,7 +28923,20 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/maelstrom_plating",
+                    "count": 8
+                },
+                {
+                    "itemHrid": "/items/holy_plate_legs",
+                    "count": 30
+                },
+                {
+                    "itemHrid": "/items/demonic_plate_legs",
+                    "count": 1
+                }
+            ],
             "transmuteSuccessRate": 0,
             "transmuteDropTable": null
         },
@@ -29815,7 +29985,20 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/marksman_brooch",
+                    "count": 10
+                },
+                {
+                    "itemHrid": "/items/umbral_bracers",
+                    "count": 30
+                },
+                {
+                    "itemHrid": "/items/sighted_bracers",
+                    "count": 10
+                }
+            ],
             "transmuteSuccessRate": 0,
             "transmuteDropTable": null
         },
@@ -37257,11 +37440,15 @@
                 },
                 {
                     "itemHrid": "/items/holy_sword",
-                    "count": 100
+                    "count": 60
                 },
                 {
                     "itemHrid": "/items/garnet",
                     "count": 100
+                },
+                {
+                    "itemHrid": "/items/werewolf_slasher",
+                    "count": 1
                 }
             ],
             "transmuteSuccessRate": 0.5,
@@ -38669,7 +38856,24 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/kraken_fang",
+                    "count": 20
+                },
+                {
+                    "itemHrid": "/items/arcane_water_staff",
+                    "count": 60
+                },
+                {
+                    "itemHrid": "/items/amethyst",
+                    "count": 100
+                },
+                {
+                    "itemHrid": "/items/frost_staff",
+                    "count": 1
+                }
+            ],
             "transmuteSuccessRate": 0,
             "transmuteDropTable": null
         },
@@ -39536,7 +39740,11 @@
                 },
                 {
                     "itemHrid": "/items/radiant_robe_bottoms",
-                    "count": 50
+                    "count": 30
+                },
+                {
+                    "itemHrid": "/items/luna_robe_bottoms",
+                    "count": 1
                 }
             ],
             "transmuteSuccessRate": 0.5,
@@ -39637,7 +39845,11 @@
                 },
                 {
                     "itemHrid": "/items/radiant_robe_top",
-                    "count": 50
+                    "count": 30
+                },
+                {
+                    "itemHrid": "/items/luna_robe_top",
+                    "count": 1
                 }
             ],
             "transmuteSuccessRate": 0.5,
@@ -43361,11 +43573,15 @@
                 },
                 {
                     "itemHrid": "/items/arcane_crossbow",
-                    "count": 100
+                    "count": 60
                 },
                 {
                     "itemHrid": "/items/jade",
                     "count": 100
+                },
+                {
+                    "itemHrid": "/items/soul_hunter_crossbow",
+                    "count": 1
                 }
             ],
             "transmuteSuccessRate": 0.5,

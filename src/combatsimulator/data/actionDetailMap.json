@@ -3833,6 +3833,126 @@
         "buffs": null,
         "sortIndex": 6
     },
+    "/actions/cheesesmithing/anchorbound_plate_body": {
+        "hrid": "/actions/cheesesmithing/anchorbound_plate_body",
+        "function": "/action_functions/production",
+        "type": "/action_types/cheesesmithing",
+        "category": "/action_categories/cheesesmithing/body",
+        "name": "Anchorbound Plate Body",
+        "levelRequirement": {
+            "skillHrid": "/skills/cheesesmithing",
+            "level": 96
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cheesesmithing",
+            "value": 200000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "dropRate": 0.32666666666666666,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.000875,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "/items/colossus_plate_body",
+        "inputItems": [
+            {
+                "itemHrid": "/items/damaged_anchor",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/holy_plate_body",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/griffin_tunic",
+                "count": 1
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/anchorbound_plate_body",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 188
+    },
+    "/actions/cheesesmithing/anchorbound_plate_legs": {
+        "hrid": "/actions/cheesesmithing/anchorbound_plate_legs",
+        "function": "/action_functions/production",
+        "type": "/action_types/cheesesmithing",
+        "category": "/action_categories/cheesesmithing/legs",
+        "name": "Anchorbound Plate Legs",
+        "levelRequirement": {
+            "skillHrid": "/skills/cheesesmithing",
+            "level": 94
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cheesesmithing",
+            "value": 160000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "dropRate": 0.3233333333333333,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008611111111111111,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "/items/colossus_plate_legs",
+        "inputItems": [
+            {
+                "itemHrid": "/items/damaged_anchor",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/holy_plate_legs",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/griffin_chaps",
+                "count": 1
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/anchorbound_plate_legs",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 182
+    },
     "/actions/cheesesmithing/azure_alembic": {
         "hrid": "/actions/cheesesmithing/azure_alembic",
         "function": "/action_functions/production",
@@ -6879,7 +6999,7 @@
                 "minEliteTier": 0
             }
         ],
-        "upgradeItemHrid": "",
+        "upgradeItemHrid": "/items/granite_bludgeon",
         "inputItems": [
             {
                 "itemHrid": "/items/chaotic_chain",
@@ -6887,7 +7007,7 @@
             },
             {
                 "itemHrid": "/items/holy_mace",
-                "count": 100
+                "count": 60
             },
             {
                 "itemHrid": "/items/garnet",
@@ -6903,7 +7023,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 182
+        "sortIndex": 186
     },
     "/actions/cheesesmithing/cheese": {
         "hrid": "/actions/cheesesmithing/cheese",
@@ -8128,6 +8248,66 @@
         "maxPartySize": 0,
         "buffs": null,
         "sortIndex": 175
+    },
+    "/actions/cheesesmithing/corsair_helmet": {
+        "hrid": "/actions/cheesesmithing/corsair_helmet",
+        "function": "/action_functions/production",
+        "type": "/action_types/cheesesmithing",
+        "category": "/action_categories/cheesesmithing/head",
+        "name": "Corsair Helmet",
+        "levelRequirement": {
+            "skillHrid": "/skills/cheesesmithing",
+            "level": 93
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cheesesmithing",
+            "value": 120000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "dropRate": 0.32166666666666666,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008541666666666667,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "/items/fluffy_red_hat",
+        "inputItems": [
+            {
+                "itemHrid": "/items/corsair_crest",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/holy_helmet",
+                "count": 30
+            },
+            {
+                "itemHrid": "/items/vision_helmet",
+                "count": 10
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/corsair_helmet",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 180
     },
     "/actions/cheesesmithing/crimson_alembic": {
         "hrid": "/actions/cheesesmithing/crimson_alembic",
@@ -9417,6 +9597,70 @@
         "buffs": null,
         "sortIndex": 179
     },
+    "/actions/cheesesmithing/furious_spear": {
+        "hrid": "/actions/cheesesmithing/furious_spear",
+        "function": "/action_functions/production",
+        "type": "/action_types/cheesesmithing",
+        "category": "/action_categories/cheesesmithing/main_hand",
+        "name": "Furious Spear",
+        "levelRequirement": {
+            "skillHrid": "/skills/cheesesmithing",
+            "level": 96
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cheesesmithing",
+            "value": 200000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "dropRate": 0.32666666666666666,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.000875,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "/items/stalactite_spear",
+        "inputItems": [
+            {
+                "itemHrid": "/items/regal_jewel",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/sundering_jewel",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/holy_spear",
+                "count": 60
+            },
+            {
+                "itemHrid": "/items/garnet",
+                "count": 100
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/furious_spear",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 185
+    },
     "/actions/cheesesmithing/granite_bludgeon": {
         "hrid": "/actions/cheesesmithing/granite_bludgeon",
         "function": "/action_functions/production",
@@ -9503,7 +9747,7 @@
                 "minEliteTier": 0
             }
         ],
-        "upgradeItemHrid": "",
+        "upgradeItemHrid": "/items/spiked_bulwark",
         "inputItems": [
             {
                 "itemHrid": "/items/griffin_talon",
@@ -9515,7 +9759,7 @@
             },
             {
                 "itemHrid": "/items/holy_bulwark",
-                "count": 100
+                "count": 60
             },
             {
                 "itemHrid": "/items/amber",
@@ -9531,7 +9775,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 181
+        "sortIndex": 184
     },
     "/actions/cheesesmithing/grizzly_bear_shoes": {
         "hrid": "/actions/cheesesmithing/grizzly_bear_shoes",
@@ -10774,7 +11018,119 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 180
+        "sortIndex": 181
+    },
+    "/actions/cheesesmithing/maelstrom_plate_body": {
+        "hrid": "/actions/cheesesmithing/maelstrom_plate_body",
+        "function": "/action_functions/production",
+        "type": "/action_types/cheesesmithing",
+        "category": "/action_categories/cheesesmithing/body",
+        "name": "Maelstrom Plate Body",
+        "levelRequirement": {
+            "skillHrid": "/skills/cheesesmithing",
+            "level": 96
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cheesesmithing",
+            "value": 200000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "dropRate": 0.32666666666666666,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.000875,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "/items/demonic_plate_body",
+        "inputItems": [
+            {
+                "itemHrid": "/items/maelstrom_plating",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/holy_plate_body",
+                "count": 30
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/maelstrom_plate_body",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 189
+    },
+    "/actions/cheesesmithing/maelstrom_plate_legs": {
+        "hrid": "/actions/cheesesmithing/maelstrom_plate_legs",
+        "function": "/action_functions/production",
+        "type": "/action_types/cheesesmithing",
+        "category": "/action_categories/cheesesmithing/legs",
+        "name": "Maelstrom Plate Legs",
+        "levelRequirement": {
+            "skillHrid": "/skills/cheesesmithing",
+            "level": 94
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cheesesmithing",
+            "value": 160000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "dropRate": 0.3233333333333333,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008611111111111111,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "/items/demonic_plate_legs",
+        "inputItems": [
+            {
+                "itemHrid": "/items/maelstrom_plating",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/holy_plate_legs",
+                "count": 30
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/maelstrom_plate_legs",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 183
     },
     "/actions/cheesesmithing/magnetic_gloves": {
         "hrid": "/actions/cheesesmithing/magnetic_gloves",
@@ -12145,7 +12501,7 @@
                 "minEliteTier": 0
             }
         ],
-        "upgradeItemHrid": "",
+        "upgradeItemHrid": "/items/werewolf_slasher",
         "inputItems": [
             {
                 "itemHrid": "/items/regal_jewel",
@@ -12153,7 +12509,7 @@
             },
             {
                 "itemHrid": "/items/holy_sword",
-                "count": 100
+                "count": 60
             },
             {
                 "itemHrid": "/items/garnet",
@@ -12169,7 +12525,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 183
+        "sortIndex": 187
     },
     "/actions/cheesesmithing/snail_shell_helmet": {
         "hrid": "/actions/cheesesmithing/snail_shell_helmet",
@@ -17443,19 +17799,19 @@
                                 "strength": 150
                             },
                             {
-                                "combatMonsterHrid": "/monsters/melee_pirate",
+                                "combatMonsterHrid": "/monsters/anchor_shark",
                                 "eliteTier": 0,
                                 "rate": 0.5,
                                 "strength": 250
                             },
                             {
-                                "combatMonsterHrid": "/monsters/ranged_pirate",
+                                "combatMonsterHrid": "/monsters/brine_marksman",
                                 "eliteTier": 0,
                                 "rate": 0.5,
                                 "strength": 250
                             },
                             {
-                                "combatMonsterHrid": "/monsters/magic_pirate",
+                                "combatMonsterHrid": "/monsters/tidal_conjuror",
                                 "eliteTier": 0,
                                 "rate": 0.5,
                                 "strength": 250
@@ -17488,7 +17844,7 @@
                     ],
                     "15": [
                         {
-                            "combatMonsterHrid": "/monsters/melee_pirate",
+                            "combatMonsterHrid": "/monsters/anchor_shark",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17496,7 +17852,7 @@
                     ],
                     "20": [
                         {
-                            "combatMonsterHrid": "/monsters/ranged_pirate",
+                            "combatMonsterHrid": "/monsters/brine_marksman",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17504,7 +17860,7 @@
                     ],
                     "25": [
                         {
-                            "combatMonsterHrid": "/monsters/magic_pirate",
+                            "combatMonsterHrid": "/monsters/tidal_conjuror",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17512,13 +17868,13 @@
                     ],
                     "30": [
                         {
-                            "combatMonsterHrid": "/monsters/melee_pirate",
+                            "combatMonsterHrid": "/monsters/anchor_shark",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
                         },
                         {
-                            "combatMonsterHrid": "/monsters/ranged_pirate",
+                            "combatMonsterHrid": "/monsters/brine_marksman",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17526,13 +17882,13 @@
                     ],
                     "35": [
                         {
-                            "combatMonsterHrid": "/monsters/ranged_pirate",
+                            "combatMonsterHrid": "/monsters/brine_marksman",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
                         },
                         {
-                            "combatMonsterHrid": "/monsters/magic_pirate",
+                            "combatMonsterHrid": "/monsters/tidal_conjuror",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17540,13 +17896,13 @@
                     ],
                     "40": [
                         {
-                            "combatMonsterHrid": "/monsters/magic_pirate",
+                            "combatMonsterHrid": "/monsters/tidal_conjuror",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
                         },
                         {
-                            "combatMonsterHrid": "/monsters/melee_pirate",
+                            "combatMonsterHrid": "/monsters/anchor_shark",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17554,7 +17910,7 @@
                     ],
                     "45": [
                         {
-                            "combatMonsterHrid": "/monsters/melee_pirate",
+                            "combatMonsterHrid": "/monsters/anchor_shark",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17566,7 +17922,7 @@
                             "strength": 0
                         },
                         {
-                            "combatMonsterHrid": "/monsters/ranged_pirate",
+                            "combatMonsterHrid": "/monsters/brine_marksman",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17574,7 +17930,7 @@
                     ],
                     "50": [
                         {
-                            "combatMonsterHrid": "/monsters/ranged_pirate",
+                            "combatMonsterHrid": "/monsters/brine_marksman",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17586,7 +17942,7 @@
                             "strength": 0
                         },
                         {
-                            "combatMonsterHrid": "/monsters/magic_pirate",
+                            "combatMonsterHrid": "/monsters/tidal_conjuror",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17594,7 +17950,7 @@
                     ],
                     "55": [
                         {
-                            "combatMonsterHrid": "/monsters/magic_pirate",
+                            "combatMonsterHrid": "/monsters/tidal_conjuror",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17606,7 +17962,7 @@
                             "strength": 0
                         },
                         {
-                            "combatMonsterHrid": "/monsters/melee_pirate",
+                            "combatMonsterHrid": "/monsters/anchor_shark",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17614,19 +17970,19 @@
                     ],
                     "60": [
                         {
-                            "combatMonsterHrid": "/monsters/melee_pirate",
+                            "combatMonsterHrid": "/monsters/anchor_shark",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
                         },
                         {
-                            "combatMonsterHrid": "/monsters/ranged_pirate",
+                            "combatMonsterHrid": "/monsters/brine_marksman",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
                         },
                         {
-                            "combatMonsterHrid": "/monsters/magic_pirate",
+                            "combatMonsterHrid": "/monsters/tidal_conjuror",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17634,7 +17990,7 @@
                     ],
                     "65": [
                         {
-                            "combatMonsterHrid": "/monsters/pirate_captain",
+                            "combatMonsterHrid": "/monsters/captain_fishhook",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -22429,15 +22785,11 @@
                 "minEliteTier": 0
             }
         ],
-        "upgradeItemHrid": "",
+        "upgradeItemHrid": "/items/watchful_relic",
         "inputItems": [
             {
                 "itemHrid": "/items/bishops_scroll",
                 "count": 10
-            },
-            {
-                "itemHrid": "/items/watchful_relic",
-                "count": 1
             },
             {
                 "itemHrid": "/items/tome_of_the_elements",
@@ -22465,7 +22817,127 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 103
+        "sortIndex": 105
+    },
+    "/actions/crafting/blazing_trident": {
+        "hrid": "/actions/crafting/blazing_trident",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/staff",
+        "name": "Blazing Trident",
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 96
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 200000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.32666666666666666,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.000875,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "/items/infernal_battlestaff",
+        "inputItems": [
+            {
+                "itemHrid": "/items/kraken_fang",
+                "count": 20
+            },
+            {
+                "itemHrid": "/items/arcane_fire_staff",
+                "count": 60
+            },
+            {
+                "itemHrid": "/items/amethyst",
+                "count": 100
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/blazing_trident",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 110
+    },
+    "/actions/crafting/blooming_trident": {
+        "hrid": "/actions/crafting/blooming_trident",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/staff",
+        "name": "Blooming Trident",
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 96
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 200000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.32666666666666666,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.000875,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "/items/jackalope_staff",
+        "inputItems": [
+            {
+                "itemHrid": "/items/kraken_fang",
+                "count": 20
+            },
+            {
+                "itemHrid": "/items/arcane_nature_staff",
+                "count": 60
+            },
+            {
+                "itemHrid": "/items/amethyst",
+                "count": 100
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/blooming_trident",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 109
     },
     "/actions/crafting/catalyst_of_coinification": {
         "hrid": "/actions/crafting/catalyst_of_coinification",
@@ -23589,7 +24061,7 @@
                 "minEliteTier": 0
             }
         ],
-        "upgradeItemHrid": "",
+        "upgradeItemHrid": "/items/vampiric_bow",
         "inputItems": [
             {
                 "itemHrid": "/items/cursed_ball",
@@ -23597,7 +24069,7 @@
             },
             {
                 "itemHrid": "/items/arcane_bow",
-                "count": 100
+                "count": 60
             },
             {
                 "itemHrid": "/items/jade",
@@ -23613,7 +24085,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 104
+        "sortIndex": 106
     },
     "/actions/crafting/earrings_of_armor": {
         "hrid": "/actions/crafting/earrings_of_armor",
@@ -25245,7 +25717,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 101
+        "sortIndex": 103
     },
     "/actions/crafting/philosophers_necklace": {
         "hrid": "/actions/crafting/philosophers_necklace",
@@ -25317,7 +25789,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 102
+        "sortIndex": 104
     },
     "/actions/crafting/philosophers_ring": {
         "hrid": "/actions/crafting/philosophers_ring",
@@ -25394,6 +25866,130 @@
         "maxPartySize": 0,
         "buffs": null,
         "sortIndex": 99
+    },
+    "/actions/crafting/pirate_chest_key": {
+        "hrid": "/actions/crafting/pirate_chest_key",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/dungeon_keys",
+        "name": "Pirate Chest Key",
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 90
+        },
+        "baseTimeCost": 10000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 3000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.05277777777777777,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0001388888888888889,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/white_key_fragment",
+                "count": 1
+            },
+            {
+                "itemHrid": "/items/stone_key_fragment",
+                "count": 1
+            },
+            {
+                "itemHrid": "/items/dark_key_fragment",
+                "count": 1
+            },
+            {
+                "itemHrid": "/items/burning_key_fragment",
+                "count": 1
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/pirate_chest_key",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 102
+    },
+    "/actions/crafting/pirate_entry_key": {
+        "hrid": "/actions/crafting/pirate_entry_key",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/dungeon_keys",
+        "name": "Pirate Entry Key",
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 90
+        },
+        "baseTimeCost": 10000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 600
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.05277777777777777,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0001388888888888889,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/coin",
+                "count": 300000
+            },
+            {
+                "itemHrid": "/items/arcane_lumber",
+                "count": 100
+            },
+            {
+                "itemHrid": "/items/redwood_lumber",
+                "count": 100
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/pirate_entry_key",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 101
     },
     "/actions/crafting/purpleheart_bow": {
         "hrid": "/actions/crafting/purpleheart_bow",
@@ -26590,6 +27186,66 @@
         "buffs": null,
         "sortIndex": 57
     },
+    "/actions/crafting/rippling_trident": {
+        "hrid": "/actions/crafting/rippling_trident",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/staff",
+        "name": "Rippling Trident",
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 96
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 200000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.32666666666666666,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.000875,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "/items/frost_staff",
+        "inputItems": [
+            {
+                "itemHrid": "/items/kraken_fang",
+                "count": 20
+            },
+            {
+                "itemHrid": "/items/arcane_water_staff",
+                "count": 60
+            },
+            {
+                "itemHrid": "/items/amethyst",
+                "count": 100
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/rippling_trident",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 108
+    },
     "/actions/crafting/sinister_chest_key": {
         "hrid": "/actions/crafting/sinister_chest_key",
         "function": "/action_functions/production",
@@ -26800,7 +27456,7 @@
                 "minEliteTier": 0
             }
         ],
-        "upgradeItemHrid": "",
+        "upgradeItemHrid": "/items/soul_hunter_crossbow",
         "inputItems": [
             {
                 "itemHrid": "/items/sundering_jewel",
@@ -26808,7 +27464,7 @@
             },
             {
                 "itemHrid": "/items/arcane_crossbow",
-                "count": 100
+                "count": 60
             },
             {
                 "itemHrid": "/items/jade",
@@ -26824,7 +27480,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 105
+        "sortIndex": 107
     },
     "/actions/crafting/treant_shield": {
         "hrid": "/actions/crafting/treant_shield",
@@ -29660,7 +30316,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 108
+        "sortIndex": 109
     },
     "/actions/tailoring/alchemists_bottoms": {
         "hrid": "/actions/tailoring/alchemists_bottoms",
@@ -32814,6 +33470,118 @@
         "buffs": null,
         "sortIndex": 43
     },
+    "/actions/tailoring/kraken_chaps": {
+        "hrid": "/actions/tailoring/kraken_chaps",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/legs",
+        "name": "Kraken Chaps",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 94
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 160000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.3233333333333333,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008611111111111111,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "/items/revenant_chaps",
+        "inputItems": [
+            {
+                "itemHrid": "/items/kraken_leather",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/umbral_chaps",
+                "count": 30
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/kraken_chaps",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 111
+    },
+    "/actions/tailoring/kraken_tunic": {
+        "hrid": "/actions/tailoring/kraken_tunic",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/body",
+        "name": "Kraken Tunic",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 96
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 200000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.32666666666666666,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.000875,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "/items/revenant_tunic",
+        "inputItems": [
+            {
+                "itemHrid": "/items/kraken_leather",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/umbral_tunic",
+                "count": 30
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/kraken_tunic",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 115
+    },
     "/actions/tailoring/large_pouch": {
         "hrid": "/actions/tailoring/large_pouch",
         "function": "/action_functions/production",
@@ -33480,7 +34248,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 109
+        "sortIndex": 110
     },
     "/actions/tailoring/marine_chaps": {
         "hrid": "/actions/tailoring/marine_chaps",
@@ -33585,6 +34353,66 @@
         "maxPartySize": 0,
         "buffs": null,
         "sortIndex": 41
+    },
+    "/actions/tailoring/marksman_bracers": {
+        "hrid": "/actions/tailoring/marksman_bracers",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/hands",
+        "name": "Marksman Bracers",
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 92
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 100000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.31999999999999995,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008472222222222222,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/marksman_brooch",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/umbral_bracers",
+                "count": 30
+            },
+            {
+                "itemHrid": "/items/sighted_bracers",
+                "count": 10
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/marksman_bracers",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 108
     },
     "/actions/tailoring/medium_pouch": {
         "hrid": "/actions/tailoring/medium_pouch",
@@ -34819,119 +35647,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 116
-    },
-    "/actions/tailoring/royal_fire_robe_bottoms_from_nature": {
-        "hrid": "/actions/tailoring/royal_fire_robe_bottoms_from_nature",
-        "function": "/action_functions/production",
-        "type": "/action_types/tailoring",
-        "category": "/action_categories/tailoring/legs",
-        "name": "Royal Fire Robe Bottoms (From Nature)",
-        "levelRequirement": {
-            "skillHrid": "/skills/tailoring",
-            "level": 94
-        },
-        "baseTimeCost": 60000000000,
-        "experienceGain": {
-            "skillHrid": "/skills/tailoring",
-            "value": 32000
-        },
-        "dropTable": null,
-        "essenceDropTable": [
-            {
-                "itemHrid": "/items/tailoring_essence",
-                "dropRate": 0.3233333333333333,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "rareDropTable": [
-            {
-                "itemHrid": "/items/large_artisans_crate",
-                "dropRate": 0.0008611111111111111,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "upgradeItemHrid": "/items/royal_nature_robe_bottoms",
-        "inputItems": [
-            {
-                "itemHrid": "/items/radiant_robe_bottoms",
-                "count": 30
-            },
-            {
-                "itemHrid": "/items/flaming_robe_bottoms",
-                "count": 10
-            }
-        ],
-        "outputItems": [
-            {
-                "itemHrid": "/items/royal_fire_robe_bottoms",
-                "count": 1
-            }
-        ],
-        "combatZoneInfo": null,
-        "maxPartySize": 0,
-        "buffs": null,
-        "sortIndex": 118
-    },
-    "/actions/tailoring/royal_fire_robe_bottoms_from_water": {
-        "hrid": "/actions/tailoring/royal_fire_robe_bottoms_from_water",
-        "function": "/action_functions/production",
-        "type": "/action_types/tailoring",
-        "category": "/action_categories/tailoring/legs",
-        "name": "Royal Fire Robe Bottoms (From Water)",
-        "levelRequirement": {
-            "skillHrid": "/skills/tailoring",
-            "level": 94
-        },
-        "baseTimeCost": 60000000000,
-        "experienceGain": {
-            "skillHrid": "/skills/tailoring",
-            "value": 32000
-        },
-        "dropTable": null,
-        "essenceDropTable": [
-            {
-                "itemHrid": "/items/tailoring_essence",
-                "dropRate": 0.3233333333333333,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "rareDropTable": [
-            {
-                "itemHrid": "/items/large_artisans_crate",
-                "dropRate": 0.0008611111111111111,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "upgradeItemHrid": "/items/royal_water_robe_bottoms",
-        "inputItems": [
-            {
-                "itemHrid": "/items/radiant_robe_bottoms",
-                "count": 30
-            },
-            {
-                "itemHrid": "/items/flaming_robe_bottoms",
-                "count": 10
-            }
-        ],
-        "outputItems": [
-            {
-                "itemHrid": "/items/royal_fire_robe_bottoms",
-                "count": 1
-            }
-        ],
-        "combatZoneInfo": null,
-        "maxPartySize": 0,
-        "buffs": null,
-        "sortIndex": 117
+        "sortIndex": 114
     },
     "/actions/tailoring/royal_fire_robe_top": {
         "hrid": "/actions/tailoring/royal_fire_robe_top",
@@ -34991,119 +35707,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 125
-    },
-    "/actions/tailoring/royal_fire_robe_top_from_nature": {
-        "hrid": "/actions/tailoring/royal_fire_robe_top_from_nature",
-        "function": "/action_functions/production",
-        "type": "/action_types/tailoring",
-        "category": "/action_categories/tailoring/body",
-        "name": "Royal Fire Robe Top (From Nature)",
-        "levelRequirement": {
-            "skillHrid": "/skills/tailoring",
-            "level": 96
-        },
-        "baseTimeCost": 60000000000,
-        "experienceGain": {
-            "skillHrid": "/skills/tailoring",
-            "value": 40000
-        },
-        "dropTable": null,
-        "essenceDropTable": [
-            {
-                "itemHrid": "/items/tailoring_essence",
-                "dropRate": 0.32666666666666666,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "rareDropTable": [
-            {
-                "itemHrid": "/items/large_artisans_crate",
-                "dropRate": 0.000875,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "upgradeItemHrid": "/items/royal_nature_robe_top",
-        "inputItems": [
-            {
-                "itemHrid": "/items/radiant_robe_top",
-                "count": 30
-            },
-            {
-                "itemHrid": "/items/flaming_robe_top",
-                "count": 10
-            }
-        ],
-        "outputItems": [
-            {
-                "itemHrid": "/items/royal_fire_robe_top",
-                "count": 1
-            }
-        ],
-        "combatZoneInfo": null,
-        "maxPartySize": 0,
-        "buffs": null,
-        "sortIndex": 127
-    },
-    "/actions/tailoring/royal_fire_robe_top_from_water": {
-        "hrid": "/actions/tailoring/royal_fire_robe_top_from_water",
-        "function": "/action_functions/production",
-        "type": "/action_types/tailoring",
-        "category": "/action_categories/tailoring/body",
-        "name": "Royal Fire Robe Top (From Water)",
-        "levelRequirement": {
-            "skillHrid": "/skills/tailoring",
-            "level": 96
-        },
-        "baseTimeCost": 60000000000,
-        "experienceGain": {
-            "skillHrid": "/skills/tailoring",
-            "value": 40000
-        },
-        "dropTable": null,
-        "essenceDropTable": [
-            {
-                "itemHrid": "/items/tailoring_essence",
-                "dropRate": 0.32666666666666666,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "rareDropTable": [
-            {
-                "itemHrid": "/items/large_artisans_crate",
-                "dropRate": 0.000875,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "upgradeItemHrid": "/items/royal_water_robe_top",
-        "inputItems": [
-            {
-                "itemHrid": "/items/radiant_robe_top",
-                "count": 30
-            },
-            {
-                "itemHrid": "/items/flaming_robe_top",
-                "count": 10
-            }
-        ],
-        "outputItems": [
-            {
-                "itemHrid": "/items/royal_fire_robe_top",
-                "count": 1
-            }
-        ],
-        "combatZoneInfo": null,
-        "maxPartySize": 0,
-        "buffs": null,
-        "sortIndex": 126
+        "sortIndex": 118
     },
     "/actions/tailoring/royal_nature_robe_bottoms": {
         "hrid": "/actions/tailoring/royal_nature_robe_bottoms",
@@ -35139,7 +35743,7 @@
                 "minEliteTier": 0
             }
         ],
-        "upgradeItemHrid": "",
+        "upgradeItemHrid": "/items/luna_robe_bottoms",
         "inputItems": [
             {
                 "itemHrid": "/items/royal_cloth",
@@ -35147,7 +35751,7 @@
             },
             {
                 "itemHrid": "/items/radiant_robe_bottoms",
-                "count": 50
+                "count": 30
             }
         ],
         "outputItems": [
@@ -35160,110 +35764,6 @@
         "maxPartySize": 0,
         "buffs": null,
         "sortIndex": 113
-    },
-    "/actions/tailoring/royal_nature_robe_bottoms_from_fire": {
-        "hrid": "/actions/tailoring/royal_nature_robe_bottoms_from_fire",
-        "function": "/action_functions/production",
-        "type": "/action_types/tailoring",
-        "category": "/action_categories/tailoring/legs",
-        "name": "Royal Nature Robe Bottoms (From Fire)",
-        "levelRequirement": {
-            "skillHrid": "/skills/tailoring",
-            "level": 94
-        },
-        "baseTimeCost": 60000000000,
-        "experienceGain": {
-            "skillHrid": "/skills/tailoring",
-            "value": 32000
-        },
-        "dropTable": null,
-        "essenceDropTable": [
-            {
-                "itemHrid": "/items/tailoring_essence",
-                "dropRate": 0.3233333333333333,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "rareDropTable": [
-            {
-                "itemHrid": "/items/large_artisans_crate",
-                "dropRate": 0.0008611111111111111,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "upgradeItemHrid": "/items/royal_fire_robe_bottoms",
-        "inputItems": [
-            {
-                "itemHrid": "/items/radiant_robe_bottoms",
-                "count": 50
-            }
-        ],
-        "outputItems": [
-            {
-                "itemHrid": "/items/royal_nature_robe_bottoms",
-                "count": 1
-            }
-        ],
-        "combatZoneInfo": null,
-        "maxPartySize": 0,
-        "buffs": null,
-        "sortIndex": 115
-    },
-    "/actions/tailoring/royal_nature_robe_bottoms_from_water": {
-        "hrid": "/actions/tailoring/royal_nature_robe_bottoms_from_water",
-        "function": "/action_functions/production",
-        "type": "/action_types/tailoring",
-        "category": "/action_categories/tailoring/legs",
-        "name": "Royal Nature Robe Bottoms (From Water)",
-        "levelRequirement": {
-            "skillHrid": "/skills/tailoring",
-            "level": 94
-        },
-        "baseTimeCost": 60000000000,
-        "experienceGain": {
-            "skillHrid": "/skills/tailoring",
-            "value": 32000
-        },
-        "dropTable": null,
-        "essenceDropTable": [
-            {
-                "itemHrid": "/items/tailoring_essence",
-                "dropRate": 0.3233333333333333,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "rareDropTable": [
-            {
-                "itemHrid": "/items/large_artisans_crate",
-                "dropRate": 0.0008611111111111111,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "upgradeItemHrid": "/items/royal_water_robe_bottoms",
-        "inputItems": [
-            {
-                "itemHrid": "/items/radiant_robe_bottoms",
-                "count": 50
-            }
-        ],
-        "outputItems": [
-            {
-                "itemHrid": "/items/royal_nature_robe_bottoms",
-                "count": 1
-            }
-        ],
-        "combatZoneInfo": null,
-        "maxPartySize": 0,
-        "buffs": null,
-        "sortIndex": 114
     },
     "/actions/tailoring/royal_nature_robe_top": {
         "hrid": "/actions/tailoring/royal_nature_robe_top",
@@ -35299,7 +35799,7 @@
                 "minEliteTier": 0
             }
         ],
-        "upgradeItemHrid": "",
+        "upgradeItemHrid": "/items/luna_robe_top",
         "inputItems": [
             {
                 "itemHrid": "/items/royal_cloth",
@@ -35307,7 +35807,7 @@
             },
             {
                 "itemHrid": "/items/radiant_robe_top",
-                "count": 50
+                "count": 30
             }
         ],
         "outputItems": [
@@ -35319,111 +35819,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 122
-    },
-    "/actions/tailoring/royal_nature_robe_top_from_fire": {
-        "hrid": "/actions/tailoring/royal_nature_robe_top_from_fire",
-        "function": "/action_functions/production",
-        "type": "/action_types/tailoring",
-        "category": "/action_categories/tailoring/body",
-        "name": "Royal Nature Robe Top (From Fire)",
-        "levelRequirement": {
-            "skillHrid": "/skills/tailoring",
-            "level": 96
-        },
-        "baseTimeCost": 60000000000,
-        "experienceGain": {
-            "skillHrid": "/skills/tailoring",
-            "value": 40000
-        },
-        "dropTable": null,
-        "essenceDropTable": [
-            {
-                "itemHrid": "/items/tailoring_essence",
-                "dropRate": 0.32666666666666666,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "rareDropTable": [
-            {
-                "itemHrid": "/items/large_artisans_crate",
-                "dropRate": 0.000875,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "upgradeItemHrid": "/items/royal_fire_robe_top",
-        "inputItems": [
-            {
-                "itemHrid": "/items/radiant_robe_top",
-                "count": 50
-            }
-        ],
-        "outputItems": [
-            {
-                "itemHrid": "/items/royal_nature_robe_top",
-                "count": 1
-            }
-        ],
-        "combatZoneInfo": null,
-        "maxPartySize": 0,
-        "buffs": null,
-        "sortIndex": 124
-    },
-    "/actions/tailoring/royal_nature_robe_top_from_water": {
-        "hrid": "/actions/tailoring/royal_nature_robe_top_from_water",
-        "function": "/action_functions/production",
-        "type": "/action_types/tailoring",
-        "category": "/action_categories/tailoring/body",
-        "name": "Royal Nature Robe Top (From Water)",
-        "levelRequirement": {
-            "skillHrid": "/skills/tailoring",
-            "level": 96
-        },
-        "baseTimeCost": 60000000000,
-        "experienceGain": {
-            "skillHrid": "/skills/tailoring",
-            "value": 40000
-        },
-        "dropTable": null,
-        "essenceDropTable": [
-            {
-                "itemHrid": "/items/tailoring_essence",
-                "dropRate": 0.32666666666666666,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "rareDropTable": [
-            {
-                "itemHrid": "/items/large_artisans_crate",
-                "dropRate": 0.000875,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "upgradeItemHrid": "/items/royal_water_robe_top",
-        "inputItems": [
-            {
-                "itemHrid": "/items/radiant_robe_top",
-                "count": 50
-            }
-        ],
-        "outputItems": [
-            {
-                "itemHrid": "/items/royal_nature_robe_top",
-                "count": 1
-            }
-        ],
-        "combatZoneInfo": null,
-        "maxPartySize": 0,
-        "buffs": null,
-        "sortIndex": 123
+        "sortIndex": 117
     },
     "/actions/tailoring/royal_water_robe_bottoms": {
         "hrid": "/actions/tailoring/royal_water_robe_bottoms",
@@ -35483,119 +35879,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 110
-    },
-    "/actions/tailoring/royal_water_robe_bottoms_from_fire": {
-        "hrid": "/actions/tailoring/royal_water_robe_bottoms_from_fire",
-        "function": "/action_functions/production",
-        "type": "/action_types/tailoring",
-        "category": "/action_categories/tailoring/legs",
-        "name": "Royal Water Robe Bottoms (From Fire)",
-        "levelRequirement": {
-            "skillHrid": "/skills/tailoring",
-            "level": 94
-        },
-        "baseTimeCost": 60000000000,
-        "experienceGain": {
-            "skillHrid": "/skills/tailoring",
-            "value": 32000
-        },
-        "dropTable": null,
-        "essenceDropTable": [
-            {
-                "itemHrid": "/items/tailoring_essence",
-                "dropRate": 0.3233333333333333,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "rareDropTable": [
-            {
-                "itemHrid": "/items/large_artisans_crate",
-                "dropRate": 0.0008611111111111111,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "upgradeItemHrid": "/items/royal_fire_robe_bottoms",
-        "inputItems": [
-            {
-                "itemHrid": "/items/radiant_robe_bottoms",
-                "count": 30
-            },
-            {
-                "itemHrid": "/items/icy_robe_bottoms",
-                "count": 10
-            }
-        ],
-        "outputItems": [
-            {
-                "itemHrid": "/items/royal_water_robe_bottoms",
-                "count": 1
-            }
-        ],
-        "combatZoneInfo": null,
-        "maxPartySize": 0,
-        "buffs": null,
         "sortIndex": 112
-    },
-    "/actions/tailoring/royal_water_robe_bottoms_from_nature": {
-        "hrid": "/actions/tailoring/royal_water_robe_bottoms_from_nature",
-        "function": "/action_functions/production",
-        "type": "/action_types/tailoring",
-        "category": "/action_categories/tailoring/legs",
-        "name": "Royal Water Robe Bottoms (From Nature)",
-        "levelRequirement": {
-            "skillHrid": "/skills/tailoring",
-            "level": 94
-        },
-        "baseTimeCost": 60000000000,
-        "experienceGain": {
-            "skillHrid": "/skills/tailoring",
-            "value": 32000
-        },
-        "dropTable": null,
-        "essenceDropTable": [
-            {
-                "itemHrid": "/items/tailoring_essence",
-                "dropRate": 0.3233333333333333,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "rareDropTable": [
-            {
-                "itemHrid": "/items/large_artisans_crate",
-                "dropRate": 0.0008611111111111111,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "upgradeItemHrid": "/items/royal_nature_robe_bottoms",
-        "inputItems": [
-            {
-                "itemHrid": "/items/radiant_robe_bottoms",
-                "count": 30
-            },
-            {
-                "itemHrid": "/items/icy_robe_bottoms",
-                "count": 10
-            }
-        ],
-        "outputItems": [
-            {
-                "itemHrid": "/items/royal_water_robe_bottoms",
-                "count": 1
-            }
-        ],
-        "combatZoneInfo": null,
-        "maxPartySize": 0,
-        "buffs": null,
-        "sortIndex": 111
     },
     "/actions/tailoring/royal_water_robe_top": {
         "hrid": "/actions/tailoring/royal_water_robe_top",
@@ -35655,119 +35939,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 119
-    },
-    "/actions/tailoring/royal_water_robe_top_from_fire": {
-        "hrid": "/actions/tailoring/royal_water_robe_top_from_fire",
-        "function": "/action_functions/production",
-        "type": "/action_types/tailoring",
-        "category": "/action_categories/tailoring/body",
-        "name": "Royal Water Robe Top (From Fire)",
-        "levelRequirement": {
-            "skillHrid": "/skills/tailoring",
-            "level": 96
-        },
-        "baseTimeCost": 60000000000,
-        "experienceGain": {
-            "skillHrid": "/skills/tailoring",
-            "value": 40000
-        },
-        "dropTable": null,
-        "essenceDropTable": [
-            {
-                "itemHrid": "/items/tailoring_essence",
-                "dropRate": 0.32666666666666666,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "rareDropTable": [
-            {
-                "itemHrid": "/items/large_artisans_crate",
-                "dropRate": 0.000875,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "upgradeItemHrid": "/items/royal_fire_robe_top",
-        "inputItems": [
-            {
-                "itemHrid": "/items/radiant_robe_top",
-                "count": 30
-            },
-            {
-                "itemHrid": "/items/icy_robe_top",
-                "count": 10
-            }
-        ],
-        "outputItems": [
-            {
-                "itemHrid": "/items/royal_water_robe_top",
-                "count": 1
-            }
-        ],
-        "combatZoneInfo": null,
-        "maxPartySize": 0,
-        "buffs": null,
-        "sortIndex": 121
-    },
-    "/actions/tailoring/royal_water_robe_top_from_nature": {
-        "hrid": "/actions/tailoring/royal_water_robe_top_from_nature",
-        "function": "/action_functions/production",
-        "type": "/action_types/tailoring",
-        "category": "/action_categories/tailoring/body",
-        "name": "Royal Water Robe Top (From Nature)",
-        "levelRequirement": {
-            "skillHrid": "/skills/tailoring",
-            "level": 96
-        },
-        "baseTimeCost": 60000000000,
-        "experienceGain": {
-            "skillHrid": "/skills/tailoring",
-            "value": 40000
-        },
-        "dropTable": null,
-        "essenceDropTable": [
-            {
-                "itemHrid": "/items/tailoring_essence",
-                "dropRate": 0.32666666666666666,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "rareDropTable": [
-            {
-                "itemHrid": "/items/large_artisans_crate",
-                "dropRate": 0.000875,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ],
-        "upgradeItemHrid": "/items/royal_nature_robe_top",
-        "inputItems": [
-            {
-                "itemHrid": "/items/radiant_robe_top",
-                "count": 30
-            },
-            {
-                "itemHrid": "/items/icy_robe_top",
-                "count": 10
-            }
-        ],
-        "outputItems": [
-            {
-                "itemHrid": "/items/royal_water_robe_top",
-                "count": 1
-            }
-        ],
-        "combatZoneInfo": null,
-        "maxPartySize": 0,
-        "buffs": null,
-        "sortIndex": 120
+        "sortIndex": 116
     },
     "/actions/tailoring/shoebill_shoes": {
         "hrid": "/actions/tailoring/shoebill_shoes",

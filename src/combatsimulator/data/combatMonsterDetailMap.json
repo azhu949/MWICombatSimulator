@@ -656,6 +656,194 @@
             }
         ]
     },
+    "/monsters/anchor_shark": {
+        "hrid": "/monsters/anchor_shark",
+        "name": "Anchor Shark",
+        "combatDetails": {
+            "currentHitpoints": 40500,
+            "maxHitpoints": 40500,
+            "currentManapoints": 40500,
+            "maxManapoints": 40500,
+            "attackInterval": 3404255319,
+            "stabAccuracyRating": 360,
+            "slashAccuracyRating": 360,
+            "smashAccuracyRating": 360,
+            "rangedAccuracyRating": 10,
+            "magicAccuracyRating": 10,
+            "stabMaxDamage": 460,
+            "slashMaxDamage": 460,
+            "smashMaxDamage": 460,
+            "rangedMaxDamage": 10,
+            "magicMaxDamage": 10,
+            "stabEvasionRating": 410,
+            "slashEvasionRating": 410,
+            "smashEvasionRating": 410,
+            "rangedEvasionRating": 820,
+            "magicEvasionRating": 310,
+            "totalArmor": 180,
+            "totalWaterResistance": 90,
+            "totalNatureResistance": 40,
+            "totalFireResistance": 90,
+            "totalThreat": 100,
+            "combatLevel": 1856,
+            "staminaLevel": 4040,
+            "intelligenceLevel": 4040,
+            "attackLevel": 350,
+            "powerLevel": 450,
+            "defenseLevel": 400,
+            "rangedLevel": 0,
+            "magicLevel": 0,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/smash"
+                ],
+                "damageType": "/damage_types/physical",
+                "attackInterval": 4000000000,
+                "rangedEvasion": 1,
+                "armor": 100,
+                "waterResistance": 50,
+                "fireResistance": 50,
+                "tenacity": 50,
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
+            }
+        },
+        "elite1CombatDetails": {
+            "currentHitpoints": 57220,
+            "maxHitpoints": 57220,
+            "currentManapoints": 57220,
+            "maxManapoints": 57220,
+            "attackInterval": 3142183817,
+            "stabAccuracyRating": 556,
+            "slashAccuracyRating": 556,
+            "smashAccuracyRating": 556,
+            "rangedAccuracyRating": 66,
+            "magicAccuracyRating": 66,
+            "stabMaxDamage": 696,
+            "slashMaxDamage": 696,
+            "smashMaxDamage": 696,
+            "rangedMaxDamage": 66,
+            "magicMaxDamage": 66,
+            "stabEvasionRating": 626,
+            "slashEvasionRating": 626,
+            "smashEvasionRating": 626,
+            "rangedEvasionRating": 1252,
+            "magicEvasionRating": 486,
+            "totalArmor": 223.2,
+            "totalWaterResistance": 117.2,
+            "totalNatureResistance": 67.2,
+            "totalFireResistance": 117.2,
+            "totalThreat": 100,
+            "combatLevel": 2654,
+            "staminaLevel": 5712,
+            "intelligenceLevel": 5712,
+            "attackLevel": 546,
+            "powerLevel": 686,
+            "defenseLevel": 616,
+            "rangedLevel": 56,
+            "magicLevel": 56,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/smash"
+                ],
+                "damageType": "/damage_types/physical",
+                "attackInterval": 4000000000,
+                "rangedEvasion": 1,
+                "armor": 100,
+                "waterResistance": 50,
+                "fireResistance": 50,
+                "tenacity": 50,
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
+            }
+        },
+        "elite2CombatDetails": {
+            "currentHitpoints": 74260,
+            "maxHitpoints": 74260,
+            "currentManapoints": 74260,
+            "maxManapoints": 74260,
+            "attackInterval": 2883922134,
+            "stabAccuracyRating": 784,
+            "slashAccuracyRating": 784,
+            "smashAccuracyRating": 784,
+            "rangedAccuracyRating": 154,
+            "magicAccuracyRating": 154,
+            "stabMaxDamage": 964,
+            "slashMaxDamage": 964,
+            "smashMaxDamage": 964,
+            "rangedMaxDamage": 154,
+            "magicMaxDamage": 154,
+            "stabEvasionRating": 874,
+            "slashEvasionRating": 874,
+            "smashEvasionRating": 874,
+            "rangedEvasionRating": 1748,
+            "magicEvasionRating": 694,
+            "totalArmor": 272.8,
+            "totalWaterResistance": 150.8,
+            "totalNatureResistance": 100.80000000000001,
+            "totalFireResistance": 150.8,
+            "totalThreat": 100,
+            "combatLevel": 3484,
+            "staminaLevel": 7416,
+            "intelligenceLevel": 7416,
+            "attackLevel": 774,
+            "powerLevel": 954,
+            "defenseLevel": 864,
+            "rangedLevel": 144,
+            "magicLevel": 144,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/smash"
+                ],
+                "damageType": "/damage_types/physical",
+                "attackInterval": 4000000000,
+                "rangedEvasion": 1,
+                "armor": 100,
+                "waterResistance": 50,
+                "fireResistance": 50,
+                "tenacity": 50,
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
+            }
+        },
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/invincible",
+                "level": 30,
+                "minEliteTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/toughness",
+                "level": 50,
+                "minEliteTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/berserk",
+                "level": 50,
+                "minEliteTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/stunning_blow",
+                "level": 50,
+                "minEliteTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/shield_bash",
+                "level": 50,
+                "minEliteTier": 0
+            }
+        ],
+        "dropTable": null,
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_treasure_chest",
+                "dropRate": 0.2160822222222222,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ]
+    },
     "/monsters/aquahorse": {
         "hrid": "/monsters/aquahorse",
         "name": "Aquahorse",
@@ -1098,6 +1286,194 @@
             }
         ]
     },
+    "/monsters/brine_marksman": {
+        "hrid": "/monsters/brine_marksman",
+        "name": "Brine Marksman",
+        "combatDetails": {
+            "currentHitpoints": 38500,
+            "maxHitpoints": 38500,
+            "currentManapoints": 38500,
+            "maxManapoints": 38500,
+            "attackInterval": 3600000000,
+            "stabAccuracyRating": 10,
+            "slashAccuracyRating": 10,
+            "smashAccuracyRating": 10,
+            "rangedAccuracyRating": 500,
+            "magicAccuracyRating": 10,
+            "stabMaxDamage": 10,
+            "slashMaxDamage": 10,
+            "smashMaxDamage": 10,
+            "rangedMaxDamage": 500,
+            "magicMaxDamage": 10,
+            "stabEvasionRating": 320,
+            "slashEvasionRating": 320,
+            "smashEvasionRating": 320,
+            "rangedEvasionRating": 320,
+            "magicEvasionRating": 730,
+            "totalArmor": 62,
+            "totalWaterResistance": 181,
+            "totalNatureResistance": 131,
+            "totalFireResistance": 181,
+            "totalThreat": 100,
+            "combatLevel": 1794,
+            "staminaLevel": 3840,
+            "intelligenceLevel": 3840,
+            "attackLevel": 0,
+            "powerLevel": 0,
+            "defenseLevel": 310,
+            "rangedLevel": 490,
+            "magicLevel": 0,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/ranged"
+                ],
+                "damageType": "/damage_types/physical",
+                "attackInterval": 3600000000,
+                "magicEvasion": 1,
+                "waterResistance": 150,
+                "natureResistance": 100,
+                "fireResistance": 150,
+                "tenacity": 50,
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
+            }
+        },
+        "elite1CombatDetails": {
+            "currentHitpoints": 54420,
+            "maxHitpoints": 54420,
+            "currentManapoints": 54420,
+            "maxManapoints": 54420,
+            "attackInterval": 3501945525,
+            "stabAccuracyRating": 66,
+            "slashAccuracyRating": 66,
+            "smashAccuracyRating": 66,
+            "rangedAccuracyRating": 752,
+            "magicAccuracyRating": 66,
+            "stabMaxDamage": 66,
+            "slashMaxDamage": 66,
+            "smashMaxDamage": 66,
+            "rangedMaxDamage": 752,
+            "magicMaxDamage": 66,
+            "stabEvasionRating": 499.99999999999994,
+            "slashEvasionRating": 499.99999999999994,
+            "smashEvasionRating": 499.99999999999994,
+            "rangedEvasionRating": 499.99999999999994,
+            "magicEvasionRating": 1126,
+            "totalArmor": 98,
+            "totalWaterResistance": 204.6,
+            "totalNatureResistance": 154.6,
+            "totalFireResistance": 204.6,
+            "totalThreat": 100,
+            "combatLevel": 2567,
+            "staminaLevel": 5432,
+            "intelligenceLevel": 5432,
+            "attackLevel": 56,
+            "powerLevel": 56,
+            "defenseLevel": 489.99999999999994,
+            "rangedLevel": 742,
+            "magicLevel": 56,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/ranged"
+                ],
+                "damageType": "/damage_types/physical",
+                "attackInterval": 3600000000,
+                "magicEvasion": 1,
+                "waterResistance": 150,
+                "natureResistance": 100,
+                "fireResistance": 150,
+                "tenacity": 50,
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
+            }
+        },
+        "elite2CombatDetails": {
+            "currentHitpoints": 70660,
+            "maxHitpoints": 70660,
+            "currentManapoints": 70660,
+            "maxManapoints": 70660,
+            "attackInterval": 3358208955,
+            "stabAccuracyRating": 154,
+            "slashAccuracyRating": 154,
+            "smashAccuracyRating": 154,
+            "rangedAccuracyRating": 1036,
+            "magicAccuracyRating": 154,
+            "stabMaxDamage": 154,
+            "slashMaxDamage": 154,
+            "smashMaxDamage": 154,
+            "rangedMaxDamage": 1036,
+            "magicMaxDamage": 154,
+            "stabEvasionRating": 712,
+            "slashEvasionRating": 712,
+            "smashEvasionRating": 712,
+            "rangedEvasionRating": 712,
+            "magicEvasionRating": 1586,
+            "totalArmor": 140.4,
+            "totalWaterResistance": 234.60000000000002,
+            "totalNatureResistance": 184.60000000000002,
+            "totalFireResistance": 234.60000000000002,
+            "totalThreat": 100,
+            "combatLevel": 3373,
+            "staminaLevel": 7056,
+            "intelligenceLevel": 7056,
+            "attackLevel": 144,
+            "powerLevel": 144,
+            "defenseLevel": 702,
+            "rangedLevel": 1026,
+            "magicLevel": 144,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/ranged"
+                ],
+                "damageType": "/damage_types/physical",
+                "attackInterval": 3600000000,
+                "magicEvasion": 1,
+                "waterResistance": 150,
+                "natureResistance": 100,
+                "fireResistance": 150,
+                "tenacity": 50,
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
+            }
+        },
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/critical_aura",
+                "level": 30,
+                "minEliteTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/rain_of_arrows",
+                "level": 50,
+                "minEliteTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/aqua_arrow",
+                "level": 50,
+                "minEliteTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/penetrating_shot",
+                "level": 50,
+                "minEliteTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/quick_shot",
+                "level": 60,
+                "minEliteTier": 0
+            }
+        ],
+        "dropTable": null,
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_treasure_chest",
+                "dropRate": 0.19878999999999997,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ]
+    },
     "/monsters/butterjerry": {
         "hrid": "/monsters/butterjerry",
         "name": "Butterjerry",
@@ -1272,6 +1648,194 @@
             {
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.0067511111111111105,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ]
+    },
+    "/monsters/captain_fishhook": {
+        "hrid": "/monsters/captain_fishhook",
+        "name": "Captain Cheesehook",
+        "combatDetails": {
+            "currentHitpoints": 88500,
+            "maxHitpoints": 88500,
+            "currentManapoints": 88500,
+            "maxManapoints": 88500,
+            "attackInterval": 2452107279,
+            "stabAccuracyRating": 620,
+            "slashAccuracyRating": 620,
+            "smashAccuracyRating": 620,
+            "rangedAccuracyRating": 10,
+            "magicAccuracyRating": 10,
+            "stabMaxDamage": 660,
+            "slashMaxDamage": 660,
+            "smashMaxDamage": 660,
+            "rangedMaxDamage": 10,
+            "magicMaxDamage": 10,
+            "stabEvasionRating": 380,
+            "slashEvasionRating": 380,
+            "smashEvasionRating": 380,
+            "rangedEvasionRating": 570,
+            "magicEvasionRating": 287.5,
+            "totalArmor": 124,
+            "totalWaterResistance": 87,
+            "totalNatureResistance": 37,
+            "totalFireResistance": 87,
+            "totalThreat": 100,
+            "combatLevel": 3862,
+            "staminaLevel": 8840,
+            "intelligenceLevel": 8840,
+            "attackLevel": 610,
+            "powerLevel": 650,
+            "defenseLevel": 370,
+            "rangedLevel": 0,
+            "magicLevel": 0,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/slash"
+                ],
+                "damageType": "/damage_types/physical",
+                "attackInterval": 3200000000,
+                "rangedEvasion": 0.5,
+                "armor": 50,
+                "waterResistance": 50,
+                "fireResistance": 50,
+                "tenacity": 50,
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
+            }
+        },
+        "elite1CombatDetails": {
+            "currentHitpoints": 124420,
+            "maxHitpoints": 124420,
+            "currentManapoints": 124420,
+            "maxManapoints": 124420,
+            "attackInterval": 2199312714,
+            "stabAccuracyRating": 919.9999999999999,
+            "slashAccuracyRating": 919.9999999999999,
+            "smashAccuracyRating": 919.9999999999999,
+            "rangedAccuracyRating": 66,
+            "magicAccuracyRating": 66,
+            "stabMaxDamage": 975.9999999999999,
+            "slashMaxDamage": 975.9999999999999,
+            "smashMaxDamage": 975.9999999999999,
+            "rangedMaxDamage": 66,
+            "magicMaxDamage": 66,
+            "stabEvasionRating": 584,
+            "slashEvasionRating": 584,
+            "smashEvasionRating": 584,
+            "rangedEvasionRating": 876,
+            "magicEvasionRating": 454.5,
+            "totalArmor": 164.8,
+            "totalWaterResistance": 113,
+            "totalNatureResistance": 63.00000000000001,
+            "totalFireResistance": 113,
+            "totalThreat": 100,
+            "combatLevel": 5462,
+            "staminaLevel": 12432,
+            "intelligenceLevel": 12432,
+            "attackLevel": 909.9999999999999,
+            "powerLevel": 965.9999999999999,
+            "defenseLevel": 574,
+            "rangedLevel": 56,
+            "magicLevel": 56,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/slash"
+                ],
+                "damageType": "/damage_types/physical",
+                "attackInterval": 3200000000,
+                "rangedEvasion": 0.5,
+                "armor": 50,
+                "waterResistance": 50,
+                "fireResistance": 50,
+                "tenacity": 50,
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
+            }
+        },
+        "elite2CombatDetails": {
+            "currentHitpoints": 160660,
+            "maxHitpoints": 160660,
+            "currentManapoints": 160660,
+            "maxManapoints": 160660,
+            "attackInterval": 1974090067,
+            "stabAccuracyRating": 1252,
+            "slashAccuracyRating": 1252,
+            "smashAccuracyRating": 1252,
+            "rangedAccuracyRating": 154,
+            "magicAccuracyRating": 154,
+            "stabMaxDamage": 1324,
+            "slashMaxDamage": 1324,
+            "smashMaxDamage": 1324,
+            "rangedMaxDamage": 154,
+            "magicMaxDamage": 154,
+            "stabEvasionRating": 820,
+            "slashEvasionRating": 820,
+            "smashEvasionRating": 820,
+            "rangedEvasionRating": 1230,
+            "magicEvasionRating": 653.5,
+            "totalArmor": 212,
+            "totalWaterResistance": 145.4,
+            "totalNatureResistance": 95.4,
+            "totalFireResistance": 145.4,
+            "totalThreat": 100,
+            "combatLevel": 7095,
+            "staminaLevel": 16056,
+            "intelligenceLevel": 16056,
+            "attackLevel": 1242,
+            "powerLevel": 1314,
+            "defenseLevel": 810,
+            "rangedLevel": 144,
+            "magicLevel": 144,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/slash"
+                ],
+                "damageType": "/damage_types/physical",
+                "attackInterval": 3200000000,
+                "rangedEvasion": 0.5,
+                "armor": 50,
+                "waterResistance": 50,
+                "fireResistance": 50,
+                "tenacity": 50,
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01
+            }
+        },
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/fierce_aura",
+                "level": 30,
+                "minEliteTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/frenzy",
+                "level": 50,
+                "minEliteTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/cleave",
+                "level": 50,
+                "minEliteTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/maim",
+                "level": 50,
+                "minEliteTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/fracturing_impact",
+                "level": 50,
+                "minEliteTier": 0
+            }
+        ],
+        "dropTable": null,
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_treasure_chest",
+                "dropRate": 0.9652477777777778,
                 "minCount": 1,
                 "maxCount": 1,
                 "minEliteTier": 0
@@ -2908,8 +3472,8 @@
                 "minEliteTier": 0
             },
             {
-                "abilityHrid": "/abilities/smack",
-                "level": 60,
+                "abilityHrid": "/abilities/shield_bash",
+                "level": 50,
                 "minEliteTier": 0
             },
             {
@@ -9626,203 +10190,6 @@
             }
         ]
     },
-    "/monsters/magic_pirate": {
-        "hrid": "/monsters/magic_pirate",
-        "name": "Tidal Conjuror",
-        "combatDetails": {
-            "currentHitpoints": 34500,
-            "maxHitpoints": 34500,
-            "currentManapoints": 34500,
-            "maxManapoints": 34500,
-            "attackInterval": 3500000000,
-            "stabAccuracyRating": 10,
-            "slashAccuracyRating": 10,
-            "smashAccuracyRating": 10,
-            "rangedAccuracyRating": 10,
-            "magicAccuracyRating": 490,
-            "stabMaxDamage": 10,
-            "slashMaxDamage": 10,
-            "smashMaxDamage": 10,
-            "rangedMaxDamage": 10,
-            "magicMaxDamage": 490,
-            "stabEvasionRating": 290,
-            "slashEvasionRating": 290,
-            "smashEvasionRating": 290,
-            "rangedEvasionRating": 290,
-            "magicEvasionRating": 286,
-            "totalArmor": 56,
-            "totalWaterResistance": 176,
-            "totalNatureResistance": 126,
-            "totalFireResistance": 176,
-            "totalThreat": 100,
-            "combatLevel": 1624,
-            "staminaLevel": 3440,
-            "intelligenceLevel": 3440,
-            "attackLevel": 0,
-            "powerLevel": 0,
-            "defenseLevel": 280,
-            "rangedLevel": 0,
-            "magicLevel": 480,
-            "combatStats": {
-                "combatStyleHrids": [
-                    "/combat_styles/magic"
-                ],
-                "damageType": "/damage_types/water",
-                "attackInterval": 3500000000,
-                "autoAttackDamage": -0.5,
-                "waterAmplify": 0.4,
-                "magicEvasion": 0.3,
-                "waterResistance": 100,
-                "natureResistance": 50,
-                "fireResistance": 100,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01,
-                "ripple": 0.25
-            }
-        },
-        "elite1CombatDetails": {
-            "currentHitpoints": 48820,
-            "maxHitpoints": 48820,
-            "currentManapoints": 48820,
-            "maxManapoints": 48820,
-            "attackInterval": 3404669260,
-            "stabAccuracyRating": 66,
-            "slashAccuracyRating": 66,
-            "smashAccuracyRating": 66,
-            "rangedAccuracyRating": 66,
-            "magicAccuracyRating": 738,
-            "stabMaxDamage": 66,
-            "slashMaxDamage": 66,
-            "smashMaxDamage": 66,
-            "rangedMaxDamage": 66,
-            "magicMaxDamage": 738,
-            "stabEvasionRating": 458,
-            "slashEvasionRating": 458,
-            "smashEvasionRating": 458,
-            "rangedEvasionRating": 458,
-            "magicEvasionRating": 468,
-            "totalArmor": 89.60000000000001,
-            "totalWaterResistance": 217.6,
-            "totalNatureResistance": 167.6,
-            "totalFireResistance": 217.6,
-            "totalThreat": 100,
-            "combatLevel": 2329,
-            "staminaLevel": 4872,
-            "intelligenceLevel": 4872,
-            "attackLevel": 56,
-            "powerLevel": 56,
-            "defenseLevel": 448,
-            "rangedLevel": 56,
-            "magicLevel": 728,
-            "combatStats": {
-                "combatStyleHrids": [
-                    "/combat_styles/magic"
-                ],
-                "damageType": "/damage_types/water",
-                "attackInterval": 3500000000,
-                "autoAttackDamage": -0.5,
-                "waterAmplify": 0.4,
-                "magicEvasion": 0.3,
-                "waterResistance": 100,
-                "natureResistance": 50,
-                "fireResistance": 100,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01,
-                "ripple": 0.25
-            }
-        },
-        "elite2CombatDetails": {
-            "currentHitpoints": 63460,
-            "maxHitpoints": 63460,
-            "currentManapoints": 63460,
-            "maxManapoints": 63460,
-            "attackInterval": 3264925373,
-            "stabAccuracyRating": 154,
-            "slashAccuracyRating": 154,
-            "smashAccuracyRating": 154,
-            "rangedAccuracyRating": 154,
-            "magicAccuracyRating": 1018,
-            "stabMaxDamage": 154,
-            "slashMaxDamage": 154,
-            "smashMaxDamage": 154,
-            "rangedMaxDamage": 154,
-            "magicMaxDamage": 1018,
-            "stabEvasionRating": 658,
-            "slashEvasionRating": 658,
-            "smashEvasionRating": 658,
-            "rangedEvasionRating": 658,
-            "magicEvasionRating": 691.6,
-            "totalArmor": 129.6,
-            "totalWaterResistance": 265.6,
-            "totalNatureResistance": 215.60000000000002,
-            "totalFireResistance": 265.6,
-            "totalThreat": 100,
-            "combatLevel": 3067,
-            "staminaLevel": 6336,
-            "intelligenceLevel": 6336,
-            "attackLevel": 144,
-            "powerLevel": 144,
-            "defenseLevel": 648,
-            "rangedLevel": 144,
-            "magicLevel": 1008,
-            "combatStats": {
-                "combatStyleHrids": [
-                    "/combat_styles/magic"
-                ],
-                "damageType": "/damage_types/water",
-                "attackInterval": 3500000000,
-                "autoAttackDamage": -0.5,
-                "waterAmplify": 0.4,
-                "magicEvasion": 0.3,
-                "waterResistance": 100,
-                "natureResistance": 50,
-                "fireResistance": 100,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01,
-                "ripple": 0.25
-            }
-        },
-        "abilities": [
-            {
-                "abilityHrid": "/abilities/aqua_aura",
-                "level": 30,
-                "minEliteTier": 0
-            },
-            {
-                "abilityHrid": "/abilities/elemental_affinity",
-                "level": 50,
-                "minEliteTier": 0
-            },
-            {
-                "abilityHrid": "/abilities/frost_surge",
-                "level": 50,
-                "minEliteTier": 0
-            },
-            {
-                "abilityHrid": "/abilities/ice_spear",
-                "level": 50,
-                "minEliteTier": 0
-            },
-            {
-                "abilityHrid": "/abilities/water_strike",
-                "level": 60,
-                "minEliteTier": 0
-            }
-        ],
-        "dropTable": null,
-        "rareDropTable": [
-            {
-                "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.1618511111111111,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ]
-    },
     "/monsters/magician": {
         "hrid": "/monsters/magician",
         "name": "Magician",
@@ -10679,194 +11046,6 @@
             {
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.0017722222222222223,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ]
-    },
-    "/monsters/melee_pirate": {
-        "hrid": "/monsters/melee_pirate",
-        "name": "Anchorborn Brute",
-        "combatDetails": {
-            "currentHitpoints": 40500,
-            "maxHitpoints": 40500,
-            "currentManapoints": 40500,
-            "maxManapoints": 40500,
-            "attackInterval": 3404255319,
-            "stabAccuracyRating": 360,
-            "slashAccuracyRating": 360,
-            "smashAccuracyRating": 360,
-            "rangedAccuracyRating": 10,
-            "magicAccuracyRating": 10,
-            "stabMaxDamage": 460,
-            "slashMaxDamage": 460,
-            "smashMaxDamage": 460,
-            "rangedMaxDamage": 10,
-            "magicMaxDamage": 10,
-            "stabEvasionRating": 410,
-            "slashEvasionRating": 410,
-            "smashEvasionRating": 410,
-            "rangedEvasionRating": 820,
-            "magicEvasionRating": 310,
-            "totalArmor": 180,
-            "totalWaterResistance": 90,
-            "totalNatureResistance": 40,
-            "totalFireResistance": 90,
-            "totalThreat": 100,
-            "combatLevel": 1856,
-            "staminaLevel": 4040,
-            "intelligenceLevel": 4040,
-            "attackLevel": 350,
-            "powerLevel": 450,
-            "defenseLevel": 400,
-            "rangedLevel": 0,
-            "magicLevel": 0,
-            "combatStats": {
-                "combatStyleHrids": [
-                    "/combat_styles/smash"
-                ],
-                "damageType": "/damage_types/physical",
-                "attackInterval": 4000000000,
-                "rangedEvasion": 1,
-                "armor": 100,
-                "waterResistance": 50,
-                "fireResistance": 50,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
-            }
-        },
-        "elite1CombatDetails": {
-            "currentHitpoints": 57220,
-            "maxHitpoints": 57220,
-            "currentManapoints": 57220,
-            "maxManapoints": 57220,
-            "attackInterval": 3142183817,
-            "stabAccuracyRating": 556,
-            "slashAccuracyRating": 556,
-            "smashAccuracyRating": 556,
-            "rangedAccuracyRating": 66,
-            "magicAccuracyRating": 66,
-            "stabMaxDamage": 696,
-            "slashMaxDamage": 696,
-            "smashMaxDamage": 696,
-            "rangedMaxDamage": 66,
-            "magicMaxDamage": 66,
-            "stabEvasionRating": 626,
-            "slashEvasionRating": 626,
-            "smashEvasionRating": 626,
-            "rangedEvasionRating": 1252,
-            "magicEvasionRating": 486,
-            "totalArmor": 223.2,
-            "totalWaterResistance": 117.2,
-            "totalNatureResistance": 67.2,
-            "totalFireResistance": 117.2,
-            "totalThreat": 100,
-            "combatLevel": 2654,
-            "staminaLevel": 5712,
-            "intelligenceLevel": 5712,
-            "attackLevel": 546,
-            "powerLevel": 686,
-            "defenseLevel": 616,
-            "rangedLevel": 56,
-            "magicLevel": 56,
-            "combatStats": {
-                "combatStyleHrids": [
-                    "/combat_styles/smash"
-                ],
-                "damageType": "/damage_types/physical",
-                "attackInterval": 4000000000,
-                "rangedEvasion": 1,
-                "armor": 100,
-                "waterResistance": 50,
-                "fireResistance": 50,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
-            }
-        },
-        "elite2CombatDetails": {
-            "currentHitpoints": 74260,
-            "maxHitpoints": 74260,
-            "currentManapoints": 74260,
-            "maxManapoints": 74260,
-            "attackInterval": 2883922134,
-            "stabAccuracyRating": 784,
-            "slashAccuracyRating": 784,
-            "smashAccuracyRating": 784,
-            "rangedAccuracyRating": 154,
-            "magicAccuracyRating": 154,
-            "stabMaxDamage": 964,
-            "slashMaxDamage": 964,
-            "smashMaxDamage": 964,
-            "rangedMaxDamage": 154,
-            "magicMaxDamage": 154,
-            "stabEvasionRating": 874,
-            "slashEvasionRating": 874,
-            "smashEvasionRating": 874,
-            "rangedEvasionRating": 1748,
-            "magicEvasionRating": 694,
-            "totalArmor": 272.8,
-            "totalWaterResistance": 150.8,
-            "totalNatureResistance": 100.80000000000001,
-            "totalFireResistance": 150.8,
-            "totalThreat": 100,
-            "combatLevel": 3484,
-            "staminaLevel": 7416,
-            "intelligenceLevel": 7416,
-            "attackLevel": 774,
-            "powerLevel": 954,
-            "defenseLevel": 864,
-            "rangedLevel": 144,
-            "magicLevel": 144,
-            "combatStats": {
-                "combatStyleHrids": [
-                    "/combat_styles/smash"
-                ],
-                "damageType": "/damage_types/physical",
-                "attackInterval": 4000000000,
-                "rangedEvasion": 1,
-                "armor": 100,
-                "waterResistance": 50,
-                "fireResistance": 50,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
-            }
-        },
-        "abilities": [
-            {
-                "abilityHrid": "/abilities/invincible",
-                "level": 30,
-                "minEliteTier": 0
-            },
-            {
-                "abilityHrid": "/abilities/toughness",
-                "level": 50,
-                "minEliteTier": 0
-            },
-            {
-                "abilityHrid": "/abilities/berserk",
-                "level": 50,
-                "minEliteTier": 0
-            },
-            {
-                "abilityHrid": "/abilities/stunning_blow",
-                "level": 50,
-                "minEliteTier": 0
-            },
-            {
-                "abilityHrid": "/abilities/shield_bash",
-                "level": 50,
-                "minEliteTier": 0
-            }
-        ],
-        "dropTable": null,
-        "rareDropTable": [
-            {
-                "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.2160822222222222,
                 "minCount": 1,
                 "maxCount": 1,
                 "minEliteTier": 0
@@ -11818,194 +11997,6 @@
             }
         ]
     },
-    "/monsters/pirate_captain": {
-        "hrid": "/monsters/pirate_captain",
-        "name": "Captain Cheesehook",
-        "combatDetails": {
-            "currentHitpoints": 88500,
-            "maxHitpoints": 88500,
-            "currentManapoints": 88500,
-            "maxManapoints": 88500,
-            "attackInterval": 2452107279,
-            "stabAccuracyRating": 620,
-            "slashAccuracyRating": 620,
-            "smashAccuracyRating": 620,
-            "rangedAccuracyRating": 10,
-            "magicAccuracyRating": 10,
-            "stabMaxDamage": 660,
-            "slashMaxDamage": 660,
-            "smashMaxDamage": 660,
-            "rangedMaxDamage": 10,
-            "magicMaxDamage": 10,
-            "stabEvasionRating": 380,
-            "slashEvasionRating": 380,
-            "smashEvasionRating": 380,
-            "rangedEvasionRating": 570,
-            "magicEvasionRating": 287.5,
-            "totalArmor": 124,
-            "totalWaterResistance": 87,
-            "totalNatureResistance": 37,
-            "totalFireResistance": 87,
-            "totalThreat": 100,
-            "combatLevel": 3862,
-            "staminaLevel": 8840,
-            "intelligenceLevel": 8840,
-            "attackLevel": 610,
-            "powerLevel": 650,
-            "defenseLevel": 370,
-            "rangedLevel": 0,
-            "magicLevel": 0,
-            "combatStats": {
-                "combatStyleHrids": [
-                    "/combat_styles/slash"
-                ],
-                "damageType": "/damage_types/physical",
-                "attackInterval": 3200000000,
-                "rangedEvasion": 0.5,
-                "armor": 50,
-                "waterResistance": 50,
-                "fireResistance": 50,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
-            }
-        },
-        "elite1CombatDetails": {
-            "currentHitpoints": 124420,
-            "maxHitpoints": 124420,
-            "currentManapoints": 124420,
-            "maxManapoints": 124420,
-            "attackInterval": 2199312714,
-            "stabAccuracyRating": 919.9999999999999,
-            "slashAccuracyRating": 919.9999999999999,
-            "smashAccuracyRating": 919.9999999999999,
-            "rangedAccuracyRating": 66,
-            "magicAccuracyRating": 66,
-            "stabMaxDamage": 975.9999999999999,
-            "slashMaxDamage": 975.9999999999999,
-            "smashMaxDamage": 975.9999999999999,
-            "rangedMaxDamage": 66,
-            "magicMaxDamage": 66,
-            "stabEvasionRating": 584,
-            "slashEvasionRating": 584,
-            "smashEvasionRating": 584,
-            "rangedEvasionRating": 876,
-            "magicEvasionRating": 454.5,
-            "totalArmor": 164.8,
-            "totalWaterResistance": 113,
-            "totalNatureResistance": 63.00000000000001,
-            "totalFireResistance": 113,
-            "totalThreat": 100,
-            "combatLevel": 5462,
-            "staminaLevel": 12432,
-            "intelligenceLevel": 12432,
-            "attackLevel": 909.9999999999999,
-            "powerLevel": 965.9999999999999,
-            "defenseLevel": 574,
-            "rangedLevel": 56,
-            "magicLevel": 56,
-            "combatStats": {
-                "combatStyleHrids": [
-                    "/combat_styles/slash"
-                ],
-                "damageType": "/damage_types/physical",
-                "attackInterval": 3200000000,
-                "rangedEvasion": 0.5,
-                "armor": 50,
-                "waterResistance": 50,
-                "fireResistance": 50,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
-            }
-        },
-        "elite2CombatDetails": {
-            "currentHitpoints": 160660,
-            "maxHitpoints": 160660,
-            "currentManapoints": 160660,
-            "maxManapoints": 160660,
-            "attackInterval": 1974090067,
-            "stabAccuracyRating": 1252,
-            "slashAccuracyRating": 1252,
-            "smashAccuracyRating": 1252,
-            "rangedAccuracyRating": 154,
-            "magicAccuracyRating": 154,
-            "stabMaxDamage": 1324,
-            "slashMaxDamage": 1324,
-            "smashMaxDamage": 1324,
-            "rangedMaxDamage": 154,
-            "magicMaxDamage": 154,
-            "stabEvasionRating": 820,
-            "slashEvasionRating": 820,
-            "smashEvasionRating": 820,
-            "rangedEvasionRating": 1230,
-            "magicEvasionRating": 653.5,
-            "totalArmor": 212,
-            "totalWaterResistance": 145.4,
-            "totalNatureResistance": 95.4,
-            "totalFireResistance": 145.4,
-            "totalThreat": 100,
-            "combatLevel": 7095,
-            "staminaLevel": 16056,
-            "intelligenceLevel": 16056,
-            "attackLevel": 1242,
-            "powerLevel": 1314,
-            "defenseLevel": 810,
-            "rangedLevel": 144,
-            "magicLevel": 144,
-            "combatStats": {
-                "combatStyleHrids": [
-                    "/combat_styles/slash"
-                ],
-                "damageType": "/damage_types/physical",
-                "attackInterval": 3200000000,
-                "rangedEvasion": 0.5,
-                "armor": 50,
-                "waterResistance": 50,
-                "fireResistance": 50,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
-            }
-        },
-        "abilities": [
-            {
-                "abilityHrid": "/abilities/fierce_aura",
-                "level": 30,
-                "minEliteTier": 0
-            },
-            {
-                "abilityHrid": "/abilities/frenzy",
-                "level": 50,
-                "minEliteTier": 0
-            },
-            {
-                "abilityHrid": "/abilities/cleave",
-                "level": 50,
-                "minEliteTier": 0
-            },
-            {
-                "abilityHrid": "/abilities/maim",
-                "level": 50,
-                "minEliteTier": 0
-            },
-            {
-                "abilityHrid": "/abilities/fracturing_impact",
-                "level": 50,
-                "minEliteTier": 0
-            }
-        ],
-        "dropTable": null,
-        "rareDropTable": [
-            {
-                "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.9652477777777778,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ]
-    },
     "/monsters/polar_bear": {
         "hrid": "/monsters/polar_bear",
         "name": "Polar Bear",
@@ -12607,194 +12598,6 @@
             {
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.01352111111111111,
-                "minCount": 1,
-                "maxCount": 1,
-                "minEliteTier": 0
-            }
-        ]
-    },
-    "/monsters/ranged_pirate": {
-        "hrid": "/monsters/ranged_pirate",
-        "name": "Brine Marksman",
-        "combatDetails": {
-            "currentHitpoints": 38500,
-            "maxHitpoints": 38500,
-            "currentManapoints": 38500,
-            "maxManapoints": 38500,
-            "attackInterval": 3600000000,
-            "stabAccuracyRating": 10,
-            "slashAccuracyRating": 10,
-            "smashAccuracyRating": 10,
-            "rangedAccuracyRating": 500,
-            "magicAccuracyRating": 10,
-            "stabMaxDamage": 10,
-            "slashMaxDamage": 10,
-            "smashMaxDamage": 10,
-            "rangedMaxDamage": 500,
-            "magicMaxDamage": 10,
-            "stabEvasionRating": 320,
-            "slashEvasionRating": 320,
-            "smashEvasionRating": 320,
-            "rangedEvasionRating": 320,
-            "magicEvasionRating": 730,
-            "totalArmor": 62,
-            "totalWaterResistance": 181,
-            "totalNatureResistance": 131,
-            "totalFireResistance": 181,
-            "totalThreat": 100,
-            "combatLevel": 1794,
-            "staminaLevel": 3840,
-            "intelligenceLevel": 3840,
-            "attackLevel": 0,
-            "powerLevel": 0,
-            "defenseLevel": 310,
-            "rangedLevel": 490,
-            "magicLevel": 0,
-            "combatStats": {
-                "combatStyleHrids": [
-                    "/combat_styles/ranged"
-                ],
-                "damageType": "/damage_types/physical",
-                "attackInterval": 3600000000,
-                "magicEvasion": 1,
-                "waterResistance": 150,
-                "natureResistance": 100,
-                "fireResistance": 150,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
-            }
-        },
-        "elite1CombatDetails": {
-            "currentHitpoints": 54420,
-            "maxHitpoints": 54420,
-            "currentManapoints": 54420,
-            "maxManapoints": 54420,
-            "attackInterval": 3501945525,
-            "stabAccuracyRating": 66,
-            "slashAccuracyRating": 66,
-            "smashAccuracyRating": 66,
-            "rangedAccuracyRating": 752,
-            "magicAccuracyRating": 66,
-            "stabMaxDamage": 66,
-            "slashMaxDamage": 66,
-            "smashMaxDamage": 66,
-            "rangedMaxDamage": 752,
-            "magicMaxDamage": 66,
-            "stabEvasionRating": 499.99999999999994,
-            "slashEvasionRating": 499.99999999999994,
-            "smashEvasionRating": 499.99999999999994,
-            "rangedEvasionRating": 499.99999999999994,
-            "magicEvasionRating": 1126,
-            "totalArmor": 98,
-            "totalWaterResistance": 204.6,
-            "totalNatureResistance": 154.6,
-            "totalFireResistance": 204.6,
-            "totalThreat": 100,
-            "combatLevel": 2567,
-            "staminaLevel": 5432,
-            "intelligenceLevel": 5432,
-            "attackLevel": 56,
-            "powerLevel": 56,
-            "defenseLevel": 489.99999999999994,
-            "rangedLevel": 742,
-            "magicLevel": 56,
-            "combatStats": {
-                "combatStyleHrids": [
-                    "/combat_styles/ranged"
-                ],
-                "damageType": "/damage_types/physical",
-                "attackInterval": 3600000000,
-                "magicEvasion": 1,
-                "waterResistance": 150,
-                "natureResistance": 100,
-                "fireResistance": 150,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
-            }
-        },
-        "elite2CombatDetails": {
-            "currentHitpoints": 70660,
-            "maxHitpoints": 70660,
-            "currentManapoints": 70660,
-            "maxManapoints": 70660,
-            "attackInterval": 3358208955,
-            "stabAccuracyRating": 154,
-            "slashAccuracyRating": 154,
-            "smashAccuracyRating": 154,
-            "rangedAccuracyRating": 1036,
-            "magicAccuracyRating": 154,
-            "stabMaxDamage": 154,
-            "slashMaxDamage": 154,
-            "smashMaxDamage": 154,
-            "rangedMaxDamage": 1036,
-            "magicMaxDamage": 154,
-            "stabEvasionRating": 712,
-            "slashEvasionRating": 712,
-            "smashEvasionRating": 712,
-            "rangedEvasionRating": 712,
-            "magicEvasionRating": 1586,
-            "totalArmor": 140.4,
-            "totalWaterResistance": 234.60000000000002,
-            "totalNatureResistance": 184.60000000000002,
-            "totalFireResistance": 234.60000000000002,
-            "totalThreat": 100,
-            "combatLevel": 3373,
-            "staminaLevel": 7056,
-            "intelligenceLevel": 7056,
-            "attackLevel": 144,
-            "powerLevel": 144,
-            "defenseLevel": 702,
-            "rangedLevel": 1026,
-            "magicLevel": 144,
-            "combatStats": {
-                "combatStyleHrids": [
-                    "/combat_styles/ranged"
-                ],
-                "damageType": "/damage_types/physical",
-                "attackInterval": 3600000000,
-                "magicEvasion": 1,
-                "waterResistance": 150,
-                "natureResistance": 100,
-                "fireResistance": 150,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
-            }
-        },
-        "abilities": [
-            {
-                "abilityHrid": "/abilities/critical_aura",
-                "level": 30,
-                "minEliteTier": 0
-            },
-            {
-                "abilityHrid": "/abilities/rain_of_arrows",
-                "level": 50,
-                "minEliteTier": 0
-            },
-            {
-                "abilityHrid": "/abilities/aqua_arrow",
-                "level": 50,
-                "minEliteTier": 0
-            },
-            {
-                "abilityHrid": "/abilities/penetrating_shot",
-                "level": 50,
-                "minEliteTier": 0
-            },
-            {
-                "abilityHrid": "/abilities/quick_shot",
-                "level": 60,
-                "minEliteTier": 0
-            }
-        ],
-        "dropTable": null,
-        "rareDropTable": [
-            {
-                "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.19878999999999997,
                 "minCount": 1,
                 "maxCount": 1,
                 "minEliteTier": 0
@@ -15025,30 +14828,30 @@
             "stabAccuracyRating": 590,
             "slashAccuracyRating": 590,
             "smashAccuracyRating": 590,
-            "rangedAccuracyRating": 670,
+            "rangedAccuracyRating": 770,
             "magicAccuracyRating": 10,
             "stabMaxDamage": 650,
             "slashMaxDamage": 650,
             "smashMaxDamage": 650,
-            "rangedMaxDamage": 670,
+            "rangedMaxDamage": 770,
             "magicMaxDamage": 10,
             "stabEvasionRating": 380,
             "slashEvasionRating": 380,
             "smashEvasionRating": 380,
             "rangedEvasionRating": 380,
-            "magicEvasionRating": 678.75,
+            "magicEvasionRating": 716.25,
             "totalArmor": 124,
             "totalWaterResistance": 137,
             "totalNatureResistance": 87,
             "totalFireResistance": 137,
             "totalThreat": 100,
-            "combatLevel": 5334,
+            "combatLevel": 5374,
             "staminaLevel": 12490,
             "intelligenceLevel": 12490,
             "attackLevel": 580,
             "powerLevel": 640,
             "defenseLevel": 370,
-            "rangedLevel": 660,
+            "rangedLevel": 760,
             "magicLevel": 0,
             "combatStats": {
                 "combatStyleHrids": [
@@ -15064,7 +14867,7 @@
                 "tenacity": 50,
                 "hpRegenPer10": 0.01,
                 "mpRegenPer10": 0.01,
-                "ripple": 0.25
+                "ripple": 0.18
             }
         },
         "elite1CombatDetails": {
@@ -15076,30 +14879,30 @@
             "stabAccuracyRating": 878,
             "slashAccuracyRating": 878,
             "smashAccuracyRating": 878,
-            "rangedAccuracyRating": 989.9999999999999,
+            "rangedAccuracyRating": 1130,
             "magicAccuracyRating": 66,
             "stabMaxDamage": 961.9999999999999,
             "slashMaxDamage": 961.9999999999999,
             "smashMaxDamage": 961.9999999999999,
-            "rangedMaxDamage": 989.9999999999999,
+            "rangedMaxDamage": 1130,
             "magicMaxDamage": 66,
             "stabEvasionRating": 584,
             "slashEvasionRating": 584,
             "smashEvasionRating": 584,
             "rangedEvasionRating": 584,
-            "magicEvasionRating": 1028.25,
+            "magicEvasionRating": 1080.75,
             "totalArmor": 164.8,
             "totalWaterResistance": 163,
             "totalNatureResistance": 113,
             "totalFireResistance": 163,
             "totalThreat": 100,
-            "combatLevel": 7523,
+            "combatLevel": 7579,
             "staminaLevel": 17542,
             "intelligenceLevel": 17542,
             "attackLevel": 868,
             "powerLevel": 951.9999999999999,
             "defenseLevel": 574,
-            "rangedLevel": 979.9999999999999,
+            "rangedLevel": 1120,
             "magicLevel": 56,
             "combatStats": {
                 "combatStyleHrids": [
@@ -15115,7 +14918,7 @@
                 "tenacity": 50,
                 "hpRegenPer10": 0.01,
                 "mpRegenPer10": 0.01,
-                "ripple": 0.25
+                "ripple": 0.18
             }
         },
         "elite2CombatDetails": {
@@ -15127,30 +14930,30 @@
             "stabAccuracyRating": 1198,
             "slashAccuracyRating": 1198,
             "smashAccuracyRating": 1198,
-            "rangedAccuracyRating": 1342,
+            "rangedAccuracyRating": 1522,
             "magicAccuracyRating": 154,
             "stabMaxDamage": 1306,
             "slashMaxDamage": 1306,
             "smashMaxDamage": 1306,
-            "rangedMaxDamage": 1342,
+            "rangedMaxDamage": 1522,
             "magicMaxDamage": 154,
             "stabEvasionRating": 820,
             "slashEvasionRating": 820,
             "smashEvasionRating": 820,
             "rangedEvasionRating": 820,
-            "magicEvasionRating": 1425.75,
+            "magicEvasionRating": 1493.25,
             "totalArmor": 212,
             "totalWaterResistance": 195.4,
             "totalNatureResistance": 145.4,
             "totalFireResistance": 195.4,
             "totalThreat": 100,
-            "combatLevel": 9745,
+            "combatLevel": 9817,
             "staminaLevel": 22626,
             "intelligenceLevel": 22626,
             "attackLevel": 1188,
             "powerLevel": 1296,
             "defenseLevel": 810,
-            "rangedLevel": 1332,
+            "rangedLevel": 1512,
             "magicLevel": 144,
             "combatStats": {
                 "combatStyleHrids": [
@@ -15166,7 +14969,7 @@
                 "tenacity": 50,
                 "hpRegenPer10": 0.01,
                 "mpRegenPer10": 0.01,
-                "ripple": 0.25
+                "ripple": 0.18
             }
         },
         "abilities": [
@@ -15200,7 +15003,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 1.8744150000000002,
+                "dropRate": 1.8883150000000002,
                 "minCount": 1,
                 "maxCount": 1,
                 "minEliteTier": 0
@@ -15451,6 +15254,203 @@
             {
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.005948194444444444,
+                "minCount": 1,
+                "maxCount": 1,
+                "minEliteTier": 0
+            }
+        ]
+    },
+    "/monsters/tidal_conjuror": {
+        "hrid": "/monsters/tidal_conjuror",
+        "name": "Tidal Conjuror",
+        "combatDetails": {
+            "currentHitpoints": 34500,
+            "maxHitpoints": 34500,
+            "currentManapoints": 34500,
+            "maxManapoints": 34500,
+            "attackInterval": 3500000000,
+            "stabAccuracyRating": 10,
+            "slashAccuracyRating": 10,
+            "smashAccuracyRating": 10,
+            "rangedAccuracyRating": 10,
+            "magicAccuracyRating": 420,
+            "stabMaxDamage": 10,
+            "slashMaxDamage": 10,
+            "smashMaxDamage": 10,
+            "rangedMaxDamage": 10,
+            "magicMaxDamage": 420,
+            "stabEvasionRating": 290,
+            "slashEvasionRating": 290,
+            "smashEvasionRating": 290,
+            "rangedEvasionRating": 290,
+            "magicEvasionRating": 286,
+            "totalArmor": 56,
+            "totalWaterResistance": 169,
+            "totalNatureResistance": 119,
+            "totalFireResistance": 169,
+            "totalThreat": 100,
+            "combatLevel": 1596,
+            "staminaLevel": 3440,
+            "intelligenceLevel": 3440,
+            "attackLevel": 0,
+            "powerLevel": 0,
+            "defenseLevel": 280,
+            "rangedLevel": 0,
+            "magicLevel": 410,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/magic"
+                ],
+                "damageType": "/damage_types/water",
+                "attackInterval": 3500000000,
+                "autoAttackDamage": -0.5,
+                "waterAmplify": 0.4,
+                "magicEvasion": 0.3,
+                "waterResistance": 100,
+                "natureResistance": 50,
+                "fireResistance": 100,
+                "tenacity": 50,
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01,
+                "ripple": 0.18
+            }
+        },
+        "elite1CombatDetails": {
+            "currentHitpoints": 48820,
+            "maxHitpoints": 48820,
+            "currentManapoints": 48820,
+            "maxManapoints": 48820,
+            "attackInterval": 3404669260,
+            "stabAccuracyRating": 66,
+            "slashAccuracyRating": 66,
+            "smashAccuracyRating": 66,
+            "rangedAccuracyRating": 66,
+            "magicAccuracyRating": 640,
+            "stabMaxDamage": 66,
+            "slashMaxDamage": 66,
+            "smashMaxDamage": 66,
+            "rangedMaxDamage": 66,
+            "magicMaxDamage": 640,
+            "stabEvasionRating": 458,
+            "slashEvasionRating": 458,
+            "smashEvasionRating": 458,
+            "rangedEvasionRating": 458,
+            "magicEvasionRating": 468,
+            "totalArmor": 89.60000000000001,
+            "totalWaterResistance": 207.8,
+            "totalNatureResistance": 157.8,
+            "totalFireResistance": 207.8,
+            "totalThreat": 100,
+            "combatLevel": 2290,
+            "staminaLevel": 4872,
+            "intelligenceLevel": 4872,
+            "attackLevel": 56,
+            "powerLevel": 56,
+            "defenseLevel": 448,
+            "rangedLevel": 56,
+            "magicLevel": 630,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/magic"
+                ],
+                "damageType": "/damage_types/water",
+                "attackInterval": 3500000000,
+                "autoAttackDamage": -0.5,
+                "waterAmplify": 0.4,
+                "magicEvasion": 0.3,
+                "waterResistance": 100,
+                "natureResistance": 50,
+                "fireResistance": 100,
+                "tenacity": 50,
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01,
+                "ripple": 0.18
+            }
+        },
+        "elite2CombatDetails": {
+            "currentHitpoints": 63460,
+            "maxHitpoints": 63460,
+            "currentManapoints": 63460,
+            "maxManapoints": 63460,
+            "attackInterval": 3264925373,
+            "stabAccuracyRating": 154,
+            "slashAccuracyRating": 154,
+            "smashAccuracyRating": 154,
+            "rangedAccuracyRating": 154,
+            "magicAccuracyRating": 892,
+            "stabMaxDamage": 154,
+            "slashMaxDamage": 154,
+            "smashMaxDamage": 154,
+            "rangedMaxDamage": 154,
+            "magicMaxDamage": 892,
+            "stabEvasionRating": 658,
+            "slashEvasionRating": 658,
+            "smashEvasionRating": 658,
+            "rangedEvasionRating": 658,
+            "magicEvasionRating": 691.6,
+            "totalArmor": 129.6,
+            "totalWaterResistance": 253,
+            "totalNatureResistance": 203,
+            "totalFireResistance": 253,
+            "totalThreat": 100,
+            "combatLevel": 3016,
+            "staminaLevel": 6336,
+            "intelligenceLevel": 6336,
+            "attackLevel": 144,
+            "powerLevel": 144,
+            "defenseLevel": 648,
+            "rangedLevel": 144,
+            "magicLevel": 882,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/magic"
+                ],
+                "damageType": "/damage_types/water",
+                "attackInterval": 3500000000,
+                "autoAttackDamage": -0.5,
+                "waterAmplify": 0.4,
+                "magicEvasion": 0.3,
+                "waterResistance": 100,
+                "natureResistance": 50,
+                "fireResistance": 100,
+                "tenacity": 50,
+                "hpRegenPer10": 0.01,
+                "mpRegenPer10": 0.01,
+                "ripple": 0.18
+            }
+        },
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/aqua_aura",
+                "level": 30,
+                "minEliteTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/elemental_affinity",
+                "level": 50,
+                "minEliteTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/frost_surge",
+                "level": 50,
+                "minEliteTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/ice_spear",
+                "level": 50,
+                "minEliteTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/water_strike",
+                "level": 50,
+                "minEliteTier": 0
+            }
+        ],
+        "dropTable": null,
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_treasure_chest",
+                "dropRate": 0.15916,
                 "minCount": 1,
                 "maxCount": 1,
                 "minEliteTier": 0
