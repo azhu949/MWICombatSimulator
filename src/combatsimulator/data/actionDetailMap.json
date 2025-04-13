@@ -17624,7 +17624,7 @@
                         "minEliteTier": 0
                     }
                 ],
-                "maxWaves": 70,
+                "maxWaves": 65,
                 "randomSpawnInfoMap": {
                     "0": {
                         "maxSpawnCount": 4,
@@ -17728,7 +17728,7 @@
                             }
                         ]
                     },
-                    "45": {
+                    "40": {
                         "maxSpawnCount": 5,
                         "maxTotalStrength": 450,
                         "spawns": [
@@ -17830,13 +17830,7 @@
                     ],
                     "10": [
                         {
-                            "combatMonsterHrid": "/monsters/squawker",
-                            "eliteTier": 0,
-                            "rate": 0,
-                            "strength": 0
-                        },
-                        {
-                            "combatMonsterHrid": "/monsters/squawker",
+                            "combatMonsterHrid": "/monsters/anchor_shark",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17844,7 +17838,7 @@
                     ],
                     "15": [
                         {
-                            "combatMonsterHrid": "/monsters/anchor_shark",
+                            "combatMonsterHrid": "/monsters/brine_marksman",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17852,7 +17846,7 @@
                     ],
                     "20": [
                         {
-                            "combatMonsterHrid": "/monsters/brine_marksman",
+                            "combatMonsterHrid": "/monsters/tidal_conjuror",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17860,7 +17854,13 @@
                     ],
                     "25": [
                         {
-                            "combatMonsterHrid": "/monsters/tidal_conjuror",
+                            "combatMonsterHrid": "/monsters/anchor_shark",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        },
+                        {
+                            "combatMonsterHrid": "/monsters/brine_marksman",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17868,13 +17868,13 @@
                     ],
                     "30": [
                         {
-                            "combatMonsterHrid": "/monsters/anchor_shark",
+                            "combatMonsterHrid": "/monsters/brine_marksman",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
                         },
                         {
-                            "combatMonsterHrid": "/monsters/brine_marksman",
+                            "combatMonsterHrid": "/monsters/tidal_conjuror",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17882,13 +17882,13 @@
                     ],
                     "35": [
                         {
-                            "combatMonsterHrid": "/monsters/brine_marksman",
+                            "combatMonsterHrid": "/monsters/tidal_conjuror",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
                         },
                         {
-                            "combatMonsterHrid": "/monsters/tidal_conjuror",
+                            "combatMonsterHrid": "/monsters/anchor_shark",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17896,13 +17896,19 @@
                     ],
                     "40": [
                         {
-                            "combatMonsterHrid": "/monsters/tidal_conjuror",
+                            "combatMonsterHrid": "/monsters/anchor_shark",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
                         },
                         {
-                            "combatMonsterHrid": "/monsters/anchor_shark",
+                            "combatMonsterHrid": "/monsters/squawker",
+                            "eliteTier": 0,
+                            "rate": 0,
+                            "strength": 0
+                        },
+                        {
+                            "combatMonsterHrid": "/monsters/brine_marksman",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17910,7 +17916,7 @@
                     ],
                     "45": [
                         {
-                            "combatMonsterHrid": "/monsters/anchor_shark",
+                            "combatMonsterHrid": "/monsters/brine_marksman",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17922,7 +17928,7 @@
                             "strength": 0
                         },
                         {
-                            "combatMonsterHrid": "/monsters/brine_marksman",
+                            "combatMonsterHrid": "/monsters/tidal_conjuror",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17930,7 +17936,7 @@
                     ],
                     "50": [
                         {
-                            "combatMonsterHrid": "/monsters/brine_marksman",
+                            "combatMonsterHrid": "/monsters/tidal_conjuror",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17942,7 +17948,7 @@
                             "strength": 0
                         },
                         {
-                            "combatMonsterHrid": "/monsters/tidal_conjuror",
+                            "combatMonsterHrid": "/monsters/anchor_shark",
                             "eliteTier": 0,
                             "rate": 0,
                             "strength": 0
@@ -17950,26 +17956,6 @@
                     ],
                     "55": [
                         {
-                            "combatMonsterHrid": "/monsters/tidal_conjuror",
-                            "eliteTier": 0,
-                            "rate": 0,
-                            "strength": 0
-                        },
-                        {
-                            "combatMonsterHrid": "/monsters/squawker",
-                            "eliteTier": 0,
-                            "rate": 0,
-                            "strength": 0
-                        },
-                        {
-                            "combatMonsterHrid": "/monsters/anchor_shark",
-                            "eliteTier": 0,
-                            "rate": 0,
-                            "strength": 0
-                        }
-                    ],
-                    "60": [
-                        {
                             "combatMonsterHrid": "/monsters/anchor_shark",
                             "eliteTier": 0,
                             "rate": 0,
@@ -17988,7 +17974,7 @@
                             "strength": 0
                         }
                     ],
-                    "65": [
+                    "60": [
                         {
                             "combatMonsterHrid": "/monsters/captain_fishhook",
                             "eliteTier": 0,
@@ -17996,7 +17982,7 @@
                             "strength": 0
                         }
                     ],
-                    "70": [
+                    "65": [
                         {
                             "combatMonsterHrid": "/monsters/the_kraken",
                             "eliteTier": 0,

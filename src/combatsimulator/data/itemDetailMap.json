@@ -27421,7 +27421,7 @@
     "/items/kraken_fang": {
         "hrid": "/items/kraken_fang",
         "name": "Kraken Fang",
-        "description": "Material used in smithing Rippling, Blooming, or Blazing Trident",
+        "description": "Material used in crafting Rippling, Blooming, or Blazing Trident",
         "categoryHrid": "/item_categories/resource",
         "sellPrice": 100000,
         "isTradable": true,
@@ -27437,7 +27437,7 @@
     "/items/kraken_leather": {
         "hrid": "/items/kraken_leather",
         "name": "Kraken Leather",
-        "description": "Material used in smithing Kraken Tunic or Chaps",
+        "description": "Material used in tailoring Kraken Tunic or Chaps",
         "categoryHrid": "/item_categories/resource",
         "sellPrice": 40000,
         "isTradable": true,
@@ -30045,7 +30045,7 @@
     "/items/marksman_brooch": {
         "hrid": "/items/marksman_brooch",
         "name": "Marksman Brooch",
-        "description": "Material used in smithing Marksman Bracers",
+        "description": "Material used in tailoring Marksman Bracers",
         "categoryHrid": "/item_categories/resource",
         "sellPrice": 40000,
         "isTradable": true,
