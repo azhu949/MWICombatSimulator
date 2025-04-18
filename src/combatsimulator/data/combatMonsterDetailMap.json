@@ -1656,7 +1656,7 @@
     },
     "/monsters/captain_fishhook": {
         "hrid": "/monsters/captain_fishhook",
-        "name": "Captain Cheesehook",
+        "name": "Captain Fishhook",
         "combatDetails": {
             "currentHitpoints": 67500,
             "maxHitpoints": 67500,

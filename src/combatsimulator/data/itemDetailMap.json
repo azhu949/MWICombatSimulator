@@ -805,8 +805,23 @@
                     "count": 1
                 }
             ],
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "transmuteSuccessRate": 0.5,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/anchorbound_plate_body",
+                    "dropRate": 0.9,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/philosophers_stone",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "equipmentDetail": {
             "type": "/equipment_types/body",
@@ -904,8 +919,23 @@
                     "count": 1
                 }
             ],
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "transmuteSuccessRate": 0.5,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/anchorbound_plate_legs",
+                    "dropRate": 0.92,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/philosophers_stone",
+                    "dropRate": 0.08,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "equipmentDetail": {
             "type": "/equipment_types/legs",
@@ -1894,25 +1924,39 @@
             "bulkMultiplier": 1,
             "isCoinifiable": true,
             "decomposeItems": null,
-            "transmuteSuccessRate": 0.75,
+            "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
                 {
+                    "itemHrid": "/items/shield_bash",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
                     "itemHrid": "/items/penetrating_strike",
-                    "dropRate": 0.15,
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
                 },
                 {
                     "itemHrid": "/items/crippling_slash",
-                    "dropRate": 0.2,
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/fracturing_impact",
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
                 },
                 {
                     "itemHrid": "/items/pestilent_shot",
-                    "dropRate": 0.2,
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
@@ -1932,8 +1976,15 @@
                     "minEliteTier": 0
                 },
                 {
+                    "itemHrid": "/items/life_drain",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
                     "itemHrid": "/items/smoke_burst",
-                    "dropRate": 0.15,
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
@@ -5958,8 +6009,23 @@
                     "count": 1
                 }
             ],
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "transmuteSuccessRate": 0.5,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/blazing_trident",
+                    "dropRate": 0.72,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/philosophers_stone",
+                    "dropRate": 0.28,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "equipmentDetail": {
             "type": "/equipment_types/main_hand",
@@ -6123,8 +6189,23 @@
                     "count": 1
                 }
             ],
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "transmuteSuccessRate": 0.5,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/blooming_trident",
+                    "dropRate": 0.72,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/philosophers_stone",
+                    "dropRate": 0.28,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "equipmentDetail": {
             "type": "/equipment_types/main_hand",
@@ -6165,7 +6246,7 @@
         "name": "Blue Key Fragment",
         "description": "Can be used to craft dungeon keys",
         "categoryHrid": "/item_categories/key",
-        "sellPrice": 10000,
+        "sellPrice": 30000,
         "isTradable": true,
         "itemLevel": 55,
         "alchemyDetail": {
@@ -6819,7 +6900,7 @@
         "name": "Brown Key Fragment",
         "description": "Can be used to craft dungeon keys",
         "categoryHrid": "/item_categories/key",
-        "sellPrice": 60000,
+        "sellPrice": 50000,
         "isTradable": true,
         "itemLevel": 70,
         "alchemyDetail": {
@@ -12287,21 +12368,28 @@
             "transmuteDropTable": [
                 {
                     "itemHrid": "/items/chimerical_essence",
-                    "dropRate": 0.5,
+                    "dropRate": 0.45,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
                 },
                 {
                     "itemHrid": "/items/sinister_essence",
-                    "dropRate": 0.3,
+                    "dropRate": 0.28,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
                 },
                 {
                     "itemHrid": "/items/enchanted_essence",
-                    "dropRate": 0.2,
+                    "dropRate": 0.15,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/pirate_essence",
+                    "dropRate": 0.12,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
@@ -13294,12 +13382,68 @@
         "categoryHrid": "/item_categories/resource",
         "sellPrice": 40000,
         "isTradable": true,
+        "itemLevel": 95,
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/pirate_essence",
+                    "count": 2000
+                }
+            ],
+            "transmuteSuccessRate": 0.64,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/marksman_brooch",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/corsair_crest",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/damaged_anchor",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/maelstrom_plating",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/kraken_leather",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/kraken_fang",
+                    "dropRate": 0.088235,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/crushed_philosophers_stone",
+                    "dropRate": 0.25,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "sortIndex": 701
     },
@@ -13349,8 +13493,23 @@
                     "count": 1
                 }
             ],
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "transmuteSuccessRate": 0.5,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/corsair_helmet",
+                    "dropRate": 0.9,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/philosophers_stone",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "equipmentDetail": {
             "type": "/equipment_types/head",
@@ -15664,25 +15823,39 @@
             "bulkMultiplier": 1,
             "isCoinifiable": true,
             "decomposeItems": null,
-            "transmuteSuccessRate": 0.375,
+            "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
                 {
+                    "itemHrid": "/items/shield_bash",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
                     "itemHrid": "/items/penetrating_strike",
-                    "dropRate": 0.15,
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
                 },
                 {
                     "itemHrid": "/items/crippling_slash",
-                    "dropRate": 0.2,
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/fracturing_impact",
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
                 },
                 {
                     "itemHrid": "/items/pestilent_shot",
-                    "dropRate": 0.2,
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
@@ -15702,8 +15875,15 @@
                     "minEliteTier": 0
                 },
                 {
+                    "itemHrid": "/items/life_drain",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
                     "itemHrid": "/items/smoke_burst",
-                    "dropRate": 0.15,
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
@@ -16869,12 +17049,68 @@
         "categoryHrid": "/item_categories/resource",
         "sellPrice": 40000,
         "isTradable": true,
+        "itemLevel": 95,
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/pirate_essence",
+                    "count": 2000
+                }
+            ],
+            "transmuteSuccessRate": 0.64,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/marksman_brooch",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/corsair_crest",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/damaged_anchor",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/maelstrom_plating",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/kraken_leather",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/kraken_fang",
+                    "dropRate": 0.088235,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/crushed_philosophers_stone",
+                    "dropRate": 0.25,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "sortIndex": 702
     },
@@ -18564,21 +18800,28 @@
             "transmuteDropTable": [
                 {
                     "itemHrid": "/items/chimerical_essence",
-                    "dropRate": 0.5,
+                    "dropRate": 0.45,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
                 },
                 {
                     "itemHrid": "/items/sinister_essence",
-                    "dropRate": 0.3,
+                    "dropRate": 0.28,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
                 },
                 {
                     "itemHrid": "/items/enchanted_essence",
-                    "dropRate": 0.2,
+                    "dropRate": 0.15,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/pirate_essence",
+                    "dropRate": 0.12,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
@@ -20934,8 +21177,79 @@
             "bulkMultiplier": 1,
             "isCoinifiable": true,
             "decomposeItems": null,
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "transmuteSuccessRate": 0.5,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/shield_bash",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/penetrating_strike",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/crippling_slash",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/fracturing_impact",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/pestilent_shot",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/penetrating_shot",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/mana_spring",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/life_drain",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/smoke_burst",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/arcane_reflection",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "abilityBookDetail": {
             "abilityHrid": "/abilities/fracturing_impact",
@@ -21321,8 +21635,23 @@
                     "count": 1
                 }
             ],
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "transmuteSuccessRate": 0.5,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/furious_spear",
+                    "dropRate": 0.75,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/philosophers_stone",
+                    "dropRate": 0.25,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "equipmentDetail": {
             "type": "/equipment_types/main_hand",
@@ -23448,7 +23777,7 @@
         "name": "Green Key Fragment",
         "description": "Can be used to craft dungeon keys",
         "categoryHrid": "/item_categories/key",
-        "sellPrice": 20000,
+        "sellPrice": 30000,
         "isTradable": true,
         "itemLevel": 55,
         "alchemyDetail": {
@@ -27373,8 +27702,23 @@
                     "count": 1
                 }
             ],
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "transmuteSuccessRate": 0.5,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/kraken_chaps",
+                    "dropRate": 0.92,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/philosophers_stone",
+                    "dropRate": 0.08,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "equipmentDetail": {
             "type": "/equipment_types/legs",
@@ -27425,12 +27769,68 @@
         "categoryHrid": "/item_categories/resource",
         "sellPrice": 100000,
         "isTradable": true,
+        "itemLevel": 95,
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/pirate_essence",
+                    "count": 3000
+                }
+            ],
+            "transmuteSuccessRate": 0.96,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/marksman_brooch",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/corsair_crest",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/damaged_anchor",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/maelstrom_plating",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/kraken_leather",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/kraken_fang",
+                    "dropRate": 0.088235,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/crushed_philosophers_stone",
+                    "dropRate": 0.25,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "sortIndex": 705
     },
@@ -27441,12 +27841,68 @@
         "categoryHrid": "/item_categories/resource",
         "sellPrice": 40000,
         "isTradable": true,
+        "itemLevel": 95,
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/pirate_essence",
+                    "count": 2000
+                }
+            ],
+            "transmuteSuccessRate": 0.64,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/marksman_brooch",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/corsair_crest",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/damaged_anchor",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/maelstrom_plating",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/kraken_leather",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/kraken_fang",
+                    "dropRate": 0.088235,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/crushed_philosophers_stone",
+                    "dropRate": 0.25,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "sortIndex": 704
     },
@@ -27492,8 +27948,23 @@
                     "count": 1
                 }
             ],
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "transmuteSuccessRate": 0.5,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/kraken_tunic",
+                    "dropRate": 0.9,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/philosophers_stone",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "equipmentDetail": {
             "type": "/equipment_types/body",
@@ -27710,8 +28181,79 @@
             "bulkMultiplier": 1,
             "isCoinifiable": true,
             "decomposeItems": null,
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "transmuteSuccessRate": 0.5,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/shield_bash",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/penetrating_strike",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/crippling_slash",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/fracturing_impact",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/pestilent_shot",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/penetrating_shot",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/mana_spring",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/life_drain",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/smoke_burst",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/arcane_reflection",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "abilityBookDetail": {
             "abilityHrid": "/abilities/life_drain",
@@ -28852,8 +29394,23 @@
                     "count": 1
                 }
             ],
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "transmuteSuccessRate": 0.5,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/maelstrom_plate_body",
+                    "dropRate": 0.9,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/philosophers_stone",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "equipmentDetail": {
             "type": "/equipment_types/body",
@@ -28937,8 +29494,23 @@
                     "count": 1
                 }
             ],
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "transmuteSuccessRate": 0.5,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/maelstrom_plate_legs",
+                    "dropRate": 0.92,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/philosophers_stone",
+                    "dropRate": 0.08,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "equipmentDetail": {
             "type": "/equipment_types/legs",
@@ -28987,12 +29559,68 @@
         "categoryHrid": "/item_categories/resource",
         "sellPrice": 40000,
         "isTradable": true,
+        "itemLevel": 95,
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/pirate_essence",
+                    "count": 2000
+                }
+            ],
+            "transmuteSuccessRate": 0.64,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/marksman_brooch",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/corsair_crest",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/damaged_anchor",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/maelstrom_plating",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/kraken_leather",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/kraken_fang",
+                    "dropRate": 0.088235,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/crushed_philosophers_stone",
+                    "dropRate": 0.25,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "sortIndex": 703
     },
@@ -29521,25 +30149,39 @@
             "bulkMultiplier": 1,
             "isCoinifiable": true,
             "decomposeItems": null,
-            "transmuteSuccessRate": 0.75,
+            "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
                 {
+                    "itemHrid": "/items/shield_bash",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
                     "itemHrid": "/items/penetrating_strike",
-                    "dropRate": 0.15,
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
                 },
                 {
                     "itemHrid": "/items/crippling_slash",
-                    "dropRate": 0.2,
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/fracturing_impact",
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
                 },
                 {
                     "itemHrid": "/items/pestilent_shot",
-                    "dropRate": 0.2,
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
@@ -29559,8 +30201,15 @@
                     "minEliteTier": 0
                 },
                 {
+                    "itemHrid": "/items/life_drain",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
                     "itemHrid": "/items/smoke_burst",
-                    "dropRate": 0.15,
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
@@ -29999,8 +30648,23 @@
                     "count": 10
                 }
             ],
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "transmuteSuccessRate": 0.5,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/marksman_bracers",
+                    "dropRate": 0.9,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/philosophers_stone",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "equipmentDetail": {
             "type": "/equipment_types/hands",
@@ -30049,12 +30713,68 @@
         "categoryHrid": "/item_categories/resource",
         "sellPrice": 40000,
         "isTradable": true,
+        "itemLevel": 95,
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/pirate_essence",
+                    "count": 2000
+                }
+            ],
+            "transmuteSuccessRate": 0.64,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/marksman_brooch",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/corsair_crest",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/damaged_anchor",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/maelstrom_plating",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/kraken_leather",
+                    "dropRate": 0.132353,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/kraken_fang",
+                    "dropRate": 0.088235,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/crushed_philosophers_stone",
+                    "dropRate": 0.25,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "sortIndex": 700
     },
@@ -32088,25 +32808,39 @@
             "bulkMultiplier": 1,
             "isCoinifiable": true,
             "decomposeItems": null,
-            "transmuteSuccessRate": 0.75,
+            "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
                 {
+                    "itemHrid": "/items/shield_bash",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
                     "itemHrid": "/items/penetrating_strike",
-                    "dropRate": 0.15,
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
                 },
                 {
                     "itemHrid": "/items/crippling_slash",
-                    "dropRate": 0.2,
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/fracturing_impact",
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
                 },
                 {
                     "itemHrid": "/items/pestilent_shot",
-                    "dropRate": 0.2,
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
@@ -32126,8 +32860,15 @@
                     "minEliteTier": 0
                 },
                 {
+                    "itemHrid": "/items/life_drain",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
                     "itemHrid": "/items/smoke_burst",
-                    "dropRate": 0.15,
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
@@ -32168,22 +32909,36 @@
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
                 {
+                    "itemHrid": "/items/shield_bash",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
                     "itemHrid": "/items/penetrating_strike",
-                    "dropRate": 0.15,
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
                 },
                 {
                     "itemHrid": "/items/crippling_slash",
-                    "dropRate": 0.2,
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/fracturing_impact",
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
                 },
                 {
                     "itemHrid": "/items/pestilent_shot",
-                    "dropRate": 0.2,
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
@@ -32203,8 +32958,15 @@
                     "minEliteTier": 0
                 },
                 {
+                    "itemHrid": "/items/life_drain",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
                     "itemHrid": "/items/smoke_burst",
-                    "dropRate": 0.15,
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
@@ -32242,25 +33004,39 @@
             "bulkMultiplier": 1,
             "isCoinifiable": true,
             "decomposeItems": null,
-            "transmuteSuccessRate": 0.375,
+            "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
                 {
+                    "itemHrid": "/items/shield_bash",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
                     "itemHrid": "/items/penetrating_strike",
-                    "dropRate": 0.15,
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
                 },
                 {
                     "itemHrid": "/items/crippling_slash",
-                    "dropRate": 0.2,
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/fracturing_impact",
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
                 },
                 {
                     "itemHrid": "/items/pestilent_shot",
-                    "dropRate": 0.2,
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
@@ -32280,8 +33056,15 @@
                     "minEliteTier": 0
                 },
                 {
+                    "itemHrid": "/items/life_drain",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
                     "itemHrid": "/items/smoke_burst",
-                    "dropRate": 0.15,
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
@@ -32746,6 +33529,7 @@
         "categoryHrid": "/item_categories/key",
         "sellPrice": 600000,
         "isTradable": true,
+        "itemLevel": 95,
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
@@ -32762,6 +33546,7 @@
         "categoryHrid": "/item_categories/key",
         "sellPrice": 60000,
         "isTradable": true,
+        "itemLevel": 95,
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
@@ -32778,12 +33563,42 @@
         "categoryHrid": "/item_categories/resource",
         "sellPrice": 600,
         "isTradable": true,
+        "itemLevel": 95,
         "alchemyDetail": {
-            "bulkMultiplier": 1,
+            "bulkMultiplier": 5,
             "isCoinifiable": true,
             "decomposeItems": null,
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "transmuteSuccessRate": 0.85,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/chimerical_essence",
+                    "dropRate": 0.45,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/sinister_essence",
+                    "dropRate": 0.28,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/enchanted_essence",
+                    "dropRate": 0.15,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/pirate_essence",
+                    "dropRate": 0.12,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "sortIndex": 734
     },
@@ -32793,7 +33608,6 @@
         "description": "Dungeon currency from the Pirate Cove. Spend these in the Shop",
         "categoryHrid": "/item_categories/currency",
         "sellPrice": 0,
-        "isTradable": true,
         "sortIndex": 6
     },
     "/items/plum": {
@@ -38874,8 +39688,23 @@
                     "count": 1
                 }
             ],
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "transmuteSuccessRate": 0.5,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/rippling_trident",
+                    "dropRate": 0.72,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/philosophers_stone",
+                    "dropRate": 0.28,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "equipmentDetail": {
             "type": "/equipment_types/main_hand",
@@ -40268,8 +41097,79 @@
             "bulkMultiplier": 1,
             "isCoinifiable": true,
             "decomposeItems": null,
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
+            "transmuteSuccessRate": 0.5,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/shield_bash",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/penetrating_strike",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/crippling_slash",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/fracturing_impact",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/pestilent_shot",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/penetrating_shot",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/mana_spring",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/life_drain",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/smoke_burst",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/arcane_reflection",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                }
+            ]
         },
         "abilityBookDetail": {
             "abilityHrid": "/abilities/shield_bash",
@@ -41197,21 +42097,28 @@
             "transmuteDropTable": [
                 {
                     "itemHrid": "/items/chimerical_essence",
-                    "dropRate": 0.5,
+                    "dropRate": 0.45,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
                 },
                 {
                     "itemHrid": "/items/sinister_essence",
-                    "dropRate": 0.3,
+                    "dropRate": 0.28,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
                 },
                 {
                     "itemHrid": "/items/enchanted_essence",
-                    "dropRate": 0.2,
+                    "dropRate": 0.15,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/pirate_essence",
+                    "dropRate": 0.12,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
@@ -41418,22 +42325,36 @@
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
                 {
+                    "itemHrid": "/items/shield_bash",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
                     "itemHrid": "/items/penetrating_strike",
-                    "dropRate": 0.15,
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
                 },
                 {
                     "itemHrid": "/items/crippling_slash",
-                    "dropRate": 0.2,
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
+                    "itemHrid": "/items/fracturing_impact",
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
                 },
                 {
                     "itemHrid": "/items/pestilent_shot",
-                    "dropRate": 0.2,
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
@@ -41453,8 +42374,15 @@
                     "minEliteTier": 0
                 },
                 {
+                    "itemHrid": "/items/life_drain",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1,
+                    "minEliteTier": 0
+                },
+                {
                     "itemHrid": "/items/smoke_burst",
-                    "dropRate": 0.15,
+                    "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1,
                     "minEliteTier": 0
@@ -51129,7 +52057,7 @@
         "name": "White Key Fragment",
         "description": "Can be used to craft dungeon keys",
         "categoryHrid": "/item_categories/key",
-        "sellPrice": 40000,
+        "sellPrice": 50000,
         "isTradable": true,
         "itemLevel": 70,
         "alchemyDetail": {
