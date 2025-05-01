@@ -35,7 +35,7 @@ onmessage = async function (event) {
             let simulationTimeLimit = event.data.simulationTimeLimit;
             let combatSimulator = new CombatSimulator(players, zone);
             combatSimulator.addEventListener("progress", (event) => {
-                this.postMessage({ type: "simulation_progress", progress: event.detail });
+                this.postMessage({ type: "simulation_progress", progress: event.detail.progress });
             });
 
             try {
