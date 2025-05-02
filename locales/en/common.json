@@ -54,6 +54,7 @@
         "ranOutOfMana": "Mana Run Out",
         "Yes": "Yes",
         "No": "No",
+        "ranOutOfManaRatio": "Mana Run Out Ratio",
         "healthRestoredPerSecond": "Health Restored Per Second",
         "manaRestoredPerSecond": "Mana Restored Per Second",
         "damageDoneTotal": "Damage Done (Total)",

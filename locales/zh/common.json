@@ -54,6 +54,7 @@
         "ranOutOfMana": "法力值耗尽",
         "Yes": "是",
         "No": "否",
+        "ranOutOfManaRatio": "法力值耗尽比例",
         "healthRestoredPerSecond": "每秒恢复的生命值",
         "manaRestoredPerSecond": "每秒恢复的法力值",
         "damageDoneTotal": "总伤害",

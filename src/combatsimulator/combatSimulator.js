@@ -860,9 +860,12 @@ class CombatSimulator extends EventTarget {
 
         if (source.combatDetails.currentManapoints < ability.manaCost) {
             if (source.isPlayer && oomCheck) {
-                this.simResult.playerRanOutOfMana[source.hrid] = true;
+                this.simResult.addRanOutOfManaCount(source, true);
             }
             return false;
+        }
+        if (source.isPlayer && oomCheck) {
+            this.simResult.addRanOutOfManaCount(source, false);
         }
         return true;
     }
