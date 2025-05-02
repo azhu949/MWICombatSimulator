@@ -1158,9 +1158,12 @@ class CombatSimulator extends EventTarget {
 
         if (source.combatDetails.currentManapoints < ability.manaCost) {
             if (source.isPlayer && oomCheck) {
-                this.simResult.playerRanOutOfMana[source.hrid] = true;
+                this.simResult.addRanOutOfManaCount(source, true);
             }
             return false;
+        }
+        if (source.isPlayer && oomCheck) {
+            this.simResult.addRanOutOfManaCount(source, false);
         }
         return true;
     }
@@ -3965,6 +3968,7 @@ class SimResult {
             "player4" : false,
             "player5" : false
         };
+        this.playerRanOutOfManaTime = {};
         this.manaUsed = {};
         this.timeSpentAlive = [];
         this.bossSpawns = [];
@@ -4105,6 +4109,18 @@ class SimResult {
         }
 
         this.hitpointsSpent[unit.hrid][source] += amount;
+    }
+
+    addRanOutOfManaCount(unit, isRunOutOfMana){
+        if (!this.playerRanOutOfManaTime[unit.hrid]) {
+            this.playerRanOutOfManaTime[unit.hrid] = [0, 0];
+        }
+        if (isRunOutOfMana) {
+            this.playerRanOutOfMana[unit.hrid] = true;
+            this.playerRanOutOfManaTime[unit.hrid][0] += 1;
+        } else {
+            this.playerRanOutOfManaTime[unit.hrid][1] += 1;
+        }
     }
 }
 

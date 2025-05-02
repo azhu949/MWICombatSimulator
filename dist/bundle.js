@@ -3481,6 +3481,20 @@ function showManapointsGained(simResult, playerToDisplay) {
     ranOutOfManaRow.lastElementChild.setAttribute("data-i18n", "common:simulationResults." + ranOutOfManaText);
     newChildren.push(ranOutOfManaRow);
 
+    let ranOutOfManaStat = simResult.playerRanOutOfManaTime[playerToDisplay];
+    if (ranOutOfManaStat) {
+        let ranOutOfManaStatRow = createRow(
+            ["col-md-6", "col-md-3 text-end", "col-md-3 text-end"],
+            [
+                "Ran out of mana ratio",
+                `${ranOutOfManaStat[0]}/${ranOutOfManaStat[1]+ranOutOfManaStat[0]}`,
+                (ranOutOfManaStat[0]/(ranOutOfManaStat[1]+ranOutOfManaStat[0]) * 100).toFixed(2) + "%"
+            ]
+        );
+        ranOutOfManaStatRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.ranOutOfManaRatio");
+        newChildren.push(ranOutOfManaStatRow);
+    }
+
     resultDiv.replaceChildren(...newChildren);
 }
 
