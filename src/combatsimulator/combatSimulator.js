@@ -20,8 +20,6 @@ import AbilityCastEndEvent from "./events/abilityCastEndEvent";
 import AwaitCooldownEvent from "./events/awaitCooldownEvent";
 import Monster from "./monster";
 import Ability from "./ability";
-import Player from "./player";
-import Zone from "./zone";
 
 const ONE_SECOND = 1e9;
 const HOT_TICK_INTERVAL = 5 * ONE_SECOND;
@@ -1290,43 +1288,6 @@ class CombatSimulator extends EventTarget {
 
         this.simResult.addHitpointsSpent(source, ability.hrid, hpSpent);
         this.simResult.addExperienceGain(source, "stamina", experienceGained);
-    }
-}
-
-onmessage = async function (event) {
-    switch (event.data.type) {
-        case "start_simulation":
-            try {
-                let zone = new Zone(event.data.zone);
-                let players = [];
-                for (let i = 0; i < event.data.players.length; i++) {
-                    let currentPlayer = Player.createFromDTO(structuredClone(event.data.players[i]));
-                    currentPlayer.zoneBuffs = zone.buffs;
-                    players.push(currentPlayer);
-                }
-
-                let simulator = new CombatSimulator(players, zone);
-
-                simulator.addEventListener("progress", (event) => {
-                    this.postMessage({
-                        type: "simulation_progress",
-                        progress: event.detail.progress,
-                        zone: event.detail.zone,
-                    });
-                });
-                const simulationResult = await simulator.simulate(event.data.simulationTimeLimit);
-
-                this.postMessage({
-                    type: "simulation_result",
-                    simResult: simulationResult,
-                })
-            } catch (error) {
-                this.postMessage({
-                    type: "simulation_error",
-                    error: error.message,
-                })
-            }
-            break;
     }
 }
 
