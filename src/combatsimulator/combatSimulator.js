@@ -29,8 +29,6 @@ const ENEMY_RESPAWN_INTERVAL = 3 * ONE_SECOND;
 const PLAYER_RESPAWN_INTERVAL = 150 * ONE_SECOND;
 const RESTART_INTERVAL = 15 * ONE_SECOND;
 
-let tempDungeonCount = 0;
-
 class CombatSimulator extends EventTarget {
     constructor(players, zone) {
         super();
@@ -237,11 +235,13 @@ class CombatSimulator extends EventTarget {
             this.enemies = this.zone.getNextWave();
             this.simResult.updateTimeSpentAlive("#" + (this.zone.encountersKilled - 1).toString(), true, this.simulationTime);
             let currentDungeonCount = this.zone.dungeonsCompleted;
-            if (currentDungeonCount > tempDungeonCount) {
-                tempDungeonCount = currentDungeonCount;
+            // console.log('wave at #' + (this.zone.encountersKilled - 1) +' completed:' + this.zone.dungeonsCompleted + ' failed:'+ this.zone.dungeonsFailed + ' temp:'+ this.tempDungeonCount);
+            if (currentDungeonCount > this.tempDungeonCount) {
+                this.tempDungeonCount = currentDungeonCount;
                 for (let i = 0; i < this.players.length; i++) {
                     this.players[i].combatDetails.currentHitpoints = this.players[i].combatDetails.maxHitpoints;
                     this.players[i].combatDetails.currentManapoints = this.players[i].combatDetails.maxManapoints;
+                    // this.simResult.playerRanOutOfMana[this.players[i].hrid] = false;
                 }
             }
         }
@@ -478,7 +478,7 @@ class CombatSimulator extends EventTarget {
                     let playerRespawnEvent = new PlayerRespawnEvent(this.simulationTime + PLAYER_RESPAWN_INTERVAL, player.hrid);
                     this.eventQueue.addEvent(playerRespawnEvent);
                 }
-                // console.log(player.hrid + " died at " + (this.simulationTime / 1000000000));
+                // console.log(player.hrid + " died at " + (this.simulationTime / 1000000000) + 'in wave #' + (this.zone.encountersKilled - 1) + ' with ememies: ' + this.enemies?.map(enemy => (enemy.hrid+"("+(enemy.combatDetails.currentHitpoints*100/enemy.combatDetails.maxHitpoints).toFixed(2)+"%)")).join(", "));
             }
         });
 
@@ -858,6 +858,9 @@ class CombatSimulator extends EventTarget {
 
         if (source.combatDetails.currentManapoints < ability.manaCost) {
             if (source.isPlayer && oomCheck) {
+                // if (this.simResult.playerRanOutOfMana[source.hrid] == false) {
+                //     console.log(source.hrid + " ran out of mana" + ' at wave #' + (this.zone.encountersKilled - 1) + ' at time ' + this.simulationTime / 1000000000 + 's');
+                // }
                 this.simResult.addRanOutOfManaCount(source, true);
             }
             return false;
@@ -1267,7 +1270,7 @@ class CombatSimulator extends EventTarget {
                 this.simResult.updateTimeSpentAlive(reviveTarget.hrid, true, this.simulationTime);
             }
 
-            // console.log(source.hrid + " revived " + reviveTarget.hrid + " with " + amountHealed + " HP.");
+            // console.log(source.hrid + " revived " + reviveTarget.hrid + " with " + amountHealed + " HP." + ' at wave #' + (this.zone.encountersKilled - 1) + ' at time ' + this.simulationTime / 1000000000 + 's');
         }
         return;
     }

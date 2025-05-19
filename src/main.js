@@ -2182,7 +2182,7 @@ document.querySelectorAll('#playerTab .nav-link').forEach(tab => {
 
 function initSimulationControls() {
     let simulationTimeInput = document.getElementById("inputSimulationTime");
-    simulationTimeInput.value = 100;
+    simulationTimeInput.value = 24;
 
     buttonStartSimulation.addEventListener("click", (event) => {
         let invalidElements = document.querySelectorAll(":invalid");
