@@ -988,6 +988,10 @@ function showSimulationResult(simResult) {
     if (selectedPlayers.includes(parseInt(currentPlayerTabId))) {
         playerToDisplay = "player" + currentPlayerTabId;
     }
+    if (!simResult.dropRateMultiplier[playerToDisplay]) {
+        return;
+    }
+
     showKills(simResult, playerToDisplay);
     showDeaths(simResult, playerToDisplay);
     showExperienceGained(simResult, playerToDisplay);

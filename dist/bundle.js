@@ -521,11 +521,12 @@ class CombatUnit {
             this.combatDetails.combatStats.attackInterval /= (1 + (this.combatDetails.attackLevel / 2000));
         }
         let baseAttackSpeed = this.combatDetails.combatStats.attackSpeed;
+        this.combatDetails.combatStats.attackInterval /= (1 + baseAttackSpeed);
         let attackIntervalBoosts = this.getBuffBoosts("/buff_types/attack_speed");
         let attackIntervalRatioBoost = attackIntervalBoosts
             .map((boost) => boost.ratioBoost)
             .reduce((prev, cur) => prev + cur, 0);
-        this.combatDetails.combatStats.attackInterval /= (1 + (baseAttackSpeed + attackIntervalRatioBoost));
+        this.combatDetails.combatStats.attackInterval /= (1 + attackIntervalRatioBoost);
 
         let baseArmor = 0.2 * this.combatDetails.defenseLevel + this.combatDetails.combatStats.armor;
         this.combatDetails.totalArmor = baseArmor;
@@ -2650,6 +2651,10 @@ function showSimulationResult(simResult) {
     if (selectedPlayers.includes(parseInt(currentPlayerTabId))) {
         playerToDisplay = "player" + currentPlayerTabId;
     }
+    if (!simResult.dropRateMultiplier[playerToDisplay]) {
+        return;
+    }
+
     showKills(simResult, playerToDisplay);
     showDeaths(simResult, playerToDisplay);
     showExperienceGained(simResult, playerToDisplay);
