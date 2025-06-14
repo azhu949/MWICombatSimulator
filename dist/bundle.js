@@ -432,15 +432,15 @@ class CombatUnit {
             this.combatDetails[stat + "Level"] = this[stat + "Level"];
             let boosts = this.getBuffBoosts("/buff_types/" + stat + "_level");
             boosts.forEach((buff) => {
-                this.combatDetails[stat + "Level"] += Math.floor(this[stat + "Level"] * buff.ratioBoost);
+                this.combatDetails[stat + "Level"] += (this[stat + "Level"] * buff.ratioBoost);
                 this.combatDetails[stat + "Level"] += buff.flatBoost;
             });
         });
 
-        this.combatDetails.maxHitpoints =
-            10 * (10 + this.combatDetails.staminaLevel) + this.combatDetails.combatStats.maxHitpoints;
-        this.combatDetails.maxManapoints =
-            10 * (10 + this.combatDetails.intelligenceLevel) + this.combatDetails.combatStats.maxManapoints;
+        this.combatDetails.maxHitpoints = Math.floor
+            (10 * (10 + this.combatDetails.staminaLevel) + this.combatDetails.combatStats.maxHitpoints);
+        this.combatDetails.maxManapoints = Math.floor
+            (10 * (10 + this.combatDetails.intelligenceLevel) + this.combatDetails.combatStats.maxManapoints);
 
         let accuracyRatioBoost = this.getBuffBoost("/buff_types/accuracy").ratioBoost;
         let damageRatioBoost = this.getBuffBoost("/buff_types/damage").ratioBoost;
@@ -2743,14 +2743,28 @@ function getDropProfit(simResult, playerToDisplay) {
                 if (drop.minEliteTier > simResult.eliteTier) {
                     continue;
                 }
-                dropMap.set(drop.itemHrid, { "dropRate": Math.min(1, drop.dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
+                const existingDrop = dropMap.get(drop.itemHrid);
+                if (existingDrop) {
+                    existingDrop.dropRate = Math.min(1, existingDrop.dropRate + drop.dropRate * dropRateMultiplier);
+                    existingDrop.dropMin = Math.max(existingDrop.dropMin, drop.minCount);
+                    existingDrop.dropMax = Math.max(existingDrop.dropMax, drop.maxCount);
+                } else {
+                    dropMap.set(drop.itemHrid, { "dropRate": Math.min(1, drop.dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
+                }
             }
             if (_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].rareDropTable)
                 for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].rareDropTable) {
                     if (drop.minEliteTier > simResult.eliteTier) {
                         continue;
                     }
-                    rareDropMap.set(drop.itemHrid, { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
+                    const existingRareDrop = rareDropMap.get(drop.itemHrid);
+                    if (existingRareDrop) {
+                        existingRareDrop.dropRate = Math.min(1, existingRareDrop.dropRate + drop.dropRate * rareFindMultiplier);
+                        existingRareDrop.dropMin = Math.max(existingRareDrop.dropMin, drop.minCount);
+                        existingRareDrop.dropMax = Math.max(existingRareDrop.dropMax, drop.maxCount);
+                    } else {
+                        rareDropMap.set(drop.itemHrid, { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
+                    }
                 }
 
             for (let dropObject of dropMap.values()) {
@@ -3052,15 +3066,29 @@ function showKills(simResult, playerToDisplay) {
                 if (drop.minEliteTier > simResult.eliteTier) {
                     continue;
                 }
-                dropMap.set(drop.itemHrid, { "dropRate": Math.min(1, drop.dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
+                const existingDrop = dropMap.get(drop.itemHrid);
+                if (existingDrop) {
+                    existingDrop.dropRate = Math.min(1, existingDrop.dropRate + drop.dropRate * dropRateMultiplier);
+                    existingDrop.dropMin = Math.max(existingDrop.dropMin, drop.minCount);
+                    existingDrop.dropMax = Math.max(existingDrop.dropMax, drop.maxCount);
+                } else {
+                    dropMap.set(drop.itemHrid, { "dropRate": Math.min(1, drop.dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
+                }
             }
         if (_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].rareDropTable)
             for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].rareDropTable) {
                 if (drop.minEliteTier > simResult.eliteTier) {
                     continue;
                 }
-                rareDropMap.set(drop.itemHrid, { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
-            }
+                const existingRareDrop = rareDropMap.get(drop.itemHrid);
+                if (existingRareDrop) {
+                    existingRareDrop.dropRate = Math.min(1, existingRareDrop.dropRate + drop.dropRate * rareFindMultiplier);
+                    existingRareDrop.dropMin = Math.max(existingRareDrop.dropMin, drop.minCount);
+                    existingRareDrop.dropMax = Math.max(existingRareDrop.dropMax, drop.maxCount);
+                } else {
+                    rareDropMap.set(drop.itemHrid, { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
+                }
+        }
 
         for (let dropObject of dropMap.values()) {
             dropObject.noRngDropAmount += simResult.deaths[monster] * dropObject.dropRate * ((dropObject.dropMax + dropObject.dropMin) / 2) / numberOfPlayers;

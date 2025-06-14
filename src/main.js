@@ -1080,14 +1080,28 @@ function getDropProfit(simResult, playerToDisplay) {
                 if (drop.minEliteTier > simResult.eliteTier) {
                     continue;
                 }
-                dropMap.set(drop.itemHrid, { "dropRate": Math.min(1, drop.dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
+                const existingDrop = dropMap.get(drop.itemHrid);
+                if (existingDrop) {
+                    existingDrop.dropRate = Math.min(1, existingDrop.dropRate + drop.dropRate * dropRateMultiplier);
+                    existingDrop.dropMin = Math.max(existingDrop.dropMin, drop.minCount);
+                    existingDrop.dropMax = Math.max(existingDrop.dropMax, drop.maxCount);
+                } else {
+                    dropMap.set(drop.itemHrid, { "dropRate": Math.min(1, drop.dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
+                }
             }
             if (combatMonsterDetailMap[monster].rareDropTable)
                 for (const drop of combatMonsterDetailMap[monster].rareDropTable) {
                     if (drop.minEliteTier > simResult.eliteTier) {
                         continue;
                     }
-                    rareDropMap.set(drop.itemHrid, { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
+                    const existingRareDrop = rareDropMap.get(drop.itemHrid);
+                    if (existingRareDrop) {
+                        existingRareDrop.dropRate = Math.min(1, existingRareDrop.dropRate + drop.dropRate * rareFindMultiplier);
+                        existingRareDrop.dropMin = Math.max(existingRareDrop.dropMin, drop.minCount);
+                        existingRareDrop.dropMax = Math.max(existingRareDrop.dropMax, drop.maxCount);
+                    } else {
+                        rareDropMap.set(drop.itemHrid, { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
+                    }
                 }
 
             for (let dropObject of dropMap.values()) {
@@ -1389,15 +1403,29 @@ function showKills(simResult, playerToDisplay) {
                 if (drop.minEliteTier > simResult.eliteTier) {
                     continue;
                 }
-                dropMap.set(drop.itemHrid, { "dropRate": Math.min(1, drop.dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
+                const existingDrop = dropMap.get(drop.itemHrid);
+                if (existingDrop) {
+                    existingDrop.dropRate = Math.min(1, existingDrop.dropRate + drop.dropRate * dropRateMultiplier);
+                    existingDrop.dropMin = Math.max(existingDrop.dropMin, drop.minCount);
+                    existingDrop.dropMax = Math.max(existingDrop.dropMax, drop.maxCount);
+                } else {
+                    dropMap.set(drop.itemHrid, { "dropRate": Math.min(1, drop.dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
+                }
             }
         if (combatMonsterDetailMap[monster].rareDropTable)
             for (const drop of combatMonsterDetailMap[monster].rareDropTable) {
                 if (drop.minEliteTier > simResult.eliteTier) {
                     continue;
                 }
-                rareDropMap.set(drop.itemHrid, { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
-            }
+                const existingRareDrop = rareDropMap.get(drop.itemHrid);
+                if (existingRareDrop) {
+                    existingRareDrop.dropRate = Math.min(1, existingRareDrop.dropRate + drop.dropRate * rareFindMultiplier);
+                    existingRareDrop.dropMin = Math.max(existingRareDrop.dropMin, drop.minCount);
+                    existingRareDrop.dropMax = Math.max(existingRareDrop.dropMax, drop.maxCount);
+                } else {
+                    rareDropMap.set(drop.itemHrid, { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
+                }
+        }
 
         for (let dropObject of dropMap.values()) {
             dropObject.noRngDropAmount += simResult.deaths[monster] * dropObject.dropRate * ((dropObject.dropMax + dropObject.dropMin) / 2) / numberOfPlayers;
