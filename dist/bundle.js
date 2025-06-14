@@ -4598,6 +4598,14 @@ function updateNextPlayer(currentPlayerNumber) {
         triggerMap = importSet.triggerMap;
     }
 
+    { // reset all houseRooms
+        let houseRooms = Object.values(_combatsimulator_data_houseRoomDetailMap_json__WEBPACK_IMPORTED_MODULE_4__);
+        for (const room of Object.values(houseRooms)) {
+            const field = document.querySelector('[data-house-hrid="' + room.hrid + '"]');
+            field.value = '';
+            player.houseRooms[room.hrid] = 0;
+        }
+    }
     if (importSet.houseRooms) {
         for (const room in importSet.houseRooms) {
             const field = document.querySelector('[data-house-hrid="' + room + '"]');
@@ -4608,14 +4616,7 @@ function updateNextPlayer(currentPlayerNumber) {
             }
         }
         player.houseRooms = importSet.houseRooms;
-    } else {
-        let houseRooms = Object.values(_combatsimulator_data_houseRoomDetailMap_json__WEBPACK_IMPORTED_MODULE_4__);
-        for (const room of Object.values(houseRooms)) {
-            const field = document.querySelector('[data-house-hrid="' + room.hrid + '"]');
-            field.value = '';
-            player.houseRooms[room.hrid] = 0;
-        }
-    }
+    } 
 }
 
 function showErrorModal(error) {
