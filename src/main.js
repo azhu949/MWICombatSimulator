@@ -1425,7 +1425,7 @@ function showKills(simResult, playerToDisplay) {
                 } else {
                     rareDropMap.set(drop.itemHrid, { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
                 }
-        }
+            }
 
         for (let dropObject of dropMap.values()) {
             dropObject.noRngDropAmount += simResult.deaths[monster] * dropObject.dropRate * ((dropObject.dropMax + dropObject.dropMin) / 2) / numberOfPlayers;
@@ -1863,14 +1863,14 @@ function showManapointsGained(simResult, playerToDisplay) {
     ranOutOfManaRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.ranOutOfMana");
     ranOutOfManaRow.lastElementChild.setAttribute("data-i18n", "common:simulationResults." + ranOutOfManaText);
     newChildren.push(ranOutOfManaRow);
-    
+
     if (simResult.playerRanOutOfMana[playerToDisplay]) {
         let ranOutOfManaStat = simResult.playerRanOutOfManaTime[playerToDisplay];
         let ranOutOfManaStatRow = createRow(
             ["col-md-6", "col-md-6 text-end"],
             [
                 "Run Out Ratio",
-                (ranOutOfManaStat[0]/(ranOutOfManaStat[1]+ranOutOfManaStat[0]) * 100).toFixed(2) + "%"
+                (ranOutOfManaStat[0] / (ranOutOfManaStat[1] + ranOutOfManaStat[0]) * 100).toFixed(2) + "%"
             ]
         );
         ranOutOfManaStatRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.ranOutOfManaRatio");
@@ -2614,6 +2614,8 @@ function resetImportInputs() {
     document.getElementById('inputSetGroupCombatplayer1').value = '';
     document.getElementById('inputSetGroupCombatplayer2').value = '';
     document.getElementById('inputSetGroupCombatplayer3').value = '';
+    document.getElementById('inputSetGroupCombatplayer4').value = '';
+    document.getElementById('inputSetGroupCombatplayer5').value = '';
     document.getElementById('inputSetSolo').value = '';
 }
 
@@ -2686,21 +2688,28 @@ function setPlayerData(playerId, inputElementId) {
     // Only set the value in the map if it's not null, undefined, or empty
     if (value) {
         playerDataMap[playerId] = value;
+        return true;
     }
+    return false;
 }
 
 function doGroupImport() {
+    let needUpdateCurrentTab = false;
     const value = document.getElementById("inputSetGroupCombatAll")?.value || "";
     if (!value.trim()) {
-        setPlayerData("1", "inputSetGroupCombatplayer1");
-        setPlayerData("2", "inputSetGroupCombatplayer2");
-        setPlayerData("3", "inputSetGroupCombatplayer3");
-        setPlayerData("4", "inputSetGroupCombatplayer4");
-        setPlayerData("5", "inputSetGroupCombatplayer5");
+        for (let i of ['1', '2', '3', '4', '5']) {
+            if (setPlayerData(i, "inputSetGroupCombatplayer" + i) && currentPlayerTabId == i) {
+                needUpdateCurrentTab = true;
+            }
+        }
     } else {
         playerDataMap = JSON.parse(value);
+        needUpdateCurrentTab = true;
     }
-    updateNextPlayer(currentPlayerTabId);
+
+    if (needUpdateCurrentTab) {
+        updateNextPlayer(currentPlayerTabId);
+    }
 }
 
 function doSoloImport() {
@@ -2953,7 +2962,7 @@ function updateNextPlayer(currentPlayerNumber) {
             }
         }
         player.houseRooms = importSet.houseRooms;
-    } 
+    }
 }
 
 function showErrorModal(error) {
