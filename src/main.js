@@ -2312,7 +2312,7 @@ function startSimulation(selectedPlayers) {
         let difficultyTier = Number(zoneSelect.value.split('#')[1]);
         if (simDungeonToggle.checked) {
             zoneHrid = dungeonSelect.value.split('#')[0];
-            difficultyTier = Number(dungeonSelect.split('#')[1]);
+            difficultyTier = Number(dungeonSelect.value.split('#')[1]);
         }
         let workerMessage = {
             type: "start_simulation",
