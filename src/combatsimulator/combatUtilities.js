@@ -173,6 +173,8 @@ class CombatUtilities {
         damageRoll *= (1 + target.combatDetails.combatStats.damageTaken);
         if (!abilityEffect) {
             damageRoll += damageRoll * source.combatDetails.combatStats.autoAttackDamage;
+        } else {
+            damageRoll *= (1 + source.combatDetails.combatStats.abilityDamage);
         }
         let maxPremitigatedDamage = Math.min(damageRoll, target.combatDetails.currentHitpoints);
 

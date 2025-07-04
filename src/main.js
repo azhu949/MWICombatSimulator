@@ -395,6 +395,7 @@ function updateCombatStatsUI() {
         "blaze",
         "attackSpeed",
         "autoAttackDamage",
+        "abilityDamage",
         "drinkConcentration",
         "foodHaste"
     ].forEach((stat) => {

@@ -69,6 +69,7 @@ class CombatUnit {
             damageType: "/damage_types/physical",
             attackInterval: 3000000000,
             autoAttackDamage: 0,
+            abilityDamage: 0,
             criticalRate: 0,
             criticalDamage: 0,
             stabAccuracy: 0,
@@ -191,7 +192,7 @@ class CombatUnit {
         });
 
         this.combatDetails.rangedAccuracyRating =
-            (10 + this.combatDetails.rangedLevel) *
+            (10 + this.combatDetails.attackLevel) *
             (1 + this.combatDetails.combatStats.rangedAccuracy) *
             (1 + accuracyRatioBoost) *
             (1 + this.furyValue);
@@ -220,7 +221,7 @@ class CombatUnit {
         // }
 
         this.combatDetails.magicAccuracyRating =
-            (10 + this.combatDetails.magicLevel) *
+            (10 + this.combatDetails.attackLevel) *
             (1 + this.combatDetails.combatStats.magicAccuracy) *
             (1 + accuracyRatioBoost) *
             (1 + this.furyValue);
@@ -309,7 +310,9 @@ class CombatUnit {
         this.combatDetails.combatStats.combatExperience += this.getBuffBoost("/buff_types/wisdom").flatBoost;
         this.combatDetails.combatStats.criticalRate += this.getBuffBoost("/buff_types/critical_rate").flatBoost;
         this.combatDetails.combatStats.criticalDamage += this.getBuffBoost("/buff_types/critical_damage").flatBoost;
+
         this.combatDetails.combatStats.castSpeed += this.getBuffBoost("/buff_types/cast_speed").flatBoost;
+        this.combatDetails.combatStats.castSpeed += this.combatDetails["attackLevel"] / 2000;
 
         let combatDropRateBoosts = this.getBuffBoost("/buff_types/combat_drop_rate");
         this.combatDetails.combatStats.combatDropRate += (1 + this.combatDetails.combatStats.combatDropRate) * combatDropRateBoosts.ratioBoost;

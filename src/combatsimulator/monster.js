@@ -117,7 +117,8 @@ class Monster extends CombatUnit {
             "attackSpeed",
             "foodHaste",
             "drinkConcentration",
-            "autoAttackDamage"
+            "autoAttackDamage",
+            "abilityDamage"
         ].forEach((stat) => {
             if (gameMonster.combatDetails.combatStats[stat] == null) {
                 this.combatDetails.combatStats[stat] = 0;
