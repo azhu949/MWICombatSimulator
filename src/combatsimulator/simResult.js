@@ -1,5 +1,5 @@
 class SimResult {
-    constructor(zoneName, numberOfPlayers) {
+    constructor(zone, numberOfPlayers) {
         this.deaths = {};
         this.experienceGained = {};
         this.encounters = 0;
@@ -20,9 +20,9 @@ class SimResult {
         this.manaUsed = {};
         this.timeSpentAlive = [];
         this.bossSpawns = [];
-        this.eliteTier = 0;
         this.hitpointsSpent = {};
-        this.zoneName = zoneName;
+        this.zoneName = zone.hrid;
+        this.difficultyTier = zone.difficultyTier;
         this.isDungeon = false;
         this.dungeonsCompleted = 0;
         this.dungeonsFailed = 0;

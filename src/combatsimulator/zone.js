@@ -2,8 +2,9 @@ import actionDetailMap from "./data/actionDetailMap.json";
 import Monster from "./monster";
 
 class Zone {
-    constructor(hrid) {
+    constructor(hrid, difficultyTier) {
         this.hrid = hrid;
+        this.difficultyTier = difficultyTier;
 
         let gameZone = actionDetailMap[this.hrid];
         this.monsterSpawnInfo = gameZone.combatZoneInfo.fightInfo;
@@ -21,7 +22,7 @@ class Zone {
 
         if (this.monsterSpawnInfo.bossSpawns && this.encountersKilled == this.monsterSpawnInfo.battlesPerBoss) {
             this.encountersKilled = 1;
-            return this.monsterSpawnInfo.bossSpawns.map((monster) => new Monster(monster.combatMonsterHrid, monster.eliteTier));
+            return this.monsterSpawnInfo.bossSpawns.map((monster) => new Monster(monster.combatMonsterHrid, monster.difficultyTier + this.difficultyTier));
         }
 
         let totalWeight = this.monsterSpawnInfo.randomSpawnInfo.spawns.reduce((prev, cur) => prev + cur.rate, 0);
@@ -39,7 +40,8 @@ class Zone {
                     totalStrength += spawn.strength;
 
                     if (totalStrength <= this.monsterSpawnInfo.randomSpawnInfo.maxTotalStrength) {
-                        encounterHrids.push({ 'hrid': spawn.combatMonsterHrid, 'eliteTier': spawn.eliteTier });
+                        encounterHrids.push({ 'hrid': spawn.combatMonsterHrid, 'difficultyTier': spawn.difficultyTier});
+
                     } else {
                         break outer;
                     }
@@ -48,7 +50,7 @@ class Zone {
             }
         }
         this.encountersKilled++;
-        return encounterHrids.map((hrid) => new Monster(hrid.hrid, hrid.eliteTier));
+        return encounterHrids.map((hrid) => new Monster(hrid.hrid, hrid.difficultyTier + this.difficultyTier));
     }
 
     failWave() {
@@ -65,7 +67,7 @@ class Zone {
         if (this.dungeonSpawnInfo.fixedSpawnsMap.hasOwnProperty(this.encountersKilled.toString())) {
             let currentMonsters = this.dungeonSpawnInfo.fixedSpawnsMap[(this.encountersKilled).toString()];
             this.encountersKilled++;
-            return currentMonsters.map((monster) => new Monster(monster.combatMonsterHrid, monster.eliteTier));
+            return currentMonsters.map((monster) => new Monster(monster.combatMonsterHrid, monster.difficultyTier + this.difficultyTier));
         } else {
             let monsterSpawns = {};
             const waveKeys = Object.keys(this.dungeonSpawnInfo.randomSpawnInfoMap).map(Number).sort((a, b) => a - b);
@@ -94,7 +96,8 @@ class Zone {
                         totalStrength += spawn.strength;
 
                         if (totalStrength <= monsterSpawns.maxTotalStrength) {
-                            encounterHrids.push({ 'hrid': spawn.combatMonsterHrid, 'eliteTier': spawn.eliteTier });
+                            encounterHrids.push({ 'hrid': spawn.combatMonsterHrid, 'difficultyTier': spawn.difficultyTier});
+
                         } else {
                             break outer;
                         }
@@ -103,7 +106,7 @@ class Zone {
                 }
             }
             this.encountersKilled++;
-            return encounterHrids.map((hrid) => new Monster(hrid.hrid, hrid.eliteTier));
+            return encounterHrids.map((hrid) => new Monster(hrid.hrid, hrid.difficultyTier + this.difficultyTier));
         }
     }
 }

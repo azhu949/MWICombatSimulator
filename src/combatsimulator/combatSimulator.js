@@ -35,7 +35,7 @@ class CombatSimulator extends EventTarget {
         this.players = players;
         this.zone = zone;
         this.eventQueue = new EventQueue();
-        this.simResult = new SimResult(zone.hrid, players.length);
+        this.simResult = new SimResult(zone, players.length);
         this.allPlayersDead = false;
     }
 
@@ -57,6 +57,7 @@ class CombatSimulator extends EventTarget {
                 let progressEvent = new CustomEvent("progress", {
                     detail: {
                         zone: this.zone.hrid,
+                        difficultyTier: this.zone.difficultyTier,
                         progress: Math.min(this.simulationTime / simulationTimeLimit, 1)
                     },
                 });
@@ -113,10 +114,6 @@ class CombatSimulator extends EventTarget {
             }
         }
 
-        if (!this.zone.isDungeon) {
-            this.simResult.eliteTier = this.zone.monsterSpawnInfo.randomSpawnInfo.spawns[0].eliteTier;
-        }
-
         return this.simResult;
     }
 
@@ -124,7 +121,7 @@ class CombatSimulator extends EventTarget {
         this.tempDungeonCount = 0;
         this.simulationTime = 0;
         this.eventQueue.clear();
-        this.simResult = new SimResult(this.zone.hrid, this.players.length);
+        this.simResult = new SimResult(this.zone, this.players.length);
     }
 
     async processEvent(event) {
@@ -1281,7 +1278,7 @@ class CombatSimulator extends EventTarget {
     processAbilityPromoteEffect(source, ability, abilityEffect) {
         const promotionHrids = ["/monsters/enchanted_rook", "/monsters/enchanted_knight", "/monsters/enchanted_bishop"];
         let randomPromotionIndex = Math.floor(Math.random() * promotionHrids.length);
-        return new Monster(promotionHrids[randomPromotionIndex], source.eliteTier);
+        return new Monster(promotionHrids[randomPromotionIndex], source.difficultyTier);
     }
 
     processAbilitySpendHpEffect(source, ability, abilityEffect) {

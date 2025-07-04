@@ -859,9 +859,17 @@ function initZones() {
         .sort((a, b) => a.sortIndex - b.sortIndex);
 
     for (const zone of Object.values(gameZones)) {
-        let opt = new Option(zone.name, zone.hrid);
-        opt.setAttribute("data-i18n", "actionNames." + zone.hrid);
-        zoneSelect.add(opt);
+        for(let i = 0; i <= zone.maxDifficulty; i++) {
+            let opt = new Option("", zone.hrid + "#" + i);
+            let dungeonName = createElement("span", "dungeonName");
+            dungeonName.setAttribute("data-i18n", "actionNames." + zone.hrid);
+            opt.appendChild(dungeonName);
+
+            let dungeonTier = createElement("span", "dungeonTier");
+            dungeonTier.textContent = '#T' + i;
+            opt.appendChild(dungeonTier);
+            zoneSelect.add(opt);
+        }
     }
 }
 
@@ -873,9 +881,17 @@ function initDungeons() {
         .sort((a, b) => a.sortIndex - b.sortIndex);
 
     for (const dungeon of Object.values(gameDungeons)) {
-        let opt = new Option(dungeon.name, dungeon.hrid);
-        opt.setAttribute("data-i18n", "actionNames." + dungeon.hrid);
-        dungeonSelect.add(opt);
+        for(let i = 0; i <= dungeon.maxDifficulty; i++) {
+            let opt = new Option("", dungeon.hrid+'#'+i);
+            let dungeonName = createElement("span", "dungeonName");
+            dungeonName.setAttribute("data-i18n", "actionNames." + dungeon.hrid);
+            opt.appendChild(dungeonName);
+
+            let dungeonTier = createElement("span", "dungeonTier");
+            dungeonTier.textContent = '#T' + i;
+            opt.appendChild(dungeonTier);
+            dungeonSelect.add(opt);
+        }
     }
 }
 
@@ -1023,6 +1039,7 @@ function manipulateSimResultsDataForDisplay(simResults) {
             let simResult = simResults[i];
             let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
             let zoneName = simResult.zoneName;
+            let difficultyTier = simResult.difficultyTier;
             let encountersPerHour = (simResult.encounters / hoursSimulated).toFixed(1);
             let playerDeaths = simResult.deaths[playerToDisplay] ?? 0;
             let deathsPerHour = (playerDeaths / hoursSimulated).toFixed(2);
@@ -1047,7 +1064,7 @@ function manipulateSimResultsDataForDisplay(simResults) {
             let expenses = simResult["expenses"];
 
             let displaySimRow = {
-                "ZoneName": zoneName, "Player": playerToDisplay, "Encounters": encountersPerHour, "Deaths": deathsPerHour,
+                "ZoneName": zoneName, "DifficultyTier": difficultyTier, "Player": playerToDisplay, "Encounters": encountersPerHour, "Deaths": deathsPerHour,
                 "TotalExperience": totalExperiencePerHour, "Stamina": experiencePerHour["Stamina"],
                 "Intelligence": experiencePerHour["Intelligence"], "Attack": experiencePerHour["Attack"],
                 "Magic": experiencePerHour["Magic"], "Ranged": experiencePerHour["Ranged"],
@@ -1062,7 +1079,10 @@ function manipulateSimResultsDataForDisplay(simResults) {
     return displaySimResults;
 }
 
-function calcDropMaps(simResult, dropRateMultiplier, rareFindMultiplier, numberOfPlayers) {
+function getDropProfit(simResult, playerToDisplay) {
+    let dropRateMultiplier = simResult.dropRateMultiplier[playerToDisplay];
+    let rareFindMultiplier = simResult.rareFindMultiplier[playerToDisplay];
+    let numberOfPlayers = simResult.numberOfPlayers;
     let monsters = Object.keys(simResult.deaths)
         .filter(enemy => enemy !== "player1" && enemy !== "player2" && enemy !== "player3" && enemy !== "player4" && enemy !== "player5")
         .sort();
@@ -1074,7 +1094,7 @@ function calcDropMaps(simResult, dropRateMultiplier, rareFindMultiplier, numberO
         const rareDropMap = new Map();
         if (combatMonsterDetailMap[monster].dropTable) {
             for (const drop of combatMonsterDetailMap[monster].dropTable) {
-                if (drop.minEliteTier > simResult.eliteTier) {
+                if (drop.minDifficultyTier > simResult.difficultyTier) {
                     continue;
                 }
                 const existingDrop = dropMap.get(drop.itemHrid);
@@ -1088,7 +1108,7 @@ function calcDropMaps(simResult, dropRateMultiplier, rareFindMultiplier, numberO
             }
             if (combatMonsterDetailMap[monster].rareDropTable)
                 for (const drop of combatMonsterDetailMap[monster].rareDropTable) {
-                    if (drop.minEliteTier > simResult.eliteTier) {
+                    if (drop.minDifficultyTier > simResult.difficultyTier) {
                         continue;
                     }
                     const existingRareDrop = rareDropMap.get(drop.itemHrid);
@@ -1111,14 +1131,14 @@ function calcDropMaps(simResult, dropRateMultiplier, rareFindMultiplier, numberO
             for (let i = 0; i < simResult.deaths[monster]; i++) {
                 for (let dropObject of dropMap.values()) {
                     let chance = Math.random();
-                    if (chance <= dropObject.dropRate  / numberOfPlayers) {
+                    if (chance <= dropObject.dropRate) {
                         let amount = Math.floor(Math.random() * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin)
                         dropObject.number = dropObject.number + amount;
                     }
                 }
                 for (let dropObject of rareDropMap.values()) {
                     let chance = Math.random();
-                    if (chance <= dropObject.dropRate  / numberOfPlayers) {
+                    if (chance <= dropObject.dropRate) {
                         let amount = Math.floor(Math.random() * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin)
                         dropObject.number = dropObject.number + amount;
                     }
@@ -1126,9 +1146,9 @@ function calcDropMaps(simResult, dropRateMultiplier, rareFindMultiplier, numberO
             }
             for (let [name, dropObject] of dropMap.entries()) {
                 if (totalDropMap.has(name)) {
-                    totalDropMap.set(name, totalDropMap.get(name) + dropObject.number);
+                    totalDropMap.set(name, Math.round((totalDropMap.get(name) + dropObject.number) / numberOfPlayers));
                 } else {
-                    totalDropMap.set(name, dropObject.number);
+                    totalDropMap.set(name, Math.round(dropObject.number / numberOfPlayers));
                 }
                 if (noRngTotalDropMap.has(name)) {
                     noRngTotalDropMap.set(name, noRngTotalDropMap.get(name) + dropObject.noRngDropAmount);
@@ -1150,17 +1170,6 @@ function calcDropMaps(simResult, dropRateMultiplier, rareFindMultiplier, numberO
             }
         }
     }
-
-    return {totalDropMap, noRngTotalDropMap};
-}
-
-
-function getDropProfit(simResult, playerToDisplay) {
-    let dropRateMultiplier = simResult.dropRateMultiplier[playerToDisplay];
-    let rareFindMultiplier = simResult.rareFindMultiplier[playerToDisplay];
-    let numberOfPlayers = simResult.numberOfPlayers;
-
-    let {totalDropMap, noRngTotalDropMap} = calcDropMaps(simResult, dropRateMultiplier, rareFindMultiplier, numberOfPlayers);
 
     let noRngTotal = 0;
     for (let [name, dropAmount] of noRngTotalDropMap.entries()) {
@@ -1254,7 +1263,7 @@ function updateAllSimsModal(data) {
     const numCols = rows[0].cells.length;
 
     // 遍历每一列
-    for (let col = 4; col < numCols; col++) {
+    for (let col = 5; col < numCols; col++) {
         let max = -Infinity;
         let maxCell = null;
 
@@ -1311,6 +1320,7 @@ function updateSortIndicators(tableId, columnIndex, direction) {
 document.querySelectorAll('#allZonesData th').forEach((header, index) => {
     if (index === 0) return;
     if (index === 1) return;
+    if (index === 2) return;
 
     header.addEventListener('click', () => {
         if (currentSortColumn === index) {
@@ -1391,19 +1401,98 @@ function showKills(simResult, playerToDisplay) {
 
     let monsters = Object.keys(simResult.deaths)
         .filter(enemy => enemy !== "player1" && enemy !== "player2" && enemy !== "player3" && enemy !== "player4" && enemy !== "player5")
-        .sort()
-        .forEach(monster => {
-            let killsPerHour = (simResult.deaths[monster] / hoursSimulated).toFixed(1);
-            let monsterRow = createRow(
-                ["col-md-6", "col-md-6 text-end"],
-                [combatMonsterDetailMap[monster].name, killsPerHour]
-            );
-            monsterRow.firstElementChild.setAttribute("data-i18n", "monsterNames." + monster);
-            newChildren.push(monsterRow);
-        });
+        .sort();
 
+    const totalDropMap = new Map();
+    const noRngTotalDropMap = new Map();
+    for (const monster of monsters) {
+        let killsPerHour = (simResult.deaths[monster] / hoursSimulated).toFixed(1);
+        let monsterRow = createRow(
+            ["col-md-6", "col-md-6 text-end"],
+            [combatMonsterDetailMap[monster].name, killsPerHour]
+        );
+        monsterRow.firstElementChild.setAttribute("data-i18n", "monsterNames." + monster);
+        newChildren.push(monsterRow);
 
-    let {totalDropMap, noRngTotalDropMap} = calcDropMaps(simResult, dropRateMultiplier, rareFindMultiplier, numberOfPlayers);
+        const dropMap = new Map();
+        const rareDropMap = new Map();
+        if (combatMonsterDetailMap[monster].dropTable)
+            for (const drop of combatMonsterDetailMap[monster].dropTable) {
+                if (drop.minDifficultyTier > simResult.difficultyTier) {
+                    continue;
+                }
+                const existingDrop = dropMap.get(drop.itemHrid);
+                if (existingDrop) {
+                    existingDrop.dropRate = Math.min(1, existingDrop.dropRate + drop.dropRate * dropRateMultiplier);
+                    existingDrop.dropMin = Math.max(existingDrop.dropMin, drop.minCount);
+                    existingDrop.dropMax = Math.max(existingDrop.dropMax, drop.maxCount);
+                } else {
+                    dropMap.set(drop.itemHrid, { "dropRate": Math.min(1, drop.dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
+                }
+            }
+        if (combatMonsterDetailMap[monster].rareDropTable)
+            for (const drop of combatMonsterDetailMap[monster].rareDropTable) {
+                if (drop.minDifficultyTier > simResult.difficultyTier) {
+                    continue;
+                }
+                const existingRareDrop = rareDropMap.get(drop.itemHrid);
+                if (existingRareDrop) {
+                    existingRareDrop.dropRate = Math.min(1, existingRareDrop.dropRate + drop.dropRate * rareFindMultiplier);
+                    existingRareDrop.dropMin = Math.max(existingRareDrop.dropMin, drop.minCount);
+                    existingRareDrop.dropMax = Math.max(existingRareDrop.dropMax, drop.maxCount);
+                } else {
+                    rareDropMap.set(drop.itemHrid, { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
+                }
+            }
+
+        for (let dropObject of dropMap.values()) {
+            dropObject.noRngDropAmount += simResult.deaths[monster] * dropObject.dropRate * ((dropObject.dropMax + dropObject.dropMin) / 2) / numberOfPlayers;
+        }
+        for (let dropObject of rareDropMap.values()) {
+            dropObject.noRngDropAmount += simResult.deaths[monster] * dropObject.dropRate * ((dropObject.dropMax + dropObject.dropMin) / 2) / numberOfPlayers;
+        }
+
+        for (let i = 0; i < simResult.deaths[monster]; i++) {
+            for (let dropObject of dropMap.values()) {
+                let chance = Math.random();
+                if (chance <= dropObject.dropRate) {
+                    let amount = Math.floor(Math.random() * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin)
+                    dropObject.number = dropObject.number + amount;
+                }
+            }
+            for (let dropObject of rareDropMap.values()) {
+                let chance = Math.random();
+                if (chance <= dropObject.dropRate) {
+                    let amount = Math.floor(Math.random() * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin)
+                    dropObject.number = dropObject.number + amount;
+                }
+            }
+        }
+        for (let [name, dropObject] of dropMap.entries()) {
+            if (totalDropMap.has(name)) {
+                totalDropMap.set(name, Math.round((totalDropMap.get(name) + dropObject.number) / numberOfPlayers));
+            } else {
+                totalDropMap.set(name, Math.round(dropObject.number / numberOfPlayers));
+            }
+            if (noRngTotalDropMap.has(name)) {
+                noRngTotalDropMap.set(name, noRngTotalDropMap.get(name) + dropObject.noRngDropAmount);
+            } else {
+                noRngTotalDropMap.set(name, dropObject.noRngDropAmount);
+            }
+        }
+        for (let [name, dropObject] of rareDropMap.entries()) {
+            if (totalDropMap.has(name)) {
+                totalDropMap.set(name, totalDropMap.get(name) + dropObject.number);
+            } else {
+                totalDropMap.set(name, dropObject.number);
+            }
+            if (noRngTotalDropMap.has(name)) {
+                noRngTotalDropMap.set(name, noRngTotalDropMap.get(name) + dropObject.noRngDropAmount);
+            } else {
+                noRngTotalDropMap.set(name, dropObject.noRngDropAmount);
+            }
+        }
+    }
 
     let revenueModalTable = document.querySelector("#revenueTable > tbody");
     let total = 0;
@@ -2219,14 +2308,16 @@ function startSimulation(selectedPlayers) {
     let simulationTimeInput = document.getElementById("inputSimulationTime");
     let simulationTimeLimit = Number(simulationTimeInput.value) * ONE_HOUR;
     if (!simAllZonesToggle.checked) {
-        let zoneHrid = zoneSelect.value;
+        let zoneHrid = zoneSelect.value.split('#')[0];
+        let difficultyTier = Number(zoneSelect.value.split('#')[1]);
         if (simDungeonToggle.checked) {
-            zoneHrid = dungeonSelect.value;
+            zoneHrid = dungeonSelect.value.split('#')[0];
+            difficultyTier = Number(dungeonSelect.split('#')[1]);
         }
         let workerMessage = {
             type: "start_simulation",
             players: playersToSim,
-            zoneHrid: zoneHrid,
+            zone: {zoneHrid:zoneHrid, difficultyTier:difficultyTier},
             simulationTimeLimit: simulationTimeLimit,
         };
         worker.postMessage(workerMessage);
@@ -2234,7 +2325,15 @@ function startSimulation(selectedPlayers) {
         let zoneHrids = Object.values(actionDetailMap)
             .filter((action) => action.type == "/action_types/combat" && action.category != "/action_categories/combat/dungeons" && action.combatZoneInfo.fightInfo.randomSpawnInfo.maxSpawnCount > 1)
             .sort((a, b) => a.sortIndex - b.sortIndex)
-            .map(action => action.hrid);
+            .map(action => {
+                let result = [];
+                for(let difficultyTier = 0; difficultyTier <= action.maxDifficulty; difficultyTier++) {
+                    result.push({ zoneHrid: action.hrid, difficultyTier: difficultyTier });
+                }
+                return result;
+            })
+            .flat();
+
         let workerMessage = {
             type: "start_simulation_all_zones",
             players: playersToSim,
@@ -2926,7 +3025,7 @@ window.prices;
 
 async function fetchPrices() {
     try {
-        const response = await fetch('https://www.milkywayidle.com/game_data/marketplace.json'
+        const response = await fetch('https://ghproxy.net/https://raw.githubusercontent.com/holychikenz/MWIApi/refs/heads/main/milkyapi.json'
             , {
                 mode: 'cors'
             }
@@ -2941,16 +3040,11 @@ async function fetchPrices() {
 
         const pricesJson = await response.json();
 
-        const priceTmp = pricesJson['marketData'];
+        const priceTmp = pricesJson['market'];
         window.prices = {};
         for (const item in itemDetailMap) {
-            const hrid = itemDetailMap[item].hrid;
-            if (hrid in priceTmp) {
-                window.prices[hrid] = { "ask": -1, "bid": -1, "vendor": itemDetailMap[item].sellPrice };
-                if (priceTmp[hrid]['0']) {
-                    window.prices[hrid].ask = priceTmp[hrid]['0'].a;
-                    window.prices[hrid].bid = priceTmp[hrid]['0'].b;
-                }
+            if (itemDetailMap[item].name in priceTmp) {
+                window.prices[itemDetailMap[item].hrid] = priceTmp[itemDetailMap[item].name];
             }
         }
 
@@ -3023,7 +3117,6 @@ document.addEventListener("input", (e) => {
                 noRngRevenueDifference = updateTable('noRngRevenueTable', item, newPrice);
             }
             if (window.prices) {
-                if (!window.prices[item]) window.prices[item] = { "ask": -1, "bid": -1, "vendor": itemDetailMap[item].sellPrice };
                 if (expensesSetting == 'bid') {
                     window.prices[item]['bid'] = newPrice;
                 } else {
@@ -3037,7 +3130,6 @@ document.addEventListener("input", (e) => {
                 expensesDifference = updateTable('expensesTable', item, newPrice);
             }
             if (window.prices) {
-                if (!window.prices[item]) window.prices[item] = { "ask": -1, "bid": -1, "vendor": itemDetailMap[item].sellPrice };
                 if (revenueSetting == 'bid') {
                     window.prices[item]['bid'] = newPrice;
                 } else {

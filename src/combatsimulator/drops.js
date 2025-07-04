@@ -1,11 +1,11 @@
 class Drops {
 
-    constructor(itemHrid, dropRate, minCount, maxCount, eliteTier) {
+    constructor(itemHrid, dropRate, minCount, maxCount, difficultyTier) {
         this.itemHrid = itemHrid;
         this.dropRate = dropRate;
         this.minCount = minCount;
         this.maxCount = maxCount;
-        this.eliteTier = eliteTier;
+        this.difficultyTier = difficultyTier;
     }
 }
 
