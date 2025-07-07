@@ -1096,17 +1096,9 @@ function initZones() {
         .sort((a, b) => a.sortIndex - b.sortIndex);
 
     for (const zone of Object.values(gameZones)) {
-        for(let i = 0; i <= zone.maxDifficulty; i++) {
-            let opt = new Option("", zone.hrid + "#" + i);
-            let dungeonName = createElement("span", "dungeonName");
-            dungeonName.setAttribute("data-i18n", "actionNames." + zone.hrid);
-            opt.appendChild(dungeonName);
-
-            let dungeonTier = createElement("span", "dungeonTier");
-            dungeonTier.textContent = '#T' + i;
-            opt.appendChild(dungeonTier);
-            zoneSelect.add(opt);
-        }
+        let opt = new Option(zone.name, zone.hrid);
+        opt.setAttribute("data-i18n", "actionNames." + zone.hrid);
+        zoneSelect.add(opt);
     }
 }
 
@@ -1118,17 +1110,9 @@ function initDungeons() {
         .sort((a, b) => a.sortIndex - b.sortIndex);
 
     for (const dungeon of Object.values(gameDungeons)) {
-        for(let i = 0; i <= dungeon.maxDifficulty; i++) {
-            let opt = new Option("", dungeon.hrid+'#'+i);
-            let dungeonName = createElement("span", "dungeonName");
-            dungeonName.setAttribute("data-i18n", "actionNames." + dungeon.hrid);
-            opt.appendChild(dungeonName);
-
-            let dungeonTier = createElement("span", "dungeonTier");
-            dungeonTier.textContent = '#T' + i;
-            opt.appendChild(dungeonTier);
-            dungeonSelect.add(opt);
-        }
+        let opt = new Option(dungeon.name, dungeon.hrid);
+        opt.setAttribute("data-i18n", "actionNames." + dungeon.hrid);
+        dungeonSelect.add(opt);
     }
 }
 
@@ -2433,13 +2417,26 @@ document.addEventListener('DOMContentLoaded', function () {
         boxes.forEach((checkBox) => { checkBox.checked = isCheck });
     }
 
+    function updateDifficultySelect(isCheck) {
+        const difficultySelect = document.getElementById('selectDifficulty');
+        // disable last four option
+        if (isCheck && Number(difficultySelect.value) >= 3) {
+            difficultySelect.value = 0;
+        }
+        for (let i = 3; i < difficultySelect.options.length; i++) {
+            difficultySelect.options[i].disabled = isCheck;
+        }
+    }
+
     simDungeonToggle.addEventListener('change', function () {
         if (simDungeonToggle.checked) {
             addPlayers();
             updatePlayersCheckbox(true);
+            updateDifficultySelect(true);
         } else {
             removePlayers();
             updatePlayersCheckbox(false);
+            updateDifficultySelect(false);
         }
         updatePlayerNames();
     });
@@ -2554,14 +2551,14 @@ function startSimulation(selectedPlayers) {
     let simDungeonToggle = document.getElementById("simDungeonToggle");
     let zoneSelect = document.getElementById("selectZone");
     let dungeonSelect = document.getElementById("selectDungeon");
+    let difficultySelect = document.getElementById("selectDifficulty");
     let simulationTimeInput = document.getElementById("inputSimulationTime");
     let simulationTimeLimit = Number(simulationTimeInput.value) * ONE_HOUR;
     if (!simAllZonesToggle.checked) {
-        let zoneHrid = zoneSelect.value.split('#')[0];
-        let difficultyTier = Number(zoneSelect.value.split('#')[1]);
+        let zoneHrid = zoneSelect.value;
+        let difficultyTier = Number(difficultySelect.value);
         if (simDungeonToggle.checked) {
-            zoneHrid = dungeonSelect.value.split('#')[0];
-            difficultyTier = Number(dungeonSelect.value.split('#')[1]);
+            zoneHrid = dungeonSelect.value;
         }
         let workerMessage = {
             type: "start_simulation",
