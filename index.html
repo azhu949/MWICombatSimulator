@@ -151,7 +151,8 @@
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <label for="inputLevel_attack" class="col-md-6 col-form-label" data-i18n="skillNames./skills/attack">Attack</label>
+                            <label for="inputLevel_attack" class="col-md-3 col-form-label" data-i18n="skillNames./skills/attack">Attack</label>
+                            <label for="inputLevel_attack" class="col-md-3 col-form-label">RE:<span id="reLevel_attack">1</span></label>
                             <div class="col-md-6">
                                 <input type="number" id="inputLevel_attack" class="form-control" value="1" min="1"
                                     max="400" required />
@@ -1307,7 +1308,17 @@
                                         </label>
                                     </div>
                                 </div>
-                                
+                            </div>
+                            <div class="col-md-6 pt-1">
+                                <div class="outlined-box">
+                                    <div class="checkbox-container">
+                                        <span data-i18n="common:useAttackLevelRework">Attack bonus from 10% Ranged and 10% Magic</span>:
+                                        <label class="switch">
+                                            <input type="checkbox" id="attackRework">
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                </div>
                             </div>
                         </div>
                     </div>

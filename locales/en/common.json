@@ -83,5 +83,6 @@
     "solo": "Solo",
     "or": "OR",
     "import": "Import",
-    "exportGroupSolo": "Export Group/Solo"
+    "exportGroupSolo": "Export Group/Solo",
+    "useAttackLevelRework" : "AttackLevel bonus from 10% Ranged and 10% Magic"
 }
