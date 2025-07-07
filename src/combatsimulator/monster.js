@@ -43,13 +43,17 @@ class Monster extends CombatUnit {
         let a = 1 + .2 * this.difficultyTier;
         let i = 20 * this.difficultyTier;
 
-        this.staminaLevel = a * (gameMonster.combatDetails.staminaLevel + i),
-        this.intelligenceLevel = a * (gameMonster.combatDetails.intelligenceLevel + i),
-        this.attackLevel = a * (gameMonster.combatDetails.attackLevel + i),
-        this.powerLevel = a * (gameMonster.combatDetails.powerLevel + i),
-        this.defenseLevel = a * (gameMonster.combatDetails.defenseLevel + i),
-        this.rangedLevel = a * (gameMonster.combatDetails.rangedLevel + i),
-        this.magicLevel = a * (gameMonster.combatDetails.magicLevel + i),
+        this.staminaLevel = a * (gameMonster.combatDetails.staminaLevel + i);
+        this.intelligenceLevel = a * (gameMonster.combatDetails.intelligenceLevel + i);
+        this.attackLevel = a * (gameMonster.combatDetails.attackLevel + i);
+        this.powerLevel = a * (gameMonster.combatDetails.powerLevel + i);
+        this.defenseLevel = a * (gameMonster.combatDetails.defenseLevel + i);
+        this.rangedLevel = a * (gameMonster.combatDetails.rangedLevel + i);
+        this.magicLevel = a * (gameMonster.combatDetails.magicLevel + i);
+
+        let t = this.difficultyTier;
+        let e = gameMonster.experience;
+        this.experience = (1 + .2 * t) * (e + 10 * t);
 
         this.combatDetails.combatStats.combatStyleHrid = gameMonster.combatDetails.combatStats.combatStyleHrids[0];
 

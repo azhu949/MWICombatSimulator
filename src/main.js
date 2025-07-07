@@ -99,7 +99,7 @@ multiWorker.onmessage = function (event) {
 // #region Equipment
 
 function initEquipmentSection() {
-    ["head", "body", "legs", "feet", "hands", "main_hand", "two_hand", "off_hand", "pouch", "neck", "earrings", "ring", "back"].forEach((type) => {
+    ["head", "body", "legs", "feet", "hands", "main_hand", "two_hand", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"].forEach((type) => {
         initEquipmentSelect(type);
         initEnhancementLevelInput(type);
     });
@@ -224,7 +224,7 @@ function enhancementLevelInputHandler() {
 }
 
 function updateEquipmentState() {
-    ["head", "body", "legs", "feet", "hands", "main_hand", "two_hand", "off_hand", "pouch", "neck", "earrings", "ring", "back"].forEach((type) => {
+    ["head", "body", "legs", "feet", "hands", "main_hand", "two_hand", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"].forEach((type) => {
         let equipmentType = "/equipment_types/" + type;
         let selectType = type;
         if (type == "main_hand" || type == "two_hand") {
@@ -327,6 +327,20 @@ function updateCombatStatsUI() {
     let attackIntervalElement = document.getElementById("combatStat_attackInterval");
     attackIntervalElement.innerHTML = (player.combatDetails.combatStats.attackInterval / 1e9).toLocaleString() + "s";
 
+    let primaryTrainingElement = document.getElementById("combatStat_primaryTraining");
+    let primaryTraining = player.combatDetails.combatStats.primaryTraining;
+    primaryTrainingElement.setAttribute("data-i18n", "skillNames." + primaryTraining);
+    primaryTrainingElement.innerHTML = primaryTraining;
+
+    let focusTrainingElement = document.getElementById("combatStat_focusTraining");
+    let focusTraining = player.combatDetails.combatStats.focusTraining;
+    if (focusTraining) {
+        focusTrainingElement.setAttribute("data-i18n", "skillNames." + focusTraining);
+    } else {
+        focusTrainingElement.setAttribute("data-i18n", "characterSelectPage.slots.empty");
+    }
+    focusTrainingElement.innerHTML = focusTraining;
+
     [
         "maxHitpoints",
         "maxManapoints",
@@ -397,7 +411,15 @@ function updateCombatStatsUI() {
         "autoAttackDamage",
         "abilityDamage",
         "drinkConcentration",
-        "foodHaste"
+        "foodHaste",
+        "staminaExperience",
+        "intelligenceExperience",
+        "attackExperience",
+        "defenseExperience",
+        "powerExperience",
+        "rangedExperience",
+        "magicExperience"
+
     ].forEach((stat) => {
         let element = document.getElementById("combatStat_" + stat);
         let value = (100 * player.combatDetails.combatStats[stat]).toLocaleString([], {
@@ -2734,7 +2756,7 @@ function getEquipmentSetFromUI() {
         equipmentSet.levels[skill] = Number(levelInput.value);
     });
 
-    ["head", "body", "legs", "feet", "hands", "weapon", "off_hand", "pouch", "neck", "earrings", "ring", "back"].forEach((type) => {
+    ["head", "body", "legs", "feet", "hands", "weapon", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"].forEach((type) => {
         let equipmentSelect = document.getElementById("selectEquipment_" + type);
         let enhancementLevelInput = document.getElementById("inputEquipmentEnhancementLevel_" + type);
 
@@ -2777,7 +2799,7 @@ function loadEquipmentSetIntoUI(equipmentSet) {
     });
     updateReAttackLevel();
 
-    ["head", "body", "legs", "feet", "hands", "weapon", "off_hand", "pouch", "neck", "earrings", "ring", "back"].forEach((type) => {
+    ["head", "body", "legs", "feet", "hands", "weapon", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"].forEach((type) => {
         let equipmentSelect = document.getElementById("selectEquipment_" + type);
         let enhancementLevelInput = document.getElementById("inputEquipmentEnhancementLevel_" + type);
 
@@ -2996,7 +3018,7 @@ function doSoloImport() {
     });
     updateReAttackLevel();
 
-    ["head", "body", "legs", "feet", "hands", "off_hand", "pouch", "neck", "earrings", "ring", "back"].forEach((type) => {
+    ["head", "body", "legs", "feet", "hands", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"].forEach((type) => {
         let equipmentSelect = document.getElementById("selectEquipment_" + type);
         let enhancementLevelInput = document.getElementById("inputEquipmentEnhancementLevel_" + type);
         let currentEquipment = importSet.player.equipment.find(item => item.itemLocationHrid === "/item_locations/" + type);
@@ -3155,7 +3177,8 @@ function updateNextPlayer(currentPlayerNumber) {
     });
     updateReAttackLevel();
 
-    ["head", "body", "legs", "feet", "hands", "off_hand", "pouch", "neck", "earrings", "ring", "back"].forEach((type) => {
+    ["head", "body", "legs", "feet", "hands", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"].forEach((type) => {
+
         let equipmentSelect = document.getElementById("selectEquipment_" + type);
         let enhancementLevelInput = document.getElementById("inputEquipmentEnhancementLevel_" + type);
         let currentEquipment = importSet.player.equipment.find(item => item.itemLocationHrid === "/item_locations/" + type);

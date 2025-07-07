@@ -1,3 +1,5 @@
+import combatStyleDetailMap from "./data/combatStyleDetailMap.json"
+
 class SimResult {
     constructor(zone, numberOfPlayers) {
         this.deaths = {};
@@ -10,11 +12,11 @@ class SimResult {
         this.dropRateMultiplier = {};
         this.rareFindMultiplier = {};
         this.playerRanOutOfMana = {
-            "player1" : false,
-            "player2" : false,
-            "player3" : false,
-            "player4" : false,
-            "player5" : false
+            "player1": false,
+            "player2": false,
+            "player3": false,
+            "player4": false,
+            "player5": false
         };
         this.playerRanOutOfManaTime = {};
         this.manaUsed = {};
@@ -55,7 +57,7 @@ class SimResult {
         }
     }
 
-    addExperienceGain(unit, type, experience) {
+    addExperienceGain(unit, experience) {
         if (!unit.isPlayer) {
             return;
         }
@@ -72,7 +74,42 @@ class SimResult {
             };
         }
 
-        this.experienceGained[unit.hrid][type] += experience * (1 + unit.combatDetails.combatStats.combatExperience);
+        let experienceGainedRate = {
+            "stamina": 0,
+            "intelligence": 0,
+            "attack": 0,
+            "power": 0,
+            "defense": 0,
+            "ranged": 0,
+            "magic": 0,
+        };
+
+        const primaryTraining = unit.combatDetails.combatStats.primaryTraining;
+        experienceGainedRate[primaryTraining.split("/")[2]] = 1 / 3;
+
+        const skillExpMap = combatStyleDetailMap[unit.combatDetails.combatStats.combatStyleHrid].skillExpMap;
+        const skillExpMapLength = Object.keys(skillExpMap).length;
+
+        const focusTraining = unit.combatDetails.combatStats.focusTraining;
+        if (focusTraining && skillExpMap[focusTraining]) {
+            experienceGainedRate[focusTraining.split("/")[2]] += 2 / 3;
+        } else {
+            Object.keys(skillExpMap).forEach(skillHrid => {
+                experienceGainedRate[skillHrid.split("/")[2]] += 2 / 3 / skillExpMapLength;
+            });
+        }
+
+        for (const [type, rate] of Object.entries(experienceGainedRate)) {
+            if (rate <= 0) continue;
+
+            const skillExperience = rate * (1 + unit.combatDetails.combatStats[type + "Experience"]);
+
+            this.experienceGained[unit.hrid][type] += (
+                experience
+                * (1 + unit.combatDetails.combatStats.combatExperience)
+                * skillExperience
+            );
+        }
     }
 
     addEncounterEnd() {
@@ -159,7 +196,7 @@ class SimResult {
         this.hitpointsSpent[unit.hrid][source] += amount;
     }
 
-    addRanOutOfManaCount(unit, isRunOutOfMana){
+    addRanOutOfManaCount(unit, isRunOutOfMana) {
         if (!this.playerRanOutOfManaTime[unit.hrid]) {
             this.playerRanOutOfManaTime[unit.hrid] = [0, 0];
         }

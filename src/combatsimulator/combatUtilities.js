@@ -236,53 +236,13 @@ class CombatUtilities {
             manaLeechMana = source.addManapoints(Math.floor(source.combatDetails.combatStats.manaLeech * damageDone));
         }
 
-        let experienceGained = {
-            source: {
-                attack: 0,
-                power: 0,
-                ranged: 0,
-                magic: 0,
-            },
-            target: {
-                defense: 0,
-                stamina: 0,
-            },
-        };
-
         let damagePrevented = maxPremitigatedDamage - damageDone;
 
         if (damagePrevented < 0) {
             damagePrevented = 0;
         }
 
-        switch (combatStyle) {
-            case "/combat_styles/stab":
-            case "/combat_styles/slash":
-            case "/combat_styles/smash":
-                experienceGained.source.attack = this.calculateAttackExperience(damageDone, damagePrevented, combatStyle);
-                experienceGained.source.power = this.calculatePowerExperience(damageDone, damagePrevented, combatStyle);
-                break;
-            case "/combat_styles/ranged":
-                experienceGained.source.ranged = this.calculateRangedExperience(damageDone, damagePrevented);
-                break;
-            case "/combat_styles/magic":
-                experienceGained.source.magic = this.calculateMagicExperience(damageDone, damagePrevented);
-                break;
-        }
-
-        experienceGained.target.defense = this.calculateDefenseExperience(damagePrevented);
-        experienceGained.target.stamina = this.calculateStaminaExperience(damagePrevented, damageDone);
-
-        if (mitigatedReflectDamage > 0) {
-            experienceGained.target.defense += this.calculateDefenseExperience(mitigatedReflectDamage);
-
-            let reflectDamagePrevented = reflectDamage - reflectDamageDone;
-
-            experienceGained.source.defense = this.calculateDefenseExperience(reflectDamagePrevented);
-            experienceGained.source.stamina = this.calculateStaminaExperience(reflectDamagePrevented, reflectDamageDone);
-        }
-
-        return { damageDone, didHit, reflectDamageDone, thornType, lifeStealHeal, hpDrain, manaLeechMana, experienceGained };
+        return { damageDone, didHit, reflectDamageDone, thornType, lifeStealHeal, hpDrain, manaLeechMana};
     }
 
     static processHeal(source, abilityEffect, target) {
@@ -344,56 +304,6 @@ class CombatUtilities {
         let previousSum = Math.floor(((currentTick - 1) * totalValue) / totalTicks);
 
         return currentSum - previousSum;
-    }
-
-    static calculateStaminaExperience(damagePrevented, damageTaken) {
-        return 0.03 * damagePrevented + 0.3 * damageTaken;
-    }
-
-    static calculateIntelligenceExperience(manaUsed) {
-        return 0.3 * manaUsed;
-    }
-
-    static calculateAttackExperience(damage, damagePrevented, combatStyle) {
-        switch (combatStyle) {
-            case "/combat_styles/stab":
-                return 0.54 + 0.1125 * (damage + 0.35 * damagePrevented);
-            case "/combat_styles/slash":
-                return 0.3 + 0.0625 * (damage + 0.35 * damagePrevented)
-            case "/combat_styles/smash":
-                return 0.06 + 0.0125 * (damage + 0.35 * damagePrevented)
-            default:
-                return 0;
-        }
-    }
-
-    static calculatePowerExperience(damage, damagePrevented, combatStyle) {
-        switch (combatStyle) {
-            case "/combat_styles/stab":
-                return 0.06 + 0.0125 * (damage + 0.35 * damagePrevented)
-            case "/combat_styles/slash":
-                return 0.3 + 0.0625 * (damage + 0.35 * damagePrevented)
-            case "/combat_styles/smash":
-                return 0.54 + 0.1125 * (damage + 0.35 * damagePrevented);
-            default:
-                return 0;
-        }
-    }
-
-    static calculateDefenseExperience(damagePrevented) {
-        return 0.4 + 0.1 * damagePrevented;
-    }
-
-    static calculateRangedExperience(damage, damagePrevented) {
-        return 0.4 + 0.083375 * (damage + 0.35 * damagePrevented)
-    }
-
-    static calculateMagicExperience(damage, damagePrevented) {
-        return 0.4 + 0.083375 * (damage + 0.35 * damagePrevented)
-    }
-
-    static calculateHealingExperience(healed) {
-        return CombatUtilities.calculateMagicExperience(healed, 0) * 3;
     }
 }
 

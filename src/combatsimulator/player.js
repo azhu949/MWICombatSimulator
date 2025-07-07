@@ -61,16 +61,27 @@ class Player extends CombatUnit {
             this.combatDetails.combatStats.damageType = this.equipment["/equipment_types/main_hand"].getDamageType();
             this.combatDetails.combatStats.attackInterval =
                 this.equipment["/equipment_types/main_hand"].getCombatStat("attackInterval");
+            this.combatDetails.combatStats.primaryTraining = 
+                this.equipment["/equipment_types/main_hand"].getPrimaryTraining();
         } else if (this.equipment["/equipment_types/two_hand"]) {
             this.combatDetails.combatStats.combatStyleHrid =
                 this.equipment["/equipment_types/two_hand"].getCombatStyle();
             this.combatDetails.combatStats.damageType = this.equipment["/equipment_types/two_hand"].getDamageType();
             this.combatDetails.combatStats.attackInterval =
                 this.equipment["/equipment_types/two_hand"].getCombatStat("attackInterval");
+            this.combatDetails.combatStats.primaryTraining = 
+                this.equipment["/equipment_types/two_hand"].getPrimaryTraining();
         } else {
             this.combatDetails.combatStats.combatStyleHrid = "/combat_styles/smash";
             this.combatDetails.combatStats.damageType = "/damage_types/physical";
             this.combatDetails.combatStats.attackInterval = 3000000000;
+            this.combatDetails.combatStats.primaryTraining = "/skills/power";
+        }
+
+        if (this.equipment["/equipment_types/charm"]) {
+            this.combatDetails.combatStats.focusTraining = this.equipment["/equipment_types/charm"].getFocusTraining();
+        } else {
+            this.combatDetails.combatStats.focusTraining = "";
         }
 
         [
@@ -134,7 +145,14 @@ class Player extends CombatUnit {
             "foodHaste",
             "drinkConcentration",
             "autoAttackDamage",
-            "abilityDamage"
+            "abilityDamage",
+            "staminaExperience",
+            "intelligenceExperience",
+            "attackExperience",
+            "defenseExperience",
+            "powerExperience",
+            "rangedExperience",
+            "magicExperience"
         ].forEach((stat) => {
             this.combatDetails.combatStats[stat] = Object.values(this.equipment)
                 .filter((equipment) => equipment != null)

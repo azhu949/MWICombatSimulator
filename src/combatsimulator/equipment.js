@@ -35,6 +35,14 @@ class Equipment {
     getDamageType() {
         return this.gameItem.equipmentDetail.combatStats.damageType;
     }
+
+    getPrimaryTraining() {
+        return this.gameItem.equipmentDetail.combatStats.primaryTraining;
+    }
+
+    getFocusTraining(){
+        return this.gameItem.equipmentDetail.combatStats.focusTraining;
+    }
 }
 
 export default Equipment;

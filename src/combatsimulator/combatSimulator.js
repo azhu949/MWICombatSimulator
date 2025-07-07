@@ -399,22 +399,6 @@ class CombatSimulator extends EventTarget {
                 this.simResult.addAttack(target, source, attackResult.thornType, attackResult.reflectDamageDone);
             }
 
-            if (mayhem && !attackResult.didHit && i < (aliveTargets.length - 1)) {
-                attackResult.experienceGained.source = {
-                    attack: 0,
-                    power: 0,
-                    ranged: 0,
-                    magic: 0
-                }
-            }
-
-            for (const [skill, xp] of Object.entries(attackResult.experienceGained.source)) {
-                this.simResult.addExperienceGain(source, skill, xp);
-            }
-            for (const [skill, xp] of Object.entries(attackResult.experienceGained.target)) {
-                this.simResult.addExperienceGain(target, skill, xp);
-            }
-
             if (target.combatDetails.currentHitpoints == 0) {
                 this.eventQueue.clearEventsForUnit(target);
                 this.simResult.addDeath(target);
@@ -457,6 +441,13 @@ class CombatSimulator extends EventTarget {
             this.eventQueue.clearEventsOfType(AbilityCastEndEvent.type);
             let enemyRespawnEvent = new EnemyRespawnEvent(this.simulationTime + ENEMY_RESPAWN_INTERVAL);
             this.eventQueue.addEvent(enemyRespawnEvent);
+
+            //calc exp before clear
+            let totalExp = this.enemies.map(enemy => enemy.experience).reduce((a, b) => a + b, 0);
+            this.players.forEach(player => {
+                this.simResult.addExperienceGain(player, totalExp / this.players.length);
+            });
+
             this.enemies = null;
 
             if (this.zone.isDungeon) {
@@ -636,22 +627,7 @@ class CombatSimulator extends EventTarget {
         event.target.combatDetails.currentHitpoints -= damage;
         this.simResult.addAttack(event.sourceRef, event.target, "damageOverTime", damage);
 
-        let targetStaminaExperience = CombatUtilities.calculateStaminaExperience(0, damage);
-        this.simResult.addExperienceGain(event.target, "stamina", targetStaminaExperience);
         // console.log(event.target.hrid, "bleed for", damage);
-
-        switch (event.combatStyleHrid) {
-            case "/combat_styles/magic":
-                let sourceMagicExperience = CombatUtilities.calculateMagicExperience(damage, 0);
-                this.simResult.addExperienceGain(event.sourceRef, "magic", sourceMagicExperience);
-                break;
-            case "/combat_styles/slash":
-                let sourceAttackExperience = CombatUtilities.calculateAttackExperience(damage, 0, "/combat_styles/slash");
-                this.simResult.addExperienceGain(event.sourceRef, "attack", sourceAttackExperience);
-                let sourcePowerExperience = CombatUtilities.calculatePowerExperience(damage, 0, "/combat_styles/slash");
-                this.simResult.addExperienceGain(event.sourceRef, "power", sourcePowerExperience);
-                break;
-        }
 
         if (event.currentTick < event.totalTicks) {
             let damageOverTimeTickEvent = new DamageOverTimeEvent(
@@ -887,9 +863,6 @@ class CombatSimulator extends EventTarget {
 
         source.combatDetails.currentManapoints -= ability.manaCost;
 
-        let sourceIntelligenceExperience = CombatUtilities.calculateIntelligenceExperience(ability.manaCost);
-        this.simResult.addExperienceGain(source, "intelligence", sourceIntelligenceExperience);
-
         ability.lastUsed = this.simulationTime;
 
         let haste = source.combatDetails.combatStats.abilityHaste;
@@ -1037,13 +1010,6 @@ class CombatSimulator extends EventTarget {
                     this.simResult.addAttack(tempTarget, tempSource, attackResult.thornType, attackResult.reflectDamageDone);
                 }
 
-                for (const [skill, xp] of Object.entries(attackResult.experienceGained.source)) {
-                    this.simResult.addExperienceGain(tempSource, skill, xp);
-                }
-                for (const [skill, xp] of Object.entries(attackResult.experienceGained.target)) {
-                    this.simResult.addExperienceGain(tempTarget, skill, xp);
-                }
-
                 if (tempTarget.combatDetails.currentHitpoints == 0) {
                     this.eventQueue.clearEventsForUnit(tempTarget);
                     this.simResult.addDeath(tempTarget);
@@ -1173,13 +1139,6 @@ class CombatSimulator extends EventTarget {
                     this.simResult.addAttack(target, source, attackResult.thornType, attackResult.reflectDamageDone);
                 }
 
-                for (const [skill, xp] of Object.entries(attackResult.experienceGained.source)) {
-                    this.simResult.addExperienceGain(source, skill, xp);
-                }
-                for (const [skill, xp] of Object.entries(attackResult.experienceGained.target)) {
-                    this.simResult.addExperienceGain(target, skill, xp);
-                }
-
                 if (target.combatDetails.currentHitpoints == 0) {
                     this.eventQueue.clearEventsForUnit(target);
                     this.simResult.addDeath(target);
@@ -1206,10 +1165,8 @@ class CombatSimulator extends EventTarget {
             let targets = source.isPlayer ? this.players : this.enemies;
             for (const target of targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0)) {
                 let amountHealed = CombatUtilities.processHeal(source, abilityEffect, target);
-                let experienceGained = CombatUtilities.calculateHealingExperience(amountHealed);
 
                 this.simResult.addHitpointsGained(target, ability.hrid, amountHealed);
-                this.simResult.addExperienceGain(source, "magic", experienceGained);
             }
             return;
         }
@@ -1229,10 +1186,8 @@ class CombatSimulator extends EventTarget {
 
             if (healTarget) {
                 let amountHealed = CombatUtilities.processHeal(source, abilityEffect, healTarget);
-                let experienceGained = CombatUtilities.calculateHealingExperience(amountHealed);
 
                 this.simResult.addHitpointsGained(healTarget, ability.hrid, amountHealed);
-                this.simResult.addExperienceGain(source, "magic", experienceGained);
             }
             return;
         }
@@ -1242,10 +1197,8 @@ class CombatSimulator extends EventTarget {
         }
 
         let amountHealed = CombatUtilities.processHeal(source, abilityEffect, source);
-        let experienceGained = CombatUtilities.calculateHealingExperience(amountHealed);
 
         this.simResult.addHitpointsGained(source, ability.hrid, amountHealed);
-        this.simResult.addExperienceGain(source, "magic", experienceGained);
     }
 
     processAbilityReviveEffect(source, ability, abilityEffect) {
@@ -1259,10 +1212,8 @@ class CombatSimulator extends EventTarget {
         if (reviveTarget) {
             this.eventQueue.clearMatching((event) => event.type == PlayerRespawnEvent.type && event.hrid == reviveTarget.hrid);
             let amountHealed = CombatUtilities.processRevive(source, abilityEffect, reviveTarget);
-            let experienceGained = CombatUtilities.calculateHealingExperience(amountHealed);
 
             this.simResult.addHitpointsGained(reviveTarget, ability.hrid, amountHealed);
-            this.simResult.addExperienceGain(source, "magic", experienceGained);
 
             this.addNextAttackEvent(reviveTarget);
 
@@ -1287,10 +1238,8 @@ class CombatSimulator extends EventTarget {
         }
 
         let hpSpent = CombatUtilities.processSpendHp(source, abilityEffect);
-        let experienceGained = CombatUtilities.calculateStaminaExperience(0, hpSpent);
 
         this.simResult.addHitpointsSpent(source, ability.hrid, hpSpent);
-        this.simResult.addExperienceGain(source, "stamina", experienceGained);
     }
 }
 

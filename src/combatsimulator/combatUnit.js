@@ -21,6 +21,8 @@ class CombatUnit {
     rangedLevel = 1;
     magicLevel = 1;
 
+    experience = 0;
+
     abilities = [null, null, null, null];
     food = [null, null, null];
     drinks = [null, null, null];
@@ -131,7 +133,16 @@ class CombatUnit {
             damageTaken: 0,
             attackSpeed: 0,
             armorDamageRatio: 0,
-            hpDrainRatio: 0
+            hpDrainRatio: 0,
+            primaryTraining: "",
+            focusTraining: "",
+            staminaExperience: 0,
+            intelligenceExperience: 0,
+            attackExperience: 0,
+            defenseExperience: 0,
+            powerExperience: 0,
+            rangedExperience: 0,
+            magicExperience: 0
         },
     };
     combatBuffs = {};
