@@ -296,6 +296,8 @@ class CombatUnit {
     rangedLevel = 1;
     magicLevel = 1;
 
+    experience = 0;
+
     abilities = [null, null, null, null];
     food = [null, null, null];
     drinks = [null, null, null];
@@ -406,7 +408,16 @@ class CombatUnit {
             damageTaken: 0,
             attackSpeed: 0,
             armorDamageRatio: 0,
-            hpDrainRatio: 0
+            hpDrainRatio: 0,
+            primaryTraining: "",
+            focusTraining: "",
+            staminaExperience: 0,
+            intelligenceExperience: 0,
+            attackExperience: 0,
+            defenseExperience: 0,
+            powerExperience: 0,
+            rangedExperience: 0,
+            magicExperience: 0
         },
     };
     combatBuffs = {};
@@ -943,6 +954,14 @@ class Equipment {
     getDamageType() {
         return this.gameItem.equipmentDetail.combatStats.damageType;
     }
+
+    getPrimaryTraining() {
+        return this.gameItem.equipmentDetail.combatStats.primaryTraining;
+    }
+
+    getFocusTraining(){
+        return this.gameItem.equipmentDetail.combatStats.focusTraining;
+    }
 }
 
 /* harmony default export */ const __WEBPACK_DEFAULT_EXPORT__ = (Equipment);
@@ -1073,16 +1092,27 @@ class Player extends _combatUnit__WEBPACK_IMPORTED_MODULE_1__["default"] {
             this.combatDetails.combatStats.damageType = this.equipment["/equipment_types/main_hand"].getDamageType();
             this.combatDetails.combatStats.attackInterval =
                 this.equipment["/equipment_types/main_hand"].getCombatStat("attackInterval");
+            this.combatDetails.combatStats.primaryTraining = 
+                this.equipment["/equipment_types/main_hand"].getPrimaryTraining();
         } else if (this.equipment["/equipment_types/two_hand"]) {
             this.combatDetails.combatStats.combatStyleHrid =
                 this.equipment["/equipment_types/two_hand"].getCombatStyle();
             this.combatDetails.combatStats.damageType = this.equipment["/equipment_types/two_hand"].getDamageType();
             this.combatDetails.combatStats.attackInterval =
                 this.equipment["/equipment_types/two_hand"].getCombatStat("attackInterval");
+            this.combatDetails.combatStats.primaryTraining = 
+                this.equipment["/equipment_types/two_hand"].getPrimaryTraining();
         } else {
             this.combatDetails.combatStats.combatStyleHrid = "/combat_styles/smash";
             this.combatDetails.combatStats.damageType = "/damage_types/physical";
             this.combatDetails.combatStats.attackInterval = 3000000000;
+            this.combatDetails.combatStats.primaryTraining = "/skills/power";
+        }
+
+        if (this.equipment["/equipment_types/charm"]) {
+            this.combatDetails.combatStats.focusTraining = this.equipment["/equipment_types/charm"].getFocusTraining();
+        } else {
+            this.combatDetails.combatStats.focusTraining = "";
         }
 
         [
@@ -1146,7 +1176,14 @@ class Player extends _combatUnit__WEBPACK_IMPORTED_MODULE_1__["default"] {
             "foodHaste",
             "drinkConcentration",
             "autoAttackDamage",
-            "abilityDamage"
+            "abilityDamage",
+            "staminaExperience",
+            "intelligenceExperience",
+            "attackExperience",
+            "defenseExperience",
+            "powerExperience",
+            "rangedExperience",
+            "magicExperience"
         ].forEach((stat) => {
             this.combatDetails.combatStats[stat] = Object.values(this.equipment)
                 .filter((equipment) => equipment != null)
@@ -1431,7 +1468,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"/monsters/abyssal_imp":{"hrid":"/mon
   \************************************************************/
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"/combat_styles/heal":{"hrid":"/combat_styles/heal","name":"Heal","sortIndex":6},"/combat_styles/magic":{"hrid":"/combat_styles/magic","name":"Magic","sortIndex":5},"/combat_styles/ranged":{"hrid":"/combat_styles/ranged","name":"Ranged","sortIndex":4},"/combat_styles/slash":{"hrid":"/combat_styles/slash","name":"Slash","sortIndex":2},"/combat_styles/smash":{"hrid":"/combat_styles/smash","name":"Smash","sortIndex":3},"/combat_styles/stab":{"hrid":"/combat_styles/stab","name":"Stab","sortIndex":1}}');
+module.exports = /*#__PURE__*/JSON.parse('{"/combat_styles/heal":{"hrid":"/combat_styles/heal","name":"Heal","skillExpMap":null,"sortIndex":6},"/combat_styles/magic":{"hrid":"/combat_styles/magic","name":"Magic","skillExpMap":{"/skills/attack":true,"/skills/defense":true,"/skills/intelligence":true,"/skills/magic":true,"/skills/stamina":true},"sortIndex":5},"/combat_styles/ranged":{"hrid":"/combat_styles/ranged","name":"Ranged","skillExpMap":{"/skills/attack":true,"/skills/defense":true,"/skills/intelligence":true,"/skills/ranged":true,"/skills/stamina":true},"sortIndex":4},"/combat_styles/slash":{"hrid":"/combat_styles/slash","name":"Slash","skillExpMap":{"/skills/attack":true,"/skills/defense":true,"/skills/intelligence":true,"/skills/power":true,"/skills/stamina":true},"sortIndex":2},"/combat_styles/smash":{"hrid":"/combat_styles/smash","name":"Smash","skillExpMap":{"/skills/attack":true,"/skills/defense":true,"/skills/intelligence":true,"/skills/power":true,"/skills/stamina":true},"sortIndex":3},"/combat_styles/stab":{"hrid":"/combat_styles/stab","name":"Stab","skillExpMap":{"/skills/attack":true,"/skills/defense":true,"/skills/intelligence":true,"/skills/power":true,"/skills/stamina":true},"sortIndex":1}}');
 
 /***/ }),
 
@@ -1767,7 +1804,7 @@ multiWorker.onmessage = function (event) {
 // #region Equipment
 
 function initEquipmentSection() {
-    ["head", "body", "legs", "feet", "hands", "main_hand", "two_hand", "off_hand", "pouch", "neck", "earrings", "ring", "back"].forEach((type) => {
+    ["head", "body", "legs", "feet", "hands", "main_hand", "two_hand", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"].forEach((type) => {
         initEquipmentSelect(type);
         initEnhancementLevelInput(type);
     });
@@ -1892,7 +1929,7 @@ function enhancementLevelInputHandler() {
 }
 
 function updateEquipmentState() {
-    ["head", "body", "legs", "feet", "hands", "main_hand", "two_hand", "off_hand", "pouch", "neck", "earrings", "ring", "back"].forEach((type) => {
+    ["head", "body", "legs", "feet", "hands", "main_hand", "two_hand", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"].forEach((type) => {
         let equipmentType = "/equipment_types/" + type;
         let selectType = type;
         if (type == "main_hand" || type == "two_hand") {
@@ -1995,6 +2032,20 @@ function updateCombatStatsUI() {
     let attackIntervalElement = document.getElementById("combatStat_attackInterval");
     attackIntervalElement.innerHTML = (player.combatDetails.combatStats.attackInterval / 1e9).toLocaleString() + "s";
 
+    let primaryTrainingElement = document.getElementById("combatStat_primaryTraining");
+    let primaryTraining = player.combatDetails.combatStats.primaryTraining;
+    primaryTrainingElement.setAttribute("data-i18n", "skillNames." + primaryTraining);
+    primaryTrainingElement.innerHTML = primaryTraining;
+
+    let focusTrainingElement = document.getElementById("combatStat_focusTraining");
+    let focusTraining = player.combatDetails.combatStats.focusTraining;
+    if (focusTraining) {
+        focusTrainingElement.setAttribute("data-i18n", "skillNames." + focusTraining);
+    } else {
+        focusTrainingElement.setAttribute("data-i18n", "characterSelectPage.slots.empty");
+    }
+    focusTrainingElement.innerHTML = focusTraining;
+
     [
         "maxHitpoints",
         "maxManapoints",
@@ -2065,7 +2116,15 @@ function updateCombatStatsUI() {
         "autoAttackDamage",
         "abilityDamage",
         "drinkConcentration",
-        "foodHaste"
+        "foodHaste",
+        "staminaExperience",
+        "intelligenceExperience",
+        "attackExperience",
+        "defenseExperience",
+        "powerExperience",
+        "rangedExperience",
+        "magicExperience"
+
     ].forEach((stat) => {
         let element = document.getElementById("combatStat_" + stat);
         let value = (100 * player.combatDetails.combatStats[stat]).toLocaleString([], {
@@ -4402,7 +4461,7 @@ function getEquipmentSetFromUI() {
         equipmentSet.levels[skill] = Number(levelInput.value);
     });
 
-    ["head", "body", "legs", "feet", "hands", "weapon", "off_hand", "pouch", "neck", "earrings", "ring", "back"].forEach((type) => {
+    ["head", "body", "legs", "feet", "hands", "weapon", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"].forEach((type) => {
         let equipmentSelect = document.getElementById("selectEquipment_" + type);
         let enhancementLevelInput = document.getElementById("inputEquipmentEnhancementLevel_" + type);
 
@@ -4445,7 +4504,7 @@ function loadEquipmentSetIntoUI(equipmentSet) {
     });
     updateReAttackLevel();
 
-    ["head", "body", "legs", "feet", "hands", "weapon", "off_hand", "pouch", "neck", "earrings", "ring", "back"].forEach((type) => {
+    ["head", "body", "legs", "feet", "hands", "weapon", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"].forEach((type) => {
         let equipmentSelect = document.getElementById("selectEquipment_" + type);
         let enhancementLevelInput = document.getElementById("inputEquipmentEnhancementLevel_" + type);
 
@@ -4664,7 +4723,7 @@ function doSoloImport() {
     });
     updateReAttackLevel();
 
-    ["head", "body", "legs", "feet", "hands", "off_hand", "pouch", "neck", "earrings", "ring", "back"].forEach((type) => {
+    ["head", "body", "legs", "feet", "hands", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"].forEach((type) => {
         let equipmentSelect = document.getElementById("selectEquipment_" + type);
         let enhancementLevelInput = document.getElementById("inputEquipmentEnhancementLevel_" + type);
         let currentEquipment = importSet.player.equipment.find(item => item.itemLocationHrid === "/item_locations/" + type);
@@ -4823,7 +4882,8 @@ function updateNextPlayer(currentPlayerNumber) {
     });
     updateReAttackLevel();
 
-    ["head", "body", "legs", "feet", "hands", "off_hand", "pouch", "neck", "earrings", "ring", "back"].forEach((type) => {
+    ["head", "body", "legs", "feet", "hands", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"].forEach((type) => {
+
         let equipmentSelect = document.getElementById("selectEquipment_" + type);
         let enhancementLevelInput = document.getElementById("inputEquipmentEnhancementLevel_" + type);
         let currentEquipment = importSet.player.equipment.find(item => item.itemLocationHrid === "/item_locations/" + type);
