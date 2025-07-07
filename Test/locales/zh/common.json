@@ -83,5 +83,6 @@
     "solo": "单人",
     "or": "或",
     "import": "导入",
-    "exportGroupSolo": "导出"
+    "exportGroupSolo": "导出",
+    "useAttackLevelRework" : "攻击等级从10%远程和10%魔法中获得对应经验"
 }
