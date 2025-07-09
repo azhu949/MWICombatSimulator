@@ -2997,7 +2997,7 @@ window.prices;
 
 async function fetchPrices() {
     try {
-        const response = await fetch('https://ghproxy.net/https://raw.githubusercontent.com/holychikenz/MWIApi/refs/heads/main/milkyapi.json'
+        const response = await fetch('https://www.milkywayidle.com/game_data/marketplace.json'
             , {
                 mode: 'cors'
             }
@@ -3012,11 +3012,16 @@ async function fetchPrices() {
 
         const pricesJson = await response.json();
 
-        const priceTmp = pricesJson['market'];
+        const priceTmp = pricesJson['marketData'];
         window.prices = {};
         for (const item in itemDetailMap) {
-            if (itemDetailMap[item].name in priceTmp) {
-                window.prices[itemDetailMap[item].hrid] = priceTmp[itemDetailMap[item].name];
+            const hrid = itemDetailMap[item].hrid;
+            if (hrid in priceTmp) {
+                window.prices[hrid] = { "ask": -1, "bid": -1, "vendor": itemDetailMap[item].sellPrice };
+                if (priceTmp[hrid]['0']) {
+                    window.prices[hrid].ask = priceTmp[hrid]['0'].a;
+                    window.prices[hrid].bid = priceTmp[hrid]['0'].b;
+                }
             }
         }
 

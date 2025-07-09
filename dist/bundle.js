@@ -4660,7 +4660,7 @@ window.prices;
 
 async function fetchPrices() {
     try {
-        const response = await fetch('https://ghproxy.net/https://raw.githubusercontent.com/holychikenz/MWIApi/refs/heads/main/milkyapi.json'
+        const response = await fetch('https://www.milkywayidle.com/game_data/marketplace.json'
             , {
                 mode: 'cors'
             }
@@ -4675,11 +4675,16 @@ async function fetchPrices() {
 
         const pricesJson = await response.json();
 
-        const priceTmp = pricesJson['market'];
+        const priceTmp = pricesJson['marketData'];
         window.prices = {};
         for (const item in _combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__) {
-            if (_combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[item].name in priceTmp) {
-                window.prices[_combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[item].hrid] = priceTmp[_combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[item].name];
+            const hrid = _combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[item].hrid;
+            if (hrid in priceTmp) {
+                window.prices[hrid] = { "ask": -1, "bid": -1, "vendor": _combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[item].sellPrice };
+                if (priceTmp[hrid]['0']) {
+                    window.prices[hrid].ask = priceTmp[hrid]['0'].a;
+                    window.prices[hrid].bid = priceTmp[hrid]['0'].b;
+                }
             }
         }
 
