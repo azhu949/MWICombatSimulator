@@ -40,20 +40,22 @@ class Monster extends CombatUnit {
     updateCombatDetails() {
         let gameMonster = combatMonsterDetailMap[this.hrid];
 
-        let a = 1 + .2 * this.difficultyTier;
-        let i = 20 * this.difficultyTier;
+        let levelMultiplier = 1.0 + 0.2 * this.difficultyTier;
+        let levelBonus = 20.0 * this.difficultyTier;
 
-        this.staminaLevel = a * (gameMonster.combatDetails.staminaLevel + i);
-        this.intelligenceLevel = a * (gameMonster.combatDetails.intelligenceLevel + i);
-        this.attackLevel = a * (gameMonster.combatDetails.attackLevel + i);
-        this.powerLevel = a * (gameMonster.combatDetails.powerLevel + i);
-        this.defenseLevel = a * (gameMonster.combatDetails.defenseLevel + i);
-        this.rangedLevel = a * (gameMonster.combatDetails.rangedLevel + i);
-        this.magicLevel = a * (gameMonster.combatDetails.magicLevel + i);
+        this.staminaLevel = levelMultiplier * (gameMonster.combatDetails.staminaLevel + levelBonus);
+        this.intelligenceLevel = levelMultiplier * (gameMonster.combatDetails.intelligenceLevel + levelBonus);
+        this.attackLevel = levelMultiplier * (gameMonster.combatDetails.attackLevel + levelBonus);
+        this.powerLevel = levelMultiplier * (gameMonster.combatDetails.powerLevel + levelBonus);
+        this.defenseLevel = levelMultiplier * (gameMonster.combatDetails.defenseLevel + levelBonus);
+        this.rangedLevel = levelMultiplier * (gameMonster.combatDetails.rangedLevel + levelBonus);
+        this.magicLevel = levelMultiplier * (gameMonster.combatDetails.magicLevel + levelBonus);
 
-        let t = this.difficultyTier;
-        let e = gameMonster.experience;
-        this.experience = (1 + .2 * t) * (e + 10 * t);
+        
+        let expMultiplier = 1.0 + 0.5 * this.difficultyTier;
+        let expBonus = 10.0 * this.difficultyTier;
+
+        this.experience = expMultiplier * (gameMonster.experience + expBonus);
 
         this.combatDetails.combatStats.combatStyleHrid = gameMonster.combatDetails.combatStats.combatStyleHrids[0];
 

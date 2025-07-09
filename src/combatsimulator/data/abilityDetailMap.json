@@ -1819,7 +1819,7 @@
     "/abilities/pestilent_shot": {
         "hrid": "/abilities/pestilent_shot",
         "name": "Pestilent Shot",
-        "description": "Shoots the targeted enemy, dealing damage and decreasing regeneration",
+        "description": "Shoots the targeted enemy, dealing damage and decreasing armor and resistances",
         "isSpecialAbility": false,
         "manaCost": 50,
         "cooldownDuration": 20000000000,
@@ -1851,24 +1851,44 @@
                 "spendHpRatio": 0,
                 "buffs": [
                     {
-                        "uniqueHrid": "/buff_uniques/pestilent_shot_hp_regen",
-                        "typeHrid": "/buff_types/hp_regen",
-                        "ratioBoost": -0.25,
-                        "ratioBoostLevelBonus": -0.0025,
+                        "uniqueHrid": "/buff_uniques/pestilent_shot_armor",
+                        "typeHrid": "/buff_types/armor",
+                        "ratioBoost": -0.1,
+                        "ratioBoostLevelBonus": -0.001,
                         "flatBoost": 0,
                         "flatBoostLevelBonus": 0,
                         "startTime": "0001-01-01T00:00:00Z",
-                        "duration": 10000000000
+                        "duration": 12000000000
                     },
                     {
-                        "uniqueHrid": "/buff_uniques/pestilent_shot_mp_regen",
-                        "typeHrid": "/buff_types/mp_regen",
-                        "ratioBoost": -0.25,
-                        "ratioBoostLevelBonus": -0.0025,
+                        "uniqueHrid": "/buff_uniques/pestilent_shot_water_resistance",
+                        "typeHrid": "/buff_types/water_resistance",
+                        "ratioBoost": -0.1,
+                        "ratioBoostLevelBonus": -0.001,
                         "flatBoost": 0,
                         "flatBoostLevelBonus": 0,
                         "startTime": "0001-01-01T00:00:00Z",
-                        "duration": 10000000000
+                        "duration": 12000000000
+                    },
+                    {
+                        "uniqueHrid": "/buff_uniques/pestilent_shot_water_resistance",
+                        "typeHrid": "/buff_types/nature_resistance",
+                        "ratioBoost": -0.1,
+                        "ratioBoostLevelBonus": -0.001,
+                        "flatBoost": 0,
+                        "flatBoostLevelBonus": 0,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": 12000000000
+                    },
+                    {
+                        "uniqueHrid": "/buff_uniques/pestilent_shot_water_resistance",
+                        "typeHrid": "/buff_types/fire_resistance",
+                        "ratioBoost": -0.1,
+                        "ratioBoostLevelBonus": -0.001,
+                        "flatBoost": 0,
+                        "flatBoostLevelBonus": 0,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": 12000000000
                     }
                 ]
             }
@@ -2117,7 +2137,7 @@
                         "flatBoost": 0,
                         "flatBoostLevelBonus": 0,
                         "startTime": "0001-01-01T00:00:00Z",
-                        "duration": 10000000000
+                        "duration": 12000000000
                     }
                 ]
             }

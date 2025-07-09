@@ -48,9 +48,7 @@
                 "fireAmplify": 0.2,
                 "waterResistance": 20,
                 "natureResistance": 50,
-                "fireResistance": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "fireResistance": 50
             }
         },
         "abilities": [
@@ -75,50 +73,43 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 500,
-                "maxCount": 2500,
-                "minDifficultyTier": 0
+                "maxCount": 2500
             },
             {
                 "itemHrid": "/items/red_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/emp_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/abyssal_essence",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/quick_aid",
                 "dropRate": 0.0005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/firestorm",
                 "dropRate": 0.0005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/fireball",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -126,8 +117,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.00114,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -182,9 +172,7 @@
                 "waterResistance": 50,
                 "natureResistance": 50,
                 "fireResistance": 50,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "tenacity": 50
             }
         },
         "abilities": [
@@ -220,8 +208,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.10912,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -275,9 +262,7 @@
                 "smashDamage": 0.06,
                 "stabEvasion": 0.4,
                 "slashEvasion": 0.4,
-                "smashEvasion": 0.4,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "smashEvasion": 0.4
             }
         },
         "abilities": [
@@ -292,64 +277,55 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 50,
-                "maxCount": 250,
-                "minDifficultyTier": 0
+                "maxCount": 250
             },
             {
                 "itemHrid": "/items/reptile_hide",
                 "dropRate": 1,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/blueberry",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/blackberry",
                 "dropRate": 0.05,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/apple",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/orange",
                 "dropRate": 0.15,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/gator_vest",
                 "dropRate": 0.003,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/swamp_essence",
                 "dropRate": 0.4,
                 "minCount": 2,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/scratch",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -357,8 +333,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.000488888888888889,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -411,9 +386,7 @@
                 "armor": 100,
                 "waterResistance": 50,
                 "fireResistance": 50,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "tenacity": 50
             }
         },
         "abilities": [
@@ -449,8 +422,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.16089,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -500,9 +472,7 @@
                 "damageType": "/damage_types/water",
                 "attackInterval": 3000000000,
                 "waterResistance": 20,
-                "fireResistance": 20,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "fireResistance": 20
             }
         },
         "abilities": [
@@ -517,43 +487,37 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 60,
-                "maxCount": 300,
-                "minDifficultyTier": 0
+                "maxCount": 300
             },
             {
                 "itemHrid": "/items/orange",
                 "dropRate": 0.15,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/plum",
                 "dropRate": 0.05,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/pearl",
                 "dropRate": 0.0003,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/aqua_essence",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/aqua_arrow",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -561,8 +525,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.0006694444444444445,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -613,9 +576,7 @@
                 "attackInterval": 3200000000,
                 "stabEvasion": 0.3,
                 "waterResistance": 10,
-                "natureResistance": 10,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "natureResistance": 10
             }
         },
         "abilities": [
@@ -630,78 +591,67 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 340,
-                "maxCount": 1700,
-                "minDifficultyTier": 0
+                "maxCount": 1700
             },
             {
                 "itemHrid": "/items/beast_hide",
                 "dropRate": 1,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/mooberry",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/marsberry",
                 "dropRate": 0.15,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/spaceberry",
                 "dropRate": 0.05,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/black_tea_leaf",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/red_tea_leaf",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/emp_tea_leaf",
                 "dropRate": 0.15,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/black_bear_fluff",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/bear_essence",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/frenzy",
                 "dropRate": 0.0006,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -709,8 +659,7 @@
                 "itemHrid": "/items/medium_treasure_chest",
                 "dropRate": 0.001317037037037037,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -763,9 +712,7 @@
                 "waterResistance": 150,
                 "natureResistance": 100,
                 "fireResistance": 150,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "tenacity": 50
             }
         },
         "abilities": [
@@ -801,8 +748,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.14615666666666668,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -854,9 +800,7 @@
                 "stabEvasion": 0.5,
                 "slashEvasion": 0.5,
                 "smashEvasion": 0.5,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "tenacity": 50
             }
         },
         "abilities": [
@@ -887,8 +831,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.0067511111111111105,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -941,9 +884,7 @@
                 "armor": 50,
                 "waterResistance": 50,
                 "fireResistance": 50,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "tenacity": 50
             }
         },
         "abilities": [
@@ -979,8 +920,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.5809844444444445,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -1031,9 +971,7 @@
                 "attackInterval": 3000000000,
                 "waterResistance": 30,
                 "natureResistance": 30,
-                "fireResistance": 30,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "fireResistance": 30
             }
         },
         "abilities": [
@@ -1058,71 +996,61 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 200,
-                "maxCount": 1000,
-                "minDifficultyTier": 0
+                "maxCount": 1000
             },
             {
                 "itemHrid": "/items/beast_hide",
                 "dropRate": 1,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/black_tea_leaf",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/burble_tea_leaf",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/amber",
                 "dropRate": 0.0005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/centaur_hoof",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/jungle_essence",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/elusiveness",
                 "dropRate": 0.0015,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/rain_of_arrows",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/quick_shot",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -1130,8 +1058,7 @@
                 "itemHrid": "/items/medium_treasure_chest",
                 "dropRate": 0.0009688888888888889,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -1185,9 +1112,7 @@
                 "waterAmplify": 0.3,
                 "waterResistance": 50,
                 "natureResistance": 20,
-                "fireResistance": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "fireResistance": 50
             }
         },
         "abilities": [
@@ -1222,85 +1147,83 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 1600,
-                "maxCount": 8000,
-                "minDifficultyTier": 0
+                "maxCount": 8000
             },
             {
                 "itemHrid": "/items/sorcerers_sole",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/chrono_sphere",
                 "dropRate": 0.007,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/frost_sphere",
                 "dropRate": 0.007,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/sorcerer_essence",
                 "dropRate": 0.5,
                 "minCount": 10,
-                "maxCount": 30,
-                "minDifficultyTier": 0
+                "maxCount": 30
             },
             {
                 "itemHrid": "/items/heal",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/elemental_affinity",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/frost_surge",
                 "dropRate": 0.007,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/ice_spear",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/aqua_aura",
-                "dropRate": 0.0015,
+                "dropRate": -0.0015,
+                "dropRatePerDifficultyTier": 0.0015,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/orange_key_fragment",
-                "dropRate": 0.005,
+                "dropRate": 0,
+                "dropRatePerDifficultyTier": 0.02,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
-                "itemHrid": "/items/orange_key_fragment",
-                "dropRate": 0.05,
+                "itemHrid": "/items/basic_magic_charm",
+                "dropRate": -0.012,
+                "dropRatePerDifficultyTier": 0.006,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/advanced_magic_charm",
+                "dropRate": -0.0048,
+                "dropRatePerDifficultyTier": 0.0012,
+                "minCount": 1,
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -1308,8 +1231,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.008066666666666666,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -1361,9 +1283,7 @@
                 "slashEvasion": 0.4,
                 "smashEvasion": -0.2,
                 "waterResistance": 20,
-                "fireResistance": 20,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "fireResistance": 20
             }
         },
         "abilities": [
@@ -1378,43 +1298,37 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 60,
-                "maxCount": 300,
-                "minDifficultyTier": 0
+                "maxCount": 300
             },
             {
                 "itemHrid": "/items/orange",
                 "dropRate": 0.15,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/plum",
                 "dropRate": 0.05,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/crab_pincer",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/aqua_essence",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/smack",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -1422,8 +1336,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.0006416666666666667,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -1475,9 +1388,7 @@
                 "smashEvasion": -0.2,
                 "rangedEvasion": 0.4,
                 "waterResistance": 40,
-                "fireResistance": 40,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "fireResistance": 40
             }
         },
         "abilities": [
@@ -1512,92 +1423,103 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 4000,
-                "maxCount": 20000,
-                "minDifficultyTier": 0
+                "maxCount": 20000
             },
             {
                 "itemHrid": "/items/garnet",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/jade",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/amethyst",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/colossus_core",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/golem_essence",
                 "dropRate": 0.5,
                 "minCount": 10,
-                "maxCount": 30,
-                "minDifficultyTier": 0
+                "maxCount": 30
             },
             {
                 "itemHrid": "/items/toughness",
                 "dropRate": 0.015,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/spike_shell",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/puncture",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/impale",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/invincible",
-                "dropRate": 0.0015,
+                "dropRate": -0.0015,
+                "dropRatePerDifficultyTier": 0.0015,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/stone_key_fragment",
-                "dropRate": 0.007,
+                "dropRate": 0,
+                "dropRatePerDifficultyTier": 0.03,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
-                "itemHrid": "/items/stone_key_fragment",
-                "dropRate": 0.07,
+                "itemHrid": "/items/basic_defense_charm",
+                "dropRate": -0.006,
+                "dropRatePerDifficultyTier": 0.006,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/basic_power_charm",
+                "dropRate": -0.006,
+                "dropRatePerDifficultyTier": 0.006,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/advanced_defense_charm",
+                "dropRate": -0.003,
+                "dropRatePerDifficultyTier": 0.001,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/advanced_power_charm",
+                "dropRate": -0.003,
+                "dropRatePerDifficultyTier": 0.001,
+                "minCount": 1,
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -1605,8 +1527,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.010584999999999999,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -1659,9 +1580,7 @@
                 "fireAmplify": 0.2,
                 "waterResistance": 20,
                 "natureResistance": 50,
-                "fireResistance": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "fireResistance": 50
             }
         },
         "abilities": [
@@ -1696,71 +1615,85 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 4000,
-                "maxCount": 20000,
-                "minDifficultyTier": 0
+                "maxCount": 20000
             },
             {
                 "itemHrid": "/items/demonic_core",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/abyssal_essence",
                 "dropRate": 0.5,
                 "minCount": 10,
-                "maxCount": 30,
-                "minDifficultyTier": 0
+                "maxCount": 30
             },
             {
                 "itemHrid": "/items/toughness",
                 "dropRate": 0.015,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/firestorm",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/flame_blast",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/fireball",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/flame_aura",
-                "dropRate": 0.0015,
+                "dropRate": -0.0015,
+                "dropRatePerDifficultyTier": 0.0015,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/burning_key_fragment",
-                "dropRate": 0.007,
+                "dropRate": 0,
+                "dropRatePerDifficultyTier": 0.03,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
-                "itemHrid": "/items/burning_key_fragment",
-                "dropRate": 0.07,
+                "itemHrid": "/items/basic_intelligence_charm",
+                "dropRate": -0.006,
+                "dropRatePerDifficultyTier": 0.006,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/basic_magic_charm",
+                "dropRate": -0.006,
+                "dropRatePerDifficultyTier": 0.006,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/advanced_intelligence_charm",
+                "dropRate": -0.003,
+                "dropRatePerDifficultyTier": 0.001,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/advanced_magic_charm",
+                "dropRate": -0.003,
+                "dropRatePerDifficultyTier": 0.001,
+                "minCount": 1,
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -1768,8 +1701,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.016159999999999997,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -1823,8 +1755,6 @@
                 "natureResistance": 80,
                 "fireResistance": 80,
                 "tenacity": 100,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01,
                 "curse": 0.04
             }
         },
@@ -1861,8 +1791,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 2.6731415277777777,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -1918,9 +1847,7 @@
                 "waterResistance": 20,
                 "natureResistance": 20,
                 "fireResistance": 20,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "tenacity": 50
             }
         },
         "abilities": [
@@ -1956,8 +1883,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.05218333333333333,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -2009,9 +1935,7 @@
                 "waterResistance": 60,
                 "natureResistance": 60,
                 "fireResistance": 40,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "tenacity": 50
             }
         },
         "abilities": [
@@ -2046,78 +1970,91 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 4000,
-                "maxCount": 20000,
-                "minDifficultyTier": 0
+                "maxCount": 20000
             },
             {
                 "itemHrid": "/items/moonstone",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/revenant_anima",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/twilight_essence",
                 "dropRate": 0.5,
                 "minCount": 10,
-                "maxCount": 30,
-                "minDifficultyTier": 0
+                "maxCount": 30
             },
             {
                 "itemHrid": "/items/vampirism",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/steady_shot",
                 "dropRate": 0.006,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/silencing_shot",
                 "dropRate": 0.006,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/rain_of_arrows",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/critical_aura",
-                "dropRate": 0.0015,
+                "dropRate": -0.0015,
+                "dropRatePerDifficultyTier": 0.0015,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/dark_key_fragment",
-                "dropRate": 0.007,
+                "dropRate": 0,
+                "dropRatePerDifficultyTier": 0.03,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
-                "itemHrid": "/items/dark_key_fragment",
-                "dropRate": 0.07,
+                "itemHrid": "/items/basic_attack_charm",
+                "dropRate": -0.006,
+                "dropRatePerDifficultyTier": 0.006,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/basic_ranged_charm",
+                "dropRate": -0.006,
+                "dropRatePerDifficultyTier": 0.006,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/advanced_attack_charm",
+                "dropRate": -0.003,
+                "dropRatePerDifficultyTier": 0.001,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/advanced_ranged_charm",
+                "dropRate": -0.003,
+                "dropRatePerDifficultyTier": 0.001,
+                "minCount": 1,
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -2125,8 +2062,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.014685,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -2180,9 +2116,7 @@
                 "fireAmplify": 0.3,
                 "waterResistance": 40,
                 "natureResistance": 40,
-                "fireResistance": 40,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "fireResistance": 40
             }
         },
         "abilities": [
@@ -2212,78 +2146,68 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 240,
-                "maxCount": 1200,
-                "minDifficultyTier": 0
+                "maxCount": 1200
             },
             {
                 "itemHrid": "/items/dragon_fruit",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/silk_fabric",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/radiant_fiber",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/sorcerers_sole",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/tome_of_the_elements",
                 "dropRate": 0.0002,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/sorcerer_essence",
                 "dropRate": 0.3,
                 "minCount": 2,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/elemental_affinity",
                 "dropRate": 0.0008,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/ice_spear",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/flame_blast",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/revive",
-                "dropRate": 0.0002,
+                "dropRate": -0.0002,
+                "dropRatePerDifficultyTier": 0.0002,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -2291,8 +2215,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.00108,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -2351,9 +2274,7 @@
                 "waterResistance": 150,
                 "natureResistance": 150,
                 "fireResistance": 100,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "tenacity": 50
             }
         },
         "abilities": [
@@ -2389,8 +2310,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.12869000000000003,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -2439,9 +2359,7 @@
                 ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
-                "tenacity": 100,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "tenacity": 100
             }
         },
         "abilities": [
@@ -2477,8 +2395,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.5053216666666667,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -2529,9 +2446,7 @@
                 "attackInterval": 3500000000,
                 "rangedEvasion": 1,
                 "armor": 100,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "tenacity": 50
             }
         },
         "abilities": [
@@ -2567,8 +2482,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.1911,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -2617,9 +2531,7 @@
                 ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "tenacity": 50
             }
         },
         "abilities": [
@@ -2650,8 +2562,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.017367777777777777,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -2708,9 +2619,7 @@
                 "waterResistance": 50,
                 "natureResistance": 50,
                 "fireResistance": 50,
-                "tenacity": 100,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "tenacity": 100
             }
         },
         "abilities": [
@@ -2746,8 +2655,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.5177855555555556,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -2802,9 +2710,7 @@
                 "waterResistance": 50,
                 "natureResistance": 50,
                 "fireResistance": 50,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "tenacity": 50
             }
         },
         "abilities": [
@@ -2840,8 +2746,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.16414,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -2891,9 +2796,7 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
                 "stabEvasion": -0.25,
-                "rangedEvasion": -0.25,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "rangedEvasion": -0.25
             }
         },
         "abilities": [
@@ -2908,106 +2811,91 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 200,
-                "maxCount": 1000,
-                "minDifficultyTier": 0
+                "maxCount": 1000
             },
             {
                 "itemHrid": "/items/azure_cheese",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/burble_cheese",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/crimson_cheese",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/strawberry",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/mooberry",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/marsberry",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/plum",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/peach",
                 "dropRate": 0.15,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/dragon_fruit",
                 "dropRate": 0.05,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/burble_tea_leaf",
                 "dropRate": 0.6,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/moolong_tea_leaf",
                 "dropRate": 0.45,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/red_tea_leaf",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/eyessence",
                 "dropRate": 0.4,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/precision",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -3015,8 +2903,7 @@
                 "itemHrid": "/items/medium_treasure_chest",
                 "dropRate": 0.0008841111111111111,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -3066,9 +2953,7 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
                 "stabEvasion": -0.25,
-                "rangedEvasion": -0.25,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "rangedEvasion": -0.25
             }
         },
         "abilities": [
@@ -3083,50 +2968,43 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 240,
-                "maxCount": 1200,
-                "minDifficultyTier": 0
+                "maxCount": 1200
             },
             {
                 "itemHrid": "/items/burble_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/moolong_tea_leaf",
                 "dropRate": 0.15,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/red_tea_leaf",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/goggles",
                 "dropRate": 0.0005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/eyessence",
                 "dropRate": 0.4,
                 "minCount": 2,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/precision",
                 "dropRate": 0.0015,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -3134,8 +3012,7 @@
                 "itemHrid": "/items/medium_treasure_chest",
                 "dropRate": 0.0010352222222222223,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -3188,9 +3065,7 @@
                 "fireAmplify": 0.2,
                 "waterResistance": 10,
                 "natureResistance": 40,
-                "fireResistance": 40,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "fireResistance": 40
             }
         },
         "abilities": [
@@ -3210,57 +3085,49 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 150,
-                "maxCount": 750,
-                "minDifficultyTier": 0
+                "maxCount": 750
             },
             {
                 "itemHrid": "/items/peach",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/bamboo_fabric",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/flaming_cloth",
                 "dropRate": 0.002,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/sorcerers_sole",
                 "dropRate": 0.0005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/sorcerer_essence",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/flame_blast",
                 "dropRate": 0.0008,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/fireball",
                 "dropRate": 0.012,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -3268,8 +3135,7 @@
                 "itemHrid": "/items/medium_treasure_chest",
                 "dropRate": 0.0011651851851851851,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -3319,9 +3185,7 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 4000000000,
                 "smashAccuracy": -0.5,
-                "smashDamage": -0.5,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "smashDamage": -0.5
             }
         },
         "abilities": [],
@@ -3330,15 +3194,14 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 8,
-                "maxCount": 40,
-                "minDifficultyTier": 0
+                "maxCount": 40
             },
             {
                 "itemHrid": "/items/blue_key_fragment",
-                "dropRate": 0.0001,
+                "dropRate": 0,
+                "dropRatePerDifficultyTier": 4e-05,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -3346,8 +3209,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.00016749999999999998,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -3395,9 +3257,7 @@
                     "/combat_styles/smash"
                 ],
                 "damageType": "/damage_types/physical",
-                "attackInterval": 3200000000,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "attackInterval": 3200000000
             }
         },
         "abilities": [
@@ -3412,43 +3272,37 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 24,
-                "maxCount": 120,
-                "minDifficultyTier": 0
+                "maxCount": 120
             },
             {
                 "itemHrid": "/items/egg",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/green_tea_leaf",
                 "dropRate": 0.4,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/black_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/swamp_essence",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/smack",
                 "dropRate": 0.007,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -3456,8 +3310,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.0002916666666666667,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -3505,9 +3358,7 @@
                     "/combat_styles/smash"
                 ],
                 "damageType": "/damage_types/physical",
-                "attackInterval": 3000000000,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "attackInterval": 3000000000
             }
         },
         "abilities": [
@@ -3537,64 +3388,65 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 400,
-                "maxCount": 2000,
-                "minDifficultyTier": 0
+                "maxCount": 2000
             },
             {
                 "itemHrid": "/items/swamp_essence",
                 "dropRate": 0.5,
                 "minCount": 10,
-                "maxCount": 30,
-                "minDifficultyTier": 0
+                "maxCount": 30
             },
             {
                 "itemHrid": "/items/shoebill_feather",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/elusiveness",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/sweep",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/smack",
                 "dropRate": 0.05,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/speed_aura",
-                "dropRate": 0.0004,
+                "dropRate": -0.0004,
+                "dropRatePerDifficultyTier": 0.0004,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/green_key_fragment",
-                "dropRate": 0.001,
+                "dropRate": 0,
+                "dropRatePerDifficultyTier": 0.004,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
-                "itemHrid": "/items/green_key_fragment",
-                "dropRate": 0.01,
+                "itemHrid": "/items/basic_stamina_charm",
+                "dropRate": -0.006,
+                "dropRatePerDifficultyTier": 0.003,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/advanced_stamina_charm",
+                "dropRate": -0.0024,
+                "dropRatePerDifficultyTier": 0.0006,
+                "minCount": 1,
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -3602,8 +3454,7 @@
                 "itemHrid": "/items/medium_treasure_chest",
                 "dropRate": 0.0013155555555555557,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -3658,9 +3509,7 @@
                 "fireAmplify": 0.2,
                 "waterResistance": 15,
                 "natureResistance": 15,
-                "fireResistance": 15,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "fireResistance": 15
             }
         },
         "abilities": [
@@ -3680,78 +3529,68 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 130,
-                "maxCount": 650,
-                "minDifficultyTier": 0
+                "maxCount": 650
             },
             {
                 "itemHrid": "/items/gobo_hide",
                 "dropRate": 1,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/cotton_fabric",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/linen_fabric",
                 "dropRate": 0.05,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/green_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/burble_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/moolong_tea_leaf",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/gobo_boomstick",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/gobo_essence",
                 "dropRate": 0.3,
                 "minCount": 2,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/fireball",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/revive",
-                "dropRate": 0.0001,
+                "dropRate": -0.0001,
+                "dropRatePerDifficultyTier": 0.0001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -3759,8 +3598,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.00128,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -3810,9 +3648,7 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3200000000,
                 "armorPenetration": 0.2,
-                "armor": 10,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "armor": 10
             }
         },
         "abilities": [
@@ -3847,85 +3683,83 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 800,
-                "maxCount": 4000,
-                "minDifficultyTier": 0
+                "maxCount": 4000
             },
             {
                 "itemHrid": "/items/gobo_hide",
                 "dropRate": 1,
                 "minCount": 5,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/gobo_rag",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/gobo_defender",
                 "dropRate": 0.0015,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/gobo_essence",
                 "dropRate": 0.5,
                 "minCount": 10,
-                "maxCount": 30,
-                "minDifficultyTier": 0
+                "maxCount": 30
             },
             {
                 "itemHrid": "/items/berserk",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/puncture",
                 "dropRate": 0.0015,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/impale",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/poke",
                 "dropRate": 0.05,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/fierce_aura",
-                "dropRate": 0.001,
+                "dropRate": -0.001,
+                "dropRatePerDifficultyTier": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/purple_key_fragment",
-                "dropRate": 0.005,
+                "dropRate": 0,
+                "dropRatePerDifficultyTier": 0.02,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
-                "itemHrid": "/items/purple_key_fragment",
-                "dropRate": 0.05,
+                "itemHrid": "/items/basic_attack_charm",
+                "dropRate": -0.01,
+                "dropRatePerDifficultyTier": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/advanced_attack_charm",
+                "dropRate": -0.004,
+                "dropRatePerDifficultyTier": 0.001,
+                "minCount": 1,
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -3933,8 +3767,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.004437222222222222,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -3987,9 +3820,7 @@
                 "rangedDamage": 0.55,
                 "waterResistance": 30,
                 "natureResistance": 30,
-                "fireResistance": 30,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "fireResistance": 30
             }
         },
         "abilities": [
@@ -4004,78 +3835,67 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 130,
-                "maxCount": 650,
-                "minDifficultyTier": 0
+                "maxCount": 650
             },
             {
                 "itemHrid": "/items/gobo_hide",
                 "dropRate": 1,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/orange",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/plum",
                 "dropRate": 0.15,
                 "minCount": 1,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/peach",
                 "dropRate": 0.05,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/green_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/burble_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/moolong_tea_leaf",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/gobo_shooter",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/gobo_essence",
                 "dropRate": 0.3,
                 "minCount": 2,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/flame_arrow",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -4083,8 +3903,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.00125,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -4134,9 +3953,7 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3300000000,
                 "slashAccuracy": 0.9,
-                "slashDamage": 0.9,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "slashDamage": 0.9
             }
         },
         "abilities": [
@@ -4151,78 +3968,67 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 130,
-                "maxCount": 650,
-                "minDifficultyTier": 0
+                "maxCount": 650
             },
             {
                 "itemHrid": "/items/gobo_hide",
                 "dropRate": 1,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/blackberry",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/strawberry",
                 "dropRate": 0.15,
                 "minCount": 1,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/mooberry",
                 "dropRate": 0.05,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/black_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/burble_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/moolong_tea_leaf",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/gobo_slasher",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/gobo_essence",
                 "dropRate": 0.3,
                 "minCount": 2,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/cleave",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -4230,8 +4036,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.00123,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -4281,9 +4086,7 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3700000000,
                 "smashAccuracy": 0.1,
-                "smashDamage": 1.65,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "smashDamage": 1.65
             }
         },
         "abilities": [
@@ -4298,78 +4101,67 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 130,
-                "maxCount": 650,
-                "minDifficultyTier": 0
+                "maxCount": 650
             },
             {
                 "itemHrid": "/items/gobo_hide",
                 "dropRate": 1,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/orange",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/plum",
                 "dropRate": 0.15,
                 "minCount": 1,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/peach",
                 "dropRate": 0.05,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/green_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/burble_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/moolong_tea_leaf",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/gobo_smasher",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/gobo_essence",
                 "dropRate": 0.3,
                 "minCount": 2,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/berserk",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -4377,8 +4169,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.0012350000000000002,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -4428,9 +4219,7 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 2500000000,
                 "stabAccuracy": 2,
-                "stabDamage": 0.1,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "stabDamage": 0.1
             }
         },
         "abilities": [
@@ -4445,71 +4234,61 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 130,
-                "maxCount": 650,
-                "minDifficultyTier": 0
+                "maxCount": 650
             },
             {
                 "itemHrid": "/items/gobo_hide",
                 "dropRate": 1,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/burble_milk",
                 "dropRate": 0.15,
                 "minCount": 2,
-                "maxCount": 10,
-                "minDifficultyTier": 0
+                "maxCount": 10
             },
             {
                 "itemHrid": "/items/crimson_milk",
                 "dropRate": 0.05,
                 "minCount": 2,
-                "maxCount": 10,
-                "minDifficultyTier": 0
+                "maxCount": 10
             },
             {
                 "itemHrid": "/items/black_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/burble_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/moolong_tea_leaf",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/gobo_stabber",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/gobo_essence",
                 "dropRate": 0.3,
                 "minCount": 2,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/impale",
                 "dropRate": 0.0015,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -4517,8 +4296,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.00122,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -4570,9 +4348,7 @@
                 "smashEvasion": -0.2,
                 "rangedEvasion": 0.4,
                 "waterResistance": 40,
-                "fireResistance": 40,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "fireResistance": 40
             }
         },
         "abilities": [
@@ -4602,85 +4378,74 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 750,
-                "maxCount": 3750,
-                "minDifficultyTier": 0
+                "maxCount": 3750
             },
             {
                 "itemHrid": "/items/red_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/emp_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/garnet",
                 "dropRate": 0.0004,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/jade",
                 "dropRate": 0.0004,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/amethyst",
                 "dropRate": 0.0004,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/living_granite",
                 "dropRate": 0.0007,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/golem_essence",
                 "dropRate": 0.3,
                 "minCount": 3,
-                "maxCount": 9,
-                "minDifficultyTier": 0
+                "maxCount": 9
             },
             {
                 "itemHrid": "/items/provoke",
                 "dropRate": 0.0005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/stunning_blow",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/sweep",
                 "dropRate": 0.0025,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/invincible",
-                "dropRate": 5e-05,
+                "dropRate": -5e-05,
+                "dropRatePerDifficultyTier": 5e-05,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -4688,8 +4453,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.0014566666666666664,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -4745,9 +4509,7 @@
                 "waterResistance": 300,
                 "natureResistance": 300,
                 "fireResistance": 300,
-                "tenacity": 100,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "tenacity": 100
             }
         },
         "abilities": [
@@ -4783,8 +4545,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.5918655555555555,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -4835,9 +4596,7 @@
                 "attackInterval": 3200000000,
                 "slashEvasion": 0.3,
                 "waterResistance": 10,
-                "natureResistance": 10,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "natureResistance": 10
             }
         },
         "abilities": [
@@ -4852,78 +4611,67 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 380,
-                "maxCount": 1900,
-                "minDifficultyTier": 0
+                "maxCount": 1900
             },
             {
                 "itemHrid": "/items/beast_hide",
                 "dropRate": 1,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/mooberry",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/marsberry",
                 "dropRate": 0.15,
                 "minCount": 1,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/spaceberry",
                 "dropRate": 0.05,
                 "minCount": 1,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/burble_tea_leaf",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/red_tea_leaf",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/emp_tea_leaf",
                 "dropRate": 0.15,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/grizzly_bear_fluff",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/bear_essence",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/frenzy",
                 "dropRate": 0.0008,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -4931,8 +4679,7 @@
                 "itemHrid": "/items/medium_treasure_chest",
                 "dropRate": 0.0014666666666666667,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -4983,9 +4730,7 @@
                 "attackInterval": 2800000000,
                 "smashEvasion": 0.3,
                 "waterResistance": 10,
-                "natureResistance": 10,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "natureResistance": 10
             }
         },
         "abilities": [
@@ -5000,57 +4745,49 @@
                 "itemHrid": "/items/sugar",
                 "dropRate": 1,
                 "minCount": 20,
-                "maxCount": 100,
-                "minDifficultyTier": 0
+                "maxCount": 100
             },
             {
                 "itemHrid": "/items/apple_gummy",
                 "dropRate": 0.5,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/orange_gummy",
                 "dropRate": 0.5,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/plum_gummy",
                 "dropRate": 0.5,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/peach_gummy",
                 "dropRate": 0.5,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/dragon_fruit_gummy",
                 "dropRate": 0.5,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/bear_essence",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/frenzy",
                 "dropRate": 0.0003,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -5058,8 +4795,7 @@
                 "itemHrid": "/items/medium_treasure_chest",
                 "dropRate": 0.0011266666666666667,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -5112,9 +4848,7 @@
                 "waterAmplify": 0.2,
                 "waterResistance": 40,
                 "natureResistance": 10,
-                "fireResistance": 40,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "fireResistance": 40
             }
         },
         "abilities": [
@@ -5134,57 +4868,49 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 120,
-                "maxCount": 600,
-                "minDifficultyTier": 0
+                "maxCount": 600
             },
             {
                 "itemHrid": "/items/peach",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/bamboo_fabric",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/icy_cloth",
                 "dropRate": 0.002,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/sorcerers_sole",
                 "dropRate": 0.0005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/sorcerer_essence",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/ice_spear",
                 "dropRate": 0.0008,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/water_strike",
                 "dropRate": 0.012,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -5192,8 +4918,7 @@
                 "itemHrid": "/items/medium_treasure_chest",
                 "dropRate": 0.0010311111111111111,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -5247,9 +4972,7 @@
                 "armor": 10,
                 "waterResistance": 20,
                 "natureResistance": 50,
-                "fireResistance": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "fireResistance": 50
             }
         },
         "abilities": [
@@ -5274,57 +4997,50 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 750,
-                "maxCount": 3750,
-                "minDifficultyTier": 0
+                "maxCount": 3750
             },
             {
                 "itemHrid": "/items/red_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/emp_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/infernal_ember",
                 "dropRate": 0.0007,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/abyssal_essence",
                 "dropRate": 0.3,
                 "minCount": 3,
-                "maxCount": 9,
-                "minDifficultyTier": 0
+                "maxCount": 9
             },
             {
                 "itemHrid": "/items/firestorm",
                 "dropRate": 0.0008,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/flame_blast",
                 "dropRate": 0.0015,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/flame_aura",
-                "dropRate": 5e-05,
+                "dropRate": -5e-05,
+                "dropRatePerDifficultyTier": 5e-05,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -5332,8 +5048,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.002295,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -5387,9 +5102,7 @@
                 "waterResistance": 200,
                 "natureResistance": 200,
                 "fireResistance": 100,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "tenacity": 50
             }
         },
         "abilities": [
@@ -5420,8 +5133,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.02893777777777778,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -5476,8 +5188,6 @@
                 "natureResistance": 100,
                 "fireResistance": 100,
                 "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01,
                 "curse": 0.04
             }
         },
@@ -5514,8 +5224,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.165555,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -5567,9 +5276,7 @@
                 "autoAttackDamage": -0.5,
                 "natureAmplify": 0.3,
                 "waterResistance": 20,
-                "natureResistance": 20,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "natureResistance": 20
             }
         },
         "abilities": [
@@ -5594,57 +5301,50 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 80,
-                "maxCount": 400,
-                "minDifficultyTier": 0
+                "maxCount": 400
             },
             {
                 "itemHrid": "/items/cotton",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/flax",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/tome_of_healing",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/jungle_essence",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/heal",
                 "dropRate": 0.0008,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/entangle",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/rejuvenate",
-                "dropRate": 0.0004,
+                "dropRate": -0.0004,
+                "dropRatePerDifficultyTier": 0.0004,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -5652,8 +5352,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.0007733333333333332,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -5707,9 +5406,7 @@
                 "armor": 20,
                 "waterResistance": 20,
                 "natureResistance": 20,
-                "tenacity": 40,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "tenacity": 40
             }
         },
         "abilities": [
@@ -5744,78 +5441,77 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 1000,
-                "maxCount": 5000,
-                "minDifficultyTier": 0
+                "maxCount": 5000
             },
             {
                 "itemHrid": "/items/amber",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/luna_wing",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/jungle_essence",
                 "dropRate": 0.5,
                 "minCount": 10,
-                "maxCount": 30,
-                "minDifficultyTier": 0
+                "maxCount": 30
             },
             {
                 "itemHrid": "/items/rejuvenate",
                 "dropRate": 0.0025,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/elusiveness",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/natures_veil",
                 "dropRate": 0.0035,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/toxic_pollen",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/sylvan_aura",
-                "dropRate": 0.0005,
+                "dropRate": -0.0006,
+                "dropRatePerDifficultyTier": 0.0006,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/green_key_fragment",
-                "dropRate": 0.004,
+                "dropRate": 0,
+                "dropRatePerDifficultyTier": 0.02,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
-                "itemHrid": "/items/green_key_fragment",
-                "dropRate": 0.04,
+                "itemHrid": "/items/basic_intelligence_charm",
+                "dropRate": -0.01,
+                "dropRatePerDifficultyTier": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/advanced_intelligence_charm",
+                "dropRate": -0.004,
+                "dropRatePerDifficultyTier": 0.001,
+                "minCount": 1,
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -5823,8 +5519,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.0038,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -5877,9 +5572,7 @@
                 "waterResistance": 40,
                 "natureResistance": 80,
                 "fireResistance": 80,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "tenacity": 50
             }
         },
         "abilities": [
@@ -5915,8 +5608,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.14191666666666666,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -5968,9 +5660,7 @@
                 "smashEvasion": -0.2,
                 "rangedEvasion": 0.4,
                 "waterResistance": 40,
-                "fireResistance": 40,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "fireResistance": 40
             }
         },
         "abilities": [
@@ -5985,64 +5675,55 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 500,
-                "maxCount": 2500,
-                "minDifficultyTier": 0
+                "maxCount": 2500
             },
             {
                 "itemHrid": "/items/red_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/emp_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/garnet",
                 "dropRate": 0.0002,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/jade",
                 "dropRate": 0.0002,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/amethyst",
                 "dropRate": 0.0002,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/magnet",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/golem_essence",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/stunning_blow",
                 "dropRate": 0.0008,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -6050,8 +5731,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.0009833333333333332,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -6106,9 +5786,7 @@
                 "waterResistance": 200,
                 "natureResistance": 200,
                 "fireResistance": 200,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "tenacity": 50
             }
         },
         "abilities": [
@@ -6144,8 +5822,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.16485333333333332,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -6197,9 +5874,7 @@
                 "waterAmplify": 0.2,
                 "waterResistance": 20,
                 "fireResistance": 20,
-                "tenacity": 30,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "tenacity": 30
             }
         },
         "abilities": [
@@ -6229,71 +5904,71 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 700,
-                "maxCount": 3500,
-                "minDifficultyTier": 0
+                "maxCount": 3500
             },
             {
                 "itemHrid": "/items/pearl",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/marine_scale",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/aqua_essence",
                 "dropRate": 0.5,
                 "minCount": 10,
-                "maxCount": 30,
-                "minDifficultyTier": 0
+                "maxCount": 30
             },
             {
                 "itemHrid": "/items/silencing_shot",
                 "dropRate": 0.0025,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/aqua_arrow",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/rain_of_arrows",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/aqua_aura",
-                "dropRate": 0.0005,
+                "dropRate": -0.0005,
+                "dropRatePerDifficultyTier": 0.0005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/blue_key_fragment",
-                "dropRate": 0.004,
+                "dropRate": 0,
+                "dropRatePerDifficultyTier": 0.02,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
-                "itemHrid": "/items/blue_key_fragment",
-                "dropRate": 0.04,
+                "itemHrid": "/items/basic_defense_charm",
+                "dropRate": -0.008,
+                "dropRatePerDifficultyTier": 0.004,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/advanced_defense_charm",
+                "dropRate": -0.0032,
+                "dropRatePerDifficultyTier": 0.0008,
+                "minCount": 1,
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -6301,8 +5976,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.0017722222222222223,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -6354,9 +6028,7 @@
                 "autoAttackDamage": -0.5,
                 "natureAmplify": 0.3,
                 "waterResistance": 20,
-                "natureResistance": 20,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "natureResistance": 20
             }
         },
         "abilities": [
@@ -6371,50 +6043,43 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 120,
-                "maxCount": 600,
-                "minDifficultyTier": 0
+                "maxCount": 600
             },
             {
                 "itemHrid": "/items/cocoon",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/black_tea_leaf",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/burble_tea_leaf",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/amber",
                 "dropRate": 0.0003,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/jungle_essence",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/toxic_pollen",
                 "dropRate": 0.0008,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -6422,8 +6087,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.0010933333333333333,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -6475,9 +6139,7 @@
                 "stabAccuracy": -0.2,
                 "slashAccuracy": -0.2,
                 "waterResistance": 20,
-                "fireResistance": 20,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "fireResistance": 20
             }
         },
         "abilities": [
@@ -6492,78 +6154,67 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 90,
-                "maxCount": 450,
-                "minDifficultyTier": 0
+                "maxCount": 450
             },
             {
                 "itemHrid": "/items/blackberry",
                 "dropRate": 0.15,
                 "minCount": 1,
-                "maxCount": 12,
-                "minDifficultyTier": 0
+                "maxCount": 12
             },
             {
                 "itemHrid": "/items/strawberry",
                 "dropRate": 0.05,
                 "minCount": 1,
-                "maxCount": 8,
-                "minDifficultyTier": 0
+                "maxCount": 8
             },
             {
                 "itemHrid": "/items/orange",
                 "dropRate": 0.15,
                 "minCount": 1,
-                "maxCount": 10,
-                "minDifficultyTier": 0
+                "maxCount": 10
             },
             {
                 "itemHrid": "/items/plum",
                 "dropRate": 0.05,
                 "minCount": 1,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/green_tea_leaf",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/black_tea_leaf",
                 "dropRate": 0.4,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/burble_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/pearl",
                 "dropRate": 0.0004,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/aqua_essence",
                 "dropRate": 0.4,
                 "minCount": 3,
-                "maxCount": 9,
-                "minDifficultyTier": 0
+                "maxCount": 9
             },
             {
                 "itemHrid": "/items/impale",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -6571,8 +6222,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.0007797777777777778,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -6625,9 +6275,7 @@
                 "waterAmplify": 0.1,
                 "waterResistance": 20,
                 "natureResistance": 20,
-                "fireResistance": 20,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "fireResistance": 20
             }
         },
         "abilities": [
@@ -6647,50 +6295,44 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 60,
-                "maxCount": 300,
-                "minDifficultyTier": 0
+                "maxCount": 300
             },
             {
                 "itemHrid": "/items/plum",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/linen_fabric",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/sorcerers_sole",
                 "dropRate": 0.0002,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/sorcerer_essence",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/quick_aid",
-                "dropRate": 0.001,
+                "dropRate": -0.001,
+                "dropRatePerDifficultyTier": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/water_strike",
                 "dropRate": 0.008,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -6698,8 +6340,7 @@
                 "itemHrid": "/items/medium_treasure_chest",
                 "dropRate": 0.0006666666666666666,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -6751,9 +6392,7 @@
                 "smashEvasion": 0.3,
                 "armor": 12,
                 "waterResistance": 10,
-                "natureResistance": 10,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "natureResistance": 10
             }
         },
         "abilities": [
@@ -6768,99 +6407,85 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 340,
-                "maxCount": 1700,
-                "minDifficultyTier": 0
+                "maxCount": 1700
             },
             {
                 "itemHrid": "/items/beast_hide",
                 "dropRate": 1,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/bamboo_branch",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/wheat",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 15,
-                "minDifficultyTier": 0
+                "maxCount": 15
             },
             {
                 "itemHrid": "/items/egg",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 15,
-                "minDifficultyTier": 0
+                "maxCount": 15
             },
             {
                 "itemHrid": "/items/peach",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/dragon_fruit",
                 "dropRate": 0.15,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/star_fruit",
                 "dropRate": 0.05,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/green_tea_leaf",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/red_tea_leaf",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/emp_tea_leaf",
                 "dropRate": 0.15,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/panda_fluff",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/bear_essence",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/toughness",
                 "dropRate": 0.002,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -6868,8 +6493,7 @@
                 "itemHrid": "/items/medium_treasure_chest",
                 "dropRate": 0.0016874074074074074,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -6920,9 +6544,7 @@
                 "attackInterval": 3200000000,
                 "smashEvasion": 0.3,
                 "waterResistance": 10,
-                "natureResistance": 10,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "natureResistance": 10
             }
         },
         "abilities": [
@@ -6937,78 +6559,67 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 440,
-                "maxCount": 2200,
-                "minDifficultyTier": 0
+                "maxCount": 2200
             },
             {
                 "itemHrid": "/items/beast_hide",
                 "dropRate": 1,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/crimson_milk",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/rainbow_milk",
                 "dropRate": 0.15,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/holy_milk",
                 "dropRate": 0.05,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/moolong_tea_leaf",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/red_tea_leaf",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/emp_tea_leaf",
                 "dropRate": 0.15,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/polar_bear_fluff",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/bear_essence",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/frenzy",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -7016,8 +6627,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.0009155555555555556,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -7065,9 +6675,7 @@
                     "/combat_styles/ranged"
                 ],
                 "damageType": "/damage_types/physical",
-                "attackInterval": 3000000000,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "attackInterval": 3000000000
             }
         },
         "abilities": [
@@ -7082,43 +6690,38 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 16,
-                "maxCount": 80,
-                "minDifficultyTier": 0
+                "maxCount": 80
             },
             {
                 "itemHrid": "/items/rough_hide",
                 "dropRate": 1,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/cotton",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/green_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/quick_shot",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/blue_key_fragment",
-                "dropRate": 0.0003,
+                "dropRate": 0,
+                "dropRatePerDifficultyTier": 0.00012,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -7126,8 +6729,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.00025177777777777774,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -7176,9 +6778,7 @@
                 ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "tenacity": 50
             }
         },
         "abilities": [
@@ -7209,8 +6809,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.01352111111111111,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -7258,9 +6857,7 @@
                     "/combat_styles/stab"
                 ],
                 "damageType": "/damage_types/physical",
-                "attackInterval": 3500000000,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "attackInterval": 3500000000
             }
         },
         "abilities": [
@@ -7275,64 +6872,56 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 10,
-                "maxCount": 50,
-                "minDifficultyTier": 0
+                "maxCount": 50
             },
             {
                 "itemHrid": "/items/rough_hide",
                 "dropRate": 1,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/wheat",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/sugar",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/cheese",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/verdant_cheese",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/azure_cheese",
                 "dropRate": 0.05,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/poke",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/blue_key_fragment",
-                "dropRate": 0.0002,
+                "dropRate": 0,
+                "dropRatePerDifficultyTier": 8e-05,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -7340,8 +6929,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.00019077777777777778,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -7393,9 +6981,7 @@
                 "smashEvasion": 0.3,
                 "armor": 20,
                 "waterResistance": 10,
-                "natureResistance": 10,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "natureResistance": 10
             }
         },
         "abilities": [
@@ -7430,78 +7016,91 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 2500,
-                "maxCount": 12500,
-                "minDifficultyTier": 0
+                "maxCount": 12500
             },
             {
                 "itemHrid": "/items/beast_hide",
                 "dropRate": 1,
                 "minCount": 3,
-                "maxCount": 9,
-                "minDifficultyTier": 0
+                "maxCount": 9
             },
             {
                 "itemHrid": "/items/red_panda_fluff",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/bear_essence",
                 "dropRate": 0.5,
                 "minCount": 10,
-                "maxCount": 30,
-                "minDifficultyTier": 0
+                "maxCount": 30
             },
             {
                 "itemHrid": "/items/berserk",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/frenzy",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/maim",
                 "dropRate": 0.0025,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/cleave",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/insanity",
-                "dropRate": 0.001,
+                "dropRate": -0.001,
+                "dropRatePerDifficultyTier": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/brown_key_fragment",
-                "dropRate": 0.005,
+                "dropRate": 0,
+                "dropRatePerDifficultyTier": 0.02,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
-                "itemHrid": "/items/brown_key_fragment",
-                "dropRate": 0.05,
+                "itemHrid": "/items/basic_stamina_charm",
+                "dropRate": -0.006,
+                "dropRatePerDifficultyTier": 0.003,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/basic_power_charm",
+                "dropRate": -0.012,
+                "dropRatePerDifficultyTier": 0.006,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/basic_stamina_charm",
+                "dropRate": -0.0024,
+                "dropRatePerDifficultyTier": 0.0006,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/basic_power_charm",
+                "dropRate": -0.0048,
+                "dropRatePerDifficultyTier": 0.0012,
+                "minCount": 1,
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -7509,8 +7108,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.008586666666666668,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -7562,9 +7160,7 @@
                 "slashEvasion": 0.4,
                 "smashEvasion": -0.2,
                 "waterResistance": 20,
-                "fireResistance": 20,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "fireResistance": 20
             }
         },
         "abilities": [
@@ -7579,57 +7175,49 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 56,
-                "maxCount": 280,
-                "minDifficultyTier": 0
+                "maxCount": 280
             },
             {
                 "itemHrid": "/items/wheat",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 10,
-                "minDifficultyTier": 0
+                "maxCount": 10
             },
             {
                 "itemHrid": "/items/snail_shell",
                 "dropRate": 0.006,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/green_tea_leaf",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/black_tea_leaf",
                 "dropRate": 0.4,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/burble_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/aqua_essence",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/toughness",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -7637,8 +7225,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.0005600000000000001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -7686,9 +7273,7 @@
                     "/combat_styles/slash"
                 ],
                 "damageType": "/damage_types/physical",
-                "attackInterval": 3500000000,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "attackInterval": 3500000000
             }
         },
         "abilities": [
@@ -7703,43 +7288,38 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 14,
-                "maxCount": 70,
-                "minDifficultyTier": 0
+                "maxCount": 70
             },
             {
                 "itemHrid": "/items/rough_hide",
                 "dropRate": 1,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/blueberry",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/green_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/scratch",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/blue_key_fragment",
-                "dropRate": 0.00025,
+                "dropRate": 0,
+                "dropRatePerDifficultyTier": 0.0001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -7747,8 +7327,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.00022666666666666668,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -7797,9 +7376,7 @@
                 ],
                 "damageType": "/damage_types/water",
                 "attackInterval": 3000000000,
-                "autoAttackDamage": -0.5,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "autoAttackDamage": -0.5
             }
         },
         "abilities": [
@@ -7819,43 +7396,38 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 20,
-                "maxCount": 100,
-                "minDifficultyTier": 0
+                "maxCount": 100
             },
             {
                 "itemHrid": "/items/apple",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/green_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/minor_heal",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/water_strike",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/blue_key_fragment",
-                "dropRate": 0.00035,
+                "dropRate": 0,
+                "dropRatePerDifficultyTier": 0.00015,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -7863,8 +7435,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.00027866666666666665,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -7913,9 +7484,7 @@
                 ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3200000000,
-                "slashEvasion": -0.3,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "slashEvasion": -0.3
             }
         },
         "abilities": [
@@ -7930,43 +7499,37 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 32,
-                "maxCount": 160,
-                "minDifficultyTier": 0
+                "maxCount": 160
             },
             {
                 "itemHrid": "/items/reptile_hide",
                 "dropRate": 1,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/egg",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/snake_fang",
                 "dropRate": 0.015,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/swamp_essence",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/poke",
                 "dropRate": 0.008,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -7974,8 +7537,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.00035499999999999996,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -8028,9 +7590,7 @@
                 "waterResistance": 50,
                 "natureResistance": 50,
                 "fireResistance": 50,
-                "manaLeech": 0.02,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "manaLeech": 0.02
             }
         },
         "abilities": [
@@ -8055,64 +7615,56 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 600,
-                "maxCount": 3000,
-                "minDifficultyTier": 0
+                "maxCount": 3000
             },
             {
                 "itemHrid": "/items/umbral_leather",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/red_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/emp_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/soul_fragment",
                 "dropRate": 0.0007,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/abyssal_essence",
                 "dropRate": 0.3,
                 "minCount": 2,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/silencing_shot",
                 "dropRate": 0.0008,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/flame_arrow",
                 "dropRate": 0.0015,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/critical_aura",
-                "dropRate": 5e-05,
+                "dropRate": -5e-05,
+                "dropRatePerDifficultyTier": 5e-05,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -8120,8 +7672,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.0017733333333333334,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -8175,8 +7726,6 @@
                 "slashEvasion": 1.5,
                 "smashEvasion": 1.5,
                 "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01,
                 "bloom": 0.4
             }
         },
@@ -8208,8 +7757,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.019904444444444443,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -8262,9 +7810,7 @@
                 "smashEvasion": -0.2,
                 "rangedEvasion": 0.4,
                 "waterResistance": 40,
-                "fireResistance": 40,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "fireResistance": 40
             }
         },
         "abilities": [
@@ -8289,78 +7835,68 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 600,
-                "maxCount": 3000,
-                "minDifficultyTier": 0
+                "maxCount": 3000
             },
             {
                 "itemHrid": "/items/red_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/emp_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/garnet",
                 "dropRate": 0.0003,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/jade",
                 "dropRate": 0.0003,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/amethyst",
                 "dropRate": 0.0003,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/stalactite_shard",
                 "dropRate": 0.0007,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/golem_essence",
                 "dropRate": 0.3,
                 "minCount": 2,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/spike_shell",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/toughness",
                 "dropRate": 0.0025,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/fierce_aura",
-                "dropRate": 5e-05,
+                "dropRate": -5e-05,
+                "dropRatePerDifficultyTier": 5e-05,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -8368,8 +7904,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.0011333333333333334,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -8418,9 +7953,7 @@
                 ],
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
-                "smashEvasion": -0.3,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "smashEvasion": -0.3
             }
         },
         "abilities": [
@@ -8435,71 +7968,61 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 44,
-                "maxCount": 220,
-                "minDifficultyTier": 0
+                "maxCount": 220
             },
             {
                 "itemHrid": "/items/cocoon",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/blueberry",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/blackberry",
                 "dropRate": 0.15,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/apple",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/orange",
                 "dropRate": 0.05,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/green_tea_leaf",
                 "dropRate": 0.4,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/black_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/swamp_essence",
                 "dropRate": 0.4,
                 "minCount": 3,
-                "maxCount": 9,
-                "minDifficultyTier": 0
+                "maxCount": 9
             },
             {
                 "itemHrid": "/items/sweep",
                 "dropRate": 0.002,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -8507,8 +8030,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.00043400000000000003,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -8563,8 +8085,6 @@
                 "natureResistance": 50,
                 "fireResistance": 100,
                 "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01,
                 "ripple": 0.18
             }
         },
@@ -8601,8 +8121,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.8619316666666668,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -8652,9 +8171,7 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3500000000,
                 "stabEvasion": -0.25,
-                "rangedEvasion": -0.25,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "rangedEvasion": -0.25
             }
         },
         "abilities": [
@@ -8689,71 +8206,71 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 1500,
-                "maxCount": 7500,
-                "minDifficultyTier": 0
+                "maxCount": 7500
             },
             {
                 "itemHrid": "/items/eye_of_the_watcher",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/eyessence",
                 "dropRate": 0.5,
                 "minCount": 10,
-                "maxCount": 30,
-                "minDifficultyTier": 0
+                "maxCount": 30
             },
             {
                 "itemHrid": "/items/precision",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/steady_shot",
                 "dropRate": 0.002,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/aqua_arrow",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/flame_arrow",
                 "dropRate": 0.005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/speed_aura",
-                "dropRate": 0.001,
+                "dropRate": -0.001,
+                "dropRatePerDifficultyTier": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/white_key_fragment",
-                "dropRate": 0.005,
+                "dropRate": 0,
+                "dropRatePerDifficultyTier": 0.02,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
-                "itemHrid": "/items/white_key_fragment",
-                "dropRate": 0.05,
+                "itemHrid": "/items/basic_ranged_charm",
+                "dropRate": -0.012,
+                "dropRatePerDifficultyTier": 0.006,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/advanced_ranged_charm",
+                "dropRate": -0.0048,
+                "dropRatePerDifficultyTier": 0.0012,
+                "minCount": 1,
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -8761,8 +8278,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.005948194444444444,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -8818,8 +8334,6 @@
                 "natureResistance": 50,
                 "fireResistance": 100,
                 "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01,
                 "ripple": 0.18
             }
         },
@@ -8856,8 +8370,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.10365333333333332,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -8910,9 +8423,7 @@
                 "natureAmplify": 0.3,
                 "armor": 10,
                 "waterResistance": 20,
-                "natureResistance": 20,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "natureResistance": 20
             }
         },
         "abilities": [
@@ -8937,106 +8448,92 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 160,
-                "maxCount": 800,
-                "minDifficultyTier": 0
+                "maxCount": 800
             },
             {
                 "itemHrid": "/items/log",
                 "dropRate": 0.25,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/birch_log",
                 "dropRate": 0.25,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/cedar_log",
                 "dropRate": 0.125,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/purpleheart_log",
                 "dropRate": 0.06,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/ginkgo_log",
                 "dropRate": 0.03,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/redwood_log",
                 "dropRate": 0.015,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/arcane_log",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/bamboo_branch",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/amber",
                 "dropRate": 0.0004,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/treant_bark",
                 "dropRate": 0.003,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/jungle_essence",
                 "dropRate": 0.4,
                 "minCount": 2,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/toxic_pollen",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/entangle",
                 "dropRate": 0.01,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/sylvan_aura",
-                "dropRate": 2e-05,
+                "dropRate": -2e-05,
+                "dropRatePerDifficultyTier": 2e-05,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -9044,8 +8541,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.001488888888888889,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -9097,9 +8593,7 @@
                 "slashEvasion": 0.4,
                 "smashEvasion": -0.2,
                 "waterResistance": 20,
-                "fireResistance": 20,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "fireResistance": 20
             }
         },
         "abilities": [
@@ -9119,78 +8613,67 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 120,
-                "maxCount": 600,
-                "minDifficultyTier": 0
+                "maxCount": 600
             },
             {
                 "itemHrid": "/items/reptile_hide",
                 "dropRate": 1,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/egg",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 10,
-                "minDifficultyTier": 0
+                "maxCount": 10
             },
             {
                 "itemHrid": "/items/orange",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/plum",
                 "dropRate": 0.15,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/peach",
                 "dropRate": 0.05,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/pearl",
                 "dropRate": 0.0005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/turtle_shell",
                 "dropRate": 0.004,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/aqua_essence",
                 "dropRate": 0.4,
                 "minCount": 2,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/toughness",
                 "dropRate": 0.0015,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/taunt",
                 "dropRate": 0.001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -9198,8 +8681,7 @@
                 "itemHrid": "/items/small_treasure_chest",
                 "dropRate": 0.0011200000000000001,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -9251,9 +8733,7 @@
                 "waterResistance": 50,
                 "natureResistance": 50,
                 "fireResistance": 30,
-                "lifeSteal": 0.02,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "lifeSteal": 0.02
             }
         },
         "abilities": [
@@ -9278,71 +8758,62 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 600,
-                "maxCount": 3000,
-                "minDifficultyTier": 0
+                "maxCount": 3000
             },
             {
                 "itemHrid": "/items/umbral_hide",
                 "dropRate": 1,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/red_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/emp_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/moonstone",
                 "dropRate": 0.0004,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/vampire_fang",
                 "dropRate": 0.0007,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/twilight_essence",
                 "dropRate": 0.3,
                 "minCount": 2,
-                "maxCount": 6,
-                "minDifficultyTier": 0
+                "maxCount": 6
             },
             {
                 "itemHrid": "/items/vampirism",
                 "dropRate": 0.0008,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/puncture",
                 "dropRate": 0.0008,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/fierce_aura",
-                "dropRate": 5e-05,
+                "dropRate": -5e-05,
+                "dropRatePerDifficultyTier": 5e-05,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -9350,8 +8821,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.0017122222222222224,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -9401,9 +8871,7 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3000000000,
                 "stabEvasion": -0.25,
-                "rangedEvasion": -0.25,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "rangedEvasion": -0.25
             }
         },
         "abilities": [
@@ -9418,50 +8886,43 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 280,
-                "maxCount": 1400,
-                "minDifficultyTier": 0
+                "maxCount": 1400
             },
             {
                 "itemHrid": "/items/burble_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/moolong_tea_leaf",
                 "dropRate": 0.15,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/red_tea_leaf",
                 "dropRate": 0.1,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/magnifying_glass",
                 "dropRate": 0.0005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/eyessence",
                 "dropRate": 0.4,
                 "minCount": 5,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/precision",
                 "dropRate": 0.002,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -9469,8 +8930,7 @@
                 "itemHrid": "/items/medium_treasure_chest",
                 "dropRate": 0.001197,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -9521,9 +8981,7 @@
                 "attackInterval": 3100000000,
                 "waterResistance": 50,
                 "natureResistance": 50,
-                "fireResistance": 30,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "fireResistance": 30
             }
         },
         "abilities": [
@@ -9548,71 +9006,62 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 750,
-                "maxCount": 3750,
-                "minDifficultyTier": 0
+                "maxCount": 3750
             },
             {
                 "itemHrid": "/items/umbral_hide",
                 "dropRate": 1,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/red_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/emp_tea_leaf",
                 "dropRate": 0.2,
                 "minCount": 1,
-                "maxCount": 2,
-                "minDifficultyTier": 0
+                "maxCount": 2
             },
             {
                 "itemHrid": "/items/moonstone",
                 "dropRate": 0.0005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/werewolf_claw",
                 "dropRate": 0.0007,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/twilight_essence",
                 "dropRate": 0.3,
                 "minCount": 3,
-                "maxCount": 9,
-                "minDifficultyTier": 0
+                "maxCount": 9
             },
             {
                 "itemHrid": "/items/berserk",
                 "dropRate": 0.002,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/maim",
                 "dropRate": 0.0008,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/insanity",
-                "dropRate": 5e-05,
+                "dropRate": -5e-05,
+                "dropRatePerDifficultyTier": 5e-05,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -9620,8 +9069,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.002022222222222222,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -9645,16 +9093,16 @@
             "slashMaxDamage": 200,
             "smashMaxDamage": 200,
             "rangedMaxDamage": 10,
-            "magicMaxDamage": 10,
+            "magicMaxDamage": 190,
             "stabEvasionRating": 160,
             "slashEvasionRating": 160,
             "smashEvasionRating": 160,
             "rangedEvasionRating": 160,
             "magicEvasionRating": 122.5,
             "totalArmor": 30,
-            "totalWaterResistance": 35,
-            "totalNatureResistance": 35,
-            "totalFireResistance": 15,
+            "totalWaterResistance": 53,
+            "totalNatureResistance": 53,
+            "totalFireResistance": 33,
             "totalThreat": 100,
             "combatLevel": 172,
             "staminaLevel": 170,
@@ -9663,7 +9111,7 @@
             "powerLevel": 190,
             "defenseLevel": 150,
             "rangedLevel": 0,
-            "magicLevel": 0,
+            "magicLevel": 180,
             "combatStats": {
                 "combatStyleHrids": [
                     "/combat_styles/slash"
@@ -9671,17 +9119,10 @@
                 "damageType": "/damage_types/physical",
                 "attackInterval": 3400000000,
                 "waterResistance": 20,
-                "natureResistance": 20,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "natureResistance": 20
             }
         },
         "abilities": [
-            {
-                "abilityHrid": "/abilities/provoke",
-                "level": 1,
-                "minDifficultyTier": 2
-            },
             {
                 "abilityHrid": "/abilities/toughness",
                 "level": 10,
@@ -9691,6 +9132,11 @@
                 "abilityHrid": "/abilities/maim",
                 "level": 1,
                 "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/natures_veil",
+                "level": 1,
+                "minDifficultyTier": 0
             }
         ],
         "dropTable": [
@@ -9698,85 +9144,73 @@
                 "itemHrid": "/items/coin",
                 "dropRate": 0.8,
                 "minCount": 500,
-                "maxCount": 2500,
-                "minDifficultyTier": 0
+                "maxCount": 2500
             },
             {
                 "itemHrid": "/items/umbral_hide",
                 "dropRate": 1,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/green_tea_leaf",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/black_tea_leaf",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 5,
-                "minDifficultyTier": 0
+                "maxCount": 5
             },
             {
                 "itemHrid": "/items/burble_tea_leaf",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/moolong_tea_leaf",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/red_tea_leaf",
                 "dropRate": 0.4,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/emp_tea_leaf",
                 "dropRate": 0.4,
                 "minCount": 1,
-                "maxCount": 3,
-                "minDifficultyTier": 0
+                "maxCount": 3
             },
             {
                 "itemHrid": "/items/twilight_essence",
                 "dropRate": 0.3,
                 "minCount": 1,
-                "maxCount": 4,
-                "minDifficultyTier": 0
+                "maxCount": 4
             },
             {
                 "itemHrid": "/items/toughness",
                 "dropRate": 0.002,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
                 "itemHrid": "/items/maim",
                 "dropRate": 0.0005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             },
             {
-                "itemHrid": "/items/provoke",
-                "dropRate": 0.001,
+                "itemHrid": "/items/natures_veil",
+                "dropRate": 0.0005,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 2
+                "maxCount": 1
             }
         ],
         "rareDropTable": [
@@ -9784,8 +9218,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.0012244444444444442,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     },
@@ -9836,9 +9269,7 @@
                 "attackInterval": 4000000000,
                 "rangedEvasion": 0.5,
                 "armor": 50,
-                "tenacity": 50,
-                "hpRegenPer10": 0.01,
-                "mpRegenPer10": 0.01
+                "tenacity": 50
             }
         },
         "abilities": [
@@ -9869,8 +9300,7 @@
                 "itemHrid": "/items/large_treasure_chest",
                 "dropRate": 0.04917166666666666,
                 "minCount": 1,
-                "maxCount": 1,
-                "minDifficultyTier": 0
+                "maxCount": 1
             }
         ]
     }

@@ -1340,28 +1340,19 @@ function getDropProfit(simResult, playerToDisplay) {
                 if (drop.minDifficultyTier > simResult.difficultyTier) {
                     continue;
                 }
-                const existingDrop = dropMap.get(drop.itemHrid);
-                if (existingDrop) {
-                    existingDrop.dropRate = Math.min(1, existingDrop.dropRate + drop.dropRate * dropRateMultiplier);
-                    existingDrop.dropMin = Math.max(existingDrop.dropMin, drop.minCount);
-                    existingDrop.dropMax = Math.max(existingDrop.dropMax, drop.maxCount);
-                } else {
-                    dropMap.set(drop.itemHrid, { "dropRate": Math.min(1, drop.dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
-                }
+
+                let multiplier = 1.0 + 0.1 * simResult.difficultyTier;
+                let dropRate = Math.min(1.0, multiplier * (drop.dropRate + (drop.dropRatePerDifficultyTier ?? 0) * simResult.difficultyTier));
+                if (dropRate < 0) dropRate = 0;
+
+                dropMap.set(drop.itemHrid, { "dropRate": Math.min(1.0, dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
             }
             if (combatMonsterDetailMap[monster].rareDropTable)
                 for (const drop of combatMonsterDetailMap[monster].rareDropTable) {
                     if (drop.minDifficultyTier > simResult.difficultyTier) {
                         continue;
                     }
-                    const existingRareDrop = rareDropMap.get(drop.itemHrid);
-                    if (existingRareDrop) {
-                        existingRareDrop.dropRate = Math.min(1, existingRareDrop.dropRate + drop.dropRate * rareFindMultiplier);
-                        existingRareDrop.dropMin = Math.max(existingRareDrop.dropMin, drop.minCount);
-                        existingRareDrop.dropMax = Math.max(existingRareDrop.dropMax, drop.maxCount);
-                    } else {
-                        rareDropMap.set(drop.itemHrid, { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
-                    }
+                    rareDropMap.set(drop.itemHrid, { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
                 }
 
             for (let dropObject of dropMap.values()) {
@@ -1664,28 +1655,19 @@ function showKills(simResult, playerToDisplay) {
                 if (drop.minDifficultyTier > simResult.difficultyTier) {
                     continue;
                 }
-                const existingDrop = dropMap.get(drop.itemHrid);
-                if (existingDrop) {
-                    existingDrop.dropRate = Math.min(1, existingDrop.dropRate + drop.dropRate * dropRateMultiplier);
-                    existingDrop.dropMin = Math.max(existingDrop.dropMin, drop.minCount);
-                    existingDrop.dropMax = Math.max(existingDrop.dropMax, drop.maxCount);
-                } else {
-                    dropMap.set(drop.itemHrid, { "dropRate": Math.min(1, drop.dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
-                }
+
+                let multiplier = 1.0 + 0.1 * simResult.difficultyTier;
+                let dropRate = Math.min(1.0, multiplier * (drop.dropRate + (drop.dropRatePerDifficultyTier ?? 0) * simResult.difficultyTier));
+                if (dropRate < 0) dropRate = 0;
+
+                dropMap.set(drop.itemHrid, { "dropRate": Math.min(1.0, dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
             }
         if (combatMonsterDetailMap[monster].rareDropTable)
             for (const drop of combatMonsterDetailMap[monster].rareDropTable) {
                 if (drop.minDifficultyTier > simResult.difficultyTier) {
                     continue;
                 }
-                const existingRareDrop = rareDropMap.get(drop.itemHrid);
-                if (existingRareDrop) {
-                    existingRareDrop.dropRate = Math.min(1, existingRareDrop.dropRate + drop.dropRate * rareFindMultiplier);
-                    existingRareDrop.dropMin = Math.max(existingRareDrop.dropMin, drop.minCount);
-                    existingRareDrop.dropMax = Math.max(existingRareDrop.dropMax, drop.maxCount);
-                } else {
-                    rareDropMap.set(drop.itemHrid, { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
-                }
+                rareDropMap.set(drop.itemHrid, { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
             }
 
         for (let dropObject of dropMap.values()) {
@@ -3297,7 +3279,7 @@ window.prices;
 
 async function fetchPrices() {
     try {
-        const response = await fetch('https://ghproxy.net/https://raw.githubusercontent.com/holychikenz/MWIApi/refs/heads/main/milkyapi.json'
+        const response = await fetch('https://www.milkywayidle.com/game_data/marketplace.json'
             , {
                 mode: 'cors'
             }
@@ -3312,11 +3294,16 @@ async function fetchPrices() {
 
         const pricesJson = await response.json();
 
-        const priceTmp = pricesJson['market'];
+        const priceTmp = pricesJson['marketData'];
         window.prices = {};
         for (const item in itemDetailMap) {
-            if (itemDetailMap[item].name in priceTmp) {
-                window.prices[itemDetailMap[item].hrid] = priceTmp[itemDetailMap[item].name];
+            const hrid = itemDetailMap[item].hrid;
+            if (hrid in priceTmp) {
+                window.prices[hrid] = { "ask": -1, "bid": -1, "vendor": itemDetailMap[item].sellPrice };
+                if (priceTmp[hrid]['0']) {
+                    window.prices[hrid].ask = priceTmp[hrid]['0'].a;
+                    window.prices[hrid].bid = priceTmp[hrid]['0'].b;
+                }
             }
         }
 

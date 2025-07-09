@@ -141,8 +141,10 @@ class Trigger {
             case "/combat_trigger_conditions/taunt":
             case "/combat_trigger_conditions/crippling_slash":
             case "/combat_trigger_conditions/mana_spring":
-            case "/combat_trigger_conditions/pestilent_shot_hp_regen":
-            case "/combat_trigger_conditions/pestilent_shot_mp_regen":
+            case "/combat_trigger_conditions/pestilent_shot_armor":
+            case "/combat_trigger_conditions/pestilent_shot_fire_resistance":
+            case "/combat_trigger_conditions/pestilent_shot_nature_resistance":
+            case "/combat_trigger_conditions/pestilent_shot_water_resistance":
             case "/combat_trigger_conditions/smoke_burst_accuracy":
             case "/combat_trigger_conditions/smoke_burst_evasion":
             case "/combat_trigger_conditions/arcane_reflection":
