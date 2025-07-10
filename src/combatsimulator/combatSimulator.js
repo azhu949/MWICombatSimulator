@@ -1012,6 +1012,8 @@ class CombatSimulator extends EventTarget {
             return;
         }
 
+        let avoidTargets = [];
+
         for (let target of targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0)) {
             if (target.combatDetails.combatStats.parry > Math.random()) {
                 let tempTarget = source;
@@ -1063,7 +1065,7 @@ class CombatSimulator extends EventTarget {
                     }
                 }
             } else {
-                targets = targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0);
+                targets = targets.filter((unit) => unit && !avoidTargets.includes(unit.hrid) && unit.combatDetails.currentHitpoints > 0);
                 if (!source.isPlayer && targets.length > 1 && abilityEffect.targetType == "enemy") {
                     let cumulativeThreat = 0;
                     let cumulativeRanges = [];
@@ -1078,6 +1080,7 @@ class CombatSimulator extends EventTarget {
                     });
                     let randomValueHit = Math.random() * cumulativeThreat;
                     target = cumulativeRanges.find(range => randomValueHit >= range.rangeStart && randomValueHit < range.rangeEnd).player;
+                    avoidTargets.push(target.hrid);
                 }
 
                 let attackResult = CombatUtilities.processAttack(source, target, abilityEffect);
