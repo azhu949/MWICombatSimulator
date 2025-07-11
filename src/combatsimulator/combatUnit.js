@@ -16,7 +16,7 @@ class CombatUnit {
     staminaLevel = 1;
     intelligenceLevel = 1;
     attackLevel = 1;
-    powerLevel = 1;
+    meleeLevel = 1;
     defenseLevel = 1;
     rangedLevel = 1;
     magicLevel = 1;
@@ -36,7 +36,7 @@ class CombatUnit {
         staminaLevel: 1,
         intelligenceLevel: 1,
         attackLevel: 1,
-        powerLevel: 1,
+        meleeLevel: 1,
         defenseLevel: 1,
         rangedLevel: 1,
         magicLevel: 1,
@@ -140,7 +140,7 @@ class CombatUnit {
             intelligenceExperience: 0,
             attackExperience: 0,
             defenseExperience: 0,
-            powerExperience: 0,
+            meleeExperience: 0,
             rangedExperience: 0,
             magicExperience: 0
         },
@@ -165,7 +165,7 @@ class CombatUnit {
             }
         }
 
-        ["stamina", "intelligence", "attack", "power", "defense", "ranged", "magic"].forEach((stat) => {
+        ["stamina", "intelligence", "attack", "melee", "defense", "ranged", "magic"].forEach((stat) => {
             this.combatDetails[stat + "Level"] = this[stat + "Level"];
             let boosts = this.getBuffBoosts("/buff_types/" + stat + "_level");
             boosts.forEach((buff) => {
@@ -189,7 +189,7 @@ class CombatUnit {
                 (1 + accuracyRatioBoost) *
                 (1 + this.furyValue);
             this.combatDetails[style + "MaxDamage"] =
-                (10 + this.combatDetails.powerLevel) *
+                (10 + this.combatDetails.meleeLevel) *
                 (1 + this.combatDetails.combatStats[style + "Damage"]) *
                 (1 + damageRatioBoost) *
                 (1 + this.furyValue);
@@ -242,7 +242,7 @@ class CombatUnit {
             (1 + damageRatioBoost) *
             (1 + this.furyValue);
 
-        let baseMagicEvasion = (10 + (this.combatDetails.defenseLevel * 0.75 + this.combatDetails.rangedLevel * 0.25)) * (1 + this.combatDetails.combatStats.magicEvasion);
+        let baseMagicEvasion = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats.magicEvasion);
         this.combatDetails.magicEvasionRating = baseMagicEvasion;
         for (const boost of evasionBoosts) {
             this.combatDetails.magicEvasionRating += boost.flatBoost;
@@ -274,7 +274,7 @@ class CombatUnit {
         }
 
         let baseWaterResistance =
-            0.1 * (this.combatDetails.defenseLevel + this.combatDetails.magicLevel) +
+            0.2 * this.combatDetails.defenseLevel +
             this.combatDetails.combatStats.waterResistance;
         this.combatDetails.totalWaterResistance = baseWaterResistance;
         let waterResistanceBoosts = this.getBuffBoosts("/buff_types/water_resistance");
@@ -284,7 +284,7 @@ class CombatUnit {
         }
 
         let baseNatureResistance =
-            0.1 * (this.combatDetails.defenseLevel + this.combatDetails.magicLevel) +
+            0.2 * this.combatDetails.defenseLevel +
             this.combatDetails.combatStats.natureResistance;
         this.combatDetails.totalNatureResistance = baseNatureResistance;
         let natureResistanceBoosts = this.getBuffBoosts("/buff_types/nature_resistance");
@@ -294,7 +294,7 @@ class CombatUnit {
         }
 
         let baseFireResistance =
-            0.1 * (this.combatDetails.defenseLevel + this.combatDetails.magicLevel) +
+            0.2 * this.combatDetails.defenseLevel +
             this.combatDetails.combatStats.fireResistance;
         this.combatDetails.totalFireResistance = baseFireResistance;
         let fireResistanceBoosts = this.getBuffBoosts("/buff_types/fire_resistance");

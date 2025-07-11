@@ -159,9 +159,9 @@
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <label for="inputLevel_power" class="col-md-6 col-form-label" data-i18n="skillNames./skills/power">Power</label>
+                            <label for="inputLevel_melee" class="col-md-6 col-form-label" data-i18n="skillNames./skills/melee">Melee</label>
                             <div class="col-md-6">
-                                <input type="number" id="inputLevel_power" class="form-control" value="1" min="1"
+                                <input type="number" id="inputLevel_melee" class="form-control" value="1" min="1"
                                     max="400" required />
                             </div>
                         </div>
@@ -958,8 +958,8 @@
                     <div class="col-md-4" id="combatStat_defenseExperience"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8" data-i18n="combatStats.powerExperience">Power Experience:</div>
-                    <div class="col-md-4" id="combatStat_powerExperience"></div>
+                    <div class="col-md-8" data-i18n="combatStats.meleeExperience">Melee Experience:</div>
+                    <div class="col-md-4" id="combatStat_meleeExperience"></div>
                 </div>
                 <div class="row">
                     <div class="col-md-8" data-i18n="combatStats.rangedExperience">Ranged Experience:</div>
@@ -1418,7 +1418,7 @@
                                 <th data-i18n="skillNames./skills/attack">Attack</th>
                                 <th data-i18n="skillNames./skills/magic">Magic</th>
                                 <th data-i18n="skillNames./skills/ranged">Ranged</th>
-                                <th data-i18n="skillNames./skills/power">Power</th>
+                                <th data-i18n="skillNames./skills/melee">Melee</th>
                                 <th data-i18n="skillNames./skills/defense">Defense</th>
                                 <th data-i18n="common:noRNGRevenue">noRngRevenue</th>
                                 <th data-i18n="common:expense">expenses</th>
@@ -1515,15 +1515,12 @@
                     <div class="container-fluid">
                         <div class="row">
                             <div class="col-12 mb-4">
-                                <h6>2025年7月7日</h6>
+                                <h6>2025年7月11日</h6>
                                 <ul>
-                                    <li>怪物属性缩放和地图多难度</li>
-                                    <li>法师技能调整和装备上'技能伤害'词缀生效</li>
-                                    <li>攻击等级和房屋等级对施法速度的影响生效</li>
-                                    <li>物品调整</li>
-                                    <li>精准重做以攻击等级计算</li>
-                                    <li>TEST 远程魔法经验的10%映射到攻击经验！</li>
-                                    <li>经验重做和护符装备</li>
+                                    <li>怪物经验和技能等级公式更新</li>
+                                    <li>闪避和抗性计算公式更新</li>
+                                    <li>力量更替为近战以及对应的兼容</li>
+                                    <li>init_client_info_v1.20250626.0_0711.json游戏数据更新</li>
                                 </ul>
                             </div>
                         </div>
@@ -1545,6 +1542,20 @@
                                     <li>怪物自动恢复移除</li>
                                     <li>疫病射击trigger调整</li>
                                     <li>获取价格使用官方API</li>
+                                </ul>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12 mb-4">
+                                <h6>2025年7月7日</h6>
+                                <ul>
+                                    <li>怪物属性缩放和地图多难度</li>
+                                    <li>法师技能调整和装备上'技能伤害'词缀生效</li>
+                                    <li>攻击等级和房屋等级对施法速度的影响生效</li>
+                                    <li>物品调整</li>
+                                    <li>精准重做以攻击等级计算</li>
+                                    <li>TEST 远程魔法经验的10%映射到攻击经验！</li>
+                                    <li>经验重做和护符装备</li>
                                 </ul>
                             </div>
                         </div>

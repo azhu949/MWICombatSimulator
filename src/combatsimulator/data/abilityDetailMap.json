@@ -1871,7 +1871,7 @@
                         "duration": 12000000000
                     },
                     {
-                        "uniqueHrid": "/buff_uniques/pestilent_shot_water_resistance",
+                        "uniqueHrid": "/buff_uniques/pestilent_shot_nature_resistance",
                         "typeHrid": "/buff_types/nature_resistance",
                         "ratioBoost": -0.1,
                         "ratioBoostLevelBonus": -0.001,
@@ -1881,7 +1881,7 @@
                         "duration": 12000000000
                     },
                     {
-                        "uniqueHrid": "/buff_uniques/pestilent_shot_water_resistance",
+                        "uniqueHrid": "/buff_uniques/pestilent_shot_fire_resistance",
                         "typeHrid": "/buff_types/fire_resistance",
                         "ratioBoost": -0.1,
                         "ratioBoostLevelBonus": -0.001,

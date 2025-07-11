@@ -31,7 +31,7 @@ class Player extends CombatUnit {
         player.staminaLevel = dto.staminaLevel;
         player.intelligenceLevel = dto.intelligenceLevel;
         player.attackLevel = dto.attackLevel;
-        player.powerLevel = dto.powerLevel;
+        player.meleeLevel = dto.meleeLevel;
         player.defenseLevel = dto.defenseLevel;
         player.rangedLevel = dto.rangedLevel;
         player.magicLevel = dto.magicLevel;
@@ -75,7 +75,7 @@ class Player extends CombatUnit {
             this.combatDetails.combatStats.combatStyleHrid = "/combat_styles/smash";
             this.combatDetails.combatStats.damageType = "/damage_types/physical";
             this.combatDetails.combatStats.attackInterval = 3000000000;
-            this.combatDetails.combatStats.primaryTraining = "/skills/power";
+            this.combatDetails.combatStats.primaryTraining = "/skills/melee";
         }
 
         if (this.equipment["/equipment_types/charm"]) {
@@ -150,7 +150,7 @@ class Player extends CombatUnit {
             "intelligenceExperience",
             "attackExperience",
             "defenseExperience",
-            "powerExperience",
+            "meleeExperience",
             "rangedExperience",
             "magicExperience"
         ].forEach((stat) => {

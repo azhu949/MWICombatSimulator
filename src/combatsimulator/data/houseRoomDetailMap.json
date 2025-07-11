@@ -2696,14 +2696,14 @@
     "/house_rooms/gym": {
         "hrid": "/house_rooms/gym",
         "name": "Gym",
-        "skillHrid": "/skills/power",
+        "skillHrid": "/skills/melee",
         "usableInActionTypeMap": {
             "/action_types/combat": true
         },
         "actionBuffs": [
             {
-                "uniqueHrid": "/buff_uniques/house_power_level",
-                "typeHrid": "/buff_types/power_level",
+                "uniqueHrid": "/buff_uniques/house_melee_level",
+                "typeHrid": "/buff_types/melee_level",
                 "ratioBoost": 0,
                 "ratioBoostLevelBonus": 0,
                 "flatBoost": 1,
@@ -2843,7 +2843,7 @@
                     "count": 20
                 },
                 {
-                    "itemHrid": "/items/power_coffee",
+                    "itemHrid": "/items/melee_coffee",
                     "count": 1000
                 }
             ],
@@ -2955,7 +2955,7 @@
                     "count": 80
                 },
                 {
-                    "itemHrid": "/items/super_power_coffee",
+                    "itemHrid": "/items/super_melee_coffee",
                     "count": 2000
                 }
             ]

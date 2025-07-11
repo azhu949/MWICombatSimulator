@@ -101,7 +101,7 @@ class Trigger {
             case "/combat_trigger_conditions/intelligence_coffee_mp_regen":
             case "/combat_trigger_conditions/lucky_coffee":
             case "/combat_trigger_conditions/magic_coffee":
-            case "/combat_trigger_conditions/power_coffee":
+            case "/combat_trigger_conditions/melee_coffee":
             case "/combat_trigger_conditions/ranged_coffee":
             case "/combat_trigger_conditions/stamina_coffee_hp_regen":
             case "/combat_trigger_conditions/stamina_coffee_max_hp":

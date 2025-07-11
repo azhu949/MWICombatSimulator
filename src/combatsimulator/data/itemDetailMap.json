@@ -674,6 +674,51 @@
         },
         "sortIndex": 426
     },
+    "/items/advanced_melee_charm": {
+        "hrid": "/items/advanced_melee_charm",
+        "name": "Advanced Melee Charm",
+        "description": "",
+        "categoryHrid": "/item_categories/equipment",
+        "sellPrice": 1000000,
+        "isTradable": true,
+        "itemLevel": 40,
+        "enhancementCosts": [
+            {
+                "itemHrid": "/items/trainee_melee_charm",
+                "count": 4
+            },
+            {
+                "itemHrid": "/items/coin",
+                "count": 120
+            }
+        ],
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "equipmentDetail": {
+            "type": "/equipment_types/charm",
+            "levelRequirements": [
+                {
+                    "skillHrid": "/skills/melee",
+                    "level": 40
+                }
+            ],
+            "combatStats": {
+                "focusTraining": "/skills/melee",
+                "meleeExperience": 0.04
+            },
+            "noncombatStats": {},
+            "combatEnhancementBonuses": {
+                "meleeExperience": 0.004
+            },
+            "noncombatEnhancementBonuses": {}
+        },
+        "sortIndex": 414
+    },
     "/items/advanced_milking_charm": {
         "hrid": "/items/advanced_milking_charm",
         "name": "Advanced Milking Charm",
@@ -717,51 +762,6 @@
             }
         },
         "sortIndex": 330
-    },
-    "/items/advanced_power_charm": {
-        "hrid": "/items/advanced_power_charm",
-        "name": "Advanced Power Charm",
-        "description": "",
-        "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 1000000,
-        "isTradable": true,
-        "itemLevel": 40,
-        "enhancementCosts": [
-            {
-                "itemHrid": "/items/trainee_power_charm",
-                "count": 4
-            },
-            {
-                "itemHrid": "/items/coin",
-                "count": 120
-            }
-        ],
-        "alchemyDetail": {
-            "bulkMultiplier": 1,
-            "isCoinifiable": true,
-            "decomposeItems": null,
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
-        },
-        "equipmentDetail": {
-            "type": "/equipment_types/charm",
-            "levelRequirements": [
-                {
-                    "skillHrid": "/skills/power",
-                    "level": 40
-                }
-            ],
-            "combatStats": {
-                "focusTraining": "/skills/power",
-                "powerExperience": 0.04
-            },
-            "noncombatStats": {},
-            "combatEnhancementBonuses": {
-                "powerExperience": 0.004
-            },
-            "noncombatEnhancementBonuses": {}
-        },
-        "sortIndex": 414
     },
     "/items/advanced_ranged_charm": {
         "hrid": "/items/advanced_ranged_charm",
@@ -3743,7 +3743,7 @@
             "type": "/equipment_types/main_hand",
             "levelRequirements": [
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 20
                 }
             ],
@@ -3755,7 +3755,7 @@
                 "attackInterval": 3300000000,
                 "smashAccuracy": 0.18,
                 "smashDamage": 0.56,
-                "primaryTraining": "/skills/power"
+                "primaryTraining": "/skills/melee"
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
@@ -4296,7 +4296,7 @@
                     "level": 20
                 },
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 20
                 }
             ],
@@ -4308,7 +4308,7 @@
                 "attackInterval": 3000000000,
                 "slashAccuracy": 0.32,
                 "slashDamage": 0.36,
-                "primaryTraining": "/skills/power"
+                "primaryTraining": "/skills/melee"
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
@@ -5288,6 +5288,51 @@
         },
         "sortIndex": 425
     },
+    "/items/basic_melee_charm": {
+        "hrid": "/items/basic_melee_charm",
+        "name": "Basic Melee Charm",
+        "description": "",
+        "categoryHrid": "/item_categories/equipment",
+        "sellPrice": 200000,
+        "isTradable": true,
+        "itemLevel": 20,
+        "enhancementCosts": [
+            {
+                "itemHrid": "/items/trainee_melee_charm",
+                "count": 2
+            },
+            {
+                "itemHrid": "/items/coin",
+                "count": 54
+            }
+        ],
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "equipmentDetail": {
+            "type": "/equipment_types/charm",
+            "levelRequirements": [
+                {
+                    "skillHrid": "/skills/melee",
+                    "level": 20
+                }
+            ],
+            "combatStats": {
+                "focusTraining": "/skills/melee",
+                "meleeExperience": 0.02
+            },
+            "noncombatStats": {},
+            "combatEnhancementBonuses": {
+                "meleeExperience": 0.002
+            },
+            "noncombatEnhancementBonuses": {}
+        },
+        "sortIndex": 413
+    },
     "/items/basic_milking_charm": {
         "hrid": "/items/basic_milking_charm",
         "name": "Basic Milking Charm",
@@ -5331,51 +5376,6 @@
             }
         },
         "sortIndex": 329
-    },
-    "/items/basic_power_charm": {
-        "hrid": "/items/basic_power_charm",
-        "name": "Basic Power Charm",
-        "description": "",
-        "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 200000,
-        "isTradable": true,
-        "itemLevel": 20,
-        "enhancementCosts": [
-            {
-                "itemHrid": "/items/trainee_power_charm",
-                "count": 2
-            },
-            {
-                "itemHrid": "/items/coin",
-                "count": 54
-            }
-        ],
-        "alchemyDetail": {
-            "bulkMultiplier": 1,
-            "isCoinifiable": true,
-            "decomposeItems": null,
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
-        },
-        "equipmentDetail": {
-            "type": "/equipment_types/charm",
-            "levelRequirements": [
-                {
-                    "skillHrid": "/skills/power",
-                    "level": 20
-                }
-            ],
-            "combatStats": {
-                "focusTraining": "/skills/power",
-                "powerExperience": 0.02
-            },
-            "noncombatStats": {},
-            "combatEnhancementBonuses": {
-                "powerExperience": 0.002
-            },
-            "noncombatEnhancementBonuses": {}
-        },
-        "sortIndex": 413
     },
     "/items/basic_ranged_charm": {
         "hrid": "/items/basic_ranged_charm",
@@ -8972,7 +8972,7 @@
             "type": "/equipment_types/main_hand",
             "levelRequirements": [
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 35
                 }
             ],
@@ -8984,7 +8984,7 @@
                 "attackInterval": 3300000000,
                 "smashAccuracy": 0.27,
                 "smashDamage": 0.84,
-                "primaryTraining": "/skills/power"
+                "primaryTraining": "/skills/melee"
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
@@ -9513,7 +9513,7 @@
                     "level": 35
                 },
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 35
                 }
             ],
@@ -9525,7 +9525,7 @@
                 "attackInterval": 3000000000,
                 "slashAccuracy": 0.48,
                 "slashDamage": 0.54,
-                "primaryTraining": "/skills/power"
+                "primaryTraining": "/skills/melee"
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
@@ -11734,7 +11734,7 @@
             "type": "/equipment_types/main_hand",
             "levelRequirements": [
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 95
                 }
             ],
@@ -11746,7 +11746,7 @@
                 "attackInterval": 3300000000,
                 "smashAccuracy": 0.75,
                 "smashDamage": 2.25,
-                "primaryTraining": "/skills/power",
+                "primaryTraining": "/skills/melee",
                 "mayhem": 0.8
             },
             "noncombatStats": {},
@@ -12471,7 +12471,7 @@
             "type": "/equipment_types/main_hand",
             "levelRequirements": [
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 1
                 }
             ],
@@ -12483,7 +12483,7 @@
                 "attackInterval": 3300000000,
                 "smashAccuracy": 0.09,
                 "smashDamage": 0.28,
-                "primaryTraining": "/skills/power"
+                "primaryTraining": "/skills/melee"
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
@@ -12921,7 +12921,7 @@
                     "level": 1
                 },
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 1
                 }
             ],
@@ -12933,7 +12933,7 @@
                 "attackInterval": 3000000000,
                 "slashAccuracy": 0.16,
                 "slashDamage": 0.18,
-                "primaryTraining": "/skills/power"
+                "primaryTraining": "/skills/melee"
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
@@ -16298,7 +16298,7 @@
             "type": "/equipment_types/main_hand",
             "levelRequirements": [
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 50
                 }
             ],
@@ -16310,7 +16310,7 @@
                 "attackInterval": 3300000000,
                 "smashAccuracy": 0.36,
                 "smashDamage": 1.12,
-                "primaryTraining": "/skills/power"
+                "primaryTraining": "/skills/melee"
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
@@ -16851,7 +16851,7 @@
                     "level": 50
                 },
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 50
                 }
             ],
@@ -16863,7 +16863,7 @@
                 "attackInterval": 3000000000,
                 "slashAccuracy": 0.64,
                 "slashDamage": 0.72,
-                "primaryTraining": "/skills/power"
+                "primaryTraining": "/skills/melee"
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
@@ -20803,6 +20803,51 @@
         },
         "sortIndex": 427
     },
+    "/items/expert_melee_charm": {
+        "hrid": "/items/expert_melee_charm",
+        "name": "Expert Melee Charm",
+        "description": "",
+        "categoryHrid": "/item_categories/equipment",
+        "sellPrice": 3000000,
+        "isTradable": true,
+        "itemLevel": 60,
+        "enhancementCosts": [
+            {
+                "itemHrid": "/items/trainee_melee_charm",
+                "count": 8
+            },
+            {
+                "itemHrid": "/items/coin",
+                "count": 319
+            }
+        ],
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "equipmentDetail": {
+            "type": "/equipment_types/charm",
+            "levelRequirements": [
+                {
+                    "skillHrid": "/skills/melee",
+                    "level": 60
+                }
+            ],
+            "combatStats": {
+                "focusTraining": "/skills/melee",
+                "meleeExperience": 0.06
+            },
+            "noncombatStats": {},
+            "combatEnhancementBonuses": {
+                "meleeExperience": 0.006
+            },
+            "noncombatEnhancementBonuses": {}
+        },
+        "sortIndex": 415
+    },
     "/items/expert_milking_charm": {
         "hrid": "/items/expert_milking_charm",
         "name": "Expert Milking Charm",
@@ -20846,51 +20891,6 @@
             }
         },
         "sortIndex": 331
-    },
-    "/items/expert_power_charm": {
-        "hrid": "/items/expert_power_charm",
-        "name": "Expert Power Charm",
-        "description": "",
-        "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 3000000,
-        "isTradable": true,
-        "itemLevel": 60,
-        "enhancementCosts": [
-            {
-                "itemHrid": "/items/trainee_power_charm",
-                "count": 8
-            },
-            {
-                "itemHrid": "/items/coin",
-                "count": 319
-            }
-        ],
-        "alchemyDetail": {
-            "bulkMultiplier": 1,
-            "isCoinifiable": true,
-            "decomposeItems": null,
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
-        },
-        "equipmentDetail": {
-            "type": "/equipment_types/charm",
-            "levelRequirements": [
-                {
-                    "skillHrid": "/skills/power",
-                    "level": 60
-                }
-            ],
-            "combatStats": {
-                "focusTraining": "/skills/power",
-                "powerExperience": 0.06
-            },
-            "noncombatStats": {},
-            "combatEnhancementBonuses": {
-                "powerExperience": 0.006
-            },
-            "noncombatEnhancementBonuses": {}
-        },
-        "sortIndex": 415
     },
     "/items/expert_ranged_charm": {
         "hrid": "/items/expert_ranged_charm",
@@ -24387,7 +24387,7 @@
                     "level": 60
                 },
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 60
                 },
                 {
@@ -24772,7 +24772,7 @@
                     "level": 40
                 },
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 40
                 }
             ],
@@ -24784,7 +24784,7 @@
                 "attackInterval": 3300000000,
                 "slashAccuracy": 1,
                 "slashDamage": 1.12,
-                "primaryTraining": "/skills/power"
+                "primaryTraining": "/skills/melee"
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
@@ -24829,7 +24829,7 @@
             "type": "/equipment_types/two_hand",
             "levelRequirements": [
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 40
                 }
             ],
@@ -24841,7 +24841,7 @@
                 "attackInterval": 3700000000,
                 "smashAccuracy": 0.1,
                 "smashDamage": 2,
-                "primaryTraining": "/skills/power"
+                "primaryTraining": "/skills/melee"
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
@@ -25616,6 +25616,51 @@
         },
         "sortIndex": 429
     },
+    "/items/grandmaster_melee_charm": {
+        "hrid": "/items/grandmaster_melee_charm",
+        "name": "Grandmaster Melee Charm",
+        "description": "",
+        "categoryHrid": "/item_categories/equipment",
+        "sellPrice": 10000000,
+        "isTradable": true,
+        "itemLevel": 100,
+        "enhancementCosts": [
+            {
+                "itemHrid": "/items/trainee_melee_charm",
+                "count": 32
+            },
+            {
+                "itemHrid": "/items/coin",
+                "count": 7490
+            }
+        ],
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "equipmentDetail": {
+            "type": "/equipment_types/charm",
+            "levelRequirements": [
+                {
+                    "skillHrid": "/skills/melee",
+                    "level": 100
+                }
+            ],
+            "combatStats": {
+                "focusTraining": "/skills/melee",
+                "meleeExperience": 0.1
+            },
+            "noncombatStats": {},
+            "combatEnhancementBonuses": {
+                "meleeExperience": 0.010000000000000002
+            },
+            "noncombatEnhancementBonuses": {}
+        },
+        "sortIndex": 417
+    },
     "/items/grandmaster_milking_charm": {
         "hrid": "/items/grandmaster_milking_charm",
         "name": "Grandmaster Milking Charm",
@@ -25659,51 +25704,6 @@
             }
         },
         "sortIndex": 333
-    },
-    "/items/grandmaster_power_charm": {
-        "hrid": "/items/grandmaster_power_charm",
-        "name": "Grandmaster Power Charm",
-        "description": "",
-        "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 10000000,
-        "isTradable": true,
-        "itemLevel": 100,
-        "enhancementCosts": [
-            {
-                "itemHrid": "/items/trainee_power_charm",
-                "count": 32
-            },
-            {
-                "itemHrid": "/items/coin",
-                "count": 7490
-            }
-        ],
-        "alchemyDetail": {
-            "bulkMultiplier": 1,
-            "isCoinifiable": true,
-            "decomposeItems": null,
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
-        },
-        "equipmentDetail": {
-            "type": "/equipment_types/charm",
-            "levelRequirements": [
-                {
-                    "skillHrid": "/skills/power",
-                    "level": 100
-                }
-            ],
-            "combatStats": {
-                "focusTraining": "/skills/power",
-                "powerExperience": 0.1
-            },
-            "noncombatStats": {},
-            "combatEnhancementBonuses": {
-                "powerExperience": 0.010000000000000002
-            },
-            "noncombatEnhancementBonuses": {}
-        },
-        "sortIndex": 417
     },
     "/items/grandmaster_ranged_charm": {
         "hrid": "/items/grandmaster_ranged_charm",
@@ -25945,7 +25945,7 @@
             "type": "/equipment_types/main_hand",
             "levelRequirements": [
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 85
                 }
             ],
@@ -25957,7 +25957,7 @@
                 "attackInterval": 3400000000,
                 "smashAccuracy": 0.7,
                 "smashDamage": 2,
-                "primaryTraining": "/skills/power"
+                "primaryTraining": "/skills/melee"
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
@@ -27841,7 +27841,7 @@
             "type": "/equipment_types/main_hand",
             "levelRequirements": [
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 80
                 }
             ],
@@ -27853,7 +27853,7 @@
                 "attackInterval": 3300000000,
                 "smashAccuracy": 0.54,
                 "smashDamage": 1.68,
-                "primaryTraining": "/skills/power"
+                "primaryTraining": "/skills/melee"
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
@@ -28480,7 +28480,7 @@
                     "level": 80
                 },
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 80
                 }
             ],
@@ -28492,7 +28492,7 @@
                 "attackInterval": 3000000000,
                 "slashAccuracy": 0.96,
                 "slashDamage": 1.08,
-                "primaryTraining": "/skills/power"
+                "primaryTraining": "/skills/melee"
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
@@ -31621,7 +31621,7 @@
                     "maxCount": 1
                 },
                 {
-                    "itemHrid": "/items/power_coffee",
+                    "itemHrid": "/items/melee_coffee",
                     "dropRate": 0.25,
                     "minCount": 1,
                     "maxCount": 1
@@ -33396,6 +33396,51 @@
         },
         "sortIndex": 428
     },
+    "/items/master_melee_charm": {
+        "hrid": "/items/master_melee_charm",
+        "name": "Master Melee Charm",
+        "description": "",
+        "categoryHrid": "/item_categories/equipment",
+        "sellPrice": 6000000,
+        "isTradable": true,
+        "itemLevel": 80,
+        "enhancementCosts": [
+            {
+                "itemHrid": "/items/trainee_melee_charm",
+                "count": 16
+            },
+            {
+                "itemHrid": "/items/coin",
+                "count": 1345
+            }
+        ],
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "equipmentDetail": {
+            "type": "/equipment_types/charm",
+            "levelRequirements": [
+                {
+                    "skillHrid": "/skills/melee",
+                    "level": 80
+                }
+            ],
+            "combatStats": {
+                "focusTraining": "/skills/melee",
+                "meleeExperience": 0.08
+            },
+            "noncombatStats": {},
+            "combatEnhancementBonuses": {
+                "meleeExperience": 0.008
+            },
+            "noncombatEnhancementBonuses": {}
+        },
+        "sortIndex": 416
+    },
     "/items/master_milking_charm": {
         "hrid": "/items/master_milking_charm",
         "name": "Master Milking Charm",
@@ -33439,51 +33484,6 @@
             }
         },
         "sortIndex": 332
-    },
-    "/items/master_power_charm": {
-        "hrid": "/items/master_power_charm",
-        "name": "Master Power Charm",
-        "description": "",
-        "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 6000000,
-        "isTradable": true,
-        "itemLevel": 80,
-        "enhancementCosts": [
-            {
-                "itemHrid": "/items/trainee_power_charm",
-                "count": 16
-            },
-            {
-                "itemHrid": "/items/coin",
-                "count": 1345
-            }
-        ],
-        "alchemyDetail": {
-            "bulkMultiplier": 1,
-            "isCoinifiable": true,
-            "decomposeItems": null,
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
-        },
-        "equipmentDetail": {
-            "type": "/equipment_types/charm",
-            "levelRequirements": [
-                {
-                    "skillHrid": "/skills/power",
-                    "level": 80
-                }
-            ],
-            "combatStats": {
-                "focusTraining": "/skills/power",
-                "powerExperience": 0.08
-            },
-            "noncombatStats": {},
-            "combatEnhancementBonuses": {
-                "powerExperience": 0.008
-            },
-            "noncombatEnhancementBonuses": {}
-        },
-        "sortIndex": 416
     },
     "/items/master_ranged_charm": {
         "hrid": "/items/master_ranged_charm",
@@ -33758,6 +33758,82 @@
         "sellPrice": 0,
         "isOpenable": true,
         "sortIndex": 17
+    },
+    "/items/melee_coffee": {
+        "hrid": "/items/melee_coffee",
+        "name": "Melee Coffee",
+        "description": "",
+        "categoryHrid": "/item_categories/drink",
+        "sellPrice": 40,
+        "isTradable": true,
+        "itemLevel": 20,
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/brewing_essence",
+                    "count": 6
+                }
+            ],
+            "transmuteSuccessRate": 0.5,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/melee_coffee",
+                    "dropRate": 0.4,
+                    "minCount": 1,
+                    "maxCount": 1
+                },
+                {
+                    "itemHrid": "/items/ranged_coffee",
+                    "dropRate": 0.25,
+                    "minCount": 1,
+                    "maxCount": 1
+                },
+                {
+                    "itemHrid": "/items/magic_coffee",
+                    "dropRate": 0.25,
+                    "minCount": 1,
+                    "maxCount": 1
+                },
+                {
+                    "itemHrid": "/items/super_melee_coffee",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1
+                }
+            ]
+        },
+        "consumableDetail": {
+            "cooldownDuration": 300000000000,
+            "usableInActionTypeMap": {
+                "/action_types/combat": true
+            },
+            "hitpointRestore": 0,
+            "manapointRestore": 0,
+            "recoveryDuration": 0,
+            "buffs": [
+                {
+                    "uniqueHrid": "/buff_uniques/melee_coffee",
+                    "typeHrid": "/buff_types/melee_level",
+                    "ratioBoost": 0.08,
+                    "ratioBoostLevelBonus": 0,
+                    "flatBoost": 1,
+                    "flatBoostLevelBonus": 0,
+                    "startTime": "0001-01-01T00:00:00Z",
+                    "duration": 300000000000
+                }
+            ],
+            "defaultCombatTriggers": [
+                {
+                    "dependencyHrid": "/combat_trigger_dependencies/self",
+                    "conditionHrid": "/combat_trigger_conditions/melee_coffee",
+                    "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+                    "value": 0
+                }
+            ]
+        },
+        "sortIndex": 110
     },
     "/items/milk": {
         "hrid": "/items/milk",
@@ -35897,7 +35973,7 @@
     "/items/philosophers_stone": {
         "hrid": "/items/philosophers_stone",
         "name": "Philosopher's Stone",
-        "description": "A legendary stone of immense power.",
+        "description": "A legendary stone of immense melee.",
         "categoryHrid": "/item_categories/resource",
         "sellPrice": 10000000,
         "isTradable": true,
@@ -36511,82 +36587,6 @@
             "noncombatEnhancementBonuses": {}
         },
         "sortIndex": 544
-    },
-    "/items/power_coffee": {
-        "hrid": "/items/power_coffee",
-        "name": "Power Coffee",
-        "description": "",
-        "categoryHrid": "/item_categories/drink",
-        "sellPrice": 40,
-        "isTradable": true,
-        "itemLevel": 20,
-        "alchemyDetail": {
-            "bulkMultiplier": 1,
-            "isCoinifiable": true,
-            "decomposeItems": [
-                {
-                    "itemHrid": "/items/brewing_essence",
-                    "count": 6
-                }
-            ],
-            "transmuteSuccessRate": 0.5,
-            "transmuteDropTable": [
-                {
-                    "itemHrid": "/items/power_coffee",
-                    "dropRate": 0.4,
-                    "minCount": 1,
-                    "maxCount": 1
-                },
-                {
-                    "itemHrid": "/items/ranged_coffee",
-                    "dropRate": 0.25,
-                    "minCount": 1,
-                    "maxCount": 1
-                },
-                {
-                    "itemHrid": "/items/magic_coffee",
-                    "dropRate": 0.25,
-                    "minCount": 1,
-                    "maxCount": 1
-                },
-                {
-                    "itemHrid": "/items/super_power_coffee",
-                    "dropRate": 0.1,
-                    "minCount": 1,
-                    "maxCount": 1
-                }
-            ]
-        },
-        "consumableDetail": {
-            "cooldownDuration": 300000000000,
-            "usableInActionTypeMap": {
-                "/action_types/combat": true
-            },
-            "hitpointRestore": 0,
-            "manapointRestore": 0,
-            "recoveryDuration": 0,
-            "buffs": [
-                {
-                    "uniqueHrid": "/buff_uniques/power_coffee",
-                    "typeHrid": "/buff_types/power_level",
-                    "ratioBoost": 0.08,
-                    "ratioBoostLevelBonus": 0,
-                    "flatBoost": 1,
-                    "flatBoostLevelBonus": 0,
-                    "startTime": "0001-01-01T00:00:00Z",
-                    "duration": 300000000000
-                }
-            ],
-            "defaultCombatTriggers": [
-                {
-                    "dependencyHrid": "/combat_trigger_dependencies/self",
-                    "conditionHrid": "/combat_trigger_conditions/power_coffee",
-                    "comparatorHrid": "/combat_trigger_comparators/is_inactive",
-                    "value": 0
-                }
-            ]
-        },
-        "sortIndex": 110
     },
     "/items/precision": {
         "hrid": "/items/precision",
@@ -39042,7 +39042,7 @@
             "type": "/equipment_types/main_hand",
             "levelRequirements": [
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 65
                 }
             ],
@@ -39054,7 +39054,7 @@
                 "attackInterval": 3300000000,
                 "smashAccuracy": 0.45,
                 "smashDamage": 1.4,
-                "primaryTraining": "/skills/power"
+                "primaryTraining": "/skills/melee"
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
@@ -39595,7 +39595,7 @@
                     "level": 65
                 },
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 65
                 }
             ],
@@ -39607,7 +39607,7 @@
                 "attackInterval": 3000000000,
                 "slashAccuracy": 0.8,
                 "slashDamage": 0.9,
-                "primaryTraining": "/skills/power"
+                "primaryTraining": "/skills/melee"
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
@@ -39644,7 +39644,7 @@
                     "maxCount": 1
                 },
                 {
-                    "itemHrid": "/items/power_coffee",
+                    "itemHrid": "/items/melee_coffee",
                     "dropRate": 0.25,
                     "minCount": 1,
                     "maxCount": 1
@@ -40626,7 +40626,7 @@
                     "level": 95
                 },
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 95
                 }
             ],
@@ -40638,7 +40638,7 @@
                 "attackInterval": 3000000000,
                 "slashAccuracy": 1.35,
                 "slashDamage": 1.55,
-                "primaryTraining": "/skills/power",
+                "primaryTraining": "/skills/melee",
                 "parry": 0.1
             },
             "noncombatStats": {},
@@ -44274,7 +44274,7 @@
                     "level": 80
                 },
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 80
                 }
             ],
@@ -47737,7 +47737,7 @@
                     "maxCount": 1
                 },
                 {
-                    "itemHrid": "/items/super_power_coffee",
+                    "itemHrid": "/items/super_melee_coffee",
                     "dropRate": 0.25,
                     "minCount": 1,
                     "maxCount": 1
@@ -47792,6 +47792,94 @@
             ]
         },
         "sortIndex": 119
+    },
+    "/items/super_melee_coffee": {
+        "hrid": "/items/super_melee_coffee",
+        "name": "Super Melee Coffee",
+        "description": "",
+        "categoryHrid": "/item_categories/drink",
+        "sellPrice": 120,
+        "isTradable": true,
+        "itemLevel": 65,
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/brewing_essence",
+                    "count": 24
+                }
+            ],
+            "transmuteSuccessRate": 0.5,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/super_melee_coffee",
+                    "dropRate": 0.29975,
+                    "minCount": 1,
+                    "maxCount": 1
+                },
+                {
+                    "itemHrid": "/items/melee_coffee",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1
+                },
+                {
+                    "itemHrid": "/items/super_ranged_coffee",
+                    "dropRate": 0.25,
+                    "minCount": 1,
+                    "maxCount": 1
+                },
+                {
+                    "itemHrid": "/items/super_magic_coffee",
+                    "dropRate": 0.25,
+                    "minCount": 1,
+                    "maxCount": 1
+                },
+                {
+                    "itemHrid": "/items/ultra_melee_coffee",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1
+                },
+                {
+                    "itemHrid": "/items/guzzling_energy",
+                    "dropRate": 0.00025,
+                    "minCount": 1,
+                    "maxCount": 1
+                }
+            ]
+        },
+        "consumableDetail": {
+            "cooldownDuration": 300000000000,
+            "usableInActionTypeMap": {
+                "/action_types/combat": true
+            },
+            "hitpointRestore": 0,
+            "manapointRestore": 0,
+            "recoveryDuration": 0,
+            "buffs": [
+                {
+                    "uniqueHrid": "/buff_uniques/melee_coffee",
+                    "typeHrid": "/buff_types/melee_level",
+                    "ratioBoost": 0.16,
+                    "ratioBoostLevelBonus": 0,
+                    "flatBoost": 2,
+                    "flatBoostLevelBonus": 0,
+                    "startTime": "0001-01-01T00:00:00Z",
+                    "duration": 300000000000
+                }
+            ],
+            "defaultCombatTriggers": [
+                {
+                    "dependencyHrid": "/combat_trigger_dependencies/self",
+                    "conditionHrid": "/combat_trigger_conditions/melee_coffee",
+                    "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+                    "value": 0
+                }
+            ]
+        },
+        "sortIndex": 117
     },
     "/items/super_milking_tea": {
         "hrid": "/items/super_milking_tea",
@@ -47884,94 +47972,6 @@
         },
         "sortIndex": 78
     },
-    "/items/super_power_coffee": {
-        "hrid": "/items/super_power_coffee",
-        "name": "Super Power Coffee",
-        "description": "",
-        "categoryHrid": "/item_categories/drink",
-        "sellPrice": 120,
-        "isTradable": true,
-        "itemLevel": 65,
-        "alchemyDetail": {
-            "bulkMultiplier": 1,
-            "isCoinifiable": true,
-            "decomposeItems": [
-                {
-                    "itemHrid": "/items/brewing_essence",
-                    "count": 24
-                }
-            ],
-            "transmuteSuccessRate": 0.5,
-            "transmuteDropTable": [
-                {
-                    "itemHrid": "/items/super_power_coffee",
-                    "dropRate": 0.29975,
-                    "minCount": 1,
-                    "maxCount": 1
-                },
-                {
-                    "itemHrid": "/items/power_coffee",
-                    "dropRate": 0.1,
-                    "minCount": 1,
-                    "maxCount": 1
-                },
-                {
-                    "itemHrid": "/items/super_ranged_coffee",
-                    "dropRate": 0.25,
-                    "minCount": 1,
-                    "maxCount": 1
-                },
-                {
-                    "itemHrid": "/items/super_magic_coffee",
-                    "dropRate": 0.25,
-                    "minCount": 1,
-                    "maxCount": 1
-                },
-                {
-                    "itemHrid": "/items/ultra_power_coffee",
-                    "dropRate": 0.1,
-                    "minCount": 1,
-                    "maxCount": 1
-                },
-                {
-                    "itemHrid": "/items/guzzling_energy",
-                    "dropRate": 0.00025,
-                    "minCount": 1,
-                    "maxCount": 1
-                }
-            ]
-        },
-        "consumableDetail": {
-            "cooldownDuration": 300000000000,
-            "usableInActionTypeMap": {
-                "/action_types/combat": true
-            },
-            "hitpointRestore": 0,
-            "manapointRestore": 0,
-            "recoveryDuration": 0,
-            "buffs": [
-                {
-                    "uniqueHrid": "/buff_uniques/power_coffee",
-                    "typeHrid": "/buff_types/power_level",
-                    "ratioBoost": 0.16,
-                    "ratioBoostLevelBonus": 0,
-                    "flatBoost": 2,
-                    "flatBoostLevelBonus": 0,
-                    "startTime": "0001-01-01T00:00:00Z",
-                    "duration": 300000000000
-                }
-            ],
-            "defaultCombatTriggers": [
-                {
-                    "dependencyHrid": "/combat_trigger_dependencies/self",
-                    "conditionHrid": "/combat_trigger_conditions/power_coffee",
-                    "comparatorHrid": "/combat_trigger_comparators/is_inactive",
-                    "value": 0
-                }
-            ]
-        },
-        "sortIndex": 117
-    },
     "/items/super_ranged_coffee": {
         "hrid": "/items/super_ranged_coffee",
         "name": "Super Ranged Coffee",
@@ -48004,7 +48004,7 @@
                     "maxCount": 1
                 },
                 {
-                    "itemHrid": "/items/super_power_coffee",
+                    "itemHrid": "/items/super_melee_coffee",
                     "dropRate": 0.25,
                     "minCount": 1,
                     "maxCount": 1
@@ -49839,6 +49839,50 @@
         },
         "sortIndex": 424
     },
+    "/items/trainee_melee_charm": {
+        "hrid": "/items/trainee_melee_charm",
+        "name": "Trainee Melee Charm",
+        "description": "",
+        "categoryHrid": "/item_categories/equipment",
+        "sellPrice": 25000,
+        "itemLevel": 1,
+        "enhancementCosts": [
+            {
+                "itemHrid": "/items/trainee_melee_charm",
+                "count": 1
+            },
+            {
+                "itemHrid": "/items/coin",
+                "count": 12
+            }
+        ],
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "equipmentDetail": {
+            "type": "/equipment_types/charm",
+            "levelRequirements": [
+                {
+                    "skillHrid": "/skills/melee",
+                    "level": 1
+                }
+            ],
+            "combatStats": {
+                "focusTraining": "/skills/melee",
+                "meleeExperience": 0.01
+            },
+            "noncombatStats": {},
+            "combatEnhancementBonuses": {
+                "meleeExperience": 0.001
+            },
+            "noncombatEnhancementBonuses": {}
+        },
+        "sortIndex": 412
+    },
     "/items/trainee_milking_charm": {
         "hrid": "/items/trainee_milking_charm",
         "name": "Trainee Milking Charm",
@@ -49881,50 +49925,6 @@
             }
         },
         "sortIndex": 328
-    },
-    "/items/trainee_power_charm": {
-        "hrid": "/items/trainee_power_charm",
-        "name": "Trainee Power Charm",
-        "description": "",
-        "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 25000,
-        "itemLevel": 1,
-        "enhancementCosts": [
-            {
-                "itemHrid": "/items/trainee_power_charm",
-                "count": 1
-            },
-            {
-                "itemHrid": "/items/coin",
-                "count": 12
-            }
-        ],
-        "alchemyDetail": {
-            "bulkMultiplier": 1,
-            "isCoinifiable": true,
-            "decomposeItems": null,
-            "transmuteSuccessRate": 0,
-            "transmuteDropTable": null
-        },
-        "equipmentDetail": {
-            "type": "/equipment_types/charm",
-            "levelRequirements": [
-                {
-                    "skillHrid": "/skills/power",
-                    "level": 1
-                }
-            ],
-            "combatStats": {
-                "focusTraining": "/skills/power",
-                "powerExperience": 0.01
-            },
-            "noncombatStats": {},
-            "combatEnhancementBonuses": {
-                "powerExperience": 0.001
-            },
-            "noncombatEnhancementBonuses": {}
-        },
-        "sortIndex": 412
     },
     "/items/trainee_ranged_charm": {
         "hrid": "/items/trainee_ranged_charm",
@@ -51340,7 +51340,7 @@
                     "maxCount": 1
                 },
                 {
-                    "itemHrid": "/items/ultra_power_coffee",
+                    "itemHrid": "/items/ultra_melee_coffee",
                     "dropRate": 0.25,
                     "minCount": 1,
                     "maxCount": 1
@@ -51389,6 +51389,88 @@
             ]
         },
         "sortIndex": 126
+    },
+    "/items/ultra_melee_coffee": {
+        "hrid": "/items/ultra_melee_coffee",
+        "name": "Ultra Melee Coffee",
+        "description": "",
+        "categoryHrid": "/item_categories/drink",
+        "sellPrice": 210,
+        "isTradable": true,
+        "itemLevel": 85,
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/brewing_essence",
+                    "count": 36
+                }
+            ],
+            "transmuteSuccessRate": 0.5,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/ultra_melee_coffee",
+                    "dropRate": 0.3995,
+                    "minCount": 1,
+                    "maxCount": 1
+                },
+                {
+                    "itemHrid": "/items/super_melee_coffee",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1
+                },
+                {
+                    "itemHrid": "/items/ultra_ranged_coffee",
+                    "dropRate": 0.25,
+                    "minCount": 1,
+                    "maxCount": 1
+                },
+                {
+                    "itemHrid": "/items/ultra_magic_coffee",
+                    "dropRate": 0.25,
+                    "minCount": 1,
+                    "maxCount": 1
+                },
+                {
+                    "itemHrid": "/items/guzzling_energy",
+                    "dropRate": 0.0005,
+                    "minCount": 1,
+                    "maxCount": 1
+                }
+            ]
+        },
+        "consumableDetail": {
+            "cooldownDuration": 300000000000,
+            "usableInActionTypeMap": {
+                "/action_types/combat": true
+            },
+            "hitpointRestore": 0,
+            "manapointRestore": 0,
+            "recoveryDuration": 0,
+            "buffs": [
+                {
+                    "uniqueHrid": "/buff_uniques/melee_coffee",
+                    "typeHrid": "/buff_types/melee_level",
+                    "ratioBoost": 0.22,
+                    "ratioBoostLevelBonus": 0,
+                    "flatBoost": 3,
+                    "flatBoostLevelBonus": 0,
+                    "startTime": "0001-01-01T00:00:00Z",
+                    "duration": 300000000000
+                }
+            ],
+            "defaultCombatTriggers": [
+                {
+                    "dependencyHrid": "/combat_trigger_dependencies/self",
+                    "conditionHrid": "/combat_trigger_conditions/melee_coffee",
+                    "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+                    "value": 0
+                }
+            ]
+        },
+        "sortIndex": 124
     },
     "/items/ultra_milking_tea": {
         "hrid": "/items/ultra_milking_tea",
@@ -51475,88 +51557,6 @@
         },
         "sortIndex": 88
     },
-    "/items/ultra_power_coffee": {
-        "hrid": "/items/ultra_power_coffee",
-        "name": "Ultra Power Coffee",
-        "description": "",
-        "categoryHrid": "/item_categories/drink",
-        "sellPrice": 210,
-        "isTradable": true,
-        "itemLevel": 85,
-        "alchemyDetail": {
-            "bulkMultiplier": 1,
-            "isCoinifiable": true,
-            "decomposeItems": [
-                {
-                    "itemHrid": "/items/brewing_essence",
-                    "count": 36
-                }
-            ],
-            "transmuteSuccessRate": 0.5,
-            "transmuteDropTable": [
-                {
-                    "itemHrid": "/items/ultra_power_coffee",
-                    "dropRate": 0.3995,
-                    "minCount": 1,
-                    "maxCount": 1
-                },
-                {
-                    "itemHrid": "/items/super_power_coffee",
-                    "dropRate": 0.1,
-                    "minCount": 1,
-                    "maxCount": 1
-                },
-                {
-                    "itemHrid": "/items/ultra_ranged_coffee",
-                    "dropRate": 0.25,
-                    "minCount": 1,
-                    "maxCount": 1
-                },
-                {
-                    "itemHrid": "/items/ultra_magic_coffee",
-                    "dropRate": 0.25,
-                    "minCount": 1,
-                    "maxCount": 1
-                },
-                {
-                    "itemHrid": "/items/guzzling_energy",
-                    "dropRate": 0.0005,
-                    "minCount": 1,
-                    "maxCount": 1
-                }
-            ]
-        },
-        "consumableDetail": {
-            "cooldownDuration": 300000000000,
-            "usableInActionTypeMap": {
-                "/action_types/combat": true
-            },
-            "hitpointRestore": 0,
-            "manapointRestore": 0,
-            "recoveryDuration": 0,
-            "buffs": [
-                {
-                    "uniqueHrid": "/buff_uniques/power_coffee",
-                    "typeHrid": "/buff_types/power_level",
-                    "ratioBoost": 0.22,
-                    "ratioBoostLevelBonus": 0,
-                    "flatBoost": 3,
-                    "flatBoostLevelBonus": 0,
-                    "startTime": "0001-01-01T00:00:00Z",
-                    "duration": 300000000000
-                }
-            ],
-            "defaultCombatTriggers": [
-                {
-                    "dependencyHrid": "/combat_trigger_dependencies/self",
-                    "conditionHrid": "/combat_trigger_conditions/power_coffee",
-                    "comparatorHrid": "/combat_trigger_comparators/is_inactive",
-                    "value": 0
-                }
-            ]
-        },
-        "sortIndex": 124
-    },
     "/items/ultra_ranged_coffee": {
         "hrid": "/items/ultra_ranged_coffee",
         "name": "Ultra Ranged Coffee",
@@ -51589,7 +51589,7 @@
                     "maxCount": 1
                 },
                 {
-                    "itemHrid": "/items/ultra_power_coffee",
+                    "itemHrid": "/items/ultra_melee_coffee",
                     "dropRate": 0.25,
                     "minCount": 1,
                     "maxCount": 1
@@ -53507,7 +53507,7 @@
             "type": "/equipment_types/main_hand",
             "levelRequirements": [
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 10
                 }
             ],
@@ -53519,7 +53519,7 @@
                 "attackInterval": 3300000000,
                 "smashAccuracy": 0.135,
                 "smashDamage": 0.42,
-                "primaryTraining": "/skills/power"
+                "primaryTraining": "/skills/melee"
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
@@ -54060,7 +54060,7 @@
                     "level": 10
                 },
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 10
                 }
             ],
@@ -54072,7 +54072,7 @@
                 "attackInterval": 3000000000,
                 "slashAccuracy": 0.24,
                 "slashDamage": 0.27,
-                "primaryTraining": "/skills/power"
+                "primaryTraining": "/skills/melee"
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
@@ -54517,7 +54517,7 @@
                     "level": 85
                 },
                 {
-                    "skillHrid": "/skills/power",
+                    "skillHrid": "/skills/melee",
                     "level": 85
                 }
             ],
@@ -54529,7 +54529,7 @@
                 "attackInterval": 2800000000,
                 "slashAccuracy": 1.3,
                 "slashDamage": 1.45,
-                "primaryTraining": "/skills/power"
+                "primaryTraining": "/skills/melee"
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {

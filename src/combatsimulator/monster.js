@@ -40,20 +40,21 @@ class Monster extends CombatUnit {
     updateCombatDetails() {
         let gameMonster = combatMonsterDetailMap[this.hrid];
 
-        let levelMultiplier = 1.0 + 0.2 * this.difficultyTier;
+        let levelMultiplier = 1.0 + 0.25 * this.difficultyTier;
+        let defLevelMultiplier = 1.0 + 0.15 * this.difficultyTier;
         let levelBonus = 20.0 * this.difficultyTier;
 
         this.staminaLevel = levelMultiplier * (gameMonster.combatDetails.staminaLevel + levelBonus);
         this.intelligenceLevel = levelMultiplier * (gameMonster.combatDetails.intelligenceLevel + levelBonus);
         this.attackLevel = levelMultiplier * (gameMonster.combatDetails.attackLevel + levelBonus);
-        this.powerLevel = levelMultiplier * (gameMonster.combatDetails.powerLevel + levelBonus);
-        this.defenseLevel = levelMultiplier * (gameMonster.combatDetails.defenseLevel + levelBonus);
+        this.meleeLevel = levelMultiplier * (gameMonster.combatDetails.meleeLevel + levelBonus);
+        this.defenseLevel = defLevelMultiplier * (gameMonster.combatDetails.defenseLevel + levelBonus);
         this.rangedLevel = levelMultiplier * (gameMonster.combatDetails.rangedLevel + levelBonus);
         this.magicLevel = levelMultiplier * (gameMonster.combatDetails.magicLevel + levelBonus);
 
         
         let expMultiplier = 1.0 + 0.5 * this.difficultyTier;
-        let expBonus = 10.0 * this.difficultyTier;
+        let expBonus = 5.0 * this.difficultyTier;
 
         this.experience = expMultiplier * (gameMonster.experience + expBonus);
 

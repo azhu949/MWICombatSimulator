@@ -1244,6 +1244,61 @@
         "buffs": null,
         "sortIndex": 21
     },
+    "/actions/brewing/melee_coffee": {
+        "hrid": "/actions/brewing/melee_coffee",
+        "function": "/action_functions/production",
+        "type": "/action_types/brewing",
+        "category": "/action_categories/brewing/coffee",
+        "name": "Melee Coffee",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/brewing",
+            "level": 20
+        },
+        "baseTimeCost": 10000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/brewing",
+            "value": 24
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/brewing_essence",
+                "dropRate": 0.03333333333333333,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_artisans_crate",
+                "dropRate": 0.0002777777777777778,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "inputItems": [
+            {
+                "itemHrid": "/items/liberica_coffee_bean",
+                "count": 1
+            },
+            {
+                "itemHrid": "/items/blackberry",
+                "count": 1
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/melee_coffee",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 15
+    },
     "/actions/brewing/milking_tea": {
         "hrid": "/actions/brewing/milking_tea",
         "function": "/action_functions/production",
@@ -1302,61 +1357,6 @@
         "maxPartySize": 0,
         "buffs": null,
         "sortIndex": 1
-    },
-    "/actions/brewing/power_coffee": {
-        "hrid": "/actions/brewing/power_coffee",
-        "function": "/action_functions/production",
-        "type": "/action_types/brewing",
-        "category": "/action_categories/brewing/coffee",
-        "name": "Power Coffee",
-        "maxDifficulty": 0,
-        "levelRequirement": {
-            "skillHrid": "/skills/brewing",
-            "level": 20
-        },
-        "baseTimeCost": 10000000000,
-        "experienceGain": {
-            "skillHrid": "/skills/brewing",
-            "value": 24
-        },
-        "dropTable": null,
-        "essenceDropTable": [
-            {
-                "itemHrid": "/items/brewing_essence",
-                "dropRate": 0.03333333333333333,
-                "minCount": 1,
-                "maxCount": 1
-            }
-        ],
-        "rareDropTable": [
-            {
-                "itemHrid": "/items/small_artisans_crate",
-                "dropRate": 0.0002777777777777778,
-                "minCount": 1,
-                "maxCount": 1
-            }
-        ],
-        "upgradeItemHrid": "",
-        "inputItems": [
-            {
-                "itemHrid": "/items/liberica_coffee_bean",
-                "count": 1
-            },
-            {
-                "itemHrid": "/items/blackberry",
-                "count": 1
-            }
-        ],
-        "outputItems": [
-            {
-                "itemHrid": "/items/power_coffee",
-                "count": 1
-            }
-        ],
-        "combatZoneInfo": null,
-        "maxPartySize": 0,
-        "buffs": null,
-        "sortIndex": 15
     },
     "/actions/brewing/processing_tea": {
         "hrid": "/actions/brewing/processing_tea",
@@ -2204,6 +2204,65 @@
         "buffs": null,
         "sortIndex": 54
     },
+    "/actions/brewing/super_melee_coffee": {
+        "hrid": "/actions/brewing/super_melee_coffee",
+        "function": "/action_functions/production",
+        "type": "/action_types/brewing",
+        "category": "/action_categories/brewing/coffee",
+        "name": "Super Melee Coffee",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/brewing",
+            "level": 65
+        },
+        "baseTimeCost": 16000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/brewing",
+            "value": 51
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/brewing_essence",
+                "dropRate": 0.07333333333333333,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.00032098765432098765,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/melee_coffee",
+        "inputItems": [
+            {
+                "itemHrid": "/items/spacia_coffee_bean",
+                "count": 1
+            },
+            {
+                "itemHrid": "/items/mooberry",
+                "count": 1
+            },
+            {
+                "itemHrid": "/items/crushed_garnet",
+                "count": 1
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/super_melee_coffee",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 44
+    },
     "/actions/brewing/super_milking_tea": {
         "hrid": "/actions/brewing/super_milking_tea",
         "function": "/action_functions/production",
@@ -2266,65 +2325,6 @@
         "maxPartySize": 0,
         "buffs": null,
         "sortIndex": 22
-    },
-    "/actions/brewing/super_power_coffee": {
-        "hrid": "/actions/brewing/super_power_coffee",
-        "function": "/action_functions/production",
-        "type": "/action_types/brewing",
-        "category": "/action_categories/brewing/coffee",
-        "name": "Super Power Coffee",
-        "maxDifficulty": 0,
-        "levelRequirement": {
-            "skillHrid": "/skills/brewing",
-            "level": 65
-        },
-        "baseTimeCost": 16000000000,
-        "experienceGain": {
-            "skillHrid": "/skills/brewing",
-            "value": 51
-        },
-        "dropTable": null,
-        "essenceDropTable": [
-            {
-                "itemHrid": "/items/brewing_essence",
-                "dropRate": 0.07333333333333333,
-                "minCount": 1,
-                "maxCount": 1
-            }
-        ],
-        "rareDropTable": [
-            {
-                "itemHrid": "/items/medium_artisans_crate",
-                "dropRate": 0.00032098765432098765,
-                "minCount": 1,
-                "maxCount": 1
-            }
-        ],
-        "upgradeItemHrid": "/items/power_coffee",
-        "inputItems": [
-            {
-                "itemHrid": "/items/spacia_coffee_bean",
-                "count": 1
-            },
-            {
-                "itemHrid": "/items/mooberry",
-                "count": 1
-            },
-            {
-                "itemHrid": "/items/crushed_garnet",
-                "count": 1
-            }
-        ],
-        "outputItems": [
-            {
-                "itemHrid": "/items/super_power_coffee",
-                "count": 1
-            }
-        ],
-        "combatZoneInfo": null,
-        "maxPartySize": 0,
-        "buffs": null,
-        "sortIndex": 44
     },
     "/actions/brewing/super_ranged_coffee": {
         "hrid": "/actions/brewing/super_ranged_coffee",
@@ -3277,6 +3277,57 @@
         "buffs": null,
         "sortIndex": 64
     },
+    "/actions/brewing/ultra_melee_coffee": {
+        "hrid": "/actions/brewing/ultra_melee_coffee",
+        "function": "/action_functions/production",
+        "type": "/action_types/brewing",
+        "category": "/action_categories/brewing/coffee",
+        "name": "Ultra Melee Coffee",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/brewing",
+            "level": 85
+        },
+        "baseTimeCost": 16000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/brewing",
+            "value": 69
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/brewing_essence",
+                "dropRate": 0.08222222222222222,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.00021296296296296295,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/super_melee_coffee",
+        "inputItems": [
+            {
+                "itemHrid": "/items/crushed_sunstone",
+                "count": 1
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/ultra_melee_coffee",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 60
+    },
     "/actions/brewing/ultra_milking_tea": {
         "hrid": "/actions/brewing/ultra_milking_tea",
         "function": "/action_functions/production",
@@ -3331,57 +3382,6 @@
         "maxPartySize": 0,
         "buffs": null,
         "sortIndex": 32
-    },
-    "/actions/brewing/ultra_power_coffee": {
-        "hrid": "/actions/brewing/ultra_power_coffee",
-        "function": "/action_functions/production",
-        "type": "/action_types/brewing",
-        "category": "/action_categories/brewing/coffee",
-        "name": "Ultra Power Coffee",
-        "maxDifficulty": 0,
-        "levelRequirement": {
-            "skillHrid": "/skills/brewing",
-            "level": 85
-        },
-        "baseTimeCost": 16000000000,
-        "experienceGain": {
-            "skillHrid": "/skills/brewing",
-            "value": 69
-        },
-        "dropTable": null,
-        "essenceDropTable": [
-            {
-                "itemHrid": "/items/brewing_essence",
-                "dropRate": 0.08222222222222222,
-                "minCount": 1,
-                "maxCount": 1
-            }
-        ],
-        "rareDropTable": [
-            {
-                "itemHrid": "/items/large_artisans_crate",
-                "dropRate": 0.00021296296296296295,
-                "minCount": 1,
-                "maxCount": 1
-            }
-        ],
-        "upgradeItemHrid": "/items/super_power_coffee",
-        "inputItems": [
-            {
-                "itemHrid": "/items/crushed_sunstone",
-                "count": 1
-            }
-        ],
-        "outputItems": [
-            {
-                "itemHrid": "/items/ultra_power_coffee",
-                "count": 1
-            }
-        ],
-        "combatZoneInfo": null,
-        "maxPartySize": 0,
-        "buffs": null,
-        "sortIndex": 60
     },
     "/actions/brewing/ultra_ranged_coffee": {
         "hrid": "/actions/brewing/ultra_ranged_coffee",
@@ -18261,19 +18261,19 @@
                             "combatMonsterHrid": "/monsters/novice_sorcerer",
                             "difficultyTier": 0,
                             "rate": 1,
-                            "strength": 30
+                            "strength": 35
                         },
                         {
                             "combatMonsterHrid": "/monsters/ice_sorcerer",
                             "difficultyTier": 0,
                             "rate": 1,
-                            "strength": 55
+                            "strength": 60
                         },
                         {
                             "combatMonsterHrid": "/monsters/flame_sorcerer",
                             "difficultyTier": 0,
                             "rate": 1,
-                            "strength": 60
+                            "strength": 65
                         },
                         {
                             "combatMonsterHrid": "/monsters/elementalist",

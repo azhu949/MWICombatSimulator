@@ -483,6 +483,17 @@
         ],
         "sortIndex": 23
     },
+    "/combat_trigger_conditions/melee_coffee": {
+        "hrid": "/combat_trigger_conditions/melee_coffee",
+        "name": "Melee Coffee",
+        "isSingleTarget": true,
+        "isMultiTarget": false,
+        "allowedComparatorHrids": [
+            "/combat_trigger_comparators/is_active",
+            "/combat_trigger_comparators/is_inactive"
+        ],
+        "sortIndex": 14
+    },
     "/combat_trigger_conditions/missing_hp": {
         "hrid": "/combat_trigger_conditions/missing_hp",
         "name": "Missing Hp",
@@ -570,17 +581,6 @@
             "/combat_trigger_comparators/is_inactive"
         ],
         "sortIndex": 65
-    },
-    "/combat_trigger_conditions/power_coffee": {
-        "hrid": "/combat_trigger_conditions/power_coffee",
-        "name": "Power Coffee",
-        "isSingleTarget": true,
-        "isMultiTarget": false,
-        "allowedComparatorHrids": [
-            "/combat_trigger_comparators/is_active",
-            "/combat_trigger_comparators/is_inactive"
-        ],
-        "sortIndex": 14
     },
     "/combat_trigger_conditions/precision": {
         "hrid": "/combat_trigger_conditions/precision",
