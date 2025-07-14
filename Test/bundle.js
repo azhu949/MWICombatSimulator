@@ -2829,6 +2829,36 @@ function initZones() {
         opt.setAttribute("data-i18n", "actionNames." + zone.hrid);
         zoneSelect.add(opt);
     }
+
+
+    let zoneCheckBox = document.getElementById("zoneCheckBox");
+    
+    let simAllZonesToggle = document.getElementById("simAllToggle");
+    simAllZonesToggle.addEventListener("change", (event) => {
+        if (simAllZonesToggle.checked) {
+            zoneCheckBox.classList.remove("d-none");
+            zoneCheckBox.querySelectorAll(".zone-checkbox").forEach(checkbox => checkbox.checked = true);
+        } else {
+            zoneCheckBox.classList.add("d-none");
+        }
+    });
+
+    let zoneHrids = Object.values(_combatsimulator_data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_12__)
+    .filter((action) => action.type == "/action_types/combat" && action.category != "/action_categories/combat/dungeons" && action.combatZoneInfo.fightInfo.randomSpawnInfo.maxSpawnCount > 1)
+    .sort((a, b) => a.sortIndex - b.sortIndex)
+    .flat();
+
+    for (const zoneHrid of zoneHrids) {
+        const newZone = document.createElement('div');
+        newZone.classList.add('form-check');
+        newZone.innerHTML = `
+            <input class="form-check-input zone-checkbox" type="checkbox" id="${zoneHrid.hrid}">
+            <label class="form-check-label" for="${zoneHrid.hrid}" data-i18n="actionNames.${zoneHrid.hrid}">
+                ${zoneHrid.name}
+            </label>
+        `;
+        zoneCheckBox.append(newZone);
+    }
 }
 
 function initDungeons() {
@@ -4081,7 +4111,7 @@ function createElement(tagName, className, innerHTML = "", id = "") {
 
 document.addEventListener('DOMContentLoaded', function () {
     const simDungeonToggle = document.getElementById('simDungeonToggle');
-    const playerContainer = document.querySelector('.outlined-box');
+    const playerContainer = document.getElementById('playerCheckBox');
 
     function addPlayers() {
         const player4 = document.createElement('div');
@@ -4280,7 +4310,12 @@ function startSimulation(selectedPlayers) {
         worker.postMessage(workerMessage);
     } else {
         let zoneHrids = Object.values(_combatsimulator_data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_12__)
-            .filter((action) => action.type == "/action_types/combat" && action.category != "/action_categories/combat/dungeons" && action.combatZoneInfo.fightInfo.randomSpawnInfo.maxSpawnCount > 1)
+            .filter((action) => 
+                action.type == "/action_types/combat" && 
+                action.category != "/action_categories/combat/dungeons" && 
+                action.combatZoneInfo.fightInfo.randomSpawnInfo.maxSpawnCount > 1 &&
+                document.getElementById(action.hrid).checked
+            )
             .sort((a, b) => a.sortIndex - b.sortIndex)
             .map(action => {
                 let result = [];
