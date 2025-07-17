@@ -2853,6 +2853,15 @@ function loadEquipmentSetIntoUI(equipmentSet) {
         let abilitySelect = document.getElementById("selectAbility_" + abilitySlot);
         let abilityLevelInput = document.getElementById("inputAbilityLevel_" + abilitySlot);
 
+        if (hasSpecial && i == 0 && (
+                equipmentSet.abilities[i].ability == "/abilities/aqua_aura" ||
+                equipmentSet.abilities[i].ability == "/abilities/flame_aura" ||
+                equipmentSet.abilities[i].ability == "/abilities/sylvan_aura"
+            )
+        ) {
+            equipmentSet.abilities[i].ability = "/abilities/mystic_aura";
+        }
+
         abilitySelect.value = equipmentSet.abilities[i].ability;
         abilityLevelInput.value = equipmentSet.abilities[i].level;
     }
@@ -3094,6 +3103,16 @@ function doSoloImport() {
         let abilitySlot = hasSpecial ? i : (i + 1);
         let abilitySelect = document.getElementById("selectAbility_" + abilitySlot);
         let abilityLevelInput = document.getElementById("inputAbilityLevel_" + abilitySlot);
+
+        if (hasSpecial && i == 0 && (
+                importSet.abilities[i].abilityHrid == "/abilities/aqua_aura" ||
+                importSet.abilities[i].abilityHrid == "/abilities/flame_aura" ||
+                importSet.abilities[i].abilityHrid == "/abilities/sylvan_aura"
+            )
+        ) {
+            importSet.abilities[i].abilityHrid = "/abilities/mystic_aura";
+        }
+
         if (importSet.abilities[i] != null) {
             abilitySelect.value = importSet.abilities[i].abilityHrid;
             abilityLevelInput.value = String(importSet.abilities[i].level);
@@ -3257,6 +3276,17 @@ function updateNextPlayer(currentPlayerNumber) {
         let abilitySlot = hasSpecial ? i : (i + 1);
         let abilitySelect = document.getElementById("selectAbility_" + abilitySlot);
         let abilityLevelInput = document.getElementById("inputAbilityLevel_" + abilitySlot);
+
+        if (hasSpecial && i == 0 && (
+                importSet.abilities[i].abilityHrid == "/abilities/aqua_aura" ||
+                importSet.abilities[i].abilityHrid == "/abilities/flame_aura" ||
+                importSet.abilities[i].abilityHrid == "/abilities/sylvan_aura"
+            )
+        ) {
+            importSet.abilities[i].abilityHrid = "/abilities/mystic_aura";
+        }
+
+
         if (importSet.abilities[i] != null) {
             abilitySelect.value = importSet.abilities[i].abilityHrid;
             abilityLevelInput.value = String(importSet.abilities[i].level);

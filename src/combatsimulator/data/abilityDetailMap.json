@@ -45,73 +45,6 @@
         ],
         "sortIndex": 15
     },
-    "/abilities/aqua_aura": {
-        "hrid": "/abilities/aqua_aura",
-        "name": "Aqua Aura",
-        "description": "Increases water amplify and resistance for all allies",
-        "isSpecialAbility": true,
-        "manaCost": 100,
-        "cooldownDuration": 120000000000,
-        "castDuration": 200000000,
-        "abilityEffects": [
-            {
-                "targetType": "allAllies",
-                "effectType": "/ability_effect_types/buff",
-                "combatStyleHrid": "",
-                "damageType": "",
-                "baseDamageFlat": 0,
-                "baseDamageFlatLevelBonus": 0,
-                "baseDamageRatio": 0,
-                "baseDamageRatioLevelBonus": 0,
-                "bonusAccuracyRatio": 0,
-                "bonusAccuracyRatioLevelBonus": 0,
-                "damageOverTimeRatio": 0,
-                "damageOverTimeDuration": 0,
-                "armorDamageRatio": 0,
-                "armorDamageRatioLevelBonus": 0,
-                "hpDrainRatio": 0,
-                "pierceChance": 0,
-                "blindChance": 0,
-                "blindDuration": 0,
-                "silenceChance": 0,
-                "silenceDuration": 0,
-                "stunChance": 0,
-                "stunDuration": 0,
-                "spendHpRatio": 0,
-                "buffs": [
-                    {
-                        "uniqueHrid": "/buff_uniques/aqua_aura_water_amplify",
-                        "typeHrid": "/buff_types/water_amplify",
-                        "ratioBoost": 0,
-                        "ratioBoostLevelBonus": 0,
-                        "flatBoost": 0.08,
-                        "flatBoostLevelBonus": 0.0016,
-                        "startTime": "0001-01-01T00:00:00Z",
-                        "duration": 120000000000
-                    },
-                    {
-                        "uniqueHrid": "/buff_uniques/aqua_aura_water_resistance",
-                        "typeHrid": "/buff_types/water_resistance",
-                        "ratioBoost": 0,
-                        "ratioBoostLevelBonus": 0,
-                        "flatBoost": 4,
-                        "flatBoostLevelBonus": 0.08,
-                        "startTime": "0001-01-01T00:00:00Z",
-                        "duration": 120000000000
-                    }
-                ]
-            }
-        ],
-        "defaultCombatTriggers": [
-            {
-                "dependencyHrid": "/combat_trigger_dependencies/self",
-                "conditionHrid": "/combat_trigger_conditions/aqua_aura_water_amplify",
-                "comparatorHrid": "/combat_trigger_comparators/is_inactive",
-                "value": 0
-            }
-        ],
-        "sortIndex": 53
-    },
     "/abilities/arcane_reflection": {
         "hrid": "/abilities/arcane_reflection",
         "name": "Arcane Reflection",
@@ -338,7 +271,7 @@
     "/abilities/critical_aura": {
         "hrid": "/abilities/critical_aura",
         "name": "Critical Aura",
-        "description": "Increases critical rate for all allies",
+        "description": "Increases critical rate for all allies. Effect increases by (0.01x) per caster's Ranged level",
         "isSpecialAbility": true,
         "manaCost": 100,
         "cooldownDuration": 120000000000,
@@ -374,8 +307,8 @@
                         "typeHrid": "/buff_types/critical_rate",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
-                        "flatBoost": 0.03,
-                        "flatBoostLevelBonus": 0.0006,
+                        "flatBoost": 0.02,
+                        "flatBoostLevelBonus": 0.0004,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 120000000000
                     }
@@ -390,7 +323,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 57
+        "sortIndex": 55
     },
     "/abilities/elemental_affinity": {
         "hrid": "/abilities/elemental_affinity",
@@ -575,7 +508,7 @@
     "/abilities/fierce_aura": {
         "hrid": "/abilities/fierce_aura",
         "name": "Fierce Aura",
-        "description": "Increases physical amplify and armor for all allies",
+        "description": "Increases physical amplify for all allies. Effect increases by (0.01x) percaster's Melee level",
         "isSpecialAbility": true,
         "manaCost": 100,
         "cooldownDuration": 120000000000,
@@ -607,22 +540,14 @@
                 "spendHpRatio": 0,
                 "buffs": [
                     {
-                        "uniqueHrid": "/buff_uniques/fierce_aura_physical_amplify",
+                        "uniqueHrid": "/buff_uniques/fierce_aura",
                         "typeHrid": "/buff_types/physical_amplify",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
-                        "flatBoost": 0.06,
-                        "flatBoostLevelBonus": 0.0012,
-                        "startTime": "0001-01-01T00:00:00Z",
-                        "duration": 120000000000
-                    },
-                    {
-                        "uniqueHrid": "/buff_uniques/fierce_aura_armor",
-                        "typeHrid": "/buff_types/armor",
-                        "ratioBoost": 0,
-                        "ratioBoostLevelBonus": 0,
-                        "flatBoost": 4,
-                        "flatBoostLevelBonus": 0.08,
+                        "flatBoost": 0.04,
+                        "flatBoostLevelBonus": 0.0008,
+                        "multiplierForSkillHrid": "/skills/melee",
+                        "multiplierPerSkillLevel": 0.01,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 120000000000
                     }
@@ -632,12 +557,12 @@
         "defaultCombatTriggers": [
             {
                 "dependencyHrid": "/combat_trigger_dependencies/self",
-                "conditionHrid": "/combat_trigger_conditions/fierce_aura_physical_amplify",
+                "conditionHrid": "/combat_trigger_conditions/fierce_aura",
                 "comparatorHrid": "/combat_trigger_comparators/is_inactive",
                 "value": 0
             }
         ],
-        "sortIndex": 52
+        "sortIndex": 54
     },
     "/abilities/fireball": {
         "hrid": "/abilities/fireball",
@@ -782,73 +707,6 @@
             }
         ],
         "sortIndex": 16
-    },
-    "/abilities/flame_aura": {
-        "hrid": "/abilities/flame_aura",
-        "name": "Flame Aura",
-        "description": "Increases fire amplify and resistance for all allies",
-        "isSpecialAbility": true,
-        "manaCost": 100,
-        "cooldownDuration": 120000000000,
-        "castDuration": 200000000,
-        "abilityEffects": [
-            {
-                "targetType": "allAllies",
-                "effectType": "/ability_effect_types/buff",
-                "combatStyleHrid": "",
-                "damageType": "",
-                "baseDamageFlat": 0,
-                "baseDamageFlatLevelBonus": 0,
-                "baseDamageRatio": 0,
-                "baseDamageRatioLevelBonus": 0,
-                "bonusAccuracyRatio": 0,
-                "bonusAccuracyRatioLevelBonus": 0,
-                "damageOverTimeRatio": 0,
-                "damageOverTimeDuration": 0,
-                "armorDamageRatio": 0,
-                "armorDamageRatioLevelBonus": 0,
-                "hpDrainRatio": 0,
-                "pierceChance": 0,
-                "blindChance": 0,
-                "blindDuration": 0,
-                "silenceChance": 0,
-                "silenceDuration": 0,
-                "stunChance": 0,
-                "stunDuration": 0,
-                "spendHpRatio": 0,
-                "buffs": [
-                    {
-                        "uniqueHrid": "/buff_uniques/flame_aura_fire_amplify",
-                        "typeHrid": "/buff_types/fire_amplify",
-                        "ratioBoost": 0,
-                        "ratioBoostLevelBonus": 0,
-                        "flatBoost": 0.08,
-                        "flatBoostLevelBonus": 0.0016,
-                        "startTime": "0001-01-01T00:00:00Z",
-                        "duration": 120000000000
-                    },
-                    {
-                        "uniqueHrid": "/buff_uniques/flame_aura_fire_resistance",
-                        "typeHrid": "/buff_types/fire_resistance",
-                        "ratioBoost": 0,
-                        "ratioBoostLevelBonus": 0,
-                        "flatBoost": 4,
-                        "flatBoostLevelBonus": 0.08,
-                        "startTime": "0001-01-01T00:00:00Z",
-                        "duration": 120000000000
-                    }
-                ]
-            }
-        ],
-        "defaultCombatTriggers": [
-            {
-                "dependencyHrid": "/combat_trigger_dependencies/self",
-                "conditionHrid": "/combat_trigger_conditions/flame_aura_fire_amplify",
-                "comparatorHrid": "/combat_trigger_comparators/is_inactive",
-                "value": 0
-            }
-        ],
-        "sortIndex": 55
     },
     "/abilities/flame_blast": {
         "hrid": "/abilities/flame_blast",
@@ -1084,6 +942,113 @@
             }
         ],
         "sortIndex": 24
+    },
+    "/abilities/guardian_aura": {
+        "hrid": "/abilities/guardian_aura",
+        "name": "Guardian Aura",
+        "description": "Increases heal amplify, armor, and resistances for all allies. Effect increases by (0.01x) per caster's Defense level",
+        "isSpecialAbility": true,
+        "manaCost": 100,
+        "cooldownDuration": 120000000000,
+        "castDuration": 200000000,
+        "abilityEffects": [
+            {
+                "targetType": "allAllies",
+                "effectType": "/ability_effect_types/buff",
+                "combatStyleHrid": "",
+                "damageType": "",
+                "baseDamageFlat": 0,
+                "baseDamageFlatLevelBonus": 0,
+                "baseDamageRatio": 0,
+                "baseDamageRatioLevelBonus": 0,
+                "bonusAccuracyRatio": 0,
+                "bonusAccuracyRatioLevelBonus": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
+                "pierceChance": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
+                "stunChance": 0,
+                "stunDuration": 0,
+                "spendHpRatio": 0,
+                "buffs": [
+                    {
+                        "uniqueHrid": "/buff_uniques/guardian_aura_healing_amplify",
+                        "typeHrid": "/buff_types/healing_amplify",
+                        "ratioBoost": 0,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 0.04,
+                        "flatBoostLevelBonus": 0.0008,
+                        "multiplierForSkillHrid": "/skills/defense",
+                        "multiplierPerSkillLevel": 0.01,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": 120000000000
+                    },
+                    {
+                        "uniqueHrid": "/buff_uniques/guardian_aura_armor",
+                        "typeHrid": "/buff_types/armor",
+                        "ratioBoost": 0,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 4,
+                        "flatBoostLevelBonus": 0.08,
+                        "multiplierForSkillHrid": "/skills/defense",
+                        "multiplierPerSkillLevel": 0.01,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": 120000000000
+                    },
+                    {
+                        "uniqueHrid": "/buff_uniques/guardian_aura_water_resistance",
+                        "typeHrid": "/buff_types/water_resistance",
+                        "ratioBoost": 0,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 4,
+                        "flatBoostLevelBonus": 0.08,
+                        "multiplierForSkillHrid": "/skills/defense",
+                        "multiplierPerSkillLevel": 0.01,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": 120000000000
+                    },
+                    {
+                        "uniqueHrid": "/buff_uniques/guardian_aura_nature_resistance",
+                        "typeHrid": "/buff_types/nature_resistance",
+                        "ratioBoost": 0,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 4,
+                        "flatBoostLevelBonus": 0.08,
+                        "multiplierForSkillHrid": "/skills/defense",
+                        "multiplierPerSkillLevel": 0.01,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": 120000000000
+                    },
+                    {
+                        "uniqueHrid": "/buff_uniques/guardian_aura_healing_amplify",
+                        "typeHrid": "/buff_types/fire_resistance",
+                        "ratioBoost": 0,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 4,
+                        "flatBoostLevelBonus": 0.08,
+                        "multiplierForSkillHrid": "/skills/defense",
+                        "multiplierPerSkillLevel": 0.01,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": 120000000000
+                    }
+                ]
+            }
+        ],
+        "defaultCombatTriggers": [
+            {
+                "dependencyHrid": "/combat_trigger_dependencies/self",
+                "conditionHrid": "/combat_trigger_conditions/guardian_aura_healing_amplify",
+                "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+                "value": 0
+            }
+        ],
+        "sortIndex": 53
     },
     "/abilities/heal": {
         "hrid": "/abilities/heal",
@@ -1672,6 +1637,89 @@
         ],
         "sortIndex": 34
     },
+    "/abilities/mystic_aura": {
+        "hrid": "/abilities/mystic_aura",
+        "name": "Mystic Aura",
+        "description": "Increases elemental amplify for all allies. Effect increases by (0.01x) per caster's Magic level",
+        "isSpecialAbility": true,
+        "manaCost": 100,
+        "cooldownDuration": 120000000000,
+        "castDuration": 200000000,
+        "abilityEffects": [
+            {
+                "targetType": "allAllies",
+                "effectType": "/ability_effect_types/buff",
+                "combatStyleHrid": "",
+                "damageType": "",
+                "baseDamageFlat": 0,
+                "baseDamageFlatLevelBonus": 0,
+                "baseDamageRatio": 0,
+                "baseDamageRatioLevelBonus": 0,
+                "bonusAccuracyRatio": 0,
+                "bonusAccuracyRatioLevelBonus": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
+                "pierceChance": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
+                "stunChance": 0,
+                "stunDuration": 0,
+                "spendHpRatio": 0,
+                "buffs": [
+                    {
+                        "uniqueHrid": "/buff_uniques/mystic_aura_water_amplify",
+                        "typeHrid": "/buff_types/water_amplify",
+                        "ratioBoost": 0,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 0.05,
+                        "flatBoostLevelBonus": 0.001,
+                        "multiplierForSkillHrid": "/skills/magic",
+                        "multiplierPerSkillLevel": 0.01,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": 120000000000
+                    },
+                    {
+                        "uniqueHrid": "/buff_uniques/mystic_aura_nature_amplify",
+                        "typeHrid": "/buff_types/nature_amplify",
+                        "ratioBoost": 0,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 0.05,
+                        "flatBoostLevelBonus": 0.001,
+                        "multiplierForSkillHrid": "/skills/magic",
+                        "multiplierPerSkillLevel": 0.01,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": 120000000000
+                    },
+                    {
+                        "uniqueHrid": "/buff_uniques/mystic_aura_fire_amplify",
+                        "typeHrid": "/buff_types/fire_amplify",
+                        "ratioBoost": 0,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 0.05,
+                        "flatBoostLevelBonus": 0.001,
+                        "multiplierForSkillHrid": "/skills/magic",
+                        "multiplierPerSkillLevel": 0.01,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": 120000000000
+                    }
+                ]
+            }
+        ],
+        "defaultCombatTriggers": [
+            {
+                "dependencyHrid": "/combat_trigger_dependencies/self",
+                "conditionHrid": "/combat_trigger_conditions/mystic_aura_water_amplify",
+                "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+                "value": 0
+            }
+        ],
+        "sortIndex": 56
+    },
     "/abilities/natures_veil": {
         "hrid": "/abilities/natures_veil",
         "name": "Nature's Veil",
@@ -2043,7 +2091,7 @@
             }
         ],
         "defaultCombatTriggers": [],
-        "sortIndex": 58
+        "sortIndex": 57
     },
     "/abilities/provoke": {
         "hrid": "/abilities/provoke",
@@ -2642,7 +2690,7 @@
     "/abilities/speed_aura": {
         "hrid": "/abilities/speed_aura",
         "name": "Speed Aura",
-        "description": "Increases attack speed and cast speed for all allies",
+        "description": "Increases attack speed and cast speed for all allies. Effect increases by (0.01x) per caster's Attack level",
         "isSpecialAbility": true,
         "manaCost": 100,
         "cooldownDuration": 120000000000,
@@ -2676,10 +2724,12 @@
                     {
                         "uniqueHrid": "/buff_uniques/speed_aura_attack_speed",
                         "typeHrid": "/buff_types/attack_speed",
-                        "ratioBoost": 0.04,
-                        "ratioBoostLevelBonus": 0.0008,
+                        "ratioBoost": 0.03,
+                        "ratioBoostLevelBonus": 0.0006,
                         "flatBoost": 0,
                         "flatBoostLevelBonus": 0,
+                        "multiplierForSkillHrid": "/skills/attack",
+                        "multiplierPerSkillLevel": 0.01,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 120000000000
                     },
@@ -2688,8 +2738,10 @@
                         "typeHrid": "/buff_types/cast_speed",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
-                        "flatBoost": 0.04,
-                        "flatBoostLevelBonus": 0.0008,
+                        "flatBoost": 0.03,
+                        "flatBoostLevelBonus": 0.0006,
+                        "multiplierForSkillHrid": "/skills/attack",
+                        "multiplierPerSkillLevel": 0.01,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 120000000000
                     }
@@ -2704,7 +2756,7 @@
                 "value": 0
             }
         ],
-        "sortIndex": 56
+        "sortIndex": 52
     },
     "/abilities/spike_shell": {
         "hrid": "/abilities/spike_shell",
@@ -2906,83 +2958,6 @@
             }
         ],
         "sortIndex": 10
-    },
-    "/abilities/sylvan_aura": {
-        "hrid": "/abilities/sylvan_aura",
-        "name": "Sylvan Aura",
-        "description": "Increases nature amplify and resistance for all allies",
-        "isSpecialAbility": true,
-        "manaCost": 100,
-        "cooldownDuration": 120000000000,
-        "castDuration": 200000000,
-        "abilityEffects": [
-            {
-                "targetType": "allAllies",
-                "effectType": "/ability_effect_types/buff",
-                "combatStyleHrid": "",
-                "damageType": "",
-                "baseDamageFlat": 0,
-                "baseDamageFlatLevelBonus": 0,
-                "baseDamageRatio": 0,
-                "baseDamageRatioLevelBonus": 0,
-                "bonusAccuracyRatio": 0,
-                "bonusAccuracyRatioLevelBonus": 0,
-                "damageOverTimeRatio": 0,
-                "damageOverTimeDuration": 0,
-                "armorDamageRatio": 0,
-                "armorDamageRatioLevelBonus": 0,
-                "hpDrainRatio": 0,
-                "pierceChance": 0,
-                "blindChance": 0,
-                "blindDuration": 0,
-                "silenceChance": 0,
-                "silenceDuration": 0,
-                "stunChance": 0,
-                "stunDuration": 0,
-                "spendHpRatio": 0,
-                "buffs": [
-                    {
-                        "uniqueHrid": "/buff_uniques/sylvan_aura_nature_amplify",
-                        "typeHrid": "/buff_types/nature_amplify",
-                        "ratioBoost": 0,
-                        "ratioBoostLevelBonus": 0,
-                        "flatBoost": 0.06,
-                        "flatBoostLevelBonus": 0.0012,
-                        "startTime": "0001-01-01T00:00:00Z",
-                        "duration": 120000000000
-                    },
-                    {
-                        "uniqueHrid": "/buff_uniques/sylvan_aura_healing_amplify",
-                        "typeHrid": "/buff_types/healing_amplify",
-                        "ratioBoost": 0,
-                        "ratioBoostLevelBonus": 0,
-                        "flatBoost": 0.06,
-                        "flatBoostLevelBonus": 0.0012,
-                        "startTime": "0001-01-01T00:00:00Z",
-                        "duration": 120000000000
-                    },
-                    {
-                        "uniqueHrid": "/buff_uniques/sylvan_aura_nature_resistance",
-                        "typeHrid": "/buff_types/nature_resistance",
-                        "ratioBoost": 0,
-                        "ratioBoostLevelBonus": 0,
-                        "flatBoost": 4,
-                        "flatBoostLevelBonus": 0.08,
-                        "startTime": "0001-01-01T00:00:00Z",
-                        "duration": 120000000000
-                    }
-                ]
-            }
-        ],
-        "defaultCombatTriggers": [
-            {
-                "dependencyHrid": "/combat_trigger_dependencies/self",
-                "conditionHrid": "/combat_trigger_conditions/sylvan_aura_nature_amplify",
-                "comparatorHrid": "/combat_trigger_comparators/is_inactive",
-                "value": 0
-            }
-        ],
-        "sortIndex": 54
     },
     "/abilities/taunt": {
         "hrid": "/abilities/taunt",

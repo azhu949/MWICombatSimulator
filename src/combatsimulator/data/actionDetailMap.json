@@ -14398,6 +14398,13 @@
                         "dropRate": 1,
                         "minCount": 1,
                         "maxCount": 1
+                    },
+                    {
+                        "itemHrid": "/items/chimerical_refinement_chest",
+                        "dropRate": 0,
+                        "dropRatePerDifficultyTier": 0.42,
+                        "minCount": 1,
+                        "maxCount": 1
                     }
                 ],
                 "maxWaves": 50,
@@ -14969,6 +14976,13 @@
                     {
                         "itemHrid": "/items/enchanted_chest",
                         "dropRate": 1,
+                        "minCount": 1,
+                        "maxCount": 1
+                    },
+                    {
+                        "itemHrid": "/items/enchanted_refinement_chest",
+                        "dropRate": 0,
+                        "dropRatePerDifficultyTier": 0.42,
                         "minCount": 1,
                         "maxCount": 1
                     }
@@ -16816,6 +16830,13 @@
                         "dropRate": 1,
                         "minCount": 1,
                         "maxCount": 1
+                    },
+                    {
+                        "itemHrid": "/items/enchanted_refinement_chest",
+                        "dropRate": 0,
+                        "dropRatePerDifficultyTier": 0.42,
+                        "minCount": 1,
+                        "maxCount": 1
                     }
                 ],
                 "maxWaves": 65,
@@ -17520,6 +17541,13 @@
                     {
                         "itemHrid": "/items/sinister_chest",
                         "dropRate": 1,
+                        "minCount": 1,
+                        "maxCount": 1
+                    },
+                    {
+                        "itemHrid": "/items/sinister_refinement_chest",
+                        "dropRate": 0,
+                        "dropRatePerDifficultyTier": 0.42,
                         "minCount": 1,
                         "maxCount": 1
                     }

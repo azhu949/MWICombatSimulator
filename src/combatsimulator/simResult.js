@@ -85,17 +85,17 @@ class SimResult {
         };
 
         const primaryTraining = unit.combatDetails.combatStats.primaryTraining;
-        experienceGainedRate[primaryTraining.split("/")[2]] = 1 / 3;
+        experienceGainedRate[primaryTraining.split("/")[2]] = .3;
 
         const skillExpMap = combatStyleDetailMap[unit.combatDetails.combatStats.combatStyleHrid].skillExpMap;
         const skillExpMapLength = Object.keys(skillExpMap).length;
 
         const focusTraining = unit.combatDetails.combatStats.focusTraining;
         if (focusTraining && skillExpMap[focusTraining]) {
-            experienceGainedRate[focusTraining.split("/")[2]] += 2 / 3;
+            experienceGainedRate[focusTraining.split("/")[2]] += .7;
         } else {
             Object.keys(skillExpMap).forEach(skillHrid => {
-                experienceGainedRate[skillHrid.split("/")[2]] += 2 / 3 / skillExpMapLength;
+                experienceGainedRate[skillHrid.split("/")[2]] += .7 / skillExpMapLength;
             });
         }
 

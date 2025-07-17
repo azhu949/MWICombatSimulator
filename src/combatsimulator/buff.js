@@ -7,6 +7,8 @@ class Buff {
         this.ratioBoost = buff.ratioBoost + (level - 1) * buff.ratioBoostLevelBonus;
         this.flatBoost = buff.flatBoost + (level - 1) * buff.flatBoostLevelBonus;
         this.duration = buff.duration;
+        this.multiplierForSkillHrid = buff.multiplierForSkillHrid ?? "";
+        this.multiplierPerSkillLevel = buff.multiplierPerSkillLevel ?? 0;
     }
 }
 

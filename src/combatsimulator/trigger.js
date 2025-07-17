@@ -118,13 +118,8 @@ class Trigger {
             case "/combat_trigger_conditions/frost_surge":
             case "/combat_trigger_conditions/elusiveness":
             case "/combat_trigger_conditions/channeling_coffee":
-            case "/combat_trigger_conditions/aqua_aura_water_amplify":
-            case "/combat_trigger_conditions/aqua_aura_water_resistance":
             case "/combat_trigger_conditions/critical_aura":
-            case "/combat_trigger_conditions/fierce_aura_armor":
-            case "/combat_trigger_conditions/fierce_aura_physical_amplify":
-            case "/combat_trigger_conditions/flame_aura_fire_amplify":
-            case "/combat_trigger_conditions/flame_aura_fire_resistance":
+            case "/combat_trigger_conditions/fierce_aura":
             case "/combat_trigger_conditions/insanity_attack_speed":
             case "/combat_trigger_conditions/insanity_cast_speed":
             case "/combat_trigger_conditions/insanity_damage":
@@ -135,9 +130,6 @@ class Trigger {
             case "/combat_trigger_conditions/provoke":
             case "/combat_trigger_conditions/speed_aura_attack_speed":
             case "/combat_trigger_conditions/speed_aura_cast_speed":
-            case "/combat_trigger_conditions/sylvan_aura_healing_amplify":
-            case "/combat_trigger_conditions/sylvan_aura_nature_amplify":
-            case "/combat_trigger_conditions/sylvan_aura_nature_resistance":
             case "/combat_trigger_conditions/taunt":
             case "/combat_trigger_conditions/crippling_slash":
             case "/combat_trigger_conditions/mana_spring":
@@ -152,6 +144,14 @@ class Trigger {
             case "/combat_trigger_conditions/maim":
             case "/combat_trigger_conditions/fury_accuracy":
             case "/combat_trigger_conditions/fury_damage":
+            case "/combat_trigger_conditions/guardian_aura_armor":
+            case "/combat_trigger_conditions/guardian_aura_fire_resistance":
+            case "/combat_trigger_conditions/guardian_aura_healing_amplify":
+            case "/combat_trigger_conditions/guardian_aura_nature_resistance":
+            case "/combat_trigger_conditions/guardian_aura_water_resistance":
+            case "/combat_trigger_conditions/mystic_aura_fire_amplify":
+            case "/combat_trigger_conditions/mystic_aura_nature_amplify":
+            case "/combat_trigger_conditions/mystic_aura_water_amplify":
                 let buffHrid = "/buff_uniques";
                 buffHrid += this.conditionHrid.slice(this.conditionHrid.lastIndexOf("/"));
                 return source.combatBuffs[buffHrid];

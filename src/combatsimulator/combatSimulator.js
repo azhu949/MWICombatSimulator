@@ -947,7 +947,14 @@ class CombatSimulator extends EventTarget {
             let targets = source.isPlayer ? this.players : this.enemies;
             for (const target of targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0)) {
                 for (const buff of abilityEffect.buffs) {
-                    target.addBuff(buff, this.simulationTime);
+                    if (ability.isSpecialAbility && buff.multiplierForSkillHrid && buff.multiplierPerSkillLevel > 0) {
+                        let multiplier = 1.0 + source.combatDetails[buff.multiplierForSkillHrid.split('/')[2] + 'Level'] * buff.multiplierPerSkillLevel;
+                        let currentBuff = structuredClone(buff);
+                        currentBuff.flatBoost *= multiplier;
+                        target.addBuff(currentBuff, this.simulationTime);
+                    } else {
+                        target.addBuff(buff, this.simulationTime);
+                    }
                     let checkBuffExpirationEvent = new CheckBuffExpirationEvent(this.simulationTime + buff.duration, target);
                     this.eventQueue.addEvent(checkBuffExpirationEvent);
                 }

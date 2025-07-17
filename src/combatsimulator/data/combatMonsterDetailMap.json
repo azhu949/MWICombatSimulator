@@ -129,13 +129,13 @@
             "maxHitpoints": 27800,
             "currentManapoints": 27800,
             "maxManapoints": 27800,
-            "attackInterval": 2745098039,
-            "totalCastSpeed": 0.275,
-            "stabAccuracyRating": 560,
-            "slashAccuracyRating": 560,
-            "smashAccuracyRating": 560,
-            "rangedAccuracyRating": 560,
-            "magicAccuracyRating": 560,
+            "attackInterval": 2800000000,
+            "totalCastSpeed": 0.25,
+            "stabAccuracyRating": 510,
+            "slashAccuracyRating": 510,
+            "smashAccuracyRating": 510,
+            "rangedAccuracyRating": 510,
+            "magicAccuracyRating": 510,
             "stabMaxDamage": 310,
             "slashMaxDamage": 310,
             "smashMaxDamage": 310,
@@ -151,10 +151,10 @@
             "totalNatureResistance": 100,
             "totalFireResistance": 100,
             "totalThreat": 100,
-            "combatLevel": 1148,
+            "combatLevel": 1128,
             "staminaLevel": 2770,
             "intelligenceLevel": 2770,
-            "attackLevel": 550,
+            "attackLevel": 500,
             "meleeLevel": 300,
             "defenseLevel": 350,
             "rangedLevel": 0,
@@ -176,8 +176,8 @@
         },
         "abilities": [
             {
-                "abilityHrid": "/abilities/critical_aura",
-                "level": 30,
+                "abilityHrid": "/abilities/speed_aura",
+                "level": 10,
                 "minDifficultyTier": 0
             },
             {
@@ -205,7 +205,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.09362,
+                "dropRate": 0.09207,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -682,7 +682,7 @@
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
-            "rangedMaxDamage": 500,
+            "rangedMaxDamage": 480,
             "magicMaxDamage": 10,
             "stabEvasionRating": 320,
             "slashEvasionRating": 320,
@@ -694,13 +694,13 @@
             "totalNatureResistance": 142,
             "totalFireResistance": 182,
             "totalThreat": 100,
-            "combatLevel": 1288,
+            "combatLevel": 1285,
             "staminaLevel": 3240,
             "intelligenceLevel": 3240,
             "attackLevel": 490,
             "meleeLevel": 0,
             "defenseLevel": 310,
-            "rangedLevel": 490,
+            "rangedLevel": 470,
             "magicLevel": 0,
             "combatStats": {
                 "combatStyleHrids": [
@@ -718,7 +718,7 @@
         "abilities": [
             {
                 "abilityHrid": "/abilities/critical_aura",
-                "level": 30,
+                "level": 10,
                 "minDifficultyTier": 0
             },
             {
@@ -746,7 +746,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.12206888888888891,
+                "dropRate": 0.12179722222222222,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -761,16 +761,16 @@
             "maxHitpoints": 5500,
             "currentManapoints": 5500,
             "maxManapoints": 5500,
-            "attackInterval": 3171806167,
-            "totalCastSpeed": 0.135,
-            "stabAccuracyRating": 280,
-            "slashAccuracyRating": 280,
-            "smashAccuracyRating": 280,
-            "rangedAccuracyRating": 280,
-            "magicAccuracyRating": 280,
-            "stabMaxDamage": 280,
-            "slashMaxDamage": 280,
-            "smashMaxDamage": 280,
+            "attackInterval": 3185840707,
+            "totalCastSpeed": 0.13,
+            "stabAccuracyRating": 270,
+            "slashAccuracyRating": 270,
+            "smashAccuracyRating": 270,
+            "rangedAccuracyRating": 270,
+            "magicAccuracyRating": 270,
+            "stabMaxDamage": 270,
+            "slashMaxDamage": 270,
+            "smashMaxDamage": 270,
             "rangedMaxDamage": 10,
             "magicMaxDamage": 10,
             "stabEvasionRating": 390,
@@ -783,11 +783,11 @@
             "totalNatureResistance": 50,
             "totalFireResistance": 50,
             "totalThreat": 100,
-            "combatLevel": 348,
+            "combatLevel": 342,
             "staminaLevel": 540,
             "intelligenceLevel": 540,
-            "attackLevel": 270,
-            "meleeLevel": 270,
+            "attackLevel": 260,
+            "meleeLevel": 260,
             "defenseLevel": 250,
             "rangedLevel": 0,
             "magicLevel": 0,
@@ -829,7 +829,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.006346666666666666,
+                "dropRate": 0.006253333333333332,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -840,10 +840,10 @@
         "name": "Captain Fishhook",
         "experience": 18000,
         "combatDetails": {
-            "currentHitpoints": 67500,
-            "maxHitpoints": 67500,
-            "currentManapoints": 67500,
-            "maxManapoints": 67500,
+            "currentHitpoints": 77500,
+            "maxHitpoints": 77500,
+            "currentManapoints": 77500,
+            "maxManapoints": 77500,
             "attackInterval": 2415094339,
             "totalCastSpeed": 0.325,
             "stabAccuracyRating": 660,
@@ -851,9 +851,9 @@
             "smashAccuracyRating": 660,
             "rangedAccuracyRating": 660,
             "magicAccuracyRating": 660,
-            "stabMaxDamage": 720,
-            "slashMaxDamage": 720,
-            "smashMaxDamage": 720,
+            "stabMaxDamage": 690,
+            "slashMaxDamage": 690,
+            "smashMaxDamage": 690,
             "rangedMaxDamage": 10,
             "magicMaxDamage": 10,
             "stabEvasionRating": 340,
@@ -866,11 +866,11 @@
             "totalNatureResistance": 66,
             "totalFireResistance": 116,
             "totalThreat": 100,
-            "combatLevel": 2453,
-            "staminaLevel": 6740,
-            "intelligenceLevel": 6740,
+            "combatLevel": 2741,
+            "staminaLevel": 7740,
+            "intelligenceLevel": 7740,
             "attackLevel": 650,
-            "meleeLevel": 710,
+            "meleeLevel": 680,
             "defenseLevel": 330,
             "rangedLevel": 0,
             "magicLevel": 0,
@@ -890,7 +890,7 @@
         "abilities": [
             {
                 "abilityHrid": "/abilities/fierce_aura",
-                "level": 30,
+                "level": 10,
                 "minDifficultyTier": 0
             },
             {
@@ -918,7 +918,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.47188555555555556,
+                "dropRate": 0.6037711111111111,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -1082,7 +1082,7 @@
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
             "rangedMaxDamage": 10,
-            "magicMaxDamage": 260,
+            "magicMaxDamage": 250,
             "stabEvasionRating": 130,
             "slashEvasionRating": 130,
             "smashEvasionRating": 130,
@@ -1093,14 +1093,14 @@
             "totalNatureResistance": 44,
             "totalFireResistance": 74,
             "totalThreat": 100,
-            "combatLevel": 340,
+            "combatLevel": 336,
             "staminaLevel": 640,
             "intelligenceLevel": 640,
             "attackLevel": 200,
             "meleeLevel": 0,
             "defenseLevel": 120,
             "rangedLevel": 0,
-            "magicLevel": 250,
+            "magicLevel": 240,
             "combatStats": {
                 "combatStyleHrids": [
                     "/combat_styles/magic"
@@ -1117,7 +1117,7 @@
         },
         "abilities": [
             {
-                "abilityHrid": "/abilities/aqua_aura",
+                "abilityHrid": "/abilities/mystic_aura",
                 "level": 1,
                 "minDifficultyTier": 2
             },
@@ -1198,7 +1198,7 @@
                 "maxCount": 1
             },
             {
-                "itemHrid": "/items/aqua_aura",
+                "itemHrid": "/items/mystic_aura",
                 "dropRate": -0.0015,
                 "dropRatePerDifficultyTier": 0.0015,
                 "minCount": 1,
@@ -1229,7 +1229,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.007333333333333333,
+                "dropRate": 0.00726,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -1552,7 +1552,7 @@
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
             "rangedMaxDamage": 10,
-            "magicMaxDamage": 340,
+            "magicMaxDamage": 330,
             "stabEvasionRating": 200,
             "slashEvasionRating": 200,
             "smashEvasionRating": 200,
@@ -1563,14 +1563,14 @@
             "totalNatureResistance": 68,
             "totalFireResistance": 68,
             "totalThreat": 100,
-            "combatLevel": 484,
+            "combatLevel": 480,
             "staminaLevel": 940,
             "intelligenceLevel": 940,
             "attackLevel": 280,
             "meleeLevel": 0,
             "defenseLevel": 190,
             "rangedLevel": 0,
-            "magicLevel": 330,
+            "magicLevel": 320,
             "combatStats": {
                 "combatStyleHrids": [
                     "/combat_styles/magic"
@@ -1585,8 +1585,8 @@
         },
         "abilities": [
             {
-                "abilityHrid": "/abilities/flame_aura",
-                "level": 10,
+                "abilityHrid": "/abilities/mystic_aura",
+                "level": 1,
                 "minDifficultyTier": 2
             },
             {
@@ -1654,7 +1654,7 @@
                 "maxCount": 1
             },
             {
-                "itemHrid": "/items/flame_aura",
+                "itemHrid": "/items/mystic_aura",
                 "dropRate": -0.0015,
                 "dropRatePerDifficultyTier": 0.0015,
                 "minCount": 1,
@@ -1699,7 +1699,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.014506666666666668,
+                "dropRate": 0.0144,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -1710,10 +1710,10 @@
         "name": "Deranged Jester",
         "experience": 25000,
         "combatDetails": {
-            "currentHitpoints": 123450,
-            "maxHitpoints": 123450,
-            "currentManapoints": 246800,
-            "maxManapoints": 246800,
+            "currentHitpoints": 152700,
+            "maxHitpoints": 152700,
+            "currentManapoints": 152700,
+            "maxManapoints": 152700,
             "attackInterval": 2745098039,
             "totalCastSpeed": 0.275,
             "stabAccuracyRating": 560,
@@ -1736,9 +1736,9 @@
             "totalNatureResistance": 154,
             "totalFireResistance": 154,
             "totalThreat": 100,
-            "combatLevel": 5976,
-            "staminaLevel": 12335,
-            "intelligenceLevel": 24670,
+            "combatLevel": 5004,
+            "staminaLevel": 15260,
+            "intelligenceLevel": 15260,
             "attackLevel": 550,
             "meleeLevel": 720,
             "defenseLevel": 370,
@@ -1789,7 +1789,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 2.0715216666666665,
+                "dropRate": 2.1493866666666666,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -1938,7 +1938,7 @@
         "abilities": [
             {
                 "abilityHrid": "/abilities/critical_aura",
-                "level": 10,
+                "level": 1,
                 "minDifficultyTier": 2
             },
             {
@@ -2316,10 +2316,10 @@
         "name": "Enchanted King",
         "experience": 18000,
         "combatDetails": {
-            "currentHitpoints": 64000,
-            "maxHitpoints": 64000,
-            "currentManapoints": 64000,
-            "maxManapoints": 64000,
+            "currentHitpoints": 80000,
+            "maxHitpoints": 80000,
+            "currentManapoints": 80000,
+            "maxManapoints": 80000,
             "attackInterval": 2500000000,
             "totalCastSpeed": 0.2,
             "stabAccuracyRating": 410,
@@ -2342,9 +2342,9 @@
             "totalNatureResistance": 62,
             "totalFireResistance": 62,
             "totalThreat": 100,
-            "combatLevel": 2183,
-            "staminaLevel": 6390,
-            "intelligenceLevel": 6390,
+            "combatLevel": 2663,
+            "staminaLevel": 7990,
+            "intelligenceLevel": 7990,
             "attackLevel": 400,
             "meleeLevel": 400,
             "defenseLevel": 310,
@@ -2390,7 +2390,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.3993786111111111,
+                "dropRate": 0.6058675,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -2412,9 +2412,9 @@
             "smashAccuracyRating": 420,
             "rangedAccuracyRating": 420,
             "magicAccuracyRating": 420,
-            "stabMaxDamage": 470,
-            "slashMaxDamage": 470,
-            "smashMaxDamage": 470,
+            "stabMaxDamage": 460,
+            "slashMaxDamage": 460,
+            "smashMaxDamage": 460,
             "rangedMaxDamage": 10,
             "magicMaxDamage": 10,
             "stabEvasionRating": 420,
@@ -2427,11 +2427,11 @@
             "totalNatureResistance": 82,
             "totalFireResistance": 82,
             "totalThreat": 100,
-            "combatLevel": 1435,
+            "combatLevel": 1431,
             "staminaLevel": 3760,
             "intelligenceLevel": 3760,
             "attackLevel": 410,
-            "meleeLevel": 460,
+            "meleeLevel": 450,
             "defenseLevel": 410,
             "rangedLevel": 0,
             "magicLevel": 0,
@@ -2449,7 +2449,7 @@
         "abilities": [
             {
                 "abilityHrid": "/abilities/fierce_aura",
-                "level": 30,
+                "level": 10,
                 "minDifficultyTier": 0
             },
             {
@@ -2477,7 +2477,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.156975,
+                "dropRate": 0.156555,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -2568,10 +2568,10 @@
         "name": "Enchanted Queen",
         "experience": 18000,
         "combatDetails": {
-            "currentHitpoints": 64000,
-            "maxHitpoints": 64000,
-            "currentManapoints": 64000,
-            "maxManapoints": 64000,
+            "currentHitpoints": 80000,
+            "maxHitpoints": 80000,
+            "currentManapoints": 80000,
+            "maxManapoints": 80000,
             "attackInterval": 2822580645,
             "totalCastSpeed": 0.24,
             "stabAccuracyRating": 490,
@@ -2583,7 +2583,7 @@
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
             "rangedMaxDamage": 10,
-            "magicMaxDamage": 550,
+            "magicMaxDamage": 530,
             "stabEvasionRating": 585,
             "slashEvasionRating": 585,
             "smashEvasionRating": 585,
@@ -2594,14 +2594,14 @@
             "totalNatureResistance": 126,
             "totalFireResistance": 126,
             "totalThreat": 100,
-            "combatLevel": 2262,
-            "staminaLevel": 6390,
-            "intelligenceLevel": 6390,
+            "combatLevel": 2734,
+            "staminaLevel": 7990,
+            "intelligenceLevel": 7990,
             "attackLevel": 480,
             "meleeLevel": 0,
             "defenseLevel": 380,
             "rangedLevel": 0,
-            "magicLevel": 540,
+            "magicLevel": 520,
             "combatStats": {
                 "combatStyleHrids": [
                     "/combat_styles/magic"
@@ -2622,7 +2622,7 @@
         "abilities": [
             {
                 "abilityHrid": "/abilities/speed_aura",
-                "level": 30,
+                "level": 10,
                 "minDifficultyTier": 0
             },
             {
@@ -2650,7 +2650,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.413445,
+                "dropRate": 0.621665,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -2675,7 +2675,7 @@
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
-            "rangedMaxDamage": 460,
+            "rangedMaxDamage": 450,
             "magicMaxDamage": 10,
             "stabEvasionRating": 380,
             "slashEvasionRating": 380,
@@ -2687,13 +2687,13 @@
             "totalNatureResistance": 124,
             "totalFireResistance": 124,
             "totalThreat": 100,
-            "combatLevel": 1353,
+            "combatLevel": 1351,
             "staminaLevel": 3460,
             "intelligenceLevel": 3460,
             "attackLevel": 480,
             "meleeLevel": 0,
             "defenseLevel": 370,
-            "rangedLevel": 450,
+            "rangedLevel": 440,
             "magicLevel": 0,
             "combatStats": {
                 "combatStyleHrids": [
@@ -2713,7 +2713,7 @@
         "abilities": [
             {
                 "abilityHrid": "/abilities/critical_aura",
-                "level": 30,
+                "level": 10,
                 "minDifficultyTier": 0
             },
             {
@@ -2741,7 +2741,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.13659000000000002,
+                "dropRate": 0.13639666666666667,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -3615,9 +3615,9 @@
             "smashAccuracyRating": 160,
             "rangedAccuracyRating": 160,
             "magicAccuracyRating": 160,
-            "stabMaxDamage": 160,
-            "slashMaxDamage": 160,
-            "smashMaxDamage": 160,
+            "stabMaxDamage": 150,
+            "slashMaxDamage": 150,
+            "smashMaxDamage": 150,
             "rangedMaxDamage": 10,
             "magicMaxDamage": 10,
             "stabEvasionRating": 100,
@@ -3630,11 +3630,11 @@
             "totalNatureResistance": 18,
             "totalFireResistance": 18,
             "totalThreat": 100,
-            "combatLevel": 237,
+            "combatLevel": 235,
             "staminaLevel": 470,
             "intelligenceLevel": 470,
             "attackLevel": 150,
-            "meleeLevel": 150,
+            "meleeLevel": 140,
             "defenseLevel": 90,
             "rangedLevel": 0,
             "magicLevel": 0,
@@ -3762,7 +3762,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.0040425,
+                "dropRate": 0.004015277777777778,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -4459,10 +4459,10 @@
         "name": "Griffin",
         "experience": 20000,
         "combatDetails": {
-            "currentHitpoints": 68500,
-            "maxHitpoints": 68500,
-            "currentManapoints": 68500,
-            "maxManapoints": 68500,
+            "currentHitpoints": 78500,
+            "maxHitpoints": 78500,
+            "currentManapoints": 78500,
+            "maxManapoints": 78500,
             "attackInterval": 3076923076,
             "totalCastSpeed": 0.3,
             "stabAccuracyRating": 610,
@@ -4470,9 +4470,9 @@
             "smashAccuracyRating": 610,
             "rangedAccuracyRating": 610,
             "magicAccuracyRating": 610,
-            "stabMaxDamage": 610,
-            "slashMaxDamage": 610,
-            "smashMaxDamage": 610,
+            "stabMaxDamage": 560,
+            "slashMaxDamage": 560,
+            "smashMaxDamage": 560,
             "rangedMaxDamage": 490,
             "magicMaxDamage": 10,
             "stabEvasionRating": 468,
@@ -4485,11 +4485,11 @@
             "totalNatureResistance": 270,
             "totalFireResistance": 270,
             "totalThreat": 100,
-            "combatLevel": 2434,
-            "staminaLevel": 6840,
-            "intelligenceLevel": 6840,
+            "combatLevel": 2727,
+            "staminaLevel": 7840,
+            "intelligenceLevel": 7840,
             "attackLevel": 600,
-            "meleeLevel": 600,
+            "meleeLevel": 550,
             "defenseLevel": 350,
             "rangedLevel": 480,
             "magicLevel": 0,
@@ -4512,7 +4512,7 @@
         "abilities": [
             {
                 "abilityHrid": "/abilities/fierce_aura",
-                "level": 30,
+                "level": 10,
                 "minDifficultyTier": 0
             },
             {
@@ -4540,7 +4540,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.47524555555555553,
+                "dropRate": 0.608495,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -4939,7 +4939,7 @@
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
             "rangedMaxDamage": 10,
-            "magicMaxDamage": 260,
+            "magicMaxDamage": 250,
             "stabEvasionRating": 190,
             "slashEvasionRating": 190,
             "smashEvasionRating": 190,
@@ -4950,14 +4950,14 @@
             "totalNatureResistance": 66,
             "totalFireResistance": 66,
             "totalThreat": 100,
-            "combatLevel": 239,
+            "combatLevel": 235,
             "staminaLevel": 250,
             "intelligenceLevel": 300,
             "attackLevel": 200,
             "meleeLevel": 0,
             "defenseLevel": 180,
             "rangedLevel": 0,
-            "magicLevel": 250,
+            "magicLevel": 240,
             "combatStats": {
                 "combatStyleHrids": [
                     "/combat_styles/magic"
@@ -4973,7 +4973,7 @@
         },
         "abilities": [
             {
-                "abilityHrid": "/abilities/flame_aura",
+                "abilityHrid": "/abilities/mystic_aura",
                 "level": 1,
                 "minDifficultyTier": 2
             },
@@ -5032,7 +5032,7 @@
                 "maxCount": 1
             },
             {
-                "itemHrid": "/items/flame_aura",
+                "itemHrid": "/items/mystic_aura",
                 "dropRate": -5e-05,
                 "dropRatePerDifficultyTier": 5e-05,
                 "minCount": 1,
@@ -5042,7 +5042,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.0022425,
+                "dropRate": 0.0022125,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -5069,22 +5069,22 @@
             "smashMaxDamage": 10,
             "rangedMaxDamage": 10,
             "magicMaxDamage": 310,
-            "stabEvasionRating": 260,
-            "slashEvasionRating": 260,
-            "smashEvasionRating": 260,
-            "rangedEvasionRating": 260,
-            "magicEvasionRating": 520,
-            "totalArmor": 50,
-            "totalWaterResistance": 250,
-            "totalNatureResistance": 250,
-            "totalFireResistance": 150,
+            "stabEvasionRating": 250,
+            "slashEvasionRating": 250,
+            "smashEvasionRating": 250,
+            "rangedEvasionRating": 250,
+            "magicEvasionRating": 500,
+            "totalArmor": 48,
+            "totalWaterResistance": 248,
+            "totalNatureResistance": 248,
+            "totalFireResistance": 148,
             "totalThreat": 100,
-            "combatLevel": 600,
+            "combatLevel": 598,
             "staminaLevel": 1340,
             "intelligenceLevel": 1340,
             "attackLevel": 270,
             "meleeLevel": 0,
-            "defenseLevel": 250,
+            "defenseLevel": 240,
             "rangedLevel": 0,
             "magicLevel": 300,
             "combatStats": {
@@ -5103,8 +5103,8 @@
         },
         "abilities": [
             {
-                "abilityHrid": "/abilities/sylvan_aura",
-                "level": 20,
+                "abilityHrid": "/abilities/guardian_aura",
+                "level": 10,
                 "minDifficultyTier": 0
             },
             {
@@ -5127,7 +5127,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.02493333333333333,
+                "dropRate": 0.024857777777777777,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -5142,17 +5142,17 @@
             "maxHitpoints": 35000,
             "currentManapoints": 35000,
             "maxManapoints": 35000,
-            "attackInterval": 2857142857,
-            "totalCastSpeed": 0.225,
-            "stabAccuracyRating": 460,
-            "slashAccuracyRating": 460,
-            "smashAccuracyRating": 460,
-            "rangedAccuracyRating": 460,
-            "magicAccuracyRating": 460,
+            "attackInterval": 2868852459,
+            "totalCastSpeed": 0.22,
+            "stabAccuracyRating": 450,
+            "slashAccuracyRating": 450,
+            "smashAccuracyRating": 450,
+            "rangedAccuracyRating": 450,
+            "magicAccuracyRating": 450,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
-            "rangedMaxDamage": 460,
+            "rangedMaxDamage": 450,
             "magicMaxDamage": 10,
             "stabEvasionRating": 320,
             "slashEvasionRating": 320,
@@ -5164,13 +5164,13 @@
             "totalNatureResistance": 162,
             "totalFireResistance": 162,
             "totalThreat": 100,
-            "combatLevel": 1341,
+            "combatLevel": 1335,
             "staminaLevel": 3490,
             "intelligenceLevel": 3490,
-            "attackLevel": 450,
+            "attackLevel": 440,
             "meleeLevel": 0,
             "defenseLevel": 310,
-            "rangedLevel": 450,
+            "rangedLevel": 440,
             "magicLevel": 0,
             "combatStats": {
                 "combatStyleHrids": [
@@ -5190,7 +5190,7 @@
         "abilities": [
             {
                 "abilityHrid": "/abilities/critical_aura",
-                "level": 30,
+                "level": 10,
                 "minDifficultyTier": 0
             },
             {
@@ -5218,7 +5218,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.1365975,
+                "dropRate": 0.13601249999999998,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -5251,9 +5251,9 @@
             "rangedEvasionRating": 30,
             "magicEvasionRating": 30,
             "totalArmor": 4,
-            "totalWaterResistance": 14,
-            "totalNatureResistance": 14,
-            "totalFireResistance": -6,
+            "totalWaterResistance": 4,
+            "totalNatureResistance": 4,
+            "totalFireResistance": -16,
             "totalThreat": 100,
             "combatLevel": 31,
             "staminaLevel": 40,
@@ -5271,9 +5271,7 @@
                 "attackInterval": 3000000000,
                 "autoAttackDamage": -0.5,
                 "natureAmplify": 0.3,
-                "waterResistance": 10,
-                "natureResistance": 10,
-                "fireResistance": -10
+                "fireResistance": -20
             }
         },
         "abilities": [
@@ -5374,22 +5372,22 @@
             "smashMaxDamage": 10,
             "rangedMaxDamage": 10,
             "magicMaxDamage": 150,
-            "stabEvasionRating": 90,
-            "slashEvasionRating": 90,
-            "smashEvasionRating": 90,
-            "rangedEvasionRating": 90,
-            "magicEvasionRating": 90,
-            "totalArmor": 36,
-            "totalWaterResistance": 26,
-            "totalNatureResistance": 26,
-            "totalFireResistance": 6,
+            "stabEvasionRating": 80,
+            "slashEvasionRating": 80,
+            "smashEvasionRating": 80,
+            "rangedEvasionRating": 80,
+            "magicEvasionRating": 80,
+            "totalArmor": 24,
+            "totalWaterResistance": 14,
+            "totalNatureResistance": 14,
+            "totalFireResistance": -6,
             "totalThreat": 100,
-            "combatLevel": 218,
+            "combatLevel": 216,
             "staminaLevel": 430,
             "intelligenceLevel": 430,
             "attackLevel": 140,
             "meleeLevel": 0,
-            "defenseLevel": 80,
+            "defenseLevel": 70,
             "rangedLevel": 0,
             "magicLevel": 140,
             "combatStats": {
@@ -5400,16 +5398,14 @@
                 "attackInterval": 3000000000,
                 "autoAttackDamage": -0.5,
                 "natureAmplify": 0.3,
-                "armor": 20,
-                "waterResistance": 10,
-                "natureResistance": 10,
-                "fireResistance": -10,
+                "armor": 10,
+                "fireResistance": -20,
                 "tenacity": 40
             }
         },
         "abilities": [
             {
-                "abilityHrid": "/abilities/sylvan_aura",
+                "abilityHrid": "/abilities/guardian_aura",
                 "level": 1,
                 "minDifficultyTier": 2
             },
@@ -5484,7 +5480,7 @@
                 "maxCount": 1
             },
             {
-                "itemHrid": "/items/sylvan_aura",
+                "itemHrid": "/items/guardian_aura",
                 "dropRate": -0.0006,
                 "dropRatePerDifficultyTier": 0.0006,
                 "minCount": 1,
@@ -5515,7 +5511,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.003475,
+                "dropRate": 0.00345,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -5541,7 +5537,7 @@
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
             "rangedMaxDamage": 10,
-            "magicMaxDamage": 430,
+            "magicMaxDamage": 410,
             "stabEvasionRating": 270,
             "slashEvasionRating": 270,
             "smashEvasionRating": 270,
@@ -5552,14 +5548,14 @@
             "totalNatureResistance": 112,
             "totalFireResistance": 112,
             "totalThreat": 100,
-            "combatLevel": 1228,
+            "combatLevel": 1220,
             "staminaLevel": 3230,
             "intelligenceLevel": 3230,
             "attackLevel": 350,
             "meleeLevel": 0,
             "defenseLevel": 260,
             "rangedLevel": 0,
-            "magicLevel": 420,
+            "magicLevel": 400,
             "combatStats": {
                 "combatStyleHrids": [
                     "/combat_styles/magic"
@@ -5575,8 +5571,8 @@
         },
         "abilities": [
             {
-                "abilityHrid": "/abilities/flame_aura",
-                "level": 30,
+                "abilityHrid": "/abilities/mystic_aura",
+                "level": 10,
                 "minDifficultyTier": 0
             },
             {
@@ -5604,7 +5600,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.11627777777777777,
+                "dropRate": 0.11555555555555555,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -5738,10 +5734,10 @@
         "name": "Manticore",
         "experience": 7000,
         "combatDetails": {
-            "currentHitpoints": 35100,
-            "maxHitpoints": 35100,
-            "currentManapoints": 35100,
-            "maxManapoints": 35100,
+            "currentHitpoints": 38100,
+            "maxHitpoints": 38100,
+            "currentManapoints": 38100,
+            "maxManapoints": 38100,
             "attackInterval": 2916666666,
             "totalCastSpeed": 0.2,
             "stabAccuracyRating": 410,
@@ -5764,9 +5760,9 @@
             "totalNatureResistance": 216,
             "totalFireResistance": 216,
             "totalThreat": 100,
-            "combatLevel": 1319,
-            "staminaLevel": 3500,
-            "intelligenceLevel": 3500,
+            "combatLevel": 1409,
+            "staminaLevel": 3800,
+            "intelligenceLevel": 3800,
             "attackLevel": 400,
             "meleeLevel": 0,
             "defenseLevel": 330,
@@ -5790,7 +5786,7 @@
         "abilities": [
             {
                 "abilityHrid": "/abilities/critical_aura",
-                "level": 25,
+                "level": 10,
                 "minDifficultyTier": 0
             },
             {
@@ -5818,7 +5814,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.13483555555555554,
+                "dropRate": 0.15587722222222222,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -5844,7 +5840,7 @@
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
             "rangedMaxDamage": 105,
-            "magicMaxDamage": 10,
+            "magicMaxDamage": 90,
             "stabEvasionRating": 80,
             "slashEvasionRating": 80,
             "smashEvasionRating": 80,
@@ -5862,7 +5858,7 @@
             "meleeLevel": 0,
             "defenseLevel": 70,
             "rangedLevel": 95,
-            "magicLevel": 0,
+            "magicLevel": 80,
             "combatStats": {
                 "combatStyleHrids": [
                     "/combat_styles/ranged"
@@ -5878,7 +5874,7 @@
         },
         "abilities": [
             {
-                "abilityHrid": "/abilities/aqua_aura",
+                "abilityHrid": "/abilities/mystic_aura",
                 "level": 1,
                 "minDifficultyTier": 2
             },
@@ -5942,7 +5938,7 @@
                 "maxCount": 1
             },
             {
-                "itemHrid": "/items/aqua_aura",
+                "itemHrid": "/items/mystic_aura",
                 "dropRate": -0.0005,
                 "dropRatePerDifficultyTier": 0.0005,
                 "minCount": 1,
@@ -6006,9 +6002,9 @@
             "rangedEvasionRating": 40,
             "magicEvasionRating": 40,
             "totalArmor": 6,
-            "totalWaterResistance": 16,
-            "totalNatureResistance": 16,
-            "totalFireResistance": -4,
+            "totalWaterResistance": 6,
+            "totalNatureResistance": 6,
+            "totalFireResistance": -14,
             "totalThreat": 100,
             "combatLevel": 44,
             "staminaLevel": 60,
@@ -6026,9 +6022,7 @@
                 "attackInterval": 3000000000,
                 "autoAttackDamage": -0.5,
                 "natureAmplify": 0.3,
-                "waterResistance": 10,
-                "natureResistance": 10,
-                "fireResistance": -10
+                "fireResistance": -20
             }
         },
         "abilities": [
@@ -6550,6 +6544,11 @@
         },
         "abilities": [
             {
+                "abilityHrid": "/abilities/fierce_aura",
+                "level": 1,
+                "minDifficultyTier": 2
+            },
+            {
                 "abilityHrid": "/abilities/frenzy",
                 "level": 10,
                 "minDifficultyTier": 0
@@ -6619,6 +6618,13 @@
             {
                 "itemHrid": "/items/frenzy",
                 "dropRate": 0.001,
+                "minCount": 1,
+                "maxCount": 1
+            },
+            {
+                "itemHrid": "/items/fierce_aura",
+                "dropRate": -3e-05,
+                "dropRatePerDifficultyTier": 3e-05,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -7733,8 +7739,8 @@
         },
         "abilities": [
             {
-                "abilityHrid": "/abilities/sylvan_aura",
-                "level": 30,
+                "abilityHrid": "/abilities/guardian_aura",
+                "level": 10,
                 "minDifficultyTier": 0
             },
             {
@@ -7784,22 +7790,22 @@
             "smashMaxDamage": 170,
             "rangedMaxDamage": 10,
             "magicMaxDamage": 10,
-            "stabEvasionRating": 240,
-            "slashEvasionRating": 240,
-            "smashEvasionRating": 192,
-            "rangedEvasionRating": 312,
-            "magicEvasionRating": 192,
-            "totalArmor": 46,
-            "totalWaterResistance": 46,
-            "totalNatureResistance": 6,
-            "totalFireResistance": 46,
+            "stabEvasionRating": 210,
+            "slashEvasionRating": 210,
+            "smashEvasionRating": 168,
+            "rangedEvasionRating": 273,
+            "magicEvasionRating": 168,
+            "totalArmor": 40,
+            "totalWaterResistance": 40,
+            "totalNatureResistance": 0,
+            "totalFireResistance": 40,
             "totalThreat": 100,
-            "combatLevel": 194,
+            "combatLevel": 187,
             "staminaLevel": 150,
             "intelligenceLevel": 150,
             "attackLevel": 220,
             "meleeLevel": 160,
-            "defenseLevel": 230,
+            "defenseLevel": 200,
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
@@ -7817,7 +7823,7 @@
         },
         "abilities": [
             {
-                "abilityHrid": "/abilities/fierce_aura",
+                "abilityHrid": "/abilities/guardian_aura",
                 "level": 1,
                 "minDifficultyTier": 2
             },
@@ -7894,7 +7900,7 @@
                 "maxCount": 1
             },
             {
-                "itemHrid": "/items/fierce_aura",
+                "itemHrid": "/items/guardian_aura",
                 "dropRate": -5e-05,
                 "dropRatePerDifficultyTier": 5e-05,
                 "minCount": 1,
@@ -7904,7 +7910,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.0011994444444444446,
+                "dropRate": 0.0011663888888888891,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -8041,10 +8047,10 @@
         "name": "The Kraken",
         "experience": 28000,
         "combatDetails": {
-            "currentHitpoints": 83000,
-            "maxHitpoints": 83000,
-            "currentManapoints": 83000,
-            "maxManapoints": 83000,
+            "currentHitpoints": 103000,
+            "maxHitpoints": 103000,
+            "currentManapoints": 103000,
+            "maxManapoints": 103000,
             "attackInterval": 2713178294,
             "totalCastSpeed": 0.29,
             "stabAccuracyRating": 590,
@@ -8055,7 +8061,7 @@
             "stabMaxDamage": 650,
             "slashMaxDamage": 650,
             "smashMaxDamage": 650,
-            "rangedMaxDamage": 720,
+            "rangedMaxDamage": 700,
             "magicMaxDamage": 10,
             "stabEvasionRating": 380,
             "slashEvasionRating": 380,
@@ -8067,13 +8073,13 @@
             "totalNatureResistance": 114,
             "totalFireResistance": 154,
             "totalThreat": 100,
-            "combatLevel": 2913,
-            "staminaLevel": 8290,
-            "intelligenceLevel": 8290,
+            "combatLevel": 3505,
+            "staminaLevel": 10290,
+            "intelligenceLevel": 10290,
             "attackLevel": 580,
             "meleeLevel": 640,
             "defenseLevel": 370,
-            "rangedLevel": 710,
+            "rangedLevel": 690,
             "magicLevel": 0,
             "combatStats": {
                 "combatStyleHrids": [
@@ -8093,7 +8099,7 @@
         "abilities": [
             {
                 "abilityHrid": "/abilities/critical_aura",
-                "level": 40,
+                "level": 10,
                 "minDifficultyTier": 0
             },
             {
@@ -8121,7 +8127,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.6862675,
+                "dropRate": 1.0209763888888888,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -8136,17 +8142,17 @@
             "maxHitpoints": 5550,
             "currentManapoints": 5550,
             "maxManapoints": 5550,
-            "attackInterval": 3181818181,
-            "totalCastSpeed": 0.1,
-            "stabAccuracyRating": 210,
-            "slashAccuracyRating": 210,
-            "smashAccuracyRating": 210,
-            "rangedAccuracyRating": 210,
-            "magicAccuracyRating": 210,
+            "attackInterval": 3196347031,
+            "totalCastSpeed": 0.095,
+            "stabAccuracyRating": 200,
+            "slashAccuracyRating": 200,
+            "smashAccuracyRating": 200,
+            "rangedAccuracyRating": 200,
+            "magicAccuracyRating": 200,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
-            "rangedMaxDamage": 190,
+            "rangedMaxDamage": 185,
             "magicMaxDamage": 10,
             "stabEvasionRating": 116.25,
             "slashEvasionRating": 155,
@@ -8158,13 +8164,13 @@
             "totalNatureResistance": 29,
             "totalFireResistance": 29,
             "totalThreat": 100,
-            "combatLevel": 292,
+            "combatLevel": 287,
             "staminaLevel": 545,
             "intelligenceLevel": 545,
-            "attackLevel": 200,
+            "attackLevel": 190,
             "meleeLevel": 0,
             "defenseLevel": 145,
-            "rangedLevel": 180,
+            "rangedLevel": 175,
             "magicLevel": 0,
             "combatStats": {
                 "combatStyleHrids": [
@@ -8278,7 +8284,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.005524444444444445,
+                "dropRate": 0.005445972222222223,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -8304,7 +8310,7 @@
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
             "rangedMaxDamage": 10,
-            "magicMaxDamage": 370,
+            "magicMaxDamage": 360,
             "stabEvasionRating": 270,
             "slashEvasionRating": 270,
             "smashEvasionRating": 270,
@@ -8315,14 +8321,14 @@
             "totalNatureResistance": 112,
             "totalFireResistance": 152,
             "totalThreat": 100,
-            "combatLevel": 1051,
+            "combatLevel": 1047,
             "staminaLevel": 2740,
             "intelligenceLevel": 2740,
             "attackLevel": 310,
             "meleeLevel": 0,
             "defenseLevel": 260,
             "rangedLevel": 0,
-            "magicLevel": 360,
+            "magicLevel": 350,
             "combatStats": {
                 "combatStyleHrids": [
                     "/combat_styles/magic"
@@ -8341,8 +8347,8 @@
         },
         "abilities": [
             {
-                "abilityHrid": "/abilities/aqua_aura",
-                "level": 30,
+                "abilityHrid": "/abilities/mystic_aura",
+                "level": 10,
                 "minDifficultyTier": 0
             },
             {
@@ -8370,7 +8376,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.08517666666666666,
+                "dropRate": 0.08487,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -8402,10 +8408,10 @@
             "smashEvasionRating": 70,
             "rangedEvasionRating": 70,
             "magicEvasionRating": 70,
-            "totalArmor": 22,
-            "totalWaterResistance": 22,
-            "totalNatureResistance": 22,
-            "totalFireResistance": 2,
+            "totalArmor": 12,
+            "totalWaterResistance": 12,
+            "totalNatureResistance": 12,
+            "totalFireResistance": -8,
             "totalThreat": 100,
             "combatLevel": 64,
             "staminaLevel": 80,
@@ -8423,15 +8429,12 @@
                 "attackInterval": 3000000000,
                 "autoAttackDamage": -0.5,
                 "natureAmplify": 0.3,
-                "armor": 10,
-                "waterResistance": 10,
-                "natureResistance": 10,
-                "fireResistance": -10
+                "fireResistance": -20
             }
         },
         "abilities": [
             {
-                "abilityHrid": "/abilities/sylvan_aura",
+                "abilityHrid": "/abilities/guardian_aura",
                 "level": 1,
                 "minDifficultyTier": 2
             },
@@ -8532,7 +8535,7 @@
                 "maxCount": 1
             },
             {
-                "itemHrid": "/items/sylvan_aura",
+                "itemHrid": "/items/guardian_aura",
                 "dropRate": -2e-05,
                 "dropRatePerDifficultyTier": 2e-05,
                 "minCount": 1,
@@ -9241,9 +9244,9 @@
             "smashAccuracyRating": 400,
             "rangedAccuracyRating": 400,
             "magicAccuracyRating": 400,
-            "stabMaxDamage": 320,
-            "slashMaxDamage": 320,
-            "smashMaxDamage": 320,
+            "stabMaxDamage": 310,
+            "slashMaxDamage": 310,
+            "smashMaxDamage": 310,
             "rangedMaxDamage": 10,
             "magicMaxDamage": 10,
             "stabEvasionRating": 320,
@@ -9256,11 +9259,11 @@
             "totalNatureResistance": 62,
             "totalFireResistance": 62,
             "totalThreat": 100,
-            "combatLevel": 786,
+            "combatLevel": 784,
             "staminaLevel": 1790,
             "intelligenceLevel": 1790,
             "attackLevel": 390,
-            "meleeLevel": 310,
+            "meleeLevel": 300,
             "defenseLevel": 310,
             "rangedLevel": 0,
             "magicLevel": 0,
@@ -9278,7 +9281,7 @@
         "abilities": [
             {
                 "abilityHrid": "/abilities/fierce_aura",
-                "level": 25,
+                "level": 10,
                 "minDifficultyTier": 0
             },
             {
@@ -9301,7 +9304,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.042535,
+                "dropRate": 0.04243444444444444,
                 "minCount": 1,
                 "maxCount": 1
             }
