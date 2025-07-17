@@ -4577,6 +4577,12 @@ function loadEquipmentSetIntoUI(equipmentSet) {
 
     triggerMap = equipmentSet.triggerMap;
 
+    if (triggerMap['/abilities/fierce_aura'] 
+        && triggerMap['/abilities/fierce_aura'].some(trigger => trigger.conditionHrid == '/combat_trigger_conditions/fierce_aura_physical_amplify' || trigger.conditionHrid == '/combat_trigger_conditions/fierce_aura_armor')
+    ) {
+        delete triggerMap['/abilities/fierce_aura'];
+    }
+
     if (equipmentSet.houseRooms) {
         for (const room in equipmentSet.houseRooms) {
             const field = document.querySelector('[data-house-hrid="' + room + '"]');
@@ -4833,6 +4839,12 @@ function doSoloImport() {
 
     if (importSet.triggerMap) {
         triggerMap = importSet.triggerMap;
+
+        if (triggerMap['/abilities/fierce_aura'] 
+            && triggerMap['/abilities/fierce_aura'].some(trigger => trigger.conditionHrid == '/combat_trigger_conditions/fierce_aura_physical_amplify' || trigger.conditionHrid == '/combat_trigger_conditions/fierce_aura_armor')
+        ) {
+            delete triggerMap['/abilities/fierce_aura'];
+        }        
     }
 
     if (importSet.houseRooms) {
@@ -5007,6 +5019,12 @@ function updateNextPlayer(currentPlayerNumber) {
 
     if (importSet.triggerMap) {
         triggerMap = importSet.triggerMap;
+
+        if (triggerMap['/abilities/fierce_aura'] 
+            && triggerMap['/abilities/fierce_aura'].some(trigger => trigger.conditionHrid == '/combat_trigger_conditions/fierce_aura_physical_amplify' || trigger.conditionHrid == '/combat_trigger_conditions/fierce_aura_armor')
+        ) {
+            delete triggerMap['/abilities/fierce_aura'];
+        }        
     }
 
     { // reset all houseRooms
