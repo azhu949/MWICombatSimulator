@@ -271,7 +271,7 @@
     "/abilities/critical_aura": {
         "hrid": "/abilities/critical_aura",
         "name": "Critical Aura",
-        "description": "Increases critical rate for all allies. Effect increases by (0.01x) per caster's Ranged level",
+        "description": "Increases critical rate for all allies. Effect increases by (0.005x) per caster's Ranged level",
         "isSpecialAbility": true,
         "manaCost": 100,
         "cooldownDuration": 120000000000,
@@ -309,6 +309,8 @@
                         "ratioBoostLevelBonus": 0,
                         "flatBoost": 0.02,
                         "flatBoostLevelBonus": 0.0004,
+                        "multiplierForSkillHrid": "/skills/ranged",
+                        "multiplierPerSkillLevel": 0.005,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 120000000000
                     }
@@ -508,7 +510,7 @@
     "/abilities/fierce_aura": {
         "hrid": "/abilities/fierce_aura",
         "name": "Fierce Aura",
-        "description": "Increases physical amplify for all allies. Effect increases by (0.01x) percaster's Melee level",
+        "description": "Increases physical amplify for all allies. Effect increases by (0.005x) per caster's Melee level",
         "isSpecialAbility": true,
         "manaCost": 100,
         "cooldownDuration": 120000000000,
@@ -547,7 +549,7 @@
                         "flatBoost": 0.04,
                         "flatBoostLevelBonus": 0.0008,
                         "multiplierForSkillHrid": "/skills/melee",
-                        "multiplierPerSkillLevel": 0.01,
+                        "multiplierPerSkillLevel": 0.005,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 120000000000
                     }
@@ -946,7 +948,7 @@
     "/abilities/guardian_aura": {
         "hrid": "/abilities/guardian_aura",
         "name": "Guardian Aura",
-        "description": "Increases heal amplify, armor, and resistances for all allies. Effect increases by (0.01x) per caster's Defense level",
+        "description": "Increases heal amplify, armor, and resistances for all allies. Effect increases by (0.005x) per caster's Defense level",
         "isSpecialAbility": true,
         "manaCost": 100,
         "cooldownDuration": 120000000000,
@@ -982,10 +984,10 @@
                         "typeHrid": "/buff_types/healing_amplify",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
-                        "flatBoost": 0.04,
-                        "flatBoostLevelBonus": 0.0008,
+                        "flatBoost": 0.05,
+                        "flatBoostLevelBonus": 0.0012,
                         "multiplierForSkillHrid": "/skills/defense",
-                        "multiplierPerSkillLevel": 0.01,
+                        "multiplierPerSkillLevel": 0.005,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 120000000000
                     },
@@ -994,10 +996,10 @@
                         "typeHrid": "/buff_types/armor",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
-                        "flatBoost": 4,
-                        "flatBoostLevelBonus": 0.08,
+                        "flatBoost": 5,
+                        "flatBoostLevelBonus": 0.1,
                         "multiplierForSkillHrid": "/skills/defense",
-                        "multiplierPerSkillLevel": 0.01,
+                        "multiplierPerSkillLevel": 0.005,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 120000000000
                     },
@@ -1006,10 +1008,10 @@
                         "typeHrid": "/buff_types/water_resistance",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
-                        "flatBoost": 4,
-                        "flatBoostLevelBonus": 0.08,
+                        "flatBoost": 5,
+                        "flatBoostLevelBonus": 0.1,
                         "multiplierForSkillHrid": "/skills/defense",
-                        "multiplierPerSkillLevel": 0.01,
+                        "multiplierPerSkillLevel": 0.005,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 120000000000
                     },
@@ -1018,10 +1020,10 @@
                         "typeHrid": "/buff_types/nature_resistance",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
-                        "flatBoost": 4,
-                        "flatBoostLevelBonus": 0.08,
+                        "flatBoost": 5,
+                        "flatBoostLevelBonus": 0.1,
                         "multiplierForSkillHrid": "/skills/defense",
-                        "multiplierPerSkillLevel": 0.01,
+                        "multiplierPerSkillLevel": 0.005,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 120000000000
                     },
@@ -1030,10 +1032,10 @@
                         "typeHrid": "/buff_types/fire_resistance",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
-                        "flatBoost": 4,
-                        "flatBoostLevelBonus": 0.08,
+                        "flatBoost": 5,
+                        "flatBoostLevelBonus": 0.1,
                         "multiplierForSkillHrid": "/skills/defense",
-                        "multiplierPerSkillLevel": 0.01,
+                        "multiplierPerSkillLevel": 0.005,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 120000000000
                     }
@@ -1640,7 +1642,7 @@
     "/abilities/mystic_aura": {
         "hrid": "/abilities/mystic_aura",
         "name": "Mystic Aura",
-        "description": "Increases elemental amplify for all allies. Effect increases by (0.01x) per caster's Magic level",
+        "description": "Increases elemental amplify for all allies. Effect increases by (0.005x) per caster's Magic level",
         "isSpecialAbility": true,
         "manaCost": 100,
         "cooldownDuration": 120000000000,
@@ -1676,10 +1678,10 @@
                         "typeHrid": "/buff_types/water_amplify",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
-                        "flatBoost": 0.05,
-                        "flatBoostLevelBonus": 0.001,
+                        "flatBoost": 0.06,
+                        "flatBoostLevelBonus": 0.0012,
                         "multiplierForSkillHrid": "/skills/magic",
-                        "multiplierPerSkillLevel": 0.01,
+                        "multiplierPerSkillLevel": 0.005,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 120000000000
                     },
@@ -1688,10 +1690,10 @@
                         "typeHrid": "/buff_types/nature_amplify",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
-                        "flatBoost": 0.05,
-                        "flatBoostLevelBonus": 0.001,
+                        "flatBoost": 0.06,
+                        "flatBoostLevelBonus": 0.0012,
                         "multiplierForSkillHrid": "/skills/magic",
-                        "multiplierPerSkillLevel": 0.01,
+                        "multiplierPerSkillLevel": 0.005,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 120000000000
                     },
@@ -1700,10 +1702,10 @@
                         "typeHrid": "/buff_types/fire_amplify",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
-                        "flatBoost": 0.05,
-                        "flatBoostLevelBonus": 0.001,
+                        "flatBoost": 0.06,
+                        "flatBoostLevelBonus": 0.0012,
                         "multiplierForSkillHrid": "/skills/magic",
-                        "multiplierPerSkillLevel": 0.01,
+                        "multiplierPerSkillLevel": 0.005,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 120000000000
                     }
@@ -2690,7 +2692,7 @@
     "/abilities/speed_aura": {
         "hrid": "/abilities/speed_aura",
         "name": "Speed Aura",
-        "description": "Increases attack speed and cast speed for all allies. Effect increases by (0.01x) per caster's Attack level",
+        "description": "Increases attack speed and cast speed for all allies. Effect increases by (0.005x) per caster's Attack level",
         "isSpecialAbility": true,
         "manaCost": 100,
         "cooldownDuration": 120000000000,
@@ -2729,7 +2731,7 @@
                         "flatBoost": 0,
                         "flatBoostLevelBonus": 0,
                         "multiplierForSkillHrid": "/skills/attack",
-                        "multiplierPerSkillLevel": 0.01,
+                        "multiplierPerSkillLevel": 0.005,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 120000000000
                     },
@@ -2741,7 +2743,7 @@
                         "flatBoost": 0.03,
                         "flatBoostLevelBonus": 0.0006,
                         "multiplierForSkillHrid": "/skills/attack",
-                        "multiplierPerSkillLevel": 0.01,
+                        "multiplierPerSkillLevel": 0.005,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 120000000000
                     }
