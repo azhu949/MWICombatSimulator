@@ -16832,7 +16832,7 @@
                         "maxCount": 1
                     },
                     {
-                        "itemHrid": "/items/enchanted_refinement_chest",
+                        "itemHrid": "/items/pirate_refinement_chest",
                         "dropRate": 0,
                         "dropRatePerDifficultyTier": 0.42,
                         "minCount": 1,

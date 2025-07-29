@@ -59,6 +59,7 @@ class CombatUnit {
         smashEvasionRating: 11,
         rangedEvasionRating: 11,
         magicEvasionRating: 11,
+        defensiveMaxDamage: 0,
         totalArmor: 0.2,
         totalWaterResistance: 0.4,
         totalNatureResistance: 0.4,
@@ -84,6 +85,7 @@ class CombatUnit {
             smashDamage: 0,
             rangedDamage: 0,
             magicDamage: 0,
+            defensiveDamage: 0,
             taskDamage: 0,
             physicalAmplify: 0,
             waterAmplify: 0,
@@ -142,7 +144,8 @@ class CombatUnit {
             defenseExperience: 0,
             meleeExperience: 0,
             rangedExperience: 0,
-            magicExperience: 0
+            magicExperience: 0,
+            retaliation: 0,
         },
     };
     combatBuffs = {};
@@ -335,12 +338,16 @@ class CombatUnit {
         let baseThreat = 100 + this.combatDetails.combatStats.threat;
         this.combatDetails.totalThreat = baseThreat;
         let threatBoosts = this.getBuffBoost("/buff_types/threat");
-        if(threatBoosts.ratioBoost !== 0) {
-            this.combatDetails.combatStats.threat += baseThreat * threatBoosts.ratioBoost;               
+        if (threatBoosts.ratioBoost !== 0) {
+            this.combatDetails.combatStats.threat += baseThreat * threatBoosts.ratioBoost;
         } else {
-            this.combatDetails.combatStats.threat = baseThreat;   
+            this.combatDetails.combatStats.threat = baseThreat;
         }
         this.combatDetails.combatStats.threat += threatBoosts.flatBoost;
+
+        this.combatDetails.defensiveMaxDamage = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats.defensiveDamage);
+
+        this.combatDetails.combatStats.retaliation += this.getBuffBoost("/buff_types/retaliation").flatBoost;
     }
 
     addCurse(curse) {

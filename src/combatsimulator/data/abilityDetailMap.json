@@ -48,7 +48,7 @@
     "/abilities/arcane_reflection": {
         "hrid": "/abilities/arcane_reflection",
         "name": "Arcane Reflection",
-        "description": "Gains elemental thorns temporarily",
+        "description": "Gains retaliation temporarily",
         "isSpecialAbility": false,
         "manaCost": 65,
         "cooldownDuration": 30000000000,
@@ -81,13 +81,13 @@
                 "buffs": [
                     {
                         "uniqueHrid": "/buff_uniques/arcane_reflection",
-                        "typeHrid": "/buff_types/elemental_thorns",
+                        "typeHrid": "/buff_types/retaliation",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
-                        "flatBoost": 0.25,
-                        "flatBoostLevelBonus": 0.0025,
+                        "flatBoost": 0.15,
+                        "flatBoostLevelBonus": 0.0015,
                         "startTime": "0001-01-01T00:00:00Z",
-                        "duration": 20000000000
+                        "duration": 30000000000
                     }
                 ]
             }
@@ -303,8 +303,20 @@
                 "spendHpRatio": 0,
                 "buffs": [
                     {
-                        "uniqueHrid": "/buff_uniques/critical_aura",
+                        "uniqueHrid": "/buff_uniques/critical_aura_rate",
                         "typeHrid": "/buff_types/critical_rate",
+                        "ratioBoost": 0,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 0.01,
+                        "flatBoostLevelBonus": 0.0002,
+                        "multiplierForSkillHrid": "/skills/ranged",
+                        "multiplierPerSkillLevel": 0.005,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": 120000000000
+                    },
+                    {
+                        "uniqueHrid": "/buff_uniques/critical_aura_damage",
+                        "typeHrid": "/buff_types/critical_damage",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
                         "flatBoost": 0.02,
@@ -397,7 +409,7 @@
         "defaultCombatTriggers": [
             {
                 "dependencyHrid": "/combat_trigger_dependencies/self",
-                "conditionHrid": "/combat_trigger_conditions/elemental_affinity_water_amplify",
+                "conditionHrid": "/combat_trigger_conditions/elemental_affinity",
                 "comparatorHrid": "/combat_trigger_comparators/is_inactive",
                 "value": 0
             }
@@ -1045,7 +1057,7 @@
         "defaultCombatTriggers": [
             {
                 "dependencyHrid": "/combat_trigger_dependencies/self",
-                "conditionHrid": "/combat_trigger_conditions/guardian_aura_healing_amplify",
+                "conditionHrid": "/combat_trigger_conditions/guardian_aura",
                 "comparatorHrid": "/combat_trigger_comparators/is_inactive",
                 "value": 0
             }
@@ -1297,7 +1309,7 @@
         "defaultCombatTriggers": [
             {
                 "dependencyHrid": "/combat_trigger_dependencies/self",
-                "conditionHrid": "/combat_trigger_conditions/insanity_damage",
+                "conditionHrid": "/combat_trigger_conditions/insanity",
                 "comparatorHrid": "/combat_trigger_comparators/is_inactive",
                 "value": 0
             }
@@ -1394,7 +1406,7 @@
         "defaultCombatTriggers": [
             {
                 "dependencyHrid": "/combat_trigger_dependencies/self",
-                "conditionHrid": "/combat_trigger_conditions/invincible_armor",
+                "conditionHrid": "/combat_trigger_conditions/invincible",
                 "comparatorHrid": "/combat_trigger_comparators/is_inactive",
                 "value": 0
             }
@@ -1715,7 +1727,7 @@
         "defaultCombatTriggers": [
             {
                 "dependencyHrid": "/combat_trigger_dependencies/self",
-                "conditionHrid": "/combat_trigger_conditions/mystic_aura_water_amplify",
+                "conditionHrid": "/combat_trigger_conditions/mystic_aura",
                 "comparatorHrid": "/combat_trigger_comparators/is_inactive",
                 "value": 0
             }
@@ -2753,7 +2765,7 @@
         "defaultCombatTriggers": [
             {
                 "dependencyHrid": "/combat_trigger_dependencies/self",
-                "conditionHrid": "/combat_trigger_conditions/speed_aura_attack_speed",
+                "conditionHrid": "/combat_trigger_conditions/speed_aura",
                 "comparatorHrid": "/combat_trigger_comparators/is_inactive",
                 "value": 0
             }
@@ -2763,7 +2775,7 @@
     "/abilities/spike_shell": {
         "hrid": "/abilities/spike_shell",
         "name": "Spike Shell",
-        "description": "Gains physical thorns temporarily",
+        "description": "Gains physical and elemental thorns temporarily",
         "isSpecialAbility": false,
         "manaCost": 65,
         "cooldownDuration": 30000000000,
@@ -2795,14 +2807,24 @@
                 "spendHpRatio": 0,
                 "buffs": [
                     {
-                        "uniqueHrid": "/buff_uniques/spike_shell",
+                        "uniqueHrid": "/buff_uniques/spike_shell_physical_thorns",
                         "typeHrid": "/buff_types/physical_thorns",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
-                        "flatBoost": 0.2,
-                        "flatBoostLevelBonus": 0.002,
+                        "flatBoost": 0.08,
+                        "flatBoostLevelBonus": 0.0008,
                         "startTime": "0001-01-01T00:00:00Z",
-                        "duration": 20000000000
+                        "duration": 30000000000
+                    },
+                    {
+                        "uniqueHrid": "/buff_uniques/spike_shell_elemental_thorns",
+                        "typeHrid": "/buff_types/elemental_thorns",
+                        "ratioBoost": 0,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 0.08,
+                        "flatBoostLevelBonus": 0.0008,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": 30000000000
                     }
                 ]
             }
@@ -3091,7 +3113,7 @@
         "defaultCombatTriggers": [
             {
                 "dependencyHrid": "/combat_trigger_dependencies/self",
-                "conditionHrid": "/combat_trigger_conditions/toughness_armor",
+                "conditionHrid": "/combat_trigger_conditions/toughness",
                 "comparatorHrid": "/combat_trigger_comparators/is_inactive",
                 "value": 0
             }

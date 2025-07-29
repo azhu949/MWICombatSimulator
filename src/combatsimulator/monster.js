@@ -75,6 +75,7 @@ class Monster extends CombatUnit {
             "smashDamage",
             "rangedDamage",
             "magicDamage",
+            "defensiveDamage",
             "taskDamage",
             "physicalAmplify",
             "waterAmplify",
@@ -125,7 +126,8 @@ class Monster extends CombatUnit {
             "foodHaste",
             "drinkConcentration",
             "autoAttackDamage",
-            "abilityDamage"
+            "abilityDamage",
+            "retaliation"
         ].forEach((stat) => {
             if (gameMonster.combatDetails.combatStats[stat] == null) {
                 this.combatDetails.combatStats[stat] = 0;

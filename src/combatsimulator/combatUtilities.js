@@ -110,6 +110,7 @@ class CombatUtilities {
                 sourcePenetration = source.combatDetails.combatStats.waterPenetration;
                 targetResistance = target.combatDetails.totalWaterResistance;
                 targetThornPower = target.combatDetails.combatStats.elementalThorns;
+                targetPenetration = target.combatDetails.combatStats.waterPenetration;
                 thornType = "elementalThorns";
                 break;
             case "/damage_types/nature":
@@ -118,6 +119,7 @@ class CombatUtilities {
                 sourcePenetration = source.combatDetails.combatStats.naturePenetration;
                 targetResistance = target.combatDetails.totalNatureResistance;
                 targetThornPower = target.combatDetails.combatStats.elementalThorns;
+                targetPenetration = target.combatDetails.combatStats.naturePenetration;
                 thornType = "elementalThorns";
                 break;
             case "/damage_types/fire":
@@ -126,6 +128,7 @@ class CombatUtilities {
                 sourcePenetration = source.combatDetails.combatStats.firePenetration;
                 targetResistance = target.combatDetails.totalFireResistance;
                 targetThornPower = target.combatDetails.combatStats.elementalThorns;
+                targetPenetration = target.combatDetails.combatStats.firePenetration;
                 thornType = "elementalThorns";
                 break;
             default:
@@ -176,12 +179,9 @@ class CombatUtilities {
         } else {
             damageRoll *= (1 + source.combatDetails.combatStats.abilityDamage);
         }
-        let maxPremitigatedDamage = Math.min(damageRoll, target.combatDetails.currentHitpoints);
 
         let damageDone = 0;
-        let reflectDamage = 0;
-        let mitigatedReflectDamage = 0;
-        let reflectDamageDone = 0;
+        let thornDamageDone = 0;
 
         let didHit = false;
         if (Math.random() < hitChance) {
@@ -202,22 +202,64 @@ class CombatUtilities {
             target.combatDetails.currentHitpoints -= damageDone;
         }
 
-        if (targetThornPower > 0 && targetResistance > 0) {
+        if (targetThornPower > 0.0 && targetResistance > -99.0) {
             let penetratedSourceResistance = sourceResistance
 
-            if (targetPenetration > 0 && sourceResistance > 0) {
+            if (sourceResistance > 0) {
                 penetratedSourceResistance = sourceResistance / (1 + targetPenetration);
             }
 
-            let sourceDamageTakenRatio = 100 / (100 + penetratedSourceResistance);
+            let sourceDamageTakenRatio = 100.0 / (100 + penetratedSourceResistance);
             if (penetratedSourceResistance < 0) {
                 sourceDamageTakenRatio = (100 - penetratedSourceResistance) / 100;
             }
 
-            reflectDamage = Math.ceil(targetThornPower * targetResistance);
-            mitigatedReflectDamage = Math.ceil(sourceDamageTakenRatio * reflectDamage);
-            reflectDamageDone = Math.min(mitigatedReflectDamage, source.combatDetails.currentHitpoints);
-            source.combatDetails.currentHitpoints -= reflectDamageDone;
+            let targetTaskDamageMultiplier = 1.0 + target.combatDetails.combatStats.taskDamage;
+            let sourceDamageTakenMultiplier = 1.0 + source.combatDetails.combatStats.damageTaken;
+            let targetDamageMultiplier = targetTaskDamageMultiplier * sourceDamageTakenMultiplier;
+
+            let thornsDamage = CombatUtilities.randomInt(1,
+                targetDamageMultiplier
+                * target.combatDetails.defensiveMaxDamage
+                * (1.0 + target.combatDetails.combatStats.retaliation / 100.0)
+                * targetThornPower);
+
+            let mitigatedThornsDamage = Math.ceil(sourceDamageTakenRatio * thornsDamage);
+
+            thornDamageDone = Math.min(mitigatedThornsDamage, source.combatDetails.currentHitpoints);
+            source.combatDetails.currentHitpoints -= thornDamageDone;
+        }
+
+        let retaliationDamageDone = 0;
+        if (target.combatDetails.combatStats.retaliation > 0) {
+            let retaliationHitChance = 
+                Math.pow(source.combatDetails.smashAccuracyRating, 1.4) /
+                (Math.pow(source.combatDetails.smashAccuracyRating, 1.4) + Math.pow(target.combatDetails.smashEvasionRating, 1.4));
+
+            if (retaliationHitChance > Math.random()) {
+                let retaliationDamage = Math.ceil(target.combatDetails.combatStats.retaliation * damageRoll);
+                let sourceEffectiveArmor = source.combatDetails.totalArmor;
+                if (sourceEffectiveArmor > 0) {
+                    sourceEffectiveArmor = sourceEffectiveArmor / (1.0 + target.combatDetails.combatStats.armorPenetration);
+                }
+
+                let sourceDamageTakenRatio = 100.0 / (100.0 + sourceEffectiveArmor);
+                if (sourceEffectiveArmor < 0) {
+                    sourceDamageTakenRatio = (100.0 - sourceEffectiveArmor) / 100.0;
+                }
+
+                let targetTaskDamageMultiplier = 1.0 + source.combatDetails.combatStats.taskDamage;
+                let sourceDamageTakenMultiplier = 1.0 + target.combatDetails.combatStats.damageTaken;
+                let retaliationDamageMultiplier = targetTaskDamageMultiplier * sourceDamageTakenMultiplier;
+
+                let retaliationMinDamage = retaliationDamageMultiplier * retaliationDamage;
+                let retaliationMaxDamage = retaliationDamageMultiplier * (target.combatDetails.defensiveMaxDamage + retaliationDamage);
+
+                let retaliationDamageRoll = CombatUtilities.randomInt(retaliationMinDamage, retaliationMaxDamage);
+                let mitigatedRetaliationDamage = Math.ceil(sourceDamageTakenRatio * retaliationDamageRoll);
+                retaliationDamageDone = Math.min(mitigatedRetaliationDamage, source.combatDetails.currentHitpoints);
+                source.combatDetails.currentHitpoints -= retaliationDamageDone;
+            }
         }
 
         let lifeStealHeal = 0;
@@ -236,13 +278,7 @@ class CombatUtilities {
             manaLeechMana = source.addManapoints(Math.floor(source.combatDetails.combatStats.manaLeech * damageDone));
         }
 
-        let damagePrevented = maxPremitigatedDamage - damageDone;
-
-        if (damagePrevented < 0) {
-            damagePrevented = 0;
-        }
-
-        return { damageDone, didHit, reflectDamageDone, thornType, lifeStealHeal, hpDrain, manaLeechMana};
+        return { damageDone, didHit, thornDamageDone, thornType, retaliationDamageDone, lifeStealHeal, hpDrain, manaLeechMana };
     }
 
     static processHeal(source, abilityEffect, target) {

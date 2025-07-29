@@ -2,6 +2,7 @@
     "/monsters/abyssal_imp": {
         "hrid": "/monsters/abyssal_imp",
         "name": "Abyssal Imp",
+        "isBoss": false,
         "experience": 240,
         "combatDetails": {
             "currentHitpoints": 1800,
@@ -15,6 +16,7 @@
             "smashAccuracyRating": 150,
             "rangedAccuracyRating": 150,
             "magicAccuracyRating": 150,
+            "defensiveMaxDamage": 130,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -123,19 +125,21 @@
     "/monsters/acrobat": {
         "hrid": "/monsters/acrobat",
         "name": "Acrobat",
+        "isBoss": true,
         "experience": 6000,
         "combatDetails": {
             "currentHitpoints": 27800,
             "maxHitpoints": 27800,
             "currentManapoints": 27800,
             "maxManapoints": 27800,
-            "attackInterval": 2800000000,
-            "totalCastSpeed": 0.25,
-            "stabAccuracyRating": 510,
-            "slashAccuracyRating": 510,
-            "smashAccuracyRating": 510,
-            "rangedAccuracyRating": 510,
-            "magicAccuracyRating": 510,
+            "attackInterval": 2766798418,
+            "totalCastSpeed": 0.265,
+            "stabAccuracyRating": 540,
+            "slashAccuracyRating": 540,
+            "smashAccuracyRating": 540,
+            "rangedAccuracyRating": 540,
+            "magicAccuracyRating": 540,
+            "defensiveMaxDamage": 360,
             "stabMaxDamage": 310,
             "slashMaxDamage": 310,
             "smashMaxDamage": 310,
@@ -151,10 +155,10 @@
             "totalNatureResistance": 100,
             "totalFireResistance": 100,
             "totalThreat": 100,
-            "combatLevel": 1128,
+            "combatLevel": 1140,
             "staminaLevel": 2770,
             "intelligenceLevel": 2770,
-            "attackLevel": 500,
+            "attackLevel": 530,
             "meleeLevel": 300,
             "defenseLevel": 350,
             "rangedLevel": 0,
@@ -205,7 +209,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.09207,
+                "dropRate": 0.093,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -214,6 +218,7 @@
     "/monsters/alligator": {
         "hrid": "/monsters/alligator",
         "name": "Sherlock",
+        "isBoss": false,
         "experience": 40,
         "combatDetails": {
             "currentHitpoints": 300,
@@ -227,6 +232,7 @@
             "smashAccuracyRating": 30,
             "rangedAccuracyRating": 30,
             "magicAccuracyRating": 30,
+            "defensiveMaxDamage": 26,
             "stabMaxDamage": 37.1,
             "slashMaxDamage": 37.1,
             "smashMaxDamage": 37.1,
@@ -339,6 +345,7 @@
     "/monsters/anchor_shark": {
         "hrid": "/monsters/anchor_shark",
         "name": "Anchor Shark",
+        "isBoss": true,
         "experience": 7000,
         "combatDetails": {
             "currentHitpoints": 34500,
@@ -352,6 +359,7 @@
             "smashAccuracyRating": 360,
             "rangedAccuracyRating": 360,
             "magicAccuracyRating": 360,
+            "defensiveMaxDamage": 400,
             "stabMaxDamage": 460,
             "slashMaxDamage": 460,
             "smashMaxDamage": 460,
@@ -428,6 +436,7 @@
     "/monsters/aquahorse": {
         "hrid": "/monsters/aquahorse",
         "name": "Aquahorse",
+        "isBoss": false,
         "experience": 60,
         "combatDetails": {
             "currentHitpoints": 400,
@@ -441,6 +450,7 @@
             "smashAccuracyRating": 50,
             "rangedAccuracyRating": 50,
             "magicAccuracyRating": 50,
+            "defensiveMaxDamage": 45,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -532,6 +542,7 @@
     "/monsters/black_bear": {
         "hrid": "/monsters/black_bear",
         "name": "Black Bear",
+        "isBoss": false,
         "experience": 150,
         "combatDetails": {
             "currentHitpoints": 1300,
@@ -545,6 +556,7 @@
             "smashAccuracyRating": 150,
             "rangedAccuracyRating": 150,
             "magicAccuracyRating": 150,
+            "defensiveMaxDamage": 110,
             "stabMaxDamage": 150,
             "slashMaxDamage": 150,
             "smashMaxDamage": 150,
@@ -666,6 +678,7 @@
     "/monsters/brine_marksman": {
         "hrid": "/monsters/brine_marksman",
         "name": "Brine Marksman",
+        "isBoss": true,
         "experience": 7000,
         "combatDetails": {
             "currentHitpoints": 32500,
@@ -679,10 +692,11 @@
             "smashAccuracyRating": 500,
             "rangedAccuracyRating": 500,
             "magicAccuracyRating": 500,
+            "defensiveMaxDamage": 320,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
-            "rangedMaxDamage": 480,
+            "rangedMaxDamage": 490,
             "magicMaxDamage": 10,
             "stabEvasionRating": 320,
             "slashEvasionRating": 320,
@@ -694,13 +708,13 @@
             "totalNatureResistance": 142,
             "totalFireResistance": 182,
             "totalThreat": 100,
-            "combatLevel": 1285,
+            "combatLevel": 1286,
             "staminaLevel": 3240,
             "intelligenceLevel": 3240,
             "attackLevel": 490,
             "meleeLevel": 0,
             "defenseLevel": 310,
-            "rangedLevel": 470,
+            "rangedLevel": 480,
             "magicLevel": 0,
             "combatStats": {
                 "combatStyleHrids": [
@@ -746,7 +760,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.12179722222222222,
+                "dropRate": 0.12188777777777779,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -755,22 +769,24 @@
     "/monsters/butterjerry": {
         "hrid": "/monsters/butterjerry",
         "name": "Butterjerry",
+        "isBoss": true,
         "experience": 1000,
         "combatDetails": {
             "currentHitpoints": 5500,
             "maxHitpoints": 5500,
             "currentManapoints": 5500,
             "maxManapoints": 5500,
-            "attackInterval": 3185840707,
-            "totalCastSpeed": 0.13,
-            "stabAccuracyRating": 270,
-            "slashAccuracyRating": 270,
-            "smashAccuracyRating": 270,
-            "rangedAccuracyRating": 270,
-            "magicAccuracyRating": 270,
-            "stabMaxDamage": 270,
-            "slashMaxDamage": 270,
-            "smashMaxDamage": 270,
+            "attackInterval": 3171806167,
+            "totalCastSpeed": 0.135,
+            "stabAccuracyRating": 280,
+            "slashAccuracyRating": 280,
+            "smashAccuracyRating": 280,
+            "rangedAccuracyRating": 280,
+            "magicAccuracyRating": 280,
+            "defensiveMaxDamage": 260,
+            "stabMaxDamage": 280,
+            "slashMaxDamage": 280,
+            "smashMaxDamage": 280,
             "rangedMaxDamage": 10,
             "magicMaxDamage": 10,
             "stabEvasionRating": 390,
@@ -783,11 +799,11 @@
             "totalNatureResistance": 50,
             "totalFireResistance": 50,
             "totalThreat": 100,
-            "combatLevel": 342,
+            "combatLevel": 348,
             "staminaLevel": 540,
             "intelligenceLevel": 540,
-            "attackLevel": 260,
-            "meleeLevel": 260,
+            "attackLevel": 270,
+            "meleeLevel": 270,
             "defenseLevel": 250,
             "rangedLevel": 0,
             "magicLevel": 0,
@@ -829,7 +845,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.006253333333333332,
+                "dropRate": 0.006346666666666666,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -838,6 +854,7 @@
     "/monsters/captain_fishhook": {
         "hrid": "/monsters/captain_fishhook",
         "name": "Captain Fishhook",
+        "isBoss": true,
         "experience": 18000,
         "combatDetails": {
             "currentHitpoints": 77500,
@@ -851,6 +868,7 @@
             "smashAccuracyRating": 660,
             "rangedAccuracyRating": 660,
             "magicAccuracyRating": 660,
+            "defensiveMaxDamage": 340,
             "stabMaxDamage": 690,
             "slashMaxDamage": 690,
             "smashMaxDamage": 690,
@@ -927,6 +945,7 @@
     "/monsters/centaur_archer": {
         "hrid": "/monsters/centaur_archer",
         "name": "Centaur Archer",
+        "isBoss": false,
         "experience": 125,
         "combatDetails": {
             "currentHitpoints": 1100,
@@ -940,6 +959,7 @@
             "smashAccuracyRating": 90,
             "rangedAccuracyRating": 90,
             "magicAccuracyRating": 90,
+            "defensiveMaxDamage": 90,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -1065,6 +1085,7 @@
     "/monsters/chronofrost_sorcerer": {
         "hrid": "/monsters/chronofrost_sorcerer",
         "name": "Chronofrost Sorcerer",
+        "isBoss": true,
         "experience": 1100,
         "combatDetails": {
             "currentHitpoints": 6500,
@@ -1078,11 +1099,12 @@
             "smashAccuracyRating": 210,
             "rangedAccuracyRating": 210,
             "magicAccuracyRating": 210,
+            "defensiveMaxDamage": 130,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
             "rangedMaxDamage": 10,
-            "magicMaxDamage": 250,
+            "magicMaxDamage": 260,
             "stabEvasionRating": 130,
             "slashEvasionRating": 130,
             "smashEvasionRating": 130,
@@ -1093,14 +1115,14 @@
             "totalNatureResistance": 44,
             "totalFireResistance": 74,
             "totalThreat": 100,
-            "combatLevel": 336,
+            "combatLevel": 340,
             "staminaLevel": 640,
             "intelligenceLevel": 640,
             "attackLevel": 200,
             "meleeLevel": 0,
             "defenseLevel": 120,
             "rangedLevel": 0,
-            "magicLevel": 240,
+            "magicLevel": 250,
             "combatStats": {
                 "combatStyleHrids": [
                     "/combat_styles/magic"
@@ -1229,7 +1251,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.00726,
+                "dropRate": 0.007333333333333333,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -1238,6 +1260,7 @@
     "/monsters/crab": {
         "hrid": "/monsters/crab",
         "name": "I Pinch",
+        "isBoss": false,
         "experience": 54,
         "combatDetails": {
             "currentHitpoints": 400,
@@ -1251,6 +1274,7 @@
             "smashAccuracyRating": 35,
             "rangedAccuracyRating": 35,
             "magicAccuracyRating": 35,
+            "defensiveMaxDamage": 50,
             "stabMaxDamage": 40,
             "slashMaxDamage": 40,
             "smashMaxDamage": 40,
@@ -1344,6 +1368,7 @@
     "/monsters/crystal_colossus": {
         "hrid": "/monsters/crystal_colossus",
         "name": "Crystal Colossus",
+        "isBoss": true,
         "experience": 2000,
         "combatDetails": {
             "currentHitpoints": 7200,
@@ -1357,6 +1382,7 @@
             "smashAccuracyRating": 290,
             "rangedAccuracyRating": 290,
             "magicAccuracyRating": 290,
+            "defensiveMaxDamage": 340,
             "stabMaxDamage": 330,
             "slashMaxDamage": 330,
             "smashMaxDamage": 330,
@@ -1535,6 +1561,7 @@
     "/monsters/demonic_overlord": {
         "hrid": "/monsters/demonic_overlord",
         "name": "Demonic Overlord",
+        "isBoss": true,
         "experience": 2200,
         "combatDetails": {
             "currentHitpoints": 9500,
@@ -1548,11 +1575,12 @@
             "smashAccuracyRating": 290,
             "rangedAccuracyRating": 290,
             "magicAccuracyRating": 290,
+            "defensiveMaxDamage": 200,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
             "rangedMaxDamage": 10,
-            "magicMaxDamage": 330,
+            "magicMaxDamage": 340,
             "stabEvasionRating": 200,
             "slashEvasionRating": 200,
             "smashEvasionRating": 200,
@@ -1563,14 +1591,14 @@
             "totalNatureResistance": 68,
             "totalFireResistance": 68,
             "totalThreat": 100,
-            "combatLevel": 480,
+            "combatLevel": 484,
             "staminaLevel": 940,
             "intelligenceLevel": 940,
             "attackLevel": 280,
             "meleeLevel": 0,
             "defenseLevel": 190,
             "rangedLevel": 0,
-            "magicLevel": 320,
+            "magicLevel": 330,
             "combatStats": {
                 "combatStyleHrids": [
                     "/combat_styles/magic"
@@ -1699,7 +1727,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.0144,
+                "dropRate": 0.014506666666666668,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -1708,6 +1736,7 @@
     "/monsters/deranged_jester": {
         "hrid": "/monsters/deranged_jester",
         "name": "Deranged Jester",
+        "isBoss": true,
         "experience": 25000,
         "combatDetails": {
             "currentHitpoints": 152700,
@@ -1721,6 +1750,7 @@
             "smashAccuracyRating": 560,
             "rangedAccuracyRating": 560,
             "magicAccuracyRating": 560,
+            "defensiveMaxDamage": 380,
             "stabMaxDamage": 730,
             "slashMaxDamage": 730,
             "smashMaxDamage": 730,
@@ -1798,6 +1828,7 @@
     "/monsters/dodocamel": {
         "hrid": "/monsters/dodocamel",
         "name": "Dodocamel",
+        "isBoss": true,
         "experience": 3600,
         "combatDetails": {
             "currentHitpoints": 18500,
@@ -1811,27 +1842,28 @@
             "smashAccuracyRating": 340,
             "rangedAccuracyRating": 340,
             "magicAccuracyRating": 340,
+            "defensiveMaxDamage": 410,
             "stabMaxDamage": 340,
             "slashMaxDamage": 340,
             "smashMaxDamage": 340,
             "rangedMaxDamage": 10,
             "magicMaxDamage": 10,
-            "stabEvasionRating": 420,
-            "slashEvasionRating": 504,
-            "smashEvasionRating": 504,
-            "rangedEvasionRating": 840,
-            "magicEvasionRating": 420,
-            "totalArmor": 182,
-            "totalWaterResistance": 82,
-            "totalNatureResistance": 82,
-            "totalFireResistance": 82,
+            "stabEvasionRating": 410,
+            "slashEvasionRating": 492,
+            "smashEvasionRating": 492,
+            "rangedEvasionRating": 820,
+            "magicEvasionRating": 410,
+            "totalArmor": 180,
+            "totalWaterResistance": 80,
+            "totalNatureResistance": 80,
+            "totalFireResistance": 80,
             "totalThreat": 100,
-            "combatLevel": 815,
+            "combatLevel": 811,
             "staminaLevel": 1840,
             "intelligenceLevel": 1840,
             "attackLevel": 330,
             "meleeLevel": 330,
-            "defenseLevel": 410,
+            "defenseLevel": 400,
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
@@ -1878,7 +1910,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.045208333333333336,
+                "dropRate": 0.04500166666666667,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -1887,6 +1919,7 @@
     "/monsters/dusk_revenant": {
         "hrid": "/monsters/dusk_revenant",
         "name": "Dusk Revenant",
+        "isBoss": true,
         "experience": 2100,
         "combatDetails": {
             "currentHitpoints": 8800,
@@ -1900,6 +1933,7 @@
             "smashAccuracyRating": 310,
             "rangedAccuracyRating": 310,
             "magicAccuracyRating": 310,
+            "defensiveMaxDamage": 260,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -2066,6 +2100,7 @@
     "/monsters/elementalist": {
         "hrid": "/monsters/elementalist",
         "name": "Elementalist",
+        "isBoss": false,
         "experience": 200,
         "combatDetails": {
             "currentHitpoints": 1700,
@@ -2079,6 +2114,7 @@
             "smashAccuracyRating": 170,
             "rangedAccuracyRating": 170,
             "magicAccuracyRating": 170,
+            "defensiveMaxDamage": 90,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -2219,6 +2255,7 @@
     "/monsters/enchanted_bishop": {
         "hrid": "/monsters/enchanted_bishop",
         "name": "Enchanted Bishop",
+        "isBoss": true,
         "experience": 7000,
         "combatDetails": {
             "currentHitpoints": 30500,
@@ -2232,6 +2269,7 @@
             "smashAccuracyRating": 410,
             "rangedAccuracyRating": 410,
             "magicAccuracyRating": 410,
+            "defensiveMaxDamage": 320,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -2314,6 +2352,7 @@
     "/monsters/enchanted_king": {
         "hrid": "/monsters/enchanted_king",
         "name": "Enchanted King",
+        "isBoss": true,
         "experience": 18000,
         "combatDetails": {
             "currentHitpoints": 80000,
@@ -2327,6 +2366,7 @@
             "smashAccuracyRating": 410,
             "rangedAccuracyRating": 410,
             "magicAccuracyRating": 410,
+            "defensiveMaxDamage": 320,
             "stabMaxDamage": 410,
             "slashMaxDamage": 410,
             "smashMaxDamage": 410,
@@ -2399,6 +2439,7 @@
     "/monsters/enchanted_knight": {
         "hrid": "/monsters/enchanted_knight",
         "name": "Enchanted Knight",
+        "isBoss": true,
         "experience": 7000,
         "combatDetails": {
             "currentHitpoints": 37700,
@@ -2412,9 +2453,10 @@
             "smashAccuracyRating": 420,
             "rangedAccuracyRating": 420,
             "magicAccuracyRating": 420,
-            "stabMaxDamage": 460,
-            "slashMaxDamage": 460,
-            "smashMaxDamage": 460,
+            "defensiveMaxDamage": 420,
+            "stabMaxDamage": 470,
+            "slashMaxDamage": 470,
+            "smashMaxDamage": 470,
             "rangedMaxDamage": 10,
             "magicMaxDamage": 10,
             "stabEvasionRating": 420,
@@ -2427,11 +2469,11 @@
             "totalNatureResistance": 82,
             "totalFireResistance": 82,
             "totalThreat": 100,
-            "combatLevel": 1431,
+            "combatLevel": 1435,
             "staminaLevel": 3760,
             "intelligenceLevel": 3760,
             "attackLevel": 410,
-            "meleeLevel": 450,
+            "meleeLevel": 460,
             "defenseLevel": 410,
             "rangedLevel": 0,
             "magicLevel": 0,
@@ -2477,7 +2519,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.156555,
+                "dropRate": 0.156975,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -2486,6 +2528,7 @@
     "/monsters/enchanted_pawn": {
         "hrid": "/monsters/enchanted_pawn",
         "name": "Enchanted Pawn",
+        "isBoss": true,
         "experience": 1600,
         "combatDetails": {
             "currentHitpoints": 9700,
@@ -2499,6 +2542,7 @@
             "smashAccuracyRating": 340,
             "rangedAccuracyRating": 340,
             "magicAccuracyRating": 340,
+            "defensiveMaxDamage": 320,
             "stabMaxDamage": 340,
             "slashMaxDamage": 340,
             "smashMaxDamage": 340,
@@ -2566,6 +2610,7 @@
     "/monsters/enchanted_queen": {
         "hrid": "/monsters/enchanted_queen",
         "name": "Enchanted Queen",
+        "isBoss": true,
         "experience": 18000,
         "combatDetails": {
             "currentHitpoints": 80000,
@@ -2579,6 +2624,7 @@
             "smashAccuracyRating": 490,
             "rangedAccuracyRating": 490,
             "magicAccuracyRating": 490,
+            "defensiveMaxDamage": 390,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -2659,6 +2705,7 @@
     "/monsters/enchanted_rook": {
         "hrid": "/monsters/enchanted_rook",
         "name": "Enchanted Rook",
+        "isBoss": true,
         "experience": 7000,
         "combatDetails": {
             "currentHitpoints": 34700,
@@ -2672,6 +2719,7 @@
             "smashAccuracyRating": 490,
             "rangedAccuracyRating": 490,
             "magicAccuracyRating": 490,
+            "defensiveMaxDamage": 380,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -2750,6 +2798,7 @@
     "/monsters/eye": {
         "hrid": "/monsters/eye",
         "name": "Eye",
+        "isBoss": false,
         "experience": 120,
         "combatDetails": {
             "currentHitpoints": 990,
@@ -2763,6 +2812,7 @@
             "smashAccuracyRating": 99,
             "rangedAccuracyRating": 99,
             "magicAccuracyRating": 99,
+            "defensiveMaxDamage": 99,
             "stabMaxDamage": 99,
             "slashMaxDamage": 99,
             "smashMaxDamage": 99,
@@ -2907,6 +2957,7 @@
     "/monsters/eyes": {
         "hrid": "/monsters/eyes",
         "name": "Eyes",
+        "isBoss": false,
         "experience": 135,
         "combatDetails": {
             "currentHitpoints": 1110,
@@ -2920,6 +2971,7 @@
             "smashAccuracyRating": 111,
             "rangedAccuracyRating": 111,
             "magicAccuracyRating": 111,
+            "defensiveMaxDamage": 111,
             "stabMaxDamage": 111,
             "slashMaxDamage": 111,
             "smashMaxDamage": 111,
@@ -3016,6 +3068,7 @@
     "/monsters/flame_sorcerer": {
         "hrid": "/monsters/flame_sorcerer",
         "name": "Flame Sorcerer",
+        "isBoss": false,
         "experience": 140,
         "combatDetails": {
             "currentHitpoints": 1200,
@@ -3029,6 +3082,7 @@
             "smashAccuracyRating": 120,
             "rangedAccuracyRating": 120,
             "magicAccuracyRating": 120,
+            "defensiveMaxDamage": 70,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -3139,6 +3193,7 @@
     "/monsters/fly": {
         "hrid": "/monsters/fly",
         "name": "Fly",
+        "isBoss": false,
         "experience": 10,
         "combatDetails": {
             "currentHitpoints": 50,
@@ -3152,6 +3207,7 @@
             "smashAccuracyRating": 7.5,
             "rangedAccuracyRating": 15,
             "magicAccuracyRating": 15,
+            "defensiveMaxDamage": 11,
             "stabMaxDamage": 15,
             "slashMaxDamage": 15,
             "smashMaxDamage": 7.5,
@@ -3213,6 +3269,7 @@
     "/monsters/frog": {
         "hrid": "/monsters/frog",
         "name": "Frogger",
+        "isBoss": false,
         "experience": 25,
         "combatDetails": {
             "currentHitpoints": 150,
@@ -3226,6 +3283,7 @@
             "smashAccuracyRating": 25,
             "rangedAccuracyRating": 25,
             "magicAccuracyRating": 25,
+            "defensiveMaxDamage": 25,
             "stabMaxDamage": 20,
             "slashMaxDamage": 20,
             "smashMaxDamage": 20,
@@ -3314,6 +3372,7 @@
     "/monsters/giant_shoebill": {
         "hrid": "/monsters/giant_shoebill",
         "name": "Giant Shoebill",
+        "isBoss": true,
         "experience": 200,
         "combatDetails": {
             "currentHitpoints": 1500,
@@ -3327,6 +3386,7 @@
             "smashAccuracyRating": 75,
             "rangedAccuracyRating": 75,
             "magicAccuracyRating": 75,
+            "defensiveMaxDamage": 60,
             "stabMaxDamage": 75,
             "slashMaxDamage": 75,
             "smashMaxDamage": 75,
@@ -3458,6 +3518,7 @@
     "/monsters/gobo_boomy": {
         "hrid": "/monsters/gobo_boomy",
         "name": "Boomy",
+        "isBoss": false,
         "experience": 100,
         "combatDetails": {
             "currentHitpoints": 800,
@@ -3471,6 +3532,7 @@
             "smashAccuracyRating": 50,
             "rangedAccuracyRating": 50,
             "magicAccuracyRating": 62,
+            "defensiveMaxDamage": 50,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -3602,6 +3664,7 @@
     "/monsters/gobo_chieftain": {
         "hrid": "/monsters/gobo_chieftain",
         "name": "Gobo Chieftain",
+        "isBoss": true,
         "experience": 600,
         "combatDetails": {
             "currentHitpoints": 4800,
@@ -3615,9 +3678,10 @@
             "smashAccuracyRating": 160,
             "rangedAccuracyRating": 160,
             "magicAccuracyRating": 160,
-            "stabMaxDamage": 150,
-            "slashMaxDamage": 150,
-            "smashMaxDamage": 150,
+            "defensiveMaxDamage": 100,
+            "stabMaxDamage": 160,
+            "slashMaxDamage": 160,
+            "smashMaxDamage": 160,
             "rangedMaxDamage": 10,
             "magicMaxDamage": 10,
             "stabEvasionRating": 100,
@@ -3630,11 +3694,11 @@
             "totalNatureResistance": 18,
             "totalFireResistance": 18,
             "totalThreat": 100,
-            "combatLevel": 235,
+            "combatLevel": 237,
             "staminaLevel": 470,
             "intelligenceLevel": 470,
             "attackLevel": 150,
-            "meleeLevel": 140,
+            "meleeLevel": 150,
             "defenseLevel": 90,
             "rangedLevel": 0,
             "magicLevel": 0,
@@ -3762,7 +3826,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.004015277777777778,
+                "dropRate": 0.0040425,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -3771,6 +3835,7 @@
     "/monsters/gobo_shooty": {
         "hrid": "/monsters/gobo_shooty",
         "name": "Shooty",
+        "isBoss": false,
         "experience": 100,
         "combatDetails": {
             "currentHitpoints": 800,
@@ -3784,6 +3849,7 @@
             "smashAccuracyRating": 50,
             "rangedAccuracyRating": 65,
             "magicAccuracyRating": 50,
+            "defensiveMaxDamage": 70,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -3907,6 +3973,7 @@
     "/monsters/gobo_slashy": {
         "hrid": "/monsters/gobo_slashy",
         "name": "Slashy",
+        "isBoss": false,
         "experience": 100,
         "combatDetails": {
             "currentHitpoints": 800,
@@ -3920,6 +3987,7 @@
             "smashAccuracyRating": 50,
             "rangedAccuracyRating": 50,
             "magicAccuracyRating": 50,
+            "defensiveMaxDamage": 70,
             "stabMaxDamage": 50,
             "slashMaxDamage": 95,
             "smashMaxDamage": 50,
@@ -4040,6 +4108,7 @@
     "/monsters/gobo_smashy": {
         "hrid": "/monsters/gobo_smashy",
         "name": "Smashy",
+        "isBoss": false,
         "experience": 100,
         "combatDetails": {
             "currentHitpoints": 800,
@@ -4053,6 +4122,7 @@
             "smashAccuracyRating": 55.00000000000001,
             "rangedAccuracyRating": 50,
             "magicAccuracyRating": 50,
+            "defensiveMaxDamage": 70,
             "stabMaxDamage": 55,
             "slashMaxDamage": 55,
             "smashMaxDamage": 145.75,
@@ -4173,6 +4243,7 @@
     "/monsters/gobo_stabby": {
         "hrid": "/monsters/gobo_stabby",
         "name": "Stabby",
+        "isBoss": false,
         "experience": 100,
         "combatDetails": {
             "currentHitpoints": 800,
@@ -4186,6 +4257,7 @@
             "smashAccuracyRating": 50,
             "rangedAccuracyRating": 50,
             "magicAccuracyRating": 50,
+            "defensiveMaxDamage": 70,
             "stabMaxDamage": 44,
             "slashMaxDamage": 40,
             "smashMaxDamage": 40,
@@ -4300,6 +4372,7 @@
     "/monsters/granite_golem": {
         "hrid": "/monsters/granite_golem",
         "name": "Granite Golem",
+        "isBoss": false,
         "experience": 330,
         "combatDetails": {
             "currentHitpoints": 1800,
@@ -4313,6 +4386,7 @@
             "smashAccuracyRating": 210,
             "rangedAccuracyRating": 210,
             "magicAccuracyRating": 210,
+            "defensiveMaxDamage": 310,
             "stabMaxDamage": 270,
             "slashMaxDamage": 270,
             "smashMaxDamage": 270,
@@ -4457,6 +4531,7 @@
     "/monsters/griffin": {
         "hrid": "/monsters/griffin",
         "name": "Griffin",
+        "isBoss": true,
         "experience": 20000,
         "combatDetails": {
             "currentHitpoints": 78500,
@@ -4470,6 +4545,7 @@
             "smashAccuracyRating": 610,
             "rangedAccuracyRating": 610,
             "magicAccuracyRating": 610,
+            "defensiveMaxDamage": 360,
             "stabMaxDamage": 560,
             "slashMaxDamage": 560,
             "smashMaxDamage": 560,
@@ -4549,6 +4625,7 @@
     "/monsters/grizzly_bear": {
         "hrid": "/monsters/grizzly_bear",
         "name": "Grizzly Bear",
+        "isBoss": false,
         "experience": 160,
         "combatDetails": {
             "currentHitpoints": 1400,
@@ -4562,6 +4639,7 @@
             "smashAccuracyRating": 160,
             "rangedAccuracyRating": 160,
             "magicAccuracyRating": 160,
+            "defensiveMaxDamage": 120,
             "stabMaxDamage": 160,
             "slashMaxDamage": 160,
             "smashMaxDamage": 160,
@@ -4683,6 +4761,7 @@
     "/monsters/gummy_bear": {
         "hrid": "/monsters/gummy_bear",
         "name": "Gummy Bear",
+        "isBoss": false,
         "experience": 140,
         "combatDetails": {
             "currentHitpoints": 1200,
@@ -4696,6 +4775,7 @@
             "smashAccuracyRating": 150,
             "rangedAccuracyRating": 150,
             "magicAccuracyRating": 150,
+            "defensiveMaxDamage": 90,
             "stabMaxDamage": 90,
             "slashMaxDamage": 90,
             "smashMaxDamage": 90,
@@ -4799,6 +4879,7 @@
     "/monsters/ice_sorcerer": {
         "hrid": "/monsters/ice_sorcerer",
         "name": "Ice Sorcerer",
+        "isBoss": false,
         "experience": 130,
         "combatDetails": {
             "currentHitpoints": 1100,
@@ -4812,6 +4893,7 @@
             "smashAccuracyRating": 110,
             "rangedAccuracyRating": 110,
             "magicAccuracyRating": 110,
+            "defensiveMaxDamage": 60,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -4922,6 +5004,7 @@
     "/monsters/infernal_warlock": {
         "hrid": "/monsters/infernal_warlock",
         "name": "Infernal Warlock",
+        "isBoss": false,
         "experience": 350,
         "combatDetails": {
             "currentHitpoints": 2600,
@@ -4935,11 +5018,12 @@
             "smashAccuracyRating": 210,
             "rangedAccuracyRating": 210,
             "magicAccuracyRating": 210,
+            "defensiveMaxDamage": 190,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
             "rangedMaxDamage": 10,
-            "magicMaxDamage": 250,
+            "magicMaxDamage": 260,
             "stabEvasionRating": 190,
             "slashEvasionRating": 190,
             "smashEvasionRating": 190,
@@ -4950,14 +5034,14 @@
             "totalNatureResistance": 66,
             "totalFireResistance": 66,
             "totalThreat": 100,
-            "combatLevel": 235,
+            "combatLevel": 239,
             "staminaLevel": 250,
             "intelligenceLevel": 300,
             "attackLevel": 200,
             "meleeLevel": 0,
             "defenseLevel": 180,
             "rangedLevel": 0,
-            "magicLevel": 240,
+            "magicLevel": 250,
             "combatStats": {
                 "combatStyleHrids": [
                     "/combat_styles/magic"
@@ -4979,7 +5063,7 @@
             },
             {
                 "abilityHrid": "/abilities/firestorm",
-                "level": 10,
+                "level": 1,
                 "minDifficultyTier": 0
             },
             {
@@ -5042,7 +5126,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.0022125,
+                "dropRate": 0.0022425,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -5051,6 +5135,7 @@
     "/monsters/jackalope": {
         "hrid": "/monsters/jackalope",
         "name": "Jackalope",
+        "isBoss": true,
         "experience": 2500,
         "combatDetails": {
             "currentHitpoints": 13500,
@@ -5064,6 +5149,7 @@
             "smashAccuracyRating": 280,
             "rangedAccuracyRating": 280,
             "magicAccuracyRating": 280,
+            "defensiveMaxDamage": 250,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -5136,6 +5222,7 @@
     "/monsters/juggler": {
         "hrid": "/monsters/juggler",
         "name": "Juggler",
+        "isBoss": true,
         "experience": 6200,
         "combatDetails": {
             "currentHitpoints": 35000,
@@ -5149,10 +5236,11 @@
             "smashAccuracyRating": 450,
             "rangedAccuracyRating": 450,
             "magicAccuracyRating": 450,
+            "defensiveMaxDamage": 320,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
-            "rangedMaxDamage": 450,
+            "rangedMaxDamage": 460,
             "magicMaxDamage": 10,
             "stabEvasionRating": 320,
             "slashEvasionRating": 320,
@@ -5164,13 +5252,13 @@
             "totalNatureResistance": 162,
             "totalFireResistance": 162,
             "totalThreat": 100,
-            "combatLevel": 1335,
+            "combatLevel": 1339,
             "staminaLevel": 3490,
             "intelligenceLevel": 3490,
             "attackLevel": 440,
             "meleeLevel": 0,
             "defenseLevel": 310,
-            "rangedLevel": 440,
+            "rangedLevel": 450,
             "magicLevel": 0,
             "combatStats": {
                 "combatStyleHrids": [
@@ -5218,7 +5306,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.13601249999999998,
+                "dropRate": 0.1364025,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -5227,6 +5315,7 @@
     "/monsters/jungle_sprite": {
         "hrid": "/monsters/jungle_sprite",
         "name": "Jungle Sprite",
+        "isBoss": false,
         "experience": 65,
         "combatDetails": {
             "currentHitpoints": 500,
@@ -5240,6 +5329,7 @@
             "smashAccuracyRating": 40,
             "rangedAccuracyRating": 40,
             "magicAccuracyRating": 40,
+            "defensiveMaxDamage": 30,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -5354,6 +5444,7 @@
     "/monsters/luna_empress": {
         "hrid": "/monsters/luna_empress",
         "name": "Luna Empress",
+        "isBoss": true,
         "experience": 550,
         "combatDetails": {
             "currentHitpoints": 4400,
@@ -5367,6 +5458,7 @@
             "smashAccuracyRating": 150,
             "rangedAccuracyRating": 150,
             "magicAccuracyRating": 150,
+            "defensiveMaxDamage": 80,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -5520,6 +5612,7 @@
     "/monsters/magician": {
         "hrid": "/monsters/magician",
         "name": "Magician",
+        "isBoss": true,
         "experience": 6400,
         "combatDetails": {
             "currentHitpoints": 32400,
@@ -5533,6 +5626,7 @@
             "smashAccuracyRating": 360,
             "rangedAccuracyRating": 360,
             "magicAccuracyRating": 360,
+            "defensiveMaxDamage": 270,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -5609,6 +5703,7 @@
     "/monsters/magnetic_golem": {
         "hrid": "/monsters/magnetic_golem",
         "name": "Magnetic Golem",
+        "isBoss": false,
         "experience": 240,
         "combatDetails": {
             "currentHitpoints": 1400,
@@ -5622,6 +5717,7 @@
             "smashAccuracyRating": 170,
             "rangedAccuracyRating": 170,
             "magicAccuracyRating": 170,
+            "defensiveMaxDamage": 270,
             "stabMaxDamage": 220,
             "slashMaxDamage": 220,
             "smashMaxDamage": 220,
@@ -5732,6 +5828,7 @@
     "/monsters/manticore": {
         "hrid": "/monsters/manticore",
         "name": "Manticore",
+        "isBoss": true,
         "experience": 7000,
         "combatDetails": {
             "currentHitpoints": 38100,
@@ -5745,6 +5842,7 @@
             "smashAccuracyRating": 410,
             "rangedAccuracyRating": 410,
             "magicAccuracyRating": 410,
+            "defensiveMaxDamage": 340,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -5823,6 +5921,7 @@
     "/monsters/marine_huntress": {
         "hrid": "/monsters/marine_huntress",
         "name": "Marine Huntress",
+        "isBoss": true,
         "experience": 400,
         "combatDetails": {
             "currentHitpoints": 2800,
@@ -5836,6 +5935,7 @@
             "smashAccuracyRating": 110,
             "rangedAccuracyRating": 110,
             "magicAccuracyRating": 110,
+            "defensiveMaxDamage": 80,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -5978,6 +6078,7 @@
     "/monsters/myconid": {
         "hrid": "/monsters/myconid",
         "name": "Myconid",
+        "isBoss": false,
         "experience": 75,
         "combatDetails": {
             "currentHitpoints": 700,
@@ -5991,6 +6092,7 @@
             "smashAccuracyRating": 50,
             "rangedAccuracyRating": 50,
             "magicAccuracyRating": 50,
+            "defensiveMaxDamage": 40,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -6088,6 +6190,7 @@
     "/monsters/nom_nom": {
         "hrid": "/monsters/nom_nom",
         "name": "Nom Nom",
+        "isBoss": false,
         "experience": 70,
         "combatDetails": {
             "currentHitpoints": 480,
@@ -6101,6 +6204,7 @@
             "smashAccuracyRating": 55,
             "rangedAccuracyRating": 55,
             "magicAccuracyRating": 55,
+            "defensiveMaxDamage": 55,
             "stabMaxDamage": 55,
             "slashMaxDamage": 55,
             "smashMaxDamage": 55,
@@ -6224,6 +6328,7 @@
     "/monsters/novice_sorcerer": {
         "hrid": "/monsters/novice_sorcerer",
         "name": "Novice Sorcerer",
+        "isBoss": false,
         "experience": 100,
         "combatDetails": {
             "currentHitpoints": 800,
@@ -6237,6 +6342,7 @@
             "smashAccuracyRating": 80,
             "rangedAccuracyRating": 80,
             "magicAccuracyRating": 80,
+            "defensiveMaxDamage": 40,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -6342,6 +6448,7 @@
     "/monsters/panda": {
         "hrid": "/monsters/panda",
         "name": "Panda",
+        "isBoss": false,
         "experience": 160,
         "combatDetails": {
             "currentHitpoints": 1600,
@@ -6355,6 +6462,7 @@
             "smashAccuracyRating": 140,
             "rangedAccuracyRating": 140,
             "magicAccuracyRating": 140,
+            "defensiveMaxDamage": 140,
             "stabMaxDamage": 140,
             "slashMaxDamage": 140,
             "smashMaxDamage": 140,
@@ -6495,6 +6603,7 @@
     "/monsters/polar_bear": {
         "hrid": "/monsters/polar_bear",
         "name": "Polar Bear",
+        "isBoss": false,
         "experience": 170,
         "combatDetails": {
             "currentHitpoints": 1500,
@@ -6508,6 +6617,7 @@
             "smashAccuracyRating": 170,
             "rangedAccuracyRating": 170,
             "magicAccuracyRating": 170,
+            "defensiveMaxDamage": 140,
             "stabMaxDamage": 170,
             "slashMaxDamage": 170,
             "smashMaxDamage": 170,
@@ -6641,6 +6751,7 @@
     "/monsters/porcupine": {
         "hrid": "/monsters/porcupine",
         "name": "Porcupine",
+        "isBoss": false,
         "experience": 20,
         "combatDetails": {
             "currentHitpoints": 120,
@@ -6654,6 +6765,7 @@
             "smashAccuracyRating": 20,
             "rangedAccuracyRating": 20,
             "magicAccuracyRating": 20,
+            "defensiveMaxDamage": 18,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -6743,6 +6855,7 @@
     "/monsters/rabid_rabbit": {
         "hrid": "/monsters/rabid_rabbit",
         "name": "Rabid Rabbit",
+        "isBoss": true,
         "experience": 1500,
         "combatDetails": {
             "currentHitpoints": 8500,
@@ -6756,6 +6869,7 @@
             "smashAccuracyRating": 300,
             "rangedAccuracyRating": 300,
             "magicAccuracyRating": 300,
+            "defensiveMaxDamage": 210,
             "stabMaxDamage": 370,
             "slashMaxDamage": 370,
             "smashMaxDamage": 370,
@@ -6823,6 +6937,7 @@
     "/monsters/rat": {
         "hrid": "/monsters/rat",
         "name": "Jerry",
+        "isBoss": false,
         "experience": 15,
         "combatDetails": {
             "currentHitpoints": 70,
@@ -6836,6 +6951,7 @@
             "smashAccuracyRating": 15,
             "rangedAccuracyRating": 15,
             "magicAccuracyRating": 15,
+            "defensiveMaxDamage": 15,
             "stabMaxDamage": 15,
             "slashMaxDamage": 15,
             "smashMaxDamage": 15,
@@ -6943,6 +7059,7 @@
     "/monsters/red_panda": {
         "hrid": "/monsters/red_panda",
         "name": "Red Panda",
+        "isBoss": true,
         "experience": 1200,
         "combatDetails": {
             "currentHitpoints": 6800,
@@ -6956,6 +7073,7 @@
             "smashAccuracyRating": 230,
             "rangedAccuracyRating": 230,
             "magicAccuracyRating": 230,
+            "defensiveMaxDamage": 170,
             "stabMaxDamage": 230,
             "slashMaxDamage": 230,
             "smashMaxDamage": 230,
@@ -7122,6 +7240,7 @@
     "/monsters/sea_snail": {
         "hrid": "/monsters/sea_snail",
         "name": "Gary",
+        "isBoss": false,
         "experience": 45,
         "combatDetails": {
             "currentHitpoints": 350,
@@ -7135,6 +7254,7 @@
             "smashAccuracyRating": 32,
             "rangedAccuracyRating": 32,
             "magicAccuracyRating": 32,
+            "defensiveMaxDamage": 38,
             "stabMaxDamage": 32,
             "slashMaxDamage": 32,
             "smashMaxDamage": 32,
@@ -7240,6 +7360,7 @@
     "/monsters/skunk": {
         "hrid": "/monsters/skunk",
         "name": "Skunk",
+        "isBoss": false,
         "experience": 18,
         "combatDetails": {
             "currentHitpoints": 100,
@@ -7253,6 +7374,7 @@
             "smashAccuracyRating": 18,
             "rangedAccuracyRating": 18,
             "magicAccuracyRating": 18,
+            "defensiveMaxDamage": 18,
             "stabMaxDamage": 18,
             "slashMaxDamage": 18,
             "smashMaxDamage": 18,
@@ -7342,6 +7464,7 @@
     "/monsters/slimy": {
         "hrid": "/monsters/slimy",
         "name": "Slimy",
+        "isBoss": false,
         "experience": 24,
         "combatDetails": {
             "currentHitpoints": 140,
@@ -7355,6 +7478,7 @@
             "smashAccuracyRating": 22,
             "rangedAccuracyRating": 22,
             "magicAccuracyRating": 22,
+            "defensiveMaxDamage": 20,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -7450,6 +7574,7 @@
     "/monsters/snake": {
         "hrid": "/monsters/snake",
         "name": "Thnake",
+        "isBoss": false,
         "experience": 28,
         "combatDetails": {
             "currentHitpoints": 200,
@@ -7463,6 +7588,7 @@
             "smashAccuracyRating": 24,
             "rangedAccuracyRating": 24,
             "magicAccuracyRating": 24,
+            "defensiveMaxDamage": 28,
             "stabMaxDamage": 26,
             "slashMaxDamage": 26,
             "smashMaxDamage": 26,
@@ -7552,6 +7678,7 @@
     "/monsters/soul_hunter": {
         "hrid": "/monsters/soul_hunter",
         "name": "Soul Hunter",
+        "isBoss": false,
         "experience": 300,
         "combatDetails": {
             "currentHitpoints": 2300,
@@ -7565,6 +7692,7 @@
             "smashAccuracyRating": 230,
             "rangedAccuracyRating": 230,
             "magicAccuracyRating": 230,
+            "defensiveMaxDamage": 160,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -7687,6 +7815,7 @@
     "/monsters/squawker": {
         "hrid": "/monsters/squawker",
         "name": "Squawker",
+        "isBoss": true,
         "experience": 2400,
         "combatDetails": {
             "currentHitpoints": 10500,
@@ -7700,6 +7829,7 @@
             "smashAccuracyRating": 310,
             "rangedAccuracyRating": 310,
             "magicAccuracyRating": 310,
+            "defensiveMaxDamage": 310,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -7772,6 +7902,7 @@
     "/monsters/stalactite_golem": {
         "hrid": "/monsters/stalactite_golem",
         "name": "Stalactite Golem",
+        "isBoss": false,
         "experience": 280,
         "combatDetails": {
             "currentHitpoints": 1600,
@@ -7785,27 +7916,28 @@
             "smashAccuracyRating": 230,
             "rangedAccuracyRating": 230,
             "magicAccuracyRating": 230,
+            "defensiveMaxDamage": 230,
             "stabMaxDamage": 170,
             "slashMaxDamage": 170,
             "smashMaxDamage": 170,
             "rangedMaxDamage": 10,
             "magicMaxDamage": 10,
-            "stabEvasionRating": 210,
-            "slashEvasionRating": 210,
-            "smashEvasionRating": 168,
-            "rangedEvasionRating": 273,
-            "magicEvasionRating": 168,
-            "totalArmor": 40,
-            "totalWaterResistance": 40,
-            "totalNatureResistance": 0,
-            "totalFireResistance": 40,
+            "stabEvasionRating": 230,
+            "slashEvasionRating": 230,
+            "smashEvasionRating": 184,
+            "rangedEvasionRating": 299,
+            "magicEvasionRating": 184,
+            "totalArmor": 44,
+            "totalWaterResistance": 44,
+            "totalNatureResistance": 4,
+            "totalFireResistance": 44,
             "totalThreat": 100,
-            "combatLevel": 187,
+            "combatLevel": 190,
             "staminaLevel": 150,
             "intelligenceLevel": 150,
             "attackLevel": 220,
             "meleeLevel": 160,
-            "defenseLevel": 200,
+            "defenseLevel": 220,
             "rangedLevel": 0,
             "magicLevel": 0,
             "combatStats": {
@@ -7910,7 +8042,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.0011663888888888891,
+                "dropRate": 0.0011805555555555556,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -7919,6 +8051,7 @@
     "/monsters/swampy": {
         "hrid": "/monsters/swampy",
         "name": "Swampy",
+        "isBoss": false,
         "experience": 35,
         "combatDetails": {
             "currentHitpoints": 260,
@@ -7932,6 +8065,7 @@
             "smashAccuracyRating": 28,
             "rangedAccuracyRating": 28,
             "magicAccuracyRating": 28,
+            "defensiveMaxDamage": 32,
             "stabMaxDamage": 26,
             "slashMaxDamage": 26,
             "smashMaxDamage": 26,
@@ -8045,6 +8179,7 @@
     "/monsters/the_kraken": {
         "hrid": "/monsters/the_kraken",
         "name": "The Kraken",
+        "isBoss": true,
         "experience": 28000,
         "combatDetails": {
             "currentHitpoints": 103000,
@@ -8058,6 +8193,7 @@
             "smashAccuracyRating": 590,
             "rangedAccuracyRating": 590,
             "magicAccuracyRating": 590,
+            "defensiveMaxDamage": 380,
             "stabMaxDamage": 650,
             "slashMaxDamage": 650,
             "smashMaxDamage": 650,
@@ -8136,23 +8272,25 @@
     "/monsters/the_watcher": {
         "hrid": "/monsters/the_watcher",
         "name": "The Watcher",
+        "isBoss": true,
         "experience": 888,
         "combatDetails": {
             "currentHitpoints": 5550,
             "maxHitpoints": 5550,
             "currentManapoints": 5550,
             "maxManapoints": 5550,
-            "attackInterval": 3196347031,
-            "totalCastSpeed": 0.095,
-            "stabAccuracyRating": 200,
-            "slashAccuracyRating": 200,
-            "smashAccuracyRating": 200,
-            "rangedAccuracyRating": 200,
-            "magicAccuracyRating": 200,
+            "attackInterval": 3181818181,
+            "totalCastSpeed": 0.1,
+            "stabAccuracyRating": 210,
+            "slashAccuracyRating": 210,
+            "smashAccuracyRating": 210,
+            "rangedAccuracyRating": 210,
+            "magicAccuracyRating": 210,
+            "defensiveMaxDamage": 155,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
-            "rangedMaxDamage": 185,
+            "rangedMaxDamage": 190,
             "magicMaxDamage": 10,
             "stabEvasionRating": 116.25,
             "slashEvasionRating": 155,
@@ -8164,13 +8302,13 @@
             "totalNatureResistance": 29,
             "totalFireResistance": 29,
             "totalThreat": 100,
-            "combatLevel": 287,
+            "combatLevel": 292,
             "staminaLevel": 545,
             "intelligenceLevel": 545,
-            "attackLevel": 190,
+            "attackLevel": 200,
             "meleeLevel": 0,
             "defenseLevel": 145,
-            "rangedLevel": 175,
+            "rangedLevel": 180,
             "magicLevel": 0,
             "combatStats": {
                 "combatStyleHrids": [
@@ -8284,7 +8422,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.005445972222222223,
+                "dropRate": 0.005524444444444445,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -8293,6 +8431,7 @@
     "/monsters/tidal_conjuror": {
         "hrid": "/monsters/tidal_conjuror",
         "name": "Tidal Conjuror",
+        "isBoss": true,
         "experience": 7000,
         "combatDetails": {
             "currentHitpoints": 27500,
@@ -8306,6 +8445,7 @@
             "smashAccuracyRating": 320,
             "rangedAccuracyRating": 320,
             "magicAccuracyRating": 320,
+            "defensiveMaxDamage": 270,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -8385,6 +8525,7 @@
     "/monsters/treant": {
         "hrid": "/monsters/treant",
         "name": "Treant",
+        "isBoss": false,
         "experience": 100,
         "combatDetails": {
             "currentHitpoints": 900,
@@ -8398,6 +8539,7 @@
             "smashAccuracyRating": 60,
             "rangedAccuracyRating": 60,
             "magicAccuracyRating": 60,
+            "defensiveMaxDamage": 70,
             "stabMaxDamage": 10,
             "slashMaxDamage": 10,
             "smashMaxDamage": 10,
@@ -8554,6 +8696,7 @@
     "/monsters/turtle": {
         "hrid": "/monsters/turtle",
         "name": "Turuto",
+        "isBoss": false,
         "experience": 90,
         "combatDetails": {
             "currentHitpoints": 700,
@@ -8567,6 +8710,7 @@
             "smashAccuracyRating": 50,
             "rangedAccuracyRating": 50,
             "magicAccuracyRating": 50,
+            "defensiveMaxDamage": 65,
             "stabMaxDamage": 65,
             "slashMaxDamage": 65,
             "smashMaxDamage": 65,
@@ -8695,6 +8839,7 @@
     "/monsters/vampire": {
         "hrid": "/monsters/vampire",
         "name": "Vampire",
+        "isBoss": false,
         "experience": 290,
         "combatDetails": {
             "currentHitpoints": 2200,
@@ -8708,6 +8853,7 @@
             "smashAccuracyRating": 260,
             "rangedAccuracyRating": 260,
             "magicAccuracyRating": 260,
+            "defensiveMaxDamage": 180,
             "stabMaxDamage": 210,
             "slashMaxDamage": 210,
             "smashMaxDamage": 210,
@@ -8835,6 +8981,7 @@
     "/monsters/veyes": {
         "hrid": "/monsters/veyes",
         "name": "Veyes",
+        "isBoss": false,
         "experience": 150,
         "combatDetails": {
             "currentHitpoints": 1230,
@@ -8848,6 +8995,7 @@
             "smashAccuracyRating": 123,
             "rangedAccuracyRating": 123,
             "magicAccuracyRating": 123,
+            "defensiveMaxDamage": 123,
             "stabMaxDamage": 123,
             "slashMaxDamage": 123,
             "smashMaxDamage": 123,
@@ -8944,6 +9092,7 @@
     "/monsters/werewolf": {
         "hrid": "/monsters/werewolf",
         "name": "Werewolf",
+        "isBoss": false,
         "experience": 340,
         "combatDetails": {
             "currentHitpoints": 2500,
@@ -8957,6 +9106,7 @@
             "smashAccuracyRating": 240,
             "rangedAccuracyRating": 240,
             "magicAccuracyRating": 240,
+            "defensiveMaxDamage": 170,
             "stabMaxDamage": 240,
             "slashMaxDamage": 240,
             "smashMaxDamage": 240,
@@ -9083,6 +9233,7 @@
     "/monsters/zombie": {
         "hrid": "/monsters/zombie",
         "name": "Zombie",
+        "isBoss": false,
         "experience": 260,
         "combatDetails": {
             "currentHitpoints": 1800,
@@ -9096,6 +9247,7 @@
             "smashAccuracyRating": 190,
             "rangedAccuracyRating": 190,
             "magicAccuracyRating": 190,
+            "defensiveMaxDamage": 160,
             "stabMaxDamage": 200,
             "slashMaxDamage": 200,
             "smashMaxDamage": 200,
@@ -9231,6 +9383,7 @@
     "/monsters/zombie_bear": {
         "hrid": "/monsters/zombie_bear",
         "name": "Zombie Bear",
+        "isBoss": true,
         "experience": 3000,
         "combatDetails": {
             "currentHitpoints": 18000,
@@ -9244,9 +9397,10 @@
             "smashAccuracyRating": 400,
             "rangedAccuracyRating": 400,
             "magicAccuracyRating": 400,
-            "stabMaxDamage": 310,
-            "slashMaxDamage": 310,
-            "smashMaxDamage": 310,
+            "defensiveMaxDamage": 320,
+            "stabMaxDamage": 320,
+            "slashMaxDamage": 320,
+            "smashMaxDamage": 320,
             "rangedMaxDamage": 10,
             "magicMaxDamage": 10,
             "stabEvasionRating": 320,
@@ -9259,11 +9413,11 @@
             "totalNatureResistance": 62,
             "totalFireResistance": 62,
             "totalThreat": 100,
-            "combatLevel": 784,
+            "combatLevel": 786,
             "staminaLevel": 1790,
             "intelligenceLevel": 1790,
             "attackLevel": 390,
-            "meleeLevel": 300,
+            "meleeLevel": 310,
             "defenseLevel": 310,
             "rangedLevel": 0,
             "magicLevel": 0,
@@ -9304,7 +9458,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.04243444444444444,
+                "dropRate": 0.042535,
                 "minCount": 1,
                 "maxCount": 1
             }

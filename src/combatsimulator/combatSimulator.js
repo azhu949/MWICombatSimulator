@@ -395,8 +395,11 @@ class CombatSimulator extends EventTarget {
                 this.simResult.addManapointsGained(source, "manaLeech", attackResult.manaLeechMana);
             }
 
-            if (attackResult.reflectDamageDone > 0) {
-                this.simResult.addAttack(target, source, attackResult.thornType, attackResult.reflectDamageDone);
+            if (attackResult.thornDamageDone > 0) {
+                this.simResult.addAttack(target, source, attackResult.thornType, attackResult.thornDamageDone);
+            }
+            if (attackResult.retaliationDamageDone > 0) {
+                this.simResult.addAttack(target, source, "retaliation", attackResult.retaliationDamageDone);
             }
 
             if (target.combatDetails.currentHitpoints == 0) {
@@ -409,7 +412,9 @@ class CombatSimulator extends EventTarget {
             }
 
             // Could die from reflect damage
-            if (source.combatDetails.currentHitpoints == 0 && attackResult.reflectDamageDone != 0) {
+            if (source.combatDetails.currentHitpoints == 0 && 
+                (attackResult.thornDamageDone != 0 || attackResult.retaliationDamageDone != 0)
+            ) {
                 this.eventQueue.clearEventsForUnit(source);
                 this.simResult.addDeath(source);
                 if (!source.isPlayer) {
@@ -1013,8 +1018,11 @@ class CombatSimulator extends EventTarget {
                     this.simResult.addManapointsGained(tempSource, "manaLeech", attackResult.manaLeechMana);
                 }
 
-                if (attackResult.reflectDamageDone > 0) {
-                    this.simResult.addAttack(tempTarget, tempSource, attackResult.thornType, attackResult.reflectDamageDone);
+                if (attackResult.thornDamageDone > 0) {
+                    this.simResult.addAttack(tempTarget, tempSource, attackResult.thornType, attackResult.thornDamageDone);
+                }
+                if (attackResult.retaliationDamageDone > 0) {
+                    this.simResult.addAttack(tempSource, tempTarget, "retaliation", attackResult.retaliationDamageDone);
                 }
 
                 if (tempTarget.combatDetails.currentHitpoints == 0) {
@@ -1027,7 +1035,9 @@ class CombatSimulator extends EventTarget {
                 }
 
                 // Could die from reflect damage
-                if (tempSource.combatDetails.currentHitpoints == 0 && attackResult.reflectDamageDone != 0) {
+                if (tempSource.combatDetails.currentHitpoints == 0 && 
+                    (attackResult.thornDamageDone != 0 || attackResult.retaliationDamageDone != 0)
+                ) {
                     this.eventQueue.clearEventsForUnit(tempSource);
                     this.simResult.addDeath(tempSource);
                     if (!tempSource.isPlayer) {
@@ -1142,8 +1152,11 @@ class CombatSimulator extends EventTarget {
                     attackResult.didHit ? attackResult.damageDone : "miss"
                 );
 
-                if (attackResult.reflectDamageDone > 0) {
-                    this.simResult.addAttack(target, source, attackResult.thornType, attackResult.reflectDamageDone);
+                if (attackResult.thornDamageDone > 0) {
+                    this.simResult.addAttack(target, source, attackResult.thornType, attackResult.thornDamageDone);
+                }
+                if (attackResult.retaliationDamageDone > 0) {
+                    this.simResult.addAttack(target, source, "retaliation", attackResult.retaliationDamageDone);
                 }
 
                 if (target.combatDetails.currentHitpoints == 0) {

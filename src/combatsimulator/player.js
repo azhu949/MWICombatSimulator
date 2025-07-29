@@ -95,6 +95,7 @@ class Player extends CombatUnit {
             "smashDamage",
             "rangedDamage",
             "magicDamage",
+            "defensiveDamage",
             "taskDamage",
             "physicalAmplify",
             "waterAmplify",
@@ -152,7 +153,8 @@ class Player extends CombatUnit {
             "defenseExperience",
             "meleeExperience",
             "rangedExperience",
-            "magicExperience"
+            "magicExperience",
+            "retaliation"
         ].forEach((stat) => {
             this.combatDetails.combatStats[stat] = Object.values(this.equipment)
                 .filter((equipment) => equipment != null)

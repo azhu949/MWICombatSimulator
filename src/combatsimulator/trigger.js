@@ -84,77 +84,57 @@ class Trigger {
     getDependencyValue(source, currentTime) {
         switch (this.conditionHrid) {
             case "/combat_trigger_conditions/berserk":
-            case "/combat_trigger_conditions/elemental_affinity_fire_amplify":
-            case "/combat_trigger_conditions/elemental_affinity_nature_amplify":
-            case "/combat_trigger_conditions/elemental_affinity_water_amplify":
             case "/combat_trigger_conditions/frenzy":
             case "/combat_trigger_conditions/precision":
-            case "/combat_trigger_conditions/spike_shell":
-            case "/combat_trigger_conditions/toughness_armor":
-            case "/combat_trigger_conditions/toughness_fire_resistance":
-            case "/combat_trigger_conditions/toughness_nature_resistance":
-            case "/combat_trigger_conditions/toughness_water_resistance":
             case "/combat_trigger_conditions/vampirism":
             case "/combat_trigger_conditions/attack_coffee":
             case "/combat_trigger_conditions/defense_coffee":
-            case "/combat_trigger_conditions/intelligence_coffee_max_mp":
-            case "/combat_trigger_conditions/intelligence_coffee_mp_regen":
             case "/combat_trigger_conditions/lucky_coffee":
             case "/combat_trigger_conditions/magic_coffee":
             case "/combat_trigger_conditions/melee_coffee":
             case "/combat_trigger_conditions/ranged_coffee":
-            case "/combat_trigger_conditions/stamina_coffee_hp_regen":
-            case "/combat_trigger_conditions/stamina_coffee_max_hp":
             case "/combat_trigger_conditions/swiftness_coffee":
-            case "/combat_trigger_conditions/critical_coffee_damage":
-            case "/combat_trigger_conditions/critical_coffee_rate":
             case "/combat_trigger_conditions/wisdom_coffee":
             case "/combat_trigger_conditions/ice_spear":
-            case "/combat_trigger_conditions/toxic_pollen_armor":
-            case "/combat_trigger_conditions/toxic_pollen_fire_resistance":
-            case "/combat_trigger_conditions/toxic_pollen_nature_resistance":
-            case "/combat_trigger_conditions/toxic_pollen_water_resistance":
             case "/combat_trigger_conditions/puncture":
             case "/combat_trigger_conditions/frost_surge":
             case "/combat_trigger_conditions/elusiveness":
             case "/combat_trigger_conditions/channeling_coffee":
             case "/combat_trigger_conditions/critical_aura":
             case "/combat_trigger_conditions/fierce_aura":
-            case "/combat_trigger_conditions/insanity_attack_speed":
-            case "/combat_trigger_conditions/insanity_cast_speed":
-            case "/combat_trigger_conditions/insanity_damage":
             case "/combat_trigger_conditions/invincible_armor":
             case "/combat_trigger_conditions/invincible_fire_resistance":
             case "/combat_trigger_conditions/invincible_nature_resistance":
             case "/combat_trigger_conditions/invincible_water_resistance":
             case "/combat_trigger_conditions/provoke":
-            case "/combat_trigger_conditions/speed_aura_attack_speed":
-            case "/combat_trigger_conditions/speed_aura_cast_speed":
             case "/combat_trigger_conditions/taunt":
             case "/combat_trigger_conditions/crippling_slash":
             case "/combat_trigger_conditions/mana_spring":
-            case "/combat_trigger_conditions/pestilent_shot_armor":
-            case "/combat_trigger_conditions/pestilent_shot_fire_resistance":
-            case "/combat_trigger_conditions/pestilent_shot_nature_resistance":
-            case "/combat_trigger_conditions/pestilent_shot_water_resistance":
-            case "/combat_trigger_conditions/smoke_burst_accuracy":
-            case "/combat_trigger_conditions/smoke_burst_evasion":
             case "/combat_trigger_conditions/arcane_reflection":
             case "/combat_trigger_conditions/fracturing_impact":
             case "/combat_trigger_conditions/maim":
-            case "/combat_trigger_conditions/fury_accuracy":
-            case "/combat_trigger_conditions/fury_damage":
-            case "/combat_trigger_conditions/guardian_aura_armor":
-            case "/combat_trigger_conditions/guardian_aura_fire_resistance":
-            case "/combat_trigger_conditions/guardian_aura_healing_amplify":
-            case "/combat_trigger_conditions/guardian_aura_nature_resistance":
-            case "/combat_trigger_conditions/guardian_aura_water_resistance":
-            case "/combat_trigger_conditions/mystic_aura_fire_amplify":
-            case "/combat_trigger_conditions/mystic_aura_nature_amplify":
-            case "/combat_trigger_conditions/mystic_aura_water_amplify":
                 let buffHrid = "/buff_uniques";
                 buffHrid += this.conditionHrid.slice(this.conditionHrid.lastIndexOf("/"));
                 return source.combatBuffs[buffHrid];
+            case "/combat_trigger_conditions/critical_coffee":
+            case "/combat_trigger_conditions/intelligence_coffee":
+            case "/combat_trigger_conditions/stamina_coffee":
+            case "/combat_trigger_conditions/elemental_affinity":
+            case "/combat_trigger_conditions/fury":
+            case "/combat_trigger_conditions/guardian_aura":
+            case "/combat_trigger_conditions/insanity":
+            case "/combat_trigger_conditions/spike_shell":
+            case "/combat_trigger_conditions/toxic_pollen":
+            case "/combat_trigger_conditions/invincible":
+            case "/combat_trigger_conditions/mystic_aura":
+            case "/combat_trigger_conditions/pestilent_shot":
+            case "/combat_trigger_conditions/smoke_burst":
+            case "/combat_trigger_conditions/speed_aura":
+            case "/combat_trigger_conditions/toughness":
+                let buffPrefix = "/buff_uniques";
+                buffPrefix += this.conditionHrid.slice(this.conditionHrid.lastIndexOf("/"));
+                let buffs = Object.keys(source.combatBuffs).filter(buff => buff.startsWith(buffPrefix));
+                return source.combatBuffs[buffs?.[0]];
             case "/combat_trigger_conditions/current_hp":
                 return source.combatDetails.currentHitpoints;
             case "/combat_trigger_conditions/current_mp":
