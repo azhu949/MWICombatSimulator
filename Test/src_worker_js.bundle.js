@@ -1783,6 +1783,13 @@ class CombatUnit {
             }
         });
 
+        this.combatDetails.defensiveMaxDamage = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats.defensiveDamage);
+
+        // when equiped bulwark
+        if (this.equipment?.['/equipment_types/two_hand']?.hrid.endsWith("bulwark")) {
+            this.combatDetails.smashMaxDamage += this.combatDetails.defensiveMaxDamage;
+        }
+
         this.combatDetails.rangedAccuracyRating =
             (10 + this.combatDetails.attackLevel) *
             (1 + this.combatDetails.combatStats.rangedAccuracy) *
@@ -1922,8 +1929,6 @@ class CombatUnit {
             this.combatDetails.combatStats.threat = baseThreat;
         }
         this.combatDetails.combatStats.threat += threatBoosts.flatBoost;
-
-        this.combatDetails.defensiveMaxDamage = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats.defensiveDamage);
 
         this.combatDetails.combatStats.retaliation += this.getBuffBoost("/buff_types/retaliation").flatBoost;
     }
@@ -2341,13 +2346,13 @@ class CombatUtilities {
             let sourceDamageTakenMultiplier = 1.0 + source.combatDetails.combatStats.damageTaken;
             let targetDamageMultiplier = targetTaskDamageMultiplier * sourceDamageTakenMultiplier;
 
-            let thornsDamage = CombatUtilities.randomInt(1,
+            let thornsDamageRoll = CombatUtilities.randomInt(1,
                 targetDamageMultiplier
                 * target.combatDetails.defensiveMaxDamage
-                * (1.0 + target.combatDetails.combatStats.retaliation / 100.0)
+                * (1.0 + targetResistance / 100.0)
                 * targetThornPower);
 
-            let mitigatedThornsDamage = Math.ceil(sourceDamageTakenRatio * thornsDamage);
+            let mitigatedThornsDamage = Math.ceil(sourceDamageTakenRatio * thornsDamageRoll);
 
             thornDamageDone = Math.min(mitigatedThornsDamage, source.combatDetails.currentHitpoints);
             source.combatDetails.currentHitpoints -= thornDamageDone;
@@ -2356,8 +2361,8 @@ class CombatUtilities {
         let retaliationDamageDone = 0;
         if (target.combatDetails.combatStats.retaliation > 0) {
             let retaliationHitChance = 
-                Math.pow(source.combatDetails.smashAccuracyRating, 1.4) /
-                (Math.pow(source.combatDetails.smashAccuracyRating, 1.4) + Math.pow(target.combatDetails.smashEvasionRating, 1.4));
+                Math.pow(target.combatDetails.smashAccuracyRating, 1.4) /
+                (Math.pow(target.combatDetails.smashAccuracyRating, 1.4) + Math.pow(source.combatDetails.smashEvasionRating, 1.4));
 
             if (retaliationHitChance > Math.random()) {
                 let retaliationDamage = Math.ceil(target.combatDetails.combatStats.retaliation * damageRoll);
@@ -2371,8 +2376,8 @@ class CombatUtilities {
                     sourceDamageTakenRatio = (100.0 - sourceEffectiveArmor) / 100.0;
                 }
 
-                let targetTaskDamageMultiplier = 1.0 + source.combatDetails.combatStats.taskDamage;
-                let sourceDamageTakenMultiplier = 1.0 + target.combatDetails.combatStats.damageTaken;
+                let targetTaskDamageMultiplier = 1.0 + target.combatDetails.combatStats.taskDamage;
+                let sourceDamageTakenMultiplier = 1.0 + source.combatDetails.combatStats.damageTaken;
                 let retaliationDamageMultiplier = targetTaskDamageMultiplier * sourceDamageTakenMultiplier;
 
                 let retaliationMinDamage = retaliationDamageMultiplier * retaliationDamage;
