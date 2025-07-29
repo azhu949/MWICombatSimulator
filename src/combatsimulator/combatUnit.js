@@ -205,6 +205,13 @@ class CombatUnit {
             }
         });
 
+        this.combatDetails.defensiveMaxDamage = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats.defensiveDamage);
+
+        // when equiped bulwark
+        if (this.equipment?.['/equipment_types/two_hand']?.hrid.endsWith("bulwark")) {
+            this.combatDetails.smashMaxDamage += this.combatDetails.defensiveMaxDamage;
+        }
+
         this.combatDetails.rangedAccuracyRating =
             (10 + this.combatDetails.attackLevel) *
             (1 + this.combatDetails.combatStats.rangedAccuracy) *
@@ -344,8 +351,6 @@ class CombatUnit {
             this.combatDetails.combatStats.threat = baseThreat;
         }
         this.combatDetails.combatStats.threat += threatBoosts.flatBoost;
-
-        this.combatDetails.defensiveMaxDamage = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats.defensiveDamage);
 
         this.combatDetails.combatStats.retaliation += this.getBuffBoost("/buff_types/retaliation").flatBoost;
     }
