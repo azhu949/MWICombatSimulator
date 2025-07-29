@@ -4757,6 +4757,7 @@ document.addEventListener("input", (e) => {
                 noRngRevenueDifference = updateTable('noRngRevenueTable', item, newPrice);
             }
             if (window.prices) {
+                if (!window.prices[item]) window.prices[item] = { "ask": -1, "bid": -1, "vendor": _combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[item].sellPrice };
                 if (expensesSetting == 'bid') {
                     window.prices[item]['bid'] = newPrice;
                 } else {
@@ -4770,6 +4771,7 @@ document.addEventListener("input", (e) => {
                 expensesDifference = updateTable('expensesTable', item, newPrice);
             }
             if (window.prices) {
+                if (!window.prices[item]) window.prices[item] = { "ask": -1, "bid": -1, "vendor": _combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[item].sellPrice };
                 if (revenueSetting == 'bid') {
                     window.prices[item]['bid'] = newPrice;
                 } else {
