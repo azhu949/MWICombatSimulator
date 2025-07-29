@@ -354,6 +354,7 @@ function updateCombatStatsUI() {
         "rangedMaxDamage",
         "magicAccuracyRating",
         "magicMaxDamage",
+        "defensiveMaxDamage",
         "stabEvasionRating",
         "slashEvasionRating",
         "smashEvasionRating",
@@ -2354,6 +2355,10 @@ function createDamageTable(resultDiv, damageDone, secondsSimulated) {
                 abilityText = "Elemental Thorns";
                 abilityFullHrid = "combatStats.elementalThorns";
                 break;
+            case "retaliation":
+                abilityText = "Retaliation";
+                abilityFullHrid = "combatStats.retaliation";
+                break;
             case 'blaze':
                 abilityText = "Blaze";
                 abilityFullHrid = "combatStats.blaze";
@@ -2809,6 +2814,25 @@ function getEquipmentSetFromUI() {
     return equipmentSet;
 }
 
+function fixTriggerMap(triggerMap) {
+    let delKeys = []
+    for (const key of Object.keys(triggerMap)) {
+        let err = false;
+        for (const trigger of triggerMap[key]) {
+            if (!combatTriggerConditionDetailMap[trigger.conditionHrid]) {
+                err = true;
+                break;
+            }
+        }
+        if (err) {
+            delKeys.push(key);
+        }
+    }
+    for (const key of delKeys) {
+        delete triggerMap[key];
+    }
+}
+
 function loadEquipmentSetIntoUI(equipmentSet) {
     ["stamina", "intelligence", "attack", "melee", "defense", "ranged", "magic"].forEach((skill) => {
         let levelInput = document.getElementById("inputLevel_" + skill);
@@ -2867,12 +2891,7 @@ function loadEquipmentSetIntoUI(equipmentSet) {
     }
 
     triggerMap = equipmentSet.triggerMap;
-
-    if (triggerMap['/abilities/fierce_aura'] 
-        && triggerMap['/abilities/fierce_aura'].some(trigger => trigger.conditionHrid == '/combat_trigger_conditions/fierce_aura_physical_amplify' || trigger.conditionHrid == '/combat_trigger_conditions/fierce_aura_armor')
-    ) {
-        delete triggerMap['/abilities/fierce_aura'];
-    }
+    fixTriggerMap(triggerMap);
 
     if (equipmentSet.houseRooms) {
         for (const room in equipmentSet.houseRooms) {
@@ -3130,12 +3149,7 @@ function doSoloImport() {
 
     if (importSet.triggerMap) {
         triggerMap = importSet.triggerMap;
-
-        if (triggerMap['/abilities/fierce_aura'] 
-            && triggerMap['/abilities/fierce_aura'].some(trigger => trigger.conditionHrid == '/combat_trigger_conditions/fierce_aura_physical_amplify' || trigger.conditionHrid == '/combat_trigger_conditions/fierce_aura_armor')
-        ) {
-            delete triggerMap['/abilities/fierce_aura'];
-        }        
+        fixTriggerMap(triggerMap);
     }
 
     if (importSet.houseRooms) {
@@ -3310,12 +3324,7 @@ function updateNextPlayer(currentPlayerNumber) {
 
     if (importSet.triggerMap) {
         triggerMap = importSet.triggerMap;
-
-        if (triggerMap['/abilities/fierce_aura'] 
-            && triggerMap['/abilities/fierce_aura'].some(trigger => trigger.conditionHrid == '/combat_trigger_conditions/fierce_aura_physical_amplify' || trigger.conditionHrid == '/combat_trigger_conditions/fierce_aura_armor')
-        ) {
-            delete triggerMap['/abilities/fierce_aura'];
-        }        
+        fixTriggerMap(triggerMap);
     }
 
     { // reset all houseRooms
