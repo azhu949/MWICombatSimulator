@@ -6,7 +6,6 @@ class CombatUnit {
     blindExpireTime = null;
     isSilenced = false;
     silenceExpireTime = null;
-    furyValue = 0;
 
     // Base levels which don't change after initialization
     staminaLevel = 1;
@@ -178,6 +177,12 @@ class CombatUnit {
         this.combatDetails.maxManapoints = Math.floor
             (10 * (10 + this.combatDetails.intelligenceLevel) + this.combatDetails.combatStats.maxManapoints);
 
+        let accuracyRatioBoostFromFury = this.getBuffBoost("/buff_types/fury_accuracy").ratioBoost;
+        let damageRatioBoostFromFury = this.getBuffBoost("/buff_types/fury_damage").ratioBoost;
+        // if (accuracyRatioBoostFromFury > 0) {
+        //     console.log("Fury Boost: " + accuracyRatioBoostFromFury);
+        // }
+
         let accuracyRatioBoost = this.getBuffBoost("/buff_types/accuracy").ratioBoost;
         let damageRatioBoost = this.getBuffBoost("/buff_types/damage").ratioBoost;
 
@@ -186,12 +191,12 @@ class CombatUnit {
                 (10 + this.combatDetails.attackLevel) *
                 (1 + this.combatDetails.combatStats[style + "Accuracy"]) *
                 (1 + accuracyRatioBoost) *
-                (1 + this.furyValue);
+                (1 + accuracyRatioBoostFromFury);
             this.combatDetails[style + "MaxDamage"] =
                 (10 + this.combatDetails.meleeLevel) *
                 (1 + this.combatDetails.combatStats[style + "Damage"]) *
                 (1 + damageRatioBoost) *
-                (1 + this.furyValue);
+                (1 + damageRatioBoostFromFury);
             let baseEvasion = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats[style + "Evasion"]);
             this.combatDetails[style + "EvasionRating"] = baseEvasion;
             let evasionBoosts = this.getBuffBoosts("/buff_types/evasion");
@@ -212,12 +217,12 @@ class CombatUnit {
             (10 + this.combatDetails.attackLevel) *
             (1 + this.combatDetails.combatStats.rangedAccuracy) *
             (1 + accuracyRatioBoost) *
-            (1 + this.furyValue);
+            (1 + accuracyRatioBoostFromFury);
         this.combatDetails.rangedMaxDamage =
             (10 + this.combatDetails.rangedLevel) *
             (1 + this.combatDetails.combatStats.rangedDamage) *
             (1 + damageRatioBoost) *
-            (1 + this.furyValue);
+            (1 + damageRatioBoostFromFury);
 
         let baseRangedEvasion = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats.rangedEvasion);
         this.combatDetails.rangedEvasionRating = baseRangedEvasion;
@@ -236,12 +241,12 @@ class CombatUnit {
             (10 + this.combatDetails.attackLevel) *
             (1 + this.combatDetails.combatStats.magicAccuracy) *
             (1 + accuracyRatioBoost) *
-            (1 + this.furyValue);
+            (1 + accuracyRatioBoostFromFury);
         this.combatDetails.magicMaxDamage =
             (10 + this.combatDetails.magicLevel) *
             (1 + this.combatDetails.combatStats.magicDamage) *
             (1 + damageRatioBoost) *
-            (1 + this.furyValue);
+            (1 + damageRatioBoostFromFury);
 
         let baseMagicEvasion = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats.magicEvasion);
         this.combatDetails.magicEvasionRating = baseMagicEvasion;
@@ -346,19 +351,6 @@ class CombatUnit {
         this.combatDetails.combatStats.retaliation += this.getBuffBoost("/buff_types/retaliation").flatBoost;
     }
 
-
-    updateFury(isHit, fury) {
-        if (isHit && this.furyValue < 0.15) {
-            this.furyValue += fury;
-        }
-        if (!isHit) {
-            this.furyValue = Math.floor(this.furyValue / fury / 2) * fury;
-        }
-
-        // console.log("Fury value: " + this.furyValue);
-        return this.furyValue;
-    }
-
     addBuff(buff, currentTime) {
         buff.startTime = currentTime;
         this.combatBuffs[buff.uniqueHrid] = buff;
@@ -422,7 +414,6 @@ class CombatUnit {
         this.isBlinded = false;
         this.blindExpireTime = null;
         this.combatDetails.combatStats.damageTaken = 0;
-        this.furyValue = 0; // max 0.15
     }
 
     getBuffBoosts(type) {
