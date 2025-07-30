@@ -568,6 +568,18 @@ class CombatSimulator extends EventTarget {
         }
     }
 
+    checkParry(targets) {
+        let parryUnits = targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0 && unit.combatDetails.combatStats.parry > 0);
+        if (parryUnits.length <= 0) {
+            return undefined;
+        }
+        let randomIndex = Math.floor(Math.random() * parryUnits.length);
+        if (parryUnits[randomIndex].combatDetails.combatStats.parry > Math.random()) {
+            return parryUnits[randomIndex];
+        }
+        return undefined;
+    }
+
     processAutoAttackEvent(event) {
         // console.log("source:", event.source.hrid);
         // console.log("aa " + (this.simulationTime / 1000000000));
@@ -599,10 +611,10 @@ class CombatSimulator extends EventTarget {
             }
             let source = event.source;
 
-            if (target.combatDetails.combatStats.parry > Math.random()) {
-                let temp = source;
-                source = target;
-                target = temp;
+            let parryTarget = this.checkParry(targets);
+            if (parryTarget) {
+                target = source;
+                source = parryTarget;
             }
 
             let attackResult = _combatUtilities__WEBPACK_IMPORTED_MODULE_0__["default"].processAttack(source, target);
@@ -610,73 +622,102 @@ class CombatSimulator extends EventTarget {
             let mayhem = source.combatDetails.combatStats.mayhem > Math.random();
 
             if (attackResult.didHit && source.combatDetails.combatStats.curse > 0) {
-                let curseExpireTime = this.simulationTime + 15000000000;
-                target.addCurse(source.combatDetails.combatStats.curse);
-                this.eventQueue.clearMatching((event) => event.type == _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"].type && event.source == target)
-                let curseExpirationEvent = new _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"](curseExpireTime, target);
+                const curseExpireTime = 15000000000;
+                let currentCurseEvent = this.eventQueue.getMatching((event) => event.type == _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"].type && event.source == target);
+                let currentCurseAmount = 0;
+                if (currentCurseEvent) currentCurseAmount = currentCurseEvent.curseAmount;
+                this.eventQueue.clearMatching((event) => event.type == _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"].type && event.source == target);
+
+                let curseExpirationEvent = new _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"](this.simulationTime + curseExpireTime, currentCurseAmount, target);
+                const curseBuff = {
+                    "uniqueHrid": "/buff_uniques/curse",
+                    "typeHrid": "/buff_types/damage_taken",
+                    "ratioBoost": 0,
+                    "ratioBoostLevelBonus": 0,
+                    "flatBoost": source.combatDetails.combatStats.curse * curseExpirationEvent.curseAmount,
+                    "flatBoostLevelBonus": 0,
+                    "startTime": "0001-01-01T00:00:00Z",
+                    "duration": curseExpireTime
+                };
+                target.addBuff(curseBuff);
                 this.eventQueue.addEvent(curseExpirationEvent);
             }
 
             if (source.combatDetails.combatStats.fury > 0) {
+                let currentFuryEvent = this.eventQueue.getMatching((event) => event.type == _events_furyExpirationEvent__WEBPACK_IMPORTED_MODULE_16__["default"].type && event.source == source);
                 this.eventQueue.clearMatching((event) => event.type == _events_furyExpirationEvent__WEBPACK_IMPORTED_MODULE_16__["default"].type && event.source == source);
-                let oldFuryValue = source.furyValue;
-                let nowFuryValue = source.updateFury(attackResult.didHit, source.combatDetails.combatStats.fury);
 
                 const furyExpireTime = 15000000000;
-                let furryExpireTime = this.simulationTime + furyExpireTime;
+                const maxFuryStack = 5;
 
-                if (nowFuryValue > 0) {
-                    let furyExpirationEvent = new _events_furyExpirationEvent__WEBPACK_IMPORTED_MODULE_16__["default"](furryExpireTime, source);
-                    this.eventQueue.addEvent(furyExpirationEvent);
+                let furyAmount = 0;
+                if (currentFuryEvent) furyAmount = currentFuryEvent.furyAmount;
+
+                if (attackResult.didHit) {
+                    furyAmount = Math.min(furyAmount + 1, maxFuryStack);
+                } else {
+                    furyAmount = Math.floor(furyAmount / 2);
                 }
 
-                if (oldFuryValue != nowFuryValue) {
-                    const furyAccuracyBuf = {
-                        "uniqueHrid": "/buff_uniques/fury_accuracy",
-                        "typeHrid": "/buff_types/fury_accuracy",
-                        "ratioBoost": 0,
-                        "ratioBoostLevelBonus": 0,
-                        "flatBoost": source.combatDetails.combatStats.fury,
-                        "flatBoostLevelBonus": 0,
-                        "startTime": "0001-01-01T00:00:00Z",
-                        "duration": furyExpireTime
-                    };
-                    const furyDamageBuf = {
-                        "uniqueHrid": "/buff_uniques/fury_damage",
-                        "typeHrid": "/buff_types/fury_damage",
-                        "ratioBoost": 0,
-                        "ratioBoostLevelBonus": 0,
-                        "flatBoost": source.combatDetails.combatStats.fury,
-                        "flatBoostLevelBonus": 0,
-                        "startTime": "0001-01-01T00:00:00Z",
-                        "duration": furyExpireTime
-                    };
+                const furyAccuracyBuf = {
+                    "uniqueHrid": "/buff_uniques/fury_accuracy",
+                    "typeHrid": "/buff_types/fury_accuracy",
+                    "ratioBoost": furyAmount * source.combatDetails.combatStats.fury,
+                    "ratioBoostLevelBonus": 0,
+                    "flatBoost": 0,
+                    "flatBoostLevelBonus": 0,
+                    "startTime": "0001-01-01T00:00:00Z",
+                    "duration": furyExpireTime
+                };
+                const furyDamageBuf = {
+                    "uniqueHrid": "/buff_uniques/fury_damage",
+                    "typeHrid": "/buff_types/fury_damage",
+                    "ratioBoost": furyAmount * source.combatDetails.combatStats.fury,
+                    "ratioBoostLevelBonus": 0,
+                    "flatBoost": 0,
+                    "flatBoostLevelBonus": 0,
+                    "startTime": "0001-01-01T00:00:00Z",
+                    "duration": furyExpireTime
+                };
 
-                    if (attackResult.didHit) {
-                        source.addBuff(furyAccuracyBuf, this.simulationTime);
-                        source.addBuff(furyDamageBuf, this.simulationTime);
-                    }
-                    else if (nowFuryValue == 0) {
-                        source.removeBuff(furyAccuracyBuf);
-                        source.removeBuff(furyDamageBuf);
-                    }
+                if (furyAmount > 0) {
+                    let furyExpirationEvent = new _events_furyExpirationEvent__WEBPACK_IMPORTED_MODULE_16__["default"](this.simulationTime + furyExpireTime, furyAmount, source);
+                    this.eventQueue.addEvent(furyExpirationEvent);
+
+                    source.addBuff(furyAccuracyBuf, this.simulationTime);
+                    source.addBuff(furyDamageBuf, this.simulationTime);
+                }
+                else {
+                    source.removeBuff(furyAccuracyBuf);
+                    source.removeBuff(furyDamageBuf);
                 }
             }
 
             if (target.combatDetails.combatStats.weaken > 0) {
-                source.isWeakened = true;
-                source.weakenExpireTime = this.simulationTime + 15000000000;
+                const weakenExpireTime = 15000000000;
                 let currentWeakenEvent = this.eventQueue.getMatching((event) => event.type == _events_weakenExpirationEvent__WEBPACK_IMPORTED_MODULE_15__["default"].type && event.source == source);
                 let weakenAmount = 0;
                 if (currentWeakenEvent)
                     weakenAmount = currentWeakenEvent.weakenAmount;
                 this.eventQueue.clearMatching((event) => event.type == _events_weakenExpirationEvent__WEBPACK_IMPORTED_MODULE_15__["default"].type && event.source == source);
-                let weakenExpirationEvent = new _events_weakenExpirationEvent__WEBPACK_IMPORTED_MODULE_15__["default"](source.weakenExpireTime, weakenAmount, source);
-                source.weakenPercentage = weakenExpirationEvent.weakenAmount * 2 / 100;
+                let weakenExpirationEvent = new _events_weakenExpirationEvent__WEBPACK_IMPORTED_MODULE_15__["default"](this.simulationTime + 15000000000, weakenAmount, source);
+                const weakenBuff = {
+                    "uniqueHrid": "/buff_uniques/weaken",
+                    "typeHrid": "/buff_types/damage",
+                    "ratioBoost": -1 * target.combatDetails.combatStats.weaken * weakenExpirationEvent.weakenAmount,
+                    "ratioBoostLevelBonus": 0,
+                    "flatBoost": 0,
+                    "flatBoostLevelBonus": 0,
+                    "startTime": "0001-01-01T00:00:00Z",
+                    "duration": weakenExpireTime
+                };
+                source.addBuff(weakenBuff);
                 this.eventQueue.addEvent(weakenExpirationEvent);
             }
 
             if (!mayhem || (mayhem && attackResult.didHit) || (mayhem && i == (aliveTargets.length - 1))) {
+                let attackType = "autoAttack";
+                if (parryTarget) attackType = "parry";
                 this.simResult.addAttack(
                     source,
                     target,
@@ -1001,16 +1042,15 @@ class CombatSimulator extends EventTarget {
     }
 
     processCurseExpirationEvent(event) {
-        event.source.curseValue = 0;
+        event.source.removeExpiredBuffs(this.simulationTime);
     }
 
     processWeakenExpirationEvent(event) {
-        event.source.isWeakened = false;
-        event.source.weakenPercentage = 0;
+        event.source.removeExpiredBuffs(this.simulationTime);
     }
 
     processFuryExpirationEvent(event) {
-        event.source.furyValue = 0;
+        event.source.removeExpiredBuffs(this.simulationTime);
         console.log("Fury Timeout");
     }
 
@@ -1292,19 +1332,29 @@ class CombatSimulator extends EventTarget {
             return;
         }
 
-        let avoidTarget = []
+        let avoidTarget = [];
+
+        let isSkipParry = false;
 
         for (let target of targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0)) {
-            if (target.combatDetails.combatStats.parry > Math.random()) {
+            let parryTarget = undefined;
+            if (!isSkipParry) {
+                parryTarget = this.checkParry(targets);
+                if (abilityEffect.targetType == "allEnemies") {
+                    isSkipParry = true; //  parry on aoe run only once on first target
+                } 
+            }
+            
+            if (parryTarget) {
                 let tempTarget = source;
-                let tempSource = target;
+                let tempSource = parryTarget;
 
                 let attackResult = _combatUtilities__WEBPACK_IMPORTED_MODULE_0__["default"].processAttack(tempSource, tempTarget);
 
                 this.simResult.addAttack(
                     tempSource,
                     tempTarget,
-                    "autoAttack",
+                    "parry",
                     attackResult.didHit ? attackResult.damageDone : "miss"
                 );
 
@@ -1320,7 +1370,7 @@ class CombatSimulator extends EventTarget {
                     this.simResult.addAttack(tempTarget, tempSource, attackResult.thornType, attackResult.thornDamageDone);
                 }
                 if (attackResult.retaliationDamageDone > 0) {
-                    this.simResult.addAttack(tempSource, tempTarget, "retaliation", attackResult.retaliationDamageDone);
+                    this.simResult.addAttack(tempTarget, tempSource, "retaliation", attackResult.retaliationDamageDone);
                 }
 
                 if (tempTarget.combatDetails.currentHitpoints == 0) {
@@ -1423,23 +1473,47 @@ class CombatSimulator extends EventTarget {
                 }
 
                 if (attackResult.didHit && source.combatDetails.combatStats.curse > 0 && Math.random() < (100 / (100 + target.combatDetails.combatStats.tenacity))) {
-                    let curseExpireTime = this.simulationTime + 15000000000;
-                    target.addCurse(source.combatDetails.combatStats.curse);
-                    this.eventQueue.clearMatching((event) => event.type == _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"].type && event.source == target)
-                    let curseExpirationEvent = new _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"](curseExpireTime, target);
+                    const curseExpireTime = 15000000000;
+                    let currentCurseEvent = this.eventQueue.getMatching((event) => event.type == _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"].type && event.source == target);
+                    let currentCurseAmount = 0;
+                    if (currentCurseEvent) currentCurseAmount = currentCurseEvent.curseAmount;
+                    this.eventQueue.clearMatching((event) => event.type == _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"].type && event.source == target);
+
+                    let curseExpirationEvent = new _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"](this.simulationTime + curseExpireTime, currentCurseAmount, target);
+                    const curseBuff = {
+                        "uniqueHrid": "/buff_uniques/curse",
+                        "typeHrid": "/buff_types/damage_taken",
+                        "ratioBoost": 0,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": source.combatDetails.combatStats.curse * curseExpirationEvent.curseAmount,
+                        "flatBoostLevelBonus": 0,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": curseExpireTime
+                    };
+                    target.addBuff(curseBuff);
                     this.eventQueue.addEvent(curseExpirationEvent);
                 }
 
                 if (target.combatDetails.combatStats.weaken > 0) {
-                    source.isWeakened = true;
-                    source.weakenExpireTime = this.simulationTime + 15000000000;
+                    const weakenExpireTime = 15000000000;
+                    source.weakenExpireTime = this.simulationTime + weakenExpireTime;
                     let currentWeakenEvent = this.eventQueue.getMatching((event) => event.type == _events_weakenExpirationEvent__WEBPACK_IMPORTED_MODULE_15__["default"].type && event.source == source);
                     let weakenAmount = 0;
                     if (currentWeakenEvent)
                         weakenAmount = currentWeakenEvent.weakenAmount;
                     this.eventQueue.clearMatching((event) => event.type == _events_weakenExpirationEvent__WEBPACK_IMPORTED_MODULE_15__["default"].type && event.source == source);
-                    let weakenExpirationEvent = new _events_weakenExpirationEvent__WEBPACK_IMPORTED_MODULE_15__["default"](source.weakenExpireTime, weakenAmount, source);
-                    source.weakenPercentage = weakenExpirationEvent.weakenAmount * 2 / 100;
+                    let weakenExpirationEvent = new _events_weakenExpirationEvent__WEBPACK_IMPORTED_MODULE_15__["default"](this.simulationTime + weakenExpireTime, weakenAmount, source);
+                    const weakenBuff = {
+                        "uniqueHrid": "/buff_uniques/weaken",
+                        "typeHrid": "/buff_types/damage",
+                        "ratioBoost": -1 * target.combatDetails.combatStats.weaken * weakenExpirationEvent.weakenAmount,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 0,
+                        "flatBoostLevelBonus": 0,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": weakenExpireTime
+                    };
+                    source.addBuff(weakenBuff);
                     this.eventQueue.addEvent(weakenExpirationEvent);
                 }
 
@@ -1471,6 +1545,10 @@ class CombatSimulator extends EventTarget {
                 }
             }
 
+            if (abilityEffect.targetType == "allEnemies" && parryTarget)
+            {
+                break;
+            }
             if (abilityEffect.targetType == "enemy") {
                 break;
             }
@@ -1584,11 +1662,6 @@ class CombatUnit {
     blindExpireTime = null;
     isSilenced = false;
     silenceExpireTime = null;
-    curseValue = 0;
-    furyValue = 0;
-    isWeakened = false;
-    weakenExpireTime = null;
-    weakenPercentage = 0;
 
     // Base levels which don't change after initialization
     staminaLevel = 1;
@@ -1760,6 +1833,12 @@ class CombatUnit {
         this.combatDetails.maxManapoints = Math.floor
             (10 * (10 + this.combatDetails.intelligenceLevel) + this.combatDetails.combatStats.maxManapoints);
 
+        let accuracyRatioBoostFromFury = this.getBuffBoost("/buff_types/fury_accuracy").ratioBoost;
+        let damageRatioBoostFromFury = this.getBuffBoost("/buff_types/fury_damage").ratioBoost;
+        // if (accuracyRatioBoostFromFury > 0) {
+        //     console.log("Fury Boost: " + accuracyRatioBoostFromFury);
+        // }
+
         let accuracyRatioBoost = this.getBuffBoost("/buff_types/accuracy").ratioBoost;
         let damageRatioBoost = this.getBuffBoost("/buff_types/damage").ratioBoost;
 
@@ -1768,12 +1847,12 @@ class CombatUnit {
                 (10 + this.combatDetails.attackLevel) *
                 (1 + this.combatDetails.combatStats[style + "Accuracy"]) *
                 (1 + accuracyRatioBoost) *
-                (1 + this.furyValue);
+                (1 + accuracyRatioBoostFromFury);
             this.combatDetails[style + "MaxDamage"] =
                 (10 + this.combatDetails.meleeLevel) *
                 (1 + this.combatDetails.combatStats[style + "Damage"]) *
                 (1 + damageRatioBoost) *
-                (1 + this.furyValue);
+                (1 + damageRatioBoostFromFury);
             let baseEvasion = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats[style + "Evasion"]);
             this.combatDetails[style + "EvasionRating"] = baseEvasion;
             let evasionBoosts = this.getBuffBoosts("/buff_types/evasion");
@@ -1794,12 +1873,12 @@ class CombatUnit {
             (10 + this.combatDetails.attackLevel) *
             (1 + this.combatDetails.combatStats.rangedAccuracy) *
             (1 + accuracyRatioBoost) *
-            (1 + this.furyValue);
+            (1 + accuracyRatioBoostFromFury);
         this.combatDetails.rangedMaxDamage =
             (10 + this.combatDetails.rangedLevel) *
             (1 + this.combatDetails.combatStats.rangedDamage) *
             (1 + damageRatioBoost) *
-            (1 + this.furyValue);
+            (1 + damageRatioBoostFromFury);
 
         let baseRangedEvasion = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats.rangedEvasion);
         this.combatDetails.rangedEvasionRating = baseRangedEvasion;
@@ -1809,12 +1888,7 @@ class CombatUnit {
             this.combatDetails.rangedEvasionRating += baseRangedEvasion * boost.ratioBoost;
         }
 
-        let baseDamageTaken = this.curseValue;
-        this.combatDetails.combatStats.damageTaken = baseDamageTaken;
-        let damageTakens = this.getBuffBoosts("/buff_types/damage_taken");
-        for (const boost of damageTakens) {
-            this.combatDetails.combatStats.damageTaken += boost.flatBoost;
-        }
+        this.combatDetails.combatStats.damageTaken = this.getBuffBoost("/buff_types/damage_taken").flatBoost;
         // if (this.combatDetails.combatStats.damageTaken > 0) {
         //     console.log("Damage taken: " + this.combatDetails.combatStats.damageTaken);
         // }
@@ -1823,12 +1897,12 @@ class CombatUnit {
             (10 + this.combatDetails.attackLevel) *
             (1 + this.combatDetails.combatStats.magicAccuracy) *
             (1 + accuracyRatioBoost) *
-            (1 + this.furyValue);
+            (1 + accuracyRatioBoostFromFury);
         this.combatDetails.magicMaxDamage =
             (10 + this.combatDetails.magicLevel) *
             (1 + this.combatDetails.combatStats.magicDamage) *
             (1 + damageRatioBoost) *
-            (1 + this.furyValue);
+            (1 + damageRatioBoostFromFury);
 
         let baseMagicEvasion = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats.magicEvasion);
         this.combatDetails.magicEvasionRating = baseMagicEvasion;
@@ -1933,27 +2007,6 @@ class CombatUnit {
         this.combatDetails.combatStats.retaliation += this.getBuffBoost("/buff_types/retaliation").flatBoost;
     }
 
-    addCurse(curse) {
-        if (this.curseValue >= 0.1) {
-            return;
-        }
-
-        this.curseValue += curse;
-        this.updateCombatDetails();
-    }
-
-    updateFury(isHit, fury) {
-        if (isHit && this.furyValue < 0.15) {
-            this.furyValue += fury;
-        }
-        if (!isHit) {
-            this.furyValue = Math.floor(this.furyValue / fury / 2) * fury;
-        }
-
-        // console.log("Fury value: " + this.furyValue);
-        return this.furyValue;
-    }
-
     addBuff(buff, currentTime) {
         buff.startTime = currentTime;
         this.combatBuffs[buff.uniqueHrid] = buff;
@@ -2017,8 +2070,6 @@ class CombatUnit {
         this.isBlinded = false;
         this.blindExpireTime = null;
         this.combatDetails.combatStats.damageTaken = 0;
-        this.curseValue = 0; // max 0.1
-        this.furyValue = 0; // max 0.15
     }
 
     getBuffBoosts(type) {
@@ -2928,9 +2979,12 @@ __webpack_require__.r(__webpack_exports__);
 
 class CurseExpirationEvent extends _combatEvent__WEBPACK_IMPORTED_MODULE_0__["default"] {
     static type = "curseExpiration";
+    static maxCurseStacks = 5;
 
-    constructor(time, source) {
+    constructor(time, curseAmount, source) {
         super(CurseExpirationEvent.type, time);
+
+        this.curseAmount = Math.min(curseAmount + 1, CurseExpirationEvent.maxCurseStacks);
 
         this.source = source;
     }
@@ -3096,9 +3150,10 @@ __webpack_require__.r(__webpack_exports__);
 class FuryExpirationEvent extends _combatEvent__WEBPACK_IMPORTED_MODULE_0__["default"] {
     static type = "furyExpiration";
 
-    constructor(time, source) {
+    constructor(time, furyAmount, source) {
         super(FuryExpirationEvent.type, time);
         
+        this.furyAmount = furyAmount;
         this.source = source;
     }
 }
@@ -4002,6 +4057,8 @@ class Trigger {
             case "/combat_trigger_conditions/arcane_reflection":
             case "/combat_trigger_conditions/fracturing_impact":
             case "/combat_trigger_conditions/maim":
+            case "/combat_trigger_conditions/curse":
+            case "/combat_trigger_conditions/weaken":
                 let buffHrid = "/buff_uniques";
                 buffHrid += this.conditionHrid.slice(this.conditionHrid.lastIndexOf("/"));
                 return source.combatBuffs[buffHrid];
@@ -4040,10 +4097,6 @@ class Trigger {
                 return source.isBlinded || source.blindExpireTime == currentTime;
             case "/combat_trigger_conditions/silence_status":
                 return source.isSilenced || source.silenceExpireTime == currentTime;
-            case "/combat_trigger_conditions/curse":
-                return source.curseValue > 0;
-            case "/combat_trigger_conditions/weaken":
-                return source.isWeakened || source.weakenExpireTime == currentTime;
             default:
                 throw new Error("Unknown conditionHrid in trigger: " + this.conditionHrid);
         }

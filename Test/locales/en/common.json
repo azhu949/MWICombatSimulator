@@ -62,6 +62,7 @@
         "damageDone": "Damage Done",
         "damageTaken": "Damage Taken",
         "damageOverTime": "damageOverTime",
+        "parryAttack": "Parry Attack",
         "source": "Source",
         "hitChance": "Hitchance",
         "totalExperience": "Total Experience",

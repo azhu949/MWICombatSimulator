@@ -62,6 +62,7 @@
         "damageDone": "造成伤害",
         "damageTaken": "承受伤害",
         "damageOverTime": "持续伤害",
+        "parryAttack": "招架攻击",
         "source": "来源",
         "hitChance": "命中率",
         "totalExperience": "总经验",
