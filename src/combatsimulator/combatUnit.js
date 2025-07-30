@@ -6,11 +6,7 @@ class CombatUnit {
     blindExpireTime = null;
     isSilenced = false;
     silenceExpireTime = null;
-    curseValue = 0;
     furyValue = 0;
-    isWeakened = false;
-    weakenExpireTime = null;
-    weakenPercentage = 0;
 
     // Base levels which don't change after initialization
     staminaLevel = 1;
@@ -231,12 +227,7 @@ class CombatUnit {
             this.combatDetails.rangedEvasionRating += baseRangedEvasion * boost.ratioBoost;
         }
 
-        let baseDamageTaken = this.curseValue;
-        this.combatDetails.combatStats.damageTaken = baseDamageTaken;
-        let damageTakens = this.getBuffBoosts("/buff_types/damage_taken");
-        for (const boost of damageTakens) {
-            this.combatDetails.combatStats.damageTaken += boost.flatBoost;
-        }
+        this.combatDetails.combatStats.damageTaken = this.getBuffBoost("/buff_types/damage_taken").flatBoost;
         // if (this.combatDetails.combatStats.damageTaken > 0) {
         //     console.log("Damage taken: " + this.combatDetails.combatStats.damageTaken);
         // }
@@ -355,14 +346,6 @@ class CombatUnit {
         this.combatDetails.combatStats.retaliation += this.getBuffBoost("/buff_types/retaliation").flatBoost;
     }
 
-    addCurse(curse) {
-        if (this.curseValue >= 0.1) {
-            return;
-        }
-
-        this.curseValue += curse;
-        this.updateCombatDetails();
-    }
 
     updateFury(isHit, fury) {
         if (isHit && this.furyValue < 0.15) {
@@ -439,7 +422,6 @@ class CombatUnit {
         this.isBlinded = false;
         this.blindExpireTime = null;
         this.combatDetails.combatStats.damageTaken = 0;
-        this.curseValue = 0; // max 0.1
         this.furyValue = 0; // max 0.15
     }
 

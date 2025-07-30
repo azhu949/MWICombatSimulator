@@ -270,6 +270,18 @@ class CombatSimulator extends EventTarget {
         }
     }
 
+    checkParry(targets) {
+        let parryUnits = targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0 && unit.combatDetails.combatStats.parry > 0);
+        if (parryUnits.length <= 0) {
+            return undefined;
+        }
+        let randomIndex = Math.floor(Math.random() * parryUnits.length);
+        if (parryUnits[randomIndex].combatDetails.combatStats.parry > Math.random()) {
+            return parryUnits[randomIndex];
+        }
+        return undefined;
+    }
+
     processAutoAttackEvent(event) {
         // console.log("source:", event.source.hrid);
         // console.log("aa " + (this.simulationTime / 1000000000));
@@ -301,10 +313,10 @@ class CombatSimulator extends EventTarget {
             }
             let source = event.source;
 
-            if (target.combatDetails.combatStats.parry > Math.random()) {
-                let temp = source;
-                source = target;
-                target = temp;
+            let parryTarget = this.checkParry(targets);
+            if (parryTarget) {
+                target = source;
+                source = parryTarget;
             }
 
             let attackResult = CombatUtilities.processAttack(source, target);
@@ -312,10 +324,24 @@ class CombatSimulator extends EventTarget {
             let mayhem = source.combatDetails.combatStats.mayhem > Math.random();
 
             if (attackResult.didHit && source.combatDetails.combatStats.curse > 0) {
-                let curseExpireTime = this.simulationTime + 15000000000;
-                target.addCurse(source.combatDetails.combatStats.curse);
-                this.eventQueue.clearMatching((event) => event.type == CurseExpirationEvent.type && event.source == target)
-                let curseExpirationEvent = new CurseExpirationEvent(curseExpireTime, target);
+                const curseExpireTime = 15000000000;
+                let currentCurseEvent = this.eventQueue.getMatching((event) => event.type == CurseExpirationEvent.type && event.source == target);
+                let currentCurseAmount = 0;
+                if (currentCurseEvent) currentCurseAmount = currentCurseEvent.curseAmount;
+                this.eventQueue.clearMatching((event) => event.type == CurseExpirationEvent.type && event.source == target);
+
+                let curseExpirationEvent = new CurseExpirationEvent(this.simulationTime + curseExpireTime, currentCurseAmount, target);
+                const curseBuff = {
+                    "uniqueHrid": "/buff_uniques/curse",
+                    "typeHrid": "/buff_types/damage_taken",
+                    "ratioBoost": 0,
+                    "ratioBoostLevelBonus": 0,
+                    "flatBoost": source.combatDetails.combatStats.curse * curseExpirationEvent.curseAmount,
+                    "flatBoostLevelBonus": 0,
+                    "startTime": "0001-01-01T00:00:00Z",
+                    "duration": curseExpireTime
+                };
+                target.addBuff(curseBuff);
                 this.eventQueue.addEvent(curseExpirationEvent);
             }
 
@@ -366,19 +392,30 @@ class CombatSimulator extends EventTarget {
             }
 
             if (target.combatDetails.combatStats.weaken > 0) {
-                source.isWeakened = true;
-                source.weakenExpireTime = this.simulationTime + 15000000000;
+                const weakenExpireTime = 15000000000;
                 let currentWeakenEvent = this.eventQueue.getMatching((event) => event.type == WeakenExpirationEvent.type && event.source == source);
                 let weakenAmount = 0;
                 if (currentWeakenEvent)
                     weakenAmount = currentWeakenEvent.weakenAmount;
                 this.eventQueue.clearMatching((event) => event.type == WeakenExpirationEvent.type && event.source == source);
-                let weakenExpirationEvent = new WeakenExpirationEvent(source.weakenExpireTime, weakenAmount, source);
-                source.weakenPercentage = weakenExpirationEvent.weakenAmount * 2 / 100;
+                let weakenExpirationEvent = new WeakenExpirationEvent(this.simulationTime + 15000000000, weakenAmount, source);
+                const weakenBuff = {
+                    "uniqueHrid": "/buff_uniques/weaken",
+                    "typeHrid": "/buff_types/damage",
+                    "ratioBoost": -1 * target.combatDetails.combatStats.weaken * weakenExpirationEvent.weakenAmount,
+                    "ratioBoostLevelBonus": 0,
+                    "flatBoost": 0,
+                    "flatBoostLevelBonus": 0,
+                    "startTime": "0001-01-01T00:00:00Z",
+                    "duration": weakenExpireTime
+                };
+                source.addBuff(weakenBuff);
                 this.eventQueue.addEvent(weakenExpirationEvent);
             }
 
             if (!mayhem || (mayhem && attackResult.didHit) || (mayhem && i == (aliveTargets.length - 1))) {
+                let attackType = "autoAttack";
+                if (parryTarget) attackType = "parry";
                 this.simResult.addAttack(
                     source,
                     target,
@@ -703,12 +740,11 @@ class CombatSimulator extends EventTarget {
     }
 
     processCurseExpirationEvent(event) {
-        event.source.curseValue = 0;
+        event.source.removeExpiredBuffs(this.simulationTime);
     }
 
     processWeakenExpirationEvent(event) {
-        event.source.isWeakened = false;
-        event.source.weakenPercentage = 0;
+        event.source.removeExpiredBuffs(this.simulationTime);
     }
 
     processFuryExpirationEvent(event) {
@@ -994,19 +1030,29 @@ class CombatSimulator extends EventTarget {
             return;
         }
 
-        let avoidTarget = []
+        let avoidTarget = [];
+
+        let isSkipParry = false;
 
         for (let target of targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0)) {
-            if (target.combatDetails.combatStats.parry > Math.random()) {
+            let parryTarget = undefined;
+            if (!isSkipParry) {
+                parryTarget = this.checkParry(targets);
+                if (abilityEffect.targetType == "allEnemies") {
+                    isSkipParry = true; //  parry on aoe run only once on first target
+                } 
+            }
+            
+            if (parryTarget) {
                 let tempTarget = source;
-                let tempSource = target;
+                let tempSource = parryTarget;
 
                 let attackResult = CombatUtilities.processAttack(tempSource, tempTarget);
 
                 this.simResult.addAttack(
                     tempSource,
                     tempTarget,
-                    "autoAttack",
+                    "parry",
                     attackResult.didHit ? attackResult.damageDone : "miss"
                 );
 
@@ -1022,7 +1068,7 @@ class CombatSimulator extends EventTarget {
                     this.simResult.addAttack(tempTarget, tempSource, attackResult.thornType, attackResult.thornDamageDone);
                 }
                 if (attackResult.retaliationDamageDone > 0) {
-                    this.simResult.addAttack(tempSource, tempTarget, "retaliation", attackResult.retaliationDamageDone);
+                    this.simResult.addAttack(tempTarget, tempSource, "retaliation", attackResult.retaliationDamageDone);
                 }
 
                 if (tempTarget.combatDetails.currentHitpoints == 0) {
@@ -1125,23 +1171,47 @@ class CombatSimulator extends EventTarget {
                 }
 
                 if (attackResult.didHit && source.combatDetails.combatStats.curse > 0 && Math.random() < (100 / (100 + target.combatDetails.combatStats.tenacity))) {
-                    let curseExpireTime = this.simulationTime + 15000000000;
-                    target.addCurse(source.combatDetails.combatStats.curse);
-                    this.eventQueue.clearMatching((event) => event.type == CurseExpirationEvent.type && event.source == target)
-                    let curseExpirationEvent = new CurseExpirationEvent(curseExpireTime, target);
+                    const curseExpireTime = 15000000000;
+                    let currentCurseEvent = this.eventQueue.getMatching((event) => event.type == CurseExpirationEvent.type && event.source == target);
+                    let currentCurseAmount = 0;
+                    if (currentCurseEvent) currentCurseAmount = currentCurseEvent.curseAmount;
+                    this.eventQueue.clearMatching((event) => event.type == CurseExpirationEvent.type && event.source == target);
+
+                    let curseExpirationEvent = new CurseExpirationEvent(this.simulationTime + curseExpireTime, currentCurseAmount, target);
+                    const curseBuff = {
+                        "uniqueHrid": "/buff_uniques/curse",
+                        "typeHrid": "/buff_types/damage_taken",
+                        "ratioBoost": 0,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": source.combatDetails.combatStats.curse * curseExpirationEvent.curseAmount,
+                        "flatBoostLevelBonus": 0,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": curseExpireTime
+                    };
+                    target.addBuff(curseBuff);
                     this.eventQueue.addEvent(curseExpirationEvent);
                 }
 
                 if (target.combatDetails.combatStats.weaken > 0) {
-                    source.isWeakened = true;
-                    source.weakenExpireTime = this.simulationTime + 15000000000;
+                    const weakenExpireTime = 15000000000;
+                    source.weakenExpireTime = this.simulationTime + weakenExpireTime;
                     let currentWeakenEvent = this.eventQueue.getMatching((event) => event.type == WeakenExpirationEvent.type && event.source == source);
                     let weakenAmount = 0;
                     if (currentWeakenEvent)
                         weakenAmount = currentWeakenEvent.weakenAmount;
                     this.eventQueue.clearMatching((event) => event.type == WeakenExpirationEvent.type && event.source == source);
-                    let weakenExpirationEvent = new WeakenExpirationEvent(source.weakenExpireTime, weakenAmount, source);
-                    source.weakenPercentage = weakenExpirationEvent.weakenAmount * 2 / 100;
+                    let weakenExpirationEvent = new WeakenExpirationEvent(this.simulationTime + weakenExpireTime, weakenAmount, source);
+                    const weakenBuff = {
+                        "uniqueHrid": "/buff_uniques/weaken",
+                        "typeHrid": "/buff_types/damage",
+                        "ratioBoost": -1 * target.combatDetails.combatStats.weaken * weakenExpirationEvent.weakenAmount,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 0,
+                        "flatBoostLevelBonus": 0,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": weakenExpireTime
+                    };
+                    source.addBuff(weakenBuff);
                     this.eventQueue.addEvent(weakenExpirationEvent);
                 }
 
@@ -1173,6 +1243,10 @@ class CombatSimulator extends EventTarget {
                 }
             }
 
+            if (abilityEffect.targetType == "allEnemies" && parryTarget)
+            {
+                break;
+            }
             if (abilityEffect.targetType == "enemy") {
                 break;
             }

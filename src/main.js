@@ -2343,6 +2343,10 @@ function createDamageTable(resultDiv, damageDone, secondsSimulated) {
                 abilityText = "Auto Attack";
                 abilityFullHrid = "combatUnit.autoAttack";
                 break;
+            case "parry":
+                abilityText = "Parry Attack";
+                abilityFullHrid = "common:simulationResults.parryAttack";
+                break;
             case "damageOverTime":
                 abilityText = "Damage Over Time";
                 abilityFullHrid = "common:simulationResults.damageOverTime";
