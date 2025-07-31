@@ -1129,9 +1129,9 @@ function getDropProfit(simResult, playerToDisplay) {
             }
             for (let [name, dropObject] of dropMap.entries()) {
                 if (totalDropMap.has(name)) {
-                    totalDropMap.set(name, Math.round((totalDropMap.get(name) + dropObject.number) / numberOfPlayers));
+                    totalDropMap.set(name, totalDropMap.get(name) + dropObject.number);
                 } else {
-                    totalDropMap.set(name, Math.round(dropObject.number / numberOfPlayers));
+                    totalDropMap.set(name, dropObject.number);
                 }
                 if (noRngTotalDropMap.has(name)) {
                     noRngTotalDropMap.set(name, noRngTotalDropMap.get(name) + dropObject.noRngDropAmount);
@@ -1152,6 +1152,11 @@ function getDropProfit(simResult, playerToDisplay) {
                 }
             }
         }
+    }
+
+    // 在计算完所有掉落后，将总掉落分配给每个玩家
+    for (let [name, totalAmount] of totalDropMap.entries()) {
+        totalDropMap.set(name, Math.round(totalAmount / numberOfPlayers));
     }
 
     let noRngTotal = 0;
@@ -1452,9 +1457,9 @@ function showKills(simResult, playerToDisplay) {
         }
         for (let [name, dropObject] of dropMap.entries()) {
             if (totalDropMap.has(name)) {
-                totalDropMap.set(name, Math.round((totalDropMap.get(name) + dropObject.number) / numberOfPlayers));
+                totalDropMap.set(name, totalDropMap.get(name) + dropObject.number);
             } else {
-                totalDropMap.set(name, Math.round(dropObject.number / numberOfPlayers));
+                totalDropMap.set(name, dropObject.number);
             }
             if (noRngTotalDropMap.has(name)) {
                 noRngTotalDropMap.set(name, noRngTotalDropMap.get(name) + dropObject.noRngDropAmount);
@@ -1474,6 +1479,11 @@ function showKills(simResult, playerToDisplay) {
                 noRngTotalDropMap.set(name, dropObject.noRngDropAmount);
             }
         }
+    }
+
+    // 在计算完所有掉落后，将总掉落分配给每个玩家
+    for (let [name, totalAmount] of totalDropMap.entries()) {
+        totalDropMap.set(name, Math.round(totalAmount / numberOfPlayers));
     }
 
     let revenueModalTable = document.querySelector("#revenueTable > tbody");
