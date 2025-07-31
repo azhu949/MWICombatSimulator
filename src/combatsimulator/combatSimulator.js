@@ -350,7 +350,7 @@ class CombatSimulator extends EventTarget {
                 this.eventQueue.clearMatching((event) => event.type == FuryExpirationEvent.type && event.source == source);
 
                 const furyExpireTime = 15000000000;
-                const maxFuryStack = 5;
+                const maxFuryStack = 6;
 
                 let furyAmount = 0;
                 if (currentFuryEvent) furyAmount = currentFuryEvent.furyAmount;
@@ -439,8 +439,8 @@ class CombatSimulator extends EventTarget {
             if (attackResult.thornDamageDone > 0) {
                 this.simResult.addAttack(target, source, attackResult.thornType, attackResult.thornDamageDone);
             }
-            if (attackResult.retaliationDamageDone > 0) {
-                this.simResult.addAttack(target, source, "retaliation", attackResult.retaliationDamageDone);
+            if (target.combatDetails.combatStats.retaliation > 0) {
+                this.simResult.addAttack(target, source, "retaliation", attackResult.retaliationDamageDone > 0?attackResult.retaliationDamageDone:"miss");
             }
 
             if (target.combatDetails.currentHitpoints == 0) {
@@ -963,6 +963,8 @@ class CombatSimulator extends EventTarget {
         }
 
         if (source.combatDetails.combatStats.ripple > 0 && Math.random() < source.combatDetails.combatStats.ripple) {
+            let manapointsAdded = source.addManapoints(10);
+            this.simResult.addManapointsGained(source, "ripple", manapointsAdded);
             for (const skill of source.abilities) {
                 if (skill && skill.lastUsed) {
                     const remainingCooldown = skill.lastUsed + skill.cooldownDuration - this.simulationTime;
@@ -1229,8 +1231,8 @@ class CombatSimulator extends EventTarget {
                 if (attackResult.thornDamageDone > 0) {
                     this.simResult.addAttack(target, source, attackResult.thornType, attackResult.thornDamageDone);
                 }
-                if (attackResult.retaliationDamageDone > 0) {
-                    this.simResult.addAttack(target, source, "retaliation", attackResult.retaliationDamageDone);
+                if (target.combatDetails.combatStats.retaliation > 0) {
+                    this.simResult.addAttack(target, source, "retaliation", attackResult.retaliationDamageDone > 0 ? attackResult.retaliationDamageDone : "miss");
                 }
 
                 if (target.combatDetails.currentHitpoints == 0) {

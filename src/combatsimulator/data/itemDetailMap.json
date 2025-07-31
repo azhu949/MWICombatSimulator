@@ -216,7 +216,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/alchemy",
-                    "level": 40
+                    "level": 50
                 }
             ],
             "combatStats": {},
@@ -260,7 +260,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/attack",
-                    "level": 40
+                    "level": 50
                 }
             ],
             "combatStats": {
@@ -305,7 +305,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/brewing",
-                    "level": 40
+                    "level": 50
                 }
             ],
             "combatStats": {},
@@ -349,7 +349,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/cheesesmithing",
-                    "level": 40
+                    "level": 50
                 }
             ],
             "combatStats": {},
@@ -393,7 +393,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/cooking",
-                    "level": 40
+                    "level": 50
                 }
             ],
             "combatStats": {},
@@ -437,7 +437,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/crafting",
-                    "level": 40
+                    "level": 50
                 }
             ],
             "combatStats": {},
@@ -481,7 +481,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/defense",
-                    "level": 40
+                    "level": 50
                 }
             ],
             "combatStats": {
@@ -526,7 +526,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/enhancing",
-                    "level": 40
+                    "level": 50
                 }
             ],
             "combatStats": {},
@@ -570,7 +570,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/foraging",
-                    "level": 40
+                    "level": 50
                 }
             ],
             "combatStats": {},
@@ -614,7 +614,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/intelligence",
-                    "level": 40
+                    "level": 50
                 }
             ],
             "combatStats": {
@@ -659,7 +659,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/magic",
-                    "level": 40
+                    "level": 50
                 }
             ],
             "combatStats": {
@@ -704,7 +704,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/melee",
-                    "level": 40
+                    "level": 50
                 }
             ],
             "combatStats": {
@@ -749,7 +749,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/milking",
-                    "level": 40
+                    "level": 50
                 }
             ],
             "combatStats": {},
@@ -793,7 +793,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/ranged",
-                    "level": 40
+                    "level": 50
                 }
             ],
             "combatStats": {
@@ -838,7 +838,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/stamina",
-                    "level": 40
+                    "level": 50
                 }
             ],
             "combatStats": {
@@ -883,7 +883,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/tailoring",
-                    "level": 40
+                    "level": 50
                 }
             ],
             "combatStats": {},
@@ -978,7 +978,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/woodcutting",
-                    "level": 40
+                    "level": 50
                 }
             ],
             "combatStats": {},
@@ -3161,21 +3161,21 @@
                     "/combat_styles/smash"
                 ],
                 "damageType": "/damage_types/physical",
-                "attackInterval": 4000000000,
+                "attackInterval": 3600000000,
                 "smashAccuracy": 0.32,
-                "defensiveDamage": 0.2,
+                "defensiveDamage": 0.24,
                 "armor": 16,
                 "threat": 24,
                 "primaryTraining": "/skills/defense",
-                "defenseExperience": 0.04
+                "defenseExperience": 0.02
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "smashAccuracy": 0.0064,
-                "defensiveDamage": 0.004,
+                "defensiveDamage": 0.0048,
                 "armor": 0.32,
                 "threat": 0.48,
-                "defenseExperience": 0.0008
+                "defenseExperience": 0.0004
             },
             "noncombatEnhancementBonuses": {}
         },
@@ -4749,7 +4749,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/alchemy",
-                    "level": 20
+                    "level": 25
                 }
             ],
             "combatStats": {},
@@ -4793,7 +4793,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/attack",
-                    "level": 20
+                    "level": 25
                 }
             ],
             "combatStats": {
@@ -4838,7 +4838,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/brewing",
-                    "level": 20
+                    "level": 25
                 }
             ],
             "combatStats": {},
@@ -4882,7 +4882,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/cheesesmithing",
-                    "level": 20
+                    "level": 25
                 }
             ],
             "combatStats": {},
@@ -4926,7 +4926,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/cooking",
-                    "level": 20
+                    "level": 25
                 }
             ],
             "combatStats": {},
@@ -4970,7 +4970,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/crafting",
-                    "level": 20
+                    "level": 25
                 }
             ],
             "combatStats": {},
@@ -5014,7 +5014,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/defense",
-                    "level": 20
+                    "level": 25
                 }
             ],
             "combatStats": {
@@ -5059,7 +5059,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/enhancing",
-                    "level": 20
+                    "level": 25
                 }
             ],
             "combatStats": {},
@@ -5103,7 +5103,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/foraging",
-                    "level": 20
+                    "level": 25
                 }
             ],
             "combatStats": {},
@@ -5147,7 +5147,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/intelligence",
-                    "level": 20
+                    "level": 25
                 }
             ],
             "combatStats": {
@@ -5192,7 +5192,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/magic",
-                    "level": 20
+                    "level": 25
                 }
             ],
             "combatStats": {
@@ -5237,7 +5237,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/melee",
-                    "level": 20
+                    "level": 25
                 }
             ],
             "combatStats": {
@@ -5282,7 +5282,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/milking",
-                    "level": 20
+                    "level": 25
                 }
             ],
             "combatStats": {},
@@ -5326,7 +5326,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/ranged",
-                    "level": 20
+                    "level": 25
                 }
             ],
             "combatStats": {
@@ -5371,7 +5371,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/stamina",
-                    "level": 20
+                    "level": 25
                 }
             ],
             "combatStats": {
@@ -5416,7 +5416,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/tailoring",
-                    "level": 20
+                    "level": 25
                 }
             ],
             "combatStats": {},
@@ -5507,7 +5507,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/woodcutting",
-                    "level": 20
+                    "level": 25
                 }
             ],
             "combatStats": {},
@@ -8403,21 +8403,21 @@
                     "/combat_styles/smash"
                 ],
                 "damageType": "/damage_types/physical",
-                "attackInterval": 4000000000,
+                "attackInterval": 3600000000,
                 "smashAccuracy": 0.48,
-                "defensiveDamage": 0.3,
+                "defensiveDamage": 0.36,
                 "armor": 24,
                 "threat": 36,
                 "primaryTraining": "/skills/defense",
-                "defenseExperience": 0.06
+                "defenseExperience": 0.03
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "smashAccuracy": 0.0096,
-                "defensiveDamage": 0.006,
+                "defensiveDamage": 0.0072,
                 "armor": 0.48,
                 "threat": 0.72,
-                "defenseExperience": 0.0012
+                "defenseExperience": 0.0006
             },
             "noncombatEnhancementBonuses": {}
         },
@@ -11990,21 +11990,21 @@
                     "/combat_styles/smash"
                 ],
                 "damageType": "/damage_types/physical",
-                "attackInterval": 4000000000,
+                "attackInterval": 3600000000,
                 "smashAccuracy": 0.16,
-                "defensiveDamage": 0.1,
+                "defensiveDamage": 0.12,
                 "armor": 8,
                 "threat": 12,
                 "primaryTraining": "/skills/defense",
-                "defenseExperience": 0.02
+                "defenseExperience": 0.01
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "smashAccuracy": 0.0032,
-                "defensiveDamage": 0.002,
+                "defensiveDamage": 0.0024,
                 "armor": 0.16,
                 "threat": 0.24,
-                "defenseExperience": 0.0004
+                "defenseExperience": 0.0002
             },
             "noncombatEnhancementBonuses": {}
         },
@@ -15745,21 +15745,21 @@
                     "/combat_styles/smash"
                 ],
                 "damageType": "/damage_types/physical",
-                "attackInterval": 4000000000,
+                "attackInterval": 3600000000,
                 "smashAccuracy": 0.64,
-                "defensiveDamage": 0.4,
+                "defensiveDamage": 0.48,
                 "armor": 32,
                 "threat": 48,
                 "primaryTraining": "/skills/defense",
-                "defenseExperience": 0.08
+                "defenseExperience": 0.04
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "smashAccuracy": 0.0128,
-                "defensiveDamage": 0.008,
+                "defensiveDamage": 0.0096,
                 "armor": 0.64,
                 "threat": 0.96,
-                "defenseExperience": 0.0016
+                "defenseExperience": 0.0008
             },
             "noncombatEnhancementBonuses": {}
         },
@@ -20307,7 +20307,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/alchemy",
-                    "level": 60
+                    "level": 75
                 }
             ],
             "combatStats": {},
@@ -20351,7 +20351,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/attack",
-                    "level": 60
+                    "level": 75
                 }
             ],
             "combatStats": {
@@ -20396,7 +20396,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/brewing",
-                    "level": 60
+                    "level": 75
                 }
             ],
             "combatStats": {},
@@ -20440,7 +20440,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/cheesesmithing",
-                    "level": 60
+                    "level": 75
                 }
             ],
             "combatStats": {},
@@ -20484,7 +20484,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/cooking",
-                    "level": 60
+                    "level": 75
                 }
             ],
             "combatStats": {},
@@ -20528,7 +20528,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/crafting",
-                    "level": 60
+                    "level": 75
                 }
             ],
             "combatStats": {},
@@ -20572,7 +20572,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/defense",
-                    "level": 60
+                    "level": 75
                 }
             ],
             "combatStats": {
@@ -20617,7 +20617,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/enhancing",
-                    "level": 60
+                    "level": 75
                 }
             ],
             "combatStats": {},
@@ -20661,7 +20661,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/foraging",
-                    "level": 60
+                    "level": 75
                 }
             ],
             "combatStats": {},
@@ -20705,7 +20705,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/intelligence",
-                    "level": 60
+                    "level": 75
                 }
             ],
             "combatStats": {
@@ -20750,7 +20750,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/magic",
-                    "level": 60
+                    "level": 75
                 }
             ],
             "combatStats": {
@@ -20795,7 +20795,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/melee",
-                    "level": 60
+                    "level": 75
                 }
             ],
             "combatStats": {
@@ -20840,7 +20840,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/milking",
-                    "level": 60
+                    "level": 75
                 }
             ],
             "combatStats": {},
@@ -20884,7 +20884,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/ranged",
-                    "level": 60
+                    "level": 75
                 }
             ],
             "combatStats": {
@@ -20929,7 +20929,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/stamina",
-                    "level": 60
+                    "level": 75
                 }
             ],
             "combatStats": {
@@ -20974,7 +20974,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/tailoring",
-                    "level": 60
+                    "level": 75
                 }
             ],
             "combatStats": {},
@@ -21069,7 +21069,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/woodcutting",
-                    "level": 60
+                    "level": 75
                 }
             ],
             "combatStats": {},
@@ -25032,7 +25032,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/alchemy",
-                    "level": 100
+                    "level": 125
                 }
             ],
             "combatStats": {},
@@ -25076,7 +25076,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/attack",
-                    "level": 100
+                    "level": 125
                 }
             ],
             "combatStats": {
@@ -25121,7 +25121,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/brewing",
-                    "level": 100
+                    "level": 125
                 }
             ],
             "combatStats": {},
@@ -25165,7 +25165,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/cheesesmithing",
-                    "level": 100
+                    "level": 125
                 }
             ],
             "combatStats": {},
@@ -25209,7 +25209,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/cooking",
-                    "level": 100
+                    "level": 125
                 }
             ],
             "combatStats": {},
@@ -25253,7 +25253,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/crafting",
-                    "level": 100
+                    "level": 125
                 }
             ],
             "combatStats": {},
@@ -25297,7 +25297,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/defense",
-                    "level": 100
+                    "level": 125
                 }
             ],
             "combatStats": {
@@ -25342,7 +25342,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/enhancing",
-                    "level": 100
+                    "level": 125
                 }
             ],
             "combatStats": {},
@@ -25386,7 +25386,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/foraging",
-                    "level": 100
+                    "level": 125
                 }
             ],
             "combatStats": {},
@@ -25430,7 +25430,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/intelligence",
-                    "level": 100
+                    "level": 125
                 }
             ],
             "combatStats": {
@@ -25475,7 +25475,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/magic",
-                    "level": 100
+                    "level": 125
                 }
             ],
             "combatStats": {
@@ -25520,7 +25520,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/melee",
-                    "level": 100
+                    "level": 125
                 }
             ],
             "combatStats": {
@@ -25565,7 +25565,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/milking",
-                    "level": 100
+                    "level": 125
                 }
             ],
             "combatStats": {},
@@ -25609,7 +25609,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/ranged",
-                    "level": 100
+                    "level": 125
                 }
             ],
             "combatStats": {
@@ -25654,7 +25654,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/stamina",
-                    "level": 100
+                    "level": 125
                 }
             ],
             "combatStats": {
@@ -25699,7 +25699,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/tailoring",
-                    "level": 100
+                    "level": 125
                 }
             ],
             "combatStats": {},
@@ -25743,7 +25743,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/woodcutting",
-                    "level": 100
+                    "level": 125
                 }
             ],
             "combatStats": {},
@@ -26008,28 +26008,28 @@
                     "/combat_styles/smash"
                 ],
                 "damageType": "/damage_types/physical",
-                "attackInterval": 4000000000,
-                "smashAccuracy": 1.25,
-                "defensiveDamage": 0.88,
+                "attackInterval": 3600000000,
+                "smashAccuracy": 1.35,
+                "defensiveDamage": 1.1,
                 "armor": 65,
                 "waterResistance": 30,
                 "natureResistance": 30,
                 "fireResistance": 30,
                 "threat": 100,
                 "primaryTraining": "/skills/defense",
-                "defenseExperience": 0.16,
+                "defenseExperience": 0.12,
                 "weaken": 0.03
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "smashAccuracy": 0.025,
-                "defensiveDamage": 0.0176,
+                "smashAccuracy": 0.027000000000000003,
+                "defensiveDamage": 0.022000000000000002,
                 "armor": 1.3,
                 "waterResistance": 0.6,
                 "natureResistance": 0.6,
                 "fireResistance": 0.6,
                 "threat": 2,
-                "defenseExperience": 0.0032
+                "defenseExperience": 0.0024
             },
             "noncombatEnhancementBonuses": {}
         },
@@ -27213,21 +27213,21 @@
                     "/combat_styles/smash"
                 ],
                 "damageType": "/damage_types/physical",
-                "attackInterval": 4000000000,
+                "attackInterval": 3600000000,
                 "smashAccuracy": 0.96,
-                "defensiveDamage": 0.6,
+                "defensiveDamage": 0.72,
                 "armor": 48,
                 "threat": 72,
                 "primaryTraining": "/skills/defense",
-                "defenseExperience": 0.12
+                "defenseExperience": 0.06
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "smashAccuracy": 0.0192,
-                "defensiveDamage": 0.012,
+                "defensiveDamage": 0.0144,
                 "armor": 0.96,
                 "threat": 1.44,
-                "defenseExperience": 0.0024
+                "defenseExperience": 0.0012
             },
             "noncombatEnhancementBonuses": {}
         },
@@ -32866,7 +32866,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/alchemy",
-                    "level": 80
+                    "level": 100
                 }
             ],
             "combatStats": {},
@@ -32910,7 +32910,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/attack",
-                    "level": 80
+                    "level": 100
                 }
             ],
             "combatStats": {
@@ -32955,7 +32955,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/brewing",
-                    "level": 80
+                    "level": 100
                 }
             ],
             "combatStats": {},
@@ -32999,7 +32999,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/cheesesmithing",
-                    "level": 80
+                    "level": 100
                 }
             ],
             "combatStats": {},
@@ -33043,7 +33043,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/cooking",
-                    "level": 80
+                    "level": 100
                 }
             ],
             "combatStats": {},
@@ -33087,7 +33087,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/crafting",
-                    "level": 80
+                    "level": 100
                 }
             ],
             "combatStats": {},
@@ -33131,7 +33131,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/defense",
-                    "level": 80
+                    "level": 100
                 }
             ],
             "combatStats": {
@@ -33176,7 +33176,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/enhancing",
-                    "level": 80
+                    "level": 100
                 }
             ],
             "combatStats": {},
@@ -33220,7 +33220,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/foraging",
-                    "level": 80
+                    "level": 100
                 }
             ],
             "combatStats": {},
@@ -33264,7 +33264,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/intelligence",
-                    "level": 80
+                    "level": 100
                 }
             ],
             "combatStats": {
@@ -33309,7 +33309,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/magic",
-                    "level": 80
+                    "level": 100
                 }
             ],
             "combatStats": {
@@ -33354,7 +33354,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/melee",
-                    "level": 80
+                    "level": 100
                 }
             ],
             "combatStats": {
@@ -33399,7 +33399,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/milking",
-                    "level": 80
+                    "level": 100
                 }
             ],
             "combatStats": {},
@@ -33443,7 +33443,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/ranged",
-                    "level": 80
+                    "level": 100
                 }
             ],
             "combatStats": {
@@ -33488,7 +33488,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/stamina",
-                    "level": 80
+                    "level": 100
                 }
             ],
             "combatStats": {
@@ -33533,7 +33533,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/tailoring",
-                    "level": 80
+                    "level": 100
                 }
             ],
             "combatStats": {},
@@ -33577,7 +33577,7 @@
             "levelRequirements": [
                 {
                     "skillHrid": "/skills/woodcutting",
-                    "level": 80
+                    "level": 100
                 }
             ],
             "combatStats": {},
@@ -35977,7 +35977,7 @@
     "/items/philosophers_stone": {
         "hrid": "/items/philosophers_stone",
         "name": "Philosopher's Stone",
-        "description": "A legendary stone of immense melee.",
+        "description": "A legendary stone of immense power.",
         "categoryHrid": "/item_categories/resource",
         "sellPrice": 10000000,
         "isTradable": true,
@@ -38572,21 +38572,21 @@
                     "/combat_styles/smash"
                 ],
                 "damageType": "/damage_types/physical",
-                "attackInterval": 4000000000,
+                "attackInterval": 3600000000,
                 "smashAccuracy": 0.8,
-                "defensiveDamage": 0.5,
+                "defensiveDamage": 0.6,
                 "armor": 40,
                 "threat": 60,
                 "primaryTraining": "/skills/defense",
-                "defenseExperience": 0.1
+                "defenseExperience": 0.05
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "smashAccuracy": 0.016,
-                "defensiveDamage": 0.01,
+                "defensiveDamage": 0.012,
                 "armor": 0.8,
                 "threat": 1.2,
-                "defenseExperience": 0.002
+                "defenseExperience": 0.001
             },
             "noncombatEnhancementBonuses": {}
         },
@@ -45688,27 +45688,27 @@
                     "/combat_styles/smash"
                 ],
                 "damageType": "/damage_types/physical",
-                "attackInterval": 4000000000,
-                "smashAccuracy": 1.12,
-                "defensiveDamage": 0.72,
+                "attackInterval": 3600000000,
+                "smashAccuracy": 1.15,
+                "defensiveDamage": 0.88,
                 "armor": 60,
                 "waterResistance": 10,
                 "natureResistance": 10,
                 "fireResistance": 10,
                 "threat": 80,
                 "primaryTraining": "/skills/defense",
-                "defenseExperience": 0.14
+                "defenseExperience": 0.09
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "smashAccuracy": 0.022400000000000003,
-                "defensiveDamage": 0.0144,
+                "smashAccuracy": 0.023,
+                "defensiveDamage": 0.0176,
                 "armor": 1.2,
                 "waterResistance": 0.2,
                 "natureResistance": 0.2,
                 "fireResistance": 0.2,
                 "threat": 1.6,
-                "defenseExperience": 0.0028000000000000004
+                "defenseExperience": 0.0018
             },
             "noncombatEnhancementBonuses": {}
         },
@@ -52937,21 +52937,21 @@
                     "/combat_styles/smash"
                 ],
                 "damageType": "/damage_types/physical",
-                "attackInterval": 4000000000,
+                "attackInterval": 3600000000,
                 "smashAccuracy": 0.24,
-                "defensiveDamage": 0.15,
+                "defensiveDamage": 0.18,
                 "armor": 12,
                 "threat": 18,
                 "primaryTraining": "/skills/defense",
-                "defenseExperience": 0.03
+                "defenseExperience": 0.015
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "smashAccuracy": 0.0048,
-                "defensiveDamage": 0.003,
+                "defensiveDamage": 0.0036,
                 "armor": 0.24,
                 "threat": 0.36,
-                "defenseExperience": 0.0006
+                "defenseExperience": 0.0003
             },
             "noncombatEnhancementBonuses": {}
         },

@@ -2116,6 +2116,10 @@ function showManapointsGained(simResult, playerToDisplay) {
                 sourceText = "Mana Leech";
                 sourceFullHrid = "combatStats.manaLeech";
                 break;
+            case "ripple":
+                sourceText = "Ripple";
+                sourceFullHrid = "combatStats.ripple";
+                break;
             default:
                 sourceText = itemDetailMap[source].name;
                 sourceFullHrid = "itemNames." + source;

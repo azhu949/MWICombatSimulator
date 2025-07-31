@@ -237,7 +237,6 @@ class CombatUtilities {
                 (Math.pow(target.combatDetails.smashAccuracyRating, 1.4) + Math.pow(source.combatDetails.smashEvasionRating, 1.4));
 
             if (retaliationHitChance > Math.random()) {
-                let retaliationDamage = Math.ceil(target.combatDetails.combatStats.retaliation * damageRoll);
                 let sourceEffectiveArmor = source.combatDetails.totalArmor;
                 if (sourceEffectiveArmor > 0) {
                     sourceEffectiveArmor = sourceEffectiveArmor / (1.0 + target.combatDetails.combatStats.armorPenetration);
@@ -252,8 +251,8 @@ class CombatUtilities {
                 let sourceDamageTakenMultiplier = 1.0 + source.combatDetails.combatStats.damageTaken;
                 let retaliationDamageMultiplier = targetTaskDamageMultiplier * sourceDamageTakenMultiplier;
 
-                let retaliationMinDamage = retaliationDamageMultiplier * retaliationDamage;
-                let retaliationMaxDamage = retaliationDamageMultiplier * (target.combatDetails.defensiveMaxDamage + retaliationDamage);
+                let retaliationMinDamage = retaliationDamageMultiplier * target.combatDetails.combatStats.retaliation * damageRoll;
+                let retaliationMaxDamage = retaliationDamageMultiplier * target.combatDetails.combatStats.retaliation * (target.combatDetails.defensiveMaxDamage + damageRoll);
 
                 let retaliationDamageRoll = CombatUtilities.randomInt(retaliationMinDamage, retaliationMaxDamage);
                 let mitigatedRetaliationDamage = Math.ceil(sourceDamageTakenRatio * retaliationDamageRoll);

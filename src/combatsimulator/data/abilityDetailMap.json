@@ -84,8 +84,8 @@
                         "typeHrid": "/buff_types/retaliation",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
-                        "flatBoost": 0.15,
-                        "flatBoostLevelBonus": 0.0015,
+                        "flatBoost": 0.25,
+                        "flatBoostLevelBonus": 0.0025,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 30000000000
                     }
@@ -997,7 +997,7 @@
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
                         "flatBoost": 0.05,
-                        "flatBoostLevelBonus": 0.0012,
+                        "flatBoostLevelBonus": 0.001,
                         "multiplierForSkillHrid": "/skills/defense",
                         "multiplierPerSkillLevel": 0.005,
                         "startTime": "0001-01-01T00:00:00Z",
@@ -2811,8 +2811,8 @@
                         "typeHrid": "/buff_types/physical_thorns",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
-                        "flatBoost": 0.08,
-                        "flatBoostLevelBonus": 0.0008,
+                        "flatBoost": 0.06,
+                        "flatBoostLevelBonus": 0.0006,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 30000000000
                     },
@@ -2821,8 +2821,8 @@
                         "typeHrid": "/buff_types/elemental_thorns",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
-                        "flatBoost": 0.08,
-                        "flatBoostLevelBonus": 0.0008,
+                        "flatBoost": 0.06,
+                        "flatBoostLevelBonus": 0.0006,
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": 30000000000
                     }
