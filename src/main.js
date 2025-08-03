@@ -1662,6 +1662,12 @@ function showKills(simResult, playerToDisplay) {
         encountersRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.encounters");
     }
 
+    if (simResult.maxEnrageStack > 0) {
+        let enrageRow = createRow(["col-md-6", "col-md-6 text-end"], ["Max Enrage Stack", simResult.maxEnrageStack]);
+        enrageRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.maxEnrageStack");
+        newChildren.push(enrageRow);
+    }
+
     newChildren.push(encountersRow);
 
     let monsters = Object.keys(simResult.deaths)

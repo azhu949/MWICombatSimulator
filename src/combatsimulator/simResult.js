@@ -30,6 +30,7 @@ class SimResult {
         this.dungeonsFailed = 0;
         this.maxWaveReached = 0;
         this.numberOfPlayers = numberOfPlayers;
+        this.maxEnrageStack = 0;
     }
 
     addDeath(unit) {

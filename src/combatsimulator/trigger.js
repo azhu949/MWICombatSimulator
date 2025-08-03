@@ -133,6 +133,7 @@ class Trigger {
             case "/combat_trigger_conditions/smoke_burst":
             case "/combat_trigger_conditions/speed_aura":
             case "/combat_trigger_conditions/toughness":
+            case "/combat_trigger_conditions/enrage":
                 let buffPrefix = "/buff_uniques";
                 buffPrefix += this.conditionHrid.slice(this.conditionHrid.lastIndexOf("/"));
                 let buffs = Object.keys(source.combatBuffs).filter(buff => buff.startsWith(buffPrefix));

@@ -15,6 +15,7 @@ import SilenceExpirationEvent from "./events/silenceExpirationEvent";
 import CurseExpirationEvent from "./events/curseExpirationEvent";
 import WeakenExpirationEvent from "./events/weakenExpirationEvent";
 import FuryExpirationEvent from "./events/furyExpirationEvent";
+import EnrageTickEvent from "./events/enrageTickEvent";
 import SimResult from "./simResult";
 import AbilityCastEndEvent from "./events/abilityCastEndEvent";
 import AwaitCooldownEvent from "./events/awaitCooldownEvent";
@@ -28,6 +29,7 @@ const REGEN_TICK_INTERVAL = 10 * ONE_SECOND;
 const ENEMY_RESPAWN_INTERVAL = 3 * ONE_SECOND;
 const PLAYER_RESPAWN_INTERVAL = 150 * ONE_SECOND;
 const RESTART_INTERVAL = 15 * ONE_SECOND;
+const ENRAGE_TICK_INTERVAL = 60 * ONE_SECOND;
 
 class CombatSimulator extends EventTarget {
     constructor(players, zone) {
@@ -172,6 +174,9 @@ class CombatSimulator extends EventTarget {
             case FuryExpirationEvent.type:
                 this.processFuryExpirationEvent(event);
                 break;
+            case EnrageTickEvent.type:
+                this.processEnrageTickEvent(event);
+                break;
             case AbilityCastEndEvent.type:
                 this.tryUseAbility(event.source, event.ability);
                 break;
@@ -248,6 +253,10 @@ class CombatSimulator extends EventTarget {
             this.simResult.updateTimeSpentAlive(enemy.hrid, true, this.simulationTime);
             //console.log(enemy.hrid, "spawned");
         });
+
+        this.eventQueue.clearEventsOfType(EnrageTickEvent.type);
+        let enrageTickEvent = new EnrageTickEvent(this.simulationTime + ENRAGE_TICK_INTERVAL, 1);
+        this.eventQueue.addEvent(enrageTickEvent);
 
         this.startAttacks();
     }
@@ -754,6 +763,75 @@ class CombatSimulator extends EventTarget {
     processFuryExpirationEvent(event) {
         event.source.removeExpiredBuffs(this.simulationTime);
         console.log("Fury Timeout");
+    }
+
+    processEnrageTickEvent(event) {
+        if (!this.enemies) return;
+        const maxEnrageStack = 10;
+        const isBossEnragePerTick = 10;
+        const noBossEnragePerTick = 3;
+        this.enemies.filter((enemy) => enemy.combatDetails.currentHitpoints > 0).forEach((enemy) => {
+            if (enemy.isBoss && event.currentTick % isBossEnragePerTick == 0) {
+                let nowStack = Math.min(maxEnrageStack, event.currentTick / isBossEnragePerTick);
+                console.log(enemy.hrid, " Boss ", nowStack, " stack Enrage Tick", event.currentTick, "nowTime", (this.simulationTime / 1000000000));
+
+                const enrageDamageBuff = {
+                        "uniqueHrid": "/buff_uniques/enrage_damage",
+                        "typeHrid": "/buff_types/damage",
+                        "ratioBoost": nowStack * 0.1,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 0,
+                        "flatBoostLevelBonus": 0,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": ENRAGE_TICK_INTERVAL
+                };
+                const enrageAccuracyBuff = {
+                        "uniqueHrid": "/buff_uniques/enrage_accuracy",
+                        "typeHrid": "/buff_types/accuracy",
+                        "ratioBoost": nowStack * 0.1,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 0,
+                        "flatBoostLevelBonus": 0,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": ENRAGE_TICK_INTERVAL
+                };
+                enemy.addBuff(enrageDamageBuff);
+                enemy.addBuff(enrageAccuracyBuff);
+                
+                this.simResult.maxEnrageStack = Math.max(this.simResult.maxEnrageStack, nowStack);
+            } else if (!enemy.isBoss && event.currentTick % noBossEnragePerTick == 0) {
+                let nowStack = Math.min(maxEnrageStack, event.currentTick / noBossEnragePerTick);
+                console.log(enemy.hrid, " Non-Boss ", nowStack, " stack Enrage Tick", event.currentTick, "nowTime", (this.simulationTime / 1000000000));
+
+                const enrageDamageBuff = {
+                        "uniqueHrid": "/buff_uniques/enrage_damage",
+                        "typeHrid": "/buff_types/damage",
+                        "ratioBoost": nowStack * 0.1,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 0,
+                        "flatBoostLevelBonus": 0,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": ENRAGE_TICK_INTERVAL
+                };
+                const enrageAccuracyBuff = {
+                        "uniqueHrid": "/buff_uniques/enrage_accuracy",
+                        "typeHrid": "/buff_types/accuracy",
+                        "ratioBoost": nowStack * 0.1,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 0,
+                        "flatBoostLevelBonus": 0,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": ENRAGE_TICK_INTERVAL
+                };
+                enemy.addBuff(enrageDamageBuff);
+                enemy.addBuff(enrageAccuracyBuff);
+
+                this.simResult.maxEnrageStack = Math.max(this.simResult.maxEnrageStack, nowStack);
+            }
+        });
+
+        let enrageTickEvent = new EnrageTickEvent(this.simulationTime + ENRAGE_TICK_INTERVAL, event.currentTick + 1);
+        this.eventQueue.addEvent(enrageTickEvent);
     }
 
     checkTriggers() {

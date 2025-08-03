@@ -17,6 +17,7 @@ class CombatUnit {
     magicLevel = 1;
 
     experience = 0;
+    isBoss = false;
 
     abilities = [null, null, null, null];
     food = [null, null, null];

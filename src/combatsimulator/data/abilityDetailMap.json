@@ -1004,6 +1004,18 @@
                         "duration": 120000000000
                     },
                     {
+                        "uniqueHrid": "/buff_uniques/guardian_aura_evasion",
+                        "typeHrid": "/buff_types/evasion",
+                        "ratioBoost": 0.02,
+                        "ratioBoostLevelBonus": 0.0004,
+                        "flatBoost": 0,
+                        "flatBoostLevelBonus": 0,
+                        "multiplierForSkillHrid": "/skills/defense",
+                        "multiplierPerSkillLevel": 0.005,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": 120000000000
+                    },
+                    {
                         "uniqueHrid": "/buff_uniques/guardian_aura_armor",
                         "typeHrid": "/buff_types/armor",
                         "ratioBoost": 0,

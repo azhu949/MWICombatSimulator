@@ -69,7 +69,8 @@
         "maxWaveReached" : "已完成最大波次",
         "dungeonsCompleted": "地下城的完成次数",
         "dungeonsFailed": "地下城的团灭次数",
-        "averageTime": "完成平均时间"
+        "averageTime": "完成平均时间",
+        "maxEnrageStack": "最大狂暴层数"
     },
     "selectPlayer": "选择玩家",
     "simAllZones": "模拟所有星球",

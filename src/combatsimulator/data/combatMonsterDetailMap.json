@@ -155,7 +155,7 @@
             "totalNatureResistance": 100,
             "totalFireResistance": 100,
             "totalThreat": 100,
-            "combatLevel": 1140,
+            "combatLevel": 1140.5,
             "staminaLevel": 2770,
             "intelligenceLevel": 2770,
             "attackLevel": 530,
@@ -209,7 +209,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.093,
+                "dropRate": 0.09303875,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -248,7 +248,7 @@
             "totalNatureResistance": 3.2,
             "totalFireResistance": 3.2,
             "totalThreat": 100,
-            "combatLevel": 21,
+            "combatLevel": 21.4,
             "staminaLevel": 20,
             "intelligenceLevel": 20,
             "attackLevel": 20,
@@ -336,7 +336,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/small_treasure_chest",
-                "dropRate": 0.0004911111111111111,
+                "dropRate": 0.000492,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -466,7 +466,7 @@
             "totalNatureResistance": -3,
             "totalFireResistance": 17,
             "totalThreat": 100,
-            "combatLevel": 40,
+            "combatLevel": 40.75,
             "staminaLevel": 30,
             "intelligenceLevel": 60,
             "attackLevel": 40,
@@ -533,7 +533,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/small_treasure_chest",
-                "dropRate": 0.0006666666666666666,
+                "dropRate": 0.0006687500000000001,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -708,7 +708,7 @@
             "totalNatureResistance": 142,
             "totalFireResistance": 182,
             "totalThreat": 100,
-            "combatLevel": 1286,
+            "combatLevel": 1286.5,
             "staminaLevel": 3240,
             "intelligenceLevel": 3240,
             "attackLevel": 490,
@@ -760,7 +760,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.12188777777777779,
+                "dropRate": 0.12193305555555556,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -1290,7 +1290,7 @@
             "totalNatureResistance": -2,
             "totalFireResistance": 18,
             "totalThreat": 100,
-            "combatLevel": 33,
+            "combatLevel": 33.25,
             "staminaLevel": 30,
             "intelligenceLevel": 30,
             "attackLevel": 25,
@@ -1359,7 +1359,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/small_treasure_chest",
-                "dropRate": 0.0006472222222222222,
+                "dropRate": 0.0006479166666666666,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -1591,7 +1591,7 @@
             "totalNatureResistance": 68,
             "totalFireResistance": 68,
             "totalThreat": 100,
-            "combatLevel": 484,
+            "combatLevel": 484.5,
             "staminaLevel": 940,
             "intelligenceLevel": 940,
             "attackLevel": 280,
@@ -1727,7 +1727,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.014506666666666668,
+                "dropRate": 0.01452,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -1949,7 +1949,7 @@
             "totalNatureResistance": 90,
             "totalFireResistance": 70,
             "totalThreat": 100,
-            "combatLevel": 479,
+            "combatLevel": 479.5,
             "staminaLevel": 870,
             "intelligenceLevel": 870,
             "attackLevel": 300,
@@ -2091,7 +2091,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.013325277777777776,
+                "dropRate": 0.013337638888888887,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -2266,7 +2266,7 @@
             "totalCastSpeed": 0.2,
             "stabAccuracyRating": 410,
             "slashAccuracyRating": 410,
-            "smashAccuracyRating": 410,
+            "smashAccuracyRating": 164,
             "rangedAccuracyRating": 410,
             "magicAccuracyRating": 410,
             "defensiveMaxDamage": 320,
@@ -2285,7 +2285,7 @@
             "totalNatureResistance": 212,
             "totalFireResistance": 162,
             "totalThreat": 100,
-            "combatLevel": 1194,
+            "combatLevel": 1194.5,
             "staminaLevel": 3040,
             "intelligenceLevel": 3040,
             "attackLevel": 400,
@@ -2300,6 +2300,7 @@
                 "damageType": "/damage_types/nature",
                 "attackInterval": 3500000000,
                 "autoAttackDamage": -0.5,
+                "smashAccuracy": -0.6,
                 "natureAmplify": 0.4,
                 "healingAmplify": 0.4,
                 "stabEvasion": 0.5,
@@ -2320,7 +2321,7 @@
             },
             {
                 "abilityHrid": "/abilities/arcane_reflection",
-                "level": 50,
+                "level": 1,
                 "minDifficultyTier": 0
             },
             {
@@ -2343,7 +2344,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.10659,
+                "dropRate": 0.1066325,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -2382,7 +2383,7 @@
             "totalNatureResistance": 62,
             "totalFireResistance": 62,
             "totalThreat": 100,
-            "combatLevel": 2663,
+            "combatLevel": 2663.5,
             "staminaLevel": 7990,
             "intelligenceLevel": 7990,
             "attackLevel": 400,
@@ -2430,7 +2431,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.6058675,
+                "dropRate": 0.60597875,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -2735,7 +2736,7 @@
             "totalNatureResistance": 124,
             "totalFireResistance": 124,
             "totalThreat": 100,
-            "combatLevel": 1351,
+            "combatLevel": 1351.5,
             "staminaLevel": 3460,
             "intelligenceLevel": 3460,
             "attackLevel": 480,
@@ -2789,7 +2790,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.13639666666666667,
+                "dropRate": 0.136445,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -3098,7 +3099,7 @@
             "totalNatureResistance": 52,
             "totalFireResistance": 52,
             "totalThreat": 100,
-            "combatLevel": 113,
+            "combatLevel": 113.5,
             "staminaLevel": 110,
             "intelligenceLevel": 130,
             "attackLevel": 110,
@@ -3184,7 +3185,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/medium_treasure_chest",
-                "dropRate": 0.00117,
+                "dropRate": 0.0011724074074074074,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -3223,7 +3224,7 @@
             "totalNatureResistance": 0.2,
             "totalFireResistance": 0.2,
             "totalThreat": 100,
-            "combatLevel": 2,
+            "combatLevel": 2.15,
             "staminaLevel": -5,
             "intelligenceLevel": 0,
             "attackLevel": 5,
@@ -3260,7 +3261,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/small_treasure_chest",
-                "dropRate": 0.00016833333333333332,
+                "dropRate": 0.00016845833333333334,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -3299,7 +3300,7 @@
             "totalNatureResistance": 3,
             "totalFireResistance": 3,
             "totalThreat": 100,
-            "combatLevel": 11,
+            "combatLevel": 11.25,
             "staminaLevel": 5,
             "intelligenceLevel": 5,
             "attackLevel": 15,
@@ -3363,7 +3364,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/small_treasure_chest",
-                "dropRate": 0.0002930555555555555,
+                "dropRate": 0.00029340277777777774,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -3402,7 +3403,7 @@
             "totalNatureResistance": 10,
             "totalFireResistance": 10,
             "totalThreat": 100,
-            "combatLevel": 85,
+            "combatLevel": 85.25,
             "staminaLevel": 140,
             "intelligenceLevel": 140,
             "attackLevel": 65,
@@ -3509,7 +3510,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/medium_treasure_chest",
-                "dropRate": 0.0012740740740740742,
+                "dropRate": 0.0012755555555555556,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -4003,7 +4004,7 @@
             "totalNatureResistance": 12,
             "totalFireResistance": 12,
             "totalThreat": 100,
-            "combatLevel": 49,
+            "combatLevel": 49.5,
             "staminaLevel": 70,
             "intelligenceLevel": 20,
             "attackLevel": 40,
@@ -4099,7 +4100,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/small_treasure_chest",
-                "dropRate": 0.0012450000000000002,
+                "dropRate": 0.0012475000000000001,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -4138,7 +4139,7 @@
             "totalNatureResistance": 12,
             "totalFireResistance": 12,
             "totalThreat": 100,
-            "combatLevel": 50,
+            "combatLevel": 50.25,
             "staminaLevel": 70,
             "intelligenceLevel": 20,
             "attackLevel": 40,
@@ -4234,7 +4235,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/small_treasure_chest",
-                "dropRate": 0.00125,
+                "dropRate": 0.00125125,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -4909,7 +4910,7 @@
             "totalNatureResistance": 20,
             "totalFireResistance": 50,
             "totalThreat": 100,
-            "combatLevel": 103,
+            "combatLevel": 103.5,
             "staminaLevel": 100,
             "intelligenceLevel": 120,
             "attackLevel": 100,
@@ -4995,7 +4996,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/medium_treasure_chest",
-                "dropRate": 0.0010355555555555554,
+                "dropRate": 0.0010377777777777777,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -5034,7 +5035,7 @@
             "totalNatureResistance": 66,
             "totalFireResistance": 66,
             "totalThreat": 100,
-            "combatLevel": 239,
+            "combatLevel": 239.5,
             "staminaLevel": 250,
             "intelligenceLevel": 300,
             "attackLevel": 200,
@@ -5126,7 +5127,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.0022425,
+                "dropRate": 0.00224625,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -5165,7 +5166,7 @@
             "totalNatureResistance": 248,
             "totalFireResistance": 148,
             "totalThreat": 100,
-            "combatLevel": 598,
+            "combatLevel": 598.5,
             "staminaLevel": 1340,
             "intelligenceLevel": 1340,
             "attackLevel": 270,
@@ -5213,7 +5214,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.024857777777777777,
+                "dropRate": 0.02487666666666667,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -5252,7 +5253,7 @@
             "totalNatureResistance": 162,
             "totalFireResistance": 162,
             "totalThreat": 100,
-            "combatLevel": 1339,
+            "combatLevel": 1339.5,
             "staminaLevel": 3490,
             "intelligenceLevel": 3490,
             "attackLevel": 440,
@@ -5306,7 +5307,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.1364025,
+                "dropRate": 0.13645125,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -5345,7 +5346,7 @@
             "totalNatureResistance": 4,
             "totalFireResistance": -16,
             "totalThreat": 100,
-            "combatLevel": 31,
+            "combatLevel": 31.5,
             "staminaLevel": 40,
             "intelligenceLevel": 40,
             "attackLevel": 30,
@@ -5435,7 +5436,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/small_treasure_chest",
-                "dropRate": 0.00077,
+                "dropRate": 0.0007716666666666666,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -5474,7 +5475,7 @@
             "totalNatureResistance": 14,
             "totalFireResistance": -6,
             "totalThreat": 100,
-            "combatLevel": 216,
+            "combatLevel": 216.5,
             "staminaLevel": 430,
             "intelligenceLevel": 430,
             "attackLevel": 140,
@@ -5603,7 +5604,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.00345,
+                "dropRate": 0.00345625,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -5642,7 +5643,7 @@
             "totalNatureResistance": 112,
             "totalFireResistance": 112,
             "totalThreat": 100,
-            "combatLevel": 1220,
+            "combatLevel": 1220.5,
             "staminaLevel": 3230,
             "intelligenceLevel": 3230,
             "attackLevel": 350,
@@ -5694,7 +5695,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.11555555555555555,
+                "dropRate": 0.11560069444444443,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -5733,7 +5734,7 @@
             "totalNatureResistance": 12,
             "totalFireResistance": 52,
             "totalThreat": 100,
-            "combatLevel": 198,
+            "combatLevel": 198.5,
             "staminaLevel": 130,
             "intelligenceLevel": 130,
             "attackLevel": 160,
@@ -5819,7 +5820,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.001075,
+                "dropRate": 0.0010770833333333333,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -5858,7 +5859,7 @@
             "totalNatureResistance": 216,
             "totalFireResistance": 216,
             "totalThreat": 100,
-            "combatLevel": 1409,
+            "combatLevel": 1409.5,
             "staminaLevel": 3800,
             "intelligenceLevel": 3800,
             "attackLevel": 400,
@@ -5912,7 +5913,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.15587722222222222,
+                "dropRate": 0.1559302777777778,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -5951,7 +5952,7 @@
             "totalNatureResistance": 4,
             "totalFireResistance": 24,
             "totalThreat": 100,
-            "combatLevel": 145,
+            "combatLevel": 145.75,
             "staminaLevel": 270,
             "intelligenceLevel": 270,
             "attackLevel": 100,
@@ -6069,7 +6070,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.0016513888888888887,
+                "dropRate": 0.0016574305555555557,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -6108,7 +6109,7 @@
             "totalNatureResistance": 6,
             "totalFireResistance": -14,
             "totalThreat": 100,
-            "combatLevel": 44,
+            "combatLevel": 44.5,
             "staminaLevel": 60,
             "intelligenceLevel": 60,
             "attackLevel": 40,
@@ -6181,7 +6182,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/small_treasure_chest",
-                "dropRate": 0.0010844444444444445,
+                "dropRate": 0.0010866666666666666,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -6220,7 +6221,7 @@
             "totalNatureResistance": -1,
             "totalFireResistance": 19,
             "totalThreat": 100,
-            "combatLevel": 42,
+            "combatLevel": 42.9,
             "staminaLevel": 38,
             "intelligenceLevel": 38,
             "attackLevel": 45,
@@ -6319,7 +6320,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/small_treasure_chest",
-                "dropRate": 0.0007797777777777778,
+                "dropRate": 0.0007826777777777779,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -6633,7 +6634,7 @@
             "totalNatureResistance": 26,
             "totalFireResistance": 16,
             "totalThreat": 100,
-            "combatLevel": 149,
+            "combatLevel": 149.5,
             "staminaLevel": 140,
             "intelligenceLevel": 140,
             "attackLevel": 160,
@@ -6742,7 +6743,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.0009288888888888888,
+                "dropRate": 0.0009311111111111113,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -6781,7 +6782,7 @@
             "totalNatureResistance": 1.6,
             "totalFireResistance": 1.6,
             "totalThreat": 100,
-            "combatLevel": 7,
+            "combatLevel": 7.3,
             "staminaLevel": 2,
             "intelligenceLevel": 2,
             "attackLevel": 10,
@@ -6846,7 +6847,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/small_treasure_chest",
-                "dropRate": 0.00025299999999999997,
+                "dropRate": 0.00025336666666666663,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -6885,7 +6886,7 @@
             "totalNatureResistance": 40,
             "totalFireResistance": 40,
             "totalThreat": 100,
-            "combatLevel": 469,
+            "combatLevel": 469.5,
             "staminaLevel": 840,
             "intelligenceLevel": 840,
             "attackLevel": 290,
@@ -6928,7 +6929,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.012637222222222222,
+                "dropRate": 0.012649166666666666,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -6967,7 +6968,7 @@
             "totalNatureResistance": 1,
             "totalFireResistance": 1,
             "totalThreat": 100,
-            "combatLevel": 3,
+            "combatLevel": 3.05,
             "staminaLevel": -3,
             "intelligenceLevel": 0,
             "attackLevel": 5,
@@ -7050,7 +7051,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/small_treasure_chest",
-                "dropRate": 0.0001917222222222222,
+                "dropRate": 0.00019176944444444444,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -7270,7 +7271,7 @@
             "totalNatureResistance": -4.3999999999999995,
             "totalFireResistance": 15.600000000000001,
             "totalThreat": 100,
-            "combatLevel": 25,
+            "combatLevel": 25.3,
             "staminaLevel": 25,
             "intelligenceLevel": 25,
             "attackLevel": 22,
@@ -7351,7 +7352,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/small_treasure_chest",
-                "dropRate": 0.0005625000000000001,
+                "dropRate": 0.0005632500000000001,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -7390,7 +7391,7 @@
             "totalNatureResistance": 1.6,
             "totalFireResistance": 1.6,
             "totalThreat": 100,
-            "combatLevel": 5,
+            "combatLevel": 5.6,
             "staminaLevel": 0,
             "intelligenceLevel": 0,
             "attackLevel": 8,
@@ -7455,7 +7456,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/small_treasure_chest",
-                "dropRate": 0.00022777777777777778,
+                "dropRate": 0.00022844444444444447,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -7494,7 +7495,7 @@
             "totalNatureResistance": 2,
             "totalFireResistance": 2,
             "totalThreat": 100,
-            "combatLevel": 10,
+            "combatLevel": 10.2,
             "staminaLevel": 4,
             "intelligenceLevel": 10,
             "attackLevel": 12,
@@ -7565,7 +7566,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/small_treasure_chest",
-                "dropRate": 0.00028000000000000003,
+                "dropRate": 0.0002802666666666667,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -7604,7 +7605,7 @@
             "totalNatureResistance": 3.6,
             "totalFireResistance": 3.6,
             "totalThreat": 100,
-            "combatLevel": 14,
+            "combatLevel": 14.7,
             "staminaLevel": 10,
             "intelligenceLevel": 10,
             "attackLevel": 14,
@@ -7669,7 +7670,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/small_treasure_chest",
-                "dropRate": 0.0003566666666666667,
+                "dropRate": 0.00035783333333333327,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -7708,7 +7709,7 @@
             "totalNatureResistance": 60,
             "totalFireResistance": 60,
             "totalThreat": 100,
-            "combatLevel": 209,
+            "combatLevel": 209.5,
             "staminaLevel": 220,
             "intelligenceLevel": 220,
             "attackLevel": 220,
@@ -7806,7 +7807,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.0017933333333333332,
+                "dropRate": 0.0017966666666666665,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -8081,7 +8082,7 @@
             "totalNatureResistance": 4.4,
             "totalFireResistance": 4.4,
             "totalThreat": 100,
-            "combatLevel": 18,
+            "combatLevel": 18.7,
             "staminaLevel": 16,
             "intelligenceLevel": 16,
             "attackLevel": 18,
@@ -8170,7 +8171,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/small_treasure_chest",
-                "dropRate": 0.000436,
+                "dropRate": 0.0004374,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -8209,7 +8210,7 @@
             "totalNatureResistance": 114,
             "totalFireResistance": 154,
             "totalThreat": 100,
-            "combatLevel": 3505,
+            "combatLevel": 3505.5,
             "staminaLevel": 10290,
             "intelligenceLevel": 10290,
             "attackLevel": 580,
@@ -8263,7 +8264,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 1.0209763888888888,
+                "dropRate": 1.0211195833333333,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -8302,7 +8303,7 @@
             "totalNatureResistance": 29,
             "totalFireResistance": 29,
             "totalThreat": 100,
-            "combatLevel": 292,
+            "combatLevel": 292.25,
             "staminaLevel": 545,
             "intelligenceLevel": 545,
             "attackLevel": 200,
@@ -8422,7 +8423,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.005524444444444445,
+                "dropRate": 0.0055283680555555555,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -8461,7 +8462,7 @@
             "totalNatureResistance": 112,
             "totalFireResistance": 152,
             "totalThreat": 100,
-            "combatLevel": 1047,
+            "combatLevel": 1047.5,
             "staminaLevel": 2740,
             "intelligenceLevel": 2740,
             "attackLevel": 310,
@@ -8516,7 +8517,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.08487,
+                "dropRate": 0.08490833333333332,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -8555,7 +8556,7 @@
             "totalNatureResistance": 12,
             "totalFireResistance": -8,
             "totalThreat": 100,
-            "combatLevel": 64,
+            "combatLevel": 64.5,
             "staminaLevel": 80,
             "intelligenceLevel": 80,
             "attackLevel": 50,
@@ -8687,7 +8688,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/small_treasure_chest",
-                "dropRate": 0.0014666666666666667,
+                "dropRate": 0.0014694444444444444,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -8726,7 +8727,7 @@
             "totalNatureResistance": 1,
             "totalFireResistance": 21,
             "totalThreat": 100,
-            "combatLevel": 52,
+            "combatLevel": 52.75,
             "staminaLevel": 60,
             "intelligenceLevel": 50,
             "attackLevel": 40,
@@ -8830,7 +8831,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/small_treasure_chest",
-                "dropRate": 0.0011200000000000001,
+                "dropRate": 0.0011233333333333334,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -8869,7 +8870,7 @@
             "totalNatureResistance": 64,
             "totalFireResistance": 44,
             "totalThreat": 100,
-            "combatLevel": 218,
+            "combatLevel": 218.5,
             "staminaLevel": 210,
             "intelligenceLevel": 210,
             "attackLevel": 250,
@@ -8972,7 +8973,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.0017761111111111111,
+                "dropRate": 0.0017793055555555557,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -9122,7 +9123,7 @@
             "totalNatureResistance": 62,
             "totalFireResistance": 42,
             "totalThreat": 100,
-            "combatLevel": 222,
+            "combatLevel": 222.5,
             "staminaLevel": 240,
             "intelligenceLevel": 240,
             "attackLevel": 230,
@@ -9224,7 +9225,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.0020366666666666667,
+                "dropRate": 0.002040277777777778,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -9263,7 +9264,7 @@
             "totalNatureResistance": 30,
             "totalFireResistance": 10,
             "totalThreat": 100,
-            "combatLevel": 176,
+            "combatLevel": 176.5,
             "staminaLevel": 170,
             "intelligenceLevel": 170,
             "attackLevel": 180,
@@ -9374,7 +9375,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/large_treasure_chest",
-                "dropRate": 0.0012455555555555553,
+                "dropRate": 0.0012481944444444444,
                 "minCount": 1,
                 "maxCount": 1
             }

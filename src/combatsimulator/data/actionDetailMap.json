@@ -20641,6 +20641,822 @@
         "buffs": null,
         "sortIndex": 4
     },
+    "/actions/crafting/advanced_alchemy_charm": {
+        "hrid": "/actions/crafting/advanced_alchemy_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Advanced Alchemy Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 50
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 3000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.125,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.0005324074074074074,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/basic_alchemy_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/basic_alchemy_charm",
+                "count": 8
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_alchemy_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 59
+    },
+    "/actions/crafting/advanced_attack_charm": {
+        "hrid": "/actions/crafting/advanced_attack_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Advanced Attack Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 50
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 3000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.125,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.0005324074074074074,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/basic_attack_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/basic_attack_charm",
+                "count": 8
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_attack_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 63
+    },
+    "/actions/crafting/advanced_brewing_charm": {
+        "hrid": "/actions/crafting/advanced_brewing_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Advanced Brewing Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 50
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 3000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.125,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.0005324074074074074,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/basic_brewing_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/basic_brewing_charm",
+                "count": 8
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_brewing_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 58
+    },
+    "/actions/crafting/advanced_cheesesmithing_charm": {
+        "hrid": "/actions/crafting/advanced_cheesesmithing_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Advanced Cheesesmithing Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 50
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 3000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.125,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.0005324074074074074,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/basic_cheesesmithing_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/basic_cheesesmithing_charm",
+                "count": 8
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_cheesesmithing_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 54
+    },
+    "/actions/crafting/advanced_cooking_charm": {
+        "hrid": "/actions/crafting/advanced_cooking_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Advanced Cooking Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 50
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 3000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.125,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.0005324074074074074,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/basic_cooking_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/basic_cooking_charm",
+                "count": 8
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_cooking_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 57
+    },
+    "/actions/crafting/advanced_crafting_charm": {
+        "hrid": "/actions/crafting/advanced_crafting_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Advanced Crafting Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 50
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 3000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.125,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.0005324074074074074,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/basic_crafting_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/basic_crafting_charm",
+                "count": 8
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_crafting_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 55
+    },
+    "/actions/crafting/advanced_defense_charm": {
+        "hrid": "/actions/crafting/advanced_defense_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Advanced Defense Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 50
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 3000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.125,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.0005324074074074074,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/basic_defense_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/basic_defense_charm",
+                "count": 8
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_defense_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 64
+    },
+    "/actions/crafting/advanced_enhancing_charm": {
+        "hrid": "/actions/crafting/advanced_enhancing_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Advanced Enhancing Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 50
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 3000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.125,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.0005324074074074074,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/basic_enhancing_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/basic_enhancing_charm",
+                "count": 8
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_enhancing_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 60
+    },
+    "/actions/crafting/advanced_foraging_charm": {
+        "hrid": "/actions/crafting/advanced_foraging_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Advanced Foraging Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 50
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 3000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.125,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.0005324074074074074,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/basic_foraging_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/basic_foraging_charm",
+                "count": 8
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_foraging_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 52
+    },
+    "/actions/crafting/advanced_intelligence_charm": {
+        "hrid": "/actions/crafting/advanced_intelligence_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Advanced Intelligence Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 50
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 3000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.125,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.0005324074074074074,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/basic_intelligence_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/basic_intelligence_charm",
+                "count": 8
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_intelligence_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 62
+    },
+    "/actions/crafting/advanced_magic_charm": {
+        "hrid": "/actions/crafting/advanced_magic_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Advanced Magic Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 50
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 3000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.125,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.0005324074074074074,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/basic_magic_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/basic_magic_charm",
+                "count": 8
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_magic_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 67
+    },
+    "/actions/crafting/advanced_melee_charm": {
+        "hrid": "/actions/crafting/advanced_melee_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Advanced Melee Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 50
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 3000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.125,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.0005324074074074074,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/basic_melee_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/basic_melee_charm",
+                "count": 8
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_melee_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 65
+    },
+    "/actions/crafting/advanced_milking_charm": {
+        "hrid": "/actions/crafting/advanced_milking_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Advanced Milking Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 50
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 3000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.125,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.0005324074074074074,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/basic_milking_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/basic_milking_charm",
+                "count": 8
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_milking_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 51
+    },
+    "/actions/crafting/advanced_ranged_charm": {
+        "hrid": "/actions/crafting/advanced_ranged_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Advanced Ranged Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 50
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 3000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.125,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.0005324074074074074,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/basic_ranged_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/basic_ranged_charm",
+                "count": 8
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_ranged_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 66
+    },
+    "/actions/crafting/advanced_stamina_charm": {
+        "hrid": "/actions/crafting/advanced_stamina_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Advanced Stamina Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 50
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 3000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.125,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.0005324074074074074,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/basic_stamina_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/basic_stamina_charm",
+                "count": 8
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_stamina_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 61
+    },
+    "/actions/crafting/advanced_tailoring_charm": {
+        "hrid": "/actions/crafting/advanced_tailoring_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Advanced Tailoring Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 50
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 3000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.125,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.0005324074074074074,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/basic_tailoring_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/basic_tailoring_charm",
+                "count": 8
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_tailoring_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 56
+    },
     "/actions/crafting/advanced_task_badge": {
         "hrid": "/actions/crafting/advanced_task_badge",
         "function": "/action_functions/production",
@@ -20692,6 +21508,57 @@
         "buffs": null,
         "sortIndex": 5
     },
+    "/actions/crafting/advanced_woodcutting_charm": {
+        "hrid": "/actions/crafting/advanced_woodcutting_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Advanced Woodcutting Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 50
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 3000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.125,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.0005324074074074074,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/basic_woodcutting_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/basic_woodcutting_charm",
+                "count": 8
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_woodcutting_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 53
+    },
     "/actions/crafting/arcane_bow": {
         "hrid": "/actions/crafting/arcane_bow",
         "function": "/action_functions/production",
@@ -20741,7 +21608,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 90
+        "sortIndex": 124
     },
     "/actions/crafting/arcane_crossbow": {
         "hrid": "/actions/crafting/arcane_crossbow",
@@ -20792,7 +21659,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 83
+        "sortIndex": 117
     },
     "/actions/crafting/arcane_fire_staff": {
         "hrid": "/actions/crafting/arcane_fire_staff",
@@ -20843,7 +21710,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 93
+        "sortIndex": 127
     },
     "/actions/crafting/arcane_lumber": {
         "hrid": "/actions/crafting/arcane_lumber",
@@ -20900,7 +21767,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 82
+        "sortIndex": 116
     },
     "/actions/crafting/arcane_nature_staff": {
         "hrid": "/actions/crafting/arcane_nature_staff",
@@ -20951,7 +21818,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 88
+        "sortIndex": 122
     },
     "/actions/crafting/arcane_shield": {
         "hrid": "/actions/crafting/arcane_shield",
@@ -21002,7 +21869,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 87
+        "sortIndex": 121
     },
     "/actions/crafting/arcane_water_staff": {
         "hrid": "/actions/crafting/arcane_water_staff",
@@ -21053,7 +21920,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 84
+        "sortIndex": 118
     },
     "/actions/crafting/basic_task_badge": {
         "hrid": "/actions/crafting/basic_task_badge",
@@ -21528,7 +22395,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 105
+        "sortIndex": 139
     },
     "/actions/crafting/blazing_trident": {
         "hrid": "/actions/crafting/blazing_trident",
@@ -21587,7 +22454,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 110
+        "sortIndex": 144
     },
     "/actions/crafting/blooming_trident": {
         "hrid": "/actions/crafting/blooming_trident",
@@ -21646,7 +22513,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 109
+        "sortIndex": 143
     },
     "/actions/crafting/catalyst_of_coinification": {
         "hrid": "/actions/crafting/catalyst_of_coinification",
@@ -21764,7 +22631,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 51
+        "sortIndex": 68
     },
     "/actions/crafting/catalyst_of_transmutation": {
         "hrid": "/actions/crafting/catalyst_of_transmutation",
@@ -21827,7 +22694,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 63
+        "sortIndex": 80
     },
     "/actions/crafting/cedar_bow": {
         "hrid": "/actions/crafting/cedar_bow",
@@ -22247,7 +23114,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 74
+        "sortIndex": 91
     },
     "/actions/crafting/chimerical_entry_key": {
         "hrid": "/actions/crafting/chimerical_entry_key",
@@ -22306,7 +23173,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 73
+        "sortIndex": 90
     },
     "/actions/crafting/crushed_amber": {
         "hrid": "/actions/crafting/crushed_amber",
@@ -22561,7 +23428,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 58
+        "sortIndex": 75
     },
     "/actions/crafting/crushed_pearl": {
         "hrid": "/actions/crafting/crushed_pearl",
@@ -22663,7 +23530,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 100
+        "sortIndex": 134
     },
     "/actions/crafting/crushed_sunstone": {
         "hrid": "/actions/crafting/crushed_sunstone",
@@ -22714,7 +23581,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 72
+        "sortIndex": 89
     },
     "/actions/crafting/cursed_bow": {
         "hrid": "/actions/crafting/cursed_bow",
@@ -22773,7 +23640,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 106
+        "sortIndex": 140
     },
     "/actions/crafting/earrings_of_armor": {
         "hrid": "/actions/crafting/earrings_of_armor",
@@ -22832,7 +23699,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 53
+        "sortIndex": 70
     },
     "/actions/crafting/earrings_of_critical_strike": {
         "hrid": "/actions/crafting/earrings_of_critical_strike",
@@ -22887,7 +23754,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 80
+        "sortIndex": 114
     },
     "/actions/crafting/earrings_of_essence_find": {
         "hrid": "/actions/crafting/earrings_of_essence_find",
@@ -23052,7 +23919,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 64
+        "sortIndex": 81
     },
     "/actions/crafting/earrings_of_regeneration": {
         "hrid": "/actions/crafting/earrings_of_regeneration",
@@ -23170,7 +24037,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 60
+        "sortIndex": 77
     },
     "/actions/crafting/enchanted_chest_key": {
         "hrid": "/actions/crafting/enchanted_chest_key",
@@ -23233,7 +24100,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 92
+        "sortIndex": 126
     },
     "/actions/crafting/enchanted_entry_key": {
         "hrid": "/actions/crafting/enchanted_entry_key",
@@ -23292,7 +24159,823 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 91
+        "sortIndex": 125
+    },
+    "/actions/crafting/expert_alchemy_charm": {
+        "hrid": "/actions/crafting/expert_alchemy_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Expert Alchemy Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 75
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 6000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.14583333333333331,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.00036458333333333335,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/advanced_alchemy_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/advanced_alchemy_charm",
+                "count": 6
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_alchemy_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 104
+    },
+    "/actions/crafting/expert_attack_charm": {
+        "hrid": "/actions/crafting/expert_attack_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Expert Attack Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 75
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 6000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.14583333333333331,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.00036458333333333335,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/advanced_attack_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/advanced_attack_charm",
+                "count": 6
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_attack_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 108
+    },
+    "/actions/crafting/expert_brewing_charm": {
+        "hrid": "/actions/crafting/expert_brewing_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Expert Brewing Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 75
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 6000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.14583333333333331,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.00036458333333333335,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/advanced_brewing_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/advanced_brewing_charm",
+                "count": 6
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_brewing_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 103
+    },
+    "/actions/crafting/expert_cheesesmithing_charm": {
+        "hrid": "/actions/crafting/expert_cheesesmithing_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Expert Cheesesmithing Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 75
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 6000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.14583333333333331,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.00036458333333333335,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/advanced_cheesesmithing_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/advanced_cheesesmithing_charm",
+                "count": 6
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_cheesesmithing_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 99
+    },
+    "/actions/crafting/expert_cooking_charm": {
+        "hrid": "/actions/crafting/expert_cooking_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Expert Cooking Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 75
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 6000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.14583333333333331,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.00036458333333333335,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/advanced_cooking_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/advanced_cooking_charm",
+                "count": 6
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_cooking_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 102
+    },
+    "/actions/crafting/expert_crafting_charm": {
+        "hrid": "/actions/crafting/expert_crafting_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Expert Crafting Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 75
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 6000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.14583333333333331,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.00036458333333333335,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/advanced_crafting_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/advanced_crafting_charm",
+                "count": 6
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_crafting_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 100
+    },
+    "/actions/crafting/expert_defense_charm": {
+        "hrid": "/actions/crafting/expert_defense_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Expert Defense Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 75
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 6000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.14583333333333331,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.00036458333333333335,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/advanced_defense_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/advanced_defense_charm",
+                "count": 6
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_defense_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 109
+    },
+    "/actions/crafting/expert_enhancing_charm": {
+        "hrid": "/actions/crafting/expert_enhancing_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Expert Enhancing Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 75
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 6000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.14583333333333331,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.00036458333333333335,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/advanced_enhancing_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/advanced_enhancing_charm",
+                "count": 6
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_enhancing_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 105
+    },
+    "/actions/crafting/expert_foraging_charm": {
+        "hrid": "/actions/crafting/expert_foraging_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Expert Foraging Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 75
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 6000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.14583333333333331,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.00036458333333333335,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/advanced_foraging_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/advanced_foraging_charm",
+                "count": 6
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_foraging_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 97
+    },
+    "/actions/crafting/expert_intelligence_charm": {
+        "hrid": "/actions/crafting/expert_intelligence_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Expert Intelligence Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 75
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 6000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.14583333333333331,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.00036458333333333335,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/advanced_intelligence_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/advanced_intelligence_charm",
+                "count": 6
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_intelligence_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 107
+    },
+    "/actions/crafting/expert_magic_charm": {
+        "hrid": "/actions/crafting/expert_magic_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Expert Magic Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 75
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 6000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.14583333333333331,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.00036458333333333335,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/advanced_magic_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/advanced_magic_charm",
+                "count": 6
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_magic_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 112
+    },
+    "/actions/crafting/expert_melee_charm": {
+        "hrid": "/actions/crafting/expert_melee_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Expert Melee Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 75
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 6000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.14583333333333331,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.00036458333333333335,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/advanced_melee_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/advanced_melee_charm",
+                "count": 6
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_melee_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 110
+    },
+    "/actions/crafting/expert_milking_charm": {
+        "hrid": "/actions/crafting/expert_milking_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Expert Milking Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 75
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 6000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.14583333333333331,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.00036458333333333335,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/advanced_milking_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/advanced_milking_charm",
+                "count": 6
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_milking_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 96
+    },
+    "/actions/crafting/expert_ranged_charm": {
+        "hrid": "/actions/crafting/expert_ranged_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Expert Ranged Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 75
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 6000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.14583333333333331,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.00036458333333333335,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/advanced_ranged_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/advanced_ranged_charm",
+                "count": 6
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_ranged_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 111
+    },
+    "/actions/crafting/expert_stamina_charm": {
+        "hrid": "/actions/crafting/expert_stamina_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Expert Stamina Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 75
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 6000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.14583333333333331,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.00036458333333333335,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/advanced_stamina_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/advanced_stamina_charm",
+                "count": 6
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_stamina_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 106
+    },
+    "/actions/crafting/expert_tailoring_charm": {
+        "hrid": "/actions/crafting/expert_tailoring_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Expert Tailoring Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 75
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 6000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.14583333333333331,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.00036458333333333335,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/advanced_tailoring_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/advanced_tailoring_charm",
+                "count": 6
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_tailoring_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 101
     },
     "/actions/crafting/expert_task_badge": {
         "hrid": "/actions/crafting/expert_task_badge",
@@ -23344,6 +25027,57 @@
         "maxPartySize": 0,
         "buffs": null,
         "sortIndex": 6
+    },
+    "/actions/crafting/expert_woodcutting_charm": {
+        "hrid": "/actions/crafting/expert_woodcutting_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Expert Woodcutting Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 75
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 6000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.14583333333333331,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.00036458333333333335,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/advanced_woodcutting_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/advanced_woodcutting_charm",
+                "count": 6
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_woodcutting_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 98
     },
     "/actions/crafting/eye_watch": {
         "hrid": "/actions/crafting/eye_watch",
@@ -23410,7 +25144,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 75
+        "sortIndex": 92
     },
     "/actions/crafting/fighter_necklace": {
         "hrid": "/actions/crafting/fighter_necklace",
@@ -23516,7 +25250,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 96
+        "sortIndex": 130
     },
     "/actions/crafting/ginkgo_bow": {
         "hrid": "/actions/crafting/ginkgo_bow",
@@ -23567,7 +25301,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 56
+        "sortIndex": 73
     },
     "/actions/crafting/ginkgo_crossbow": {
         "hrid": "/actions/crafting/ginkgo_crossbow",
@@ -23669,7 +25403,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 59
+        "sortIndex": 76
     },
     "/actions/crafting/ginkgo_lumber": {
         "hrid": "/actions/crafting/ginkgo_lumber",
@@ -23771,7 +25505,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 54
+        "sortIndex": 71
     },
     "/actions/crafting/ginkgo_shield": {
         "hrid": "/actions/crafting/ginkgo_shield",
@@ -23822,7 +25556,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 52
+        "sortIndex": 69
     },
     "/actions/crafting/ginkgo_water_staff": {
         "hrid": "/actions/crafting/ginkgo_water_staff",
@@ -23875,6 +25609,873 @@
         "buffs": null,
         "sortIndex": 49
     },
+    "/actions/crafting/grandmaster_alchemy_charm": {
+        "hrid": "/actions/crafting/grandmaster_alchemy_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Grandmaster Alchemy Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 125
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 24000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.1875,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0005381944444444444,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/master_alchemy_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/master_alchemy_charm",
+                "count": 2
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/grandmaster_alchemy_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 170
+    },
+    "/actions/crafting/grandmaster_attack_charm": {
+        "hrid": "/actions/crafting/grandmaster_attack_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Grandmaster Attack Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 125
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 24000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.1875,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0005381944444444444,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/master_attack_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/master_attack_charm",
+                "count": 2
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/grandmaster_attack_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 174
+    },
+    "/actions/crafting/grandmaster_brewing_charm": {
+        "hrid": "/actions/crafting/grandmaster_brewing_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Grandmaster Brewing Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 125
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 24000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.1875,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0005381944444444444,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/master_brewing_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/master_brewing_charm",
+                "count": 2
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/grandmaster_brewing_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 169
+    },
+    "/actions/crafting/grandmaster_cheesesmithing_charm": {
+        "hrid": "/actions/crafting/grandmaster_cheesesmithing_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Grandmaster Cheesesmithing Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 125
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 24000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.1875,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0005381944444444444,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/master_cheesesmithing_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/master_cheesesmithing_charm",
+                "count": 2
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/grandmaster_cheesesmithing_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 165
+    },
+    "/actions/crafting/grandmaster_cooking_charm": {
+        "hrid": "/actions/crafting/grandmaster_cooking_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Grandmaster Cooking Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 125
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 24000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.1875,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0005381944444444444,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/master_cooking_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/master_cooking_charm",
+                "count": 2
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/grandmaster_cooking_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 168
+    },
+    "/actions/crafting/grandmaster_crafting_charm": {
+        "hrid": "/actions/crafting/grandmaster_crafting_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Grandmaster Crafting Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 125
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 24000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.1875,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0005381944444444444,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/master_crafting_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/master_crafting_charm",
+                "count": 2
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/grandmaster_crafting_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 166
+    },
+    "/actions/crafting/grandmaster_defense_charm": {
+        "hrid": "/actions/crafting/grandmaster_defense_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Grandmaster Defense Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 125
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 24000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.1875,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0005381944444444444,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/master_defense_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/master_defense_charm",
+                "count": 2
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/grandmaster_defense_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 175
+    },
+    "/actions/crafting/grandmaster_enhancing_charm": {
+        "hrid": "/actions/crafting/grandmaster_enhancing_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Grandmaster Enhancing Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 125
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 24000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.1875,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0005381944444444444,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/master_enhancing_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/master_enhancing_charm",
+                "count": 2
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/grandmaster_enhancing_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 171
+    },
+    "/actions/crafting/grandmaster_foraging_charm": {
+        "hrid": "/actions/crafting/grandmaster_foraging_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Grandmaster Foraging Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 125
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 24000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.1875,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0005381944444444444,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/master_foraging_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/master_foraging_charm",
+                "count": 2
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/grandmaster_foraging_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 163
+    },
+    "/actions/crafting/grandmaster_intelligence_charm": {
+        "hrid": "/actions/crafting/grandmaster_intelligence_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Grandmaster Intelligence Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 125
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 24000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.1875,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0005381944444444444,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/master_intelligence_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/master_intelligence_charm",
+                "count": 2
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/grandmaster_intelligence_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 173
+    },
+    "/actions/crafting/grandmaster_magic_charm": {
+        "hrid": "/actions/crafting/grandmaster_magic_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Grandmaster Magic Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 125
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 24000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.1875,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0005381944444444444,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/master_magic_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/master_magic_charm",
+                "count": 2
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/grandmaster_magic_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 178
+    },
+    "/actions/crafting/grandmaster_melee_charm": {
+        "hrid": "/actions/crafting/grandmaster_melee_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Grandmaster Melee Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 125
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 24000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.1875,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0005381944444444444,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/master_melee_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/master_melee_charm",
+                "count": 2
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/grandmaster_melee_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 176
+    },
+    "/actions/crafting/grandmaster_milking_charm": {
+        "hrid": "/actions/crafting/grandmaster_milking_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Grandmaster Milking Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 125
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 24000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.1875,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0005381944444444444,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/master_milking_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/master_milking_charm",
+                "count": 2
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/grandmaster_milking_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 162
+    },
+    "/actions/crafting/grandmaster_ranged_charm": {
+        "hrid": "/actions/crafting/grandmaster_ranged_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Grandmaster Ranged Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 125
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 24000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.1875,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0005381944444444444,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/master_ranged_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/master_ranged_charm",
+                "count": 2
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/grandmaster_ranged_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 177
+    },
+    "/actions/crafting/grandmaster_stamina_charm": {
+        "hrid": "/actions/crafting/grandmaster_stamina_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Grandmaster Stamina Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 125
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 24000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.1875,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0005381944444444444,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/master_stamina_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/master_stamina_charm",
+                "count": 2
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/grandmaster_stamina_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 172
+    },
+    "/actions/crafting/grandmaster_tailoring_charm": {
+        "hrid": "/actions/crafting/grandmaster_tailoring_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Grandmaster Tailoring Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 125
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 24000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.1875,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0005381944444444444,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/master_tailoring_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/master_tailoring_charm",
+                "count": 2
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/grandmaster_tailoring_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 167
+    },
+    "/actions/crafting/grandmaster_woodcutting_charm": {
+        "hrid": "/actions/crafting/grandmaster_woodcutting_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Grandmaster Woodcutting Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 125
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 24000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.1875,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0005381944444444444,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/master_woodcutting_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/master_woodcutting_charm",
+                "count": 2
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/grandmaster_woodcutting_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 164
+    },
     "/actions/crafting/infernal_battlestaff": {
         "hrid": "/actions/crafting/infernal_battlestaff",
         "function": "/action_functions/production",
@@ -23924,7 +26525,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 97
+        "sortIndex": 131
     },
     "/actions/crafting/jackalope_staff": {
         "hrid": "/actions/crafting/jackalope_staff",
@@ -23975,7 +26576,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 98
+        "sortIndex": 132
     },
     "/actions/crafting/lumber": {
         "hrid": "/actions/crafting/lumber",
@@ -24077,7 +26678,874 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 89
+        "sortIndex": 123
+    },
+    "/actions/crafting/master_alchemy_charm": {
+        "hrid": "/actions/crafting/master_alchemy_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Master Alchemy Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 100
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 12000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.16666666666666666,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0004513888888888889,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/expert_alchemy_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/expert_alchemy_charm",
+                "count": 4
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/master_alchemy_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 153
+    },
+    "/actions/crafting/master_attack_charm": {
+        "hrid": "/actions/crafting/master_attack_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Master Attack Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 100
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 12000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.16666666666666666,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0004513888888888889,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/expert_attack_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/expert_attack_charm",
+                "count": 4
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/master_attack_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 157
+    },
+    "/actions/crafting/master_brewing_charm": {
+        "hrid": "/actions/crafting/master_brewing_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Master Brewing Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 100
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 12000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.16666666666666666,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0004513888888888889,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/expert_brewing_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/expert_brewing_charm",
+                "count": 4
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/master_brewing_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 152
+    },
+    "/actions/crafting/master_cheesesmithing_charm": {
+        "hrid": "/actions/crafting/master_cheesesmithing_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Master Cheesesmithing Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 100
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 12000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.16666666666666666,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0004513888888888889,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/expert_cheesesmithing_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/expert_cheesesmithing_charm",
+                "count": 4
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/master_cheesesmithing_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 148
+    },
+    "/actions/crafting/master_cooking_charm": {
+        "hrid": "/actions/crafting/master_cooking_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Master Cooking Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 100
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 12000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.16666666666666666,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0004513888888888889,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/expert_cooking_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/expert_cooking_charm",
+                "count": 4
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/master_cooking_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 151
+    },
+    "/actions/crafting/master_crafting_charm": {
+        "hrid": "/actions/crafting/master_crafting_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Master Crafting Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 100
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 12000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.16666666666666666,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0004513888888888889,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/expert_crafting_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/expert_crafting_charm",
+                "count": 4
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/master_crafting_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 149
+    },
+    "/actions/crafting/master_defense_charm": {
+        "hrid": "/actions/crafting/master_defense_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Master Defense Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 100
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 12000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.16666666666666666,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0004513888888888889,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/expert_defense_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/expert_defense_charm",
+                "count": 4
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/master_defense_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 158
+    },
+    "/actions/crafting/master_enhancing_charm": {
+        "hrid": "/actions/crafting/master_enhancing_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Master Enhancing Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 100
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 12000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.16666666666666666,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0004513888888888889,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/expert_enhancing_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/expert_enhancing_charm",
+                "count": 4
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/master_enhancing_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 154
+    },
+    "/actions/crafting/master_foraging_charm": {
+        "hrid": "/actions/crafting/master_foraging_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Master Foraging Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 100
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 12000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.16666666666666666,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0004513888888888889,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/expert_foraging_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/expert_foraging_charm",
+                "count": 4
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/master_foraging_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 146
+    },
+    "/actions/crafting/master_intelligence_charm": {
+        "hrid": "/actions/crafting/master_intelligence_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Master Intelligence Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 100
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 12000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.16666666666666666,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0004513888888888889,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/expert_intelligence_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/expert_intelligence_charm",
+                "count": 4
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/master_intelligence_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 156
+    },
+    "/actions/crafting/master_magic_charm": {
+        "hrid": "/actions/crafting/master_magic_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Master Magic Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 100
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 12000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.16666666666666666,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0004513888888888889,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/expert_magic_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/expert_magic_charm",
+                "count": 4
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/master_magic_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 161
+    },
+    "/actions/crafting/master_melee_charm": {
+        "hrid": "/actions/crafting/master_melee_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Master Melee Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 100
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 12000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.16666666666666666,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0004513888888888889,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/expert_melee_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/expert_melee_charm",
+                "count": 4
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/master_melee_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 159
+    },
+    "/actions/crafting/master_milking_charm": {
+        "hrid": "/actions/crafting/master_milking_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Master Milking Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 100
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 12000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.16666666666666666,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0004513888888888889,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/expert_milking_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/expert_milking_charm",
+                "count": 4
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/master_milking_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 145
+    },
+    "/actions/crafting/master_ranged_charm": {
+        "hrid": "/actions/crafting/master_ranged_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Master Ranged Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 100
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 12000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.16666666666666666,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0004513888888888889,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/expert_ranged_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/expert_ranged_charm",
+                "count": 4
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/master_ranged_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 160
+    },
+    "/actions/crafting/master_stamina_charm": {
+        "hrid": "/actions/crafting/master_stamina_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Master Stamina Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 100
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 12000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.16666666666666666,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0004513888888888889,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/expert_stamina_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/expert_stamina_charm",
+                "count": 4
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/master_stamina_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 155
+    },
+    "/actions/crafting/master_tailoring_charm": {
+        "hrid": "/actions/crafting/master_tailoring_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Master Tailoring Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 100
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 12000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.16666666666666666,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0004513888888888889,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/expert_tailoring_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/expert_tailoring_charm",
+                "count": 4
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/master_tailoring_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 150
+    },
+    "/actions/crafting/master_woodcutting_charm": {
+        "hrid": "/actions/crafting/master_woodcutting_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Master Woodcutting Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 100
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 12000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.16666666666666666,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0004513888888888889,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/expert_woodcutting_charm",
+        "inputItems": [
+            {
+                "itemHrid": "/items/expert_woodcutting_charm",
+                "count": 4
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/master_woodcutting_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 147
     },
     "/actions/crafting/mirror_of_protection": {
         "hrid": "/actions/crafting/mirror_of_protection",
@@ -24128,7 +27596,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 79
+        "sortIndex": 113
     },
     "/actions/crafting/necklace_of_efficiency": {
         "hrid": "/actions/crafting/necklace_of_efficiency",
@@ -24242,7 +27710,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 81
+        "sortIndex": 115
     },
     "/actions/crafting/necklace_of_wisdom": {
         "hrid": "/actions/crafting/necklace_of_wisdom",
@@ -24301,7 +27769,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 65
+        "sortIndex": 82
     },
     "/actions/crafting/philosophers_earrings": {
         "hrid": "/actions/crafting/philosophers_earrings",
@@ -24376,7 +27844,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 103
+        "sortIndex": 137
     },
     "/actions/crafting/philosophers_necklace": {
         "hrid": "/actions/crafting/philosophers_necklace",
@@ -24447,7 +27915,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 104
+        "sortIndex": 138
     },
     "/actions/crafting/philosophers_ring": {
         "hrid": "/actions/crafting/philosophers_ring",
@@ -24522,7 +27990,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 99
+        "sortIndex": 133
     },
     "/actions/crafting/pirate_chest_key": {
         "hrid": "/actions/crafting/pirate_chest_key",
@@ -24585,7 +28053,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 102
+        "sortIndex": 136
     },
     "/actions/crafting/pirate_entry_key": {
         "hrid": "/actions/crafting/pirate_entry_key",
@@ -24644,7 +28112,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 101
+        "sortIndex": 135
     },
     "/actions/crafting/purpleheart_bow": {
         "hrid": "/actions/crafting/purpleheart_bow",
@@ -25056,7 +28524,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 55
+        "sortIndex": 72
     },
     "/actions/crafting/redwood_bow": {
         "hrid": "/actions/crafting/redwood_bow",
@@ -25107,7 +28575,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 71
+        "sortIndex": 88
     },
     "/actions/crafting/redwood_crossbow": {
         "hrid": "/actions/crafting/redwood_crossbow",
@@ -25158,7 +28626,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 67
+        "sortIndex": 84
     },
     "/actions/crafting/redwood_fire_staff": {
         "hrid": "/actions/crafting/redwood_fire_staff",
@@ -25209,7 +28677,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 77
+        "sortIndex": 94
     },
     "/actions/crafting/redwood_lumber": {
         "hrid": "/actions/crafting/redwood_lumber",
@@ -25266,7 +28734,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 66
+        "sortIndex": 83
     },
     "/actions/crafting/redwood_nature_staff": {
         "hrid": "/actions/crafting/redwood_nature_staff",
@@ -25317,7 +28785,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 70
+        "sortIndex": 87
     },
     "/actions/crafting/redwood_shield": {
         "hrid": "/actions/crafting/redwood_shield",
@@ -25368,7 +28836,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 69
+        "sortIndex": 86
     },
     "/actions/crafting/redwood_water_staff": {
         "hrid": "/actions/crafting/redwood_water_staff",
@@ -25419,7 +28887,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 68
+        "sortIndex": 85
     },
     "/actions/crafting/ring_of_armor": {
         "hrid": "/actions/crafting/ring_of_armor",
@@ -25533,7 +29001,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 78
+        "sortIndex": 95
     },
     "/actions/crafting/ring_of_essence_find": {
         "hrid": "/actions/crafting/ring_of_essence_find",
@@ -25698,7 +29166,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 62
+        "sortIndex": 79
     },
     "/actions/crafting/ring_of_regeneration": {
         "hrid": "/actions/crafting/ring_of_regeneration",
@@ -25816,7 +29284,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 57
+        "sortIndex": 74
     },
     "/actions/crafting/rippling_trident": {
         "hrid": "/actions/crafting/rippling_trident",
@@ -25875,7 +29343,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 108
+        "sortIndex": 142
     },
     "/actions/crafting/sinister_chest_key": {
         "hrid": "/actions/crafting/sinister_chest_key",
@@ -25938,7 +29406,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 86
+        "sortIndex": 120
     },
     "/actions/crafting/sinister_entry_key": {
         "hrid": "/actions/crafting/sinister_entry_key",
@@ -25997,7 +29465,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 85
+        "sortIndex": 119
     },
     "/actions/crafting/soul_hunter_crossbow": {
         "hrid": "/actions/crafting/soul_hunter_crossbow",
@@ -26048,7 +29516,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 95
+        "sortIndex": 129
     },
     "/actions/crafting/sundering_crossbow": {
         "hrid": "/actions/crafting/sundering_crossbow",
@@ -26107,7 +29575,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 107
+        "sortIndex": 141
     },
     "/actions/crafting/treant_shield": {
         "hrid": "/actions/crafting/treant_shield",
@@ -26213,7 +29681,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 94
+        "sortIndex": 128
     },
     "/actions/crafting/watchful_relic": {
         "hrid": "/actions/crafting/watchful_relic",
@@ -26280,7 +29748,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 76
+        "sortIndex": 93
     },
     "/actions/crafting/wizard_necklace": {
         "hrid": "/actions/crafting/wizard_necklace",
@@ -26335,7 +29803,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 61
+        "sortIndex": 78
     },
     "/actions/crafting/wooden_bow": {
         "hrid": "/actions/crafting/wooden_bow",

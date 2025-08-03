@@ -69,7 +69,8 @@
         "maxWaveReached" : "Max Wave Reached",
         "dungeonsCompleted": "Dungeons Completed",
         "dungeonsFailed": "Dungeons Failed",
-        "averageTime": "Average Time"
+        "averageTime": "Average Time",
+        "maxEnrageStack": "Max Stack of Enrage"
     },
     "selectPlayer": "SelectPlayer",
     "simAllZones": "Sim All Zones",
