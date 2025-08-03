@@ -658,7 +658,7 @@ class CombatSimulator extends EventTarget {
                 this.eventQueue.clearMatching((event) => event.type == _events_furyExpirationEvent__WEBPACK_IMPORTED_MODULE_16__["default"].type && event.source == source);
 
                 const furyExpireTime = 15000000000;
-                const maxFuryStack = 6;
+                const maxFuryStack = 5;
 
                 let furyAmount = 0;
                 if (currentFuryEvent) furyAmount = currentFuryEvent.furyAmount;
@@ -776,7 +776,7 @@ class CombatSimulator extends EventTarget {
                 continue;
             }
 
-            if (!attackResult.didHit || source.combatDetails.combatStats.pierce <= Math.random()) {
+            if (!attackResult.didHit || parryTarget || source.combatDetails.combatStats.pierce <= Math.random()) {
                 break;
             }
         }
@@ -1421,9 +1421,7 @@ class CombatSimulator extends EventTarget {
             let parryTarget = undefined;
             if (!isSkipParry) {
                 parryTarget = this.checkParry(targets);
-                if (abilityEffect.targetType == "allEnemies") {
-                    isSkipParry = true; //  parry on aoe run only once on first target
-                } 
+                isSkipParry = true; //  parry check only once on first target
             }
             
             if (parryTarget) {
@@ -1621,15 +1619,16 @@ class CombatSimulator extends EventTarget {
                     // console.log(target.hrid, "died");
                 }
 
+                if (parryTarget)
+                {
+                    break;
+                }
+
                 if (attackResult.didHit && abilityEffect.pierceChance > Math.random()) {
                     continue;
                 }
             }
 
-            if (abilityEffect.targetType == "allEnemies" && parryTarget)
-            {
-                break;
-            }
             if (abilityEffect.targetType == "enemy") {
                 break;
             }
