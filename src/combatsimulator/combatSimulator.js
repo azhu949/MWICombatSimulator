@@ -1149,8 +1149,8 @@ class CombatSimulator extends EventTarget {
                 if (attackResult.thornDamageDone > 0) {
                     this.simResult.addAttack(tempTarget, tempSource, attackResult.thornType, attackResult.thornDamageDone);
                 }
-                if (attackResult.retaliationDamageDone > 0) {
-                    this.simResult.addAttack(tempTarget, tempSource, "retaliation", attackResult.retaliationDamageDone);
+                if (tempTarget.combatDetails.combatStats.retaliation > 0) {
+                    this.simResult.addAttack(tempTarget, tempSource, "retaliation", attackResult.retaliationDamageDone > 0 ? attackResult.retaliationDamageDone : "miss");
                 }
 
                 if (tempTarget.combatDetails.currentHitpoints == 0) {
@@ -1320,14 +1320,15 @@ class CombatSimulator extends EventTarget {
                     // console.log(target.hrid, "died");
                 }
 
-                if (parryTarget)
-                {
-                    break;
-                }
 
                 if (attackResult.didHit && abilityEffect.pierceChance > Math.random()) {
                     continue;
                 }
+            }
+            
+            if (parryTarget)
+            {
+                break;
             }
 
             if (abilityEffect.targetType == "enemy") {
