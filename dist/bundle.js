@@ -2725,10 +2725,7 @@ function manipulateSimResultsDataForDisplay(simResults) {
     return displaySimResults;
 }
 
-function getDropProfit(simResult, playerToDisplay) {
-    let dropRateMultiplier = simResult.dropRateMultiplier[playerToDisplay];
-    let rareFindMultiplier = simResult.rareFindMultiplier[playerToDisplay];
-    let numberOfPlayers = simResult.numberOfPlayers;
+function calcDropMaps(simResult, dropRateMultiplier, rareFindMultiplier, numberOfPlayers) {
     let monsters = Object.keys(simResult.deaths)
         .filter(enemy => enemy !== "player1" && enemy !== "player2" && enemy !== "player3" && enemy !== "player4" && enemy !== "player5")
         .sort();
@@ -2777,14 +2774,14 @@ function getDropProfit(simResult, playerToDisplay) {
             for (let i = 0; i < simResult.deaths[monster]; i++) {
                 for (let dropObject of dropMap.values()) {
                     let chance = Math.random();
-                    if (chance <= dropObject.dropRate) {
+                    if (chance <= dropObject.dropRate  / numberOfPlayers) {
                         let amount = Math.floor(Math.random() * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin)
                         dropObject.number = dropObject.number + amount;
                     }
                 }
                 for (let dropObject of rareDropMap.values()) {
                     let chance = Math.random();
-                    if (chance <= dropObject.dropRate) {
+                    if (chance <= dropObject.dropRate  / numberOfPlayers) {
                         let amount = Math.floor(Math.random() * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin)
                         dropObject.number = dropObject.number + amount;
                     }
@@ -2792,9 +2789,9 @@ function getDropProfit(simResult, playerToDisplay) {
             }
             for (let [name, dropObject] of dropMap.entries()) {
                 if (totalDropMap.has(name)) {
-                    totalDropMap.set(name, Math.round((totalDropMap.get(name) + dropObject.number) / numberOfPlayers));
+                    totalDropMap.set(name, totalDropMap.get(name) + dropObject.number);
                 } else {
-                    totalDropMap.set(name, Math.round(dropObject.number / numberOfPlayers));
+                    totalDropMap.set(name, dropObject.number);
                 }
                 if (noRngTotalDropMap.has(name)) {
                     noRngTotalDropMap.set(name, noRngTotalDropMap.get(name) + dropObject.noRngDropAmount);
@@ -2816,6 +2813,17 @@ function getDropProfit(simResult, playerToDisplay) {
             }
         }
     }
+
+    return {totalDropMap, noRngTotalDropMap};
+}
+
+
+function getDropProfit(simResult, playerToDisplay) {
+    let dropRateMultiplier = simResult.dropRateMultiplier[playerToDisplay];
+    let rareFindMultiplier = simResult.rareFindMultiplier[playerToDisplay];
+    let numberOfPlayers = simResult.numberOfPlayers;
+
+    let {totalDropMap, noRngTotalDropMap} = calcDropMaps(simResult, dropRateMultiplier, rareFindMultiplier, numberOfPlayers);
 
     let noRngTotal = 0;
     for (let [name, dropAmount] of noRngTotalDropMap.entries()) {
@@ -3046,98 +3054,19 @@ function showKills(simResult, playerToDisplay) {
 
     let monsters = Object.keys(simResult.deaths)
         .filter(enemy => enemy !== "player1" && enemy !== "player2" && enemy !== "player3" && enemy !== "player4" && enemy !== "player5")
-        .sort();
+        .sort()
+        .forEach(monster => {
+            let killsPerHour = (simResult.deaths[monster] / hoursSimulated).toFixed(1);
+            let monsterRow = createRow(
+                ["col-md-6", "col-md-6 text-end"],
+                [_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].name, killsPerHour]
+            );
+            monsterRow.firstElementChild.setAttribute("data-i18n", "monsterNames." + monster);
+            newChildren.push(monsterRow);
+        });
 
-    const totalDropMap = new Map();
-    const noRngTotalDropMap = new Map();
-    for (const monster of monsters) {
-        let killsPerHour = (simResult.deaths[monster] / hoursSimulated).toFixed(1);
-        let monsterRow = createRow(
-            ["col-md-6", "col-md-6 text-end"],
-            [_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].name, killsPerHour]
-        );
-        monsterRow.firstElementChild.setAttribute("data-i18n", "monsterNames." + monster);
-        newChildren.push(monsterRow);
 
-        const dropMap = new Map();
-        const rareDropMap = new Map();
-        if (_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].dropTable)
-            for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].dropTable) {
-                if (drop.minEliteTier > simResult.eliteTier) {
-                    continue;
-                }
-                const existingDrop = dropMap.get(drop.itemHrid);
-                if (existingDrop) {
-                    existingDrop.dropRate = Math.min(1, existingDrop.dropRate + drop.dropRate * dropRateMultiplier);
-                    existingDrop.dropMin = Math.max(existingDrop.dropMin, drop.minCount);
-                    existingDrop.dropMax = Math.max(existingDrop.dropMax, drop.maxCount);
-                } else {
-                    dropMap.set(drop.itemHrid, { "dropRate": Math.min(1, drop.dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
-                }
-            }
-        if (_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].rareDropTable)
-            for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].rareDropTable) {
-                if (drop.minEliteTier > simResult.eliteTier) {
-                    continue;
-                }
-                const existingRareDrop = rareDropMap.get(drop.itemHrid);
-                if (existingRareDrop) {
-                    existingRareDrop.dropRate = Math.min(1, existingRareDrop.dropRate + drop.dropRate * rareFindMultiplier);
-                    existingRareDrop.dropMin = Math.max(existingRareDrop.dropMin, drop.minCount);
-                    existingRareDrop.dropMax = Math.max(existingRareDrop.dropMax, drop.maxCount);
-                } else {
-                    rareDropMap.set(drop.itemHrid, { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
-                }
-            }
-
-        for (let dropObject of dropMap.values()) {
-            dropObject.noRngDropAmount += simResult.deaths[monster] * dropObject.dropRate * ((dropObject.dropMax + dropObject.dropMin) / 2) / numberOfPlayers;
-        }
-        for (let dropObject of rareDropMap.values()) {
-            dropObject.noRngDropAmount += simResult.deaths[monster] * dropObject.dropRate * ((dropObject.dropMax + dropObject.dropMin) / 2) / numberOfPlayers;
-        }
-
-        for (let i = 0; i < simResult.deaths[monster]; i++) {
-            for (let dropObject of dropMap.values()) {
-                let chance = Math.random();
-                if (chance <= dropObject.dropRate) {
-                    let amount = Math.floor(Math.random() * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin)
-                    dropObject.number = dropObject.number + amount;
-                }
-            }
-            for (let dropObject of rareDropMap.values()) {
-                let chance = Math.random();
-                if (chance <= dropObject.dropRate) {
-                    let amount = Math.floor(Math.random() * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin)
-                    dropObject.number = dropObject.number + amount;
-                }
-            }
-        }
-        for (let [name, dropObject] of dropMap.entries()) {
-            if (totalDropMap.has(name)) {
-                totalDropMap.set(name, Math.round((totalDropMap.get(name) + dropObject.number) / numberOfPlayers));
-            } else {
-                totalDropMap.set(name, Math.round(dropObject.number / numberOfPlayers));
-            }
-            if (noRngTotalDropMap.has(name)) {
-                noRngTotalDropMap.set(name, noRngTotalDropMap.get(name) + dropObject.noRngDropAmount);
-            } else {
-                noRngTotalDropMap.set(name, dropObject.noRngDropAmount);
-            }
-        }
-        for (let [name, dropObject] of rareDropMap.entries()) {
-            if (totalDropMap.has(name)) {
-                totalDropMap.set(name, totalDropMap.get(name) + dropObject.number);
-            } else {
-                totalDropMap.set(name, dropObject.number);
-            }
-            if (noRngTotalDropMap.has(name)) {
-                noRngTotalDropMap.set(name, noRngTotalDropMap.get(name) + dropObject.noRngDropAmount);
-            } else {
-                noRngTotalDropMap.set(name, dropObject.noRngDropAmount);
-            }
-        }
-    }
+    let {totalDropMap, noRngTotalDropMap} = calcDropMaps(simResult, dropRateMultiplier, rareFindMultiplier, numberOfPlayers);
 
     let revenueModalTable = document.querySelector("#revenueTable > tbody");
     let total = 0;
