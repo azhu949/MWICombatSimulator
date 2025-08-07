@@ -946,7 +946,7 @@
         "hrid": "/monsters/centaur_archer",
         "name": "Centaur Archer",
         "isBoss": false,
-        "experience": 125,
+        "experience": 135,
         "combatDetails": {
             "currentHitpoints": 1100,
             "maxHitpoints": 1100,
@@ -1229,7 +1229,7 @@
             {
                 "itemHrid": "/items/orange_key_fragment",
                 "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.02,
+                "dropRatePerDifficultyTier": 0.015,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -1516,7 +1516,7 @@
             {
                 "itemHrid": "/items/stone_key_fragment",
                 "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.03,
+                "dropRatePerDifficultyTier": 0.025,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -1691,7 +1691,7 @@
             {
                 "itemHrid": "/items/burning_key_fragment",
                 "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.03,
+                "dropRatePerDifficultyTier": 0.025,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -2055,7 +2055,7 @@
             {
                 "itemHrid": "/items/dark_key_fragment",
                 "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.03,
+                "dropRatePerDifficultyTier": 0.025,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -2800,7 +2800,7 @@
         "hrid": "/monsters/eye",
         "name": "Eye",
         "isBoss": false,
-        "experience": 120,
+        "experience": 125,
         "combatDetails": {
             "currentHitpoints": 990,
             "maxHitpoints": 990,
@@ -2959,7 +2959,7 @@
         "hrid": "/monsters/eyes",
         "name": "Eyes",
         "isBoss": false,
-        "experience": 135,
+        "experience": 140,
         "combatDetails": {
             "currentHitpoints": 1110,
             "maxHitpoints": 1110,
@@ -3253,7 +3253,7 @@
             {
                 "itemHrid": "/items/blue_key_fragment",
                 "dropRate": 0,
-                "dropRatePerDifficultyTier": 4e-05,
+                "dropRatePerDifficultyTier": 3e-05,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -3488,7 +3488,7 @@
             {
                 "itemHrid": "/items/green_key_fragment",
                 "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.004,
+                "dropRatePerDifficultyTier": 0.003,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -3520,7 +3520,7 @@
         "hrid": "/monsters/gobo_boomy",
         "name": "Boomy",
         "isBoss": false,
-        "experience": 100,
+        "experience": 110,
         "combatDetails": {
             "currentHitpoints": 800,
             "maxHitpoints": 800,
@@ -3666,7 +3666,7 @@
         "hrid": "/monsters/gobo_chieftain",
         "name": "Gobo Chieftain",
         "isBoss": true,
-        "experience": 600,
+        "experience": 650,
         "combatDetails": {
             "currentHitpoints": 4800,
             "maxHitpoints": 4800,
@@ -3805,7 +3805,7 @@
             {
                 "itemHrid": "/items/purple_key_fragment",
                 "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.02,
+                "dropRatePerDifficultyTier": 0.015,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -3837,7 +3837,7 @@
         "hrid": "/monsters/gobo_shooty",
         "name": "Shooty",
         "isBoss": false,
-        "experience": 100,
+        "experience": 110,
         "combatDetails": {
             "currentHitpoints": 800,
             "maxHitpoints": 800,
@@ -3975,7 +3975,7 @@
         "hrid": "/monsters/gobo_slashy",
         "name": "Slashy",
         "isBoss": false,
-        "experience": 100,
+        "experience": 110,
         "combatDetails": {
             "currentHitpoints": 800,
             "maxHitpoints": 800,
@@ -4110,7 +4110,7 @@
         "hrid": "/monsters/gobo_smashy",
         "name": "Smashy",
         "isBoss": false,
-        "experience": 100,
+        "experience": 110,
         "combatDetails": {
             "currentHitpoints": 800,
             "maxHitpoints": 800,
@@ -4245,7 +4245,7 @@
         "hrid": "/monsters/gobo_stabby",
         "name": "Stabby",
         "isBoss": false,
-        "experience": 100,
+        "experience": 110,
         "combatDetails": {
             "currentHitpoints": 800,
             "maxHitpoints": 800,
@@ -5317,7 +5317,7 @@
         "hrid": "/monsters/jungle_sprite",
         "name": "Jungle Sprite",
         "isBoss": false,
-        "experience": 65,
+        "experience": 70,
         "combatDetails": {
             "currentHitpoints": 500,
             "maxHitpoints": 500,
@@ -5446,7 +5446,7 @@
         "hrid": "/monsters/luna_empress",
         "name": "Luna Empress",
         "isBoss": true,
-        "experience": 550,
+        "experience": 600,
         "combatDetails": {
             "currentHitpoints": 4400,
             "maxHitpoints": 4400,
@@ -5582,7 +5582,7 @@
             {
                 "itemHrid": "/items/green_key_fragment",
                 "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.02,
+                "dropRatePerDifficultyTier": 0.015,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -6048,7 +6048,7 @@
             {
                 "itemHrid": "/items/blue_key_fragment",
                 "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.02,
+                "dropRatePerDifficultyTier": 0.015,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -6080,7 +6080,7 @@
         "hrid": "/monsters/myconid",
         "name": "Myconid",
         "isBoss": false,
-        "experience": 75,
+        "experience": 80,
         "combatDetails": {
             "currentHitpoints": 700,
             "maxHitpoints": 700,
@@ -6839,7 +6839,7 @@
             {
                 "itemHrid": "/items/blue_key_fragment",
                 "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.00012,
+                "dropRatePerDifficultyTier": 0.0001,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -7043,7 +7043,7 @@
             {
                 "itemHrid": "/items/blue_key_fragment",
                 "dropRate": 0,
-                "dropRatePerDifficultyTier": 8e-05,
+                "dropRatePerDifficultyTier": 6e-05,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -7196,7 +7196,7 @@
             {
                 "itemHrid": "/items/brown_key_fragment",
                 "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.02,
+                "dropRatePerDifficultyTier": 0.015,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -7448,7 +7448,7 @@
             {
                 "itemHrid": "/items/blue_key_fragment",
                 "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.0001,
+                "dropRatePerDifficultyTier": 8e-05,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -7558,7 +7558,7 @@
             {
                 "itemHrid": "/items/blue_key_fragment",
                 "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.00015,
+                "dropRatePerDifficultyTier": 0.00012,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -8401,7 +8401,7 @@
             {
                 "itemHrid": "/items/white_key_fragment",
                 "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.02,
+                "dropRatePerDifficultyTier": 0.015,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -8527,7 +8527,7 @@
         "hrid": "/monsters/treant",
         "name": "Treant",
         "isBoss": false,
-        "experience": 100,
+        "experience": 105,
         "combatDetails": {
             "currentHitpoints": 900,
             "maxHitpoints": 900,
@@ -8983,7 +8983,7 @@
         "hrid": "/monsters/veyes",
         "name": "Veyes",
         "isBoss": false,
-        "experience": 150,
+        "experience": 160,
         "combatDetails": {
             "currentHitpoints": 1230,
             "maxHitpoints": 1230,
