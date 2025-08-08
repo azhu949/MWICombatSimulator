@@ -806,12 +806,8 @@ class CombatSimulator extends EventTarget {
         let encounterEnded = false;
 
         if (this.enemies && !this.enemies.some((enemy) => enemy.combatDetails.currentHitpoints > 0)) {
-            this.enemies.forEach(enemy => {
-                this.eventQueue.clearEventsForUnit(enemy);
-            });
-
             this.eventQueue.clearEventsOfType(_events_autoAttackEvent__WEBPACK_IMPORTED_MODULE_1__["default"].type);
-            // this.eventQueue.clearEventsOfType(AbilityCastEndEvent.type);
+            this.eventQueue.clearEventsOfType(_events_abilityCastEndEvent__WEBPACK_IMPORTED_MODULE_19__["default"].type);
             let enemyRespawnEvent = new _events_enemyRespawnEvent__WEBPACK_IMPORTED_MODULE_7__["default"](this.simulationTime + ENEMY_RESPAWN_INTERVAL);
             this.eventQueue.addEvent(enemyRespawnEvent);
 
