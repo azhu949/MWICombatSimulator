@@ -70,7 +70,8 @@
         "dungeonsCompleted": "Dungeons Completed",
         "dungeonsFailed": "Dungeons Failed",
         "averageTime": "Average Time",
-        "maxEnrageStack": "Max Stack of Enrage"
+        "maxEnrageStack": "Max Stack of Enrage",
+        "debuffOnLevelGap": "Debuff on Level Gap"
     },
     "selectPlayer": "SelectPlayer",
     "simAllZones": "Sim All Zones",

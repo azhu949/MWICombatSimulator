@@ -2,7 +2,7 @@
     "/monsters/abyssal_imp": {
         "hrid": "/monsters/abyssal_imp",
         "name": "Abyssal Imp",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 240,
         "combatDetails": {
             "currentHitpoints": 1800,
@@ -125,7 +125,7 @@
     "/monsters/acrobat": {
         "hrid": "/monsters/acrobat",
         "name": "Acrobat",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 6000,
         "combatDetails": {
             "currentHitpoints": 27800,
@@ -218,7 +218,7 @@
     "/monsters/alligator": {
         "hrid": "/monsters/alligator",
         "name": "Sherlock",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 40,
         "combatDetails": {
             "currentHitpoints": 300,
@@ -345,7 +345,7 @@
     "/monsters/anchor_shark": {
         "hrid": "/monsters/anchor_shark",
         "name": "Anchor Shark",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 7000,
         "combatDetails": {
             "currentHitpoints": 34500,
@@ -436,7 +436,7 @@
     "/monsters/aquahorse": {
         "hrid": "/monsters/aquahorse",
         "name": "Aquahorse",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 60,
         "combatDetails": {
             "currentHitpoints": 400,
@@ -542,7 +542,7 @@
     "/monsters/black_bear": {
         "hrid": "/monsters/black_bear",
         "name": "Black Bear",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 150,
         "combatDetails": {
             "currentHitpoints": 1300,
@@ -678,7 +678,7 @@
     "/monsters/brine_marksman": {
         "hrid": "/monsters/brine_marksman",
         "name": "Brine Marksman",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 7000,
         "combatDetails": {
             "currentHitpoints": 32500,
@@ -769,7 +769,7 @@
     "/monsters/butterjerry": {
         "hrid": "/monsters/butterjerry",
         "name": "Butterjerry",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 1000,
         "combatDetails": {
             "currentHitpoints": 5500,
@@ -854,7 +854,7 @@
     "/monsters/captain_fishhook": {
         "hrid": "/monsters/captain_fishhook",
         "name": "Captain Fishhook",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 18000,
         "combatDetails": {
             "currentHitpoints": 77500,
@@ -945,7 +945,7 @@
     "/monsters/centaur_archer": {
         "hrid": "/monsters/centaur_archer",
         "name": "Centaur Archer",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 135,
         "combatDetails": {
             "currentHitpoints": 1100,
@@ -1085,7 +1085,7 @@
     "/monsters/chronofrost_sorcerer": {
         "hrid": "/monsters/chronofrost_sorcerer",
         "name": "Chronofrost Sorcerer",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 1100,
         "combatDetails": {
             "currentHitpoints": 6500,
@@ -1228,8 +1228,8 @@
             },
             {
                 "itemHrid": "/items/orange_key_fragment",
-                "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.015,
+                "dropRate": -0.015,
+                "dropRatePerDifficultyTier": 0.03,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -1260,7 +1260,7 @@
     "/monsters/crab": {
         "hrid": "/monsters/crab",
         "name": "I Pinch",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 54,
         "combatDetails": {
             "currentHitpoints": 400,
@@ -1368,7 +1368,7 @@
     "/monsters/crystal_colossus": {
         "hrid": "/monsters/crystal_colossus",
         "name": "Crystal Colossus",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 2000,
         "combatDetails": {
             "currentHitpoints": 7200,
@@ -1515,36 +1515,36 @@
             },
             {
                 "itemHrid": "/items/stone_key_fragment",
-                "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.025,
+                "dropRate": -0.02,
+                "dropRatePerDifficultyTier": 0.04,
                 "minCount": 1,
                 "maxCount": 1
             },
             {
                 "itemHrid": "/items/basic_defense_charm",
-                "dropRate": -0.006,
+                "dropRate": -0.009,
                 "dropRatePerDifficultyTier": 0.006,
                 "minCount": 1,
                 "maxCount": 1
             },
             {
                 "itemHrid": "/items/basic_melee_charm",
-                "dropRate": -0.006,
+                "dropRate": -0.009,
                 "dropRatePerDifficultyTier": 0.006,
                 "minCount": 1,
                 "maxCount": 1
             },
             {
                 "itemHrid": "/items/advanced_defense_charm",
-                "dropRate": -0.003,
-                "dropRatePerDifficultyTier": 0.001,
+                "dropRate": -0.007,
+                "dropRatePerDifficultyTier": 0.002,
                 "minCount": 1,
                 "maxCount": 1
             },
             {
                 "itemHrid": "/items/advanced_melee_charm",
-                "dropRate": -0.003,
-                "dropRatePerDifficultyTier": 0.001,
+                "dropRate": -0.007,
+                "dropRatePerDifficultyTier": 0.002,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -1561,7 +1561,7 @@
     "/monsters/demonic_overlord": {
         "hrid": "/monsters/demonic_overlord",
         "name": "Demonic Overlord",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 2200,
         "combatDetails": {
             "currentHitpoints": 9500,
@@ -1690,36 +1690,36 @@
             },
             {
                 "itemHrid": "/items/burning_key_fragment",
-                "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.025,
+                "dropRate": -0.02,
+                "dropRatePerDifficultyTier": 0.04,
                 "minCount": 1,
                 "maxCount": 1
             },
             {
                 "itemHrid": "/items/basic_intelligence_charm",
-                "dropRate": -0.006,
+                "dropRate": -0.009,
                 "dropRatePerDifficultyTier": 0.006,
                 "minCount": 1,
                 "maxCount": 1
             },
             {
                 "itemHrid": "/items/basic_magic_charm",
-                "dropRate": -0.006,
+                "dropRate": -0.009,
                 "dropRatePerDifficultyTier": 0.006,
                 "minCount": 1,
                 "maxCount": 1
             },
             {
                 "itemHrid": "/items/advanced_intelligence_charm",
-                "dropRate": -0.003,
-                "dropRatePerDifficultyTier": 0.001,
+                "dropRate": -0.007,
+                "dropRatePerDifficultyTier": 0.002,
                 "minCount": 1,
                 "maxCount": 1
             },
             {
                 "itemHrid": "/items/advanced_magic_charm",
-                "dropRate": -0.003,
-                "dropRatePerDifficultyTier": 0.001,
+                "dropRate": -0.007,
+                "dropRatePerDifficultyTier": 0.002,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -1736,7 +1736,7 @@
     "/monsters/deranged_jester": {
         "hrid": "/monsters/deranged_jester",
         "name": "Deranged Jester",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 25000,
         "combatDetails": {
             "currentHitpoints": 152700,
@@ -1828,7 +1828,7 @@
     "/monsters/dodocamel": {
         "hrid": "/monsters/dodocamel",
         "name": "Dodocamel",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 3600,
         "combatDetails": {
             "currentHitpoints": 18500,
@@ -1919,7 +1919,7 @@
     "/monsters/dusk_revenant": {
         "hrid": "/monsters/dusk_revenant",
         "name": "Dusk Revenant",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 2100,
         "combatDetails": {
             "currentHitpoints": 8800,
@@ -2054,36 +2054,36 @@
             },
             {
                 "itemHrid": "/items/dark_key_fragment",
-                "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.025,
+                "dropRate": -0.02,
+                "dropRatePerDifficultyTier": 0.04,
                 "minCount": 1,
                 "maxCount": 1
             },
             {
                 "itemHrid": "/items/basic_attack_charm",
-                "dropRate": -0.006,
+                "dropRate": -0.009,
                 "dropRatePerDifficultyTier": 0.006,
                 "minCount": 1,
                 "maxCount": 1
             },
             {
                 "itemHrid": "/items/basic_ranged_charm",
-                "dropRate": -0.006,
+                "dropRate": -0.009,
                 "dropRatePerDifficultyTier": 0.006,
                 "minCount": 1,
                 "maxCount": 1
             },
             {
                 "itemHrid": "/items/advanced_attack_charm",
-                "dropRate": -0.003,
-                "dropRatePerDifficultyTier": 0.001,
+                "dropRate": -0.007,
+                "dropRatePerDifficultyTier": 0.002,
                 "minCount": 1,
                 "maxCount": 1
             },
             {
                 "itemHrid": "/items/advanced_ranged_charm",
-                "dropRate": -0.003,
-                "dropRatePerDifficultyTier": 0.001,
+                "dropRate": -0.007,
+                "dropRatePerDifficultyTier": 0.002,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -2100,7 +2100,7 @@
     "/monsters/elementalist": {
         "hrid": "/monsters/elementalist",
         "name": "Elementalist",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 200,
         "combatDetails": {
             "currentHitpoints": 1700,
@@ -2255,7 +2255,7 @@
     "/monsters/enchanted_bishop": {
         "hrid": "/monsters/enchanted_bishop",
         "name": "Enchanted Bishop",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 7000,
         "combatDetails": {
             "currentHitpoints": 30500,
@@ -2353,7 +2353,7 @@
     "/monsters/enchanted_king": {
         "hrid": "/monsters/enchanted_king",
         "name": "Enchanted King",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 18000,
         "combatDetails": {
             "currentHitpoints": 80000,
@@ -2440,7 +2440,7 @@
     "/monsters/enchanted_knight": {
         "hrid": "/monsters/enchanted_knight",
         "name": "Enchanted Knight",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 7000,
         "combatDetails": {
             "currentHitpoints": 37700,
@@ -2529,7 +2529,7 @@
     "/monsters/enchanted_pawn": {
         "hrid": "/monsters/enchanted_pawn",
         "name": "Enchanted Pawn",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 1600,
         "combatDetails": {
             "currentHitpoints": 9700,
@@ -2611,7 +2611,7 @@
     "/monsters/enchanted_queen": {
         "hrid": "/monsters/enchanted_queen",
         "name": "Enchanted Queen",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 18000,
         "combatDetails": {
             "currentHitpoints": 80000,
@@ -2706,7 +2706,7 @@
     "/monsters/enchanted_rook": {
         "hrid": "/monsters/enchanted_rook",
         "name": "Enchanted Rook",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 7000,
         "combatDetails": {
             "currentHitpoints": 34700,
@@ -2799,7 +2799,7 @@
     "/monsters/eye": {
         "hrid": "/monsters/eye",
         "name": "Eye",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 125,
         "combatDetails": {
             "currentHitpoints": 990,
@@ -2958,7 +2958,7 @@
     "/monsters/eyes": {
         "hrid": "/monsters/eyes",
         "name": "Eyes",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 140,
         "combatDetails": {
             "currentHitpoints": 1110,
@@ -3069,7 +3069,7 @@
     "/monsters/flame_sorcerer": {
         "hrid": "/monsters/flame_sorcerer",
         "name": "Flame Sorcerer",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 140,
         "combatDetails": {
             "currentHitpoints": 1200,
@@ -3194,7 +3194,7 @@
     "/monsters/fly": {
         "hrid": "/monsters/fly",
         "name": "Fly",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 10,
         "combatDetails": {
             "currentHitpoints": 50,
@@ -3252,8 +3252,8 @@
             },
             {
                 "itemHrid": "/items/blue_key_fragment",
-                "dropRate": 0,
-                "dropRatePerDifficultyTier": 3e-05,
+                "dropRate": -3e-05,
+                "dropRatePerDifficultyTier": 6e-05,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -3270,7 +3270,7 @@
     "/monsters/frog": {
         "hrid": "/monsters/frog",
         "name": "Frogger",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 25,
         "combatDetails": {
             "currentHitpoints": 150,
@@ -3373,7 +3373,7 @@
     "/monsters/giant_shoebill": {
         "hrid": "/monsters/giant_shoebill",
         "name": "Giant Shoebill",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 200,
         "combatDetails": {
             "currentHitpoints": 1500,
@@ -3487,8 +3487,8 @@
             },
             {
                 "itemHrid": "/items/green_key_fragment",
-                "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.003,
+                "dropRate": -0.003,
+                "dropRatePerDifficultyTier": 0.006,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -3519,7 +3519,7 @@
     "/monsters/gobo_boomy": {
         "hrid": "/monsters/gobo_boomy",
         "name": "Boomy",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 110,
         "combatDetails": {
             "currentHitpoints": 800,
@@ -3665,7 +3665,7 @@
     "/monsters/gobo_chieftain": {
         "hrid": "/monsters/gobo_chieftain",
         "name": "Gobo Chieftain",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 650,
         "combatDetails": {
             "currentHitpoints": 4800,
@@ -3804,8 +3804,8 @@
             },
             {
                 "itemHrid": "/items/purple_key_fragment",
-                "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.015,
+                "dropRate": -0.015,
+                "dropRatePerDifficultyTier": 0.03,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -3836,7 +3836,7 @@
     "/monsters/gobo_shooty": {
         "hrid": "/monsters/gobo_shooty",
         "name": "Shooty",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 110,
         "combatDetails": {
             "currentHitpoints": 800,
@@ -3974,7 +3974,7 @@
     "/monsters/gobo_slashy": {
         "hrid": "/monsters/gobo_slashy",
         "name": "Slashy",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 110,
         "combatDetails": {
             "currentHitpoints": 800,
@@ -4109,7 +4109,7 @@
     "/monsters/gobo_smashy": {
         "hrid": "/monsters/gobo_smashy",
         "name": "Smashy",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 110,
         "combatDetails": {
             "currentHitpoints": 800,
@@ -4244,7 +4244,7 @@
     "/monsters/gobo_stabby": {
         "hrid": "/monsters/gobo_stabby",
         "name": "Stabby",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 110,
         "combatDetails": {
             "currentHitpoints": 800,
@@ -4373,7 +4373,7 @@
     "/monsters/granite_golem": {
         "hrid": "/monsters/granite_golem",
         "name": "Granite Golem",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 330,
         "combatDetails": {
             "currentHitpoints": 1800,
@@ -4532,7 +4532,7 @@
     "/monsters/griffin": {
         "hrid": "/monsters/griffin",
         "name": "Griffin",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 20000,
         "combatDetails": {
             "currentHitpoints": 78500,
@@ -4626,7 +4626,7 @@
     "/monsters/grizzly_bear": {
         "hrid": "/monsters/grizzly_bear",
         "name": "Grizzly Bear",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 160,
         "combatDetails": {
             "currentHitpoints": 1400,
@@ -4762,7 +4762,7 @@
     "/monsters/gummy_bear": {
         "hrid": "/monsters/gummy_bear",
         "name": "Gummy Bear",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 140,
         "combatDetails": {
             "currentHitpoints": 1200,
@@ -4880,7 +4880,7 @@
     "/monsters/ice_sorcerer": {
         "hrid": "/monsters/ice_sorcerer",
         "name": "Ice Sorcerer",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 130,
         "combatDetails": {
             "currentHitpoints": 1100,
@@ -5005,7 +5005,7 @@
     "/monsters/infernal_warlock": {
         "hrid": "/monsters/infernal_warlock",
         "name": "Infernal Warlock",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 350,
         "combatDetails": {
             "currentHitpoints": 2600,
@@ -5136,7 +5136,7 @@
     "/monsters/jackalope": {
         "hrid": "/monsters/jackalope",
         "name": "Jackalope",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 2500,
         "combatDetails": {
             "currentHitpoints": 13500,
@@ -5223,7 +5223,7 @@
     "/monsters/juggler": {
         "hrid": "/monsters/juggler",
         "name": "Juggler",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 6200,
         "combatDetails": {
             "currentHitpoints": 35000,
@@ -5316,7 +5316,7 @@
     "/monsters/jungle_sprite": {
         "hrid": "/monsters/jungle_sprite",
         "name": "Jungle Sprite",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 70,
         "combatDetails": {
             "currentHitpoints": 500,
@@ -5445,7 +5445,7 @@
     "/monsters/luna_empress": {
         "hrid": "/monsters/luna_empress",
         "name": "Luna Empress",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 600,
         "combatDetails": {
             "currentHitpoints": 4400,
@@ -5581,8 +5581,8 @@
             },
             {
                 "itemHrid": "/items/green_key_fragment",
-                "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.015,
+                "dropRate": -0.0125,
+                "dropRatePerDifficultyTier": 0.025,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -5613,7 +5613,7 @@
     "/monsters/magician": {
         "hrid": "/monsters/magician",
         "name": "Magician",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 6400,
         "combatDetails": {
             "currentHitpoints": 32400,
@@ -5704,7 +5704,7 @@
     "/monsters/magnetic_golem": {
         "hrid": "/monsters/magnetic_golem",
         "name": "Magnetic Golem",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 240,
         "combatDetails": {
             "currentHitpoints": 1400,
@@ -5829,7 +5829,7 @@
     "/monsters/manticore": {
         "hrid": "/monsters/manticore",
         "name": "Manticore",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 7000,
         "combatDetails": {
             "currentHitpoints": 38100,
@@ -5922,7 +5922,7 @@
     "/monsters/marine_huntress": {
         "hrid": "/monsters/marine_huntress",
         "name": "Marine Huntress",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 400,
         "combatDetails": {
             "currentHitpoints": 2800,
@@ -6047,8 +6047,8 @@
             },
             {
                 "itemHrid": "/items/blue_key_fragment",
-                "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.015,
+                "dropRate": -0.0125,
+                "dropRatePerDifficultyTier": 0.025,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -6079,7 +6079,7 @@
     "/monsters/myconid": {
         "hrid": "/monsters/myconid",
         "name": "Myconid",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 80,
         "combatDetails": {
             "currentHitpoints": 700,
@@ -6191,7 +6191,7 @@
     "/monsters/nom_nom": {
         "hrid": "/monsters/nom_nom",
         "name": "Nom Nom",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 70,
         "combatDetails": {
             "currentHitpoints": 480,
@@ -6329,7 +6329,7 @@
     "/monsters/novice_sorcerer": {
         "hrid": "/monsters/novice_sorcerer",
         "name": "Novice Sorcerer",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 100,
         "combatDetails": {
             "currentHitpoints": 800,
@@ -6449,7 +6449,7 @@
     "/monsters/panda": {
         "hrid": "/monsters/panda",
         "name": "Panda",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 160,
         "combatDetails": {
             "currentHitpoints": 1600,
@@ -6604,7 +6604,7 @@
     "/monsters/polar_bear": {
         "hrid": "/monsters/polar_bear",
         "name": "Polar Bear",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 170,
         "combatDetails": {
             "currentHitpoints": 1500,
@@ -6752,7 +6752,7 @@
     "/monsters/porcupine": {
         "hrid": "/monsters/porcupine",
         "name": "Porcupine",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 20,
         "combatDetails": {
             "currentHitpoints": 120,
@@ -6838,8 +6838,8 @@
             },
             {
                 "itemHrid": "/items/blue_key_fragment",
-                "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.0001,
+                "dropRate": -6e-05,
+                "dropRatePerDifficultyTier": 0.00012,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -6856,7 +6856,7 @@
     "/monsters/rabid_rabbit": {
         "hrid": "/monsters/rabid_rabbit",
         "name": "Rabid Rabbit",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 1500,
         "combatDetails": {
             "currentHitpoints": 8500,
@@ -6938,7 +6938,7 @@
     "/monsters/rat": {
         "hrid": "/monsters/rat",
         "name": "Jerry",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 15,
         "combatDetails": {
             "currentHitpoints": 70,
@@ -7042,8 +7042,8 @@
             },
             {
                 "itemHrid": "/items/blue_key_fragment",
-                "dropRate": 0,
-                "dropRatePerDifficultyTier": 6e-05,
+                "dropRate": -4e-05,
+                "dropRatePerDifficultyTier": 8e-05,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -7060,7 +7060,7 @@
     "/monsters/red_panda": {
         "hrid": "/monsters/red_panda",
         "name": "Red Panda",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 1200,
         "combatDetails": {
             "currentHitpoints": 6800,
@@ -7195,8 +7195,8 @@
             },
             {
                 "itemHrid": "/items/brown_key_fragment",
-                "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.015,
+                "dropRate": -0.015,
+                "dropRatePerDifficultyTier": 0.03,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -7241,7 +7241,7 @@
     "/monsters/sea_snail": {
         "hrid": "/monsters/sea_snail",
         "name": "Gary",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 45,
         "combatDetails": {
             "currentHitpoints": 350,
@@ -7361,7 +7361,7 @@
     "/monsters/skunk": {
         "hrid": "/monsters/skunk",
         "name": "Skunk",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 18,
         "combatDetails": {
             "currentHitpoints": 100,
@@ -7447,8 +7447,8 @@
             },
             {
                 "itemHrid": "/items/blue_key_fragment",
-                "dropRate": 0,
-                "dropRatePerDifficultyTier": 8e-05,
+                "dropRate": -5e-05,
+                "dropRatePerDifficultyTier": 0.0001,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -7465,7 +7465,7 @@
     "/monsters/slimy": {
         "hrid": "/monsters/slimy",
         "name": "Slimy",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 24,
         "combatDetails": {
             "currentHitpoints": 140,
@@ -7557,8 +7557,8 @@
             },
             {
                 "itemHrid": "/items/blue_key_fragment",
-                "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.00012,
+                "dropRate": -8e-05,
+                "dropRatePerDifficultyTier": 0.00016,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -7575,7 +7575,7 @@
     "/monsters/snake": {
         "hrid": "/monsters/snake",
         "name": "Thnake",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 28,
         "combatDetails": {
             "currentHitpoints": 200,
@@ -7679,7 +7679,7 @@
     "/monsters/soul_hunter": {
         "hrid": "/monsters/soul_hunter",
         "name": "Soul Hunter",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 300,
         "combatDetails": {
             "currentHitpoints": 2300,
@@ -7816,7 +7816,7 @@
     "/monsters/squawker": {
         "hrid": "/monsters/squawker",
         "name": "Squawker",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 2400,
         "combatDetails": {
             "currentHitpoints": 10500,
@@ -7903,7 +7903,7 @@
     "/monsters/stalactite_golem": {
         "hrid": "/monsters/stalactite_golem",
         "name": "Stalactite Golem",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 280,
         "combatDetails": {
             "currentHitpoints": 1600,
@@ -8052,7 +8052,7 @@
     "/monsters/swampy": {
         "hrid": "/monsters/swampy",
         "name": "Swampy",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 35,
         "combatDetails": {
             "currentHitpoints": 260,
@@ -8180,7 +8180,7 @@
     "/monsters/the_kraken": {
         "hrid": "/monsters/the_kraken",
         "name": "The Kraken",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 28000,
         "combatDetails": {
             "currentHitpoints": 103000,
@@ -8273,7 +8273,7 @@
     "/monsters/the_watcher": {
         "hrid": "/monsters/the_watcher",
         "name": "The Watcher",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 888,
         "combatDetails": {
             "currentHitpoints": 5550,
@@ -8400,8 +8400,8 @@
             },
             {
                 "itemHrid": "/items/white_key_fragment",
-                "dropRate": 0,
-                "dropRatePerDifficultyTier": 0.015,
+                "dropRate": -0.015,
+                "dropRatePerDifficultyTier": 0.03,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -8432,7 +8432,7 @@
     "/monsters/tidal_conjuror": {
         "hrid": "/monsters/tidal_conjuror",
         "name": "Tidal Conjuror",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 7000,
         "combatDetails": {
             "currentHitpoints": 27500,
@@ -8526,7 +8526,7 @@
     "/monsters/treant": {
         "hrid": "/monsters/treant",
         "name": "Treant",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 105,
         "combatDetails": {
             "currentHitpoints": 900,
@@ -8697,7 +8697,7 @@
     "/monsters/turtle": {
         "hrid": "/monsters/turtle",
         "name": "Turuto",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 90,
         "combatDetails": {
             "currentHitpoints": 700,
@@ -8840,7 +8840,7 @@
     "/monsters/vampire": {
         "hrid": "/monsters/vampire",
         "name": "Vampire",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 290,
         "combatDetails": {
             "currentHitpoints": 2200,
@@ -8982,7 +8982,7 @@
     "/monsters/veyes": {
         "hrid": "/monsters/veyes",
         "name": "Veyes",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 160,
         "combatDetails": {
             "currentHitpoints": 1230,
@@ -9093,7 +9093,7 @@
     "/monsters/werewolf": {
         "hrid": "/monsters/werewolf",
         "name": "Werewolf",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 340,
         "combatDetails": {
             "currentHitpoints": 2500,
@@ -9234,7 +9234,7 @@
     "/monsters/zombie": {
         "hrid": "/monsters/zombie",
         "name": "Zombie",
-        "isBoss": false,
+        "enrageTime": 180000000000,
         "experience": 260,
         "combatDetails": {
             "currentHitpoints": 1800,
@@ -9384,7 +9384,7 @@
     "/monsters/zombie_bear": {
         "hrid": "/monsters/zombie_bear",
         "name": "Zombie Bear",
-        "isBoss": true,
+        "enrageTime": 600000000000,
         "experience": 3000,
         "combatDetails": {
             "currentHitpoints": 18000,

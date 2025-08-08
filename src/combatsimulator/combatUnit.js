@@ -17,7 +17,8 @@ class CombatUnit {
     magicLevel = 1;
 
     experience = 0;
-    isBoss = false;
+    experienceRate = 0;
+    enrageTime = 0;
 
     abilities = [null, null, null, null];
     food = [null, null, null];
@@ -210,7 +211,7 @@ class CombatUnit {
         this.combatDetails.defensiveMaxDamage = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats.defensiveDamage);
 
         // when equiped bulwark
-        if (this.equipment?.['/equipment_types/two_hand']?.hrid.endsWith("bulwark")) {
+        if (this.equipment?.['/equipment_types/two_hand']?.hrid.includes("bulwark")) {
             this.combatDetails.smashMaxDamage += this.combatDetails.defensiveMaxDamage;
         }
 

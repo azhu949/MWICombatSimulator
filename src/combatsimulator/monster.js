@@ -19,7 +19,7 @@ class Monster extends CombatUnit {
             throw new Error("No monster found for hrid: " + this.hrid);
         }
 
-        this.isBoss = gameMonster.isBoss;
+        this.enrageTime = gameMonster.enrageTime;
 
         for (let i = 0; i < gameMonster.abilities.length; i++) {
             if (gameMonster.abilities[i].minDifficultyTier > this.difficultyTier) {

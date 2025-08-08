@@ -3,10 +3,11 @@ import CombatEvent from "./combatEvent";
 class EnrageTickEvent extends CombatEvent {
     static type = "enrageTick";
 
-    constructor(time, currentTick) {
+    constructor(time, encounterTime) {
+
         super(EnrageTickEvent.type, time);
 
-        this.currentTick = currentTick;
+        this.encounterTime = encounterTime;
     }
 }
 

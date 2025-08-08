@@ -9,6 +9,7 @@ class SimResult {
         this.consumablesUsed = {};
         this.hitpointsGained = {};
         this.manapointsGained = {};
+        this.debuffOnLevelGap = {};
         this.dropRateMultiplier = {};
         this.rareFindMultiplier = {};
         this.playerRanOutOfMana = {
@@ -109,6 +110,8 @@ class SimResult {
                 experience
                 * (1 + unit.combatDetails.combatStats.combatExperience)
                 * skillExperience
+                * (1 + unit.debuffOnLevelGap)
+
             );
         }
     }
@@ -173,10 +176,16 @@ class SimResult {
             this.dropRateMultiplier[unit.hrid] = {};
         }
         this.dropRateMultiplier[unit.hrid] = 1 + unit.combatDetails.combatStats.combatDropRate;
+
         if (!this.rareFindMultiplier[unit.hrid]) {
             this.rareFindMultiplier[unit.hrid] = {};
         }
         this.rareFindMultiplier[unit.hrid] = 1 + unit.combatDetails.combatStats.combatRareFind;
+
+        if (!this.debuffOnLevelGap[unit.hrid]) {
+            this.debuffOnLevelGap[unit.hrid] = {};
+        }
+        this.debuffOnLevelGap[unit.hrid] = unit.debuffOnLevelGap;
     }
 
     setManaUsed(unit) {
