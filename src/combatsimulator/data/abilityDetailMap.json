@@ -6,7 +6,7 @@
         "isSpecialAbility": false,
         "manaCost": 35,
         "cooldownDuration": 18000000000,
-        "castDuration": 800000000,
+        "castDuration": 500000000,
         "abilityEffects": [
             {
                 "targetType": "enemy",
@@ -166,7 +166,7 @@
         "isSpecialAbility": false,
         "manaCost": 35,
         "cooldownDuration": 20000000000,
-        "castDuration": 500000000,
+        "castDuration": 300000000,
         "abilityEffects": [
             {
                 "targetType": "allEnemies",
@@ -218,7 +218,7 @@
         "isSpecialAbility": false,
         "manaCost": 55,
         "cooldownDuration": 20000000000,
-        "castDuration": 500000000,
+        "castDuration": 300000000,
         "abilityEffects": [
             {
                 "targetType": "allEnemies",
@@ -271,7 +271,7 @@
     "/abilities/critical_aura": {
         "hrid": "/abilities/critical_aura",
         "name": "Critical Aura",
-        "description": "Increases critical rate for all allies. Effect increases by (0.005x) per caster's Ranged level",
+        "description": "Increases critical rate and critical damage for all allies. Effect increases by (0.005x) per caster's Ranged level",
         "isSpecialAbility": true,
         "manaCost": 100,
         "cooldownDuration": 120000000000,
@@ -683,7 +683,7 @@
         "isSpecialAbility": false,
         "manaCost": 35,
         "cooldownDuration": 18000000000,
-        "castDuration": 800000000,
+        "castDuration": 500000000,
         "abilityEffects": [
             {
                 "targetType": "enemy",
@@ -781,7 +781,7 @@
         "isSpecialAbility": false,
         "manaCost": 55,
         "cooldownDuration": 20000000000,
-        "castDuration": 500000000,
+        "castDuration": 300000000,
         "abilityEffects": [
             {
                 "targetType": "allEnemies",
@@ -960,7 +960,7 @@
     "/abilities/guardian_aura": {
         "hrid": "/abilities/guardian_aura",
         "name": "Guardian Aura",
-        "description": "Increases heal amplify, armor, and resistances for all allies. Effect increases by (0.005x) per caster's Defense level",
+        "description": "Increases healing amplify, evasion, armor, and resistances for all allies. Effect increases by (0.005x) per caster's Defense level",
         "isSpecialAbility": true,
         "manaCost": 100,
         "cooldownDuration": 120000000000,
@@ -1186,7 +1186,7 @@
         "isSpecialAbility": false,
         "manaCost": 35,
         "cooldownDuration": 20000000000,
-        "castDuration": 500000000,
+        "castDuration": 300000000,
         "abilityEffects": [
             {
                 "targetType": "enemy",
@@ -1478,7 +1478,7 @@
         "isSpecialAbility": false,
         "manaCost": 50,
         "cooldownDuration": 20000000000,
-        "castDuration": 500000000,
+        "castDuration": 300000000,
         "abilityEffects": [
             {
                 "targetType": "enemy",
@@ -1805,7 +1805,7 @@
         "isSpecialAbility": false,
         "manaCost": 55,
         "cooldownDuration": 20000000000,
-        "castDuration": 800000000,
+        "castDuration": 500000000,
         "abilityEffects": [
             {
                 "targetType": "enemy",
@@ -1851,7 +1851,7 @@
         "isSpecialAbility": false,
         "manaCost": 55,
         "cooldownDuration": 20000000000,
-        "castDuration": 500000000,
+        "castDuration": 300000000,
         "abilityEffects": [
             {
                 "targetType": "enemy",
@@ -1897,7 +1897,7 @@
         "isSpecialAbility": false,
         "manaCost": 50,
         "cooldownDuration": 20000000000,
-        "castDuration": 800000000,
+        "castDuration": 500000000,
         "abilityEffects": [
             {
                 "targetType": "enemy",
@@ -2176,7 +2176,7 @@
         "isSpecialAbility": false,
         "manaCost": 50,
         "cooldownDuration": 20000000000,
-        "castDuration": 500000000,
+        "castDuration": 300000000,
         "abilityEffects": [
             {
                 "targetType": "enemy",
@@ -2279,7 +2279,7 @@
         "isSpecialAbility": false,
         "manaCost": 25,
         "cooldownDuration": 15000000000,
-        "castDuration": 500000000,
+        "castDuration": 300000000,
         "abilityEffects": [
             {
                 "targetType": "enemy",
@@ -2325,7 +2325,7 @@
         "isSpecialAbility": false,
         "manaCost": 35,
         "cooldownDuration": 20000000000,
-        "castDuration": 800000000,
+        "castDuration": 500000000,
         "abilityEffects": [
             {
                 "targetType": "allEnemies",
@@ -2469,7 +2469,7 @@
         "isSpecialAbility": false,
         "manaCost": 25,
         "cooldownDuration": 15000000000,
-        "castDuration": 500000000,
+        "castDuration": 300000000,
         "abilityEffects": [
             {
                 "targetType": "enemy",
@@ -2515,7 +2515,7 @@
         "isSpecialAbility": false,
         "manaCost": 35,
         "cooldownDuration": 12000000000,
-        "castDuration": 500000000,
+        "castDuration": 300000000,
         "abilityEffects": [
             {
                 "targetType": "enemy",
@@ -2530,8 +2530,8 @@
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
                 "damageOverTimeDuration": 0,
-                "armorDamageRatio": 0.6,
-                "armorDamageRatioLevelBonus": 0.006,
+                "armorDamageRatio": 0.7,
+                "armorDamageRatioLevelBonus": 0.007,
                 "hpDrainRatio": 0,
                 "pierceChance": 0,
                 "blindChance": 0,
@@ -2561,7 +2561,7 @@
         "isSpecialAbility": false,
         "manaCost": 50,
         "cooldownDuration": 20000000000,
-        "castDuration": 800000000,
+        "castDuration": 500000000,
         "abilityEffects": [
             {
                 "targetType": "enemy",
@@ -2607,7 +2607,7 @@
         "isSpecialAbility": false,
         "manaCost": 25,
         "cooldownDuration": 15000000000,
-        "castDuration": 500000000,
+        "castDuration": 300000000,
         "abilityEffects": [
             {
                 "targetType": "enemy",
@@ -2858,7 +2858,7 @@
         "isSpecialAbility": false,
         "manaCost": 50,
         "cooldownDuration": 20000000000,
-        "castDuration": 800000000,
+        "castDuration": 500000000,
         "abilityEffects": [
             {
                 "targetType": "enemy",
@@ -2904,7 +2904,7 @@
         "isSpecialAbility": false,
         "manaCost": 50,
         "cooldownDuration": 20000000000,
-        "castDuration": 500000000,
+        "castDuration": 300000000,
         "abilityEffects": [
             {
                 "targetType": "enemy",
@@ -2913,8 +2913,8 @@
                 "damageType": "/damage_types/physical",
                 "baseDamageFlat": 30,
                 "baseDamageFlatLevelBonus": 0.3,
-                "baseDamageRatio": 1,
-                "baseDamageRatioLevelBonus": 0.01,
+                "baseDamageRatio": 1.1,
+                "baseDamageRatioLevelBonus": 0.011,
                 "bonusAccuracyRatio": 0,
                 "bonusAccuracyRatioLevelBonus": 0,
                 "damageOverTimeRatio": 0,
@@ -2950,7 +2950,7 @@
         "isSpecialAbility": false,
         "manaCost": 35,
         "cooldownDuration": 20000000000,
-        "castDuration": 500000000,
+        "castDuration": 300000000,
         "abilityEffects": [
             {
                 "targetType": "allEnemies",

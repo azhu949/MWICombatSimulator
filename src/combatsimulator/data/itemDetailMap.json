@@ -6109,7 +6109,12 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/alchemy_essence",
+                    "count": 10000
+                }
+            ],
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
                 {
@@ -6302,7 +6307,12 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/brewing_essence",
+                    "count": 10000
+                }
+            ],
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
                 {
@@ -6407,7 +6417,12 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/cheesesmithing_essence",
+                    "count": 10000
+                }
+            ],
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
                 {
@@ -6512,7 +6527,12 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/cooking_essence",
+                    "count": 10000
+                }
+            ],
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
                 {
@@ -6617,7 +6637,12 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/crafting_essence",
+                    "count": 10000
+                }
+            ],
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
                 {
@@ -6810,7 +6835,12 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/enhancing_essence",
+                    "count": 10000
+                }
+            ],
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
                 {
@@ -6915,7 +6945,12 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/foraging_essence",
+                    "count": 10000
+                }
+            ],
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
                 {
@@ -7284,7 +7319,12 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/milking_essence",
+                    "count": 10000
+                }
+            ],
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
                 {
@@ -7565,7 +7605,12 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/tailoring_essence",
+                    "count": 10000
+                }
+            ],
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
                 {
@@ -7717,7 +7762,12 @@
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
-            "decomposeItems": null,
+            "decomposeItems": [
+                {
+                    "itemHrid": "/items/woodcutting_essence",
+                    "count": 10000
+                }
+            ],
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
                 {
@@ -31395,7 +31445,7 @@
                 "fireResistance": 30,
                 "threat": 100,
                 "primaryTraining": "/skills/defense",
-                "defenseExperience": 0.12,
+                "defenseExperience": 0.1,
                 "weaken": 0.03
             },
             "noncombatStats": {},
@@ -31407,7 +31457,7 @@
                 "natureResistance": 0.6,
                 "fireResistance": 0.6,
                 "threat": 2,
-                "defenseExperience": 0.0024
+                "defenseExperience": 0.002
             },
             "noncombatEnhancementBonuses": {}
         },
@@ -53805,7 +53855,7 @@
                 "fireResistance": 10,
                 "threat": 80,
                 "primaryTraining": "/skills/defense",
-                "defenseExperience": 0.09
+                "defenseExperience": 0.08
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
@@ -53816,7 +53866,7 @@
                 "natureResistance": 0.2,
                 "fireResistance": 0.2,
                 "threat": 1.6,
-                "defenseExperience": 0.0018
+                "defenseExperience": 0.0016
             },
             "noncombatEnhancementBonuses": {}
         },

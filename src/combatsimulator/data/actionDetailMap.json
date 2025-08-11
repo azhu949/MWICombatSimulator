@@ -15237,8 +15237,8 @@
                     },
                     {
                         "itemHrid": "/items/chimerical_refinement_chest",
-                        "dropRate": 0,
-                        "dropRatePerDifficultyTier": 0.42,
+                        "dropRate": -0.3,
+                        "dropRatePerDifficultyTier": 0.6,
                         "minCount": 1,
                         "maxCount": 1
                     }
@@ -15820,8 +15820,8 @@
                     },
                     {
                         "itemHrid": "/items/enchanted_refinement_chest",
-                        "dropRate": 0,
-                        "dropRatePerDifficultyTier": 0.42,
+                        "dropRate": -0.3,
+                        "dropRatePerDifficultyTier": 0.6,
                         "minCount": 1,
                         "maxCount": 1
                     }
@@ -17698,8 +17698,8 @@
                     },
                     {
                         "itemHrid": "/items/pirate_refinement_chest",
-                        "dropRate": 0,
-                        "dropRatePerDifficultyTier": 0.42,
+                        "dropRate": -0.3,
+                        "dropRatePerDifficultyTier": 0.6,
                         "minCount": 1,
                         "maxCount": 1
                     }
@@ -18417,8 +18417,8 @@
                     },
                     {
                         "itemHrid": "/items/sinister_refinement_chest",
-                        "dropRate": 0,
-                        "dropRatePerDifficultyTier": 0.42,
+                        "dropRate": -0.3,
+                        "dropRatePerDifficultyTier": 0.6,
                         "minCount": 1,
                         "maxCount": 1
                     }
@@ -21606,7 +21606,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 46
+        "sortIndex": 56
     },
     "/actions/crafting/advanced_attack_charm": {
         "hrid": "/actions/crafting/advanced_attack_charm",
@@ -21658,7 +21658,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 50
+        "sortIndex": 60
     },
     "/actions/crafting/advanced_brewing_charm": {
         "hrid": "/actions/crafting/advanced_brewing_charm",
@@ -21710,7 +21710,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 45
+        "sortIndex": 55
     },
     "/actions/crafting/advanced_cheesesmithing_charm": {
         "hrid": "/actions/crafting/advanced_cheesesmithing_charm",
@@ -21762,7 +21762,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 41
+        "sortIndex": 51
     },
     "/actions/crafting/advanced_cooking_charm": {
         "hrid": "/actions/crafting/advanced_cooking_charm",
@@ -21814,7 +21814,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 44
+        "sortIndex": 54
     },
     "/actions/crafting/advanced_crafting_charm": {
         "hrid": "/actions/crafting/advanced_crafting_charm",
@@ -21866,7 +21866,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 42
+        "sortIndex": 52
     },
     "/actions/crafting/advanced_defense_charm": {
         "hrid": "/actions/crafting/advanced_defense_charm",
@@ -21918,7 +21918,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 51
+        "sortIndex": 61
     },
     "/actions/crafting/advanced_enhancing_charm": {
         "hrid": "/actions/crafting/advanced_enhancing_charm",
@@ -21970,7 +21970,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 47
+        "sortIndex": 57
     },
     "/actions/crafting/advanced_foraging_charm": {
         "hrid": "/actions/crafting/advanced_foraging_charm",
@@ -22022,7 +22022,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 39
+        "sortIndex": 49
     },
     "/actions/crafting/advanced_intelligence_charm": {
         "hrid": "/actions/crafting/advanced_intelligence_charm",
@@ -22074,7 +22074,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 49
+        "sortIndex": 59
     },
     "/actions/crafting/advanced_magic_charm": {
         "hrid": "/actions/crafting/advanced_magic_charm",
@@ -22126,7 +22126,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 54
+        "sortIndex": 64
     },
     "/actions/crafting/advanced_melee_charm": {
         "hrid": "/actions/crafting/advanced_melee_charm",
@@ -22178,7 +22178,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 52
+        "sortIndex": 62
     },
     "/actions/crafting/advanced_milking_charm": {
         "hrid": "/actions/crafting/advanced_milking_charm",
@@ -22230,7 +22230,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 38
+        "sortIndex": 48
     },
     "/actions/crafting/advanced_ranged_charm": {
         "hrid": "/actions/crafting/advanced_ranged_charm",
@@ -22282,7 +22282,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 53
+        "sortIndex": 63
     },
     "/actions/crafting/advanced_stamina_charm": {
         "hrid": "/actions/crafting/advanced_stamina_charm",
@@ -22334,7 +22334,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 48
+        "sortIndex": 58
     },
     "/actions/crafting/advanced_tailoring_charm": {
         "hrid": "/actions/crafting/advanced_tailoring_charm",
@@ -22386,7 +22386,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 43
+        "sortIndex": 53
     },
     "/actions/crafting/advanced_task_badge": {
         "hrid": "/actions/crafting/advanced_task_badge",
@@ -22490,7 +22490,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 40
+        "sortIndex": 50
     },
     "/actions/crafting/arcane_bow": {
         "hrid": "/actions/crafting/arcane_bow",
@@ -22542,7 +22542,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 141
+        "sortIndex": 151
     },
     "/actions/crafting/arcane_crossbow": {
         "hrid": "/actions/crafting/arcane_crossbow",
@@ -22594,7 +22594,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 117
+        "sortIndex": 127
     },
     "/actions/crafting/arcane_fire_staff": {
         "hrid": "/actions/crafting/arcane_fire_staff",
@@ -22646,7 +22646,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 144
+        "sortIndex": 154
     },
     "/actions/crafting/arcane_lumber": {
         "hrid": "/actions/crafting/arcane_lumber",
@@ -22704,7 +22704,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 116
+        "sortIndex": 126
     },
     "/actions/crafting/arcane_nature_staff": {
         "hrid": "/actions/crafting/arcane_nature_staff",
@@ -22756,7 +22756,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 139
+        "sortIndex": 149
     },
     "/actions/crafting/arcane_shield": {
         "hrid": "/actions/crafting/arcane_shield",
@@ -22808,7 +22808,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 138
+        "sortIndex": 148
     },
     "/actions/crafting/arcane_water_staff": {
         "hrid": "/actions/crafting/arcane_water_staff",
@@ -22860,7 +22860,475 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 118
+        "sortIndex": 128
+    },
+    "/actions/crafting/basic_alchemy_charm": {
+        "hrid": "/actions/crafting/basic_alchemy_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Basic Alchemy Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 20
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 1000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.09999999999999999,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/alchemy_essence",
+                "count": 10000
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/basic_alchemy_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 32
+    },
+    "/actions/crafting/basic_brewing_charm": {
+        "hrid": "/actions/crafting/basic_brewing_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Basic Brewing Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 20
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 1000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.09999999999999999,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/brewing_essence",
+                "count": 10000
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/basic_brewing_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 31
+    },
+    "/actions/crafting/basic_cheesesmithing_charm": {
+        "hrid": "/actions/crafting/basic_cheesesmithing_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Basic Cheesesmithing Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 20
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 1000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.09999999999999999,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "count": 10000
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/basic_cheesesmithing_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 27
+    },
+    "/actions/crafting/basic_cooking_charm": {
+        "hrid": "/actions/crafting/basic_cooking_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Basic Cooking Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 20
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 1000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.09999999999999999,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/cooking_essence",
+                "count": 10000
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/basic_cooking_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 30
+    },
+    "/actions/crafting/basic_crafting_charm": {
+        "hrid": "/actions/crafting/basic_crafting_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Basic Crafting Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 20
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 1000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.09999999999999999,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "count": 10000
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/basic_crafting_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 28
+    },
+    "/actions/crafting/basic_enhancing_charm": {
+        "hrid": "/actions/crafting/basic_enhancing_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Basic Enhancing Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 20
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 1000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.09999999999999999,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/enhancing_essence",
+                "count": 10000
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/basic_enhancing_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 33
+    },
+    "/actions/crafting/basic_foraging_charm": {
+        "hrid": "/actions/crafting/basic_foraging_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Basic Foraging Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 20
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 1000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.09999999999999999,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/foraging_essence",
+                "count": 10000
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/basic_foraging_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 25
+    },
+    "/actions/crafting/basic_milking_charm": {
+        "hrid": "/actions/crafting/basic_milking_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Basic Milking Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 20
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 1000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.09999999999999999,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/milking_essence",
+                "count": 10000
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/basic_milking_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 24
+    },
+    "/actions/crafting/basic_tailoring_charm": {
+        "hrid": "/actions/crafting/basic_tailoring_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Basic Tailoring Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 20
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 1000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.09999999999999999,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "count": 10000
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/basic_tailoring_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 29
     },
     "/actions/crafting/basic_task_badge": {
         "hrid": "/actions/crafting/basic_task_badge",
@@ -22913,6 +23381,58 @@
         "maxPartySize": 0,
         "buffs": null,
         "sortIndex": 4
+    },
+    "/actions/crafting/basic_woodcutting_charm": {
+        "hrid": "/actions/crafting/basic_woodcutting_charm",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/charm",
+        "name": "Basic Woodcutting Charm",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 20
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 1000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.09999999999999999,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_artisans_crate",
+                "dropRate": 0.0008333333333333334,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/woodcutting_essence",
+                "count": 10000
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/basic_woodcutting_charm",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 26
     },
     "/actions/crafting/birch_bow": {
         "hrid": "/actions/crafting/birch_bow",
@@ -23344,7 +23864,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 156
+        "sortIndex": 166
     },
     "/actions/crafting/bishops_codex_refined": {
         "hrid": "/actions/crafting/bishops_codex_refined",
@@ -23396,7 +23916,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 179
+        "sortIndex": 189
     },
     "/actions/crafting/blazing_trident": {
         "hrid": "/actions/crafting/blazing_trident",
@@ -23456,7 +23976,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 161
+        "sortIndex": 171
     },
     "/actions/crafting/blazing_trident_refined": {
         "hrid": "/actions/crafting/blazing_trident_refined",
@@ -23508,7 +24028,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 184
+        "sortIndex": 194
     },
     "/actions/crafting/blooming_trident": {
         "hrid": "/actions/crafting/blooming_trident",
@@ -23568,7 +24088,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 160
+        "sortIndex": 170
     },
     "/actions/crafting/blooming_trident_refined": {
         "hrid": "/actions/crafting/blooming_trident_refined",
@@ -23620,7 +24140,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 183
+        "sortIndex": 193
     },
     "/actions/crafting/catalyst_of_coinification": {
         "hrid": "/actions/crafting/catalyst_of_coinification",
@@ -23680,7 +24200,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 58
+        "sortIndex": 68
     },
     "/actions/crafting/catalyst_of_decomposition": {
         "hrid": "/actions/crafting/catalyst_of_decomposition",
@@ -23740,7 +24260,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 68
+        "sortIndex": 78
     },
     "/actions/crafting/catalyst_of_transmutation": {
         "hrid": "/actions/crafting/catalyst_of_transmutation",
@@ -23804,7 +24324,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 97
+        "sortIndex": 107
     },
     "/actions/crafting/cedar_bow": {
         "hrid": "/actions/crafting/cedar_bow",
@@ -23856,7 +24376,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 26
+        "sortIndex": 36
     },
     "/actions/crafting/cedar_crossbow": {
         "hrid": "/actions/crafting/cedar_crossbow",
@@ -23960,7 +24480,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 28
+        "sortIndex": 38
     },
     "/actions/crafting/cedar_lumber": {
         "hrid": "/actions/crafting/cedar_lumber",
@@ -24064,7 +24584,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 25
+        "sortIndex": 35
     },
     "/actions/crafting/cedar_shield": {
         "hrid": "/actions/crafting/cedar_shield",
@@ -24116,7 +24636,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 24
+        "sortIndex": 34
     },
     "/actions/crafting/cedar_water_staff": {
         "hrid": "/actions/crafting/cedar_water_staff",
@@ -24232,7 +24752,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 108
+        "sortIndex": 118
     },
     "/actions/crafting/chimerical_entry_key": {
         "hrid": "/actions/crafting/chimerical_entry_key",
@@ -24292,7 +24812,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 107
+        "sortIndex": 117
     },
     "/actions/crafting/crushed_amber": {
         "hrid": "/actions/crafting/crushed_amber",
@@ -24344,7 +24864,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 27
+        "sortIndex": 37
     },
     "/actions/crafting/crushed_amethyst": {
         "hrid": "/actions/crafting/crushed_amethyst",
@@ -24396,7 +24916,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 57
+        "sortIndex": 67
     },
     "/actions/crafting/crushed_garnet": {
         "hrid": "/actions/crafting/crushed_garnet",
@@ -24448,7 +24968,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 55
+        "sortIndex": 65
     },
     "/actions/crafting/crushed_jade": {
         "hrid": "/actions/crafting/crushed_jade",
@@ -24500,7 +25020,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 56
+        "sortIndex": 66
     },
     "/actions/crafting/crushed_moonstone": {
         "hrid": "/actions/crafting/crushed_moonstone",
@@ -24552,7 +25072,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 75
+        "sortIndex": 85
     },
     "/actions/crafting/crushed_pearl": {
         "hrid": "/actions/crafting/crushed_pearl",
@@ -24656,7 +25176,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 151
+        "sortIndex": 161
     },
     "/actions/crafting/crushed_sunstone": {
         "hrid": "/actions/crafting/crushed_sunstone",
@@ -24708,7 +25228,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 106
+        "sortIndex": 116
     },
     "/actions/crafting/cursed_bow": {
         "hrid": "/actions/crafting/cursed_bow",
@@ -24768,7 +25288,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 157
+        "sortIndex": 167
     },
     "/actions/crafting/cursed_bow_refined": {
         "hrid": "/actions/crafting/cursed_bow_refined",
@@ -24820,7 +25340,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 180
+        "sortIndex": 190
     },
     "/actions/crafting/earrings_of_armor": {
         "hrid": "/actions/crafting/earrings_of_armor",
@@ -24880,7 +25400,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 70
+        "sortIndex": 80
     },
     "/actions/crafting/earrings_of_critical_strike": {
         "hrid": "/actions/crafting/earrings_of_critical_strike",
@@ -24936,7 +25456,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 114
+        "sortIndex": 124
     },
     "/actions/crafting/earrings_of_essence_find": {
         "hrid": "/actions/crafting/earrings_of_essence_find",
@@ -24992,7 +25512,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 30
+        "sortIndex": 40
     },
     "/actions/crafting/earrings_of_gathering": {
         "hrid": "/actions/crafting/earrings_of_gathering",
@@ -25104,7 +25624,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 98
+        "sortIndex": 108
     },
     "/actions/crafting/earrings_of_regeneration": {
         "hrid": "/actions/crafting/earrings_of_regeneration",
@@ -25164,7 +25684,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 62
+        "sortIndex": 72
     },
     "/actions/crafting/earrings_of_resistance": {
         "hrid": "/actions/crafting/earrings_of_resistance",
@@ -25224,7 +25744,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 77
+        "sortIndex": 87
     },
     "/actions/crafting/enchanted_chest_key": {
         "hrid": "/actions/crafting/enchanted_chest_key",
@@ -25288,7 +25808,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 143
+        "sortIndex": 153
     },
     "/actions/crafting/enchanted_entry_key": {
         "hrid": "/actions/crafting/enchanted_entry_key",
@@ -25348,7 +25868,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 142
+        "sortIndex": 152
     },
     "/actions/crafting/expert_alchemy_charm": {
         "hrid": "/actions/crafting/expert_alchemy_charm",
@@ -25400,7 +25920,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 88
+        "sortIndex": 98
     },
     "/actions/crafting/expert_attack_charm": {
         "hrid": "/actions/crafting/expert_attack_charm",
@@ -25452,7 +25972,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 92
+        "sortIndex": 102
     },
     "/actions/crafting/expert_brewing_charm": {
         "hrid": "/actions/crafting/expert_brewing_charm",
@@ -25504,7 +26024,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 87
+        "sortIndex": 97
     },
     "/actions/crafting/expert_cheesesmithing_charm": {
         "hrid": "/actions/crafting/expert_cheesesmithing_charm",
@@ -25556,7 +26076,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 83
+        "sortIndex": 93
     },
     "/actions/crafting/expert_cooking_charm": {
         "hrid": "/actions/crafting/expert_cooking_charm",
@@ -25608,7 +26128,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 86
+        "sortIndex": 96
     },
     "/actions/crafting/expert_crafting_charm": {
         "hrid": "/actions/crafting/expert_crafting_charm",
@@ -25660,7 +26180,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 84
+        "sortIndex": 94
     },
     "/actions/crafting/expert_defense_charm": {
         "hrid": "/actions/crafting/expert_defense_charm",
@@ -25712,7 +26232,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 93
+        "sortIndex": 103
     },
     "/actions/crafting/expert_enhancing_charm": {
         "hrid": "/actions/crafting/expert_enhancing_charm",
@@ -25764,7 +26284,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 89
+        "sortIndex": 99
     },
     "/actions/crafting/expert_foraging_charm": {
         "hrid": "/actions/crafting/expert_foraging_charm",
@@ -25816,7 +26336,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 81
+        "sortIndex": 91
     },
     "/actions/crafting/expert_intelligence_charm": {
         "hrid": "/actions/crafting/expert_intelligence_charm",
@@ -25868,7 +26388,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 91
+        "sortIndex": 101
     },
     "/actions/crafting/expert_magic_charm": {
         "hrid": "/actions/crafting/expert_magic_charm",
@@ -25920,7 +26440,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 96
+        "sortIndex": 106
     },
     "/actions/crafting/expert_melee_charm": {
         "hrid": "/actions/crafting/expert_melee_charm",
@@ -25972,7 +26492,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 94
+        "sortIndex": 104
     },
     "/actions/crafting/expert_milking_charm": {
         "hrid": "/actions/crafting/expert_milking_charm",
@@ -26024,7 +26544,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 80
+        "sortIndex": 90
     },
     "/actions/crafting/expert_ranged_charm": {
         "hrid": "/actions/crafting/expert_ranged_charm",
@@ -26076,7 +26596,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 95
+        "sortIndex": 105
     },
     "/actions/crafting/expert_stamina_charm": {
         "hrid": "/actions/crafting/expert_stamina_charm",
@@ -26128,7 +26648,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 90
+        "sortIndex": 100
     },
     "/actions/crafting/expert_tailoring_charm": {
         "hrid": "/actions/crafting/expert_tailoring_charm",
@@ -26180,7 +26700,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 85
+        "sortIndex": 95
     },
     "/actions/crafting/expert_task_badge": {
         "hrid": "/actions/crafting/expert_task_badge",
@@ -26284,7 +26804,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 82
+        "sortIndex": 92
     },
     "/actions/crafting/eye_watch": {
         "hrid": "/actions/crafting/eye_watch",
@@ -26352,7 +26872,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 109
+        "sortIndex": 119
     },
     "/actions/crafting/fighter_necklace": {
         "hrid": "/actions/crafting/fighter_necklace",
@@ -26408,7 +26928,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 63
+        "sortIndex": 73
     },
     "/actions/crafting/frost_staff": {
         "hrid": "/actions/crafting/frost_staff",
@@ -26460,7 +26980,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 147
+        "sortIndex": 157
     },
     "/actions/crafting/ginkgo_bow": {
         "hrid": "/actions/crafting/ginkgo_bow",
@@ -26512,7 +27032,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 73
+        "sortIndex": 83
     },
     "/actions/crafting/ginkgo_crossbow": {
         "hrid": "/actions/crafting/ginkgo_crossbow",
@@ -26564,7 +27084,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 65
+        "sortIndex": 75
     },
     "/actions/crafting/ginkgo_fire_staff": {
         "hrid": "/actions/crafting/ginkgo_fire_staff",
@@ -26616,7 +27136,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 76
+        "sortIndex": 86
     },
     "/actions/crafting/ginkgo_lumber": {
         "hrid": "/actions/crafting/ginkgo_lumber",
@@ -26668,7 +27188,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 64
+        "sortIndex": 74
     },
     "/actions/crafting/ginkgo_nature_staff": {
         "hrid": "/actions/crafting/ginkgo_nature_staff",
@@ -26720,7 +27240,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 71
+        "sortIndex": 81
     },
     "/actions/crafting/ginkgo_shield": {
         "hrid": "/actions/crafting/ginkgo_shield",
@@ -26772,7 +27292,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 69
+        "sortIndex": 79
     },
     "/actions/crafting/ginkgo_water_staff": {
         "hrid": "/actions/crafting/ginkgo_water_staff",
@@ -26824,7 +27344,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 66
+        "sortIndex": 76
     },
     "/actions/crafting/grandmaster_alchemy_charm": {
         "hrid": "/actions/crafting/grandmaster_alchemy_charm",
@@ -26876,7 +27396,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 170
+        "sortIndex": 180
     },
     "/actions/crafting/grandmaster_attack_charm": {
         "hrid": "/actions/crafting/grandmaster_attack_charm",
@@ -26928,7 +27448,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 174
+        "sortIndex": 184
     },
     "/actions/crafting/grandmaster_brewing_charm": {
         "hrid": "/actions/crafting/grandmaster_brewing_charm",
@@ -26980,7 +27500,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 169
+        "sortIndex": 179
     },
     "/actions/crafting/grandmaster_cheesesmithing_charm": {
         "hrid": "/actions/crafting/grandmaster_cheesesmithing_charm",
@@ -27032,7 +27552,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 165
+        "sortIndex": 175
     },
     "/actions/crafting/grandmaster_cooking_charm": {
         "hrid": "/actions/crafting/grandmaster_cooking_charm",
@@ -27084,7 +27604,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 168
+        "sortIndex": 178
     },
     "/actions/crafting/grandmaster_crafting_charm": {
         "hrid": "/actions/crafting/grandmaster_crafting_charm",
@@ -27136,7 +27656,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 166
+        "sortIndex": 176
     },
     "/actions/crafting/grandmaster_defense_charm": {
         "hrid": "/actions/crafting/grandmaster_defense_charm",
@@ -27188,7 +27708,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 175
+        "sortIndex": 185
     },
     "/actions/crafting/grandmaster_enhancing_charm": {
         "hrid": "/actions/crafting/grandmaster_enhancing_charm",
@@ -27240,7 +27760,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 171
+        "sortIndex": 181
     },
     "/actions/crafting/grandmaster_foraging_charm": {
         "hrid": "/actions/crafting/grandmaster_foraging_charm",
@@ -27292,7 +27812,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 163
+        "sortIndex": 173
     },
     "/actions/crafting/grandmaster_intelligence_charm": {
         "hrid": "/actions/crafting/grandmaster_intelligence_charm",
@@ -27344,7 +27864,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 173
+        "sortIndex": 183
     },
     "/actions/crafting/grandmaster_magic_charm": {
         "hrid": "/actions/crafting/grandmaster_magic_charm",
@@ -27396,7 +27916,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 178
+        "sortIndex": 188
     },
     "/actions/crafting/grandmaster_melee_charm": {
         "hrid": "/actions/crafting/grandmaster_melee_charm",
@@ -27448,7 +27968,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 176
+        "sortIndex": 186
     },
     "/actions/crafting/grandmaster_milking_charm": {
         "hrid": "/actions/crafting/grandmaster_milking_charm",
@@ -27500,7 +28020,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 162
+        "sortIndex": 172
     },
     "/actions/crafting/grandmaster_ranged_charm": {
         "hrid": "/actions/crafting/grandmaster_ranged_charm",
@@ -27552,7 +28072,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 177
+        "sortIndex": 187
     },
     "/actions/crafting/grandmaster_stamina_charm": {
         "hrid": "/actions/crafting/grandmaster_stamina_charm",
@@ -27604,7 +28124,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 172
+        "sortIndex": 182
     },
     "/actions/crafting/grandmaster_tailoring_charm": {
         "hrid": "/actions/crafting/grandmaster_tailoring_charm",
@@ -27656,7 +28176,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 167
+        "sortIndex": 177
     },
     "/actions/crafting/grandmaster_woodcutting_charm": {
         "hrid": "/actions/crafting/grandmaster_woodcutting_charm",
@@ -27708,7 +28228,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 164
+        "sortIndex": 174
     },
     "/actions/crafting/infernal_battlestaff": {
         "hrid": "/actions/crafting/infernal_battlestaff",
@@ -27760,7 +28280,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 148
+        "sortIndex": 158
     },
     "/actions/crafting/jackalope_staff": {
         "hrid": "/actions/crafting/jackalope_staff",
@@ -27812,7 +28332,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 149
+        "sortIndex": 159
     },
     "/actions/crafting/lumber": {
         "hrid": "/actions/crafting/lumber",
@@ -27916,7 +28436,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 140
+        "sortIndex": 150
     },
     "/actions/crafting/master_alchemy_charm": {
         "hrid": "/actions/crafting/master_alchemy_charm",
@@ -27968,7 +28488,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 127
+        "sortIndex": 137
     },
     "/actions/crafting/master_attack_charm": {
         "hrid": "/actions/crafting/master_attack_charm",
@@ -28020,7 +28540,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 131
+        "sortIndex": 141
     },
     "/actions/crafting/master_brewing_charm": {
         "hrid": "/actions/crafting/master_brewing_charm",
@@ -28072,7 +28592,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 126
+        "sortIndex": 136
     },
     "/actions/crafting/master_cheesesmithing_charm": {
         "hrid": "/actions/crafting/master_cheesesmithing_charm",
@@ -28124,7 +28644,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 122
+        "sortIndex": 132
     },
     "/actions/crafting/master_cooking_charm": {
         "hrid": "/actions/crafting/master_cooking_charm",
@@ -28176,7 +28696,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 125
+        "sortIndex": 135
     },
     "/actions/crafting/master_crafting_charm": {
         "hrid": "/actions/crafting/master_crafting_charm",
@@ -28228,7 +28748,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 123
+        "sortIndex": 133
     },
     "/actions/crafting/master_defense_charm": {
         "hrid": "/actions/crafting/master_defense_charm",
@@ -28280,7 +28800,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 132
+        "sortIndex": 142
     },
     "/actions/crafting/master_enhancing_charm": {
         "hrid": "/actions/crafting/master_enhancing_charm",
@@ -28332,7 +28852,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 128
+        "sortIndex": 138
     },
     "/actions/crafting/master_foraging_charm": {
         "hrid": "/actions/crafting/master_foraging_charm",
@@ -28384,7 +28904,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 120
+        "sortIndex": 130
     },
     "/actions/crafting/master_intelligence_charm": {
         "hrid": "/actions/crafting/master_intelligence_charm",
@@ -28436,7 +28956,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 130
+        "sortIndex": 140
     },
     "/actions/crafting/master_magic_charm": {
         "hrid": "/actions/crafting/master_magic_charm",
@@ -28488,7 +29008,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 135
+        "sortIndex": 145
     },
     "/actions/crafting/master_melee_charm": {
         "hrid": "/actions/crafting/master_melee_charm",
@@ -28540,7 +29060,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 133
+        "sortIndex": 143
     },
     "/actions/crafting/master_milking_charm": {
         "hrid": "/actions/crafting/master_milking_charm",
@@ -28592,7 +29112,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 119
+        "sortIndex": 129
     },
     "/actions/crafting/master_ranged_charm": {
         "hrid": "/actions/crafting/master_ranged_charm",
@@ -28644,7 +29164,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 134
+        "sortIndex": 144
     },
     "/actions/crafting/master_stamina_charm": {
         "hrid": "/actions/crafting/master_stamina_charm",
@@ -28696,7 +29216,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 129
+        "sortIndex": 139
     },
     "/actions/crafting/master_tailoring_charm": {
         "hrid": "/actions/crafting/master_tailoring_charm",
@@ -28748,7 +29268,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 124
+        "sortIndex": 134
     },
     "/actions/crafting/master_woodcutting_charm": {
         "hrid": "/actions/crafting/master_woodcutting_charm",
@@ -28800,7 +29320,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 121
+        "sortIndex": 131
     },
     "/actions/crafting/mirror_of_protection": {
         "hrid": "/actions/crafting/mirror_of_protection",
@@ -28852,7 +29372,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 113
+        "sortIndex": 123
     },
     "/actions/crafting/necklace_of_efficiency": {
         "hrid": "/actions/crafting/necklace_of_efficiency",
@@ -28912,7 +29432,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 31
+        "sortIndex": 41
     },
     "/actions/crafting/necklace_of_speed": {
         "hrid": "/actions/crafting/necklace_of_speed",
@@ -28968,7 +29488,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 115
+        "sortIndex": 125
     },
     "/actions/crafting/necklace_of_wisdom": {
         "hrid": "/actions/crafting/necklace_of_wisdom",
@@ -29028,7 +29548,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 99
+        "sortIndex": 109
     },
     "/actions/crafting/philosophers_earrings": {
         "hrid": "/actions/crafting/philosophers_earrings",
@@ -29104,7 +29624,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 154
+        "sortIndex": 164
     },
     "/actions/crafting/philosophers_necklace": {
         "hrid": "/actions/crafting/philosophers_necklace",
@@ -29176,7 +29696,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 155
+        "sortIndex": 165
     },
     "/actions/crafting/philosophers_ring": {
         "hrid": "/actions/crafting/philosophers_ring",
@@ -29252,7 +29772,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 150
+        "sortIndex": 160
     },
     "/actions/crafting/pirate_chest_key": {
         "hrid": "/actions/crafting/pirate_chest_key",
@@ -29316,7 +29836,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 153
+        "sortIndex": 163
     },
     "/actions/crafting/pirate_entry_key": {
         "hrid": "/actions/crafting/pirate_entry_key",
@@ -29376,7 +29896,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 152
+        "sortIndex": 162
     },
     "/actions/crafting/purpleheart_bow": {
         "hrid": "/actions/crafting/purpleheart_bow",
@@ -29428,7 +29948,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 37
+        "sortIndex": 47
     },
     "/actions/crafting/purpleheart_crossbow": {
         "hrid": "/actions/crafting/purpleheart_crossbow",
@@ -29480,7 +30000,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 33
+        "sortIndex": 43
     },
     "/actions/crafting/purpleheart_fire_staff": {
         "hrid": "/actions/crafting/purpleheart_fire_staff",
@@ -29532,7 +30052,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 60
+        "sortIndex": 70
     },
     "/actions/crafting/purpleheart_lumber": {
         "hrid": "/actions/crafting/purpleheart_lumber",
@@ -29584,7 +30104,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 32
+        "sortIndex": 42
     },
     "/actions/crafting/purpleheart_nature_staff": {
         "hrid": "/actions/crafting/purpleheart_nature_staff",
@@ -29636,7 +30156,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 36
+        "sortIndex": 46
     },
     "/actions/crafting/purpleheart_shield": {
         "hrid": "/actions/crafting/purpleheart_shield",
@@ -29688,7 +30208,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 35
+        "sortIndex": 45
     },
     "/actions/crafting/purpleheart_water_staff": {
         "hrid": "/actions/crafting/purpleheart_water_staff",
@@ -29740,7 +30260,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 34
+        "sortIndex": 44
     },
     "/actions/crafting/ranger_necklace": {
         "hrid": "/actions/crafting/ranger_necklace",
@@ -29796,7 +30316,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 72
+        "sortIndex": 82
     },
     "/actions/crafting/redwood_bow": {
         "hrid": "/actions/crafting/redwood_bow",
@@ -29848,7 +30368,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 105
+        "sortIndex": 115
     },
     "/actions/crafting/redwood_crossbow": {
         "hrid": "/actions/crafting/redwood_crossbow",
@@ -29900,7 +30420,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 101
+        "sortIndex": 111
     },
     "/actions/crafting/redwood_fire_staff": {
         "hrid": "/actions/crafting/redwood_fire_staff",
@@ -29952,7 +30472,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 111
+        "sortIndex": 121
     },
     "/actions/crafting/redwood_lumber": {
         "hrid": "/actions/crafting/redwood_lumber",
@@ -30010,7 +30530,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 100
+        "sortIndex": 110
     },
     "/actions/crafting/redwood_nature_staff": {
         "hrid": "/actions/crafting/redwood_nature_staff",
@@ -30062,7 +30582,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 104
+        "sortIndex": 114
     },
     "/actions/crafting/redwood_shield": {
         "hrid": "/actions/crafting/redwood_shield",
@@ -30114,7 +30634,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 103
+        "sortIndex": 113
     },
     "/actions/crafting/redwood_water_staff": {
         "hrid": "/actions/crafting/redwood_water_staff",
@@ -30166,7 +30686,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 102
+        "sortIndex": 112
     },
     "/actions/crafting/ring_of_armor": {
         "hrid": "/actions/crafting/ring_of_armor",
@@ -30226,7 +30746,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 67
+        "sortIndex": 77
     },
     "/actions/crafting/ring_of_critical_strike": {
         "hrid": "/actions/crafting/ring_of_critical_strike",
@@ -30282,7 +30802,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 112
+        "sortIndex": 122
     },
     "/actions/crafting/ring_of_essence_find": {
         "hrid": "/actions/crafting/ring_of_essence_find",
@@ -30338,7 +30858,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 29
+        "sortIndex": 39
     },
     "/actions/crafting/ring_of_gathering": {
         "hrid": "/actions/crafting/ring_of_gathering",
@@ -30450,7 +30970,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 79
+        "sortIndex": 89
     },
     "/actions/crafting/ring_of_regeneration": {
         "hrid": "/actions/crafting/ring_of_regeneration",
@@ -30510,7 +31030,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 61
+        "sortIndex": 71
     },
     "/actions/crafting/ring_of_resistance": {
         "hrid": "/actions/crafting/ring_of_resistance",
@@ -30570,7 +31090,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 74
+        "sortIndex": 84
     },
     "/actions/crafting/rippling_trident": {
         "hrid": "/actions/crafting/rippling_trident",
@@ -30630,7 +31150,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 159
+        "sortIndex": 169
     },
     "/actions/crafting/rippling_trident_refined": {
         "hrid": "/actions/crafting/rippling_trident_refined",
@@ -30682,7 +31202,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 182
+        "sortIndex": 192
     },
     "/actions/crafting/sinister_chest_key": {
         "hrid": "/actions/crafting/sinister_chest_key",
@@ -30746,7 +31266,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 137
+        "sortIndex": 147
     },
     "/actions/crafting/sinister_entry_key": {
         "hrid": "/actions/crafting/sinister_entry_key",
@@ -30806,7 +31326,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 136
+        "sortIndex": 146
     },
     "/actions/crafting/soul_hunter_crossbow": {
         "hrid": "/actions/crafting/soul_hunter_crossbow",
@@ -30858,7 +31378,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 146
+        "sortIndex": 156
     },
     "/actions/crafting/sundering_crossbow": {
         "hrid": "/actions/crafting/sundering_crossbow",
@@ -30918,7 +31438,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 158
+        "sortIndex": 168
     },
     "/actions/crafting/sundering_crossbow_refined": {
         "hrid": "/actions/crafting/sundering_crossbow_refined",
@@ -30970,7 +31490,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 181
+        "sortIndex": 191
     },
     "/actions/crafting/treant_shield": {
         "hrid": "/actions/crafting/treant_shield",
@@ -31022,7 +31542,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 59
+        "sortIndex": 69
     },
     "/actions/crafting/vampiric_bow": {
         "hrid": "/actions/crafting/vampiric_bow",
@@ -31078,7 +31598,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 145
+        "sortIndex": 155
     },
     "/actions/crafting/watchful_relic": {
         "hrid": "/actions/crafting/watchful_relic",
@@ -31146,7 +31666,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 110
+        "sortIndex": 120
     },
     "/actions/crafting/wizard_necklace": {
         "hrid": "/actions/crafting/wizard_necklace",
@@ -31202,7 +31722,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 78
+        "sortIndex": 88
     },
     "/actions/crafting/wooden_bow": {
         "hrid": "/actions/crafting/wooden_bow",
