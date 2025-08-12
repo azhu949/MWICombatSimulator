@@ -1481,6 +1481,9 @@ class CombatSimulator extends EventTarget {
                     target = cumulativeRanges.find(range => randomValueHit >= range.rangeStart && randomValueHit < range.rangeEnd).player;
                     avoidTarget.push(target.hrid);
                 }
+                if (targets.length <= 0) {
+                    break;
+                }
 
                 let attackResult = _combatUtilities__WEBPACK_IMPORTED_MODULE_0__["default"].processAttack(source, target, abilityEffect);
 
