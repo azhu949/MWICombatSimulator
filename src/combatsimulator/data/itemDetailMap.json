@@ -100,7 +100,7 @@
             "combatStats": {
                 "attackSpeed": 0.05,
                 "criticalRate": 0.01,
-                "rangedAccuracy": 0.45,
+                "rangedAccuracy": 0.5,
                 "magicAccuracy": -0.15,
                 "rangedDamage": 0.1,
                 "stabEvasion": 0.42,
@@ -117,7 +117,7 @@
             "combatEnhancementBonuses": {
                 "attackSpeed": 0.001,
                 "criticalRate": 0.0002,
-                "rangedAccuracy": 0.009000000000000001,
+                "rangedAccuracy": 0.01,
                 "rangedDamage": 0.002,
                 "stabEvasion": 0.0084,
                 "slashEvasion": 0.0084,
@@ -199,7 +199,7 @@
             "combatStats": {
                 "attackSpeed": 0.0525,
                 "criticalRate": 0.0105,
-                "rangedAccuracy": 0.4725,
+                "rangedAccuracy": 0.525,
                 "magicAccuracy": -0.15,
                 "rangedDamage": 0.105,
                 "stabEvasion": 0.441,
@@ -216,7 +216,7 @@
             "combatEnhancementBonuses": {
                 "attackSpeed": 0.00105,
                 "criticalRate": 0.00021,
-                "rangedAccuracy": 0.00945,
+                "rangedAccuracy": 0.0105,
                 "rangedDamage": 0.0021,
                 "stabEvasion": 0.00882,
                 "slashEvasion": 0.00882,
@@ -26186,7 +26186,7 @@
             ],
             "combatStats": {
                 "abilityDamage": 0.024,
-                "magicAccuracy": 0.06,
+                "magicAccuracy": 0.08,
                 "magicDamage": 0.12,
                 "fireAmplify": 0.08,
                 "stabEvasion": 0.21,
@@ -26201,7 +26201,7 @@
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "abilityDamage": 0.00048,
-                "magicAccuracy": 0.0012,
+                "magicAccuracy": 0.0016,
                 "magicDamage": 0.0024,
                 "fireAmplify": 0.0016,
                 "stabEvasion": 0.0042,
@@ -26268,7 +26268,7 @@
             ],
             "combatStats": {
                 "abilityDamage": 0.024,
-                "magicAccuracy": 0.09,
+                "magicAccuracy": 0.12,
                 "magicDamage": 0.15,
                 "fireAmplify": 0.1,
                 "stabEvasion": 0.24,
@@ -26283,7 +26283,7 @@
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "abilityDamage": 0.00048,
-                "magicAccuracy": 0.0018,
+                "magicAccuracy": 0.0024,
                 "magicDamage": 0.003,
                 "fireAmplify": 0.002,
                 "stabEvasion": 0.0048,
@@ -31544,7 +31544,7 @@
                 "fireResistance": 31.5,
                 "threat": 105,
                 "primaryTraining": "/skills/defense",
-                "defenseExperience": 0.126,
+                "defenseExperience": 0.105,
                 "weaken": 0.032
             },
             "noncombatStats": {},
@@ -31556,7 +31556,7 @@
                 "natureResistance": 0.63,
                 "fireResistance": 0.63,
                 "threat": 2.1,
-                "defenseExperience": 0.00252
+                "defenseExperience": 0.0021
             },
             "noncombatEnhancementBonuses": {}
         },
@@ -31641,7 +31641,7 @@
                 "stabAccuracy": 0.08,
                 "slashAccuracy": 0.08,
                 "smashAccuracy": 0.08,
-                "rangedAccuracy": 0.6,
+                "rangedAccuracy": 0.64,
                 "magicAccuracy": -0.2,
                 "stabEvasion": 0.5,
                 "slashEvasion": 0.5,
@@ -31660,7 +31660,7 @@
                 "stabAccuracy": 0.0016,
                 "slashAccuracy": 0.0016,
                 "smashAccuracy": 0.0016,
-                "rangedAccuracy": 0.012,
+                "rangedAccuracy": 0.0128,
                 "stabEvasion": 0.01,
                 "slashEvasion": 0.01,
                 "smashEvasion": 0.01,
@@ -31873,7 +31873,7 @@
                 "stabAccuracy": 0.1,
                 "slashAccuracy": 0.1,
                 "smashAccuracy": 0.1,
-                "rangedAccuracy": 0.75,
+                "rangedAccuracy": 0.8,
                 "magicAccuracy": -0.25,
                 "stabEvasion": 0.6,
                 "slashEvasion": 0.6,
@@ -31892,7 +31892,7 @@
                 "stabAccuracy": 0.002,
                 "slashAccuracy": 0.002,
                 "smashAccuracy": 0.002,
-                "rangedAccuracy": 0.015,
+                "rangedAccuracy": 0.016,
                 "stabEvasion": 0.012,
                 "slashEvasion": 0.012,
                 "smashEvasion": 0.012,
@@ -34164,7 +34164,7 @@
             ],
             "combatStats": {
                 "abilityDamage": 0.024,
-                "magicAccuracy": 0.06,
+                "magicAccuracy": 0.08,
                 "magicDamage": 0.12,
                 "waterAmplify": 0.08,
                 "stabEvasion": 0.21,
@@ -34179,7 +34179,7 @@
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "abilityDamage": 0.00048,
-                "magicAccuracy": 0.0012,
+                "magicAccuracy": 0.0016,
                 "magicDamage": 0.0024,
                 "waterAmplify": 0.0016,
                 "stabEvasion": 0.0042,
@@ -34246,7 +34246,7 @@
             ],
             "combatStats": {
                 "abilityDamage": 0.024,
-                "magicAccuracy": 0.09,
+                "magicAccuracy": 0.12,
                 "magicDamage": 0.15,
                 "waterAmplify": 0.1,
                 "stabEvasion": 0.24,
@@ -34261,7 +34261,7 @@
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "abilityDamage": 0.00048,
-                "magicAccuracy": 0.0018,
+                "magicAccuracy": 0.0024,
                 "magicDamage": 0.003,
                 "waterAmplify": 0.002,
                 "stabEvasion": 0.0048,
@@ -35313,7 +35313,7 @@
             ],
             "combatStats": {
                 "criticalRate": 0.04,
-                "rangedAccuracy": 0.56,
+                "rangedAccuracy": 0.6,
                 "magicAccuracy": -0.2,
                 "rangedDamage": 0.12,
                 "stabEvasion": 0.5,
@@ -35329,7 +35329,7 @@
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "criticalRate": 0.0008,
-                "rangedAccuracy": 0.011200000000000002,
+                "rangedAccuracy": 0.012,
                 "rangedDamage": 0.0024,
                 "stabEvasion": 0.01,
                 "slashEvasion": 0.01,
@@ -35410,7 +35410,7 @@
             ],
             "combatStats": {
                 "criticalRate": 0.042,
-                "rangedAccuracy": 0.588,
+                "rangedAccuracy": 0.63,
                 "magicAccuracy": -0.2,
                 "rangedDamage": 0.126,
                 "stabEvasion": 0.525,
@@ -35426,7 +35426,7 @@
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "criticalRate": 0.00084,
-                "rangedAccuracy": 0.01176,
+                "rangedAccuracy": 0.0126,
                 "rangedDamage": 0.00252,
                 "stabEvasion": 0.0105,
                 "slashEvasion": 0.0105,
@@ -35640,7 +35640,7 @@
             ],
             "combatStats": {
                 "criticalRate": 0.04,
-                "rangedAccuracy": 0.7,
+                "rangedAccuracy": 0.75,
                 "magicAccuracy": -0.25,
                 "rangedDamage": 0.15,
                 "stabEvasion": 0.6,
@@ -35656,7 +35656,7 @@
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "criticalRate": 0.0008,
-                "rangedAccuracy": 0.013999999999999999,
+                "rangedAccuracy": 0.015,
                 "rangedDamage": 0.003,
                 "stabEvasion": 0.012,
                 "slashEvasion": 0.012,
@@ -35737,7 +35737,7 @@
             ],
             "combatStats": {
                 "criticalRate": 0.042,
-                "rangedAccuracy": 0.735,
+                "rangedAccuracy": 0.7875,
                 "magicAccuracy": -0.25,
                 "rangedDamage": 0.1575,
                 "stabEvasion": 0.63,
@@ -35753,7 +35753,7 @@
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "criticalRate": 0.00084,
-                "rangedAccuracy": 0.0147,
+                "rangedAccuracy": 0.01575,
                 "rangedDamage": 0.00315,
                 "stabEvasion": 0.0126,
                 "slashEvasion": 0.0126,
@@ -36906,7 +36906,7 @@
             ],
             "combatStats": {
                 "abilityDamage": 0.032,
-                "magicAccuracy": 0.08,
+                "magicAccuracy": 0.1,
                 "magicDamage": 0.16,
                 "natureAmplify": 0.08,
                 "healingAmplify": 0.08,
@@ -36924,7 +36924,7 @@
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "abilityDamage": 0.00064,
-                "magicAccuracy": 0.0016,
+                "magicAccuracy": 0.002,
                 "magicDamage": 0.0032,
                 "natureAmplify": 0.0016,
                 "healingAmplify": 0.0016,
@@ -36994,7 +36994,7 @@
             ],
             "combatStats": {
                 "abilityDamage": 0.032,
-                "magicAccuracy": 0.12,
+                "magicAccuracy": 0.15,
                 "magicDamage": 0.2,
                 "natureAmplify": 0.1,
                 "healingAmplify": 0.1,
@@ -37012,7 +37012,7 @@
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "abilityDamage": 0.00064,
-                "magicAccuracy": 0.0024,
+                "magicAccuracy": 0.003,
                 "magicDamage": 0.004,
                 "natureAmplify": 0.002,
                 "healingAmplify": 0.002,
@@ -37723,7 +37723,7 @@
             "combatStats": {
                 "abilityDamage": 0.025,
                 "abilityHaste": 6,
-                "magicAccuracy": 0.12,
+                "magicAccuracy": 0.15,
                 "magicDamage": 0.18,
                 "stabEvasion": 0.3,
                 "slashEvasion": 0.3,
@@ -37738,7 +37738,7 @@
             "combatEnhancementBonuses": {
                 "abilityDamage": 0.0005,
                 "abilityHaste": 0.12,
-                "magicAccuracy": 0.0024,
+                "magicAccuracy": 0.003,
                 "magicDamage": 0.0036,
                 "stabEvasion": 0.006,
                 "slashEvasion": 0.006,
@@ -37819,7 +37819,7 @@
             "combatStats": {
                 "abilityDamage": 0.02625,
                 "abilityHaste": 6.3,
-                "magicAccuracy": 0.126,
+                "magicAccuracy": 0.1575,
                 "magicDamage": 0.189,
                 "stabEvasion": 0.315,
                 "slashEvasion": 0.315,
@@ -37834,7 +37834,7 @@
             "combatEnhancementBonuses": {
                 "abilityDamage": 0.000525,
                 "abilityHaste": 0.126,
-                "magicAccuracy": 0.00252,
+                "magicAccuracy": 0.00315,
                 "magicDamage": 0.00378,
                 "stabEvasion": 0.0063,
                 "slashEvasion": 0.0063,
@@ -48722,7 +48722,7 @@
             ],
             "combatStats": {
                 "criticalRate": 0.01,
-                "rangedAccuracy": 0.52,
+                "rangedAccuracy": 0.54,
                 "magicAccuracy": -0.2,
                 "rangedDamage": 0.04,
                 "stabEvasion": 0.55,
@@ -48738,7 +48738,7 @@
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "criticalRate": 0.0002,
-                "rangedAccuracy": 0.010400000000000001,
+                "rangedAccuracy": 0.0108,
                 "rangedDamage": 0.0008,
                 "stabEvasion": 0.011000000000000001,
                 "slashEvasion": 0.011000000000000001,
@@ -48818,7 +48818,7 @@
             ],
             "combatStats": {
                 "criticalRate": 0.01,
-                "rangedAccuracy": 0.65,
+                "rangedAccuracy": 0.68,
                 "magicAccuracy": -0.25,
                 "rangedDamage": 0.05,
                 "stabEvasion": 0.66,
@@ -48834,7 +48834,7 @@
             "noncombatStats": {},
             "combatEnhancementBonuses": {
                 "criticalRate": 0.0002,
-                "rangedAccuracy": 0.013000000000000001,
+                "rangedAccuracy": 0.013600000000000001,
                 "rangedDamage": 0.001,
                 "stabEvasion": 0.013200000000000002,
                 "slashEvasion": 0.013200000000000002,
@@ -50160,7 +50160,7 @@
             "combatStats": {
                 "abilityDamage": 0.05,
                 "castSpeed": 0.02,
-                "magicAccuracy": 0.15,
+                "magicAccuracy": 0.18,
                 "magicDamage": 0.2,
                 "fireAmplify": 0.08,
                 "stabEvasion": 0.42,
@@ -50177,7 +50177,7 @@
             "combatEnhancementBonuses": {
                 "abilityDamage": 0.001,
                 "castSpeed": 0.0004,
-                "magicAccuracy": 0.003,
+                "magicAccuracy": 0.0036,
                 "magicDamage": 0.004,
                 "fireAmplify": 0.0016,
                 "stabEvasion": 0.0084,
@@ -50260,7 +50260,7 @@
             "combatStats": {
                 "abilityDamage": 0.0525,
                 "castSpeed": 0.021,
-                "magicAccuracy": 0.1575,
+                "magicAccuracy": 0.189,
                 "magicDamage": 0.21,
                 "fireAmplify": 0.084,
                 "stabEvasion": 0.441,
@@ -50277,7 +50277,7 @@
             "combatEnhancementBonuses": {
                 "abilityDamage": 0.00105,
                 "castSpeed": 0.00042,
-                "magicAccuracy": 0.00315,
+                "magicAccuracy": 0.00378,
                 "magicDamage": 0.0042,
                 "fireAmplify": 0.00168,
                 "stabEvasion": 0.00882,
@@ -50363,7 +50363,7 @@
             "combatStats": {
                 "abilityDamage": 0.05,
                 "castSpeed": 0.02,
-                "magicAccuracy": 0.2,
+                "magicAccuracy": 0.24,
                 "magicDamage": 0.25,
                 "fireAmplify": 0.1,
                 "stabEvasion": 0.48,
@@ -50380,7 +50380,7 @@
             "combatEnhancementBonuses": {
                 "abilityDamage": 0.001,
                 "castSpeed": 0.0004,
-                "magicAccuracy": 0.004,
+                "magicAccuracy": 0.0048,
                 "magicDamage": 0.005,
                 "fireAmplify": 0.002,
                 "stabEvasion": 0.0096,
@@ -50463,7 +50463,7 @@
             "combatStats": {
                 "abilityDamage": 0.0525,
                 "castSpeed": 0.021,
-                "magicAccuracy": 0.21,
+                "magicAccuracy": 0.252,
                 "magicDamage": 0.2625,
                 "fireAmplify": 0.105,
                 "stabEvasion": 0.504,
@@ -50480,7 +50480,7 @@
             "combatEnhancementBonuses": {
                 "abilityDamage": 0.00105,
                 "castSpeed": 0.00042,
-                "magicAccuracy": 0.0042,
+                "magicAccuracy": 0.00504,
                 "magicDamage": 0.00525,
                 "fireAmplify": 0.0021,
                 "stabEvasion": 0.01008,
@@ -50566,7 +50566,7 @@
             "combatStats": {
                 "abilityDamage": 0.05,
                 "castSpeed": 0.02,
-                "magicAccuracy": 0.15,
+                "magicAccuracy": 0.18,
                 "magicDamage": 0.2,
                 "natureAmplify": 0.08,
                 "healingAmplify": 0.08,
@@ -50584,7 +50584,7 @@
             "combatEnhancementBonuses": {
                 "abilityDamage": 0.001,
                 "castSpeed": 0.0004,
-                "magicAccuracy": 0.003,
+                "magicAccuracy": 0.0036,
                 "magicDamage": 0.004,
                 "natureAmplify": 0.0016,
                 "healingAmplify": 0.0016,
@@ -50668,7 +50668,7 @@
             "combatStats": {
                 "abilityDamage": 0.0525,
                 "castSpeed": 0.021,
-                "magicAccuracy": 0.1575,
+                "magicAccuracy": 0.189,
                 "magicDamage": 0.21,
                 "natureAmplify": 0.084,
                 "healingAmplify": 0.084,
@@ -50686,7 +50686,7 @@
             "combatEnhancementBonuses": {
                 "abilityDamage": 0.00105,
                 "castSpeed": 0.00042,
-                "magicAccuracy": 0.00315,
+                "magicAccuracy": 0.00378,
                 "magicDamage": 0.0042,
                 "natureAmplify": 0.00168,
                 "healingAmplify": 0.00168,
@@ -50773,7 +50773,7 @@
             "combatStats": {
                 "abilityDamage": 0.05,
                 "castSpeed": 0.02,
-                "magicAccuracy": 0.2,
+                "magicAccuracy": 0.24,
                 "magicDamage": 0.25,
                 "natureAmplify": 0.1,
                 "healingAmplify": 0.1,
@@ -50791,7 +50791,7 @@
             "combatEnhancementBonuses": {
                 "abilityDamage": 0.001,
                 "castSpeed": 0.0004,
-                "magicAccuracy": 0.004,
+                "magicAccuracy": 0.0048,
                 "magicDamage": 0.005,
                 "natureAmplify": 0.002,
                 "healingAmplify": 0.002,
@@ -50875,7 +50875,7 @@
             "combatStats": {
                 "abilityDamage": 0.0525,
                 "castSpeed": 0.021,
-                "magicAccuracy": 0.21,
+                "magicAccuracy": 0.252,
                 "magicDamage": 0.2625,
                 "natureAmplify": 0.105,
                 "healingAmplify": 0.105,
@@ -50893,7 +50893,7 @@
             "combatEnhancementBonuses": {
                 "abilityDamage": 0.00105,
                 "castSpeed": 0.00042,
-                "magicAccuracy": 0.0042,
+                "magicAccuracy": 0.00504,
                 "magicDamage": 0.00525,
                 "natureAmplify": 0.0021,
                 "healingAmplify": 0.0021,
@@ -50980,7 +50980,7 @@
             "combatStats": {
                 "abilityDamage": 0.05,
                 "castSpeed": 0.02,
-                "magicAccuracy": 0.15,
+                "magicAccuracy": 0.18,
                 "magicDamage": 0.2,
                 "waterAmplify": 0.08,
                 "stabEvasion": 0.42,
@@ -50997,7 +50997,7 @@
             "combatEnhancementBonuses": {
                 "abilityDamage": 0.001,
                 "castSpeed": 0.0004,
-                "magicAccuracy": 0.003,
+                "magicAccuracy": 0.0036,
                 "magicDamage": 0.004,
                 "waterAmplify": 0.0016,
                 "stabEvasion": 0.0084,
@@ -51080,7 +51080,7 @@
             "combatStats": {
                 "abilityDamage": 0.0525,
                 "castSpeed": 0.021,
-                "magicAccuracy": 0.1575,
+                "magicAccuracy": 0.189,
                 "magicDamage": 0.21,
                 "waterAmplify": 0.084,
                 "stabEvasion": 0.441,
@@ -51097,7 +51097,7 @@
             "combatEnhancementBonuses": {
                 "abilityDamage": 0.00105,
                 "castSpeed": 0.00042,
-                "magicAccuracy": 0.00315,
+                "magicAccuracy": 0.00378,
                 "magicDamage": 0.0042,
                 "waterAmplify": 0.00168,
                 "stabEvasion": 0.00882,
@@ -51183,7 +51183,7 @@
             "combatStats": {
                 "abilityDamage": 0.05,
                 "castSpeed": 0.02,
-                "magicAccuracy": 0.2,
+                "magicAccuracy": 0.24,
                 "magicDamage": 0.25,
                 "waterAmplify": 0.1,
                 "stabEvasion": 0.48,
@@ -51200,7 +51200,7 @@
             "combatEnhancementBonuses": {
                 "abilityDamage": 0.001,
                 "castSpeed": 0.0004,
-                "magicAccuracy": 0.004,
+                "magicAccuracy": 0.0048,
                 "magicDamage": 0.005,
                 "waterAmplify": 0.002,
                 "stabEvasion": 0.0096,
@@ -51283,7 +51283,7 @@
             "combatStats": {
                 "abilityDamage": 0.0525,
                 "castSpeed": 0.021,
-                "magicAccuracy": 0.21,
+                "magicAccuracy": 0.252,
                 "magicDamage": 0.2625,
                 "waterAmplify": 0.105,
                 "stabEvasion": 0.504,
@@ -51300,7 +51300,7 @@
             "combatEnhancementBonuses": {
                 "abilityDamage": 0.00105,
                 "castSpeed": 0.00042,
-                "magicAccuracy": 0.0042,
+                "magicAccuracy": 0.00504,
                 "magicDamage": 0.00525,
                 "waterAmplify": 0.0021,
                 "stabEvasion": 0.01008,

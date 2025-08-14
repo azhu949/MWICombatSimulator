@@ -664,11 +664,11 @@ function calcAttackLevel(attackLevel, rangedLevel, magicLevel) {
     let attackExp = (expTable[attackLevel] + expTable[attackLevel + 1]) / 2;
 
     if (rangedLevel > 1) {
-        attackExp += (expTable[rangedLevel] + expTable[rangedLevel + 1]) / 2 * 0.1;
+        attackExp += (expTable[rangedLevel] + expTable[rangedLevel + 1]) / 2 * 0.15;
     }
 
     if (magicLevel > 1) {
-        attackExp += (expTable[magicLevel] + expTable[magicLevel + 1]) / 2 * 0.1;
+        attackExp += (expTable[magicLevel] + expTable[magicLevel + 1]) / 2 * 0.12;
     }
 
     let reAttackLevel = attackLevel;
@@ -710,18 +710,17 @@ function updateCombatLevel() {
     let magicLevel = player["magicLevel"];
 
     //old one
-    let combatLevel = Math.floor(
+    let oldCombatLevel = Math.floor(
         0.2 * (staminaLevel + intelligenceLevel + defenseLevel)
         + 0.4 * Math.max(0.5 * (meleeLevel + attackLevel), rangedLevel, magicLevel)
     );
 
+    let levelInput = document.getElementById("inputLevel_combat");
+    levelInput.value = calcCombatLevel(staminaLevel, intelligenceLevel, defenseLevel, attackLevel, meleeLevel, rangedLevel, magicLevel);;
+
+
     let reAttackLevel = calcAttackLevel(attackLevel, rangedLevel, magicLevel);
     let reCombatLevel = calcCombatLevel(staminaLevel, intelligenceLevel, defenseLevel, reAttackLevel, meleeLevel, rangedLevel, magicLevel);
-
-
-    let levelInput = document.getElementById("inputLevel_combat");
-    levelInput.value = combatLevel;
-
     let spanCombatLevel = document.getElementById("reLevel_combat");
     spanCombatLevel.innerHTML = reCombatLevel;
 }
@@ -1708,7 +1707,7 @@ function showKills(simResult, playerToDisplay) {
     }
 
     if (simResult.debuffOnLevelGap[playerToDisplay] != 0) {
-        let debuffOnLevelGapRow = createRow(["col-md-6", "col-md-6 text-end"], ["Debuff on Level Gap", simResult.debuffOnLevelGap[playerToDisplay]*100+"%"]);
+        let debuffOnLevelGapRow = createRow(["col-md-6", "col-md-6 text-end"], ["Debuff on Level Gap", Math.round(simResult.debuffOnLevelGap[playerToDisplay] * 100) + "%"]);
         debuffOnLevelGapRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.debuffOnLevelGap");
         newChildren.push(debuffOnLevelGapRow);
     }
@@ -2124,12 +2123,14 @@ function showManapointsGained(simResult, playerToDisplay) {
     newChildren.push(ranOutOfManaRow);
 
     if (simResult.playerRanOutOfMana[playerToDisplay]) {
-        let ranOutOfManaStat = simResult.playerRanOutOfManaTime[playerToDisplay];
+        let ranOutOfManaStat = simResult.playerRanOutOfManaTime[playerToDisplay]; // {isOutOfMana: false, startTimeForOutOfMana:0, totalTimeForOutOfMana:0};
+        let totalTimeForOut = ranOutOfManaStat.totalTimeForOutOfMana + (ranOutOfManaStat.isOutOfMana ? (simResult.simulatedTime - ranOutOfManaStat.startTimeForOutOfMana) : 0);
+
         let ranOutOfManaStatRow = createRow(
             ["col-md-6", "col-md-6 text-end"],
             [
                 "Run Out Ratio",
-                (ranOutOfManaStat[0] / (ranOutOfManaStat[1] + ranOutOfManaStat[0]) * 100).toFixed(2) + "%"
+                (totalTimeForOut / simResult.simulatedTime * 100).toFixed(2) + "%"
             ]
         );
         ranOutOfManaStatRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.ranOutOfManaRatio");
@@ -2580,11 +2581,13 @@ function startSimulation(selectedPlayers) {
     }
 
     for (let player of playersToSim) {
-        if ((maxPlayerCombatLevel / player.combatLevel) > 1.2 ) {
+        if ((maxPlayerCombatLevel / player.combatLevel) > 1.2) {
             const maxDebuffOnLevelGap = 0.9;
-            player.debuffOnLevelGap = -1 * Math.min(maxDebuffOnLevelGap, 3 * ( (maxPlayerCombatLevel / player.combatLevel) - 1.2));
+            let levelPercent = Math.floor(((maxPlayerCombatLevel / player.combatLevel) - 1.2) * 100) / 100;
 
-            console.log("player " + player.hrid + " debuff on level gap: " + player.debuffOnLevelGap*100 + "% for " + (maxPlayerCombatLevel / player.combatLevel));
+            player.debuffOnLevelGap = -1 * Math.min(maxDebuffOnLevelGap, 3 * levelPercent);
+
+            console.log("player " + player.hrid + " debuff on level gap: " + player.debuffOnLevelGap * 100 + "% for " + (maxPlayerCombatLevel / player.combatLevel));
         }
         else {
             player.debuffOnLevelGap = 0;

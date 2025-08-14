@@ -7,6 +7,8 @@ class CombatUnit {
     isSilenced = false;
     silenceExpireTime = null;
 
+    isOutOfMana = false;
+
     // Base levels which don't change after initialization
     staminaLevel = 1;
     intelligenceLevel = 1;

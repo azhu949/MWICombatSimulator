@@ -259,6 +259,8 @@ class CombatSimulator extends EventTarget {
         this.eventQueue.addEvent(enrageTickEvent);
         this.enrageBeginTime = this.simulationTime;
 
+        this.eventQueue.clearEventsOfType(AbilityCastEndEvent.type);
+
         this.startAttacks();
     }
 
@@ -508,7 +510,7 @@ class CombatSimulator extends EventTarget {
 
         if (this.enemies && !this.enemies.some((enemy) => enemy.combatDetails.currentHitpoints > 0)) {
             this.eventQueue.clearEventsOfType(AutoAttackEvent.type);
-            this.eventQueue.clearEventsOfType(AbilityCastEndEvent.type);
+            // this.eventQueue.clearEventsOfType(AbilityCastEndEvent.type);
             let enemyRespawnEvent = new EnemyRespawnEvent(this.simulationTime + ENEMY_RESPAWN_INTERVAL);
             this.eventQueue.addEvent(enemyRespawnEvent);
 
@@ -540,6 +542,7 @@ class CombatSimulator extends EventTarget {
                     let playerRespawnEvent = new PlayerRespawnEvent(this.simulationTime + PLAYER_RESPAWN_INTERVAL, player.hrid);
                     this.eventQueue.addEvent(playerRespawnEvent);
                 }
+                this.simResult.addRanOutOfManaCount(player, false, this.simulationTime);
                 // console.log(player.hrid + " died at " + (this.simulationTime / 1000000000) + 'in wave #' + (this.zone.encountersKilled - 1) + ' with ememies: ' + this.enemies?.map(enemy => (enemy.hrid+"("+(enemy.combatDetails.currentHitpoints*100/enemy.combatDetails.maxHitpoints).toFixed(2)+"%)")).join(", "));
             }
         });
@@ -568,6 +571,10 @@ class CombatSimulator extends EventTarget {
     }
 
     addNextAttackEvent(source) {
+        if (this.eventQueue.getMatching((event) => (event.type == AbilityCastEndEvent.type || event.type == AutoAttackEvent.type)&& event.source == source)) {
+            return;
+        }
+
         let target;
         let friendlies;
         let enemies;
@@ -582,31 +589,42 @@ class CombatSimulator extends EventTarget {
         }
 
         let usedAbility = false;
+        let skipNextAbility = false; 
 
         source.abilities
             .filter((ability) => ability != null)
             .forEach((ability) => {
-                if (!usedAbility && ability.shouldTrigger(this.simulationTime, source, target, friendlies, enemies) && this.canUseAbility(source, ability, true)) {
-                    let castDuration = ability.castDuration;
-                    castDuration /= (1 + source.combatDetails.combatStats.castSpeed)
-                    let abilityCastEndEvent = new AbilityCastEndEvent(this.simulationTime + castDuration, source, ability);
-                    this.eventQueue.addEvent(abilityCastEndEvent);
-                    /*-if (source.isPlayer) {
-                        let haste = source.combatDetails.combatStats.abilityHaste;
-                        let cooldownDuration = ability.cooldownDuration;
-                        if (haste > 0) {
-                            cooldownDuration = cooldownDuration * 100 / (100 + haste);
-                        }
-                        // console.log((this.simulationTime / 1000000000) + " Casting " + ability.hrid + " Cast time " + (castDuration / 1e9) + " Off CD at " + ((this.simulationTime + cooldownDuration + castDuration) / 1e9) + " CD " + ((cooldownDuration) / 1e9));
-                    }*/
-                    usedAbility = true;
+                if (!usedAbility && !skipNextAbility && ability.shouldTrigger(this.simulationTime, source, target, friendlies, enemies)) {
+                    if (!this.canUseAbility(source, ability, true)) {
+                        skipNextAbility = true;
+                    }
+
+                    if (!skipNextAbility) {
+                        let castDuration = ability.castDuration;
+                        castDuration /= (1 + source.combatDetails.combatStats.castSpeed)
+                        let abilityCastEndEvent = new AbilityCastEndEvent(this.simulationTime + castDuration, source, ability);
+                        this.eventQueue.addEvent(abilityCastEndEvent);
+                        /*-if (source.isPlayer) {
+                            let haste = source.combatDetails.combatStats.abilityHaste;
+                            let cooldownDuration = ability.cooldownDuration;
+                            if (haste > 0) {
+                                cooldownDuration = cooldownDuration * 100 / (100 + haste);
+                            }
+                            // console.log((this.simulationTime / 1000000000) + " Casting " + ability.hrid + " Cast time " + (castDuration / 1e9) + " Off CD at " + ((this.simulationTime + cooldownDuration + castDuration) / 1e9) + " CD " + ((cooldownDuration) / 1e9));
+                        }*/
+                        usedAbility = true;
+                    }
                 }
             });
 
         if (usedAbility) {
+            source.isOutOfMana = false;
             return;
         }
 
+        if (!enemies) {
+            return;
+        }
 
         if (!source.isBlinded) {
             let autoAttackEvent = new AutoAttackEvent(
@@ -618,44 +636,7 @@ class CombatSimulator extends EventTarget {
             }*/
             this.eventQueue.addEvent(autoAttackEvent);
         } else {
-            let nextCast = Number.MAX_SAFE_INTEGER;
-            source.abilities
-                .filter((ability) => ability != null)
-                .forEach((ability) => {
-                    // TODO account for regen tick
-                    if (this.canUseAbility(source, ability, false)) {
-                        let haste = source.combatDetails.combatStats.abilityHaste;
-                        let cooldownDuration = ability.cooldownDuration;
-                        if (haste > 0) {
-                            cooldownDuration = cooldownDuration * 100 / (100 + haste);
-                        }
-
-                        let abilityNextCastTime = ability.lastUsed + cooldownDuration;
-
-                        if (abilityNextCastTime <= source.blindExpireTime && abilityNextCastTime < nextCast) {
-                            if (ability.shouldTrigger(abilityNextCastTime, source, target, friendlies, enemies)) {
-                                nextCast = abilityNextCastTime;
-                            }
-                        }
-                    }
-                });
-
-            if (nextCast > source.blindExpireTime) {
-                let autoAttackEvent = new AutoAttackEvent(
-                    source.blindExpireTime + source.combatDetails.combatStats.attackInterval,
-                    source
-                );
-                /*-if (source.isPlayer) {
-                    // console.log("next attack " + ((source.blindExpireTime + source.combatDetails.combatStats.attackInterval) / 1e9))
-                }*/
-                this.eventQueue.addEvent(autoAttackEvent);
-            } else {
-                let awaitCooldownEvent = new AwaitCooldownEvent(
-                    nextCast,
-                    source
-                );
-                this.eventQueue.addEvent(awaitCooldownEvent);
-            }
+            source.isOutOfMana = true;
         }
     }
 
@@ -680,6 +661,15 @@ class CombatSimulator extends EventTarget {
             let manapointsAdded = event.source.addManapoints(tickValue);
             this.simResult.addManapointsGained(event.source, event.consumable.hrid, manapointsAdded);
             // console.log("Added manapoints:", manapointsAdded);
+
+            // when oom check ability trigger
+            if (event.source.isOutOfMana) {
+                let awaitCooldownEvent = new AwaitCooldownEvent(
+                    this.simulationTime,
+                    event.source
+                );
+                this.eventQueue.addEvent(awaitCooldownEvent);
+            }
         }
 
         if (event.currentTick < event.totalTicks) {
@@ -747,6 +737,15 @@ class CombatSimulator extends EventTarget {
             let manapointsAdded = unit.addManapoints(manapointRegen);
             this.simResult.addManapointsGained(unit, "regen", manapointsAdded);
             // console.log("Added manapoints:", manapointsAdded);
+
+            // when oom check ability trigger
+            if (unit.isOutOfMana) {
+                let awaitCooldownEvent = new AwaitCooldownEvent(
+                    this.simulationTime,
+                    unit
+                );
+                this.eventQueue.addEvent(awaitCooldownEvent);
+            }
         }
 
         let regenTickEvent = new RegenTickEvent(this.simulationTime + REGEN_TICK_INTERVAL);
@@ -765,6 +764,7 @@ class CombatSimulator extends EventTarget {
 
     processBlindExpirationEvent(event) {
         event.source.isBlinded = false;
+        this.addNextAttackEvent(event.source);
     }
 
     processSilenceExpirationEvent(event) {
@@ -911,6 +911,15 @@ class CombatSimulator extends EventTarget {
                 let manapointsAdded = source.addManapoints(consumable.manapointRestore);
                 this.simResult.addManapointsGained(source, consumable.hrid, manapointsAdded);
                 // console.log("Added manapoints:", manapointsAdded);
+
+                // when oom check ability trigger
+                if (source.isOutOfMana) {
+                    let awaitCooldownEvent = new AwaitCooldownEvent(
+                        this.simulationTime,
+                        source
+                    );
+                    this.eventQueue.addEvent(awaitCooldownEvent);
+                }
             }
         } else {
             let consumableTickEvent = new ConsumableTickEvent(
@@ -949,12 +958,12 @@ class CombatSimulator extends EventTarget {
                 // if (this.simResult.playerRanOutOfMana[source.hrid] == false) {
                 //     console.log(source.hrid + " ran out of mana" + ' at wave #' + (this.zone.encountersKilled - 1) + ' at time ' + this.simulationTime / 1000000000 + 's');
                 // }
-                this.simResult.addRanOutOfManaCount(source, true);
+                this.simResult.addRanOutOfManaCount(source, true, this.simulationTime);
             }
             return false;
         }
         if (source.isPlayer && oomCheck) {
-            this.simResult.addRanOutOfManaCount(source, false);
+            this.simResult.addRanOutOfManaCount(source, false, this.simulationTime);
         }
         return true;
     }
@@ -1035,11 +1044,11 @@ class CombatSimulator extends EventTarget {
         if (source.combatDetails.combatStats.ripple > 0 && Math.random() < source.combatDetails.combatStats.ripple) {
             let manapointsAdded = source.addManapoints(10);
             this.simResult.addManapointsGained(source, "ripple", manapointsAdded);
-            for (const skill of source.abilities) {
-                if (skill && skill.lastUsed) {
-                    const remainingCooldown = skill.lastUsed + skill.cooldownDuration - this.simulationTime;
+            for (const ability of source.abilities) {
+                if (ability && ability.lastUsed) {
+                    const remainingCooldown = ability.lastUsed + ability.cooldownDuration - this.simulationTime;
                     if (remainingCooldown > 0) {
-                        skill.lastUsed = Math.max(skill.lastUsed - ONE_SECOND * 2, this.simulationTime - skill.cooldownDuration);
+                        ability.lastUsed = Math.max(ability.lastUsed - ONE_SECOND * 2, this.simulationTime - ability.cooldownDuration);
                     }
                 }
             }

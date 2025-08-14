@@ -206,15 +206,23 @@ class SimResult {
         this.hitpointsSpent[unit.hrid][source] += amount;
     }
 
-    addRanOutOfManaCount(unit, isRunOutOfMana) {
+    addRanOutOfManaCount(unit, isOutOfMana, time) {
+        if (isOutOfMana) this.playerRanOutOfMana[unit.hrid] = true;
+
         if (!this.playerRanOutOfManaTime[unit.hrid]) {
-            this.playerRanOutOfManaTime[unit.hrid] = [0, 0];
+            this.playerRanOutOfManaTime[unit.hrid] = {isOutOfMana: false, startTimeForOutOfMana:0, totalTimeForOutOfMana:0};
         }
-        if (isRunOutOfMana) {
-            this.playerRanOutOfMana[unit.hrid] = true;
-            this.playerRanOutOfManaTime[unit.hrid][0] += 1;
+
+        if (isOutOfMana) {
+            if (!this.playerRanOutOfManaTime[unit.hrid].isOutOfMana) {
+                this.playerRanOutOfManaTime[unit.hrid].isOutOfMana = true;
+                this.playerRanOutOfManaTime[unit.hrid].startTimeForOutOfMana = time;
+            }
         } else {
-            this.playerRanOutOfManaTime[unit.hrid][1] += 1;
+            if (this.playerRanOutOfManaTime[unit.hrid].isOutOfMana) {
+                this.playerRanOutOfManaTime[unit.hrid].isOutOfMana = false;
+                this.playerRanOutOfManaTime[unit.hrid].totalTimeForOutOfMana += time - this.playerRanOutOfManaTime[unit.hrid].startTimeForOutOfMana;
+            }
         }
     }
 }
