@@ -3854,94 +3854,6 @@
         },
         "sortIndex": 279
     },
-    "/items/arcane_reflection": {
-        "hrid": "/items/arcane_reflection",
-        "name": "Arcane Reflection",
-        "description": "",
-        "categoryHrid": "/item_categories/ability_book",
-        "sellPrice": 1000,
-        "isTradable": true,
-        "itemLevel": 60,
-        "alchemyDetail": {
-            "bulkMultiplier": 1,
-            "isCoinifiable": true,
-            "decomposeItems": null,
-            "transmuteSuccessRate": 0.5,
-            "transmuteDropTable": [
-                {
-                    "itemHrid": "/items/shield_bash",
-                    "dropRate": 0.1,
-                    "minCount": 1,
-                    "maxCount": 1
-                },
-                {
-                    "itemHrid": "/items/penetrating_strike",
-                    "dropRate": 0.1,
-                    "minCount": 1,
-                    "maxCount": 1
-                },
-                {
-                    "itemHrid": "/items/crippling_slash",
-                    "dropRate": 0.1,
-                    "minCount": 1,
-                    "maxCount": 1
-                },
-                {
-                    "itemHrid": "/items/fracturing_impact",
-                    "dropRate": 0.1,
-                    "minCount": 1,
-                    "maxCount": 1
-                },
-                {
-                    "itemHrid": "/items/pestilent_shot",
-                    "dropRate": 0.1,
-                    "minCount": 1,
-                    "maxCount": 1
-                },
-                {
-                    "itemHrid": "/items/penetrating_shot",
-                    "dropRate": 0.1,
-                    "minCount": 1,
-                    "maxCount": 1
-                },
-                {
-                    "itemHrid": "/items/mana_spring",
-                    "dropRate": 0.1,
-                    "minCount": 1,
-                    "maxCount": 1
-                },
-                {
-                    "itemHrid": "/items/life_drain",
-                    "dropRate": 0.1,
-                    "minCount": 1,
-                    "maxCount": 1
-                },
-                {
-                    "itemHrid": "/items/smoke_burst",
-                    "dropRate": 0.1,
-                    "minCount": 1,
-                    "maxCount": 1
-                },
-                {
-                    "itemHrid": "/items/arcane_reflection",
-                    "dropRate": 0.1,
-                    "minCount": 1,
-                    "maxCount": 1
-                }
-            ]
-        },
-        "abilityBookDetail": {
-            "abilityHrid": "/abilities/arcane_reflection",
-            "levelRequirements": [
-                {
-                    "skillHrid": "/skills/intelligence",
-                    "level": 60
-                }
-            ],
-            "experienceGain": 500
-        },
-        "sortIndex": 182
-    },
     "/items/arcane_shield": {
         "hrid": "/items/arcane_shield",
         "name": "Arcane Shield",
@@ -19803,7 +19715,7 @@
                     "maxCount": 1
                 },
                 {
-                    "itemHrid": "/items/arcane_reflection",
+                    "itemHrid": "/items/retribution",
                     "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1
@@ -26891,7 +26803,7 @@
                     "maxCount": 1
                 },
                 {
-                    "itemHrid": "/items/arcane_reflection",
+                    "itemHrid": "/items/retribution",
                     "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1
@@ -35993,7 +35905,7 @@
                     "maxCount": 1
                 },
                 {
-                    "itemHrid": "/items/arcane_reflection",
+                    "itemHrid": "/items/retribution",
                     "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1
@@ -38179,7 +38091,7 @@
                     "maxCount": 1
                 },
                 {
-                    "itemHrid": "/items/arcane_reflection",
+                    "itemHrid": "/items/retribution",
                     "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1
@@ -42742,7 +42654,7 @@
                     "maxCount": 1
                 },
                 {
-                    "itemHrid": "/items/arcane_reflection",
+                    "itemHrid": "/items/retribution",
                     "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1
@@ -42830,7 +42742,7 @@
                     "maxCount": 1
                 },
                 {
-                    "itemHrid": "/items/arcane_reflection",
+                    "itemHrid": "/items/retribution",
                     "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1
@@ -42918,7 +42830,7 @@
                     "maxCount": 1
                 },
                 {
-                    "itemHrid": "/items/arcane_reflection",
+                    "itemHrid": "/items/retribution",
                     "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1
@@ -48611,6 +48523,94 @@
         },
         "sortIndex": 388
     },
+    "/items/retribution": {
+        "hrid": "/items/retribution",
+        "name": "Retribution",
+        "description": "",
+        "categoryHrid": "/item_categories/ability_book",
+        "sellPrice": 1000,
+        "isTradable": true,
+        "itemLevel": 60,
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0.5,
+            "transmuteDropTable": [
+                {
+                    "itemHrid": "/items/shield_bash",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1
+                },
+                {
+                    "itemHrid": "/items/penetrating_strike",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1
+                },
+                {
+                    "itemHrid": "/items/crippling_slash",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1
+                },
+                {
+                    "itemHrid": "/items/fracturing_impact",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1
+                },
+                {
+                    "itemHrid": "/items/pestilent_shot",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1
+                },
+                {
+                    "itemHrid": "/items/penetrating_shot",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1
+                },
+                {
+                    "itemHrid": "/items/mana_spring",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1
+                },
+                {
+                    "itemHrid": "/items/life_drain",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1
+                },
+                {
+                    "itemHrid": "/items/smoke_burst",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1
+                },
+                {
+                    "itemHrid": "/items/retribution",
+                    "dropRate": 0.1,
+                    "minCount": 1,
+                    "maxCount": 1
+                }
+            ]
+        },
+        "abilityBookDetail": {
+            "abilityHrid": "/abilities/retribution",
+            "levelRequirements": [
+                {
+                    "skillHrid": "/skills/intelligence",
+                    "level": 60
+                }
+            ],
+            "experienceGain": 500
+        },
+        "sortIndex": 182
+    },
     "/items/revenant_anima": {
         "hrid": "/items/revenant_anima",
         "name": "Revenant Anima",
@@ -51509,7 +51509,7 @@
                     "maxCount": 1
                 },
                 {
-                    "itemHrid": "/items/arcane_reflection",
+                    "itemHrid": "/items/retribution",
                     "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1
@@ -52842,7 +52842,7 @@
                     "maxCount": 1
                 },
                 {
-                    "itemHrid": "/items/arcane_reflection",
+                    "itemHrid": "/items/retribution",
                     "dropRate": 0.1,
                     "minCount": 1,
                     "maxCount": 1

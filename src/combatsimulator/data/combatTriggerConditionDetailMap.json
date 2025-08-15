@@ -1,15 +1,4 @@
 {
-    "/combat_trigger_conditions/arcane_reflection": {
-        "hrid": "/combat_trigger_conditions/arcane_reflection",
-        "name": "Arcane Reflection",
-        "isSingleTarget": true,
-        "isMultiTarget": false,
-        "allowedComparatorHrids": [
-            "/combat_trigger_comparators/is_active",
-            "/combat_trigger_comparators/is_inactive"
-        ],
-        "sortIndex": 30
-    },
     "/combat_trigger_conditions/attack_coffee": {
         "hrid": "/combat_trigger_conditions/attack_coffee",
         "name": "Attack Coffee",
@@ -449,6 +438,17 @@
             "/combat_trigger_comparators/is_inactive"
         ],
         "sortIndex": 13
+    },
+    "/combat_trigger_conditions/retribution": {
+        "hrid": "/combat_trigger_conditions/retribution",
+        "name": "Retribution",
+        "isSingleTarget": true,
+        "isMultiTarget": false,
+        "allowedComparatorHrids": [
+            "/combat_trigger_comparators/is_active",
+            "/combat_trigger_comparators/is_inactive"
+        ],
+        "sortIndex": 30
     },
     "/combat_trigger_conditions/silence_status": {
         "hrid": "/combat_trigger_conditions/silence_status",

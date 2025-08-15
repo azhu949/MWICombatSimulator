@@ -863,7 +863,7 @@
                 }
             ]
         },
-        "sortIndex": 15
+        "sortIndex": 14
     },
     "/house_rooms/brewery": {
         "hrid": "/house_rooms/brewery",
@@ -2960,7 +2960,7 @@
                 }
             ]
         },
-        "sortIndex": 14
+        "sortIndex": 15
     },
     "/house_rooms/kitchen": {
         "hrid": "/house_rooms/kitchen",

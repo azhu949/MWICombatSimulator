@@ -3173,6 +3173,10 @@ function loadEquipmentSetIntoUI(equipmentSet) {
             equipmentSet.abilities[i].ability = "/abilities/mystic_aura";
         }
 
+        if (equipmentSet.abilities[i].ability == "/abilities/arcane_reflection") {
+            equipmentSet.abilities[i].ability = "/abilities/retribution";
+        }
+
         abilitySelect.value = equipmentSet.abilities[i].ability;
         abilityLevelInput.value = equipmentSet.abilities[i].level;
     }
@@ -3425,6 +3429,10 @@ function doSoloImport() {
             importSet.abilities[i].abilityHrid = "/abilities/mystic_aura";
         }
 
+        if (importSet.abilities[i].abilityHrid == "/abilities/arcane_reflection") {
+            importSet.abilities[i].abilityHrid = "/abilities/retribution";
+        }
+
         if (importSet.abilities[i] != null) {
             abilitySelect.value = importSet.abilities[i].abilityHrid;
             abilityLevelInput.value = String(importSet.abilities[i].level);
@@ -3599,6 +3607,9 @@ function updateNextPlayer(currentPlayerNumber) {
             importSet.abilities[i].abilityHrid = "/abilities/mystic_aura";
         }
 
+        if (importSet.abilities[i].abilityHrid == "/abilities/arcane_reflection") {
+            importSet.abilities[i].abilityHrid = "/abilities/retribution";
+        }
 
         if (importSet.abilities[i] != null) {
             abilitySelect.value = importSet.abilities[i].abilityHrid;

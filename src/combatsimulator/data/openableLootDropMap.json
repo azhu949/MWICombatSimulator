@@ -217,7 +217,7 @@
             "maxCount": 2
         },
         {
-            "itemHrid": "/items/arcane_reflection",
+            "itemHrid": "/items/retribution",
             "dropRate": 0.5,
             "minCount": 1,
             "maxCount": 2

@@ -110,7 +110,7 @@ class Trigger {
             case "/combat_trigger_conditions/taunt":
             case "/combat_trigger_conditions/crippling_slash":
             case "/combat_trigger_conditions/mana_spring":
-            case "/combat_trigger_conditions/arcane_reflection":
+            case "/combat_trigger_conditions/retribution":
             case "/combat_trigger_conditions/fracturing_impact":
             case "/combat_trigger_conditions/maim":
             case "/combat_trigger_conditions/curse":

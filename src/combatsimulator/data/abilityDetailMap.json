@@ -45,63 +45,6 @@
         ],
         "sortIndex": 15
     },
-    "/abilities/arcane_reflection": {
-        "hrid": "/abilities/arcane_reflection",
-        "name": "Arcane Reflection",
-        "description": "Gains retaliation temporarily",
-        "isSpecialAbility": false,
-        "manaCost": 65,
-        "cooldownDuration": 30000000000,
-        "castDuration": 300000000,
-        "abilityEffects": [
-            {
-                "targetType": "self",
-                "effectType": "/ability_effect_types/buff",
-                "combatStyleHrid": "",
-                "damageType": "",
-                "baseDamageFlat": 0,
-                "baseDamageFlatLevelBonus": 0,
-                "baseDamageRatio": 0,
-                "baseDamageRatioLevelBonus": 0,
-                "bonusAccuracyRatio": 0,
-                "bonusAccuracyRatioLevelBonus": 0,
-                "damageOverTimeRatio": 0,
-                "damageOverTimeDuration": 0,
-                "armorDamageRatio": 0,
-                "armorDamageRatioLevelBonus": 0,
-                "hpDrainRatio": 0,
-                "pierceChance": 0,
-                "blindChance": 0,
-                "blindDuration": 0,
-                "silenceChance": 0,
-                "silenceDuration": 0,
-                "stunChance": 0,
-                "stunDuration": 0,
-                "spendHpRatio": 0,
-                "buffs": [
-                    {
-                        "uniqueHrid": "/buff_uniques/arcane_reflection",
-                        "typeHrid": "/buff_types/retaliation",
-                        "ratioBoost": 0,
-                        "ratioBoostLevelBonus": 0,
-                        "flatBoost": 0.25,
-                        "flatBoostLevelBonus": 0.0025,
-                        "startTime": "0001-01-01T00:00:00Z",
-                        "duration": 30000000000
-                    }
-                ]
-            }
-        ],
-        "defaultCombatTriggers": [
-            {
-                "dependencyHrid": "/combat_trigger_dependencies/self",
-                "conditionHrid": "/combat_trigger_conditions/arcane_reflection",
-                "comparatorHrid": "/combat_trigger_comparators/is_inactive",
-                "value": 0
-            }
-        ],
-        "sortIndex": 47
-    },
     "/abilities/berserk": {
         "hrid": "/abilities/berserk",
         "name": "Berserk",
@@ -2415,6 +2358,63 @@
             }
         ],
         "sortIndex": 37
+    },
+    "/abilities/retribution": {
+        "hrid": "/abilities/retribution",
+        "name": "Retribution",
+        "description": "Gains retaliation temporarily",
+        "isSpecialAbility": false,
+        "manaCost": 65,
+        "cooldownDuration": 30000000000,
+        "castDuration": 300000000,
+        "abilityEffects": [
+            {
+                "targetType": "self",
+                "effectType": "/ability_effect_types/buff",
+                "combatStyleHrid": "",
+                "damageType": "",
+                "baseDamageFlat": 0,
+                "baseDamageFlatLevelBonus": 0,
+                "baseDamageRatio": 0,
+                "baseDamageRatioLevelBonus": 0,
+                "bonusAccuracyRatio": 0,
+                "bonusAccuracyRatioLevelBonus": 0,
+                "damageOverTimeRatio": 0,
+                "damageOverTimeDuration": 0,
+                "armorDamageRatio": 0,
+                "armorDamageRatioLevelBonus": 0,
+                "hpDrainRatio": 0,
+                "pierceChance": 0,
+                "blindChance": 0,
+                "blindDuration": 0,
+                "silenceChance": 0,
+                "silenceDuration": 0,
+                "stunChance": 0,
+                "stunDuration": 0,
+                "spendHpRatio": 0,
+                "buffs": [
+                    {
+                        "uniqueHrid": "/buff_uniques/retribution",
+                        "typeHrid": "/buff_types/retaliation",
+                        "ratioBoost": 0,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 0.25,
+                        "flatBoostLevelBonus": 0.0025,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": 30000000000
+                    }
+                ]
+            }
+        ],
+        "defaultCombatTriggers": [
+            {
+                "dependencyHrid": "/combat_trigger_dependencies/self",
+                "conditionHrid": "/combat_trigger_conditions/retribution",
+                "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+                "value": 0
+            }
+        ],
+        "sortIndex": 47
     },
     "/abilities/revive": {
         "hrid": "/abilities/revive",
