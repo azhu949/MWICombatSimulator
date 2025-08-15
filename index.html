@@ -537,6 +537,14 @@
                                 </button>
                             </div>
                         </div>
+                        <div class="row pt-3">
+                            <div class="col-md-auto">
+                                <button id="buttonWipeEvents" class="btn btn-primary" type="button"
+                                    data-bs-toggle="modal" data-bs-target="#WipeEventsModal" data-i18n="common:WipeEvents">
+                                    Wipe Events
+                                </button>
+                            </div>
+                        </div>                        
                         <!-- #endregion -->
                     </div>
                     <div class="col-md-7">
@@ -550,16 +558,19 @@
                             </div>
                         </div>
                         <div class="row mb-2">
+                            <div class="col-md-1">
+                                <button id="selectAbilityMoveUp_0" class="btn btn-primary" type="button" disabled>#</button>
+                            </div>
                             <div class="col-md-6">
                                 <select id="selectAbility_0" class="form-select">
                                     <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
-                            <div class="col">
+                            <div class="col-md-auto">
                                 <input type="number" id="inputAbilityLevel_0" class="form-control" value="1" min="1"
                                     max="400" required />
                             </div>
-                            <div class="col-md-auto">
+                            <div class="col-md-2">
                                 <button id="buttonAbilityTrigger_0" class="btn btn-primary" type="button"
                                     data-bs-toggle="modal" data-bs-target="#triggerModal" data-bs-triggertype="ability"
                                     data-bs-triggerindex="0">
@@ -568,16 +579,19 @@
                             </div>
                         </div>
                         <div class="row mb-2">
+                            <div class="col-md-1">
+                                <button id="selectAbilityMoveUp_1" class="btn btn-primary" type="button" disabled>#</button>
+                            </div>
                             <div class="col-md-6">
                                 <select id="selectAbility_1" class="form-select">
                                     <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
-                            <div class="col">
+                            <div class="col-md-auto">
                                 <input type="number" id="inputAbilityLevel_1" class="form-control" value="1" min="1"
                                     max="400" required />
                             </div>
-                            <div class="col-md-auto">
+                            <div class="col-md-2">
                                 <button id="buttonAbilityTrigger_1" class="btn btn-primary" type="button"
                                     data-bs-toggle="modal" data-bs-target="#triggerModal" data-bs-triggertype="ability"
                                     data-bs-triggerindex="1">
@@ -586,16 +600,19 @@
                             </div>
                         </div>
                         <div class="row mb-2">
+                            <div class="col-md-1">
+                                <button id="selectAbilityMoveUp_2" class="btn btn-primary" type="button">↑</button>
+                            </div>
                             <div class="col-md-6">
                                 <select id="selectAbility_2" class="form-select">
                                     <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
-                            <div class="col">
+                            <div class="col-md-auto">
                                 <input type="number" id="inputAbilityLevel_2" class="form-control" value="1" min="1"
                                     max="400" required />
                             </div>
-                            <div class="col-md-auto">
+                            <div class="col-md-2">
                                 <button id="buttonAbilityTrigger_2" class="btn btn-primary" type="button"
                                     data-bs-toggle="modal" data-bs-target="#triggerModal" data-bs-triggertype="ability"
                                     data-bs-triggerindex="2">
@@ -604,16 +621,19 @@
                             </div>
                         </div>
                         <div class="row mb-2">
+                            <div class="col-md-1">
+                                <button id="selectAbilityMoveUp_3" class="btn btn-primary" type="button">↑</button>
+                            </div>
                             <div class="col-md-6">
                                 <select id="selectAbility_3" class="form-select">
                                     <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
-                            <div class="col">
+                            <div class="col-md-auto">
                                 <input type="number" id="inputAbilityLevel_3" class="form-control" value="1" min="1"
                                     max="400" required />
                             </div>
-                            <div class="col-md-auto">
+                            <div class="col-md-2">
                                 <button id="buttonAbilityTrigger_3" class="btn btn-primary" type="button"
                                     data-bs-toggle="modal" data-bs-target="#triggerModal" data-bs-triggertype="ability"
                                     data-bs-triggerindex="3">
@@ -622,16 +642,19 @@
                             </div>
                         </div>
                         <div class="row mb-3">
+                            <div class="col-md-1">
+                                <button id="selectAbilityMoveUp_4" class="btn btn-primary" type="button">↑</button>
+                            </div>
                             <div class="col-md-6">
                                 <select id="selectAbility_4" class="form-select">
                                     <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
-                            <div class="col">
+                            <div class="col-md-auto">
                                 <input type="number" id="inputAbilityLevel_4" class="form-control" value="1" min="1"
                                     max="400" required />
                             </div>
-                            <div class="col-md-auto">
+                            <div class="col-md-2">
                                 <button id="buttonAbilityTrigger_4" class="btn btn-primary" type="button"
                                     data-bs-toggle="modal" data-bs-target="#triggerModal" data-bs-triggertype="ability"
                                     data-bs-triggerindex="4">
@@ -653,6 +676,11 @@
                                     <div id="simulationProgressBar" class="progress-bar" role="progressbar"
                                         style="width: 0%"></div>
                                 </div>
+                            </div>
+                            <div class="col-md-auto">
+                                <button id="buttonStopSimulation" class="btn btn-danger" type="button"data-i18n="common:controls.stopSimulation">
+                                    Stop Simulation
+                                </button> 
                             </div>
                         </div>
                         <div class="row">
@@ -1520,6 +1548,50 @@
         </div>
         <!-- endregion -->
     </div>    
+        <!-- Wipe Events Modal -->
+    <div class="modal fade" id="WipeEventsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" data-i18n="common:WipeEvents">Wipe Events</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="wipeEventSelector" class="form-label" data-i18n="common:selectWipeEvent">Select Wipe Event</label>
+                                <select class="form-select" id="wipeEventSelector">
+                                    <option value="-1" data-i18n="common:noWipeEvents">No Wipe Events</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="wipe-event-info">
+                                    <span class="badge bg-danger" id="wipeWaveBadge"></span>
+                                    <span class="ms-2" id="wipeTimeInfo"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header" data-i18n="common:combatLogs">Combat Logs</div>
+                                    <div class="card-body">
+                                        <div id="wipeLogsContainer" class="wipe-logs-container">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="common:controls.close">Close</button>
+                </div>
+            </div>
+        </div>
+        <!-- endregion -->
+    </div>
     <div class="modal" id="patchNotesModal" tabindex="-1">
         <!-- #region Patch Notes Modal -->
         <div class="modal-dialog modal-lg">
@@ -1530,150 +1602,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-12 mb-4">
-                                <h6>2025年8月14日</h6>
-                                <ul>
-                                    <li>怪物属性更新</li>
-                                    <li>远程和法师装备属性调整</li>
-                                    <li>反伤计算上限调整</li>
-                                    <li>修复战斗间隔释放技能的异常</li>
-                                    <li>修复技能释放判断逻辑的异常</li>
-                                    <li>法力值耗尽比例更加准确</li>
-                                    <li>调整远程经验的15%和魔法经验的12%映射到攻击经验</li>
-                                    <li>init_client_info_v1.20250626.0_0813.json游戏数据更新</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 mb-4">
-                                <h6>2025年8月11日</h6>
-                                <ul>
-                                    <li>怪物属性更新</li>
-                                    <li>近战和物理技能施法时间更新</li>
-                                    <li>盾击和重锤数值调整</li>
-                                    <li>双手盾防御经验加成调整</li>
-                                    <li>init_client_info_v1.20250626.0_0811.json游戏数据更新</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 mb-4">
-                                <h6>2025年8月8日</h6>
-                                <ul>
-                                    <li>实现组队等级差过大时对掉落和经验的惩罚</li>
-                                    <li>实现怪物经验随狂暴进度百分比增加</li>
-                                    <li>暴击光环数值调整</li>
-                                    <li>增加战斗等级数值显示</li>
-                                    <li>增加等级差距惩罚数值显示</li>
-                                    <li>init_client_info_v1.20250626.0_0807.json游戏数据更新</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 mb-4">
-                                <h6>2025年8月7日</h6>
-                                <ul>
-                                    <li>修复组队战斗时一些重复物品掉落数量异常的缺陷 by contr4l</li>
-                                    <li>init_client_info_v1.20250626.0_0806.json游戏数据更新</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 mb-4">
-                                <h6>2025年8月3日</h6>
-                                <ul>
-                                    <li>怪物狂暴机制及对应trigger生效</li>
-                                    <li>精炼装备更新，护符数值调整，守护光环增加闪避率</li>
-                                    <li>init_client_info_v1.20250626.0_0802.json游戏数据更新</li>
-                                    <li>狂怒层数修正为5层</li>
-                                    <li>招架结算机制调整</li>
-                                </ul>
-                            </div>
-                        </div>                        <div class="row">
-                            <div class="col-12 mb-4">
-                                <h6>2025年7月31日</h6>
-                                <ul>
-                                    <li>物品数据和怪物属性更新</li>
-                                    <li>尖刺外壳和奥术反射重做</li>
-                                    <li>强化数值更新</li>
-                                    <li>删除异常trigger</li>
-                                    <li>狮鹫盾的虚弱重做</li>
-                                    <li>君王剑招架对队友生效</li>
-                                    <li>狂怒特效最大层数修正为6层</li>
-                                    <li>涟漪特效增加10MP恢复</li>
-                                    <li>反伤正确显示其命中率</li>
-                                    <li>反伤机制调整</li>
-                                    <li>同步双手盾属性和反伤荆棘技能数值的调整</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 mb-4">
-                                <h6>2025年7月22日</h6>
-                                <ul>
-                                    <li>暴击光环受远程等级加成</li>
-                                    <li>光环基础数值和等级加成调整</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 mb-4">
-                                <h6>2025年7月17日</h6>
-                                <ul>
-                                    <li>批量模拟支持勾选星球</li>
-                                    <li>经验分配比例调整至30%+70%</li>
-                                    <li>光环及对应trigger，并按对应技能等级百分比加成</li>
-                                    <li>水火自然默认调整为元素光环</li>
-                                    <li>init_client_info_v1.20250626.0_0717.json游戏数据更新</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 mb-4">
-                                <h6>2025年7月11日</h6>
-                                <ul>
-                                    <li>怪物经验和技能等级公式更新</li>
-                                    <li>闪避和抗性计算公式更新</li>
-                                    <li>力量更替为近战以及对应的兼容</li>
-                                    <li>init_client_info_v1.20250626.0_0711.json游戏数据更新</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 mb-4">
-                                <h6>2025年7月10日</h6>
-                                <ul>
-                                    <li>修复贯穿技能由敌人释放时可能多次击中相同目标的缺陷</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 mb-4">
-                                <h6>2025年7月9日</h6>
-                                <ul>
-                                    <li>掉落和掉率调整</li>
-                                    <li>经验调整</li>
-                                    <li>疫病射击和破甲之刺调整</li>
-                                    <li>怪物自动恢复移除</li>
-                                    <li>疫病射击trigger调整</li>
-                                    <li>获取价格使用官方API</li>
-                                </ul>
-                            </div>
-                        </div>
-                        <div class="row">
-                            <div class="col-12 mb-4">
-                                <h6>2025年7月7日</h6>
-                                <ul>
-                                    <li>怪物属性缩放和地图多难度</li>
-                                    <li>法师技能调整和装备上'技能伤害'词缀生效</li>
-                                    <li>攻击等级和房屋等级对施法速度的影响生效</li>
-                                    <li>物品调整</li>
-                                    <li>精准重做以攻击等级计算</li>
-                                    <li>TEST 远程魔法经验的10%映射到攻击经验！</li>
-                                    <li>经验重做和护符装备</li>
-                                </ul>
-                            </div>
+                        <div class="row" id="patchNotes">                            
                         </div>
                     </div>
                 </div>

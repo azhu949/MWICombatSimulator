@@ -16,14 +16,18 @@ import damageTypeDetailMap from "./combatsimulator/data/damageTypeDetailMap.json
 import combatStyleDetailMap from "./combatsimulator/data/combatStyleDetailMap.json";
 import openableLootDropMap from "./combatsimulator/data/openableLootDropMap.json";
 
+import patchNote from "../patchNote.json";
+
 const ONE_SECOND = 1e9;
 const ONE_HOUR = 60 * 60 * ONE_SECOND;
 
 let buttonStartSimulation = document.getElementById("buttonStartSimulation");
+let buttonStopSimulation = document.getElementById("buttonStopSimulation");
 let progressbar = document.getElementById("simulationProgressBar");
 
-let worker = new Worker(new URL("worker.js", import.meta.url));
-let multiWorker = new Worker(new URL("multiWorker.js", import.meta.url));
+let worker = null; // new Worker(new URL("worker.js", import.meta.url));
+let multiWorker = null; // new Worker(new URL("multiWorker.js", import.meta.url));
+
 
 
 let player = new Player();
@@ -51,7 +55,7 @@ window.noRngProfit = 0;
 
 // #region Worker
 
-worker.onmessage = function (event) {
+function onWorkerMessage(event) {
     switch (event.data.type) {
         case "simulation_result":
             progressbar.style.width = "100%";
@@ -60,6 +64,7 @@ worker.onmessage = function (event) {
             showSimulationResult(event.data.simResult);
             updateContent();
             buttonStartSimulation.disabled = false;
+            buttonStopSimulation.style.display = 'none';
             document.getElementById('buttonShowAllSimData').style.display = 'none';
             break;
         case "simulation_progress":
@@ -73,7 +78,7 @@ worker.onmessage = function (event) {
     }
 };
 
-multiWorker.onmessage = function (event) {
+function onMultiWorkerMessage(event) {
     switch (event.data.type) {
         case "simulation_result_allZones":
             progressbar.style.width = "100%";
@@ -876,7 +881,33 @@ function updateAbilityUI() {
         selectElement.disabled = player.intelligenceLevel < abilitySlotsLevelRequirementList[i + 1];
         inputElement.disabled = player.intelligenceLevel < abilitySlotsLevelRequirementList[i + 1];
         triggerButton.disabled = player.intelligenceLevel < abilitySlotsLevelRequirementList[i + 1] || !abilities[i];
+        let moveUpButton = document.getElementById("selectAbilityMoveUp_" + i);
+        moveUpButton.onclick = () => swapAbilityOrder(i, -1);
     }
+}
+
+function swapAbilityOrder(abilityIndex, step) {
+    const swapIndex = abilityIndex + step;
+    if (swapIndex < 0 || swapIndex > 4) {
+        return;
+    }
+
+    let abilitySelect = document.getElementById("selectAbility_" + abilityIndex);
+    let abilityLevelInput = document.getElementById("inputAbilityLevel_" + abilityIndex);
+
+    const tempAbility = abilities[abilityIndex];
+    abilities[abilityIndex] = abilities[swapIndex];
+    abilities[swapIndex] = tempAbility;
+
+    const tempLevel = abilityLevelInput.value;
+    abilityLevelInput.value = document.getElementById("inputAbilityLevel_" + swapIndex).value;
+    document.getElementById("inputAbilityLevel_" + swapIndex).value = tempLevel;
+
+    abilitySelect.value = document.getElementById("selectAbility_" + (swapIndex)).value;
+    document.getElementById("selectAbility_" + swapIndex).value = abilities[swapIndex];
+
+    updateAbilityState();
+    updateAbilityUI();
 }
 
 // #endregion
@@ -1326,6 +1357,7 @@ function showSimulationResult(simResult) {
     showManapointsGained(simResult, playerToDisplay);
     showDamageDone(simResult, playerToDisplay);
     showDamageTaken(simResult, playerToDisplay);
+    renderWipeEvents(simResult);
     window.profit = window.revenue - window.expenses;
     document.getElementById('profitSpan').innerText = window.profit.toLocaleString();
     document.getElementById('profitPreview').innerText = window.profit.toLocaleString();
@@ -2519,8 +2551,23 @@ function initSimulationControls() {
             alert("You need to select at least one player to sim.");
             return;
         }
-        buttonStartSimulation.disabled = true;
+        // buttonStartSimulation.disabled = true;
+        buttonStopSimulation.style.display = 'block';
         startSimulation(selectedPlayers);
+    });
+
+    buttonStopSimulation.style.display = 'none';
+    buttonStopSimulation.addEventListener("click", (event) => {
+        progressbar.style.width = "0%";
+        progressbar.innerHTML = "0%";
+        if (worker) {
+            worker.terminate();
+        }
+        if (multiWorker) {
+            multiWorker.terminate();
+        }
+        buttonStartSimulation.disabled = false;
+        buttonStopSimulation.style.display = 'none';
     });
 }
 
@@ -2594,6 +2641,7 @@ function startSimulation(selectedPlayers) {
         }
     }
 
+    
 
     let simAllZonesToggle = document.getElementById("simAllToggle");
     let simDungeonToggle = document.getElementById("simDungeonToggle");
@@ -2602,6 +2650,7 @@ function startSimulation(selectedPlayers) {
     let difficultySelect = document.getElementById("selectDifficulty");
     let simulationTimeInput = document.getElementById("inputSimulationTime");
     let simulationTimeLimit = Number(simulationTimeInput.value) * ONE_HOUR;
+    buttonStopSimulation.style.display = 'block';
     if (!simAllZonesToggle.checked) {
         let zoneHrid = zoneSelect.value;
         let difficultyTier = Number(difficultySelect.value);
@@ -2614,6 +2663,8 @@ function startSimulation(selectedPlayers) {
             zone: { zoneHrid: zoneHrid, difficultyTier: difficultyTier },
             simulationTimeLimit: simulationTimeLimit,
         };
+        worker = new Worker(new URL("worker.js", import.meta.url));
+        worker.onmessage = onWorkerMessage;
         worker.postMessage(workerMessage);
     } else {
         let zoneHrids = Object.values(actionDetailMap)
@@ -2639,11 +2690,238 @@ function startSimulation(selectedPlayers) {
             zones: zoneHrids,
             simulationTimeLimit: simulationTimeLimit,
         };
+        multiWorker = new Worker(new URL("multiWorker.js", import.meta.url));
+        multiWorker.onmessage = onMultiWorkerMessage;
         multiWorker.postMessage(workerMessage);
     }
 }
 
 // #endregion
+
+// #region WipeEvents
+
+function renderWipeEvents(simResult) {
+    const selector = document.getElementById('wipeEventSelector');
+    const logsContainer = document.getElementById('wipeLogsContainer');
+    const waveBadge = document.getElementById('wipeWaveBadge');
+    const timeInfo = document.getElementById('wipeTimeInfo');
+    
+    selector.innerHTML = '';
+    logsContainer.innerHTML = '';
+    
+    if (!simResult.wipeEvents || simResult.wipeEvents.length === 0) {
+        selector.innerHTML = `<option value="-1" data-i18n="common:noWipeEvents">No Wipe Events</option>`;
+        logsContainer.innerHTML = `<div class="text-center py-4" data-i18n="common:noWipeEventsDetected">No Wipe Events Detected</div>`;
+        waveBadge.textContent = '';
+        timeInfo.textContent = '';
+        return;
+    }
+    
+    simResult.wipeEvents.forEach((event, index) => {
+        const wave = event.wave || '?';
+        // const time = (event.simulationTime / 1e9).toFixed(2);
+        // const timestamp = new Date(event.timestamp).toLocaleTimeString();
+        
+        const option = document.createElement('option');
+        option.value = index;
+        option.textContent = `#${index + 1} - 波次: ${wave}`;
+        selector.appendChild(option);
+    });
+    
+    selector.value = 0;
+    renderSelectedWipeEvent(0, simResult);
+    
+    selector.addEventListener('change', () => {
+        renderSelectedWipeEvent(selector.value, simResult);
+    });
+}
+
+// 渲染选中的团灭事件
+function renderSelectedWipeEvent(index, simResult) {
+    const logsContainer = document.getElementById('wipeLogsContainer');
+    const waveBadge = document.getElementById('wipeWaveBadge');
+    const timeInfo = document.getElementById('wipeTimeInfo');
+    
+    logsContainer.innerHTML = '';
+    
+    if (index < 0 || index >= simResult.wipeEvents.length) {
+        logsContainer.innerHTML = `<div class="text-center py-4" data-i18n="common:noWipeEvents">No Wipe Events</div>`;
+        waveBadge.textContent = '';
+        timeInfo.textContent = '';
+        return;
+    }
+    
+    const wipeEvent = simResult.wipeEvents[index];
+    const wave = wipeEvent.wave || '?';
+    const time = (wipeEvent.simulationTime / 1e9).toFixed(2);
+    const timestamp = new Date(wipeEvent.timestamp).toLocaleString();
+    
+    waveBadge.textContent = `波次: ${wave}`;
+    timeInfo.textContent = `模拟时间: ${time}s | 记录时间: ${timestamp}`;
+    
+    const logsByTime = groupLogsByTime(wipeEvent.logs);
+    
+    const baseTime = logsByTime.length > 0 ? logsByTime[0].time : 0;
+    
+    logsByTime.forEach(group => {
+        const timeGroupElement = document.createElement('div');
+        timeGroupElement.className = 'log-time-group';
+
+        const relativeTime = (group.time - baseTime) / 1e9;
+        
+        // 时间标题
+        const timeHeader = document.createElement('div');
+        timeHeader.className = 'log-time-header';
+        timeHeader.textContent = `[${relativeTime.toFixed(2)}s]`;
+        timeGroupElement.appendChild(timeHeader);
+        
+        // 事件列表
+        const eventsList = document.createElement('div');
+        eventsList.className = 'log-events';
+
+        const damagedPlayers = new Set();
+        
+        group.logs.forEach(log => {
+            const eventElement = document.createElement('div');
+            eventElement.className = 'log-event';
+
+            damagedPlayers.add(log.target);
+
+            const sourceSpan = document.createElement('span');
+            sourceSpan.className = 'log-source';
+            sourceSpan.setAttribute('data-i18n', `monsterNames.${log.source}`);
+            sourceSpan.textContent = log.source;
+            
+            const castSpan = document.createElement('span');
+            castSpan.className = 'log-cast';
+            castSpan.setAttribute('data-i18n', `common:cast`);
+            castSpan.textContent = ' cast ';
+
+            const abilitySpan = document.createElement('span');
+            abilitySpan.className = 'log-ability';            
+            if (log.ability === "autoAttack") {
+                abilitySpan.setAttribute('data-i18n', 'combatUnit.autoAttack');
+                abilitySpan.textContent = 'Auto Attack';
+            } else {
+                abilitySpan.setAttribute('data-i18n', `abilityNames.${log.ability}`);
+                abilitySpan.textContent = log.ability;
+            }
+
+            const toSpan = document.createElement('span');
+            toSpan.className = 'log-to';
+            toSpan.setAttribute('data-i18n', `common:to`);
+            toSpan.textContent = ' to ';
+            
+            const targetSpan = document.createElement('span');
+            targetSpan.className = 'log-target';
+            targetSpan.textContent = log.target;
+            
+            const dealDamageSpan = document.createElement('span');
+            dealDamageSpan.className = 'log-deal-damage';
+            dealDamageSpan.setAttribute('data-i18n', `common:dealDamage`);
+            dealDamageSpan.textContent = ' deal damage ';
+
+            const damageDoneSpan = document.createElement('span');
+            damageDoneSpan.className = 'log-damage-done';
+            damageDoneSpan.textContent = log.damage;
+            if (log.isCrit) {
+                damageDoneSpan.style.fontWeight = 'bold';
+                damageDoneSpan.textContent += '!!!';
+            }
+
+            eventElement.appendChild(sourceSpan);
+            eventElement.appendChild(castSpan);
+            eventElement.appendChild(abilitySpan);
+            eventElement.appendChild(toSpan);
+            eventElement.appendChild(targetSpan);
+            eventElement.appendChild(dealDamageSpan);
+            eventElement.appendChild(damageDoneSpan);
+            eventElement.appendChild(document.createTextNode(` , HP ${log.beforeHp} → ${log.afterHp}`));
+
+            eventsList.appendChild(eventElement);
+        });
+        
+        timeGroupElement.appendChild(eventsList);
+        
+        const lastLog = group.logs[group.logs.length - 1];
+        const playersHpElement = document.createElement('div');
+
+        const playerHpTitle = document.createElement('span');
+        playerHpTitle.className = 'log-players-hp';
+        playerHpTitle.setAttribute('data-i18n', `common:playersHp`);
+        playerHpTitle.textContent = 'Players HP: ';
+        playersHpElement.appendChild(playerHpTitle);
+        
+        lastLog.playersHp.forEach((player, idx) => {
+            const playerElement = document.createElement('span');
+            playerElement.className = 'log-player-hp';
+            playerElement.textContent = `${player.hrid}: ${player.current}/${player.max}`;
+            
+            if (player.current <= 0) {
+                playerElement.style.color = darkModeToggle.checked? '#FF6347' : '#CC0000';
+            } else if (damagedPlayers.has(player.hrid)) {
+                playerElement.style.color = darkModeToggle.checked? '#00BFFF' : '#007BFF';
+            }
+            
+            if (idx > 0) {
+                playersHpElement.appendChild(document.createTextNode(' | '));
+            }
+            playersHpElement.appendChild(playerElement);
+        });
+        const spacer = document.createElement('div');
+        spacer.style.height = '15px';
+        logsContainer.appendChild(spacer);
+        timeGroupElement.appendChild(playersHpElement);
+        logsContainer.appendChild(timeGroupElement);
+    });
+    
+    // 更新汉化
+    updateContent()
+}
+
+// 按时间分组日志
+function groupLogsByTime(logs) {
+    const groups = [];
+    let currentGroup = null;
+    
+    logs.forEach(log => {
+        if (!currentGroup || currentGroup.time !== log.time) {
+            currentGroup = {
+                time: log.time,
+                logs: [log]
+            };
+            groups.push(currentGroup);
+        } else {
+            currentGroup.logs.push(log);
+        }
+    });
+
+    groups.forEach(group => {
+        let hpMap = {};
+        if (group.logs.length > 0) {
+            group.logs[0].playersHp.forEach(p => {
+                hpMap[p.hrid] = { current: p.current, max: p.max };
+            });
+        }
+        group.logs.forEach(log => {
+            if (hpMap[log.target]) {
+                hpMap[log.target].current = log.afterHp;
+            }
+        });
+        group.logs.forEach(log => {
+            log.playersHp = Object.entries(hpMap).map(([hrid, val]) => ({
+                hrid,
+                current: val.current,
+                max: val.max
+            }));
+        });
+    });
+
+    return groups;
+}
+
+// #endregion
+
 
 // #region Equipment Sets
 
@@ -3548,6 +3826,27 @@ function updateTable(tableId, item, price) {
 
 // #endregion
 
+function initPatchNotes() {
+    const patchNotesRows = document.getElementById("patchNotes");
+    for (const pn in patchNote) {
+        const patchNoteContainer = document.createElement("div");
+        patchNotesRows.setAttribute('class', 'col-12 mb-4');
+
+        const patchNoteElement = document.createElement("h6");
+        patchNoteElement.innerHTML = pn;
+        const patchNoteList = document.createElement("ul");
+        for (const note of patchNote[pn]) {
+            const noteElement = document.createElement("li");
+            noteElement.innerHTML = note;
+            patchNoteList.appendChild(noteElement);
+        }
+        patchNoteContainer.appendChild(patchNoteElement);
+        patchNoteContainer.appendChild(patchNoteList);
+
+        patchNotesRows.appendChild(patchNoteContainer);
+    }
+}
+
 function updateState() {
     updateEquipmentState();
     updateLevels();
@@ -3623,6 +3922,7 @@ initEquipmentSetsModal();
 initErrorHandling();
 initImportExportModal();
 initDamageDoneTaken();
+initPatchNotes();
 
 updateState();
 updateUI();

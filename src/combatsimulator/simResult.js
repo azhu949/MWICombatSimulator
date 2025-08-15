@@ -32,8 +32,19 @@ class SimResult {
         this.maxWaveReached = 0;
         this.numberOfPlayers = numberOfPlayers;
         this.maxEnrageStack = 0;
+
+        this.wipeEvents = [];
     }
 
+    addWipeEvent(logs, simulationTime, wave) {
+        this.wipeEvents.push({
+            simulationTime: simulationTime,
+            logs: logs,
+            wave: wave,
+            timestamp: new Date().toISOString()
+        });
+    }
+    
     addDeath(unit) {
         if (!this.deaths[unit.hrid]) {
             this.deaths[unit.hrid] = 0;
