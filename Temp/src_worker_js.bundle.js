@@ -338,6 +338,98 @@ class CombatSimulator extends EventTarget {
         this.eventQueue = new _events_eventQueue__WEBPACK_IMPORTED_MODULE_8__["default"]();
         this.simResult = new _simResult__WEBPACK_IMPORTED_MODULE_18__["default"](zone, players.length);
         this.allPlayersDead = false;
+
+        this.wipeLogs = {
+            buffer: new Array(200),
+            index: 0,
+            count: 0,
+            maxSize: 200
+        };
+    }
+
+        addToWipeLogs(logEntry) {
+        const { buffer, maxSize } = this.wipeLogs;
+
+        buffer[this.wipeLogs.index] = logEntry;
+        this.wipeLogs.index = (this.wipeLogs.index + 1) % maxSize;
+        this.wipeLogs.count = Math.min(this.wipeLogs.count + 1, maxSize);
+    }
+
+    logAndResetWipeLogs() {
+        const logs = this.getOrderedWipeLogs();
+        
+        // console.log("===== 团灭日志 =====");
+        // console.log(`最后 ${logs.length} 条战斗日志：`);
+        
+        logs.forEach(log => {
+            if (log.error) {
+                console.log(log.error);
+                return;
+            }
+            
+            const time = (log.time / 1e9).toFixed(2);
+            // console.log(
+            //     `[${time}s] [${log.source}] 用 [${log.ability}] ` +
+            //     `对 ${log.target} 造成 ${log.damage} 伤害，` +
+            //     `HP ${log.beforeHp} → ${log.afterHp}。` +
+            //     `队伍生命值：${log.playersHp.map(p => `${p.hrid}: ${p.current}/${p.max}`).join(" | ")}`
+            // );
+        });
+
+        this.wipeLogs.index = 0;
+        this.wipeLogs.count = 0;
+        // console.log("===== 团灭日志结束 =====");
+    }
+    
+    generateCombatLog(source, ability, target, attackResult) {
+        try {
+            const sourceHrid = source?.hrid || "UNKNOWN_SOURCE";
+            const targetHrid = target?.hrid || "UNKNOWN_TARGET";
+            const damage = attackResult?.damageDone || 0;
+            
+            const afterHp = target?.combatDetails?.currentHitpoints || 0;
+            const beforeHp = Math.max(0, afterHp + damage);
+
+            const playersHp = this.players.map(p => ({
+                hrid: p.hrid || "UNKNOWN_PLAYER",
+                current: p.combatDetails?.currentHitpoints ?? 0,
+                max: p.combatDetails?.maxHitpoints ?? 0
+            }));
+            
+            return {
+                time: this.simulationTime,
+                source: sourceHrid,
+                ability: ability,
+                target: targetHrid,
+                damage: damage,
+                beforeHp: beforeHp,
+                afterHp: afterHp,
+                playersHp: playersHp,
+                // enemiesHp: enemiesHp,
+                isCrit: attackResult?.isCrit || false,
+            };
+        } catch (e) {
+            return {
+                error: `[日志生成错误] ${e.message}`
+            };
+        }
+    }
+    
+    getOrderedWipeLogs() {
+        const { buffer, maxSize, count } = this.wipeLogs;
+        const logs = [];
+        
+        for (let i = 0; i < count; i++) {
+            const idx = (this.wipeLogs.index - count + maxSize + i) % maxSize;
+            logs.push(buffer[idx]);
+        }
+        
+        return logs;
+    }
+
+    saveWipeLogsToSimResult(wave) {
+        const logs = this.getOrderedWipeLogs();
+        this.simResult.addWipeEvent(logs, this.simulationTime, wave);
     }
 
     async simulate(simulationTimeLimit) {
@@ -631,6 +723,10 @@ class CombatSimulator extends EventTarget {
             }
 
             let attackResult = _combatUtilities__WEBPACK_IMPORTED_MODULE_0__["default"].processAttack(source, target);
+            if (this.zone.isDungeon && target.isPlayer && attackResult.didHit && attackResult.damageDone > 0) {
+                const log = this.generateCombatLog(source, "autoAttack", target, attackResult);
+                this.addToWipeLogs(log);
+            }
 
             let mayhem = source.combatDetails.combatStats.mayhem > Math.random();
 
@@ -851,6 +947,11 @@ class CombatSimulator extends EventTarget {
         ) {
             if (this.zone.isDungeon) {
                 console.log("All Players died at wave #" + (this.zone.encountersKilled - 1) + " with ememies: " + this.enemies.map(enemy => (enemy.hrid+"("+(enemy.combatDetails.currentHitpoints*100/enemy.combatDetails.maxHitpoints).toFixed(2)+"%)")).join(", "));
+
+                this.saveWipeLogsToSimResult(this.zone.encountersKilled - 1);
+                // console.log(this.simResult)
+                this.wipeLogs.index = 0;
+                this.wipeLogs.count = 0;
 
                 this.eventQueue.clear();
                 this.enemies = null;
@@ -1495,6 +1596,11 @@ class CombatSimulator extends EventTarget {
                 }
 
                 let attackResult = _combatUtilities__WEBPACK_IMPORTED_MODULE_0__["default"].processAttack(source, target, abilityEffect);
+
+                if (this.zone.isDungeon && target.isPlayer && attackResult.didHit && attackResult.damageDone > 0) {
+                    const log = this.generateCombatLog(source, ability.hrid, target, attackResult);
+                    this.addToWipeLogs(log);
+                }
 
                 if (attackResult.hpDrain > 0) {
                     this.simResult.addHitpointsGained(source, ability.hrid, attackResult.hpDrain);
@@ -2405,6 +2511,7 @@ class CombatUtilities {
 
         let hitChance = 1;
         let critChance = 0;
+        let isCrit = false;
         let bonusCritChance = source.combatDetails.combatStats.criticalRate;
         let bonusCritDamage = source.combatDetails.combatStats.criticalDamage;
 
@@ -2437,6 +2544,7 @@ class CombatUtilities {
         if (Math.random() < critChance) {
             sourceMaxDamage = sourceMaxDamage * (1 + bonusCritDamage);
             sourceMinDamage = sourceMaxDamage;
+            isCrit = true;
         }
 
         let damageRoll = CombatUtilities.randomInt(sourceMinDamage, sourceMaxDamage);
@@ -2548,7 +2656,7 @@ class CombatUtilities {
             manaLeechMana = source.addManapoints(Math.floor(source.combatDetails.combatStats.manaLeech * damageDone));
         }
 
-        return { damageDone, didHit, thornDamageDone, thornType, retaliationDamageDone, lifeStealHeal, hpDrain, manaLeechMana };
+        return { damageDone, didHit, thornDamageDone, thornType, retaliationDamageDone, lifeStealHeal, hpDrain, manaLeechMana, isCrit};
     }
 
     static processHeal(source, abilityEffect, target) {
@@ -3873,8 +3981,19 @@ class SimResult {
         this.maxWaveReached = 0;
         this.numberOfPlayers = numberOfPlayers;
         this.maxEnrageStack = 0;
+
+        this.wipeEvents = [];
     }
 
+    addWipeEvent(logs, simulationTime, wave) {
+        this.wipeEvents.push({
+            simulationTime: simulationTime,
+            logs: logs,
+            wave: wave,
+            timestamp: new Date().toISOString()
+        });
+    }
+    
     addDeath(unit) {
         if (!this.deaths[unit.hrid]) {
             this.deaths[unit.hrid] = 0;

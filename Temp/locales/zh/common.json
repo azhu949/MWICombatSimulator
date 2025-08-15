@@ -18,6 +18,7 @@
         "title": "操作区域",
         "battleQueue": "战斗队列?",
         "startSimulation": "开始模拟",
+        "stopSimulation": "中止模拟",
         "calcCoffeeBenefits": "计算咖啡收益",
         "coffeeResults": "咖啡结果",
         "calcSpecialAbilityBenefits": "计算特殊能力收益",
@@ -87,5 +88,14 @@
     "or": "或",
     "import": "导入",
     "exportGroupSolo": "导出",
-    "useAttackLevelRework" : "攻击等级从15%远程和12%魔法中获得对应经验"
+    "useAttackLevelRework" : "攻击等级从15%远程和12%魔法中获得对应经验",
+    "noWipeEvents": "无团灭事件",
+    "noWipeEventsDetected": "未检测到团灭事件",
+    "WipeEvents": "团灭日志",
+    "combatLogs": "战斗日志",
+    "selectWipeEvent": "选择团灭日志",
+    "cast": " 释放 ",
+    "to": " 对 ",
+    "dealDamage": " 造成伤害: ",
+    "playersHp": "队伍生命值: "
 }
