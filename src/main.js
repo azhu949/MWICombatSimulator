@@ -699,8 +699,8 @@ function updateReAttackLevel() {
 
 function calcCombatLevel(staminaLevel, intelligenceLevel, defenseLevel, attackLevel, meleeLevel, rangedLevel, magicLevel) {
     return Math.floor(
-        0.15 * (staminaLevel + intelligenceLevel + attackLevel + defenseLevel + Math.max(meleeLevel, rangedLevel, magicLevel))
-        + 0.25 * Math.max(attackLevel, defenseLevel, meleeLevel, rangedLevel, magicLevel)
+        0.1 * (staminaLevel + intelligenceLevel + attackLevel + defenseLevel + Math.max(meleeLevel, rangedLevel, magicLevel))
+        + 0.5 * Math.max(attackLevel, defenseLevel, meleeLevel, rangedLevel, magicLevel)
     );
 }
 

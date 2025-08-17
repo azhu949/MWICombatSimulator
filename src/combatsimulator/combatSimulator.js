@@ -1276,7 +1276,7 @@ class CombatSimulator extends EventTarget {
                 }
             } else {
                 targets = targets.filter((unit) => unit && !avoidTarget.includes(unit.hrid) && unit.combatDetails.currentHitpoints > 0);
-                if (!source.isPlayer && targets.length > 1 && abilityEffect.targetType == "enemy") {
+                if (!source.isPlayer && targets.length > 0 && abilityEffect.targetType == "enemy") {
                     let cumulativeThreat = 0;
                     let cumulativeRanges = [];
                     targets.forEach(player => {
