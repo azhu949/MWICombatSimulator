@@ -24,6 +24,7 @@ const ONE_HOUR = 60 * 60 * ONE_SECOND;
 let buttonStartSimulation = document.getElementById("buttonStartSimulation");
 let buttonStopSimulation = document.getElementById("buttonStopSimulation");
 let progressbar = document.getElementById("simulationProgressBar");
+let simStartTime = 0;
 
 let worker = null; // new Worker(new URL("worker.js", import.meta.url));
 let multiWorker = null; // new Worker(new URL("multiWorker.js", import.meta.url));
@@ -59,7 +60,7 @@ function onWorkerMessage(event) {
     switch (event.data.type) {
         case "simulation_result":
             progressbar.style.width = "100%";
-            progressbar.innerHTML = "100%";
+            progressbar.innerHTML = "100% (" + ((Date.now() - simStartTime) / 1000).toFixed(2) + "s)";
             //console.log("SIM RESULTS: ", event.data.simResult);
             showSimulationResult(event.data.simResult);
             updateContent();
@@ -70,7 +71,7 @@ function onWorkerMessage(event) {
         case "simulation_progress":
             let progress = Math.floor(100 * event.data.progress);
             progressbar.style.width = progress + "%";
-            progressbar.innerHTML = progress + "%";
+            progressbar.innerHTML = progress + "% (" + ((Date.now() - simStartTime) / 1000).toFixed(2) + "s)";
             break;
         case "simulation_error":
             showErrorModal(event.data.error.toString());
@@ -82,16 +83,17 @@ function onMultiWorkerMessage(event) {
     switch (event.data.type) {
         case "simulation_result_allZones":
             progressbar.style.width = "100%";
-            progressbar.innerHTML = "100%";
+            progressbar.innerHTML = "100% (" + ((Date.now() - simStartTime) / 1000).toFixed(2) + "s)";
             showAllSimulationResults(event.data.simResults);
             updateContent();
             buttonStartSimulation.disabled = false;
+            buttonStopSimulation.style.display = 'none';
             document.getElementById('buttonShowAllSimData').style.display = 'block';
             break;
         case "simulation_progress":
             let progress = Math.floor(100 * event.data.progress);
             progressbar.style.width = progress + "%";
-            progressbar.innerHTML = progress + "%";
+            progressbar.innerHTML = progress + "% (" + ((Date.now() - simStartTime) / 1000).toFixed(2) + "s)";
             break;
         case "simulation_error":
             showErrorModal(event.data.error.toString());
@@ -2663,6 +2665,7 @@ function startSimulation(selectedPlayers) {
             zone: { zoneHrid: zoneHrid, difficultyTier: difficultyTier },
             simulationTimeLimit: simulationTimeLimit,
         };
+        simStartTime = Date.now();
         worker = new Worker(new URL("worker.js", import.meta.url));
         worker.onmessage = onWorkerMessage;
         worker.postMessage(workerMessage);
@@ -2690,6 +2693,7 @@ function startSimulation(selectedPlayers) {
             zones: zoneHrids,
             simulationTimeLimit: simulationTimeLimit,
         };
+        simStartTime = Date.now();
         multiWorker = new Worker(new URL("multiWorker.js", import.meta.url));
         multiWorker.onmessage = onMultiWorkerMessage;
         multiWorker.postMessage(workerMessage);
