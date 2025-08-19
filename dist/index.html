@@ -90,6 +90,11 @@
             background-color: #444; 
         }
 
+        body.dark-mode .card {
+            background-color: #444;
+            color: #f0f0f0;
+        }
+
         .outlined-box {
             border: 1px solid #ccc; /* Border color */
             border-radius: 4px; /* Rounded corners */
@@ -137,6 +142,13 @@
                             <b data-i18n="sharableProfile.skills">Levels</b>
                         </div>
                         <div class="row mb-2">
+                            <label for="inputLevel_combat" class="col-md-6 col-form-label" data-i18n="actionTypeNames./action_types/combat">Combat</label>
+                            <div class="col-md-6">
+                                <input type="number" id="inputLevel_combat" class="form-control" value="1" min="1"
+                                    max="400" required disabled />
+                            </div>
+                        </div>
+                        <div class="row mb-2">
                             <label for="inputLevel_stamina" class="col-md-6 col-form-label" data-i18n="skillNames./skills/stamina">Stamina</label>
                             <div class="col-md-6">
                                 <input type="number" id="inputLevel_stamina" class="form-control" value="1" min="1"
@@ -158,9 +170,9 @@
                             </div>
                         </div>
                         <div class="row mb-2">
-                            <label for="inputLevel_power" class="col-md-6 col-form-label" data-i18n="skillNames./skills/power">Power</label>
+                            <label for="inputLevel_melee" class="col-md-6 col-form-label" data-i18n="skillNames./skills/melee">Melee</label>
                             <div class="col-md-6">
-                                <input type="number" id="inputLevel_power" class="form-control" value="1" min="1"
+                                <input type="number" id="inputLevel_melee" class="form-control" value="1" min="1"
                                     max="400" required />
                             </div>
                         </div>
@@ -367,6 +379,18 @@
                             </div>
                         </div>
                         <div class="row mb-2">
+                            <label for="selectEquipment_charm" class="col-md-2 col-form-label" data-i18n="characterItemsUtil.charm">Charm</label>
+                            <div class="col-md-6">
+                                <select id="selectEquipment_charm" class="form-select">
+                                    <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
+                                </select>
+                            </div>
+                            <div class="col-md-4">
+                                <input type="number" id="inputEquipmentEnhancementLevel_charm" class="form-control"
+                                    value="0" min="0" max="20" required />
+                            </div>
+                        </div>
+                        <div class="row mb-2">
                             <label for="selectEquipment_set" class="col-md-2 col-form-label">Presets</label>
                             <div class="col-md-6">
                                 <select id="selectEquipment_set" class="form-select">
@@ -516,6 +540,14 @@
                                 </button>
                             </div>
                         </div>
+                        <div class="row pt-3">
+                            <div class="col-md-auto">
+                                <button id="buttonWipeEvents" class="btn btn-primary" type="button"
+                                    data-bs-toggle="modal" data-bs-target="#WipeEventsModal" data-i18n="common:WipeEvents">
+                                    Wipe Events
+                                </button>
+                            </div>
+                        </div>                        
                         <!-- #endregion -->
                     </div>
                     <div class="col-md-7">
@@ -529,16 +561,19 @@
                             </div>
                         </div>
                         <div class="row mb-2">
+                            <div class="col-md-1">
+                                <button id="selectAbilityMoveUp_0" class="btn btn-primary" type="button" disabled>#</button>
+                            </div>
                             <div class="col-md-6">
                                 <select id="selectAbility_0" class="form-select">
                                     <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
-                            <div class="col">
+                            <div class="col-md-auto">
                                 <input type="number" id="inputAbilityLevel_0" class="form-control" value="1" min="1"
                                     max="400" required />
                             </div>
-                            <div class="col-md-auto">
+                            <div class="col-md-2">
                                 <button id="buttonAbilityTrigger_0" class="btn btn-primary" type="button"
                                     data-bs-toggle="modal" data-bs-target="#triggerModal" data-bs-triggertype="ability"
                                     data-bs-triggerindex="0">
@@ -547,16 +582,19 @@
                             </div>
                         </div>
                         <div class="row mb-2">
+                            <div class="col-md-1">
+                                <button id="selectAbilityMoveUp_1" class="btn btn-primary" type="button" disabled>#</button>
+                            </div>
                             <div class="col-md-6">
                                 <select id="selectAbility_1" class="form-select">
                                     <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
-                            <div class="col">
+                            <div class="col-md-auto">
                                 <input type="number" id="inputAbilityLevel_1" class="form-control" value="1" min="1"
                                     max="400" required />
                             </div>
-                            <div class="col-md-auto">
+                            <div class="col-md-2">
                                 <button id="buttonAbilityTrigger_1" class="btn btn-primary" type="button"
                                     data-bs-toggle="modal" data-bs-target="#triggerModal" data-bs-triggertype="ability"
                                     data-bs-triggerindex="1">
@@ -565,16 +603,19 @@
                             </div>
                         </div>
                         <div class="row mb-2">
+                            <div class="col-md-1">
+                                <button id="selectAbilityMoveUp_2" class="btn btn-primary" type="button">↑</button>
+                            </div>
                             <div class="col-md-6">
                                 <select id="selectAbility_2" class="form-select">
                                     <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
-                            <div class="col">
+                            <div class="col-md-auto">
                                 <input type="number" id="inputAbilityLevel_2" class="form-control" value="1" min="1"
                                     max="400" required />
                             </div>
-                            <div class="col-md-auto">
+                            <div class="col-md-2">
                                 <button id="buttonAbilityTrigger_2" class="btn btn-primary" type="button"
                                     data-bs-toggle="modal" data-bs-target="#triggerModal" data-bs-triggertype="ability"
                                     data-bs-triggerindex="2">
@@ -583,16 +624,19 @@
                             </div>
                         </div>
                         <div class="row mb-2">
+                            <div class="col-md-1">
+                                <button id="selectAbilityMoveUp_3" class="btn btn-primary" type="button">↑</button>
+                            </div>
                             <div class="col-md-6">
                                 <select id="selectAbility_3" class="form-select">
                                     <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
-                            <div class="col">
+                            <div class="col-md-auto">
                                 <input type="number" id="inputAbilityLevel_3" class="form-control" value="1" min="1"
                                     max="400" required />
                             </div>
-                            <div class="col-md-auto">
+                            <div class="col-md-2">
                                 <button id="buttonAbilityTrigger_3" class="btn btn-primary" type="button"
                                     data-bs-toggle="modal" data-bs-target="#triggerModal" data-bs-triggertype="ability"
                                     data-bs-triggerindex="3">
@@ -601,16 +645,19 @@
                             </div>
                         </div>
                         <div class="row mb-3">
+                            <div class="col-md-1">
+                                <button id="selectAbilityMoveUp_4" class="btn btn-primary" type="button">↑</button>
+                            </div>
                             <div class="col-md-6">
                                 <select id="selectAbility_4" class="form-select">
                                     <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
                                 </select>
                             </div>
-                            <div class="col">
+                            <div class="col-md-auto">
                                 <input type="number" id="inputAbilityLevel_4" class="form-control" value="1" min="1"
                                     max="400" required />
                             </div>
-                            <div class="col-md-auto">
+                            <div class="col-md-2">
                                 <button id="buttonAbilityTrigger_4" class="btn btn-primary" type="button"
                                     data-bs-toggle="modal" data-bs-target="#triggerModal" data-bs-triggertype="ability"
                                     data-bs-triggerindex="4">
@@ -632,6 +679,11 @@
                                     <div id="simulationProgressBar" class="progress-bar" role="progressbar"
                                         style="width: 0%"></div>
                                 </div>
+                            </div>
+                            <div class="col-md-auto">
+                                <button id="buttonStopSimulation" class="btn btn-danger" type="button"data-i18n="common:controls.stopSimulation">
+                                    Stop Simulation
+                                </button> 
                             </div>
                         </div>
                         <div class="row">
@@ -721,16 +773,20 @@
                     <div class="col-md-4" id="combatStat_smashMaxDamage"></div>
                 </div>
                 <div class="row">
+                    <div class="col-md-8" data-i18n="combatStats.defensiveDamage">Defensive Damage:</div>
+                    <div class="col-md-4" id="combatStat_defensiveMaxDamage"></div>
+                </div>
+                <div class="row">
                     <div class="col-md-8" data-i18n="combatStats.rangedAccuracy">Ranged Accuracy:</div>
                     <div class="col-md-4" id="combatStat_rangedAccuracyRating"></div>
                 </div>
                 <div class="row">
-                    <div class="col-md-8" data-i18n="combatStats.magicAccuracy">Magic Accuracy:</div>
-                    <div class="col-md-4" id="combatStat_magicAccuracyRating"></div>
-                </div>
-                <div class="row">
                     <div class="col-md-8" data-i18n="combatStats.rangedDamage">Ranged Damage:</div>
                     <div class="col-md-4" id="combatStat_rangedMaxDamage"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8" data-i18n="combatStats.magicAccuracy">Magic Accuracy:</div>
+                    <div class="col-md-4" id="combatStat_magicAccuracyRating"></div>
                 </div>
                 <div class="row">
                     <div class="col-md-8" data-i18n="combatStats.magicDamage">Magic Damage:</div>
@@ -909,12 +965,52 @@
                     <div class="col-md-4" id="combatStat_autoAttackDamage"></div>
                 </div>
                 <div class="row">
+                    <div class="col-md-8" data-i18n="combatStats.abilityDamage">Ability Damage:</div>
+                    <div class="col-md-4" id="combatStat_abilityDamage"></div>
+                </div>
+                <div class="row">
                     <div class="col-md-8" data-i18n="combatStats.drinkConcentration">Drink Concentration:</div>
                     <div class="col-md-4" id="combatStat_drinkConcentration"></div>
                 </div>
                 <div class="row">
                     <div class="col-md-8" data-i18n="combatStats.foodHaste">Food Haste:</div>
                     <div class="col-md-4" id="combatStat_foodHaste"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8" data-i18n="combatStats.primaryTraining">Primary Training:</div>
+                    <div class="col-md-4" id="combatStat_primaryTraining"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8" data-i18n="combatStats.focusTraining">Focus Training:</div>
+                    <div class="col-md-4" id="combatStat_focusTraining"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8" data-i18n="combatStats.staminaExperience">Stamina Experience:</div>
+                    <div class="col-md-4" id="combatStat_staminaExperience"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8" data-i18n="combatStats.intelligenceExperience">Intelligence Experience:</div>
+                    <div class="col-md-4" id="combatStat_intelligenceExperience"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8" data-i18n="combatStats.attackExperience">Attack Experience:</div>
+                    <div class="col-md-4" id="combatStat_attackExperience"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8" data-i18n="combatStats.defenseExperience">Defense Experience:</div>
+                    <div class="col-md-4" id="combatStat_defenseExperience"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8" data-i18n="combatStats.meleeExperience">Melee Experience:</div>
+                    <div class="col-md-4" id="combatStat_meleeExperience"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8" data-i18n="combatStats.rangedExperience">Ranged Experience:</div>
+                    <div class="col-md-4" id="combatStat_rangedExperience"></div>
+                </div>
+                <div class="row">
+                    <div class="col-md-8" data-i18n="combatStats.magicExperience">Magic Experience:</div>
+                    <div class="col-md-4" id="combatStat_magicExperience"></div>
                 </div>
                 <!-- #endregion -->
             </div>
@@ -1253,6 +1349,19 @@
                             </div>
                         </div>
                         <div class="row">
+                            <label for="selectDifficulty" class="col-md-3 col-form-label" data-i18n="party.difficulty">Difficulty</label>
+                            <div class="col-md">
+                                <select id="selectDifficulty" class="form-select">
+                                    <option value="0">T0</option>
+                                    <option value="1">T1</option>
+                                    <option value="2">T2</option>
+                                    <option value="3">T3</option>
+                                    <option value="4">T4</option>
+                                    <option value="5">T5</option>
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row">
                             <label for="inputSimulationTime" class="col-md-3 col-form-label" data-i18n="skillActionDetail.duration">Duration</label>
                             <div class="col-md">
                                 <div class="input-group">
@@ -1264,7 +1373,7 @@
                         </div>
                         <div class="row">
                             <div class="col-md-6 pt-1">
-                                <div class="outlined-box">
+                                <div id="playerCheckBox" class="outlined-box">
                                     <h6 data-i18n="common:selectPlayer">Select Players</h6>
                                         <div class="form-check">
                                             <input class="form-check-input player-checkbox" type="checkbox" id="player1">
@@ -1303,7 +1412,11 @@
                                         </label>
                                     </div>
                                 </div>
-                                
+                            </div>
+                            <div class="col-md-6 pt-1">
+                                <div id="zoneCheckBox" class="outlined-box d-none">
+                                    <h6 data-i18n="party.selectZone">Select Zones</h6>
+                                </div>
                             </div>
                         </div>
                     </div>
@@ -1332,6 +1445,7 @@
                         <thead>
                             <tr>
                                 <th data-i18n="common:zoneName">Zone Name</th>
+                                <th data-i18n="party.difficulty">Difficulty Tier</th>
                                 <th data-i18n="common:player">Player</th>
                                 <th data-i18n="common:simulationResults.encounters">Encounters</th>
                                 <th data-i18n="common:simulationResults.deathPerHour">Deaths</th>
@@ -1341,7 +1455,7 @@
                                 <th data-i18n="skillNames./skills/attack">Attack</th>
                                 <th data-i18n="skillNames./skills/magic">Magic</th>
                                 <th data-i18n="skillNames./skills/ranged">Ranged</th>
-                                <th data-i18n="skillNames./skills/power">Power</th>
+                                <th data-i18n="skillNames./skills/melee">Melee</th>
                                 <th data-i18n="skillNames./skills/defense">Defense</th>
                                 <th data-i18n="common:noRNGRevenue">noRngRevenue</th>
                                 <th data-i18n="common:expense">expenses</th>
@@ -1426,6 +1540,50 @@
         </div>
         <!-- endregion -->
     </div>    
+        <!-- Wipe Events Modal -->
+    <div class="modal fade" id="WipeEventsModal" tabindex="-1" aria-hidden="true">
+        <div class="modal-dialog modal-xl">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" data-i18n="common:WipeEvents">Wipe Events</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="row mb-3">
+                            <div class="col-md-6">
+                                <label for="wipeEventSelector" class="form-label" data-i18n="common:selectWipeEvent">Select Wipe Event</label>
+                                <select class="form-select" id="wipeEventSelector">
+                                    <option value="-1" data-i18n="common:noWipeEvents">No Wipe Events</option>
+                                </select>
+                            </div>
+                            <div class="col-md-6">
+                                <div class="wipe-event-info">
+                                    <span class="badge bg-danger" id="wipeWaveBadge"></span>
+                                    <span class="ms-2" id="wipeTimeInfo"></span>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="row">
+                            <div class="col-12">
+                                <div class="card">
+                                    <div class="card-header" data-i18n="common:combatLogs">Combat Logs</div>
+                                    <div class="card-body">
+                                        <div id="wipeLogsContainer" class="wipe-logs-container">
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="common:controls.close">Close</button>
+                </div>
+            </div>
+        </div>
+        <!-- endregion -->
+    </div>
     <div class="modal" id="patchNotesModal" tabindex="-1">
         <!-- #region Patch Notes Modal -->
         <div class="modal-dialog modal-lg">
@@ -1436,54 +1594,7 @@
                 </div>
                 <div class="modal-body">
                     <div class="container-fluid">
-                        <div class="row">
-                            <div class="col-12 mb-4">
-                                <h6>2025年8月7日</h6>
-                                <ul>
-                                    <li>修复组队战斗时一些重复物品掉落数量异常的缺陷 by contr4l</li>
-                                </ul>
-                            </div>
-                            <div class="col-12 mb-4">
-                                <h6>2025年7月10日</h6>
-                                <ul>
-                                    <li>修复贯穿技能由敌人释放时可能多次击中相同目标的缺陷</li>
-                                </ul>
-                            </div>
-                            <div class="col-12 mb-4">
-                                <h6>2025年7月9日</h6>
-                                <ul>
-                                    <li>获取价格使用官方API</li>
-                                </ul>
-                            </div>
-                            <div class="col-12 mb-4">
-                                <h6>2025年6月15日</h6>
-                                <ul>
-                                    <li>修复战斗属性等级未计算小数部分的问题</li>
-                                    <li>修复HP和MP错误计算小数部分的问题</li>
-                                    <li>修复掉落物品重复(如钥匙碎片)时概率异常偏低的问题</li>
-                                    <li>修复未建设房屋时组队模拟可能的异常</li>
-                                </ul>
-                            </div>
-                            <div class="col-12 mb-4">
-                                <h6>2025年5月28日</h6>
-                                <ul>
-                                    <li>修复攻击间隔计算异常的问题</li>
-                                </ul>
-                            </div>
-                            <div class="col-12 mb-4">
-                                <h6>2025年5月19日</h6>
-                                <ul>
-                                    <li>修复地下城完成时可能未正确重置血蓝的问题</li>
-                                    <li>批量模拟多线程优化</li>
-                                </ul>
-                            </div>
-                            <div class="col-12 mb-4">
-                                <h6>2025年5月5日</h6>
-                                <ul>
-                                    <li>批量模拟速度优化支持多线程 by BKN46</li>
-                                    <li>新增法力值耗尽比例功能 by BKN46</li>
-                                </ul>
-                            </div>
+                        <div class="row" id="patchNotes">                            
                         </div>
                     </div>
                 </div>

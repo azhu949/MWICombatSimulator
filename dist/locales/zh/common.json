@@ -1,5 +1,5 @@
 {
-    "title": "MWI 战斗模拟器",
+    "title": "MWI 战斗模拟器 Test",
     "priceSettings": {
         "title": "价格设置",
         "consumablePrices": "消耗品价格",
@@ -18,6 +18,7 @@
         "title": "操作区域",
         "battleQueue": "战斗队列?",
         "startSimulation": "开始模拟",
+        "stopSimulation": "中止模拟",
         "calcCoffeeBenefits": "计算咖啡收益",
         "coffeeResults": "咖啡结果",
         "calcSpecialAbilityBenefits": "计算特殊能力收益",
@@ -62,13 +63,16 @@
         "damageDone": "造成伤害",
         "damageTaken": "承受伤害",
         "damageOverTime": "持续伤害",
+        "parryAttack": "招架攻击",
         "source": "来源",
         "hitChance": "命中率",
         "totalExperience": "总经验",
         "maxWaveReached" : "已完成最大波次",
         "dungeonsCompleted": "地下城的完成次数",
         "dungeonsFailed": "地下城的团灭次数",
-        "averageTime": "完成平均时间"
+        "averageTime": "完成平均时间",
+        "maxEnrageStack": "最大狂暴层数",
+        "debuffOnLevelGap": "等级差距惩罚"
     },
     "selectPlayer": "选择玩家",
     "simAllZones": "模拟所有星球",
@@ -83,5 +87,14 @@
     "solo": "单人",
     "or": "或",
     "import": "导入",
-    "exportGroupSolo": "导出"
+    "exportGroupSolo": "导出",
+    "noWipeEvents": "无团灭事件",
+    "noWipeEventsDetected": "未检测到团灭事件",
+    "WipeEvents": "团灭日志",
+    "combatLogs": "战斗日志",
+    "selectWipeEvent": "选择团灭日志",
+    "cast": " 释放 ",
+    "to": " 对 ",
+    "dealDamage": " 造成伤害: ",
+    "playersHp": "队伍生命值: "
 }

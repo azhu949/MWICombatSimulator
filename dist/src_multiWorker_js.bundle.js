@@ -84,7 +84,7 @@ onmessage = async function (event) {
     switch (event.data.type) {
         case "start_simulation_all_zones":
             const zoneHrids = event.data.zones;
-            let zoneProgress = Object.fromEntries(zoneHrids.map(zone => [zone, 0]));
+            let zoneProgress = Object.fromEntries(zoneHrids.map(zone => [zone.zoneHrid+'#'+zone.difficultyTier, 0]));
 
             try {
                 const maxWorkers = navigator.hardwareConcurrency;
@@ -106,7 +106,7 @@ onmessage = async function (event) {
                         let workerMessage = {
                             type: "start_simulation",
                             players: event.data.players,
-                            zoneHrid: currentZone,
+                            zone: currentZone,
                             simulationTimeLimit: event.data.simulationTimeLimit,
                         };
                         simulationWorker.postMessage(workerMessage);
@@ -116,7 +116,7 @@ onmessage = async function (event) {
                                 if (event.data.type === "simulation_result") {
                                     resolve(event.data.simResult);
                                 } else if (event.data.type === "simulation_progress") {
-                                    zoneProgress[event.data.zone] = event.data.progress;
+                                    zoneProgress[event.data.zone+'#'+event.data.difficultyTier] = event.data.progress;
                                     let totalProgress = Object.values(zoneProgress).reduce((acc, progress) => acc + progress, 0) / Object.keys(zoneProgress).length;
                                     outer_worker.postMessage({ type: "simulation_progress", progress: totalProgress });
                                 } else if (event.data.type === "simulation_error") {

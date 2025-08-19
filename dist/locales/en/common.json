@@ -1,5 +1,5 @@
 {
-    "title": "MWI Combat Simulator",
+    "title": "MWI Combat Simulator Test",
     "priceSettings": {
         "title": "Price Settings",
         "consumablePrices": "Consumable Prices",
@@ -18,6 +18,7 @@
         "title": "Controls",
         "battleQueue": "BattleQueue?",
         "startSimulation": "Start Simulation",
+        "stopSimulation": "Stop Simulation",
         "calcCoffeeBenefits": "Calc Coffee Benefits",
         "coffeeResults": "Coffee Results",
         "calcSpecialAbilityBenefits": "Calc Special Ability Benefits",
@@ -62,13 +63,16 @@
         "damageDone": "Damage Done",
         "damageTaken": "Damage Taken",
         "damageOverTime": "damageOverTime",
+        "parryAttack": "Parry Attack",
         "source": "Source",
         "hitChance": "Hitchance",
         "totalExperience": "Total Experience",
         "maxWaveReached" : "Max Wave Reached",
         "dungeonsCompleted": "Dungeons Completed",
         "dungeonsFailed": "Dungeons Failed",
-        "averageTime": "Average Time"
+        "averageTime": "Average Time",
+        "maxEnrageStack": "Max Stack of Enrage",
+        "debuffOnLevelGap": "Debuff on Level Gap"
     },
     "selectPlayer": "SelectPlayer",
     "simAllZones": "Sim All Zones",
@@ -83,5 +87,14 @@
     "solo": "Solo",
     "or": "OR",
     "import": "Import",
-    "exportGroupSolo": "Export Group/Solo"
+    "exportGroupSolo": "Export Group/Solo",
+    "noWipeEvents": "No Wipe Events",
+    "noWipeEventsDetected": "No Wipe Events Detected",
+    "WipeEvents": "Wipe Events",
+    "combatLogs": "Combat Logs",
+    "selectWipeEvent": "Select Wipe Event",
+    "cast": " cast ",
+    "to": " to ",
+    "dealDamage": " deal damage ",
+    "playersHp": "Players HP: "
 }
