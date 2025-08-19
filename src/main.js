@@ -1138,14 +1138,17 @@ function manipulateSimResultsDataForDisplay(simResults) {
             let playerDeaths = simResult.deaths[playerToDisplay] ?? 0;
             let deathsPerHour = (playerDeaths / hoursSimulated).toFixed(2);
 
-            let totalExperience = Object.values(simResult.experienceGained[playerToDisplay]).reduce((prev, cur) => prev + cur, 0);
+            let totalExperience = 0;
+            if (simResult.experienceGained[playerToDisplay]) {
+                totalExperience = Object.values(simResult.experienceGained[playerToDisplay]).reduce((prev, cur) => prev + cur, 0);
+            }
             let totalExperiencePerHour = (totalExperience / hoursSimulated).toFixed(0);
 
             let experiencePerHour = {};
             const skills = ["Stamina", "Intelligence", "Attack", "Melee", "Defense", "Ranged", "Magic"];
             skills.forEach((skill) => {
                 const skillLower = skill.toLowerCase();
-                let experience = simResult.experienceGained[playerToDisplay][skillLower] ?? 0;
+                let experience = simResult.experienceGained[playerToDisplay]?.[skillLower] ?? 0;
                 let experiencePerHourValue = 0;
                 if (experience != 0) {
                     experiencePerHourValue = (experience / hoursSimulated).toFixed(0);
@@ -1640,14 +1643,17 @@ function showExperienceGained(simResult, playerToDisplay) {
 
     let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
 
-    let totalExperience = Object.values(simResult.experienceGained[playerToDisplay]).reduce((prev, cur) => prev + cur, 0);
+    let totalExperience = 0;
+    if (simResult.experienceGained[playerToDisplay]) {
+        totalExperience = Object.values(simResult.experienceGained[playerToDisplay]).reduce((prev, cur) => prev + cur, 0);
+    }
     let totalExperiencePerHour = (totalExperience / hoursSimulated).toFixed(0);
     let totalRow = createRow(["col-md-6", "col-md-6 text-end"], ["Total", totalExperiencePerHour]);
     totalRow.firstElementChild.setAttribute("data-i18n", "common:total");
     newChildren.push(totalRow);
 
     ["Stamina", "Intelligence", "Attack", "Melee", "Defense", "Ranged", "Magic"].forEach((skill) => {
-        let experience = simResult.experienceGained[playerToDisplay][skill.toLowerCase()] ?? 0;
+        let experience = simResult.experienceGained[playerToDisplay]?.[skill.toLowerCase()] ?? 0;
         if (experience == 0) {
             return;
         }
@@ -1941,6 +1947,10 @@ function showDamageDone(simResult, playerToDisplay) {
     bossTimeHeadingDiv.classList.add("d-none");
     let bossTimeDiv = document.getElementById("simulationBossTime");
     bossTimeDiv.classList.add("d-none");
+
+    if (!simResult.attacks[playerToDisplay]) {
+        return;
+    }
 
     for (const [target, abilities] of Object.entries(simResult.attacks[playerToDisplay])) {
         let targetDamageDone = {};
