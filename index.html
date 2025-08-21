@@ -1400,7 +1400,14 @@
                                     <div class="checkbox-container">
                                         <span data-i18n="common:simAllZones">Sim All Zones</span>:
                                         <label class="switch">
-                                            <input type="checkbox" id="simAllToggle">
+                                            <input type="checkbox" id="simAllZoneToggle">
+                                            <span class="slider round"></span>
+                                        </label>
+                                    </div>
+                                    <div class="checkbox-container">
+                                        <span data-i18n="common:simAllSolos">Sim All Solos</span>:
+                                        <label class="switch">
+                                            <input type="checkbox" id="simAllSoloToggle">
                                             <span class="slider round"></span>
                                         </label>
                                     </div>
@@ -1416,6 +1423,23 @@
                             <div class="col-md-6 pt-1">
                                 <div id="zoneCheckBox" class="outlined-box d-none">
                                     <h6 data-i18n="party.selectZone">Select Zones</h6>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="checkAllZones">
+                                        <label class="form-check-label fw-bold" for="checkAllZones" data-i18n="common:selectAllOrNot">
+                                            Select All
+                                        </label>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-md-6 pt-1">
+                                <div id="soloCheckBox" class="outlined-box d-none">
+                                    <h6 data-i18n="common:selectSolo">Select Solos</h6>
+                                    <div class="form-check">
+                                        <input class="form-check-input" type="checkbox" id="checkAllSolos">
+                                        <label class="form-check-label fw-bold" for="checkAllSolos" data-i18n="common:selectAllOrNot">
+                                            Select All
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                         </div>

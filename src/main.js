@@ -945,12 +945,14 @@ function initZones() {
 
 
     let zoneCheckBox = document.getElementById("zoneCheckBox");
+    let checkAllZonesToggle = document.getElementById('checkAllZones');
 
-    let simAllZonesToggle = document.getElementById("simAllToggle");
+    let simAllZonesToggle = document.getElementById("simAllZoneToggle");
     simAllZonesToggle.addEventListener("change", (event) => {
         if (simAllZonesToggle.checked) {
             zoneCheckBox.classList.remove("d-none");
             zoneCheckBox.querySelectorAll(".zone-checkbox").forEach(checkbox => checkbox.checked = true);
+            checkAllZonesToggle.checked = true;
         } else {
             zoneCheckBox.classList.add("d-none");
         }
@@ -972,6 +974,60 @@ function initZones() {
         `;
         zoneCheckBox.append(newZone);
     }
+
+    let checkZoneToggles = document.querySelectorAll('.zone-checkbox');
+    checkAllZonesToggle.addEventListener('change', () => {
+        checkZoneToggles.forEach(cb => cb.checked = checkAllZonesToggle.checked);
+    });
+
+    checkZoneToggles.forEach(cb =>
+        cb.addEventListener('change', () => {
+            checkAllZonesToggle.checked = [...checkZoneToggles].every(x => x.checked);
+        })
+    );
+
+
+    let soloCheckBox = document.getElementById("soloCheckBox");
+    let checkAllSolosToggle = document.getElementById('checkAllSolos');
+
+    let simAllSoloToggle = document.getElementById("simAllSoloToggle");
+    simAllSoloToggle.addEventListener("change", (event) => {
+        if (simAllSoloToggle.checked) {
+            soloCheckBox.classList.remove("d-none");
+            soloCheckBox.querySelectorAll(".solo-checkbox").forEach(checkbox => checkbox.checked = true);
+            checkAllSolosToggle.checked = true;
+        } else {
+            soloCheckBox.classList.add("d-none");
+        }
+    });
+
+    let soloHrids = Object.values(actionDetailMap)
+        .filter((action) => action.type == "/action_types/combat" && action.category != "/action_categories/combat/dungeons" && action.combatZoneInfo.fightInfo.randomSpawnInfo.maxSpawnCount == 1)
+        .sort((a, b) => a.sortIndex - b.sortIndex)
+        .flat();
+
+    for (const zoneHrid of soloHrids) {
+        const newZone = document.createElement('div');
+        newZone.classList.add('form-check');
+        newZone.innerHTML = `
+            <input class="form-check-input solo-checkbox" type="checkbox" id="${zoneHrid.hrid}">
+            <label class="form-check-label" for="${zoneHrid.hrid}" data-i18n="actionNames.${zoneHrid.hrid}">
+                ${zoneHrid.name}
+            </label>
+        `;
+        soloCheckBox.append(newZone);
+    }
+
+    let checkSoloToggles = document.querySelectorAll('.solo-checkbox');
+    checkAllSolosToggle.addEventListener('change', () => {
+        checkSoloToggles.forEach(cb => cb.checked = checkAllSolosToggle.checked);
+    });
+
+    checkSoloToggles.forEach(cb =>
+        cb.addEventListener('change', () => {
+            checkAllSolosToggle.checked = [...checkSoloToggles].every(x => x.checked);
+        })
+    );
 }
 
 function initDungeons() {
@@ -2396,9 +2452,10 @@ function startSimulation(selectedPlayers) {
         }
     }
 
-    
 
-    let simAllZonesToggle = document.getElementById("simAllToggle");
+
+    let simAllZonesToggle = document.getElementById("simAllZoneToggle");
+    let simAllSoloToggle = document.getElementById("simAllSoloToggle");
     let simDungeonToggle = document.getElementById("simDungeonToggle");
     let zoneSelect = document.getElementById("selectZone");
     let dungeonSelect = document.getElementById("selectDungeon");
@@ -2406,7 +2463,7 @@ function startSimulation(selectedPlayers) {
     let simulationTimeInput = document.getElementById("inputSimulationTime");
     let simulationTimeLimit = Number(simulationTimeInput.value) * ONE_HOUR;
     buttonStopSimulation.style.display = 'block';
-    if (!simAllZonesToggle.checked) {
+    if (!simAllZonesToggle.checked && !simAllSoloToggle.checked) {
         let zoneHrid = zoneSelect.value;
         let difficultyTier = Number(difficultySelect.value);
         if (simDungeonToggle.checked) {
@@ -2423,13 +2480,31 @@ function startSimulation(selectedPlayers) {
         worker.onmessage = onWorkerMessage;
         worker.postMessage(workerMessage);
     } else {
-        let zoneHrids = Object.values(actionDetailMap)
-            .filter((action) =>
-                action.type == "/action_types/combat" &&
-                action.category != "/action_categories/combat/dungeons" &&
-                action.combatZoneInfo.fightInfo.randomSpawnInfo.maxSpawnCount > 1 &&
-                document.getElementById(action.hrid).checked
-            )
+        let targetHrids = {};
+
+        if (simAllZonesToggle.checked) {
+            Object.values(actionDetailMap)
+                .filter(a =>
+                    a.type === "/action_types/combat" &&
+                    a.category !== "/action_categories/combat/dungeons" &&
+                    a.combatZoneInfo.fightInfo.randomSpawnInfo.maxSpawnCount > 1 &&
+                    document.getElementById(a.hrid)?.checked
+                )
+                .forEach(a => { targetHrids[a.hrid] = a; });
+        }
+
+        if (simAllSoloToggle.checked) {
+            Object.values(actionDetailMap)
+                .filter(a =>
+                    a.type === "/action_types/combat" &&
+                    a.category !== "/action_categories/combat/dungeons" &&
+                    a.combatZoneInfo.fightInfo.randomSpawnInfo.maxSpawnCount === 1 &&
+                    document.getElementById(a.hrid)?.checked
+                )
+                .forEach(a => { targetHrids[a.hrid] = a; });
+        }
+
+        let simHrids = Object.values(targetHrids)
             .sort((a, b) => a.sortIndex - b.sortIndex)
             .map(action => {
                 let result = [];
@@ -2443,7 +2518,7 @@ function startSimulation(selectedPlayers) {
         let workerMessage = {
             type: "start_simulation_all_zones",
             players: playersToSim,
-            zones: zoneHrids,
+            zones: simHrids,
             simulationTimeLimit: simulationTimeLimit,
         };
         simStartTime = Date.now();
@@ -2462,10 +2537,10 @@ function renderWipeEvents(simResult) {
     const logsContainer = document.getElementById('wipeLogsContainer');
     const waveBadge = document.getElementById('wipeWaveBadge');
     const timeInfo = document.getElementById('wipeTimeInfo');
-    
+
     selector.innerHTML = '';
     logsContainer.innerHTML = '';
-    
+
     if (!simResult.wipeEvents || simResult.wipeEvents.length === 0) {
         selector.innerHTML = `<option value="-1" data-i18n="common:noWipeEvents">No Wipe Events</option>`;
         logsContainer.innerHTML = `<div class="text-center py-4" data-i18n="common:noWipeEventsDetected">No Wipe Events Detected</div>`;
@@ -2473,21 +2548,21 @@ function renderWipeEvents(simResult) {
         timeInfo.textContent = '';
         return;
     }
-    
+
     simResult.wipeEvents.forEach((event, index) => {
         const wave = event.wave || '?';
         // const time = (event.simulationTime / 1e9).toFixed(2);
         // const timestamp = new Date(event.timestamp).toLocaleTimeString();
-        
+
         const option = document.createElement('option');
         option.value = index;
         option.textContent = `#${index + 1} - 波次: ${wave}`;
         selector.appendChild(option);
     });
-    
+
     selector.value = 0;
     renderSelectedWipeEvent(0, simResult);
-    
+
     selector.addEventListener('change', () => {
         renderSelectedWipeEvent(selector.value, simResult);
     });
@@ -2498,46 +2573,46 @@ function renderSelectedWipeEvent(index, simResult) {
     const logsContainer = document.getElementById('wipeLogsContainer');
     const waveBadge = document.getElementById('wipeWaveBadge');
     const timeInfo = document.getElementById('wipeTimeInfo');
-    
+
     logsContainer.innerHTML = '';
-    
+
     if (index < 0 || index >= simResult.wipeEvents.length) {
         logsContainer.innerHTML = `<div class="text-center py-4" data-i18n="common:noWipeEvents">No Wipe Events</div>`;
         waveBadge.textContent = '';
         timeInfo.textContent = '';
         return;
     }
-    
+
     const wipeEvent = simResult.wipeEvents[index];
     const wave = wipeEvent.wave || '?';
     const time = (wipeEvent.simulationTime / 1e9).toFixed(2);
     const timestamp = new Date(wipeEvent.timestamp).toLocaleString();
-    
+
     waveBadge.textContent = `波次: ${wave}`;
     timeInfo.textContent = `模拟时间: ${time}s | 记录时间: ${timestamp}`;
-    
+
     const logsByTime = groupLogsByTime(wipeEvent.logs);
-    
+
     const baseTime = logsByTime.length > 0 ? logsByTime[0].time : 0;
-    
+
     logsByTime.forEach(group => {
         const timeGroupElement = document.createElement('div');
         timeGroupElement.className = 'log-time-group';
 
         const relativeTime = (group.time - baseTime) / 1e9;
-        
+
         // 时间标题
         const timeHeader = document.createElement('div');
         timeHeader.className = 'log-time-header';
         timeHeader.textContent = `[${relativeTime.toFixed(2)}s]`;
         timeGroupElement.appendChild(timeHeader);
-        
+
         // 事件列表
         const eventsList = document.createElement('div');
         eventsList.className = 'log-events';
 
         const damagedPlayers = new Set();
-        
+
         group.logs.forEach(log => {
             const eventElement = document.createElement('div');
             eventElement.className = 'log-event';
@@ -2548,14 +2623,14 @@ function renderSelectedWipeEvent(index, simResult) {
             sourceSpan.className = 'log-source';
             sourceSpan.setAttribute('data-i18n', `monsterNames.${log.source}`);
             sourceSpan.textContent = log.source;
-            
+
             const castSpan = document.createElement('span');
             castSpan.className = 'log-cast';
             castSpan.setAttribute('data-i18n', `common:cast`);
             castSpan.textContent = ' cast ';
 
             const abilitySpan = document.createElement('span');
-            abilitySpan.className = 'log-ability';            
+            abilitySpan.className = 'log-ability';
             if (log.ability === "autoAttack") {
                 abilitySpan.setAttribute('data-i18n', 'combatUnit.autoAttack');
                 abilitySpan.textContent = 'Auto Attack';
@@ -2568,11 +2643,11 @@ function renderSelectedWipeEvent(index, simResult) {
             toSpan.className = 'log-to';
             toSpan.setAttribute('data-i18n', `common:to`);
             toSpan.textContent = ' to ';
-            
+
             const targetSpan = document.createElement('span');
             targetSpan.className = 'log-target';
             targetSpan.textContent = log.target;
-            
+
             const dealDamageSpan = document.createElement('span');
             dealDamageSpan.className = 'log-deal-damage';
             dealDamageSpan.setAttribute('data-i18n', `common:dealDamage`);
@@ -2597,9 +2672,9 @@ function renderSelectedWipeEvent(index, simResult) {
 
             eventsList.appendChild(eventElement);
         });
-        
+
         timeGroupElement.appendChild(eventsList);
-        
+
         const lastLog = group.logs[group.logs.length - 1];
         const playersHpElement = document.createElement('div');
 
@@ -2608,18 +2683,18 @@ function renderSelectedWipeEvent(index, simResult) {
         playerHpTitle.setAttribute('data-i18n', `common:playersHp`);
         playerHpTitle.textContent = 'Players HP: ';
         playersHpElement.appendChild(playerHpTitle);
-        
+
         lastLog.playersHp.forEach((player, idx) => {
             const playerElement = document.createElement('span');
             playerElement.className = 'log-player-hp';
             playerElement.textContent = `${player.hrid}: ${player.current}/${player.max}`;
-            
+
             if (player.current <= 0) {
-                playerElement.style.color = darkModeToggle.checked? '#FF6347' : '#CC0000';
+                playerElement.style.color = darkModeToggle.checked ? '#FF6347' : '#CC0000';
             } else if (damagedPlayers.has(player.hrid)) {
-                playerElement.style.color = darkModeToggle.checked? '#00BFFF' : '#007BFF';
+                playerElement.style.color = darkModeToggle.checked ? '#00BFFF' : '#007BFF';
             }
-            
+
             if (idx > 0) {
                 playersHpElement.appendChild(document.createTextNode(' | '));
             }
@@ -2631,7 +2706,7 @@ function renderSelectedWipeEvent(index, simResult) {
         timeGroupElement.appendChild(playersHpElement);
         logsContainer.appendChild(timeGroupElement);
     });
-    
+
     // 更新汉化
     updateContent()
 }
@@ -2640,7 +2715,7 @@ function renderSelectedWipeEvent(index, simResult) {
 function groupLogsByTime(logs) {
     const groups = [];
     let currentGroup = null;
-    
+
     logs.forEach(log => {
         if (!currentGroup || currentGroup.time !== log.time) {
             currentGroup = {
