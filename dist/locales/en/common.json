@@ -75,7 +75,11 @@
         "debuffOnLevelGap": "Debuff on Level Gap"
     },
     "selectPlayer": "SelectPlayer",
+    "selectAllOrNot": "Select / Deselect All",
+    "simulationOption": "Simulation Option",
     "simAllZones": "Sim All Zones",
+    "simAllSolos": "Sim All Solos",
+    "selectSolo": "Select Solo Target",
     "simDungeon": "Sim Dungeon",
     "simulationSettings": "Simulation Settings",
     "allZonesData": "All Zones Data",
