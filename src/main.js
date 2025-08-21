@@ -3716,6 +3716,73 @@ function initPatchNotes() {
     }
 }
 
+function initExtraBuffSection() {
+    // mooPass
+    let mooPassToggle = document.getElementById("mooPassToggle");
+    let mooPass = localStorage.getItem('mooPass');
+    if (mooPass) {
+        mooPassToggle.checked = Boolean(mooPass);
+    }
+    mooPassToggle.onchange = () => {
+        localStorage.setItem('mooPass', mooPassToggle.checked);
+    }
+    
+    // comExp
+    let comExpToggle = document.getElementById("comExpToggle");
+    let comExpInput = document.getElementById("comExpInput");
+    let comExp = localStorage.getItem('comExp');
+    if (comExp) {
+        let comExpNumber = Number(comExp);
+        if (comExpNumber > 0) {
+            comExpToggle.checked = true;
+            comExpInput.value = comExpNumber;
+        } else {
+            comExpToggle.checked = false;
+            comExpInput.disabled = true;
+        }
+    }
+    const updateComExp = () => {
+        if (comExpToggle.checked) {
+            let comExp = Number(comExpInput.value);
+            localStorage.setItem('comExp', comExp); 
+            comExpInput.disabled = false;
+        } else {
+            localStorage.setItem('comExp', 0);
+            comExpInput.disabled = true;
+        }
+    }
+    comExpToggle.onchange = updateComExp;
+    comExpInput.onchange = updateComExp;
+
+    // comDrop
+    let comDropToggle = document.getElementById("comDropToggle");
+    let comDropInput = document.getElementById("comDropInput");
+    let comDrop = localStorage.getItem('comDrop');
+    if (comDrop) {
+        let comDropNumber = Number(comDrop);
+        if (comDropNumber > 0) {
+            comDropToggle.checked = true;
+            comDropInput.value = comDropNumber;
+        } else {
+            comDropToggle.checked = false;
+            comDropInput.disabled = true;
+        }
+    }
+    const updateComDrop = () => {
+        if (comDropToggle.checked) {
+            let comDrop = Number(comDropInput.value);
+            localStorage.setItem('comDrop', comDrop); 
+            comDropInput.disabled = false;
+        } else {
+            localStorage.setItem('comDrop', 0);
+            comDropInput.disabled = true;
+        }
+    }
+    comDropToggle.onchange = updateComDrop;
+    comDropInput.onchange = updateComDrop;
+}
+
+
 function updateState() {
     updateEquipmentState();
     updateLevels();
@@ -3792,6 +3859,7 @@ initErrorHandling();
 initImportExportModal();
 initDamageDoneTaken();
 initPatchNotes();
+initExtraBuffSection();
 
 updateState();
 updateUI();
