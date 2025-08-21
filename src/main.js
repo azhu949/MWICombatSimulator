@@ -1232,9 +1232,18 @@ function manipulateSimResultsDataForDisplay(simResults) {
     return displaySimResults;
 }
 
+function fidDropAmount(dropAmount) {
+  if (Number.isInteger(dropAmount)) return dropAmount;
+
+  const intPart   = Math.floor(dropAmount);
+  const fracPart  = dropAmount - intPart;
+  return Math.random() < fracPart ? intPart + 1 : intPart;
+}
+
 function calcDropMaps(simResult, playerToDisplay) {
     let dropRateMultiplier = simResult.dropRateMultiplier[playerToDisplay];
     let rareFindMultiplier = simResult.rareFindMultiplier[playerToDisplay];
+    let combatDropQuantity = simResult.combatDropQuantity[playerToDisplay];
     let debuffOnLevelGap = simResult.debuffOnLevelGap[playerToDisplay];
 
     let numberOfPlayers = simResult.numberOfPlayers;
@@ -1268,25 +1277,26 @@ function calcDropMaps(simResult, playerToDisplay) {
                 }
 
             for (let dropObject of dropMap.values()) {
-                dropObject.noRngDropAmount += simResult.deaths[monster] * dropObject.dropRate * ((dropObject.dropMax + dropObject.dropMin) / 2) * (1 + debuffOnLevelGap) / numberOfPlayers;
+                dropObject.noRngDropAmount += simResult.deaths[monster] * dropObject.dropRate * ((dropObject.dropMax + dropObject.dropMin) / 2) * (1 + debuffOnLevelGap) * (1 + combatDropQuantity) / numberOfPlayers;
+
             }
             for (let dropObject of rareDropMap.values()) {
-                dropObject.noRngDropAmount += simResult.deaths[monster] * dropObject.dropRate * ((dropObject.dropMax + dropObject.dropMin) / 2) * (1 + debuffOnLevelGap) / numberOfPlayers;
+                dropObject.noRngDropAmount += simResult.deaths[monster] * dropObject.dropRate * ((dropObject.dropMax + dropObject.dropMin) / 2) * (1 + debuffOnLevelGap) * (1 + combatDropQuantity) / numberOfPlayers;
             }
 
             for (let i = 0; i < simResult.deaths[monster]; i++) {
                 for (let dropObject of dropMap.values()) {
                     let chance = Math.random();
                     if (chance <= dropObject.dropRate / numberOfPlayers) {
-                        let amount = Math.floor(Math.random() * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin) * (1 + debuffOnLevelGap);
-                        dropObject.number = dropObject.number + amount;
+                        let amount = Math.floor(Math.random() * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin) * (1 + debuffOnLevelGap) * (1 + combatDropQuantity);
+                        dropObject.number = dropObject.number + fidDropAmount(amount);
                     }
                 }
                 for (let dropObject of rareDropMap.values()) {
                     let chance = Math.random();
                     if (chance <= dropObject.dropRate / numberOfPlayers) {
-                        let amount = Math.floor(Math.random() * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin) * (1 + debuffOnLevelGap);
-                        dropObject.number = dropObject.number + amount;
+                        let amount = Math.floor(Math.random() * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin) * (1 + debuffOnLevelGap) * (1 + combatDropQuantity);
+                        dropObject.number = dropObject.number + fidDropAmount(amount);
                     }
                 }
             }
@@ -2452,7 +2462,16 @@ function startSimulation(selectedPlayers) {
         }
     }
 
-
+    let extra = {};
+    extra.mooPass = document.getElementById("mooPassToggle").checked;
+    extra.comExp = 0;
+    if (document.getElementById("comExpToggle").checked) {
+        extra.comExp = Number(document.getElementById("comExpInput").value);
+    }
+    extra.comDrop = 0;
+    if (document.getElementById("comDropToggle").checked) {
+        extra.comDrop = Number(document.getElementById("comDropInput").value);
+    }
 
     let simAllZonesToggle = document.getElementById("simAllZoneToggle");
     let simAllSoloToggle = document.getElementById("simAllSoloToggle");
@@ -2474,6 +2493,7 @@ function startSimulation(selectedPlayers) {
             players: playersToSim,
             zone: { zoneHrid: zoneHrid, difficultyTier: difficultyTier },
             simulationTimeLimit: simulationTimeLimit,
+            extra : extra
         };
         simStartTime = Date.now();
         worker = new Worker(new URL("worker.js", import.meta.url));
@@ -2520,6 +2540,7 @@ function startSimulation(selectedPlayers) {
             players: playersToSim,
             zones: simHrids,
             simulationTimeLimit: simulationTimeLimit,
+            extra: extra
         };
         simStartTime = Date.now();
         multiWorker = new Worker(new URL("multiWorker.js", import.meta.url));

@@ -26,6 +26,7 @@ onmessage = async function (event) {
                             type: "start_simulation",
                             players: event.data.players,
                             zone: currentZone,
+                            extra: event.data.extra,
                             simulationTimeLimit: event.data.simulationTimeLimit,
                         };
                         simulationWorker.postMessage(workerMessage);

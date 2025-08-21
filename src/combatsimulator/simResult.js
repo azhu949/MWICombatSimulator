@@ -12,6 +12,7 @@ class SimResult {
         this.debuffOnLevelGap = {};
         this.dropRateMultiplier = {};
         this.rareFindMultiplier = {};
+        this.combatDropQuantity = {};
         this.playerRanOutOfMana = {
             "player1": false,
             "player2": false,
@@ -192,6 +193,11 @@ class SimResult {
             this.rareFindMultiplier[unit.hrid] = {};
         }
         this.rareFindMultiplier[unit.hrid] = 1 + unit.combatDetails.combatStats.combatRareFind;
+
+        if (!this.combatDropQuantity[unit.hrid]) {
+            this.combatDropQuantity[unit.hrid] = {};
+        }
+        this.combatDropQuantity[unit.hrid] = unit.combatDetails.combatStats.combatDropQuantity;
 
         if (!this.debuffOnLevelGap[unit.hrid]) {
             this.debuffOnLevelGap[unit.hrid] = {};

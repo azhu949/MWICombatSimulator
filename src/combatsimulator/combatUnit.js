@@ -150,6 +150,7 @@ class CombatUnit {
     combatBuffs = {};
     permanentBuffs = {};
     zoneBuffs = {};
+    extraBuffs = {};
 
     constructor() { }
 
@@ -341,6 +342,9 @@ class CombatUnit {
         let combatRareFindBoosts = this.getBuffBoost("/buff_types/rare_find");
         this.combatDetails.combatStats.combatRareFind += (1 + this.combatDetails.combatStats.combatRareFind) * combatRareFindBoosts.ratioBoost;
         this.combatDetails.combatStats.combatRareFind += combatRareFindBoosts.flatBoost;
+        let combatDropQuantityBoosts = this.getBuffBoost("/buff_types/combat_drop_quantity");
+        this.combatDetails.combatStats.combatDropQuantity += (1 + this.combatDetails.combatStats.combatDropQuantity) * combatDropQuantityBoosts.ratioBoost;
+        this.combatDetails.combatStats.combatDropQuantity += combatDropQuantityBoosts.flatBoost;
 
         let baseThreat = 100 + this.combatDetails.combatStats.threat;
         this.combatDetails.totalThreat = baseThreat;
@@ -389,6 +393,11 @@ class CombatUnit {
         }
         if (this.zoneBuffs) {
             this.zoneBuffs.forEach(buff => {
+                this.addPermanentBuff(buff);
+            });
+        }
+        if (this.extraBuffs) {
+            this.extraBuffs.forEach(buff => {
                 this.addPermanentBuff(buff);
             });
         }
