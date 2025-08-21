@@ -1727,8 +1727,8 @@ let buttonStopSimulation = document.getElementById("buttonStopSimulation");
 let progressbar = document.getElementById("simulationProgressBar");
 let simStartTime = 0;
 
-let worker = null; // new Worker(new URL("worker.js", import.meta.url));
-let multiWorker = null; // new Worker(new URL("multiWorker.js", import.meta.url));
+let worker = new Worker(new URL(/* worker import */ __webpack_require__.p + __webpack_require__.u(1), __webpack_require__.b));
+let multiWorker = new Worker(new URL(/* worker import */ __webpack_require__.p + __webpack_require__.u("src_multiWorker_js-_004d1"), __webpack_require__.b));
 
 
 
@@ -4094,9 +4094,13 @@ function initSimulationControls() {
         if (worker) {
             worker.terminate();
         }
+        worker = new Worker(new URL(/* worker import */ __webpack_require__.p + __webpack_require__.u(2), __webpack_require__.b));
+
         if (multiWorker) {
             multiWorker.terminate();
         }
+        multiWorker = new Worker(new URL(/* worker import */ __webpack_require__.p + __webpack_require__.u("src_multiWorker_js-_004d2"), __webpack_require__.b));
+
         buttonStartSimulation.disabled = false;
         buttonStopSimulation.style.display = 'none';
     });
@@ -4197,7 +4201,9 @@ function startSimulation(selectedPlayers) {
             extra : extra
         };
         simStartTime = Date.now();
-        worker = new Worker(new URL(/* worker import */ __webpack_require__.p + __webpack_require__.u(0), __webpack_require__.b));
+        if (!worker) {
+            worker = new Worker(new URL(/* worker import */ __webpack_require__.p + __webpack_require__.u(0), __webpack_require__.b));
+        }
         worker.onmessage = onWorkerMessage;
         worker.postMessage(workerMessage);
     } else {
@@ -4244,7 +4250,9 @@ function startSimulation(selectedPlayers) {
             extra: extra
         };
         simStartTime = Date.now();
-        multiWorker = new Worker(new URL(/* worker import */ __webpack_require__.p + __webpack_require__.u("src_multiWorker_js"), __webpack_require__.b));
+        if (!multiWorker) {
+            multiWorker = new Worker(new URL(/* worker import */ __webpack_require__.p + __webpack_require__.u("src_multiWorker_js-_004d0"), __webpack_require__.b));
+        }
         multiWorker.onmessage = onMultiWorkerMessage;
         multiWorker.postMessage(workerMessage);
     }

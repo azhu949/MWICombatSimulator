@@ -26,8 +26,8 @@ let buttonStopSimulation = document.getElementById("buttonStopSimulation");
 let progressbar = document.getElementById("simulationProgressBar");
 let simStartTime = 0;
 
-let worker = null; // new Worker(new URL("worker.js", import.meta.url));
-let multiWorker = null; // new Worker(new URL("multiWorker.js", import.meta.url));
+let worker = new Worker(new URL("worker.js", import.meta.url));
+let multiWorker = new Worker(new URL("multiWorker.js", import.meta.url));
 
 
 
@@ -2393,9 +2393,13 @@ function initSimulationControls() {
         if (worker) {
             worker.terminate();
         }
+        worker = new Worker(new URL("worker.js", import.meta.url));
+
         if (multiWorker) {
             multiWorker.terminate();
         }
+        multiWorker = new Worker(new URL("multiWorker.js", import.meta.url));
+
         buttonStartSimulation.disabled = false;
         buttonStopSimulation.style.display = 'none';
     });
@@ -2496,7 +2500,9 @@ function startSimulation(selectedPlayers) {
             extra : extra
         };
         simStartTime = Date.now();
-        worker = new Worker(new URL("worker.js", import.meta.url));
+        if (!worker) {
+            worker = new Worker(new URL("worker.js", import.meta.url));
+        }
         worker.onmessage = onWorkerMessage;
         worker.postMessage(workerMessage);
     } else {
@@ -2543,7 +2549,9 @@ function startSimulation(selectedPlayers) {
             extra: extra
         };
         simStartTime = Date.now();
-        multiWorker = new Worker(new URL("multiWorker.js", import.meta.url));
+        if (!multiWorker) {
+            multiWorker = new Worker(new URL("multiWorker.js", import.meta.url));
+        }
         multiWorker.onmessage = onMultiWorkerMessage;
         multiWorker.postMessage(workerMessage);
     }
