@@ -381,6 +381,40 @@ class CombatSimulator extends EventTarget {
         // console.log("===== 团灭日志结束 =====");
     }
     
+    buildCombatLog(source, ability, target, damageDone) {
+        try {
+            const sourceHrid = source?.hrid || "UNKNOWN_SOURCE";
+            const targetHrid = target?.hrid || "UNKNOWN_TARGET";
+            
+            const afterHp = target?.combatDetails?.currentHitpoints || 0;
+            const beforeHp = Math.max(0, afterHp + damageDone);
+
+            const playersHp = this.players.map(p => ({
+                hrid: p.hrid || "UNKNOWN_PLAYER",
+                current: p.combatDetails?.currentHitpoints ?? 0,
+                max: p.combatDetails?.maxHitpoints ?? 0
+            }));
+            
+            return {
+                time: this.simulationTime,
+                wave: (this.zone.encountersKilled - 1),
+                source: sourceHrid,
+                ability: ability,
+                target: targetHrid,
+                damage: damageDone,
+                beforeHp: beforeHp,
+                afterHp: afterHp,
+                playersHp: playersHp,
+                // enemiesHp: enemiesHp,
+                isCrit: false,
+            };
+        } catch (e) {
+            return {
+                error: `[日志生成错误] ${e.message}`
+            };
+        }
+    }
+
     generateCombatLog(source, ability, target, attackResult) {
         try {
             const sourceHrid = source?.hrid || "UNKNOWN_SOURCE";
@@ -398,6 +432,7 @@ class CombatSimulator extends EventTarget {
             
             return {
                 time: this.simulationTime,
+                wave: (this.zone.encountersKilled - 1),
                 source: sourceHrid,
                 ability: ability,
                 target: targetHrid,
@@ -846,8 +881,17 @@ class CombatSimulator extends EventTarget {
             if (attackResult.thornDamageDone > 0) {
                 this.simResult.addAttack(target, source, attackResult.thornType, attackResult.thornDamageDone);
             }
+            if (this.zone.isDungeon && attackResult.thornDamageDone > 0 && source.isPlayer) {
+                const log = this.buildCombatLog(target, attackResult.thornType, source, attackResult.thornDamageDone);
+                this.addToWipeLogs(log);
+            }
+
             if (target.combatDetails.combatStats.retaliation > 0) {
                 this.simResult.addAttack(target, source, "retaliation", attackResult.retaliationDamageDone > 0?attackResult.retaliationDamageDone:"miss");
+            }
+            if (this.zone.isDungeon && attackResult.retaliationDamageDone > 0 && source.isPlayer) {
+                const log = this.buildCombatLog(target, "retaliation", source, attackResult.retaliationDamageDone);
+                this.addToWipeLogs(log);
             }
 
             if (target.combatDetails.currentHitpoints == 0) {
@@ -1090,6 +1134,9 @@ class CombatSimulator extends EventTarget {
 
         event.target.combatDetails.currentHitpoints -= damage;
         this.simResult.addAttack(event.sourceRef, event.target, "damageOverTime", damage);
+
+        const log = this.buildCombatLog("", "damageOverTime", event.target, damage);
+        this.addToWipeLogs(log);
 
         // console.log(event.target.hrid, "bleed for", damage);
 
@@ -1716,8 +1763,17 @@ class CombatSimulator extends EventTarget {
                 if (attackResult.thornDamageDone > 0) {
                     this.simResult.addAttack(target, source, attackResult.thornType, attackResult.thornDamageDone);
                 }
+                if (this.zone.isDungeon && attackResult.thornDamageDone > 0 && source.isPlayer) {
+                    const log = this.buildCombatLog(target, attackResult.thornType, source, attackResult.thornDamageDone);
+                    this.addToWipeLogs(log);
+                }
+
                 if (target.combatDetails.combatStats.retaliation > 0) {
                     this.simResult.addAttack(target, source, "retaliation", attackResult.retaliationDamageDone > 0 ? attackResult.retaliationDamageDone : "miss");
+                }
+                if (this.zone.isDungeon && attackResult.retaliationDamageDone > 0 && source.isPlayer) {
+                    const log = this.buildCombatLog(target, "retaliation", source, attackResult.retaliationDamageDone);
+                    this.addToWipeLogs(log);
                 }
 
                 if (target.combatDetails.currentHitpoints == 0) {
@@ -1798,6 +1854,9 @@ class CombatSimulator extends EventTarget {
 
         if (reviveTarget) {
             this.eventQueue.clearMatching((event) => event.type == _events_playerRespawnEvent__WEBPACK_IMPORTED_MODULE_9__["default"].type && event.hrid == reviveTarget.hrid);
+
+            reviveTarget.removeExpiredBuffs(this.simulationTime);
+
             let amountHealed = _combatUtilities__WEBPACK_IMPORTED_MODULE_0__["default"].processRevive(source, abilityEffect, reviveTarget);
 
             this.simResult.addHitpointsGained(reviveTarget, ability.hrid, amountHealed);
@@ -2706,7 +2765,8 @@ class CombatUtilities {
         let amountHealed = target.addHitpoints(heal);
         target.combatDetails.currentManapoints = target.combatDetails.maxManapoints;
         target.clearCCs();
-        target.clearBuffs();
+
+        // target.clearBuffs();
 
         return amountHealed;
     }

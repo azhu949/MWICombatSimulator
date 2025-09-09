@@ -2633,7 +2633,7 @@ function renderSelectedWipeEvent(index, simResult) {
         // 时间标题
         const timeHeader = document.createElement('div');
         timeHeader.className = 'log-time-header';
-        timeHeader.textContent = `[${relativeTime.toFixed(2)}s]`;
+        timeHeader.textContent = `[${relativeTime.toFixed(2)}s] [Wave#${group.wave}]`;
         timeGroupElement.appendChild(timeHeader);
 
         // 事件列表
@@ -2650,8 +2650,14 @@ function renderSelectedWipeEvent(index, simResult) {
 
             const sourceSpan = document.createElement('span');
             sourceSpan.className = 'log-source';
-            sourceSpan.setAttribute('data-i18n', `monsterNames.${log.source}`);
-            sourceSpan.textContent = log.source;
+            if (log.ability === "damageOverTime") {
+                sourceSpan.textContent = log.target;
+            } else if(log.source == 'UNKNOWN_SOURCE') {
+                sourceSpan.textContent = 'UNKNOWN';
+            } else {
+                sourceSpan.setAttribute('data-i18n', `monsterNames.${log.source}`);
+                sourceSpan.textContent = log.source;
+            }
 
             const castSpan = document.createElement('span');
             castSpan.className = 'log-cast';
@@ -2663,6 +2669,18 @@ function renderSelectedWipeEvent(index, simResult) {
             if (log.ability === "autoAttack") {
                 abilitySpan.setAttribute('data-i18n', 'combatUnit.autoAttack');
                 abilitySpan.textContent = 'Auto Attack';
+            } else if (log.ability === "physicalThorns") {
+                abilitySpan.setAttribute('data-i18n', `combatStats.physicalThorns`);
+                abilitySpan.textContent = 'Physical Thorns';
+            } else if (log.ability === "elementalThorns") {
+                abilitySpan.setAttribute('data-i18n', `combatStats.elementalThorns`);
+                abilitySpan.textContent = 'Elemental Thorns';
+            } else if (log.ability === "retaliation") {
+                abilitySpan.setAttribute('data-i18n', `combatStats.retaliation`);
+                abilitySpan.textContent = 'Retaliation';
+            } else if (log.ability === "damageOverTime") {
+                abilitySpan.setAttribute('data-i18n', `common:simulationResults.damageOverTime`);
+                abilitySpan.textContent = 'Damage Over Time';
             } else {
                 abilitySpan.setAttribute('data-i18n', `abilityNames.${log.ability}`);
                 abilitySpan.textContent = log.ability;
@@ -2749,6 +2767,7 @@ function groupLogsByTime(logs) {
         if (!currentGroup || currentGroup.time !== log.time) {
             currentGroup = {
                 time: log.time,
+                wave: log.wave,
                 logs: [log]
             };
             groups.push(currentGroup);
