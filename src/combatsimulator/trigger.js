@@ -100,7 +100,6 @@ class Trigger {
             case "/combat_trigger_conditions/frost_surge":
             case "/combat_trigger_conditions/elusiveness":
             case "/combat_trigger_conditions/channeling_coffee":
-            case "/combat_trigger_conditions/critical_aura":
             case "/combat_trigger_conditions/fierce_aura":
             case "/combat_trigger_conditions/invincible_armor":
             case "/combat_trigger_conditions/invincible_fire_resistance":
@@ -118,6 +117,7 @@ class Trigger {
                 let buffHrid = "/buff_uniques";
                 buffHrid += this.conditionHrid.slice(this.conditionHrid.lastIndexOf("/"));
                 return source.combatBuffs[buffHrid];
+            case "/combat_trigger_conditions/critical_aura":
             case "/combat_trigger_conditions/critical_coffee":
             case "/combat_trigger_conditions/intelligence_coffee":
             case "/combat_trigger_conditions/stamina_coffee":
