@@ -265,9 +265,8 @@ class CombatUnit {
         this.combatDetails.combatStats.natureAmplify += this.getBuffBoost("/buff_types/nature_amplify").flatBoost;
         this.combatDetails.combatStats.fireAmplify += this.getBuffBoost("/buff_types/fire_amplify").flatBoost;
 
-        if (this.isPlayer) {
-            this.combatDetails.combatStats.attackInterval /= (1 + (this.combatDetails.attackLevel / 2000));
-        }
+        this.combatDetails.combatStats.attackInterval /= (1 + (this.combatDetails.attackLevel / 2000));
+
         let baseAttackSpeed = this.combatDetails.combatStats.attackSpeed;
         this.combatDetails.combatStats.attackInterval /= (1 + baseAttackSpeed);
         let attackIntervalBoosts = this.getBuffBoosts("/buff_types/attack_speed");

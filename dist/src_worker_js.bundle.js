@@ -2171,9 +2171,8 @@ class CombatUnit {
         this.combatDetails.combatStats.natureAmplify += this.getBuffBoost("/buff_types/nature_amplify").flatBoost;
         this.combatDetails.combatStats.fireAmplify += this.getBuffBoost("/buff_types/fire_amplify").flatBoost;
 
-        if (this.isPlayer) {
-            this.combatDetails.combatStats.attackInterval /= (1 + (this.combatDetails.attackLevel / 2000));
-        }
+        this.combatDetails.combatStats.attackInterval /= (1 + (this.combatDetails.attackLevel / 2000));
+
         let baseAttackSpeed = this.combatDetails.combatStats.attackSpeed;
         this.combatDetails.combatStats.attackInterval /= (1 + baseAttackSpeed);
         let attackIntervalBoosts = this.getBuffBoosts("/buff_types/attack_speed");
@@ -3794,7 +3793,9 @@ class Monster extends _combatUnit__WEBPACK_IMPORTED_MODULE_1__["default"] {
             }
         });
 
-        this.combatDetails.combatStats.attackInterval = gameMonster.combatDetails.attackInterval;
+        if (this.combatDetails.combatStats.attackInterval == 0) {
+            this.combatDetails.combatStats.attackInterval = gameMonster.combatDetails.attackInterval;
+        }
 
         super.updateCombatDetails();
     }
