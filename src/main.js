@@ -3554,16 +3554,40 @@ function showErrorModal(error) {
 window.prices;
 
 async function fetchPrices() {
+    let response = null;
     try {
-        const response = await fetch('https://www.milkywayidle.com/game_data/marketplace.json'
+        response = await fetch('https://www.milkywayidle.com/game_data/marketplace.json'
             , {
                 mode: 'cors'
             }
         );
         if (!response.ok) {
             console.log('Error fetching prices');
-            throw new Error('Error fetching prices');
         }
+    } catch (error) {
+        console.error(error);
+    }
+
+    if (response == null) {
+        try {
+            response = await fetch('https://www.milkywayidlecn.com/game_data/marketplace.json'
+                , {
+                    mode: 'cors'
+                }
+            );
+            if (!response.ok) {
+                console.log('Error fetching prices');
+            }
+        } catch (error) {
+            console.error(error);
+        }
+    }
+
+    if (!response || !response.ok) {
+        return;
+    }
+
+    try {
 
         let btn = document.querySelector('#buttonGetPrices');
         btn.style.backgroundColor = 'green';
@@ -3581,7 +3605,7 @@ async function fetchPrices() {
                     window.prices[hrid].bid = priceTmp[hrid]['0'].b;
                 }
             }
-        }
+        } 
 
         window.prices["/items/coin"] = { "ask": 1, "bid": 1, "vendor": 1 };
 
