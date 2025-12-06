@@ -2985,6 +2985,9 @@ function fixTriggerMap(triggerMap) {
     let delKeys = []
     for (const key of Object.keys(triggerMap)) {
         let err = false;
+        if (null == triggerMap[key]) {
+            triggerMap[key] = [];
+        }
         for (const trigger of triggerMap[key]) {
             if (!combatTriggerConditionDetailMap[trigger.conditionHrid]) {
                 err = true;
