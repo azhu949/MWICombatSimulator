@@ -1,0 +1,659 @@
+{
+    "/achievements/bestiary_points_100": {
+        "hrid": "/achievements/bestiary_points_100",
+        "name": "Hunter III",
+        "description": "Obtain 100 Bestiary points",
+        "tierHrid": "/achievement_tiers/veteran",
+        "sortIndex": 41,
+        "steamAchievementId": "ach_bestiary_points_100",
+        "target": 100
+    },
+    "/achievements/bestiary_points_20": {
+        "hrid": "/achievements/bestiary_points_20",
+        "name": "Hunter I",
+        "description": "Obtain 20 Bestiary points",
+        "tierHrid": "/achievement_tiers/novice",
+        "sortIndex": 15,
+        "steamAchievementId": "ach_bestiary_points_20",
+        "target": 20
+    },
+    "/achievements/bestiary_points_200": {
+        "hrid": "/achievements/bestiary_points_200",
+        "name": "Hunter IV",
+        "description": "Obtain 200 Bestiary points",
+        "tierHrid": "/achievement_tiers/elite",
+        "sortIndex": 55,
+        "steamAchievementId": "ach_bestiary_points_200",
+        "target": 200
+    },
+    "/achievements/bestiary_points_40": {
+        "hrid": "/achievements/bestiary_points_40",
+        "name": "Hunter II",
+        "description": "Obtain 40 Bestiary points",
+        "tierHrid": "/achievement_tiers/adept",
+        "sortIndex": 28,
+        "steamAchievementId": "ach_bestiary_points_40",
+        "target": 40
+    },
+    "/achievements/bestiary_points_400": {
+        "hrid": "/achievements/bestiary_points_400",
+        "name": "Hunter V",
+        "description": "Obtain 400 Bestiary points",
+        "tierHrid": "/achievement_tiers/champion",
+        "sortIndex": 71,
+        "steamAchievementId": "ach_bestiary_points_400",
+        "target": 400
+    },
+    "/achievements/brew_gourmet_tea": {
+        "hrid": "/achievements/brew_gourmet_tea",
+        "name": "Tea Enthusiast",
+        "description": "Brew a Gourmet Tea",
+        "tierHrid": "/achievement_tiers/novice",
+        "sortIndex": 9,
+        "steamAchievementId": "ach_brew_gourmet_tea",
+        "target": 1
+    },
+    "/achievements/brew_ultra_magic_coffee": {
+        "hrid": "/achievements/brew_ultra_magic_coffee",
+        "name": "Ultra Brewer",
+        "description": "Brew an Ultra Magic Coffee",
+        "tierHrid": "/achievement_tiers/elite",
+        "sortIndex": 47,
+        "steamAchievementId": "ach_brew_ultra_magic_coffee",
+        "target": 1
+    },
+    "/achievements/build_room_level_1": {
+        "hrid": "/achievements/build_room_level_1",
+        "name": "Homeowner I",
+        "description": "Build a level 1 room in your house",
+        "tierHrid": "/achievement_tiers/adept",
+        "sortIndex": 29,
+        "steamAchievementId": "ach_build_room_level_1",
+        "target": 1
+    },
+    "/achievements/build_room_level_3": {
+        "hrid": "/achievements/build_room_level_3",
+        "name": "Homeowner II",
+        "description": "Build a level 3 room in your house",
+        "tierHrid": "/achievement_tiers/veteran",
+        "sortIndex": 42,
+        "steamAchievementId": "ach_build_room_level_3",
+        "target": 1
+    },
+    "/achievements/build_room_level_6": {
+        "hrid": "/achievements/build_room_level_6",
+        "name": "Homeowner III",
+        "description": "Build a level 6 room in your house",
+        "tierHrid": "/achievement_tiers/elite",
+        "sortIndex": 57,
+        "steamAchievementId": "ach_build_room_level_6",
+        "target": 1
+    },
+    "/achievements/build_room_level_8": {
+        "hrid": "/achievements/build_room_level_8",
+        "name": "Homeowner IV",
+        "description": "Build a level 8 room in your house",
+        "tierHrid": "/achievement_tiers/champion",
+        "sortIndex": 72,
+        "steamAchievementId": "ach_build_room_level_8",
+        "target": 1
+    },
+    "/achievements/buy_trainee_charm": {
+        "hrid": "/achievements/buy_trainee_charm",
+        "name": "Charmed",
+        "description": "Buy a trainee charm from shop",
+        "tierHrid": "/achievement_tiers/adept",
+        "sortIndex": 26,
+        "steamAchievementId": "ach_buy_trainee_charm",
+        "target": 1
+    },
+    "/achievements/cheesesmith_azure_tool": {
+        "hrid": "/achievements/cheesesmith_azure_tool",
+        "name": "Feeling Blue",
+        "description": "Cheesesmith any azure tool",
+        "tierHrid": "/achievement_tiers/novice",
+        "sortIndex": 7,
+        "steamAchievementId": "ach_cheesesmith_azure_tool",
+        "target": 1
+    },
+    "/achievements/clear_chimerical_den": {
+        "hrid": "/achievements/clear_chimerical_den",
+        "name": "Chimerical Hunter",
+        "description": "Clear the Chimerical Den dungeon",
+        "tierHrid": "/achievement_tiers/elite",
+        "sortIndex": 52,
+        "steamAchievementId": "ach_clear_chimerical_den",
+        "target": 1
+    },
+    "/achievements/clear_enchanted_fortress": {
+        "hrid": "/achievements/clear_enchanted_fortress",
+        "name": "Fortress Conqueror",
+        "description": "Clear the Enchanted Fortress dungeon",
+        "tierHrid": "/achievement_tiers/champion",
+        "sortIndex": 67,
+        "steamAchievementId": "ach_clear_enchanted_fortress",
+        "target": 1
+    },
+    "/achievements/clear_pirate_cove": {
+        "hrid": "/achievements/clear_pirate_cove",
+        "name": "Pirate's Bane",
+        "description": "Clear the Pirate Cove dungeon",
+        "tierHrid": "/achievement_tiers/champion",
+        "sortIndex": 68,
+        "steamAchievementId": "ach_clear_pirate_cove",
+        "target": 1
+    },
+    "/achievements/clear_sinister_circus": {
+        "hrid": "/achievements/clear_sinister_circus",
+        "name": "Ringmaster",
+        "description": "Clear the Sinister Circus dungeon",
+        "tierHrid": "/achievement_tiers/elite",
+        "sortIndex": 53,
+        "steamAchievementId": "ach_clear_sinister_circus",
+        "target": 1
+    },
+    "/achievements/clear_t1_dungeon_10_times": {
+        "hrid": "/achievements/clear_t1_dungeon_10_times",
+        "name": "Dungeon Elitist",
+        "description": "Clear any T1 or higher dungeon 10 times",
+        "tierHrid": "/achievement_tiers/champion",
+        "sortIndex": 69,
+        "steamAchievementId": "ach_clear_t1_dungeon_10_times",
+        "target": 10
+    },
+    "/achievements/coinify_coins_1m": {
+        "hrid": "/achievements/coinify_coins_1m",
+        "name": "Midas Touch",
+        "description": "Earn a total of 1m coins from coinify",
+        "tierHrid": "/achievement_tiers/veteran",
+        "sortIndex": 34,
+        "steamAchievementId": "ach_coinify_coins_1m",
+        "target": 1000000
+    },
+    "/achievements/collect_branch_of_insight": {
+        "hrid": "/achievements/collect_branch_of_insight",
+        "name": "Branch Manager",
+        "description": "Collect a Branch of Insight from Woodcutting or Crafting",
+        "tierHrid": "/achievement_tiers/elite",
+        "sortIndex": 45,
+        "steamAchievementId": "ach_collect_branch_of_insight",
+        "target": 1
+    },
+    "/achievements/collect_butter_of_proficiency": {
+        "hrid": "/achievements/collect_butter_of_proficiency",
+        "name": "Pass The Butter",
+        "description": "Collect a Butter of Proficiency from Milking or Cheesesmithing",
+        "tierHrid": "/achievement_tiers/elite",
+        "sortIndex": 44,
+        "steamAchievementId": "ach_collect_butter_of_proficiency",
+        "target": 1
+    },
+    "/achievements/collect_thread_of_expertise": {
+        "hrid": "/achievements/collect_thread_of_expertise",
+        "name": "No Loose Threads",
+        "description": "Collect a Thread of Expertise from Foraging or Tailoring",
+        "tierHrid": "/achievement_tiers/elite",
+        "sortIndex": 46,
+        "steamAchievementId": "ach_collect_thread_of_expertise",
+        "target": 1
+    },
+    "/achievements/collection_points_100": {
+        "hrid": "/achievements/collection_points_100",
+        "name": "Collector I",
+        "description": "Obtain 100 Collection points",
+        "tierHrid": "/achievement_tiers/novice",
+        "sortIndex": 14,
+        "steamAchievementId": "ach_collection_points_100",
+        "target": 100
+    },
+    "/achievements/collection_points_1000": {
+        "hrid": "/achievements/collection_points_1000",
+        "name": "Collector IV",
+        "description": "Obtain 1000 Collection points",
+        "tierHrid": "/achievement_tiers/elite",
+        "sortIndex": 54,
+        "steamAchievementId": "ach_collection_points_1000",
+        "target": 1000
+    },
+    "/achievements/collection_points_200": {
+        "hrid": "/achievements/collection_points_200",
+        "name": "Collector II",
+        "description": "Obtain 200 Collection points",
+        "tierHrid": "/achievement_tiers/adept",
+        "sortIndex": 27,
+        "steamAchievementId": "ach_collection_points_200",
+        "target": 200
+    },
+    "/achievements/collection_points_2000": {
+        "hrid": "/achievements/collection_points_2000",
+        "name": "Collector V",
+        "description": "Obtain 2000 Collection points",
+        "tierHrid": "/achievement_tiers/champion",
+        "sortIndex": 70,
+        "steamAchievementId": "ach_collection_points_2000",
+        "target": 2000
+    },
+    "/achievements/collection_points_500": {
+        "hrid": "/achievements/collection_points_500",
+        "name": "Collector III",
+        "description": "Obtain 500 Collection points",
+        "tierHrid": "/achievement_tiers/veteran",
+        "sortIndex": 40,
+        "steamAchievementId": "ach_collection_points_500",
+        "target": 500
+    },
+    "/achievements/complete_tutorial": {
+        "hrid": "/achievements/complete_tutorial",
+        "name": "Graduate",
+        "description": "Complete the tutorial with Purple",
+        "tierHrid": "/achievement_tiers/beginner",
+        "sortIndex": 4,
+        "steamAchievementId": "ach_complete_tutorial",
+        "target": 1
+    },
+    "/achievements/cook_apple_gummy": {
+        "hrid": "/achievements/cook_apple_gummy",
+        "name": "Sweet Tooth",
+        "description": "Make an Apple Gummy with Cooking",
+        "tierHrid": "/achievement_tiers/beginner",
+        "sortIndex": 3,
+        "steamAchievementId": "ach_cook_apple_gummy",
+        "target": 1
+    },
+    "/achievements/cook_peach_yogurt": {
+        "hrid": "/achievements/cook_peach_yogurt",
+        "name": "Dairy Chef",
+        "description": "Make a Peach Yogurt with Cooking",
+        "tierHrid": "/achievement_tiers/adept",
+        "sortIndex": 19,
+        "steamAchievementId": "ach_cook_peach_yogurt",
+        "target": 1
+    },
+    "/achievements/cook_spaceberry_cake": {
+        "hrid": "/achievements/cook_spaceberry_cake",
+        "name": "Pastry Chef",
+        "description": "Make a Spaceberry Cake with cooking",
+        "tierHrid": "/achievement_tiers/veteran",
+        "sortIndex": 33,
+        "steamAchievementId": "ach_cook_spaceberry_cake",
+        "target": 1
+    },
+    "/achievements/craft_celestial_tool_or_outfit": {
+        "hrid": "/achievements/craft_celestial_tool_or_outfit",
+        "name": "Celestial Artisan",
+        "description": "Make any Celestial Tool or Level 90 Skilling Outfit Top or Bottoms",
+        "tierHrid": "/achievement_tiers/champion",
+        "sortIndex": 59,
+        "steamAchievementId": "ach_craft_celestial_tool_or_outfit",
+        "target": 1
+    },
+    "/achievements/craft_dungeon_equipment": {
+        "hrid": "/achievements/craft_dungeon_equipment",
+        "name": "Dungeon Forger",
+        "description": "Make any dungeon equipment from its components",
+        "tierHrid": "/achievement_tiers/elite",
+        "sortIndex": 49,
+        "steamAchievementId": "ach_craft_dungeon_equipment",
+        "target": 1
+    },
+    "/achievements/craft_jewelry": {
+        "hrid": "/achievements/craft_jewelry",
+        "name": "Jeweler",
+        "description": "Craft any jewelry",
+        "tierHrid": "/achievement_tiers/adept",
+        "sortIndex": 18,
+        "steamAchievementId": "ach_craft_jewelry",
+        "target": 1
+    },
+    "/achievements/craft_master_charm": {
+        "hrid": "/achievements/craft_master_charm",
+        "name": "Master Charmer",
+        "description": "Craft any Master charm",
+        "tierHrid": "/achievement_tiers/champion",
+        "sortIndex": 61,
+        "steamAchievementId": "ach_craft_master_charm",
+        "target": 1
+    },
+    "/achievements/craft_wooden_bow": {
+        "hrid": "/achievements/craft_wooden_bow",
+        "name": "Fletcher",
+        "description": "Make a Wooden Bow with Crafting",
+        "tierHrid": "/achievement_tiers/beginner",
+        "sortIndex": 2,
+        "steamAchievementId": "ach_craft_wooden_bow",
+        "target": 1
+    },
+    "/achievements/decompose_bamboo_gloves": {
+        "hrid": "/achievements/decompose_bamboo_gloves",
+        "name": "Break It Down",
+        "description": "Decompose Bamboo Gloves successfully",
+        "tierHrid": "/achievement_tiers/adept",
+        "sortIndex": 20,
+        "steamAchievementId": "ach_decompose_bamboo_gloves",
+        "target": 1
+    },
+    "/achievements/defeat_chronofrost_sorcerer": {
+        "hrid": "/achievements/defeat_chronofrost_sorcerer",
+        "name": "Chronofrost Slayer",
+        "description": "Defeat Chronofrost Sorcerer by yourself",
+        "tierHrid": "/achievement_tiers/veteran",
+        "sortIndex": 38,
+        "steamAchievementId": "ach_defeat_chronofrost_sorcerer",
+        "target": 1
+    },
+    "/achievements/defeat_crystal_colossus": {
+        "hrid": "/achievements/defeat_crystal_colossus",
+        "name": "Crystal Breaker",
+        "description": "Defeat Crystal Colossus by yourself",
+        "tierHrid": "/achievement_tiers/elite",
+        "sortIndex": 50,
+        "steamAchievementId": "ach_defeat_crystal_colossus",
+        "target": 1
+    },
+    "/achievements/defeat_demonic_overlord_t1": {
+        "hrid": "/achievements/defeat_demonic_overlord_t1",
+        "name": "Overlord's Doom",
+        "description": "Defeat Demonic Overlord (T1) by yourself",
+        "tierHrid": "/achievement_tiers/champion",
+        "sortIndex": 65,
+        "steamAchievementId": "ach_defeat_demonic_overlord_t1",
+        "target": 1
+    },
+    "/achievements/defeat_dusk_revenant": {
+        "hrid": "/achievements/defeat_dusk_revenant",
+        "name": "Revenant Hunter",
+        "description": "Defeat Dusk Revenant by yourself",
+        "tierHrid": "/achievement_tiers/elite",
+        "sortIndex": 51,
+        "steamAchievementId": "ach_defeat_dusk_revenant",
+        "target": 1
+    },
+    "/achievements/defeat_gobo_chieftain": {
+        "hrid": "/achievements/defeat_gobo_chieftain",
+        "name": "Gobo Subjugator",
+        "description": "Defeat Gobo Chieftain by yourself",
+        "tierHrid": "/achievement_tiers/adept",
+        "sortIndex": 24,
+        "steamAchievementId": "ach_defeat_gobo_chieftain",
+        "target": 1
+    },
+    "/achievements/defeat_jerry": {
+        "hrid": "/achievements/defeat_jerry",
+        "name": "Jerry Slayer",
+        "description": "Defeat Jerry by yourself",
+        "tierHrid": "/achievement_tiers/beginner",
+        "sortIndex": 5,
+        "steamAchievementId": "ach_defeat_jerry",
+        "target": 1
+    },
+    "/achievements/defeat_jerry_t5": {
+        "hrid": "/achievements/defeat_jerry_t5",
+        "name": "Ultimate Jerry Slayer",
+        "description": "Defeat T5 Jerry by yourself",
+        "tierHrid": "/achievement_tiers/veteran",
+        "sortIndex": 37,
+        "steamAchievementId": "ach_defeat_jerry_t5",
+        "target": 1
+    },
+    "/achievements/defeat_luna_empress": {
+        "hrid": "/achievements/defeat_luna_empress",
+        "name": "Lunar Vanquisher",
+        "description": "Defeat Luna Empress by yourself",
+        "tierHrid": "/achievement_tiers/adept",
+        "sortIndex": 23,
+        "steamAchievementId": "ach_defeat_luna_empress",
+        "target": 1
+    },
+    "/achievements/defeat_marine_huntress": {
+        "hrid": "/achievements/defeat_marine_huntress",
+        "name": "Marine Hunter",
+        "description": "Defeat Marine Huntress by yourself",
+        "tierHrid": "/achievement_tiers/novice",
+        "sortIndex": 13,
+        "steamAchievementId": "ach_defeat_marine_huntress",
+        "target": 1
+    },
+    "/achievements/defeat_red_panda": {
+        "hrid": "/achievements/defeat_red_panda",
+        "name": "Panda Tamer",
+        "description": "Defeat Red Panda by yourself",
+        "tierHrid": "/achievement_tiers/veteran",
+        "sortIndex": 39,
+        "steamAchievementId": "ach_defeat_red_panda",
+        "target": 1
+    },
+    "/achievements/defeat_shoebill": {
+        "hrid": "/achievements/defeat_shoebill",
+        "name": "Shoebill Slayer",
+        "description": "Defeat Shoebill by yourself",
+        "tierHrid": "/achievement_tiers/novice",
+        "sortIndex": 12,
+        "steamAchievementId": "ach_defeat_shoebill",
+        "target": 1
+    },
+    "/achievements/defeat_stalactite_golem_t5": {
+        "hrid": "/achievements/defeat_stalactite_golem_t5",
+        "name": "Golem Breaker",
+        "description": "Defeat Stalactite Golem (T5) by yourself",
+        "tierHrid": "/achievement_tiers/champion",
+        "sortIndex": 66,
+        "steamAchievementId": "ach_defeat_stalactite_golem_t5",
+        "target": 1
+    },
+    "/achievements/defeat_the_watcher": {
+        "hrid": "/achievements/defeat_the_watcher",
+        "name": "Watcher's Bane",
+        "description": "Defeat The Watcher by yourself",
+        "tierHrid": "/achievement_tiers/adept",
+        "sortIndex": 25,
+        "steamAchievementId": "ach_defeat_the_watcher",
+        "target": 1
+    },
+    "/achievements/enhance_level_80_to_10": {
+        "hrid": "/achievements/enhance_level_80_to_10",
+        "name": "Enhancer IV",
+        "description": "Successfully enhance equipment with 80+ recommended level to +10",
+        "tierHrid": "/achievement_tiers/elite",
+        "sortIndex": 48,
+        "steamAchievementId": "ach_enhance_level_80_to_10",
+        "target": 1
+    },
+    "/achievements/enhance_level_90_to_10": {
+        "hrid": "/achievements/enhance_level_90_to_10",
+        "name": "Enhancer V",
+        "description": "Successfully enhance equipment with 90+ recommended level to +10",
+        "tierHrid": "/achievement_tiers/champion",
+        "sortIndex": 64,
+        "steamAchievementId": "ach_enhance_level_90_to_10",
+        "target": 1
+    },
+    "/achievements/enhance_to_10": {
+        "hrid": "/achievements/enhance_to_10",
+        "name": "Enhancer III",
+        "description": "Successfully enhance any equipment to +10",
+        "tierHrid": "/achievement_tiers/veteran",
+        "sortIndex": 35,
+        "steamAchievementId": "ach_enhance_to_10",
+        "target": 1
+    },
+    "/achievements/enhance_to_3": {
+        "hrid": "/achievements/enhance_to_3",
+        "name": "Enhancer I",
+        "description": "Successfully enhance any equipment to +3",
+        "tierHrid": "/achievement_tiers/novice",
+        "sortIndex": 10,
+        "steamAchievementId": "ach_enhance_to_3",
+        "target": 1
+    },
+    "/achievements/enhance_to_6": {
+        "hrid": "/achievements/enhance_to_6",
+        "name": "Enhancer II",
+        "description": "Successfully enhance any equipment to +6",
+        "tierHrid": "/achievement_tiers/adept",
+        "sortIndex": 21,
+        "steamAchievementId": "ach_enhance_to_6",
+        "target": 1
+    },
+    "/achievements/equip_expert_task_badge": {
+        "hrid": "/achievements/equip_expert_task_badge",
+        "name": "Task Master",
+        "description": "Equip an expert task badge",
+        "tierHrid": "/achievement_tiers/elite",
+        "sortIndex": 56,
+        "steamAchievementId": "ach_equip_expert_task_badge",
+        "target": 1
+    },
+    "/achievements/equip_ginkgo_weapon": {
+        "hrid": "/achievements/equip_ginkgo_weapon",
+        "name": "Ginkgo Warrior",
+        "description": "Equip any Ginkgo weapon (staff, bow, or crossbow)",
+        "tierHrid": "/achievement_tiers/adept",
+        "sortIndex": 22,
+        "steamAchievementId": "ach_equip_ginkgo_weapon",
+        "target": 1
+    },
+    "/achievements/gather_milk": {
+        "hrid": "/achievements/gather_milk",
+        "name": "Got Milk?",
+        "description": "Gather 1 Milk from a cow",
+        "tierHrid": "/achievement_tiers/beginner",
+        "sortIndex": 1,
+        "steamAchievementId": "ach_gather_milk",
+        "target": 1
+    },
+    "/achievements/learn_ability": {
+        "hrid": "/achievements/learn_ability",
+        "name": "Awakened",
+        "description": "Learn a combat ability",
+        "tierHrid": "/achievement_tiers/novice",
+        "sortIndex": 11,
+        "steamAchievementId": "ach_learn_ability",
+        "target": 1
+    },
+    "/achievements/learn_special_ability": {
+        "hrid": "/achievements/learn_special_ability",
+        "name": "Ability Master",
+        "description": "Learn a special ability",
+        "tierHrid": "/achievement_tiers/veteran",
+        "sortIndex": 36,
+        "steamAchievementId": "ach_learn_special_ability",
+        "target": 1
+    },
+    "/achievements/refine_dungeon_equipment": {
+        "hrid": "/achievements/refine_dungeon_equipment",
+        "name": "Dungeon Refiner",
+        "description": "Refine any dungeon equipment",
+        "tierHrid": "/achievement_tiers/champion",
+        "sortIndex": 63,
+        "steamAchievementId": "ach_refine_dungeon_equipment",
+        "target": 1
+    },
+    "/achievements/tailor_gluttonous_or_guzzling_pouch": {
+        "hrid": "/achievements/tailor_gluttonous_or_guzzling_pouch",
+        "name": "Snack Pack Pro",
+        "description": "Tailor a Gluttonous or Guzzling Pouch",
+        "tierHrid": "/achievement_tiers/champion",
+        "sortIndex": 60,
+        "steamAchievementId": "ach_tailor_gluttonous_or_guzzling_pouch",
+        "target": 1
+    },
+    "/achievements/tailor_medium_pouch": {
+        "hrid": "/achievements/tailor_medium_pouch",
+        "name": "Bag Maker",
+        "description": "Tailor a Medium Pouch",
+        "tierHrid": "/achievement_tiers/novice",
+        "sortIndex": 8,
+        "steamAchievementId": "ach_tailor_medium_pouch",
+        "target": 1
+    },
+    "/achievements/tailor_umbral_tunic": {
+        "hrid": "/achievements/tailor_umbral_tunic",
+        "name": "Shadow Tailor",
+        "description": "Tailor an Umbral Tunic",
+        "tierHrid": "/achievement_tiers/veteran",
+        "sortIndex": 32,
+        "steamAchievementId": "ach_tailor_umbral_tunic",
+        "target": 1
+    },
+    "/achievements/task_tokens_10": {
+        "hrid": "/achievements/task_tokens_10",
+        "name": "Task Taker",
+        "description": "Obtain 10 task tokens",
+        "tierHrid": "/achievement_tiers/novice",
+        "sortIndex": 16,
+        "steamAchievementId": "ach_task_tokens_10",
+        "target": 10
+    },
+    "/achievements/total_level_100": {
+        "hrid": "/achievements/total_level_100",
+        "name": "Beginner Adventurer",
+        "description": "Get a total level of 100",
+        "tierHrid": "/achievement_tiers/beginner",
+        "sortIndex": 6,
+        "steamAchievementId": "ach_total_level_100",
+        "target": 100
+    },
+    "/achievements/total_level_1000": {
+        "hrid": "/achievements/total_level_1000",
+        "name": "Veteran Adventurer",
+        "description": "Get a Total level of 1000",
+        "tierHrid": "/achievement_tiers/veteran",
+        "sortIndex": 43,
+        "steamAchievementId": "ach_total_level_1000",
+        "target": 1000
+    },
+    "/achievements/total_level_1500": {
+        "hrid": "/achievements/total_level_1500",
+        "name": "Elite Adventurer",
+        "description": "Get a total level of 1500",
+        "tierHrid": "/achievement_tiers/elite",
+        "sortIndex": 58,
+        "steamAchievementId": "ach_total_level_1500",
+        "target": 1500
+    },
+    "/achievements/total_level_1800": {
+        "hrid": "/achievements/total_level_1800",
+        "name": "Champion Adventurer",
+        "description": "Get a Total level of 1800",
+        "tierHrid": "/achievement_tiers/champion",
+        "sortIndex": 73,
+        "steamAchievementId": "ach_total_level_1800",
+        "target": 1800
+    },
+    "/achievements/total_level_250": {
+        "hrid": "/achievements/total_level_250",
+        "name": "Novice Adventurer",
+        "description": "Get a Total level of 250",
+        "tierHrid": "/achievement_tiers/novice",
+        "sortIndex": 17,
+        "steamAchievementId": "ach_total_level_250",
+        "target": 250
+    },
+    "/achievements/total_level_500": {
+        "hrid": "/achievements/total_level_500",
+        "name": "Adept Adventurer",
+        "description": "Get total level of 500",
+        "tierHrid": "/achievement_tiers/adept",
+        "sortIndex": 30,
+        "steamAchievementId": "ach_total_level_500",
+        "target": 500
+    },
+    "/achievements/transmute_philosophers_stone": {
+        "hrid": "/achievements/transmute_philosophers_stone",
+        "name": "Philosopher",
+        "description": "Gain a Philosopher's Stone from transmuting",
+        "tierHrid": "/achievement_tiers/champion",
+        "sortIndex": 62,
+        "steamAchievementId": "ach_transmute_philosophers_stone",
+        "target": 1
+    },
+    "/achievements/woodcut_arcane_tree": {
+        "hrid": "/achievements/woodcut_arcane_tree",
+        "name": "Arcane Logger",
+        "description": "Woodcut an arcane tree",
+        "tierHrid": "/achievement_tiers/veteran",
+        "sortIndex": 31,
+        "steamAchievementId": "ach_woodcut_arcane_tree",
+        "target": 1
+    }
+}

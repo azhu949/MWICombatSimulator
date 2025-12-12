@@ -1,0 +1,140 @@
+{
+    "/achievement_tiers/adept": {
+        "hrid": "/achievement_tiers/adept",
+        "name": "Adept",
+        "sortIndex": 3,
+        "buff": {
+            "uniqueHrid": "/buff_uniques/achievement_adept_efficiency",
+            "typeHrid": "/buff_types/efficiency",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.02,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        "usableInActionTypeMap": {
+            "/action_types/alchemy": true,
+            "/action_types/brewing": true,
+            "/action_types/cheesesmithing": true,
+            "/action_types/cooking": true,
+            "/action_types/crafting": true,
+            "/action_types/foraging": true,
+            "/action_types/milking": true,
+            "/action_types/tailoring": true,
+            "/action_types/woodcutting": true
+        }
+    },
+    "/achievement_tiers/beginner": {
+        "hrid": "/achievement_tiers/beginner",
+        "name": "Beginner",
+        "sortIndex": 1,
+        "buff": {
+            "uniqueHrid": "/buff_uniques/achievement_beginner_gathering",
+            "typeHrid": "/buff_types/gathering",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.02,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        "usableInActionTypeMap": {
+            "/action_types/foraging": true,
+            "/action_types/milking": true,
+            "/action_types/woodcutting": true
+        }
+    },
+    "/achievement_tiers/champion": {
+        "hrid": "/achievement_tiers/champion",
+        "name": "Champion",
+        "sortIndex": 6,
+        "buff": {
+            "uniqueHrid": "/buff_uniques/achievement_champion_enhancing_success",
+            "typeHrid": "/buff_types/enhancing_success",
+            "ratioBoost": 0.002,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        "usableInActionTypeMap": {
+            "/action_types/enhancing": true
+        }
+    },
+    "/achievement_tiers/elite": {
+        "hrid": "/achievement_tiers/elite",
+        "name": "Elite",
+        "sortIndex": 5,
+        "buff": {
+            "uniqueHrid": "/buff_uniques/achievement_elite_damage",
+            "typeHrid": "/buff_types/damage",
+            "ratioBoost": 0.02,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        "usableInActionTypeMap": {
+            "/action_types/combat": true
+        }
+    },
+    "/achievement_tiers/novice": {
+        "hrid": "/achievement_tiers/novice",
+        "name": "Novice",
+        "sortIndex": 2,
+        "buff": {
+            "uniqueHrid": "/buff_uniques/achievement_novice_experience",
+            "typeHrid": "/buff_types/wisdom",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.02,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        "usableInActionTypeMap": {
+            "/action_types/alchemy": true,
+            "/action_types/brewing": true,
+            "/action_types/cheesesmithing": true,
+            "/action_types/combat": true,
+            "/action_types/cooking": true,
+            "/action_types/crafting": true,
+            "/action_types/enhancing": true,
+            "/action_types/foraging": true,
+            "/action_types/milking": true,
+            "/action_types/tailoring": true,
+            "/action_types/woodcutting": true
+        }
+    },
+    "/achievement_tiers/veteran": {
+        "hrid": "/achievement_tiers/veteran",
+        "name": "Veteran",
+        "sortIndex": 4,
+        "buff": {
+            "uniqueHrid": "/buff_uniques/achievement_veteran_rare_find",
+            "typeHrid": "/buff_types/rare_find",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.02,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        "usableInActionTypeMap": {
+            "/action_types/alchemy": true,
+            "/action_types/brewing": true,
+            "/action_types/cheesesmithing": true,
+            "/action_types/combat": true,
+            "/action_types/cooking": true,
+            "/action_types/crafting": true,
+            "/action_types/enhancing": true,
+            "/action_types/foraging": true,
+            "/action_types/milking": true,
+            "/action_types/tailoring": true,
+            "/action_types/woodcutting": true
+        }
+    }
+}

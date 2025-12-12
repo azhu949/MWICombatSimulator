@@ -159,6 +159,9 @@
             "/items/acrobats_ribbon",
             "/items/acrobatic_hood"
         ],
+        "baseItemHrids": [
+            "/items/acrobatic_hood"
+        ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
@@ -2772,6 +2775,9 @@
             "/items/damaged_anchor",
             "/items/anchorbound_plate_body"
         ],
+        "baseItemHrids": [
+            "/items/anchorbound_plate_body"
+        ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
@@ -2987,6 +2993,9 @@
         ],
         "protectionItemHrids": [
             "/items/damaged_anchor",
+            "/items/anchorbound_plate_legs"
+        ],
+        "baseItemHrids": [
             "/items/anchorbound_plate_legs"
         ],
         "alchemyDetail": {
@@ -5526,6 +5535,7 @@
         "categoryHrid": "/item_categories/loot",
         "sellPrice": 0,
         "isTradable": true,
+        "isUncollectable": true,
         "isOpenable": true,
         "sortIndex": 8
     },
@@ -9018,6 +9028,9 @@
             "/items/bishops_scroll",
             "/items/bishops_codex"
         ],
+        "baseItemHrids": [
+            "/items/bishops_codex"
+        ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
@@ -9670,6 +9683,9 @@
             "/items/kraken_fang",
             "/items/blazing_trident"
         ],
+        "baseItemHrids": [
+            "/items/blazing_trident"
+        ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
@@ -9936,6 +9952,9 @@
         ],
         "protectionItemHrids": [
             "/items/kraken_fang",
+            "/items/blooming_trident"
+        ],
+        "baseItemHrids": [
             "/items/blooming_trident"
         ],
         "alchemyDetail": {
@@ -14242,6 +14261,9 @@
             "/items/chaotic_chain",
             "/items/chaotic_flail"
         ],
+        "baseItemHrids": [
+            "/items/chaotic_flail"
+        ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
@@ -16213,6 +16235,9 @@
             "/items/sinister_cape",
             "/items/enchanted_cloak"
         ],
+        "baseItemHrids": [
+            "/items/chimerical_quiver"
+        ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
@@ -17354,6 +17379,9 @@
         ],
         "protectionItemHrids": [
             "/items/corsair_crest",
+            "/items/corsair_helmet"
+        ],
+        "baseItemHrids": [
             "/items/corsair_helmet"
         ],
         "alchemyDetail": {
@@ -20618,6 +20646,9 @@
             "/items/cursed_ball",
             "/items/cursed_bow"
         ],
+        "baseItemHrids": [
+            "/items/cursed_bow"
+        ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
@@ -21401,6 +21432,9 @@
         ],
         "protectionItemHrids": [
             "/items/dodocamel_plume",
+            "/items/dodocamel_gauntlets"
+        ],
+        "baseItemHrids": [
             "/items/dodocamel_gauntlets"
         ],
         "alchemyDetail": {
@@ -22651,6 +22685,9 @@
         "protectionItemHrids": [
             "/items/chimerical_quiver",
             "/items/sinister_cape",
+            "/items/enchanted_cloak"
+        ],
+        "baseItemHrids": [
             "/items/enchanted_cloak"
         ],
         "alchemyDetail": {
@@ -27253,6 +27290,9 @@
             "/items/sundering_jewel",
             "/items/furious_spear"
         ],
+        "baseItemHrids": [
+            "/items/furious_spear"
+        ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
@@ -31405,6 +31445,9 @@
             "/items/griffin_talon",
             "/items/griffin_bulwark"
         ],
+        "baseItemHrids": [
+            "/items/griffin_bulwark"
+        ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
@@ -35025,6 +35068,9 @@
             "/items/knights_ingot",
             "/items/knights_aegis"
         ],
+        "baseItemHrids": [
+            "/items/knights_aegis"
+        ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
@@ -35281,6 +35327,9 @@
         ],
         "protectionItemHrids": [
             "/items/kraken_leather",
+            "/items/kraken_chaps"
+        ],
+        "baseItemHrids": [
             "/items/kraken_chaps"
         ],
         "alchemyDetail": {
@@ -35608,6 +35657,9 @@
         ],
         "protectionItemHrids": [
             "/items/kraken_leather",
+            "/items/kraken_tunic"
+        ],
+        "baseItemHrids": [
             "/items/kraken_tunic"
         ],
         "alchemyDetail": {
@@ -37114,6 +37166,9 @@
             "/items/maelstrom_plating",
             "/items/maelstrom_plate_body"
         ],
+        "baseItemHrids": [
+            "/items/maelstrom_plate_body"
+        ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
@@ -37305,6 +37360,9 @@
         ],
         "protectionItemHrids": [
             "/items/maelstrom_plating",
+            "/items/maelstrom_plate_legs"
+        ],
+        "baseItemHrids": [
             "/items/maelstrom_plate_legs"
         ],
         "alchemyDetail": {
@@ -37689,6 +37747,9 @@
         ],
         "protectionItemHrids": [
             "/items/magicians_cloth",
+            "/items/magicians_hat"
+        ],
+        "baseItemHrids": [
             "/items/magicians_hat"
         ],
         "alchemyDetail": {
@@ -38596,6 +38657,9 @@
         ],
         "protectionItemHrids": [
             "/items/marksman_brooch",
+            "/items/marksman_bracers"
+        ],
+        "baseItemHrids": [
             "/items/marksman_bracers"
         ],
         "alchemyDetail": {
@@ -42946,6 +43010,22 @@
             }
         },
         "sortIndex": 516
+    },
+    "/items/philosophers_mirror": {
+        "hrid": "/items/philosophers_mirror",
+        "name": "Philosopher's Mirror",
+        "description": "A mystical artifact for enhancing. When used as protection, the enhancement is guaranteed to succeed and the enhancing cost changes to a copy of the base item at one enhancement level below the primary item.",
+        "categoryHrid": "/item_categories/resource",
+        "sellPrice": 10000000,
+        "isTradable": true,
+        "alchemyDetail": {
+            "bulkMultiplier": 1,
+            "isCoinifiable": true,
+            "decomposeItems": null,
+            "transmuteSuccessRate": 0,
+            "transmuteDropTable": null
+        },
+        "sortIndex": 895
     },
     "/items/philosophers_necklace": {
         "hrid": "/items/philosophers_necklace",
@@ -47888,6 +47968,9 @@
             "/items/regal_jewel",
             "/items/regal_sword"
         ],
+        "baseItemHrids": [
+            "/items/regal_sword"
+        ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
@@ -49453,6 +49536,9 @@
             "/items/kraken_fang",
             "/items/rippling_trident"
         ],
+        "baseItemHrids": [
+            "/items/rippling_trident"
+        ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
@@ -50220,6 +50306,9 @@
             "/items/royal_cloth",
             "/items/royal_fire_robe_bottoms"
         ],
+        "baseItemHrids": [
+            "/items/royal_fire_robe_bottoms"
+        ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
@@ -50421,6 +50510,9 @@
         ],
         "protectionItemHrids": [
             "/items/royal_cloth",
+            "/items/royal_fire_robe_top"
+        ],
+        "baseItemHrids": [
             "/items/royal_fire_robe_top"
         ],
         "alchemyDetail": {
@@ -50626,6 +50718,9 @@
         ],
         "protectionItemHrids": [
             "/items/royal_cloth",
+            "/items/royal_nature_robe_bottoms"
+        ],
+        "baseItemHrids": [
             "/items/royal_nature_robe_bottoms"
         ],
         "alchemyDetail": {
@@ -50835,6 +50930,9 @@
             "/items/royal_cloth",
             "/items/royal_nature_robe_top"
         ],
+        "baseItemHrids": [
+            "/items/royal_nature_robe_top"
+        ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
@@ -51040,6 +51138,9 @@
             "/items/royal_cloth",
             "/items/royal_water_robe_bottoms"
         ],
+        "baseItemHrids": [
+            "/items/royal_water_robe_bottoms"
+        ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
@@ -51241,6 +51342,9 @@
         ],
         "protectionItemHrids": [
             "/items/royal_cloth",
+            "/items/royal_water_robe_top"
+        ],
+        "baseItemHrids": [
             "/items/royal_water_robe_top"
         ],
         "alchemyDetail": {
@@ -52343,10 +52447,6 @@
             "type": "/equipment_types/back",
             "levelRequirements": [
                 {
-                    "skillHrid": "/skills/attack",
-                    "level": 80
-                },
-                {
                     "skillHrid": "/skills/melee",
                     "level": 80
                 }
@@ -52414,6 +52514,9 @@
             "/items/sinister_cape",
             "/items/enchanted_cloak"
         ],
+        "baseItemHrids": [
+            "/items/sinister_cape"
+        ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
             "isCoinifiable": true,
@@ -52446,10 +52549,6 @@
         "equipmentDetail": {
             "type": "/equipment_types/back",
             "levelRequirements": [
-                {
-                    "skillHrid": "/skills/attack",
-                    "level": 100
-                },
                 {
                     "skillHrid": "/skills/melee",
                     "level": 100
@@ -54903,6 +55002,9 @@
         ],
         "protectionItemHrids": [
             "/items/sundering_jewel",
+            "/items/sundering_crossbow"
+        ],
+        "baseItemHrids": [
             "/items/sundering_crossbow"
         ],
         "alchemyDetail": {
@@ -57554,7 +57656,7 @@
         "name": "Trainee Alchemy Charm",
         "description": "",
         "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 25000,
+        "sellPrice": 250000,
         "itemLevel": 1,
         "enhancementCosts": [
             {
@@ -57568,7 +57670,7 @@
         ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
-            "isCoinifiable": true,
+            "isCoinifiable": false,
             "decomposeItems": null,
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
@@ -57658,7 +57760,7 @@
         "name": "Trainee Attack Charm",
         "description": "",
         "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 25000,
+        "sellPrice": 250000,
         "itemLevel": 1,
         "enhancementCosts": [
             {
@@ -57672,7 +57774,7 @@
         ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
-            "isCoinifiable": true,
+            "isCoinifiable": false,
             "decomposeItems": null,
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
@@ -57745,7 +57847,7 @@
         "name": "Trainee Brewing Charm",
         "description": "",
         "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 25000,
+        "sellPrice": 250000,
         "itemLevel": 1,
         "enhancementCosts": [
             {
@@ -57759,7 +57861,7 @@
         ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
-            "isCoinifiable": true,
+            "isCoinifiable": false,
             "decomposeItems": null,
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
@@ -57849,7 +57951,7 @@
         "name": "Trainee Cheesesmithing Charm",
         "description": "",
         "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 25000,
+        "sellPrice": 250000,
         "itemLevel": 1,
         "enhancementCosts": [
             {
@@ -57863,7 +57965,7 @@
         ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
-            "isCoinifiable": true,
+            "isCoinifiable": false,
             "decomposeItems": null,
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
@@ -57953,7 +58055,7 @@
         "name": "Trainee Cooking Charm",
         "description": "",
         "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 25000,
+        "sellPrice": 250000,
         "itemLevel": 1,
         "enhancementCosts": [
             {
@@ -57967,7 +58069,7 @@
         ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
-            "isCoinifiable": true,
+            "isCoinifiable": false,
             "decomposeItems": null,
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
@@ -58057,7 +58159,7 @@
         "name": "Trainee Crafting Charm",
         "description": "",
         "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 25000,
+        "sellPrice": 250000,
         "itemLevel": 1,
         "enhancementCosts": [
             {
@@ -58071,7 +58173,7 @@
         ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
-            "isCoinifiable": true,
+            "isCoinifiable": false,
             "decomposeItems": null,
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
@@ -58161,7 +58263,7 @@
         "name": "Trainee Defense Charm",
         "description": "",
         "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 25000,
+        "sellPrice": 250000,
         "itemLevel": 1,
         "enhancementCosts": [
             {
@@ -58175,7 +58277,7 @@
         ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
-            "isCoinifiable": true,
+            "isCoinifiable": false,
             "decomposeItems": null,
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
@@ -58248,7 +58350,7 @@
         "name": "Trainee Enhancing Charm",
         "description": "",
         "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 25000,
+        "sellPrice": 250000,
         "itemLevel": 1,
         "enhancementCosts": [
             {
@@ -58262,7 +58364,7 @@
         ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
-            "isCoinifiable": true,
+            "isCoinifiable": false,
             "decomposeItems": null,
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
@@ -58352,7 +58454,7 @@
         "name": "Trainee Foraging Charm",
         "description": "",
         "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 25000,
+        "sellPrice": 250000,
         "itemLevel": 1,
         "enhancementCosts": [
             {
@@ -58366,7 +58468,7 @@
         ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
-            "isCoinifiable": true,
+            "isCoinifiable": false,
             "decomposeItems": null,
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
@@ -58456,7 +58558,7 @@
         "name": "Trainee Intelligence Charm",
         "description": "",
         "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 25000,
+        "sellPrice": 250000,
         "itemLevel": 1,
         "enhancementCosts": [
             {
@@ -58470,7 +58572,7 @@
         ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
-            "isCoinifiable": true,
+            "isCoinifiable": false,
             "decomposeItems": null,
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
@@ -58543,7 +58645,7 @@
         "name": "Trainee Magic Charm",
         "description": "",
         "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 25000,
+        "sellPrice": 250000,
         "itemLevel": 1,
         "enhancementCosts": [
             {
@@ -58557,7 +58659,7 @@
         ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
-            "isCoinifiable": true,
+            "isCoinifiable": false,
             "decomposeItems": null,
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
@@ -58630,7 +58732,7 @@
         "name": "Trainee Melee Charm",
         "description": "",
         "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 25000,
+        "sellPrice": 250000,
         "itemLevel": 1,
         "enhancementCosts": [
             {
@@ -58644,7 +58746,7 @@
         ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
-            "isCoinifiable": true,
+            "isCoinifiable": false,
             "decomposeItems": null,
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
@@ -58717,7 +58819,7 @@
         "name": "Trainee Milking Charm",
         "description": "",
         "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 25000,
+        "sellPrice": 250000,
         "itemLevel": 1,
         "enhancementCosts": [
             {
@@ -58731,7 +58833,7 @@
         ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
-            "isCoinifiable": true,
+            "isCoinifiable": false,
             "decomposeItems": null,
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
@@ -58821,7 +58923,7 @@
         "name": "Trainee Ranged Charm",
         "description": "",
         "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 25000,
+        "sellPrice": 250000,
         "itemLevel": 1,
         "enhancementCosts": [
             {
@@ -58835,7 +58937,7 @@
         ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
-            "isCoinifiable": true,
+            "isCoinifiable": false,
             "decomposeItems": null,
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
@@ -58908,7 +59010,7 @@
         "name": "Trainee Stamina Charm",
         "description": "",
         "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 25000,
+        "sellPrice": 250000,
         "itemLevel": 1,
         "enhancementCosts": [
             {
@@ -58922,7 +59024,7 @@
         ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
-            "isCoinifiable": true,
+            "isCoinifiable": false,
             "decomposeItems": null,
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
@@ -58995,7 +59097,7 @@
         "name": "Trainee Tailoring Charm",
         "description": "",
         "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 25000,
+        "sellPrice": 250000,
         "itemLevel": 1,
         "enhancementCosts": [
             {
@@ -59009,7 +59111,7 @@
         ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
-            "isCoinifiable": true,
+            "isCoinifiable": false,
             "decomposeItems": null,
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [
@@ -59099,7 +59201,7 @@
         "name": "Trainee Woodcutting Charm",
         "description": "",
         "categoryHrid": "/item_categories/equipment",
-        "sellPrice": 25000,
+        "sellPrice": 250000,
         "itemLevel": 1,
         "enhancementCosts": [
             {
@@ -59113,7 +59215,7 @@
         ],
         "alchemyDetail": {
             "bulkMultiplier": 1,
-            "isCoinifiable": true,
+            "isCoinifiable": false,
             "decomposeItems": null,
             "transmuteSuccessRate": 0.5,
             "transmuteDropTable": [

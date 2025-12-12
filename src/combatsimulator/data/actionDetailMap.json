@@ -23916,7 +23916,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 189
+        "sortIndex": 190
     },
     "/actions/crafting/blazing_trident": {
         "hrid": "/actions/crafting/blazing_trident",
@@ -24028,7 +24028,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 194
+        "sortIndex": 195
     },
     "/actions/crafting/blooming_trident": {
         "hrid": "/actions/crafting/blooming_trident",
@@ -24140,7 +24140,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 193
+        "sortIndex": 194
     },
     "/actions/crafting/catalyst_of_coinification": {
         "hrid": "/actions/crafting/catalyst_of_coinification",
@@ -25340,7 +25340,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 190
+        "sortIndex": 191
     },
     "/actions/crafting/earrings_of_armor": {
         "hrid": "/actions/crafting/earrings_of_armor",
@@ -29626,6 +29626,58 @@
         "buffs": null,
         "sortIndex": 164
     },
+    "/actions/crafting/philosophers_mirror": {
+        "hrid": "/actions/crafting/philosophers_mirror",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/special",
+        "name": "Philosopher's Mirror",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 100
+        },
+        "baseTimeCost": 120000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 200000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.6666666666666666,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0018055555555555557,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/philosophers_stone",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/mirror_of_protection",
+                "count": 10
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/philosophers_mirror",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 189
+    },
     "/actions/crafting/philosophers_necklace": {
         "hrid": "/actions/crafting/philosophers_necklace",
         "function": "/action_functions/production",
@@ -31202,7 +31254,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 192
+        "sortIndex": 193
     },
     "/actions/crafting/sinister_chest_key": {
         "hrid": "/actions/crafting/sinister_chest_key",
@@ -31490,7 +31542,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 191
+        "sortIndex": 192
     },
     "/actions/crafting/treant_shield": {
         "hrid": "/actions/crafting/treant_shield",

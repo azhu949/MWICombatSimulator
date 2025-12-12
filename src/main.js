@@ -2400,6 +2400,10 @@ function initSimulationControls() {
         }
         multiWorker = new Worker(new URL("multiWorker.js", import.meta.url));
 
+        for (let worker of workerPool) {
+            worker.worker.terminate();
+        }
+
         buttonStartSimulation.disabled = false;
         buttonStopSimulation.style.display = 'none';
     });
@@ -2494,6 +2498,7 @@ function startSimulation(selectedPlayers) {
         }
         let workerMessage = {
             type: "start_simulation",
+            workerId: Math.floor(Math.random() * 1e9).toString(),
             players: playersToSim,
             zone: { zoneHrid: zoneHrid, difficultyTier: difficultyTier },
             simulationTimeLimit: simulationTimeLimit,
@@ -2501,7 +2506,7 @@ function startSimulation(selectedPlayers) {
         };
         simStartTime = Date.now();
         if (!worker) {
-            worker = new Worker(new URL("worker.js", import.meta.url));
+            worker = new Worker(new URL("multiWorker.js", import.meta.url));
         }
         worker.onmessage = onWorkerMessage;
         worker.postMessage(workerMessage);
@@ -2543,6 +2548,7 @@ function startSimulation(selectedPlayers) {
 
         let workerMessage = {
             type: "start_simulation_all_zones",
+            workerId: Math.floor(Math.random() * 1e9).toString(),
             players: playersToSim,
             zones: simHrids,
             simulationTimeLimit: simulationTimeLimit,
@@ -2556,6 +2562,184 @@ function startSimulation(selectedPlayers) {
         multiWorker.postMessage(workerMessage);
     }
 }
+
+function parsePlayerJson(playerJson, hrid) {
+    let playerData = {
+        hrid: hrid,
+        food: [],
+        drinks: [],
+        abilities: [],
+        ...playerJson.player,
+        houseRooms: playerJson.houseRooms,
+    };
+    playerData.equipment = {};
+    const triggerMap = playerJson.triggerMap;
+    ["head", "body", "legs", "feet", "hands", "off_hand", "pouch", "neck", "earrings", "ring", "back", "main_hand", "two_hand", "charm"].forEach((type) => {
+        let currentEquipment = playerJson.player.equipment.find(item => item.itemLocationHrid === "/item_locations/" + type);
+        if (currentEquipment){
+            playerData.equipment[`/equipment_types/${type}`] = new Equipment(currentEquipment.itemHrid, currentEquipment.enhancementLevel);
+        }
+    });
+
+    for (const foodHrid of playerJson.food["/action_types/combat"]) {
+        if (foodHrid.itemHrid === "") continue;
+        const food = new Consumable(foodHrid.itemHrid, triggerMap[foodHrid.itemHrid]);
+        playerData.food.push(food);
+    }
+    for (const drinkHrid of playerJson.drinks["/action_types/combat"]) {
+        if (drinkHrid.itemHrid === "") continue;
+        const drink = new Consumable(drinkHrid.itemHrid, triggerMap[drinkHrid.itemHrid]);
+        playerData.drinks.push(drink);
+    }
+    for (const ability of playerJson.abilities) {
+        if (ability.abilityHrid === "") continue;
+        const abilityLevel = Number(ability.level);
+        const abilityHrid = ability.abilityHrid;
+        if (abilityLevel > 0) {
+            const abilityObj = new Ability(abilityHrid, abilityLevel, triggerMap[abilityHrid]);
+            playerData.abilities.push(abilityObj);
+        }
+    }
+    const player = Player.createFromDTO(playerData)
+    player.updateCombatDetails();
+    player.houseRooms = playerJson.houseRooms;
+    return player;
+}
+// read JSON file to simulate
+document.getElementById("buttonUploadJSONSimulate").addEventListener("click", (event) => {
+    let extra = {};
+    extra.mooPass = document.getElementById("mooPassToggle").checked;
+    extra.comExp = 0;
+    if (document.getElementById("comExpToggle").checked) {
+        extra.comExp = Number(document.getElementById("comExpInput").value);
+    }
+    extra.comDrop = 0;
+    if (document.getElementById("comDropToggle").checked) {
+        extra.comDrop = Number(document.getElementById("comDropInput").value);
+    }
+
+    let fileInput = document.getElementById("inputUploadJSONSimulation");
+    let file = fileInput.files[0];
+    if (!file) {
+        alert("Please select a file to upload.");
+        return;
+    }
+
+    let reader = new FileReader();
+    reader.onload = function (event) {
+        let fileContent = event.target.result;
+        const jsonDataList = JSON.parse(fileContent);
+        try {
+            const simDataList = [];
+            for (const key in jsonDataList) {
+                if (jsonDataList[key].cases) {
+                    const cases = getProductCases(jsonDataList[key], jsonDataList[key].cases);
+                    simDataList.push(...cases);
+                } else {
+                    simDataList.push(jsonDataList[key]);
+                }
+            }
+            for (const key in simDataList) {
+                const jsonData = simDataList[key];
+                if (!jsonData || !jsonData.zone || !jsonData.players) {
+                    alert("Invalid JSON file format. Please ensure it contains a 'simulationResult' property.");
+                    return;
+                }
+                const playersToSim = Object.values(jsonData.players).map(
+                    (player, index) => parsePlayerJson(player, `player${index + 1}`)
+                );
+
+                let maxPlayerCombatLevel = 1;
+                for (let player of playersToSim) {
+                    player.combatLevel = calcCombatLevel(player.staminaLevel, player.intelligenceLevel, player.defenseLevel, player.attackLevel, player.meleeLevel, player.rangedLevel, player.magicLevel);
+                    maxPlayerCombatLevel = Math.max(maxPlayerCombatLevel, player.combatLevel);
+                }
+
+                for (let player of playersToSim) {
+                    if ((maxPlayerCombatLevel / player.combatLevel) > 1.2) {
+                        const maxDebuffOnLevelGap = 0.9;
+                        let levelPercent = Math.floor(((maxPlayerCombatLevel / player.combatLevel) - 1.2) * 100) / 100;
+                        player.debuffOnLevelGap = -1 * Math.min(maxDebuffOnLevelGap, 3 * levelPercent);
+                        console.log("player " + player.hrid + " debuff on level gap: " + player.debuffOnLevelGap * 100 + "% for " + (maxPlayerCombatLevel / player.combatLevel));
+                    }
+                    else {
+                        player.debuffOnLevelGap = 0;
+                    }
+                }
+
+                const simulationTimeLimit = (jsonData.simulationTimeLimit || 24) * ONE_HOUR;
+                const simName = jsonData.name || `Json ${key}`;
+                const zoneHrid = jsonData.zone;
+                if (zoneHrid === "all") {
+                    let targetHrids = {};
+
+                    if (simAllZonesToggle.checked) {
+                        Object.values(actionDetailMap)
+                            .filter(a =>
+                                a.type === "/action_types/combat" &&
+                                a.category !== "/action_categories/combat/dungeons" &&
+                                a.combatZoneInfo.fightInfo.randomSpawnInfo.maxSpawnCount > 1
+                            )
+                            .forEach(a => { targetHrids[a.hrid] = a; });
+                    }
+
+                    let simHrids = Object.values(targetHrids)
+                        .sort((a, b) => a.sortIndex - b.sortIndex)
+                        .map(action => {
+                            let result = [];
+                            for (let difficultyTier = 0; difficultyTier <= action.maxDifficulty; difficultyTier++) {
+                                result.push({ zoneHrid: action.hrid, difficultyTier: difficultyTier });
+                            }
+                            return result;
+                        })
+                        .flat();
+
+                    let workerMessage = {
+                        simulationName: simName,
+                        type: "start_simulation_all_zones",
+                        workerId: Math.floor(Math.random() * 1e9).toString(),
+                        players: playersToSim,
+                        zones: simHrids,
+                        simulationTimeLimit: simulationTimeLimit,
+                        extra : extra
+                    };
+                    const worker = new Worker(new URL("worker.js", import.meta.url)); 
+                    worker.onmessage = mainWorkerOnMessage;
+                    worker.postMessage(workerMessage);
+                    customAlert("Simulation task Created", "info")
+                    workerPool.push({
+                        workerId: workerMessage.workerId,
+                        worker: worker,
+                    });
+                } else {
+                    let difficultyTier = jsonData.difficultyTier || 0;
+                    let workerMessage = {
+                        simulationName: simName,
+                        type: "start_simulation",
+                        workerId: Math.floor(Math.random() * 1e9).toString(),
+                        players: playersToSim,
+                        zone: { zoneHrid: zoneHrid, difficultyTier: difficultyTier },
+                        simulationTimeLimit: simulationTimeLimit,
+                        extra : extra
+                    };
+                    const worker = new Worker(new URL("worker.js", import.meta.url)); 
+                    worker.onmessage = mainWorkerOnMessage;
+                    worker.postMessage(workerMessage);
+                    customAlert("Simulation task Created", "info")
+                    workerPool.push({
+                        workerId: workerMessage.workerId,
+                        worker: worker,
+                    });
+                }
+            }
+        } catch (error) {
+            // alert("Error parsing JSON file: " + error.message);
+            customAlert("Error parsing JSON file: " + error.message, "danger");
+        }
+    }
+    reader.readAsText(file);
+});
+
 
 // #endregion
 
