@@ -15,6 +15,8 @@ import combatMonsterDetailMap from "./combatsimulator/data/combatMonsterDetailMa
 import damageTypeDetailMap from "./combatsimulator/data/damageTypeDetailMap.json";
 import combatStyleDetailMap from "./combatsimulator/data/combatStyleDetailMap.json";
 import openableLootDropMap from "./combatsimulator/data/openableLootDropMap.json";
+import achievementTierMap from "./combatsimulator/data/achievementTierDetailMap.json"
+import achievementDetailMap from "./combatsimulator/data/achievementDetailMap.json"
 
 import patchNote from "../patchNote.json";
 
@@ -181,6 +183,72 @@ function createHouseInput(hrid) {
     levelInput.dataset.houseHrid = hrid;
 
     return levelInput;
+}
+
+function initAchievementsModal(){
+    let achievementsList = document.getElementById("achievementsList");
+    let newChildren = [];
+    player.achievements = {};
+
+    let tierMap = Object.values(achievementTierMap).sort((a, b) => a.sortIndex - b.sortIndex);
+    for(const tier of Object.values(tierMap)) {
+        let card = createElement("div", "card");
+        let cardHeader = createElement("div", "card-header d-flex align-items-center");
+
+        let cardTitle = createElement("a", "btn", tier.name);
+        cardTitle.setAttribute("data-bs-toggle","collapse");
+        cardTitle.setAttribute("href", `#AchTier${tier.sortIndex}`);
+        cardTitle.setAttribute("data-i18n", "achievementTierNames."+tier.hrid);
+        cardHeader.appendChild(cardTitle);
+
+        let bufDesc = createElement("div", "small text-secondary");
+        let buffName = createElement("i", "");
+        buffName.setAttribute("data-i18n", "buffTypeNames."+tier["buff"].typeHrid);
+        bufDesc.appendChild(buffName);
+        let buffValue = createElement("i", "");
+        buffValue.innerText = ":+" + parseFloat(tier["buff"].ratioBoost==0?tier["buff"].flatBoost:tier["buff"].ratioBoost)*100 + "%";
+        bufDesc.appendChild(buffValue);
+        cardHeader.appendChild(bufDesc);
+
+        let cardStatics = createElement("div", "ms-auto", "(0/0)");
+        cardStatics.id = `AchTier${tier.sortIndex}Statics`;
+        cardHeader.appendChild(cardStatics);
+
+        card.appendChild(cardHeader);
+
+        let cardMain = createElement("div", "collapse show");
+        cardMain.id = `AchTier${tier.sortIndex}`;
+        let cardBody = createElement("div", "card-body");
+
+        let detailMap = Object.values(achievementDetailMap).filter((detail) => detail.tierHrid == tier.hrid).sort((a, b) => a.sortIndex - b.sortIndex);
+        for (const detail of Object.values(detailMap)) {
+            let row = createElement("div", "row mb-2");
+
+            let formCheck = createElement("div", "form-check");
+            let input = createElement("input", "form-check-input");
+            input.setAttribute("type", "checkbox");
+            input.id = `AchDetail${detail.sortIndex}`;
+            input.dataset.achievementHrid = detail.hrid;
+            input.addEventListener("input", function (e) {
+                const hrid = e.target.dataset.achievementHrid;
+                player.achievements[hrid] = e.target.checked;
+            });
+            formCheck.appendChild(input);
+
+            let name = createElement("label", "form-check-label", detail.name);
+            name.setAttribute("data-i18n", "achievementNames." + detail.hrid);
+            name.setAttribute("for", `AchDetail${detail.sortIndex}`);
+            formCheck.appendChild(name);
+            row.appendChild(formCheck);
+            cardBody.appendChild(row);
+        }
+        cardMain.appendChild(cardBody);
+        card.appendChild(cardMain);
+
+        newChildren.push(card);
+    }
+
+    achievementsList.replaceChildren(...newChildren);
 }
 
 function initEnhancementLevelInput(equipmentType) {
@@ -4076,6 +4144,7 @@ function updateContent() {
 
 initEquipmentSection();
 initHouseRoomsModal();
+initAchievementsModal();
 initLevelSection();
 initFoodSection();
 initDrinksSection();

@@ -100,5 +100,11 @@
     "cast": " cast ",
     "to": " to ",
     "dealDamage": " deal damage ",
-    "playersHp": "Players HP: "
+    "playersHp": "Players HP: ",
+    "Experiment" : {
+        "ExperimentalFeatures" : "Experimental Features",
+        "batchSimFromJson" : "Run batch simulations from JSON files",
+        "upload" : "Upload",
+        "download" : "Download Results"
+    }
 }
