@@ -104,7 +104,10 @@
     "Experiment" : {
         "ExperimentalFeatures" : "Experimental Features",
         "batchSimFromJson" : "Run batch simulations from JSON files",
-        "upload" : "Upload",
-        "download" : "Download Results"
+        "uploadAndRun" : "Upload & Run",
+        "download" : "Download Results",
+        "dungeonStartWave" : "Dungeon Start Wave",
+        "wave" : "Wave"
+
     }
 }

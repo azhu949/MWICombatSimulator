@@ -3,6 +3,7 @@ import CombatUnit from "./combatUnit";
 import Consumable from "./consumable";
 import Equipment from "./equipment";
 import HouseRoom from "./houseRoom";
+import Achievement from "./achievement";
 
 class Player extends CombatUnit {
     equipment = {
@@ -50,6 +51,8 @@ class Player extends CombatUnit {
                 player.houseRooms.push(new HouseRoom(houseRoom[0], houseRoom[1]))
             }
         });
+
+        player.achievements = new Achievement(dto.achievements);
 
         player.debuffOnLevelGap = dto.debuffOnLevelGap;
 

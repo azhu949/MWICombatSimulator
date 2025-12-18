@@ -202,6 +202,12 @@
                                 House Rooms
                             </button>
                         </div>
+                        <div class="row mb-2">
+                            <button id="buttonAchievementsModal" class="btn btn-primary" type="button"
+                                data-bs-toggle="modal" data-bs-target="#achievementsModal" data-i18n="achievementsPanel.achievements">
+                                House Rooms
+                            </button>
+                        </div>
                         <!-- #endregion -->
                         <div class="row">
                             <b data-i18n="common:priceSettings.title">Price Settings</b>
@@ -546,7 +552,15 @@
                                     Wipe Events
                                 </button>
                             </div>
-                        </div>                        
+                        </div>
+                        <div class="row pt-3">
+                            <div class="col-md-auto">
+                                <button id="buttonExperimentalFeatures" class="btn btn-primary" type="button"
+                                    data-bs-toggle="modal" data-bs-target="#ExperimentalFeaturesModal" data-i18n="common:Experiment.ExperimentalFeatures">
+                                    Experiment Feautres
+                                </button>
+                            </div>
+                        </div>
                         <!-- #endregion -->
                     </div>
                     <div class="col-md-7">
@@ -1643,17 +1657,79 @@
         </div>
         <!-- endregion -->
     </div>
+        <div class="modal" id="ExperimentalFeaturesModal" tabindex="-1">
+        <!-- #region Patch Notes Modal -->
+        <div class="modal-dialog modal-lg">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" data-i18n="common:Experiment.ExperimentalFeatures">Experimental Features</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div class="col-12 pt-1">
+                            <div class="outlined-box p-3">
+                                <div class="row mb-3">
+                                    <b data-i18n="common:Experiment.batchSimFromJson">Run batch simulations from JSON files</b>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="col-md-auto">
+                                        <input type="file" id="inputUploadJSONSimulation" class="form-control" />
+                                    </div>
+                                    <div class="col-md-auto">
+                                        <button id="buttonUploadJSONSimulate" class="btn btn-primary" type="button" data-i18n="common:Experiment.uploadAndRun" disabled>
+                                            Upload&Run
+                                        </button>
+                                    </div>
+                                    <div class="col-md-auto">
+                                        <button id="buttonDownloadResults" class="btn btn-primary" type="button" data-i18n="common:Experiment.download" disabled>
+                                            Download Results
+                                        </button>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="outlined-box p-3">
+                                <div class="row mb-3">
+                                    <b data-i18n="common:Experiment.dungeonStartWave">Dungeon Start Wave Setting</b>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-auto">
+                                            <div class="form-check form-switch mb-0">
+                                                <input class="form-check-input" type="checkbox" id="dungeonStartWaveToggle" disabled>
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <div class="input-group">
+                                                <input type="number" class="form-control" id="startWaveInput" min="1" max="100" value="1" required="">
+                                                <span class="input-group-text" data-i18n="common:Experiment.wave">Wave</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="common:controls.close">Close</button>
+                </div>
+            </div>
+        </div>
+        <!-- #endregion -->
+    </div>
     <div class="modal" id="patchNotesModal" tabindex="-1">
         <!-- #region Patch Notes Modal -->
         <div class="modal-dialog modal-lg">
             <div class="modal-content">
                 <div class="modal-header">
-                    <h5 class="modal-title">Patch Notes</h5>
+                    <h5 class="modal-title" data-i18n="common:patchNotes">Patch Notes</h5>
                     <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
                 </div>
                 <div class="modal-body">
                     <div class="container-fluid">
-                        <div class="row" id="patchNotes">                            
+                        <div class="row" id="patchNotes">
                         </div>
                     </div>
                 </div>
@@ -1741,6 +1817,26 @@
                 <div class="modal-body">
                     <div class="container-fluid">
                         <div id="houseRoomsList"></div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="common:controls.close">Close</button>
+                </div>
+            </div>
+        </div>
+        <!-- #endregion -->
+    </div>
+    <div class="modal" id="achievementsModal" tabindex="-1">
+        <!-- #region Achievements Modal -->
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" data-i18n="achievementsPanel.achievements">Achievements</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="container-fluid">
+                        <div id="achievementsList"></div>
                     </div>
                 </div>
                 <div class="modal-footer">

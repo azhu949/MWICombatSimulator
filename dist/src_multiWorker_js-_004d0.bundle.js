@@ -100,7 +100,7 @@ onmessage = async function (event) {
                         const zoneIndex = zoneHrids.length - taskQueue.length;
                         const currentZone = taskQueue.shift();
 
-                        const simulationWorker = new Worker(new URL(/* worker import */ __webpack_require__.p + __webpack_require__.u(3), __webpack_require__.b));
+                        const simulationWorker = new Worker(new URL(/* worker import */ __webpack_require__.p + __webpack_require__.u(4), __webpack_require__.b));
 
                         // Do simulation
                         let workerMessage = {

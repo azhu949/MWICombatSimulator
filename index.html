@@ -1677,17 +1677,38 @@
                                         <input type="file" id="inputUploadJSONSimulation" class="form-control" />
                                     </div>
                                     <div class="col-md-auto">
-                                        <button id="buttonUploadJSONSimulate" class="btn btn-primary" type="button" data-i18n="common:Experiment.upload">
-                                            Upload
+                                        <button id="buttonUploadJSONSimulate" class="btn btn-primary" type="button" data-i18n="common:Experiment.uploadAndRun" disabled>
+                                            Upload&Run
                                         </button>
                                     </div>
                                     <div class="col-md-auto">
-                                        <button id="buttonDownloadResults" class="btn btn-primary" type="button" data-i18n="common:Experiment.download">
+                                        <button id="buttonDownloadResults" class="btn btn-primary" type="button" data-i18n="common:Experiment.download" disabled>
                                             Download Results
                                         </button>
                                     </div>
                                 </div>
                             </div>
+                            <div class="outlined-box p-3">
+                                <div class="row mb-3">
+                                    <b data-i18n="common:Experiment.dungeonStartWave">Dungeon Start Wave Setting</b>
+                                </div>
+                                <div class="row mb-2">
+                                    <div class="row align-items-center">
+                                        <div class="col-md-auto">
+                                            <div class="form-check form-switch mb-0">
+                                                <input class="form-check-input" type="checkbox" id="dungeonStartWaveToggle" disabled>
+                                            </div>
+                                        </div>
+                                        <div class="col-auto">
+                                            <div class="input-group">
+                                                <input type="number" class="form-control" id="startWaveInput" min="1" max="100" value="1" required="">
+                                                <span class="input-group-text" data-i18n="common:Experiment.wave">Wave</span>
+                                            </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+
                         </div>
                     </div>
                 </div>
