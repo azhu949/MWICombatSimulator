@@ -2011,8 +2011,19 @@ function initAchievementsModal(){
         bufDesc.appendChild(buffValue);
         cardHeader.appendChild(bufDesc);
 
-        let cardStatics = createElement("div", "ms-auto", `(0/${detailMapCount})`);
+        let cardStatics = createElement("div", "ms-auto btn", `(0/${detailMapCount})`);
         cardStatics.id = `AchTier${tier.sortIndex}Statics`;
+        cardStatics.dataset.checked = "true";
+        cardStatics.addEventListener("click", function (e) {
+            const checks = document.querySelectorAll(`input[data-achievement-hrid][data-tier="${tier.sortIndex}"]`);
+            for (const check of checks) {
+                check.checked = cardStatics.dataset.checked == "true";
+                const hrid = check.dataset.achievementHrid;
+                player.achievements[hrid] = check.checked;
+            }
+            cardStatics.dataset.checked = cardStatics.dataset.checked == "true" ? "false" : "true";
+            refreshAchievementStatics();
+        });
         cardHeader.appendChild(cardStatics);
 
         card.appendChild(cardHeader);
