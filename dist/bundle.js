@@ -1806,7 +1806,7 @@ let simStartTime = 0;
 
 let worker = new Worker(new URL(/* worker import */ __webpack_require__.p + __webpack_require__.u(1), __webpack_require__.b));
 let multiWorker = new Worker(new URL(/* worker import */ __webpack_require__.p + __webpack_require__.u("src_multiWorker_js-_004d1"), __webpack_require__.b));
-
+let workerPool = [];
 
 
 let player = new _combatsimulator_player_js__WEBPACK_IMPORTED_MODULE_1__["default"]();

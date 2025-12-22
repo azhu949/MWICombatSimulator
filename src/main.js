@@ -30,7 +30,7 @@ let simStartTime = 0;
 
 let worker = new Worker(new URL("worker.js", import.meta.url));
 let multiWorker = new Worker(new URL("multiWorker.js", import.meta.url));
-
+let workerPool = [];
 
 
 let player = new Player();
