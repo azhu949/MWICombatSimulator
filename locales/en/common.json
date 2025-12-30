@@ -71,6 +71,7 @@
         "dungeonsCompleted": "Dungeons Completed",
         "dungeonsFailed": "Dungeons Failed",
         "averageTime": "Average Time",
+        "minimumTime": "Minimum Time",
         "maxEnrageStack": "Max Stack of Enrage",
         "debuffOnLevelGap": "Debuff on Level Gap"
     },

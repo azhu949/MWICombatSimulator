@@ -668,6 +668,9 @@ class CombatSimulator extends EventTarget {
 
             if (this.zone.isDungeon) {
                 this.simResult.updateTimeSpentAlive("#" + (this.zone.encountersKilled - 1).toString(), false, this.simulationTime);
+                if (this.zone.encountersKilled > this.zone.dungeonSpawnInfo.maxWaves) {
+                    this.simResult.updateDungenonFinish("#1", this.simulationTime);
+                }
             }
             this.simResult.addEncounterEnd();
             // console.log("All enemies died");

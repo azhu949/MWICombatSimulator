@@ -1010,6 +1010,9 @@ class CombatSimulator extends EventTarget {
 
             if (this.zone.isDungeon) {
                 this.simResult.updateTimeSpentAlive("#" + (this.zone.encountersKilled - 1).toString(), false, this.simulationTime);
+                if (this.zone.encountersKilled > this.zone.dungeonSpawnInfo.maxWaves) {
+                    this.simResult.updateDungenonFinish("#1", this.simulationTime);
+                }
             }
             this.simResult.addEncounterEnd();
             // console.log("All enemies died");
@@ -4109,6 +4112,7 @@ class SimResult {
         this.maxWaveReached = 0;
         this.numberOfPlayers = numberOfPlayers;
         this.maxEnrageStack = 0;
+        this.minDungenonTime = 0;
 
         this.wipeEvents = [];
     }
@@ -4144,6 +4148,19 @@ class SimResult {
             this.timeSpentAlive[i].alive = false;
             this.timeSpentAlive[i].timeSpentAlive += timeAlive;
             this.timeSpentAlive[i].count += 1;
+        }
+    }
+
+    updateDungenonFinish(beginFlag, finishTime) {
+        const i = this.timeSpentAlive.findIndex(e => e.name === beginFlag); 
+        if (i == -1) {
+            return;
+        }
+
+        const currentDungenonTime = finishTime - this.timeSpentAlive[i].spawnedAt;
+
+        if (this.minDungenonTime == 0 || this.minDungenonTime > currentDungenonTime) {
+            this.minDungenonTime = currentDungenonTime;
         }
     }
 

@@ -1655,6 +1655,12 @@ function showKills(simResult, playerToDisplay) {
         let averageTime = (hoursSimulated * 60 / simResult.dungeonsCompleted).toFixed(1);
         encountersRow = createRow(["col-md-6", "col-md-6 text-end"], ["Average Time", averageTime]);
         encountersRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.averageTime");
+        if (simResult.minDungenonTime > 0) {
+            let minimumTime = (simResult.minDungenonTime / ONE_SECOND / 60).toFixed(1);
+            let minimumTimeRow = createRow(["col-md-6", "col-md-6 text-end"], ["Minimum Time", minimumTime]);
+            minimumTimeRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.minimumTime");
+            newChildren.push(minimumTimeRow);
+        }
     } else {
         encountersPerHour = (simResult.encounters / hoursSimulated).toFixed(1);
         encountersRow = createRow(["col-md-6", "col-md-6 text-end"], ["Encounters", encountersPerHour]);

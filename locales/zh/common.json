@@ -70,7 +70,8 @@
         "maxWaveReached" : "已完成最大波次",
         "dungeonsCompleted": "地下城的完成次数",
         "dungeonsFailed": "地下城的团灭次数",
-        "averageTime": "完成平均时间",
+        "averageTime": "平均完成时间",
+        "minimumTime": "最短完成时间",
         "maxEnrageStack": "最大狂暴层数",
         "debuffOnLevelGap": "等级差距惩罚"
     },
