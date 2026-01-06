@@ -1471,7 +1471,7 @@ class Trigger {
   \************************/
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"2025年12月30日":["地下城增加最短完成时间记录"],"2025年12月24日":["修复技能释放选择的缺陷，之前可能存在异常缺蓝等情况"],"2025年12月18日":["支持成就系统及对应buff效果","地下城怪物的掉落不再生效"],"2025年12月6日":["修复游戏更新后技能在无trigger情况下由[]变为null时造成的异常"],"2025年11月7日":["兼容支持从CN镜像站调用API获取价格"],"2025年10月14日":["修复怪物攻击间隔数值未能适配攻击等级的问题"],"2025年9月17日":["修复暴击光环的trigger缺陷"],"2025年9月9日":["复活时不再错误的清空所有buff","团灭日志增加反伤、荆棘和DOT伤害记录"],"2025年8月21日":["增加单挑战斗批量模拟和对应怪物选项","增加MooPass和社区buff的选项及对应功能","精炼装备数值加强","秘法主教属性削弱","init_client_info_v1.20250819.0.json游戏数据更新"],"2025年8月20日":["修复经验和掉落计算在极端情况下的可能异常"],"2025年8月19日":["合并Test和Temp分支的rework内容","init_client_info_v1.20250818.0.json游戏数据更新"],"2025年8月18日":["修复贯穿技能可能对相同目标造成重复伤害的问题","修复团灭日志在黑夜模式下的显示异常","战斗等级公式更新","钟乳石魔像的荆棘数值调整","init_client_info_v1.20250626.0_0817.json游戏数据更新"],"2025年8月16日":["增加停止模拟按钮 by BKN46","增加技能顺序调整按钮 by BKN46","增加团灭日志 by TruthLight","怪物属性更新","奥术反射更名为报应","init_client_info_v1.20250626.0_0815.json游戏数据更新"],"2025年8月14日":["怪物属性更新","远程和法师装备属性调整","反伤计算上限调整","修复战斗间隔释放技能的异常","修复技能释放判断逻辑的异常","法力值耗尽比例更加准确","调整远程经验的15%和魔法经验的12%映射到攻击经验","init_client_info_v1.20250626.0_0813.json游戏数据更新"],"2025年8月11日":["怪物属性更新","近战和物理技能施法时间更新","盾击和重锤数值调整","双手盾防御经验加成调整","init_client_info_v1.20250626.0_0811.json游戏数据更新"],"2025年8月8日":["实现组队等级差过大时对掉落和经验的惩罚","实现怪物经验随狂暴进度百分比增加","暴击光环数值调整","增加战斗等级数值显示","增加等级差距惩罚数值显示","init_client_info_v1.20250626.0_0807.json游戏数据更新"],"2025年8月7日":["修复组队战斗时一些重复物品掉落数量异常的缺陷 by contr4l","init_client_info_v1.20250626.0_0806.json游戏数据更新"],"2025年8月3日":["怪物狂暴机制及对应trigger生效","精炼装备更新，护符数值调整，守护光环增加闪避率","init_client_info_v1.20250626.0_0802.json游戏数据更新","狂怒层数修正为5层","招架结算机制调整"],"2025年7月31日":["物品数据和怪物属性更新","尖刺外壳和奥术反射重做","强化数值更新","删除异常trigger","狮鹫盾的虚弱重做","君王剑招架对队友生效","狂怒特效最大层数修正为6层","涟漪特效增加10MP恢复","反伤正确显示其命中率","反伤机制调整","同步双手盾属性和反伤荆棘技能数值的调整"],"2025年7月22日":["暴击光环受远程等级加成","光环基础数值和等级加成调整"],"2025年7月17日":["批量模拟支持勾选星球","经验分配比例调整至30%+70%","光环及对应trigger，并按对应技能等级百分比加成","水火自然默认调整为元素光环","init_client_info_v1.20250626.0_0717.json游戏数据更新"],"2025年7月11日":["怪物经验和技能等级公式更新","闪避和抗性计算公式更新","力量更替为近战以及对应的兼容","init_client_info_v1.20250626.0_0711.json游戏数据更新"],"2025年7月10日":["修复贯穿技能由敌人释放时可能多次击中相同目标的缺陷"],"2025年7月9日":["掉落和掉率调整","经验调整","疫病射击和破甲之刺调整","怪物自动恢复移除","疫病射击trigger调整","获取价格使用官方API"],"2025年7月7日":["怪物属性缩放和地图多难度","法师技能调整和装备上\'技能伤害\'词缀生效","攻击等级和房屋等级对施法速度的影响生效","物品调整","精准重做以攻击等级计算","TEST 远程魔法经验的10%映射到攻击经验！","经验重做和护符装备"]}');
+module.exports = /*#__PURE__*/JSON.parse('{"2025年12月31日":["实验性功能新增HP/MP可视化图表 by wangchyan","修复防御伤害未正确受damge加成的异常 by wangchyan","修复守护光环的治疗加成效果未生效的异常 by wangchyan","修复快速治疗等技能未正确选择最低%生命为目标的错误 by wangchyan"],"2025年12月30日":["地下城增加最短完成时间记录"],"2025年12月24日":["修复技能释放选择的缺陷，之前可能存在异常缺蓝等情况"],"2025年12月18日":["支持成就系统及对应buff效果","地下城怪物的掉落不再生效"],"2025年12月6日":["修复游戏更新后技能在无trigger情况下由[]变为null时造成的异常"],"2025年11月7日":["兼容支持从CN镜像站调用API获取价格"],"2025年10月14日":["修复怪物攻击间隔数值未能适配攻击等级的问题"],"2025年9月17日":["修复暴击光环的trigger缺陷"],"2025年9月9日":["复活时不再错误的清空所有buff","团灭日志增加反伤、荆棘和DOT伤害记录"],"2025年8月21日":["增加单挑战斗批量模拟和对应怪物选项","增加MooPass和社区buff的选项及对应功能","精炼装备数值加强","秘法主教属性削弱","init_client_info_v1.20250819.0.json游戏数据更新"],"2025年8月20日":["修复经验和掉落计算在极端情况下的可能异常"],"2025年8月19日":["合并Test和Temp分支的rework内容","init_client_info_v1.20250818.0.json游戏数据更新"],"2025年8月18日":["修复贯穿技能可能对相同目标造成重复伤害的问题","修复团灭日志在黑夜模式下的显示异常","战斗等级公式更新","钟乳石魔像的荆棘数值调整","init_client_info_v1.20250626.0_0817.json游戏数据更新"],"2025年8月16日":["增加停止模拟按钮 by BKN46","增加技能顺序调整按钮 by BKN46","增加团灭日志 by TruthLight","怪物属性更新","奥术反射更名为报应","init_client_info_v1.20250626.0_0815.json游戏数据更新"],"2025年8月14日":["怪物属性更新","远程和法师装备属性调整","反伤计算上限调整","修复战斗间隔释放技能的异常","修复技能释放判断逻辑的异常","法力值耗尽比例更加准确","调整远程经验的15%和魔法经验的12%映射到攻击经验","init_client_info_v1.20250626.0_0813.json游戏数据更新"],"2025年8月11日":["怪物属性更新","近战和物理技能施法时间更新","盾击和重锤数值调整","双手盾防御经验加成调整","init_client_info_v1.20250626.0_0811.json游戏数据更新"],"2025年8月8日":["实现组队等级差过大时对掉落和经验的惩罚","实现怪物经验随狂暴进度百分比增加","暴击光环数值调整","增加战斗等级数值显示","增加等级差距惩罚数值显示","init_client_info_v1.20250626.0_0807.json游戏数据更新"],"2025年8月7日":["修复组队战斗时一些重复物品掉落数量异常的缺陷 by contr4l","init_client_info_v1.20250626.0_0806.json游戏数据更新"],"2025年8月3日":["怪物狂暴机制及对应trigger生效","精炼装备更新，护符数值调整，守护光环增加闪避率","init_client_info_v1.20250626.0_0802.json游戏数据更新","狂怒层数修正为5层","招架结算机制调整"],"2025年7月31日":["物品数据和怪物属性更新","尖刺外壳和奥术反射重做","强化数值更新","删除异常trigger","狮鹫盾的虚弱重做","君王剑招架对队友生效","狂怒特效最大层数修正为6层","涟漪特效增加10MP恢复","反伤正确显示其命中率","反伤机制调整","同步双手盾属性和反伤荆棘技能数值的调整"],"2025年7月22日":["暴击光环受远程等级加成","光环基础数值和等级加成调整"],"2025年7月17日":["批量模拟支持勾选星球","经验分配比例调整至30%+70%","光环及对应trigger，并按对应技能等级百分比加成","水火自然默认调整为元素光环","init_client_info_v1.20250626.0_0717.json游戏数据更新"],"2025年7月11日":["怪物经验和技能等级公式更新","闪避和抗性计算公式更新","力量更替为近战以及对应的兼容","init_client_info_v1.20250626.0_0711.json游戏数据更新"],"2025年7月10日":["修复贯穿技能由敌人释放时可能多次击中相同目标的缺陷"],"2025年7月9日":["掉落和掉率调整","经验调整","疫病射击和破甲之刺调整","怪物自动恢复移除","疫病射击trigger调整","获取价格使用官方API"],"2025年7月7日":["怪物属性缩放和地图多难度","法师技能调整和装备上\'技能伤害\'词缀生效","攻击等级和房屋等级对施法速度的影响生效","物品调整","精准重做以攻击等级计算","TEST 远程魔法经验的10%映射到攻击经验！","经验重做和护符装备"]}');
 
 /***/ }),
 
@@ -1481,7 +1481,7 @@ module.exports = /*#__PURE__*/JSON.parse('{"2025年12月30日":["地下城增加
   \********************************************************/
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"/abilities/aqua_arrow":{"hrid":"/abilities/aqua_arrow","name":"Aqua Arrow","description":"Shoots an arrow made of water at the targeted enemy","isSpecialAbility":false,"manaCost":35,"cooldownDuration":18000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/ranged","damageType":"/damage_types/water","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.2,"baseDamageRatio":0.9,"baseDamageRatioLevelBonus":0.009,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":15},"/abilities/berserk":{"hrid":"/abilities/berserk","name":"Berserk","description":"Greatly increases physical damage temporarily","isSpecialAbility":false,"manaCost":65,"cooldownDuration":30000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/berserk","typeHrid":"/buff_types/physical_amplify","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.18,"flatBoostLevelBonus":0.0018,"startTime":"0001-01-01T00:00:00Z","duration":20000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/berserk","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":43},"/abilities/cleave":{"hrid":"/abilities/cleave","name":"Cleave","description":"Cleaves all enemies","isSpecialAbility":false,"manaCost":35,"cooldownDuration":20000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/slash","damageType":"/damage_types/physical","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.2,"baseDamageRatio":0.5,"baseDamageRatioLevelBonus":0.005,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/number_of_active_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1},{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":6},"/abilities/crippling_slash":{"hrid":"/abilities/crippling_slash","name":"Crippling Slash","description":"Slashes all enemies and reduce their damage","isSpecialAbility":false,"manaCost":55,"cooldownDuration":20000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/slash","damageType":"/damage_types/physical","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.2,"baseDamageRatio":0.6,"baseDamageRatioLevelBonus":0.006,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/crippling_slash","typeHrid":"/buff_types/damage","ratioBoost":-0.12,"ratioBoostLevelBonus":-0.0012,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":12000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":8},"/abilities/critical_aura":{"hrid":"/abilities/critical_aura","name":"Critical Aura","description":"Increases critical rate and critical damage for all allies. Effect increases by (0.005x) per caster\'s Ranged level","isSpecialAbility":true,"manaCost":100,"cooldownDuration":120000000000,"castDuration":200000000,"abilityEffects":[{"targetType":"allAllies","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/critical_aura_rate","typeHrid":"/buff_types/critical_rate","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.02,"flatBoostLevelBonus":0.0004,"multiplierForSkillHrid":"/skills/ranged","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000},{"uniqueHrid":"/buff_uniques/critical_aura_damage","typeHrid":"/buff_types/critical_damage","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.02,"flatBoostLevelBonus":0.0004,"multiplierForSkillHrid":"/skills/ranged","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/critical_aura","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":55},"/abilities/elemental_affinity":{"hrid":"/abilities/elemental_affinity","name":"Elemental Affinity","description":"Greatly increases elemental damage temporarily","isSpecialAbility":false,"manaCost":65,"cooldownDuration":30000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/elemental_affinity_water_amplify","typeHrid":"/buff_types/water_amplify","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.4,"flatBoostLevelBonus":0.004,"startTime":"0001-01-01T00:00:00Z","duration":20000000000},{"uniqueHrid":"/buff_uniques/elemental_affinity_nature_amplify","typeHrid":"/buff_types/nature_amplify","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.4,"flatBoostLevelBonus":0.004,"startTime":"0001-01-01T00:00:00Z","duration":20000000000},{"uniqueHrid":"/buff_uniques/elemental_affinity_fire_amplify","typeHrid":"/buff_types/fire_amplify","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.4,"flatBoostLevelBonus":0.004,"startTime":"0001-01-01T00:00:00Z","duration":20000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/elemental_affinity","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":45},"/abilities/elusiveness":{"hrid":"/abilities/elusiveness","name":"Elusiveness","description":"Greatly increases evasion temporarily","isSpecialAbility":false,"manaCost":65,"cooldownDuration":30000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/elusiveness","typeHrid":"/buff_types/evasion","ratioBoost":0.2,"ratioBoostLevelBonus":0.002,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":20000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/elusiveness","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":41},"/abilities/entangle":{"hrid":"/abilities/entangle","name":"Entangle","description":"Entangles the targeted enemy, dealing damage with chance to stun","isSpecialAbility":false,"manaCost":10,"cooldownDuration":0,"castDuration":3000000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/nature","baseDamageFlat":10,"baseDamageFlatLevelBonus":0.05,"baseDamageRatio":0.44,"baseDamageRatioLevelBonus":0.0022,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0.1,"stunDuration":2000000000,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":26},"/abilities/fierce_aura":{"hrid":"/abilities/fierce_aura","name":"Fierce Aura","description":"Increases physical amplify for all allies. Effect increases by (0.005x) per caster\'s Melee level","isSpecialAbility":true,"manaCost":100,"cooldownDuration":120000000000,"castDuration":200000000,"abilityEffects":[{"targetType":"allAllies","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/fierce_aura","typeHrid":"/buff_types/physical_amplify","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.04,"flatBoostLevelBonus":0.0008,"multiplierForSkillHrid":"/skills/melee","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/fierce_aura","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":54},"/abilities/fireball":{"hrid":"/abilities/fireball","name":"Fireball","description":"Casts a fireball at the targeted enemy","isSpecialAbility":false,"manaCost":10,"cooldownDuration":0,"castDuration":3000000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/fire","baseDamageFlat":10,"baseDamageFlatLevelBonus":0.05,"baseDamageRatio":0.5,"baseDamageRatioLevelBonus":0.0025,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":30},"/abilities/firestorm":{"hrid":"/abilities/firestorm","name":"Firestorm","description":"Casts a firestorm at all enemies","isSpecialAbility":false,"manaCost":75,"cooldownDuration":15000000000,"castDuration":2000000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/fire","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.1,"baseDamageRatio":0.6,"baseDamageRatioLevelBonus":0.003,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":1,"damageOverTimeDuration":6000000000,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/number_of_active_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1},{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":32},"/abilities/flame_arrow":{"hrid":"/abilities/flame_arrow","name":"Flame Arrow","description":"Shoots a flaming arrow at the targeted enemy","isSpecialAbility":false,"manaCost":35,"cooldownDuration":18000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/ranged","damageType":"/damage_types/fire","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.2,"baseDamageRatio":0.9,"baseDamageRatioLevelBonus":0.009,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":16},"/abilities/flame_blast":{"hrid":"/abilities/flame_blast","name":"Flame Blast","description":"Casts a flame blast at all enemies","isSpecialAbility":false,"manaCost":45,"cooldownDuration":15000000000,"castDuration":2000000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/fire","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.1,"baseDamageRatio":0.8,"baseDamageRatioLevelBonus":0.004,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/number_of_active_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1},{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":31},"/abilities/fracturing_impact":{"hrid":"/abilities/fracturing_impact","name":"Fracturing Impact","description":"Attacks all enemies, dealing damage and increases their damage taken","isSpecialAbility":false,"manaCost":55,"cooldownDuration":20000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/smash","damageType":"/damage_types/physical","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.2,"baseDamageRatio":0.6,"baseDamageRatioLevelBonus":0.006,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/fracturing_impact","typeHrid":"/buff_types/damage_taken","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.05,"flatBoostLevelBonus":0.0005,"startTime":"0001-01-01T00:00:00Z","duration":12000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/number_of_active_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1},{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":12},"/abilities/frenzy":{"hrid":"/abilities/frenzy","name":"Frenzy","description":"Greatly increases attack speed temporarily","isSpecialAbility":false,"manaCost":65,"cooldownDuration":30000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/frenzy","typeHrid":"/buff_types/attack_speed","ratioBoost":0.24,"ratioBoostLevelBonus":0.0024,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":20000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/frenzy","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":44},"/abilities/frost_surge":{"hrid":"/abilities/frost_surge","name":"Frost Surge","description":"Casts frost surge at all enemies, dealing damage and reducing evasion","isSpecialAbility":false,"manaCost":75,"cooldownDuration":15000000000,"castDuration":2000000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/water","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.15,"baseDamageRatio":1,"baseDamageRatioLevelBonus":0.005,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/frost_surge","typeHrid":"/buff_types/evasion","ratioBoost":-0.1,"ratioBoostLevelBonus":-0.001,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":9000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/number_of_active_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1},{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":24},"/abilities/guardian_aura":{"hrid":"/abilities/guardian_aura","name":"Guardian Aura","description":"Increases healing amplify, evasion, armor, and resistances for all allies. Effect increases by (0.005x) per caster\'s Defense level","isSpecialAbility":true,"manaCost":100,"cooldownDuration":120000000000,"castDuration":200000000,"abilityEffects":[{"targetType":"allAllies","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/guardian_aura_healing_amplify","typeHrid":"/buff_types/healing_amplify","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.05,"flatBoostLevelBonus":0.001,"multiplierForSkillHrid":"/skills/defense","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000},{"uniqueHrid":"/buff_uniques/guardian_aura_evasion","typeHrid":"/buff_types/evasion","ratioBoost":0.02,"ratioBoostLevelBonus":0.0004,"flatBoost":0,"flatBoostLevelBonus":0,"multiplierForSkillHrid":"/skills/defense","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000},{"uniqueHrid":"/buff_uniques/guardian_aura_armor","typeHrid":"/buff_types/armor","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":5,"flatBoostLevelBonus":0.1,"multiplierForSkillHrid":"/skills/defense","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000},{"uniqueHrid":"/buff_uniques/guardian_aura_water_resistance","typeHrid":"/buff_types/water_resistance","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":5,"flatBoostLevelBonus":0.1,"multiplierForSkillHrid":"/skills/defense","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000},{"uniqueHrid":"/buff_uniques/guardian_aura_nature_resistance","typeHrid":"/buff_types/nature_resistance","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":5,"flatBoostLevelBonus":0.1,"multiplierForSkillHrid":"/skills/defense","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000},{"uniqueHrid":"/buff_uniques/guardian_aura_fire_resistance","typeHrid":"/buff_types/fire_resistance","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":5,"flatBoostLevelBonus":0.1,"multiplierForSkillHrid":"/skills/defense","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/guardian_aura","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":53},"/abilities/heal":{"hrid":"/abilities/heal","name":"Heal","description":"Casts heal on yourself","isSpecialAbility":false,"manaCost":60,"cooldownDuration":15000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/heal","combatStyleHrid":"/combat_styles/magic","damageType":"","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.3,"baseDamageRatio":0.45,"baseDamageRatioLevelBonus":0.0045,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/missing_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":35},"/abilities/ice_spear":{"hrid":"/abilities/ice_spear","name":"Ice Spear","description":"Casts an ice spear at the targeted enemy, dealing damage and reducing attack speed","isSpecialAbility":false,"manaCost":45,"cooldownDuration":15000000000,"castDuration":2000000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/water","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.1,"baseDamageRatio":1.3,"baseDamageRatioLevelBonus":0.0065,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/ice_spear","typeHrid":"/buff_types/attack_speed","ratioBoost":-0.25,"ratioBoostLevelBonus":-0.0025,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":8000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":23},"/abilities/impale":{"hrid":"/abilities/impale","name":"Impale","description":"Impales the targeted enemy","isSpecialAbility":false,"manaCost":35,"cooldownDuration":20000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/stab","damageType":"/damage_types/physical","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.2,"baseDamageRatio":0.9,"baseDamageRatioLevelBonus":0.009,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":2},"/abilities/insanity":{"hrid":"/abilities/insanity","name":"Insanity","description":"Increases damage, attack speed, and cast speed temporarily at the cost of HP","isSpecialAbility":true,"manaCost":80,"cooldownDuration":90000000000,"castDuration":200000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/insanity_damage","typeHrid":"/buff_types/damage","ratioBoost":0.3,"ratioBoostLevelBonus":0.0015,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":12000000000},{"uniqueHrid":"/buff_uniques/insanity_attack_speed","typeHrid":"/buff_types/attack_speed","ratioBoost":0.3,"ratioBoostLevelBonus":0.0015,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":12000000000},{"uniqueHrid":"/buff_uniques/insanity_cast_speed","typeHrid":"/buff_types/cast_speed","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.3,"flatBoostLevelBonus":0.0015,"startTime":"0001-01-01T00:00:00Z","duration":12000000000}]},{"targetType":"self","effectType":"/ability_effect_types/spend_hp","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0.3,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/insanity","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":50},"/abilities/invincible":{"hrid":"/abilities/invincible","name":"Invincible","description":"Tremendously increases armor, resistances, and tenacity temporarily","isSpecialAbility":true,"manaCost":80,"cooldownDuration":90000000000,"castDuration":200000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/invincible_armor","typeHrid":"/buff_types/armor","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":700,"flatBoostLevelBonus":7,"startTime":"0001-01-01T00:00:00Z","duration":12000000000},{"uniqueHrid":"/buff_uniques/invincible_water_resistance","typeHrid":"/buff_types/water_resistance","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":700,"flatBoostLevelBonus":7,"startTime":"0001-01-01T00:00:00Z","duration":12000000000},{"uniqueHrid":"/buff_uniques/invincible_nature_resistance","typeHrid":"/buff_types/nature_resistance","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":700,"flatBoostLevelBonus":7,"startTime":"0001-01-01T00:00:00Z","duration":12000000000},{"uniqueHrid":"/buff_uniques/invincible_fire_resistance","typeHrid":"/buff_types/fire_resistance","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":700,"flatBoostLevelBonus":7,"startTime":"0001-01-01T00:00:00Z","duration":12000000000},{"uniqueHrid":"/buff_uniques/invincible_tenacity","typeHrid":"/buff_types/tenacity","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":700,"flatBoostLevelBonus":7,"startTime":"0001-01-01T00:00:00Z","duration":12000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/invincible","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":51},"/abilities/life_drain":{"hrid":"/abilities/life_drain","name":"Life Drain","description":"Drains the life force of the targeted enemy, dealing damage and healing the caster","isSpecialAbility":false,"manaCost":75,"cooldownDuration":15000000000,"castDuration":2000000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/nature","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.15,"baseDamageRatio":1.8,"baseDamageRatioLevelBonus":0.009,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0.08,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":29},"/abilities/maim":{"hrid":"/abilities/maim","name":"Maim","description":"Maims the targeted enemy and causes bleeding","isSpecialAbility":false,"manaCost":50,"cooldownDuration":20000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/slash","damageType":"/damage_types/physical","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.3,"baseDamageRatio":0.65,"baseDamageRatioLevelBonus":0.0065,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":1,"damageOverTimeDuration":9000000000,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/maim","typeHrid":"/buff_types/damage_taken","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.08,"flatBoostLevelBonus":0.0008,"startTime":"0001-01-01T00:00:00Z","duration":12000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":7},"/abilities/mana_spring":{"hrid":"/abilities/mana_spring","name":"Mana Spring","description":"Casts mana spring at all enemies, dealing damage and increasing ally MP regeneration","isSpecialAbility":false,"manaCost":75,"cooldownDuration":15000000000,"castDuration":2000000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/water","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.15,"baseDamageRatio":0.7,"baseDamageRatioLevelBonus":0.0035,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null},{"targetType":"allAllies","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/mana_spring","typeHrid":"/buff_types/mp_regen","ratioBoost":0.5,"ratioBoostLevelBonus":0.005,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":10000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/number_of_active_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1},{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":25},"/abilities/minor_heal":{"hrid":"/abilities/minor_heal","name":"Minor Heal","description":"Casts minor heal on yourself","isSpecialAbility":false,"manaCost":30,"cooldownDuration":15000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/heal","combatStyleHrid":"/combat_styles/magic","damageType":"","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.2,"baseDamageRatio":0.3,"baseDamageRatioLevelBonus":0.003,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/missing_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":34},"/abilities/mystic_aura":{"hrid":"/abilities/mystic_aura","name":"Mystic Aura","description":"Increases elemental amplify for all allies. Effect increases by (0.005x) per caster\'s Magic level","isSpecialAbility":true,"manaCost":100,"cooldownDuration":120000000000,"castDuration":200000000,"abilityEffects":[{"targetType":"allAllies","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/mystic_aura_water_amplify","typeHrid":"/buff_types/water_amplify","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.06,"flatBoostLevelBonus":0.0012,"multiplierForSkillHrid":"/skills/magic","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000},{"uniqueHrid":"/buff_uniques/mystic_aura_nature_amplify","typeHrid":"/buff_types/nature_amplify","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.06,"flatBoostLevelBonus":0.0012,"multiplierForSkillHrid":"/skills/magic","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000},{"uniqueHrid":"/buff_uniques/mystic_aura_fire_amplify","typeHrid":"/buff_types/fire_amplify","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.06,"flatBoostLevelBonus":0.0012,"multiplierForSkillHrid":"/skills/magic","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/mystic_aura","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":56},"/abilities/natures_veil":{"hrid":"/abilities/natures_veil","name":"Nature\'s Veil","description":"Cast\'s a veil over all enemies, dealing damage with a chance to blind","isSpecialAbility":false,"manaCost":75,"cooldownDuration":15000000000,"castDuration":2000000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/nature","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.15,"baseDamageRatio":0.9,"baseDamageRatioLevelBonus":0.0045,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0.5,"blindDuration":5000000000,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/number_of_active_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1},{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":28},"/abilities/penetrating_shot":{"hrid":"/abilities/penetrating_shot","name":"Penetrating Shot","description":"Shoots the targeted enemy. On each successful hit, will pierce and hit the next enemy","isSpecialAbility":false,"manaCost":55,"cooldownDuration":20000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/ranged","damageType":"/damage_types/physical","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.3,"baseDamageRatio":0.8,"baseDamageRatioLevelBonus":0.008,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":1,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":21},"/abilities/penetrating_strike":{"hrid":"/abilities/penetrating_strike","name":"Penetrating Strike","description":"Strikes the targeted enemy. On each successful hit, will pierce and hit the next enemy.","isSpecialAbility":false,"manaCost":55,"cooldownDuration":20000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/stab","damageType":"/damage_types/physical","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.3,"baseDamageRatio":0.8,"baseDamageRatioLevelBonus":0.008,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":1,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":4},"/abilities/pestilent_shot":{"hrid":"/abilities/pestilent_shot","name":"Pestilent Shot","description":"Shoots the targeted enemy, dealing damage and decreasing armor and resistances","isSpecialAbility":false,"manaCost":50,"cooldownDuration":20000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/ranged","damageType":"/damage_types/physical","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.3,"baseDamageRatio":1,"baseDamageRatioLevelBonus":0.01,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/pestilent_shot_armor","typeHrid":"/buff_types/armor","ratioBoost":-0.1,"ratioBoostLevelBonus":-0.001,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":12000000000},{"uniqueHrid":"/buff_uniques/pestilent_shot_water_resistance","typeHrid":"/buff_types/water_resistance","ratioBoost":-0.1,"ratioBoostLevelBonus":-0.001,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":12000000000},{"uniqueHrid":"/buff_uniques/pestilent_shot_nature_resistance","typeHrid":"/buff_types/nature_resistance","ratioBoost":-0.1,"ratioBoostLevelBonus":-0.001,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":12000000000},{"uniqueHrid":"/buff_uniques/pestilent_shot_fire_resistance","typeHrid":"/buff_types/fire_resistance","ratioBoost":-0.1,"ratioBoostLevelBonus":-0.001,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":12000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":20},"/abilities/poke":{"hrid":"/abilities/poke","name":"Poke","description":"Pokes the targeted enemy","isSpecialAbility":false,"manaCost":25,"cooldownDuration":15000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/stab","damageType":"/damage_types/physical","baseDamageFlat":10,"baseDamageFlatLevelBonus":0.1,"baseDamageRatio":0.6,"baseDamageRatioLevelBonus":0.006,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":1},"/abilities/precision":{"hrid":"/abilities/precision","name":"Precision","description":"Greatly increases accuracy temporarily","isSpecialAbility":false,"manaCost":65,"cooldownDuration":30000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/precision","typeHrid":"/buff_types/accuracy","ratioBoost":0.4,"ratioBoostLevelBonus":0.004,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":20000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/precision","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":42},"/abilities/promote":{"hrid":"/abilities/promote","name":"Promote","description":"Promotes a pawn","isSpecialAbility":true,"manaCost":100,"cooldownDuration":180000000000,"castDuration":10000000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/promote","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[],"sortIndex":57},"/abilities/provoke":{"hrid":"/abilities/provoke","name":"Provoke","description":"Tremendously increases threat rating","isSpecialAbility":false,"manaCost":150,"cooldownDuration":60000000000,"castDuration":200000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/provoke","typeHrid":"/buff_types/threat","ratioBoost":5,"ratioBoostLevelBonus":0.05,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":65000000000}]}],"defaultCombatTriggers":[],"sortIndex":39},"/abilities/puncture":{"hrid":"/abilities/puncture","name":"Puncture","description":"Punctures the targeted enemy\'s armor, dealing damage and temporarily reducing its armor","isSpecialAbility":false,"manaCost":50,"cooldownDuration":20000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/stab","damageType":"/damage_types/physical","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.3,"baseDamageRatio":1.1,"baseDamageRatioLevelBonus":0.011,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/puncture","typeHrid":"/buff_types/armor","ratioBoost":-0.2,"ratioBoostLevelBonus":-0.002,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":12000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":3},"/abilities/quick_aid":{"hrid":"/abilities/quick_aid","name":"Quick Aid","description":"Casts heal on the ally with the lowest HP percentage","isSpecialAbility":false,"manaCost":60,"cooldownDuration":12000000000,"castDuration":200000000,"abilityEffects":[{"targetType":"lowestHpAlly","effectType":"/ability_effect_types/heal","combatStyleHrid":"/combat_styles/magic","damageType":"","baseDamageFlat":40,"baseDamageFlatLevelBonus":0.4,"baseDamageRatio":0.3,"baseDamageRatioLevelBonus":0.003,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_allies","conditionHrid":"/combat_trigger_conditions/lowest_hp_percentage","comparatorHrid":"/combat_trigger_comparators/less_than_equal","value":75}],"sortIndex":36},"/abilities/quick_shot":{"hrid":"/abilities/quick_shot","name":"Quick Shot","description":"Takes a quick shot at the targeted enemy","isSpecialAbility":false,"manaCost":25,"cooldownDuration":15000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/ranged","damageType":"/damage_types/physical","baseDamageFlat":10,"baseDamageFlatLevelBonus":0.1,"baseDamageRatio":0.55,"baseDamageRatioLevelBonus":0.0055,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":14},"/abilities/rain_of_arrows":{"hrid":"/abilities/rain_of_arrows","name":"Rain Of Arrows","description":"Shoots a rain of arrows on all enemies","isSpecialAbility":false,"manaCost":35,"cooldownDuration":20000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/ranged","damageType":"/damage_types/physical","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.2,"baseDamageRatio":0.5,"baseDamageRatioLevelBonus":0.005,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/number_of_active_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1},{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":17},"/abilities/rejuvenate":{"hrid":"/abilities/rejuvenate","name":"Rejuvenate","description":"Heals all allies","isSpecialAbility":false,"manaCost":90,"cooldownDuration":25000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"allAllies","effectType":"/ability_effect_types/heal","combatStyleHrid":"/combat_styles/magic","damageType":"","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.3,"baseDamageRatio":0.2,"baseDamageRatioLevelBonus":0.002,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_allies","conditionHrid":"/combat_trigger_conditions/missing_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":37},"/abilities/retribution":{"hrid":"/abilities/retribution","name":"Retribution","description":"Gains retaliation temporarily","isSpecialAbility":false,"manaCost":65,"cooldownDuration":30000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/retribution","typeHrid":"/buff_types/retaliation","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.25,"flatBoostLevelBonus":0.0025,"startTime":"0001-01-01T00:00:00Z","duration":30000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/retribution","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":47},"/abilities/revive":{"hrid":"/abilities/revive","name":"Revive","description":"Revives a dead ally","isSpecialAbility":true,"manaCost":200,"cooldownDuration":300000000000,"castDuration":2000000000,"abilityEffects":[{"targetType":"deadAlly","effectType":"/ability_effect_types/revive","combatStyleHrid":"/combat_styles/magic","damageType":"","baseDamageFlat":100,"baseDamageFlatLevelBonus":1,"baseDamageRatio":1,"baseDamageRatioLevelBonus":0.01,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_allies","conditionHrid":"/combat_trigger_conditions/number_of_dead_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":49},"/abilities/scratch":{"hrid":"/abilities/scratch","name":"Scratch","description":"Scratches the targeted enemy","isSpecialAbility":false,"manaCost":25,"cooldownDuration":15000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/slash","damageType":"/damage_types/physical","baseDamageFlat":10,"baseDamageFlatLevelBonus":0.1,"baseDamageRatio":0.6,"baseDamageRatioLevelBonus":0.006,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":5},"/abilities/shield_bash":{"hrid":"/abilities/shield_bash","name":"Shield Bash","description":"Bashes the targeted enemy with a shield, dealing extra damage based on attacker\'s armor","isSpecialAbility":false,"manaCost":35,"cooldownDuration":12000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/smash","damageType":"/damage_types/physical","baseDamageFlat":10,"baseDamageFlatLevelBonus":0.1,"baseDamageRatio":0.3,"baseDamageRatioLevelBonus":0.003,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0.7,"armorDamageRatioLevelBonus":0.007,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":13},"/abilities/silencing_shot":{"hrid":"/abilities/silencing_shot","name":"Silencing Shot","description":"Takes a shot at the targeted enemy, temporarily silencing them","isSpecialAbility":false,"manaCost":50,"cooldownDuration":20000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/ranged","damageType":"/damage_types/physical","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.3,"baseDamageRatio":1,"baseDamageRatioLevelBonus":0.01,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0.6,"silenceDuration":5000000000,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":18},"/abilities/smack":{"hrid":"/abilities/smack","name":"Smack","description":"Smacks the targeted enemy","isSpecialAbility":false,"manaCost":25,"cooldownDuration":15000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/smash","damageType":"/damage_types/physical","baseDamageFlat":10,"baseDamageFlatLevelBonus":0.1,"baseDamageRatio":0.6,"baseDamageRatioLevelBonus":0.006,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":9},"/abilities/smoke_burst":{"hrid":"/abilities/smoke_burst","name":"Smoke Burst","description":"Casts a smoke burst at the targeted enemy, dealing damage and decreasing their accuracy","isSpecialAbility":false,"manaCost":75,"cooldownDuration":15000000000,"castDuration":2000000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/fire","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.15,"baseDamageRatio":1.8,"baseDamageRatioLevelBonus":0.009,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/smoke_burst_accuracy","typeHrid":"/buff_types/accuracy","ratioBoost":-0.15,"ratioBoostLevelBonus":-0.0015,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":8000000000},{"uniqueHrid":"/buff_uniques/smoke_burst_evasion","typeHrid":"/buff_types/evasion","ratioBoost":-0.15,"ratioBoostLevelBonus":-0.0015,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":8000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":33},"/abilities/speed_aura":{"hrid":"/abilities/speed_aura","name":"Speed Aura","description":"Increases attack speed and cast speed for all allies. Effect increases by (0.005x) per caster\'s Attack level","isSpecialAbility":true,"manaCost":100,"cooldownDuration":120000000000,"castDuration":200000000,"abilityEffects":[{"targetType":"allAllies","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/speed_aura_attack_speed","typeHrid":"/buff_types/attack_speed","ratioBoost":0.03,"ratioBoostLevelBonus":0.0006,"flatBoost":0,"flatBoostLevelBonus":0,"multiplierForSkillHrid":"/skills/attack","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000},{"uniqueHrid":"/buff_uniques/speed_aura_cast_speed","typeHrid":"/buff_types/cast_speed","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.03,"flatBoostLevelBonus":0.0006,"multiplierForSkillHrid":"/skills/attack","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/speed_aura","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":52},"/abilities/spike_shell":{"hrid":"/abilities/spike_shell","name":"Spike Shell","description":"Gains physical and elemental thorns temporarily","isSpecialAbility":false,"manaCost":65,"cooldownDuration":30000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/spike_shell_physical_thorns","typeHrid":"/buff_types/physical_thorns","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.06,"flatBoostLevelBonus":0.0006,"startTime":"0001-01-01T00:00:00Z","duration":30000000000},{"uniqueHrid":"/buff_uniques/spike_shell_elemental_thorns","typeHrid":"/buff_types/elemental_thorns","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.06,"flatBoostLevelBonus":0.0006,"startTime":"0001-01-01T00:00:00Z","duration":30000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/spike_shell","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":46},"/abilities/steady_shot":{"hrid":"/abilities/steady_shot","name":"Steady Shot","description":"Takes a shot at the targeted enemy with greatly enhanced accuracy","isSpecialAbility":false,"manaCost":50,"cooldownDuration":20000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/ranged","damageType":"/damage_types/physical","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.3,"baseDamageRatio":1,"baseDamageRatioLevelBonus":0.01,"bonusAccuracyRatio":1,"bonusAccuracyRatioLevelBonus":0.01,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":19},"/abilities/stunning_blow":{"hrid":"/abilities/stunning_blow","name":"Stunning Blow","description":"Smashes the targeted enemy and has a chance to stun","isSpecialAbility":false,"manaCost":50,"cooldownDuration":20000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/smash","damageType":"/damage_types/physical","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.3,"baseDamageRatio":1.1,"baseDamageRatioLevelBonus":0.011,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0.7,"stunDuration":3000000000,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":11},"/abilities/sweep":{"hrid":"/abilities/sweep","name":"Sweep","description":"Performs a sweeping attack on all enemies","isSpecialAbility":false,"manaCost":35,"cooldownDuration":20000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/smash","damageType":"/damage_types/physical","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.2,"baseDamageRatio":0.5,"baseDamageRatioLevelBonus":0.005,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/number_of_active_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1},{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":10},"/abilities/taunt":{"hrid":"/abilities/taunt","name":"Taunt","description":"Greatly increases threat rating","isSpecialAbility":false,"manaCost":120,"cooldownDuration":60000000000,"castDuration":200000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/taunt","typeHrid":"/buff_types/threat","ratioBoost":2.5,"ratioBoostLevelBonus":0.025,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":65000000000}]}],"defaultCombatTriggers":[],"sortIndex":38},"/abilities/toughness":{"hrid":"/abilities/toughness","name":"Toughness","description":"Greatly increases armor and resistances temporarily","isSpecialAbility":false,"manaCost":65,"cooldownDuration":30000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/toughness_armor","typeHrid":"/buff_types/armor","ratioBoost":0.2,"ratioBoostLevelBonus":0.002,"flatBoost":20,"flatBoostLevelBonus":0.2,"startTime":"0001-01-01T00:00:00Z","duration":20000000000},{"uniqueHrid":"/buff_uniques/toughness_water_resistance","typeHrid":"/buff_types/water_resistance","ratioBoost":0.2,"ratioBoostLevelBonus":0.002,"flatBoost":20,"flatBoostLevelBonus":0.2,"startTime":"0001-01-01T00:00:00Z","duration":20000000000},{"uniqueHrid":"/buff_uniques/toughness_nature_resistance","typeHrid":"/buff_types/nature_resistance","ratioBoost":0.2,"ratioBoostLevelBonus":0.002,"flatBoost":20,"flatBoostLevelBonus":0.2,"startTime":"0001-01-01T00:00:00Z","duration":20000000000},{"uniqueHrid":"/buff_uniques/toughness_fire_resistance","typeHrid":"/buff_types/fire_resistance","ratioBoost":0.2,"ratioBoostLevelBonus":0.002,"flatBoost":20,"flatBoostLevelBonus":0.2,"startTime":"0001-01-01T00:00:00Z","duration":20000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/toughness","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":40},"/abilities/toxic_pollen":{"hrid":"/abilities/toxic_pollen","name":"Toxic Pollen","description":"Casts toxic pollen at all enemies, dealing damage and decreasing armor and resistances","isSpecialAbility":false,"manaCost":45,"cooldownDuration":15000000000,"castDuration":2000000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/nature","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.1,"baseDamageRatio":0.65,"baseDamageRatioLevelBonus":0.00325,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/toxic_pollen_armor","typeHrid":"/buff_types/armor","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":-12,"flatBoostLevelBonus":-0.12,"startTime":"0001-01-01T00:00:00Z","duration":10000000000},{"uniqueHrid":"/buff_uniques/toxic_pollen_water_resistance","typeHrid":"/buff_types/water_resistance","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":-15,"flatBoostLevelBonus":-0.15,"startTime":"0001-01-01T00:00:00Z","duration":10000000000},{"uniqueHrid":"/buff_uniques/toxic_pollen_nature_resistance","typeHrid":"/buff_types/nature_resistance","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":-20,"flatBoostLevelBonus":-0.2,"startTime":"0001-01-01T00:00:00Z","duration":10000000000},{"uniqueHrid":"/buff_uniques/toxic_pollen_fire_resistance","typeHrid":"/buff_types/fire_resistance","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":-15,"flatBoostLevelBonus":-0.15,"startTime":"0001-01-01T00:00:00Z","duration":10000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/number_of_active_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1},{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":27},"/abilities/vampirism":{"hrid":"/abilities/vampirism","name":"Vampirism","description":"Gains lifesteal temporarily","isSpecialAbility":false,"manaCost":65,"cooldownDuration":30000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/vampirism","typeHrid":"/buff_types/life_steal","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.08,"flatBoostLevelBonus":0.0008,"startTime":"0001-01-01T00:00:00Z","duration":20000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/vampirism","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":48},"/abilities/water_strike":{"hrid":"/abilities/water_strike","name":"Water Strike","description":"Casts a water strike at the targeted enemy","isSpecialAbility":false,"manaCost":10,"cooldownDuration":0,"castDuration":3000000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/water","baseDamageFlat":10,"baseDamageFlatLevelBonus":0.05,"baseDamageRatio":0.5,"baseDamageRatioLevelBonus":0.0025,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":22}}');
+module.exports = /*#__PURE__*/JSON.parse('{"/abilities/aqua_arrow":{"hrid":"/abilities/aqua_arrow","name":"Aqua Arrow","description":"Shoots an arrow made of water at the targeted enemy","isSpecialAbility":false,"manaCost":35,"cooldownDuration":18000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/ranged","damageType":"/damage_types/water","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.2,"baseDamageRatio":0.9,"baseDamageRatioLevelBonus":0.009,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":15},"/abilities/berserk":{"hrid":"/abilities/berserk","name":"Berserk","description":"Greatly increases physical damage temporarily","isSpecialAbility":false,"manaCost":65,"cooldownDuration":30000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/berserk","typeHrid":"/buff_types/physical_amplify","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.18,"flatBoostLevelBonus":0.0018,"startTime":"0001-01-01T00:00:00Z","duration":20000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/berserk","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":43},"/abilities/cleave":{"hrid":"/abilities/cleave","name":"Cleave","description":"Cleaves all enemies","isSpecialAbility":false,"manaCost":35,"cooldownDuration":20000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/slash","damageType":"/damage_types/physical","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.2,"baseDamageRatio":0.5,"baseDamageRatioLevelBonus":0.005,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/number_of_active_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1},{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":6},"/abilities/crippling_slash":{"hrid":"/abilities/crippling_slash","name":"Crippling Slash","description":"Slashes all enemies and reduce their damage","isSpecialAbility":false,"manaCost":55,"cooldownDuration":20000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/slash","damageType":"/damage_types/physical","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.2,"baseDamageRatio":0.6,"baseDamageRatioLevelBonus":0.006,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/crippling_slash","typeHrid":"/buff_types/damage","ratioBoost":-0.12,"ratioBoostLevelBonus":-0.0012,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":12000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":8},"/abilities/critical_aura":{"hrid":"/abilities/critical_aura","name":"Critical Aura","description":"Increases critical rate and critical damage for all allies. Effect increases by (0.005x) per caster\'s Ranged level","isSpecialAbility":true,"manaCost":100,"cooldownDuration":120000000000,"castDuration":200000000,"abilityEffects":[{"targetType":"allAllies","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/critical_aura_rate","typeHrid":"/buff_types/critical_rate","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.02,"flatBoostLevelBonus":0.0004,"multiplierForSkillHrid":"/skills/ranged","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000},{"uniqueHrid":"/buff_uniques/critical_aura_damage","typeHrid":"/buff_types/critical_damage","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.02,"flatBoostLevelBonus":0.0004,"multiplierForSkillHrid":"/skills/ranged","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/critical_aura","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":55},"/abilities/elemental_affinity":{"hrid":"/abilities/elemental_affinity","name":"Elemental Affinity","description":"Greatly increases elemental damage temporarily","isSpecialAbility":false,"manaCost":65,"cooldownDuration":30000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/elemental_affinity_water_amplify","typeHrid":"/buff_types/water_amplify","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.4,"flatBoostLevelBonus":0.004,"startTime":"0001-01-01T00:00:00Z","duration":20000000000},{"uniqueHrid":"/buff_uniques/elemental_affinity_nature_amplify","typeHrid":"/buff_types/nature_amplify","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.4,"flatBoostLevelBonus":0.004,"startTime":"0001-01-01T00:00:00Z","duration":20000000000},{"uniqueHrid":"/buff_uniques/elemental_affinity_fire_amplify","typeHrid":"/buff_types/fire_amplify","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.4,"flatBoostLevelBonus":0.004,"startTime":"0001-01-01T00:00:00Z","duration":20000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/elemental_affinity","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":45},"/abilities/elusiveness":{"hrid":"/abilities/elusiveness","name":"Elusiveness","description":"Greatly increases evasion temporarily","isSpecialAbility":false,"manaCost":65,"cooldownDuration":30000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/elusiveness","typeHrid":"/buff_types/evasion","ratioBoost":0.2,"ratioBoostLevelBonus":0.002,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":20000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/elusiveness","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":41},"/abilities/entangle":{"hrid":"/abilities/entangle","name":"Entangle","description":"Entangles the targeted enemy, dealing damage with chance to stun","isSpecialAbility":false,"manaCost":10,"cooldownDuration":0,"castDuration":3000000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/nature","baseDamageFlat":10,"baseDamageFlatLevelBonus":0.05,"baseDamageRatio":0.44,"baseDamageRatioLevelBonus":0.0022,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0.1,"stunDuration":2000000000,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":26},"/abilities/fierce_aura":{"hrid":"/abilities/fierce_aura","name":"Fierce Aura","description":"Increases physical amplify for all allies. Effect increases by (0.005x) per caster\'s Melee level","isSpecialAbility":true,"manaCost":100,"cooldownDuration":120000000000,"castDuration":200000000,"abilityEffects":[{"targetType":"allAllies","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/fierce_aura","typeHrid":"/buff_types/physical_amplify","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.04,"flatBoostLevelBonus":0.0008,"multiplierForSkillHrid":"/skills/melee","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/fierce_aura","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":54},"/abilities/fireball":{"hrid":"/abilities/fireball","name":"Fireball","description":"Casts a fireball at the targeted enemy","isSpecialAbility":false,"manaCost":10,"cooldownDuration":0,"castDuration":3000000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/fire","baseDamageFlat":10,"baseDamageFlatLevelBonus":0.05,"baseDamageRatio":0.5,"baseDamageRatioLevelBonus":0.0025,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":30},"/abilities/firestorm":{"hrid":"/abilities/firestorm","name":"Firestorm","description":"Casts a firestorm at all enemies","isSpecialAbility":false,"manaCost":75,"cooldownDuration":15000000000,"castDuration":2000000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/fire","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.1,"baseDamageRatio":0.6,"baseDamageRatioLevelBonus":0.003,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":1,"damageOverTimeDuration":6000000000,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/number_of_active_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1},{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":32},"/abilities/flame_arrow":{"hrid":"/abilities/flame_arrow","name":"Flame Arrow","description":"Shoots a flaming arrow at the targeted enemy","isSpecialAbility":false,"manaCost":35,"cooldownDuration":18000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/ranged","damageType":"/damage_types/fire","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.2,"baseDamageRatio":0.9,"baseDamageRatioLevelBonus":0.009,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":16},"/abilities/flame_blast":{"hrid":"/abilities/flame_blast","name":"Flame Blast","description":"Casts a flame blast at all enemies","isSpecialAbility":false,"manaCost":45,"cooldownDuration":15000000000,"castDuration":2000000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/fire","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.1,"baseDamageRatio":0.8,"baseDamageRatioLevelBonus":0.004,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/number_of_active_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1},{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":31},"/abilities/fracturing_impact":{"hrid":"/abilities/fracturing_impact","name":"Fracturing Impact","description":"Attacks all enemies, dealing damage and increases their damage taken","isSpecialAbility":false,"manaCost":55,"cooldownDuration":20000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/smash","damageType":"/damage_types/physical","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.2,"baseDamageRatio":0.6,"baseDamageRatioLevelBonus":0.006,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/fracturing_impact","typeHrid":"/buff_types/damage_taken","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.05,"flatBoostLevelBonus":0.0005,"startTime":"0001-01-01T00:00:00Z","duration":12000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/number_of_active_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1},{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":12},"/abilities/frenzy":{"hrid":"/abilities/frenzy","name":"Frenzy","description":"Greatly increases attack speed temporarily","isSpecialAbility":false,"manaCost":65,"cooldownDuration":30000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/frenzy","typeHrid":"/buff_types/attack_speed","ratioBoost":0.24,"ratioBoostLevelBonus":0.0024,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":20000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/frenzy","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":44},"/abilities/frost_surge":{"hrid":"/abilities/frost_surge","name":"Frost Surge","description":"Casts frost surge at all enemies, dealing damage and reducing evasion","isSpecialAbility":false,"manaCost":75,"cooldownDuration":15000000000,"castDuration":2000000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/water","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.15,"baseDamageRatio":1,"baseDamageRatioLevelBonus":0.005,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/frost_surge","typeHrid":"/buff_types/evasion","ratioBoost":-0.1,"ratioBoostLevelBonus":-0.001,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":9000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/number_of_active_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1},{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":24},"/abilities/guardian_aura":{"hrid":"/abilities/guardian_aura","name":"Guardian Aura","description":"Increases healing amplify, evasion, armor, and resistances for all allies. Effect increases by (0.005x) per caster\'s Defense level","isSpecialAbility":true,"manaCost":100,"cooldownDuration":120000000000,"castDuration":200000000,"abilityEffects":[{"targetType":"allAllies","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/guardian_aura_healing_amplify","typeHrid":"/buff_types/healing_amplify","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.05,"flatBoostLevelBonus":0.001,"multiplierForSkillHrid":"/skills/defense","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000},{"uniqueHrid":"/buff_uniques/guardian_aura_evasion","typeHrid":"/buff_types/evasion","ratioBoost":0.02,"ratioBoostLevelBonus":0.0004,"flatBoost":0,"flatBoostLevelBonus":0,"multiplierForSkillHrid":"/skills/defense","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000},{"uniqueHrid":"/buff_uniques/guardian_aura_armor","typeHrid":"/buff_types/armor","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":5,"flatBoostLevelBonus":0.1,"multiplierForSkillHrid":"/skills/defense","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000},{"uniqueHrid":"/buff_uniques/guardian_aura_water_resistance","typeHrid":"/buff_types/water_resistance","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":5,"flatBoostLevelBonus":0.1,"multiplierForSkillHrid":"/skills/defense","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000},{"uniqueHrid":"/buff_uniques/guardian_aura_nature_resistance","typeHrid":"/buff_types/nature_resistance","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":5,"flatBoostLevelBonus":0.1,"multiplierForSkillHrid":"/skills/defense","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000},{"uniqueHrid":"/buff_uniques/guardian_aura_healing_amplify","typeHrid":"/buff_types/fire_resistance","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":5,"flatBoostLevelBonus":0.1,"multiplierForSkillHrid":"/skills/defense","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/guardian_aura","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":53},"/abilities/heal":{"hrid":"/abilities/heal","name":"Heal","description":"Casts heal on yourself","isSpecialAbility":false,"manaCost":60,"cooldownDuration":15000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/heal","combatStyleHrid":"/combat_styles/magic","damageType":"","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.3,"baseDamageRatio":0.45,"baseDamageRatioLevelBonus":0.0045,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/missing_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":35},"/abilities/ice_spear":{"hrid":"/abilities/ice_spear","name":"Ice Spear","description":"Casts an ice spear at the targeted enemy, dealing damage and reducing attack speed","isSpecialAbility":false,"manaCost":45,"cooldownDuration":15000000000,"castDuration":2000000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/water","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.1,"baseDamageRatio":1.3,"baseDamageRatioLevelBonus":0.0065,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/ice_spear","typeHrid":"/buff_types/attack_speed","ratioBoost":-0.25,"ratioBoostLevelBonus":-0.0025,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":8000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":23},"/abilities/impale":{"hrid":"/abilities/impale","name":"Impale","description":"Impales the targeted enemy","isSpecialAbility":false,"manaCost":35,"cooldownDuration":20000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/stab","damageType":"/damage_types/physical","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.2,"baseDamageRatio":0.9,"baseDamageRatioLevelBonus":0.009,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":2},"/abilities/insanity":{"hrid":"/abilities/insanity","name":"Insanity","description":"Increases damage, attack speed, and cast speed temporarily at the cost of HP","isSpecialAbility":true,"manaCost":80,"cooldownDuration":90000000000,"castDuration":200000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/insanity_damage","typeHrid":"/buff_types/damage","ratioBoost":0.3,"ratioBoostLevelBonus":0.0015,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":12000000000},{"uniqueHrid":"/buff_uniques/insanity_attack_speed","typeHrid":"/buff_types/attack_speed","ratioBoost":0.3,"ratioBoostLevelBonus":0.0015,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":12000000000},{"uniqueHrid":"/buff_uniques/insanity_cast_speed","typeHrid":"/buff_types/cast_speed","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.3,"flatBoostLevelBonus":0.0015,"startTime":"0001-01-01T00:00:00Z","duration":12000000000}]},{"targetType":"self","effectType":"/ability_effect_types/spend_hp","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0.3,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/insanity","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":50},"/abilities/invincible":{"hrid":"/abilities/invincible","name":"Invincible","description":"Tremendously increases armor, resistances, and tenacity temporarily","isSpecialAbility":true,"manaCost":80,"cooldownDuration":90000000000,"castDuration":200000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/invincible_armor","typeHrid":"/buff_types/armor","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":700,"flatBoostLevelBonus":7,"startTime":"0001-01-01T00:00:00Z","duration":12000000000},{"uniqueHrid":"/buff_uniques/invincible_water_resistance","typeHrid":"/buff_types/water_resistance","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":700,"flatBoostLevelBonus":7,"startTime":"0001-01-01T00:00:00Z","duration":12000000000},{"uniqueHrid":"/buff_uniques/invincible_nature_resistance","typeHrid":"/buff_types/nature_resistance","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":700,"flatBoostLevelBonus":7,"startTime":"0001-01-01T00:00:00Z","duration":12000000000},{"uniqueHrid":"/buff_uniques/invincible_fire_resistance","typeHrid":"/buff_types/fire_resistance","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":700,"flatBoostLevelBonus":7,"startTime":"0001-01-01T00:00:00Z","duration":12000000000},{"uniqueHrid":"/buff_uniques/invincible_tenacity","typeHrid":"/buff_types/tenacity","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":700,"flatBoostLevelBonus":7,"startTime":"0001-01-01T00:00:00Z","duration":12000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/invincible","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":51},"/abilities/life_drain":{"hrid":"/abilities/life_drain","name":"Life Drain","description":"Drains the life force of the targeted enemy, dealing damage and healing the caster","isSpecialAbility":false,"manaCost":75,"cooldownDuration":15000000000,"castDuration":2000000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/nature","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.15,"baseDamageRatio":1.8,"baseDamageRatioLevelBonus":0.009,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0.08,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":29},"/abilities/maim":{"hrid":"/abilities/maim","name":"Maim","description":"Maims the targeted enemy and causes bleeding","isSpecialAbility":false,"manaCost":50,"cooldownDuration":20000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/slash","damageType":"/damage_types/physical","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.3,"baseDamageRatio":0.65,"baseDamageRatioLevelBonus":0.0065,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":1,"damageOverTimeDuration":9000000000,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/maim","typeHrid":"/buff_types/damage_taken","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.08,"flatBoostLevelBonus":0.0008,"startTime":"0001-01-01T00:00:00Z","duration":12000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":7},"/abilities/mana_spring":{"hrid":"/abilities/mana_spring","name":"Mana Spring","description":"Casts mana spring at all enemies, dealing damage and increasing ally MP regeneration","isSpecialAbility":false,"manaCost":75,"cooldownDuration":15000000000,"castDuration":2000000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/water","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.15,"baseDamageRatio":0.7,"baseDamageRatioLevelBonus":0.0035,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null},{"targetType":"allAllies","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/mana_spring","typeHrid":"/buff_types/mp_regen","ratioBoost":0.5,"ratioBoostLevelBonus":0.005,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":10000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/number_of_active_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1},{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":25},"/abilities/minor_heal":{"hrid":"/abilities/minor_heal","name":"Minor Heal","description":"Casts minor heal on yourself","isSpecialAbility":false,"manaCost":30,"cooldownDuration":15000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/heal","combatStyleHrid":"/combat_styles/magic","damageType":"","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.2,"baseDamageRatio":0.3,"baseDamageRatioLevelBonus":0.003,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/missing_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":34},"/abilities/mystic_aura":{"hrid":"/abilities/mystic_aura","name":"Mystic Aura","description":"Increases elemental amplify for all allies. Effect increases by (0.005x) per caster\'s Magic level","isSpecialAbility":true,"manaCost":100,"cooldownDuration":120000000000,"castDuration":200000000,"abilityEffects":[{"targetType":"allAllies","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/mystic_aura_water_amplify","typeHrid":"/buff_types/water_amplify","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.06,"flatBoostLevelBonus":0.0012,"multiplierForSkillHrid":"/skills/magic","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000},{"uniqueHrid":"/buff_uniques/mystic_aura_nature_amplify","typeHrid":"/buff_types/nature_amplify","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.06,"flatBoostLevelBonus":0.0012,"multiplierForSkillHrid":"/skills/magic","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000},{"uniqueHrid":"/buff_uniques/mystic_aura_fire_amplify","typeHrid":"/buff_types/fire_amplify","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.06,"flatBoostLevelBonus":0.0012,"multiplierForSkillHrid":"/skills/magic","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/mystic_aura","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":56},"/abilities/natures_veil":{"hrid":"/abilities/natures_veil","name":"Nature\'s Veil","description":"Cast\'s a veil over all enemies, dealing damage with a chance to blind","isSpecialAbility":false,"manaCost":75,"cooldownDuration":15000000000,"castDuration":2000000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/nature","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.15,"baseDamageRatio":0.9,"baseDamageRatioLevelBonus":0.0045,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0.5,"blindDuration":5000000000,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/number_of_active_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1},{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":28},"/abilities/penetrating_shot":{"hrid":"/abilities/penetrating_shot","name":"Penetrating Shot","description":"Shoots the targeted enemy. On each successful hit, will pierce and hit the next enemy","isSpecialAbility":false,"manaCost":55,"cooldownDuration":20000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/ranged","damageType":"/damage_types/physical","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.3,"baseDamageRatio":0.8,"baseDamageRatioLevelBonus":0.008,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":1,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":21},"/abilities/penetrating_strike":{"hrid":"/abilities/penetrating_strike","name":"Penetrating Strike","description":"Strikes the targeted enemy. On each successful hit, will pierce and hit the next enemy.","isSpecialAbility":false,"manaCost":55,"cooldownDuration":20000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/stab","damageType":"/damage_types/physical","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.3,"baseDamageRatio":0.8,"baseDamageRatioLevelBonus":0.008,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":1,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":4},"/abilities/pestilent_shot":{"hrid":"/abilities/pestilent_shot","name":"Pestilent Shot","description":"Shoots the targeted enemy, dealing damage and decreasing armor and resistances","isSpecialAbility":false,"manaCost":50,"cooldownDuration":20000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/ranged","damageType":"/damage_types/physical","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.3,"baseDamageRatio":1,"baseDamageRatioLevelBonus":0.01,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/pestilent_shot_armor","typeHrid":"/buff_types/armor","ratioBoost":-0.1,"ratioBoostLevelBonus":-0.001,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":12000000000},{"uniqueHrid":"/buff_uniques/pestilent_shot_water_resistance","typeHrid":"/buff_types/water_resistance","ratioBoost":-0.1,"ratioBoostLevelBonus":-0.001,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":12000000000},{"uniqueHrid":"/buff_uniques/pestilent_shot_nature_resistance","typeHrid":"/buff_types/nature_resistance","ratioBoost":-0.1,"ratioBoostLevelBonus":-0.001,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":12000000000},{"uniqueHrid":"/buff_uniques/pestilent_shot_fire_resistance","typeHrid":"/buff_types/fire_resistance","ratioBoost":-0.1,"ratioBoostLevelBonus":-0.001,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":12000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":20},"/abilities/poke":{"hrid":"/abilities/poke","name":"Poke","description":"Pokes the targeted enemy","isSpecialAbility":false,"manaCost":25,"cooldownDuration":15000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/stab","damageType":"/damage_types/physical","baseDamageFlat":10,"baseDamageFlatLevelBonus":0.1,"baseDamageRatio":0.6,"baseDamageRatioLevelBonus":0.006,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":1},"/abilities/precision":{"hrid":"/abilities/precision","name":"Precision","description":"Greatly increases accuracy temporarily","isSpecialAbility":false,"manaCost":65,"cooldownDuration":30000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/precision","typeHrid":"/buff_types/accuracy","ratioBoost":0.4,"ratioBoostLevelBonus":0.004,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":20000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/precision","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":42},"/abilities/promote":{"hrid":"/abilities/promote","name":"Promote","description":"Promotes a pawn","isSpecialAbility":true,"manaCost":100,"cooldownDuration":180000000000,"castDuration":10000000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/promote","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[],"sortIndex":57},"/abilities/provoke":{"hrid":"/abilities/provoke","name":"Provoke","description":"Tremendously increases threat rating","isSpecialAbility":false,"manaCost":150,"cooldownDuration":60000000000,"castDuration":200000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/provoke","typeHrid":"/buff_types/threat","ratioBoost":5,"ratioBoostLevelBonus":0.05,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":65000000000}]}],"defaultCombatTriggers":[],"sortIndex":39},"/abilities/puncture":{"hrid":"/abilities/puncture","name":"Puncture","description":"Punctures the targeted enemy\'s armor, dealing damage and temporarily reducing its armor","isSpecialAbility":false,"manaCost":50,"cooldownDuration":20000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/stab","damageType":"/damage_types/physical","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.3,"baseDamageRatio":1.1,"baseDamageRatioLevelBonus":0.011,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/puncture","typeHrid":"/buff_types/armor","ratioBoost":-0.2,"ratioBoostLevelBonus":-0.002,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":12000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":3},"/abilities/quick_aid":{"hrid":"/abilities/quick_aid","name":"Quick Aid","description":"Casts heal on the ally with the lowest HP percentage","isSpecialAbility":false,"manaCost":60,"cooldownDuration":12000000000,"castDuration":200000000,"abilityEffects":[{"targetType":"lowestHpAlly","effectType":"/ability_effect_types/heal","combatStyleHrid":"/combat_styles/magic","damageType":"","baseDamageFlat":40,"baseDamageFlatLevelBonus":0.4,"baseDamageRatio":0.3,"baseDamageRatioLevelBonus":0.003,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_allies","conditionHrid":"/combat_trigger_conditions/lowest_hp_percentage","comparatorHrid":"/combat_trigger_comparators/less_than_equal","value":75}],"sortIndex":36},"/abilities/quick_shot":{"hrid":"/abilities/quick_shot","name":"Quick Shot","description":"Takes a quick shot at the targeted enemy","isSpecialAbility":false,"manaCost":25,"cooldownDuration":15000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/ranged","damageType":"/damage_types/physical","baseDamageFlat":10,"baseDamageFlatLevelBonus":0.1,"baseDamageRatio":0.55,"baseDamageRatioLevelBonus":0.0055,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":14},"/abilities/rain_of_arrows":{"hrid":"/abilities/rain_of_arrows","name":"Rain Of Arrows","description":"Shoots a rain of arrows on all enemies","isSpecialAbility":false,"manaCost":35,"cooldownDuration":20000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/ranged","damageType":"/damage_types/physical","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.2,"baseDamageRatio":0.5,"baseDamageRatioLevelBonus":0.005,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/number_of_active_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1},{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":17},"/abilities/rejuvenate":{"hrid":"/abilities/rejuvenate","name":"Rejuvenate","description":"Heals all allies","isSpecialAbility":false,"manaCost":90,"cooldownDuration":25000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"allAllies","effectType":"/ability_effect_types/heal","combatStyleHrid":"/combat_styles/magic","damageType":"","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.3,"baseDamageRatio":0.2,"baseDamageRatioLevelBonus":0.002,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_allies","conditionHrid":"/combat_trigger_conditions/missing_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":37},"/abilities/retribution":{"hrid":"/abilities/retribution","name":"Retribution","description":"Gains retaliation temporarily","isSpecialAbility":false,"manaCost":65,"cooldownDuration":30000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/retribution","typeHrid":"/buff_types/retaliation","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.25,"flatBoostLevelBonus":0.0025,"startTime":"0001-01-01T00:00:00Z","duration":30000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/retribution","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":47},"/abilities/revive":{"hrid":"/abilities/revive","name":"Revive","description":"Revives a dead ally","isSpecialAbility":true,"manaCost":200,"cooldownDuration":300000000000,"castDuration":2000000000,"abilityEffects":[{"targetType":"deadAlly","effectType":"/ability_effect_types/revive","combatStyleHrid":"/combat_styles/magic","damageType":"","baseDamageFlat":100,"baseDamageFlatLevelBonus":1,"baseDamageRatio":1,"baseDamageRatioLevelBonus":0.01,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_allies","conditionHrid":"/combat_trigger_conditions/number_of_dead_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":49},"/abilities/scratch":{"hrid":"/abilities/scratch","name":"Scratch","description":"Scratches the targeted enemy","isSpecialAbility":false,"manaCost":25,"cooldownDuration":15000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/slash","damageType":"/damage_types/physical","baseDamageFlat":10,"baseDamageFlatLevelBonus":0.1,"baseDamageRatio":0.6,"baseDamageRatioLevelBonus":0.006,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":5},"/abilities/shield_bash":{"hrid":"/abilities/shield_bash","name":"Shield Bash","description":"Bashes the targeted enemy with a shield, dealing extra damage based on attacker\'s armor","isSpecialAbility":false,"manaCost":35,"cooldownDuration":12000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/smash","damageType":"/damage_types/physical","baseDamageFlat":10,"baseDamageFlatLevelBonus":0.1,"baseDamageRatio":0.3,"baseDamageRatioLevelBonus":0.003,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0.7,"armorDamageRatioLevelBonus":0.007,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":13},"/abilities/silencing_shot":{"hrid":"/abilities/silencing_shot","name":"Silencing Shot","description":"Takes a shot at the targeted enemy, temporarily silencing them","isSpecialAbility":false,"manaCost":50,"cooldownDuration":20000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/ranged","damageType":"/damage_types/physical","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.3,"baseDamageRatio":1,"baseDamageRatioLevelBonus":0.01,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0.6,"silenceDuration":5000000000,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":18},"/abilities/smack":{"hrid":"/abilities/smack","name":"Smack","description":"Smacks the targeted enemy","isSpecialAbility":false,"manaCost":25,"cooldownDuration":15000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/smash","damageType":"/damage_types/physical","baseDamageFlat":10,"baseDamageFlatLevelBonus":0.1,"baseDamageRatio":0.6,"baseDamageRatioLevelBonus":0.006,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":9},"/abilities/smoke_burst":{"hrid":"/abilities/smoke_burst","name":"Smoke Burst","description":"Casts a smoke burst at the targeted enemy, dealing damage and decreasing their accuracy","isSpecialAbility":false,"manaCost":75,"cooldownDuration":15000000000,"castDuration":2000000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/fire","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.15,"baseDamageRatio":1.8,"baseDamageRatioLevelBonus":0.009,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/smoke_burst_accuracy","typeHrid":"/buff_types/accuracy","ratioBoost":-0.15,"ratioBoostLevelBonus":-0.0015,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":8000000000},{"uniqueHrid":"/buff_uniques/smoke_burst_evasion","typeHrid":"/buff_types/evasion","ratioBoost":-0.15,"ratioBoostLevelBonus":-0.0015,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":8000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":33},"/abilities/speed_aura":{"hrid":"/abilities/speed_aura","name":"Speed Aura","description":"Increases attack speed and cast speed for all allies. Effect increases by (0.005x) per caster\'s Attack level","isSpecialAbility":true,"manaCost":100,"cooldownDuration":120000000000,"castDuration":200000000,"abilityEffects":[{"targetType":"allAllies","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/speed_aura_attack_speed","typeHrid":"/buff_types/attack_speed","ratioBoost":0.03,"ratioBoostLevelBonus":0.0006,"flatBoost":0,"flatBoostLevelBonus":0,"multiplierForSkillHrid":"/skills/attack","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000},{"uniqueHrid":"/buff_uniques/speed_aura_cast_speed","typeHrid":"/buff_types/cast_speed","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.03,"flatBoostLevelBonus":0.0006,"multiplierForSkillHrid":"/skills/attack","multiplierPerSkillLevel":0.005,"startTime":"0001-01-01T00:00:00Z","duration":120000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/speed_aura","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":52},"/abilities/spike_shell":{"hrid":"/abilities/spike_shell","name":"Spike Shell","description":"Gains physical and elemental thorns temporarily","isSpecialAbility":false,"manaCost":65,"cooldownDuration":30000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/spike_shell_physical_thorns","typeHrid":"/buff_types/physical_thorns","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.06,"flatBoostLevelBonus":0.0006,"startTime":"0001-01-01T00:00:00Z","duration":30000000000},{"uniqueHrid":"/buff_uniques/spike_shell_elemental_thorns","typeHrid":"/buff_types/elemental_thorns","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.06,"flatBoostLevelBonus":0.0006,"startTime":"0001-01-01T00:00:00Z","duration":30000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/spike_shell","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":46},"/abilities/steady_shot":{"hrid":"/abilities/steady_shot","name":"Steady Shot","description":"Takes a shot at the targeted enemy with greatly enhanced accuracy","isSpecialAbility":false,"manaCost":50,"cooldownDuration":20000000000,"castDuration":500000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/ranged","damageType":"/damage_types/physical","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.3,"baseDamageRatio":1,"baseDamageRatioLevelBonus":0.01,"bonusAccuracyRatio":1,"bonusAccuracyRatioLevelBonus":0.01,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":19},"/abilities/stunning_blow":{"hrid":"/abilities/stunning_blow","name":"Stunning Blow","description":"Smashes the targeted enemy and has a chance to stun","isSpecialAbility":false,"manaCost":50,"cooldownDuration":20000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/smash","damageType":"/damage_types/physical","baseDamageFlat":30,"baseDamageFlatLevelBonus":0.3,"baseDamageRatio":1.1,"baseDamageRatioLevelBonus":0.011,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0.7,"stunDuration":3000000000,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":11},"/abilities/sweep":{"hrid":"/abilities/sweep","name":"Sweep","description":"Performs a sweeping attack on all enemies","isSpecialAbility":false,"manaCost":35,"cooldownDuration":20000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/smash","damageType":"/damage_types/physical","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.2,"baseDamageRatio":0.5,"baseDamageRatioLevelBonus":0.005,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/number_of_active_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1},{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":10},"/abilities/taunt":{"hrid":"/abilities/taunt","name":"Taunt","description":"Greatly increases threat rating","isSpecialAbility":false,"manaCost":120,"cooldownDuration":60000000000,"castDuration":200000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/taunt","typeHrid":"/buff_types/threat","ratioBoost":2.5,"ratioBoostLevelBonus":0.025,"flatBoost":0,"flatBoostLevelBonus":0,"startTime":"0001-01-01T00:00:00Z","duration":65000000000}]}],"defaultCombatTriggers":[],"sortIndex":38},"/abilities/toughness":{"hrid":"/abilities/toughness","name":"Toughness","description":"Greatly increases armor and resistances temporarily","isSpecialAbility":false,"manaCost":65,"cooldownDuration":30000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/toughness_armor","typeHrid":"/buff_types/armor","ratioBoost":0.2,"ratioBoostLevelBonus":0.002,"flatBoost":20,"flatBoostLevelBonus":0.2,"startTime":"0001-01-01T00:00:00Z","duration":20000000000},{"uniqueHrid":"/buff_uniques/toughness_water_resistance","typeHrid":"/buff_types/water_resistance","ratioBoost":0.2,"ratioBoostLevelBonus":0.002,"flatBoost":20,"flatBoostLevelBonus":0.2,"startTime":"0001-01-01T00:00:00Z","duration":20000000000},{"uniqueHrid":"/buff_uniques/toughness_nature_resistance","typeHrid":"/buff_types/nature_resistance","ratioBoost":0.2,"ratioBoostLevelBonus":0.002,"flatBoost":20,"flatBoostLevelBonus":0.2,"startTime":"0001-01-01T00:00:00Z","duration":20000000000},{"uniqueHrid":"/buff_uniques/toughness_fire_resistance","typeHrid":"/buff_types/fire_resistance","ratioBoost":0.2,"ratioBoostLevelBonus":0.002,"flatBoost":20,"flatBoostLevelBonus":0.2,"startTime":"0001-01-01T00:00:00Z","duration":20000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/toughness","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":40},"/abilities/toxic_pollen":{"hrid":"/abilities/toxic_pollen","name":"Toxic Pollen","description":"Casts toxic pollen at all enemies, dealing damage and decreasing armor and resistances","isSpecialAbility":false,"manaCost":45,"cooldownDuration":15000000000,"castDuration":2000000000,"abilityEffects":[{"targetType":"allEnemies","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/nature","baseDamageFlat":20,"baseDamageFlatLevelBonus":0.1,"baseDamageRatio":0.65,"baseDamageRatioLevelBonus":0.00325,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/toxic_pollen_armor","typeHrid":"/buff_types/armor","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":-12,"flatBoostLevelBonus":-0.12,"startTime":"0001-01-01T00:00:00Z","duration":10000000000},{"uniqueHrid":"/buff_uniques/toxic_pollen_water_resistance","typeHrid":"/buff_types/water_resistance","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":-15,"flatBoostLevelBonus":-0.15,"startTime":"0001-01-01T00:00:00Z","duration":10000000000},{"uniqueHrid":"/buff_uniques/toxic_pollen_nature_resistance","typeHrid":"/buff_types/nature_resistance","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":-20,"flatBoostLevelBonus":-0.2,"startTime":"0001-01-01T00:00:00Z","duration":10000000000},{"uniqueHrid":"/buff_uniques/toxic_pollen_fire_resistance","typeHrid":"/buff_types/fire_resistance","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":-15,"flatBoostLevelBonus":-0.15,"startTime":"0001-01-01T00:00:00Z","duration":10000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/number_of_active_units","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1},{"dependencyHrid":"/combat_trigger_dependencies/all_enemies","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":27},"/abilities/vampirism":{"hrid":"/abilities/vampirism","name":"Vampirism","description":"Gains lifesteal temporarily","isSpecialAbility":false,"manaCost":65,"cooldownDuration":30000000000,"castDuration":300000000,"abilityEffects":[{"targetType":"self","effectType":"/ability_effect_types/buff","combatStyleHrid":"","damageType":"","baseDamageFlat":0,"baseDamageFlatLevelBonus":0,"baseDamageRatio":0,"baseDamageRatioLevelBonus":0,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":[{"uniqueHrid":"/buff_uniques/vampirism","typeHrid":"/buff_types/life_steal","ratioBoost":0,"ratioBoostLevelBonus":0,"flatBoost":0.08,"flatBoostLevelBonus":0.0008,"startTime":"0001-01-01T00:00:00Z","duration":20000000000}]}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/self","conditionHrid":"/combat_trigger_conditions/vampirism","comparatorHrid":"/combat_trigger_comparators/is_inactive","value":0}],"sortIndex":48},"/abilities/water_strike":{"hrid":"/abilities/water_strike","name":"Water Strike","description":"Casts a water strike at the targeted enemy","isSpecialAbility":false,"manaCost":10,"cooldownDuration":0,"castDuration":3000000000,"abilityEffects":[{"targetType":"enemy","effectType":"/ability_effect_types/damage","combatStyleHrid":"/combat_styles/magic","damageType":"/damage_types/water","baseDamageFlat":10,"baseDamageFlatLevelBonus":0.05,"baseDamageRatio":0.5,"baseDamageRatioLevelBonus":0.0025,"bonusAccuracyRatio":0,"bonusAccuracyRatioLevelBonus":0,"damageOverTimeRatio":0,"damageOverTimeDuration":0,"armorDamageRatio":0,"armorDamageRatioLevelBonus":0,"hpDrainRatio":0,"pierceChance":0,"blindChance":0,"blindDuration":0,"silenceChance":0,"silenceDuration":0,"stunChance":0,"stunDuration":0,"spendHpRatio":0,"buffs":null}],"defaultCombatTriggers":[{"dependencyHrid":"/combat_trigger_dependencies/targeted_enemy","conditionHrid":"/combat_trigger_conditions/current_hp","comparatorHrid":"/combat_trigger_comparators/greater_than_equal","value":1}],"sortIndex":22}}');
 
 /***/ }),
 
@@ -1767,22 +1767,18 @@ __webpack_require__.r(__webpack_exports__);
 /* harmony import */ var _combatsimulator_ability_js__WEBPACK_IMPORTED_MODULE_5__ = __webpack_require__(/*! ./combatsimulator/ability.js */ "./src/combatsimulator/ability.js");
 /* harmony import */ var _combatsimulator_consumable_js__WEBPACK_IMPORTED_MODULE_6__ = __webpack_require__(/*! ./combatsimulator/consumable.js */ "./src/combatsimulator/consumable.js");
 /* harmony import */ var _combatsimulator_houseRoom__WEBPACK_IMPORTED_MODULE_7__ = __webpack_require__(/*! ./combatsimulator/houseRoom */ "./src/combatsimulator/houseRoom.js");
-/* harmony import */ var _combatsimulator_buff_js__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./combatsimulator/buff.js */ "./src/combatsimulator/buff.js");
-/* harmony import */ var _combatsimulator_achievement_js__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./combatsimulator/achievement.js */ "./src/combatsimulator/achievement.js");
-/* harmony import */ var _combatsimulator_data_combatTriggerDependencyDetailMap_json__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./combatsimulator/data/combatTriggerDependencyDetailMap.json */ "./src/combatsimulator/data/combatTriggerDependencyDetailMap.json");
-/* harmony import */ var _combatsimulator_data_combatTriggerConditionDetailMap_json__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./combatsimulator/data/combatTriggerConditionDetailMap.json */ "./src/combatsimulator/data/combatTriggerConditionDetailMap.json");
-/* harmony import */ var _combatsimulator_data_combatTriggerComparatorDetailMap_json__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./combatsimulator/data/combatTriggerComparatorDetailMap.json */ "./src/combatsimulator/data/combatTriggerComparatorDetailMap.json");
-/* harmony import */ var _combatsimulator_data_abilitySlotsLevelRequirementList_json__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./combatsimulator/data/abilitySlotsLevelRequirementList.json */ "./src/combatsimulator/data/abilitySlotsLevelRequirementList.json");
-/* harmony import */ var _combatsimulator_data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./combatsimulator/data/actionDetailMap.json */ "./src/combatsimulator/data/actionDetailMap.json");
-/* harmony import */ var _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./combatsimulator/data/combatMonsterDetailMap.json */ "./src/combatsimulator/data/combatMonsterDetailMap.json");
-/* harmony import */ var _combatsimulator_data_damageTypeDetailMap_json__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./combatsimulator/data/damageTypeDetailMap.json */ "./src/combatsimulator/data/damageTypeDetailMap.json");
-/* harmony import */ var _combatsimulator_data_combatStyleDetailMap_json__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./combatsimulator/data/combatStyleDetailMap.json */ "./src/combatsimulator/data/combatStyleDetailMap.json");
-/* harmony import */ var _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./combatsimulator/data/openableLootDropMap.json */ "./src/combatsimulator/data/openableLootDropMap.json");
-/* harmony import */ var _combatsimulator_data_achievementTierDetailMap_json__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ./combatsimulator/data/achievementTierDetailMap.json */ "./src/combatsimulator/data/achievementTierDetailMap.json");
-/* harmony import */ var _combatsimulator_data_achievementDetailMap_json__WEBPACK_IMPORTED_MODULE_20__ = __webpack_require__(/*! ./combatsimulator/data/achievementDetailMap.json */ "./src/combatsimulator/data/achievementDetailMap.json");
-/* harmony import */ var _patchNote_json__WEBPACK_IMPORTED_MODULE_21__ = __webpack_require__(/*! ../patchNote.json */ "./patchNote.json");
-
-
+/* harmony import */ var _combatsimulator_data_combatTriggerDependencyDetailMap_json__WEBPACK_IMPORTED_MODULE_8__ = __webpack_require__(/*! ./combatsimulator/data/combatTriggerDependencyDetailMap.json */ "./src/combatsimulator/data/combatTriggerDependencyDetailMap.json");
+/* harmony import */ var _combatsimulator_data_combatTriggerConditionDetailMap_json__WEBPACK_IMPORTED_MODULE_9__ = __webpack_require__(/*! ./combatsimulator/data/combatTriggerConditionDetailMap.json */ "./src/combatsimulator/data/combatTriggerConditionDetailMap.json");
+/* harmony import */ var _combatsimulator_data_combatTriggerComparatorDetailMap_json__WEBPACK_IMPORTED_MODULE_10__ = __webpack_require__(/*! ./combatsimulator/data/combatTriggerComparatorDetailMap.json */ "./src/combatsimulator/data/combatTriggerComparatorDetailMap.json");
+/* harmony import */ var _combatsimulator_data_abilitySlotsLevelRequirementList_json__WEBPACK_IMPORTED_MODULE_11__ = __webpack_require__(/*! ./combatsimulator/data/abilitySlotsLevelRequirementList.json */ "./src/combatsimulator/data/abilitySlotsLevelRequirementList.json");
+/* harmony import */ var _combatsimulator_data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_12__ = __webpack_require__(/*! ./combatsimulator/data/actionDetailMap.json */ "./src/combatsimulator/data/actionDetailMap.json");
+/* harmony import */ var _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__ = __webpack_require__(/*! ./combatsimulator/data/combatMonsterDetailMap.json */ "./src/combatsimulator/data/combatMonsterDetailMap.json");
+/* harmony import */ var _combatsimulator_data_damageTypeDetailMap_json__WEBPACK_IMPORTED_MODULE_14__ = __webpack_require__(/*! ./combatsimulator/data/damageTypeDetailMap.json */ "./src/combatsimulator/data/damageTypeDetailMap.json");
+/* harmony import */ var _combatsimulator_data_combatStyleDetailMap_json__WEBPACK_IMPORTED_MODULE_15__ = __webpack_require__(/*! ./combatsimulator/data/combatStyleDetailMap.json */ "./src/combatsimulator/data/combatStyleDetailMap.json");
+/* harmony import */ var _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_16__ = __webpack_require__(/*! ./combatsimulator/data/openableLootDropMap.json */ "./src/combatsimulator/data/openableLootDropMap.json");
+/* harmony import */ var _combatsimulator_data_achievementTierDetailMap_json__WEBPACK_IMPORTED_MODULE_17__ = __webpack_require__(/*! ./combatsimulator/data/achievementTierDetailMap.json */ "./src/combatsimulator/data/achievementTierDetailMap.json");
+/* harmony import */ var _combatsimulator_data_achievementDetailMap_json__WEBPACK_IMPORTED_MODULE_18__ = __webpack_require__(/*! ./combatsimulator/data/achievementDetailMap.json */ "./src/combatsimulator/data/achievementDetailMap.json");
+/* harmony import */ var _patchNote_json__WEBPACK_IMPORTED_MODULE_19__ = __webpack_require__(/*! ../patchNote.json */ "./patchNote.json");
 
 
 
@@ -1950,10 +1946,6 @@ function initHouseRoomsModal() {
             let inputValue = e.target.value;
             const hrid = e.target.dataset.houseHrid;
             player.houseRooms[hrid] = parseInt(inputValue);
-            // 如果开启入战属性模式，实时更新
-            if (isCombatReadyMode) {
-                updateCombatStatsUI();
-            }
         });
 
         levelCol.appendChild(levelInput);
@@ -1979,7 +1971,7 @@ function createHouseInput(hrid) {
 }
 
 function refreshAchievementStatics() {
-    let tierMap = Object.values(_combatsimulator_data_achievementTierDetailMap_json__WEBPACK_IMPORTED_MODULE_19__).sort((a, b) => a.sortIndex - b.sortIndex);
+    let tierMap = Object.values(_combatsimulator_data_achievementTierDetailMap_json__WEBPACK_IMPORTED_MODULE_17__).sort((a, b) => a.sortIndex - b.sortIndex);
     for(const tier of Object.values(tierMap)) {
         const checks = document.querySelectorAll(`input[data-achievement-hrid][data-tier="${tier.sortIndex}"]`);
         const done = Array.from(checks).filter(cb => cb.checked).length;
@@ -2004,9 +1996,9 @@ function initAchievementsModal(){
     let newChildren = [];
     player.achievements = {};
 
-    let tierMap = Object.values(_combatsimulator_data_achievementTierDetailMap_json__WEBPACK_IMPORTED_MODULE_19__).sort((a, b) => a.sortIndex - b.sortIndex);
+    let tierMap = Object.values(_combatsimulator_data_achievementTierDetailMap_json__WEBPACK_IMPORTED_MODULE_17__).sort((a, b) => a.sortIndex - b.sortIndex);
     for(const tier of Object.values(tierMap)) {
-        let detailMap = Object.values(_combatsimulator_data_achievementDetailMap_json__WEBPACK_IMPORTED_MODULE_20__).filter((detail) => detail.tierHrid == tier.hrid).sort((a, b) => a.sortIndex - b.sortIndex);
+        let detailMap = Object.values(_combatsimulator_data_achievementDetailMap_json__WEBPACK_IMPORTED_MODULE_18__).filter((detail) => detail.tierHrid == tier.hrid).sort((a, b) => a.sortIndex - b.sortIndex);
         let detailMapCount = detailMap.length;
         if (detailMapCount <= 0) continue;
 
@@ -2040,10 +2032,6 @@ function initAchievementsModal(){
             }
             cardStatics.dataset.checked = cardStatics.dataset.checked == "true" ? "false" : "true";
             refreshAchievementStatics();
-            // 如果开启入战属性模式，实时更新
-            if (isCombatReadyMode) {
-                updateCombatStatsUI();
-            }
         });
         cardHeader.appendChild(cardStatics);
 
@@ -2067,10 +2055,6 @@ function initAchievementsModal(){
                 player.achievements[hrid] = e.target.checked;
 
                 refreshAchievementStatics();
-                // 如果开启入战属性模式，实时更新
-                if (isCombatReadyMode) {
-                    updateCombatStatsUI();
-                }
             });
             formCheck.appendChild(input);
 
@@ -2225,334 +2209,29 @@ function changeEquipmentSetListener() {
 
 // #region Combat Stats
 
-// 存储基础属性和入战属性的对比数据
-let baseStats = {};
-let combatReadyStats = {};
-let isCombatReadyMode = false;
-
-// 光环技能列表（按照后放覆盖先放的逻辑）
-const AURA_ABILITIES = [
-    "/abilities/critical_aura",
-    "/abilities/fierce_aura",
-    "/abilities/guardian_aura",
-    "/abilities/mystic_aura",
-    "/abilities/speed_aura"
-];
-
-// 咖啡类饮料列表（用于识别咖啡）
-function isCoffee(hrid) {
-    return hrid && hrid.includes("coffee");
-}
-
-// 计算入战时的所有永久buff
-function calculateCombatReadyBuffs() {
-    let buffs = [];
-    
-    // 1. 房屋buff
-    Object.entries(player.houseRooms).forEach(([hrid, level]) => {
-        if (level > 0) {
-            try {
-                let houseRoom = new _combatsimulator_houseRoom__WEBPACK_IMPORTED_MODULE_7__["default"](hrid, level);
-                houseRoom.buffs.forEach(buff => {
-                    buffs.push(buff);
-                });
-            } catch (e) {
-                // 跳过无效的房间
-            }
-        }
-    });
-    
-    // 2. 成就buff
-    if (player.achievements && Object.keys(player.achievements).length > 0) {
-        let achievement = new _combatsimulator_achievement_js__WEBPACK_IMPORTED_MODULE_9__["default"](player.achievements);
-        achievement.buffs.forEach(buff => {
-            buffs.push(buff);
-        });
-    }
-    
-    // 3. 社区经验buff
-    if (document.getElementById("comExpToggle").checked) {
-        let comExp = Number(document.getElementById("comExpInput").value);
-        if (comExp > 0) {
-            const comExpBuff = {
-                uniqueHrid: "/buff_uniques/experience_community_buff",
-                typeHrid: "/buff_types/wisdom",
-                ratioBoost: 0,
-                ratioBoostLevelBonus: 0,
-                flatBoost: 0.005 * (comExp - 1) + 0.2,
-                flatBoostLevelBonus: 0,
-                duration: 0
-            };
-            buffs.push(new _combatsimulator_buff_js__WEBPACK_IMPORTED_MODULE_8__["default"](comExpBuff));
-        }
-    }
-    
-    // 4. 社区掉落buff
-    if (document.getElementById("comDropToggle").checked) {
-        let comDrop = Number(document.getElementById("comDropInput").value);
-        if (comDrop > 0) {
-            const comDropBuff = {
-                uniqueHrid: "/buff_uniques/combat_community_buff",
-                typeHrid: "/buff_types/combat_drop_quantity",
-                ratioBoost: 0,
-                ratioBoostLevelBonus: 0,
-                flatBoost: 0.005 * (comDrop - 1) + 0.2,
-                flatBoostLevelBonus: 0,
-                duration: 0
-            };
-            buffs.push(new _combatsimulator_buff_js__WEBPACK_IMPORTED_MODULE_8__["default"](comDropBuff));
-        }
-    }
-    
-    // 5. MooPass buff
-    if (document.getElementById("mooPassToggle").checked) {
-        const mooPassBuff = {
-            uniqueHrid: "/buff_uniques/experience_moo_pass_buff",
-            typeHrid: "/buff_types/wisdom",
-            ratioBoost: 0,
-            ratioBoostLevelBonus: 0,
-            flatBoost: 0.05,
-            flatBoostLevelBonus: 0,
-            duration: 0
-        };
-        buffs.push(new _combatsimulator_buff_js__WEBPACK_IMPORTED_MODULE_8__["default"](mooPassBuff));
-    }
-    
-    // 6. 咖啡buff（考虑饮料浓度）
-    let drinkConcentration = player.combatDetails.combatStats.drinkConcentration;
-    for (let i = 0; i < 3; i++) {
-        let drinkSelect = document.getElementById("selectDrink_" + i);
-        if (drinkSelect && drinkSelect.value && isCoffee(drinkSelect.value)) {
-            let drinkHrid = drinkSelect.value;
-            let gameItem = _combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[drinkHrid];
-            if (gameItem && gameItem.consumableDetail && gameItem.consumableDetail.buffs) {
-                for (const buffData of gameItem.consumableDetail.buffs) {
-                    let buffCopy = structuredClone(buffData);
-                    // 应用饮料浓度加成
-                    if (drinkConcentration > 0) {
-                        buffCopy.ratioBoost = buffCopy.ratioBoost * (1 + drinkConcentration);
-                        buffCopy.flatBoost = buffCopy.flatBoost * (1 + drinkConcentration);
-                    }
-                    buffs.push(new _combatsimulator_buff_js__WEBPACK_IMPORTED_MODULE_8__["default"](buffCopy));
-                }
-            }
-        }
-    }
-    
-    // 7. 光环技能buff（从所有选中的玩家收集，按顺序处理，后放覆盖先放）
-    let auraBuffMap = {}; // 用于处理覆盖
-    
-    // 获取所有选中的玩家（如果没有选中则默认只看当前玩家）
-    let playersToCheck = [];
-    const checkboxes = document.querySelectorAll('.player-checkbox');
-    checkboxes.forEach(checkbox => {
-        if (checkbox.checked) {
-            const playerNumber = parseInt(checkbox.id.replace('player', ''));
-            playersToCheck.push(playerNumber);
-        }
-    });
-    
-    // 如果没有选中任何玩家，只检查当前玩家
-    if (playersToCheck.length === 0) {
-        playersToCheck.push(parseInt(currentPlayerTabId));
-    }
-    
-    // 遍历所有选中的玩家，按玩家顺序收集光环（模拟战斗时的释放顺序）
-    for (const playerNumber of playersToCheck) {
-        let playerData;
-        
-        // 如果是当前显示的玩家，从UI读取
-        if (playerNumber.toString() === currentPlayerTabId) {
-            for (let i = 0; i < 5; i++) {
-                let abilitySelect = document.getElementById("selectAbility_" + i);
-                if (abilitySelect && abilitySelect.value && AURA_ABILITIES.includes(abilitySelect.value)) {
-                    let abilityHrid = abilitySelect.value;
-                    let abilityLevel = Number(document.getElementById("inputAbilityLevel_" + i).value) || 1;
-                    let gameAbility = _combatsimulator_data_abilityDetailMap_json__WEBPACK_IMPORTED_MODULE_2__[abilityHrid];
-                    if (gameAbility && gameAbility.abilityEffects) {
-                        for (const effect of gameAbility.abilityEffects) {
-                            if (effect.buffs) {
-                                for (const buffData of effect.buffs) {
-                                    let buff = new _combatsimulator_buff_js__WEBPACK_IMPORTED_MODULE_8__["default"](buffData, abilityLevel);
-                                    // 使用uniqueHrid作为key，后放覆盖先放
-                                    auraBuffMap[buff.uniqueHrid] = buff;
-                                }
-                            }
-                        }
-                    }
-                }
-            }
-        } else {
-            // 从playerDataMap读取其他玩家的配置
-            try {
-                playerData = JSON.parse(playerDataMap[playerNumber]);
-                if (playerData && playerData.abilities) {
-                    for (let i = 0; i < playerData.abilities.length; i++) {
-                        let abilityConfig = playerData.abilities[i];
-                        if (abilityConfig && abilityConfig.abilityHrid && AURA_ABILITIES.includes(abilityConfig.abilityHrid)) {
-                            let abilityHrid = abilityConfig.abilityHrid;
-                            let abilityLevel = Number(abilityConfig.level) || 1;
-                            let gameAbility = _combatsimulator_data_abilityDetailMap_json__WEBPACK_IMPORTED_MODULE_2__[abilityHrid];
-                            if (gameAbility && gameAbility.abilityEffects) {
-                                for (const effect of gameAbility.abilityEffects) {
-                                    if (effect.buffs) {
-                                        for (const buffData of effect.buffs) {
-                                            let buff = new _combatsimulator_buff_js__WEBPACK_IMPORTED_MODULE_8__["default"](buffData, abilityLevel);
-                                            // 使用uniqueHrid作为key，后放覆盖先放
-                                            auraBuffMap[buff.uniqueHrid] = buff;
-                                        }
-                                    }
-                                }
-                            }
-                        }
-                    }
-                }
-            } catch (e) {
-                // 跳过无法解析的玩家数据
-            }
-        }
-    }
-    
-    // 添加光环buff
-    Object.values(auraBuffMap).forEach(buff => {
-        buffs.push(buff);
-    });
-    
-    return buffs;
-}
-
-// 创建一个临时player来计算入战属性
-function calculateCombatReadyPlayer() {
-    // 深拷贝当前player的基础数据
-    let tempPlayer = new _combatsimulator_player_js__WEBPACK_IMPORTED_MODULE_1__["default"]();
-    tempPlayer.staminaLevel = player.staminaLevel;
-    tempPlayer.intelligenceLevel = player.intelligenceLevel;
-    tempPlayer.attackLevel = player.attackLevel;
-    tempPlayer.meleeLevel = player.meleeLevel;
-    tempPlayer.defenseLevel = player.defenseLevel;
-    tempPlayer.rangedLevel = player.rangedLevel;
-    tempPlayer.magicLevel = player.magicLevel;
-    tempPlayer.equipment = player.equipment;
-    tempPlayer.food = player.food;
-    tempPlayer.drinks = player.drinks;
-    tempPlayer.abilities = player.abilities;
-    tempPlayer.houseRooms = [];
-    tempPlayer.achievements = null;
-    
-    // 计算基础属性
-    tempPlayer.updateCombatDetails();
-    
-    // 收集所有入战buff
-    let combatBuffs = calculateCombatReadyBuffs();
-    
-    // 将buff添加到permanentBuffs
-    combatBuffs.forEach(buff => {
-        if (tempPlayer.permanentBuffs[buff.typeHrid]) {
-            tempPlayer.permanentBuffs[buff.typeHrid].flatBoost += buff.flatBoost;
-            tempPlayer.permanentBuffs[buff.typeHrid].ratioBoost += buff.ratioBoost;
-        } else {
-            tempPlayer.permanentBuffs[buff.typeHrid] = buff;
-        }
-    });
-    
-    // 复制到combatBuffs
-    tempPlayer.combatBuffs = structuredClone(tempPlayer.permanentBuffs);
-    
-    // 重新计算战斗属性
-    tempPlayer.updateCombatDetails();
-    
-    return tempPlayer;
-}
-
-// 保存基础属性快照
-function saveBaseStats() {
-    player.updateCombatDetails();
-    baseStats = {
-        combatDetails: structuredClone(player.combatDetails)
-    };
-}
-
-// 保存入战属性快照
-function saveCombatReadyStats() {
-    let combatReadyPlayer = calculateCombatReadyPlayer();
-    combatReadyStats = {
-        combatDetails: structuredClone(combatReadyPlayer.combatDetails)
-    };
-}
-
-// 判断属性是否被增益（用于高亮显示）
-function isStatBoosted(statName, isFloor = false, isCombatStats = false) {
-    if (!isCombatReadyMode) return false;
-    if (!baseStats.combatDetails || !combatReadyStats.combatDetails) return false;
-    
-    let baseValue, combatValue;
-    if (isCombatStats) {
-        baseValue = baseStats.combatDetails.combatStats[statName];
-        combatValue = combatReadyStats.combatDetails.combatStats[statName];
-    } else {
-        baseValue = baseStats.combatDetails[statName];
-        combatValue = combatReadyStats.combatDetails[statName];
-    }
-    
-    if (baseValue === undefined || combatValue === undefined) return false;
-    
-    if (isFloor) {
-        return Math.floor(combatValue) > Math.floor(baseValue);
-    }
-    return combatValue > baseValue + 0.0001; // 浮点数比较容差
-}
-
-// 获取当前应该显示的属性源
-function getCurrentDisplayStats() {
-    return isCombatReadyMode ? combatReadyStats : baseStats;
-}
-
 function updateCombatStatsUI() {
-    // 先保存基础属性
-    saveBaseStats();
-    
-    // 如果开启入战属性模式，计算入战属性
-    if (isCombatReadyMode) {
-        saveCombatReadyStats();
-    }
-    
-    // 获取要显示的属性
-    let displayStats = isCombatReadyMode ? combatReadyStats.combatDetails : player.combatDetails;
-    if (!displayStats) {
-        player.updateCombatDetails();
-        displayStats = player.combatDetails;
-    }
+    player.updateCombatDetails();
 
     let combatStyleElement = document.getElementById("combatStat_combatStyleHrid");
-    let combatStyle = displayStats.combatStats.combatStyleHrid;
+    let combatStyle = player.combatDetails.combatStats.combatStyleHrid;
     combatStyleElement.setAttribute("data-i18n", "combatStyleNames." + combatStyle);
-    combatStyleElement.innerHTML = _combatsimulator_data_combatStyleDetailMap_json__WEBPACK_IMPORTED_MODULE_17__[combatStyle].name;
+    combatStyleElement.innerHTML = _combatsimulator_data_combatStyleDetailMap_json__WEBPACK_IMPORTED_MODULE_15__[combatStyle].name;
 
     let damageTypeElement = document.getElementById("combatStat_damageType");
-    let damageType = _combatsimulator_data_damageTypeDetailMap_json__WEBPACK_IMPORTED_MODULE_16__[displayStats.combatStats.damageType];
+    let damageType = _combatsimulator_data_damageTypeDetailMap_json__WEBPACK_IMPORTED_MODULE_14__[player.combatDetails.combatStats.damageType];
     damageTypeElement.setAttribute("data-i18n", "damageTypeNames." + damageType.hrid);
     damageTypeElement.innerHTML = damageType.name;
 
     let attackIntervalElement = document.getElementById("combatStat_attackInterval");
-    let attackIntervalValue = (displayStats.combatStats.attackInterval / 1e9).toLocaleString() + "s";
-    attackIntervalElement.innerHTML = attackIntervalValue;
-    // 攻速变快时也高亮（数值变小）
-    if (isCombatReadyMode && baseStats.combatDetails && 
-        displayStats.combatStats.attackInterval < baseStats.combatDetails.combatStats.attackInterval - 1000) {
-        attackIntervalElement.style.color = "#0d6efd";
-        attackIntervalElement.style.fontWeight = "bold";
-    } else {
-        attackIntervalElement.style.color = "";
-        attackIntervalElement.style.fontWeight = "";
-    }
+    attackIntervalElement.innerHTML = (player.combatDetails.combatStats.attackInterval / 1e9).toLocaleString() + "s";
 
     let primaryTrainingElement = document.getElementById("combatStat_primaryTraining");
-    let primaryTraining = displayStats.combatStats.primaryTraining;
+    let primaryTraining = player.combatDetails.combatStats.primaryTraining;
     primaryTrainingElement.setAttribute("data-i18n", "skillNames." + primaryTraining);
     primaryTrainingElement.innerHTML = primaryTraining;
 
     let focusTrainingElement = document.getElementById("combatStat_focusTraining");
-    let focusTraining = displayStats.combatStats.focusTraining;
+    let focusTraining = player.combatDetails.combatStats.focusTraining;
     if (focusTraining) {
         focusTrainingElement.setAttribute("data-i18n", "skillNames." + focusTraining);
     } else {
@@ -2586,14 +2265,7 @@ function updateCombatStatsUI() {
         "totalThreat"
     ].forEach((stat) => {
         let element = document.getElementById("combatStat_" + stat);
-        element.innerHTML = Math.floor(displayStats[stat]);
-        if (isStatBoosted(stat, true, false)) {
-            element.style.color = "#0d6efd";
-            element.style.fontWeight = "bold";
-        } else {
-            element.style.color = "";
-            element.style.fontWeight = "";
-        }
+        element.innerHTML = Math.floor(player.combatDetails[stat]);
     });
 
     [
@@ -2601,14 +2273,7 @@ function updateCombatStatsUI() {
         "tenacity"
     ].forEach((stat) => {
         let element = document.getElementById("combatStat_" + stat);
-        element.innerHTML = Math.floor(displayStats.combatStats[stat]);
-        if (isStatBoosted(stat, true, true)) {
-            element.style.color = "#0d6efd";
-            element.style.fontWeight = "bold";
-        } else {
-            element.style.color = "";
-            element.style.fontWeight = "";
-        }
+        element.innerHTML = Math.floor(player.combatDetails.combatStats[stat]);
     });
 
     [
@@ -2656,37 +2321,11 @@ function updateCombatStatsUI() {
 
     ].forEach((stat) => {
         let element = document.getElementById("combatStat_" + stat);
-        let value = (100 * displayStats.combatStats[stat]).toLocaleString([], {
+        let value = (100 * player.combatDetails.combatStats[stat]).toLocaleString([], {
             minimumFractionDigits: 0,
             maximumFractionDigits: 4,
         });
         element.innerHTML = value + "%";
-        if (isStatBoosted(stat, false, true)) {
-            element.style.color = "#0d6efd";
-            element.style.fontWeight = "bold";
-        } else {
-            element.style.color = "";
-            element.style.fontWeight = "";
-        }
-    });
-}
-
-// 初始化入战属性开关
-function initCombatReadyStatsToggle() {
-    let toggle = document.getElementById("combatReadyStatsToggle");
-    if (!toggle) return;
-    
-    // 从localStorage读取状态
-    let savedState = localStorage.getItem('combatReadyStatsEnabled');
-    if (savedState === 'true') {
-        toggle.checked = true;
-        isCombatReadyMode = true;
-    }
-    
-    toggle.addEventListener('change', () => {
-        isCombatReadyMode = toggle.checked;
-        localStorage.setItem('combatReadyStatsEnabled', toggle.checked);
-        updateUI();
     });
 }
 
@@ -2810,10 +2449,6 @@ function initDrinksSection() {
 function drinkSelectHandler() {
     updateDrinksState();
     updateDrinksUI();
-    // 如果开启入战属性模式，实时更新（咖啡会影响入战属性）
-    if (isCombatReadyMode) {
-        updateCombatStatsUI();
-    }
 }
 
 function updateDrinksState() {
@@ -2863,25 +2498,12 @@ function initAbilitiesSection() {
         }
 
         selectElement.addEventListener("change", abilitySelectHandler);
-        // 技能等级改变时也需要更新入战属性
-        inputElement.addEventListener("input", abilityLevelInputHandler);
-    }
-}
-
-function abilityLevelInputHandler() {
-    // 如果开启入战属性模式，实时更新（光环技能等级会影响入战属性）
-    if (isCombatReadyMode) {
-        updateCombatStatsUI();
     }
 }
 
 function abilitySelectHandler() {
     updateAbilityState();
     updateAbilityUI();
-    // 如果开启入战属性模式，实时更新（光环技能会影响入战属性）
-    if (isCombatReadyMode) {
-        updateCombatStatsUI();
-    }
 }
 
 function updateAbilityState() {
@@ -2901,9 +2523,9 @@ function updateAbilityUI() {
         let inputElement = document.getElementById("inputAbilityLevel_" + i);
         let triggerButton = document.getElementById("buttonAbilityTrigger_" + i);
 
-        selectElement.disabled = player.intelligenceLevel < _combatsimulator_data_abilitySlotsLevelRequirementList_json__WEBPACK_IMPORTED_MODULE_13__[i + 1];
-        inputElement.disabled = player.intelligenceLevel < _combatsimulator_data_abilitySlotsLevelRequirementList_json__WEBPACK_IMPORTED_MODULE_13__[i + 1];
-        triggerButton.disabled = player.intelligenceLevel < _combatsimulator_data_abilitySlotsLevelRequirementList_json__WEBPACK_IMPORTED_MODULE_13__[i + 1] || !main_abilities[i];
+        selectElement.disabled = player.intelligenceLevel < _combatsimulator_data_abilitySlotsLevelRequirementList_json__WEBPACK_IMPORTED_MODULE_11__[i + 1];
+        inputElement.disabled = player.intelligenceLevel < _combatsimulator_data_abilitySlotsLevelRequirementList_json__WEBPACK_IMPORTED_MODULE_11__[i + 1];
+        triggerButton.disabled = player.intelligenceLevel < _combatsimulator_data_abilitySlotsLevelRequirementList_json__WEBPACK_IMPORTED_MODULE_11__[i + 1] || !main_abilities[i];
         let moveUpButton = document.getElementById("selectAbilityMoveUp_" + i);
         moveUpButton.onclick = () => swapAbilityOrder(i, -1);
     }
@@ -3122,7 +2744,7 @@ function updateTriggerModal() {
 
         triggerComparatorSelect.value = modalTriggers[i].comparatorHrid;
 
-        if (_combatsimulator_data_combatTriggerComparatorDetailMap_json__WEBPACK_IMPORTED_MODULE_12__[modalTriggers[i].comparatorHrid].allowValue) {
+        if (_combatsimulator_data_combatTriggerComparatorDetailMap_json__WEBPACK_IMPORTED_MODULE_10__[modalTriggers[i].comparatorHrid].allowValue) {
             showElement(triggerValueInput);
             triggerValueInput.value = modalTriggers[i].value;
         } else {
@@ -3140,7 +2762,7 @@ function fillTriggerDependencySelect(element) {
     element.length = 0;
     element.add(new Option("", ""));
 
-    for (const dependency of Object.values(_combatsimulator_data_combatTriggerDependencyDetailMap_json__WEBPACK_IMPORTED_MODULE_10__).sort(
+    for (const dependency of Object.values(_combatsimulator_data_combatTriggerDependencyDetailMap_json__WEBPACK_IMPORTED_MODULE_8__).sort(
         (a, b) => a.sortIndex - b.sortIndex
     )) {
         let opt = new Option(dependency.name, dependency.hrid);
@@ -3150,13 +2772,13 @@ function fillTriggerDependencySelect(element) {
 }
 
 function fillTriggerConditionSelect(element, dependencyHrid) {
-    let dependency = _combatsimulator_data_combatTriggerDependencyDetailMap_json__WEBPACK_IMPORTED_MODULE_10__[dependencyHrid];
+    let dependency = _combatsimulator_data_combatTriggerDependencyDetailMap_json__WEBPACK_IMPORTED_MODULE_8__[dependencyHrid];
 
     let conditions;
     if (dependency.isSingleTarget) {
-        conditions = Object.values(_combatsimulator_data_combatTriggerConditionDetailMap_json__WEBPACK_IMPORTED_MODULE_11__).filter((condition) => condition.isSingleTarget);
+        conditions = Object.values(_combatsimulator_data_combatTriggerConditionDetailMap_json__WEBPACK_IMPORTED_MODULE_9__).filter((condition) => condition.isSingleTarget);
     } else {
-        conditions = Object.values(_combatsimulator_data_combatTriggerConditionDetailMap_json__WEBPACK_IMPORTED_MODULE_11__).filter((condition) => condition.isMultiTarget);
+        conditions = Object.values(_combatsimulator_data_combatTriggerConditionDetailMap_json__WEBPACK_IMPORTED_MODULE_9__).filter((condition) => condition.isMultiTarget);
     }
 
     element.length = 0;
@@ -3170,9 +2792,9 @@ function fillTriggerConditionSelect(element, dependencyHrid) {
 }
 
 function fillTriggerComparatorSelect(element, conditionHrid) {
-    let condition = _combatsimulator_data_combatTriggerConditionDetailMap_json__WEBPACK_IMPORTED_MODULE_11__[conditionHrid];
+    let condition = _combatsimulator_data_combatTriggerConditionDetailMap_json__WEBPACK_IMPORTED_MODULE_9__[conditionHrid];
 
-    let comparators = condition.allowedComparatorHrids.map((hrid) => _combatsimulator_data_combatTriggerComparatorDetailMap_json__WEBPACK_IMPORTED_MODULE_12__[hrid]);
+    let comparators = condition.allowedComparatorHrids.map((hrid) => _combatsimulator_data_combatTriggerComparatorDetailMap_json__WEBPACK_IMPORTED_MODULE_10__[hrid]);
 
     element.length = 0;
     element.add(new Option("", ""));
@@ -3202,7 +2824,7 @@ function initZones() {
     let zoneSelect = document.getElementById("selectZone");
 
     // TOOD dungeon wave spawns
-    let gameZones = Object.values(_combatsimulator_data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_14__)
+    let gameZones = Object.values(_combatsimulator_data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_12__)
         .filter((action) => action.type == "/action_types/combat" && action.category != "/action_categories/combat/dungeons")
         .sort((a, b) => a.sortIndex - b.sortIndex);
 
@@ -3227,7 +2849,7 @@ function initZones() {
         }
     });
 
-    let zoneHrids = Object.values(_combatsimulator_data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_14__)
+    let zoneHrids = Object.values(_combatsimulator_data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_12__)
         .filter((action) => action.type == "/action_types/combat" && action.category != "/action_categories/combat/dungeons" && action.combatZoneInfo.fightInfo.randomSpawnInfo.maxSpawnCount > 1)
         .sort((a, b) => a.sortIndex - b.sortIndex)
         .flat();
@@ -3270,7 +2892,7 @@ function initZones() {
         }
     });
 
-    let soloHrids = Object.values(_combatsimulator_data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_14__)
+    let soloHrids = Object.values(_combatsimulator_data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_12__)
         .filter((action) => action.type == "/action_types/combat" && action.category != "/action_categories/combat/dungeons" && action.combatZoneInfo.fightInfo.randomSpawnInfo.maxSpawnCount == 1)
         .sort((a, b) => a.sortIndex - b.sortIndex)
         .flat();
@@ -3302,7 +2924,7 @@ function initZones() {
 function initDungeons() {
     let dungeonSelect = document.getElementById("selectDungeon");
 
-    let gameDungeons = Object.values(_combatsimulator_data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_14__)
+    let gameDungeons = Object.values(_combatsimulator_data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_12__)
         .filter((action) => action.type == "/action_types/combat" && action.category == "/action_categories/combat/dungeons")
         .sort((a, b) => a.sortIndex - b.sortIndex);
 
@@ -3757,6 +3379,13 @@ function showEmptyCharts() {
 function initHpMpVisualization() {
     const toggle = document.getElementById('hpMpVisualizationToggle');
     const container = document.getElementById('combatChartsContainer');
+
+    const enableHpMpVisualization = localStorage.getItem('enableHpMpVisualization');
+    if (enableHpMpVisualization === 'true') {
+        toggle.checked = true;
+        container.classList.remove('d-none');
+        showEmptyCharts();
+    }
     
     if (toggle && container) {
         toggle.addEventListener('change', function() {
@@ -3768,6 +3397,7 @@ function initHpMpVisualization() {
                 destroyChart('hpChart');
                 destroyChart('mpChart');
             }
+            localStorage.setItem('enableHpMpVisualization', this.checked);
         });
     }
 }
@@ -3849,8 +3479,8 @@ function calcDropMaps(simResult, playerToDisplay) {
     for (const monster of monsters) {
         const dropMap = new Map();
         const rareDropMap = new Map();
-        if (_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_15__[monster].dropTable) {
-            for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_15__[monster].dropTable) {
+        if (_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].dropTable) {
+            for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].dropTable) {
                 if (drop.minDifficultyTier > simResult.difficultyTier) {
                     continue;
                 }
@@ -3861,8 +3491,8 @@ function calcDropMaps(simResult, playerToDisplay) {
 
                 dropMap.set(drop.itemHrid, { "dropRate": Math.min(1.0, dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
             }
-            if (_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_15__[monster].rareDropTable)
-                for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_15__[monster].rareDropTable) {
+            if (_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].rareDropTable)
+                for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].rareDropTable) {
                     if (drop.minDifficultyTier > simResult.difficultyTier) {
                         continue;
                     }
@@ -4175,7 +3805,7 @@ function showKills(simResult, playerToDisplay) {
             let killsPerHour = (simResult.deaths[monster] / hoursSimulated).toFixed(1);
             let monsterRow = createRow(
                 ["col-md-6", "col-md-6 text-end"],
-                [_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_15__[monster].name, killsPerHour]
+                [_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].name, killsPerHour]
             );
             monsterRow.firstElementChild.setAttribute("data-i18n", "monsterNames." + monster);
             newChildren.push(monsterRow);
@@ -4657,7 +4287,7 @@ function showDamageDone(simResult, playerToDisplay) {
         let resultAccordionButton = document.getElementById(
             "buttonSimulationResultDamageDoneAccordionEnemy" + enemyIndex
         );
-        let targetName = _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_15__[target].name;
+        let targetName = _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[target].name;
         resultAccordionButton.innerHTML = "<b><span data-i18n=\"common:simulationResults.damageDone\">Damage Done</span> (" + "<span data-i18n=\"monsterNames." + target + "\">" + targetName + "</span>" + ")</b>";
 
         if (simResult.bossSpawns.includes(target)) {
@@ -4754,7 +4384,7 @@ function showDamageTaken(simResult, playerToDisplay) {
         let resultAccordionButton = document.getElementById(
             "buttonSimulationResultDamageTakenAccordionEnemy" + enemyIndex
         );
-        let sourceName = _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_15__[source].name;
+        let sourceName = _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[source].name;
         resultAccordionButton.innerHTML = "<b><span data-i18n=\"common:simulationResults.damageTaken\">Damage Taken</span> (" + "<span data-i18n=\"monsterNames." + source + "\">" + sourceName + "</span>" + ")</b>";
 
         enemyIndex++;
@@ -4862,21 +4492,6 @@ document.addEventListener('DOMContentLoaded', function () {
     const simDungeonToggle = document.getElementById('simDungeonToggle');
     const playerContainer = document.getElementById('playerCheckBox');
 
-    // 处理玩家 checkbox 变化时更新入战属性
-    function onPlayerCheckboxChange() {
-        if (isCombatReadyMode) {
-            updateUI();
-        }
-    }
-
-    // 给 checkbox 添加事件监听器
-    function addCheckboxListener(checkbox) {
-        checkbox.addEventListener('change', onPlayerCheckboxChange);
-    }
-
-    // 给初始的 player1, player2, player3 checkbox 添加事件监听器
-    document.querySelectorAll('.player-checkbox').forEach(addCheckboxListener);
-
     function addPlayers() {
         const player4 = document.createElement('div');
         player4.classList.add('form-check');
@@ -4898,10 +4513,6 @@ document.addEventListener('DOMContentLoaded', function () {
 
         playerContainer.appendChild(player4);
         playerContainer.appendChild(player5);
-
-        // 给新添加的 checkbox 添加事件监听器
-        addCheckboxListener(document.getElementById('player4'));
-        addCheckboxListener(document.getElementById('player5'));
     }
 
     function removePlayers() {
@@ -4924,10 +4535,6 @@ document.addEventListener('DOMContentLoaded', function () {
     function updatePlayersCheckbox(isCheck) {
         const boxes = playerContainer.querySelectorAll('.player-checkbox');
         boxes.forEach((checkBox) => { checkBox.checked = isCheck });
-        // 勾选状态变化后更新入战属性
-        if (isCombatReadyMode) {
-            updateUI();
-        }
     }
 
     function updateDifficultySelect(isCheck) {
@@ -5056,7 +4663,7 @@ function startSimulation(selectedPlayers) {
             }
 
             for (let i = 0; i < 5; i++) {
-                if (main_abilities[i] && player.intelligenceLevel >= _combatsimulator_data_abilitySlotsLevelRequirementList_json__WEBPACK_IMPORTED_MODULE_13__[i + 1]) {
+                if (main_abilities[i] && player.intelligenceLevel >= _combatsimulator_data_abilitySlotsLevelRequirementList_json__WEBPACK_IMPORTED_MODULE_11__[i + 1]) {
                     let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
                     let ability = new _combatsimulator_ability_js__WEBPACK_IMPORTED_MODULE_5__["default"](main_abilities[i], Number(abilityLevelInput.value), triggerMap[main_abilities[i]]);
                     player.abilities[i] = ability;
@@ -5137,7 +4744,7 @@ function startSimulation(selectedPlayers) {
         let targetHrids = {};
 
         if (simAllZonesToggle.checked) {
-            Object.values(_combatsimulator_data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_14__)
+            Object.values(_combatsimulator_data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_12__)
                 .filter(a =>
                     a.type === "/action_types/combat" &&
                     a.category !== "/action_categories/combat/dungeons" &&
@@ -5148,7 +4755,7 @@ function startSimulation(selectedPlayers) {
         }
 
         if (simAllSoloToggle.checked) {
-            Object.values(_combatsimulator_data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_14__)
+            Object.values(_combatsimulator_data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_12__)
                 .filter(a =>
                     a.type === "/action_types/combat" &&
                     a.category !== "/action_categories/combat/dungeons" &&
@@ -5298,7 +4905,7 @@ document.getElementById("buttonUploadJSONSimulate").addEventListener("click", (e
                     let targetHrids = {};
 
                     if (simAllZonesToggle.checked) {
-                        Object.values(_combatsimulator_data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_14__)
+                        Object.values(_combatsimulator_data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_12__)
                             .filter(a =>
                                 a.type === "/action_types/combat" &&
                                 a.category !== "/action_categories/combat/dungeons" &&
@@ -5521,23 +5128,9 @@ function renderSelectedWipeEvent(index, simResult) {
             eventElement.appendChild(abilitySpan);
             eventElement.appendChild(toSpan);
             eventElement.appendChild(targetSpan);
-            if (log.isHeal) {
-                const healSpan = document.createElement('span');
-                healSpan.className = 'log-heal';
-                healSpan.setAttribute('data-i18n', `common:healAmount`);
-                healSpan.textContent = ' 治疗: ';
-                eventElement.appendChild(healSpan);
-                const healAmountSpan = document.createElement('span');
-                healAmountSpan.className = 'log-heal-amount';
-                healAmountSpan.style.color = darkModeToggle.checked ? '#32CD32' : '#228B22';
-                healAmountSpan.textContent = `+${log.damage}`;
-                eventElement.appendChild(healAmountSpan);
-                eventElement.appendChild(document.createTextNode(` , HP ${log.beforeHp} → ${log.afterHp}`));
-            } else {
-                eventElement.appendChild(dealDamageSpan);
-                eventElement.appendChild(damageDoneSpan);
-                eventElement.appendChild(document.createTextNode(` , HP ${log.beforeHp} → ${log.afterHp}`));
-            }
+            eventElement.appendChild(dealDamageSpan);
+            eventElement.appendChild(damageDoneSpan);
+            eventElement.appendChild(document.createTextNode(` , HP ${log.beforeHp} → ${log.afterHp}`));
 
             eventsList.appendChild(eventElement);
         });
@@ -5569,179 +5162,10 @@ function renderSelectedWipeEvent(index, simResult) {
             }
             playersHpElement.appendChild(playerElement);
         });
-
-        // 添加全员MP显示
-        const playersMpElement = document.createElement('div');
-        const playerMpTitle = document.createElement('span');
-        playerMpTitle.className = 'log-players-mp';
-        playerMpTitle.setAttribute('data-i18n', `common:playersMp`);
-        playerMpTitle.textContent = 'Players MP: ';
-        playersMpElement.appendChild(playerMpTitle);
-
-        if (lastLog.playersMp) {
-            lastLog.playersMp.forEach((player, idx) => {
-                const playerElement = document.createElement('span');
-                playerElement.className = 'log-player-mp';
-                playerElement.textContent = `${player.hrid}: ${player.current}/${player.max}`;
-
-                // MP耗尽时显示红色，低于20%时显示黄色
-                const mpRatio = player.max > 0 ? player.current / player.max : 0;
-                if (player.current <= 0) {
-                    playerElement.style.color = darkModeToggle.checked ? '#FF6347' : '#CC0000';
-                } else if (mpRatio < 0.2) {
-                    playerElement.style.color = darkModeToggle.checked ? '#FFD700' : '#DAA520';
-                } else {
-                    playerElement.style.color = darkModeToggle.checked ? '#87CEEB' : '#4169E1';
-                }
-
-                if (idx > 0) {
-                    playersMpElement.appendChild(document.createTextNode(' | '));
-                }
-                playersMpElement.appendChild(playerElement);
-            });
-        }
-
-        // 添加治疗技能触发条件信息
-        const healLogsWithTrigger = group.logs.filter(log => log.isHeal && log.triggerInfo);
-        if (healLogsWithTrigger.length > 0) {
-            const triggerInfoElement = document.createElement('div');
-            triggerInfoElement.className = 'log-trigger-info';
-            triggerInfoElement.style.marginTop = '5px';
-            triggerInfoElement.style.fontSize = '0.9em';
-            triggerInfoElement.style.color = darkModeToggle.checked ? '#FFA07A' : '#D2691E';
-
-            // 获取第一个带触发条件的治疗日志
-            const healLog = healLogsWithTrigger[0];
-            const triggerInfo = healLog.triggerInfo;
-
-            // 显示触发条件标题
-            const triggerTitle = document.createElement('span');
-            triggerTitle.setAttribute('data-i18n', 'common:healTriggerInfo');
-            triggerTitle.textContent = '治疗触发条件: ';
-            triggerTitle.style.fontWeight = 'bold';
-            triggerInfoElement.appendChild(triggerTitle);
-
-            // 解析并显示触发条件
-            if (triggerInfo.triggers && triggerInfo.triggers.length > 0) {
-                triggerInfo.triggers.forEach((trigger, idx) => {
-                    if (idx > 0) {
-                        triggerInfoElement.appendChild(document.createTextNode(' && '));
-                    }
-                    
-                    const triggerSpan = document.createElement('span');
-                    
-                    // 获取依赖目标名称
-                    let dependencyName = '';
-                    switch (trigger.dependencyHrid) {
-                        case '/combat_trigger_dependencies/self':
-                            dependencyName = '自身';
-                            break;
-                        case '/combat_trigger_dependencies/all_allies':
-                            dependencyName = '所有队友';
-                            break;
-                        case '/combat_trigger_dependencies/targeted_enemy':
-                            dependencyName = '目标敌人';
-                            break;
-                        case '/combat_trigger_dependencies/all_enemies':
-                            dependencyName = '所有敌人';
-                            break;
-                        default:
-                            dependencyName = trigger.dependencyHrid.split('/').pop();
-                    }
-
-                    // 获取条件名称和当前值
-                    let conditionName = '';
-                    let currentValue = 0;
-                    switch (trigger.conditionHrid) {
-                        case '/combat_trigger_conditions/missing_hp':
-                            conditionName = '缺失生命值';
-                            currentValue = triggerInfo.totalMissingHp;
-                            break;
-                        case '/combat_trigger_conditions/missing_mp':
-                            conditionName = '缺失法力值';
-                            currentValue = triggerInfo.totalMissingMp;
-                            break;
-                        case '/combat_trigger_conditions/current_hp':
-                            conditionName = '当前生命值';
-                            break;
-                        case '/combat_trigger_conditions/current_mp':
-                            conditionName = '当前法力值';
-                            break;
-                        case '/combat_trigger_conditions/lowest_hp_percentage':
-                            conditionName = '最低生命百分比';
-                            break;
-                        default:
-                            conditionName = trigger.conditionHrid.split('/').pop().replace(/_/g, ' ');
-                    }
-
-                    // 获取比较符
-                    let comparator = '';
-                    switch (trigger.comparatorHrid) {
-                        case '/combat_trigger_comparators/greater_than_equal':
-                            comparator = '>=';
-                            break;
-                        case '/combat_trigger_comparators/less_than_equal':
-                            comparator = '<=';
-                            break;
-                        case '/combat_trigger_comparators/is_active':
-                            comparator = '激活';
-                            break;
-                        case '/combat_trigger_comparators/is_inactive':
-                            comparator = '未激活';
-                            break;
-                        default:
-                            comparator = trigger.comparatorHrid.split('/').pop();
-                    }
-
-                    // 构建触发条件文本
-                    let triggerText = `[${dependencyName}] ${conditionName} ${comparator} ${trigger.value}`;
-                    
-                    // 如果是缺失HP/MP条件，显示当前实际值
-                    if (trigger.conditionHrid === '/combat_trigger_conditions/missing_hp' || 
-                        trigger.conditionHrid === '/combat_trigger_conditions/missing_mp') {
-                        triggerText += ` (当前: ${currentValue})`;
-                    }
-                    
-                    triggerSpan.textContent = triggerText;
-                    triggerInfoElement.appendChild(triggerSpan);
-                });
-            }
-
-            // 显示各玩家缺失HP详情
-            if (triggerInfo.playersMissingHp) {
-                const detailElement = document.createElement('div');
-                detailElement.style.marginTop = '3px';
-                detailElement.style.fontSize = '0.85em';
-                detailElement.style.color = darkModeToggle.checked ? '#98FB98' : '#2E8B57';
-
-                const detailTitle = document.createElement('span');
-                detailTitle.setAttribute('data-i18n', 'common:playersMissingHp');
-                detailTitle.textContent = '各玩家缺失HP: ';
-                detailElement.appendChild(detailTitle);
-
-                triggerInfo.playersMissingHp.forEach((player, idx) => {
-                    if (idx > 0) {
-                        detailElement.appendChild(document.createTextNode(' | '));
-                    }
-                    const playerSpan = document.createElement('span');
-                    playerSpan.textContent = `${player.hrid}: ${player.missingHp}`;
-                    if (player.missingHp > 0) {
-                        playerSpan.style.color = darkModeToggle.checked ? '#FFB6C1' : '#DC143C';
-                    }
-                    detailElement.appendChild(playerSpan);
-                });
-
-                triggerInfoElement.appendChild(detailElement);
-            }
-
-            timeGroupElement.appendChild(triggerInfoElement);
-        }
-
         const spacer = document.createElement('div');
         spacer.style.height = '15px';
         logsContainer.appendChild(spacer);
         timeGroupElement.appendChild(playersHpElement);
-        timeGroupElement.appendChild(playersMpElement);
         logsContainer.appendChild(timeGroupElement);
     });
 
@@ -5769,17 +5193,10 @@ function groupLogsByTime(logs) {
 
     groups.forEach(group => {
         let hpMap = {};
-        let mpMap = {};
         if (group.logs.length > 0) {
             group.logs[0].playersHp.forEach(p => {
                 hpMap[p.hrid] = { current: p.current, max: p.max };
             });
-            // 处理 playersMp 数据
-            if (group.logs[0].playersMp) {
-                group.logs[0].playersMp.forEach(p => {
-                    mpMap[p.hrid] = { current: p.current, max: p.max };
-                });
-            }
         }
         group.logs.forEach(log => {
             if (hpMap[log.target]) {
@@ -5788,12 +5205,6 @@ function groupLogsByTime(logs) {
         });
         group.logs.forEach(log => {
             log.playersHp = Object.entries(hpMap).map(([hrid, val]) => ({
-                hrid,
-                current: val.current,
-                max: val.max
-            }));
-            // 更新 playersMp 数据
-            log.playersMp = Object.entries(mpMap).map(([hrid, val]) => ({
                 hrid,
                 current: val.current,
                 max: val.max
@@ -5995,7 +5406,7 @@ function fixTriggerMap(triggerMap) {
             triggerMap[key] = [];
         }
         for (const trigger of triggerMap[key]) {
-            if (!_combatsimulator_data_combatTriggerConditionDetailMap_json__WEBPACK_IMPORTED_MODULE_11__[trigger.conditionHrid]) {
+            if (!_combatsimulator_data_combatTriggerConditionDetailMap_json__WEBPACK_IMPORTED_MODULE_9__[trigger.conditionHrid]) {
                 err = true;
                 break;
             }
@@ -6102,7 +5513,7 @@ function loadEquipmentSetIntoUI(equipmentSet) {
             player.achievements[achievement] = field.checked;
         }
     } else {
-        let achievements = Object.values(_combatsimulator_data_achievementDetailMap_json__WEBPACK_IMPORTED_MODULE_20__);
+        let achievements = Object.values(_combatsimulator_data_achievementDetailMap_json__WEBPACK_IMPORTED_MODULE_18__);
         for (const detail of Object.values(achievements)) {
             const field = document.querySelector('[data-achievement-hrid="' + detail.hrid + '"]');
             field.checked = false;
@@ -6246,45 +5657,16 @@ function setPlayerData(playerId, inputElementId) {
 
 function doGroupImport() {
     let needUpdateCurrentTab = false;
-    let importedPlayers = []; // 跟踪导入了哪些玩家的数据
     const value = document.getElementById("inputSetGroupCombatAll")?.value || "";
     if (!value.trim()) {
         for (let i of ['1', '2', '3', '4', '5']) {
-            if (setPlayerData(i, "inputSetGroupCombatplayer" + i)) {
-                importedPlayers.push(i);
-                if (currentPlayerTabId == i) {
-                    needUpdateCurrentTab = true;
-                }
+            if (setPlayerData(i, "inputSetGroupCombatplayer" + i) && currentPlayerTabId == i) {
+                needUpdateCurrentTab = true;
             }
         }
     } else {
         playerDataMap = JSON.parse(value);
         needUpdateCurrentTab = true;
-        // 检查导入的组数据中哪些玩家有有效数据
-        for (let i of ['1', '2', '3', '4', '5']) {
-            if (playerDataMap[i]) {
-                try {
-                    let data = JSON.parse(playerDataMap[i]);
-                    // 检查是否有有效的玩家数据（至少有等级设置）
-                    if (data && data.player && (data.player.attackLevel > 1 || data.player.meleeLevel > 1 || 
-                        data.player.defenseLevel > 1 || data.player.rangedLevel > 1 || data.player.magicLevel > 1)) {
-                        importedPlayers.push(i);
-                    }
-                } catch (e) {
-                    // 跳过无法解析的数据
-                }
-            }
-        }
-    }
-
-    // 自动勾选导入了有效数据的玩家的 checkbox
-    if (importedPlayers.length > 0) {
-        for (let i of ['1', '2', '3', '4', '5']) {
-            let checkbox = document.getElementById('player' + i);
-            if (checkbox) {
-                checkbox.checked = importedPlayers.includes(i);
-            }
-        }
     }
 
     if (needUpdateCurrentTab) {
@@ -6414,7 +5796,7 @@ function doSoloImport() {
             player.achievements[achievement] = field.checked;
         }
     } else {
-        let achievements = Object.values(_combatsimulator_data_achievementDetailMap_json__WEBPACK_IMPORTED_MODULE_20__);
+        let achievements = Object.values(_combatsimulator_data_achievementDetailMap_json__WEBPACK_IMPORTED_MODULE_18__);
         for (const detail of Object.values(achievements)) {
             const field = document.querySelector('[data-achievement-hrid="' + detail.hrid + '"]');
             field.checked = false;
@@ -6603,7 +5985,7 @@ function updateNextPlayer(currentPlayerNumber) {
     }
 
     { // reset all achievements
-        let achievements = Object.values(_combatsimulator_data_achievementDetailMap_json__WEBPACK_IMPORTED_MODULE_20__);
+        let achievements = Object.values(_combatsimulator_data_achievementDetailMap_json__WEBPACK_IMPORTED_MODULE_18__);
         for (const detail of Object.values(achievements)) {
             const field = document.querySelector('[data-achievement-hrid="' + detail.hrid + '"]');
             field.checked = false;
@@ -6712,37 +6094,37 @@ async function fetchPrices() {
         window.prices["/items/coin"] = { "ask": 1, "bid": 1, "vendor": 1 };
 
         window.prices["/items/small_treasure_chest"] = {
-            "ask": _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_18__["/items/small_treasure_chest"].map((item) => {
+            "ask": _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_16__["/items/small_treasure_chest"].map((item) => {
                 return item.itemHrid in window.prices ? window.prices[item.itemHrid].ask * item.dropRate * (item.maxCount + item.minCount) / 2 : 0;
             }).reduce((a, b) => a + b, 0),
-            "bid": _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_18__["/items/small_treasure_chest"].map((item) => {
+            "bid": _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_16__["/items/small_treasure_chest"].map((item) => {
                 return item.itemHrid in window.prices ? window.prices[item.itemHrid].bid * item.dropRate * (item.maxCount + item.minCount) / 2 : 0;
             }).reduce((a, b) => a + b, 0),
-            "vendor": _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_18__["/items/small_treasure_chest"].map((item) => {
+            "vendor": _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_16__["/items/small_treasure_chest"].map((item) => {
                 return item.itemHrid in window.prices ? window.prices[item.itemHrid].vendor : 0;
             }).reduce((a, b) => a + b, 0),
         };
 
         window.prices["/items/medium_treasure_chest"] = {
-            "ask": _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_18__["/items/medium_treasure_chest"].map((item) => {
+            "ask": _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_16__["/items/medium_treasure_chest"].map((item) => {
                 return item.itemHrid in window.prices ? window.prices[item.itemHrid].ask * item.dropRate * (item.maxCount + item.minCount) / 2 : 0;
             }).reduce((a, b) => a + b, 0),
-            "bid": _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_18__["/items/medium_treasure_chest"].map((item) => {
+            "bid": _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_16__["/items/medium_treasure_chest"].map((item) => {
                 return item.itemHrid in window.prices ? window.prices[item.itemHrid].bid * item.dropRate * (item.maxCount + item.minCount) / 2 : 0;
             }).reduce((a, b) => a + b, 0),
-            "vendor": _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_18__["/items/medium_treasure_chest"].map((item) => {
+            "vendor": _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_16__["/items/medium_treasure_chest"].map((item) => {
                 return item.itemHrid in window.prices ? window.prices[item.itemHrid].vendor : 0;
             }).reduce((a, b) => a + b, 0),
         };
 
         window.prices["/items/large_treasure_chest"] = {
-            "ask": _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_18__["/items/large_treasure_chest"].map((item) => {
+            "ask": _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_16__["/items/large_treasure_chest"].map((item) => {
                 return item.itemHrid in window.prices ? window.prices[item.itemHrid].ask * item.dropRate * (item.maxCount + item.minCount) / 2 : 0;
             }).reduce((a, b) => a + b, 0),
-            "bid": _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_18__["/items/large_treasure_chest"].map((item) => {
+            "bid": _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_16__["/items/large_treasure_chest"].map((item) => {
                 return item.itemHrid in window.prices ? window.prices[item.itemHrid].bid * item.dropRate * (item.maxCount + item.minCount) / 2 : 0;
             }).reduce((a, b) => a + b, 0),
-            "vendor": _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_18__["/items/large_treasure_chest"].map((item) => {
+            "vendor": _combatsimulator_data_openableLootDropMap_json__WEBPACK_IMPORTED_MODULE_16__["/items/large_treasure_chest"].map((item) => {
                 return item.itemHrid in window.prices ? window.prices[item.itemHrid].vendor : 0;
             }).reduce((a, b) => a + b, 0),
         };
@@ -6842,14 +6224,14 @@ function updateTable(tableId, item, price) {
 
 function initPatchNotes() {
     const patchNotesRows = document.getElementById("patchNotes");
-    for (const pn in _patchNote_json__WEBPACK_IMPORTED_MODULE_21__) {
+    for (const pn in _patchNote_json__WEBPACK_IMPORTED_MODULE_19__) {
         const patchNoteContainer = document.createElement("div");
         patchNotesRows.setAttribute('class', 'col-12 mb-4');
 
         const patchNoteElement = document.createElement("h6");
         patchNoteElement.innerHTML = pn;
         const patchNoteList = document.createElement("ul");
-        for (const note of _patchNote_json__WEBPACK_IMPORTED_MODULE_21__[pn]) {
+        for (const note of _patchNote_json__WEBPACK_IMPORTED_MODULE_19__[pn]) {
             const noteElement = document.createElement("li");
             noteElement.innerHTML = note;
             patchNoteList.appendChild(noteElement);
@@ -6870,10 +6252,6 @@ function initExtraBuffSection() {
     }
     mooPassToggle.onchange = () => {
         localStorage.setItem('mooPass', mooPassToggle.checked);
-        // 如果开启入战属性模式，实时更新
-        if (isCombatReadyMode) {
-            updateCombatStatsUI();
-        }
     }
     
     // comExp
@@ -6898,10 +6276,6 @@ function initExtraBuffSection() {
         } else {
             localStorage.setItem('comExp', 0);
             comExpInput.disabled = true;
-        }
-        // 如果开启入战属性模式，实时更新
-        if (isCombatReadyMode) {
-            updateCombatStatsUI();
         }
     }
     comExpToggle.onchange = updateComExp;
@@ -6929,10 +6303,6 @@ function initExtraBuffSection() {
         } else {
             localStorage.setItem('comDrop', 0);
             comDropInput.disabled = true;
-        }
-        // 如果开启入战属性模式，实时更新
-        if (isCombatReadyMode) {
-            updateCombatStatsUI();
         }
     }
     comDropToggle.onchange = updateComDrop;
@@ -7019,7 +6389,6 @@ initDamageDoneTaken();
 initPatchNotes();
 initExtraBuffSection();
 initHpMpVisualization();
-initCombatReadyStatsToggle();
 
 updateState();
 updateUI();

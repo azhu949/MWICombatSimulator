@@ -83,50 +83,19 @@ class CombatSimulator extends EventTarget {
         // console.log("===== 团灭日志结束 =====");
     }
     
-    buildCombatLog(source, ability, target, damageDone, isHeal = false, abilityObj = null) {
+    buildCombatLog(source, ability, target, damageDone) {
         try {
             const sourceHrid = source?.hrid || "UNKNOWN_SOURCE";
             const targetHrid = target?.hrid || "UNKNOWN_TARGET";
             
             const afterHp = target?.combatDetails?.currentHitpoints || 0;
-            const beforeHp = isHeal ? Math.max(0, afterHp - damageDone) : Math.max(0, afterHp + damageDone);
+            const beforeHp = Math.max(0, afterHp + damageDone);
 
             const playersHp = this.players.map(p => ({
                 hrid: p.hrid || "UNKNOWN_PLAYER",
                 current: p.combatDetails?.currentHitpoints ?? 0,
                 max: p.combatDetails?.maxHitpoints ?? 0
             }));
-
-            const playersMp = this.players.map(p => ({
-                hrid: p.hrid || "UNKNOWN_PLAYER",
-                current: p.combatDetails?.currentManapoints ?? 0,
-                max: p.combatDetails?.maxManapoints ?? 0
-            }));
-
-            // 记录治疗技能的触发条件信息
-            let triggerInfo = null;
-            if (isHeal && abilityObj && abilityObj.triggers) {
-                triggerInfo = {
-                    triggers: abilityObj.triggers.map(t => ({
-                        dependencyHrid: t.dependencyHrid,
-                        conditionHrid: t.conditionHrid,
-                        comparatorHrid: t.comparatorHrid,
-                        value: t.value
-                    })),
-                    // 记录所有玩家的缺失HP和缺失MP值，用于显示触发条件的实际检测值
-                    playersMissingHp: this.players.map(p => ({
-                        hrid: p.hrid || "UNKNOWN_PLAYER",
-                        missingHp: (p.combatDetails?.maxHitpoints ?? 0) - (p.combatDetails?.currentHitpoints ?? 0),
-                        missingMp: (p.combatDetails?.maxManapoints ?? 0) - (p.combatDetails?.currentManapoints ?? 0)
-                    })),
-                    // 记录全队总缺失HP
-                    totalMissingHp: this.players.reduce((sum, p) => 
-                        sum + ((p.combatDetails?.maxHitpoints ?? 0) - (p.combatDetails?.currentHitpoints ?? 0)), 0),
-                    // 记录全队总缺失MP
-                    totalMissingMp: this.players.reduce((sum, p) => 
-                        sum + ((p.combatDetails?.maxManapoints ?? 0) - (p.combatDetails?.currentManapoints ?? 0)), 0)
-                };
-            }
             
             return {
                 time: this.simulationTime,
@@ -138,11 +107,8 @@ class CombatSimulator extends EventTarget {
                 beforeHp: beforeHp,
                 afterHp: afterHp,
                 playersHp: playersHp,
-                playersMp: playersMp,
-                triggerInfo: triggerInfo,
                 // enemiesHp: enemiesHp,
                 isCrit: false,
-                isHeal: isHeal,
             };
         } catch (e) {
             return {
@@ -165,12 +131,6 @@ class CombatSimulator extends EventTarget {
                 current: p.combatDetails?.currentHitpoints ?? 0,
                 max: p.combatDetails?.maxHitpoints ?? 0
             }));
-
-            const playersMp = this.players.map(p => ({
-                hrid: p.hrid || "UNKNOWN_PLAYER",
-                current: p.combatDetails?.currentManapoints ?? 0,
-                max: p.combatDetails?.maxManapoints ?? 0
-            }));
             
             return {
                 time: this.simulationTime,
@@ -182,7 +142,6 @@ class CombatSimulator extends EventTarget {
                 beforeHp: beforeHp,
                 afterHp: afterHp,
                 playersHp: playersHp,
-                playersMp: playersMp,
                 // enemiesHp: enemiesHp,
                 isCrit: attackResult?.isCrit || false,
             };
@@ -1557,24 +1516,13 @@ class CombatSimulator extends EventTarget {
     }
 
     processAbilityHealEffect(source, ability, abilityEffect) {
-        // 需要记录到团灭日志的治疗技能
-        const healAbilitiesToLog = ["/abilities/quick_aid", "/abilities/rejuvenate"];
-        const shouldLogHeal = this.zone.isDungeon && source.isPlayer && healAbilitiesToLog.includes(ability.hrid);
 
         if (abilityEffect.targetType == "allAllies") {
             let targets = source.isPlayer ? this.players : this.enemies;
-            let isFirstTarget = true;
             for (const target of targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0)) {
                 let amountHealed = CombatUtilities.processHeal(source, abilityEffect, target);
 
                 this.simResult.addHitpointsGained(target, ability.hrid, amountHealed);
-
-                // 记录群体治疗术日志（只在第一个目标时记录触发条件，避免重复）
-                if (shouldLogHeal && amountHealed > 0) {
-                    const log = this.buildCombatLog(source, ability.hrid, target, amountHealed, true, isFirstTarget ? ability : null);
-                    this.addToWipeLogs(log);
-                    isFirstTarget = false;
-                }
             }
             return;
         }
@@ -1599,12 +1547,6 @@ class CombatSimulator extends EventTarget {
                 let amountHealed = CombatUtilities.processHeal(source, abilityEffect, healTarget);
 
                 this.simResult.addHitpointsGained(healTarget, ability.hrid, amountHealed);
-
-                // 记录快速治疗术日志
-                if (shouldLogHeal && amountHealed > 0) {
-                    const log = this.buildCombatLog(source, ability.hrid, healTarget, amountHealed, true, ability);
-                    this.addToWipeLogs(log);
-                }
             }
             return;
         }

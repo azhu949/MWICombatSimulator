@@ -995,7 +995,7 @@
                         "duration": 120000000000
                     },
                     {
-                        "uniqueHrid": "/buff_uniques/guardian_aura_fire_resistance",
+                        "uniqueHrid": "/buff_uniques/guardian_aura_healing_amplify",
                         "typeHrid": "/buff_types/fire_resistance",
                         "ratioBoost": 0,
                         "ratioBoostLevelBonus": 0,
