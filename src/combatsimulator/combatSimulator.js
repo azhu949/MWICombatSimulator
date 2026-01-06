@@ -1582,27 +1582,16 @@ class CombatSimulator extends EventTarget {
         if (abilityEffect.targetType == "lowestHpAlly") {
             let targets = source.isPlayer ? this.players : this.enemies;
             let healTarget;
-            // 快速治疗术按HP百分比选择目标，其他技能（如绽放）按绝对值选择
-            const usePercentage = ability.hrid === "/abilities/quick_aid";
-            
             for (const target of targets.filter((unit) => unit && unit.combatDetails.currentHitpoints > 0)) {
                 if (!healTarget) {
                     healTarget = target;
                     continue;
                 }
-                
-                if (usePercentage) {
-                    // 按HP百分比比较，选择百分比最低的目标
-                    const targetHpPercent = target.combatDetails.currentHitpoints / target.combatDetails.maxHitpoints;
-                    const healTargetHpPercent = healTarget.combatDetails.currentHitpoints / healTarget.combatDetails.maxHitpoints;
-                    if (targetHpPercent < healTargetHpPercent) {
-                        healTarget = target;
-                    }
-                } else {
-                    // 按HP绝对值比较，选择绝对值最低的目标
-                    if (target.combatDetails.currentHitpoints < healTarget.combatDetails.currentHitpoints) {
-                        healTarget = target;
-                    }
+                // 按HP百分比比较，选择百分比最低的目标
+                const targetHpPercent = target.combatDetails.currentHitpoints / target.combatDetails.maxHitpoints;
+                const healTargetHpPercent = healTarget.combatDetails.currentHitpoints / healTarget.combatDetails.maxHitpoints;
+                if (targetHpPercent < healTargetHpPercent) {
+                    healTarget = target;
                 }
             }
 
