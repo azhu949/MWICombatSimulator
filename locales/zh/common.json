@@ -101,6 +101,10 @@
     "to": " 对 ",
     "dealDamage": " 造成伤害: ",
     "playersHp": "队伍生命值: ",
+    "playersMp": "队伍法力值: ",
+    "healAmount": " 治疗: ",
+    "healTriggerInfo": "治疗触发条件: ",
+    "playersMissingHp": "各玩家缺失HP: ",
     "Experiment" : {
         "ExperimentalFeatures" : "实验性功能",
         "batchSimFromJson" : "批量运行模拟（json压缩包）",

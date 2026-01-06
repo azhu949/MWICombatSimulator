@@ -3738,9 +3738,23 @@ function renderSelectedWipeEvent(index, simResult) {
             eventElement.appendChild(abilitySpan);
             eventElement.appendChild(toSpan);
             eventElement.appendChild(targetSpan);
-            eventElement.appendChild(dealDamageSpan);
-            eventElement.appendChild(damageDoneSpan);
-            eventElement.appendChild(document.createTextNode(` , HP ${log.beforeHp} → ${log.afterHp}`));
+            if (log.isHeal) {
+                const healSpan = document.createElement('span');
+                healSpan.className = 'log-heal';
+                healSpan.setAttribute('data-i18n', `common:healAmount`);
+                healSpan.textContent = ' 治疗: ';
+                eventElement.appendChild(healSpan);
+                const healAmountSpan = document.createElement('span');
+                healAmountSpan.className = 'log-heal-amount';
+                healAmountSpan.style.color = darkModeToggle.checked ? '#32CD32' : '#228B22';
+                healAmountSpan.textContent = `+${log.damage}`;
+                eventElement.appendChild(healAmountSpan);
+                eventElement.appendChild(document.createTextNode(` , HP ${log.beforeHp} → ${log.afterHp}`));
+            } else {
+                eventElement.appendChild(dealDamageSpan);
+                eventElement.appendChild(damageDoneSpan);
+                eventElement.appendChild(document.createTextNode(` , HP ${log.beforeHp} → ${log.afterHp}`));
+            }
 
             eventsList.appendChild(eventElement);
         });
@@ -3772,10 +3786,179 @@ function renderSelectedWipeEvent(index, simResult) {
             }
             playersHpElement.appendChild(playerElement);
         });
+
+        // 添加全员MP显示
+        const playersMpElement = document.createElement('div');
+        const playerMpTitle = document.createElement('span');
+        playerMpTitle.className = 'log-players-mp';
+        playerMpTitle.setAttribute('data-i18n', `common:playersMp`);
+        playerMpTitle.textContent = 'Players MP: ';
+        playersMpElement.appendChild(playerMpTitle);
+
+        if (lastLog.playersMp) {
+            lastLog.playersMp.forEach((player, idx) => {
+                const playerElement = document.createElement('span');
+                playerElement.className = 'log-player-mp';
+                playerElement.textContent = `${player.hrid}: ${player.current}/${player.max}`;
+
+                // MP耗尽时显示红色，低于20%时显示黄色
+                const mpRatio = player.max > 0 ? player.current / player.max : 0;
+                if (player.current <= 0) {
+                    playerElement.style.color = darkModeToggle.checked ? '#FF6347' : '#CC0000';
+                } else if (mpRatio < 0.2) {
+                    playerElement.style.color = darkModeToggle.checked ? '#FFD700' : '#DAA520';
+                } else {
+                    playerElement.style.color = darkModeToggle.checked ? '#87CEEB' : '#4169E1';
+                }
+
+                if (idx > 0) {
+                    playersMpElement.appendChild(document.createTextNode(' | '));
+                }
+                playersMpElement.appendChild(playerElement);
+            });
+        }
+
+        // 添加治疗技能触发条件信息
+        const healLogsWithTrigger = group.logs.filter(log => log.isHeal && log.triggerInfo);
+        if (healLogsWithTrigger.length > 0) {
+            const triggerInfoElement = document.createElement('div');
+            triggerInfoElement.className = 'log-trigger-info';
+            triggerInfoElement.style.marginTop = '5px';
+            triggerInfoElement.style.fontSize = '0.9em';
+            triggerInfoElement.style.color = darkModeToggle.checked ? '#FFA07A' : '#D2691E';
+
+            // 获取第一个带触发条件的治疗日志
+            const healLog = healLogsWithTrigger[0];
+            const triggerInfo = healLog.triggerInfo;
+
+            // 显示触发条件标题
+            const triggerTitle = document.createElement('span');
+            triggerTitle.setAttribute('data-i18n', 'common:healTriggerInfo');
+            triggerTitle.textContent = '治疗触发条件: ';
+            triggerTitle.style.fontWeight = 'bold';
+            triggerInfoElement.appendChild(triggerTitle);
+
+            // 解析并显示触发条件
+            if (triggerInfo.triggers && triggerInfo.triggers.length > 0) {
+                triggerInfo.triggers.forEach((trigger, idx) => {
+                    if (idx > 0) {
+                        triggerInfoElement.appendChild(document.createTextNode(' && '));
+                    }
+                    
+                    const triggerSpan = document.createElement('span');
+                    
+                    // 获取依赖目标名称
+                    let dependencyName = '';
+                    switch (trigger.dependencyHrid) {
+                        case '/combat_trigger_dependencies/self':
+                            dependencyName = '自身';
+                            break;
+                        case '/combat_trigger_dependencies/all_allies':
+                            dependencyName = '所有队友';
+                            break;
+                        case '/combat_trigger_dependencies/targeted_enemy':
+                            dependencyName = '目标敌人';
+                            break;
+                        case '/combat_trigger_dependencies/all_enemies':
+                            dependencyName = '所有敌人';
+                            break;
+                        default:
+                            dependencyName = trigger.dependencyHrid.split('/').pop();
+                    }
+
+                    // 获取条件名称和当前值
+                    let conditionName = '';
+                    let currentValue = 0;
+                    switch (trigger.conditionHrid) {
+                        case '/combat_trigger_conditions/missing_hp':
+                            conditionName = '缺失生命值';
+                            currentValue = triggerInfo.totalMissingHp;
+                            break;
+                        case '/combat_trigger_conditions/missing_mp':
+                            conditionName = '缺失法力值';
+                            currentValue = triggerInfo.totalMissingMp;
+                            break;
+                        case '/combat_trigger_conditions/current_hp':
+                            conditionName = '当前生命值';
+                            break;
+                        case '/combat_trigger_conditions/current_mp':
+                            conditionName = '当前法力值';
+                            break;
+                        case '/combat_trigger_conditions/lowest_hp_percentage':
+                            conditionName = '最低生命百分比';
+                            break;
+                        default:
+                            conditionName = trigger.conditionHrid.split('/').pop().replace(/_/g, ' ');
+                    }
+
+                    // 获取比较符
+                    let comparator = '';
+                    switch (trigger.comparatorHrid) {
+                        case '/combat_trigger_comparators/greater_than_equal':
+                            comparator = '>=';
+                            break;
+                        case '/combat_trigger_comparators/less_than_equal':
+                            comparator = '<=';
+                            break;
+                        case '/combat_trigger_comparators/is_active':
+                            comparator = '激活';
+                            break;
+                        case '/combat_trigger_comparators/is_inactive':
+                            comparator = '未激活';
+                            break;
+                        default:
+                            comparator = trigger.comparatorHrid.split('/').pop();
+                    }
+
+                    // 构建触发条件文本
+                    let triggerText = `[${dependencyName}] ${conditionName} ${comparator} ${trigger.value}`;
+                    
+                    // 如果是缺失HP/MP条件，显示当前实际值
+                    if (trigger.conditionHrid === '/combat_trigger_conditions/missing_hp' || 
+                        trigger.conditionHrid === '/combat_trigger_conditions/missing_mp') {
+                        triggerText += ` (当前: ${currentValue})`;
+                    }
+                    
+                    triggerSpan.textContent = triggerText;
+                    triggerInfoElement.appendChild(triggerSpan);
+                });
+            }
+
+            // 显示各玩家缺失HP详情
+            if (triggerInfo.playersMissingHp) {
+                const detailElement = document.createElement('div');
+                detailElement.style.marginTop = '3px';
+                detailElement.style.fontSize = '0.85em';
+                detailElement.style.color = darkModeToggle.checked ? '#98FB98' : '#2E8B57';
+
+                const detailTitle = document.createElement('span');
+                detailTitle.setAttribute('data-i18n', 'common:playersMissingHp');
+                detailTitle.textContent = '各玩家缺失HP: ';
+                detailElement.appendChild(detailTitle);
+
+                triggerInfo.playersMissingHp.forEach((player, idx) => {
+                    if (idx > 0) {
+                        detailElement.appendChild(document.createTextNode(' | '));
+                    }
+                    const playerSpan = document.createElement('span');
+                    playerSpan.textContent = `${player.hrid}: ${player.missingHp}`;
+                    if (player.missingHp > 0) {
+                        playerSpan.style.color = darkModeToggle.checked ? '#FFB6C1' : '#DC143C';
+                    }
+                    detailElement.appendChild(playerSpan);
+                });
+
+                triggerInfoElement.appendChild(detailElement);
+            }
+
+            timeGroupElement.appendChild(triggerInfoElement);
+        }
+
         const spacer = document.createElement('div');
         spacer.style.height = '15px';
         logsContainer.appendChild(spacer);
         timeGroupElement.appendChild(playersHpElement);
+        timeGroupElement.appendChild(playersMpElement);
         logsContainer.appendChild(timeGroupElement);
     });
 
@@ -3803,10 +3986,17 @@ function groupLogsByTime(logs) {
 
     groups.forEach(group => {
         let hpMap = {};
+        let mpMap = {};
         if (group.logs.length > 0) {
             group.logs[0].playersHp.forEach(p => {
                 hpMap[p.hrid] = { current: p.current, max: p.max };
             });
+            // 处理 playersMp 数据
+            if (group.logs[0].playersMp) {
+                group.logs[0].playersMp.forEach(p => {
+                    mpMap[p.hrid] = { current: p.current, max: p.max };
+                });
+            }
         }
         group.logs.forEach(log => {
             if (hpMap[log.target]) {
@@ -3815,6 +4005,12 @@ function groupLogsByTime(logs) {
         });
         group.logs.forEach(log => {
             log.playersHp = Object.entries(hpMap).map(([hrid, val]) => ({
+                hrid,
+                current: val.current,
+                max: val.max
+            }));
+            // 更新 playersMp 数据
+            log.playersMp = Object.entries(mpMap).map(([hrid, val]) => ({
                 hrid,
                 current: val.current,
                 max: val.max

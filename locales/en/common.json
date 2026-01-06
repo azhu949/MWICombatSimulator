@@ -102,6 +102,10 @@
     "to": " to ",
     "dealDamage": " deal damage ",
     "playersHp": "Players HP: ",
+    "playersMp": "Players MP: ",
+    "healAmount": " Heal: ",
+    "healTriggerInfo": "Heal Trigger: ",
+    "playersMissingHp": "Players Missing HP: ",
     "Experiment" : {
         "ExperimentalFeatures" : "Experimental Features",
         "batchSimFromJson" : "Run batch simulations from JSON files",
