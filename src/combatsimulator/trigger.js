@@ -78,14 +78,7 @@ class Trigger {
                     }, 2) * 100;
                 }
                 break;
-            case "/combat_trigger_conditions/missing_hp":
-            case "/combat_trigger_conditions/missing_mp":
-                // 只考虑存活单位的缺失HP/MP，排除死亡玩家
-                dependencyValue = dependency
-                    .filter((unit) => unit.combatDetails.currentHitpoints > 0)
-                    .map((unit) => this.getDependencyValue(unit, currentTime))
-                    .reduce((prev, cur) => prev + cur, 0);
-                break;
+            
             default:
                 dependencyValue = dependency
                     .map((unit) => this.getDependencyValue(unit, currentTime))
