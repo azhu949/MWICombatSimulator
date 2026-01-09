@@ -66,10 +66,25 @@ class Trigger {
                 dependencyValue = dependency.filter((unit) => unit.combatDetails.currentHitpoints <= 0).length;
                 break;
             case "/combat_trigger_conditions/lowest_hp_percentage":
-                dependencyValue = dependency.reduce((prev, curr) => {
-                    let currentHpPercentage = curr.combatDetails.currentHitpoints / curr.combatDetails.maxHitpoints;
-                    return currentHpPercentage < prev ? currentHpPercentage : prev;
-                }, 2) * 100;
+                // 只考虑存活的单位，排除死亡玩家
+                let aliveUnits = dependency.filter((unit) => unit.combatDetails.currentHitpoints > 0);
+                if (aliveUnits.length === 0) {
+                    // 没有存活单位时，返回100%（不应触发治疗）
+                    dependencyValue = 100;
+                } else {
+                    dependencyValue = aliveUnits.reduce((prev, curr) => {
+                        let currentHpPercentage = curr.combatDetails.currentHitpoints / curr.combatDetails.maxHitpoints;
+                        return currentHpPercentage < prev ? currentHpPercentage : prev;
+                    }, 2) * 100;
+                }
+                break;
+            case "/combat_trigger_conditions/missing_hp":
+            case "/combat_trigger_conditions/missing_mp":
+                // 只考虑存活单位的缺失HP/MP，排除死亡玩家
+                dependencyValue = dependency
+                    .filter((unit) => unit.combatDetails.currentHitpoints > 0)
+                    .map((unit) => this.getDependencyValue(unit, currentTime))
+                    .reduce((prev, cur) => prev + cur, 0);
                 break;
             default:
                 dependencyValue = dependency
