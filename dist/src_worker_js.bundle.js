@@ -4463,16 +4463,14 @@ class Trigger {
                 dependencyValue = dependency.filter((unit) => unit.combatDetails.currentHitpoints <= 0).length;
                 break;
             case "/combat_trigger_conditions/lowest_hp_percentage":
-                dependencyValue = dependency.reduce((prev, curr) => {
-                    if (curr.combatDetails.currentHitpoints <= 0) {
-                        return prev;
-                    }
+                dependencyValue = dependency.filter((unit) => unit.combatDetails.currentHitpoints > 0).reduce((prev, curr) => {
                     let currentHpPercentage = curr.combatDetails.currentHitpoints / curr.combatDetails.maxHitpoints;
                     return currentHpPercentage < prev ? currentHpPercentage : prev;
                 }, 2) * 100;
                 break;
             default:
                 dependencyValue = dependency
+                    .filter((unit) => unit.combatDetails.currentHitpoints > 0)
                     .map((unit) => this.getDependencyValue(unit, currentTime))
                     .reduce((prev, cur) => prev + cur, 0);
                 break;

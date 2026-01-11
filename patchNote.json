@@ -1,7 +1,7 @@
 {
     "2026年1月11日":
     [
-        "修复最低HP%trigger错误计算了已阵亡队友的异常 by wangchyan"
+        "修复trigger错误计算已阵亡单位的问题 by wangchyan"
     ],
     "2025年12月31日":
     [
