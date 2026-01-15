@@ -394,6 +394,9 @@ class CombatSimulator extends EventTarget {
 
         this.eventQueue.clearEventsOfType(AbilityCastEndEvent.type);
 
+        // 不知道为啥会让结果正确，但是确实会让结果正确
+        this.checkTriggers();
+
         this.startAttacks();
     }
 
@@ -1237,6 +1240,7 @@ class CombatSimulator extends EventTarget {
                         let multiplier = 1.0 + source.combatDetails[buff.multiplierForSkillHrid.split('/')[2] + 'Level'] * buff.multiplierPerSkillLevel;
                         let currentBuff = structuredClone(buff);
                         currentBuff.flatBoost *= multiplier;
+                        currentBuff.ratioBoost *= multiplier;
                         target.addBuff(currentBuff, this.simulationTime);
                     } else {
                         target.addBuff(buff, this.simulationTime);
