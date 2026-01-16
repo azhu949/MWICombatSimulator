@@ -461,11 +461,7 @@ class CombatSimulator extends EventTarget {
             }
             let source = event.source;
 
-            let parryTarget = this.checkParry(targets);
-            if (parryTarget) {
-                target = source;
-                source = parryTarget;
-            }
+            // Parry 只对技能生效，普攻不触发 Parry
 
             let attackResult = CombatUtilities.processAttack(source, target);
             if (this.zone.isDungeon && target.isPlayer && attackResult.didHit && attackResult.damageDone > 0) {
@@ -570,8 +566,6 @@ class CombatSimulator extends EventTarget {
             }
 
             if (!mayhem || (mayhem && attackResult.didHit) || (mayhem && i == (aliveTargets.length - 1))) {
-                let attackType = "autoAttack";
-                if (parryTarget) attackType = "parry";
                 this.simResult.addAttack(
                     source,
                     target,
@@ -629,7 +623,7 @@ class CombatSimulator extends EventTarget {
                 continue;
             }
 
-            if (!attackResult.didHit || parryTarget || source.combatDetails.combatStats.pierce <= Math.random()) {
+            if (!attackResult.didHit || source.combatDetails.combatStats.pierce <= Math.random()) {
                 break;
             }
         }
