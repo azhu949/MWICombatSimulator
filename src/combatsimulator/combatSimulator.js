@@ -475,7 +475,7 @@ class CombatSimulator extends EventTarget {
 
             let mayhem = source.combatDetails.combatStats.mayhem > Math.random();
 
-            if (attackResult.didHit && source.combatDetails.combatStats.curse > 0) {
+            if (attackResult.didHit && source.combatDetails.combatStats.curse > 0 && Math.random() < (100 / (100 + target.combatDetails.combatStats.tenacity))) {
                 const curseExpireTime = 15000000000;
                 let currentCurseEvent = this.eventQueue.getMatching((event) => event.type == CurseExpirationEvent.type && event.source == target);
                 let currentCurseAmount = 0;
@@ -510,7 +510,7 @@ class CombatSimulator extends EventTarget {
                 if (attackResult.didHit) {
                     furyAmount = Math.min(furyAmount + 1, maxFuryStack);
                 } else {
-                    furyAmount = Math.floor(furyAmount / 2);
+                    furyAmount = furyAmount / 2;
                 }
 
                 const furyAccuracyBuf = {
@@ -1445,6 +1445,56 @@ class CombatSimulator extends EventTarget {
                     };
                     target.addBuff(curseBuff);
                     this.eventQueue.addEvent(curseExpirationEvent);
+                }
+
+                if (source.combatDetails.combatStats.fury > 0) {
+                    let currentFuryEvent = this.eventQueue.getMatching((event) => event.type == FuryExpirationEvent.type && event.source == source);
+                    this.eventQueue.clearMatching((event) => event.type == FuryExpirationEvent.type && event.source == source);
+
+                    const furyExpireTime = 15000000000;
+                    const maxFuryStack = 5;
+
+                    let furyAmount = 0;
+                    if (currentFuryEvent) furyAmount = currentFuryEvent.furyAmount;
+
+                    if (attackResult.didHit) {
+                        furyAmount = Math.min(furyAmount + 1, maxFuryStack);
+                    } else {
+                        furyAmount = furyAmount / 2;
+                    }
+
+                    const furyAccuracyBuf = {
+                        "uniqueHrid": "/buff_uniques/fury_accuracy",
+                        "typeHrid": "/buff_types/fury_accuracy",
+                        "ratioBoost": furyAmount * source.combatDetails.combatStats.fury,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 0,
+                        "flatBoostLevelBonus": 0,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": furyExpireTime
+                    };
+                    const furyDamageBuf = {
+                        "uniqueHrid": "/buff_uniques/fury_damage",
+                        "typeHrid": "/buff_types/fury_damage",
+                        "ratioBoost": furyAmount * source.combatDetails.combatStats.fury,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 0,
+                        "flatBoostLevelBonus": 0,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": furyExpireTime
+                    };
+
+                    if (furyAmount > 0) {
+                        let furyExpirationEvent = new FuryExpirationEvent(this.simulationTime + furyExpireTime, furyAmount, source);
+                        this.eventQueue.addEvent(furyExpirationEvent);
+
+                        source.addBuff(furyAccuracyBuf, this.simulationTime);
+                        source.addBuff(furyDamageBuf, this.simulationTime);
+                    }
+                    else {
+                        source.removeBuff(furyAccuracyBuf);
+                        source.removeBuff(furyDamageBuf);
+                    }
                 }
 
                 if (target.combatDetails.combatStats.weaken > 0) {
