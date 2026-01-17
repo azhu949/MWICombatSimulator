@@ -470,13 +470,14 @@ class CombatUnit {
     reset(currentTime = 0) {
         this.clearCCs();
         
-        if (currentTime == 0) {
-            // 首次战斗开始：完全重置
+        // 只有玩家在地下城团灭重开时保留buff和CD，敌人始终完全重置
+        if (currentTime == 0 || !this.isPlayer) {
+            // 首次战斗开始 或 敌人重置：完全重置
             this.clearBuffs();
             this.updateCombatDetails();
             this.resetCooldowns(currentTime);
         } else {
-            // 地下城团灭重开：只移除过期buff，保留CD
+            // 地下城团灭重开（仅玩家）：只移除过期buff，保留CD
             this.removeExpiredBuffs(currentTime);
             this.updateCombatDetails();
         }
