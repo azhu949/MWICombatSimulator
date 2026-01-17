@@ -493,7 +493,7 @@ class CombatSimulator extends EventTarget {
                     "startTime": "0001-01-01T00:00:00Z",
                     "duration": curseExpireTime
                 };
-                target.addBuff(curseBuff);
+                target.addBuff(curseBuff, this.simulationTime);
                 this.eventQueue.addEvent(curseExpirationEvent);
             }
 
@@ -565,7 +565,7 @@ class CombatSimulator extends EventTarget {
                     "startTime": "0001-01-01T00:00:00Z",
                     "duration": weakenExpireTime
                 };
-                source.addBuff(weakenBuff);
+                source.addBuff(weakenBuff, this.simulationTime);
                 this.eventQueue.addEvent(weakenExpirationEvent);
             }
 
@@ -1453,7 +1453,7 @@ class CombatSimulator extends EventTarget {
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": curseExpireTime
                     };
-                    target.addBuff(curseBuff);
+                    target.addBuff(curseBuff, this.simulationTime);
                     this.eventQueue.addEvent(curseExpirationEvent);
                 }
 
@@ -1526,7 +1526,7 @@ class CombatSimulator extends EventTarget {
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": weakenExpireTime
                     };
-                    source.addBuff(weakenBuff);
+                    source.addBuff(weakenBuff, this.simulationTime);
                     this.eventQueue.addEvent(weakenExpirationEvent);
                 }
 
