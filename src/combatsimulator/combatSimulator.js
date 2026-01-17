@@ -28,7 +28,7 @@ const DOT_TICK_INTERVAL = 3 * ONE_SECOND;
 const REGEN_TICK_INTERVAL = 10 * ONE_SECOND;
 const ENEMY_RESPAWN_INTERVAL = 3 * ONE_SECOND;
 const PLAYER_RESPAWN_INTERVAL = 150 * ONE_SECOND;
-const RESTART_INTERVAL = 15 * ONE_SECOND;
+const RESTART_INTERVAL = 3 * ONE_SECOND;
 const ENRAGE_TICK_INTERVAL = 60 * ONE_SECOND;
 
 class CombatSimulator extends EventTarget {
@@ -710,7 +710,17 @@ class CombatSimulator extends EventTarget {
                 this.wipeLogs.index = 0;
                 this.wipeLogs.count = 0;
 
-                this.eventQueue.clear();
+                // 地下城团灭：只清除战斗相关事件，保留buff过期检查和CD事件
+                this.eventQueue.clearEventsOfType(AutoAttackEvent.type);
+                this.eventQueue.clearEventsOfType(AbilityCastEndEvent.type);
+                this.eventQueue.clearEventsOfType(DamageOverTimeEvent.type);
+                this.eventQueue.clearEventsOfType(ConsumableTickEvent.type);
+                this.eventQueue.clearEventsOfType(RegenTickEvent.type);
+                this.eventQueue.clearEventsOfType(EnrageTickEvent.type);
+                this.eventQueue.clearEventsOfType(StunExpirationEvent.type);
+                this.eventQueue.clearEventsOfType(BlindExpirationEvent.type);
+                this.eventQueue.clearEventsOfType(SilenceExpirationEvent.type);
+                this.eventQueue.clearEventsOfType(AwaitCooldownEvent.type);
                 this.enemies = null;
 
                 let combatStartEvent = new CombatStartEvent(this.simulationTime + RESTART_INTERVAL);

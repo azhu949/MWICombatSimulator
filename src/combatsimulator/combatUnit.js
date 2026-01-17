@@ -469,9 +469,17 @@ class CombatUnit {
 
     reset(currentTime = 0) {
         this.clearCCs();
-        this.clearBuffs();
-        this.updateCombatDetails();
-        this.resetCooldowns(currentTime);
+        
+        if (currentTime == 0) {
+            // 首次战斗开始：完全重置
+            this.clearBuffs();
+            this.updateCombatDetails();
+            this.resetCooldowns(currentTime);
+        } else {
+            // 地下城团灭重开：只移除过期buff，保留CD
+            this.removeExpiredBuffs(currentTime);
+            this.updateCombatDetails();
+        }
 
         this.combatDetails.currentHitpoints = this.combatDetails.maxHitpoints;
         this.combatDetails.currentManapoints = this.combatDetails.maxManapoints;
