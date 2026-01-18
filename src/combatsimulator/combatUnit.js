@@ -362,6 +362,7 @@ class CombatUnit {
         this.combatDetails.combatStats.threat += threatBoosts.flatBoost;
 
         this.combatDetails.combatStats.retaliation += this.getBuffBoost("/buff_types/retaliation").flatBoost;
+        this.combatDetails.combatStats.tenacity += this.getBuffBoost("/buff_types/tenacity").flatBoost;
     }
 
     addBuff(buff, currentTime) {
