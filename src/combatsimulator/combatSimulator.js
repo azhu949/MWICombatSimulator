@@ -683,6 +683,7 @@ class CombatSimulator extends EventTarget {
                 }
             }
             this.simResult.addEncounterEnd();
+            this.simResult.lastEncounterFinishTime = this.simulationTime;
             // console.log("All enemies died");
 
             encounterEnded = true;
