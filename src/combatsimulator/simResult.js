@@ -34,6 +34,7 @@ class SimResult {
         this.numberOfPlayers = numberOfPlayers;
         this.maxEnrageStack = 0;
         this.minDungenonTime = 0;
+        this.lastDungeonFinishTime = 0;
 
         this.wipeEvents = [];
         

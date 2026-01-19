@@ -679,6 +679,7 @@ class CombatSimulator extends EventTarget {
                 this.simResult.updateTimeSpentAlive("#" + (this.zone.encountersKilled - 1).toString(), false, this.simulationTime);
                 if (this.zone.encountersKilled > this.zone.dungeonSpawnInfo.maxWaves) {
                     this.simResult.updateDungenonFinish("#1", this.simulationTime);
+                    this.simResult.lastDungeonFinishTime = this.simulationTime;
                 }
             }
             this.simResult.addEncounterEnd();
