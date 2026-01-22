@@ -475,7 +475,7 @@ class CombatSimulator extends EventTarget {
 
             let mayhem = source.combatDetails.combatStats.mayhem > Math.random();
 
-            if (attackResult.didHit && source.combatDetails.combatStats.curse > 0 && Math.random() < (100 / (100 + target.combatDetails.combatStats.tenacity))) {
+            if (attackResult.didHit && source.combatDetails.combatStats.curse > 0) {
                 const curseExpireTime = 15000000000;
                 let currentCurseEvent = this.eventQueue.getMatching((event) => event.type == CurseExpirationEvent.type && event.source == target);
                 let currentCurseAmount = 0;
@@ -1437,7 +1437,7 @@ class CombatSimulator extends EventTarget {
                     this.eventQueue.addEvent(silenceExpirationEvent);
                 }
 
-                if (attackResult.didHit && source.combatDetails.combatStats.curse > 0 && Math.random() < (100 / (100 + target.combatDetails.combatStats.tenacity))) {
+                if (attackResult.didHit && source.combatDetails.combatStats.curse > 0) {
                     const curseExpireTime = 15000000000;
                     let currentCurseEvent = this.eventQueue.getMatching((event) => event.type == CurseExpirationEvent.type && event.source == target);
                     let currentCurseAmount = 0;
