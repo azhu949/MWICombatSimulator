@@ -394,7 +394,7 @@ class CombatSimulator extends EventTarget {
 
         this.eventQueue.clearEventsOfType(AbilityCastEndEvent.type);
 
-        // 不知道为啥会让结果正确，但是确实会让结果正确
+        // 提前检查trigger让吃喝先跑
         this.checkTriggers();
 
         this.startAttacks();

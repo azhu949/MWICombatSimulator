@@ -574,10 +574,9 @@ function updateLevels() {
 }
 
 function calcCombatLevel(staminaLevel, intelligenceLevel, defenseLevel, attackLevel, meleeLevel, rangedLevel, magicLevel) {
-    return Math.floor(
-        0.1 * (staminaLevel + intelligenceLevel + attackLevel + defenseLevel + Math.max(meleeLevel, rangedLevel, magicLevel))
-        + 0.5 * Math.max(attackLevel, defenseLevel, meleeLevel, rangedLevel, magicLevel)
-    );
+    return 0.1 * (staminaLevel + intelligenceLevel + attackLevel + defenseLevel + Math.max(meleeLevel, rangedLevel, magicLevel)) + 
+        0.5 * Math.max(attackLevel, defenseLevel, meleeLevel, rangedLevel, magicLevel)
+    ;
 }
 
 
@@ -591,7 +590,7 @@ function updateCombatLevel() {
     let magicLevel = player["magicLevel"];
 
     let levelInput = document.getElementById("inputLevel_combat");
-    levelInput.value = calcCombatLevel(staminaLevel, intelligenceLevel, defenseLevel, attackLevel, meleeLevel, rangedLevel, magicLevel);;
+    levelInput.value = parseFloat(calcCombatLevel(staminaLevel, intelligenceLevel, defenseLevel, attackLevel, meleeLevel, rangedLevel, magicLevel).toFixed(1));
 }
 
 // #endregion
@@ -2018,7 +2017,7 @@ function showKills(simResult, playerToDisplay) {
     }
 
     if (simResult.debuffOnLevelGap[playerToDisplay] != 0) {
-        let debuffOnLevelGapRow = createRow(["col-md-6", "col-md-6 text-end"], ["Debuff on Level Gap", Math.round(simResult.debuffOnLevelGap[playerToDisplay] * 100) + "%"]);
+        let debuffOnLevelGapRow = createRow(["col-md-6", "col-md-6 text-end"], ["Debuff on Level Gap", (simResult.debuffOnLevelGap[playerToDisplay] * 100).toFixed(1) + "%"]);
         debuffOnLevelGapRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.debuffOnLevelGap");
         newChildren.push(debuffOnLevelGapRow);
     }
@@ -2915,7 +2914,7 @@ function startSimulation(selectedPlayers) {
     for (let player of playersToSim) {
         if ((maxPlayerCombatLevel / player.combatLevel) > 1.2) {
             const maxDebuffOnLevelGap = 0.9;
-            let levelPercent = Math.floor(((maxPlayerCombatLevel / player.combatLevel) - 1.2) * 100) / 100;
+            let levelPercent = (maxPlayerCombatLevel / player.combatLevel) - 1.2;
 
             player.debuffOnLevelGap = -1 * Math.min(maxDebuffOnLevelGap, 3 * levelPercent);
 
@@ -3107,7 +3106,7 @@ document.getElementById("buttonUploadJSONSimulate").addEventListener("click", (e
                     (player, index) => parsePlayerJson(player, `player${index + 1}`)
                 );
 
-                let maxPlayerCombatLevel = 1;
+                let maxPlayerCombatLevel = 1.0;
                 for (let player of playersToSim) {
                     player.combatLevel = calcCombatLevel(player.staminaLevel, player.intelligenceLevel, player.defenseLevel, player.attackLevel, player.meleeLevel, player.rangedLevel, player.magicLevel);
                     maxPlayerCombatLevel = Math.max(maxPlayerCombatLevel, player.combatLevel);

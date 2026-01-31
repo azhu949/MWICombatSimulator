@@ -370,7 +370,7 @@ const DOT_TICK_INTERVAL = 3 * ONE_SECOND;
 const REGEN_TICK_INTERVAL = 10 * ONE_SECOND;
 const ENEMY_RESPAWN_INTERVAL = 3 * ONE_SECOND;
 const PLAYER_RESPAWN_INTERVAL = 150 * ONE_SECOND;
-const RESTART_INTERVAL = 15 * ONE_SECOND;
+const RESTART_INTERVAL = 3 * ONE_SECOND;
 const ENRAGE_TICK_INTERVAL = 60 * ONE_SECOND;
 
 class CombatSimulator extends EventTarget {
@@ -736,6 +736,9 @@ class CombatSimulator extends EventTarget {
 
         this.eventQueue.clearEventsOfType(_events_abilityCastEndEvent__WEBPACK_IMPORTED_MODULE_19__["default"].type);
 
+        // 提前检查trigger让吃喝先跑
+        this.checkTriggers();
+
         this.startAttacks();
     }
 
@@ -832,7 +835,7 @@ class CombatSimulator extends EventTarget {
                     "startTime": "0001-01-01T00:00:00Z",
                     "duration": curseExpireTime
                 };
-                target.addBuff(curseBuff);
+                target.addBuff(curseBuff, this.simulationTime);
                 this.eventQueue.addEvent(curseExpirationEvent);
             }
 
@@ -849,7 +852,7 @@ class CombatSimulator extends EventTarget {
                 if (attackResult.didHit) {
                     furyAmount = Math.min(furyAmount + 1, maxFuryStack);
                 } else {
-                    furyAmount = Math.floor(furyAmount / 2);
+                    furyAmount = furyAmount / 2;
                 }
 
                 const furyAccuracyBuf = {
@@ -904,7 +907,7 @@ class CombatSimulator extends EventTarget {
                     "startTime": "0001-01-01T00:00:00Z",
                     "duration": weakenExpireTime
                 };
-                source.addBuff(weakenBuff);
+                source.addBuff(weakenBuff, this.simulationTime);
                 this.eventQueue.addEvent(weakenExpirationEvent);
             }
 
@@ -1018,9 +1021,11 @@ class CombatSimulator extends EventTarget {
                 this.simResult.updateTimeSpentAlive("#" + (this.zone.encountersKilled - 1).toString(), false, this.simulationTime);
                 if (this.zone.encountersKilled > this.zone.dungeonSpawnInfo.maxWaves) {
                     this.simResult.updateDungenonFinish("#1", this.simulationTime);
+                    this.simResult.lastDungeonFinishTime = this.simulationTime;
                 }
             }
             this.simResult.addEncounterEnd();
+            this.simResult.lastEncounterFinishTime = this.simulationTime;
             // console.log("All enemies died");
 
             encounterEnded = true;
@@ -1049,7 +1054,17 @@ class CombatSimulator extends EventTarget {
                 this.wipeLogs.index = 0;
                 this.wipeLogs.count = 0;
 
-                this.eventQueue.clear();
+                // 地下城团灭：只清除战斗相关事件，保留buff过期检查和CD事件
+                this.eventQueue.clearEventsOfType(_events_autoAttackEvent__WEBPACK_IMPORTED_MODULE_1__["default"].type);
+                this.eventQueue.clearEventsOfType(_events_abilityCastEndEvent__WEBPACK_IMPORTED_MODULE_19__["default"].type);
+                this.eventQueue.clearEventsOfType(_events_damageOverTimeEvent__WEBPACK_IMPORTED_MODULE_2__["default"].type);
+                this.eventQueue.clearEventsOfType(_events_consumableTickEvent__WEBPACK_IMPORTED_MODULE_5__["default"].type);
+                this.eventQueue.clearEventsOfType(_events_regenTickEvent__WEBPACK_IMPORTED_MODULE_10__["default"].type);
+                this.eventQueue.clearEventsOfType(_events_enrageTickEvent__WEBPACK_IMPORTED_MODULE_17__["default"].type);
+                this.eventQueue.clearEventsOfType(_events_stunExpirationEvent__WEBPACK_IMPORTED_MODULE_11__["default"].type);
+                this.eventQueue.clearEventsOfType(_events_blindExpirationEvent__WEBPACK_IMPORTED_MODULE_12__["default"].type);
+                this.eventQueue.clearEventsOfType(_events_silenceExpirationEvent__WEBPACK_IMPORTED_MODULE_13__["default"].type);
+                this.eventQueue.clearEventsOfType(_events_awaitCooldownEvent__WEBPACK_IMPORTED_MODULE_20__["default"].type);
                 this.enemies = null;
 
                 let combatStartEvent = new _events_combatStartEvent__WEBPACK_IMPORTED_MODULE_4__["default"](this.simulationTime + RESTART_INTERVAL);
@@ -1579,6 +1594,7 @@ class CombatSimulator extends EventTarget {
                         let multiplier = 1.0 + source.combatDetails[buff.multiplierForSkillHrid.split('/')[2] + 'Level'] * buff.multiplierPerSkillLevel;
                         let currentBuff = structuredClone(buff);
                         currentBuff.flatBoost *= multiplier;
+                        currentBuff.ratioBoost *= multiplier;
                         target.addBuff(currentBuff, this.simulationTime);
                     } else {
                         target.addBuff(buff, this.simulationTime);
@@ -1763,7 +1779,7 @@ class CombatSimulator extends EventTarget {
                     this.eventQueue.addEvent(silenceExpirationEvent);
                 }
 
-                if (attackResult.didHit && source.combatDetails.combatStats.curse > 0 && Math.random() < (100 / (100 + target.combatDetails.combatStats.tenacity))) {
+                if (attackResult.didHit && source.combatDetails.combatStats.curse > 0) {
                     const curseExpireTime = 15000000000;
                     let currentCurseEvent = this.eventQueue.getMatching((event) => event.type == _events_curseExpirationEvent__WEBPACK_IMPORTED_MODULE_14__["default"].type && event.source == target);
                     let currentCurseAmount = 0;
@@ -1781,8 +1797,58 @@ class CombatSimulator extends EventTarget {
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": curseExpireTime
                     };
-                    target.addBuff(curseBuff);
+                    target.addBuff(curseBuff, this.simulationTime);
                     this.eventQueue.addEvent(curseExpirationEvent);
+                }
+
+                if (source.combatDetails.combatStats.fury > 0) {
+                    let currentFuryEvent = this.eventQueue.getMatching((event) => event.type == _events_furyExpirationEvent__WEBPACK_IMPORTED_MODULE_16__["default"].type && event.source == source);
+                    this.eventQueue.clearMatching((event) => event.type == _events_furyExpirationEvent__WEBPACK_IMPORTED_MODULE_16__["default"].type && event.source == source);
+
+                    const furyExpireTime = 15000000000;
+                    const maxFuryStack = 5;
+
+                    let furyAmount = 0;
+                    if (currentFuryEvent) furyAmount = currentFuryEvent.furyAmount;
+
+                    if (attackResult.didHit) {
+                        furyAmount = Math.min(furyAmount + 1, maxFuryStack);
+                    } else {
+                        furyAmount = furyAmount / 2;
+                    }
+
+                    const furyAccuracyBuf = {
+                        "uniqueHrid": "/buff_uniques/fury_accuracy",
+                        "typeHrid": "/buff_types/fury_accuracy",
+                        "ratioBoost": furyAmount * source.combatDetails.combatStats.fury,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 0,
+                        "flatBoostLevelBonus": 0,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": furyExpireTime
+                    };
+                    const furyDamageBuf = {
+                        "uniqueHrid": "/buff_uniques/fury_damage",
+                        "typeHrid": "/buff_types/fury_damage",
+                        "ratioBoost": furyAmount * source.combatDetails.combatStats.fury,
+                        "ratioBoostLevelBonus": 0,
+                        "flatBoost": 0,
+                        "flatBoostLevelBonus": 0,
+                        "startTime": "0001-01-01T00:00:00Z",
+                        "duration": furyExpireTime
+                    };
+
+                    if (furyAmount > 0) {
+                        let furyExpirationEvent = new _events_furyExpirationEvent__WEBPACK_IMPORTED_MODULE_16__["default"](this.simulationTime + furyExpireTime, furyAmount, source);
+                        this.eventQueue.addEvent(furyExpirationEvent);
+
+                        source.addBuff(furyAccuracyBuf, this.simulationTime);
+                        source.addBuff(furyDamageBuf, this.simulationTime);
+                    }
+                    else {
+                        source.removeBuff(furyAccuracyBuf);
+                        source.removeBuff(furyDamageBuf);
+                    }
                 }
 
                 if (target.combatDetails.combatStats.weaken > 0) {
@@ -1804,7 +1870,7 @@ class CombatSimulator extends EventTarget {
                         "startTime": "0001-01-01T00:00:00Z",
                         "duration": weakenExpireTime
                     };
-                    source.addBuff(weakenBuff);
+                    source.addBuff(weakenBuff, this.simulationTime);
                     this.eventQueue.addEvent(weakenExpirationEvent);
                 }
 
@@ -2326,6 +2392,7 @@ class CombatUnit {
         this.combatDetails.combatStats.threat += threatBoosts.flatBoost;
 
         this.combatDetails.combatStats.retaliation += this.getBuffBoost("/buff_types/retaliation").flatBoost;
+        this.combatDetails.combatStats.tenacity += this.getBuffBoost("/buff_types/tenacity").flatBoost;
     }
 
     addBuff(buff, currentTime) {
@@ -2433,9 +2500,18 @@ class CombatUnit {
 
     reset(currentTime = 0) {
         this.clearCCs();
-        this.clearBuffs();
-        this.updateCombatDetails();
-        this.resetCooldowns(currentTime);
+        
+        // 只有玩家在地下城团灭重开时保留buff和CD，敌人始终完全重置
+        if (currentTime == 0 || !this.isPlayer) {
+            // 首次战斗开始 或 敌人重置：完全重置
+            this.clearBuffs();
+            this.updateCombatDetails();
+            this.resetCooldowns(currentTime);
+        } else {
+            // 地下城团灭重开（仅玩家）：只移除过期buff，保留CD
+            this.removeExpiredBuffs(currentTime);
+            this.updateCombatDetails();
+        }
 
         this.combatDetails.currentHitpoints = this.combatDetails.maxHitpoints;
         this.combatDetails.currentManapoints = this.combatDetails.maxManapoints;
@@ -4127,6 +4203,8 @@ class SimResult {
         this.numberOfPlayers = numberOfPlayers;
         this.maxEnrageStack = 0;
         this.minDungenonTime = 0;
+        this.lastDungeonFinishTime = 0;
+        this.lastEncounterFinishTime = 0;
 
         this.wipeEvents = [];
         

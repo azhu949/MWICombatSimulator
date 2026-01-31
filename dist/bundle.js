@@ -682,6 +682,7 @@ class CombatUnit {
         this.combatDetails.combatStats.threat += threatBoosts.flatBoost;
 
         this.combatDetails.combatStats.retaliation += this.getBuffBoost("/buff_types/retaliation").flatBoost;
+        this.combatDetails.combatStats.tenacity += this.getBuffBoost("/buff_types/tenacity").flatBoost;
     }
 
     addBuff(buff, currentTime) {
@@ -789,9 +790,18 @@ class CombatUnit {
 
     reset(currentTime = 0) {
         this.clearCCs();
-        this.clearBuffs();
-        this.updateCombatDetails();
-        this.resetCooldowns(currentTime);
+        
+        // 只有玩家在地下城团灭重开时保留buff和CD，敌人始终完全重置
+        if (currentTime == 0 || !this.isPlayer) {
+            // 首次战斗开始 或 敌人重置：完全重置
+            this.clearBuffs();
+            this.updateCombatDetails();
+            this.resetCooldowns(currentTime);
+        } else {
+            // 地下城团灭重开（仅玩家）：只移除过期buff，保留CD
+            this.removeExpiredBuffs(currentTime);
+            this.updateCombatDetails();
+        }
 
         this.combatDetails.currentHitpoints = this.combatDetails.maxHitpoints;
         this.combatDetails.currentManapoints = this.combatDetails.maxManapoints;
@@ -1472,7 +1482,7 @@ class Trigger {
   \************************/
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"2026年1月11日":["修复trigger错误计算已阵亡单位的问题 by wangchyan"],"2025年12月31日":["实验性功能新增HP/MP可视化图表 by wangchyan","修复防御伤害未正确受damge加成的异常 by wangchyan","修复守护光环的治疗加成效果未生效的异常 by wangchyan","修复快速治疗等技能未正确选择最低%生命为目标的错误 by wangchyan"],"2025年12月30日":["地下城增加最短完成时间记录"],"2025年12月24日":["修复技能释放选择的缺陷，之前可能存在异常缺蓝等情况"],"2025年12月18日":["支持成就系统及对应buff效果","地下城怪物的掉落不再生效"],"2025年12月6日":["修复游戏更新后技能在无trigger情况下由[]变为null时造成的异常"],"2025年11月7日":["兼容支持从CN镜像站调用API获取价格"],"2025年10月14日":["修复怪物攻击间隔数值未能适配攻击等级的问题"],"2025年9月17日":["修复暴击光环的trigger缺陷"],"2025年9月9日":["复活时不再错误的清空所有buff","团灭日志增加反伤、荆棘和DOT伤害记录"],"2025年8月21日":["增加单挑战斗批量模拟和对应怪物选项","增加MooPass和社区buff的选项及对应功能","精炼装备数值加强","秘法主教属性削弱","init_client_info_v1.20250819.0.json游戏数据更新"],"2025年8月20日":["修复经验和掉落计算在极端情况下的可能异常"],"2025年8月19日":["合并Test和Temp分支的rework内容","init_client_info_v1.20250818.0.json游戏数据更新"],"2025年8月18日":["修复贯穿技能可能对相同目标造成重复伤害的问题","修复团灭日志在黑夜模式下的显示异常","战斗等级公式更新","钟乳石魔像的荆棘数值调整","init_client_info_v1.20250626.0_0817.json游戏数据更新"],"2025年8月16日":["增加停止模拟按钮 by BKN46","增加技能顺序调整按钮 by BKN46","增加团灭日志 by TruthLight","怪物属性更新","奥术反射更名为报应","init_client_info_v1.20250626.0_0815.json游戏数据更新"],"2025年8月14日":["怪物属性更新","远程和法师装备属性调整","反伤计算上限调整","修复战斗间隔释放技能的异常","修复技能释放判断逻辑的异常","法力值耗尽比例更加准确","调整远程经验的15%和魔法经验的12%映射到攻击经验","init_client_info_v1.20250626.0_0813.json游戏数据更新"],"2025年8月11日":["怪物属性更新","近战和物理技能施法时间更新","盾击和重锤数值调整","双手盾防御经验加成调整","init_client_info_v1.20250626.0_0811.json游戏数据更新"],"2025年8月8日":["实现组队等级差过大时对掉落和经验的惩罚","实现怪物经验随狂暴进度百分比增加","暴击光环数值调整","增加战斗等级数值显示","增加等级差距惩罚数值显示","init_client_info_v1.20250626.0_0807.json游戏数据更新"],"2025年8月7日":["修复组队战斗时一些重复物品掉落数量异常的缺陷 by contr4l","init_client_info_v1.20250626.0_0806.json游戏数据更新"],"2025年8月3日":["怪物狂暴机制及对应trigger生效","精炼装备更新，护符数值调整，守护光环增加闪避率","init_client_info_v1.20250626.0_0802.json游戏数据更新","狂怒层数修正为5层","招架结算机制调整"],"2025年7月31日":["物品数据和怪物属性更新","尖刺外壳和奥术反射重做","强化数值更新","删除异常trigger","狮鹫盾的虚弱重做","君王剑招架对队友生效","狂怒特效最大层数修正为6层","涟漪特效增加10MP恢复","反伤正确显示其命中率","反伤机制调整","同步双手盾属性和反伤荆棘技能数值的调整"],"2025年7月22日":["暴击光环受远程等级加成","光环基础数值和等级加成调整"],"2025年7月17日":["批量模拟支持勾选星球","经验分配比例调整至30%+70%","光环及对应trigger，并按对应技能等级百分比加成","水火自然默认调整为元素光环","init_client_info_v1.20250626.0_0717.json游戏数据更新"],"2025年7月11日":["怪物经验和技能等级公式更新","闪避和抗性计算公式更新","力量更替为近战以及对应的兼容","init_client_info_v1.20250626.0_0711.json游戏数据更新"],"2025年7月10日":["修复贯穿技能由敌人释放时可能多次击中相同目标的缺陷"],"2025年7月9日":["掉落和掉率调整","经验调整","疫病射击和破甲之刺调整","怪物自动恢复移除","疫病射击trigger调整","获取价格使用官方API"],"2025年7月7日":["怪物属性缩放和地图多难度","法师技能调整和装备上\'技能伤害\'词缀生效","攻击等级和房屋等级对施法速度的影响生效","物品调整","精准重做以攻击等级计算","TEST 远程魔法经验的10%映射到攻击经验！","经验重做和护符装备"]}');
+module.exports = /*#__PURE__*/JSON.parse('{"2026年2月1日":["修正战斗等级计算的精度","修正地下城完成或失败后重新进入战斗的时间间隔 by wangchyan","修正诅咒和削弱的持续时间 by wangchyan","修正诅咒和狂怒的触发逻辑 by wangchyan","修正地下城团灭重置机制的部分逻辑 by wangchyan","修复守护光环和速度光环部分增益未正确受对应等级加强的异常 by wangchyan","修复无敌技能未正确影响韧性数值的缺陷 by wangchyan","修复初次进入战斗时未能优先吃喝的异常 by wangchyan","战斗时长相关的统计现在仅计算已完成的战斗，不再包含当前未结束的战斗 by wangchyan"],"2026年1月11日":["修复trigger错误计算已阵亡单位的问题 by wangchyan"],"2025年12月31日":["实验性功能新增HP/MP可视化图表 by wangchyan","修复防御伤害未正确受damge加成的异常 by wangchyan","修复守护光环的治疗加成效果未生效的异常 by wangchyan","修复快速治疗等技能未正确选择最低%生命为目标的错误 by wangchyan"],"2025年12月30日":["地下城增加最短完成时间记录"],"2025年12月24日":["修复技能释放选择的缺陷，之前可能存在异常缺蓝等情况"],"2025年12月18日":["支持成就系统及对应buff效果","地下城怪物的掉落不再生效"],"2025年12月6日":["修复游戏更新后技能在无trigger情况下由[]变为null时造成的异常"],"2025年11月7日":["兼容支持从CN镜像站调用API获取价格"],"2025年10月14日":["修复怪物攻击间隔数值未能适配攻击等级的问题"],"2025年9月17日":["修复暴击光环的trigger缺陷"],"2025年9月9日":["复活时不再错误的清空所有buff","团灭日志增加反伤、荆棘和DOT伤害记录"],"2025年8月21日":["增加单挑战斗批量模拟和对应怪物选项","增加MooPass和社区buff的选项及对应功能","精炼装备数值加强","秘法主教属性削弱","init_client_info_v1.20250819.0.json游戏数据更新"],"2025年8月20日":["修复经验和掉落计算在极端情况下的可能异常"],"2025年8月19日":["合并Test和Temp分支的rework内容","init_client_info_v1.20250818.0.json游戏数据更新"],"2025年8月18日":["修复贯穿技能可能对相同目标造成重复伤害的问题","修复团灭日志在黑夜模式下的显示异常","战斗等级公式更新","钟乳石魔像的荆棘数值调整","init_client_info_v1.20250626.0_0817.json游戏数据更新"],"2025年8月16日":["增加停止模拟按钮 by BKN46","增加技能顺序调整按钮 by BKN46","增加团灭日志 by TruthLight","怪物属性更新","奥术反射更名为报应","init_client_info_v1.20250626.0_0815.json游戏数据更新"],"2025年8月14日":["怪物属性更新","远程和法师装备属性调整","反伤计算上限调整","修复战斗间隔释放技能的异常","修复技能释放判断逻辑的异常","法力值耗尽比例更加准确","调整远程经验的15%和魔法经验的12%映射到攻击经验","init_client_info_v1.20250626.0_0813.json游戏数据更新"],"2025年8月11日":["怪物属性更新","近战和物理技能施法时间更新","盾击和重锤数值调整","双手盾防御经验加成调整","init_client_info_v1.20250626.0_0811.json游戏数据更新"],"2025年8月8日":["实现组队等级差过大时对掉落和经验的惩罚","实现怪物经验随狂暴进度百分比增加","暴击光环数值调整","增加战斗等级数值显示","增加等级差距惩罚数值显示","init_client_info_v1.20250626.0_0807.json游戏数据更新"],"2025年8月7日":["修复组队战斗时一些重复物品掉落数量异常的缺陷 by contr4l","init_client_info_v1.20250626.0_0806.json游戏数据更新"],"2025年8月3日":["怪物狂暴机制及对应trigger生效","精炼装备更新，护符数值调整，守护光环增加闪避率","init_client_info_v1.20250626.0_0802.json游戏数据更新","狂怒层数修正为5层","招架结算机制调整"],"2025年7月31日":["物品数据和怪物属性更新","尖刺外壳和奥术反射重做","强化数值更新","删除异常trigger","狮鹫盾的虚弱重做","君王剑招架对队友生效","狂怒特效最大层数修正为6层","涟漪特效增加10MP恢复","反伤正确显示其命中率","反伤机制调整","同步双手盾属性和反伤荆棘技能数值的调整"],"2025年7月22日":["暴击光环受远程等级加成","光环基础数值和等级加成调整"],"2025年7月17日":["批量模拟支持勾选星球","经验分配比例调整至30%+70%","光环及对应trigger，并按对应技能等级百分比加成","水火自然默认调整为元素光环","init_client_info_v1.20250626.0_0717.json游戏数据更新"],"2025年7月11日":["怪物经验和技能等级公式更新","闪避和抗性计算公式更新","力量更替为近战以及对应的兼容","init_client_info_v1.20250626.0_0711.json游戏数据更新"],"2025年7月10日":["修复贯穿技能由敌人释放时可能多次击中相同目标的缺陷"],"2025年7月9日":["掉落和掉率调整","经验调整","疫病射击和破甲之刺调整","怪物自动恢复移除","疫病射击trigger调整","获取价格使用官方API"],"2025年7月7日":["怪物属性缩放和地图多难度","法师技能调整和装备上\'技能伤害\'词缀生效","攻击等级和房屋等级对施法速度的影响生效","物品调整","精准重做以攻击等级计算","TEST 远程魔法经验的10%映射到攻击经验！","经验重做和护符装备"]}');
 
 /***/ }),
 
@@ -2356,10 +2366,9 @@ function updateLevels() {
 }
 
 function calcCombatLevel(staminaLevel, intelligenceLevel, defenseLevel, attackLevel, meleeLevel, rangedLevel, magicLevel) {
-    return Math.floor(
-        0.1 * (staminaLevel + intelligenceLevel + attackLevel + defenseLevel + Math.max(meleeLevel, rangedLevel, magicLevel))
-        + 0.5 * Math.max(attackLevel, defenseLevel, meleeLevel, rangedLevel, magicLevel)
-    );
+    return 0.1 * (staminaLevel + intelligenceLevel + attackLevel + defenseLevel + Math.max(meleeLevel, rangedLevel, magicLevel)) + 
+        0.5 * Math.max(attackLevel, defenseLevel, meleeLevel, rangedLevel, magicLevel)
+    ;
 }
 
 
@@ -2373,7 +2382,7 @@ function updateCombatLevel() {
     let magicLevel = player["magicLevel"];
 
     let levelInput = document.getElementById("inputLevel_combat");
-    levelInput.value = calcCombatLevel(staminaLevel, intelligenceLevel, defenseLevel, attackLevel, meleeLevel, rangedLevel, magicLevel);;
+    levelInput.value = parseFloat(calcCombatLevel(staminaLevel, intelligenceLevel, defenseLevel, attackLevel, meleeLevel, rangedLevel, magicLevel).toFixed(1));
 }
 
 // #endregion
@@ -3769,8 +3778,12 @@ function showKills(simResult, playerToDisplay) {
             failedDungeonsRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.dungeonsFailed");
             newChildren.push(failedDungeonsRow);
         }
-        encountersPerHour = (simResult.dungeonsCompleted / hoursSimulated).toFixed(1);
-        let averageTime = (hoursSimulated * 60 / simResult.dungeonsCompleted).toFixed(1);
+        // 使用最后一轮完成时间来计算平均时间，避免未完成轮次的时间被计入
+        let dungeonHoursSimulated = simResult.lastDungeonFinishTime > 0 
+            ? simResult.lastDungeonFinishTime / ONE_HOUR 
+            : hoursSimulated;
+        encountersPerHour = (simResult.dungeonsCompleted / dungeonHoursSimulated).toFixed(1);
+        let averageTime = (dungeonHoursSimulated * 60 / simResult.dungeonsCompleted).toFixed(1);
         encountersRow = createRow(["col-md-6", "col-md-6 text-end"], ["Average Time", averageTime]);
         encountersRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.averageTime");
         if (simResult.minDungenonTime > 0) {
@@ -3780,7 +3793,11 @@ function showKills(simResult, playerToDisplay) {
             newChildren.push(minimumTimeRow);
         }
     } else {
-        encountersPerHour = (simResult.encounters / hoursSimulated).toFixed(1);
+        // 使用最后一场战斗完成时间来计算，避免未完成战斗的时间被计入
+        let encounterHoursSimulated = simResult.lastEncounterFinishTime > 0 
+            ? simResult.lastEncounterFinishTime / ONE_HOUR 
+            : hoursSimulated;
+        encountersPerHour = (simResult.encounters / encounterHoursSimulated).toFixed(1);
         encountersRow = createRow(["col-md-6", "col-md-6 text-end"], ["Encounters", encountersPerHour]);
         encountersRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.encounters");
     }
@@ -3792,7 +3809,7 @@ function showKills(simResult, playerToDisplay) {
     }
 
     if (simResult.debuffOnLevelGap[playerToDisplay] != 0) {
-        let debuffOnLevelGapRow = createRow(["col-md-6", "col-md-6 text-end"], ["Debuff on Level Gap", Math.round(simResult.debuffOnLevelGap[playerToDisplay] * 100) + "%"]);
+        let debuffOnLevelGapRow = createRow(["col-md-6", "col-md-6 text-end"], ["Debuff on Level Gap", (simResult.debuffOnLevelGap[playerToDisplay] * 100).toFixed(1) + "%"]);
         debuffOnLevelGapRow.firstElementChild.setAttribute("data-i18n", "common:simulationResults.debuffOnLevelGap");
         newChildren.push(debuffOnLevelGapRow);
     }
@@ -4689,7 +4706,7 @@ function startSimulation(selectedPlayers) {
     for (let player of playersToSim) {
         if ((maxPlayerCombatLevel / player.combatLevel) > 1.2) {
             const maxDebuffOnLevelGap = 0.9;
-            let levelPercent = Math.floor(((maxPlayerCombatLevel / player.combatLevel) - 1.2) * 100) / 100;
+            let levelPercent = (maxPlayerCombatLevel / player.combatLevel) - 1.2;
 
             player.debuffOnLevelGap = -1 * Math.min(maxDebuffOnLevelGap, 3 * levelPercent);
 
@@ -4881,7 +4898,7 @@ document.getElementById("buttonUploadJSONSimulate").addEventListener("click", (e
                     (player, index) => parsePlayerJson(player, `player${index + 1}`)
                 );
 
-                let maxPlayerCombatLevel = 1;
+                let maxPlayerCombatLevel = 1.0;
                 for (let player of playersToSim) {
                     player.combatLevel = calcCombatLevel(player.staminaLevel, player.intelligenceLevel, player.defenseLevel, player.attackLevel, player.meleeLevel, player.rangedLevel, player.magicLevel);
                     maxPlayerCombatLevel = Math.max(maxPlayerCombatLevel, player.combatLevel);
