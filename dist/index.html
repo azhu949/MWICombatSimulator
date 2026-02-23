@@ -101,6 +101,63 @@
             padding: 15px; /* Padding inside the box */
             box-shadow: 0 4px 8px rgba(0, 0, 0, 0.1); /* Optional shadow for better visibility */
         }
+
+        .result-metric-title {
+            margin: 0;
+            padding: 8px 0;
+            background: transparent;
+            border-bottom: none;
+            font-weight: 700;
+        }
+
+        .result-metric-body {
+            padding: 8px 0;
+            background: #ffffff;
+            line-height: 1.35;
+        }
+
+        #simulationResultPlayerDeaths {
+            background-color: #FFEAE9;
+        }
+
+        #simulationResultExperienceGain {
+            background-color: #CDFFDD;
+        }
+
+        #simulationResultConsumablesUsed {
+            background-color: #F0F8FF;
+        }
+
+        .result-metric-body .row {
+            margin-bottom: 4px;
+            margin-left: 0;
+            margin-right: 0;
+        }
+
+        .result-metric-body .row:last-child {
+            margin-bottom: 0;
+        }
+
+        .result-metric-body .col-md-6 {
+            padding-left: 0;
+            padding-right: 0;
+        }
+
+        .result-metric-body .text-end {
+            font-weight: 600;
+        }
+
+        body.dark-mode .result-metric-title {
+            background: transparent;
+            border-bottom: none;
+            color: #f0f0f0;
+        }
+
+        body.dark-mode .result-metric-body {
+            color: #f0f0f0;
+            background: #3b3f46;
+        }
+
     </style>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -1042,22 +1099,22 @@
                             <b data-i18n="common:simulationResults.timeSpentOnBoss">Time spent on boss</b>
                         </div>
                         <div id="simulationBossTime" class="mb-2"></div>
-                        <div class="row">
-                            <b data-i18n="common:simulationResults.deathPerHour">Deaths per hour</b>
+                        <div class="d-none" id="metricCardDeaths">
+                            <div class="result-metric-title" data-i18n="common:simulationResults.deathPerHour">Deaths per hour</div>
+                            <div id="simulationResultPlayerDeaths" class="result-metric-body"></div>
                         </div>
-                        <div id="simulationResultPlayerDeaths" class="mb-2"></div>
-                        <div class="row">
-                            <b data-i18n="common:simulationResults.xpPerHour">XP per hour</b>
+                        <div class="d-none" id="metricCardExperience">
+                            <div class="result-metric-title" data-i18n="common:simulationResults.xpPerHour">XP per hour</div>
+                            <div id="simulationResultExperienceGain" class="result-metric-body"></div>
                         </div>
-                        <div id="simulationResultExperienceGain" class="mb-2"></div>
                         <div class="row" id="simulationHpSpentHeading">
                             <b data-i18n="common:simulationResults.hpSpentPerHour">HP Spent per hour</b>
                         </div>
                         <div id="simulationHpSpent" class="mb-2"></div>
-                        <div class="row">
-                            <b data-i18n="common:simulationResults.consumablesUsedPerHour">Consumables used per hour</b>
+                        <div class="d-none" id="metricCardConsumables">
+                            <div class="result-metric-title" data-i18n="common:simulationResults.consumablesUsedPerHour">Consumables used per hour</div>
+                            <div id="simulationResultConsumablesUsed" class="result-metric-body"></div>
                         </div>
-                        <div id="simulationResultConsumablesUsed" class="mb-2"></div>
                         <div class="row">
                             <b data-i18n="common:simulationResults.manaUsedPerHour">Mana used per hour (Casts/h)</b>
                         </div>
@@ -1094,6 +1151,12 @@
                         <div id="simulationResultTotalDamageTaken" class="mb-2"></div>
                         <div class="row pt-2">
                             <b><span data-i18n="common:profit">Profit</span>: <span id="profitPreview"></span></b>
+                        </div>
+                        <div class="row pt-2">
+                            <b><span data-i18n="common:expense">Expense</span>: <span id="expensesPreview"></span></b>
+                        </div>
+                        <div class="row pt-2">
+                            <b><span data-i18n="common:revenue">Revenue</span>: <span id="revenuePreview"></span></b>
                         </div>
                         <div class="row pt-2">
                             <b><span data-i18n="common:noRNGProfit">No RNG Profit</span>: <span id="noRngProfitPreview"></span></b>
