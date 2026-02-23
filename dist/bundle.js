@@ -1855,7 +1855,9 @@ function onWorkerMessage(event) {
         case "simulation_result":
             progressbar.style.width = "100%";
             progressbar.innerHTML = "100% (" + ((Date.now() - simStartTime) / 1000).toFixed(2) + "s)";
-            //console.log("SIM RESULTS: ", event.data.simResult);
+            window.lastSimulationResult = event.data.simResult;
+            console.log("[MWI_SIM_RESULT_OBJECT]", event.data.simResult);
+            console.log("[MWI_SIM_RESULT_JSON]", JSON.stringify(event.data.simResult));
             showSimulationResult(event.data.simResult);
             updateContent();
             buttonStartSimulation.disabled = false;
@@ -1882,6 +1884,9 @@ function onMultiWorkerMessage(event) {
         case "simulation_result_allZones":
             progressbar.style.width = "100%";
             progressbar.innerHTML = "100% (" + ((Date.now() - simStartTime) / 1000).toFixed(2) + "s)";
+            window.lastAllZonesSimulationResults = event.data.simResults;
+            console.log("[MWI_SIM_ALL_ZONES_OBJECT]", event.data.simResults);
+            console.log("[MWI_SIM_ALL_ZONES_JSON]", JSON.stringify(event.data.simResults));
             showAllSimulationResults(event.data.simResults);
             updateContent();
             buttonStartSimulation.disabled = false;
@@ -3062,6 +3067,7 @@ function showSimulationResult(simResult) {
     showDeaths(simResult, playerToDisplay);
     showExperienceGained(simResult, playerToDisplay);
     showConsumablesUsed(simResult, playerToDisplay);
+    refreshMetricCardsVisibility();
     showHpSpent(simResult, playerToDisplay);
     showManaUsed(simResult, playerToDisplay);
     showHitpointsGained(simResult, playerToDisplay);
@@ -3072,6 +3078,8 @@ function showSimulationResult(simResult) {
     window.profit = window.revenue - window.expenses;
     document.getElementById('profitSpan').innerText = window.profit.toLocaleString();
     document.getElementById('profitPreview').innerText = window.profit.toLocaleString();
+    document.getElementById('expensesPreview').innerText = window.expenses.toLocaleString();
+    document.getElementById('revenuePreview').innerText = window.revenue.toLocaleString();
     window.noRngProfit = window.noRngRevenue - window.expenses;
     document.getElementById('noRngProfitSpan').innerText = window.noRngProfit.toLocaleString();
     document.getElementById('noRngProfitPreview').innerText = window.noRngProfit.toLocaleString();
@@ -3079,6 +3087,24 @@ function showSimulationResult(simResult) {
     // 显示战斗图表
     if (document.getElementById('hpMpVisualizationToggle').checked) {
         renderCombatCharts(simResult);
+    }
+}
+
+function refreshMetricCardsVisibility() {
+    const mappings = [
+        { cardId: "metricCardDeaths", bodyId: "simulationResultPlayerDeaths" },
+        { cardId: "metricCardExperience", bodyId: "simulationResultExperienceGain" },
+        { cardId: "metricCardConsumables", bodyId: "simulationResultConsumablesUsed" },
+    ];
+
+    for (const mapping of mappings) {
+        const card = document.getElementById(mapping.cardId);
+        const body = document.getElementById(mapping.bodyId);
+        if (!card || !body) {
+            continue;
+        }
+        const hasData = body.children.length > 0 || body.textContent.trim() !== "";
+        card.classList.toggle("d-none", !hasData);
     }
 }
 
@@ -6203,8 +6229,10 @@ document.addEventListener("input", (e) => {
 
         window.expenses += expensesDifference;
         document.getElementById('expensesSpan').innerText = window.expenses.toLocaleString();
+        document.getElementById('expensesPreview').innerText = window.expenses.toLocaleString();
         window.revenue += revenueDifference;
         document.getElementById('revenueSpan').innerText = window.revenue.toLocaleString();
+        document.getElementById('revenuePreview').innerText = window.revenue.toLocaleString();
         window.noRngRevenue += noRngRevenueDifference;
         document.getElementById('noRngRevenueSpan').innerText = window.noRngRevenue.toLocaleString();
 
@@ -6410,6 +6438,7 @@ initHpMpVisualization();
 
 updateState();
 updateUI();
+fetchPrices();
 
 /******/ })()
 ;
