@@ -10994,15 +10994,27 @@ document.addEventListener('DOMContentLoaded', function () {
         const switcherContainer = document.createElement('div');
         switcherContainer.className = 'language-switcher';
         switcherContainer.style.position = 'fixed';
-        switcherContainer.style.top = '10px';
         switcherContainer.style.right = '10px';
         switcherContainer.style.zIndex = '1000';
+
+        const positionLanguageSwitcher = () => {
+            const topBar = document.querySelector('.player-top-bar');
+            let topOffset = 10;
+            if (topBar) {
+                const rect = topBar.getBoundingClientRect();
+                topOffset = Math.max(10, Math.ceil(rect.bottom + 8));
+            }
+            switcherContainer.style.top = `${topOffset}px`;
+        };
 
         const enButton = document.createElement('button');
         enButton.className = 'btn btn-sm ' + (i18next.language === 'en' ? 'btn-primary' : 'btn-outline-primary');
         enButton.textContent = "English";
         enButton.onclick = function () {
-            i18next.changeLanguage('en').then(updateContent);
+            i18next.changeLanguage('en').then(() => {
+                updateContent();
+                positionLanguageSwitcher();
+            });
             enButton.className = 'btn btn-sm btn-primary';
             zhButton.className = 'btn btn-sm btn-outline-primary';
         };
@@ -11011,7 +11023,10 @@ document.addEventListener('DOMContentLoaded', function () {
         zhButton.className = 'btn btn-sm ' + (i18next.language === 'zh' ? 'btn-primary' : 'btn-outline-primary');
         zhButton.textContent = "中文";
         zhButton.onclick = function () {
-            i18next.changeLanguage('zh').then(updateContent);
+            i18next.changeLanguage('zh').then(() => {
+                updateContent();
+                positionLanguageSwitcher();
+            });
             zhButton.className = 'btn btn-sm btn-primary';
             enButton.className = 'btn btn-sm btn-outline-primary';
         };
@@ -11021,5 +11036,7 @@ document.addEventListener('DOMContentLoaded', function () {
         switcherContainer.appendChild(zhButton);
 
         document.body.appendChild(switcherContainer);
+        positionLanguageSwitcher();
+        window.addEventListener('resize', positionLanguageSwitcher);
     }
 });
