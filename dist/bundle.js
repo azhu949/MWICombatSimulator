@@ -1855,6 +1855,11 @@ const EQUIPMENT_SLOT_KEYS = ["head", "body", "legs", "feet", "hands", "off_hand"
 const TRIGGER_CHANGE_LABEL_PREFIX = "Trigger ";
 const JIGS_DATA_URL = "https://gist.githubusercontent.com/JigglyMoose/79db9d275a73a26dec30305865692525/raw/jigs_data.json";
 const ABILITY_BOOK_CATEGORY_HRID = "/item_categories/ability_book";
+const QUEUE_MULTI_ROUND_DEFAULT = 30;
+const QUEUE_MULTI_ROUND_MIN = 1;
+const QUEUE_MULTI_ROUND_MAX = 200;
+const QUEUE_MULTI_ROUND_METRIC_KEYS = ["dps", "dailyNoRngProfit", "xpPerHour", "killsPerHour"];
+const QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS = 4;
 const abilityBookInfoByAbilityHrid = buildAbilityBookInfoByAbilityHrid();
 
 const WATCHED_CONTROL_IDS = new Set([
@@ -7047,6 +7052,7 @@ function createEmptyPlayerQueueState() {
         baseline: null,
         queueItems: [],
         runResults: [],
+        multiRoundResults: null,
         enhancementUpgradeCosts: {},
         abilityUpgradeCosts: {},
         isRunning: false,
@@ -7073,14 +7079,16 @@ function initLeftMenuNavigation() {
     const menuHome = document.getElementById("leftMenuHome");
     const menuQueue = document.getElementById("leftMenuQueue");
     const menuResults = document.getElementById("leftMenuResults");
+    const menuMultiResults = document.getElementById("leftMenuMultiResults");
 
-    if (!menuHome || !menuQueue || !menuResults) {
+    if (!menuHome || !menuQueue || !menuResults || !menuMultiResults) {
         return;
     }
 
     menuHome.addEventListener("click", () => switchLeftPage("home"));
     menuQueue.addEventListener("click", () => switchLeftPage("queue"));
     menuResults.addEventListener("click", () => switchLeftPage("results"));
+    menuMultiResults.addEventListener("click", () => switchLeftPage("multiResults"));
     switchLeftPage("home");
 }
 
@@ -7090,21 +7098,34 @@ function switchLeftPage(pageName) {
     const pageHome = document.getElementById("pageHome");
     const pageQueue = document.getElementById("pageQueue");
     const pageResults = document.getElementById("pageResults");
+    const pageMultiResults = document.getElementById("pageMultiResults");
     const menuHome = document.getElementById("leftMenuHome");
     const menuQueue = document.getElementById("leftMenuQueue");
     const menuResults = document.getElementById("leftMenuResults");
+    const menuMultiResults = document.getElementById("leftMenuMultiResults");
 
-    if (!pageHome || !pageQueue || !pageResults || !menuHome || !menuQueue || !menuResults) {
+    if (
+        !pageHome
+        || !pageQueue
+        || !pageResults
+        || !pageMultiResults
+        || !menuHome
+        || !menuQueue
+        || !menuResults
+        || !menuMultiResults
+    ) {
         return;
     }
 
     pageHome.classList.toggle("d-none", pageName !== "home");
     pageQueue.classList.toggle("d-none", pageName !== "queue");
     pageResults.classList.toggle("d-none", pageName !== "results");
+    pageMultiResults.classList.toggle("d-none", pageName !== "multiResults");
 
     menuHome.classList.toggle("active", pageName === "home");
     menuQueue.classList.toggle("active", pageName === "queue");
     menuResults.classList.toggle("active", pageName === "results");
+    menuMultiResults.classList.toggle("active", pageName === "multiResults");
 }
 
 function initBaselineQueueControls() {
@@ -7112,20 +7133,43 @@ function initBaselineQueueControls() {
     const buttonSetBaselineInModal = document.getElementById("buttonSetBaselineInModal");
     const buttonAddToQueue = document.getElementById("buttonAddToQueue");
     const buttonRunQueue = document.getElementById("buttonRunQueue");
+    const buttonConfirmRunQueue = document.getElementById("buttonConfirmRunQueue");
     const buttonClearQueue = document.getElementById("buttonClearQueue");
     const queueList = document.getElementById("queueList");
+    const selectQueueRoundPreset = document.getElementById("selectQueueRoundPreset");
+    const inputQueueRoundCustom = document.getElementById("inputQueueRoundCustom");
+    const queueRoundCustomRow = document.getElementById("queueRoundCustomRow");
+    const selectQueueExecutionMode = document.getElementById("selectQueueExecutionMode");
 
-    if (!buttonSetBaseline || !buttonSetBaselineInModal || !buttonAddToQueue || !buttonRunQueue || !buttonClearQueue || !queueList) {
+    if (
+        !buttonSetBaseline
+        || !buttonSetBaselineInModal
+        || !buttonAddToQueue
+        || !buttonRunQueue
+        || !buttonConfirmRunQueue
+        || !buttonClearQueue
+        || !queueList
+        || !selectQueueRoundPreset
+        || !inputQueueRoundCustom
+        || !queueRoundCustomRow
+        || !selectQueueExecutionMode
+    ) {
         return;
     }
 
     buttonSetBaseline.addEventListener("click", handleSetBaselineClick);
     buttonSetBaselineInModal.addEventListener("click", handleSetBaselineClick);
     buttonAddToQueue.addEventListener("click", handleAddToQueueClick);
-    buttonRunQueue.addEventListener("click", handleRunQueueClick);
+    buttonRunQueue.addEventListener("click", handleRunQueueButtonClick);
+    buttonConfirmRunQueue.addEventListener("click", handleRunQueueConfirmClick);
     buttonClearQueue.addEventListener("click", handleClearQueueClick);
 
     queueList.addEventListener("click", handleQueueListClick);
+    selectQueueRoundPreset.value = String(QUEUE_MULTI_ROUND_DEFAULT);
+    inputQueueRoundCustom.value = String(QUEUE_MULTI_ROUND_DEFAULT);
+    selectQueueRoundPreset.addEventListener("change", syncQueueRoundCustomInputVisibility);
+    selectQueueExecutionMode.value = "parallel";
+    syncQueueRoundCustomInputVisibility();
 
     const watchedControlSelector = Array.from(WATCHED_CONTROL_IDS)
         .map((id) => "#" + CSS.escape(id))
@@ -7146,6 +7190,77 @@ function initBaselineQueueControls() {
 
 function queueNotice(messageKey) {
     alert(i18next.t(messageKey));
+}
+
+function clampNumber(value, min, max) {
+    return Math.min(max, Math.max(min, value));
+}
+
+function normalizeQueueRoundCountValue(value) {
+    const parsed = Math.floor(toFiniteNumber(value, QUEUE_MULTI_ROUND_DEFAULT));
+    return clampNumber(parsed, QUEUE_MULTI_ROUND_MIN, QUEUE_MULTI_ROUND_MAX);
+}
+
+function normalizeQueueRoundCustomInput() {
+    const input = document.getElementById("inputQueueRoundCustom");
+    if (!input) {
+        return QUEUE_MULTI_ROUND_DEFAULT;
+    }
+
+    const normalized = normalizeQueueRoundCountValue(input.value);
+    input.value = String(normalized);
+    return normalized;
+}
+
+function syncQueueRoundCustomInputVisibility() {
+    const presetSelect = document.getElementById("selectQueueRoundPreset");
+    const customRow = document.getElementById("queueRoundCustomRow");
+    if (!presetSelect || !customRow) {
+        return;
+    }
+
+    const useCustom = presetSelect.value === "custom";
+    customRow.classList.toggle("d-none", !useCustom);
+    if (useCustom) {
+        normalizeQueueRoundCustomInput();
+    }
+}
+
+function handleRunQueueButtonClick() {
+    const modalElement = document.getElementById("runQueueModal");
+    if (!modalElement || typeof bootstrap === "undefined" || !bootstrap?.Modal) {
+        handleRunQueueClick();
+        return;
+    }
+
+    syncQueueRoundCustomInputVisibility();
+    const modalInstance = bootstrap.Modal.getOrCreateInstance(modalElement);
+    modalInstance.show();
+}
+
+function handleRunQueueConfirmClick() {
+    const modalElement = document.getElementById("runQueueModal");
+    if (modalElement && typeof bootstrap !== "undefined" && bootstrap?.Modal) {
+        const modalInstance = bootstrap.Modal.getOrCreateInstance(modalElement);
+        modalInstance.hide();
+    }
+
+    handleRunQueueClick();
+}
+
+function getQueueMultiRoundConfigFromUI() {
+    const presetSelect = document.getElementById("selectQueueRoundPreset");
+    const selectedRoundPreset = presetSelect?.value ?? String(QUEUE_MULTI_ROUND_DEFAULT);
+    const roundCount = selectedRoundPreset === "custom"
+        ? normalizeQueueRoundCustomInput()
+        : normalizeQueueRoundCountValue(selectedRoundPreset);
+    const executionModeSelect = document.getElementById("selectQueueExecutionMode");
+    const executionMode = executionModeSelect?.value === "serial" ? "serial" : "parallel";
+
+    return {
+        roundCount,
+        executionMode,
+    };
 }
 
 function getCurrentPlayerStateFromUI() {
@@ -7326,9 +7441,11 @@ function buildFixedSettingsFromUI() {
     };
 }
 
-function runSinglePlayerSimulation(snapshot, settings, playerId) {
+function runSinglePlayerSimulation(snapshot, settings, playerId, options = {}) {
     return new Promise((resolve, reject) => {
         const workerInstance = new Worker(new URL(/* worker import */ __webpack_require__.p + __webpack_require__.u(5), __webpack_require__.b));
+        const muteProgressBar = Boolean(options?.muteProgressBar);
+        const onProgress = typeof options?.onProgress === "function" ? options.onProgress : null;
         const normalizedPlayerId = String(playerId);
         const playerToSim = buildPlayerFromStateForSimulation(snapshot.state, normalizedPlayerId);
         applyDebuffOnLevelGap([playerToSim]);
@@ -7352,7 +7469,16 @@ function runSinglePlayerSimulation(snapshot, settings, playerId) {
                     resolve(event.data.simResult);
                     break;
                 case "simulation_progress":
-                    progressbar.style.width = Math.floor(event.data.progress * 100) + "%";
+                    if (!muteProgressBar) {
+                        progressbar.style.width = Math.floor(event.data.progress * 100) + "%";
+                    }
+                    if (onProgress) {
+                        try {
+                            onProgress(event.data.progress);
+                        } catch (callbackError) {
+                            console.warn("runSinglePlayerSimulation progress callback failed", callbackError);
+                        }
+                    }
                     break;
                 case "simulation_error":
                     workerInstance.terminate();
@@ -7868,7 +7994,11 @@ function setQueueRunningState(isRunning) {
     const buttonSetBaselineInModal = document.getElementById("buttonSetBaselineInModal");
     const buttonAddToQueue = document.getElementById("buttonAddToQueue");
     const buttonRunQueue = document.getElementById("buttonRunQueue");
+    const buttonConfirmRunQueue = document.getElementById("buttonConfirmRunQueue");
     const buttonClearQueue = document.getElementById("buttonClearQueue");
+    const selectQueueRoundPreset = document.getElementById("selectQueueRoundPreset");
+    const inputQueueRoundCustom = document.getElementById("inputQueueRoundCustom");
+    const selectQueueExecutionMode = document.getElementById("selectQueueExecutionMode");
 
     if (!buttonSetBaseline || !buttonSetBaselineInModal || !buttonAddToQueue || !buttonRunQueue || !buttonClearQueue) {
         return;
@@ -7878,7 +8008,19 @@ function setQueueRunningState(isRunning) {
     buttonSetBaselineInModal.disabled = isRunning;
     buttonAddToQueue.disabled = isRunning;
     buttonRunQueue.disabled = isRunning;
+    if (buttonConfirmRunQueue) {
+        buttonConfirmRunQueue.disabled = isRunning;
+    }
     buttonClearQueue.disabled = isRunning;
+    if (selectQueueRoundPreset) {
+        selectQueueRoundPreset.disabled = isRunning;
+    }
+    if (inputQueueRoundCustom) {
+        inputQueueRoundCustom.disabled = isRunning;
+    }
+    if (selectQueueExecutionMode) {
+        selectQueueExecutionMode.disabled = isRunning;
+    }
 }
 
 async function handleSetBaselineClick() {
@@ -7918,6 +8060,7 @@ async function handleSetBaselineClick() {
             createdAt: Date.now(),
         };
         queueState.runResults = [];
+        queueState.multiRoundResults = null;
         queueState.enhancementUpgradeCosts = {};
         queueState.abilityUpgradeCosts = {};
         window.lastSimulationResult = simResult;
@@ -8060,6 +8203,7 @@ function handleAddToQueueClick() {
     for (const entry of queueEntries) {
         pushQueueItem(queueState, entry.snapshot, entry.changes);
     }
+    queueState.multiRoundResults = null;
 
     restoreCurrentPlayerToBaselineSnapshot();
     renderQueueViewsForCurrentPlayer();
@@ -8289,6 +8433,447 @@ function syncEquipmentChangeIntoState(state, targetState, slotLabel) {
     }
 }
 
+function updateQueueRunProgressBar(completedRuns, totalRuns, messageText = "") {
+    const safeTotal = Math.max(1, toFiniteNumber(totalRuns, 1));
+    const safeCompleted = clampNumber(Math.floor(toFiniteNumber(completedRuns, 0)), 0, safeTotal);
+    const progress = Math.floor(safeCompleted / safeTotal * 100);
+    progressbar.style.width = progress + "%";
+
+    const prefix = messageText ? (messageText + " ") : "";
+    progressbar.innerHTML = `${progress}% (${safeCompleted}/${safeTotal}) ${prefix}`.trim();
+}
+
+function getQueueRunErrorMessage(error) {
+    if (typeof error === "string") {
+        return error;
+    }
+    if (error?.message) {
+        return error.message;
+    }
+    return String(error ?? "unknown error");
+}
+
+async function runQueueItemSimulation(queueItem, queueState, options = {}) {
+    const simResult = await runSinglePlayerSimulation(
+        queueItem.snapshot,
+        queueState.baseline.settings,
+        currentPlayerTabId,
+        options
+    );
+    const playerToDisplay = "player" + currentPlayerTabId;
+    const metrics = computeMetrics(simResult, playerToDisplay);
+    const deltas = computeMetricDeltas(metrics, queueState.baseline.metrics);
+
+    return {
+        queueItemId: queueItem.id,
+        metrics,
+        deltas,
+        simResult,
+        finishedAt: Date.now(),
+    };
+}
+
+async function runQueueSingleRound(queueState) {
+    queueState.runResults = [];
+    queueState.multiRoundResults = null;
+    progressbar.style.width = "0%";
+    progressbar.innerHTML = i18next.t("common:queue.queueRunning");
+
+    for (let i = 0; i < queueState.queueItems.length; i++) {
+        const queueItem = queueState.queueItems[i];
+        const roundResult = await runQueueItemSimulation(queueItem, queueState);
+        queueState.runResults.push(roundResult);
+
+        const progress = Math.floor(((i + 1) / queueState.queueItems.length) * 100);
+        progressbar.style.width = progress + "%";
+        progressbar.innerHTML = progress + "%";
+    }
+}
+
+function resolveQueueParallelWorkerCount(roundCount) {
+    const hardwareConcurrency = toFiniteNumber(
+        typeof navigator !== "undefined" ? navigator.hardwareConcurrency : 0,
+        QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS
+    );
+    const maxWorkers = Math.max(1, Math.floor(hardwareConcurrency));
+    return Math.max(1, Math.min(QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS, maxWorkers, roundCount));
+}
+
+async function runQueueItemRoundsSerial(queueItem, queueState, roundCount, onRoundCompleted) {
+    let roundResults = [];
+    for (let roundIndex = 0; roundIndex < roundCount; roundIndex++) {
+        const runResult = await runQueueItemSimulation(queueItem, queueState, { muteProgressBar: true });
+        roundResults.push(runResult);
+        onRoundCompleted();
+    }
+    return roundResults;
+}
+
+async function runQueueItemRoundsParallel(queueItem, queueState, roundCount, parallelWorkers, onRoundCompleted) {
+    let roundResults = new Array(roundCount);
+    let failedRounds = [];
+    let nextRoundIndex = 0;
+
+    const workerLoop = async () => {
+        while (true) {
+            const currentRoundIndex = nextRoundIndex;
+            nextRoundIndex += 1;
+            if (currentRoundIndex >= roundCount) {
+                return;
+            }
+
+            try {
+                roundResults[currentRoundIndex] = await runQueueItemSimulation(queueItem, queueState, { muteProgressBar: true });
+                onRoundCompleted();
+            } catch (error) {
+                failedRounds.push({
+                    roundIndex: currentRoundIndex,
+                    error,
+                });
+            }
+        }
+    };
+
+    const workerCount = Math.max(1, Math.min(parallelWorkers, roundCount));
+    await Promise.all(Array.from({ length: workerCount }, () => workerLoop()));
+
+    for (const failedRound of failedRounds) {
+        try {
+            roundResults[failedRound.roundIndex] = await runQueueItemSimulation(queueItem, queueState, { muteProgressBar: true });
+            onRoundCompleted();
+        } catch (retryError) {
+            const roundText = failedRound.roundIndex + 1;
+            const errorText = getQueueRunErrorMessage(retryError);
+            throw new Error(`Queue item "${queueItem.id}" round ${roundText} failed after retry: ${errorText}`);
+        }
+    }
+
+    const hasMissingResult = roundResults.some((entry) => !entry);
+    if (hasMissingResult) {
+        throw new Error(`Queue item "${queueItem.id}" has incomplete multi-round results.`);
+    }
+
+    return roundResults;
+}
+
+function computePercentileFromSorted(sortedValues, percentile) {
+    if (!Array.isArray(sortedValues) || sortedValues.length === 0) {
+        return 0;
+    }
+
+    if (sortedValues.length === 1) {
+        return sortedValues[0];
+    }
+
+    const clampedPercentile = clampNumber(toFiniteNumber(percentile, 0), 0, 1);
+    const rawIndex = (sortedValues.length - 1) * clampedPercentile;
+    const lowerIndex = Math.floor(rawIndex);
+    const upperIndex = Math.ceil(rawIndex);
+
+    if (lowerIndex === upperIndex) {
+        return sortedValues[lowerIndex];
+    }
+
+    const interpolation = rawIndex - lowerIndex;
+    return sortedValues[lowerIndex] + (sortedValues[upperIndex] - sortedValues[lowerIndex]) * interpolation;
+}
+
+function summarizeMetric(values, deltaPctValues) {
+    const safeValues = values.map((value) => toFiniteNumber(value, 0));
+    if (safeValues.length === 0) {
+        return {
+            mean: 0,
+            min: 0,
+            max: 0,
+            std: 0,
+            p50: 0,
+            p90: 0,
+            cv: 1,
+            meanDeltaPct: 0,
+        };
+    }
+
+    const sum = safeValues.reduce((acc, cur) => acc + cur, 0);
+    const mean = sum / safeValues.length;
+    const min = Math.min(...safeValues);
+    const max = Math.max(...safeValues);
+    const variance = safeValues.reduce((acc, cur) => acc + ((cur - mean) ** 2), 0) / safeValues.length;
+    const std = Math.sqrt(Math.max(0, variance));
+    const cv = Math.abs(mean) > 1e-9 ? Math.abs(std / mean) : 1;
+    const sorted = [...safeValues].sort((a, b) => a - b);
+    const p50 = computePercentileFromSorted(sorted, 0.5);
+    const p90 = computePercentileFromSorted(sorted, 0.9);
+
+    const safeDeltaPctValues = deltaPctValues.filter((value) => Number.isFinite(value));
+    const meanDeltaPct = safeDeltaPctValues.length > 0
+        ? safeDeltaPctValues.reduce((acc, cur) => acc + cur, 0) / safeDeltaPctValues.length
+        : 0;
+
+    return {
+        mean: toFiniteNumber(mean, 0),
+        min: toFiniteNumber(min, 0),
+        max: toFiniteNumber(max, 0),
+        std: toFiniteNumber(std, 0),
+        p50: toFiniteNumber(p50, 0),
+        p90: toFiniteNumber(p90, 0),
+        cv: toFiniteNumber(cv, 1),
+        meanDeltaPct: toFiniteNumber(meanDeltaPct, 0),
+    };
+}
+
+function buildQueueItemMetricSummary(roundResults) {
+    let metricSummary = {};
+    for (const metricKey of QUEUE_MULTI_ROUND_METRIC_KEYS) {
+        const metricValues = roundResults.map((result) => toFiniteNumber(result?.metrics?.[metricKey], 0));
+        const deltaPctValues = roundResults.map((result) => Number(result?.deltas?.[metricKey]?.pct));
+        metricSummary[metricKey] = summarizeMetric(metricValues, deltaPctValues);
+    }
+    return metricSummary;
+}
+
+function normalizeScoreList(rawValues, options = {}) {
+    const higherIsBetter = options.higherIsBetter !== false;
+    const logScale = Boolean(options.logScale);
+    const invalidScore = toFiniteNumber(options.invalidScore, 0);
+    const tieScore = toFiniteNumber(options.tieScore, 50);
+
+    const preparedValues = rawValues.map((value) => {
+        const numeric = Number(value);
+        if (!Number.isFinite(numeric)) {
+            return null;
+        }
+
+        if (logScale) {
+            return Math.log1p(Math.max(0, numeric));
+        }
+
+        return numeric;
+    });
+
+    const finiteValues = preparedValues.filter((value) => Number.isFinite(value));
+    if (finiteValues.length === 0) {
+        return rawValues.map(() => invalidScore);
+    }
+
+    const minValue = Math.min(...finiteValues);
+    const maxValue = Math.max(...finiteValues);
+    if (maxValue <= minValue) {
+        return preparedValues.map((value) => (value == null ? invalidScore : tieScore));
+    }
+
+    return preparedValues.map((value) => {
+        if (value == null) {
+            return invalidScore;
+        }
+
+        const ratio = higherIsBetter
+            ? (value - minValue) / (maxValue - minValue)
+            : (maxValue - value) / (maxValue - minValue);
+        return clampNumber(ratio * 100, 0, 100);
+    });
+}
+
+function buildQueueItemCostInsights(queueState, queueItem, metricSummary) {
+    const totalUpgradeCost = toFiniteNumber(computeQueueItemUpgradeCost(queueState, queueItem), 0);
+    const purchaseDays = computePurchaseDaysByBaselineProfit(totalUpgradeCost, queueState?.baseline?.metrics?.dailyNoRngProfit);
+
+    let goldPerPoint01Pct = {};
+    for (const metricKey of QUEUE_MULTI_ROUND_METRIC_KEYS) {
+        const meanDeltaPct = Number(metricSummary?.[metricKey]?.meanDeltaPct);
+        goldPerPoint01Pct[metricKey] = computeGoldPerPoint01Pct(totalUpgradeCost, { pct: meanDeltaPct });
+    }
+
+    const validGoldValues = Object.values(goldPerPoint01Pct).filter((value) => Number.isFinite(value) && value > 0);
+    const goldPerPoint01PctAvg = validGoldValues.length > 0
+        ? validGoldValues.reduce((acc, cur) => acc + cur, 0) / validGoldValues.length
+        : null;
+
+    return {
+        totalUpgradeCost,
+        purchaseDays,
+        goldPerPoint01Pct,
+        goldPerPoint01PctAvg,
+    };
+}
+
+function buildMultiRoundRanking(metricSummaryByQueueItem) {
+    const normalizedScoresByMetric = {};
+
+    for (const metricKey of QUEUE_MULTI_ROUND_METRIC_KEYS) {
+        const scoreValues = metricSummaryByQueueItem.map((entry) => toFiniteNumber(entry.metricSummary?.[metricKey]?.meanDeltaPct, 0));
+        normalizedScoresByMetric[metricKey] = normalizeScoreList(scoreValues, {
+            higherIsBetter: true,
+            tieScore: 50,
+            invalidScore: 0,
+        });
+    }
+
+    const upgradeCostScores = normalizeScoreList(
+        metricSummaryByQueueItem.map((entry) => entry.costInsights?.totalUpgradeCost),
+        {
+            higherIsBetter: false,
+            logScale: true,
+            tieScore: 50,
+            invalidScore: 0,
+        }
+    );
+    const purchaseDaysScores = normalizeScoreList(
+        metricSummaryByQueueItem.map((entry) => entry.costInsights?.purchaseDays),
+        {
+            higherIsBetter: false,
+            logScale: true,
+            tieScore: 50,
+            invalidScore: 0,
+        }
+    );
+    const avgGoldScores = normalizeScoreList(
+        metricSummaryByQueueItem.map((entry) => entry.costInsights?.goldPerPoint01PctAvg),
+        {
+            higherIsBetter: false,
+            logScale: true,
+            tieScore: 50,
+            invalidScore: 0,
+        }
+    );
+
+    const ranked = metricSummaryByQueueItem.map((entry, index) => {
+        const performanceScores = QUEUE_MULTI_ROUND_METRIC_KEYS.map((metricKey) => {
+            return toFiniteNumber(normalizedScoresByMetric?.[metricKey]?.[index], 50);
+        });
+        const performanceScore = performanceScores.reduce((acc, cur) => acc + cur, 0) / Math.max(1, performanceScores.length);
+
+        const cvList = QUEUE_MULTI_ROUND_METRIC_KEYS.map((metricKey) => {
+            return toFiniteNumber(entry.metricSummary?.[metricKey]?.cv, 1);
+        });
+        const avgCv = cvList.reduce((acc, cur) => acc + cur, 0) / Math.max(1, cvList.length);
+        const stabilityScore = clampNumber(100 * (1 - Math.min(avgCv, 1)), 0, 100);
+
+        // Cost score weights:
+        // upgrade cost 25% + purchase time 35% + gold per 0.01% 40%
+        const costScore = (
+            0.25 * toFiniteNumber(upgradeCostScores[index], 0)
+            + 0.35 * toFiniteNumber(purchaseDaysScores[index], 0)
+            + 0.40 * toFiniteNumber(avgGoldScores[index], 0)
+        );
+
+        // Final score weights:
+        // performance 55% + stability 20% + cost efficiency 25%
+        const finalScore = 0.55 * performanceScore + 0.20 * stabilityScore + 0.25 * costScore;
+
+        return {
+            queueItemId: entry.queueItemId,
+            displayName: entry.displayName,
+            order: entry.order,
+            finalScore: toFiniteNumber(finalScore, 0),
+            performanceScore: toFiniteNumber(performanceScore, 0),
+            stabilityScore: toFiniteNumber(stabilityScore, 0),
+            costScore: toFiniteNumber(costScore, 0),
+            metricSummary: entry.metricSummary,
+            costInsights: entry.costInsights,
+        };
+    });
+
+    ranked.sort((a, b) => {
+        if (b.finalScore !== a.finalScore) {
+            return b.finalScore - a.finalScore;
+        }
+
+        const bProfit = toFiniteNumber(b.metricSummary?.dailyNoRngProfit?.mean, 0);
+        const aProfit = toFiniteNumber(a.metricSummary?.dailyNoRngProfit?.mean, 0);
+        if (bProfit !== aProfit) {
+            return bProfit - aProfit;
+        }
+
+        const bDps = toFiniteNumber(b.metricSummary?.dps?.mean, 0);
+        const aDps = toFiniteNumber(a.metricSummary?.dps?.mean, 0);
+        if (bDps !== aDps) {
+            return bDps - aDps;
+        }
+
+        return a.order - b.order;
+    });
+
+    ranked.forEach((entry, index) => {
+        entry.rank = index + 1;
+    });
+
+    return ranked;
+}
+
+function resolveQueueExecutionModeText(executionMode) {
+    return executionMode === "serial"
+        ? i18next.t("common:queue.modeSerial")
+        : i18next.t("common:queue.modeParallel");
+}
+
+async function runQueueMultiRound(queueState, runConfig) {
+    const queueItemMetaList = queueState.queueItems.map((item, index) => ({
+        item,
+        displayName: getQueueItemDisplayName(item, index + 1),
+        order: index,
+    }));
+
+    const totalRuns = queueItemMetaList.length * runConfig.roundCount;
+    let completedRuns = 0;
+    const startedAt = Date.now();
+    const parallelWorkers = runConfig.executionMode === "parallel"
+        ? resolveQueueParallelWorkerCount(runConfig.roundCount)
+        : 1;
+
+    const updateProgress = () => {
+        completedRuns += 1;
+        updateQueueRunProgressBar(completedRuns, totalRuns, i18next.t("common:queue.queueRunning"));
+    };
+
+    queueState.runResults = [];
+    queueState.multiRoundResults = null;
+    updateQueueRunProgressBar(0, totalRuns, i18next.t("common:queue.queueRunning"));
+
+    let rawRows = [];
+    let metricSummaryByQueueItem = [];
+
+    for (const queueItemMeta of queueItemMetaList) {
+        const queueItem = queueItemMeta.item;
+        const roundResults = runConfig.executionMode === "parallel"
+            ? await runQueueItemRoundsParallel(queueItem, queueState, runConfig.roundCount, parallelWorkers, updateProgress)
+            : await runQueueItemRoundsSerial(queueItem, queueState, runConfig.roundCount, updateProgress);
+
+        for (let roundIndex = 0; roundIndex < roundResults.length; roundIndex++) {
+            const result = roundResults[roundIndex];
+            rawRows.push({
+                queueItemId: queueItem.id,
+                displayName: queueItemMeta.displayName,
+                roundIndex: roundIndex + 1,
+                metrics: result.metrics,
+                deltas: result.deltas,
+            });
+        }
+
+        const metricSummary = buildQueueItemMetricSummary(roundResults);
+        metricSummaryByQueueItem.push({
+            queueItemId: queueItem.id,
+            displayName: queueItemMeta.displayName,
+            order: queueItemMeta.order,
+            metricSummary,
+            costInsights: buildQueueItemCostInsights(queueState, queueItem, metricSummary),
+        });
+    }
+
+    const ranking = buildMultiRoundRanking(metricSummaryByQueueItem);
+    queueState.multiRoundResults = {
+        config: {
+            roundCount: runConfig.roundCount,
+            executionMode: runConfig.executionMode,
+            parallelWorkers,
+            startedAt,
+            finishedAt: Date.now(),
+        },
+        baselineMetrics: structuredClone(queueState.baseline.metrics),
+        ranking,
+        rawRows,
+    };
+}
+
 async function handleRunQueueClick() {
     const queueState = getCurrentPlayerQueueState();
     if (!queueState.baseline) {
@@ -8301,35 +8886,21 @@ async function handleRunQueueClick() {
         return;
     }
 
+    const runConfig = getQueueMultiRoundConfigFromUI();
+
     setQueueRunningState(true);
-    queueState.runResults = [];
-    progressbar.style.width = "0%";
-    progressbar.innerHTML = i18next.t("common:queue.queueRunning");
-
     try {
-        for (let i = 0; i < queueState.queueItems.length; i++) {
-            const queueItem = queueState.queueItems[i];
-            const simResult = await runSinglePlayerSimulation(queueItem.snapshot, queueState.baseline.settings, currentPlayerTabId);
-            const playerToDisplay = "player" + currentPlayerTabId;
-            const metrics = computeMetrics(simResult, playerToDisplay);
-            const deltas = computeMetricDeltas(metrics, queueState.baseline.metrics);
-
-            queueState.runResults.push({
-                queueItemId: queueItem.id,
-                metrics,
-                deltas,
-                simResult,
-                finishedAt: Date.now(),
-            });
-
-            let progress = Math.floor(((i + 1) / queueState.queueItems.length) * 100);
-            progressbar.style.width = progress + "%";
-            progressbar.innerHTML = progress + "%";
+        if (runConfig.roundCount <= 1) {
+            await runQueueSingleRound(queueState);
+            renderQueueViewsForCurrentPlayer();
+            switchLeftPage("results");
+            queueNotice("common:queue.queueRunDone");
+        } else {
+            await runQueueMultiRound(queueState, runConfig);
+            renderQueueViewsForCurrentPlayer();
+            switchLeftPage("multiResults");
+            queueNotice("common:multiRound.runDone");
         }
-
-        renderQueueViewsForCurrentPlayer();
-        switchLeftPage("results");
-        queueNotice("common:queue.queueRunDone");
     } catch (error) {
         alert(error?.toString() ?? "queue run failed");
     } finally {
@@ -8341,6 +8912,7 @@ function handleClearQueueClick() {
     const queueState = getCurrentPlayerQueueState();
     queueState.queueItems = [];
     queueState.runResults = [];
+    queueState.multiRoundResults = null;
     renderQueueViewsForCurrentPlayer();
     queueNotice("common:queue.queueCleared");
 }
@@ -8355,6 +8927,7 @@ function handleQueueListClick(event) {
     const queueItemId = deleteButton.getAttribute("data-queue-item-id");
     queueState.queueItems = queueState.queueItems.filter((item) => item.id !== queueItemId);
     queueState.runResults = queueState.runResults.filter((item) => item.queueItemId !== queueItemId);
+    queueState.multiRoundResults = null;
     renderQueueViewsForCurrentPlayer();
 }
 
@@ -8371,6 +8944,20 @@ function getQueueItemDisplayName(item, fallbackIndex) {
 
     const order = item?.order ?? fallbackIndex;
     return `${i18next.t("common:queue.queueItem")} ${order}`;
+}
+
+function resolveQueueItemDisplayNameById(queueState, queueItemId, fallbackText = "") {
+    const queueItems = queueState?.queueItems ?? [];
+    const queueItemIndex = queueItems.findIndex((item) => item.id === queueItemId);
+    if (queueItemIndex >= 0) {
+        return getQueueItemDisplayName(queueItems[queueItemIndex], queueItemIndex + 1);
+    }
+
+    if (fallbackText) {
+        return fallbackText;
+    }
+
+    return queueItemId ?? "";
 }
 
 function deriveQueueItemDisplayNameFromChanges(changes) {
@@ -8754,6 +9341,7 @@ function renderQueueViewsForCurrentPlayer() {
     renderBaselineSummary();
     renderQueueList();
     renderQueueResults();
+    renderMultiRoundResultsForCurrentPlayer();
     refreshHomeDiffHighlight();
 }
 
@@ -8925,9 +9513,143 @@ function renderQueueResults() {
     }
 }
 
+function appendEmptyTableRow(tableBody, colSpan, messageText) {
+    const emptyRow = document.createElement("tr");
+    const cell = document.createElement("td");
+    cell.colSpan = colSpan;
+    cell.className = "text-secondary";
+    cell.textContent = messageText;
+    emptyRow.appendChild(cell);
+    tableBody.appendChild(emptyRow);
+}
+
+function formatDeltaPctText(deltaInfo, digits = 2) {
+    const pct = Number(deltaInfo?.pct);
+    if (!Number.isFinite(pct)) {
+        return "-";
+    }
+
+    const sign = pct > 0 ? "+" : "";
+    return `${sign}${formatMetricValue(pct, digits)}%`;
+}
+
+function appendDeltaPctCell(row, deltaInfo, digits = 2) {
+    const cell = document.createElement("td");
+    const pct = Number(deltaInfo?.pct);
+    cell.textContent = formatDeltaPctText(deltaInfo, digits);
+    if (Number.isFinite(pct)) {
+        if (pct > 0) {
+            cell.classList.add("delta-positive");
+        } else if (pct < 0) {
+            cell.classList.add("delta-negative");
+        }
+    }
+    row.appendChild(cell);
+}
+
+function renderMultiRoundResultsForCurrentPlayer() {
+    const summaryDiv = document.getElementById("multiRoundSummary");
+    const rankingTableBody = document.getElementById("multiRoundRankingTableBody");
+    const rawTableBody = document.getElementById("multiRoundRawTableBody");
+    if (!summaryDiv || !rankingTableBody || !rawTableBody) {
+        return;
+    }
+
+    const queueState = getCurrentPlayerQueueState();
+    const multiRoundResults = queueState?.multiRoundResults;
+
+    rankingTableBody.replaceChildren();
+    rawTableBody.replaceChildren();
+
+    if (!multiRoundResults) {
+        summaryDiv.innerHTML = `<span class="text-secondary">${i18next.t("common:multiRound.noData")}</span>`;
+        appendEmptyTableRow(rankingTableBody, 13, i18next.t("common:multiRound.noData"));
+        appendEmptyTableRow(rawTableBody, 10, i18next.t("common:multiRound.noData"));
+        return;
+    }
+
+    const config = multiRoundResults.config ?? {};
+    const baselineMetrics = multiRoundResults.baselineMetrics ?? {};
+    const finishedAtText = Number.isFinite(config.finishedAt) ? new Date(config.finishedAt).toLocaleString() : "-";
+    const totalRuns = multiRoundResults.rawRows?.length ?? 0;
+
+    summaryDiv.innerHTML = `
+        <div class="multi-round-summary-grid">
+            <div class="mb-1"><span class="label">${i18next.t("common:multiRound.configRoundCount")}:</span> ${config.roundCount}</div>
+            <div class="mb-1"><span class="label">${i18next.t("common:multiRound.configExecutionMode")}:</span> ${resolveQueueExecutionModeText(config.executionMode)}</div>
+            <div class="mb-1"><span class="label">${i18next.t("common:multiRound.configParallelWorkers")}:</span> ${config.parallelWorkers}</div>
+            <div class="mb-1"><span class="label">${i18next.t("common:multiRound.configTotalRuns")}:</span> ${totalRuns}</div>
+            <div class="mb-1"><span class="label">${i18next.t("common:multiRound.configFinishedAt")}:</span> ${finishedAtText}</div>
+            <div class="mb-1"><span class="label">${i18next.t("common:multiRound.baselineRef")}:</span> DPS ${formatMetricValue(baselineMetrics.dps, 2)} / ${i18next.t("common:queue.dailyNoRngProfit")} ${formatQueueMetricValue("dailyNoRngProfit", baselineMetrics.dailyNoRngProfit, 2)} / XP/h ${formatQueueMetricValue("xpPerHour", baselineMetrics.xpPerHour, 0)} / Kills/h ${formatMetricValue(baselineMetrics.killsPerHour, 1)}</div>
+            <div class="mb-1"><span class="label">${i18next.t("common:multiRound.scoreModel")}:</span> ${i18next.t("common:multiRound.scoreModelValue")}</div>
+            <div class="small text-secondary mt-1">
+                <div>${i18next.t("common:multiRound.scoreModelParamPerformance")}</div>
+                <div>${i18next.t("common:multiRound.scoreModelParamStability")}</div>
+                <div>${i18next.t("common:multiRound.scoreModelParamCost")}</div>
+            </div>
+        </div>
+    `;
+
+    if (!Array.isArray(multiRoundResults.ranking) || multiRoundResults.ranking.length === 0) {
+        appendEmptyTableRow(rankingTableBody, 13, i18next.t("common:multiRound.noData"));
+    } else {
+        const rankingFragment = document.createDocumentFragment();
+        for (const entry of multiRoundResults.ranking) {
+            const row = document.createElement("tr");
+            const localizedDisplayName = resolveQueueItemDisplayNameById(
+                queueState,
+                entry.queueItemId,
+                entry.displayName ?? entry.queueItemId
+            );
+            appendTextCell(row, String(entry.rank));
+            appendTextCell(row, localizedDisplayName);
+            appendTextCell(row, formatMetricValue(entry.finalScore, 2));
+            appendTextCell(row, formatMetricValue(entry.performanceScore, 2));
+            appendTextCell(row, formatMetricValue(entry.stabilityScore, 2));
+            appendTextCell(row, formatMetricValue(entry.costScore, 2));
+            appendTextCell(row, entry.costInsights?.totalUpgradeCost > 0 ? formatCompactKMBValue(entry.costInsights.totalUpgradeCost, 1) : "-");
+            appendTextCell(row, formatPurchaseDuration(entry.costInsights?.purchaseDays));
+            appendTextCell(row, Number.isFinite(entry.costInsights?.goldPerPoint01PctAvg) && entry.costInsights.goldPerPoint01PctAvg > 0 ? formatCompactKMBValue(entry.costInsights.goldPerPoint01PctAvg, 1) : "-");
+            appendTextCell(row, formatMetricValue(entry.metricSummary?.dps?.mean, 2));
+            appendTextCell(row, formatQueueMetricValue("dailyNoRngProfit", entry.metricSummary?.dailyNoRngProfit?.mean, 2));
+            appendTextCell(row, formatQueueMetricValue("xpPerHour", entry.metricSummary?.xpPerHour?.mean, 0));
+            appendTextCell(row, formatMetricValue(entry.metricSummary?.killsPerHour?.mean, 1));
+            rankingFragment.appendChild(row);
+        }
+        rankingTableBody.appendChild(rankingFragment);
+    }
+
+    if (!Array.isArray(multiRoundResults.rawRows) || multiRoundResults.rawRows.length === 0) {
+        appendEmptyTableRow(rawTableBody, 10, i18next.t("common:multiRound.noData"));
+        return;
+    }
+
+    const rawFragment = document.createDocumentFragment();
+    for (const rawRowData of multiRoundResults.rawRows) {
+        const row = document.createElement("tr");
+        const localizedDisplayName = resolveQueueItemDisplayNameById(
+            queueState,
+            rawRowData.queueItemId,
+            rawRowData.displayName ?? rawRowData.queueItemId
+        );
+        appendTextCell(row, localizedDisplayName);
+        appendTextCell(row, String(rawRowData.roundIndex));
+        appendTextCell(row, formatMetricValue(rawRowData.metrics?.dps, 2));
+        appendDeltaPctCell(row, rawRowData.deltas?.dps);
+        appendTextCell(row, formatQueueMetricValue("dailyNoRngProfit", rawRowData.metrics?.dailyNoRngProfit, 2));
+        appendDeltaPctCell(row, rawRowData.deltas?.dailyNoRngProfit);
+        appendTextCell(row, formatQueueMetricValue("xpPerHour", rawRowData.metrics?.xpPerHour, 0));
+        appendDeltaPctCell(row, rawRowData.deltas?.xpPerHour);
+        appendTextCell(row, formatMetricValue(rawRowData.metrics?.killsPerHour, 1));
+        appendDeltaPctCell(row, rawRowData.deltas?.killsPerHour);
+        rawFragment.appendChild(row);
+    }
+    rawTableBody.appendChild(rawFragment);
+}
+
 function appendTextCell(row, value) {
     const cell = document.createElement("td");
-    cell.textContent = value;
+    cell.textContent = value == null || value === "" ? "-" : value;
     row.appendChild(cell);
 }
 
