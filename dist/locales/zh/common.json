@@ -6,7 +6,9 @@
         "dropPrices": "掉落物价格"
     },
     "equipment": {
-        "presets": "Presets"
+        "presets": "Presets",
+        "marketEnhancementLevels": "市场强化等级",
+        "upgradeCost": "升级成本"
     },
     "player": "玩家",
     "trigger": "触发条件",
@@ -53,6 +55,10 @@
         "metricDps": "DPS",
         "baselineDps": "基准 DPS",
         "delta": "提升",
+        "deltaDps": "DPS变化",
+        "deltaDailyNoRngProfit": "期望利润变化",
+        "deltaXpPerHour": "XP/h变化",
+        "deltaKillsPerHour": "每小时击杀数变化",
         "emptyBaseline": "尚未设置基准，请先点击“设为基准”。",
         "emptyQueue": "队列为空，请修改构筑后加入队列。",
         "emptyResults": "尚无队列运行结果。",

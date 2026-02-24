@@ -6,7 +6,9 @@
         "dropPrices": "Drop Prices"
     },
     "equipment": {
-        "presets": "Presets"
+        "presets": "Presets",
+        "marketEnhancementLevels": "Market enhancement levels",
+        "upgradeCost": "Upgrade Cost"
     },
     "player": "Player",
     "trigger": "Trigger",
@@ -53,6 +55,10 @@
         "metricDps": "DPS",
         "baselineDps": "Baseline DPS",
         "delta": "Delta",
+        "deltaDps": "DPS Change",
+        "deltaDailyNoRngProfit": "No RNG Profit Change",
+        "deltaXpPerHour": "XP/h Change",
+        "deltaKillsPerHour": "Kills/h Change",
         "emptyBaseline": "No baseline yet. Click 'Set Baseline' to run and lock one.",
         "emptyQueue": "No queue items. Change build settings and add to queue.",
         "emptyResults": "No queue run results yet.",
