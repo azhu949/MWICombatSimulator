@@ -158,6 +158,107 @@
             background: #3b3f46;
         }
 
+        .left-menu {
+            border-right: 1px solid #e6e6e6;
+            padding-right: 0.75rem;
+        }
+
+        .left-menu .btn {
+            text-align: left;
+            width: 100%;
+            margin-bottom: 0.5rem;
+        }
+
+        .left-menu .btn.active {
+            border-color: #0d6efd;
+            color: #0d6efd;
+            background-color: #e9f2ff;
+        }
+
+        .baseline-diff {
+            outline: 2px solid #fd7e14;
+            outline-offset: 1px;
+            box-shadow: 0 0 0 0.15rem rgba(253, 126, 20, 0.25);
+        }
+
+        .queue-change-badge {
+            display: inline-block;
+            padding: 0.1rem 0.45rem;
+            border-radius: 999px;
+            font-size: 0.75rem;
+            margin-right: 0.3rem;
+            margin-bottom: 0.25rem;
+            background: #f8f9fa;
+            border: 1px solid #ced4da;
+        }
+
+        .queue-summary-grid .label {
+            color: #6c757d;
+            font-size: 0.85rem;
+        }
+
+        #queueResultsTable td,
+        #queueResultsTable th {
+            white-space: nowrap;
+            vertical-align: middle;
+        }
+
+        .delta-positive {
+            color: #198754;
+            font-weight: 600;
+        }
+
+        .delta-negative {
+            color: #dc3545;
+            font-weight: 600;
+        }
+
+        body.dark-mode .left-menu {
+            border-right-color: #555;
+        }
+
+        body.dark-mode .left-menu .btn.active {
+            background-color: #274a75;
+            color: #f0f0f0;
+            border-color: #6ea8fe;
+        }
+
+        body.dark-mode .baseline-diff {
+            box-shadow: 0 0 0 0.15rem rgba(255, 170, 80, 0.35);
+        }
+
+        .player-top-bar {
+            display: flex;
+            flex-wrap: wrap;
+            align-items: flex-end;
+            gap: 0.5rem;
+        }
+
+        .player-top-bar #playerTab {
+            flex: 1 1 auto;
+            margin-bottom: 0;
+            min-width: 520px;
+        }
+
+        .queue-top-actions {
+            margin-left: auto;
+            display: flex;
+            flex-wrap: wrap;
+            gap: 0.5rem;
+            justify-content: flex-end;
+        }
+
+        @media (max-width: 1200px) {
+            .player-top-bar #playerTab {
+                min-width: 0;
+            }
+
+            .queue-top-actions {
+                width: 100%;
+                margin-left: 0;
+            }
+        }
+
     </style>
     <meta charset="utf-8" />
     <meta name="viewport" content="width=device-width, initial-scale=1" />
@@ -172,24 +273,40 @@
 
 <body class="p-3">
     <div class="container-fluid">
-        <ul class="nav nav-tabs" id="playerTab" role="tablist">
-            <li class="nav-item">
-                <a contenteditable="true" class="nav-link active" id="player1-tab" data-bs-toggle="tab" href="#player1" role="tab" aria-controls="player1" aria-selected="true">Player 1</a>
-            </li>
-            <li class="nav-item">
-                <a contenteditable="true" class="nav-link" id="player2-tab" data-bs-toggle="tab" href="#player2" role="tab" aria-controls="player2" aria-selected="false">Player 2</a>
-            </li>
-            <li class="nav-item">
-                <a contenteditable="true" class="nav-link" id="player3-tab" data-bs-toggle="tab" href="#player3" role="tab" aria-controls="player3" aria-selected="false">Player 3</a>
-            </li>
-            <li class="nav-item">
-                <a contenteditable="true" class="nav-link" id="player4-tab" data-bs-toggle="tab" href="#player4" role="tab" aria-controls="player4" aria-selected="false">Player 4</a>
-            </li>
-            <li class="nav-item">
-                <a contenteditable="true" class="nav-link" id="player5-tab" data-bs-toggle="tab" href="#player5" role="tab" aria-controls="player5" aria-selected="false">Player 5</a>
-            </li>
-        </ul>
+        <div class="player-top-bar">
+            <ul class="nav nav-tabs" id="playerTab" role="tablist">
+                <li class="nav-item">
+                    <a contenteditable="true" class="nav-link active" id="player1-tab" data-bs-toggle="tab" href="#player1" role="tab" aria-controls="player1" aria-selected="true">Player 1</a>
+                </li>
+                <li class="nav-item">
+                    <a contenteditable="true" class="nav-link" id="player2-tab" data-bs-toggle="tab" href="#player2" role="tab" aria-controls="player2" aria-selected="false">Player 2</a>
+                </li>
+                <li class="nav-item">
+                    <a contenteditable="true" class="nav-link" id="player3-tab" data-bs-toggle="tab" href="#player3" role="tab" aria-controls="player3" aria-selected="false">Player 3</a>
+                </li>
+                <li class="nav-item">
+                    <a contenteditable="true" class="nav-link" id="player4-tab" data-bs-toggle="tab" href="#player4" role="tab" aria-controls="player4" aria-selected="false">Player 4</a>
+                </li>
+                <li class="nav-item">
+                    <a contenteditable="true" class="nav-link" id="player5-tab" data-bs-toggle="tab" href="#player5" role="tab" aria-controls="player5" aria-selected="false">Player 5</a>
+                </li>
+            </ul>
+            <div class="queue-top-actions">
+                <button id="buttonSetBaseline" class="btn btn-primary" type="button" data-i18n="common:queue.setBaseline">设为基准</button>
+                <button id="buttonAddToQueue" class="btn btn-primary" type="button" data-i18n="common:queue.addToQueue">加入队列</button>
+                <button id="buttonRunQueue" class="btn btn-success" type="button" data-i18n="common:queue.runQueue">运行队列</button>
+                <button id="buttonClearQueue" class="btn btn-outline-danger" type="button" data-i18n="common:queue.clearQueue">清空队列</button>
+            </div>
+        </div>
         <div class="row pt-3">
+            <div class="col-md-2 mb-3 left-menu">
+                <button id="leftMenuHome" class="btn btn-outline-primary active" type="button" data-i18n="common:menu.home">主页</button>
+                <button id="leftMenuQueue" class="btn btn-outline-primary" type="button" data-i18n="common:menu.queue">队列</button>
+                <button id="leftMenuResults" class="btn btn-outline-primary" type="button" data-i18n="common:menu.results">结果</button>
+            </div>
+            <div class="col-md-10">
+                <div id="pageHome">
+                    <div class="row">
             <div class="col-md-5">
                 <div class="row mb-3">
                     <div class="col-md-4">
@@ -1190,27 +1307,82 @@
                 </div>
             </div>
         </div>
-        <!-- #region HP/MP 可视化图表 -->
-        <div class="row mt-4 d-none" id="combatChartsContainer">
-            <div class="col-12">
-                <div class="row mb-3">
-                    <b data-i18n="common:Experiment.hpMpVisualization">HP/MP 可视化图表</b>
-                </div>
-                <div class="row">
-                    <div class="col-md-6 mb-3">
-                        <div style="background-color: #1e1e1e; padding: 15px; border-radius: 5px;">
-                            <canvas id="hpChart"></canvas>
+                    <!-- #region HP/MP 可视化图表 -->
+                    <div class="row mt-4 d-none" id="combatChartsContainer">
+                        <div class="col-12">
+                            <div class="row mb-3">
+                                <b data-i18n="common:Experiment.hpMpVisualization">HP/MP 可视化图表</b>
+                            </div>
+                            <div class="row">
+                                <div class="col-md-6 mb-3">
+                                    <div style="background-color: #1e1e1e; padding: 15px; border-radius: 5px;">
+                                        <canvas id="hpChart"></canvas>
+                                    </div>
+                                </div>
+                                <div class="col-md-6 mb-3">
+                                    <div style="background-color: #1e1e1e; padding: 15px; border-radius: 5px;">
+                                        <canvas id="mpChart"></canvas>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
-                    <div class="col-md-6 mb-3">
-                        <div style="background-color: #1e1e1e; padding: 15px; border-radius: 5px;">
-                            <canvas id="mpChart"></canvas>
+                    <!-- #endregion -->
+                </div>
+                <div id="pageQueue" class="d-none">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <div class="card">
+                                <div class="card-header">
+                                    <b data-i18n="common:queue.baselineSummary">基准摘要</b>
+                                </div>
+                                <div class="card-body" id="baselineSummary"></div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <b data-i18n="common:queue.queueList">队列列表</b>
+                                </div>
+                                <div class="card-body" id="queueList"></div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="pageResults" class="d-none">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <div class="card">
+                                <div class="card-header">
+                                    <b data-i18n="common:queue.resultsTitle">结果对比</b>
+                                </div>
+                                <div class="card-body">
+                                    <div id="queueResultsSummary" class="mb-3"></div>
+                                    <div class="table-responsive">
+                                        <table class="table table-bordered table-striped" id="queueResultsTable">
+                                            <thead>
+                                                <tr>
+                                                    <th data-i18n="common:queue.itemName">队列项</th>
+                                                    <th>DPS</th>
+                                                    <th data-i18n="common:queue.delta">DPS提升</th>
+                                                    <th data-i18n="common:queue.dailyNoRngProfit">每日期望利润</th>
+                                                    <th data-i18n="common:queue.delta">期望利润提升</th>
+                                                    <th data-i18n="common:simulationResults.xpPerHour">XP/h</th>
+                                                    <th data-i18n="common:queue.delta">XP/h提升</th>
+                                                    <th data-i18n="common:simulationResults.killPerHour">Kills/h</th>
+                                                    <th data-i18n="common:queue.delta">Kills/h提升</th>
+                                                </tr>
+                                            </thead>
+                                            <tbody id="queueResultsTableBody"></tbody>
+                                        </table>
+                                    </div>
+                                </div>
+                            </div>
                         </div>
                     </div>
                 </div>
             </div>
         </div>
-        <!-- #endregion -->
     </div>
     <div class="modal" id="triggerModal" tabindex="-1">
         <!-- #region Trigger Modal -->
