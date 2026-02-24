@@ -1364,13 +1364,13 @@
                                                 <tr>
                                                     <th data-i18n="common:queue.itemName">队列项</th>
                                                     <th>DPS</th>
-                                                    <th data-i18n="common:queue.delta">DPS提升</th>
+                                                    <th data-i18n="common:queue.deltaDps">DPS变化</th>
                                                     <th data-i18n="common:queue.dailyNoRngProfit">每日期望利润</th>
-                                                    <th data-i18n="common:queue.delta">期望利润提升</th>
+                                                    <th data-i18n="common:queue.deltaDailyNoRngProfit">期望利润变化</th>
                                                     <th data-i18n="common:simulationResults.xpPerHour">XP/h</th>
-                                                    <th data-i18n="common:queue.delta">XP/h提升</th>
+                                                    <th data-i18n="common:queue.deltaXpPerHour">XP/h变化</th>
                                                     <th data-i18n="common:simulationResults.killPerHour">Kills/h</th>
-                                                    <th data-i18n="common:queue.delta">Kills/h提升</th>
+                                                    <th data-i18n="common:queue.deltaKillsPerHour">每小时击杀数变化</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="queueResultsTableBody"></tbody>
@@ -1751,6 +1751,7 @@
                     </div>
                 </div>
                 <div class="modal-footer">
+                    <button type="button" class="btn btn-outline-primary" id="buttonSetBaselineInModal" data-bs-dismiss="modal" data-i18n="common:queue.setBaseline">Set Baseline</button>
                     <button type="button" class="btn btn-primary" id="buttonStartSimulation" data-bs-dismiss="modal" data-i18n="common:controls.startSimulation">Start Simulation</button>
                     <button type="button" class="btn btn-secondary" data-bs-dismiss="modal" data-i18n="common:controls.close">Close</button>
                 </div>

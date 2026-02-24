@@ -1848,6 +1848,30 @@ window.expenses = 0;
 window.profit = 0;
 window.noRngProfit = 0;
 
+const QUEUE_PLAYER_IDS = ["1", "2", "3", "4", "5"];
+const PLAYER_HRID_LIST = ["player1", "player2", "player3", "player4", "player5"];
+const LEVEL_KEYS = ["stamina", "intelligence", "attack", "melee", "defense", "ranged", "magic"];
+const EQUIPMENT_SLOT_KEYS = ["head", "body", "legs", "feet", "hands", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"];
+const TRIGGER_CHANGE_LABEL_PREFIX = "Trigger ";
+const JIGS_DATA_URL = "https://gist.githubusercontent.com/JigglyMoose/79db9d275a73a26dec30305865692525/raw/jigs_data.json";
+const ABILITY_BOOK_CATEGORY_HRID = "/item_categories/ability_book";
+const abilityBookInfoByAbilityHrid = buildAbilityBookInfoByAbilityHrid();
+
+const WATCHED_CONTROL_IDS = new Set([
+    ...LEVEL_KEYS.map((key) => "inputLevel_" + key),
+    ...EQUIPMENT_SLOT_KEYS.flatMap((key) => ["selectEquipment_" + key, "inputEquipmentEnhancementLevel_" + key]),
+    "selectEquipment_weapon",
+    "inputEquipmentEnhancementLevel_weapon",
+    ...[0, 1, 2].flatMap((i) => ["selectFood_" + i, "selectDrink_" + i, "buttonFoodTrigger_" + i, "buttonDrinkTrigger_" + i]),
+    ...[0, 1, 2, 3, 4].flatMap((i) => ["selectAbility_" + i, "inputAbilityLevel_" + i, "buttonAbilityTrigger_" + i]),
+]);
+
+let queueStateByPlayer = createInitialQueueState();
+let importedProfileByPlayer = Object.fromEntries(QUEUE_PLAYER_IDS.map((playerId) => [playerId, false]));
+let activeLeftPage = "home";
+window.jigsAbilityXpLevels = [];
+window.jigsSpellBookXpByName = {};
+
 // #region Worker
 
 function onWorkerMessage(event) {
@@ -1908,11 +1932,36 @@ function onMultiWorkerMessage(event) {
 
 // #region Equipment
 
+function buildAbilityBookInfoByAbilityHrid() {
+    let result = {};
+
+    for (const item of Object.values(_combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__)) {
+        if (item?.categoryHrid !== ABILITY_BOOK_CATEGORY_HRID) {
+            continue;
+        }
+
+        const abilityHrid = item?.abilityBookDetail?.abilityHrid ?? "";
+        if (!abilityHrid) {
+            continue;
+        }
+
+        const xpPerBook = Number(item?.abilityBookDetail?.experienceGain ?? 0);
+        result[abilityHrid] = {
+            itemHrid: item.hrid ?? "",
+            itemName: item.name ?? "",
+            xpPerBook: Number.isFinite(xpPerBook) && xpPerBook > 0 ? xpPerBook : 0,
+        };
+    }
+
+    return result;
+}
+
 function initEquipmentSection() {
     ["head", "body", "legs", "feet", "hands", "main_hand", "two_hand", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"].forEach((type) => {
         initEquipmentSelect(type);
         initEnhancementLevelInput(type);
     });
+    initEquipmentEnhancementHintPlaceholders();
 }
 
 function initEquipmentSelect(equipmentType) {
@@ -2135,6 +2184,450 @@ function equipmentSelectHandler(event, type) {
 function enhancementLevelInputHandler() {
     updateEquipmentState();
     updateUI();
+}
+
+function initEquipmentEnhancementHintPlaceholders() {
+    const selectTypes = ["head", "body", "legs", "feet", "hands", "weapon", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"];
+    for (const selectType of selectTypes) {
+        const selectElement = document.getElementById("selectEquipment_" + selectType);
+        const enhancementInput = getEnhancementInputElementBySelectType(selectType);
+        if (!selectElement || !enhancementInput) {
+            continue;
+        }
+
+        const legacyHint = document.getElementById("marketEnhancementHint_" + selectType);
+        if (legacyHint) {
+            legacyHint.remove();
+        }
+
+        const buttonHintId = "marketEnhancementButtons_" + selectType;
+        if (!document.getElementById(buttonHintId)) {
+            const buttonHintElement = document.createElement("div");
+            buttonHintElement.id = buttonHintId;
+            buttonHintElement.className = "mt-1";
+            buttonHintElement.style.minHeight = "1.1rem";
+            buttonHintElement.style.whiteSpace = "normal";
+            buttonHintElement.style.overflowWrap = "anywhere";
+            buttonHintElement.style.wordBreak = "break-word";
+            buttonHintElement.style.lineHeight = "1.2";
+            buttonHintElement.style.maxWidth = "100%";
+            selectElement.parentElement.appendChild(buttonHintElement);
+        }
+
+        const costHintId = "marketEnhancementCost_" + selectType;
+        if (!document.getElementById(costHintId)) {
+            const costHintElement = document.createElement("div");
+            costHintElement.id = costHintId;
+            costHintElement.className = "mt-1";
+            costHintElement.style.minHeight = "1.1rem";
+            costHintElement.style.maxWidth = "100%";
+            enhancementInput.parentElement.appendChild(costHintElement);
+        }
+    }
+}
+
+function initAbilityUpgradeCostPlaceholders() {
+    for (let i = 0; i < 5; i++) {
+        const abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
+        const abilityRow = abilityLevelInput?.closest(".row");
+        if (!abilityLevelInput) {
+            continue;
+        }
+
+        const costHintId = "abilityUpgradeCost_" + i;
+        if (!document.getElementById(costHintId)) {
+            const costHintElement = document.createElement("div");
+            costHintElement.id = costHintId;
+            costHintElement.style.maxWidth = "100%";
+            if (abilityRow) {
+                abilityRow.insertAdjacentElement("afterend", costHintElement);
+            } else {
+                abilityLevelInput.parentElement.appendChild(costHintElement);
+            }
+        }
+    }
+}
+
+function getMarketEnhancementLevelsForItem(itemHrid) {
+    const levels = window.marketEnhancementLevelsByItem?.[itemHrid];
+    if (!Array.isArray(levels)) {
+        return [];
+    }
+
+    return levels
+        .map((value) => Number(value))
+        .filter((value) => Number.isFinite(value) && value > 0)
+        .sort((a, b) => a - b);
+}
+
+function getEnhancementInputElementBySelectType(selectType) {
+    return document.getElementById("inputEquipmentEnhancementLevel_" + selectType);
+}
+
+function getBaselineEquipmentForSelectType(selectType) {
+    const baselineSnapshot = getCurrentPlayerQueueState()?.baseline?.snapshot;
+    if (!baselineSnapshot?.equipment) {
+        return null;
+    }
+
+    if (selectType === "weapon") {
+        return baselineSnapshot.equipment.weapon ?? null;
+    }
+
+    return baselineSnapshot.equipment[selectType] ?? null;
+}
+
+function getBaselineSkillForAbilitySlot(slotIndex) {
+    const baselineSnapshot = getCurrentPlayerQueueState()?.baseline?.snapshot;
+    if (!Array.isArray(baselineSnapshot?.skills)) {
+        return null;
+    }
+
+    return baselineSnapshot.skills[slotIndex] ?? null;
+}
+
+function getEnhancementUpgradeCostKey(selectType, itemHrid, fromLevel, toLevel) {
+    return `${selectType}|${itemHrid}|${fromLevel}|${toLevel}`;
+}
+
+function getCurrentPlayerEnhancementCostMap() {
+    const queueState = getCurrentPlayerQueueState();
+    if (!queueState.enhancementUpgradeCosts || typeof queueState.enhancementUpgradeCosts !== "object") {
+        queueState.enhancementUpgradeCosts = {};
+    }
+    return queueState.enhancementUpgradeCosts;
+}
+
+function getAbilityUpgradeCostKey(abilitySlot, abilityHrid, fromLevel, toLevel) {
+    return `${abilitySlot}|${abilityHrid}|${fromLevel}|${toLevel}`;
+}
+
+function getCurrentPlayerAbilityCostMap() {
+    const queueState = getCurrentPlayerQueueState();
+    if (!queueState.abilityUpgradeCosts || typeof queueState.abilityUpgradeCosts !== "object") {
+        queueState.abilityUpgradeCosts = {};
+    }
+    return queueState.abilityUpgradeCosts;
+}
+
+function resolveEnhancementLevelPrice(itemHrid, level, preferredMode = "ask") {
+    const quoteMap = window.marketEnhancementQuotesByItem?.[itemHrid];
+    if (!quoteMap || typeof quoteMap !== "object") {
+        return -1;
+    }
+
+    const tryLevelPrice = (targetLevel) => {
+        const quote = quoteMap[String(targetLevel)];
+        if (!quote) {
+            return -1;
+        }
+
+        const ask = toFiniteNumber(quote.ask, -1);
+        const bid = toFiniteNumber(quote.bid, -1);
+        if (preferredMode === "bid") {
+            return bid !== -1 ? bid : ask;
+        }
+        return ask !== -1 ? ask : bid;
+    };
+
+    const directPrice = tryLevelPrice(level);
+    if (directPrice !== -1) {
+        return directPrice;
+    }
+
+    const levelCandidates = Object.keys(quoteMap)
+        .map((value) => Number(value))
+        .filter((value) => Number.isFinite(value))
+        .sort((a, b) => Math.abs(a - level) - Math.abs(b - level) || a - b);
+
+    for (const candidateLevel of levelCandidates) {
+        const candidatePrice = tryLevelPrice(candidateLevel);
+        if (candidatePrice !== -1) {
+            return candidatePrice;
+        }
+    }
+
+    return -1;
+}
+
+function computeDefaultEnhancementUpgradeCost(itemHrid, fromLevel, toLevel) {
+    if (!itemHrid || !Number.isFinite(fromLevel) || !Number.isFinite(toLevel) || toLevel <= fromLevel) {
+        return 0;
+    }
+
+    const mode = document.getElementById("selectPrices_drops")?.value === "bid" ? "bid" : "ask";
+    const fromPrice = resolveEnhancementLevelPrice(itemHrid, fromLevel, mode);
+    const toPrice = resolveEnhancementLevelPrice(itemHrid, toLevel, mode);
+    if (fromPrice === -1 || toPrice === -1) {
+        return 0;
+    }
+
+    const upgradeCost = toPrice - fromPrice;
+    return upgradeCost > 0 ? upgradeCost : 0;
+}
+
+function getAbilityXpForLevel(level) {
+    const abilityXpLevels = window.jigsAbilityXpLevels;
+    if (!Array.isArray(abilityXpLevels)) {
+        return null;
+    }
+
+    const normalizedLevel = Number(level);
+    if (!Number.isFinite(normalizedLevel) || normalizedLevel < 0 || normalizedLevel >= abilityXpLevels.length) {
+        return null;
+    }
+
+    const xpValue = Number(abilityXpLevels[normalizedLevel]);
+    return Number.isFinite(xpValue) ? xpValue : null;
+}
+
+function getSpellBookXpForAbility(abilityHrid) {
+    const bookInfo = abilityBookInfoByAbilityHrid[abilityHrid];
+    if (bookInfo?.xpPerBook > 0) {
+        return bookInfo.xpPerBook;
+    }
+
+    const abilityName = _combatsimulator_data_abilityDetailMap_json__WEBPACK_IMPORTED_MODULE_2__[abilityHrid]?.name ?? "";
+    if (!abilityName) {
+        return 0;
+    }
+
+    const spellBookXpMap = window.jigsSpellBookXpByName;
+    if (!spellBookXpMap || typeof spellBookXpMap !== "object") {
+        return 0;
+    }
+
+    const matchedKey = Object.keys(spellBookXpMap).find((key) => key.toLowerCase() === abilityName.toLowerCase());
+    const xpPerBook = matchedKey ? Number(spellBookXpMap[matchedKey]) : 0;
+    return Number.isFinite(xpPerBook) && xpPerBook > 0 ? xpPerBook : 0;
+}
+
+function computeDefaultAbilityUpgradeCost(baseSkill, toLevel) {
+    const abilityHrid = baseSkill?.abilityHrid ?? "";
+    const fromLevel = Number(baseSkill?.level ?? 1);
+    if (!abilityHrid || !Number.isFinite(fromLevel) || !Number.isFinite(toLevel) || toLevel <= fromLevel) {
+        return 0;
+    }
+
+    const startXp = getAbilityXpForLevel(fromLevel);
+    const endXp = getAbilityXpForLevel(toLevel);
+    if (startXp == null || endXp == null) {
+        return null;
+    }
+
+    const xpNeeded = endXp - startXp;
+    if (xpNeeded <= 0) {
+        return 0;
+    }
+
+    const xpPerBook = getSpellBookXpForAbility(abilityHrid);
+    if (!xpPerBook) {
+        return null;
+    }
+
+    const booksNeeded = Math.ceil(xpNeeded / xpPerBook);
+    if (!Number.isFinite(booksNeeded) || booksNeeded <= 0) {
+        return 0;
+    }
+
+    const bookItemHrid = abilityBookInfoByAbilityHrid[abilityHrid]?.itemHrid ?? "";
+    if (!bookItemHrid) {
+        return null;
+    }
+
+    const pricePerBook = resolveMarketplacePrice(bookItemHrid, "selectPrices_drops");
+    if (pricePerBook === -1) {
+        return null;
+    }
+
+    const totalCost = booksNeeded * pricePerBook;
+    return totalCost > 0 ? totalCost : 0;
+}
+
+function applyEquipmentEnhancementFromMarket(selectType, enhancementLevel) {
+    const enhancementInput = getEnhancementInputElementBySelectType(selectType);
+    if (!enhancementInput) {
+        return;
+    }
+
+    enhancementInput.value = String(enhancementLevel);
+    updateEquipmentState();
+    updateUI();
+}
+
+function refreshEquipmentEnhancementHints() {
+    const selectTypes = ["head", "body", "legs", "feet", "hands", "weapon", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"];
+    for (const selectType of selectTypes) {
+        const selectElement = document.getElementById("selectEquipment_" + selectType);
+        const buttonHintElement = document.getElementById("marketEnhancementButtons_" + selectType);
+        const costHintElement = document.getElementById("marketEnhancementCost_" + selectType);
+        const enhancementInput = getEnhancementInputElementBySelectType(selectType);
+        if (!selectElement || !buttonHintElement || !costHintElement || !enhancementInput) {
+            continue;
+        }
+
+        buttonHintElement.replaceChildren();
+        costHintElement.replaceChildren();
+
+        const itemHrid = selectElement.value;
+        if (!itemHrid) {
+            continue;
+        }
+
+        const levels = getMarketEnhancementLevelsForItem(itemHrid);
+        if (levels.length === 0) {
+            continue;
+        }
+
+        const buttonContainer = document.createElement("div");
+        buttonContainer.className = "d-flex flex-wrap gap-1";
+        const currentLevel = Number(enhancementInput.value);
+        for (const level of levels) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = `btn btn-sm ${currentLevel === level ? "btn-primary" : "btn-outline-secondary"}`;
+            button.style.padding = "0 0.35rem";
+            button.textContent = `+${level}`;
+            button.addEventListener("click", () => applyEquipmentEnhancementFromMarket(selectType, level));
+            buttonContainer.appendChild(button);
+        }
+        buttonHintElement.appendChild(buttonContainer);
+
+        const baselineEquipment = getBaselineEquipmentForSelectType(selectType);
+        const baselineItemHrid = baselineEquipment?.itemHrid ?? "";
+        const baselineLevel = Number(baselineEquipment?.enhancementLevel ?? 0);
+        const shouldShowUpgradeCost = Boolean(
+            baselineItemHrid
+            && baselineItemHrid === itemHrid
+            && Number.isFinite(currentLevel)
+            && currentLevel > baselineLevel
+        );
+
+        if (shouldShowUpgradeCost) {
+            const costMap = getCurrentPlayerEnhancementCostMap();
+            const costKey = getEnhancementUpgradeCostKey(selectType, itemHrid, baselineLevel, currentLevel);
+            let savedCost;
+            if (Object.prototype.hasOwnProperty.call(costMap, costKey)) {
+                savedCost = costMap[costKey];
+            } else {
+                const defaultCost = computeDefaultEnhancementUpgradeCost(itemHrid, baselineLevel, currentLevel);
+                savedCost = String(defaultCost);
+                costMap[costKey] = savedCost;
+            }
+
+            const costContainer = document.createElement("div");
+            costContainer.className = "mt-1";
+
+            const labelRow = document.createElement("div");
+            labelRow.className = "small text-secondary";
+            costContainer.appendChild(labelRow);
+
+            const costInput = document.createElement("input");
+            costInput.type = "number";
+            costInput.step = "any";
+            costInput.min = "0";
+            costInput.className = "form-control form-control-sm";
+            costInput.style.maxWidth = "140px";
+            costInput.value = String(savedCost);
+
+            const updateCostPreview = () => {
+                const numericCost = toFiniteNumber(costInput.value, 0);
+                labelRow.textContent = `${i18next.t("common:equipment.upgradeCost")}: ${formatCompactKMBValue(numericCost, 1)}`;
+            };
+            updateCostPreview();
+
+            const inputRow = document.createElement("div");
+            inputRow.className = "mt-1";
+            inputRow.appendChild(costInput);
+            costContainer.appendChild(inputRow);
+
+            costInput.addEventListener("input", () => {
+                costMap[costKey] = costInput.value;
+                updateCostPreview();
+            });
+
+            costHintElement.appendChild(costContainer);
+        }
+    }
+}
+
+function refreshAbilityUpgradeCostHints() {
+    for (let i = 0; i < 5; i++) {
+        const abilitySelect = document.getElementById("selectAbility_" + i);
+        const abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
+        const costHintElement = document.getElementById("abilityUpgradeCost_" + i);
+        if (!abilitySelect || !abilityLevelInput || !costHintElement) {
+            continue;
+        }
+
+        costHintElement.replaceChildren();
+
+        const abilityHrid = abilitySelect.value;
+        if (!abilityHrid) {
+            continue;
+        }
+
+        const baselineSkill = getBaselineSkillForAbilitySlot(i);
+        const baselineAbilityHrid = baselineSkill?.abilityHrid ?? "";
+        const baselineLevel = Number(baselineSkill?.level ?? 1);
+        const currentLevel = Number(abilityLevelInput.value);
+        const shouldShowUpgradeCost = Boolean(
+            baselineAbilityHrid
+            && baselineAbilityHrid === abilityHrid
+            && Number.isFinite(currentLevel)
+            && currentLevel > baselineLevel
+        );
+
+        if (!shouldShowUpgradeCost) {
+            continue;
+        }
+
+        const costMap = getCurrentPlayerAbilityCostMap();
+        const costKey = getAbilityUpgradeCostKey(i, abilityHrid, baselineLevel, currentLevel);
+        let savedCost;
+        if (Object.prototype.hasOwnProperty.call(costMap, costKey)) {
+            savedCost = costMap[costKey];
+        } else {
+            const defaultCost = computeDefaultAbilityUpgradeCost(baselineSkill, currentLevel);
+            savedCost = String(defaultCost ?? 0);
+            if (defaultCost != null) {
+                costMap[costKey] = savedCost;
+            }
+        }
+
+        const costContainer = document.createElement("div");
+        costContainer.className = "mb-2";
+
+        const labelRow = document.createElement("div");
+        labelRow.className = "small text-secondary";
+        costContainer.appendChild(labelRow);
+
+        const costInput = document.createElement("input");
+        costInput.type = "number";
+        costInput.step = "any";
+        costInput.min = "0";
+        costInput.className = "form-control form-control-sm";
+        costInput.style.maxWidth = "140px";
+        costInput.value = String(savedCost);
+
+        const updateCostPreview = () => {
+            const numericCost = toFiniteNumber(costInput.value, 0);
+            labelRow.textContent = `${i18next.t("common:equipment.upgradeCost")}: ${formatCompactKMBValue(numericCost, 1)}`;
+        };
+        updateCostPreview();
+
+        const inputRow = document.createElement("div");
+        inputRow.className = "mt-1";
+        inputRow.appendChild(costInput);
+        costContainer.appendChild(inputRow);
+
+        costInput.addEventListener("input", () => {
+            costMap[costKey] = costInput.value;
+            updateCostPreview();
+        });
+
+        costHintElement.appendChild(costContainer);
+    }
 }
 
 function updateEquipmentState() {
@@ -2513,7 +3006,11 @@ function initAbilitiesSection() {
         }
 
         selectElement.addEventListener("change", abilitySelectHandler);
+        inputElement.addEventListener("input", refreshAbilityUpgradeCostHints);
+        inputElement.addEventListener("change", refreshAbilityUpgradeCostHints);
     }
+
+    initAbilityUpgradeCostPlaceholders();
 }
 
 function abilitySelectHandler() {
@@ -2544,6 +3041,8 @@ function updateAbilityUI() {
         let moveUpButton = document.getElementById("selectAbilityMoveUp_" + i);
         moveUpButton.onclick = () => swapAbilityOrder(i, -1);
     }
+
+    refreshAbilityUpgradeCostHints();
 }
 
 function swapAbilityOrder(abilityIndex, step) {
@@ -2632,6 +3131,7 @@ function triggerModalSaveHandler(event) {
     let triggerTarget = triggerTargetnput.value;
 
     triggerMap[triggerTarget] = modalTriggers;
+    refreshHomeDiffHighlight();
 }
 
 function triggerDependencySelectHandler(event, index) {
@@ -3047,6 +3547,63 @@ function initDamageDoneTaken() {
     }
 }
 
+function toFiniteNumber(value, fallback = 0) {
+    const numberValue = Number(value);
+    return Number.isFinite(numberValue) ? numberValue : fallback;
+}
+
+function hasPlayerDataInSimResult(simResult, playerHrid) {
+    if (!simResult || !playerHrid) {
+        return false;
+    }
+
+    return simResult.dropRateMultiplier?.[playerHrid] != null
+        || simResult.experienceGained?.[playerHrid] != null
+        || simResult.attacks?.[playerHrid] != null
+        || simResult.consumablesUsed?.[playerHrid] != null
+        || simResult.manaUsed?.[playerHrid] != null
+        || simResult.debuffOnLevelGap?.[playerHrid] != null;
+}
+
+function resolveSimResultPlayerHrid(simResult, preferredPlayerId = currentPlayerTabId) {
+    if (!simResult) {
+        return null;
+    }
+
+    const preferredPlayerHrid = "player" + preferredPlayerId;
+    if (hasPlayerDataInSimResult(simResult, preferredPlayerHrid)) {
+        return preferredPlayerHrid;
+    }
+
+    const selectedCandidate = selectedPlayers
+        .map((playerId) => "player" + playerId)
+        .find((playerHrid) => hasPlayerDataInSimResult(simResult, playerHrid));
+    if (selectedCandidate) {
+        return selectedCandidate;
+    }
+
+    const playerMaps = [
+        simResult.dropRateMultiplier,
+        simResult.experienceGained,
+        simResult.attacks,
+        simResult.consumablesUsed,
+        simResult.manaUsed,
+        simResult.debuffOnLevelGap,
+    ];
+
+    for (const mapObject of playerMaps) {
+        if (!mapObject) {
+            continue;
+        }
+        const firstPlayerKey = Object.keys(mapObject).find((key) => PLAYER_HRID_LIST.includes(key));
+        if (firstPlayerKey) {
+            return firstPlayerKey;
+        }
+    }
+
+    return null;
+}
+
 function showSimulationResult(simResult) {
     currentSimResults = simResult;
     let expensesModalTable = document.querySelector("#expensesTable > tbody");
@@ -3055,11 +3612,8 @@ function showSimulationResult(simResult) {
     revenueModalTable.innerHTML = '<th data-i18n=\"marketplacePanel.item\">Item</th><th data-i18n=\"marketplacePanel.price\">Price</th><th data-i18n=\"common:amount\">Amount</th><th data-i18n=\"common:total\">Total</th>';
     let noRngRevenueModalTable = document.querySelector("#noRngRevenueTable > tbody");
     noRngRevenueModalTable.innerHTML = '<th data-i18n=\"marketplacePanel.item\">Item</th><th data-i18n=\"marketplacePanel.price\">Price</th><th data-i18n=\"common:amount\">Amount</th><th data-i18n=\"common:total\">Total</th>';
-    let playerToDisplay = "player1";
-    if (selectedPlayers.includes(parseInt(currentPlayerTabId))) {
-        playerToDisplay = "player" + currentPlayerTabId;
-    }
-    if (!simResult.dropRateMultiplier[playerToDisplay]) {
+    let playerToDisplay = resolveSimResultPlayerHrid(simResult, currentPlayerTabId);
+    if (!playerToDisplay) {
         return;
     }
 
@@ -3500,61 +4054,72 @@ function fidDropAmount(dropAmount) {
 }
 
 function calcDropMaps(simResult, playerToDisplay) {
-    let dropRateMultiplier = simResult.dropRateMultiplier[playerToDisplay];
-    let rareFindMultiplier = simResult.rareFindMultiplier[playerToDisplay];
-    let combatDropQuantity = simResult.combatDropQuantity[playerToDisplay];
-    let debuffOnLevelGap = simResult.debuffOnLevelGap[playerToDisplay];
+    const preferredId = String(playerToDisplay ?? currentPlayerTabId).replace("player", "");
+    const resolvedPlayerToDisplay = resolveSimResultPlayerHrid(simResult, preferredId) ?? playerToDisplay ?? "player1";
 
-    let numberOfPlayers = simResult.numberOfPlayers;
-    let monsters = Object.keys(simResult.deaths)
+    let dropRateMultiplier = toFiniteNumber(simResult.dropRateMultiplier?.[resolvedPlayerToDisplay], 1);
+    let rareFindMultiplier = toFiniteNumber(simResult.rareFindMultiplier?.[resolvedPlayerToDisplay], 1);
+    let combatDropQuantity = toFiniteNumber(simResult.combatDropQuantity?.[resolvedPlayerToDisplay], 0);
+    let debuffOnLevelGap = toFiniteNumber(simResult.debuffOnLevelGap?.[resolvedPlayerToDisplay], 0);
+
+    let numberOfPlayers = Math.max(1, toFiniteNumber(simResult.numberOfPlayers, 1));
+    let monsters = Object.keys(simResult.deaths ?? {})
         .filter(enemy => enemy !== "player1" && enemy !== "player2" && enemy !== "player3" && enemy !== "player4" && enemy !== "player5")
         .sort();
 
     const totalDropMap = new Map();
     const noRngTotalDropMap = new Map();
     for (const monster of monsters) {
+        const deathsCount = Math.max(0, Math.floor(toFiniteNumber(simResult.deaths?.[monster], 0)));
+        if (deathsCount <= 0) {
+            continue;
+        }
         const dropMap = new Map();
         const rareDropMap = new Map();
         if (_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].dropTable) {
             for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].dropTable) {
-                if (drop.minDifficultyTier > simResult.difficultyTier) {
+                const difficultyTier = toFiniteNumber(simResult.difficultyTier, 0);
+                if (drop.minDifficultyTier > difficultyTier) {
                     continue;
                 }
 
-                let multiplier = 1.0 + 0.1 * simResult.difficultyTier;
-                let dropRate = Math.min(1.0, multiplier * (drop.dropRate + (drop.dropRatePerDifficultyTier ?? 0) * simResult.difficultyTier));
+                let multiplier = 1.0 + 0.1 * difficultyTier;
+                let dropRate = Math.min(1.0, multiplier * (toFiniteNumber(drop.dropRate, 0) + toFiniteNumber(drop.dropRatePerDifficultyTier, 0) * difficultyTier));
                 if (dropRate <= 0) continue;
 
                 dropMap.set(drop.itemHrid, { "dropRate": Math.min(1.0, dropRate * dropRateMultiplier), "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
             }
             if (_combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].rareDropTable)
                 for (const drop of _combatsimulator_data_combatMonsterDetailMap_json__WEBPACK_IMPORTED_MODULE_13__[monster].rareDropTable) {
-                    if (drop.minDifficultyTier > simResult.difficultyTier) {
+                    const difficultyTier = toFiniteNumber(simResult.difficultyTier, 0);
+                    if (drop.minDifficultyTier > difficultyTier) {
                         continue;
                     }
-                    rareDropMap.set(drop.itemHrid, { "dropRate": drop.dropRate * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
+                    rareDropMap.set(drop.itemHrid, { "dropRate": toFiniteNumber(drop.dropRate, 0) * rareFindMultiplier, "number": 0, "dropMin": drop.minCount, "dropMax": drop.maxCount, "noRngDropAmount": 0 });
                 }
 
             for (let dropObject of dropMap.values()) {
-                dropObject.noRngDropAmount += simResult.deaths[monster] * dropObject.dropRate * ((dropObject.dropMax + dropObject.dropMin) / 2) * (1 + debuffOnLevelGap) * (1 + combatDropQuantity) / numberOfPlayers;
+                const dropMidAmount = (toFiniteNumber(dropObject.dropMax, 0) + toFiniteNumber(dropObject.dropMin, 0)) / 2;
+                dropObject.noRngDropAmount += deathsCount * toFiniteNumber(dropObject.dropRate, 0) * dropMidAmount * (1 + debuffOnLevelGap) * (1 + combatDropQuantity) / numberOfPlayers;
 
             }
             for (let dropObject of rareDropMap.values()) {
-                dropObject.noRngDropAmount += simResult.deaths[monster] * dropObject.dropRate * ((dropObject.dropMax + dropObject.dropMin) / 2) * (1 + debuffOnLevelGap) * (1 + combatDropQuantity) / numberOfPlayers;
+                const dropMidAmount = (toFiniteNumber(dropObject.dropMax, 0) + toFiniteNumber(dropObject.dropMin, 0)) / 2;
+                dropObject.noRngDropAmount += deathsCount * toFiniteNumber(dropObject.dropRate, 0) * dropMidAmount * (1 + debuffOnLevelGap) * (1 + combatDropQuantity) / numberOfPlayers;
             }
 
-            for (let i = 0; i < simResult.deaths[monster]; i++) {
+            for (let i = 0; i < deathsCount; i++) {
                 for (let dropObject of dropMap.values()) {
                     let chance = Math.random();
                     if (chance <= dropObject.dropRate / numberOfPlayers) {
-                        let amount = Math.floor(Math.random() * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin) * (1 + debuffOnLevelGap) * (1 + combatDropQuantity);
+                        let amount = Math.floor(Math.random() * (toFiniteNumber(dropObject.dropMax, 0) - toFiniteNumber(dropObject.dropMin, 0) + 1) + toFiniteNumber(dropObject.dropMin, 0)) * (1 + debuffOnLevelGap) * (1 + combatDropQuantity);
                         dropObject.number = dropObject.number + fidDropAmount(amount);
                     }
                 }
                 for (let dropObject of rareDropMap.values()) {
                     let chance = Math.random();
                     if (chance <= dropObject.dropRate / numberOfPlayers) {
-                        let amount = Math.floor(Math.random() * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin) * (1 + debuffOnLevelGap) * (1 + combatDropQuantity);
+                        let amount = Math.floor(Math.random() * (toFiniteNumber(dropObject.dropMax, 0) - toFiniteNumber(dropObject.dropMin, 0) + 1) + toFiniteNumber(dropObject.dropMin, 0)) * (1 + debuffOnLevelGap) * (1 + combatDropQuantity);
                         dropObject.number = dropObject.number + fidDropAmount(amount);
                     }
                 }
@@ -3589,8 +4154,46 @@ function calcDropMaps(simResult, playerToDisplay) {
     return { totalDropMap, noRngTotalDropMap };
 }
 
+function getProfitDropMaps(simResult, playerToDisplay) {
+    const preferredId = String(playerToDisplay ?? currentPlayerTabId).replace("player", "");
+    const resolvedPlayerToDisplay = resolveSimResultPlayerHrid(simResult, preferredId) ?? playerToDisplay ?? "player1";
+
+    if (simResult?.isDungeon) {
+        return {
+            playerToDisplay: resolvedPlayerToDisplay,
+            totalDropMap: new Map(),
+            noRngTotalDropMap: new Map(),
+        };
+    }
+
+    if (!simResult.__profitDropMapsCache) {
+        simResult.__profitDropMapsCache = {};
+    }
+
+    const cached = simResult.__profitDropMapsCache[resolvedPlayerToDisplay];
+    if (cached) {
+        return {
+            playerToDisplay: resolvedPlayerToDisplay,
+            totalDropMap: new Map(cached.totalDropEntries),
+            noRngTotalDropMap: new Map(cached.noRngTotalDropEntries),
+        };
+    }
+
+    const computed = calcDropMaps(simResult, resolvedPlayerToDisplay);
+    simResult.__profitDropMapsCache[resolvedPlayerToDisplay] = {
+        totalDropEntries: Array.from(computed.totalDropMap.entries()),
+        noRngTotalDropEntries: Array.from(computed.noRngTotalDropMap.entries()),
+    };
+
+    return {
+        playerToDisplay: resolvedPlayerToDisplay,
+        totalDropMap: new Map(computed.totalDropMap),
+        noRngTotalDropMap: new Map(computed.noRngTotalDropMap),
+    };
+}
+
 function getDropProfit(simResult, playerToDisplay) {
-    let { totalDropMap, noRngTotalDropMap } = calcDropMaps(simResult, playerToDisplay);
+    let { totalDropMap, noRngTotalDropMap, playerToDisplay: resolvedPlayerToDisplay } = getProfitDropMaps(simResult, playerToDisplay);
 
     let noRngTotal = 0;
     for (let [name, dropAmount] of noRngTotalDropMap.entries()) {
@@ -3620,7 +4223,7 @@ function getDropProfit(simResult, playerToDisplay) {
         noRngTotal += price * dropAmount;
     }
 
-    let consumablesUsed = simResult.consumablesUsed?.[playerToDisplay];
+    let consumablesUsed = simResult.consumablesUsed?.[resolvedPlayerToDisplay];
 
     if (consumablesUsed) {
         consumablesUsed = Object.entries(consumablesUsed).sort((a, b) => b[1] - a[1]);
@@ -3855,7 +4458,7 @@ function showKills(simResult, playerToDisplay) {
             newChildren.push(monsterRow);
         });
 
-    let { totalDropMap, noRngTotalDropMap } = !simResult.isDungeon ? calcDropMaps(simResult, playerToDisplay) : {totalDropMap:new Map(), noRngTotalDropMap:new Map()};
+    let { totalDropMap, noRngTotalDropMap } = getProfitDropMaps(simResult, playerToDisplay);
 
     let revenueModalTable = document.querySelector("#revenueTable > tbody");
     let total = 0;
@@ -4617,6 +5220,7 @@ function onTabChange(event) {
     currentPlayerTabId = nextPlayerTabId;
     updateState();
     updateUI();
+    renderQueueViewsForCurrentPlayer();
     if (Object.keys(currentSimResults).length !== 0) {
         showSimulationResult(currentSimResults);
     }
@@ -4683,64 +5287,10 @@ function initSimulationControls() {
 }
 
 function startSimulation(selectedPlayers) {
-    let playersToSim = [];
-    for (let j = 1; j < 6; j++) {
-        if (selectedPlayers.includes(j)) {
-            updateNextPlayer(j);
-            updateState();
-            updateUI();
-            player.hrid = "player" + j.toString();
-            for (let i = 0; i < 3; i++) {
-                if (main_food[i] && i < player.combatDetails.combatStats.foodSlots) {
-                    let consumable = new _combatsimulator_consumable_js__WEBPACK_IMPORTED_MODULE_6__["default"](main_food[i], triggerMap[main_food[i]]);
-                    player.food[i] = consumable;
-                } else {
-                    player.food[i] = null;
-                }
-
-                if (main_drinks[i] && i < player.combatDetails.combatStats.drinkSlots) {
-                    let consumable = new _combatsimulator_consumable_js__WEBPACK_IMPORTED_MODULE_6__["default"](main_drinks[i], triggerMap[main_drinks[i]]);
-                    player.drinks[i] = consumable;
-                } else {
-                    player.drinks[i] = null;
-                }
-            }
-
-            for (let i = 0; i < 5; i++) {
-                if (main_abilities[i] && player.intelligenceLevel >= _combatsimulator_data_abilitySlotsLevelRequirementList_json__WEBPACK_IMPORTED_MODULE_11__[i + 1]) {
-                    let abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
-                    let ability = new _combatsimulator_ability_js__WEBPACK_IMPORTED_MODULE_5__["default"](main_abilities[i], Number(abilityLevelInput.value), triggerMap[main_abilities[i]]);
-                    player.abilities[i] = ability;
-                } else {
-                    player.abilities[i] = null;
-                }
-            }
-
-            playersToSim.push(structuredClone(player));
-        }
-    }
-    updateNextPlayer(currentPlayerTabId);
-    updateState();
-    updateUI();
-
-    let maxPlayerCombatLevel = 1;
-    for (let player of playersToSim) {
-        player.combatLevel = calcCombatLevel(player.staminaLevel, player.intelligenceLevel, player.defenseLevel, player.attackLevel, player.meleeLevel, player.rangedLevel, player.magicLevel);
-        maxPlayerCombatLevel = Math.max(maxPlayerCombatLevel, player.combatLevel);
-    }
-
-    for (let player of playersToSim) {
-        if ((maxPlayerCombatLevel / player.combatLevel) > 1.2) {
-            const maxDebuffOnLevelGap = 0.9;
-            let levelPercent = (maxPlayerCombatLevel / player.combatLevel) - 1.2;
-
-            player.debuffOnLevelGap = -1 * Math.min(maxDebuffOnLevelGap, 3 * levelPercent);
-
-            console.log("player " + player.hrid + " debuff on level gap: " + player.debuffOnLevelGap * 100 + "% for " + (maxPlayerCombatLevel / player.combatLevel));
-        }
-        else {
-            player.debuffOnLevelGap = 0;
-        }
+    let playersToSim = buildPlayersForSimulation(selectedPlayers);
+    if (playersToSim.length === 0) {
+        alert("Failed to build player simulation data.");
+        return;
     }
 
     let extra = {};
@@ -4844,28 +5394,30 @@ function parsePlayerJson(playerJson, hrid) {
         drinks: [],
         abilities: [],
         ...playerJson.player,
-        houseRooms: playerJson.houseRooms,
+        houseRooms: playerJson.houseRooms ?? {},
+        achievements: playerJson.achievements ?? {},
     };
     playerData.equipment = {};
-    const triggerMap = playerJson.triggerMap;
+    const triggerMap = playerJson.triggerMap ?? {};
+    const playerEquipment = playerJson.player?.equipment ?? [];
     ["head", "body", "legs", "feet", "hands", "off_hand", "pouch", "neck", "earrings", "ring", "back", "main_hand", "two_hand", "charm"].forEach((type) => {
-        let currentEquipment = playerJson.player.equipment.find(item => item.itemLocationHrid === "/item_locations/" + type);
+        let currentEquipment = playerEquipment.find(item => item.itemLocationHrid === "/item_locations/" + type);
         if (currentEquipment){
             playerData.equipment[`/equipment_types/${type}`] = new _combatsimulator_equipment_js__WEBPACK_IMPORTED_MODULE_0__["default"](currentEquipment.itemHrid, currentEquipment.enhancementLevel);
         }
     });
 
-    for (const foodHrid of playerJson.food["/action_types/combat"]) {
+    for (const foodHrid of (playerJson.food?.["/action_types/combat"] ?? [])) {
         if (foodHrid.itemHrid === "") continue;
         const food = new _combatsimulator_consumable_js__WEBPACK_IMPORTED_MODULE_6__["default"](foodHrid.itemHrid, triggerMap[foodHrid.itemHrid]);
         playerData.food.push(food);
     }
-    for (const drinkHrid of playerJson.drinks["/action_types/combat"]) {
+    for (const drinkHrid of (playerJson.drinks?.["/action_types/combat"] ?? [])) {
         if (drinkHrid.itemHrid === "") continue;
         const drink = new _combatsimulator_consumable_js__WEBPACK_IMPORTED_MODULE_6__["default"](drinkHrid.itemHrid, triggerMap[drinkHrid.itemHrid]);
         playerData.drinks.push(drink);
     }
-    for (const ability of playerJson.abilities) {
+    for (const ability of (playerJson.abilities ?? [])) {
         if (ability.abilityHrid === "") continue;
         const abilityLevel = Number(ability.level);
         const abilityHrid = ability.abilityHrid;
@@ -4876,8 +5428,6 @@ function parsePlayerJson(playerJson, hrid) {
     }
     const player = _combatsimulator_player_js__WEBPACK_IMPORTED_MODULE_1__["default"].createFromDTO(playerData)
     player.updateCombatDetails();
-    player.houseRooms = playerJson.houseRooms;
-    player.achievements = playerJson.achievements ?? {};
     return player;
 }
 // read JSON file to simulate
@@ -5701,21 +6251,36 @@ function setPlayerData(playerId, inputElementId) {
 
 function doGroupImport() {
     let needUpdateCurrentTab = false;
+    let updatedPlayerIds = [];
     const value = document.getElementById("inputSetGroupCombatAll")?.value || "";
     if (!value.trim()) {
         for (let i of ['1', '2', '3', '4', '5']) {
-            if (setPlayerData(i, "inputSetGroupCombatplayer" + i) && currentPlayerTabId == i) {
-                needUpdateCurrentTab = true;
+            if (setPlayerData(i, "inputSetGroupCombatplayer" + i)) {
+                updatedPlayerIds.push(i);
+                importedProfileByPlayer[i] = true;
+                if (currentPlayerTabId == i) {
+                    needUpdateCurrentTab = true;
+                }
             }
         }
     } else {
         playerDataMap = JSON.parse(value);
+        updatedPlayerIds = [...QUEUE_PLAYER_IDS];
+        for (const playerId of QUEUE_PLAYER_IDS) {
+            importedProfileByPlayer[playerId] = true;
+        }
         needUpdateCurrentTab = true;
+    }
+
+    for (const playerId of updatedPlayerIds) {
+        resetPlayerQueueState(playerId);
     }
 
     if (needUpdateCurrentTab) {
         updateNextPlayer(currentPlayerTabId);
     }
+
+    renderQueueViewsForCurrentPlayer();
 }
 
 function doSoloImport() {
@@ -5858,6 +6423,10 @@ function doSoloImport() {
         let simulationDuration = document.getElementById("inputSimulationTime");
         simulationDuration.value = importSet["simulationTime"];
     }
+
+    importedProfileByPlayer[currentPlayerTabId] = true;
+    resetPlayerQueueState(currentPlayerTabId);
+    renderQueueViewsForCurrentPlayer();
 }
 
 function savePreviousPlayer(playerId) {
@@ -6081,6 +6650,28 @@ function showErrorModal(error) {
 
 window.prices;
 
+async function fetchAbilityUpgradeReferenceData() {
+    try {
+        const response = await fetch(JIGS_DATA_URL, { mode: "cors" });
+        if (!response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+        if (Array.isArray(data?.abilityXp)) {
+            window.jigsAbilityXpLevels = data.abilityXp.map((value) => Number(value));
+        }
+
+        if (data?.spellBookXp && typeof data.spellBookXp === "object") {
+            window.jigsSpellBookXpByName = data.spellBookXp;
+        }
+
+        refreshAbilityUpgradeCostHints();
+    } catch (error) {
+        console.warn("Failed to fetch ability upgrade reference data", error);
+    }
+}
+
 async function fetchPrices() {
     let response = null;
     try {
@@ -6124,10 +6715,29 @@ async function fetchPrices() {
 
         const priceTmp = pricesJson['marketData'];
         window.prices = {};
+        window.marketEnhancementLevelsByItem = {};
+        window.marketEnhancementQuotesByItem = {};
         for (const item in _combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__) {
             const hrid = _combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[item].hrid;
             if (hrid in priceTmp) {
                 window.prices[hrid] = { "ask": -1, "bid": -1, "vendor": _combatsimulator_data_itemDetailMap_json__WEBPACK_IMPORTED_MODULE_3__[item].sellPrice };
+                const enhancementQuotes = {};
+                for (const [levelKey, levelQuote] of Object.entries(priceTmp[hrid] ?? {})) {
+                    enhancementQuotes[levelKey] = {
+                        ask: toFiniteNumber(levelQuote?.a, -1),
+                        bid: toFiniteNumber(levelQuote?.b, -1),
+                    };
+                }
+                if (Object.keys(enhancementQuotes).length > 0) {
+                    window.marketEnhancementQuotesByItem[hrid] = enhancementQuotes;
+                }
+                const enhancementLevels = Object.keys(priceTmp[hrid] ?? {})
+                    .map((levelKey) => Number(levelKey))
+                    .filter((levelValue) => Number.isFinite(levelValue) && levelValue > 0)
+                    .sort((a, b) => a - b);
+                if (enhancementLevels.length > 0) {
+                    window.marketEnhancementLevelsByItem[hrid] = enhancementLevels;
+                }
                 if (priceTmp[hrid]['0']) {
                     window.prices[hrid].ask = priceTmp[hrid]['0'].a;
                     window.prices[hrid].bid = priceTmp[hrid]['0'].b;
@@ -6172,6 +6782,9 @@ async function fetchPrices() {
                 return item.itemHrid in window.prices ? window.prices[item.itemHrid].vendor : 0;
             }).reduce((a, b) => a + b, 0),
         };
+
+        refreshEquipmentEnhancementHints();
+        refreshAbilityUpgradeCostHints();
 
     } catch (error) {
         console.error(error);
@@ -6369,8 +6982,10 @@ function updateUI() {
     updateFoodUI();
     updateDrinksUI();
     updateAbilityUI();
+    refreshEquipmentEnhancementHints();
 
     updateContent();
+    refreshHomeDiffHighlight();
 }
 
 const darkModeToggle = document.getElementById('darkModeToggle');
@@ -6417,6 +7032,146 @@ function updateContent() {
     });
 }
 
+if (typeof i18next !== "undefined" && i18next?.on) {
+    i18next.on("languageChanged", () => {
+        updateContent();
+        refreshAbilityUpgradeCostHints();
+        refreshEquipmentEnhancementHints();
+        renderQueueViewsForCurrentPlayer();
+    });
+}
+
+// #region Baseline Queue
+
+function createEmptyPlayerQueueState() {
+    return {
+        baseline: null,
+        queueItems: [],
+        runResults: [],
+        enhancementUpgradeCosts: {},
+        abilityUpgradeCosts: {},
+        isRunning: false,
+    };
+}
+
+function createInitialQueueState() {
+    let result = {};
+    for (const playerId of QUEUE_PLAYER_IDS) {
+        result[playerId] = createEmptyPlayerQueueState();
+    }
+    return result;
+}
+
+function getCurrentPlayerQueueState() {
+    return queueStateByPlayer[currentPlayerTabId];
+}
+
+function resetPlayerQueueState(playerId) {
+    queueStateByPlayer[playerId] = createEmptyPlayerQueueState();
+}
+
+function initLeftMenuNavigation() {
+    const menuHome = document.getElementById("leftMenuHome");
+    const menuQueue = document.getElementById("leftMenuQueue");
+    const menuResults = document.getElementById("leftMenuResults");
+
+    if (!menuHome || !menuQueue || !menuResults) {
+        return;
+    }
+
+    menuHome.addEventListener("click", () => switchLeftPage("home"));
+    menuQueue.addEventListener("click", () => switchLeftPage("queue"));
+    menuResults.addEventListener("click", () => switchLeftPage("results"));
+    switchLeftPage("home");
+}
+
+function switchLeftPage(pageName) {
+    activeLeftPage = pageName;
+
+    const pageHome = document.getElementById("pageHome");
+    const pageQueue = document.getElementById("pageQueue");
+    const pageResults = document.getElementById("pageResults");
+    const menuHome = document.getElementById("leftMenuHome");
+    const menuQueue = document.getElementById("leftMenuQueue");
+    const menuResults = document.getElementById("leftMenuResults");
+
+    if (!pageHome || !pageQueue || !pageResults || !menuHome || !menuQueue || !menuResults) {
+        return;
+    }
+
+    pageHome.classList.toggle("d-none", pageName !== "home");
+    pageQueue.classList.toggle("d-none", pageName !== "queue");
+    pageResults.classList.toggle("d-none", pageName !== "results");
+
+    menuHome.classList.toggle("active", pageName === "home");
+    menuQueue.classList.toggle("active", pageName === "queue");
+    menuResults.classList.toggle("active", pageName === "results");
+}
+
+function initBaselineQueueControls() {
+    const buttonSetBaseline = document.getElementById("buttonSetBaseline");
+    const buttonSetBaselineInModal = document.getElementById("buttonSetBaselineInModal");
+    const buttonAddToQueue = document.getElementById("buttonAddToQueue");
+    const buttonRunQueue = document.getElementById("buttonRunQueue");
+    const buttonClearQueue = document.getElementById("buttonClearQueue");
+    const queueList = document.getElementById("queueList");
+
+    if (!buttonSetBaseline || !buttonSetBaselineInModal || !buttonAddToQueue || !buttonRunQueue || !buttonClearQueue || !queueList) {
+        return;
+    }
+
+    buttonSetBaseline.addEventListener("click", handleSetBaselineClick);
+    buttonSetBaselineInModal.addEventListener("click", handleSetBaselineClick);
+    buttonAddToQueue.addEventListener("click", handleAddToQueueClick);
+    buttonRunQueue.addEventListener("click", handleRunQueueClick);
+    buttonClearQueue.addEventListener("click", handleClearQueueClick);
+
+    queueList.addEventListener("click", handleQueueListClick);
+
+    const watchedControlSelector = Array.from(WATCHED_CONTROL_IDS)
+        .map((id) => "#" + CSS.escape(id))
+        .join(",");
+
+    document.addEventListener("change", (event) => {
+        if (event.target && event.target.matches(watchedControlSelector)) {
+            refreshHomeDiffHighlight();
+        }
+    }, true);
+
+    document.addEventListener("input", (event) => {
+        if (event.target && event.target.matches(watchedControlSelector)) {
+            refreshHomeDiffHighlight();
+        }
+    }, true);
+}
+
+function queueNotice(messageKey) {
+    alert(i18next.t(messageKey));
+}
+
+function getCurrentPlayerStateFromUI() {
+    updateState();
+    savePreviousPlayer(currentPlayerTabId);
+    return JSON.parse(playerDataMap[currentPlayerTabId]);
+}
+
+function buildSnapshotFromUI() {
+    const currentState = getCurrentPlayerStateFromUI();
+    return buildSnapshotFromState(currentState);
+}
+
+function buildSnapshotFromState(state) {
+    return {
+        state: structuredClone(state),
+        levels: extractLevelSnapshot(state),
+        equipment: extractEquipmentSnapshot(state),
+        food: extractFoodSnapshot(state),
+        drinks: extractDrinkSnapshot(state),
+        skills: extractSkillSnapshot(state),
+        triggerMap: extractRelevantTriggerSnapshot(state),
+    };
+}
+
 initEquipmentSection();
 initHouseRoomsModal();
 initAchievementsModal();
@@ -6435,10 +7190,1542 @@ initDamageDoneTaken();
 initPatchNotes();
 initExtraBuffSection();
 initHpMpVisualization();
+initLeftMenuNavigation();
+initBaselineQueueControls();
 
 updateState();
 updateUI();
+renderQueueViewsForCurrentPlayer();
+fetchAbilityUpgradeReferenceData();
 fetchPrices();
+
+function extractLevelSnapshot(state) {
+    let levels = {};
+    for (const key of LEVEL_KEYS) {
+        levels[key] = Number(state.player?.[key + "Level"] ?? 1);
+    }
+    return levels;
+}
+
+function extractEquipmentSnapshot(state) {
+    let equipment = {};
+    for (const key of EQUIPMENT_SLOT_KEYS) {
+        equipment[key] = {
+            itemHrid: "",
+            enhancementLevel: 0,
+        };
+    }
+    equipment.weapon = {
+        itemHrid: "",
+        enhancementLevel: 0,
+        location: "",
+    };
+
+    for (const item of (state.player?.equipment ?? [])) {
+        const itemLocation = item.itemLocationHrid?.replace("/item_locations/", "");
+        if (!itemLocation) {
+            continue;
+        }
+
+        if (itemLocation === "main_hand" || itemLocation === "two_hand") {
+            equipment.weapon = {
+                itemHrid: item.itemHrid ?? "",
+                enhancementLevel: Number(item.enhancementLevel ?? 0),
+                location: itemLocation,
+            };
+            continue;
+        }
+
+        if (equipment[itemLocation]) {
+            equipment[itemLocation] = {
+                itemHrid: item.itemHrid ?? "",
+                enhancementLevel: Number(item.enhancementLevel ?? 0),
+            };
+        }
+    }
+
+    return equipment;
+}
+
+function extractFoodSnapshot(state) {
+    let foods = ["", "", ""];
+    const foodList = state.food?.["/action_types/combat"] ?? [];
+    for (let i = 0; i < 3; i++) {
+        foods[i] = foodList[i]?.itemHrid ?? "";
+    }
+    return foods;
+}
+
+function extractDrinkSnapshot(state) {
+    let drinks = ["", "", ""];
+    const drinkList = state.drinks?.["/action_types/combat"] ?? [];
+    for (let i = 0; i < 3; i++) {
+        drinks[i] = drinkList[i]?.itemHrid ?? "";
+    }
+    return drinks;
+}
+
+function extractSkillSnapshot(state) {
+    let skills = [];
+    const abilityList = state.abilities ?? [];
+    for (let i = 0; i < 5; i++) {
+        skills.push({
+            abilityHrid: abilityList[i]?.abilityHrid ?? "",
+            level: Number(abilityList[i]?.level ?? 1),
+        });
+    }
+    return skills;
+}
+
+function extractRelevantTriggerSnapshot(state) {
+    let triggerSubset = {};
+    const allTriggerMap = state.triggerMap ?? {};
+    const relatedKeys = new Set([
+        ...extractFoodSnapshot(state).filter((value) => value),
+        ...extractDrinkSnapshot(state).filter((value) => value),
+        ...extractSkillSnapshot(state).map((value) => value.abilityHrid).filter((value) => value),
+    ]);
+
+    for (const key of relatedKeys) {
+        triggerSubset[key] = structuredClone(allTriggerMap[key] ?? []);
+    }
+
+    return triggerSubset;
+}
+
+function buildFixedSettingsFromUI() {
+    const simAllZoneToggle = document.getElementById("simAllZoneToggle");
+    const simAllSoloToggle = document.getElementById("simAllSoloToggle");
+    const simDungeonToggle = document.getElementById("simDungeonToggle");
+    const zoneSelect = document.getElementById("selectZone");
+    const dungeonSelect = document.getElementById("selectDungeon");
+    const difficultySelect = document.getElementById("selectDifficulty");
+    const simulationTimeInput = document.getElementById("inputSimulationTime");
+    const mooPassToggle = document.getElementById("mooPassToggle");
+    const comExpToggle = document.getElementById("comExpToggle");
+    const comExpInput = document.getElementById("comExpInput");
+    const comDropToggle = document.getElementById("comDropToggle");
+    const comDropInput = document.getElementById("comDropInput");
+    const hpMpVisualizationToggle = document.getElementById("hpMpVisualizationToggle");
+
+    if (simAllZoneToggle.checked || simAllSoloToggle.checked) {
+        throw new Error(i18next.t("common:queue.baselineOnlySingleScene"));
+    }
+
+    const simDungeon = simDungeonToggle.checked;
+    return {
+        simDungeon,
+        zoneHrid: simDungeon ? dungeonSelect.value : zoneSelect.value,
+        difficultyTier: Number(difficultySelect.value),
+        simulationTimeHours: Number(simulationTimeInput.value),
+        extra: {
+            mooPass: mooPassToggle.checked,
+            comExp: comExpToggle.checked ? Number(comExpInput.value) : 0,
+            comDrop: comDropToggle.checked ? Number(comDropInput.value) : 0,
+            enableHpMpVisualization: hpMpVisualizationToggle.checked,
+        },
+    };
+}
+
+function runSinglePlayerSimulation(snapshot, settings, playerId) {
+    return new Promise((resolve, reject) => {
+        const workerInstance = new Worker(new URL(/* worker import */ __webpack_require__.p + __webpack_require__.u(5), __webpack_require__.b));
+        const normalizedPlayerId = String(playerId);
+        const playerToSim = buildPlayerFromStateForSimulation(snapshot.state, normalizedPlayerId);
+        applyDebuffOnLevelGap([playerToSim]);
+
+        const workerMessage = {
+            type: "start_simulation",
+            workerId: Math.floor(Math.random() * 1e9).toString(),
+            players: [playerToSim],
+            zone: {
+                zoneHrid: settings.zoneHrid,
+                difficultyTier: settings.difficultyTier,
+            },
+            simulationTimeLimit: settings.simulationTimeHours * ONE_HOUR,
+            extra: settings.extra,
+        };
+
+        workerInstance.onmessage = (event) => {
+            switch (event.data.type) {
+                case "simulation_result":
+                    workerInstance.terminate();
+                    resolve(event.data.simResult);
+                    break;
+                case "simulation_progress":
+                    progressbar.style.width = Math.floor(event.data.progress * 100) + "%";
+                    break;
+                case "simulation_error":
+                    workerInstance.terminate();
+                    reject(event.data.error);
+                    break;
+            }
+        };
+
+        workerInstance.onerror = (error) => {
+            workerInstance.terminate();
+            reject(error);
+        };
+
+        workerInstance.postMessage(workerMessage);
+    });
+}
+
+function resolveMarketplacePrice(itemHrid, selectorId) {
+    let price = -1;
+    const mode = document.getElementById(selectorId).value;
+
+    if (!window.prices) {
+        return price;
+    }
+
+    const item = window.prices[itemHrid];
+    if (!item) {
+        return price;
+    }
+
+    if (mode == "bid") {
+        if (item["bid"] !== -1) {
+            price = item["bid"];
+        } else if (item["ask"] !== -1) {
+            price = item["ask"];
+        }
+    } else if (mode == "ask") {
+        if (item["ask"] !== -1) {
+            price = item["ask"];
+        } else if (item["bid"] !== -1) {
+            price = item["bid"];
+        }
+    }
+
+    if (price == -1) {
+        price = item["vendor"];
+    }
+
+    return toFiniteNumber(price, -1);
+}
+
+function computeProfitTotals(simResult, playerToDisplay) {
+    const { totalDropMap, noRngTotalDropMap, playerToDisplay: resolvedPlayerToDisplay } = getProfitDropMaps(simResult, playerToDisplay);
+    let randomRevenue = 0;
+    let noRngRevenue = 0;
+    let expenses = 0;
+
+    for (const [itemHrid, amount] of totalDropMap.entries()) {
+        randomRevenue += resolveMarketplacePrice(itemHrid, "selectPrices_drops") * toFiniteNumber(amount, 0);
+    }
+
+    for (const [itemHrid, amount] of noRngTotalDropMap.entries()) {
+        noRngRevenue += resolveMarketplacePrice(itemHrid, "selectPrices_drops") * toFiniteNumber(amount, 0);
+    }
+
+    const consumablesUsed = simResult.consumablesUsed?.[resolvedPlayerToDisplay] ?? {};
+    for (const [consumable, amount] of Object.entries(consumablesUsed)) {
+        expenses += resolveMarketplacePrice(consumable, "selectPrices_consumables") * toFiniteNumber(amount, 0);
+    }
+
+    return {
+        randomRevenue: toFiniteNumber(randomRevenue, 0),
+        noRngRevenue: toFiniteNumber(noRngRevenue, 0),
+        expenses: toFiniteNumber(expenses, 0),
+        randomProfit: toFiniteNumber(randomRevenue - expenses, 0),
+        noRngProfit: toFiniteNumber(noRngRevenue - expenses, 0),
+    };
+}
+
+function computeEncountersPerHour(simResult) {
+    const hoursSimulated = toFiniteNumber(simResult?.simulatedTime, 0) / ONE_HOUR;
+    const safeHours = hoursSimulated > 0 ? hoursSimulated : 1;
+
+    if (simResult?.isDungeon) {
+        const dungeonsCompleted = toFiniteNumber(simResult.dungeonsCompleted, 0);
+        const dungeonHoursSimulated = toFiniteNumber(simResult.lastDungeonFinishTime, 0) > 0
+            ? toFiniteNumber(simResult.lastDungeonFinishTime, 0) / ONE_HOUR
+            : safeHours;
+        const safeDungeonHours = dungeonHoursSimulated > 0 ? dungeonHoursSimulated : 1;
+        return toFiniteNumber(dungeonsCompleted / safeDungeonHours, 0);
+    }
+
+    const encounters = toFiniteNumber(simResult?.encounters, 0);
+    const encounterHoursSimulated = toFiniteNumber(simResult?.lastEncounterFinishTime, 0) > 0
+        ? toFiniteNumber(simResult.lastEncounterFinishTime, 0) / ONE_HOUR
+        : safeHours;
+    const safeEncounterHours = encounterHoursSimulated > 0 ? encounterHoursSimulated : 1;
+    return toFiniteNumber(encounters / safeEncounterHours, 0);
+}
+
+function getLocalizedZoneName(zoneHrid) {
+    if (!zoneHrid) {
+        return "";
+    }
+
+    const i18nKey = "actionNames." + zoneHrid;
+    const translated = i18next.t(i18nKey);
+    if (translated && translated !== i18nKey) {
+        return translated;
+    }
+
+    return _combatsimulator_data_actionDetailMap_json__WEBPACK_IMPORTED_MODULE_12__[zoneHrid]?.name ?? zoneHrid;
+}
+
+function computeMetrics(simResult, playerToDisplay) {
+    const preferredId = String(playerToDisplay ?? currentPlayerTabId).replace("player", "");
+    const resolvedPlayerToDisplay = resolveSimResultPlayerHrid(simResult, preferredId) ?? playerToDisplay ?? "player1";
+
+    const simulatedHours = toFiniteNumber(simResult.simulatedTime, 0) / ONE_HOUR;
+    const simulatedSeconds = toFiniteNumber(simResult.simulatedTime, 0) / ONE_SECOND;
+    const safeHours = simulatedHours > 0 ? simulatedHours : 1;
+    const safeSeconds = simulatedSeconds > 0 ? simulatedSeconds : 1;
+
+    let totalDamage = 0;
+    const playerAttacks = simResult.attacks?.[resolvedPlayerToDisplay] ?? {};
+    for (const abilities of Object.values(playerAttacks)) {
+        for (const abilityCasts of Object.values(abilities)) {
+            totalDamage += Object.entries(abilityCasts)
+                .filter((entry) => entry[0] !== "miss")
+                .reduce((prev, cur) => prev + toFiniteNumber(cur[0], 0) * toFiniteNumber(cur[1], 0), 0);
+        }
+    }
+
+    const totalExperience = Object.values(simResult.experienceGained?.[resolvedPlayerToDisplay] ?? {})
+        .reduce((prev, cur) => prev + toFiniteNumber(cur, 0), 0);
+
+    const profits = computeProfitTotals(simResult, resolvedPlayerToDisplay);
+    const encountersPerHour = computeEncountersPerHour(simResult);
+
+    return {
+        dps: toFiniteNumber(totalDamage / safeSeconds, 0),
+        killsPerHour: encountersPerHour,
+        xpPerHour: toFiniteNumber(totalExperience / safeHours, 0),
+        dailyProfit: toFiniteNumber(profits.randomProfit / safeHours * 24, 0),
+        dailyNoRngProfit: toFiniteNumber(profits.noRngProfit / safeHours * 24, 0),
+    };
+}
+
+function computeMetricDeltas(metrics, baselineMetrics) {
+    let result = {};
+    for (const key of Object.keys(metrics)) {
+        const baselineValue = Number(baselineMetrics[key] ?? 0);
+        const currentValue = Number(metrics[key] ?? 0);
+        const deltaAbs = currentValue - baselineValue;
+        const deltaPct = baselineValue === 0 ? null : (deltaAbs / baselineValue * 100);
+        result[key] = {
+            abs: deltaAbs,
+            pct: deltaPct,
+        };
+    }
+    return result;
+}
+
+function stableStringify(value) {
+    return JSON.stringify(sortObjectKeysDeep(value));
+}
+
+function sortObjectKeysDeep(value) {
+    if (Array.isArray(value)) {
+        return value.map((entry) => sortObjectKeysDeep(entry));
+    }
+
+    if (value && typeof value === "object") {
+        let result = {};
+        for (const key of Object.keys(value).sort()) {
+            result[key] = sortObjectKeysDeep(value[key]);
+        }
+        return result;
+    }
+
+    return value;
+}
+
+function diffSnapshots(baseSnapshot, targetSnapshot) {
+    let changes = [];
+
+    for (const key of LEVEL_KEYS) {
+        if (baseSnapshot.levels[key] !== targetSnapshot.levels[key]) {
+            changes.push({
+                category: "profession",
+                label: key.toUpperCase(),
+                beforeValue: String(baseSnapshot.levels[key]),
+                afterValue: String(targetSnapshot.levels[key]),
+                controlIds: ["inputLevel_" + key],
+            });
+        }
+    }
+
+    const equipmentKeys = [...EQUIPMENT_SLOT_KEYS, "weapon"];
+    for (const key of equipmentKeys) {
+        const beforeValue = baseSnapshot.equipment[key];
+        const afterValue = targetSnapshot.equipment[key];
+        if (stableStringify(beforeValue) !== stableStringify(afterValue)) {
+            let controlIds = [];
+            if (key === "weapon") {
+                controlIds = ["selectEquipment_weapon", "inputEquipmentEnhancementLevel_weapon"];
+            } else {
+                controlIds = ["selectEquipment_" + key, "inputEquipmentEnhancementLevel_" + key];
+            }
+
+            changes.push({
+                category: "item",
+                label: key,
+                beforeValue: stringifyEquipmentValue(beforeValue),
+                afterValue: stringifyEquipmentValue(afterValue),
+                controlIds,
+            });
+        }
+    }
+
+    for (let i = 0; i < 3; i++) {
+        if (baseSnapshot.food[i] !== targetSnapshot.food[i]) {
+            changes.push({
+                category: "food",
+                label: "Food " + (i + 1),
+                beforeValue: baseSnapshot.food[i] || "-",
+                afterValue: targetSnapshot.food[i] || "-",
+                controlIds: ["selectFood_" + i, "buttonFoodTrigger_" + i],
+            });
+        }
+
+        if (baseSnapshot.drinks[i] !== targetSnapshot.drinks[i]) {
+            changes.push({
+                category: "drink",
+                label: "Drink " + (i + 1),
+                beforeValue: baseSnapshot.drinks[i] || "-",
+                afterValue: targetSnapshot.drinks[i] || "-",
+                controlIds: ["selectDrink_" + i, "buttonDrinkTrigger_" + i],
+            });
+        }
+    }
+
+    for (let i = 0; i < 5; i++) {
+        const beforeSkill = baseSnapshot.skills[i];
+        const afterSkill = targetSnapshot.skills[i];
+        if (stableStringify(beforeSkill) !== stableStringify(afterSkill)) {
+            changes.push({
+                category: "skill",
+                label: "Ability " + (i + 1),
+                beforeValue: stringifySkillValue(beforeSkill),
+                afterValue: stringifySkillValue(afterSkill),
+                controlIds: ["selectAbility_" + i, "inputAbilityLevel_" + i, "buttonAbilityTrigger_" + i],
+            });
+        }
+    }
+
+    const triggerKeys = new Set([...Object.keys(baseSnapshot.triggerMap), ...Object.keys(targetSnapshot.triggerMap)]);
+    for (const triggerKey of triggerKeys) {
+        const beforeTriggers = baseSnapshot.triggerMap[triggerKey] ?? [];
+        const afterTriggers = targetSnapshot.triggerMap[triggerKey] ?? [];
+        if (stableStringify(beforeTriggers) !== stableStringify(afterTriggers)) {
+            const currentIds = getTriggerControlIdsForKey(targetSnapshot, triggerKey);
+            const fallbackIds = getTriggerControlIdsForKey(baseSnapshot, triggerKey);
+            const controlIds = currentIds.length > 0 ? currentIds : fallbackIds;
+            changes.push({
+                category: "trigger",
+                label: TRIGGER_CHANGE_LABEL_PREFIX + triggerKey,
+                beforeValue: shortenText(stableStringify(beforeTriggers), 80),
+                afterValue: shortenText(stableStringify(afterTriggers), 80),
+                controlIds,
+            });
+        }
+    }
+
+    return changes;
+}
+
+function getTriggerControlIdsForKey(snapshot, triggerKey) {
+    let controlIds = [];
+
+    for (let i = 0; i < snapshot.food.length; i++) {
+        if (snapshot.food[i] === triggerKey) {
+            controlIds.push("buttonFoodTrigger_" + i);
+        }
+    }
+
+    for (let i = 0; i < snapshot.drinks.length; i++) {
+        if (snapshot.drinks[i] === triggerKey) {
+            controlIds.push("buttonDrinkTrigger_" + i);
+        }
+    }
+
+    for (let i = 0; i < snapshot.skills.length; i++) {
+        if (snapshot.skills[i].abilityHrid === triggerKey) {
+            controlIds.push("buttonAbilityTrigger_" + i);
+        }
+    }
+
+    return controlIds;
+}
+
+function stringifyEquipmentValue(equipmentValue) {
+    if (!equipmentValue || !equipmentValue.itemHrid) {
+        return "-";
+    }
+
+    if (equipmentValue.location) {
+        return `${equipmentValue.location}:${equipmentValue.itemHrid}(+${equipmentValue.enhancementLevel})`;
+    }
+
+    return `${equipmentValue.itemHrid}(+${equipmentValue.enhancementLevel})`;
+}
+
+function stringifySkillValue(skillValue) {
+    if (!skillValue || !skillValue.abilityHrid) {
+        return "-";
+    }
+    return `${skillValue.abilityHrid}(Lv.${skillValue.level})`;
+}
+
+function shortenText(text, maxLength) {
+    if (text.length <= maxLength) {
+        return text;
+    }
+    return text.substring(0, maxLength - 3) + "...";
+}
+
+function formatMetricValue(value, digits = 2) {
+    const safeValue = toFiniteNumber(value, 0);
+    return safeValue.toLocaleString(undefined, {
+        minimumFractionDigits: digits,
+        maximumFractionDigits: digits,
+    });
+}
+
+function formatCompactKMBValue(value, digits = 1) {
+    const safeValue = toFiniteNumber(value, 0);
+    const absValue = Math.abs(safeValue);
+    const sign = safeValue < 0 ? "-" : "";
+    const formatPart = (numberValue) => toFiniteNumber(numberValue, 0).toLocaleString(undefined, {
+        minimumFractionDigits: 0,
+        maximumFractionDigits: digits,
+    });
+
+    if (absValue >= 1e6) {
+        return sign + formatPart(absValue / 1e6) + "m";
+    }
+    if (absValue >= 1e3) {
+        return sign + formatPart(absValue / 1e3) + "k";
+    }
+
+    return sign + formatPart(absValue);
+}
+
+function formatQueueMetricValue(metricKey, value, digits = 2) {
+    if (metricKey === "dailyNoRngProfit" || metricKey === "xpPerHour") {
+        return formatCompactKMBValue(value, 1);
+    }
+    return formatMetricValue(value, digits);
+}
+
+function formatDelta(deltaInfo, digits = 2, compactAbs = false) {
+    const abs = Number(deltaInfo.abs ?? 0);
+    const sign = abs > 0 ? "+" : "";
+    const absText = sign + (compactAbs ? formatCompactKMBValue(abs, 1) : formatMetricValue(abs, digits));
+    if (deltaInfo.pct == null) {
+        return {
+            text: absText,
+            className: abs > 0 ? "delta-positive" : (abs < 0 ? "delta-negative" : "")
+        };
+    }
+
+    const pct = Number(deltaInfo.pct);
+    const pctSign = pct > 0 ? "+" : "";
+    const pctText = pctSign + formatMetricValue(pct, 2) + "%";
+    return {
+        text: `${absText} (${pctText})`,
+        className: abs > 0 ? "delta-positive" : (abs < 0 ? "delta-negative" : ""),
+    };
+}
+
+function setQueueRunningState(isRunning) {
+    const state = getCurrentPlayerQueueState();
+    state.isRunning = isRunning;
+    const buttonSetBaseline = document.getElementById("buttonSetBaseline");
+    const buttonSetBaselineInModal = document.getElementById("buttonSetBaselineInModal");
+    const buttonAddToQueue = document.getElementById("buttonAddToQueue");
+    const buttonRunQueue = document.getElementById("buttonRunQueue");
+    const buttonClearQueue = document.getElementById("buttonClearQueue");
+
+    if (!buttonSetBaseline || !buttonSetBaselineInModal || !buttonAddToQueue || !buttonRunQueue || !buttonClearQueue) {
+        return;
+    }
+
+    buttonSetBaseline.disabled = isRunning;
+    buttonSetBaselineInModal.disabled = isRunning;
+    buttonAddToQueue.disabled = isRunning;
+    buttonRunQueue.disabled = isRunning;
+    buttonClearQueue.disabled = isRunning;
+}
+
+async function handleSetBaselineClick() {
+    const queueState = getCurrentPlayerQueueState();
+    if (queueState.isRunning) {
+        return;
+    }
+
+    if (!importedProfileByPlayer[currentPlayerTabId]) {
+        queueNotice("common:queue.requireImportBeforeBaseline");
+        return;
+    }
+
+    let snapshot;
+    let settings;
+    try {
+        snapshot = buildSnapshotFromUI();
+        settings = buildFixedSettingsFromUI();
+    } catch (error) {
+        alert(error.message ?? String(error));
+        return;
+    }
+
+    setQueueRunningState(true);
+    progressbar.style.width = "0%";
+    progressbar.innerHTML = i18next.t("common:queue.baselineRunning");
+
+    try {
+        const simResult = await runSinglePlayerSimulation(snapshot, settings, currentPlayerTabId);
+        const playerToDisplay = "player" + currentPlayerTabId;
+        const metrics = computeMetrics(simResult, playerToDisplay);
+        queueState.baseline = {
+            snapshot,
+            settings,
+            simResult,
+            metrics,
+            createdAt: Date.now(),
+        };
+        queueState.runResults = [];
+        queueState.enhancementUpgradeCosts = {};
+        queueState.abilityUpgradeCosts = {};
+        window.lastSimulationResult = simResult;
+        showSimulationResult(simResult);
+        refreshAbilityUpgradeCostHints();
+        refreshEquipmentEnhancementHints();
+        updateContent();
+        progressbar.style.width = "100%";
+        progressbar.innerHTML = "100%";
+        renderQueueViewsForCurrentPlayer();
+        queueNotice("common:queue.baselineDone");
+    } catch (error) {
+        alert(error?.toString() ?? "baseline simulation failed");
+    } finally {
+        setQueueRunningState(false);
+    }
+}
+
+function buildPlayerFromStateForSimulation(state, playerId) {
+    const playerHrid = "player" + playerId;
+    const playerState = state ?? {};
+
+    let playerData = {
+        hrid: playerHrid,
+        food: [null, null, null],
+        drinks: [null, null, null],
+        abilities: [null, null, null, null, null],
+        ...playerState.player,
+        houseRooms: playerState.houseRooms ?? {},
+        achievements: playerState.achievements ?? {},
+    };
+    playerData.equipment = {};
+
+    const triggerMapForState = playerState.triggerMap ?? {};
+    const playerEquipment = playerState.player?.equipment ?? [];
+    ["head", "body", "legs", "feet", "hands", "off_hand", "pouch", "neck", "earrings", "ring", "back", "main_hand", "two_hand", "charm"].forEach((type) => {
+        let currentEquipment = playerEquipment.find(item => item.itemLocationHrid === "/item_locations/" + type);
+        if (currentEquipment) {
+            playerData.equipment[`/equipment_types/${type}`] = new _combatsimulator_equipment_js__WEBPACK_IMPORTED_MODULE_0__["default"](currentEquipment.itemHrid, currentEquipment.enhancementLevel);
+        }
+    });
+
+    let simulationPlayer = _combatsimulator_player_js__WEBPACK_IMPORTED_MODULE_1__["default"].createFromDTO(playerData);
+    simulationPlayer.updateCombatDetails();
+    simulationPlayer.hrid = playerHrid;
+
+    const foodEntries = playerState.food?.["/action_types/combat"] ?? [];
+    const drinkEntries = playerState.drinks?.["/action_types/combat"] ?? [];
+    const abilityEntries = playerState.abilities ?? [];
+
+    for (let i = 0; i < 3; i++) {
+        const foodHrid = foodEntries[i]?.itemHrid ?? "";
+        if (foodHrid && i < simulationPlayer.combatDetails.combatStats.foodSlots) {
+            simulationPlayer.food[i] = new _combatsimulator_consumable_js__WEBPACK_IMPORTED_MODULE_6__["default"](foodHrid, triggerMapForState[foodHrid]);
+        } else {
+            simulationPlayer.food[i] = null;
+        }
+
+        const drinkHrid = drinkEntries[i]?.itemHrid ?? "";
+        if (drinkHrid && i < simulationPlayer.combatDetails.combatStats.drinkSlots) {
+            simulationPlayer.drinks[i] = new _combatsimulator_consumable_js__WEBPACK_IMPORTED_MODULE_6__["default"](drinkHrid, triggerMapForState[drinkHrid]);
+        } else {
+            simulationPlayer.drinks[i] = null;
+        }
+    }
+
+    for (let i = 0; i < 5; i++) {
+        const abilityEntry = abilityEntries[i] ?? {};
+        const abilityHrid = abilityEntry.abilityHrid ?? "";
+        const abilityLevel = toFiniteNumber(abilityEntry.level, 0);
+        if (abilityHrid && abilityLevel > 0 && simulationPlayer.intelligenceLevel >= _combatsimulator_data_abilitySlotsLevelRequirementList_json__WEBPACK_IMPORTED_MODULE_11__[i + 1]) {
+            simulationPlayer.abilities[i] = new _combatsimulator_ability_js__WEBPACK_IMPORTED_MODULE_5__["default"](abilityHrid, abilityLevel, triggerMapForState[abilityHrid]);
+        } else {
+            simulationPlayer.abilities[i] = null;
+        }
+    }
+
+    return simulationPlayer;
+}
+
+function applyDebuffOnLevelGap(playersToSim) {
+    let maxPlayerCombatLevel = 1;
+    for (let currentPlayer of playersToSim) {
+        currentPlayer.combatLevel = calcCombatLevel(currentPlayer.staminaLevel, currentPlayer.intelligenceLevel, currentPlayer.defenseLevel, currentPlayer.attackLevel, currentPlayer.meleeLevel, currentPlayer.rangedLevel, currentPlayer.magicLevel);
+        maxPlayerCombatLevel = Math.max(maxPlayerCombatLevel, currentPlayer.combatLevel);
+    }
+
+    for (let currentPlayer of playersToSim) {
+        if ((maxPlayerCombatLevel / currentPlayer.combatLevel) > 1.2) {
+            const maxDebuffOnLevelGap = 0.9;
+            let levelPercent = (maxPlayerCombatLevel / currentPlayer.combatLevel) - 1.2;
+            currentPlayer.debuffOnLevelGap = -1 * Math.min(maxDebuffOnLevelGap, 3 * levelPercent);
+            console.log("player " + currentPlayer.hrid + " debuff on level gap: " + currentPlayer.debuffOnLevelGap * 100 + "% for " + (maxPlayerCombatLevel / currentPlayer.combatLevel));
+        } else {
+            currentPlayer.debuffOnLevelGap = 0;
+        }
+    }
+}
+
+function buildPlayersForSimulation(playerIds) {
+    let playersToSim = [];
+    const normalizedIds = Array.from(new Set((playerIds ?? []).map((id) => String(id)).filter((id) => QUEUE_PLAYER_IDS.includes(id))));
+
+    for (const playerId of normalizedIds) {
+        const playerStateJson = playerDataMap[playerId];
+        if (!playerStateJson) {
+            continue;
+        }
+
+        let playerState = {};
+        try {
+            playerState = JSON.parse(playerStateJson);
+        } catch (error) {
+            console.warn("Invalid player state JSON for player", playerId, error);
+            continue;
+        }
+
+        playersToSim.push(buildPlayerFromStateForSimulation(playerState, playerId));
+    }
+
+    applyDebuffOnLevelGap(playersToSim);
+    return playersToSim;
+}
+
+function handleAddToQueueClick() {
+    const queueState = getCurrentPlayerQueueState();
+    if (!queueState.baseline) {
+        queueNotice("common:queue.queueNoBaseline");
+        return;
+    }
+
+    const snapshot = buildSnapshotFromUI();
+    const changes = diffSnapshots(queueState.baseline.snapshot, snapshot);
+    if (changes.length === 0) {
+        queueNotice("common:queue.queueNoDiff");
+        return;
+    }
+
+    const queueEntries = buildQueueEntriesForChanges(queueState.baseline.snapshot, snapshot, changes);
+    for (const entry of queueEntries) {
+        pushQueueItem(queueState, entry.snapshot, entry.changes);
+    }
+
+    restoreCurrentPlayerToBaselineSnapshot();
+    renderQueueViewsForCurrentPlayer();
+}
+
+function restoreCurrentPlayerToBaselineSnapshot() {
+    const queueState = getCurrentPlayerQueueState();
+    const baselineState = queueState?.baseline?.snapshot?.state;
+    if (!baselineState) {
+        return;
+    }
+
+    try {
+        playerDataMap[currentPlayerTabId] = JSON.stringify(baselineState);
+        updateNextPlayer(currentPlayerTabId);
+        updateState();
+        updateUI();
+        clearHomeDiffHighlight();
+    } catch (error) {
+        console.warn("failed to restore baseline snapshot after queue add", error);
+    }
+}
+
+function pushQueueItem(queueState, snapshot, changes) {
+    const queueItemNumber = queueState.queueItems.length + 1;
+    queueState.queueItems.push({
+        id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
+        name: "",
+        order: queueItemNumber,
+        snapshot,
+        changes,
+        createdAt: Date.now(),
+    });
+}
+
+function buildQueueEntriesForChanges(baseSnapshot, targetSnapshot, changes) {
+    if (!Array.isArray(changes) || changes.length <= 1) {
+        return [{ snapshot: targetSnapshot, changes }];
+    }
+
+    let entries = [];
+    const seenSignatures = new Set();
+
+    for (const change of changes) {
+        const singleSnapshot = buildSingleChangeSnapshot(baseSnapshot, targetSnapshot, change);
+        if (!singleSnapshot) {
+            continue;
+        }
+
+        const singleChanges = diffSnapshots(baseSnapshot, singleSnapshot);
+        if (singleChanges.length === 0) {
+            continue;
+        }
+
+        const signature = stableStringify(singleChanges.map((entry) => ({
+            category: entry.category,
+            label: entry.label,
+            beforeValue: entry.beforeValue,
+            afterValue: entry.afterValue,
+        })));
+        if (seenSignatures.has(signature)) {
+            continue;
+        }
+
+        seenSignatures.add(signature);
+        entries.push({
+            snapshot: singleSnapshot,
+            changes: singleChanges,
+        });
+    }
+
+    if (entries.length === 0) {
+        return [{ snapshot: targetSnapshot, changes }];
+    }
+
+    return entries;
+}
+
+function buildSingleChangeSnapshot(baseSnapshot, targetSnapshot, change) {
+    if (!change) {
+        return null;
+    }
+
+    const baseState = structuredClone(baseSnapshot?.state ?? {});
+    const targetState = targetSnapshot?.state ?? {};
+    baseState.player = baseState.player ?? {};
+    baseState.triggerMap = baseState.triggerMap ?? {};
+
+    switch (change.category) {
+        case "profession": {
+            const skillKey = String(change.label ?? "").toLowerCase();
+            if (!LEVEL_KEYS.includes(skillKey)) {
+                return null;
+            }
+            baseState.player[skillKey + "Level"] = Number(targetState.player?.[skillKey + "Level"] ?? baseState.player[skillKey + "Level"] ?? 1);
+            break;
+        }
+        case "item": {
+            syncEquipmentChangeIntoState(baseState, targetState, String(change.label ?? ""));
+            break;
+        }
+        case "food": {
+            const index = parseOneBasedIndex(change.label);
+            if (index < 0 || index >= 3) {
+                return null;
+            }
+            ensureCombatConsumableState(baseState, "food", 3);
+            const targetEntry = targetState.food?.["/action_types/combat"]?.[index] ?? { itemHrid: "" };
+            baseState.food["/action_types/combat"][index] = structuredClone(targetEntry);
+            syncTriggerForHridFromState(baseState, targetState, targetEntry.itemHrid);
+            break;
+        }
+        case "drink": {
+            const index = parseOneBasedIndex(change.label);
+            if (index < 0 || index >= 3) {
+                return null;
+            }
+            ensureCombatConsumableState(baseState, "drinks", 3);
+            const targetEntry = targetState.drinks?.["/action_types/combat"]?.[index] ?? { itemHrid: "" };
+            baseState.drinks["/action_types/combat"][index] = structuredClone(targetEntry);
+            syncTriggerForHridFromState(baseState, targetState, targetEntry.itemHrid);
+            break;
+        }
+        case "skill": {
+            const index = parseOneBasedIndex(change.label);
+            if (index < 0 || index >= 5) {
+                return null;
+            }
+            ensureAbilityState(baseState, 5);
+            const targetEntry = targetState.abilities?.[index] ?? { abilityHrid: "", level: 1 };
+            baseState.abilities[index] = structuredClone(targetEntry);
+            syncTriggerForHridFromState(baseState, targetState, targetEntry.abilityHrid);
+            break;
+        }
+        case "trigger": {
+            const triggerHrid = extractTriggerHridFromChange(change);
+            if (!triggerHrid) {
+                return null;
+            }
+            if (Object.prototype.hasOwnProperty.call(targetState.triggerMap ?? {}, triggerHrid)) {
+                baseState.triggerMap[triggerHrid] = structuredClone(targetState.triggerMap[triggerHrid] ?? []);
+            } else {
+                delete baseState.triggerMap[triggerHrid];
+            }
+            break;
+        }
+        default:
+            return null;
+    }
+
+    return buildSnapshotFromState(baseState);
+}
+
+function parseOneBasedIndex(label) {
+    const text = String(label ?? "");
+    const match = text.match(/(\d+)/);
+    if (!match) {
+        return -1;
+    }
+    return Number(match[1]) - 1;
+}
+
+function ensureCombatConsumableState(state, key, size) {
+    state[key] = state[key] ?? {};
+    state[key]["/action_types/combat"] = state[key]["/action_types/combat"] ?? [];
+
+    while (state[key]["/action_types/combat"].length < size) {
+        state[key]["/action_types/combat"].push({ itemHrid: "" });
+    }
+}
+
+function ensureAbilityState(state, size) {
+    state.abilities = state.abilities ?? [];
+    while (state.abilities.length < size) {
+        state.abilities.push({ abilityHrid: "", level: 1 });
+    }
+}
+
+function syncTriggerForHridFromState(state, targetState, hrid) {
+    if (!hrid) {
+        return;
+    }
+
+    state.triggerMap = state.triggerMap ?? {};
+    if (Object.prototype.hasOwnProperty.call(targetState.triggerMap ?? {}, hrid)) {
+        state.triggerMap[hrid] = structuredClone(targetState.triggerMap[hrid] ?? []);
+    } else if (!Object.prototype.hasOwnProperty.call(state.triggerMap, hrid)) {
+        state.triggerMap[hrid] = [];
+    }
+}
+
+function syncEquipmentChangeIntoState(state, targetState, slotLabel) {
+    state.player = state.player ?? {};
+    state.player.equipment = Array.isArray(state.player.equipment) ? state.player.equipment : [];
+    const targetEquipment = Array.isArray(targetState.player?.equipment) ? targetState.player.equipment : [];
+
+    const syncLocation = (locationKey) => {
+        const locationHrid = "/item_locations/" + locationKey;
+        state.player.equipment = state.player.equipment.filter((entry) => entry.itemLocationHrid !== locationHrid);
+        const targetEntry = targetEquipment.find((entry) => entry.itemLocationHrid === locationHrid);
+        if (targetEntry && targetEntry.itemHrid) {
+            state.player.equipment.push(structuredClone(targetEntry));
+        }
+    };
+
+    if (slotLabel === "weapon") {
+        syncLocation("main_hand");
+        syncLocation("two_hand");
+        syncLocation("off_hand");
+        return;
+    }
+
+    if (slotLabel) {
+        syncLocation(slotLabel);
+    }
+}
+
+async function handleRunQueueClick() {
+    const queueState = getCurrentPlayerQueueState();
+    if (!queueState.baseline) {
+        queueNotice("common:queue.queueNoBaseline");
+        return;
+    }
+
+    if (queueState.queueItems.length === 0) {
+        queueNotice("common:queue.emptyQueue");
+        return;
+    }
+
+    setQueueRunningState(true);
+    queueState.runResults = [];
+    progressbar.style.width = "0%";
+    progressbar.innerHTML = i18next.t("common:queue.queueRunning");
+
+    try {
+        for (let i = 0; i < queueState.queueItems.length; i++) {
+            const queueItem = queueState.queueItems[i];
+            const simResult = await runSinglePlayerSimulation(queueItem.snapshot, queueState.baseline.settings, currentPlayerTabId);
+            const playerToDisplay = "player" + currentPlayerTabId;
+            const metrics = computeMetrics(simResult, playerToDisplay);
+            const deltas = computeMetricDeltas(metrics, queueState.baseline.metrics);
+
+            queueState.runResults.push({
+                queueItemId: queueItem.id,
+                metrics,
+                deltas,
+                simResult,
+                finishedAt: Date.now(),
+            });
+
+            let progress = Math.floor(((i + 1) / queueState.queueItems.length) * 100);
+            progressbar.style.width = progress + "%";
+            progressbar.innerHTML = progress + "%";
+        }
+
+        renderQueueViewsForCurrentPlayer();
+        switchLeftPage("results");
+        queueNotice("common:queue.queueRunDone");
+    } catch (error) {
+        alert(error?.toString() ?? "queue run failed");
+    } finally {
+        setQueueRunningState(false);
+    }
+}
+
+function handleClearQueueClick() {
+    const queueState = getCurrentPlayerQueueState();
+    queueState.queueItems = [];
+    queueState.runResults = [];
+    renderQueueViewsForCurrentPlayer();
+    queueNotice("common:queue.queueCleared");
+}
+
+function handleQueueListClick(event) {
+    const deleteButton = event.target.closest("[data-queue-item-id]");
+    if (!deleteButton) {
+        return;
+    }
+
+    const queueState = getCurrentPlayerQueueState();
+    const queueItemId = deleteButton.getAttribute("data-queue-item-id");
+    queueState.queueItems = queueState.queueItems.filter((item) => item.id !== queueItemId);
+    queueState.runResults = queueState.runResults.filter((item) => item.queueItemId !== queueItemId);
+    renderQueueViewsForCurrentPlayer();
+}
+
+function translateI18nKeyOrFallback(i18nKey, fallbackText) {
+    const translated = i18next.t(i18nKey);
+    return translated && translated !== i18nKey ? translated : fallbackText;
+}
+
+function getQueueItemDisplayName(item, fallbackIndex) {
+    const derivedName = deriveQueueItemDisplayNameFromChanges(item?.changes ?? []);
+    if (derivedName) {
+        return derivedName;
+    }
+
+    const order = item?.order ?? fallbackIndex;
+    return `${i18next.t("common:queue.queueItem")} ${order}`;
+}
+
+function deriveQueueItemDisplayNameFromChanges(changes) {
+    if (!Array.isArray(changes) || changes.length === 0) {
+        return "";
+    }
+
+    const categoryPriority = {
+        item: 0,
+        food: 1,
+        drink: 2,
+        skill: 3,
+        trigger: 4,
+        profession: 5,
+    };
+
+    const sortedChanges = [...changes].sort((a, b) => {
+        const aPriority = categoryPriority[a?.category] ?? 99;
+        const bPriority = categoryPriority[b?.category] ?? 99;
+        return aPriority - bPriority;
+    });
+
+    let displayCandidates = [];
+    for (const change of sortedChanges) {
+        const candidate = deriveSingleQueueChangeDisplayName(change);
+        if (candidate) {
+            displayCandidates.push(candidate);
+        }
+    }
+
+    const uniqueCandidates = Array.from(new Set(displayCandidates));
+    if (uniqueCandidates.length === 0) {
+        return "";
+    }
+
+    if (uniqueCandidates.length === 1) {
+        return uniqueCandidates[0];
+    }
+
+    return i18next.t("common:queue.itemNameWithMore", {
+        name: uniqueCandidates[0],
+        count: uniqueCandidates.length - 1,
+    });
+}
+
+function deriveSingleQueueChangeDisplayName(change) {
+    if (!change) {
+        return "";
+    }
+
+    if (change.category === "profession") {
+        return localizeQueueChangeLabel(change);
+    }
+
+    if (change.category === "item") {
+        const beforeParsed = parseEquipmentChangeValue(change.beforeValue);
+        const afterParsed = parseEquipmentChangeValue(change.afterValue);
+        if (beforeParsed?.itemHrid && afterParsed?.itemHrid && beforeParsed.itemHrid === afterParsed.itemHrid) {
+            const itemName = localizeHridDisplayName(beforeParsed.itemHrid);
+            return `${itemName}(+${beforeParsed.enhancementLevel})->(+${afterParsed.enhancementLevel})`;
+        }
+
+        const label = localizeQueueChangeLabel(change);
+        const beforeText = localizeQueueChangeValue(change.beforeValue);
+        const afterText = localizeQueueChangeValue(change.afterValue);
+
+        const hasBefore = beforeText && beforeText !== "-";
+        const hasAfter = afterText && afterText !== "-";
+        if (hasBefore && hasAfter) {
+            return `${label}: ${beforeText} -> ${afterText}`;
+        }
+        if (hasAfter) {
+            return `${label}: ${afterText}`;
+        }
+        if (hasBefore) {
+            return `${label}: ${beforeText}`;
+        }
+
+        return label;
+    }
+
+    if (change.category === "trigger") {
+        const triggerHrid = extractTriggerHridFromChange(change);
+        if (triggerHrid) {
+            return localizeHridDisplayName(triggerHrid);
+        }
+        return i18next.t("common:queue.triggerLabel");
+    }
+
+    const preferredValue = pickPreferredChangedValue(change);
+    if (!preferredValue) {
+        return "";
+    }
+
+    const hrid = extractHridFromText(preferredValue);
+    if (hrid) {
+        return localizeHridDisplayName(hrid);
+    }
+
+    const localizedValue = localizeQueueChangeValue(preferredValue);
+    if (localizedValue && localizedValue !== "-") {
+        return localizedValue;
+    }
+
+    return localizeQueueChangeLabel(change);
+}
+
+function parseEquipmentChangeValue(value) {
+    if (value == null) {
+        return null;
+    }
+
+    const text = String(value).trim();
+    if (!text || text === "-") {
+        return null;
+    }
+
+    const match = text.match(/^(?:([a-z_]+):)?(\/items\/[a-z0-9_]+)\(\+([^)]+)\)$/i);
+    if (!match) {
+        return null;
+    }
+
+    return {
+        slotKey: match[1] ?? "",
+        itemHrid: match[2],
+        enhancementLevel: match[3],
+    };
+}
+
+function pickPreferredChangedValue(change) {
+    const afterValue = normalizeChangeValue(change?.afterValue);
+    if (afterValue) {
+        return afterValue;
+    }
+
+    return normalizeChangeValue(change?.beforeValue);
+}
+
+function normalizeChangeValue(value) {
+    if (value == null) {
+        return "";
+    }
+
+    const text = String(value).trim();
+    if (!text || text === "-") {
+        return "";
+    }
+
+    return text;
+}
+
+function extractHridFromText(text) {
+    if (!text) {
+        return "";
+    }
+
+    const match = String(text).match(/\/(?:items|abilities|actions)\/[a-z0-9_]+/i);
+    return match ? match[0] : "";
+}
+
+function extractTriggerHridFromChange(change) {
+    const label = String(change?.label ?? "");
+    if (label.startsWith(TRIGGER_CHANGE_LABEL_PREFIX)) {
+        return label.substring(TRIGGER_CHANGE_LABEL_PREFIX.length);
+    }
+
+    return extractHridFromText(change?.afterValue) || extractHridFromText(change?.beforeValue);
+}
+
+function localizeHridDisplayName(hrid) {
+    if (!hrid) {
+        return hrid;
+    }
+
+    const keys = [
+        "itemNames." + hrid,
+        "abilityNames." + hrid,
+        "actionNames." + hrid,
+    ];
+
+    for (const key of keys) {
+        const translated = i18next.t(key);
+        if (translated && translated !== key) {
+            return translated;
+        }
+    }
+
+    return hrid;
+}
+
+function localizeQueueCategory(category) {
+    return translateI18nKeyOrFallback("common:queue.changeCategory." + category, category);
+}
+
+function localizeEquipmentSlotLabel(slotKey) {
+    const slotI18nMap = {
+        head: "characterItemsUtil.head",
+        body: "characterItemsUtil.body",
+        legs: "characterItemsUtil.legs",
+        feet: "characterItemsUtil.feet",
+        hands: "characterItemsUtil.hands",
+        off_hand: "characterItemsUtil.offHand",
+        pouch: "characterItemsUtil.pouch",
+        neck: "characterItemsUtil.neck",
+        earrings: "characterItemsUtil.earrings",
+        ring: "characterItemsUtil.ring",
+        back: "characterItemsUtil.back",
+        charm: "characterItemsUtil.charm",
+        main_hand: "characterItemsUtil.mainHand",
+        two_hand: "characterItemsUtil.mainHand",
+        weapon: "characterItemsUtil.mainHand",
+    };
+
+    const i18nKey = slotI18nMap[slotKey];
+    if (!i18nKey) {
+        return slotKey;
+    }
+
+    return translateI18nKeyOrFallback(i18nKey, slotKey);
+}
+
+function localizeQueueChangeLabel(change) {
+    if (!change) {
+        return "";
+    }
+
+    if (change.category === "profession") {
+        const skillKey = String(change.label ?? "").toLowerCase();
+        return translateI18nKeyOrFallback("skillNames./skills/" + skillKey, change.label);
+    }
+
+    if (change.category === "item") {
+        return localizeEquipmentSlotLabel(change.label);
+    }
+
+    if (change.category === "food") {
+        const index = Number(String(change.label).replace(/\D/g, "")) || 1;
+        return i18next.t("common:queue.foodSlot", { index });
+    }
+
+    if (change.category === "drink") {
+        const index = Number(String(change.label).replace(/\D/g, "")) || 1;
+        return i18next.t("common:queue.drinkSlot", { index });
+    }
+
+    if (change.category === "skill") {
+        const index = Number(String(change.label).replace(/\D/g, "")) || 1;
+        return i18next.t("common:queue.abilitySlot", { index });
+    }
+
+    if (change.category === "trigger") {
+        if (String(change.label).startsWith(TRIGGER_CHANGE_LABEL_PREFIX)) {
+            const triggerHrid = String(change.label).substring(TRIGGER_CHANGE_LABEL_PREFIX.length);
+            return `${i18next.t("common:queue.triggerLabel")} ${localizeHridDisplayName(triggerHrid)}`;
+        }
+        return i18next.t("common:queue.triggerLabel");
+    }
+
+    return change.label;
+}
+
+function localizeQueueChangeValue(value) {
+    if (value == null) {
+        return "-";
+    }
+
+    const text = String(value);
+    if (!text || text === "-") {
+        return "-";
+    }
+
+    const equipmentMatch = text.match(/^(?:([a-z_]+):)?(\/items\/[a-z0-9_]+)\(\+([^)]+)\)$/i);
+    if (equipmentMatch) {
+        const slotKey = equipmentMatch[1];
+        const itemHrid = equipmentMatch[2];
+        const enhancement = equipmentMatch[3];
+        const itemName = localizeHridDisplayName(itemHrid);
+        if (slotKey) {
+            return `${localizeEquipmentSlotLabel(slotKey)}:${itemName}(+${enhancement})`;
+        }
+        return `${itemName}(+${enhancement})`;
+    }
+
+    const abilityMatch = text.match(/^(\/abilities\/[a-z0-9_]+)\(Lv\.([^)]+)\)$/i);
+    if (abilityMatch) {
+        return `${localizeHridDisplayName(abilityMatch[1])}(Lv.${abilityMatch[2]})`;
+    }
+
+    if (/^\/(items|abilities|actions)\//.test(text)) {
+        return localizeHridDisplayName(text);
+    }
+
+    return text;
+}
+
+function renderQueueViewsForCurrentPlayer() {
+    renderBaselineSummary();
+    renderQueueList();
+    renderQueueResults();
+    refreshHomeDiffHighlight();
+}
+
+function renderBaselineSummary() {
+    const baselineSummary = document.getElementById("baselineSummary");
+    if (!baselineSummary) {
+        return;
+    }
+
+    const queueState = getCurrentPlayerQueueState();
+    if (!queueState.baseline) {
+        baselineSummary.innerHTML = `<span class="text-secondary">${i18next.t("common:queue.emptyBaseline")}</span>`;
+        return;
+    }
+
+    const baseline = queueState.baseline;
+    const settings = baseline.settings;
+    const zoneName = getLocalizedZoneName(settings.zoneHrid);
+    const metrics = baseline.metrics;
+
+    baselineSummary.innerHTML = `
+        <div class="queue-summary-grid">
+            <div class="mb-1"><span class="label">${i18next.t("common:queue.settingZone")}:</span> ${zoneName}</div>
+            <div class="mb-1"><span class="label">${i18next.t("common:queue.settingDifficulty")}:</span> T${settings.difficultyTier}</div>
+            <div class="mb-1"><span class="label">${i18next.t("common:queue.settingDuration")}:</span> ${settings.simulationTimeHours}h</div>
+            <div class="mb-1"><span class="label">${i18next.t("common:queue.metricDps")}:</span> ${formatMetricValue(metrics.dps, 2)}</div>
+            <div class="mb-1"><span class="label">${i18next.t("common:queue.dailyNoRngProfit")}:</span> ${formatQueueMetricValue("dailyNoRngProfit", metrics.dailyNoRngProfit, 2)}</div>
+            <div class="mb-1"><span class="label">${i18next.t("common:simulationResults.xpPerHour")}:</span> ${formatQueueMetricValue("xpPerHour", metrics.xpPerHour, 0)}</div>
+            <div class="mb-1"><span class="label">${i18next.t("common:simulationResults.killPerHour")}:</span> ${formatMetricValue(metrics.killsPerHour, 1)}</div>
+        </div>
+    `;
+}
+
+function renderQueueList() {
+    const queueList = document.getElementById("queueList");
+    if (!queueList) {
+        return;
+    }
+
+    const queueState = getCurrentPlayerQueueState();
+    if (queueState.queueItems.length === 0) {
+        queueList.innerHTML = `<span class="text-secondary">${i18next.t("common:queue.emptyQueue")}</span>`;
+        return;
+    }
+
+    queueList.replaceChildren();
+    queueState.queueItems.forEach((item, index) => {
+        const wrapper = document.createElement("div");
+        wrapper.className = "border rounded p-2 mb-2";
+
+        const titleRow = document.createElement("div");
+        titleRow.className = "d-flex justify-content-between align-items-center mb-2";
+
+        const title = document.createElement("b");
+        title.textContent = getQueueItemDisplayName(item, index + 1);
+        titleRow.appendChild(title);
+
+        const removeButton = document.createElement("button");
+        removeButton.className = "btn btn-sm btn-outline-danger";
+        removeButton.type = "button";
+        removeButton.textContent = i18next.t("common:controls.delete");
+        removeButton.setAttribute("data-queue-item-id", item.id);
+        titleRow.appendChild(removeButton);
+        wrapper.appendChild(titleRow);
+
+        const categoryRow = document.createElement("div");
+        const categories = Array.from(new Set(item.changes.map((change) => change.category)));
+        for (const category of categories) {
+            const badge = document.createElement("span");
+            badge.className = "queue-change-badge";
+            badge.textContent = localizeQueueCategory(category);
+            categoryRow.appendChild(badge);
+        }
+        wrapper.appendChild(categoryRow);
+
+        const detailContainer = document.createElement("div");
+        detailContainer.className = "small text-secondary mt-2";
+        item.changes.forEach((change) => {
+            const line = document.createElement("div");
+            line.textContent = `${localizeQueueChangeLabel(change)}: ${localizeQueueChangeValue(change.beforeValue)} -> ${localizeQueueChangeValue(change.afterValue)}`;
+            detailContainer.appendChild(line);
+        });
+        wrapper.appendChild(detailContainer);
+
+        queueList.appendChild(wrapper);
+    });
+}
+
+function renderQueueResults() {
+    const tableBody = document.getElementById("queueResultsTableBody");
+    const summary = document.getElementById("queueResultsSummary");
+    if (!tableBody || !summary) {
+        return;
+    }
+
+    const queueState = getCurrentPlayerQueueState();
+    tableBody.replaceChildren();
+
+    if (!queueState.baseline) {
+        summary.innerHTML = `<span class="text-secondary">${i18next.t("common:queue.emptyBaseline")}</span>`;
+        return;
+    }
+
+    const baseline = queueState.baseline.metrics;
+    summary.innerHTML = `
+        <span class="me-3"><b>${i18next.t("common:queue.baselineDps")}:</b> ${formatMetricValue(baseline.dps, 2)}</span>
+        <span class="me-3"><b>${i18next.t("common:queue.dailyNoRngProfit")}:</b> ${formatQueueMetricValue("dailyNoRngProfit", baseline.dailyNoRngProfit, 2)}</span>
+        <span class="me-3"><b>${i18next.t("common:simulationResults.xpPerHour")}:</b> ${formatQueueMetricValue("xpPerHour", baseline.xpPerHour, 0)}</span>
+        <span><b>${i18next.t("common:simulationResults.killPerHour")}:</b> ${formatMetricValue(baseline.killsPerHour, 1)}</span>
+    `;
+
+    if (queueState.runResults.length === 0) {
+        const emptyRow = document.createElement("tr");
+        const cell = document.createElement("td");
+        cell.colSpan = 9;
+        cell.className = "text-secondary";
+        cell.textContent = i18next.t("common:queue.emptyResults");
+        emptyRow.appendChild(cell);
+        tableBody.appendChild(emptyRow);
+        return;
+    }
+
+    const queueItemMap = new Map(queueState.queueItems.map((item, index) => [item.id, {
+        item,
+        displayName: getQueueItemDisplayName(item, index + 1),
+    }]));
+
+    for (const runResult of queueState.runResults) {
+        const row = document.createElement("tr");
+        const queueItem = queueItemMap.get(runResult.queueItemId);
+
+        appendTextCell(row, queueItem?.displayName ?? runResult.queueItemId);
+        appendTextCell(row, formatMetricValue(runResult.metrics.dps, 2));
+        appendDeltaCell(row, runResult.deltas.dps, 2);
+        appendTextCell(row, formatQueueMetricValue("dailyNoRngProfit", runResult.metrics.dailyNoRngProfit, 2));
+        appendDeltaCell(row, runResult.deltas.dailyNoRngProfit, 2, true);
+        appendTextCell(row, formatQueueMetricValue("xpPerHour", runResult.metrics.xpPerHour, 0));
+        appendDeltaCell(row, runResult.deltas.xpPerHour, 0, true);
+        appendTextCell(row, formatMetricValue(runResult.metrics.killsPerHour, 1));
+        appendDeltaCell(row, runResult.deltas.killsPerHour, 1);
+
+        tableBody.appendChild(row);
+    }
+}
+
+function appendTextCell(row, value) {
+    const cell = document.createElement("td");
+    cell.textContent = value;
+    row.appendChild(cell);
+}
+
+function appendDeltaCell(row, deltaInfo, digits, compactAbs = false) {
+    const cell = document.createElement("td");
+    const delta = formatDelta(deltaInfo, digits, compactAbs);
+    cell.textContent = delta.text;
+    if (delta.className) {
+        cell.classList.add(delta.className);
+    }
+    row.appendChild(cell);
+}
+
+function clearHomeDiffHighlight() {
+    for (const controlId of WATCHED_CONTROL_IDS) {
+        const element = document.getElementById(controlId);
+        if (element) {
+            element.classList.remove("baseline-diff");
+        }
+    }
+}
+
+function refreshHomeDiffHighlight() {
+    clearHomeDiffHighlight();
+
+    const queueState = getCurrentPlayerQueueState();
+    if (!queueState || !queueState.baseline) {
+        return;
+    }
+
+    try {
+        const currentSnapshot = buildSnapshotFromUI();
+        const changes = diffSnapshots(queueState.baseline.snapshot, currentSnapshot);
+        const changedControlIds = new Set(changes.flatMap((change) => change.controlIds ?? []));
+        changedControlIds.forEach((controlId) => {
+            const element = document.getElementById(controlId);
+            if (element) {
+                element.classList.add("baseline-diff");
+            }
+        });
+    } catch (error) {
+        console.warn("failed to refresh diff highlight", error);
+    }
+}
+
+// #endregion
 
 /******/ })()
 ;

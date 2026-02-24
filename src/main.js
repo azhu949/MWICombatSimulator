@@ -61,6 +61,9 @@ const PLAYER_HRID_LIST = ["player1", "player2", "player3", "player4", "player5"]
 const LEVEL_KEYS = ["stamina", "intelligence", "attack", "melee", "defense", "ranged", "magic"];
 const EQUIPMENT_SLOT_KEYS = ["head", "body", "legs", "feet", "hands", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"];
 const TRIGGER_CHANGE_LABEL_PREFIX = "Trigger ";
+const JIGS_DATA_URL = "https://gist.githubusercontent.com/JigglyMoose/79db9d275a73a26dec30305865692525/raw/jigs_data.json";
+const ABILITY_BOOK_CATEGORY_HRID = "/item_categories/ability_book";
+const abilityBookInfoByAbilityHrid = buildAbilityBookInfoByAbilityHrid();
 
 const WATCHED_CONTROL_IDS = new Set([
     ...LEVEL_KEYS.map((key) => "inputLevel_" + key),
@@ -74,6 +77,8 @@ const WATCHED_CONTROL_IDS = new Set([
 let queueStateByPlayer = createInitialQueueState();
 let importedProfileByPlayer = Object.fromEntries(QUEUE_PLAYER_IDS.map((playerId) => [playerId, false]));
 let activeLeftPage = "home";
+window.jigsAbilityXpLevels = [];
+window.jigsSpellBookXpByName = {};
 
 // #region Worker
 
@@ -135,11 +140,36 @@ function onMultiWorkerMessage(event) {
 
 // #region Equipment
 
+function buildAbilityBookInfoByAbilityHrid() {
+    let result = {};
+
+    for (const item of Object.values(itemDetailMap)) {
+        if (item?.categoryHrid !== ABILITY_BOOK_CATEGORY_HRID) {
+            continue;
+        }
+
+        const abilityHrid = item?.abilityBookDetail?.abilityHrid ?? "";
+        if (!abilityHrid) {
+            continue;
+        }
+
+        const xpPerBook = Number(item?.abilityBookDetail?.experienceGain ?? 0);
+        result[abilityHrid] = {
+            itemHrid: item.hrid ?? "",
+            itemName: item.name ?? "",
+            xpPerBook: Number.isFinite(xpPerBook) && xpPerBook > 0 ? xpPerBook : 0,
+        };
+    }
+
+    return result;
+}
+
 function initEquipmentSection() {
     ["head", "body", "legs", "feet", "hands", "main_hand", "two_hand", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"].forEach((type) => {
         initEquipmentSelect(type);
         initEnhancementLevelInput(type);
     });
+    initEquipmentEnhancementHintPlaceholders();
 }
 
 function initEquipmentSelect(equipmentType) {
@@ -362,6 +392,450 @@ function equipmentSelectHandler(event, type) {
 function enhancementLevelInputHandler() {
     updateEquipmentState();
     updateUI();
+}
+
+function initEquipmentEnhancementHintPlaceholders() {
+    const selectTypes = ["head", "body", "legs", "feet", "hands", "weapon", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"];
+    for (const selectType of selectTypes) {
+        const selectElement = document.getElementById("selectEquipment_" + selectType);
+        const enhancementInput = getEnhancementInputElementBySelectType(selectType);
+        if (!selectElement || !enhancementInput) {
+            continue;
+        }
+
+        const legacyHint = document.getElementById("marketEnhancementHint_" + selectType);
+        if (legacyHint) {
+            legacyHint.remove();
+        }
+
+        const buttonHintId = "marketEnhancementButtons_" + selectType;
+        if (!document.getElementById(buttonHintId)) {
+            const buttonHintElement = document.createElement("div");
+            buttonHintElement.id = buttonHintId;
+            buttonHintElement.className = "mt-1";
+            buttonHintElement.style.minHeight = "1.1rem";
+            buttonHintElement.style.whiteSpace = "normal";
+            buttonHintElement.style.overflowWrap = "anywhere";
+            buttonHintElement.style.wordBreak = "break-word";
+            buttonHintElement.style.lineHeight = "1.2";
+            buttonHintElement.style.maxWidth = "100%";
+            selectElement.parentElement.appendChild(buttonHintElement);
+        }
+
+        const costHintId = "marketEnhancementCost_" + selectType;
+        if (!document.getElementById(costHintId)) {
+            const costHintElement = document.createElement("div");
+            costHintElement.id = costHintId;
+            costHintElement.className = "mt-1";
+            costHintElement.style.minHeight = "1.1rem";
+            costHintElement.style.maxWidth = "100%";
+            enhancementInput.parentElement.appendChild(costHintElement);
+        }
+    }
+}
+
+function initAbilityUpgradeCostPlaceholders() {
+    for (let i = 0; i < 5; i++) {
+        const abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
+        const abilityRow = abilityLevelInput?.closest(".row");
+        if (!abilityLevelInput) {
+            continue;
+        }
+
+        const costHintId = "abilityUpgradeCost_" + i;
+        if (!document.getElementById(costHintId)) {
+            const costHintElement = document.createElement("div");
+            costHintElement.id = costHintId;
+            costHintElement.style.maxWidth = "100%";
+            if (abilityRow) {
+                abilityRow.insertAdjacentElement("afterend", costHintElement);
+            } else {
+                abilityLevelInput.parentElement.appendChild(costHintElement);
+            }
+        }
+    }
+}
+
+function getMarketEnhancementLevelsForItem(itemHrid) {
+    const levels = window.marketEnhancementLevelsByItem?.[itemHrid];
+    if (!Array.isArray(levels)) {
+        return [];
+    }
+
+    return levels
+        .map((value) => Number(value))
+        .filter((value) => Number.isFinite(value) && value > 0)
+        .sort((a, b) => a - b);
+}
+
+function getEnhancementInputElementBySelectType(selectType) {
+    return document.getElementById("inputEquipmentEnhancementLevel_" + selectType);
+}
+
+function getBaselineEquipmentForSelectType(selectType) {
+    const baselineSnapshot = getCurrentPlayerQueueState()?.baseline?.snapshot;
+    if (!baselineSnapshot?.equipment) {
+        return null;
+    }
+
+    if (selectType === "weapon") {
+        return baselineSnapshot.equipment.weapon ?? null;
+    }
+
+    return baselineSnapshot.equipment[selectType] ?? null;
+}
+
+function getBaselineSkillForAbilitySlot(slotIndex) {
+    const baselineSnapshot = getCurrentPlayerQueueState()?.baseline?.snapshot;
+    if (!Array.isArray(baselineSnapshot?.skills)) {
+        return null;
+    }
+
+    return baselineSnapshot.skills[slotIndex] ?? null;
+}
+
+function getEnhancementUpgradeCostKey(selectType, itemHrid, fromLevel, toLevel) {
+    return `${selectType}|${itemHrid}|${fromLevel}|${toLevel}`;
+}
+
+function getCurrentPlayerEnhancementCostMap() {
+    const queueState = getCurrentPlayerQueueState();
+    if (!queueState.enhancementUpgradeCosts || typeof queueState.enhancementUpgradeCosts !== "object") {
+        queueState.enhancementUpgradeCosts = {};
+    }
+    return queueState.enhancementUpgradeCosts;
+}
+
+function getAbilityUpgradeCostKey(abilitySlot, abilityHrid, fromLevel, toLevel) {
+    return `${abilitySlot}|${abilityHrid}|${fromLevel}|${toLevel}`;
+}
+
+function getCurrentPlayerAbilityCostMap() {
+    const queueState = getCurrentPlayerQueueState();
+    if (!queueState.abilityUpgradeCosts || typeof queueState.abilityUpgradeCosts !== "object") {
+        queueState.abilityUpgradeCosts = {};
+    }
+    return queueState.abilityUpgradeCosts;
+}
+
+function resolveEnhancementLevelPrice(itemHrid, level, preferredMode = "ask") {
+    const quoteMap = window.marketEnhancementQuotesByItem?.[itemHrid];
+    if (!quoteMap || typeof quoteMap !== "object") {
+        return -1;
+    }
+
+    const tryLevelPrice = (targetLevel) => {
+        const quote = quoteMap[String(targetLevel)];
+        if (!quote) {
+            return -1;
+        }
+
+        const ask = toFiniteNumber(quote.ask, -1);
+        const bid = toFiniteNumber(quote.bid, -1);
+        if (preferredMode === "bid") {
+            return bid !== -1 ? bid : ask;
+        }
+        return ask !== -1 ? ask : bid;
+    };
+
+    const directPrice = tryLevelPrice(level);
+    if (directPrice !== -1) {
+        return directPrice;
+    }
+
+    const levelCandidates = Object.keys(quoteMap)
+        .map((value) => Number(value))
+        .filter((value) => Number.isFinite(value))
+        .sort((a, b) => Math.abs(a - level) - Math.abs(b - level) || a - b);
+
+    for (const candidateLevel of levelCandidates) {
+        const candidatePrice = tryLevelPrice(candidateLevel);
+        if (candidatePrice !== -1) {
+            return candidatePrice;
+        }
+    }
+
+    return -1;
+}
+
+function computeDefaultEnhancementUpgradeCost(itemHrid, fromLevel, toLevel) {
+    if (!itemHrid || !Number.isFinite(fromLevel) || !Number.isFinite(toLevel) || toLevel <= fromLevel) {
+        return 0;
+    }
+
+    const mode = document.getElementById("selectPrices_drops")?.value === "bid" ? "bid" : "ask";
+    const fromPrice = resolveEnhancementLevelPrice(itemHrid, fromLevel, mode);
+    const toPrice = resolveEnhancementLevelPrice(itemHrid, toLevel, mode);
+    if (fromPrice === -1 || toPrice === -1) {
+        return 0;
+    }
+
+    const upgradeCost = toPrice - fromPrice;
+    return upgradeCost > 0 ? upgradeCost : 0;
+}
+
+function getAbilityXpForLevel(level) {
+    const abilityXpLevels = window.jigsAbilityXpLevels;
+    if (!Array.isArray(abilityXpLevels)) {
+        return null;
+    }
+
+    const normalizedLevel = Number(level);
+    if (!Number.isFinite(normalizedLevel) || normalizedLevel < 0 || normalizedLevel >= abilityXpLevels.length) {
+        return null;
+    }
+
+    const xpValue = Number(abilityXpLevels[normalizedLevel]);
+    return Number.isFinite(xpValue) ? xpValue : null;
+}
+
+function getSpellBookXpForAbility(abilityHrid) {
+    const bookInfo = abilityBookInfoByAbilityHrid[abilityHrid];
+    if (bookInfo?.xpPerBook > 0) {
+        return bookInfo.xpPerBook;
+    }
+
+    const abilityName = abilityDetailMap[abilityHrid]?.name ?? "";
+    if (!abilityName) {
+        return 0;
+    }
+
+    const spellBookXpMap = window.jigsSpellBookXpByName;
+    if (!spellBookXpMap || typeof spellBookXpMap !== "object") {
+        return 0;
+    }
+
+    const matchedKey = Object.keys(spellBookXpMap).find((key) => key.toLowerCase() === abilityName.toLowerCase());
+    const xpPerBook = matchedKey ? Number(spellBookXpMap[matchedKey]) : 0;
+    return Number.isFinite(xpPerBook) && xpPerBook > 0 ? xpPerBook : 0;
+}
+
+function computeDefaultAbilityUpgradeCost(baseSkill, toLevel) {
+    const abilityHrid = baseSkill?.abilityHrid ?? "";
+    const fromLevel = Number(baseSkill?.level ?? 1);
+    if (!abilityHrid || !Number.isFinite(fromLevel) || !Number.isFinite(toLevel) || toLevel <= fromLevel) {
+        return 0;
+    }
+
+    const startXp = getAbilityXpForLevel(fromLevel);
+    const endXp = getAbilityXpForLevel(toLevel);
+    if (startXp == null || endXp == null) {
+        return null;
+    }
+
+    const xpNeeded = endXp - startXp;
+    if (xpNeeded <= 0) {
+        return 0;
+    }
+
+    const xpPerBook = getSpellBookXpForAbility(abilityHrid);
+    if (!xpPerBook) {
+        return null;
+    }
+
+    const booksNeeded = Math.ceil(xpNeeded / xpPerBook);
+    if (!Number.isFinite(booksNeeded) || booksNeeded <= 0) {
+        return 0;
+    }
+
+    const bookItemHrid = abilityBookInfoByAbilityHrid[abilityHrid]?.itemHrid ?? "";
+    if (!bookItemHrid) {
+        return null;
+    }
+
+    const pricePerBook = resolveMarketplacePrice(bookItemHrid, "selectPrices_drops");
+    if (pricePerBook === -1) {
+        return null;
+    }
+
+    const totalCost = booksNeeded * pricePerBook;
+    return totalCost > 0 ? totalCost : 0;
+}
+
+function applyEquipmentEnhancementFromMarket(selectType, enhancementLevel) {
+    const enhancementInput = getEnhancementInputElementBySelectType(selectType);
+    if (!enhancementInput) {
+        return;
+    }
+
+    enhancementInput.value = String(enhancementLevel);
+    updateEquipmentState();
+    updateUI();
+}
+
+function refreshEquipmentEnhancementHints() {
+    const selectTypes = ["head", "body", "legs", "feet", "hands", "weapon", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"];
+    for (const selectType of selectTypes) {
+        const selectElement = document.getElementById("selectEquipment_" + selectType);
+        const buttonHintElement = document.getElementById("marketEnhancementButtons_" + selectType);
+        const costHintElement = document.getElementById("marketEnhancementCost_" + selectType);
+        const enhancementInput = getEnhancementInputElementBySelectType(selectType);
+        if (!selectElement || !buttonHintElement || !costHintElement || !enhancementInput) {
+            continue;
+        }
+
+        buttonHintElement.replaceChildren();
+        costHintElement.replaceChildren();
+
+        const itemHrid = selectElement.value;
+        if (!itemHrid) {
+            continue;
+        }
+
+        const levels = getMarketEnhancementLevelsForItem(itemHrid);
+        if (levels.length === 0) {
+            continue;
+        }
+
+        const buttonContainer = document.createElement("div");
+        buttonContainer.className = "d-flex flex-wrap gap-1";
+        const currentLevel = Number(enhancementInput.value);
+        for (const level of levels) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.className = `btn btn-sm ${currentLevel === level ? "btn-primary" : "btn-outline-secondary"}`;
+            button.style.padding = "0 0.35rem";
+            button.textContent = `+${level}`;
+            button.addEventListener("click", () => applyEquipmentEnhancementFromMarket(selectType, level));
+            buttonContainer.appendChild(button);
+        }
+        buttonHintElement.appendChild(buttonContainer);
+
+        const baselineEquipment = getBaselineEquipmentForSelectType(selectType);
+        const baselineItemHrid = baselineEquipment?.itemHrid ?? "";
+        const baselineLevel = Number(baselineEquipment?.enhancementLevel ?? 0);
+        const shouldShowUpgradeCost = Boolean(
+            baselineItemHrid
+            && baselineItemHrid === itemHrid
+            && Number.isFinite(currentLevel)
+            && currentLevel > baselineLevel
+        );
+
+        if (shouldShowUpgradeCost) {
+            const costMap = getCurrentPlayerEnhancementCostMap();
+            const costKey = getEnhancementUpgradeCostKey(selectType, itemHrid, baselineLevel, currentLevel);
+            let savedCost;
+            if (Object.prototype.hasOwnProperty.call(costMap, costKey)) {
+                savedCost = costMap[costKey];
+            } else {
+                const defaultCost = computeDefaultEnhancementUpgradeCost(itemHrid, baselineLevel, currentLevel);
+                savedCost = String(defaultCost);
+                costMap[costKey] = savedCost;
+            }
+
+            const costContainer = document.createElement("div");
+            costContainer.className = "mt-1";
+
+            const labelRow = document.createElement("div");
+            labelRow.className = "small text-secondary";
+            costContainer.appendChild(labelRow);
+
+            const costInput = document.createElement("input");
+            costInput.type = "number";
+            costInput.step = "any";
+            costInput.min = "0";
+            costInput.className = "form-control form-control-sm";
+            costInput.style.maxWidth = "140px";
+            costInput.value = String(savedCost);
+
+            const updateCostPreview = () => {
+                const numericCost = toFiniteNumber(costInput.value, 0);
+                labelRow.textContent = `${i18next.t("common:equipment.upgradeCost")}: ${formatCompactKMBValue(numericCost, 1)}`;
+            };
+            updateCostPreview();
+
+            const inputRow = document.createElement("div");
+            inputRow.className = "mt-1";
+            inputRow.appendChild(costInput);
+            costContainer.appendChild(inputRow);
+
+            costInput.addEventListener("input", () => {
+                costMap[costKey] = costInput.value;
+                updateCostPreview();
+            });
+
+            costHintElement.appendChild(costContainer);
+        }
+    }
+}
+
+function refreshAbilityUpgradeCostHints() {
+    for (let i = 0; i < 5; i++) {
+        const abilitySelect = document.getElementById("selectAbility_" + i);
+        const abilityLevelInput = document.getElementById("inputAbilityLevel_" + i);
+        const costHintElement = document.getElementById("abilityUpgradeCost_" + i);
+        if (!abilitySelect || !abilityLevelInput || !costHintElement) {
+            continue;
+        }
+
+        costHintElement.replaceChildren();
+
+        const abilityHrid = abilitySelect.value;
+        if (!abilityHrid) {
+            continue;
+        }
+
+        const baselineSkill = getBaselineSkillForAbilitySlot(i);
+        const baselineAbilityHrid = baselineSkill?.abilityHrid ?? "";
+        const baselineLevel = Number(baselineSkill?.level ?? 1);
+        const currentLevel = Number(abilityLevelInput.value);
+        const shouldShowUpgradeCost = Boolean(
+            baselineAbilityHrid
+            && baselineAbilityHrid === abilityHrid
+            && Number.isFinite(currentLevel)
+            && currentLevel > baselineLevel
+        );
+
+        if (!shouldShowUpgradeCost) {
+            continue;
+        }
+
+        const costMap = getCurrentPlayerAbilityCostMap();
+        const costKey = getAbilityUpgradeCostKey(i, abilityHrid, baselineLevel, currentLevel);
+        let savedCost;
+        if (Object.prototype.hasOwnProperty.call(costMap, costKey)) {
+            savedCost = costMap[costKey];
+        } else {
+            const defaultCost = computeDefaultAbilityUpgradeCost(baselineSkill, currentLevel);
+            savedCost = String(defaultCost ?? 0);
+            if (defaultCost != null) {
+                costMap[costKey] = savedCost;
+            }
+        }
+
+        const costContainer = document.createElement("div");
+        costContainer.className = "mb-2";
+
+        const labelRow = document.createElement("div");
+        labelRow.className = "small text-secondary";
+        costContainer.appendChild(labelRow);
+
+        const costInput = document.createElement("input");
+        costInput.type = "number";
+        costInput.step = "any";
+        costInput.min = "0";
+        costInput.className = "form-control form-control-sm";
+        costInput.style.maxWidth = "140px";
+        costInput.value = String(savedCost);
+
+        const updateCostPreview = () => {
+            const numericCost = toFiniteNumber(costInput.value, 0);
+            labelRow.textContent = `${i18next.t("common:equipment.upgradeCost")}: ${formatCompactKMBValue(numericCost, 1)}`;
+        };
+        updateCostPreview();
+
+        const inputRow = document.createElement("div");
+        inputRow.className = "mt-1";
+        inputRow.appendChild(costInput);
+        costContainer.appendChild(inputRow);
+
+        costInput.addEventListener("input", () => {
+            costMap[costKey] = costInput.value;
+            updateCostPreview();
+        });
+
+        costHintElement.appendChild(costContainer);
+    }
 }
 
 function updateEquipmentState() {
@@ -740,7 +1214,11 @@ function initAbilitiesSection() {
         }
 
         selectElement.addEventListener("change", abilitySelectHandler);
+        inputElement.addEventListener("input", refreshAbilityUpgradeCostHints);
+        inputElement.addEventListener("change", refreshAbilityUpgradeCostHints);
     }
+
+    initAbilityUpgradeCostPlaceholders();
 }
 
 function abilitySelectHandler() {
@@ -771,6 +1249,8 @@ function updateAbilityUI() {
         let moveUpButton = document.getElementById("selectAbilityMoveUp_" + i);
         moveUpButton.onclick = () => swapAbilityOrder(i, -1);
     }
+
+    refreshAbilityUpgradeCostHints();
 }
 
 function swapAbilityOrder(abilityIndex, step) {
@@ -4378,6 +4858,28 @@ function showErrorModal(error) {
 
 window.prices;
 
+async function fetchAbilityUpgradeReferenceData() {
+    try {
+        const response = await fetch(JIGS_DATA_URL, { mode: "cors" });
+        if (!response.ok) {
+            return;
+        }
+
+        const data = await response.json();
+        if (Array.isArray(data?.abilityXp)) {
+            window.jigsAbilityXpLevels = data.abilityXp.map((value) => Number(value));
+        }
+
+        if (data?.spellBookXp && typeof data.spellBookXp === "object") {
+            window.jigsSpellBookXpByName = data.spellBookXp;
+        }
+
+        refreshAbilityUpgradeCostHints();
+    } catch (error) {
+        console.warn("Failed to fetch ability upgrade reference data", error);
+    }
+}
+
 async function fetchPrices() {
     let response = null;
     try {
@@ -4421,10 +4923,29 @@ async function fetchPrices() {
 
         const priceTmp = pricesJson['marketData'];
         window.prices = {};
+        window.marketEnhancementLevelsByItem = {};
+        window.marketEnhancementQuotesByItem = {};
         for (const item in itemDetailMap) {
             const hrid = itemDetailMap[item].hrid;
             if (hrid in priceTmp) {
                 window.prices[hrid] = { "ask": -1, "bid": -1, "vendor": itemDetailMap[item].sellPrice };
+                const enhancementQuotes = {};
+                for (const [levelKey, levelQuote] of Object.entries(priceTmp[hrid] ?? {})) {
+                    enhancementQuotes[levelKey] = {
+                        ask: toFiniteNumber(levelQuote?.a, -1),
+                        bid: toFiniteNumber(levelQuote?.b, -1),
+                    };
+                }
+                if (Object.keys(enhancementQuotes).length > 0) {
+                    window.marketEnhancementQuotesByItem[hrid] = enhancementQuotes;
+                }
+                const enhancementLevels = Object.keys(priceTmp[hrid] ?? {})
+                    .map((levelKey) => Number(levelKey))
+                    .filter((levelValue) => Number.isFinite(levelValue) && levelValue > 0)
+                    .sort((a, b) => a - b);
+                if (enhancementLevels.length > 0) {
+                    window.marketEnhancementLevelsByItem[hrid] = enhancementLevels;
+                }
                 if (priceTmp[hrid]['0']) {
                     window.prices[hrid].ask = priceTmp[hrid]['0'].a;
                     window.prices[hrid].bid = priceTmp[hrid]['0'].b;
@@ -4469,6 +4990,9 @@ async function fetchPrices() {
                 return item.itemHrid in window.prices ? window.prices[item.itemHrid].vendor : 0;
             }).reduce((a, b) => a + b, 0),
         };
+
+        refreshEquipmentEnhancementHints();
+        refreshAbilityUpgradeCostHints();
 
     } catch (error) {
         console.error(error);
@@ -4666,6 +5190,7 @@ function updateUI() {
     updateFoodUI();
     updateDrinksUI();
     updateAbilityUI();
+    refreshEquipmentEnhancementHints();
 
     updateContent();
     refreshHomeDiffHighlight();
@@ -4718,6 +5243,8 @@ function updateContent() {
 if (typeof i18next !== "undefined" && i18next?.on) {
     i18next.on("languageChanged", () => {
         updateContent();
+        refreshAbilityUpgradeCostHints();
+        refreshEquipmentEnhancementHints();
         renderQueueViewsForCurrentPlayer();
     });
 }
@@ -4729,6 +5256,8 @@ function createEmptyPlayerQueueState() {
         baseline: null,
         queueItems: [],
         runResults: [],
+        enhancementUpgradeCosts: {},
+        abilityUpgradeCosts: {},
         isRunning: false,
     };
 }
@@ -4789,16 +5318,18 @@ function switchLeftPage(pageName) {
 
 function initBaselineQueueControls() {
     const buttonSetBaseline = document.getElementById("buttonSetBaseline");
+    const buttonSetBaselineInModal = document.getElementById("buttonSetBaselineInModal");
     const buttonAddToQueue = document.getElementById("buttonAddToQueue");
     const buttonRunQueue = document.getElementById("buttonRunQueue");
     const buttonClearQueue = document.getElementById("buttonClearQueue");
     const queueList = document.getElementById("queueList");
 
-    if (!buttonSetBaseline || !buttonAddToQueue || !buttonRunQueue || !buttonClearQueue || !queueList) {
+    if (!buttonSetBaseline || !buttonSetBaselineInModal || !buttonAddToQueue || !buttonRunQueue || !buttonClearQueue || !queueList) {
         return;
     }
 
     buttonSetBaseline.addEventListener("click", handleSetBaselineClick);
+    buttonSetBaselineInModal.addEventListener("click", handleSetBaselineClick);
     buttonAddToQueue.addEventListener("click", handleAddToQueueClick);
     buttonRunQueue.addEventListener("click", handleRunQueueClick);
     buttonClearQueue.addEventListener("click", handleClearQueueClick);
@@ -4873,6 +5404,7 @@ initBaselineQueueControls();
 updateState();
 updateUI();
 renderQueueViewsForCurrentPlayer();
+fetchAbilityUpgradeReferenceData();
 fetchPrices();
 
 function extractLevelSnapshot(state) {
@@ -5415,15 +5947,17 @@ function setQueueRunningState(isRunning) {
     const state = getCurrentPlayerQueueState();
     state.isRunning = isRunning;
     const buttonSetBaseline = document.getElementById("buttonSetBaseline");
+    const buttonSetBaselineInModal = document.getElementById("buttonSetBaselineInModal");
     const buttonAddToQueue = document.getElementById("buttonAddToQueue");
     const buttonRunQueue = document.getElementById("buttonRunQueue");
     const buttonClearQueue = document.getElementById("buttonClearQueue");
 
-    if (!buttonSetBaseline || !buttonAddToQueue || !buttonRunQueue || !buttonClearQueue) {
+    if (!buttonSetBaseline || !buttonSetBaselineInModal || !buttonAddToQueue || !buttonRunQueue || !buttonClearQueue) {
         return;
     }
 
     buttonSetBaseline.disabled = isRunning;
+    buttonSetBaselineInModal.disabled = isRunning;
     buttonAddToQueue.disabled = isRunning;
     buttonRunQueue.disabled = isRunning;
     buttonClearQueue.disabled = isRunning;
@@ -5466,8 +6000,12 @@ async function handleSetBaselineClick() {
             createdAt: Date.now(),
         };
         queueState.runResults = [];
+        queueState.enhancementUpgradeCosts = {};
+        queueState.abilityUpgradeCosts = {};
         window.lastSimulationResult = simResult;
         showSimulationResult(simResult);
+        refreshAbilityUpgradeCostHints();
+        refreshEquipmentEnhancementHints();
         updateContent();
         progressbar.style.width = "100%";
         progressbar.innerHTML = "100%";
@@ -5600,6 +6138,34 @@ function handleAddToQueueClick() {
         return;
     }
 
+    const queueEntries = buildQueueEntriesForChanges(queueState.baseline.snapshot, snapshot, changes);
+    for (const entry of queueEntries) {
+        pushQueueItem(queueState, entry.snapshot, entry.changes);
+    }
+
+    restoreCurrentPlayerToBaselineSnapshot();
+    renderQueueViewsForCurrentPlayer();
+}
+
+function restoreCurrentPlayerToBaselineSnapshot() {
+    const queueState = getCurrentPlayerQueueState();
+    const baselineState = queueState?.baseline?.snapshot?.state;
+    if (!baselineState) {
+        return;
+    }
+
+    try {
+        playerDataMap[currentPlayerTabId] = JSON.stringify(baselineState);
+        updateNextPlayer(currentPlayerTabId);
+        updateState();
+        updateUI();
+        clearHomeDiffHighlight();
+    } catch (error) {
+        console.warn("failed to restore baseline snapshot after queue add", error);
+    }
+}
+
+function pushQueueItem(queueState, snapshot, changes) {
     const queueItemNumber = queueState.queueItems.length + 1;
     queueState.queueItems.push({
         id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -5609,8 +6175,188 @@ function handleAddToQueueClick() {
         changes,
         createdAt: Date.now(),
     });
+}
 
-    renderQueueViewsForCurrentPlayer();
+function buildQueueEntriesForChanges(baseSnapshot, targetSnapshot, changes) {
+    if (!Array.isArray(changes) || changes.length <= 1) {
+        return [{ snapshot: targetSnapshot, changes }];
+    }
+
+    let entries = [];
+    const seenSignatures = new Set();
+
+    for (const change of changes) {
+        const singleSnapshot = buildSingleChangeSnapshot(baseSnapshot, targetSnapshot, change);
+        if (!singleSnapshot) {
+            continue;
+        }
+
+        const singleChanges = diffSnapshots(baseSnapshot, singleSnapshot);
+        if (singleChanges.length === 0) {
+            continue;
+        }
+
+        const signature = stableStringify(singleChanges.map((entry) => ({
+            category: entry.category,
+            label: entry.label,
+            beforeValue: entry.beforeValue,
+            afterValue: entry.afterValue,
+        })));
+        if (seenSignatures.has(signature)) {
+            continue;
+        }
+
+        seenSignatures.add(signature);
+        entries.push({
+            snapshot: singleSnapshot,
+            changes: singleChanges,
+        });
+    }
+
+    if (entries.length === 0) {
+        return [{ snapshot: targetSnapshot, changes }];
+    }
+
+    return entries;
+}
+
+function buildSingleChangeSnapshot(baseSnapshot, targetSnapshot, change) {
+    if (!change) {
+        return null;
+    }
+
+    const baseState = structuredClone(baseSnapshot?.state ?? {});
+    const targetState = targetSnapshot?.state ?? {};
+    baseState.player = baseState.player ?? {};
+    baseState.triggerMap = baseState.triggerMap ?? {};
+
+    switch (change.category) {
+        case "profession": {
+            const skillKey = String(change.label ?? "").toLowerCase();
+            if (!LEVEL_KEYS.includes(skillKey)) {
+                return null;
+            }
+            baseState.player[skillKey + "Level"] = Number(targetState.player?.[skillKey + "Level"] ?? baseState.player[skillKey + "Level"] ?? 1);
+            break;
+        }
+        case "item": {
+            syncEquipmentChangeIntoState(baseState, targetState, String(change.label ?? ""));
+            break;
+        }
+        case "food": {
+            const index = parseOneBasedIndex(change.label);
+            if (index < 0 || index >= 3) {
+                return null;
+            }
+            ensureCombatConsumableState(baseState, "food", 3);
+            const targetEntry = targetState.food?.["/action_types/combat"]?.[index] ?? { itemHrid: "" };
+            baseState.food["/action_types/combat"][index] = structuredClone(targetEntry);
+            syncTriggerForHridFromState(baseState, targetState, targetEntry.itemHrid);
+            break;
+        }
+        case "drink": {
+            const index = parseOneBasedIndex(change.label);
+            if (index < 0 || index >= 3) {
+                return null;
+            }
+            ensureCombatConsumableState(baseState, "drinks", 3);
+            const targetEntry = targetState.drinks?.["/action_types/combat"]?.[index] ?? { itemHrid: "" };
+            baseState.drinks["/action_types/combat"][index] = structuredClone(targetEntry);
+            syncTriggerForHridFromState(baseState, targetState, targetEntry.itemHrid);
+            break;
+        }
+        case "skill": {
+            const index = parseOneBasedIndex(change.label);
+            if (index < 0 || index >= 5) {
+                return null;
+            }
+            ensureAbilityState(baseState, 5);
+            const targetEntry = targetState.abilities?.[index] ?? { abilityHrid: "", level: 1 };
+            baseState.abilities[index] = structuredClone(targetEntry);
+            syncTriggerForHridFromState(baseState, targetState, targetEntry.abilityHrid);
+            break;
+        }
+        case "trigger": {
+            const triggerHrid = extractTriggerHridFromChange(change);
+            if (!triggerHrid) {
+                return null;
+            }
+            if (Object.prototype.hasOwnProperty.call(targetState.triggerMap ?? {}, triggerHrid)) {
+                baseState.triggerMap[triggerHrid] = structuredClone(targetState.triggerMap[triggerHrid] ?? []);
+            } else {
+                delete baseState.triggerMap[triggerHrid];
+            }
+            break;
+        }
+        default:
+            return null;
+    }
+
+    return buildSnapshotFromState(baseState);
+}
+
+function parseOneBasedIndex(label) {
+    const text = String(label ?? "");
+    const match = text.match(/(\d+)/);
+    if (!match) {
+        return -1;
+    }
+    return Number(match[1]) - 1;
+}
+
+function ensureCombatConsumableState(state, key, size) {
+    state[key] = state[key] ?? {};
+    state[key]["/action_types/combat"] = state[key]["/action_types/combat"] ?? [];
+
+    while (state[key]["/action_types/combat"].length < size) {
+        state[key]["/action_types/combat"].push({ itemHrid: "" });
+    }
+}
+
+function ensureAbilityState(state, size) {
+    state.abilities = state.abilities ?? [];
+    while (state.abilities.length < size) {
+        state.abilities.push({ abilityHrid: "", level: 1 });
+    }
+}
+
+function syncTriggerForHridFromState(state, targetState, hrid) {
+    if (!hrid) {
+        return;
+    }
+
+    state.triggerMap = state.triggerMap ?? {};
+    if (Object.prototype.hasOwnProperty.call(targetState.triggerMap ?? {}, hrid)) {
+        state.triggerMap[hrid] = structuredClone(targetState.triggerMap[hrid] ?? []);
+    } else if (!Object.prototype.hasOwnProperty.call(state.triggerMap, hrid)) {
+        state.triggerMap[hrid] = [];
+    }
+}
+
+function syncEquipmentChangeIntoState(state, targetState, slotLabel) {
+    state.player = state.player ?? {};
+    state.player.equipment = Array.isArray(state.player.equipment) ? state.player.equipment : [];
+    const targetEquipment = Array.isArray(targetState.player?.equipment) ? targetState.player.equipment : [];
+
+    const syncLocation = (locationKey) => {
+        const locationHrid = "/item_locations/" + locationKey;
+        state.player.equipment = state.player.equipment.filter((entry) => entry.itemLocationHrid !== locationHrid);
+        const targetEntry = targetEquipment.find((entry) => entry.itemLocationHrid === locationHrid);
+        if (targetEntry && targetEntry.itemHrid) {
+            state.player.equipment.push(structuredClone(targetEntry));
+        }
+    };
+
+    if (slotLabel === "weapon") {
+        syncLocation("main_hand");
+        syncLocation("two_hand");
+        syncLocation("off_hand");
+        return;
+    }
+
+    if (slotLabel) {
+        syncLocation(slotLabel);
+    }
 }
 
 async function handleRunQueueClick() {
