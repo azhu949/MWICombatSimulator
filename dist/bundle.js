@@ -1482,7 +1482,7 @@ class Trigger {
   \************************/
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"2026年2月1日":["修正战斗等级计算的精度","修正地下城完成或失败后重新进入战斗的时间间隔 by wangchyan","修正诅咒和削弱的持续时间 by wangchyan","修正诅咒和狂怒的触发逻辑 by wangchyan","修正地下城团灭重置机制的部分逻辑 by wangchyan","修复守护光环和速度光环部分增益未正确受对应等级加强的异常 by wangchyan","修复无敌技能未正确影响韧性数值的缺陷 by wangchyan","修复初次进入战斗时未能优先吃喝的异常 by wangchyan","战斗时长相关的统计现在仅计算已完成的战斗，不再包含当前未结束的战斗 by wangchyan"],"2026年1月11日":["修复trigger错误计算已阵亡单位的问题 by wangchyan"],"2025年12月31日":["实验性功能新增HP/MP可视化图表 by wangchyan","修复防御伤害未正确受damge加成的异常 by wangchyan","修复守护光环的治疗加成效果未生效的异常 by wangchyan","修复快速治疗等技能未正确选择最低%生命为目标的错误 by wangchyan"],"2025年12月30日":["地下城增加最短完成时间记录"],"2025年12月24日":["修复技能释放选择的缺陷，之前可能存在异常缺蓝等情况"],"2025年12月18日":["支持成就系统及对应buff效果","地下城怪物的掉落不再生效"],"2025年12月6日":["修复游戏更新后技能在无trigger情况下由[]变为null时造成的异常"],"2025年11月7日":["兼容支持从CN镜像站调用API获取价格"],"2025年10月14日":["修复怪物攻击间隔数值未能适配攻击等级的问题"],"2025年9月17日":["修复暴击光环的trigger缺陷"],"2025年9月9日":["复活时不再错误的清空所有buff","团灭日志增加反伤、荆棘和DOT伤害记录"],"2025年8月21日":["增加单挑战斗批量模拟和对应怪物选项","增加MooPass和社区buff的选项及对应功能","精炼装备数值加强","秘法主教属性削弱","init_client_info_v1.20250819.0.json游戏数据更新"],"2025年8月20日":["修复经验和掉落计算在极端情况下的可能异常"],"2025年8月19日":["合并Test和Temp分支的rework内容","init_client_info_v1.20250818.0.json游戏数据更新"],"2025年8月18日":["修复贯穿技能可能对相同目标造成重复伤害的问题","修复团灭日志在黑夜模式下的显示异常","战斗等级公式更新","钟乳石魔像的荆棘数值调整","init_client_info_v1.20250626.0_0817.json游戏数据更新"],"2025年8月16日":["增加停止模拟按钮 by BKN46","增加技能顺序调整按钮 by BKN46","增加团灭日志 by TruthLight","怪物属性更新","奥术反射更名为报应","init_client_info_v1.20250626.0_0815.json游戏数据更新"],"2025年8月14日":["怪物属性更新","远程和法师装备属性调整","反伤计算上限调整","修复战斗间隔释放技能的异常","修复技能释放判断逻辑的异常","法力值耗尽比例更加准确","调整远程经验的15%和魔法经验的12%映射到攻击经验","init_client_info_v1.20250626.0_0813.json游戏数据更新"],"2025年8月11日":["怪物属性更新","近战和物理技能施法时间更新","盾击和重锤数值调整","双手盾防御经验加成调整","init_client_info_v1.20250626.0_0811.json游戏数据更新"],"2025年8月8日":["实现组队等级差过大时对掉落和经验的惩罚","实现怪物经验随狂暴进度百分比增加","暴击光环数值调整","增加战斗等级数值显示","增加等级差距惩罚数值显示","init_client_info_v1.20250626.0_0807.json游戏数据更新"],"2025年8月7日":["修复组队战斗时一些重复物品掉落数量异常的缺陷 by contr4l","init_client_info_v1.20250626.0_0806.json游戏数据更新"],"2025年8月3日":["怪物狂暴机制及对应trigger生效","精炼装备更新，护符数值调整，守护光环增加闪避率","init_client_info_v1.20250626.0_0802.json游戏数据更新","狂怒层数修正为5层","招架结算机制调整"],"2025年7月31日":["物品数据和怪物属性更新","尖刺外壳和奥术反射重做","强化数值更新","删除异常trigger","狮鹫盾的虚弱重做","君王剑招架对队友生效","狂怒特效最大层数修正为6层","涟漪特效增加10MP恢复","反伤正确显示其命中率","反伤机制调整","同步双手盾属性和反伤荆棘技能数值的调整"],"2025年7月22日":["暴击光环受远程等级加成","光环基础数值和等级加成调整"],"2025年7月17日":["批量模拟支持勾选星球","经验分配比例调整至30%+70%","光环及对应trigger，并按对应技能等级百分比加成","水火自然默认调整为元素光环","init_client_info_v1.20250626.0_0717.json游戏数据更新"],"2025年7月11日":["怪物经验和技能等级公式更新","闪避和抗性计算公式更新","力量更替为近战以及对应的兼容","init_client_info_v1.20250626.0_0711.json游戏数据更新"],"2025年7月10日":["修复贯穿技能由敌人释放时可能多次击中相同目标的缺陷"],"2025年7月9日":["掉落和掉率调整","经验调整","疫病射击和破甲之刺调整","怪物自动恢复移除","疫病射击trigger调整","获取价格使用官方API"],"2025年7月7日":["怪物属性缩放和地图多难度","法师技能调整和装备上\'技能伤害\'词缀生效","攻击等级和房屋等级对施法速度的影响生效","物品调整","精准重做以攻击等级计算","TEST 远程魔法经验的10%映射到攻击经验！","经验重做和护符装备"]}');
+module.exports = /*#__PURE__*/JSON.parse('{"2026年2月24日":["队列功能优化：加入队列时会按变更项自动拆分为多个单项队列，便于逐项对比收益","队列交互优化：在模拟配置弹窗新增“设为基准”按钮，并在加入队列后自动恢复到基准构筑","新增装备市场强化等级快捷按钮，可一键切换到市场存在的强化等级","新增装备强化升级成本提示与可编辑输入（基于当前买卖价模式自动估算）","新增技能升级成本提示与可编辑输入（基于技能经验表、技能书经验和市场价格估算）","价格与文案更新：补充强化等级行情数据解析，并细化队列结果中各指标“变化”字段的多语言文案","结果页新增升级成本与购买所需时间展示，并支持按基准每日期望利润估算购买所需时间","结果页增强对比维度：在各“变化”指标后新增“每0.01%提升所需金币”列，便于横向比较性价比","结果页高亮逻辑优化：移除变化值文字红绿着色，改为按本次结果中性价比最优/最差自动标记绿色/红色背景","装备升级成本口径调整为“卖旧装按 bid、买新装按 ask”，更贴近实际换装成本","队列项命名优化：技能变更展示等级区间与估算书本数（如 等级 25 -> 50 (174 本书)），装备变更展示强化区间","修复队列拆分与文案显示问题：武器单项变更不再错误夹带副手变更，且明细中不再重复显示主手/副手槽位前缀"],"2026年2月1日":["修正战斗等级计算的精度","修正地下城完成或失败后重新进入战斗的时间间隔 by wangchyan","修正诅咒和削弱的持续时间 by wangchyan","修正诅咒和狂怒的触发逻辑 by wangchyan","修正地下城团灭重置机制的部分逻辑 by wangchyan","修复守护光环和速度光环部分增益未正确受对应等级加强的异常 by wangchyan","修复无敌技能未正确影响韧性数值的缺陷 by wangchyan","修复初次进入战斗时未能优先吃喝的异常 by wangchyan","战斗时长相关的统计现在仅计算已完成的战斗，不再包含当前未结束的战斗 by wangchyan"],"2026年1月11日":["修复trigger错误计算已阵亡单位的问题 by wangchyan"],"2025年12月31日":["实验性功能新增HP/MP可视化图表 by wangchyan","修复防御伤害未正确受damge加成的异常 by wangchyan","修复守护光环的治疗加成效果未生效的异常 by wangchyan","修复快速治疗等技能未正确选择最低%生命为目标的错误 by wangchyan"],"2025年12月30日":["地下城增加最短完成时间记录"],"2025年12月24日":["修复技能释放选择的缺陷，之前可能存在异常缺蓝等情况"],"2025年12月18日":["支持成就系统及对应buff效果","地下城怪物的掉落不再生效"],"2025年12月6日":["修复游戏更新后技能在无trigger情况下由[]变为null时造成的异常"],"2025年11月7日":["兼容支持从CN镜像站调用API获取价格"],"2025年10月14日":["修复怪物攻击间隔数值未能适配攻击等级的问题"],"2025年9月17日":["修复暴击光环的trigger缺陷"],"2025年9月9日":["复活时不再错误的清空所有buff","团灭日志增加反伤、荆棘和DOT伤害记录"],"2025年8月21日":["增加单挑战斗批量模拟和对应怪物选项","增加MooPass和社区buff的选项及对应功能","精炼装备数值加强","秘法主教属性削弱","init_client_info_v1.20250819.0.json游戏数据更新"],"2025年8月20日":["修复经验和掉落计算在极端情况下的可能异常"],"2025年8月19日":["合并Test和Temp分支的rework内容","init_client_info_v1.20250818.0.json游戏数据更新"],"2025年8月18日":["修复贯穿技能可能对相同目标造成重复伤害的问题","修复团灭日志在黑夜模式下的显示异常","战斗等级公式更新","钟乳石魔像的荆棘数值调整","init_client_info_v1.20250626.0_0817.json游戏数据更新"],"2025年8月16日":["增加停止模拟按钮 by BKN46","增加技能顺序调整按钮 by BKN46","增加团灭日志 by TruthLight","怪物属性更新","奥术反射更名为报应","init_client_info_v1.20250626.0_0815.json游戏数据更新"],"2025年8月14日":["怪物属性更新","远程和法师装备属性调整","反伤计算上限调整","修复战斗间隔释放技能的异常","修复技能释放判断逻辑的异常","法力值耗尽比例更加准确","调整远程经验的15%和魔法经验的12%映射到攻击经验","init_client_info_v1.20250626.0_0813.json游戏数据更新"],"2025年8月11日":["怪物属性更新","近战和物理技能施法时间更新","盾击和重锤数值调整","双手盾防御经验加成调整","init_client_info_v1.20250626.0_0811.json游戏数据更新"],"2025年8月8日":["实现组队等级差过大时对掉落和经验的惩罚","实现怪物经验随狂暴进度百分比增加","暴击光环数值调整","增加战斗等级数值显示","增加等级差距惩罚数值显示","init_client_info_v1.20250626.0_0807.json游戏数据更新"],"2025年8月7日":["修复组队战斗时一些重复物品掉落数量异常的缺陷 by contr4l","init_client_info_v1.20250626.0_0806.json游戏数据更新"],"2025年8月3日":["怪物狂暴机制及对应trigger生效","精炼装备更新，护符数值调整，守护光环增加闪避率","init_client_info_v1.20250626.0_0802.json游戏数据更新","狂怒层数修正为5层","招架结算机制调整"],"2025年7月31日":["物品数据和怪物属性更新","尖刺外壳和奥术反射重做","强化数值更新","删除异常trigger","狮鹫盾的虚弱重做","君王剑招架对队友生效","狂怒特效最大层数修正为6层","涟漪特效增加10MP恢复","反伤正确显示其命中率","反伤机制调整","同步双手盾属性和反伤荆棘技能数值的调整"],"2025年7月22日":["暴击光环受远程等级加成","光环基础数值和等级加成调整"],"2025年7月17日":["批量模拟支持勾选星球","经验分配比例调整至30%+70%","光环及对应trigger，并按对应技能等级百分比加成","水火自然默认调整为元素光环","init_client_info_v1.20250626.0_0717.json游戏数据更新"],"2025年7月11日":["怪物经验和技能等级公式更新","闪避和抗性计算公式更新","力量更替为近战以及对应的兼容","init_client_info_v1.20250626.0_0711.json游戏数据更新"],"2025年7月10日":["修复贯穿技能由敌人释放时可能多次击中相同目标的缺陷"],"2025年7月9日":["掉落和掉率调整","经验调整","疫病射击和破甲之刺调整","怪物自动恢复移除","疫病射击trigger调整","获取价格使用官方API"],"2025年7月7日":["怪物属性缩放和地图多难度","法师技能调整和装备上\'技能伤害\'词缀生效","攻击等级和房屋等级对施法速度的影响生效","物品调整","精准重做以攻击等级计算","TEST 远程魔法经验的10%映射到攻击经验！","经验重做和护符装备"]}');
 
 /***/ }),
 
@@ -2355,9 +2355,8 @@ function computeDefaultEnhancementUpgradeCost(itemHrid, fromLevel, toLevel) {
         return 0;
     }
 
-    const mode = document.getElementById("selectPrices_drops")?.value === "bid" ? "bid" : "ask";
-    const fromPrice = resolveEnhancementLevelPrice(itemHrid, fromLevel, mode);
-    const toPrice = resolveEnhancementLevelPrice(itemHrid, toLevel, mode);
+    const fromPrice = resolveEnhancementLevelPrice(itemHrid, fromLevel, "bid");
+    const toPrice = resolveEnhancementLevelPrice(itemHrid, toLevel, "ask");
     if (fromPrice === -1 || toPrice === -1) {
         return 0;
     }
@@ -7715,6 +7714,133 @@ function formatQueueMetricValue(metricKey, value, digits = 2) {
     return formatMetricValue(value, digits);
 }
 
+function computeQueueItemUpgradeCost(queueState, queueItem) {
+    const baselineSnapshot = queueState?.baseline?.snapshot;
+    const targetSnapshot = queueItem?.snapshot;
+    if (!baselineSnapshot || !targetSnapshot) {
+        return 0;
+    }
+
+    const enhancementCostMap = queueState?.enhancementUpgradeCosts ?? {};
+    const abilityCostMap = queueState?.abilityUpgradeCosts ?? {};
+    let totalCost = 0;
+
+    for (const slotKey of [...EQUIPMENT_SLOT_KEYS, "weapon"]) {
+        const beforeEquipment = baselineSnapshot.equipment?.[slotKey] ?? null;
+        const afterEquipment = targetSnapshot.equipment?.[slotKey] ?? null;
+        const beforeItemHrid = beforeEquipment?.itemHrid ?? "";
+        const afterItemHrid = afterEquipment?.itemHrid ?? "";
+        const beforeLevel = Number(beforeEquipment?.enhancementLevel ?? 0);
+        const afterLevel = Number(afterEquipment?.enhancementLevel ?? 0);
+
+        if (
+            !beforeItemHrid
+            || !afterItemHrid
+            || beforeItemHrid !== afterItemHrid
+            || !Number.isFinite(beforeLevel)
+            || !Number.isFinite(afterLevel)
+            || afterLevel <= beforeLevel
+        ) {
+            continue;
+        }
+
+        const selectType = slotKey === "weapon" ? "weapon" : slotKey;
+        const costKey = getEnhancementUpgradeCostKey(selectType, afterItemHrid, beforeLevel, afterLevel);
+        const estimatedCost = Object.prototype.hasOwnProperty.call(enhancementCostMap, costKey)
+            ? toFiniteNumber(enhancementCostMap[costKey], 0)
+            : toFiniteNumber(computeDefaultEnhancementUpgradeCost(afterItemHrid, beforeLevel, afterLevel), 0);
+
+        totalCost += Math.max(0, estimatedCost);
+    }
+
+    for (let i = 0; i < 5; i++) {
+        const beforeSkill = baselineSnapshot.skills?.[i] ?? null;
+        const afterSkill = targetSnapshot.skills?.[i] ?? null;
+        const beforeAbilityHrid = beforeSkill?.abilityHrid ?? "";
+        const afterAbilityHrid = afterSkill?.abilityHrid ?? "";
+        const beforeLevel = Number(beforeSkill?.level ?? 1);
+        const afterLevel = Number(afterSkill?.level ?? 1);
+
+        if (
+            !beforeAbilityHrid
+            || !afterAbilityHrid
+            || beforeAbilityHrid !== afterAbilityHrid
+            || !Number.isFinite(beforeLevel)
+            || !Number.isFinite(afterLevel)
+            || afterLevel <= beforeLevel
+        ) {
+            continue;
+        }
+
+        const costKey = getAbilityUpgradeCostKey(i, afterAbilityHrid, beforeLevel, afterLevel);
+        const defaultCost = computeDefaultAbilityUpgradeCost(beforeSkill, afterLevel);
+        const estimatedCost = Object.prototype.hasOwnProperty.call(abilityCostMap, costKey)
+            ? toFiniteNumber(abilityCostMap[costKey], 0)
+            : toFiniteNumber(defaultCost, 0);
+
+        totalCost += Math.max(0, estimatedCost);
+    }
+
+    return toFiniteNumber(totalCost, 0);
+}
+
+function computePurchaseDaysByBaselineProfit(upgradeCost, baselineDailyNoRngProfit) {
+    const safeCost = toFiniteNumber(upgradeCost, 0);
+    const safeBaselineProfit = toFiniteNumber(baselineDailyNoRngProfit, 0);
+    if (safeCost <= 0 || safeBaselineProfit <= 0) {
+        return null;
+    }
+    return safeCost / safeBaselineProfit;
+}
+
+function formatPurchaseDuration(daysValue) {
+    if (!Number.isFinite(daysValue) || daysValue == null || daysValue < 0) {
+        return "-";
+    }
+
+    const hoursValue = daysValue * 24;
+    if (hoursValue < 24) {
+        return `${formatMetricValue(hoursValue, 1)}h`;
+    }
+
+    return `${formatMetricValue(daysValue, 1)}d`;
+}
+
+function computeGoldPerPoint01Pct(upgradeCost, deltaInfo) {
+    const safeCost = toFiniteNumber(upgradeCost, 0);
+    if (safeCost <= 0 || deltaInfo?.pct == null) {
+        return null;
+    }
+
+    const pctValue = Number(deltaInfo.pct);
+    if (!Number.isFinite(pctValue) || pctValue <= 0) {
+        return null;
+    }
+
+    return safeCost / (pctValue * 100);
+}
+
+function buildGoldPerPoint01PctRangeMap(rowDataList, metricKeys) {
+    let rangeMap = {};
+    for (const metricKey of metricKeys) {
+        const values = rowDataList
+            .map((rowData) => rowData.goldPerPoint01Pct?.[metricKey])
+            .filter((value) => Number.isFinite(value) && value > 0);
+
+        if (values.length === 0) {
+            rangeMap[metricKey] = null;
+            continue;
+        }
+
+        rangeMap[metricKey] = {
+            min: Math.min(...values),
+            max: Math.max(...values),
+        };
+    }
+
+    return rangeMap;
+}
+
 function formatDelta(deltaInfo, digits = 2, compactAbs = false) {
     const abs = Number(deltaInfo.abs ?? 0);
     const sign = abs > 0 ? "+" : "";
@@ -7722,7 +7848,7 @@ function formatDelta(deltaInfo, digits = 2, compactAbs = false) {
     if (deltaInfo.pct == null) {
         return {
             text: absText,
-            className: abs > 0 ? "delta-positive" : (abs < 0 ? "delta-negative" : "")
+            className: "",
         };
     }
 
@@ -7731,7 +7857,7 @@ function formatDelta(deltaInfo, digits = 2, compactAbs = false) {
     const pctText = pctSign + formatMetricValue(pct, 2) + "%";
     return {
         text: `${absText} (${pctText})`,
-        className: abs > 0 ? "delta-positive" : (abs < 0 ? "delta-negative" : ""),
+        className: "",
     };
 }
 
@@ -8129,6 +8255,12 @@ function syncEquipmentChangeIntoState(state, targetState, slotLabel) {
     state.player = state.player ?? {};
     state.player.equipment = Array.isArray(state.player.equipment) ? state.player.equipment : [];
     const targetEquipment = Array.isArray(targetState.player?.equipment) ? targetState.player.equipment : [];
+    const stateEquipment = Array.isArray(state.player?.equipment) ? state.player.equipment : [];
+
+    const hasEquippedAtLocation = (equipmentList, locationKey) => {
+        const locationHrid = "/item_locations/" + locationKey;
+        return equipmentList.some((entry) => entry.itemLocationHrid === locationHrid && entry.itemHrid);
+    };
 
     const syncLocation = (locationKey) => {
         const locationHrid = "/item_locations/" + locationKey;
@@ -8142,7 +8274,13 @@ function syncEquipmentChangeIntoState(state, targetState, slotLabel) {
     if (slotLabel === "weapon") {
         syncLocation("main_hand");
         syncLocation("two_hand");
-        syncLocation("off_hand");
+        // Off-hand should follow weapon change only when two-hand is involved.
+        // This avoids unrelated off-hand changes being bundled into one queue entry.
+        const baseHasTwoHand = hasEquippedAtLocation(stateEquipment, "two_hand");
+        const targetHasTwoHand = hasEquippedAtLocation(targetEquipment, "two_hand");
+        if (baseHasTwoHand || targetHasTwoHand) {
+            syncLocation("off_hand");
+        }
         return;
     }
 
@@ -8287,12 +8425,44 @@ function deriveSingleQueueChangeDisplayName(change) {
         return localizeQueueChangeLabel(change);
     }
 
+    if (change.category === "skill") {
+        const beforeParsed = parseSkillChangeValue(change.beforeValue);
+        const afterParsed = parseSkillChangeValue(change.afterValue);
+        if (
+            beforeParsed?.abilityHrid
+            && afterParsed?.abilityHrid
+            && beforeParsed.abilityHrid === afterParsed.abilityHrid
+            && Number.isFinite(beforeParsed.level)
+            && Number.isFinite(afterParsed.level)
+        ) {
+            const abilityName = localizeHridDisplayName(afterParsed.abilityHrid);
+            const booksNeeded = computeAbilityBooksNeededForRange(afterParsed.abilityHrid, beforeParsed.level, afterParsed.level);
+            if (booksNeeded != null) {
+                return i18next.t("common:queue.skillLevelChangeWithBooks", {
+                    name: abilityName,
+                    from: beforeParsed.level,
+                    to: afterParsed.level,
+                    books: booksNeeded,
+                });
+            }
+            return i18next.t("common:queue.skillLevelChange", {
+                name: abilityName,
+                from: beforeParsed.level,
+                to: afterParsed.level,
+            });
+        }
+    }
+
     if (change.category === "item") {
         const beforeParsed = parseEquipmentChangeValue(change.beforeValue);
         const afterParsed = parseEquipmentChangeValue(change.afterValue);
         if (beforeParsed?.itemHrid && afterParsed?.itemHrid && beforeParsed.itemHrid === afterParsed.itemHrid) {
             const itemName = localizeHridDisplayName(beforeParsed.itemHrid);
-            return `${itemName}(+${beforeParsed.enhancementLevel})->(+${afterParsed.enhancementLevel})`;
+            return i18next.t("common:queue.itemEnhancementChange", {
+                name: itemName,
+                from: beforeParsed.enhancementLevel,
+                to: afterParsed.enhancementLevel,
+            });
         }
 
         const label = localizeQueueChangeLabel(change);
@@ -8360,6 +8530,62 @@ function parseEquipmentChangeValue(value) {
         itemHrid: match[2],
         enhancementLevel: match[3],
     };
+}
+
+function parseSkillChangeValue(value) {
+    if (value == null) {
+        return null;
+    }
+
+    const text = String(value).trim();
+    if (!text || text === "-") {
+        return null;
+    }
+
+    const match = text.match(/^(\/abilities\/[a-z0-9_]+)\(Lv\.([^)]+)\)$/i);
+    if (!match) {
+        return null;
+    }
+
+    const levelValue = Number(match[2]);
+    if (!Number.isFinite(levelValue)) {
+        return null;
+    }
+
+    return {
+        abilityHrid: match[1],
+        level: levelValue,
+    };
+}
+
+function computeAbilityBooksNeededForRange(abilityHrid, fromLevel, toLevel) {
+    if (
+        !abilityHrid
+        || !Number.isFinite(fromLevel)
+        || !Number.isFinite(toLevel)
+        || toLevel <= fromLevel
+    ) {
+        return null;
+    }
+
+    const startXp = getAbilityXpForLevel(fromLevel);
+    const endXp = getAbilityXpForLevel(toLevel);
+    if (startXp == null || endXp == null) {
+        return null;
+    }
+
+    const xpNeeded = endXp - startXp;
+    if (xpNeeded <= 0) {
+        return 0;
+    }
+
+    const xpPerBook = getSpellBookXpForAbility(abilityHrid);
+    if (!xpPerBook) {
+        return null;
+    }
+
+    const booksNeeded = Math.ceil(xpNeeded / xpPerBook);
+    return Number.isFinite(booksNeeded) && booksNeeded >= 0 ? booksNeeded : null;
 }
 
 function pickPreferredChangedValue(change) {
@@ -8506,13 +8732,9 @@ function localizeQueueChangeValue(value) {
 
     const equipmentMatch = text.match(/^(?:([a-z_]+):)?(\/items\/[a-z0-9_]+)\(\+([^)]+)\)$/i);
     if (equipmentMatch) {
-        const slotKey = equipmentMatch[1];
         const itemHrid = equipmentMatch[2];
         const enhancement = equipmentMatch[3];
         const itemName = localizeHridDisplayName(itemHrid);
-        if (slotKey) {
-            return `${localizeEquipmentSlotLabel(slotKey)}:${itemName}(+${enhancement})`;
-        }
         return `${itemName}(+${enhancement})`;
     }
 
@@ -8646,7 +8868,7 @@ function renderQueueResults() {
     if (queueState.runResults.length === 0) {
         const emptyRow = document.createElement("tr");
         const cell = document.createElement("td");
-        cell.colSpan = 9;
+        cell.colSpan = 15;
         cell.className = "text-secondary";
         cell.textContent = i18next.t("common:queue.emptyResults");
         emptyRow.appendChild(cell);
@@ -8659,19 +8881,45 @@ function renderQueueResults() {
         displayName: getQueueItemDisplayName(item, index + 1),
     }]));
 
-    for (const runResult of queueState.runResults) {
-        const row = document.createElement("tr");
+    const metricKeys = ["dps", "dailyNoRngProfit", "xpPerHour", "killsPerHour"];
+    const rowDataList = queueState.runResults.map((runResult) => {
         const queueItem = queueItemMap.get(runResult.queueItemId);
+        const totalUpgradeCost = computeQueueItemUpgradeCost(queueState, queueItem?.item);
+        return {
+            runResult,
+            queueItem,
+            totalUpgradeCost,
+            purchaseDays: computePurchaseDaysByBaselineProfit(totalUpgradeCost, baseline.dailyNoRngProfit),
+            goldPerPoint01Pct: {
+                dps: computeGoldPerPoint01Pct(totalUpgradeCost, runResult.deltas?.dps),
+                dailyNoRngProfit: computeGoldPerPoint01Pct(totalUpgradeCost, runResult.deltas?.dailyNoRngProfit),
+                xpPerHour: computeGoldPerPoint01Pct(totalUpgradeCost, runResult.deltas?.xpPerHour),
+                killsPerHour: computeGoldPerPoint01Pct(totalUpgradeCost, runResult.deltas?.killsPerHour),
+            },
+        };
+    });
+    const goldPerPoint01PctRangeMap = buildGoldPerPoint01PctRangeMap(rowDataList, metricKeys);
+
+    for (const rowData of rowDataList) {
+        const row = document.createElement("tr");
+        const runResult = rowData.runResult;
+        const queueItem = rowData.queueItem;
 
         appendTextCell(row, queueItem?.displayName ?? runResult.queueItemId);
+        appendTextCell(row, rowData.totalUpgradeCost > 0 ? formatCompactKMBValue(rowData.totalUpgradeCost, 1) : "-");
+        appendTextCell(row, formatPurchaseDuration(rowData.purchaseDays));
         appendTextCell(row, formatMetricValue(runResult.metrics.dps, 2));
         appendDeltaCell(row, runResult.deltas.dps, 2);
+        appendGoldPerPoint01PctCell(row, rowData.goldPerPoint01Pct.dps, goldPerPoint01PctRangeMap.dps);
         appendTextCell(row, formatQueueMetricValue("dailyNoRngProfit", runResult.metrics.dailyNoRngProfit, 2));
         appendDeltaCell(row, runResult.deltas.dailyNoRngProfit, 2, true);
+        appendGoldPerPoint01PctCell(row, rowData.goldPerPoint01Pct.dailyNoRngProfit, goldPerPoint01PctRangeMap.dailyNoRngProfit);
         appendTextCell(row, formatQueueMetricValue("xpPerHour", runResult.metrics.xpPerHour, 0));
         appendDeltaCell(row, runResult.deltas.xpPerHour, 0, true);
+        appendGoldPerPoint01PctCell(row, rowData.goldPerPoint01Pct.xpPerHour, goldPerPoint01PctRangeMap.xpPerHour);
         appendTextCell(row, formatMetricValue(runResult.metrics.killsPerHour, 1));
         appendDeltaCell(row, runResult.deltas.killsPerHour, 1);
+        appendGoldPerPoint01PctCell(row, rowData.goldPerPoint01Pct.killsPerHour, goldPerPoint01PctRangeMap.killsPerHour);
 
         tableBody.appendChild(row);
     }
@@ -8687,9 +8935,30 @@ function appendDeltaCell(row, deltaInfo, digits, compactAbs = false) {
     const cell = document.createElement("td");
     const delta = formatDelta(deltaInfo, digits, compactAbs);
     cell.textContent = delta.text;
-    if (delta.className) {
-        cell.classList.add(delta.className);
+    row.appendChild(cell);
+}
+
+function appendGoldPerPoint01PctCell(row, value, rangeInfo) {
+    const cell = document.createElement("td");
+    const safeValue = Number(value);
+    const isValidValue = Number.isFinite(safeValue) && safeValue > 0;
+    cell.textContent = isValidValue ? formatCompactKMBValue(safeValue, 1) : "-";
+
+    if (
+        isValidValue
+        && rangeInfo
+        && Number.isFinite(rangeInfo.min)
+        && Number.isFinite(rangeInfo.max)
+        && rangeInfo.min < rangeInfo.max
+    ) {
+        const epsilon = 1e-9;
+        if (Math.abs(safeValue - rangeInfo.min) <= epsilon) {
+            cell.classList.add("queue-ratio-best");
+        } else if (Math.abs(safeValue - rangeInfo.max) <= epsilon) {
+            cell.classList.add("queue-ratio-worst");
+        }
     }
+
     row.appendChild(cell);
 }
 

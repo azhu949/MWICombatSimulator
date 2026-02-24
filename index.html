@@ -213,6 +213,24 @@
             font-weight: 600;
         }
 
+        .queue-ratio-best {
+            background-color: #d1e7dd !important;
+        }
+
+        .queue-ratio-worst {
+            background-color: #f8d7da !important;
+        }
+
+        body.dark-mode .queue-ratio-best {
+            background-color: #1f4d3f !important;
+            color: #e6fff2;
+        }
+
+        body.dark-mode .queue-ratio-worst {
+            background-color: #5a1f28 !important;
+            color: #ffe7ea;
+        }
+
         body.dark-mode .left-menu {
             border-right-color: #555;
         }
@@ -1363,14 +1381,20 @@
                                             <thead>
                                                 <tr>
                                                     <th data-i18n="common:queue.itemName">队列项</th>
+                                                    <th data-i18n="common:equipment.upgradeCost">升级成本</th>
+                                                    <th data-i18n="common:queue.purchaseTime">购买所需时间</th>
                                                     <th>DPS</th>
                                                     <th data-i18n="common:queue.deltaDps">DPS变化</th>
+                                                    <th data-i18n="common:queue.costPerPoint01Pct">每0.01%提升所需金币</th>
                                                     <th data-i18n="common:queue.dailyNoRngProfit">每日期望利润</th>
                                                     <th data-i18n="common:queue.deltaDailyNoRngProfit">期望利润变化</th>
+                                                    <th data-i18n="common:queue.costPerPoint01Pct">每0.01%提升所需金币</th>
                                                     <th data-i18n="common:simulationResults.xpPerHour">XP/h</th>
                                                     <th data-i18n="common:queue.deltaXpPerHour">XP/h变化</th>
+                                                    <th data-i18n="common:queue.costPerPoint01Pct">每0.01%提升所需金币</th>
                                                     <th data-i18n="common:simulationResults.killPerHour">Kills/h</th>
                                                     <th data-i18n="common:queue.deltaKillsPerHour">每小时击杀数变化</th>
+                                                    <th data-i18n="common:queue.costPerPoint01Pct">每0.01%提升所需金币</th>
                                                 </tr>
                                             </thead>
                                             <tbody id="queueResultsTableBody"></tbody>

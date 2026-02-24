@@ -563,9 +563,8 @@ function computeDefaultEnhancementUpgradeCost(itemHrid, fromLevel, toLevel) {
         return 0;
     }
 
-    const mode = document.getElementById("selectPrices_drops")?.value === "bid" ? "bid" : "ask";
-    const fromPrice = resolveEnhancementLevelPrice(itemHrid, fromLevel, mode);
-    const toPrice = resolveEnhancementLevelPrice(itemHrid, toLevel, mode);
+    const fromPrice = resolveEnhancementLevelPrice(itemHrid, fromLevel, "bid");
+    const toPrice = resolveEnhancementLevelPrice(itemHrid, toLevel, "ask");
     if (fromPrice === -1 || toPrice === -1) {
         return 0;
     }
@@ -5923,6 +5922,133 @@ function formatQueueMetricValue(metricKey, value, digits = 2) {
     return formatMetricValue(value, digits);
 }
 
+function computeQueueItemUpgradeCost(queueState, queueItem) {
+    const baselineSnapshot = queueState?.baseline?.snapshot;
+    const targetSnapshot = queueItem?.snapshot;
+    if (!baselineSnapshot || !targetSnapshot) {
+        return 0;
+    }
+
+    const enhancementCostMap = queueState?.enhancementUpgradeCosts ?? {};
+    const abilityCostMap = queueState?.abilityUpgradeCosts ?? {};
+    let totalCost = 0;
+
+    for (const slotKey of [...EQUIPMENT_SLOT_KEYS, "weapon"]) {
+        const beforeEquipment = baselineSnapshot.equipment?.[slotKey] ?? null;
+        const afterEquipment = targetSnapshot.equipment?.[slotKey] ?? null;
+        const beforeItemHrid = beforeEquipment?.itemHrid ?? "";
+        const afterItemHrid = afterEquipment?.itemHrid ?? "";
+        const beforeLevel = Number(beforeEquipment?.enhancementLevel ?? 0);
+        const afterLevel = Number(afterEquipment?.enhancementLevel ?? 0);
+
+        if (
+            !beforeItemHrid
+            || !afterItemHrid
+            || beforeItemHrid !== afterItemHrid
+            || !Number.isFinite(beforeLevel)
+            || !Number.isFinite(afterLevel)
+            || afterLevel <= beforeLevel
+        ) {
+            continue;
+        }
+
+        const selectType = slotKey === "weapon" ? "weapon" : slotKey;
+        const costKey = getEnhancementUpgradeCostKey(selectType, afterItemHrid, beforeLevel, afterLevel);
+        const estimatedCost = Object.prototype.hasOwnProperty.call(enhancementCostMap, costKey)
+            ? toFiniteNumber(enhancementCostMap[costKey], 0)
+            : toFiniteNumber(computeDefaultEnhancementUpgradeCost(afterItemHrid, beforeLevel, afterLevel), 0);
+
+        totalCost += Math.max(0, estimatedCost);
+    }
+
+    for (let i = 0; i < 5; i++) {
+        const beforeSkill = baselineSnapshot.skills?.[i] ?? null;
+        const afterSkill = targetSnapshot.skills?.[i] ?? null;
+        const beforeAbilityHrid = beforeSkill?.abilityHrid ?? "";
+        const afterAbilityHrid = afterSkill?.abilityHrid ?? "";
+        const beforeLevel = Number(beforeSkill?.level ?? 1);
+        const afterLevel = Number(afterSkill?.level ?? 1);
+
+        if (
+            !beforeAbilityHrid
+            || !afterAbilityHrid
+            || beforeAbilityHrid !== afterAbilityHrid
+            || !Number.isFinite(beforeLevel)
+            || !Number.isFinite(afterLevel)
+            || afterLevel <= beforeLevel
+        ) {
+            continue;
+        }
+
+        const costKey = getAbilityUpgradeCostKey(i, afterAbilityHrid, beforeLevel, afterLevel);
+        const defaultCost = computeDefaultAbilityUpgradeCost(beforeSkill, afterLevel);
+        const estimatedCost = Object.prototype.hasOwnProperty.call(abilityCostMap, costKey)
+            ? toFiniteNumber(abilityCostMap[costKey], 0)
+            : toFiniteNumber(defaultCost, 0);
+
+        totalCost += Math.max(0, estimatedCost);
+    }
+
+    return toFiniteNumber(totalCost, 0);
+}
+
+function computePurchaseDaysByBaselineProfit(upgradeCost, baselineDailyNoRngProfit) {
+    const safeCost = toFiniteNumber(upgradeCost, 0);
+    const safeBaselineProfit = toFiniteNumber(baselineDailyNoRngProfit, 0);
+    if (safeCost <= 0 || safeBaselineProfit <= 0) {
+        return null;
+    }
+    return safeCost / safeBaselineProfit;
+}
+
+function formatPurchaseDuration(daysValue) {
+    if (!Number.isFinite(daysValue) || daysValue == null || daysValue < 0) {
+        return "-";
+    }
+
+    const hoursValue = daysValue * 24;
+    if (hoursValue < 24) {
+        return `${formatMetricValue(hoursValue, 1)}h`;
+    }
+
+    return `${formatMetricValue(daysValue, 1)}d`;
+}
+
+function computeGoldPerPoint01Pct(upgradeCost, deltaInfo) {
+    const safeCost = toFiniteNumber(upgradeCost, 0);
+    if (safeCost <= 0 || deltaInfo?.pct == null) {
+        return null;
+    }
+
+    const pctValue = Number(deltaInfo.pct);
+    if (!Number.isFinite(pctValue) || pctValue <= 0) {
+        return null;
+    }
+
+    return safeCost / (pctValue * 100);
+}
+
+function buildGoldPerPoint01PctRangeMap(rowDataList, metricKeys) {
+    let rangeMap = {};
+    for (const metricKey of metricKeys) {
+        const values = rowDataList
+            .map((rowData) => rowData.goldPerPoint01Pct?.[metricKey])
+            .filter((value) => Number.isFinite(value) && value > 0);
+
+        if (values.length === 0) {
+            rangeMap[metricKey] = null;
+            continue;
+        }
+
+        rangeMap[metricKey] = {
+            min: Math.min(...values),
+            max: Math.max(...values),
+        };
+    }
+
+    return rangeMap;
+}
+
 function formatDelta(deltaInfo, digits = 2, compactAbs = false) {
     const abs = Number(deltaInfo.abs ?? 0);
     const sign = abs > 0 ? "+" : "";
@@ -5930,7 +6056,7 @@ function formatDelta(deltaInfo, digits = 2, compactAbs = false) {
     if (deltaInfo.pct == null) {
         return {
             text: absText,
-            className: abs > 0 ? "delta-positive" : (abs < 0 ? "delta-negative" : "")
+            className: "",
         };
     }
 
@@ -5939,7 +6065,7 @@ function formatDelta(deltaInfo, digits = 2, compactAbs = false) {
     const pctText = pctSign + formatMetricValue(pct, 2) + "%";
     return {
         text: `${absText} (${pctText})`,
-        className: abs > 0 ? "delta-positive" : (abs < 0 ? "delta-negative" : ""),
+        className: "",
     };
 }
 
@@ -6337,6 +6463,12 @@ function syncEquipmentChangeIntoState(state, targetState, slotLabel) {
     state.player = state.player ?? {};
     state.player.equipment = Array.isArray(state.player.equipment) ? state.player.equipment : [];
     const targetEquipment = Array.isArray(targetState.player?.equipment) ? targetState.player.equipment : [];
+    const stateEquipment = Array.isArray(state.player?.equipment) ? state.player.equipment : [];
+
+    const hasEquippedAtLocation = (equipmentList, locationKey) => {
+        const locationHrid = "/item_locations/" + locationKey;
+        return equipmentList.some((entry) => entry.itemLocationHrid === locationHrid && entry.itemHrid);
+    };
 
     const syncLocation = (locationKey) => {
         const locationHrid = "/item_locations/" + locationKey;
@@ -6350,7 +6482,13 @@ function syncEquipmentChangeIntoState(state, targetState, slotLabel) {
     if (slotLabel === "weapon") {
         syncLocation("main_hand");
         syncLocation("two_hand");
-        syncLocation("off_hand");
+        // Off-hand should follow weapon change only when two-hand is involved.
+        // This avoids unrelated off-hand changes being bundled into one queue entry.
+        const baseHasTwoHand = hasEquippedAtLocation(stateEquipment, "two_hand");
+        const targetHasTwoHand = hasEquippedAtLocation(targetEquipment, "two_hand");
+        if (baseHasTwoHand || targetHasTwoHand) {
+            syncLocation("off_hand");
+        }
         return;
     }
 
@@ -6495,12 +6633,44 @@ function deriveSingleQueueChangeDisplayName(change) {
         return localizeQueueChangeLabel(change);
     }
 
+    if (change.category === "skill") {
+        const beforeParsed = parseSkillChangeValue(change.beforeValue);
+        const afterParsed = parseSkillChangeValue(change.afterValue);
+        if (
+            beforeParsed?.abilityHrid
+            && afterParsed?.abilityHrid
+            && beforeParsed.abilityHrid === afterParsed.abilityHrid
+            && Number.isFinite(beforeParsed.level)
+            && Number.isFinite(afterParsed.level)
+        ) {
+            const abilityName = localizeHridDisplayName(afterParsed.abilityHrid);
+            const booksNeeded = computeAbilityBooksNeededForRange(afterParsed.abilityHrid, beforeParsed.level, afterParsed.level);
+            if (booksNeeded != null) {
+                return i18next.t("common:queue.skillLevelChangeWithBooks", {
+                    name: abilityName,
+                    from: beforeParsed.level,
+                    to: afterParsed.level,
+                    books: booksNeeded,
+                });
+            }
+            return i18next.t("common:queue.skillLevelChange", {
+                name: abilityName,
+                from: beforeParsed.level,
+                to: afterParsed.level,
+            });
+        }
+    }
+
     if (change.category === "item") {
         const beforeParsed = parseEquipmentChangeValue(change.beforeValue);
         const afterParsed = parseEquipmentChangeValue(change.afterValue);
         if (beforeParsed?.itemHrid && afterParsed?.itemHrid && beforeParsed.itemHrid === afterParsed.itemHrid) {
             const itemName = localizeHridDisplayName(beforeParsed.itemHrid);
-            return `${itemName}(+${beforeParsed.enhancementLevel})->(+${afterParsed.enhancementLevel})`;
+            return i18next.t("common:queue.itemEnhancementChange", {
+                name: itemName,
+                from: beforeParsed.enhancementLevel,
+                to: afterParsed.enhancementLevel,
+            });
         }
 
         const label = localizeQueueChangeLabel(change);
@@ -6568,6 +6738,62 @@ function parseEquipmentChangeValue(value) {
         itemHrid: match[2],
         enhancementLevel: match[3],
     };
+}
+
+function parseSkillChangeValue(value) {
+    if (value == null) {
+        return null;
+    }
+
+    const text = String(value).trim();
+    if (!text || text === "-") {
+        return null;
+    }
+
+    const match = text.match(/^(\/abilities\/[a-z0-9_]+)\(Lv\.([^)]+)\)$/i);
+    if (!match) {
+        return null;
+    }
+
+    const levelValue = Number(match[2]);
+    if (!Number.isFinite(levelValue)) {
+        return null;
+    }
+
+    return {
+        abilityHrid: match[1],
+        level: levelValue,
+    };
+}
+
+function computeAbilityBooksNeededForRange(abilityHrid, fromLevel, toLevel) {
+    if (
+        !abilityHrid
+        || !Number.isFinite(fromLevel)
+        || !Number.isFinite(toLevel)
+        || toLevel <= fromLevel
+    ) {
+        return null;
+    }
+
+    const startXp = getAbilityXpForLevel(fromLevel);
+    const endXp = getAbilityXpForLevel(toLevel);
+    if (startXp == null || endXp == null) {
+        return null;
+    }
+
+    const xpNeeded = endXp - startXp;
+    if (xpNeeded <= 0) {
+        return 0;
+    }
+
+    const xpPerBook = getSpellBookXpForAbility(abilityHrid);
+    if (!xpPerBook) {
+        return null;
+    }
+
+    const booksNeeded = Math.ceil(xpNeeded / xpPerBook);
+    return Number.isFinite(booksNeeded) && booksNeeded >= 0 ? booksNeeded : null;
 }
 
 function pickPreferredChangedValue(change) {
@@ -6714,13 +6940,9 @@ function localizeQueueChangeValue(value) {
 
     const equipmentMatch = text.match(/^(?:([a-z_]+):)?(\/items\/[a-z0-9_]+)\(\+([^)]+)\)$/i);
     if (equipmentMatch) {
-        const slotKey = equipmentMatch[1];
         const itemHrid = equipmentMatch[2];
         const enhancement = equipmentMatch[3];
         const itemName = localizeHridDisplayName(itemHrid);
-        if (slotKey) {
-            return `${localizeEquipmentSlotLabel(slotKey)}:${itemName}(+${enhancement})`;
-        }
         return `${itemName}(+${enhancement})`;
     }
 
@@ -6854,7 +7076,7 @@ function renderQueueResults() {
     if (queueState.runResults.length === 0) {
         const emptyRow = document.createElement("tr");
         const cell = document.createElement("td");
-        cell.colSpan = 9;
+        cell.colSpan = 15;
         cell.className = "text-secondary";
         cell.textContent = i18next.t("common:queue.emptyResults");
         emptyRow.appendChild(cell);
@@ -6867,19 +7089,45 @@ function renderQueueResults() {
         displayName: getQueueItemDisplayName(item, index + 1),
     }]));
 
-    for (const runResult of queueState.runResults) {
-        const row = document.createElement("tr");
+    const metricKeys = ["dps", "dailyNoRngProfit", "xpPerHour", "killsPerHour"];
+    const rowDataList = queueState.runResults.map((runResult) => {
         const queueItem = queueItemMap.get(runResult.queueItemId);
+        const totalUpgradeCost = computeQueueItemUpgradeCost(queueState, queueItem?.item);
+        return {
+            runResult,
+            queueItem,
+            totalUpgradeCost,
+            purchaseDays: computePurchaseDaysByBaselineProfit(totalUpgradeCost, baseline.dailyNoRngProfit),
+            goldPerPoint01Pct: {
+                dps: computeGoldPerPoint01Pct(totalUpgradeCost, runResult.deltas?.dps),
+                dailyNoRngProfit: computeGoldPerPoint01Pct(totalUpgradeCost, runResult.deltas?.dailyNoRngProfit),
+                xpPerHour: computeGoldPerPoint01Pct(totalUpgradeCost, runResult.deltas?.xpPerHour),
+                killsPerHour: computeGoldPerPoint01Pct(totalUpgradeCost, runResult.deltas?.killsPerHour),
+            },
+        };
+    });
+    const goldPerPoint01PctRangeMap = buildGoldPerPoint01PctRangeMap(rowDataList, metricKeys);
+
+    for (const rowData of rowDataList) {
+        const row = document.createElement("tr");
+        const runResult = rowData.runResult;
+        const queueItem = rowData.queueItem;
 
         appendTextCell(row, queueItem?.displayName ?? runResult.queueItemId);
+        appendTextCell(row, rowData.totalUpgradeCost > 0 ? formatCompactKMBValue(rowData.totalUpgradeCost, 1) : "-");
+        appendTextCell(row, formatPurchaseDuration(rowData.purchaseDays));
         appendTextCell(row, formatMetricValue(runResult.metrics.dps, 2));
         appendDeltaCell(row, runResult.deltas.dps, 2);
+        appendGoldPerPoint01PctCell(row, rowData.goldPerPoint01Pct.dps, goldPerPoint01PctRangeMap.dps);
         appendTextCell(row, formatQueueMetricValue("dailyNoRngProfit", runResult.metrics.dailyNoRngProfit, 2));
         appendDeltaCell(row, runResult.deltas.dailyNoRngProfit, 2, true);
+        appendGoldPerPoint01PctCell(row, rowData.goldPerPoint01Pct.dailyNoRngProfit, goldPerPoint01PctRangeMap.dailyNoRngProfit);
         appendTextCell(row, formatQueueMetricValue("xpPerHour", runResult.metrics.xpPerHour, 0));
         appendDeltaCell(row, runResult.deltas.xpPerHour, 0, true);
+        appendGoldPerPoint01PctCell(row, rowData.goldPerPoint01Pct.xpPerHour, goldPerPoint01PctRangeMap.xpPerHour);
         appendTextCell(row, formatMetricValue(runResult.metrics.killsPerHour, 1));
         appendDeltaCell(row, runResult.deltas.killsPerHour, 1);
+        appendGoldPerPoint01PctCell(row, rowData.goldPerPoint01Pct.killsPerHour, goldPerPoint01PctRangeMap.killsPerHour);
 
         tableBody.appendChild(row);
     }
@@ -6895,9 +7143,30 @@ function appendDeltaCell(row, deltaInfo, digits, compactAbs = false) {
     const cell = document.createElement("td");
     const delta = formatDelta(deltaInfo, digits, compactAbs);
     cell.textContent = delta.text;
-    if (delta.className) {
-        cell.classList.add(delta.className);
+    row.appendChild(cell);
+}
+
+function appendGoldPerPoint01PctCell(row, value, rangeInfo) {
+    const cell = document.createElement("td");
+    const safeValue = Number(value);
+    const isValidValue = Number.isFinite(safeValue) && safeValue > 0;
+    cell.textContent = isValidValue ? formatCompactKMBValue(safeValue, 1) : "-";
+
+    if (
+        isValidValue
+        && rangeInfo
+        && Number.isFinite(rangeInfo.min)
+        && Number.isFinite(rangeInfo.max)
+        && rangeInfo.min < rangeInfo.max
+    ) {
+        const epsilon = 1e-9;
+        if (Math.abs(safeValue - rangeInfo.min) <= epsilon) {
+            cell.classList.add("queue-ratio-best");
+        } else if (Math.abs(safeValue - rangeInfo.max) <= epsilon) {
+            cell.classList.add("queue-ratio-worst");
+        }
     }
+
     row.appendChild(cell);
 }
 
