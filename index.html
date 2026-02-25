@@ -279,6 +279,59 @@
             vertical-align: middle;
         }
 
+        #multiRoundRankingTableBody tr.multi-round-rank-top-1 td {
+            background-color: #fff3cd !important;
+            color: #6b5300;
+            font-weight: 700;
+        }
+
+        #multiRoundRankingTableBody tr.multi-round-rank-top-2 td {
+            background-color: #e9ecef !important;
+            color: #36404a;
+            font-weight: 600;
+        }
+
+        #multiRoundRankingTableBody tr.multi-round-rank-top-3 td {
+            background-color: #f8d7c4 !important;
+            color: #6a3d1b;
+            font-weight: 600;
+        }
+
+        #multiRoundRankingTableBody tr.multi-round-rank-top-4 td {
+            background-color: #d1e7dd !important;
+            color: #0f5132;
+        }
+
+        #multiRoundRankingTableBody tr.multi-round-rank-top-5 td {
+            background-color: #cff4fc !important;
+            color: #055160;
+        }
+
+        body.dark-mode #multiRoundRankingTableBody tr.multi-round-rank-top-1 td {
+            background-color: #5a4a12 !important;
+            color: #fff5c0;
+        }
+
+        body.dark-mode #multiRoundRankingTableBody tr.multi-round-rank-top-2 td {
+            background-color: #3d4651 !important;
+            color: #e9edf3;
+        }
+
+        body.dark-mode #multiRoundRankingTableBody tr.multi-round-rank-top-3 td {
+            background-color: #5b331a !important;
+            color: #ffd8bf;
+        }
+
+        body.dark-mode #multiRoundRankingTableBody tr.multi-round-rank-top-4 td {
+            background-color: #1f4d3f !important;
+            color: #dff6eb;
+        }
+
+        body.dark-mode #multiRoundRankingTableBody tr.multi-round-rank-top-5 td {
+            background-color: #0b4f59 !important;
+            color: #d7f7ff;
+        }
+
         @media (max-width: 1200px) {
             .player-top-bar #playerTab {
                 min-width: 0;
@@ -1442,6 +1495,7 @@
                                                 <tr>
                                                     <th data-i18n="common:multiRound.rank">排名</th>
                                                     <th data-i18n="common:queue.itemName">队列项</th>
+                                                    <th data-i18n="common:multiRound.simCount">模拟次数</th>
                                                     <th data-i18n="common:multiRound.finalScore">综合分</th>
                                                     <th data-i18n="common:multiRound.performanceScore">性能分</th>
                                                     <th data-i18n="common:multiRound.stabilityScore">稳定分</th>

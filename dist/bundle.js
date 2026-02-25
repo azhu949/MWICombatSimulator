@@ -1482,7 +1482,7 @@ class Trigger {
   \************************/
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"2026年2月24日":["队列功能优化：加入队列时会按变更项自动拆分为多个单项队列，便于逐项对比收益","队列交互优化：在模拟配置弹窗新增“设为基准”按钮，并在加入队列后自动恢复到基准构筑","新增装备市场强化等级快捷按钮，可一键切换到市场存在的强化等级","新增装备强化升级成本提示与可编辑输入（基于当前买卖价模式自动估算）","新增技能升级成本提示与可编辑输入（基于技能经验表、技能书经验和市场价格估算）","价格与文案更新：补充强化等级行情数据解析，并细化队列结果中各指标“变化”字段的多语言文案","结果页新增升级成本与购买所需时间展示，并支持按基准每日期望利润估算购买所需时间","结果页增强对比维度：在各“变化”指标后新增“每0.01%提升所需金币”列，便于横向比较性价比","结果页高亮逻辑优化：移除变化值文字红绿着色，改为按本次结果中性价比最优/最差自动标记绿色/红色背景","装备升级成本口径调整为“卖旧装按 bid、买新装按 ask”，更贴近实际换装成本","队列项命名优化：技能变更展示等级区间与估算书本数（如 等级 25 -> 50 (174 本书)），装备变更展示强化区间","修复队列拆分与文案显示问题：武器单项变更不再错误夹带副手变更，且明细中不再重复显示主手/副手槽位前缀"],"2026年2月1日":["修正战斗等级计算的精度","修正地下城完成或失败后重新进入战斗的时间间隔 by wangchyan","修正诅咒和削弱的持续时间 by wangchyan","修正诅咒和狂怒的触发逻辑 by wangchyan","修正地下城团灭重置机制的部分逻辑 by wangchyan","修复守护光环和速度光环部分增益未正确受对应等级加强的异常 by wangchyan","修复无敌技能未正确影响韧性数值的缺陷 by wangchyan","修复初次进入战斗时未能优先吃喝的异常 by wangchyan","战斗时长相关的统计现在仅计算已完成的战斗，不再包含当前未结束的战斗 by wangchyan"],"2026年1月11日":["修复trigger错误计算已阵亡单位的问题 by wangchyan"],"2025年12月31日":["实验性功能新增HP/MP可视化图表 by wangchyan","修复防御伤害未正确受damge加成的异常 by wangchyan","修复守护光环的治疗加成效果未生效的异常 by wangchyan","修复快速治疗等技能未正确选择最低%生命为目标的错误 by wangchyan"],"2025年12月30日":["地下城增加最短完成时间记录"],"2025年12月24日":["修复技能释放选择的缺陷，之前可能存在异常缺蓝等情况"],"2025年12月18日":["支持成就系统及对应buff效果","地下城怪物的掉落不再生效"],"2025年12月6日":["修复游戏更新后技能在无trigger情况下由[]变为null时造成的异常"],"2025年11月7日":["兼容支持从CN镜像站调用API获取价格"],"2025年10月14日":["修复怪物攻击间隔数值未能适配攻击等级的问题"],"2025年9月17日":["修复暴击光环的trigger缺陷"],"2025年9月9日":["复活时不再错误的清空所有buff","团灭日志增加反伤、荆棘和DOT伤害记录"],"2025年8月21日":["增加单挑战斗批量模拟和对应怪物选项","增加MooPass和社区buff的选项及对应功能","精炼装备数值加强","秘法主教属性削弱","init_client_info_v1.20250819.0.json游戏数据更新"],"2025年8月20日":["修复经验和掉落计算在极端情况下的可能异常"],"2025年8月19日":["合并Test和Temp分支的rework内容","init_client_info_v1.20250818.0.json游戏数据更新"],"2025年8月18日":["修复贯穿技能可能对相同目标造成重复伤害的问题","修复团灭日志在黑夜模式下的显示异常","战斗等级公式更新","钟乳石魔像的荆棘数值调整","init_client_info_v1.20250626.0_0817.json游戏数据更新"],"2025年8月16日":["增加停止模拟按钮 by BKN46","增加技能顺序调整按钮 by BKN46","增加团灭日志 by TruthLight","怪物属性更新","奥术反射更名为报应","init_client_info_v1.20250626.0_0815.json游戏数据更新"],"2025年8月14日":["怪物属性更新","远程和法师装备属性调整","反伤计算上限调整","修复战斗间隔释放技能的异常","修复技能释放判断逻辑的异常","法力值耗尽比例更加准确","调整远程经验的15%和魔法经验的12%映射到攻击经验","init_client_info_v1.20250626.0_0813.json游戏数据更新"],"2025年8月11日":["怪物属性更新","近战和物理技能施法时间更新","盾击和重锤数值调整","双手盾防御经验加成调整","init_client_info_v1.20250626.0_0811.json游戏数据更新"],"2025年8月8日":["实现组队等级差过大时对掉落和经验的惩罚","实现怪物经验随狂暴进度百分比增加","暴击光环数值调整","增加战斗等级数值显示","增加等级差距惩罚数值显示","init_client_info_v1.20250626.0_0807.json游戏数据更新"],"2025年8月7日":["修复组队战斗时一些重复物品掉落数量异常的缺陷 by contr4l","init_client_info_v1.20250626.0_0806.json游戏数据更新"],"2025年8月3日":["怪物狂暴机制及对应trigger生效","精炼装备更新，护符数值调整，守护光环增加闪避率","init_client_info_v1.20250626.0_0802.json游戏数据更新","狂怒层数修正为5层","招架结算机制调整"],"2025年7月31日":["物品数据和怪物属性更新","尖刺外壳和奥术反射重做","强化数值更新","删除异常trigger","狮鹫盾的虚弱重做","君王剑招架对队友生效","狂怒特效最大层数修正为6层","涟漪特效增加10MP恢复","反伤正确显示其命中率","反伤机制调整","同步双手盾属性和反伤荆棘技能数值的调整"],"2025年7月22日":["暴击光环受远程等级加成","光环基础数值和等级加成调整"],"2025年7月17日":["批量模拟支持勾选星球","经验分配比例调整至30%+70%","光环及对应trigger，并按对应技能等级百分比加成","水火自然默认调整为元素光环","init_client_info_v1.20250626.0_0717.json游戏数据更新"],"2025年7月11日":["怪物经验和技能等级公式更新","闪避和抗性计算公式更新","力量更替为近战以及对应的兼容","init_client_info_v1.20250626.0_0711.json游戏数据更新"],"2025年7月10日":["修复贯穿技能由敌人释放时可能多次击中相同目标的缺陷"],"2025年7月9日":["掉落和掉率调整","经验调整","疫病射击和破甲之刺调整","怪物自动恢复移除","疫病射击trigger调整","获取价格使用官方API"],"2025年7月7日":["怪物属性缩放和地图多难度","法师技能调整和装备上\'技能伤害\'词缀生效","攻击等级和房屋等级对施法速度的影响生效","物品调整","精准重做以攻击等级计算","TEST 远程魔法经验的10%映射到攻击经验！","经验重做和护符装备"]}');
+module.exports = /*#__PURE__*/JSON.parse('{"2026年2月24日":["新增装备变化模拟功能","新增队列多轮模拟，支持预设/自定义轮次（1-200）与并行、串行两种执行模式","新增“多轮结果”页面，提供汇总信息、评分排名和每轮原始数据（含DPS/利润/XP/h/Kills/h变化）","加入多轮综合评分模型：性能55% + 稳定20% + 成本25%，用于队列项排序","成本分析纳入升级成本、购买所需时间与“每0.01%提升所需金币（均值）”指标","补充中英文菜单与多轮模拟相关文案，并在基准或队列变更后清空旧多轮结果避免误读"],"2026年2月1日":["修正战斗等级计算的精度","修正地下城完成或失败后重新进入战斗的时间间隔 by wangchyan","修正诅咒和削弱的持续时间 by wangchyan","修正诅咒和狂怒的触发逻辑 by wangchyan","修正地下城团灭重置机制的部分逻辑 by wangchyan","修复守护光环和速度光环部分增益未正确受对应等级加强的异常 by wangchyan","修复无敌技能未正确影响韧性数值的缺陷 by wangchyan","修复初次进入战斗时未能优先吃喝的异常 by wangchyan","战斗时长相关的统计现在仅计算已完成的战斗，不再包含当前未结束的战斗 by wangchyan"],"2026年1月11日":["修复trigger错误计算已阵亡单位的问题 by wangchyan"],"2025年12月31日":["实验性功能新增HP/MP可视化图表 by wangchyan","修复防御伤害未正确受damge加成的异常 by wangchyan","修复守护光环的治疗加成效果未生效的异常 by wangchyan","修复快速治疗等技能未正确选择最低%生命为目标的错误 by wangchyan"],"2025年12月30日":["地下城增加最短完成时间记录"],"2025年12月24日":["修复技能释放选择的缺陷，之前可能存在异常缺蓝等情况"],"2025年12月18日":["支持成就系统及对应buff效果","地下城怪物的掉落不再生效"],"2025年12月6日":["修复游戏更新后技能在无trigger情况下由[]变为null时造成的异常"],"2025年11月7日":["兼容支持从CN镜像站调用API获取价格"],"2025年10月14日":["修复怪物攻击间隔数值未能适配攻击等级的问题"],"2025年9月17日":["修复暴击光环的trigger缺陷"],"2025年9月9日":["复活时不再错误的清空所有buff","团灭日志增加反伤、荆棘和DOT伤害记录"],"2025年8月21日":["增加单挑战斗批量模拟和对应怪物选项","增加MooPass和社区buff的选项及对应功能","精炼装备数值加强","秘法主教属性削弱","init_client_info_v1.20250819.0.json游戏数据更新"],"2025年8月20日":["修复经验和掉落计算在极端情况下的可能异常"],"2025年8月19日":["合并Test和Temp分支的rework内容","init_client_info_v1.20250818.0.json游戏数据更新"],"2025年8月18日":["修复贯穿技能可能对相同目标造成重复伤害的问题","修复团灭日志在黑夜模式下的显示异常","战斗等级公式更新","钟乳石魔像的荆棘数值调整","init_client_info_v1.20250626.0_0817.json游戏数据更新"],"2025年8月16日":["增加停止模拟按钮 by BKN46","增加技能顺序调整按钮 by BKN46","增加团灭日志 by TruthLight","怪物属性更新","奥术反射更名为报应","init_client_info_v1.20250626.0_0815.json游戏数据更新"],"2025年8月14日":["怪物属性更新","远程和法师装备属性调整","反伤计算上限调整","修复战斗间隔释放技能的异常","修复技能释放判断逻辑的异常","法力值耗尽比例更加准确","调整远程经验的15%和魔法经验的12%映射到攻击经验","init_client_info_v1.20250626.0_0813.json游戏数据更新"],"2025年8月11日":["怪物属性更新","近战和物理技能施法时间更新","盾击和重锤数值调整","双手盾防御经验加成调整","init_client_info_v1.20250626.0_0811.json游戏数据更新"],"2025年8月8日":["实现组队等级差过大时对掉落和经验的惩罚","实现怪物经验随狂暴进度百分比增加","暴击光环数值调整","增加战斗等级数值显示","增加等级差距惩罚数值显示","init_client_info_v1.20250626.0_0807.json游戏数据更新"],"2025年8月7日":["修复组队战斗时一些重复物品掉落数量异常的缺陷 by contr4l","init_client_info_v1.20250626.0_0806.json游戏数据更新"],"2025年8月3日":["怪物狂暴机制及对应trigger生效","精炼装备更新，护符数值调整，守护光环增加闪避率","init_client_info_v1.20250626.0_0802.json游戏数据更新","狂怒层数修正为5层","招架结算机制调整"],"2025年7月31日":["物品数据和怪物属性更新","尖刺外壳和奥术反射重做","强化数值更新","删除异常trigger","狮鹫盾的虚弱重做","君王剑招架对队友生效","狂怒特效最大层数修正为6层","涟漪特效增加10MP恢复","反伤正确显示其命中率","反伤机制调整","同步双手盾属性和反伤荆棘技能数值的调整"],"2025年7月22日":["暴击光环受远程等级加成","光环基础数值和等级加成调整"],"2025年7月17日":["批量模拟支持勾选星球","经验分配比例调整至30%+70%","光环及对应trigger，并按对应技能等级百分比加成","水火自然默认调整为元素光环","init_client_info_v1.20250626.0_0717.json游戏数据更新"],"2025年7月11日":["怪物经验和技能等级公式更新","闪避和抗性计算公式更新","力量更替为近战以及对应的兼容","init_client_info_v1.20250626.0_0711.json游戏数据更新"],"2025年7月10日":["修复贯穿技能由敌人释放时可能多次击中相同目标的缺陷"],"2025年7月9日":["掉落和掉率调整","经验调整","疫病射击和破甲之刺调整","怪物自动恢复移除","疫病射击trigger调整","获取价格使用官方API"],"2025年7月7日":["怪物属性缩放和地图多难度","法师技能调整和装备上\'技能伤害\'词缀生效","攻击等级和房屋等级对施法速度的影响生效","物品调整","精准重做以攻击等级计算","TEST 远程魔法经验的10%映射到攻击经验！","经验重做和护符装备"]}');
 
 /***/ }),
 
@@ -7126,6 +7126,10 @@ function switchLeftPage(pageName) {
     menuQueue.classList.toggle("active", pageName === "queue");
     menuResults.classList.toggle("active", pageName === "results");
     menuMultiResults.classList.toggle("active", pageName === "multiResults");
+
+    if (pageName === "multiResults") {
+        renderMultiRoundResultsForCurrentPlayer();
+    }
 }
 
 function initBaselineQueueControls() {
@@ -8504,7 +8508,9 @@ async function runQueueItemRoundsSerial(queueItem, queueState, roundCount, onRou
     for (let roundIndex = 0; roundIndex < roundCount; roundIndex++) {
         const runResult = await runQueueItemSimulation(queueItem, queueState, { muteProgressBar: true });
         roundResults.push(runResult);
-        onRoundCompleted();
+        if (typeof onRoundCompleted === "function") {
+            onRoundCompleted(runResult, roundIndex);
+        }
     }
     return roundResults;
 }
@@ -8523,8 +8529,11 @@ async function runQueueItemRoundsParallel(queueItem, queueState, roundCount, par
             }
 
             try {
-                roundResults[currentRoundIndex] = await runQueueItemSimulation(queueItem, queueState, { muteProgressBar: true });
-                onRoundCompleted();
+                const runResult = await runQueueItemSimulation(queueItem, queueState, { muteProgressBar: true });
+                roundResults[currentRoundIndex] = runResult;
+                if (typeof onRoundCompleted === "function") {
+                    onRoundCompleted(runResult, currentRoundIndex);
+                }
             } catch (error) {
                 failedRounds.push({
                     roundIndex: currentRoundIndex,
@@ -8539,8 +8548,11 @@ async function runQueueItemRoundsParallel(queueItem, queueState, roundCount, par
 
     for (const failedRound of failedRounds) {
         try {
-            roundResults[failedRound.roundIndex] = await runQueueItemSimulation(queueItem, queueState, { muteProgressBar: true });
-            onRoundCompleted();
+            const runResult = await runQueueItemSimulation(queueItem, queueState, { muteProgressBar: true });
+            roundResults[failedRound.roundIndex] = runResult;
+            if (typeof onRoundCompleted === "function") {
+                onRoundCompleted(runResult, failedRound.roundIndex);
+            }
         } catch (retryError) {
             const roundText = failedRound.roundIndex + 1;
             const errorText = getQueueRunErrorMessage(retryError);
@@ -8554,6 +8566,86 @@ async function runQueueItemRoundsParallel(queueItem, queueState, roundCount, par
     }
 
     return roundResults;
+}
+
+async function runQueueRoundSerial(queueItemMetaList, queueState, roundIndex, onItemCompleted) {
+    const roundResultByQueueItemId = new Map();
+
+    for (const queueItemMeta of queueItemMetaList) {
+        const runResult = await runQueueItemSimulation(queueItemMeta.item, queueState, { muteProgressBar: true });
+        roundResultByQueueItemId.set(queueItemMeta.item.id, runResult);
+        if (typeof onItemCompleted === "function") {
+            onItemCompleted(queueItemMeta, roundIndex, runResult);
+        }
+    }
+
+    return roundResultByQueueItemId;
+}
+
+async function runQueueRoundParallel(queueItemMetaList, queueState, roundIndex, parallelWorkers, onItemCompleted) {
+    const roundResultByQueueItemId = new Map();
+    let failedItems = [];
+    let nextItemIndex = 0;
+    let nextEmitIndex = 0;
+    const pendingResultsByIndex = new Map();
+
+    const emitReadyResults = () => {
+        while (pendingResultsByIndex.has(nextEmitIndex)) {
+            const readyResult = pendingResultsByIndex.get(nextEmitIndex);
+            pendingResultsByIndex.delete(nextEmitIndex);
+            nextEmitIndex += 1;
+
+            roundResultByQueueItemId.set(readyResult.queueItemMeta.item.id, readyResult.runResult);
+            if (typeof onItemCompleted === "function") {
+                onItemCompleted(readyResult.queueItemMeta, roundIndex, readyResult.runResult);
+            }
+        }
+    };
+
+    const workerLoop = async () => {
+        while (true) {
+            const currentItemIndex = nextItemIndex;
+            nextItemIndex += 1;
+            if (currentItemIndex >= queueItemMetaList.length) {
+                return;
+            }
+
+            const queueItemMeta = queueItemMetaList[currentItemIndex];
+            try {
+                const runResult = await runQueueItemSimulation(queueItemMeta.item, queueState, { muteProgressBar: true });
+                pendingResultsByIndex.set(currentItemIndex, { queueItemMeta, runResult });
+                emitReadyResults();
+            } catch (error) {
+                failedItems.push({
+                    queueItemMeta,
+                    itemIndex: currentItemIndex,
+                    error,
+                });
+            }
+        }
+    };
+
+    const workerCount = Math.max(1, Math.min(parallelWorkers, queueItemMetaList.length));
+    await Promise.all(Array.from({ length: workerCount }, () => workerLoop()));
+
+    for (const failedItem of failedItems) {
+        try {
+            const runResult = await runQueueItemSimulation(failedItem.queueItemMeta.item, queueState, { muteProgressBar: true });
+            pendingResultsByIndex.set(failedItem.itemIndex, { queueItemMeta: failedItem.queueItemMeta, runResult });
+            emitReadyResults();
+        } catch (retryError) {
+            const errorText = getQueueRunErrorMessage(retryError);
+            throw new Error(`Queue item "${failedItem.queueItemMeta.item.id}" round ${roundIndex + 1} failed after retry: ${errorText}`);
+        }
+    }
+
+    for (const queueItemMeta of queueItemMetaList) {
+        if (!roundResultByQueueItemId.has(queueItemMeta.item.id)) {
+            throw new Error(`Queue item "${queueItemMeta.item.id}" has missing result in round ${roundIndex + 1}.`);
+        }
+    }
+
+    return roundResultByQueueItemId;
 }
 
 function computePercentileFromSorted(sortedValues, percentile) {
@@ -8817,7 +8909,7 @@ async function runQueueMultiRound(queueState, runConfig) {
     let completedRuns = 0;
     const startedAt = Date.now();
     const parallelWorkers = runConfig.executionMode === "parallel"
-        ? resolveQueueParallelWorkerCount(runConfig.roundCount)
+        ? resolveQueueParallelWorkerCount(queueItemMetaList.length)
         : 1;
 
     const updateProgress = () => {
@@ -8826,52 +8918,117 @@ async function runQueueMultiRound(queueState, runConfig) {
     };
 
     queueState.runResults = [];
-    queueState.multiRoundResults = null;
-    updateQueueRunProgressBar(0, totalRuns, i18next.t("common:queue.queueRunning"));
-
-    let rawRows = [];
-    let metricSummaryByQueueItem = [];
-
-    for (const queueItemMeta of queueItemMetaList) {
-        const queueItem = queueItemMeta.item;
-        const roundResults = runConfig.executionMode === "parallel"
-            ? await runQueueItemRoundsParallel(queueItem, queueState, runConfig.roundCount, parallelWorkers, updateProgress)
-            : await runQueueItemRoundsSerial(queueItem, queueState, runConfig.roundCount, updateProgress);
-
-        for (let roundIndex = 0; roundIndex < roundResults.length; roundIndex++) {
-            const result = roundResults[roundIndex];
-            rawRows.push({
-                queueItemId: queueItem.id,
-                displayName: queueItemMeta.displayName,
-                roundIndex: roundIndex + 1,
-                metrics: result.metrics,
-                deltas: result.deltas,
-            });
-        }
-
-        const metricSummary = buildQueueItemMetricSummary(roundResults);
-        metricSummaryByQueueItem.push({
-            queueItemId: queueItem.id,
-            displayName: queueItemMeta.displayName,
-            order: queueItemMeta.order,
-            metricSummary,
-            costInsights: buildQueueItemCostInsights(queueState, queueItem, metricSummary),
-        });
-    }
-
-    const ranking = buildMultiRoundRanking(metricSummaryByQueueItem);
     queueState.multiRoundResults = {
         config: {
             roundCount: runConfig.roundCount,
             executionMode: runConfig.executionMode,
             parallelWorkers,
             startedAt,
-            finishedAt: Date.now(),
+            finishedAt: null,
         },
         baselineMetrics: structuredClone(queueState.baseline.metrics),
-        ranking,
-        rawRows,
+        ranking: [],
+        rawRows: [],
     };
+    updateQueueRunProgressBar(0, totalRuns, i18next.t("common:queue.queueRunning"));
+    if (activeLeftPage === "multiResults") {
+        renderMultiRoundResultsForCurrentPlayer();
+    }
+
+    let rawRows = queueState.multiRoundResults.rawRows;
+    const roundResultsByQueueItem = new Map(queueItemMetaList.map((meta) => [meta.item.id, []]));
+
+    const onRoundCompleted = (queueItemMeta, roundIndex, runResult) => {
+        const queueItemId = queueItemMeta.item.id;
+        const resultList = roundResultsByQueueItem.get(queueItemId) ?? [];
+        resultList.push(runResult);
+        roundResultsByQueueItem.set(queueItemId, resultList);
+
+        updateProgress();
+        rawRows.push({
+            queueItemId,
+            displayName: queueItemMeta.displayName,
+            queueOrder: queueItemMeta.order,
+            roundIndex: roundIndex + 1,
+            metrics: runResult?.metrics,
+            deltas: runResult?.deltas,
+        });
+        rawRows.sort((a, b) => {
+            const roundDiff = toFiniteNumber(a?.roundIndex, 0) - toFiniteNumber(b?.roundIndex, 0);
+            if (roundDiff !== 0) {
+                return roundDiff;
+            }
+            return toFiniteNumber(a?.queueOrder, 0) - toFiniteNumber(b?.queueOrder, 0);
+        });
+
+        const realtimeMetricSummaryByQueueItem = queueItemMetaList
+            .map((meta) => {
+                const queueItemResults = roundResultsByQueueItem.get(meta.item.id) ?? [];
+                if (queueItemResults.length === 0) {
+                    return null;
+                }
+
+                const metricSummary = buildQueueItemMetricSummary(queueItemResults);
+                return {
+                    queueItemId: meta.item.id,
+                    displayName: meta.displayName,
+                    order: meta.order,
+                    metricSummary,
+                    costInsights: buildQueueItemCostInsights(queueState, meta.item, metricSummary),
+                };
+            })
+            .filter(Boolean);
+
+        queueState.multiRoundResults.ranking = realtimeMetricSummaryByQueueItem.length > 0
+            ? buildMultiRoundRanking(realtimeMetricSummaryByQueueItem)
+            : [];
+
+        if (activeLeftPage === "multiResults") {
+            renderMultiRoundResultsForCurrentPlayer();
+        }
+    };
+
+    for (let roundIndex = 0; roundIndex < runConfig.roundCount; roundIndex++) {
+        if (runConfig.executionMode === "parallel") {
+            await runQueueRoundParallel(queueItemMetaList, queueState, roundIndex, parallelWorkers, onRoundCompleted);
+        } else {
+            await runQueueRoundSerial(queueItemMetaList, queueState, roundIndex, onRoundCompleted);
+        }
+
+        const metricSummaryByQueueItem = queueItemMetaList.map((queueItemMeta) => {
+            const queueItem = queueItemMeta.item;
+            const roundResults = roundResultsByQueueItem.get(queueItem.id) ?? [];
+            const metricSummary = buildQueueItemMetricSummary(roundResults);
+            return {
+                queueItemId: queueItem.id,
+                displayName: queueItemMeta.displayName,
+                order: queueItemMeta.order,
+                metricSummary,
+                costInsights: buildQueueItemCostInsights(queueState, queueItem, metricSummary),
+            };
+        });
+
+        queueState.multiRoundResults.ranking = buildMultiRoundRanking(metricSummaryByQueueItem);
+        if (activeLeftPage === "multiResults") {
+            renderMultiRoundResultsForCurrentPlayer();
+        }
+    }
+
+    const finalMetricSummaryByQueueItem = queueItemMetaList.map((queueItemMeta) => {
+        const queueItem = queueItemMeta.item;
+        const roundResults = roundResultsByQueueItem.get(queueItem.id) ?? [];
+        const metricSummary = buildQueueItemMetricSummary(roundResults);
+        return {
+            queueItemId: queueItem.id,
+            displayName: queueItemMeta.displayName,
+            order: queueItemMeta.order,
+            metricSummary,
+            costInsights: buildQueueItemCostInsights(queueState, queueItem, metricSummary),
+        };
+    });
+
+    queueState.multiRoundResults.config.finishedAt = Date.now();
+    queueState.multiRoundResults.ranking = buildMultiRoundRanking(finalMetricSummaryByQueueItem);
 }
 
 async function handleRunQueueClick() {
@@ -9547,6 +9704,23 @@ function appendDeltaPctCell(row, deltaInfo, digits = 2) {
     row.appendChild(cell);
 }
 
+function resolveMultiRoundRankingRowClass(rank) {
+    switch (Number(rank)) {
+        case 1:
+            return "multi-round-rank-top-1";
+        case 2:
+            return "multi-round-rank-top-2";
+        case 3:
+            return "multi-round-rank-top-3";
+        case 4:
+            return "multi-round-rank-top-4";
+        case 5:
+            return "multi-round-rank-top-5";
+        default:
+            return "";
+    }
+}
+
 function renderMultiRoundResultsForCurrentPlayer() {
     const summaryDiv = document.getElementById("multiRoundSummary");
     const rankingTableBody = document.getElementById("multiRoundRankingTableBody");
@@ -9563,15 +9737,25 @@ function renderMultiRoundResultsForCurrentPlayer() {
 
     if (!multiRoundResults) {
         summaryDiv.innerHTML = `<span class="text-secondary">${i18next.t("common:multiRound.noData")}</span>`;
-        appendEmptyTableRow(rankingTableBody, 13, i18next.t("common:multiRound.noData"));
+        appendEmptyTableRow(rankingTableBody, 14, i18next.t("common:multiRound.noData"));
         appendEmptyTableRow(rawTableBody, 10, i18next.t("common:multiRound.noData"));
         return;
     }
 
     const config = multiRoundResults.config ?? {};
     const baselineMetrics = multiRoundResults.baselineMetrics ?? {};
+    const rawRows = Array.isArray(multiRoundResults.rawRows) ? multiRoundResults.rawRows : [];
     const finishedAtText = Number.isFinite(config.finishedAt) ? new Date(config.finishedAt).toLocaleString() : "-";
-    const totalRuns = multiRoundResults.rawRows?.length ?? 0;
+    const totalRuns = rawRows.length;
+    const totalRoundCount = Math.max(0, Math.floor(toFiniteNumber(config.roundCount, 0)));
+    const simCountByQueueItemId = new Map();
+    for (const rawRowData of rawRows) {
+        const queueItemId = String(rawRowData?.queueItemId ?? "");
+        if (!queueItemId) {
+            continue;
+        }
+        simCountByQueueItemId.set(queueItemId, (simCountByQueueItemId.get(queueItemId) ?? 0) + 1);
+    }
 
     summaryDiv.innerHTML = `
         <div class="multi-round-summary-grid">
@@ -9591,18 +9775,27 @@ function renderMultiRoundResultsForCurrentPlayer() {
     `;
 
     if (!Array.isArray(multiRoundResults.ranking) || multiRoundResults.ranking.length === 0) {
-        appendEmptyTableRow(rankingTableBody, 13, i18next.t("common:multiRound.noData"));
+        appendEmptyTableRow(rankingTableBody, 14, i18next.t("common:multiRound.noData"));
     } else {
         const rankingFragment = document.createDocumentFragment();
         for (const entry of multiRoundResults.ranking) {
             const row = document.createElement("tr");
+            const rankingRowClass = resolveMultiRoundRankingRowClass(entry.rank);
+            if (rankingRowClass) {
+                row.classList.add(rankingRowClass);
+            }
             const localizedDisplayName = resolveQueueItemDisplayNameById(
                 queueState,
                 entry.queueItemId,
                 entry.displayName ?? entry.queueItemId
             );
+            const simDoneCount = Math.max(0, Math.floor(toFiniteNumber(simCountByQueueItemId.get(entry.queueItemId), 0)));
+            const simCountText = totalRoundCount > 0
+                ? `${simDoneCount}/${totalRoundCount}`
+                : String(simDoneCount);
             appendTextCell(row, String(entry.rank));
             appendTextCell(row, localizedDisplayName);
+            appendTextCell(row, simCountText);
             appendTextCell(row, formatMetricValue(entry.finalScore, 2));
             appendTextCell(row, formatMetricValue(entry.performanceScore, 2));
             appendTextCell(row, formatMetricValue(entry.stabilityScore, 2));
@@ -9619,13 +9812,13 @@ function renderMultiRoundResultsForCurrentPlayer() {
         rankingTableBody.appendChild(rankingFragment);
     }
 
-    if (!Array.isArray(multiRoundResults.rawRows) || multiRoundResults.rawRows.length === 0) {
+    if (rawRows.length === 0) {
         appendEmptyTableRow(rawTableBody, 10, i18next.t("common:multiRound.noData"));
         return;
     }
 
     const rawFragment = document.createDocumentFragment();
-    for (const rawRowData of multiRoundResults.rawRows) {
+    for (const rawRowData of rawRows) {
         const row = document.createElement("tr");
         const localizedDisplayName = resolveQueueItemDisplayNameById(
             queueState,

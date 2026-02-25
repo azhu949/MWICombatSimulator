@@ -5334,6 +5334,10 @@ function switchLeftPage(pageName) {
     menuQueue.classList.toggle("active", pageName === "queue");
     menuResults.classList.toggle("active", pageName === "results");
     menuMultiResults.classList.toggle("active", pageName === "multiResults");
+
+    if (pageName === "multiResults") {
+        renderMultiRoundResultsForCurrentPlayer();
+    }
 }
 
 function initBaselineQueueControls() {
@@ -6712,7 +6716,9 @@ async function runQueueItemRoundsSerial(queueItem, queueState, roundCount, onRou
     for (let roundIndex = 0; roundIndex < roundCount; roundIndex++) {
         const runResult = await runQueueItemSimulation(queueItem, queueState, { muteProgressBar: true });
         roundResults.push(runResult);
-        onRoundCompleted();
+        if (typeof onRoundCompleted === "function") {
+            onRoundCompleted(runResult, roundIndex);
+        }
     }
     return roundResults;
 }
@@ -6731,8 +6737,11 @@ async function runQueueItemRoundsParallel(queueItem, queueState, roundCount, par
             }
 
             try {
-                roundResults[currentRoundIndex] = await runQueueItemSimulation(queueItem, queueState, { muteProgressBar: true });
-                onRoundCompleted();
+                const runResult = await runQueueItemSimulation(queueItem, queueState, { muteProgressBar: true });
+                roundResults[currentRoundIndex] = runResult;
+                if (typeof onRoundCompleted === "function") {
+                    onRoundCompleted(runResult, currentRoundIndex);
+                }
             } catch (error) {
                 failedRounds.push({
                     roundIndex: currentRoundIndex,
@@ -6747,8 +6756,11 @@ async function runQueueItemRoundsParallel(queueItem, queueState, roundCount, par
 
     for (const failedRound of failedRounds) {
         try {
-            roundResults[failedRound.roundIndex] = await runQueueItemSimulation(queueItem, queueState, { muteProgressBar: true });
-            onRoundCompleted();
+            const runResult = await runQueueItemSimulation(queueItem, queueState, { muteProgressBar: true });
+            roundResults[failedRound.roundIndex] = runResult;
+            if (typeof onRoundCompleted === "function") {
+                onRoundCompleted(runResult, failedRound.roundIndex);
+            }
         } catch (retryError) {
             const roundText = failedRound.roundIndex + 1;
             const errorText = getQueueRunErrorMessage(retryError);
@@ -6762,6 +6774,86 @@ async function runQueueItemRoundsParallel(queueItem, queueState, roundCount, par
     }
 
     return roundResults;
+}
+
+async function runQueueRoundSerial(queueItemMetaList, queueState, roundIndex, onItemCompleted) {
+    const roundResultByQueueItemId = new Map();
+
+    for (const queueItemMeta of queueItemMetaList) {
+        const runResult = await runQueueItemSimulation(queueItemMeta.item, queueState, { muteProgressBar: true });
+        roundResultByQueueItemId.set(queueItemMeta.item.id, runResult);
+        if (typeof onItemCompleted === "function") {
+            onItemCompleted(queueItemMeta, roundIndex, runResult);
+        }
+    }
+
+    return roundResultByQueueItemId;
+}
+
+async function runQueueRoundParallel(queueItemMetaList, queueState, roundIndex, parallelWorkers, onItemCompleted) {
+    const roundResultByQueueItemId = new Map();
+    let failedItems = [];
+    let nextItemIndex = 0;
+    let nextEmitIndex = 0;
+    const pendingResultsByIndex = new Map();
+
+    const emitReadyResults = () => {
+        while (pendingResultsByIndex.has(nextEmitIndex)) {
+            const readyResult = pendingResultsByIndex.get(nextEmitIndex);
+            pendingResultsByIndex.delete(nextEmitIndex);
+            nextEmitIndex += 1;
+
+            roundResultByQueueItemId.set(readyResult.queueItemMeta.item.id, readyResult.runResult);
+            if (typeof onItemCompleted === "function") {
+                onItemCompleted(readyResult.queueItemMeta, roundIndex, readyResult.runResult);
+            }
+        }
+    };
+
+    const workerLoop = async () => {
+        while (true) {
+            const currentItemIndex = nextItemIndex;
+            nextItemIndex += 1;
+            if (currentItemIndex >= queueItemMetaList.length) {
+                return;
+            }
+
+            const queueItemMeta = queueItemMetaList[currentItemIndex];
+            try {
+                const runResult = await runQueueItemSimulation(queueItemMeta.item, queueState, { muteProgressBar: true });
+                pendingResultsByIndex.set(currentItemIndex, { queueItemMeta, runResult });
+                emitReadyResults();
+            } catch (error) {
+                failedItems.push({
+                    queueItemMeta,
+                    itemIndex: currentItemIndex,
+                    error,
+                });
+            }
+        }
+    };
+
+    const workerCount = Math.max(1, Math.min(parallelWorkers, queueItemMetaList.length));
+    await Promise.all(Array.from({ length: workerCount }, () => workerLoop()));
+
+    for (const failedItem of failedItems) {
+        try {
+            const runResult = await runQueueItemSimulation(failedItem.queueItemMeta.item, queueState, { muteProgressBar: true });
+            pendingResultsByIndex.set(failedItem.itemIndex, { queueItemMeta: failedItem.queueItemMeta, runResult });
+            emitReadyResults();
+        } catch (retryError) {
+            const errorText = getQueueRunErrorMessage(retryError);
+            throw new Error(`Queue item "${failedItem.queueItemMeta.item.id}" round ${roundIndex + 1} failed after retry: ${errorText}`);
+        }
+    }
+
+    for (const queueItemMeta of queueItemMetaList) {
+        if (!roundResultByQueueItemId.has(queueItemMeta.item.id)) {
+            throw new Error(`Queue item "${queueItemMeta.item.id}" has missing result in round ${roundIndex + 1}.`);
+        }
+    }
+
+    return roundResultByQueueItemId;
 }
 
 function computePercentileFromSorted(sortedValues, percentile) {
@@ -7025,7 +7117,7 @@ async function runQueueMultiRound(queueState, runConfig) {
     let completedRuns = 0;
     const startedAt = Date.now();
     const parallelWorkers = runConfig.executionMode === "parallel"
-        ? resolveQueueParallelWorkerCount(runConfig.roundCount)
+        ? resolveQueueParallelWorkerCount(queueItemMetaList.length)
         : 1;
 
     const updateProgress = () => {
@@ -7034,52 +7126,117 @@ async function runQueueMultiRound(queueState, runConfig) {
     };
 
     queueState.runResults = [];
-    queueState.multiRoundResults = null;
-    updateQueueRunProgressBar(0, totalRuns, i18next.t("common:queue.queueRunning"));
-
-    let rawRows = [];
-    let metricSummaryByQueueItem = [];
-
-    for (const queueItemMeta of queueItemMetaList) {
-        const queueItem = queueItemMeta.item;
-        const roundResults = runConfig.executionMode === "parallel"
-            ? await runQueueItemRoundsParallel(queueItem, queueState, runConfig.roundCount, parallelWorkers, updateProgress)
-            : await runQueueItemRoundsSerial(queueItem, queueState, runConfig.roundCount, updateProgress);
-
-        for (let roundIndex = 0; roundIndex < roundResults.length; roundIndex++) {
-            const result = roundResults[roundIndex];
-            rawRows.push({
-                queueItemId: queueItem.id,
-                displayName: queueItemMeta.displayName,
-                roundIndex: roundIndex + 1,
-                metrics: result.metrics,
-                deltas: result.deltas,
-            });
-        }
-
-        const metricSummary = buildQueueItemMetricSummary(roundResults);
-        metricSummaryByQueueItem.push({
-            queueItemId: queueItem.id,
-            displayName: queueItemMeta.displayName,
-            order: queueItemMeta.order,
-            metricSummary,
-            costInsights: buildQueueItemCostInsights(queueState, queueItem, metricSummary),
-        });
-    }
-
-    const ranking = buildMultiRoundRanking(metricSummaryByQueueItem);
     queueState.multiRoundResults = {
         config: {
             roundCount: runConfig.roundCount,
             executionMode: runConfig.executionMode,
             parallelWorkers,
             startedAt,
-            finishedAt: Date.now(),
+            finishedAt: null,
         },
         baselineMetrics: structuredClone(queueState.baseline.metrics),
-        ranking,
-        rawRows,
+        ranking: [],
+        rawRows: [],
     };
+    updateQueueRunProgressBar(0, totalRuns, i18next.t("common:queue.queueRunning"));
+    if (activeLeftPage === "multiResults") {
+        renderMultiRoundResultsForCurrentPlayer();
+    }
+
+    let rawRows = queueState.multiRoundResults.rawRows;
+    const roundResultsByQueueItem = new Map(queueItemMetaList.map((meta) => [meta.item.id, []]));
+
+    const onRoundCompleted = (queueItemMeta, roundIndex, runResult) => {
+        const queueItemId = queueItemMeta.item.id;
+        const resultList = roundResultsByQueueItem.get(queueItemId) ?? [];
+        resultList.push(runResult);
+        roundResultsByQueueItem.set(queueItemId, resultList);
+
+        updateProgress();
+        rawRows.push({
+            queueItemId,
+            displayName: queueItemMeta.displayName,
+            queueOrder: queueItemMeta.order,
+            roundIndex: roundIndex + 1,
+            metrics: runResult?.metrics,
+            deltas: runResult?.deltas,
+        });
+        rawRows.sort((a, b) => {
+            const roundDiff = toFiniteNumber(a?.roundIndex, 0) - toFiniteNumber(b?.roundIndex, 0);
+            if (roundDiff !== 0) {
+                return roundDiff;
+            }
+            return toFiniteNumber(a?.queueOrder, 0) - toFiniteNumber(b?.queueOrder, 0);
+        });
+
+        const realtimeMetricSummaryByQueueItem = queueItemMetaList
+            .map((meta) => {
+                const queueItemResults = roundResultsByQueueItem.get(meta.item.id) ?? [];
+                if (queueItemResults.length === 0) {
+                    return null;
+                }
+
+                const metricSummary = buildQueueItemMetricSummary(queueItemResults);
+                return {
+                    queueItemId: meta.item.id,
+                    displayName: meta.displayName,
+                    order: meta.order,
+                    metricSummary,
+                    costInsights: buildQueueItemCostInsights(queueState, meta.item, metricSummary),
+                };
+            })
+            .filter(Boolean);
+
+        queueState.multiRoundResults.ranking = realtimeMetricSummaryByQueueItem.length > 0
+            ? buildMultiRoundRanking(realtimeMetricSummaryByQueueItem)
+            : [];
+
+        if (activeLeftPage === "multiResults") {
+            renderMultiRoundResultsForCurrentPlayer();
+        }
+    };
+
+    for (let roundIndex = 0; roundIndex < runConfig.roundCount; roundIndex++) {
+        if (runConfig.executionMode === "parallel") {
+            await runQueueRoundParallel(queueItemMetaList, queueState, roundIndex, parallelWorkers, onRoundCompleted);
+        } else {
+            await runQueueRoundSerial(queueItemMetaList, queueState, roundIndex, onRoundCompleted);
+        }
+
+        const metricSummaryByQueueItem = queueItemMetaList.map((queueItemMeta) => {
+            const queueItem = queueItemMeta.item;
+            const roundResults = roundResultsByQueueItem.get(queueItem.id) ?? [];
+            const metricSummary = buildQueueItemMetricSummary(roundResults);
+            return {
+                queueItemId: queueItem.id,
+                displayName: queueItemMeta.displayName,
+                order: queueItemMeta.order,
+                metricSummary,
+                costInsights: buildQueueItemCostInsights(queueState, queueItem, metricSummary),
+            };
+        });
+
+        queueState.multiRoundResults.ranking = buildMultiRoundRanking(metricSummaryByQueueItem);
+        if (activeLeftPage === "multiResults") {
+            renderMultiRoundResultsForCurrentPlayer();
+        }
+    }
+
+    const finalMetricSummaryByQueueItem = queueItemMetaList.map((queueItemMeta) => {
+        const queueItem = queueItemMeta.item;
+        const roundResults = roundResultsByQueueItem.get(queueItem.id) ?? [];
+        const metricSummary = buildQueueItemMetricSummary(roundResults);
+        return {
+            queueItemId: queueItem.id,
+            displayName: queueItemMeta.displayName,
+            order: queueItemMeta.order,
+            metricSummary,
+            costInsights: buildQueueItemCostInsights(queueState, queueItem, metricSummary),
+        };
+    });
+
+    queueState.multiRoundResults.config.finishedAt = Date.now();
+    queueState.multiRoundResults.ranking = buildMultiRoundRanking(finalMetricSummaryByQueueItem);
 }
 
 async function handleRunQueueClick() {
@@ -7755,6 +7912,23 @@ function appendDeltaPctCell(row, deltaInfo, digits = 2) {
     row.appendChild(cell);
 }
 
+function resolveMultiRoundRankingRowClass(rank) {
+    switch (Number(rank)) {
+        case 1:
+            return "multi-round-rank-top-1";
+        case 2:
+            return "multi-round-rank-top-2";
+        case 3:
+            return "multi-round-rank-top-3";
+        case 4:
+            return "multi-round-rank-top-4";
+        case 5:
+            return "multi-round-rank-top-5";
+        default:
+            return "";
+    }
+}
+
 function renderMultiRoundResultsForCurrentPlayer() {
     const summaryDiv = document.getElementById("multiRoundSummary");
     const rankingTableBody = document.getElementById("multiRoundRankingTableBody");
@@ -7771,15 +7945,25 @@ function renderMultiRoundResultsForCurrentPlayer() {
 
     if (!multiRoundResults) {
         summaryDiv.innerHTML = `<span class="text-secondary">${i18next.t("common:multiRound.noData")}</span>`;
-        appendEmptyTableRow(rankingTableBody, 13, i18next.t("common:multiRound.noData"));
+        appendEmptyTableRow(rankingTableBody, 14, i18next.t("common:multiRound.noData"));
         appendEmptyTableRow(rawTableBody, 10, i18next.t("common:multiRound.noData"));
         return;
     }
 
     const config = multiRoundResults.config ?? {};
     const baselineMetrics = multiRoundResults.baselineMetrics ?? {};
+    const rawRows = Array.isArray(multiRoundResults.rawRows) ? multiRoundResults.rawRows : [];
     const finishedAtText = Number.isFinite(config.finishedAt) ? new Date(config.finishedAt).toLocaleString() : "-";
-    const totalRuns = multiRoundResults.rawRows?.length ?? 0;
+    const totalRuns = rawRows.length;
+    const totalRoundCount = Math.max(0, Math.floor(toFiniteNumber(config.roundCount, 0)));
+    const simCountByQueueItemId = new Map();
+    for (const rawRowData of rawRows) {
+        const queueItemId = String(rawRowData?.queueItemId ?? "");
+        if (!queueItemId) {
+            continue;
+        }
+        simCountByQueueItemId.set(queueItemId, (simCountByQueueItemId.get(queueItemId) ?? 0) + 1);
+    }
 
     summaryDiv.innerHTML = `
         <div class="multi-round-summary-grid">
@@ -7799,18 +7983,27 @@ function renderMultiRoundResultsForCurrentPlayer() {
     `;
 
     if (!Array.isArray(multiRoundResults.ranking) || multiRoundResults.ranking.length === 0) {
-        appendEmptyTableRow(rankingTableBody, 13, i18next.t("common:multiRound.noData"));
+        appendEmptyTableRow(rankingTableBody, 14, i18next.t("common:multiRound.noData"));
     } else {
         const rankingFragment = document.createDocumentFragment();
         for (const entry of multiRoundResults.ranking) {
             const row = document.createElement("tr");
+            const rankingRowClass = resolveMultiRoundRankingRowClass(entry.rank);
+            if (rankingRowClass) {
+                row.classList.add(rankingRowClass);
+            }
             const localizedDisplayName = resolveQueueItemDisplayNameById(
                 queueState,
                 entry.queueItemId,
                 entry.displayName ?? entry.queueItemId
             );
+            const simDoneCount = Math.max(0, Math.floor(toFiniteNumber(simCountByQueueItemId.get(entry.queueItemId), 0)));
+            const simCountText = totalRoundCount > 0
+                ? `${simDoneCount}/${totalRoundCount}`
+                : String(simDoneCount);
             appendTextCell(row, String(entry.rank));
             appendTextCell(row, localizedDisplayName);
+            appendTextCell(row, simCountText);
             appendTextCell(row, formatMetricValue(entry.finalScore, 2));
             appendTextCell(row, formatMetricValue(entry.performanceScore, 2));
             appendTextCell(row, formatMetricValue(entry.stabilityScore, 2));
@@ -7827,13 +8020,13 @@ function renderMultiRoundResultsForCurrentPlayer() {
         rankingTableBody.appendChild(rankingFragment);
     }
 
-    if (!Array.isArray(multiRoundResults.rawRows) || multiRoundResults.rawRows.length === 0) {
+    if (rawRows.length === 0) {
         appendEmptyTableRow(rawTableBody, 10, i18next.t("common:multiRound.noData"));
         return;
     }
 
     const rawFragment = document.createDocumentFragment();
-    for (const rawRowData of multiRoundResults.rawRows) {
+    for (const rawRowData of rawRows) {
         const row = document.createElement("tr");
         const localizedDisplayName = resolveQueueItemDisplayNameById(
             queueState,
