@@ -105,6 +105,7 @@
     "multiRound": {
         "summaryTitle": "多轮模拟汇总",
         "rankingTitle": "评分排名",
+        "simCount": "模拟次数",
         "rawTitle": "每轮原始数据",
         "noData": "尚无多轮模拟结果。",
         "rank": "排名",

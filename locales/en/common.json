@@ -105,6 +105,7 @@
     "multiRound": {
         "summaryTitle": "Multi-round Summary",
         "rankingTitle": "Scored Ranking",
+        "simCount": "Sim Count",
         "rawTitle": "Raw Round Data",
         "noData": "No multi-round results yet.",
         "rank": "Rank",
