@@ -1,0 +1,840 @@
+{
+    "/items/advanced_coffee_crate": [
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_stamina_level",
+            "typeHrid": "/buff_types/stamina_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 10,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_intelligence_level",
+            "typeHrid": "/buff_types/intelligence_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 10,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_attack_level",
+            "typeHrid": "/buff_types/attack_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 10,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_defense_level",
+            "typeHrid": "/buff_types/defense_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 10,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_melee_level",
+            "typeHrid": "/buff_types/melee_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 10,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_ranged_level",
+            "typeHrid": "/buff_types/ranged_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 10,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_magic_level",
+            "typeHrid": "/buff_types/magic_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 10,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_attack_speed",
+            "typeHrid": "/buff_types/attack_speed",
+            "ratioBoost": 0.1,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_cast_speed",
+            "typeHrid": "/buff_types/cast_speed",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.1,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_crit_rate",
+            "typeHrid": "/buff_types/critical_rate",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.03,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_crit_damage",
+            "typeHrid": "/buff_types/critical_damage",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.05,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_combat_xp",
+            "typeHrid": "/buff_types/wisdom",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.1,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        }
+    ],
+    "/items/advanced_food_crate": [
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_hp_regen",
+            "typeHrid": "/buff_types/hp_regen",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.04,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_mp_regen",
+            "typeHrid": "/buff_types/mp_regen",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.04,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        }
+    ],
+    "/items/advanced_tea_crate": [
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_milking_level",
+            "typeHrid": "/buff_types/milking_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 10,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_foraging_level",
+            "typeHrid": "/buff_types/foraging_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 10,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_woodcutting_level",
+            "typeHrid": "/buff_types/woodcutting_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 10,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_cheesesmithing_level",
+            "typeHrid": "/buff_types/cheesesmithing_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 10,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_crafting_level",
+            "typeHrid": "/buff_types/crafting_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 10,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_tailoring_level",
+            "typeHrid": "/buff_types/tailoring_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 10,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_cooking_level",
+            "typeHrid": "/buff_types/cooking_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 10,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_brewing_level",
+            "typeHrid": "/buff_types/brewing_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 10,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_alchemy_level",
+            "typeHrid": "/buff_types/alchemy_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 10,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_enhancing_level",
+            "typeHrid": "/buff_types/enhancing_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 10,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_efficiency",
+            "typeHrid": "/buff_types/efficiency",
+            "ratioBoost": 0.1,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_success_rate",
+            "typeHrid": "/buff_types/success_rate",
+            "ratioBoost": 0.04,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_double_progress",
+            "typeHrid": "/buff_types/labyrinth_double_progress",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.04,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_skilling_xp",
+            "typeHrid": "/buff_types/wisdom",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.1,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        }
+    ],
+    "/items/basic_coffee_crate": [
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_stamina_level",
+            "typeHrid": "/buff_types/stamina_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 5,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_intelligence_level",
+            "typeHrid": "/buff_types/intelligence_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 5,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_attack_level",
+            "typeHrid": "/buff_types/attack_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 5,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_defense_level",
+            "typeHrid": "/buff_types/defense_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 5,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_melee_level",
+            "typeHrid": "/buff_types/melee_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 5,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_ranged_level",
+            "typeHrid": "/buff_types/ranged_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 5,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_magic_level",
+            "typeHrid": "/buff_types/magic_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 5,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_attack_speed",
+            "typeHrid": "/buff_types/attack_speed",
+            "ratioBoost": 0.05,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_cast_speed",
+            "typeHrid": "/buff_types/cast_speed",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.05,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_combat_xp",
+            "typeHrid": "/buff_types/wisdom",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.05,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        }
+    ],
+    "/items/basic_food_crate": [
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_hp_regen",
+            "typeHrid": "/buff_types/hp_regen",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.02,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_mp_regen",
+            "typeHrid": "/buff_types/mp_regen",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.02,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        }
+    ],
+    "/items/basic_tea_crate": [
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_milking_level",
+            "typeHrid": "/buff_types/milking_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 5,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_foraging_level",
+            "typeHrid": "/buff_types/foraging_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 5,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_woodcutting_level",
+            "typeHrid": "/buff_types/woodcutting_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 5,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_cheesesmithing_level",
+            "typeHrid": "/buff_types/cheesesmithing_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 5,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_crafting_level",
+            "typeHrid": "/buff_types/crafting_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 5,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_tailoring_level",
+            "typeHrid": "/buff_types/tailoring_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 5,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_cooking_level",
+            "typeHrid": "/buff_types/cooking_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 5,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_brewing_level",
+            "typeHrid": "/buff_types/brewing_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 5,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_alchemy_level",
+            "typeHrid": "/buff_types/alchemy_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 5,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_enhancing_level",
+            "typeHrid": "/buff_types/enhancing_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 5,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_efficiency",
+            "typeHrid": "/buff_types/efficiency",
+            "ratioBoost": 0.05,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_success_rate",
+            "typeHrid": "/buff_types/success_rate",
+            "ratioBoost": 0.02,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_double_progress",
+            "typeHrid": "/buff_types/labyrinth_double_progress",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.02,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_skilling_xp",
+            "typeHrid": "/buff_types/wisdom",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.05,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        }
+    ],
+    "/items/expert_coffee_crate": [
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_stamina_level",
+            "typeHrid": "/buff_types/stamina_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 15,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_intelligence_level",
+            "typeHrid": "/buff_types/intelligence_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 15,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_attack_level",
+            "typeHrid": "/buff_types/attack_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 15,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_defense_level",
+            "typeHrid": "/buff_types/defense_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 15,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_melee_level",
+            "typeHrid": "/buff_types/melee_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 15,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_ranged_level",
+            "typeHrid": "/buff_types/ranged_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 15,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_magic_level",
+            "typeHrid": "/buff_types/magic_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 15,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_attack_speed",
+            "typeHrid": "/buff_types/attack_speed",
+            "ratioBoost": 0.15,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_cast_speed",
+            "typeHrid": "/buff_types/cast_speed",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.15,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_crit_rate",
+            "typeHrid": "/buff_types/critical_rate",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.06,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_crit_damage",
+            "typeHrid": "/buff_types/critical_damage",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.1,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_combat_xp",
+            "typeHrid": "/buff_types/wisdom",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.15,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        }
+    ],
+    "/items/expert_food_crate": [
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_hp_regen",
+            "typeHrid": "/buff_types/hp_regen",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.06,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_mp_regen",
+            "typeHrid": "/buff_types/mp_regen",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.06,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        }
+    ],
+    "/items/expert_tea_crate": [
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_milking_level",
+            "typeHrid": "/buff_types/milking_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 15,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_foraging_level",
+            "typeHrid": "/buff_types/foraging_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 15,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_woodcutting_level",
+            "typeHrid": "/buff_types/woodcutting_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 15,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_cheesesmithing_level",
+            "typeHrid": "/buff_types/cheesesmithing_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 15,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_crafting_level",
+            "typeHrid": "/buff_types/crafting_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 15,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_tailoring_level",
+            "typeHrid": "/buff_types/tailoring_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 15,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_cooking_level",
+            "typeHrid": "/buff_types/cooking_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 15,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_brewing_level",
+            "typeHrid": "/buff_types/brewing_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 15,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_alchemy_level",
+            "typeHrid": "/buff_types/alchemy_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 15,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_enhancing_level",
+            "typeHrid": "/buff_types/enhancing_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 15,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_efficiency",
+            "typeHrid": "/buff_types/efficiency",
+            "ratioBoost": 0.15,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_success_rate",
+            "typeHrid": "/buff_types/success_rate",
+            "ratioBoost": 0.06,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_double_progress",
+            "typeHrid": "/buff_types/labyrinth_double_progress",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.06,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        },
+        {
+            "uniqueHrid": "/buff_uniques/labyrinth_crate_skilling_xp",
+            "typeHrid": "/buff_types/wisdom",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.15,
+            "flatBoostLevelBonus": 0,
+            "startTime": "0001-01-01T00:00:00Z",
+            "duration": 0
+        }
+    ]
+}

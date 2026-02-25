@@ -1851,6 +1851,23 @@
                                 </div>
                             </div>
                         </div>
+                        <div class="row mb-1">
+                            <label for="selectLabyrinth" class="col-md-3 col-form-label" data-i18n="common:labyrinth">Labyrinth</label>
+                            <div class="col-md">
+                                <select id="selectLabyrinth" class="form-select">
+                                </select>
+                            </div>
+                        </div>
+                        <div class="row mb-1">
+                            <label for="inputRoomLevel" class="col-md-3 col-form-label" data-i18n="common:roomLevel">Room Level</label>
+                            <div class="col-md">
+                                <div class="input-group">
+                                    <input type="number" id="inputRoomLevel" class="form-control" value="100"
+                                        min="20" max="240" required />
+                                    <span class="input-group-text" data-i18n="leaderboardPanel.level">level</span>
+                                </div>
+                            </div>
+                        </div>
                         <div class="row">
                             <div class="col-md-6 pt-1">
                                 <div id="playerCheckBox" class="outlined-box">
@@ -1896,6 +1913,18 @@
                                             Sim Dungeon
                                         </label>
                                     </div>
+                                    <div class="form-check form-check-reverse">
+                                        <input class="form-check-input" type="checkbox" value="" id="simLabyrinthToggle">
+                                        <label class="form-check-label" for="simLabyrinthToggle" data-i18n="common:simLabyrinth">
+                                            Sim Labyrinth
+                                        </label>
+                                    </div>
+                                    <div class="form-check form-check-reverse">
+                                        <input class="form-check-input" type="checkbox" value="" id="simAllLabyrinthsToggle">
+                                        <label class="form-check-label" for="simAllLabyrinthsToggle" data-i18n="common:simAllLabyrinths">
+                                            Sim All Labyrinths
+                                        </label>
+                                    </div>
                                 </div>
                             </div>
                             <div class="col-12 pt-1">
@@ -1932,6 +1961,27 @@
                                                 <input type="number" class="form-control" id="comDropInput" min="1" max="20" value="20" required>
                                                 <span class="input-group-text" data-i18n="leaderboardPanel.level">等级</span>
                                             </div>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                            <div class="col-12 pt-1">
+                                <div id="labyrinthSupplyItemsBox" class="outlined-box d-none">
+                                    <h6 data-i18n="common:labyrinthCrates">Crates</h6>
+                                    <div class="row mb-1">
+                                        <label for="selectCoffeeCrates" class="col-md-4 col-form-label" data-i18n="common:coffeeCrate">Coffee Crate</label>
+                                        <div class="col-md">
+                                            <select id="selectCoffeeCrates" class="form-select">
+                                                <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
+                                            </select>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-1">
+                                        <label for="selectFoodCrates" class="col-md-4 col-form-label" data-i18n="common:foodCrate">Food Crate</label>
+                                        <div class="col-md">
+                                            <select id="selectFoodCrates" class="form-select">
+                                                <option value="" data-i18n="characterSelectPage.slots.empty">Empty</option>
+                                            </select>
                                         </div>
                                     </div>
                                 </div>

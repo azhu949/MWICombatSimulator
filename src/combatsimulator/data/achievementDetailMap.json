@@ -4,7 +4,7 @@
         "name": "Hunter III",
         "description": "Obtain 100 Bestiary points",
         "tierHrid": "/achievement_tiers/veteran",
-        "sortIndex": 41,
+        "sortIndex": 42,
         "steamAchievementId": "ach_bestiary_points_100",
         "target": 100
     },
@@ -22,7 +22,7 @@
         "name": "Hunter IV",
         "description": "Obtain 200 Bestiary points",
         "tierHrid": "/achievement_tiers/elite",
-        "sortIndex": 55,
+        "sortIndex": 57,
         "steamAchievementId": "ach_bestiary_points_200",
         "target": 200
     },
@@ -40,7 +40,7 @@
         "name": "Hunter V",
         "description": "Obtain 400 Bestiary points",
         "tierHrid": "/achievement_tiers/champion",
-        "sortIndex": 71,
+        "sortIndex": 74,
         "steamAchievementId": "ach_bestiary_points_400",
         "target": 400
     },
@@ -58,7 +58,7 @@
         "name": "Ultra Brewer",
         "description": "Brew an Ultra Magic Coffee",
         "tierHrid": "/achievement_tiers/elite",
-        "sortIndex": 47,
+        "sortIndex": 49,
         "steamAchievementId": "ach_brew_ultra_magic_coffee",
         "target": 1
     },
@@ -76,7 +76,7 @@
         "name": "Homeowner II",
         "description": "Build a level 3 room in your house",
         "tierHrid": "/achievement_tiers/veteran",
-        "sortIndex": 42,
+        "sortIndex": 43,
         "steamAchievementId": "ach_build_room_level_3",
         "target": 1
     },
@@ -85,7 +85,7 @@
         "name": "Homeowner III",
         "description": "Build a level 6 room in your house",
         "tierHrid": "/achievement_tiers/elite",
-        "sortIndex": 57,
+        "sortIndex": 59,
         "steamAchievementId": "ach_build_room_level_6",
         "target": 1
     },
@@ -94,7 +94,7 @@
         "name": "Homeowner IV",
         "description": "Build a level 8 room in your house",
         "tierHrid": "/achievement_tiers/champion",
-        "sortIndex": 72,
+        "sortIndex": 75,
         "steamAchievementId": "ach_build_room_level_8",
         "target": 1
     },
@@ -121,7 +121,7 @@
         "name": "Chimerical Hunter",
         "description": "Clear the Chimerical Den dungeon",
         "tierHrid": "/achievement_tiers/elite",
-        "sortIndex": 52,
+        "sortIndex": 54,
         "steamAchievementId": "ach_clear_chimerical_den",
         "target": 1
     },
@@ -130,7 +130,7 @@
         "name": "Fortress Conqueror",
         "description": "Clear the Enchanted Fortress dungeon",
         "tierHrid": "/achievement_tiers/champion",
-        "sortIndex": 67,
+        "sortIndex": 70,
         "steamAchievementId": "ach_clear_enchanted_fortress",
         "target": 1
     },
@@ -139,7 +139,7 @@
         "name": "Pirate's Bane",
         "description": "Clear the Pirate Cove dungeon",
         "tierHrid": "/achievement_tiers/champion",
-        "sortIndex": 68,
+        "sortIndex": 71,
         "steamAchievementId": "ach_clear_pirate_cove",
         "target": 1
     },
@@ -148,7 +148,7 @@
         "name": "Ringmaster",
         "description": "Clear the Sinister Circus dungeon",
         "tierHrid": "/achievement_tiers/elite",
-        "sortIndex": 53,
+        "sortIndex": 55,
         "steamAchievementId": "ach_clear_sinister_circus",
         "target": 1
     },
@@ -157,7 +157,7 @@
         "name": "Dungeon Elitist",
         "description": "Clear any T1 or higher dungeon 10 times",
         "tierHrid": "/achievement_tiers/champion",
-        "sortIndex": 69,
+        "sortIndex": 72,
         "steamAchievementId": "ach_clear_t1_dungeon_10_times",
         "target": 10
     },
@@ -166,7 +166,7 @@
         "name": "Midas Touch",
         "description": "Earn a total of 1m coins from coinify",
         "tierHrid": "/achievement_tiers/veteran",
-        "sortIndex": 34,
+        "sortIndex": 35,
         "steamAchievementId": "ach_coinify_coins_1m",
         "target": 1000000
     },
@@ -175,7 +175,7 @@
         "name": "Branch Manager",
         "description": "Collect a Branch of Insight from Woodcutting or Crafting",
         "tierHrid": "/achievement_tiers/elite",
-        "sortIndex": 45,
+        "sortIndex": 47,
         "steamAchievementId": "ach_collect_branch_of_insight",
         "target": 1
     },
@@ -184,7 +184,7 @@
         "name": "Pass The Butter",
         "description": "Collect a Butter of Proficiency from Milking or Cheesesmithing",
         "tierHrid": "/achievement_tiers/elite",
-        "sortIndex": 44,
+        "sortIndex": 46,
         "steamAchievementId": "ach_collect_butter_of_proficiency",
         "target": 1
     },
@@ -193,7 +193,7 @@
         "name": "No Loose Threads",
         "description": "Collect a Thread of Expertise from Foraging or Tailoring",
         "tierHrid": "/achievement_tiers/elite",
-        "sortIndex": 46,
+        "sortIndex": 48,
         "steamAchievementId": "ach_collect_thread_of_expertise",
         "target": 1
     },
@@ -211,7 +211,7 @@
         "name": "Collector IV",
         "description": "Obtain 1000 Collection points",
         "tierHrid": "/achievement_tiers/elite",
-        "sortIndex": 54,
+        "sortIndex": 56,
         "steamAchievementId": "ach_collection_points_1000",
         "target": 1000
     },
@@ -229,7 +229,7 @@
         "name": "Collector V",
         "description": "Obtain 2000 Collection points",
         "tierHrid": "/achievement_tiers/champion",
-        "sortIndex": 70,
+        "sortIndex": 73,
         "steamAchievementId": "ach_collection_points_2000",
         "target": 2000
     },
@@ -238,7 +238,7 @@
         "name": "Collector III",
         "description": "Obtain 500 Collection points",
         "tierHrid": "/achievement_tiers/veteran",
-        "sortIndex": 40,
+        "sortIndex": 41,
         "steamAchievementId": "ach_collection_points_500",
         "target": 500
     },
@@ -274,7 +274,7 @@
         "name": "Pastry Chef",
         "description": "Make a Spaceberry Cake with cooking",
         "tierHrid": "/achievement_tiers/veteran",
-        "sortIndex": 33,
+        "sortIndex": 34,
         "steamAchievementId": "ach_cook_spaceberry_cake",
         "target": 1
     },
@@ -283,7 +283,7 @@
         "name": "Celestial Artisan",
         "description": "Make any Celestial Tool or Level 90 Skilling Outfit Top or Bottoms",
         "tierHrid": "/achievement_tiers/champion",
-        "sortIndex": 59,
+        "sortIndex": 62,
         "steamAchievementId": "ach_craft_celestial_tool_or_outfit",
         "target": 1
     },
@@ -292,7 +292,7 @@
         "name": "Dungeon Forger",
         "description": "Make any dungeon equipment from its components",
         "tierHrid": "/achievement_tiers/elite",
-        "sortIndex": 49,
+        "sortIndex": 51,
         "steamAchievementId": "ach_craft_dungeon_equipment",
         "target": 1
     },
@@ -310,7 +310,7 @@
         "name": "Master Charmer",
         "description": "Craft any Master charm",
         "tierHrid": "/achievement_tiers/champion",
-        "sortIndex": 61,
+        "sortIndex": 64,
         "steamAchievementId": "ach_craft_master_charm",
         "target": 1
     },
@@ -337,7 +337,7 @@
         "name": "Chronofrost Slayer",
         "description": "Defeat Chronofrost Sorcerer by yourself",
         "tierHrid": "/achievement_tiers/veteran",
-        "sortIndex": 38,
+        "sortIndex": 39,
         "steamAchievementId": "ach_defeat_chronofrost_sorcerer",
         "target": 1
     },
@@ -346,7 +346,7 @@
         "name": "Crystal Breaker",
         "description": "Defeat Crystal Colossus by yourself",
         "tierHrid": "/achievement_tiers/elite",
-        "sortIndex": 50,
+        "sortIndex": 52,
         "steamAchievementId": "ach_defeat_crystal_colossus",
         "target": 1
     },
@@ -355,7 +355,7 @@
         "name": "Overlord's Doom",
         "description": "Defeat Demonic Overlord (T1) by yourself",
         "tierHrid": "/achievement_tiers/champion",
-        "sortIndex": 65,
+        "sortIndex": 68,
         "steamAchievementId": "ach_defeat_demonic_overlord_t1",
         "target": 1
     },
@@ -364,7 +364,7 @@
         "name": "Revenant Hunter",
         "description": "Defeat Dusk Revenant by yourself",
         "tierHrid": "/achievement_tiers/elite",
-        "sortIndex": 51,
+        "sortIndex": 53,
         "steamAchievementId": "ach_defeat_dusk_revenant",
         "target": 1
     },
@@ -391,7 +391,7 @@
         "name": "Ultimate Jerry Slayer",
         "description": "Defeat T5 Jerry by yourself",
         "tierHrid": "/achievement_tiers/veteran",
-        "sortIndex": 37,
+        "sortIndex": 38,
         "steamAchievementId": "ach_defeat_jerry_t5",
         "target": 1
     },
@@ -418,7 +418,7 @@
         "name": "Panda Tamer",
         "description": "Defeat Red Panda by yourself",
         "tierHrid": "/achievement_tiers/veteran",
-        "sortIndex": 39,
+        "sortIndex": 40,
         "steamAchievementId": "ach_defeat_red_panda",
         "target": 1
     },
@@ -436,7 +436,7 @@
         "name": "Golem Breaker",
         "description": "Defeat Stalactite Golem (T5) by yourself",
         "tierHrid": "/achievement_tiers/champion",
-        "sortIndex": 66,
+        "sortIndex": 69,
         "steamAchievementId": "ach_defeat_stalactite_golem_t5",
         "target": 1
     },
@@ -454,7 +454,7 @@
         "name": "Enhancer IV",
         "description": "Successfully enhance equipment with 80+ recommended level to +10",
         "tierHrid": "/achievement_tiers/elite",
-        "sortIndex": 48,
+        "sortIndex": 50,
         "steamAchievementId": "ach_enhance_level_80_to_10",
         "target": 1
     },
@@ -463,7 +463,7 @@
         "name": "Enhancer V",
         "description": "Successfully enhance equipment with 90+ recommended level to +10",
         "tierHrid": "/achievement_tiers/champion",
-        "sortIndex": 64,
+        "sortIndex": 67,
         "steamAchievementId": "ach_enhance_level_90_to_10",
         "target": 1
     },
@@ -472,7 +472,7 @@
         "name": "Enhancer III",
         "description": "Successfully enhance any equipment to +10",
         "tierHrid": "/achievement_tiers/veteran",
-        "sortIndex": 35,
+        "sortIndex": 36,
         "steamAchievementId": "ach_enhance_to_10",
         "target": 1
     },
@@ -499,7 +499,7 @@
         "name": "Task Master",
         "description": "Equip an expert task badge",
         "tierHrid": "/achievement_tiers/elite",
-        "sortIndex": 56,
+        "sortIndex": 58,
         "steamAchievementId": "ach_equip_expert_task_badge",
         "target": 1
     },
@@ -521,6 +521,42 @@
         "steamAchievementId": "ach_gather_milk",
         "target": 1
     },
+    "/achievements/labyrinth_floor_2": {
+        "hrid": "/achievements/labyrinth_floor_2",
+        "name": "Labyrinth Explorer I",
+        "description": "Reach floor 2 of the Labyrinth",
+        "tierHrid": "/achievement_tiers/adept",
+        "sortIndex": 31,
+        "steamAchievementId": "ach_labyrinth_floor_2",
+        "target": 1
+    },
+    "/achievements/labyrinth_floor_4": {
+        "hrid": "/achievements/labyrinth_floor_4",
+        "name": "Labyrinth Explorer II",
+        "description": "Reach floor 4 of the Labyrinth",
+        "tierHrid": "/achievement_tiers/veteran",
+        "sortIndex": 45,
+        "steamAchievementId": "ach_labyrinth_floor_4",
+        "target": 1
+    },
+    "/achievements/labyrinth_floor_6": {
+        "hrid": "/achievements/labyrinth_floor_6",
+        "name": "Labyrinth Explorer III",
+        "description": "Reach floor 6 of the Labyrinth",
+        "tierHrid": "/achievement_tiers/elite",
+        "sortIndex": 61,
+        "steamAchievementId": "ach_labyrinth_floor_6",
+        "target": 1
+    },
+    "/achievements/labyrinth_floor_8": {
+        "hrid": "/achievements/labyrinth_floor_8",
+        "name": "Labyrinth Explorer IV",
+        "description": "Reach floor 8 of the Labyrinth",
+        "tierHrid": "/achievement_tiers/champion",
+        "sortIndex": 77,
+        "steamAchievementId": "ach_labyrinth_floor_8",
+        "target": 1
+    },
     "/achievements/learn_ability": {
         "hrid": "/achievements/learn_ability",
         "name": "Awakened",
@@ -535,7 +571,7 @@
         "name": "Ability Master",
         "description": "Learn a special ability",
         "tierHrid": "/achievement_tiers/veteran",
-        "sortIndex": 36,
+        "sortIndex": 37,
         "steamAchievementId": "ach_learn_special_ability",
         "target": 1
     },
@@ -544,7 +580,7 @@
         "name": "Dungeon Refiner",
         "description": "Refine any dungeon equipment",
         "tierHrid": "/achievement_tiers/champion",
-        "sortIndex": 63,
+        "sortIndex": 66,
         "steamAchievementId": "ach_refine_dungeon_equipment",
         "target": 1
     },
@@ -553,7 +589,7 @@
         "name": "Snack Pack Pro",
         "description": "Tailor a Gluttonous or Guzzling Pouch",
         "tierHrid": "/achievement_tiers/champion",
-        "sortIndex": 60,
+        "sortIndex": 63,
         "steamAchievementId": "ach_tailor_gluttonous_or_guzzling_pouch",
         "target": 1
     },
@@ -571,7 +607,7 @@
         "name": "Shadow Tailor",
         "description": "Tailor an Umbral Tunic",
         "tierHrid": "/achievement_tiers/veteran",
-        "sortIndex": 32,
+        "sortIndex": 33,
         "steamAchievementId": "ach_tailor_umbral_tunic",
         "target": 1
     },
@@ -598,7 +634,7 @@
         "name": "Veteran Adventurer",
         "description": "Get a Total level of 1000",
         "tierHrid": "/achievement_tiers/veteran",
-        "sortIndex": 43,
+        "sortIndex": 44,
         "steamAchievementId": "ach_total_level_1000",
         "target": 1000
     },
@@ -607,7 +643,7 @@
         "name": "Elite Adventurer",
         "description": "Get a total level of 1500",
         "tierHrid": "/achievement_tiers/elite",
-        "sortIndex": 58,
+        "sortIndex": 60,
         "steamAchievementId": "ach_total_level_1500",
         "target": 1500
     },
@@ -616,7 +652,7 @@
         "name": "Champion Adventurer",
         "description": "Get a Total level of 1800",
         "tierHrid": "/achievement_tiers/champion",
-        "sortIndex": 73,
+        "sortIndex": 76,
         "steamAchievementId": "ach_total_level_1800",
         "target": 1800
     },
@@ -643,7 +679,7 @@
         "name": "Philosopher",
         "description": "Gain a Philosopher's Stone from transmuting",
         "tierHrid": "/achievement_tiers/champion",
-        "sortIndex": 62,
+        "sortIndex": 65,
         "steamAchievementId": "ach_transmute_philosophers_stone",
         "target": 1
     },
@@ -652,7 +688,7 @@
         "name": "Arcane Logger",
         "description": "Woodcut an arcane tree",
         "tierHrid": "/achievement_tiers/veteran",
-        "sortIndex": 31,
+        "sortIndex": 32,
         "steamAchievementId": "ach_woodcut_arcane_tree",
         "target": 1
     }
