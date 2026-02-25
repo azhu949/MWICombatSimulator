@@ -507,6 +507,61 @@ function getEnhancementUpgradeCostKey(selectType, itemHrid, fromLevel, toLevel) 
     return `${selectType}|${itemHrid}|${fromLevel}|${toLevel}`;
 }
 
+function getEquipmentTransitionCostKey(selectType, beforeItemHrid, beforeLevel, afterItemHrid, afterLevel) {
+    return `${selectType}|${beforeItemHrid}|${beforeLevel}|${afterItemHrid}|${afterLevel}`;
+}
+
+function getLegacyEnhancementCostKeyForTransition(selectType, beforeItemHrid, beforeLevel, afterItemHrid, afterLevel) {
+    if (
+        !afterItemHrid
+        || beforeItemHrid !== afterItemHrid
+        || !Number.isFinite(beforeLevel)
+        || !Number.isFinite(afterLevel)
+        || afterLevel <= beforeLevel
+    ) {
+        return "";
+    }
+
+    return getEnhancementUpgradeCostKey(selectType, afterItemHrid, beforeLevel, afterLevel);
+}
+
+function readEquipmentTransitionCostFromMap(costMap, selectType, beforeItemHrid, beforeLevel, afterItemHrid, afterLevel) {
+    const transitionCostKey = getEquipmentTransitionCostKey(selectType, beforeItemHrid, beforeLevel, afterItemHrid, afterLevel);
+    const legacyCostKey = getLegacyEnhancementCostKeyForTransition(selectType, beforeItemHrid, beforeLevel, afterItemHrid, afterLevel);
+
+    if (Object.prototype.hasOwnProperty.call(costMap, transitionCostKey)) {
+        return {
+            value: costMap[transitionCostKey],
+            transitionCostKey,
+            legacyCostKey,
+        };
+    }
+
+    if (legacyCostKey && Object.prototype.hasOwnProperty.call(costMap, legacyCostKey)) {
+        return {
+            value: costMap[legacyCostKey],
+            transitionCostKey,
+            legacyCostKey,
+        };
+    }
+
+    return {
+        value: null,
+        transitionCostKey,
+        legacyCostKey,
+    };
+}
+
+function writeEquipmentTransitionCostToMap(costMap, selectType, beforeItemHrid, beforeLevel, afterItemHrid, afterLevel, costValue) {
+    const transitionCostKey = getEquipmentTransitionCostKey(selectType, beforeItemHrid, beforeLevel, afterItemHrid, afterLevel);
+    costMap[transitionCostKey] = costValue;
+
+    const legacyCostKey = getLegacyEnhancementCostKeyForTransition(selectType, beforeItemHrid, beforeLevel, afterItemHrid, afterLevel);
+    if (legacyCostKey) {
+        costMap[legacyCostKey] = costValue;
+    }
+}
+
 function getCurrentPlayerEnhancementCostMap() {
     const queueState = getCurrentPlayerQueueState();
     if (!queueState.enhancementUpgradeCosts || typeof queueState.enhancementUpgradeCosts !== "object") {
@@ -580,6 +635,28 @@ function computeDefaultEnhancementUpgradeCost(itemHrid, fromLevel, toLevel) {
 
     const upgradeCost = toPrice - fromPrice;
     return upgradeCost > 0 ? upgradeCost : 0;
+}
+
+function computeDefaultEquipmentTransitionCost(beforeItemHrid, beforeLevel, afterItemHrid, afterLevel) {
+    if (!afterItemHrid) {
+        return 0;
+    }
+
+    const normalizedBeforeLevel = Number.isFinite(beforeLevel) ? beforeLevel : 0;
+    const normalizedAfterLevel = Number.isFinite(afterLevel) ? afterLevel : 0;
+    const buyPrice = resolveEnhancementLevelPrice(afterItemHrid, normalizedAfterLevel, "ask");
+    if (buyPrice === -1) {
+        return 0;
+    }
+
+    let sellPrice = 0;
+    if (beforeItemHrid) {
+        const resolvedSellPrice = resolveEnhancementLevelPrice(beforeItemHrid, normalizedBeforeLevel, "bid");
+        sellPrice = resolvedSellPrice === -1 ? 0 : resolvedSellPrice;
+    }
+
+    const transitionCost = buyPrice - sellPrice;
+    return transitionCost > 0 ? transitionCost : 0;
 }
 
 function getAbilityXpForLevel(level) {
@@ -686,49 +763,86 @@ function refreshEquipmentEnhancementHints() {
         costHintElement.replaceChildren();
 
         const itemHrid = selectElement.value;
+        const currentLevelRaw = Number(enhancementInput.value);
+        const currentLevel = Number.isFinite(currentLevelRaw) ? currentLevelRaw : 0;
+        if (itemHrid) {
+            const levels = getMarketEnhancementLevelsForItem(itemHrid);
+            if (levels.length > 0) {
+                const buttonContainer = document.createElement("div");
+                buttonContainer.className = "d-flex flex-wrap gap-1";
+                for (const level of levels) {
+                    const button = document.createElement("button");
+                    button.type = "button";
+                    button.className = `btn btn-sm ${currentLevel === level ? "btn-primary" : "btn-outline-secondary"}`;
+                    button.style.padding = "0 0.35rem";
+                    button.textContent = `+${level}`;
+                    button.addEventListener("click", () => applyEquipmentEnhancementFromMarket(selectType, level));
+                    buttonContainer.appendChild(button);
+                }
+                buttonHintElement.appendChild(buttonContainer);
+            }
+        }
+
         if (!itemHrid) {
             continue;
         }
 
-        const levels = getMarketEnhancementLevelsForItem(itemHrid);
-        if (levels.length === 0) {
+        const baselineSnapshot = getCurrentPlayerQueueState()?.baseline?.snapshot;
+        if (!baselineSnapshot) {
             continue;
         }
 
-        const buttonContainer = document.createElement("div");
-        buttonContainer.className = "d-flex flex-wrap gap-1";
-        const currentLevel = Number(enhancementInput.value);
-        for (const level of levels) {
-            const button = document.createElement("button");
-            button.type = "button";
-            button.className = `btn btn-sm ${currentLevel === level ? "btn-primary" : "btn-outline-secondary"}`;
-            button.style.padding = "0 0.35rem";
-            button.textContent = `+${level}`;
-            button.addEventListener("click", () => applyEquipmentEnhancementFromMarket(selectType, level));
-            buttonContainer.appendChild(button);
-        }
-        buttonHintElement.appendChild(buttonContainer);
-
         const baselineEquipment = getBaselineEquipmentForSelectType(selectType);
         const baselineItemHrid = baselineEquipment?.itemHrid ?? "";
-        const baselineLevel = Number(baselineEquipment?.enhancementLevel ?? 0);
+        const baselineLevelRaw = Number(baselineEquipment?.enhancementLevel ?? 0);
+        const baselineLevel = Number.isFinite(baselineLevelRaw) ? baselineLevelRaw : 0;
+        const hasChangedFromBaseline = baselineItemHrid !== itemHrid || baselineLevel !== currentLevel;
         const shouldShowUpgradeCost = Boolean(
-            baselineItemHrid
-            && baselineItemHrid === itemHrid
+            hasChangedFromBaseline
             && Number.isFinite(currentLevel)
-            && currentLevel > baselineLevel
         );
 
         if (shouldShowUpgradeCost) {
             const costMap = getCurrentPlayerEnhancementCostMap();
-            const costKey = getEnhancementUpgradeCostKey(selectType, itemHrid, baselineLevel, currentLevel);
+            const savedCostResult = readEquipmentTransitionCostFromMap(
+                costMap,
+                selectType,
+                baselineItemHrid,
+                baselineLevel,
+                itemHrid,
+                currentLevel
+            );
             let savedCost;
-            if (Object.prototype.hasOwnProperty.call(costMap, costKey)) {
-                savedCost = costMap[costKey];
+            if (savedCostResult.value != null) {
+                savedCost = savedCostResult.value;
+                if (!Object.prototype.hasOwnProperty.call(costMap, savedCostResult.transitionCostKey)) {
+                    writeEquipmentTransitionCostToMap(
+                        costMap,
+                        selectType,
+                        baselineItemHrid,
+                        baselineLevel,
+                        itemHrid,
+                        currentLevel,
+                        savedCost
+                    );
+                }
             } else {
-                const defaultCost = computeDefaultEnhancementUpgradeCost(itemHrid, baselineLevel, currentLevel);
+                const defaultCost = computeDefaultEquipmentTransitionCost(
+                    baselineItemHrid,
+                    baselineLevel,
+                    itemHrid,
+                    currentLevel
+                );
                 savedCost = String(defaultCost);
-                costMap[costKey] = savedCost;
+                writeEquipmentTransitionCostToMap(
+                    costMap,
+                    selectType,
+                    baselineItemHrid,
+                    baselineLevel,
+                    itemHrid,
+                    currentLevel,
+                    savedCost
+                );
             }
 
             const costContainer = document.createElement("div");
@@ -758,7 +872,15 @@ function refreshEquipmentEnhancementHints() {
             costContainer.appendChild(inputRow);
 
             costInput.addEventListener("input", () => {
-                costMap[costKey] = costInput.value;
+                writeEquipmentTransitionCostToMap(
+                    costMap,
+                    selectType,
+                    baselineItemHrid,
+                    baselineLevel,
+                    itemHrid,
+                    currentLevel,
+                    costInput.value
+                );
                 updateCostPreview();
             });
 
@@ -6072,25 +6194,28 @@ function computeQueueItemUpgradeCost(queueState, queueItem) {
         const afterEquipment = targetSnapshot.equipment?.[slotKey] ?? null;
         const beforeItemHrid = beforeEquipment?.itemHrid ?? "";
         const afterItemHrid = afterEquipment?.itemHrid ?? "";
-        const beforeLevel = Number(beforeEquipment?.enhancementLevel ?? 0);
-        const afterLevel = Number(afterEquipment?.enhancementLevel ?? 0);
+        const beforeLevelRaw = Number(beforeEquipment?.enhancementLevel ?? 0);
+        const afterLevelRaw = Number(afterEquipment?.enhancementLevel ?? 0);
+        const beforeLevel = Number.isFinite(beforeLevelRaw) ? beforeLevelRaw : 0;
+        const afterLevel = Number.isFinite(afterLevelRaw) ? afterLevelRaw : 0;
 
-        if (
-            !beforeItemHrid
-            || !afterItemHrid
-            || beforeItemHrid !== afterItemHrid
-            || !Number.isFinite(beforeLevel)
-            || !Number.isFinite(afterLevel)
-            || afterLevel <= beforeLevel
-        ) {
+        const hasChanged = beforeItemHrid !== afterItemHrid || beforeLevel !== afterLevel;
+        if (!hasChanged || !afterItemHrid) {
             continue;
         }
 
         const selectType = slotKey === "weapon" ? "weapon" : slotKey;
-        const costKey = getEnhancementUpgradeCostKey(selectType, afterItemHrid, beforeLevel, afterLevel);
-        const estimatedCost = Object.prototype.hasOwnProperty.call(enhancementCostMap, costKey)
-            ? toFiniteNumber(enhancementCostMap[costKey], 0)
-            : toFiniteNumber(computeDefaultEnhancementUpgradeCost(afterItemHrid, beforeLevel, afterLevel), 0);
+        const savedCostResult = readEquipmentTransitionCostFromMap(
+            enhancementCostMap,
+            selectType,
+            beforeItemHrid,
+            beforeLevel,
+            afterItemHrid,
+            afterLevel
+        );
+        const estimatedCost = savedCostResult.value != null
+            ? toFiniteNumber(savedCostResult.value, 0)
+            : toFiniteNumber(computeDefaultEquipmentTransitionCost(beforeItemHrid, beforeLevel, afterItemHrid, afterLevel), 0);
 
         totalCost += Math.max(0, estimatedCost);
     }
@@ -7531,6 +7656,22 @@ function deriveSingleQueueChangeDisplayName(change) {
             });
         }
 
+        if (beforeParsed?.itemHrid && afterParsed?.itemHrid) {
+            const beforeItemName = localizeHridDisplayName(beforeParsed.itemHrid);
+            const afterItemName = localizeHridDisplayName(afterParsed.itemHrid);
+            return `${beforeItemName} -> ${afterItemName}(+${afterParsed.enhancementLevel})`;
+        }
+
+        if (afterParsed?.itemHrid) {
+            const itemName = localizeHridDisplayName(afterParsed.itemHrid);
+            return `${itemName}(+${afterParsed.enhancementLevel})`;
+        }
+
+        if (beforeParsed?.itemHrid) {
+            const itemName = localizeHridDisplayName(beforeParsed.itemHrid);
+            return `${itemName}(+${beforeParsed.enhancementLevel})`;
+        }
+
         const label = localizeQueueChangeLabel(change);
         const beforeText = localizeQueueChangeValue(change.beforeValue);
         const afterText = localizeQueueChangeValue(change.afterValue);
@@ -7708,11 +7849,11 @@ function localizeHridDisplayName(hrid) {
     for (const key of keys) {
         const translated = i18next.t(key);
         if (translated && translated !== key) {
-            return translated;
+            return String(translated).trim();
         }
     }
 
-    return hrid;
+    return String(hrid).trim();
 }
 
 function localizeQueueCategory(category) {
