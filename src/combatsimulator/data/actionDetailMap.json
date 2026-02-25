@@ -83,6 +83,198 @@
         "buffs": null,
         "sortIndex": 3
     },
+    "/actions/alchemy/unrefine": {
+        "hrid": "/actions/alchemy/unrefine",
+        "function": "/action_functions/alchemy",
+        "type": "/action_types/alchemy",
+        "category": "/action_categories/alchemy/alchemy",
+        "name": "Unrefine",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/alchemy",
+            "level": 1
+        },
+        "baseTimeCost": 20000000000,
+        "experienceGain": {
+            "skillHrid": "",
+            "value": 0
+        },
+        "dropTable": null,
+        "essenceDropTable": null,
+        "rareDropTable": null,
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": null,
+        "outputItems": null,
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 4
+    },
+    "/actions/brewing/advanced_coffee_crate": {
+        "hrid": "/actions/brewing/advanced_coffee_crate",
+        "function": "/action_functions/production",
+        "type": "/action_types/brewing",
+        "category": "/action_categories/brewing/labyrinth",
+        "name": "Advanced Coffee Crate",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/brewing",
+            "level": 50
+        },
+        "baseTimeCost": 34000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/brewing",
+            "value": 500
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/brewing_essence",
+                "dropRate": 0.14166666666666666,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.0006033950617283951,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/super_stamina_coffee",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/super_intelligence_coffee",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/super_defense_coffee",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/super_attack_coffee",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/super_melee_coffee",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/super_ranged_coffee",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/super_magic_coffee",
+                "count": 10
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_coffee_crate",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 34
+    },
+    "/actions/brewing/advanced_tea_crate": {
+        "hrid": "/actions/brewing/advanced_tea_crate",
+        "function": "/action_functions/production",
+        "type": "/action_types/brewing",
+        "category": "/action_categories/brewing/labyrinth",
+        "name": "Advanced Tea Crate",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/brewing",
+            "level": 50
+        },
+        "baseTimeCost": 34000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/brewing",
+            "value": 500
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/brewing_essence",
+                "dropRate": 0.14166666666666666,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.0006033950617283951,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/super_milking_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/super_foraging_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/super_woodcutting_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/super_cooking_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/super_brewing_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/super_alchemy_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/super_enhancing_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/super_cheesesmithing_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/super_crafting_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/super_tailoring_tea",
+                "count": 10
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_tea_crate",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 33
+    },
     "/actions/brewing/alchemy_tea": {
         "hrid": "/actions/brewing/alchemy_tea",
         "function": "/action_functions/production",
@@ -201,7 +393,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 45
+        "sortIndex": 49
     },
     "/actions/brewing/attack_coffee": {
         "hrid": "/actions/brewing/attack_coffee",
@@ -258,6 +450,170 @@
         "maxPartySize": 0,
         "buffs": null,
         "sortIndex": 10
+    },
+    "/actions/brewing/basic_coffee_crate": {
+        "hrid": "/actions/brewing/basic_coffee_crate",
+        "function": "/action_functions/production",
+        "type": "/action_types/brewing",
+        "category": "/action_categories/brewing/labyrinth",
+        "name": "Basic Coffee Crate",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/brewing",
+            "level": 20
+        },
+        "baseTimeCost": 22000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/brewing",
+            "value": 200
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/brewing_essence",
+                "dropRate": 0.07333333333333333,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_artisans_crate",
+                "dropRate": 0.000611111111111111,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/stamina_coffee",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/intelligence_coffee",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/defense_coffee",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/attack_coffee",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/melee_coffee",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/ranged_coffee",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/magic_coffee",
+                "count": 10
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/basic_coffee_crate",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 17
+    },
+    "/actions/brewing/basic_tea_crate": {
+        "hrid": "/actions/brewing/basic_tea_crate",
+        "function": "/action_functions/production",
+        "type": "/action_types/brewing",
+        "category": "/action_categories/brewing/labyrinth",
+        "name": "Basic Tea Crate",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/brewing",
+            "level": 20
+        },
+        "baseTimeCost": 22000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/brewing",
+            "value": 200
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/brewing_essence",
+                "dropRate": 0.07333333333333333,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_artisans_crate",
+                "dropRate": 0.000611111111111111,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/milking_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/foraging_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/woodcutting_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/cooking_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/brewing_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/alchemy_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/enhancing_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/cheesesmithing_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/crafting_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/tailoring_tea",
+                "count": 10
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/basic_tea_crate",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 16
     },
     "/actions/brewing/blessed_tea": {
         "hrid": "/actions/brewing/blessed_tea",
@@ -317,7 +673,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 56
+        "sortIndex": 60
     },
     "/actions/brewing/brewing_tea": {
         "hrid": "/actions/brewing/brewing_tea",
@@ -437,7 +793,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 50
+        "sortIndex": 54
     },
     "/actions/brewing/channeling_coffee": {
         "hrid": "/actions/brewing/channeling_coffee",
@@ -497,7 +853,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 41
+        "sortIndex": 45
     },
     "/actions/brewing/cheesesmithing_tea": {
         "hrid": "/actions/brewing/cheesesmithing_tea",
@@ -677,7 +1033,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 16
+        "sortIndex": 18
     },
     "/actions/brewing/critical_coffee": {
         "hrid": "/actions/brewing/critical_coffee",
@@ -737,7 +1093,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 51
+        "sortIndex": 55
     },
     "/actions/brewing/defense_coffee": {
         "hrid": "/actions/brewing/defense_coffee",
@@ -853,7 +1209,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 35
+        "sortIndex": 39
     },
     "/actions/brewing/enhancing_tea": {
         "hrid": "/actions/brewing/enhancing_tea",
@@ -914,6 +1270,170 @@
         "maxPartySize": 0,
         "buffs": null,
         "sortIndex": 13
+    },
+    "/actions/brewing/expert_coffee_crate": {
+        "hrid": "/actions/brewing/expert_coffee_crate",
+        "function": "/action_functions/production",
+        "type": "/action_types/brewing",
+        "category": "/action_categories/brewing/labyrinth",
+        "name": "Expert Coffee Crate",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/brewing",
+            "level": 80
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/brewing",
+            "value": 1000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/brewing_essence",
+                "dropRate": 0.3,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0007638888888888889,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/ultra_stamina_coffee",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/ultra_intelligence_coffee",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/ultra_defense_coffee",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/ultra_attack_coffee",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/ultra_melee_coffee",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/ultra_ranged_coffee",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/ultra_magic_coffee",
+                "count": 10
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_coffee_crate",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 64
+    },
+    "/actions/brewing/expert_tea_crate": {
+        "hrid": "/actions/brewing/expert_tea_crate",
+        "function": "/action_functions/production",
+        "type": "/action_types/brewing",
+        "category": "/action_categories/brewing/labyrinth",
+        "name": "Expert Tea Crate",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/brewing",
+            "level": 80
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/brewing",
+            "value": 1000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/brewing_essence",
+                "dropRate": 0.3,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0007638888888888889,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/ultra_milking_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/ultra_foraging_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/ultra_woodcutting_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/ultra_cooking_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/ultra_brewing_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/ultra_alchemy_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/ultra_enhancing_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/ultra_cheesesmithing_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/ultra_crafting_tea",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/ultra_tailoring_tea",
+                "count": 10
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_tea_crate",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 63
     },
     "/actions/brewing/foraging_tea": {
         "hrid": "/actions/brewing/foraging_tea",
@@ -1209,7 +1729,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 27
+        "sortIndex": 29
     },
     "/actions/brewing/magic_coffee": {
         "hrid": "/actions/brewing/magic_coffee",
@@ -1265,7 +1785,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 21
+        "sortIndex": 23
     },
     "/actions/brewing/melee_coffee": {
         "hrid": "/actions/brewing/melee_coffee",
@@ -1441,7 +1961,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 26
+        "sortIndex": 28
     },
     "/actions/brewing/ranged_coffee": {
         "hrid": "/actions/brewing/ranged_coffee",
@@ -1497,7 +2017,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 17
+        "sortIndex": 19
     },
     "/actions/brewing/stamina_coffee": {
         "hrid": "/actions/brewing/stamina_coffee",
@@ -1617,7 +2137,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 37
+        "sortIndex": 41
     },
     "/actions/brewing/super_attack_coffee": {
         "hrid": "/actions/brewing/super_attack_coffee",
@@ -1677,7 +2197,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 33
+        "sortIndex": 37
     },
     "/actions/brewing/super_brewing_tea": {
         "hrid": "/actions/brewing/super_brewing_tea",
@@ -1741,7 +2261,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 31
+        "sortIndex": 35
     },
     "/actions/brewing/super_cheesesmithing_tea": {
         "hrid": "/actions/brewing/super_cheesesmithing_tea",
@@ -1805,7 +2325,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 42
+        "sortIndex": 46
     },
     "/actions/brewing/super_cooking_tea": {
         "hrid": "/actions/brewing/super_cooking_tea",
@@ -1869,7 +2389,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 29
+        "sortIndex": 31
     },
     "/actions/brewing/super_crafting_tea": {
         "hrid": "/actions/brewing/super_crafting_tea",
@@ -1933,7 +2453,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 46
+        "sortIndex": 50
     },
     "/actions/brewing/super_defense_coffee": {
         "hrid": "/actions/brewing/super_defense_coffee",
@@ -1993,7 +2513,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 30
+        "sortIndex": 32
     },
     "/actions/brewing/super_enhancing_tea": {
         "hrid": "/actions/brewing/super_enhancing_tea",
@@ -2057,7 +2577,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 38
+        "sortIndex": 42
     },
     "/actions/brewing/super_foraging_tea": {
         "hrid": "/actions/brewing/super_foraging_tea",
@@ -2121,7 +2641,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 24
+        "sortIndex": 26
     },
     "/actions/brewing/super_intelligence_coffee": {
         "hrid": "/actions/brewing/super_intelligence_coffee",
@@ -2181,7 +2701,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 25
+        "sortIndex": 27
     },
     "/actions/brewing/super_magic_coffee": {
         "hrid": "/actions/brewing/super_magic_coffee",
@@ -2241,7 +2761,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 54
+        "sortIndex": 58
     },
     "/actions/brewing/super_melee_coffee": {
         "hrid": "/actions/brewing/super_melee_coffee",
@@ -2301,7 +2821,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 44
+        "sortIndex": 48
     },
     "/actions/brewing/super_milking_tea": {
         "hrid": "/actions/brewing/super_milking_tea",
@@ -2365,7 +2885,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 22
+        "sortIndex": 24
     },
     "/actions/brewing/super_ranged_coffee": {
         "hrid": "/actions/brewing/super_ranged_coffee",
@@ -2425,7 +2945,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 48
+        "sortIndex": 52
     },
     "/actions/brewing/super_stamina_coffee": {
         "hrid": "/actions/brewing/super_stamina_coffee",
@@ -2485,7 +3005,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 23
+        "sortIndex": 25
     },
     "/actions/brewing/super_tailoring_tea": {
         "hrid": "/actions/brewing/super_tailoring_tea",
@@ -2549,7 +3069,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 52
+        "sortIndex": 56
     },
     "/actions/brewing/super_woodcutting_tea": {
         "hrid": "/actions/brewing/super_woodcutting_tea",
@@ -2613,7 +3133,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 28
+        "sortIndex": 30
     },
     "/actions/brewing/swiftness_coffee": {
         "hrid": "/actions/brewing/swiftness_coffee",
@@ -2673,7 +3193,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 36
+        "sortIndex": 40
     },
     "/actions/brewing/tailoring_tea": {
         "hrid": "/actions/brewing/tailoring_tea",
@@ -2733,7 +3253,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 20
+        "sortIndex": 22
     },
     "/actions/brewing/ultra_alchemy_tea": {
         "hrid": "/actions/brewing/ultra_alchemy_tea",
@@ -2789,7 +3309,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 57
+        "sortIndex": 61
     },
     "/actions/brewing/ultra_attack_coffee": {
         "hrid": "/actions/brewing/ultra_attack_coffee",
@@ -2841,7 +3361,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 55
+        "sortIndex": 59
     },
     "/actions/brewing/ultra_brewing_tea": {
         "hrid": "/actions/brewing/ultra_brewing_tea",
@@ -2897,7 +3417,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 53
+        "sortIndex": 57
     },
     "/actions/brewing/ultra_cheesesmithing_tea": {
         "hrid": "/actions/brewing/ultra_cheesesmithing_tea",
@@ -2953,7 +3473,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 59
+        "sortIndex": 65
     },
     "/actions/brewing/ultra_cooking_tea": {
         "hrid": "/actions/brewing/ultra_cooking_tea",
@@ -3009,7 +3529,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 47
+        "sortIndex": 51
     },
     "/actions/brewing/ultra_crafting_tea": {
         "hrid": "/actions/brewing/ultra_crafting_tea",
@@ -3065,7 +3585,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 61
+        "sortIndex": 67
     },
     "/actions/brewing/ultra_defense_coffee": {
         "hrid": "/actions/brewing/ultra_defense_coffee",
@@ -3117,7 +3637,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 49
+        "sortIndex": 53
     },
     "/actions/brewing/ultra_enhancing_tea": {
         "hrid": "/actions/brewing/ultra_enhancing_tea",
@@ -3173,7 +3693,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 58
+        "sortIndex": 62
     },
     "/actions/brewing/ultra_foraging_tea": {
         "hrid": "/actions/brewing/ultra_foraging_tea",
@@ -3229,7 +3749,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 39
+        "sortIndex": 43
     },
     "/actions/brewing/ultra_intelligence_coffee": {
         "hrid": "/actions/brewing/ultra_intelligence_coffee",
@@ -3281,7 +3801,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 40
+        "sortIndex": 44
     },
     "/actions/brewing/ultra_magic_coffee": {
         "hrid": "/actions/brewing/ultra_magic_coffee",
@@ -3333,7 +3853,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 64
+        "sortIndex": 70
     },
     "/actions/brewing/ultra_melee_coffee": {
         "hrid": "/actions/brewing/ultra_melee_coffee",
@@ -3385,7 +3905,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 60
+        "sortIndex": 66
     },
     "/actions/brewing/ultra_milking_tea": {
         "hrid": "/actions/brewing/ultra_milking_tea",
@@ -3441,7 +3961,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 32
+        "sortIndex": 36
     },
     "/actions/brewing/ultra_ranged_coffee": {
         "hrid": "/actions/brewing/ultra_ranged_coffee",
@@ -3493,7 +4013,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 62
+        "sortIndex": 68
     },
     "/actions/brewing/ultra_stamina_coffee": {
         "hrid": "/actions/brewing/ultra_stamina_coffee",
@@ -3545,7 +4065,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 34
+        "sortIndex": 38
     },
     "/actions/brewing/ultra_tailoring_tea": {
         "hrid": "/actions/brewing/ultra_tailoring_tea",
@@ -3601,7 +4121,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 63
+        "sortIndex": 69
     },
     "/actions/brewing/ultra_woodcutting_tea": {
         "hrid": "/actions/brewing/ultra_woodcutting_tea",
@@ -3657,7 +4177,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 43
+        "sortIndex": 47
     },
     "/actions/brewing/wisdom_coffee": {
         "hrid": "/actions/brewing/wisdom_coffee",
@@ -3717,7 +4237,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 19
+        "sortIndex": 21
     },
     "/actions/brewing/wisdom_tea": {
         "hrid": "/actions/brewing/wisdom_tea",
@@ -3777,7 +4297,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 18
+        "sortIndex": 20
     },
     "/actions/brewing/woodcutting_tea": {
         "hrid": "/actions/brewing/woodcutting_tea",
@@ -3839,6 +4359,66 @@
         "buffs": null,
         "sortIndex": 6
     },
+    "/actions/cheesesmithing/advanced_beacon": {
+        "hrid": "/actions/cheesesmithing/advanced_beacon",
+        "function": "/action_functions/production",
+        "type": "/action_types/cheesesmithing",
+        "category": "/action_categories/cheesesmithing/labyrinth",
+        "name": "Advanced Beacon",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/cheesesmithing",
+            "level": 50
+        },
+        "baseTimeCost": 17000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cheesesmithing",
+            "value": 250
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "dropRate": 0.07083333333333333,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.00030169753086419757,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/azure_cheese",
+                "count": 20
+            },
+            {
+                "itemHrid": "/items/burble_cheese",
+                "count": 20
+            },
+            {
+                "itemHrid": "/items/crimson_cheese",
+                "count": 20
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_beacon",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 93
+    },
     "/actions/cheesesmithing/anchorbound_plate_body": {
         "hrid": "/actions/cheesesmithing/anchorbound_plate_body",
         "function": "/action_functions/production",
@@ -3897,7 +4477,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 188
+        "sortIndex": 192
     },
     "/actions/cheesesmithing/anchorbound_plate_body_refined": {
         "hrid": "/actions/cheesesmithing/anchorbound_plate_body_refined",
@@ -3949,7 +4529,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 199
+        "sortIndex": 204
     },
     "/actions/cheesesmithing/anchorbound_plate_legs": {
         "hrid": "/actions/cheesesmithing/anchorbound_plate_legs",
@@ -4009,7 +4589,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 182
+        "sortIndex": 186
     },
     "/actions/cheesesmithing/anchorbound_plate_legs_refined": {
         "hrid": "/actions/cheesesmithing/anchorbound_plate_legs_refined",
@@ -4061,7 +4641,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 193
+        "sortIndex": 198
     },
     "/actions/cheesesmithing/azure_alembic": {
         "hrid": "/actions/cheesesmithing/azure_alembic",
@@ -4113,7 +4693,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 59
+        "sortIndex": 60
     },
     "/actions/cheesesmithing/azure_boots": {
         "hrid": "/actions/cheesesmithing/azure_boots",
@@ -4221,7 +4801,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 48
+        "sortIndex": 49
     },
     "/actions/cheesesmithing/azure_buckler": {
         "hrid": "/actions/cheesesmithing/azure_buckler",
@@ -4273,7 +4853,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 62
+        "sortIndex": 63
     },
     "/actions/cheesesmithing/azure_bulwark": {
         "hrid": "/actions/cheesesmithing/azure_bulwark",
@@ -4325,7 +4905,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 63
+        "sortIndex": 64
     },
     "/actions/cheesesmithing/azure_cheese": {
         "hrid": "/actions/cheesesmithing/azure_cheese",
@@ -4433,7 +5013,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 53
+        "sortIndex": 54
     },
     "/actions/cheesesmithing/azure_enhancer": {
         "hrid": "/actions/cheesesmithing/azure_enhancer",
@@ -4485,7 +5065,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 60
+        "sortIndex": 61
     },
     "/actions/cheesesmithing/azure_gauntlets": {
         "hrid": "/actions/cheesesmithing/azure_gauntlets",
@@ -4537,7 +5117,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 46
+        "sortIndex": 47
     },
     "/actions/cheesesmithing/azure_hammer": {
         "hrid": "/actions/cheesesmithing/azure_hammer",
@@ -4593,7 +5173,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 52
+        "sortIndex": 53
     },
     "/actions/cheesesmithing/azure_hatchet": {
         "hrid": "/actions/cheesesmithing/azure_hatchet",
@@ -4649,7 +5229,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 50
+        "sortIndex": 51
     },
     "/actions/cheesesmithing/azure_helmet": {
         "hrid": "/actions/cheesesmithing/azure_helmet",
@@ -4701,7 +5281,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 61
+        "sortIndex": 62
     },
     "/actions/cheesesmithing/azure_mace": {
         "hrid": "/actions/cheesesmithing/azure_mace",
@@ -4757,7 +5337,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 57
+        "sortIndex": 58
     },
     "/actions/cheesesmithing/azure_needle": {
         "hrid": "/actions/cheesesmithing/azure_needle",
@@ -4809,7 +5389,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 54
+        "sortIndex": 55
     },
     "/actions/cheesesmithing/azure_plate_body": {
         "hrid": "/actions/cheesesmithing/azure_plate_body",
@@ -4861,7 +5441,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 66
+        "sortIndex": 67
     },
     "/actions/cheesesmithing/azure_plate_legs": {
         "hrid": "/actions/cheesesmithing/azure_plate_legs",
@@ -4913,7 +5493,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 64
+        "sortIndex": 65
     },
     "/actions/cheesesmithing/azure_pot": {
         "hrid": "/actions/cheesesmithing/azure_pot",
@@ -4965,7 +5545,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 56
+        "sortIndex": 57
     },
     "/actions/cheesesmithing/azure_shears": {
         "hrid": "/actions/cheesesmithing/azure_shears",
@@ -5021,7 +5601,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 49
+        "sortIndex": 50
     },
     "/actions/cheesesmithing/azure_spatula": {
         "hrid": "/actions/cheesesmithing/azure_spatula",
@@ -5073,7 +5653,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 55
+        "sortIndex": 56
     },
     "/actions/cheesesmithing/azure_spear": {
         "hrid": "/actions/cheesesmithing/azure_spear",
@@ -5129,7 +5709,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 51
+        "sortIndex": 52
     },
     "/actions/cheesesmithing/azure_sword": {
         "hrid": "/actions/cheesesmithing/azure_sword",
@@ -5181,7 +5761,67 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 47
+        "sortIndex": 48
+    },
+    "/actions/cheesesmithing/basic_beacon": {
+        "hrid": "/actions/cheesesmithing/basic_beacon",
+        "function": "/action_functions/production",
+        "type": "/action_types/cheesesmithing",
+        "category": "/action_categories/cheesesmithing/labyrinth",
+        "name": "Basic Beacon",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/cheesesmithing",
+            "level": 20
+        },
+        "baseTimeCost": 11000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cheesesmithing",
+            "value": 100
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "dropRate": 0.03666666666666667,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_artisans_crate",
+                "dropRate": 0.0003055555555555555,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/cheese",
+                "count": 20
+            },
+            {
+                "itemHrid": "/items/verdant_cheese",
+                "count": 20
+            },
+            {
+                "itemHrid": "/items/azure_cheese",
+                "count": 20
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/basic_beacon",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 46
     },
     "/actions/cheesesmithing/black_bear_shoes": {
         "hrid": "/actions/cheesesmithing/black_bear_shoes",
@@ -5233,7 +5873,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 115
+        "sortIndex": 117
     },
     "/actions/cheesesmithing/burble_alembic": {
         "hrid": "/actions/cheesesmithing/burble_alembic",
@@ -5285,7 +5925,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 83
+        "sortIndex": 84
     },
     "/actions/cheesesmithing/burble_boots": {
         "hrid": "/actions/cheesesmithing/burble_boots",
@@ -5337,7 +5977,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 70
+        "sortIndex": 71
     },
     "/actions/cheesesmithing/burble_brush": {
         "hrid": "/actions/cheesesmithing/burble_brush",
@@ -5393,7 +6033,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 73
+        "sortIndex": 74
     },
     "/actions/cheesesmithing/burble_buckler": {
         "hrid": "/actions/cheesesmithing/burble_buckler",
@@ -5445,7 +6085,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 86
+        "sortIndex": 87
     },
     "/actions/cheesesmithing/burble_bulwark": {
         "hrid": "/actions/cheesesmithing/burble_bulwark",
@@ -5497,7 +6137,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 87
+        "sortIndex": 88
     },
     "/actions/cheesesmithing/burble_cheese": {
         "hrid": "/actions/cheesesmithing/burble_cheese",
@@ -5549,7 +6189,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 69
+        "sortIndex": 70
     },
     "/actions/cheesesmithing/burble_chisel": {
         "hrid": "/actions/cheesesmithing/burble_chisel",
@@ -5605,7 +6245,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 78
+        "sortIndex": 79
     },
     "/actions/cheesesmithing/burble_enhancer": {
         "hrid": "/actions/cheesesmithing/burble_enhancer",
@@ -5657,7 +6297,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 84
+        "sortIndex": 85
     },
     "/actions/cheesesmithing/burble_gauntlets": {
         "hrid": "/actions/cheesesmithing/burble_gauntlets",
@@ -5709,7 +6349,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 71
+        "sortIndex": 72
     },
     "/actions/cheesesmithing/burble_hammer": {
         "hrid": "/actions/cheesesmithing/burble_hammer",
@@ -5765,7 +6405,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 77
+        "sortIndex": 78
     },
     "/actions/cheesesmithing/burble_hatchet": {
         "hrid": "/actions/cheesesmithing/burble_hatchet",
@@ -5821,7 +6461,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 75
+        "sortIndex": 76
     },
     "/actions/cheesesmithing/burble_helmet": {
         "hrid": "/actions/cheesesmithing/burble_helmet",
@@ -5873,7 +6513,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 85
+        "sortIndex": 86
     },
     "/actions/cheesesmithing/burble_mace": {
         "hrid": "/actions/cheesesmithing/burble_mace",
@@ -5929,7 +6569,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 82
+        "sortIndex": 83
     },
     "/actions/cheesesmithing/burble_needle": {
         "hrid": "/actions/cheesesmithing/burble_needle",
@@ -5981,7 +6621,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 79
+        "sortIndex": 80
     },
     "/actions/cheesesmithing/burble_plate_body": {
         "hrid": "/actions/cheesesmithing/burble_plate_body",
@@ -6033,7 +6673,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 89
+        "sortIndex": 90
     },
     "/actions/cheesesmithing/burble_plate_legs": {
         "hrid": "/actions/cheesesmithing/burble_plate_legs",
@@ -6085,7 +6725,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 88
+        "sortIndex": 89
     },
     "/actions/cheesesmithing/burble_pot": {
         "hrid": "/actions/cheesesmithing/burble_pot",
@@ -6137,7 +6777,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 81
+        "sortIndex": 82
     },
     "/actions/cheesesmithing/burble_shears": {
         "hrid": "/actions/cheesesmithing/burble_shears",
@@ -6193,7 +6833,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 74
+        "sortIndex": 75
     },
     "/actions/cheesesmithing/burble_spatula": {
         "hrid": "/actions/cheesesmithing/burble_spatula",
@@ -6245,7 +6885,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 80
+        "sortIndex": 81
     },
     "/actions/cheesesmithing/burble_spear": {
         "hrid": "/actions/cheesesmithing/burble_spear",
@@ -6301,7 +6941,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 76
+        "sortIndex": 77
     },
     "/actions/cheesesmithing/burble_sword": {
         "hrid": "/actions/cheesesmithing/burble_sword",
@@ -6353,7 +6993,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 72
+        "sortIndex": 73
     },
     "/actions/cheesesmithing/celestial_alembic": {
         "hrid": "/actions/cheesesmithing/celestial_alembic",
@@ -6425,7 +7065,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 172
+        "sortIndex": 175
     },
     "/actions/cheesesmithing/celestial_brush": {
         "hrid": "/actions/cheesesmithing/celestial_brush",
@@ -6497,7 +7137,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 164
+        "sortIndex": 167
     },
     "/actions/cheesesmithing/celestial_chisel": {
         "hrid": "/actions/cheesesmithing/celestial_chisel",
@@ -6569,7 +7209,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 168
+        "sortIndex": 171
     },
     "/actions/cheesesmithing/celestial_enhancer": {
         "hrid": "/actions/cheesesmithing/celestial_enhancer",
@@ -6641,7 +7281,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 173
+        "sortIndex": 176
     },
     "/actions/cheesesmithing/celestial_hammer": {
         "hrid": "/actions/cheesesmithing/celestial_hammer",
@@ -6713,7 +7353,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 167
+        "sortIndex": 170
     },
     "/actions/cheesesmithing/celestial_hatchet": {
         "hrid": "/actions/cheesesmithing/celestial_hatchet",
@@ -6785,7 +7425,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 166
+        "sortIndex": 169
     },
     "/actions/cheesesmithing/celestial_needle": {
         "hrid": "/actions/cheesesmithing/celestial_needle",
@@ -6857,7 +7497,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 169
+        "sortIndex": 172
     },
     "/actions/cheesesmithing/celestial_pot": {
         "hrid": "/actions/cheesesmithing/celestial_pot",
@@ -6929,7 +7569,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 171
+        "sortIndex": 174
     },
     "/actions/cheesesmithing/celestial_shears": {
         "hrid": "/actions/cheesesmithing/celestial_shears",
@@ -7001,7 +7641,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 165
+        "sortIndex": 168
     },
     "/actions/cheesesmithing/celestial_spatula": {
         "hrid": "/actions/cheesesmithing/celestial_spatula",
@@ -7073,7 +7713,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 170
+        "sortIndex": 173
     },
     "/actions/cheesesmithing/chaotic_flail": {
         "hrid": "/actions/cheesesmithing/chaotic_flail",
@@ -7133,7 +7773,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 186
+        "sortIndex": 190
     },
     "/actions/cheesesmithing/chaotic_flail_refined": {
         "hrid": "/actions/cheesesmithing/chaotic_flail_refined",
@@ -7185,7 +7825,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 197
+        "sortIndex": 202
     },
     "/actions/cheesesmithing/cheese": {
         "hrid": "/actions/cheesesmithing/cheese",
@@ -8357,7 +8997,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 174
+        "sortIndex": 177
     },
     "/actions/cheesesmithing/colossus_plate_legs": {
         "hrid": "/actions/cheesesmithing/colossus_plate_legs",
@@ -8409,7 +9049,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 175
+        "sortIndex": 178
     },
     "/actions/cheesesmithing/corsair_helmet": {
         "hrid": "/actions/cheesesmithing/corsair_helmet",
@@ -8469,7 +9109,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 180
+        "sortIndex": 184
     },
     "/actions/cheesesmithing/corsair_helmet_refined": {
         "hrid": "/actions/cheesesmithing/corsair_helmet_refined",
@@ -8521,7 +9161,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 191
+        "sortIndex": 196
     },
     "/actions/cheesesmithing/crimson_alembic": {
         "hrid": "/actions/cheesesmithing/crimson_alembic",
@@ -8573,7 +9213,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 104
+        "sortIndex": 106
     },
     "/actions/cheesesmithing/crimson_boots": {
         "hrid": "/actions/cheesesmithing/crimson_boots",
@@ -8625,7 +9265,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 91
+        "sortIndex": 92
     },
     "/actions/cheesesmithing/crimson_brush": {
         "hrid": "/actions/cheesesmithing/crimson_brush",
@@ -8681,7 +9321,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 94
+        "sortIndex": 96
     },
     "/actions/cheesesmithing/crimson_buckler": {
         "hrid": "/actions/cheesesmithing/crimson_buckler",
@@ -8733,7 +9373,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 107
+        "sortIndex": 109
     },
     "/actions/cheesesmithing/crimson_bulwark": {
         "hrid": "/actions/cheesesmithing/crimson_bulwark",
@@ -8785,7 +9425,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 108
+        "sortIndex": 110
     },
     "/actions/cheesesmithing/crimson_cheese": {
         "hrid": "/actions/cheesesmithing/crimson_cheese",
@@ -8837,7 +9477,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 90
+        "sortIndex": 91
     },
     "/actions/cheesesmithing/crimson_chisel": {
         "hrid": "/actions/cheesesmithing/crimson_chisel",
@@ -8893,7 +9533,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 99
+        "sortIndex": 101
     },
     "/actions/cheesesmithing/crimson_enhancer": {
         "hrid": "/actions/cheesesmithing/crimson_enhancer",
@@ -8945,7 +9585,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 105
+        "sortIndex": 107
     },
     "/actions/cheesesmithing/crimson_gauntlets": {
         "hrid": "/actions/cheesesmithing/crimson_gauntlets",
@@ -8997,7 +9637,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 92
+        "sortIndex": 94
     },
     "/actions/cheesesmithing/crimson_hammer": {
         "hrid": "/actions/cheesesmithing/crimson_hammer",
@@ -9053,7 +9693,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 98
+        "sortIndex": 100
     },
     "/actions/cheesesmithing/crimson_hatchet": {
         "hrid": "/actions/cheesesmithing/crimson_hatchet",
@@ -9109,7 +9749,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 96
+        "sortIndex": 98
     },
     "/actions/cheesesmithing/crimson_helmet": {
         "hrid": "/actions/cheesesmithing/crimson_helmet",
@@ -9161,7 +9801,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 106
+        "sortIndex": 108
     },
     "/actions/cheesesmithing/crimson_mace": {
         "hrid": "/actions/cheesesmithing/crimson_mace",
@@ -9217,7 +9857,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 103
+        "sortIndex": 105
     },
     "/actions/cheesesmithing/crimson_needle": {
         "hrid": "/actions/cheesesmithing/crimson_needle",
@@ -9269,7 +9909,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 100
+        "sortIndex": 102
     },
     "/actions/cheesesmithing/crimson_plate_body": {
         "hrid": "/actions/cheesesmithing/crimson_plate_body",
@@ -9321,7 +9961,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 112
+        "sortIndex": 114
     },
     "/actions/cheesesmithing/crimson_plate_legs": {
         "hrid": "/actions/cheesesmithing/crimson_plate_legs",
@@ -9373,7 +10013,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 109
+        "sortIndex": 111
     },
     "/actions/cheesesmithing/crimson_pot": {
         "hrid": "/actions/cheesesmithing/crimson_pot",
@@ -9425,7 +10065,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 102
+        "sortIndex": 104
     },
     "/actions/cheesesmithing/crimson_shears": {
         "hrid": "/actions/cheesesmithing/crimson_shears",
@@ -9481,7 +10121,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 95
+        "sortIndex": 97
     },
     "/actions/cheesesmithing/crimson_spatula": {
         "hrid": "/actions/cheesesmithing/crimson_spatula",
@@ -9533,7 +10173,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 101
+        "sortIndex": 103
     },
     "/actions/cheesesmithing/crimson_spear": {
         "hrid": "/actions/cheesesmithing/crimson_spear",
@@ -9589,7 +10229,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 97
+        "sortIndex": 99
     },
     "/actions/cheesesmithing/crimson_sword": {
         "hrid": "/actions/cheesesmithing/crimson_sword",
@@ -9641,7 +10281,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 93
+        "sortIndex": 95
     },
     "/actions/cheesesmithing/demonic_plate_body": {
         "hrid": "/actions/cheesesmithing/demonic_plate_body",
@@ -9693,7 +10333,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 176
+        "sortIndex": 179
     },
     "/actions/cheesesmithing/demonic_plate_legs": {
         "hrid": "/actions/cheesesmithing/demonic_plate_legs",
@@ -9745,7 +10385,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 177
+        "sortIndex": 180
     },
     "/actions/cheesesmithing/dodocamel_gauntlets": {
         "hrid": "/actions/cheesesmithing/dodocamel_gauntlets",
@@ -9809,7 +10449,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 179
+        "sortIndex": 183
     },
     "/actions/cheesesmithing/dodocamel_gauntlets_refined": {
         "hrid": "/actions/cheesesmithing/dodocamel_gauntlets_refined",
@@ -9861,7 +10501,67 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 190
+        "sortIndex": 195
+    },
+    "/actions/cheesesmithing/expert_beacon": {
+        "hrid": "/actions/cheesesmithing/expert_beacon",
+        "function": "/action_functions/production",
+        "type": "/action_types/cheesesmithing",
+        "category": "/action_categories/cheesesmithing/labyrinth",
+        "name": "Expert Beacon",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/cheesesmithing",
+            "level": 80
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cheesesmithing",
+            "value": 500
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "dropRate": 0.15,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.00038194444444444446,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/crimson_cheese",
+                "count": 20
+            },
+            {
+                "itemHrid": "/items/rainbow_cheese",
+                "count": 20
+            },
+            {
+                "itemHrid": "/items/holy_cheese",
+                "count": 20
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_beacon",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 142
     },
     "/actions/cheesesmithing/furious_spear": {
         "hrid": "/actions/cheesesmithing/furious_spear",
@@ -9925,7 +10625,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 185
+        "sortIndex": 189
     },
     "/actions/cheesesmithing/furious_spear_refined": {
         "hrid": "/actions/cheesesmithing/furious_spear_refined",
@@ -9977,7 +10677,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 196
+        "sortIndex": 201
     },
     "/actions/cheesesmithing/granite_bludgeon": {
         "hrid": "/actions/cheesesmithing/granite_bludgeon",
@@ -10029,7 +10729,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 154
+        "sortIndex": 157
     },
     "/actions/cheesesmithing/griffin_bulwark": {
         "hrid": "/actions/cheesesmithing/griffin_bulwark",
@@ -10093,7 +10793,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 184
+        "sortIndex": 188
     },
     "/actions/cheesesmithing/griffin_bulwark_refined": {
         "hrid": "/actions/cheesesmithing/griffin_bulwark_refined",
@@ -10145,7 +10845,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 195
+        "sortIndex": 200
     },
     "/actions/cheesesmithing/grizzly_bear_shoes": {
         "hrid": "/actions/cheesesmithing/grizzly_bear_shoes",
@@ -10197,7 +10897,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 116
+        "sortIndex": 118
     },
     "/actions/cheesesmithing/holy_alembic": {
         "hrid": "/actions/cheesesmithing/holy_alembic",
@@ -10249,7 +10949,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 157
+        "sortIndex": 160
     },
     "/actions/cheesesmithing/holy_boots": {
         "hrid": "/actions/cheesesmithing/holy_boots",
@@ -10301,7 +11001,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 139
+        "sortIndex": 141
     },
     "/actions/cheesesmithing/holy_brush": {
         "hrid": "/actions/cheesesmithing/holy_brush",
@@ -10357,7 +11057,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 142
+        "sortIndex": 145
     },
     "/actions/cheesesmithing/holy_buckler": {
         "hrid": "/actions/cheesesmithing/holy_buckler",
@@ -10409,7 +11109,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 160
+        "sortIndex": 163
     },
     "/actions/cheesesmithing/holy_bulwark": {
         "hrid": "/actions/cheesesmithing/holy_bulwark",
@@ -10461,7 +11161,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 161
+        "sortIndex": 164
     },
     "/actions/cheesesmithing/holy_cheese": {
         "hrid": "/actions/cheesesmithing/holy_cheese",
@@ -10519,7 +11219,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 138
+        "sortIndex": 140
     },
     "/actions/cheesesmithing/holy_chisel": {
         "hrid": "/actions/cheesesmithing/holy_chisel",
@@ -10575,7 +11275,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 147
+        "sortIndex": 150
     },
     "/actions/cheesesmithing/holy_enhancer": {
         "hrid": "/actions/cheesesmithing/holy_enhancer",
@@ -10627,7 +11327,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 158
+        "sortIndex": 161
     },
     "/actions/cheesesmithing/holy_gauntlets": {
         "hrid": "/actions/cheesesmithing/holy_gauntlets",
@@ -10679,7 +11379,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 140
+        "sortIndex": 143
     },
     "/actions/cheesesmithing/holy_hammer": {
         "hrid": "/actions/cheesesmithing/holy_hammer",
@@ -10735,7 +11435,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 146
+        "sortIndex": 149
     },
     "/actions/cheesesmithing/holy_hatchet": {
         "hrid": "/actions/cheesesmithing/holy_hatchet",
@@ -10791,7 +11491,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 144
+        "sortIndex": 147
     },
     "/actions/cheesesmithing/holy_helmet": {
         "hrid": "/actions/cheesesmithing/holy_helmet",
@@ -10843,7 +11543,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 159
+        "sortIndex": 162
     },
     "/actions/cheesesmithing/holy_mace": {
         "hrid": "/actions/cheesesmithing/holy_mace",
@@ -10899,7 +11599,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 151
+        "sortIndex": 154
     },
     "/actions/cheesesmithing/holy_needle": {
         "hrid": "/actions/cheesesmithing/holy_needle",
@@ -10951,7 +11651,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 148
+        "sortIndex": 151
     },
     "/actions/cheesesmithing/holy_plate_body": {
         "hrid": "/actions/cheesesmithing/holy_plate_body",
@@ -11003,7 +11703,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 163
+        "sortIndex": 166
     },
     "/actions/cheesesmithing/holy_plate_legs": {
         "hrid": "/actions/cheesesmithing/holy_plate_legs",
@@ -11055,7 +11755,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 162
+        "sortIndex": 165
     },
     "/actions/cheesesmithing/holy_pot": {
         "hrid": "/actions/cheesesmithing/holy_pot",
@@ -11107,7 +11807,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 150
+        "sortIndex": 153
     },
     "/actions/cheesesmithing/holy_shears": {
         "hrid": "/actions/cheesesmithing/holy_shears",
@@ -11163,7 +11863,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 143
+        "sortIndex": 146
     },
     "/actions/cheesesmithing/holy_spatula": {
         "hrid": "/actions/cheesesmithing/holy_spatula",
@@ -11215,7 +11915,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 149
+        "sortIndex": 152
     },
     "/actions/cheesesmithing/holy_spear": {
         "hrid": "/actions/cheesesmithing/holy_spear",
@@ -11271,7 +11971,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 145
+        "sortIndex": 148
     },
     "/actions/cheesesmithing/holy_sword": {
         "hrid": "/actions/cheesesmithing/holy_sword",
@@ -11323,7 +12023,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 141
+        "sortIndex": 144
     },
     "/actions/cheesesmithing/knights_aegis": {
         "hrid": "/actions/cheesesmithing/knights_aegis",
@@ -11387,7 +12087,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 181
+        "sortIndex": 185
     },
     "/actions/cheesesmithing/knights_aegis_refined": {
         "hrid": "/actions/cheesesmithing/knights_aegis_refined",
@@ -11439,7 +12139,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 192
+        "sortIndex": 197
     },
     "/actions/cheesesmithing/maelstrom_plate_body": {
         "hrid": "/actions/cheesesmithing/maelstrom_plate_body",
@@ -11495,7 +12195,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 189
+        "sortIndex": 193
     },
     "/actions/cheesesmithing/maelstrom_plate_body_refined": {
         "hrid": "/actions/cheesesmithing/maelstrom_plate_body_refined",
@@ -11547,7 +12247,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 200
+        "sortIndex": 205
     },
     "/actions/cheesesmithing/maelstrom_plate_legs": {
         "hrid": "/actions/cheesesmithing/maelstrom_plate_legs",
@@ -11603,7 +12303,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 183
+        "sortIndex": 187
     },
     "/actions/cheesesmithing/maelstrom_plate_legs_refined": {
         "hrid": "/actions/cheesesmithing/maelstrom_plate_legs_refined",
@@ -11655,7 +12355,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 194
+        "sortIndex": 199
     },
     "/actions/cheesesmithing/magnetic_gloves": {
         "hrid": "/actions/cheesesmithing/magnetic_gloves",
@@ -11707,7 +12407,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 152
+        "sortIndex": 155
     },
     "/actions/cheesesmithing/panda_gloves": {
         "hrid": "/actions/cheesesmithing/panda_gloves",
@@ -11759,7 +12459,127 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 120
+        "sortIndex": 122
+    },
+    "/actions/cheesesmithing/pathbreaker_boots": {
+        "hrid": "/actions/cheesesmithing/pathbreaker_boots",
+        "function": "/action_functions/production",
+        "type": "/action_types/cheesesmithing",
+        "category": "/action_categories/cheesesmithing/feet",
+        "name": "Pathbreaker Boots",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/cheesesmithing",
+            "level": 91
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cheesesmithing",
+            "value": 100000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "dropRate": 0.3183333333333333,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008402777777777778,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/pathbreaker_lodestone",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/holy_boots",
+                "count": 30
+            },
+            {
+                "itemHrid": "/items/black_bear_shoes",
+                "count": 4
+            },
+            {
+                "itemHrid": "/items/grizzly_bear_shoes",
+                "count": 4
+            },
+            {
+                "itemHrid": "/items/polar_bear_shoes",
+                "count": 4
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/pathbreaker_boots",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 182
+    },
+    "/actions/cheesesmithing/pathbreaker_boots_refined": {
+        "hrid": "/actions/cheesesmithing/pathbreaker_boots_refined",
+        "function": "/action_functions/production",
+        "type": "/action_types/cheesesmithing",
+        "category": "/action_categories/cheesesmithing/feet",
+        "name": "Pathbreaker Boots (R)",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/cheesesmithing",
+            "level": 101
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cheesesmithing",
+            "value": 150000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cheesesmithing_essence",
+                "dropRate": 0.33499999999999996,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0009097222222222222,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/pathbreaker_boots",
+        "retainAllEnhancement": true,
+        "inputItems": [
+            {
+                "itemHrid": "/items/labyrinth_refinement_shard",
+                "count": 100
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/pathbreaker_boots_refined",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 194
     },
     "/actions/cheesesmithing/pincer_gloves": {
         "hrid": "/actions/cheesesmithing/pincer_gloves",
@@ -11811,7 +12631,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 58
+        "sortIndex": 59
     },
     "/actions/cheesesmithing/polar_bear_shoes": {
         "hrid": "/actions/cheesesmithing/polar_bear_shoes",
@@ -11863,7 +12683,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 117
+        "sortIndex": 119
     },
     "/actions/cheesesmithing/rainbow_alembic": {
         "hrid": "/actions/cheesesmithing/rainbow_alembic",
@@ -11915,7 +12735,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 131
+        "sortIndex": 133
     },
     "/actions/cheesesmithing/rainbow_boots": {
         "hrid": "/actions/cheesesmithing/rainbow_boots",
@@ -11967,7 +12787,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 114
+        "sortIndex": 116
     },
     "/actions/cheesesmithing/rainbow_brush": {
         "hrid": "/actions/cheesesmithing/rainbow_brush",
@@ -12023,7 +12843,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 121
+        "sortIndex": 123
     },
     "/actions/cheesesmithing/rainbow_buckler": {
         "hrid": "/actions/cheesesmithing/rainbow_buckler",
@@ -12075,7 +12895,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 134
+        "sortIndex": 136
     },
     "/actions/cheesesmithing/rainbow_bulwark": {
         "hrid": "/actions/cheesesmithing/rainbow_bulwark",
@@ -12127,7 +12947,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 135
+        "sortIndex": 137
     },
     "/actions/cheesesmithing/rainbow_cheese": {
         "hrid": "/actions/cheesesmithing/rainbow_cheese",
@@ -12185,7 +13005,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 113
+        "sortIndex": 115
     },
     "/actions/cheesesmithing/rainbow_chisel": {
         "hrid": "/actions/cheesesmithing/rainbow_chisel",
@@ -12241,7 +13061,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 126
+        "sortIndex": 128
     },
     "/actions/cheesesmithing/rainbow_enhancer": {
         "hrid": "/actions/cheesesmithing/rainbow_enhancer",
@@ -12293,7 +13113,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 132
+        "sortIndex": 134
     },
     "/actions/cheesesmithing/rainbow_gauntlets": {
         "hrid": "/actions/cheesesmithing/rainbow_gauntlets",
@@ -12345,7 +13165,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 118
+        "sortIndex": 120
     },
     "/actions/cheesesmithing/rainbow_hammer": {
         "hrid": "/actions/cheesesmithing/rainbow_hammer",
@@ -12401,7 +13221,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 125
+        "sortIndex": 127
     },
     "/actions/cheesesmithing/rainbow_hatchet": {
         "hrid": "/actions/cheesesmithing/rainbow_hatchet",
@@ -12457,7 +13277,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 123
+        "sortIndex": 125
     },
     "/actions/cheesesmithing/rainbow_helmet": {
         "hrid": "/actions/cheesesmithing/rainbow_helmet",
@@ -12509,7 +13329,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 133
+        "sortIndex": 135
     },
     "/actions/cheesesmithing/rainbow_mace": {
         "hrid": "/actions/cheesesmithing/rainbow_mace",
@@ -12565,7 +13385,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 130
+        "sortIndex": 132
     },
     "/actions/cheesesmithing/rainbow_needle": {
         "hrid": "/actions/cheesesmithing/rainbow_needle",
@@ -12617,7 +13437,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 127
+        "sortIndex": 129
     },
     "/actions/cheesesmithing/rainbow_plate_body": {
         "hrid": "/actions/cheesesmithing/rainbow_plate_body",
@@ -12669,7 +13489,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 137
+        "sortIndex": 139
     },
     "/actions/cheesesmithing/rainbow_plate_legs": {
         "hrid": "/actions/cheesesmithing/rainbow_plate_legs",
@@ -12721,7 +13541,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 136
+        "sortIndex": 138
     },
     "/actions/cheesesmithing/rainbow_pot": {
         "hrid": "/actions/cheesesmithing/rainbow_pot",
@@ -12773,7 +13593,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 129
+        "sortIndex": 131
     },
     "/actions/cheesesmithing/rainbow_shears": {
         "hrid": "/actions/cheesesmithing/rainbow_shears",
@@ -12829,7 +13649,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 122
+        "sortIndex": 124
     },
     "/actions/cheesesmithing/rainbow_spatula": {
         "hrid": "/actions/cheesesmithing/rainbow_spatula",
@@ -12881,7 +13701,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 128
+        "sortIndex": 130
     },
     "/actions/cheesesmithing/rainbow_spear": {
         "hrid": "/actions/cheesesmithing/rainbow_spear",
@@ -12937,7 +13757,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 124
+        "sortIndex": 126
     },
     "/actions/cheesesmithing/rainbow_sword": {
         "hrid": "/actions/cheesesmithing/rainbow_sword",
@@ -12989,7 +13809,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 119
+        "sortIndex": 121
     },
     "/actions/cheesesmithing/regal_sword": {
         "hrid": "/actions/cheesesmithing/regal_sword",
@@ -13049,7 +13869,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 187
+        "sortIndex": 191
     },
     "/actions/cheesesmithing/regal_sword_refined": {
         "hrid": "/actions/cheesesmithing/regal_sword_refined",
@@ -13101,7 +13921,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 198
+        "sortIndex": 203
     },
     "/actions/cheesesmithing/snail_shell_helmet": {
         "hrid": "/actions/cheesesmithing/snail_shell_helmet",
@@ -13153,7 +13973,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 65
+        "sortIndex": 66
     },
     "/actions/cheesesmithing/snake_fang_dirk": {
         "hrid": "/actions/cheesesmithing/snake_fang_dirk",
@@ -13265,7 +14085,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 178
+        "sortIndex": 181
     },
     "/actions/cheesesmithing/stalactite_spear": {
         "hrid": "/actions/cheesesmithing/stalactite_spear",
@@ -13317,7 +14137,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 153
+        "sortIndex": 156
     },
     "/actions/cheesesmithing/turtle_shell_body": {
         "hrid": "/actions/cheesesmithing/turtle_shell_body",
@@ -13369,7 +14189,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 68
+        "sortIndex": 69
     },
     "/actions/cheesesmithing/turtle_shell_legs": {
         "hrid": "/actions/cheesesmithing/turtle_shell_legs",
@@ -13421,7 +14241,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 67
+        "sortIndex": 68
     },
     "/actions/cheesesmithing/vampire_fang_dirk": {
         "hrid": "/actions/cheesesmithing/vampire_fang_dirk",
@@ -13477,7 +14297,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 155
+        "sortIndex": 158
     },
     "/actions/cheesesmithing/verdant_alembic": {
         "hrid": "/actions/cheesesmithing/verdant_alembic",
@@ -14649,7 +15469,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 110
+        "sortIndex": 112
     },
     "/actions/cheesesmithing/vision_shield": {
         "hrid": "/actions/cheesesmithing/vision_shield",
@@ -14701,7 +15521,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 111
+        "sortIndex": 113
     },
     "/actions/cheesesmithing/werewolf_slasher": {
         "hrid": "/actions/cheesesmithing/werewolf_slasher",
@@ -14757,7 +15577,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 156
+        "sortIndex": 159
     },
     "/actions/combat/abyssal_imp": {
         "hrid": "/actions/combat/abyssal_imp",
@@ -19836,6 +20656,78 @@
         "buffs": null,
         "sortIndex": 48
     },
+    "/actions/cooking/advanced_food_crate": {
+        "hrid": "/actions/cooking/advanced_food_crate",
+        "function": "/action_functions/production",
+        "type": "/action_types/cooking",
+        "category": "/action_categories/cooking/labyrinth",
+        "name": "Advanced Food Crate",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/cooking",
+            "level": 50
+        },
+        "baseTimeCost": 34000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cooking",
+            "value": 500
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cooking_essence",
+                "dropRate": 0.14166666666666666,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.0006033950617283951,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/blackberry_donut",
+                "count": 30
+            },
+            {
+                "itemHrid": "/items/strawberry_donut",
+                "count": 30
+            },
+            {
+                "itemHrid": "/items/mooberry_donut",
+                "count": 30
+            },
+            {
+                "itemHrid": "/items/orange_gummy",
+                "count": 30
+            },
+            {
+                "itemHrid": "/items/plum_gummy",
+                "count": 30
+            },
+            {
+                "itemHrid": "/items/peach_gummy",
+                "count": 30
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_food_crate",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 22
+    },
     "/actions/cooking/apple_gummy": {
         "hrid": "/actions/cooking/apple_gummy",
         "function": "/action_functions/production",
@@ -19951,6 +20843,78 @@
         "maxPartySize": 0,
         "buffs": null,
         "sortIndex": 8
+    },
+    "/actions/cooking/basic_food_crate": {
+        "hrid": "/actions/cooking/basic_food_crate",
+        "function": "/action_functions/production",
+        "type": "/action_types/cooking",
+        "category": "/action_categories/cooking/labyrinth",
+        "name": "Basic Food Crate",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/cooking",
+            "level": 20
+        },
+        "baseTimeCost": 22000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cooking",
+            "value": 200
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cooking_essence",
+                "dropRate": 0.07333333333333333,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_artisans_crate",
+                "dropRate": 0.000611111111111111,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/donut",
+                "count": 30
+            },
+            {
+                "itemHrid": "/items/blueberry_donut",
+                "count": 30
+            },
+            {
+                "itemHrid": "/items/blackberry_donut",
+                "count": 30
+            },
+            {
+                "itemHrid": "/items/gummy",
+                "count": 30
+            },
+            {
+                "itemHrid": "/items/apple_gummy",
+                "count": 30
+            },
+            {
+                "itemHrid": "/items/orange_gummy",
+                "count": 30
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/basic_food_crate",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 13
     },
     "/actions/cooking/blackberry_cake": {
         "hrid": "/actions/cooking/blackberry_cake",
@@ -20394,7 +21358,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 23
+        "sortIndex": 25
     },
     "/actions/cooking/dragon_fruit_yogurt": {
         "hrid": "/actions/cooking/dragon_fruit_yogurt",
@@ -20454,7 +21418,79 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 24
+        "sortIndex": 26
+    },
+    "/actions/cooking/expert_food_crate": {
+        "hrid": "/actions/cooking/expert_food_crate",
+        "function": "/action_functions/production",
+        "type": "/action_types/cooking",
+        "category": "/action_categories/cooking/labyrinth",
+        "name": "Expert Food Crate",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/cooking",
+            "level": 80
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/cooking",
+            "value": 1000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/cooking_essence",
+                "dropRate": 0.3,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0007638888888888889,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/mooberry_donut",
+                "count": 30
+            },
+            {
+                "itemHrid": "/items/marsberry_donut",
+                "count": 30
+            },
+            {
+                "itemHrid": "/items/spaceberry_donut",
+                "count": 30
+            },
+            {
+                "itemHrid": "/items/peach_gummy",
+                "count": 30
+            },
+            {
+                "itemHrid": "/items/dragon_fruit_gummy",
+                "count": 30
+            },
+            {
+                "itemHrid": "/items/star_fruit_gummy",
+                "count": 30
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_food_crate",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 31
     },
     "/actions/cooking/gummy": {
         "hrid": "/actions/cooking/gummy",
@@ -20574,7 +21610,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 22
+        "sortIndex": 24
     },
     "/actions/cooking/marsberry_donut": {
         "hrid": "/actions/cooking/marsberry_donut",
@@ -20638,7 +21674,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 21
+        "sortIndex": 23
     },
     "/actions/cooking/mooberry_cake": {
         "hrid": "/actions/cooking/mooberry_cake",
@@ -20706,7 +21742,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 18
+        "sortIndex": 19
     },
     "/actions/cooking/mooberry_donut": {
         "hrid": "/actions/cooking/mooberry_donut",
@@ -20770,7 +21806,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 17
+        "sortIndex": 18
     },
     "/actions/cooking/orange_gummy": {
         "hrid": "/actions/cooking/orange_gummy",
@@ -20942,7 +21978,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 19
+        "sortIndex": 20
     },
     "/actions/cooking/peach_yogurt": {
         "hrid": "/actions/cooking/peach_yogurt",
@@ -21002,7 +22038,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 20
+        "sortIndex": 21
     },
     "/actions/cooking/plum_gummy": {
         "hrid": "/actions/cooking/plum_gummy",
@@ -21058,7 +22094,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 15
+        "sortIndex": 16
     },
     "/actions/cooking/plum_yogurt": {
         "hrid": "/actions/cooking/plum_yogurt",
@@ -21118,7 +22154,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 16
+        "sortIndex": 17
     },
     "/actions/cooking/spaceberry_cake": {
         "hrid": "/actions/cooking/spaceberry_cake",
@@ -21186,7 +22222,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 26
+        "sortIndex": 28
     },
     "/actions/cooking/spaceberry_donut": {
         "hrid": "/actions/cooking/spaceberry_donut",
@@ -21250,7 +22286,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 25
+        "sortIndex": 27
     },
     "/actions/cooking/star_fruit_gummy": {
         "hrid": "/actions/cooking/star_fruit_gummy",
@@ -21306,7 +22342,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 27
+        "sortIndex": 29
     },
     "/actions/cooking/star_fruit_yogurt": {
         "hrid": "/actions/cooking/star_fruit_yogurt",
@@ -21366,7 +22402,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 28
+        "sortIndex": 30
     },
     "/actions/cooking/strawberry_cake": {
         "hrid": "/actions/cooking/strawberry_cake",
@@ -21434,7 +22470,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 14
+        "sortIndex": 15
     },
     "/actions/cooking/strawberry_donut": {
         "hrid": "/actions/cooking/strawberry_donut",
@@ -21498,7 +22534,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 13
+        "sortIndex": 14
     },
     "/actions/cooking/yogurt": {
         "hrid": "/actions/cooking/yogurt",
@@ -21606,7 +22642,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 56
+        "sortIndex": 57
     },
     "/actions/crafting/advanced_attack_charm": {
         "hrid": "/actions/crafting/advanced_attack_charm",
@@ -21658,7 +22694,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 60
+        "sortIndex": 61
     },
     "/actions/crafting/advanced_brewing_charm": {
         "hrid": "/actions/crafting/advanced_brewing_charm",
@@ -21710,7 +22746,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 55
+        "sortIndex": 56
     },
     "/actions/crafting/advanced_cheesesmithing_charm": {
         "hrid": "/actions/crafting/advanced_cheesesmithing_charm",
@@ -21762,7 +22798,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 51
+        "sortIndex": 52
     },
     "/actions/crafting/advanced_cooking_charm": {
         "hrid": "/actions/crafting/advanced_cooking_charm",
@@ -21814,7 +22850,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 54
+        "sortIndex": 55
     },
     "/actions/crafting/advanced_crafting_charm": {
         "hrid": "/actions/crafting/advanced_crafting_charm",
@@ -21866,7 +22902,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 52
+        "sortIndex": 53
     },
     "/actions/crafting/advanced_defense_charm": {
         "hrid": "/actions/crafting/advanced_defense_charm",
@@ -21918,7 +22954,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 61
+        "sortIndex": 62
     },
     "/actions/crafting/advanced_enhancing_charm": {
         "hrid": "/actions/crafting/advanced_enhancing_charm",
@@ -21970,7 +23006,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 57
+        "sortIndex": 58
     },
     "/actions/crafting/advanced_foraging_charm": {
         "hrid": "/actions/crafting/advanced_foraging_charm",
@@ -22022,7 +23058,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 49
+        "sortIndex": 50
     },
     "/actions/crafting/advanced_intelligence_charm": {
         "hrid": "/actions/crafting/advanced_intelligence_charm",
@@ -22074,7 +23110,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 59
+        "sortIndex": 60
     },
     "/actions/crafting/advanced_magic_charm": {
         "hrid": "/actions/crafting/advanced_magic_charm",
@@ -22126,7 +23162,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 64
+        "sortIndex": 65
     },
     "/actions/crafting/advanced_melee_charm": {
         "hrid": "/actions/crafting/advanced_melee_charm",
@@ -22178,7 +23214,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 62
+        "sortIndex": 63
     },
     "/actions/crafting/advanced_milking_charm": {
         "hrid": "/actions/crafting/advanced_milking_charm",
@@ -22230,7 +23266,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 48
+        "sortIndex": 49
     },
     "/actions/crafting/advanced_ranged_charm": {
         "hrid": "/actions/crafting/advanced_ranged_charm",
@@ -22282,7 +23318,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 63
+        "sortIndex": 64
     },
     "/actions/crafting/advanced_stamina_charm": {
         "hrid": "/actions/crafting/advanced_stamina_charm",
@@ -22334,7 +23370,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 58
+        "sortIndex": 59
     },
     "/actions/crafting/advanced_tailoring_charm": {
         "hrid": "/actions/crafting/advanced_tailoring_charm",
@@ -22386,7 +23422,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 53
+        "sortIndex": 54
     },
     "/actions/crafting/advanced_task_badge": {
         "hrid": "/actions/crafting/advanced_task_badge",
@@ -22440,6 +23476,66 @@
         "buffs": null,
         "sortIndex": 5
     },
+    "/actions/crafting/advanced_torch": {
+        "hrid": "/actions/crafting/advanced_torch",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/labyrinth",
+        "name": "Advanced Torch",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 50
+        },
+        "baseTimeCost": 17000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 125
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.07083333333333333,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.00030169753086419757,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/cedar_lumber",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/purpleheart_lumber",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/ginkgo_lumber",
+                "count": 10
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_torch",
+                "count": 10
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 80
+    },
     "/actions/crafting/advanced_woodcutting_charm": {
         "hrid": "/actions/crafting/advanced_woodcutting_charm",
         "function": "/action_functions/production",
@@ -22490,7 +23586,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 50
+        "sortIndex": 51
     },
     "/actions/crafting/arcane_bow": {
         "hrid": "/actions/crafting/arcane_bow",
@@ -22542,7 +23638,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 151
+        "sortIndex": 154
     },
     "/actions/crafting/arcane_crossbow": {
         "hrid": "/actions/crafting/arcane_crossbow",
@@ -22594,7 +23690,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 127
+        "sortIndex": 129
     },
     "/actions/crafting/arcane_fire_staff": {
         "hrid": "/actions/crafting/arcane_fire_staff",
@@ -22646,7 +23742,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 154
+        "sortIndex": 157
     },
     "/actions/crafting/arcane_lumber": {
         "hrid": "/actions/crafting/arcane_lumber",
@@ -22704,7 +23800,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 126
+        "sortIndex": 128
     },
     "/actions/crafting/arcane_nature_staff": {
         "hrid": "/actions/crafting/arcane_nature_staff",
@@ -22756,7 +23852,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 149
+        "sortIndex": 152
     },
     "/actions/crafting/arcane_shield": {
         "hrid": "/actions/crafting/arcane_shield",
@@ -22808,7 +23904,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 148
+        "sortIndex": 151
     },
     "/actions/crafting/arcane_water_staff": {
         "hrid": "/actions/crafting/arcane_water_staff",
@@ -22860,7 +23956,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 128
+        "sortIndex": 130
     },
     "/actions/crafting/basic_alchemy_charm": {
         "hrid": "/actions/crafting/basic_alchemy_charm",
@@ -23382,6 +24478,66 @@
         "buffs": null,
         "sortIndex": 4
     },
+    "/actions/crafting/basic_torch": {
+        "hrid": "/actions/crafting/basic_torch",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/labyrinth",
+        "name": "Basic Torch",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 20
+        },
+        "baseTimeCost": 11000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 50
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.03666666666666667,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_artisans_crate",
+                "dropRate": 0.0003055555555555555,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/lumber",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/birch_lumber",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/cedar_lumber",
+                "count": 10
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/basic_torch",
+                "count": 10
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 34
+    },
     "/actions/crafting/basic_woodcutting_charm": {
         "hrid": "/actions/crafting/basic_woodcutting_charm",
         "function": "/action_functions/production",
@@ -23864,7 +25020,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 166
+        "sortIndex": 169
     },
     "/actions/crafting/bishops_codex_refined": {
         "hrid": "/actions/crafting/bishops_codex_refined",
@@ -23916,7 +25072,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 190
+        "sortIndex": 193
     },
     "/actions/crafting/blazing_trident": {
         "hrid": "/actions/crafting/blazing_trident",
@@ -23976,7 +25132,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 171
+        "sortIndex": 174
     },
     "/actions/crafting/blazing_trident_refined": {
         "hrid": "/actions/crafting/blazing_trident_refined",
@@ -24028,7 +25184,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 195
+        "sortIndex": 198
     },
     "/actions/crafting/blooming_trident": {
         "hrid": "/actions/crafting/blooming_trident",
@@ -24088,7 +25244,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 170
+        "sortIndex": 173
     },
     "/actions/crafting/blooming_trident_refined": {
         "hrid": "/actions/crafting/blooming_trident_refined",
@@ -24140,7 +25296,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 194
+        "sortIndex": 197
     },
     "/actions/crafting/catalyst_of_coinification": {
         "hrid": "/actions/crafting/catalyst_of_coinification",
@@ -24200,7 +25356,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 68
+        "sortIndex": 69
     },
     "/actions/crafting/catalyst_of_decomposition": {
         "hrid": "/actions/crafting/catalyst_of_decomposition",
@@ -24260,7 +25416,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 78
+        "sortIndex": 79
     },
     "/actions/crafting/catalyst_of_transmutation": {
         "hrid": "/actions/crafting/catalyst_of_transmutation",
@@ -24324,7 +25480,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 107
+        "sortIndex": 109
     },
     "/actions/crafting/cedar_bow": {
         "hrid": "/actions/crafting/cedar_bow",
@@ -24376,7 +25532,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 36
+        "sortIndex": 37
     },
     "/actions/crafting/cedar_crossbow": {
         "hrid": "/actions/crafting/cedar_crossbow",
@@ -24480,7 +25636,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 38
+        "sortIndex": 39
     },
     "/actions/crafting/cedar_lumber": {
         "hrid": "/actions/crafting/cedar_lumber",
@@ -24584,7 +25740,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 35
+        "sortIndex": 36
     },
     "/actions/crafting/cedar_shield": {
         "hrid": "/actions/crafting/cedar_shield",
@@ -24636,7 +25792,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 34
+        "sortIndex": 35
     },
     "/actions/crafting/cedar_water_staff": {
         "hrid": "/actions/crafting/cedar_water_staff",
@@ -24752,7 +25908,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 118
+        "sortIndex": 120
     },
     "/actions/crafting/chimerical_entry_key": {
         "hrid": "/actions/crafting/chimerical_entry_key",
@@ -24812,7 +25968,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 117
+        "sortIndex": 119
     },
     "/actions/crafting/crushed_amber": {
         "hrid": "/actions/crafting/crushed_amber",
@@ -24864,7 +26020,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 37
+        "sortIndex": 38
     },
     "/actions/crafting/crushed_amethyst": {
         "hrid": "/actions/crafting/crushed_amethyst",
@@ -24916,7 +26072,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 67
+        "sortIndex": 68
     },
     "/actions/crafting/crushed_garnet": {
         "hrid": "/actions/crafting/crushed_garnet",
@@ -24968,7 +26124,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 65
+        "sortIndex": 66
     },
     "/actions/crafting/crushed_jade": {
         "hrid": "/actions/crafting/crushed_jade",
@@ -25020,7 +26176,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 66
+        "sortIndex": 67
     },
     "/actions/crafting/crushed_moonstone": {
         "hrid": "/actions/crafting/crushed_moonstone",
@@ -25072,7 +26228,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 85
+        "sortIndex": 87
     },
     "/actions/crafting/crushed_pearl": {
         "hrid": "/actions/crafting/crushed_pearl",
@@ -25176,7 +26332,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 161
+        "sortIndex": 164
     },
     "/actions/crafting/crushed_sunstone": {
         "hrid": "/actions/crafting/crushed_sunstone",
@@ -25228,7 +26384,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 116
+        "sortIndex": 118
     },
     "/actions/crafting/cursed_bow": {
         "hrid": "/actions/crafting/cursed_bow",
@@ -25288,7 +26444,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 167
+        "sortIndex": 170
     },
     "/actions/crafting/cursed_bow_refined": {
         "hrid": "/actions/crafting/cursed_bow_refined",
@@ -25340,7 +26496,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 191
+        "sortIndex": 194
     },
     "/actions/crafting/earrings_of_armor": {
         "hrid": "/actions/crafting/earrings_of_armor",
@@ -25400,7 +26556,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 80
+        "sortIndex": 82
     },
     "/actions/crafting/earrings_of_critical_strike": {
         "hrid": "/actions/crafting/earrings_of_critical_strike",
@@ -25456,7 +26612,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 124
+        "sortIndex": 126
     },
     "/actions/crafting/earrings_of_essence_find": {
         "hrid": "/actions/crafting/earrings_of_essence_find",
@@ -25512,7 +26668,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 40
+        "sortIndex": 41
     },
     "/actions/crafting/earrings_of_gathering": {
         "hrid": "/actions/crafting/earrings_of_gathering",
@@ -25624,7 +26780,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 108
+        "sortIndex": 110
     },
     "/actions/crafting/earrings_of_regeneration": {
         "hrid": "/actions/crafting/earrings_of_regeneration",
@@ -25684,7 +26840,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 72
+        "sortIndex": 73
     },
     "/actions/crafting/earrings_of_resistance": {
         "hrid": "/actions/crafting/earrings_of_resistance",
@@ -25744,7 +26900,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 87
+        "sortIndex": 89
     },
     "/actions/crafting/enchanted_chest_key": {
         "hrid": "/actions/crafting/enchanted_chest_key",
@@ -25808,7 +26964,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 153
+        "sortIndex": 156
     },
     "/actions/crafting/enchanted_entry_key": {
         "hrid": "/actions/crafting/enchanted_entry_key",
@@ -25868,7 +27024,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 152
+        "sortIndex": 155
     },
     "/actions/crafting/expert_alchemy_charm": {
         "hrid": "/actions/crafting/expert_alchemy_charm",
@@ -25920,7 +27076,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 98
+        "sortIndex": 100
     },
     "/actions/crafting/expert_attack_charm": {
         "hrid": "/actions/crafting/expert_attack_charm",
@@ -25972,7 +27128,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 102
+        "sortIndex": 104
     },
     "/actions/crafting/expert_brewing_charm": {
         "hrid": "/actions/crafting/expert_brewing_charm",
@@ -26024,7 +27180,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 97
+        "sortIndex": 99
     },
     "/actions/crafting/expert_cheesesmithing_charm": {
         "hrid": "/actions/crafting/expert_cheesesmithing_charm",
@@ -26076,7 +27232,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 93
+        "sortIndex": 95
     },
     "/actions/crafting/expert_cooking_charm": {
         "hrid": "/actions/crafting/expert_cooking_charm",
@@ -26128,7 +27284,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 96
+        "sortIndex": 98
     },
     "/actions/crafting/expert_crafting_charm": {
         "hrid": "/actions/crafting/expert_crafting_charm",
@@ -26180,7 +27336,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 94
+        "sortIndex": 96
     },
     "/actions/crafting/expert_defense_charm": {
         "hrid": "/actions/crafting/expert_defense_charm",
@@ -26232,7 +27388,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 103
+        "sortIndex": 105
     },
     "/actions/crafting/expert_enhancing_charm": {
         "hrid": "/actions/crafting/expert_enhancing_charm",
@@ -26284,7 +27440,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 99
+        "sortIndex": 101
     },
     "/actions/crafting/expert_foraging_charm": {
         "hrid": "/actions/crafting/expert_foraging_charm",
@@ -26336,7 +27492,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 91
+        "sortIndex": 93
     },
     "/actions/crafting/expert_intelligence_charm": {
         "hrid": "/actions/crafting/expert_intelligence_charm",
@@ -26388,7 +27544,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 101
+        "sortIndex": 103
     },
     "/actions/crafting/expert_magic_charm": {
         "hrid": "/actions/crafting/expert_magic_charm",
@@ -26440,7 +27596,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 106
+        "sortIndex": 108
     },
     "/actions/crafting/expert_melee_charm": {
         "hrid": "/actions/crafting/expert_melee_charm",
@@ -26492,7 +27648,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 104
+        "sortIndex": 106
     },
     "/actions/crafting/expert_milking_charm": {
         "hrid": "/actions/crafting/expert_milking_charm",
@@ -26544,7 +27700,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 90
+        "sortIndex": 92
     },
     "/actions/crafting/expert_ranged_charm": {
         "hrid": "/actions/crafting/expert_ranged_charm",
@@ -26596,7 +27752,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 105
+        "sortIndex": 107
     },
     "/actions/crafting/expert_stamina_charm": {
         "hrid": "/actions/crafting/expert_stamina_charm",
@@ -26648,7 +27804,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 100
+        "sortIndex": 102
     },
     "/actions/crafting/expert_tailoring_charm": {
         "hrid": "/actions/crafting/expert_tailoring_charm",
@@ -26700,7 +27856,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 95
+        "sortIndex": 97
     },
     "/actions/crafting/expert_task_badge": {
         "hrid": "/actions/crafting/expert_task_badge",
@@ -26754,6 +27910,66 @@
         "buffs": null,
         "sortIndex": 6
     },
+    "/actions/crafting/expert_torch": {
+        "hrid": "/actions/crafting/expert_torch",
+        "function": "/action_functions/production",
+        "type": "/action_types/crafting",
+        "category": "/action_categories/crafting/labyrinth",
+        "name": "Expert Torch",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/crafting",
+            "level": 80
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/crafting",
+            "value": 250
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/crafting_essence",
+                "dropRate": 0.15,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.00038194444444444446,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/ginkgo_lumber",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/redwood_lumber",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/arcane_lumber",
+                "count": 10
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_torch",
+                "count": 10
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 150
+    },
     "/actions/crafting/expert_woodcutting_charm": {
         "hrid": "/actions/crafting/expert_woodcutting_charm",
         "function": "/action_functions/production",
@@ -26804,7 +28020,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 92
+        "sortIndex": 94
     },
     "/actions/crafting/eye_watch": {
         "hrid": "/actions/crafting/eye_watch",
@@ -26872,7 +28088,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 119
+        "sortIndex": 121
     },
     "/actions/crafting/fighter_necklace": {
         "hrid": "/actions/crafting/fighter_necklace",
@@ -26928,7 +28144,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 73
+        "sortIndex": 74
     },
     "/actions/crafting/frost_staff": {
         "hrid": "/actions/crafting/frost_staff",
@@ -26980,7 +28196,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 157
+        "sortIndex": 160
     },
     "/actions/crafting/ginkgo_bow": {
         "hrid": "/actions/crafting/ginkgo_bow",
@@ -27032,7 +28248,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 83
+        "sortIndex": 85
     },
     "/actions/crafting/ginkgo_crossbow": {
         "hrid": "/actions/crafting/ginkgo_crossbow",
@@ -27084,7 +28300,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 75
+        "sortIndex": 76
     },
     "/actions/crafting/ginkgo_fire_staff": {
         "hrid": "/actions/crafting/ginkgo_fire_staff",
@@ -27136,7 +28352,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 86
+        "sortIndex": 88
     },
     "/actions/crafting/ginkgo_lumber": {
         "hrid": "/actions/crafting/ginkgo_lumber",
@@ -27188,7 +28404,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 74
+        "sortIndex": 75
     },
     "/actions/crafting/ginkgo_nature_staff": {
         "hrid": "/actions/crafting/ginkgo_nature_staff",
@@ -27240,7 +28456,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 81
+        "sortIndex": 83
     },
     "/actions/crafting/ginkgo_shield": {
         "hrid": "/actions/crafting/ginkgo_shield",
@@ -27292,7 +28508,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 79
+        "sortIndex": 81
     },
     "/actions/crafting/ginkgo_water_staff": {
         "hrid": "/actions/crafting/ginkgo_water_staff",
@@ -27344,7 +28560,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 76
+        "sortIndex": 77
     },
     "/actions/crafting/grandmaster_alchemy_charm": {
         "hrid": "/actions/crafting/grandmaster_alchemy_charm",
@@ -27396,7 +28612,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 180
+        "sortIndex": 183
     },
     "/actions/crafting/grandmaster_attack_charm": {
         "hrid": "/actions/crafting/grandmaster_attack_charm",
@@ -27448,7 +28664,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 184
+        "sortIndex": 187
     },
     "/actions/crafting/grandmaster_brewing_charm": {
         "hrid": "/actions/crafting/grandmaster_brewing_charm",
@@ -27500,7 +28716,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 179
+        "sortIndex": 182
     },
     "/actions/crafting/grandmaster_cheesesmithing_charm": {
         "hrid": "/actions/crafting/grandmaster_cheesesmithing_charm",
@@ -27552,7 +28768,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 175
+        "sortIndex": 178
     },
     "/actions/crafting/grandmaster_cooking_charm": {
         "hrid": "/actions/crafting/grandmaster_cooking_charm",
@@ -27604,7 +28820,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 178
+        "sortIndex": 181
     },
     "/actions/crafting/grandmaster_crafting_charm": {
         "hrid": "/actions/crafting/grandmaster_crafting_charm",
@@ -27656,7 +28872,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 176
+        "sortIndex": 179
     },
     "/actions/crafting/grandmaster_defense_charm": {
         "hrid": "/actions/crafting/grandmaster_defense_charm",
@@ -27708,7 +28924,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 185
+        "sortIndex": 188
     },
     "/actions/crafting/grandmaster_enhancing_charm": {
         "hrid": "/actions/crafting/grandmaster_enhancing_charm",
@@ -27760,7 +28976,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 181
+        "sortIndex": 184
     },
     "/actions/crafting/grandmaster_foraging_charm": {
         "hrid": "/actions/crafting/grandmaster_foraging_charm",
@@ -27812,7 +29028,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 173
+        "sortIndex": 176
     },
     "/actions/crafting/grandmaster_intelligence_charm": {
         "hrid": "/actions/crafting/grandmaster_intelligence_charm",
@@ -27864,7 +29080,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 183
+        "sortIndex": 186
     },
     "/actions/crafting/grandmaster_magic_charm": {
         "hrid": "/actions/crafting/grandmaster_magic_charm",
@@ -27916,7 +29132,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 188
+        "sortIndex": 191
     },
     "/actions/crafting/grandmaster_melee_charm": {
         "hrid": "/actions/crafting/grandmaster_melee_charm",
@@ -27968,7 +29184,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 186
+        "sortIndex": 189
     },
     "/actions/crafting/grandmaster_milking_charm": {
         "hrid": "/actions/crafting/grandmaster_milking_charm",
@@ -28020,7 +29236,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 172
+        "sortIndex": 175
     },
     "/actions/crafting/grandmaster_ranged_charm": {
         "hrid": "/actions/crafting/grandmaster_ranged_charm",
@@ -28072,7 +29288,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 187
+        "sortIndex": 190
     },
     "/actions/crafting/grandmaster_stamina_charm": {
         "hrid": "/actions/crafting/grandmaster_stamina_charm",
@@ -28124,7 +29340,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 182
+        "sortIndex": 185
     },
     "/actions/crafting/grandmaster_tailoring_charm": {
         "hrid": "/actions/crafting/grandmaster_tailoring_charm",
@@ -28176,7 +29392,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 177
+        "sortIndex": 180
     },
     "/actions/crafting/grandmaster_woodcutting_charm": {
         "hrid": "/actions/crafting/grandmaster_woodcutting_charm",
@@ -28228,7 +29444,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 174
+        "sortIndex": 177
     },
     "/actions/crafting/infernal_battlestaff": {
         "hrid": "/actions/crafting/infernal_battlestaff",
@@ -28280,7 +29496,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 158
+        "sortIndex": 161
     },
     "/actions/crafting/jackalope_staff": {
         "hrid": "/actions/crafting/jackalope_staff",
@@ -28332,7 +29548,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 159
+        "sortIndex": 162
     },
     "/actions/crafting/lumber": {
         "hrid": "/actions/crafting/lumber",
@@ -28436,7 +29652,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 150
+        "sortIndex": 153
     },
     "/actions/crafting/master_alchemy_charm": {
         "hrid": "/actions/crafting/master_alchemy_charm",
@@ -28488,7 +29704,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 137
+        "sortIndex": 139
     },
     "/actions/crafting/master_attack_charm": {
         "hrid": "/actions/crafting/master_attack_charm",
@@ -28540,7 +29756,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 141
+        "sortIndex": 143
     },
     "/actions/crafting/master_brewing_charm": {
         "hrid": "/actions/crafting/master_brewing_charm",
@@ -28592,7 +29808,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 136
+        "sortIndex": 138
     },
     "/actions/crafting/master_cheesesmithing_charm": {
         "hrid": "/actions/crafting/master_cheesesmithing_charm",
@@ -28644,7 +29860,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 132
+        "sortIndex": 134
     },
     "/actions/crafting/master_cooking_charm": {
         "hrid": "/actions/crafting/master_cooking_charm",
@@ -28696,7 +29912,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 135
+        "sortIndex": 137
     },
     "/actions/crafting/master_crafting_charm": {
         "hrid": "/actions/crafting/master_crafting_charm",
@@ -28748,7 +29964,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 133
+        "sortIndex": 135
     },
     "/actions/crafting/master_defense_charm": {
         "hrid": "/actions/crafting/master_defense_charm",
@@ -28800,7 +30016,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 142
+        "sortIndex": 144
     },
     "/actions/crafting/master_enhancing_charm": {
         "hrid": "/actions/crafting/master_enhancing_charm",
@@ -28852,7 +30068,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 138
+        "sortIndex": 140
     },
     "/actions/crafting/master_foraging_charm": {
         "hrid": "/actions/crafting/master_foraging_charm",
@@ -28904,7 +30120,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 130
+        "sortIndex": 132
     },
     "/actions/crafting/master_intelligence_charm": {
         "hrid": "/actions/crafting/master_intelligence_charm",
@@ -28956,7 +30172,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 140
+        "sortIndex": 142
     },
     "/actions/crafting/master_magic_charm": {
         "hrid": "/actions/crafting/master_magic_charm",
@@ -29008,7 +30224,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 145
+        "sortIndex": 147
     },
     "/actions/crafting/master_melee_charm": {
         "hrid": "/actions/crafting/master_melee_charm",
@@ -29060,7 +30276,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 143
+        "sortIndex": 145
     },
     "/actions/crafting/master_milking_charm": {
         "hrid": "/actions/crafting/master_milking_charm",
@@ -29112,7 +30328,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 129
+        "sortIndex": 131
     },
     "/actions/crafting/master_ranged_charm": {
         "hrid": "/actions/crafting/master_ranged_charm",
@@ -29164,7 +30380,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 144
+        "sortIndex": 146
     },
     "/actions/crafting/master_stamina_charm": {
         "hrid": "/actions/crafting/master_stamina_charm",
@@ -29216,7 +30432,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 139
+        "sortIndex": 141
     },
     "/actions/crafting/master_tailoring_charm": {
         "hrid": "/actions/crafting/master_tailoring_charm",
@@ -29268,7 +30484,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 134
+        "sortIndex": 136
     },
     "/actions/crafting/master_woodcutting_charm": {
         "hrid": "/actions/crafting/master_woodcutting_charm",
@@ -29320,7 +30536,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 131
+        "sortIndex": 133
     },
     "/actions/crafting/mirror_of_protection": {
         "hrid": "/actions/crafting/mirror_of_protection",
@@ -29372,7 +30588,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 123
+        "sortIndex": 125
     },
     "/actions/crafting/necklace_of_efficiency": {
         "hrid": "/actions/crafting/necklace_of_efficiency",
@@ -29432,7 +30648,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 41
+        "sortIndex": 42
     },
     "/actions/crafting/necklace_of_speed": {
         "hrid": "/actions/crafting/necklace_of_speed",
@@ -29488,7 +30704,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 125
+        "sortIndex": 127
     },
     "/actions/crafting/necklace_of_wisdom": {
         "hrid": "/actions/crafting/necklace_of_wisdom",
@@ -29548,7 +30764,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 109
+        "sortIndex": 111
     },
     "/actions/crafting/philosophers_earrings": {
         "hrid": "/actions/crafting/philosophers_earrings",
@@ -29624,7 +30840,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 164
+        "sortIndex": 167
     },
     "/actions/crafting/philosophers_mirror": {
         "hrid": "/actions/crafting/philosophers_mirror",
@@ -29676,7 +30892,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 189
+        "sortIndex": 192
     },
     "/actions/crafting/philosophers_necklace": {
         "hrid": "/actions/crafting/philosophers_necklace",
@@ -29748,7 +30964,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 165
+        "sortIndex": 168
     },
     "/actions/crafting/philosophers_ring": {
         "hrid": "/actions/crafting/philosophers_ring",
@@ -29824,7 +31040,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 160
+        "sortIndex": 163
     },
     "/actions/crafting/pirate_chest_key": {
         "hrid": "/actions/crafting/pirate_chest_key",
@@ -29888,7 +31104,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 163
+        "sortIndex": 166
     },
     "/actions/crafting/pirate_entry_key": {
         "hrid": "/actions/crafting/pirate_entry_key",
@@ -29948,7 +31164,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 162
+        "sortIndex": 165
     },
     "/actions/crafting/purpleheart_bow": {
         "hrid": "/actions/crafting/purpleheart_bow",
@@ -30000,7 +31216,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 47
+        "sortIndex": 48
     },
     "/actions/crafting/purpleheart_crossbow": {
         "hrid": "/actions/crafting/purpleheart_crossbow",
@@ -30052,7 +31268,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 43
+        "sortIndex": 44
     },
     "/actions/crafting/purpleheart_fire_staff": {
         "hrid": "/actions/crafting/purpleheart_fire_staff",
@@ -30104,7 +31320,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 70
+        "sortIndex": 71
     },
     "/actions/crafting/purpleheart_lumber": {
         "hrid": "/actions/crafting/purpleheart_lumber",
@@ -30156,7 +31372,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 42
+        "sortIndex": 43
     },
     "/actions/crafting/purpleheart_nature_staff": {
         "hrid": "/actions/crafting/purpleheart_nature_staff",
@@ -30208,7 +31424,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 46
+        "sortIndex": 47
     },
     "/actions/crafting/purpleheart_shield": {
         "hrid": "/actions/crafting/purpleheart_shield",
@@ -30260,7 +31476,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 45
+        "sortIndex": 46
     },
     "/actions/crafting/purpleheart_water_staff": {
         "hrid": "/actions/crafting/purpleheart_water_staff",
@@ -30312,7 +31528,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 44
+        "sortIndex": 45
     },
     "/actions/crafting/ranger_necklace": {
         "hrid": "/actions/crafting/ranger_necklace",
@@ -30368,7 +31584,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 82
+        "sortIndex": 84
     },
     "/actions/crafting/redwood_bow": {
         "hrid": "/actions/crafting/redwood_bow",
@@ -30420,7 +31636,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 115
+        "sortIndex": 117
     },
     "/actions/crafting/redwood_crossbow": {
         "hrid": "/actions/crafting/redwood_crossbow",
@@ -30472,7 +31688,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 111
+        "sortIndex": 113
     },
     "/actions/crafting/redwood_fire_staff": {
         "hrid": "/actions/crafting/redwood_fire_staff",
@@ -30524,7 +31740,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 121
+        "sortIndex": 123
     },
     "/actions/crafting/redwood_lumber": {
         "hrid": "/actions/crafting/redwood_lumber",
@@ -30582,7 +31798,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 110
+        "sortIndex": 112
     },
     "/actions/crafting/redwood_nature_staff": {
         "hrid": "/actions/crafting/redwood_nature_staff",
@@ -30634,7 +31850,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 114
+        "sortIndex": 116
     },
     "/actions/crafting/redwood_shield": {
         "hrid": "/actions/crafting/redwood_shield",
@@ -30686,7 +31902,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 113
+        "sortIndex": 115
     },
     "/actions/crafting/redwood_water_staff": {
         "hrid": "/actions/crafting/redwood_water_staff",
@@ -30738,7 +31954,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 112
+        "sortIndex": 114
     },
     "/actions/crafting/ring_of_armor": {
         "hrid": "/actions/crafting/ring_of_armor",
@@ -30798,7 +32014,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 77
+        "sortIndex": 78
     },
     "/actions/crafting/ring_of_critical_strike": {
         "hrid": "/actions/crafting/ring_of_critical_strike",
@@ -30854,7 +32070,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 122
+        "sortIndex": 124
     },
     "/actions/crafting/ring_of_essence_find": {
         "hrid": "/actions/crafting/ring_of_essence_find",
@@ -30910,7 +32126,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 39
+        "sortIndex": 40
     },
     "/actions/crafting/ring_of_gathering": {
         "hrid": "/actions/crafting/ring_of_gathering",
@@ -31022,7 +32238,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 89
+        "sortIndex": 91
     },
     "/actions/crafting/ring_of_regeneration": {
         "hrid": "/actions/crafting/ring_of_regeneration",
@@ -31082,7 +32298,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 71
+        "sortIndex": 72
     },
     "/actions/crafting/ring_of_resistance": {
         "hrid": "/actions/crafting/ring_of_resistance",
@@ -31142,7 +32358,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 84
+        "sortIndex": 86
     },
     "/actions/crafting/rippling_trident": {
         "hrid": "/actions/crafting/rippling_trident",
@@ -31202,7 +32418,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 169
+        "sortIndex": 172
     },
     "/actions/crafting/rippling_trident_refined": {
         "hrid": "/actions/crafting/rippling_trident_refined",
@@ -31254,7 +32470,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 193
+        "sortIndex": 196
     },
     "/actions/crafting/sinister_chest_key": {
         "hrid": "/actions/crafting/sinister_chest_key",
@@ -31318,7 +32534,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 147
+        "sortIndex": 149
     },
     "/actions/crafting/sinister_entry_key": {
         "hrid": "/actions/crafting/sinister_entry_key",
@@ -31378,7 +32594,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 146
+        "sortIndex": 148
     },
     "/actions/crafting/soul_hunter_crossbow": {
         "hrid": "/actions/crafting/soul_hunter_crossbow",
@@ -31430,7 +32646,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 156
+        "sortIndex": 159
     },
     "/actions/crafting/sundering_crossbow": {
         "hrid": "/actions/crafting/sundering_crossbow",
@@ -31490,7 +32706,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 168
+        "sortIndex": 171
     },
     "/actions/crafting/sundering_crossbow_refined": {
         "hrid": "/actions/crafting/sundering_crossbow_refined",
@@ -31542,7 +32758,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 192
+        "sortIndex": 195
     },
     "/actions/crafting/treant_shield": {
         "hrid": "/actions/crafting/treant_shield",
@@ -31594,7 +32810,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 69
+        "sortIndex": 70
     },
     "/actions/crafting/vampiric_bow": {
         "hrid": "/actions/crafting/vampiric_bow",
@@ -31650,7 +32866,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 155
+        "sortIndex": 158
     },
     "/actions/crafting/watchful_relic": {
         "hrid": "/actions/crafting/watchful_relic",
@@ -31718,7 +32934,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 120
+        "sortIndex": 122
     },
     "/actions/crafting/wizard_necklace": {
         "hrid": "/actions/crafting/wizard_necklace",
@@ -31774,7 +32990,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 88
+        "sortIndex": 90
     },
     "/actions/crafting/wooden_bow": {
         "hrid": "/actions/crafting/wooden_bow",
@@ -33901,6 +35117,34 @@
         "buffs": null,
         "sortIndex": 2
     },
+    "/actions/labyrinth/explore": {
+        "hrid": "/actions/labyrinth/explore",
+        "function": "/action_functions/labyrinth",
+        "type": "/action_types/labyrinth",
+        "category": "/action_categories/labyrinth/explore",
+        "name": "Explore Labyrinth",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/total_level",
+            "level": 1
+        },
+        "baseTimeCost": 10000000,
+        "experienceGain": {
+            "skillHrid": "",
+            "value": 0
+        },
+        "dropTable": null,
+        "essenceDropTable": null,
+        "rareDropTable": null,
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": null,
+        "outputItems": null,
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 1
+    },
     "/actions/milking/azure_cow": {
         "hrid": "/actions/milking/azure_cow",
         "function": "/action_functions/gathering",
@@ -34256,6 +35500,34 @@
         "buffs": null,
         "sortIndex": 2
     },
+    "/actions/special/party_ready": {
+        "hrid": "/actions/special/party_ready",
+        "function": "/action_functions/special",
+        "type": "/action_types/special",
+        "category": "",
+        "name": "Party Ready",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "",
+            "level": 0
+        },
+        "baseTimeCost": 3000000000,
+        "experienceGain": {
+            "skillHrid": "",
+            "value": 0
+        },
+        "dropTable": null,
+        "essenceDropTable": null,
+        "rareDropTable": null,
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": null,
+        "outputItems": null,
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 1
+    },
     "/actions/tailoring/acrobatic_hood": {
         "hrid": "/actions/tailoring/acrobatic_hood",
         "function": "/action_functions/production",
@@ -34310,7 +35582,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 109
+        "sortIndex": 114
     },
     "/actions/tailoring/acrobatic_hood_refined": {
         "hrid": "/actions/tailoring/acrobatic_hood_refined",
@@ -34362,7 +35634,79 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 123
+        "sortIndex": 134
+    },
+    "/actions/tailoring/advanced_shroud": {
+        "hrid": "/actions/tailoring/advanced_shroud",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/labyrinth",
+        "name": "Advanced Shroud",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 50
+        },
+        "baseTimeCost": 17000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 250
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.07083333333333333,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_artisans_crate",
+                "dropRate": 0.00030169753086419757,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/reptile_leather",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/gobo_leather",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/beast_leather",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/linen_fabric",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/bamboo_fabric",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/silk_fabric",
+                "count": 10
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/advanced_shroud",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 48
     },
     "/actions/tailoring/alchemists_bottoms": {
         "hrid": "/actions/tailoring/alchemists_bottoms",
@@ -34430,7 +35774,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 101
+        "sortIndex": 104
     },
     "/actions/tailoring/alchemists_top": {
         "hrid": "/actions/tailoring/alchemists_top",
@@ -34498,7 +35842,59 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 100
+        "sortIndex": 103
+    },
+    "/actions/tailoring/artificer_cape_refined": {
+        "hrid": "/actions/tailoring/artificer_cape_refined",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/back",
+        "name": "Artificer Cape (R)",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 100
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 100000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.3333333333333333,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0009027777777777778,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/artificer_cape",
+        "retainAllEnhancement": true,
+        "inputItems": [
+            {
+                "itemHrid": "/items/labyrinth_refinement_shard",
+                "count": 100
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/artificer_cape_refined",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 125
     },
     "/actions/tailoring/bamboo_boots": {
         "hrid": "/actions/tailoring/bamboo_boots",
@@ -34550,7 +35946,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 31
+        "sortIndex": 32
     },
     "/actions/tailoring/bamboo_fabric": {
         "hrid": "/actions/tailoring/bamboo_fabric",
@@ -34602,7 +35998,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 29
+        "sortIndex": 30
     },
     "/actions/tailoring/bamboo_gloves": {
         "hrid": "/actions/tailoring/bamboo_gloves",
@@ -34654,7 +36050,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 33
+        "sortIndex": 34
     },
     "/actions/tailoring/bamboo_hat": {
         "hrid": "/actions/tailoring/bamboo_hat",
@@ -34706,7 +36102,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 35
+        "sortIndex": 36
     },
     "/actions/tailoring/bamboo_robe_bottoms": {
         "hrid": "/actions/tailoring/bamboo_robe_bottoms",
@@ -34758,7 +36154,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 37
+        "sortIndex": 38
     },
     "/actions/tailoring/bamboo_robe_top": {
         "hrid": "/actions/tailoring/bamboo_robe_top",
@@ -34810,7 +36206,79 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 40
+        "sortIndex": 41
+    },
+    "/actions/tailoring/basic_shroud": {
+        "hrid": "/actions/tailoring/basic_shroud",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/labyrinth",
+        "name": "Basic Shroud",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 20
+        },
+        "baseTimeCost": 11000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 100
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.03666666666666667,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/small_artisans_crate",
+                "dropRate": 0.0003055555555555555,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/rough_leather",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/reptile_leather",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/gobo_leather",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/cotton_fabric",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/linen_fabric",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/bamboo_fabric",
+                "count": 10
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/basic_shroud",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 20
     },
     "/actions/tailoring/beast_boots": {
         "hrid": "/actions/tailoring/beast_boots",
@@ -34862,7 +36330,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 49
+        "sortIndex": 51
     },
     "/actions/tailoring/beast_bracers": {
         "hrid": "/actions/tailoring/beast_bracers",
@@ -34914,7 +36382,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 51
+        "sortIndex": 53
     },
     "/actions/tailoring/beast_chaps": {
         "hrid": "/actions/tailoring/beast_chaps",
@@ -34966,7 +36434,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 57
+        "sortIndex": 59
     },
     "/actions/tailoring/beast_hood": {
         "hrid": "/actions/tailoring/beast_hood",
@@ -35018,7 +36486,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 55
+        "sortIndex": 57
     },
     "/actions/tailoring/beast_leather": {
         "hrid": "/actions/tailoring/beast_leather",
@@ -35070,7 +36538,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 47
+        "sortIndex": 49
     },
     "/actions/tailoring/beast_tunic": {
         "hrid": "/actions/tailoring/beast_tunic",
@@ -35122,7 +36590,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 62
+        "sortIndex": 64
     },
     "/actions/tailoring/brewers_bottoms": {
         "hrid": "/actions/tailoring/brewers_bottoms",
@@ -35190,7 +36658,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 99
+        "sortIndex": 102
     },
     "/actions/tailoring/brewers_top": {
         "hrid": "/actions/tailoring/brewers_top",
@@ -35258,7 +36726,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 98
+        "sortIndex": 101
     },
     "/actions/tailoring/centaur_boots": {
         "hrid": "/actions/tailoring/centaur_boots",
@@ -35310,7 +36778,59 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 59
+        "sortIndex": 61
+    },
+    "/actions/tailoring/chance_cape_refined": {
+        "hrid": "/actions/tailoring/chance_cape_refined",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/back",
+        "name": "Chance Cape (R)",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 100
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 100000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.3333333333333333,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0009027777777777778,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/chance_cape",
+        "retainAllEnhancement": true,
+        "inputItems": [
+            {
+                "itemHrid": "/items/labyrinth_refinement_shard",
+                "count": 100
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/chance_cape_refined",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 127
     },
     "/actions/tailoring/cheesemakers_bottoms": {
         "hrid": "/actions/tailoring/cheesemakers_bottoms",
@@ -35378,7 +36898,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 91
+        "sortIndex": 94
     },
     "/actions/tailoring/cheesemakers_top": {
         "hrid": "/actions/tailoring/cheesemakers_top",
@@ -35446,7 +36966,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 90
+        "sortIndex": 93
     },
     "/actions/tailoring/chefs_bottoms": {
         "hrid": "/actions/tailoring/chefs_bottoms",
@@ -35514,7 +37034,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 97
+        "sortIndex": 100
     },
     "/actions/tailoring/chefs_top": {
         "hrid": "/actions/tailoring/chefs_top",
@@ -35582,7 +37102,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 96
+        "sortIndex": 99
     },
     "/actions/tailoring/chimerical_quiver_refined": {
         "hrid": "/actions/tailoring/chimerical_quiver_refined",
@@ -35634,7 +37154,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 119
+        "sortIndex": 128
     },
     "/actions/tailoring/chrono_gloves": {
         "hrid": "/actions/tailoring/chrono_gloves",
@@ -35686,7 +37206,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 75
+        "sortIndex": 77
     },
     "/actions/tailoring/collectors_boots": {
         "hrid": "/actions/tailoring/collectors_boots",
@@ -35754,7 +37274,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 53
+        "sortIndex": 55
     },
     "/actions/tailoring/cotton_boots": {
         "hrid": "/actions/tailoring/cotton_boots",
@@ -36134,7 +37654,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 93
+        "sortIndex": 96
     },
     "/actions/tailoring/crafters_top": {
         "hrid": "/actions/tailoring/crafters_top",
@@ -36202,7 +37722,59 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 92
+        "sortIndex": 95
+    },
+    "/actions/tailoring/culinary_cape_refined": {
+        "hrid": "/actions/tailoring/culinary_cape_refined",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/back",
+        "name": "Culinary Cape (R)",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 100
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 100000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.3333333333333333,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0009027777777777778,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/culinary_cape",
+        "retainAllEnhancement": true,
+        "inputItems": [
+            {
+                "itemHrid": "/items/labyrinth_refinement_shard",
+                "count": 100
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/culinary_cape_refined",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 126
     },
     "/actions/tailoring/dairyhands_bottoms": {
         "hrid": "/actions/tailoring/dairyhands_bottoms",
@@ -36270,7 +37842,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 85
+        "sortIndex": 88
     },
     "/actions/tailoring/dairyhands_top": {
         "hrid": "/actions/tailoring/dairyhands_top",
@@ -36338,7 +37910,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 84
+        "sortIndex": 87
     },
     "/actions/tailoring/enchanted_cloak_refined": {
         "hrid": "/actions/tailoring/enchanted_cloak_refined",
@@ -36390,7 +37962,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 121
+        "sortIndex": 130
     },
     "/actions/tailoring/enchanted_gloves": {
         "hrid": "/actions/tailoring/enchanted_gloves",
@@ -36458,7 +38030,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 73
+        "sortIndex": 75
     },
     "/actions/tailoring/enhancers_bottoms": {
         "hrid": "/actions/tailoring/enhancers_bottoms",
@@ -36526,7 +38098,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 103
+        "sortIndex": 106
     },
     "/actions/tailoring/enhancers_top": {
         "hrid": "/actions/tailoring/enhancers_top",
@@ -36594,7 +38166,79 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 102
+        "sortIndex": 105
+    },
+    "/actions/tailoring/expert_shroud": {
+        "hrid": "/actions/tailoring/expert_shroud",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/labyrinth",
+        "name": "Expert Shroud",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 80
+        },
+        "baseTimeCost": 30000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 500
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.15,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.00038194444444444446,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/gobo_leather",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/beast_leather",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/umbral_leather",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/bamboo_fabric",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/silk_fabric",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/radiant_fabric",
+                "count": 10
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/expert_shroud",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 78
     },
     "/actions/tailoring/flaming_robe_bottoms": {
         "hrid": "/actions/tailoring/flaming_robe_bottoms",
@@ -36646,7 +38290,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 46
+        "sortIndex": 47
     },
     "/actions/tailoring/flaming_robe_top": {
         "hrid": "/actions/tailoring/flaming_robe_top",
@@ -36698,7 +38342,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 45
+        "sortIndex": 46
     },
     "/actions/tailoring/fluffy_red_hat": {
         "hrid": "/actions/tailoring/fluffy_red_hat",
@@ -36766,7 +38410,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 74
+        "sortIndex": 76
     },
     "/actions/tailoring/foragers_bottoms": {
         "hrid": "/actions/tailoring/foragers_bottoms",
@@ -36834,7 +38478,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 87
+        "sortIndex": 90
     },
     "/actions/tailoring/foragers_top": {
         "hrid": "/actions/tailoring/foragers_top",
@@ -36902,7 +38546,59 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 86
+        "sortIndex": 89
+    },
+    "/actions/tailoring/gatherer_cape_refined": {
+        "hrid": "/actions/tailoring/gatherer_cape_refined",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/back",
+        "name": "Gatherer Cape (R)",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 100
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 100000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.3333333333333333,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0009027777777777778,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/gatherer_cape",
+        "retainAllEnhancement": true,
+        "inputItems": [
+            {
+                "itemHrid": "/items/labyrinth_refinement_shard",
+                "count": 100
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/gatherer_cape_refined",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 124
     },
     "/actions/tailoring/giant_pouch": {
         "hrid": "/actions/tailoring/giant_pouch",
@@ -36962,7 +38658,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 61
+        "sortIndex": 63
     },
     "/actions/tailoring/gluttonous_pouch": {
         "hrid": "/actions/tailoring/gluttonous_pouch",
@@ -37026,7 +38722,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 106
+        "sortIndex": 109
     },
     "/actions/tailoring/gobo_boots": {
         "hrid": "/actions/tailoring/gobo_boots",
@@ -37078,7 +38774,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 30
+        "sortIndex": 31
     },
     "/actions/tailoring/gobo_bracers": {
         "hrid": "/actions/tailoring/gobo_bracers",
@@ -37130,7 +38826,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 32
+        "sortIndex": 33
     },
     "/actions/tailoring/gobo_chaps": {
         "hrid": "/actions/tailoring/gobo_chaps",
@@ -37182,7 +38878,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 36
+        "sortIndex": 37
     },
     "/actions/tailoring/gobo_hood": {
         "hrid": "/actions/tailoring/gobo_hood",
@@ -37234,7 +38930,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 34
+        "sortIndex": 35
     },
     "/actions/tailoring/gobo_leather": {
         "hrid": "/actions/tailoring/gobo_leather",
@@ -37286,7 +38982,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 28
+        "sortIndex": 29
     },
     "/actions/tailoring/gobo_tunic": {
         "hrid": "/actions/tailoring/gobo_tunic",
@@ -37338,7 +39034,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 39
+        "sortIndex": 40
     },
     "/actions/tailoring/griffin_chaps": {
         "hrid": "/actions/tailoring/griffin_chaps",
@@ -37394,7 +39090,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 83
+        "sortIndex": 86
     },
     "/actions/tailoring/griffin_tunic": {
         "hrid": "/actions/tailoring/griffin_tunic",
@@ -37450,7 +39146,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 105
+        "sortIndex": 108
     },
     "/actions/tailoring/guzzling_pouch": {
         "hrid": "/actions/tailoring/guzzling_pouch",
@@ -37514,7 +39210,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 107
+        "sortIndex": 110
     },
     "/actions/tailoring/icy_robe_bottoms": {
         "hrid": "/actions/tailoring/icy_robe_bottoms",
@@ -37566,7 +39262,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 44
+        "sortIndex": 45
     },
     "/actions/tailoring/icy_robe_top": {
         "hrid": "/actions/tailoring/icy_robe_top",
@@ -37618,7 +39314,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 43
+        "sortIndex": 44
     },
     "/actions/tailoring/kraken_chaps": {
         "hrid": "/actions/tailoring/kraken_chaps",
@@ -37674,7 +39370,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 111
+        "sortIndex": 116
     },
     "/actions/tailoring/kraken_chaps_refined": {
         "hrid": "/actions/tailoring/kraken_chaps_refined",
@@ -37726,7 +39422,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 125
+        "sortIndex": 136
     },
     "/actions/tailoring/kraken_tunic": {
         "hrid": "/actions/tailoring/kraken_tunic",
@@ -37782,7 +39478,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 115
+        "sortIndex": 120
     },
     "/actions/tailoring/kraken_tunic_refined": {
         "hrid": "/actions/tailoring/kraken_tunic_refined",
@@ -37834,7 +39530,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 129
+        "sortIndex": 140
     },
     "/actions/tailoring/large_pouch": {
         "hrid": "/actions/tailoring/large_pouch",
@@ -37894,7 +39590,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 38
+        "sortIndex": 39
     },
     "/actions/tailoring/linen_boots": {
         "hrid": "/actions/tailoring/linen_boots",
@@ -38102,7 +39798,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 21
+        "sortIndex": 22
     },
     "/actions/tailoring/linen_robe_bottoms": {
         "hrid": "/actions/tailoring/linen_robe_bottoms",
@@ -38154,7 +39850,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 23
+        "sortIndex": 24
     },
     "/actions/tailoring/linen_robe_top": {
         "hrid": "/actions/tailoring/linen_robe_top",
@@ -38206,7 +39902,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 26
+        "sortIndex": 27
     },
     "/actions/tailoring/lumberjacks_bottoms": {
         "hrid": "/actions/tailoring/lumberjacks_bottoms",
@@ -38274,7 +39970,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 89
+        "sortIndex": 92
     },
     "/actions/tailoring/lumberjacks_top": {
         "hrid": "/actions/tailoring/lumberjacks_top",
@@ -38342,7 +40038,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 88
+        "sortIndex": 91
     },
     "/actions/tailoring/luna_robe_bottoms": {
         "hrid": "/actions/tailoring/luna_robe_bottoms",
@@ -38394,7 +40090,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 66
+        "sortIndex": 68
     },
     "/actions/tailoring/luna_robe_top": {
         "hrid": "/actions/tailoring/luna_robe_top",
@@ -38446,7 +40142,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 65
+        "sortIndex": 67
     },
     "/actions/tailoring/magicians_hat": {
         "hrid": "/actions/tailoring/magicians_hat",
@@ -38502,7 +40198,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 110
+        "sortIndex": 115
     },
     "/actions/tailoring/magicians_hat_refined": {
         "hrid": "/actions/tailoring/magicians_hat_refined",
@@ -38554,7 +40250,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 124
+        "sortIndex": 135
     },
     "/actions/tailoring/marine_chaps": {
         "hrid": "/actions/tailoring/marine_chaps",
@@ -38606,7 +40302,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 42
+        "sortIndex": 43
     },
     "/actions/tailoring/marine_tunic": {
         "hrid": "/actions/tailoring/marine_tunic",
@@ -38658,7 +40354,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 41
+        "sortIndex": 42
     },
     "/actions/tailoring/marksman_bracers": {
         "hrid": "/actions/tailoring/marksman_bracers",
@@ -38718,7 +40414,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 108
+        "sortIndex": 113
     },
     "/actions/tailoring/marksman_bracers_refined": {
         "hrid": "/actions/tailoring/marksman_bracers_refined",
@@ -38770,7 +40466,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 122
+        "sortIndex": 133
     },
     "/actions/tailoring/medium_pouch": {
         "hrid": "/actions/tailoring/medium_pouch",
@@ -38830,7 +40526,231 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 24
+        "sortIndex": 25
+    },
+    "/actions/tailoring/pathfinder_boots": {
+        "hrid": "/actions/tailoring/pathfinder_boots",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/feet",
+        "name": "Pathfinder Boots",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 91
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 120000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.3183333333333333,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008402777777777778,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/pathfinder_lodestone",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/umbral_boots",
+                "count": 30
+            },
+            {
+                "itemHrid": "/items/centaur_boots",
+                "count": 12
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/pathfinder_boots",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 111
+    },
+    "/actions/tailoring/pathfinder_boots_refined": {
+        "hrid": "/actions/tailoring/pathfinder_boots_refined",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/feet",
+        "name": "Pathfinder Boots (R)",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 101
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 150000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.33499999999999996,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0009097222222222222,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/pathfinder_boots",
+        "retainAllEnhancement": true,
+        "inputItems": [
+            {
+                "itemHrid": "/items/labyrinth_refinement_shard",
+                "count": 100
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/pathfinder_boots_refined",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 131
+    },
+    "/actions/tailoring/pathseeker_boots": {
+        "hrid": "/actions/tailoring/pathseeker_boots",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/feet",
+        "name": "Pathseeker Boots",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 91
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 100000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.3183333333333333,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0008402777777777778,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "inputItems": [
+            {
+                "itemHrid": "/items/pathseeker_lodestone",
+                "count": 10
+            },
+            {
+                "itemHrid": "/items/radiant_boots",
+                "count": 30
+            },
+            {
+                "itemHrid": "/items/sorcerer_boots",
+                "count": 12
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/pathseeker_boots",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 112
+    },
+    "/actions/tailoring/pathseeker_boots_refined": {
+        "hrid": "/actions/tailoring/pathseeker_boots_refined",
+        "function": "/action_functions/production",
+        "type": "/action_types/tailoring",
+        "category": "/action_categories/tailoring/feet",
+        "name": "Pathseeker Boots (R)",
+        "maxDifficulty": 0,
+        "levelRequirement": {
+            "skillHrid": "/skills/tailoring",
+            "level": 101
+        },
+        "baseTimeCost": 60000000000,
+        "experienceGain": {
+            "skillHrid": "/skills/tailoring",
+            "value": 150000
+        },
+        "dropTable": null,
+        "essenceDropTable": [
+            {
+                "itemHrid": "/items/tailoring_essence",
+                "dropRate": 0.33499999999999996,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/large_artisans_crate",
+                "dropRate": 0.0009097222222222222,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ],
+        "upgradeItemHrid": "/items/pathseeker_boots",
+        "retainAllEnhancement": true,
+        "inputItems": [
+            {
+                "itemHrid": "/items/labyrinth_refinement_shard",
+                "count": 100
+            }
+        ],
+        "outputItems": [
+            {
+                "itemHrid": "/items/pathseeker_boots_refined",
+                "count": 1
+            }
+        ],
+        "combatZoneInfo": null,
+        "maxPartySize": 0,
+        "buffs": null,
+        "sortIndex": 132
     },
     "/actions/tailoring/radiant_boots": {
         "hrid": "/actions/tailoring/radiant_boots",
@@ -38882,7 +40802,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 70
+        "sortIndex": 72
     },
     "/actions/tailoring/radiant_fabric": {
         "hrid": "/actions/tailoring/radiant_fabric",
@@ -38940,7 +40860,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 68
+        "sortIndex": 70
     },
     "/actions/tailoring/radiant_gloves": {
         "hrid": "/actions/tailoring/radiant_gloves",
@@ -38992,7 +40912,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 72
+        "sortIndex": 74
     },
     "/actions/tailoring/radiant_hat": {
         "hrid": "/actions/tailoring/radiant_hat",
@@ -39044,7 +40964,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 77
+        "sortIndex": 80
     },
     "/actions/tailoring/radiant_robe_bottoms": {
         "hrid": "/actions/tailoring/radiant_robe_bottoms",
@@ -39096,7 +41016,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 79
+        "sortIndex": 82
     },
     "/actions/tailoring/radiant_robe_top": {
         "hrid": "/actions/tailoring/radiant_robe_top",
@@ -39148,7 +41068,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 81
+        "sortIndex": 84
     },
     "/actions/tailoring/red_culinary_hat": {
         "hrid": "/actions/tailoring/red_culinary_hat",
@@ -39216,7 +41136,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 64
+        "sortIndex": 66
     },
     "/actions/tailoring/reptile_boots": {
         "hrid": "/actions/tailoring/reptile_boots",
@@ -39372,7 +41292,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 22
+        "sortIndex": 23
     },
     "/actions/tailoring/reptile_hood": {
         "hrid": "/actions/tailoring/reptile_hood",
@@ -39424,7 +41344,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 20
+        "sortIndex": 21
     },
     "/actions/tailoring/reptile_leather": {
         "hrid": "/actions/tailoring/reptile_leather",
@@ -39528,7 +41448,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 25
+        "sortIndex": 26
     },
     "/actions/tailoring/revenant_chaps": {
         "hrid": "/actions/tailoring/revenant_chaps",
@@ -39580,7 +41500,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 82
+        "sortIndex": 85
     },
     "/actions/tailoring/revenant_tunic": {
         "hrid": "/actions/tailoring/revenant_tunic",
@@ -39632,7 +41552,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 104
+        "sortIndex": 107
     },
     "/actions/tailoring/rough_boots": {
         "hrid": "/actions/tailoring/rough_boots",
@@ -40004,7 +41924,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 114
+        "sortIndex": 119
     },
     "/actions/tailoring/royal_fire_robe_bottoms_refined": {
         "hrid": "/actions/tailoring/royal_fire_robe_bottoms_refined",
@@ -40056,7 +41976,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 128
+        "sortIndex": 139
     },
     "/actions/tailoring/royal_fire_robe_top": {
         "hrid": "/actions/tailoring/royal_fire_robe_top",
@@ -40116,7 +42036,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 118
+        "sortIndex": 123
     },
     "/actions/tailoring/royal_fire_robe_top_refined": {
         "hrid": "/actions/tailoring/royal_fire_robe_top_refined",
@@ -40168,7 +42088,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 132
+        "sortIndex": 143
     },
     "/actions/tailoring/royal_nature_robe_bottoms": {
         "hrid": "/actions/tailoring/royal_nature_robe_bottoms",
@@ -40224,7 +42144,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 113
+        "sortIndex": 118
     },
     "/actions/tailoring/royal_nature_robe_bottoms_refined": {
         "hrid": "/actions/tailoring/royal_nature_robe_bottoms_refined",
@@ -40276,7 +42196,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 127
+        "sortIndex": 138
     },
     "/actions/tailoring/royal_nature_robe_top": {
         "hrid": "/actions/tailoring/royal_nature_robe_top",
@@ -40332,7 +42252,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 117
+        "sortIndex": 122
     },
     "/actions/tailoring/royal_nature_robe_top_refined": {
         "hrid": "/actions/tailoring/royal_nature_robe_top_refined",
@@ -40384,7 +42304,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 131
+        "sortIndex": 142
     },
     "/actions/tailoring/royal_water_robe_bottoms": {
         "hrid": "/actions/tailoring/royal_water_robe_bottoms",
@@ -40444,7 +42364,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 112
+        "sortIndex": 117
     },
     "/actions/tailoring/royal_water_robe_bottoms_refined": {
         "hrid": "/actions/tailoring/royal_water_robe_bottoms_refined",
@@ -40496,7 +42416,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 126
+        "sortIndex": 137
     },
     "/actions/tailoring/royal_water_robe_top": {
         "hrid": "/actions/tailoring/royal_water_robe_top",
@@ -40556,7 +42476,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 116
+        "sortIndex": 121
     },
     "/actions/tailoring/royal_water_robe_top_refined": {
         "hrid": "/actions/tailoring/royal_water_robe_top_refined",
@@ -40608,7 +42528,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 130
+        "sortIndex": 141
     },
     "/actions/tailoring/shoebill_shoes": {
         "hrid": "/actions/tailoring/shoebill_shoes",
@@ -40676,7 +42596,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 27
+        "sortIndex": 28
     },
     "/actions/tailoring/sighted_bracers": {
         "hrid": "/actions/tailoring/sighted_bracers",
@@ -40728,7 +42648,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 54
+        "sortIndex": 56
     },
     "/actions/tailoring/silk_boots": {
         "hrid": "/actions/tailoring/silk_boots",
@@ -40780,7 +42700,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 50
+        "sortIndex": 52
     },
     "/actions/tailoring/silk_fabric": {
         "hrid": "/actions/tailoring/silk_fabric",
@@ -40832,7 +42752,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 48
+        "sortIndex": 50
     },
     "/actions/tailoring/silk_gloves": {
         "hrid": "/actions/tailoring/silk_gloves",
@@ -40884,7 +42804,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 52
+        "sortIndex": 54
     },
     "/actions/tailoring/silk_hat": {
         "hrid": "/actions/tailoring/silk_hat",
@@ -40936,7 +42856,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 56
+        "sortIndex": 58
     },
     "/actions/tailoring/silk_robe_bottoms": {
         "hrid": "/actions/tailoring/silk_robe_bottoms",
@@ -40988,7 +42908,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 58
+        "sortIndex": 60
     },
     "/actions/tailoring/silk_robe_top": {
         "hrid": "/actions/tailoring/silk_robe_top",
@@ -41040,7 +42960,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 63
+        "sortIndex": 65
     },
     "/actions/tailoring/sinister_cape_refined": {
         "hrid": "/actions/tailoring/sinister_cape_refined",
@@ -41092,7 +43012,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 120
+        "sortIndex": 129
     },
     "/actions/tailoring/small_pouch": {
         "hrid": "/actions/tailoring/small_pouch",
@@ -41204,7 +43124,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 60
+        "sortIndex": 62
     },
     "/actions/tailoring/tailors_bottoms": {
         "hrid": "/actions/tailoring/tailors_bottoms",
@@ -41272,7 +43192,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 95
+        "sortIndex": 98
     },
     "/actions/tailoring/tailors_top": {
         "hrid": "/actions/tailoring/tailors_top",
@@ -41340,7 +43260,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 94
+        "sortIndex": 97
     },
     "/actions/tailoring/umbral_boots": {
         "hrid": "/actions/tailoring/umbral_boots",
@@ -41392,7 +43312,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 69
+        "sortIndex": 71
     },
     "/actions/tailoring/umbral_bracers": {
         "hrid": "/actions/tailoring/umbral_bracers",
@@ -41444,7 +43364,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 71
+        "sortIndex": 73
     },
     "/actions/tailoring/umbral_chaps": {
         "hrid": "/actions/tailoring/umbral_chaps",
@@ -41496,7 +43416,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 78
+        "sortIndex": 81
     },
     "/actions/tailoring/umbral_hood": {
         "hrid": "/actions/tailoring/umbral_hood",
@@ -41548,7 +43468,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 76
+        "sortIndex": 79
     },
     "/actions/tailoring/umbral_leather": {
         "hrid": "/actions/tailoring/umbral_leather",
@@ -41606,7 +43526,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 67
+        "sortIndex": 69
     },
     "/actions/tailoring/umbral_tunic": {
         "hrid": "/actions/tailoring/umbral_tunic",
@@ -41658,7 +43578,7 @@
         "combatZoneInfo": null,
         "maxPartySize": 0,
         "buffs": null,
-        "sortIndex": 80
+        "sortIndex": 83
     },
     "/actions/woodcutting/arcane_tree": {
         "hrid": "/actions/woodcutting/arcane_tree",

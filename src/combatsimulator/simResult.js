@@ -1,7 +1,7 @@
 import combatStyleDetailMap from "./data/combatStyleDetailMap.json"
 
 class SimResult {
-    constructor(zone, numberOfPlayers) {
+    constructor(zone, labyrinth, numberOfPlayers) {
         this.deaths = {};
         this.experienceGained = {};
         this.encounters = 0;
@@ -25,9 +25,12 @@ class SimResult {
         this.timeSpentAlive = [];
         this.bossSpawns = [];
         this.hitpointsSpent = {};
-        this.zoneName = zone.hrid;
-        this.difficultyTier = zone.difficultyTier;
+        this.zoneName = zone?.hrid;
+        this.difficultyTier = zone?.difficultyTier;
+        this.labyrinthName = labyrinth?.monsterHrid;
+        this.roomLevel = labyrinth?.roomLevel;
         this.isDungeon = false;
+        this.isLabyrinth = labyrinth ? true : false;
         this.dungeonsCompleted = 0;
         this.dungeonsFailed = 0;
         this.maxWaveReached = 0;

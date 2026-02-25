@@ -2,6 +2,7 @@
     "/monsters/abyssal_imp": {
         "hrid": "/monsters/abyssal_imp",
         "name": "Abyssal Imp",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 240,
         "combatDetails": {
@@ -125,6 +126,7 @@
     "/monsters/acrobat": {
         "hrid": "/monsters/acrobat",
         "name": "Acrobat",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 6000,
         "combatDetails": {
@@ -216,6 +218,7 @@
     "/monsters/alligator": {
         "hrid": "/monsters/alligator",
         "name": "Sherlock",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 40,
         "combatDetails": {
@@ -343,6 +346,7 @@
     "/monsters/anchor_shark": {
         "hrid": "/monsters/anchor_shark",
         "name": "Anchor Shark",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 7000,
         "combatDetails": {
@@ -434,6 +438,7 @@
     "/monsters/aquahorse": {
         "hrid": "/monsters/aquahorse",
         "name": "Aquahorse",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 60,
         "combatDetails": {
@@ -540,6 +545,7 @@
     "/monsters/black_bear": {
         "hrid": "/monsters/black_bear",
         "name": "Black Bear",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 170,
         "combatDetails": {
@@ -676,6 +682,7 @@
     "/monsters/brine_marksman": {
         "hrid": "/monsters/brine_marksman",
         "name": "Brine Marksman",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 7000,
         "combatDetails": {
@@ -767,6 +774,7 @@
     "/monsters/butterjerry": {
         "hrid": "/monsters/butterjerry",
         "name": "Butterjerry",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 1000,
         "combatDetails": {
@@ -852,6 +860,7 @@
     "/monsters/captain_fishhook": {
         "hrid": "/monsters/captain_fishhook",
         "name": "Captain Fishhook",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 14000,
         "combatDetails": {
@@ -942,6 +951,7 @@
     "/monsters/centaur_archer": {
         "hrid": "/monsters/centaur_archer",
         "name": "Centaur Archer",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 140,
         "combatDetails": {
@@ -1082,6 +1092,7 @@
     "/monsters/chronofrost_sorcerer": {
         "hrid": "/monsters/chronofrost_sorcerer",
         "name": "Chronofrost Sorcerer",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 1150,
         "combatDetails": {
@@ -1257,6 +1268,7 @@
     "/monsters/crab": {
         "hrid": "/monsters/crab",
         "name": "I Pinch",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 54,
         "combatDetails": {
@@ -1365,6 +1377,7 @@
     "/monsters/crystal_colossus": {
         "hrid": "/monsters/crystal_colossus",
         "name": "Crystal Colossus",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 2000,
         "combatDetails": {
@@ -1555,9 +1568,110 @@
             }
         ]
     },
+    "/monsters/cyclops": {
+        "hrid": "/monsters/cyclops",
+        "name": "Cyclops",
+        "isLabyrinthMonster": true,
+        "enrageTime": 600000000000,
+        "experience": 5000,
+        "combatDetails": {
+            "currentHitpoints": 4400,
+            "maxHitpoints": 4400,
+            "currentManapoints": 4400,
+            "maxManapoints": 4400,
+            "attackInterval": 2857142857,
+            "totalCastSpeed": 0.05,
+            "stabAccuracyRating": 110,
+            "slashAccuracyRating": 110,
+            "smashAccuracyRating": 209,
+            "rangedAccuracyRating": 110,
+            "magicAccuracyRating": 110,
+            "defensiveMaxDamage": 110,
+            "stabMaxDamage": 110,
+            "slashMaxDamage": 110,
+            "smashMaxDamage": 231,
+            "rangedMaxDamage": 10,
+            "magicMaxDamage": 10,
+            "stabEvasionRating": 220,
+            "slashEvasionRating": 1210,
+            "smashEvasionRating": 1210,
+            "rangedEvasionRating": 2310,
+            "magicEvasionRating": 220,
+            "totalArmor": 1020,
+            "totalWaterResistance": 140,
+            "totalNatureResistance": 820,
+            "totalFireResistance": 80,
+            "totalThreat": 100,
+            "combatLevel": 100,
+            "staminaLevel": 100,
+            "intelligenceLevel": 100,
+            "attackLevel": 100,
+            "meleeLevel": 100,
+            "defenseLevel": 100,
+            "rangedLevel": 0,
+            "magicLevel": 0,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/smash"
+                ],
+                "damageType": "/damage_types/physical",
+                "attackInterval": 3000000000,
+                "smashAccuracy": 0.9,
+                "smashDamage": 1.1,
+                "maxHitpointsRatio": 3,
+                "maxManapointsRatio": 3,
+                "stabEvasion": 1,
+                "slashEvasion": 10,
+                "smashEvasion": 10,
+                "rangedEvasion": 20,
+                "magicEvasion": 1,
+                "armor": 1000,
+                "waterResistance": 120,
+                "natureResistance": 800,
+                "fireResistance": 60
+            }
+        },
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/guardian_aura",
+                "level": 40,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/toughness",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/sweep",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/stunning_blow",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/fracturing_impact",
+                "level": 60,
+                "minDifficultyTier": 0
+            }
+        ],
+        "dropTable": null,
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_treasure_chest",
+                "dropRate": 0.00375,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ]
+    },
     "/monsters/demonic_overlord": {
         "hrid": "/monsters/demonic_overlord",
         "name": "Demonic Overlord",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 2200,
         "combatDetails": {
@@ -1733,6 +1847,7 @@
     "/monsters/deranged_jester": {
         "hrid": "/monsters/deranged_jester",
         "name": "Deranged Jester",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 15000,
         "combatDetails": {
@@ -1826,6 +1941,7 @@
     "/monsters/dodocamel": {
         "hrid": "/monsters/dodocamel",
         "name": "Dodocamel",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 4200,
         "combatDetails": {
@@ -1914,9 +2030,110 @@
             }
         ]
     },
+    "/monsters/dryad": {
+        "hrid": "/monsters/dryad",
+        "name": "Dryad",
+        "isLabyrinthMonster": true,
+        "enrageTime": 600000000000,
+        "experience": 5000,
+        "combatDetails": {
+            "currentHitpoints": 4400,
+            "maxHitpoints": 4400,
+            "currentManapoints": 4400,
+            "maxManapoints": 4400,
+            "attackInterval": 2857142857,
+            "totalCastSpeed": 0.05,
+            "stabAccuracyRating": 110,
+            "slashAccuracyRating": 110,
+            "smashAccuracyRating": 110,
+            "rangedAccuracyRating": 110,
+            "magicAccuracyRating": 252.99999999999997,
+            "defensiveMaxDamage": 110,
+            "stabMaxDamage": 10,
+            "slashMaxDamage": 10,
+            "smashMaxDamage": 10,
+            "rangedMaxDamage": 10,
+            "magicMaxDamage": 252.99999999999997,
+            "stabEvasionRating": 11110,
+            "slashEvasionRating": 11110,
+            "smashEvasionRating": 2860,
+            "rangedEvasionRating": 242.00000000000003,
+            "magicEvasionRating": 990,
+            "totalArmor": 160,
+            "totalWaterResistance": 820,
+            "totalNatureResistance": 820,
+            "totalFireResistance": 220,
+            "totalThreat": 100,
+            "combatLevel": 100,
+            "staminaLevel": 100,
+            "intelligenceLevel": 100,
+            "attackLevel": 100,
+            "meleeLevel": 0,
+            "defenseLevel": 100,
+            "rangedLevel": 0,
+            "magicLevel": 100,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/magic"
+                ],
+                "damageType": "/damage_types/nature",
+                "attackInterval": 3000000000,
+                "magicAccuracy": 1.3,
+                "magicDamage": 1.3,
+                "maxHitpointsRatio": 3,
+                "maxManapointsRatio": 3,
+                "stabEvasion": 100,
+                "slashEvasion": 100,
+                "smashEvasion": 25,
+                "rangedEvasion": 1.2,
+                "magicEvasion": 8,
+                "armor": 140,
+                "waterResistance": 800,
+                "natureResistance": 800,
+                "fireResistance": 200
+            }
+        },
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/guardian_aura",
+                "level": 40,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/toxic_pollen",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/natures_veil",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/life_drain",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/entangle",
+                "level": 60,
+                "minDifficultyTier": 0
+            }
+        ],
+        "dropTable": null,
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_treasure_chest",
+                "dropRate": 0.00375,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ]
+    },
     "/monsters/dusk_revenant": {
         "hrid": "/monsters/dusk_revenant",
         "name": "Dusk Revenant",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 2100,
         "combatDetails": {
@@ -2098,6 +2315,7 @@
     "/monsters/elementalist": {
         "hrid": "/monsters/elementalist",
         "name": "Elementalist",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 210,
         "combatDetails": {
@@ -2253,6 +2471,7 @@
     "/monsters/enchanted_bishop": {
         "hrid": "/monsters/enchanted_bishop",
         "name": "Enchanted Bishop",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 7000,
         "combatDetails": {
@@ -2352,6 +2571,7 @@
     "/monsters/enchanted_king": {
         "hrid": "/monsters/enchanted_king",
         "name": "Enchanted King",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 15000,
         "combatDetails": {
@@ -2439,6 +2659,7 @@
     "/monsters/enchanted_knight": {
         "hrid": "/monsters/enchanted_knight",
         "name": "Enchanted Knight",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 7000,
         "combatDetails": {
@@ -2528,6 +2749,7 @@
     "/monsters/enchanted_pawn": {
         "hrid": "/monsters/enchanted_pawn",
         "name": "Enchanted Pawn",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 1600,
         "combatDetails": {
@@ -2610,6 +2832,7 @@
     "/monsters/enchanted_queen": {
         "hrid": "/monsters/enchanted_queen",
         "name": "Enchanted Queen",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 18000,
         "combatDetails": {
@@ -2706,6 +2929,7 @@
     "/monsters/enchanted_rook": {
         "hrid": "/monsters/enchanted_rook",
         "name": "Enchanted Rook",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 7000,
         "combatDetails": {
@@ -2799,6 +3023,7 @@
     "/monsters/eye": {
         "hrid": "/monsters/eye",
         "name": "Eye",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 130,
         "combatDetails": {
@@ -2958,6 +3183,7 @@
     "/monsters/eyes": {
         "hrid": "/monsters/eyes",
         "name": "Eyes",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 145,
         "combatDetails": {
@@ -3069,6 +3295,7 @@
     "/monsters/flame_sorcerer": {
         "hrid": "/monsters/flame_sorcerer",
         "name": "Flame Sorcerer",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 150,
         "combatDetails": {
@@ -3194,6 +3421,7 @@
     "/monsters/fly": {
         "hrid": "/monsters/fly",
         "name": "Fly",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 10,
         "combatDetails": {
@@ -3270,6 +3498,7 @@
     "/monsters/frog": {
         "hrid": "/monsters/frog",
         "name": "Frogger",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 25,
         "combatDetails": {
@@ -3370,9 +3599,310 @@
             }
         ]
     },
+    "/monsters/frost_sniper": {
+        "hrid": "/monsters/frost_sniper",
+        "name": "Frost Sniper",
+        "isLabyrinthMonster": true,
+        "enrageTime": 600000000000,
+        "experience": 5000,
+        "combatDetails": {
+            "currentHitpoints": 4400,
+            "maxHitpoints": 4400,
+            "currentManapoints": 4400,
+            "maxManapoints": 4400,
+            "attackInterval": 3333333333,
+            "totalCastSpeed": 0.05,
+            "stabAccuracyRating": 110,
+            "slashAccuracyRating": 110,
+            "smashAccuracyRating": 110,
+            "rangedAccuracyRating": 231,
+            "magicAccuracyRating": 110,
+            "defensiveMaxDamage": 110,
+            "stabMaxDamage": 10,
+            "slashMaxDamage": 10,
+            "smashMaxDamage": 10,
+            "rangedMaxDamage": 231,
+            "magicMaxDamage": 10,
+            "stabEvasionRating": 330,
+            "slashEvasionRating": 1760,
+            "smashEvasionRating": 220,
+            "rangedEvasionRating": 3410,
+            "magicEvasionRating": 1760,
+            "totalArmor": 160,
+            "totalWaterResistance": 1220,
+            "totalNatureResistance": 320,
+            "totalFireResistance": 1220,
+            "totalThreat": 100,
+            "combatLevel": 100,
+            "staminaLevel": 100,
+            "intelligenceLevel": 100,
+            "attackLevel": 100,
+            "meleeLevel": 0,
+            "defenseLevel": 100,
+            "rangedLevel": 100,
+            "magicLevel": 0,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/ranged"
+                ],
+                "damageType": "/damage_types/water",
+                "attackInterval": 3500000000,
+                "rangedAccuracy": 1.1,
+                "rangedDamage": 1.1,
+                "maxHitpointsRatio": 3,
+                "maxManapointsRatio": 3,
+                "stabEvasion": 2,
+                "slashEvasion": 15,
+                "smashEvasion": 1,
+                "rangedEvasion": 30,
+                "magicEvasion": 15,
+                "armor": 140,
+                "waterResistance": 1200,
+                "natureResistance": 300,
+                "fireResistance": 1200
+            }
+        },
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/critical_aura",
+                "level": 40,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/silencing_shot",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/rain_of_arrows",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/aqua_arrow",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/quick_shot",
+                "level": 60,
+                "minDifficultyTier": 0
+            }
+        ],
+        "dropTable": null,
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_treasure_chest",
+                "dropRate": 0.00375,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ]
+    },
+    "/monsters/giant_mantis": {
+        "hrid": "/monsters/giant_mantis",
+        "name": "Giant Mantis",
+        "isLabyrinthMonster": true,
+        "enrageTime": 600000000000,
+        "experience": 5000,
+        "combatDetails": {
+            "currentHitpoints": 4400,
+            "maxHitpoints": 4400,
+            "currentManapoints": 4400,
+            "maxManapoints": 4400,
+            "attackInterval": 2857142857,
+            "totalCastSpeed": 0.05,
+            "stabAccuracyRating": 110,
+            "slashAccuracyRating": 220,
+            "smashAccuracyRating": 110,
+            "rangedAccuracyRating": 110,
+            "magicAccuracyRating": 110,
+            "defensiveMaxDamage": 110,
+            "stabMaxDamage": 110,
+            "slashMaxDamage": 220,
+            "smashMaxDamage": 110,
+            "rangedMaxDamage": 10,
+            "magicMaxDamage": 10,
+            "stabEvasionRating": 1210,
+            "slashEvasionRating": 1210,
+            "smashEvasionRating": 220,
+            "rangedEvasionRating": 2310,
+            "magicEvasionRating": 220,
+            "totalArmor": 1020,
+            "totalWaterResistance": 820,
+            "totalNatureResistance": 80,
+            "totalFireResistance": 140,
+            "totalThreat": 100,
+            "combatLevel": 100,
+            "staminaLevel": 100,
+            "intelligenceLevel": 100,
+            "attackLevel": 100,
+            "meleeLevel": 100,
+            "defenseLevel": 100,
+            "rangedLevel": 0,
+            "magicLevel": 0,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/slash"
+                ],
+                "damageType": "/damage_types/physical",
+                "attackInterval": 3000000000,
+                "slashAccuracy": 1,
+                "slashDamage": 1,
+                "maxHitpointsRatio": 3,
+                "maxManapointsRatio": 3,
+                "stabEvasion": 10,
+                "slashEvasion": 10,
+                "smashEvasion": 1,
+                "rangedEvasion": 20,
+                "magicEvasion": 1,
+                "armor": 1000,
+                "waterResistance": 800,
+                "natureResistance": 60,
+                "fireResistance": 120
+            }
+        },
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/fierce_aura",
+                "level": 40,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/precision",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/cleave",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/maim",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/crippling_slash",
+                "level": 60,
+                "minDifficultyTier": 0
+            }
+        ],
+        "dropTable": null,
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_treasure_chest",
+                "dropRate": 0.00375,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ]
+    },
+    "/monsters/giant_scorpion": {
+        "hrid": "/monsters/giant_scorpion",
+        "name": "Giant Scorpion",
+        "isLabyrinthMonster": true,
+        "enrageTime": 600000000000,
+        "experience": 5000,
+        "combatDetails": {
+            "currentHitpoints": 4400,
+            "maxHitpoints": 4400,
+            "currentManapoints": 4400,
+            "maxManapoints": 4400,
+            "attackInterval": 2857142857,
+            "totalCastSpeed": 0.05,
+            "stabAccuracyRating": 231,
+            "slashAccuracyRating": 110,
+            "smashAccuracyRating": 110,
+            "rangedAccuracyRating": 110,
+            "magicAccuracyRating": 110,
+            "defensiveMaxDamage": 110,
+            "stabMaxDamage": 209,
+            "slashMaxDamage": 110,
+            "smashMaxDamage": 110,
+            "rangedMaxDamage": 10,
+            "magicMaxDamage": 10,
+            "stabEvasionRating": 1210,
+            "slashEvasionRating": 220,
+            "smashEvasionRating": 1210,
+            "rangedEvasionRating": 2310,
+            "magicEvasionRating": 220,
+            "totalArmor": 1020,
+            "totalWaterResistance": 80,
+            "totalNatureResistance": 140,
+            "totalFireResistance": 820,
+            "totalThreat": 100,
+            "combatLevel": 100,
+            "staminaLevel": 100,
+            "intelligenceLevel": 100,
+            "attackLevel": 100,
+            "meleeLevel": 100,
+            "defenseLevel": 100,
+            "rangedLevel": 0,
+            "magicLevel": 0,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/stab"
+                ],
+                "damageType": "/damage_types/physical",
+                "attackInterval": 3000000000,
+                "stabAccuracy": 1.1,
+                "stabDamage": 0.9,
+                "maxHitpointsRatio": 3,
+                "maxManapointsRatio": 3,
+                "stabEvasion": 10,
+                "slashEvasion": 1,
+                "smashEvasion": 10,
+                "rangedEvasion": 20,
+                "magicEvasion": 1,
+                "armor": 1000,
+                "waterResistance": 60,
+                "natureResistance": 120,
+                "fireResistance": 800
+            }
+        },
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/fierce_aura",
+                "level": 40,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/berserk",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/impale",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/puncture",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/penetrating_strike",
+                "level": 60,
+                "minDifficultyTier": 0
+            }
+        ],
+        "dropTable": null,
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_treasure_chest",
+                "dropRate": 0.00375,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ]
+    },
     "/monsters/giant_shoebill": {
         "hrid": "/monsters/giant_shoebill",
         "name": "Giant Shoebill",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 200,
         "combatDetails": {
@@ -3519,6 +4049,7 @@
     "/monsters/gobo_boomy": {
         "hrid": "/monsters/gobo_boomy",
         "name": "Boomy",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 115,
         "combatDetails": {
@@ -3665,6 +4196,7 @@
     "/monsters/gobo_chieftain": {
         "hrid": "/monsters/gobo_chieftain",
         "name": "Gobo Chieftain",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 650,
         "combatDetails": {
@@ -3836,6 +4368,7 @@
     "/monsters/gobo_shooty": {
         "hrid": "/monsters/gobo_shooty",
         "name": "Shooty",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 115,
         "combatDetails": {
@@ -3974,6 +4507,7 @@
     "/monsters/gobo_slashy": {
         "hrid": "/monsters/gobo_slashy",
         "name": "Slashy",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 115,
         "combatDetails": {
@@ -4109,6 +4643,7 @@
     "/monsters/gobo_smashy": {
         "hrid": "/monsters/gobo_smashy",
         "name": "Smashy",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 115,
         "combatDetails": {
@@ -4244,6 +4779,7 @@
     "/monsters/gobo_stabby": {
         "hrid": "/monsters/gobo_stabby",
         "name": "Stabby",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 115,
         "combatDetails": {
@@ -4373,6 +4909,7 @@
     "/monsters/granite_golem": {
         "hrid": "/monsters/granite_golem",
         "name": "Granite Golem",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 330,
         "combatDetails": {
@@ -4532,6 +5069,7 @@
     "/monsters/griffin": {
         "hrid": "/monsters/griffin",
         "name": "Griffin",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 16000,
         "combatDetails": {
@@ -4626,6 +5164,7 @@
     "/monsters/grizzly_bear": {
         "hrid": "/monsters/grizzly_bear",
         "name": "Grizzly Bear",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 180,
         "combatDetails": {
@@ -4762,6 +5301,7 @@
     "/monsters/gummy_bear": {
         "hrid": "/monsters/gummy_bear",
         "name": "Gummy Bear",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 140,
         "combatDetails": {
@@ -4880,6 +5420,7 @@
     "/monsters/ice_sorcerer": {
         "hrid": "/monsters/ice_sorcerer",
         "name": "Ice Sorcerer",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 140,
         "combatDetails": {
@@ -5005,6 +5546,7 @@
     "/monsters/infernal_warlock": {
         "hrid": "/monsters/infernal_warlock",
         "name": "Infernal Warlock",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 350,
         "combatDetails": {
@@ -5136,6 +5678,7 @@
     "/monsters/jackalope": {
         "hrid": "/monsters/jackalope",
         "name": "Jackalope",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 2600,
         "combatDetails": {
@@ -5223,6 +5766,7 @@
     "/monsters/juggler": {
         "hrid": "/monsters/juggler",
         "name": "Juggler",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 6200,
         "combatDetails": {
@@ -5315,6 +5859,7 @@
     "/monsters/jungle_sprite": {
         "hrid": "/monsters/jungle_sprite",
         "name": "Jungle Sprite",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 70,
         "combatDetails": {
@@ -5444,6 +5989,7 @@
     "/monsters/luna_empress": {
         "hrid": "/monsters/luna_empress",
         "name": "Luna Empress",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 600,
         "combatDetails": {
@@ -5612,6 +6158,7 @@
     "/monsters/magician": {
         "hrid": "/monsters/magician",
         "name": "Magician",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 6400,
         "combatDetails": {
@@ -5702,6 +6249,7 @@
     "/monsters/magnetic_golem": {
         "hrid": "/monsters/magnetic_golem",
         "name": "Magnetic Golem",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 240,
         "combatDetails": {
@@ -5827,6 +6375,7 @@
     "/monsters/manticore": {
         "hrid": "/monsters/manticore",
         "name": "Manticore",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 8000,
         "combatDetails": {
@@ -5920,6 +6469,7 @@
     "/monsters/marine_huntress": {
         "hrid": "/monsters/marine_huntress",
         "name": "Marine Huntress",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 400,
         "combatDetails": {
@@ -6074,9 +6624,110 @@
             }
         ]
     },
+    "/monsters/mimic": {
+        "hrid": "/monsters/mimic",
+        "name": "Mimic",
+        "isLabyrinthMonster": true,
+        "enrageTime": 600000000000,
+        "experience": 5000,
+        "combatDetails": {
+            "currentHitpoints": 3630,
+            "maxHitpoints": 3630,
+            "currentManapoints": 3630,
+            "maxManapoints": 3630,
+            "attackInterval": 1142857142,
+            "totalCastSpeed": 0.05,
+            "stabAccuracyRating": 220,
+            "slashAccuracyRating": 110,
+            "smashAccuracyRating": 110,
+            "rangedAccuracyRating": 110,
+            "magicAccuracyRating": 110,
+            "defensiveMaxDamage": 110,
+            "stabMaxDamage": 88,
+            "slashMaxDamage": 110,
+            "smashMaxDamage": 110,
+            "rangedMaxDamage": 10,
+            "magicMaxDamage": 10,
+            "stabEvasionRating": 3410,
+            "slashEvasionRating": 3410,
+            "smashEvasionRating": 880,
+            "rangedEvasionRating": 3410,
+            "magicEvasionRating": 3410,
+            "totalArmor": 100,
+            "totalWaterResistance": 320,
+            "totalNatureResistance": 320,
+            "totalFireResistance": 320,
+            "totalThreat": 100,
+            "combatLevel": 100,
+            "staminaLevel": 100,
+            "intelligenceLevel": 100,
+            "attackLevel": 100,
+            "meleeLevel": 100,
+            "defenseLevel": 100,
+            "rangedLevel": 0,
+            "magicLevel": 0,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/stab"
+                ],
+                "damageType": "/damage_types/physical",
+                "attackInterval": 1200000000,
+                "stabAccuracy": 1,
+                "stabDamage": -0.2,
+                "maxHitpointsRatio": 2.3,
+                "maxManapointsRatio": 2.3,
+                "stabEvasion": 30,
+                "slashEvasion": 30,
+                "smashEvasion": 7,
+                "rangedEvasion": 30,
+                "magicEvasion": 30,
+                "armor": 80,
+                "waterResistance": 300,
+                "natureResistance": 300,
+                "fireResistance": 300
+            }
+        },
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/speed_aura",
+                "level": 40,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/frenzy",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/elusiveness",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/impale",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/penetrating_strike",
+                "level": 60,
+                "minDifficultyTier": 0
+            }
+        ],
+        "dropTable": null,
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_treasure_chest",
+                "dropRate": 0.0031083333333333336,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ]
+    },
     "/monsters/myconid": {
         "hrid": "/monsters/myconid",
         "name": "Myconid",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 85,
         "combatDetails": {
@@ -6189,6 +6840,7 @@
     "/monsters/nom_nom": {
         "hrid": "/monsters/nom_nom",
         "name": "Nom Nom",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 70,
         "combatDetails": {
@@ -6327,6 +6979,7 @@
     "/monsters/novice_sorcerer": {
         "hrid": "/monsters/novice_sorcerer",
         "name": "Novice Sorcerer",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 100,
         "combatDetails": {
@@ -6447,6 +7100,7 @@
     "/monsters/panda": {
         "hrid": "/monsters/panda",
         "name": "Panda",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 170,
         "combatDetails": {
@@ -6602,6 +7256,7 @@
     "/monsters/polar_bear": {
         "hrid": "/monsters/polar_bear",
         "name": "Polar Bear",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 190,
         "combatDetails": {
@@ -6750,6 +7405,7 @@
     "/monsters/porcupine": {
         "hrid": "/monsters/porcupine",
         "name": "Porcupine",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 20,
         "combatDetails": {
@@ -6851,9 +7507,110 @@
             }
         ]
     },
+    "/monsters/pyre_hunter": {
+        "hrid": "/monsters/pyre_hunter",
+        "name": "Pyre Hunter",
+        "isLabyrinthMonster": true,
+        "enrageTime": 600000000000,
+        "experience": 5000,
+        "combatDetails": {
+            "currentHitpoints": 4400,
+            "maxHitpoints": 4400,
+            "currentManapoints": 4400,
+            "maxManapoints": 4400,
+            "attackInterval": 3333333333,
+            "totalCastSpeed": 0.05,
+            "stabAccuracyRating": 110,
+            "slashAccuracyRating": 110,
+            "smashAccuracyRating": 110,
+            "rangedAccuracyRating": 220,
+            "magicAccuracyRating": 110,
+            "defensiveMaxDamage": 110,
+            "stabMaxDamage": 10,
+            "slashMaxDamage": 10,
+            "smashMaxDamage": 10,
+            "rangedMaxDamage": 242.00000000000003,
+            "magicMaxDamage": 10,
+            "stabEvasionRating": 1760,
+            "slashEvasionRating": 220,
+            "smashEvasionRating": 330,
+            "rangedEvasionRating": 3410,
+            "magicEvasionRating": 1760,
+            "totalArmor": 160,
+            "totalWaterResistance": 320,
+            "totalNatureResistance": 1220,
+            "totalFireResistance": 1220,
+            "totalThreat": 100,
+            "combatLevel": 100,
+            "staminaLevel": 100,
+            "intelligenceLevel": 100,
+            "attackLevel": 100,
+            "meleeLevel": 0,
+            "defenseLevel": 100,
+            "rangedLevel": 100,
+            "magicLevel": 0,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/ranged"
+                ],
+                "damageType": "/damage_types/fire",
+                "attackInterval": 3500000000,
+                "rangedAccuracy": 1,
+                "rangedDamage": 1.2,
+                "maxHitpointsRatio": 3,
+                "maxManapointsRatio": 3,
+                "stabEvasion": 15,
+                "slashEvasion": 1,
+                "smashEvasion": 2,
+                "rangedEvasion": 30,
+                "magicEvasion": 15,
+                "armor": 140,
+                "waterResistance": 300,
+                "natureResistance": 1200,
+                "fireResistance": 1200
+            }
+        },
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/critical_aura",
+                "level": 40,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/precision",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/steady_shot",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/rain_of_arrows",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/flame_arrow",
+                "level": 60,
+                "minDifficultyTier": 0
+            }
+        ],
+        "dropTable": null,
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_treasure_chest",
+                "dropRate": 0.00375,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ]
+    },
     "/monsters/rabid_rabbit": {
         "hrid": "/monsters/rabid_rabbit",
         "name": "Rabid Rabbit",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 1500,
         "combatDetails": {
@@ -6936,6 +7693,7 @@
     "/monsters/rat": {
         "hrid": "/monsters/rat",
         "name": "Jerry",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 15,
         "combatDetails": {
@@ -7058,6 +7816,7 @@
     "/monsters/red_panda": {
         "hrid": "/monsters/red_panda",
         "name": "Red Panda",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 1300,
         "combatDetails": {
@@ -7236,9 +7995,110 @@
             }
         ]
     },
+    "/monsters/salamander": {
+        "hrid": "/monsters/salamander",
+        "name": "Salamander",
+        "isLabyrinthMonster": true,
+        "enrageTime": 600000000000,
+        "experience": 5000,
+        "combatDetails": {
+            "currentHitpoints": 4400,
+            "maxHitpoints": 4400,
+            "currentManapoints": 4400,
+            "maxManapoints": 4400,
+            "attackInterval": 2857142857,
+            "totalCastSpeed": 0.05,
+            "stabAccuracyRating": 110,
+            "slashAccuracyRating": 110,
+            "smashAccuracyRating": 110,
+            "rangedAccuracyRating": 110,
+            "magicAccuracyRating": 242.00000000000003,
+            "defensiveMaxDamage": 110,
+            "stabMaxDamage": 10,
+            "slashMaxDamage": 10,
+            "smashMaxDamage": 10,
+            "rangedMaxDamage": 10,
+            "magicMaxDamage": 264,
+            "stabEvasionRating": 11110,
+            "slashEvasionRating": 2860,
+            "smashEvasionRating": 11110,
+            "rangedEvasionRating": 242.00000000000003,
+            "magicEvasionRating": 990,
+            "totalArmor": 160,
+            "totalWaterResistance": 220,
+            "totalNatureResistance": 820,
+            "totalFireResistance": 820,
+            "totalThreat": 100,
+            "combatLevel": 100,
+            "staminaLevel": 100,
+            "intelligenceLevel": 100,
+            "attackLevel": 100,
+            "meleeLevel": 0,
+            "defenseLevel": 100,
+            "rangedLevel": 0,
+            "magicLevel": 100,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/magic"
+                ],
+                "damageType": "/damage_types/fire",
+                "attackInterval": 3000000000,
+                "magicAccuracy": 1.2,
+                "magicDamage": 1.4,
+                "maxHitpointsRatio": 3,
+                "maxManapointsRatio": 3,
+                "stabEvasion": 100,
+                "slashEvasion": 25,
+                "smashEvasion": 100,
+                "rangedEvasion": 1.2,
+                "magicEvasion": 8,
+                "armor": 140,
+                "waterResistance": 200,
+                "natureResistance": 800,
+                "fireResistance": 800
+            }
+        },
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/mystic_aura",
+                "level": 40,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/elemental_affinity",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/firestorm",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/smoke_burst",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/fireball",
+                "level": 60,
+                "minDifficultyTier": 0
+            }
+        ],
+        "dropTable": null,
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_treasure_chest",
+                "dropRate": 0.00375,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ]
+    },
     "/monsters/sea_snail": {
         "hrid": "/monsters/sea_snail",
         "name": "Gary",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 45,
         "combatDetails": {
@@ -7356,9 +8216,210 @@
             }
         ]
     },
+    "/monsters/shadow_archer": {
+        "hrid": "/monsters/shadow_archer",
+        "name": "Shadow Archer",
+        "isLabyrinthMonster": true,
+        "enrageTime": 600000000000,
+        "experience": 5000,
+        "combatDetails": {
+            "currentHitpoints": 4400,
+            "maxHitpoints": 4400,
+            "currentManapoints": 4400,
+            "maxManapoints": 4400,
+            "attackInterval": 2857142857,
+            "totalCastSpeed": 0.05,
+            "stabAccuracyRating": 110,
+            "slashAccuracyRating": 110,
+            "smashAccuracyRating": 110,
+            "rangedAccuracyRating": 242.00000000000003,
+            "magicAccuracyRating": 110,
+            "defensiveMaxDamage": 110,
+            "stabMaxDamage": 10,
+            "slashMaxDamage": 10,
+            "smashMaxDamage": 10,
+            "rangedMaxDamage": 220,
+            "magicMaxDamage": 10,
+            "stabEvasionRating": 242.00000000000003,
+            "slashEvasionRating": 330,
+            "smashEvasionRating": 1760,
+            "rangedEvasionRating": 3410,
+            "magicEvasionRating": 1760,
+            "totalArmor": 160,
+            "totalWaterResistance": 1220,
+            "totalNatureResistance": 1220,
+            "totalFireResistance": 320,
+            "totalThreat": 100,
+            "combatLevel": 100,
+            "staminaLevel": 100,
+            "intelligenceLevel": 100,
+            "attackLevel": 100,
+            "meleeLevel": 0,
+            "defenseLevel": 100,
+            "rangedLevel": 100,
+            "magicLevel": 0,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/ranged"
+                ],
+                "damageType": "/damage_types/physical",
+                "attackInterval": 3000000000,
+                "rangedAccuracy": 1.2,
+                "rangedDamage": 1,
+                "maxHitpointsRatio": 3,
+                "maxManapointsRatio": 3,
+                "stabEvasion": 1.2,
+                "slashEvasion": 2,
+                "smashEvasion": 15,
+                "rangedEvasion": 30,
+                "magicEvasion": 15,
+                "armor": 140,
+                "waterResistance": 1200,
+                "natureResistance": 1200,
+                "fireResistance": 300
+            }
+        },
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/critical_aura",
+                "level": 40,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/elusiveness",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/rain_of_arrows",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/penetrating_shot",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/steady_shot",
+                "level": 60,
+                "minDifficultyTier": 0
+            }
+        ],
+        "dropTable": null,
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_treasure_chest",
+                "dropRate": 0.00375,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ]
+    },
+    "/monsters/siren": {
+        "hrid": "/monsters/siren",
+        "name": "Siren",
+        "isLabyrinthMonster": true,
+        "enrageTime": 600000000000,
+        "experience": 5000,
+        "combatDetails": {
+            "currentHitpoints": 4400,
+            "maxHitpoints": 4400,
+            "currentManapoints": 4400,
+            "maxManapoints": 4400,
+            "attackInterval": 2857142857,
+            "totalCastSpeed": 0.05,
+            "stabAccuracyRating": 110,
+            "slashAccuracyRating": 110,
+            "smashAccuracyRating": 110,
+            "rangedAccuracyRating": 110,
+            "magicAccuracyRating": 264,
+            "defensiveMaxDamage": 110,
+            "stabMaxDamage": 10,
+            "slashMaxDamage": 10,
+            "smashMaxDamage": 10,
+            "rangedMaxDamage": 10,
+            "magicMaxDamage": 242.00000000000003,
+            "stabEvasionRating": 2860,
+            "slashEvasionRating": 11110,
+            "smashEvasionRating": 11110,
+            "rangedEvasionRating": 242.00000000000003,
+            "magicEvasionRating": 990,
+            "totalArmor": 160,
+            "totalWaterResistance": 820,
+            "totalNatureResistance": 220,
+            "totalFireResistance": 820,
+            "totalThreat": 100,
+            "combatLevel": 100,
+            "staminaLevel": 100,
+            "intelligenceLevel": 100,
+            "attackLevel": 100,
+            "meleeLevel": 0,
+            "defenseLevel": 100,
+            "rangedLevel": 0,
+            "magicLevel": 100,
+            "combatStats": {
+                "combatStyleHrids": [
+                    "/combat_styles/magic"
+                ],
+                "damageType": "/damage_types/water",
+                "attackInterval": 3000000000,
+                "magicAccuracy": 1.4,
+                "magicDamage": 1.2,
+                "maxHitpointsRatio": 3,
+                "maxManapointsRatio": 3,
+                "stabEvasion": 25,
+                "slashEvasion": 100,
+                "smashEvasion": 100,
+                "rangedEvasion": 1.2,
+                "magicEvasion": 8,
+                "armor": 140,
+                "waterResistance": 800,
+                "natureResistance": 200,
+                "fireResistance": 800
+            }
+        },
+        "abilities": [
+            {
+                "abilityHrid": "/abilities/mystic_aura",
+                "level": 40,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/elemental_affinity",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/frost_surge",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/mana_spring",
+                "level": 60,
+                "minDifficultyTier": 0
+            },
+            {
+                "abilityHrid": "/abilities/water_strike",
+                "level": 60,
+                "minDifficultyTier": 0
+            }
+        ],
+        "dropTable": null,
+        "rareDropTable": [
+            {
+                "itemHrid": "/items/medium_treasure_chest",
+                "dropRate": 0.00375,
+                "minCount": 1,
+                "maxCount": 1
+            }
+        ]
+    },
     "/monsters/skunk": {
         "hrid": "/monsters/skunk",
         "name": "Skunk",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 18,
         "combatDetails": {
@@ -7463,6 +8524,7 @@
     "/monsters/slimy": {
         "hrid": "/monsters/slimy",
         "name": "Slimy",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 24,
         "combatDetails": {
@@ -7573,6 +8635,7 @@
     "/monsters/snake": {
         "hrid": "/monsters/snake",
         "name": "Thnake",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 28,
         "combatDetails": {
@@ -7677,6 +8740,7 @@
     "/monsters/soul_hunter": {
         "hrid": "/monsters/soul_hunter",
         "name": "Soul Hunter",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 300,
         "combatDetails": {
@@ -7814,6 +8878,7 @@
     "/monsters/squawker": {
         "hrid": "/monsters/squawker",
         "name": "Squawker",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 2200,
         "combatDetails": {
@@ -7901,6 +8966,7 @@
     "/monsters/stalactite_golem": {
         "hrid": "/monsters/stalactite_golem",
         "name": "Stalactite Golem",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 280,
         "combatDetails": {
@@ -8050,6 +9116,7 @@
     "/monsters/swampy": {
         "hrid": "/monsters/swampy",
         "name": "Swampy",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 35,
         "combatDetails": {
@@ -8178,6 +9245,7 @@
     "/monsters/the_kraken": {
         "hrid": "/monsters/the_kraken",
         "name": "The Kraken",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 18000,
         "combatDetails": {
@@ -8271,6 +9339,7 @@
     "/monsters/the_watcher": {
         "hrid": "/monsters/the_watcher",
         "name": "The Watcher",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 888,
         "combatDetails": {
@@ -8430,6 +9499,7 @@
     "/monsters/tidal_conjuror": {
         "hrid": "/monsters/tidal_conjuror",
         "name": "Tidal Conjuror",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 7000,
         "combatDetails": {
@@ -8526,6 +9596,7 @@
     "/monsters/treant": {
         "hrid": "/monsters/treant",
         "name": "Treant",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 110,
         "combatDetails": {
@@ -8697,6 +9768,7 @@
     "/monsters/turtle": {
         "hrid": "/monsters/turtle",
         "name": "Turuto",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 90,
         "combatDetails": {
@@ -8840,6 +9912,7 @@
     "/monsters/vampire": {
         "hrid": "/monsters/vampire",
         "name": "Vampire",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 290,
         "combatDetails": {
@@ -8982,6 +10055,7 @@
     "/monsters/veyes": {
         "hrid": "/monsters/veyes",
         "name": "Veyes",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 160,
         "combatDetails": {
@@ -9093,6 +10167,7 @@
     "/monsters/werewolf": {
         "hrid": "/monsters/werewolf",
         "name": "Werewolf",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 340,
         "combatDetails": {
@@ -9234,6 +10309,7 @@
     "/monsters/zombie": {
         "hrid": "/monsters/zombie",
         "name": "Zombie",
+        "isLabyrinthMonster": false,
         "enrageTime": 180000000000,
         "experience": 260,
         "combatDetails": {
@@ -9384,6 +10460,7 @@
     "/monsters/zombie_bear": {
         "hrid": "/monsters/zombie_bear",
         "name": "Zombie Bear",
+        "isLabyrinthMonster": false,
         "enrageTime": 600000000000,
         "experience": 3000,
         "combatDetails": {

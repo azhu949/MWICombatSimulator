@@ -351,6 +351,20 @@
             "maxCount": 10
         }
     ],
+    "/items/labyrinth_refinement_chest": [
+        {
+            "itemHrid": "/items/labyrinth_refinement_shard",
+            "dropRate": 1,
+            "minCount": 1,
+            "maxCount": 2
+        },
+        {
+            "itemHrid": "/items/labyrinth_refinement_shard",
+            "dropRate": 0.05,
+            "minCount": 5,
+            "maxCount": 10
+        }
+    ],
     "/items/large_artisans_crate": [
         {
             "itemHrid": "/items/coin",
@@ -881,6 +895,172 @@
             "dropRate": 0.05,
             "minCount": 5,
             "maxCount": 10
+        }
+    ],
+    "/items/purdoras_box_combat": [
+        {
+            "itemHrid": "/items/labyrinth_essence",
+            "dropRate": 1,
+            "minCount": 40,
+            "maxCount": 80
+        },
+        {
+            "itemHrid": "/items/labyrinth_essence",
+            "dropRate": 0.05,
+            "minCount": 200,
+            "maxCount": 400
+        },
+        {
+            "itemHrid": "/items/labyrinth_token",
+            "dropRate": 0.1,
+            "minCount": 10,
+            "maxCount": 25
+        },
+        {
+            "itemHrid": "/items/seal_of_combat_drop",
+            "dropRate": 0.1,
+            "minCount": 1,
+            "maxCount": 2
+        },
+        {
+            "itemHrid": "/items/seal_of_attack_speed",
+            "dropRate": 0.1,
+            "minCount": 1,
+            "maxCount": 2
+        },
+        {
+            "itemHrid": "/items/seal_of_cast_speed",
+            "dropRate": 0.1,
+            "minCount": 1,
+            "maxCount": 2
+        },
+        {
+            "itemHrid": "/items/seal_of_damage",
+            "dropRate": 0.1,
+            "minCount": 1,
+            "maxCount": 2
+        },
+        {
+            "itemHrid": "/items/seal_of_critical_rate",
+            "dropRate": 0.1,
+            "minCount": 1,
+            "maxCount": 2
+        },
+        {
+            "itemHrid": "/items/seal_of_wisdom",
+            "dropRate": 0.05,
+            "minCount": 1,
+            "maxCount": 2
+        },
+        {
+            "itemHrid": "/items/seal_of_rare_find",
+            "dropRate": 0.05,
+            "minCount": 1,
+            "maxCount": 2
+        },
+        {
+            "itemHrid": "/items/pathbreaker_lodestone",
+            "dropRate": 0.01,
+            "minCount": 1,
+            "maxCount": 1
+        },
+        {
+            "itemHrid": "/items/pathfinder_lodestone",
+            "dropRate": 0.01,
+            "minCount": 1,
+            "maxCount": 1
+        },
+        {
+            "itemHrid": "/items/pathseeker_lodestone",
+            "dropRate": 0.01,
+            "minCount": 1,
+            "maxCount": 1
+        }
+    ],
+    "/items/purdoras_box_skilling": [
+        {
+            "itemHrid": "/items/labyrinth_essence",
+            "dropRate": 1,
+            "minCount": 40,
+            "maxCount": 80
+        },
+        {
+            "itemHrid": "/items/labyrinth_essence",
+            "dropRate": 0.05,
+            "minCount": 200,
+            "maxCount": 400
+        },
+        {
+            "itemHrid": "/items/labyrinth_token",
+            "dropRate": 0.1,
+            "minCount": 10,
+            "maxCount": 25
+        },
+        {
+            "itemHrid": "/items/seal_of_gathering",
+            "dropRate": 0.1,
+            "minCount": 1,
+            "maxCount": 2
+        },
+        {
+            "itemHrid": "/items/seal_of_gourmet",
+            "dropRate": 0.1,
+            "minCount": 1,
+            "maxCount": 2
+        },
+        {
+            "itemHrid": "/items/seal_of_processing",
+            "dropRate": 0.1,
+            "minCount": 1,
+            "maxCount": 2
+        },
+        {
+            "itemHrid": "/items/seal_of_efficiency",
+            "dropRate": 0.1,
+            "minCount": 1,
+            "maxCount": 2
+        },
+        {
+            "itemHrid": "/items/seal_of_action_speed",
+            "dropRate": 0.1,
+            "minCount": 1,
+            "maxCount": 2
+        },
+        {
+            "itemHrid": "/items/seal_of_wisdom",
+            "dropRate": 0.05,
+            "minCount": 1,
+            "maxCount": 2
+        },
+        {
+            "itemHrid": "/items/seal_of_rare_find",
+            "dropRate": 0.05,
+            "minCount": 1,
+            "maxCount": 2
+        },
+        {
+            "itemHrid": "/items/gatherer_cape",
+            "dropRate": 0.002,
+            "minCount": 1,
+            "maxCount": 1
+        },
+        {
+            "itemHrid": "/items/artificer_cape",
+            "dropRate": 0.002,
+            "minCount": 1,
+            "maxCount": 1
+        },
+        {
+            "itemHrid": "/items/culinary_cape",
+            "dropRate": 0.002,
+            "minCount": 1,
+            "maxCount": 1
+        },
+        {
+            "itemHrid": "/items/chance_cape",
+            "dropRate": 0.002,
+            "minCount": 1,
+            "maxCount": 1
         }
     ],
     "/items/purples_gift": [

@@ -10923,6 +10923,59 @@ const Ta = {
     }
 };
 
+// Patch missing labyrinth-related localization keys from upstream testing branch.
+const LABYRINTH_TRANSLATION_PATCH = {
+    en: {
+        monsterNames: {
+            "/monsters/cyclops": "Cyclops",
+            "/monsters/dryad": "Dryad",
+            "/monsters/frost_sniper": "Frost Sniper",
+            "/monsters/giant_mantis": "Giant Mantis",
+            "/monsters/giant_scorpion": "Giant Scorpion",
+            "/monsters/mimic": "Mimic",
+            "/monsters/pyre_hunter": "Pyre Hunter",
+            "/monsters/salamander": "Salamander",
+            "/monsters/shadow_archer": "Shadow Archer",
+            "/monsters/siren": "Siren",
+        },
+        itemNames: {
+            "/items/basic_coffee_crate": "Basic Coffee Crate",
+            "/items/advanced_coffee_crate": "Advanced Coffee Crate",
+            "/items/expert_coffee_crate": "Expert Coffee Crate",
+            "/items/basic_food_crate": "Basic Food Crate",
+            "/items/advanced_food_crate": "Advanced Food Crate",
+            "/items/expert_food_crate": "Expert Food Crate",
+        },
+    },
+    zh: {
+        monsterNames: {
+            "/monsters/cyclops": "独眼巨人",
+            "/monsters/dryad": "树精",
+            "/monsters/frost_sniper": "霜冻狙击手",
+            "/monsters/giant_mantis": "巨螳螂",
+            "/monsters/giant_scorpion": "巨蝎",
+            "/monsters/mimic": "宝箱怪",
+            "/monsters/pyre_hunter": "火焰猎手",
+            "/monsters/salamander": "火蜥蜴",
+            "/monsters/shadow_archer": "暗影弓手",
+            "/monsters/siren": "海妖",
+        },
+        itemNames: {
+            "/items/basic_coffee_crate": "基础咖啡箱",
+            "/items/advanced_coffee_crate": "进阶咖啡箱",
+            "/items/expert_coffee_crate": "专家咖啡箱",
+            "/items/basic_food_crate": "基础食物箱",
+            "/items/advanced_food_crate": "进阶食物箱",
+            "/items/expert_food_crate": "专家食物箱",
+        },
+    },
+};
+
+Object.assign(Ta.en.translation.monsterNames, LABYRINTH_TRANSLATION_PATCH.en.monsterNames);
+Object.assign(Ta.en.translation.itemNames, LABYRINTH_TRANSLATION_PATCH.en.itemNames);
+Object.assign(Ta.zh.translation.monsterNames, LABYRINTH_TRANSLATION_PATCH.zh.monsterNames);
+Object.assign(Ta.zh.translation.itemNames, LABYRINTH_TRANSLATION_PATCH.zh.itemNames);
+
 // i18next初始化
 document.addEventListener('DOMContentLoaded', function () {
     // 初始化i18next
@@ -10968,7 +11021,15 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('[data-i18n]').forEach(function (element) {
             const key = element.getAttribute('data-i18n');
             if (key) {
-                element.textContent = i18next.t(key);
+                const translated = i18next.t(key);
+                if (translated && translated !== key) {
+                    element.textContent = translated;
+                } else {
+                    const fallback = element.getAttribute('data-i18n-fallback');
+                    if (fallback) {
+                        element.textContent = fallback;
+                    }
+                }
             }
         });
 
@@ -10984,7 +11045,15 @@ document.addEventListener('DOMContentLoaded', function () {
         document.querySelectorAll('option[data-i18n]').forEach(function (element) {
             const key = element.getAttribute('data-i18n');
             if (key) {
-                element.textContent = i18next.t(key);
+                const translated = i18next.t(key);
+                if (translated && translated !== key) {
+                    element.textContent = translated;
+                } else {
+                    const fallback = element.getAttribute('data-i18n-fallback');
+                    if (fallback) {
+                        element.textContent = fallback;
+                    }
+                }
             }
         });
     }

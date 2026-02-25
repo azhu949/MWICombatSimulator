@@ -146,6 +146,8 @@ class CombatUnit {
             rangedExperience: 0,
             magicExperience: 0,
             retaliation: 0,
+            maxHitpointsRatio: 0,
+            maxManapointsRatio: 0,
         },
     };
     combatBuffs = {};
@@ -178,10 +180,14 @@ class CombatUnit {
             });
         });
 
-        this.combatDetails.maxHitpoints = Math.floor
-            (10 * (10 + this.combatDetails.staminaLevel) + this.combatDetails.combatStats.maxHitpoints);
-        this.combatDetails.maxManapoints = Math.floor
-            (10 * (10 + this.combatDetails.intelligenceLevel) + this.combatDetails.combatStats.maxManapoints);
+        this.combatDetails.maxHitpoints = Math.floor(
+            (10 * (10 + this.combatDetails.staminaLevel) + this.combatDetails.combatStats.maxHitpoints)
+            * (1 + this.combatDetails.combatStats.maxHitpointsRatio)
+        );
+        this.combatDetails.maxManapoints = Math.floor(
+            (10 * (10 + this.combatDetails.intelligenceLevel) + this.combatDetails.combatStats.maxManapoints)
+            * (1 + this.combatDetails.combatStats.maxManapointsRatio)
+        );
 
         let accuracyRatioBoostFromFury = this.getBuffBoost("/buff_types/fury_accuracy").ratioBoost;
         let damageRatioBoostFromFury = this.getBuffBoost("/buff_types/fury_damage").ratioBoost;

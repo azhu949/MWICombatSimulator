@@ -123,11 +123,17 @@ function onWorkerMessage(event) {
 function onMultiWorkerMessage(event) {
     switch (event.data.type) {
         case "simulation_result_allZones":
+        case "simulation_result_allLabyrinths":
             progressbar.style.width = "100%";
             progressbar.innerHTML = "100% (" + ((Date.now() - simStartTime) / 1000).toFixed(2) + "s)";
             window.lastAllZonesSimulationResults = event.data.simResults;
-            console.log("[MWI_SIM_ALL_ZONES_OBJECT]", event.data.simResults);
-            console.log("[MWI_SIM_ALL_ZONES_JSON]", JSON.stringify(event.data.simResults));
+            if (event.data.type === "simulation_result_allZones") {
+                console.log("[MWI_SIM_ALL_ZONES_OBJECT]", event.data.simResults);
+                console.log("[MWI_SIM_ALL_ZONES_JSON]", JSON.stringify(event.data.simResults));
+            } else {
+                console.log("[MWI_SIM_ALL_LABYRINTHS_OBJECT]", event.data.simResults);
+                console.log("[MWI_SIM_ALL_LABYRINTHS_JSON]", JSON.stringify(event.data.simResults));
+            }
             showAllSimulationResults(event.data.simResults);
             updateContent();
             buttonStartSimulation.disabled = false;
@@ -1788,6 +1794,75 @@ function initDungeons() {
     }
 }
 
+let LabyrinthSupplyItems = {
+    TeaCrates: ["/items/basic_tea_crate", "/items/advanced_tea_crate", "/items/expert_tea_crate"],
+    CoffeeCrates: ["/items/basic_coffee_crate", "/items/advanced_coffee_crate", "/items/expert_coffee_crate"],
+    FoodCrates: ["/items/basic_food_crate", "/items/advanced_food_crate", "/items/expert_food_crate"]
+};
+
+let isLabyrinthSim = false;
+
+function getLocalizedTextOrFallback(i18nKey, fallbackText) {
+    const translated = i18next.t(i18nKey);
+    if (translated && translated !== i18nKey) {
+        return translated;
+    }
+    return fallbackText;
+}
+
+function initLabyrinth() {
+    let labyrinthSelect = document.getElementById("selectLabyrinth");
+    if (!labyrinthSelect) {
+        return;
+    }
+
+    let gameLabyrinths = Object.values(combatMonsterDetailMap)
+        .filter((monster) => monster.isLabyrinthMonster === true)
+        .sort((a, b) => a.sortIndex - b.sortIndex);
+
+    for (const labyrinth of Object.values(gameLabyrinths)) {
+        const key = "monsterNames." + labyrinth.hrid;
+        const fallbackName = labyrinth.name ?? labyrinth.hrid;
+        let opt = new Option(getLocalizedTextOrFallback(key, fallbackName), labyrinth.hrid);
+        opt.setAttribute("data-i18n", key);
+        opt.setAttribute("data-i18n-fallback", fallbackName);
+        labyrinthSelect.add(opt);
+    }
+
+    Object.keys(LabyrinthSupplyItems).forEach((categoryKey) => {
+        const items = LabyrinthSupplyItems[categoryKey];
+        const categorySelect = document.getElementById("select" + categoryKey);
+        if (!categorySelect) return;
+
+        items.forEach((item) => {
+            const key = "itemNames." + item;
+            const fallbackName = itemDetailMap[item]?.name ?? item;
+            let opt = new Option(getLocalizedTextOrFallback(key, fallbackName), item);
+            opt.setAttribute("data-i18n", key);
+            opt.setAttribute("data-i18n-fallback", fallbackName);
+            categorySelect.add(opt);
+        });
+    });
+
+    const simLabyrinthToggle = document.getElementById("simLabyrinthToggle");
+    const simAllLabyrinthsToggle = document.getElementById("simAllLabyrinthsToggle");
+    const labyrinthSupplyItemsBox = document.getElementById("labyrinthSupplyItemsBox");
+    if (!simLabyrinthToggle || !simAllLabyrinthsToggle || !labyrinthSupplyItemsBox) {
+        return;
+    }
+
+    const updateLabyrinthToggle = () => {
+        const inLabyrinthMode = simLabyrinthToggle.checked || simAllLabyrinthsToggle.checked;
+        if (isLabyrinthSim === inLabyrinthMode) return;
+        labyrinthSupplyItemsBox.classList.toggle("d-none", !inLabyrinthMode);
+        isLabyrinthSim = inLabyrinthMode;
+    };
+
+    simLabyrinthToggle.onchange = updateLabyrinthToggle;
+    simAllLabyrinthsToggle.onchange = updateLabyrinthToggle;
+    updateLabyrinthToggle();
+}
+
 // #endregion
 
 // #region Simulation Result
@@ -2003,6 +2078,46 @@ function refreshMetricCardsVisibility() {
 function showAllSimulationResults(simResults) {
     let displaySimResults = manipulateSimResultsDataForDisplay(simResults);
     updateAllSimsModal(displaySimResults);
+
+    const isLabyrinth = simResults?.[0]?.isLabyrinth ?? false;
+    const table = document.getElementById("allZonesData");
+    const rows = table?.getElementsByTagName("tr");
+    if (!rows || rows.length === 0) {
+        return;
+    }
+
+    if (isLabyrinth) {
+        const encountersCol = 3;
+        for (let row = 1; row < rows.length; row++) {
+            const cell = rows[row].cells[encountersCol];
+            const value = parseFloat(cell.textContent.replace(/,/g, ""));
+            if (value >= 30) {
+                cell.style.backgroundColor = "green";
+                cell.style.color = "white";
+            }
+        }
+        return;
+    }
+
+    const numCols = rows[0].cells.length;
+    for (let col = 5; col < numCols; col++) {
+        let max = -Infinity;
+        let maxCell = null;
+
+        for (let row = 1; row < rows.length; row++) {
+            const cell = rows[row].cells[col];
+            const value = parseFloat(cell.textContent.replace(/,/g, ""));
+            if (value > max) {
+                max = value;
+                maxCell = cell;
+            }
+        }
+
+        if (maxCell && max !== 0) {
+            maxCell.style.backgroundColor = "green";
+            maxCell.style.color = "white";
+        }
+    }
 }
 
 // #region 战斗图表功能
@@ -2341,6 +2456,10 @@ function manipulateSimResultsDataForDisplay(simResults) {
             let hoursSimulated = simResult.simulatedTime / ONE_HOUR;
             let zoneName = simResult.zoneName;
             let difficultyTier = simResult.difficultyTier;
+            if (simResult.isLabyrinth) {
+                zoneName = simResult.labyrinthName;
+                difficultyTier = simResult.roomLevel;
+            }
             let encountersPerHour = (simResult.encounters / hoursSimulated).toFixed(1);
             let playerDeaths = simResult.deaths[playerToDisplay] ?? 0;
             let deathsPerHour = (playerDeaths / hoursSimulated).toFixed(2);
@@ -2612,39 +2731,17 @@ function updateAllSimsModal(data) {
             const cell = document.createElement('td');
             cell.textContent = item[key];
             if (key === 'ZoneName') {
-                cell.setAttribute("data-i18n", "actionNames." + item[key]);
+                if (cell.textContent.startsWith("/action")) {
+                    cell.setAttribute("data-i18n", "actionNames." + item[key]);
+                } else if (cell.textContent.startsWith("/monsters")) {
+                    cell.setAttribute("data-i18n", "monsterNames." + item[key]);
+                }
             }
             row.appendChild(cell);
         });
 
         tableBody.appendChild(row);
     });
-
-    const table = document.getElementById('allZonesData');
-    const rows = table.getElementsByTagName('tr');
-    const numCols = rows[0].cells.length;
-
-    // 遍历每一列
-    for (let col = 5; col < numCols; col++) {
-        let max = -Infinity;
-        let maxCell = null;
-
-        // 找到最大值及其单元格
-        for (let row = 1; row < rows.length; row++) {
-            const cell = rows[row].cells[col];
-            const value = parseFloat(cell.textContent.replace(/,/g, ''));
-            if (value > max) {
-                max = value;
-                maxCell = cell;
-            }
-        }
-
-        // 将最大值单元格的背景色设置为绿色
-        if (maxCell && max != 0) {
-            maxCell.style.backgroundColor = 'green';
-            maxCell.style.color = 'white'; // 设置文字颜色为白色以提高可读性
-        }
-    }
 }
 
 let currentSortColumn = null;
@@ -3475,7 +3572,10 @@ function createElement(tagName, className, innerHTML = "", id = "") {
 
 document.addEventListener('DOMContentLoaded', function () {
     const simDungeonToggle = document.getElementById('simDungeonToggle');
+    const simLabyrinthToggle = document.getElementById('simLabyrinthToggle');
+    const simAllLabyrinthsToggle = document.getElementById('simAllLabyrinthsToggle');
     const playerContainer = document.getElementById('playerCheckBox');
+    const labyrinthSupplyItemsBox = document.getElementById('labyrinthSupplyItemsBox');
 
     function addPlayers() {
         const player4 = document.createElement('div');
@@ -3533,8 +3633,24 @@ document.addEventListener('DOMContentLoaded', function () {
         }
     }
 
+    function setLabyrinthMode(enabled) {
+        if (labyrinthSupplyItemsBox) {
+            labyrinthSupplyItemsBox.classList.toggle("d-none", !enabled);
+        }
+        if (enabled) {
+            simDungeonToggle.checked = false;
+            removePlayers();
+            updatePlayersCheckbox(false);
+            updateDifficultySelect(false);
+        }
+        updatePlayerNames();
+    }
+
     simDungeonToggle.addEventListener('change', function () {
         if (simDungeonToggle.checked) {
+            if (simLabyrinthToggle) simLabyrinthToggle.checked = false;
+            if (simAllLabyrinthsToggle) simAllLabyrinthsToggle.checked = false;
+            setLabyrinthMode(false);
             addPlayers();
             updatePlayersCheckbox(true);
             updateDifficultySelect(true);
@@ -3545,6 +3661,30 @@ document.addEventListener('DOMContentLoaded', function () {
         }
         updatePlayerNames();
     });
+
+    if (simLabyrinthToggle && simAllLabyrinthsToggle) {
+        simLabyrinthToggle.addEventListener("change", () => {
+            if (simLabyrinthToggle.checked) {
+                simAllLabyrinthsToggle.checked = false;
+                setLabyrinthMode(true);
+            } else if (!simAllLabyrinthsToggle.checked) {
+                setLabyrinthMode(false);
+            }
+        });
+
+        simAllLabyrinthsToggle.addEventListener("change", () => {
+            if (simAllLabyrinthsToggle.checked) {
+                simLabyrinthToggle.checked = false;
+                setLabyrinthMode(true);
+            } else if (!simLabyrinthToggle.checked) {
+                setLabyrinthMode(false);
+            }
+        });
+
+        if (simLabyrinthToggle.checked || simAllLabyrinthsToggle.checked) {
+            setLabyrinthMode(true);
+        }
+    }
 
     document.getElementById('buttonSimulationSetup').addEventListener('click', function () {
         updatePlayerNames();
@@ -3625,10 +3765,20 @@ function initSimulationControls() {
 }
 
 function startSimulation(selectedPlayers) {
+    const simLabyrinthToggle = document.getElementById("simLabyrinthToggle");
+    const simAllLabyrinthsToggle = document.getElementById("simAllLabyrinthsToggle");
+
     let playersToSim = buildPlayersForSimulation(selectedPlayers);
     if (playersToSim.length === 0) {
         alert("Failed to build player simulation data.");
         return;
+    }
+
+    if (simLabyrinthToggle?.checked || simAllLabyrinthsToggle?.checked) {
+        playersToSim.forEach((playerToSim) => {
+            playerToSim.food = [null, null, null];
+            playerToSim.drinks = [null, null, null];
+        });
     }
 
     let extra = {};
@@ -3649,29 +3799,84 @@ function startSimulation(selectedPlayers) {
     let zoneSelect = document.getElementById("selectZone");
     let dungeonSelect = document.getElementById("selectDungeon");
     let difficultySelect = document.getElementById("selectDifficulty");
+    let labyrinthSelect = document.getElementById("selectLabyrinth");
+    let roomLevelInput = document.getElementById("inputRoomLevel");
     let simulationTimeInput = document.getElementById("inputSimulationTime");
     let simulationTimeLimit = Number(simulationTimeInput.value) * ONE_HOUR;
-    buttonStopSimulation.style.display = 'block';
-    if (!simAllZonesToggle.checked && !simAllSoloToggle.checked) {
-        let zoneHrid = zoneSelect.value;
-        let difficultyTier = Number(difficultySelect.value);
-        if (simDungeonToggle.checked) {
-            zoneHrid = dungeonSelect.value;
+
+    let crates = [];
+    Object.keys(LabyrinthSupplyItems).forEach((categoryKey) => {
+        const categorySelect = document.getElementById("select" + categoryKey);
+        if (!categorySelect) return;
+        if (categorySelect.value !== "") {
+            crates.push(categorySelect.value);
         }
+    });
+
+    buttonStopSimulation.style.display = 'block';
+
+    if (!simAllZonesToggle.checked && !simAllSoloToggle.checked && !simAllLabyrinthsToggle?.checked) {
+        let simZone = null;
+        let simLabyrinth = null;
+
+        if (simLabyrinthToggle?.checked) {
+            const labyrinthHrid = labyrinthSelect.value;
+            const roomLevel = Number(roomLevelInput.value);
+            simLabyrinth = { labyrinthHrid: labyrinthHrid, roomLevel: roomLevel, crates: crates };
+        } else {
+            let zoneHrid = zoneSelect.value;
+            let difficultyTier = Number(difficultySelect.value);
+            if (simDungeonToggle.checked) {
+                zoneHrid = dungeonSelect.value;
+            }
+            simZone = { zoneHrid: zoneHrid, difficultyTier: difficultyTier };
+        }
+
         let workerMessage = {
             type: "start_simulation",
             workerId: Math.floor(Math.random() * 1e9).toString(),
             players: playersToSim,
-            zone: { zoneHrid: zoneHrid, difficultyTier: difficultyTier },
+            zone: simZone,
+            labyrinth: simLabyrinth,
             simulationTimeLimit: simulationTimeLimit,
             extra : extra
         };
         simStartTime = Date.now();
         if (!worker) {
-            worker = new Worker(new URL("multiWorker.js", import.meta.url));
+            worker = new Worker(new URL("worker.js", import.meta.url));
         }
         worker.onmessage = onWorkerMessage;
         worker.postMessage(workerMessage);
+    } else if (simAllLabyrinthsToggle?.checked) {
+        let gameLabyrinths = Object.values(combatMonsterDetailMap)
+            .filter((monster) => monster.isLabyrinthMonster === true)
+            .sort((a, b) => a.sortIndex - b.sortIndex);
+
+        let simHrids = gameLabyrinths
+            .map((monster) => {
+                let result = [];
+                // floor 1 is room level 20-40, then +20 per floor
+                for (let roomLevel = 40; roomLevel <= 220; roomLevel += 20) {
+                    result.push({ labyrinthHrid: monster.hrid, roomLevel: roomLevel, crates: crates });
+                }
+                return result;
+            })
+            .flat();
+
+        let workerMessage = {
+            type: "start_simulation_all_labyrinths",
+            workerId: Math.floor(Math.random() * 1e9).toString(),
+            players: playersToSim,
+            labyrinths: simHrids,
+            simulationTimeLimit: simulationTimeLimit,
+            extra: extra
+        };
+        simStartTime = Date.now();
+        if (!multiWorker) {
+            multiWorker = new Worker(new URL("multiWorker.js", import.meta.url));
+        }
+        multiWorker.onmessage = onMultiWorkerMessage;
+        multiWorker.postMessage(workerMessage);
     } else {
         let targetHrids = {};
 
@@ -4437,6 +4642,7 @@ function loadEquipmentSetIntoUI(equipmentSet) {
     if (equipmentSet.achievements) {
         for (const achievement in equipmentSet.achievements) {
             const field = document.querySelector('[data-achievement-hrid="' + achievement + '"]');
+            if (!field) continue;
             if (equipmentSet.achievements[achievement]) {
                 field.checked = true;
             } else {
@@ -4448,6 +4654,7 @@ function loadEquipmentSetIntoUI(equipmentSet) {
         let achievements = Object.values(achievementDetailMap);
         for (const detail of Object.values(achievements)) {
             const field = document.querySelector('[data-achievement-hrid="' + detail.hrid + '"]');
+            if (!field) continue;
             field.checked = false;
             player.achievements[detail.hrid] = false;
         }
@@ -4735,6 +4942,7 @@ function doSoloImport() {
     if (importSet.achievements) {
         for (const achievement in importSet.achievements) {
             const field = document.querySelector('[data-achievement-hrid="' + achievement + '"]');
+            if (!field) continue;
             if (importSet.achievements[achievement]) {
                 field.checked = true;
             } else {
@@ -4746,6 +4954,7 @@ function doSoloImport() {
         let achievements = Object.values(achievementDetailMap);
         for (const detail of Object.values(achievements)) {
             const field = document.querySelector('[data-achievement-hrid="' + detail.hrid + '"]');
+            if (!field) continue;
             field.checked = false;
             player.achievements[detail.hrid] = false;
         }
@@ -4939,6 +5148,7 @@ function updateNextPlayer(currentPlayerNumber) {
         let achievements = Object.values(achievementDetailMap);
         for (const detail of Object.values(achievements)) {
             const field = document.querySelector('[data-achievement-hrid="' + detail.hrid + '"]');
+            if (!field) continue;
             field.checked = false;
             player.achievements[detail.hrid] = false;
         }
@@ -4946,6 +5156,7 @@ function updateNextPlayer(currentPlayerNumber) {
     if (importSet.achievements) {
         for (const achievement in importSet.achievements) {
             const field = document.querySelector('[data-achievement-hrid="' + achievement + '"]');
+            if (!field) continue;
             if (importSet.achievements[achievement]) {
                 field.checked = true;
                 player.achievements[achievement] = true;
@@ -5351,7 +5562,15 @@ function updateContent() {
     document.querySelectorAll('[data-i18n]').forEach(function (element) {
         const key = element.getAttribute('data-i18n');
         if (key) {
-            element.textContent = i18next.t(key);
+            const translated = i18next.t(key);
+            if (translated && translated !== key) {
+                element.textContent = translated;
+            } else {
+                const fallback = element.getAttribute("data-i18n-fallback");
+                if (fallback) {
+                    element.textContent = fallback;
+                }
+            }
         }
     });
 
@@ -5365,7 +5584,15 @@ function updateContent() {
     document.querySelectorAll('option[data-i18n]').forEach(function (element) {
         const key = element.getAttribute('data-i18n');
         if (key) {
-            element.textContent = i18next.t(key);
+            const translated = i18next.t(key);
+            if (translated && translated !== key) {
+                element.textContent = translated;
+            } else {
+                const fallback = element.getAttribute("data-i18n-fallback");
+                if (fallback) {
+                    element.textContent = fallback;
+                }
+            }
         }
     });
 }
@@ -5633,6 +5860,7 @@ initDrinksSection();
 initAbilitiesSection();
 initZones();
 initDungeons();
+initLabyrinth();
 initTriggerModal();
 initSimulationControls();
 initEquipmentSetsModal();
@@ -5749,6 +5977,8 @@ function buildFixedSettingsFromUI() {
     const simAllZoneToggle = document.getElementById("simAllZoneToggle");
     const simAllSoloToggle = document.getElementById("simAllSoloToggle");
     const simDungeonToggle = document.getElementById("simDungeonToggle");
+    const simLabyrinthToggle = document.getElementById("simLabyrinthToggle");
+    const simAllLabyrinthsToggle = document.getElementById("simAllLabyrinthsToggle");
     const zoneSelect = document.getElementById("selectZone");
     const dungeonSelect = document.getElementById("selectDungeon");
     const difficultySelect = document.getElementById("selectDifficulty");
@@ -5762,6 +5992,10 @@ function buildFixedSettingsFromUI() {
 
     if (simAllZoneToggle.checked || simAllSoloToggle.checked) {
         throw new Error(i18next.t("common:queue.baselineOnlySingleScene"));
+    }
+
+    if (simLabyrinthToggle?.checked || simAllLabyrinthsToggle?.checked) {
+        throw new Error(i18next.t("common:queue.baselineNoLabyrinth"));
     }
 
     const simDungeon = simDungeonToggle.checked;
