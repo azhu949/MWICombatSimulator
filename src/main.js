@@ -68,6 +68,10 @@ const QUEUE_MULTI_ROUND_MIN = 1;
 const QUEUE_MULTI_ROUND_MAX = 200;
 const QUEUE_MULTI_ROUND_METRIC_KEYS = ["dps", "dailyNoRngProfit", "xpPerHour", "killsPerHour"];
 const QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS = 4;
+const QUEUE_MULTI_ROUND_WINSORIZE_PCT = 0.05;
+const QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT = 0.5;
+const QUEUE_MULTI_ROUND_CONFIDENCE_SIZE_SCALE = 8;
+const QUEUE_MULTI_ROUND_CONFIDENCE_PENALTY_STRENGTH = 0.35;
 const abilityBookInfoByAbilityHrid = buildAbilityBookInfoByAbilityHrid();
 
 const WATCHED_CONTROL_IDS = new Set([
@@ -6878,46 +6882,122 @@ function computePercentileFromSorted(sortedValues, percentile) {
     return sortedValues[lowerIndex] + (sortedValues[upperIndex] - sortedValues[lowerIndex]) * interpolation;
 }
 
+function computeArithmeticMean(values, fallback = 0) {
+    if (!Array.isArray(values) || values.length === 0) {
+        return fallback;
+    }
+    return values.reduce((acc, cur) => acc + toFiniteNumber(cur, 0), 0) / values.length;
+}
+
+function winsorizeValues(values, winsorizePct = 0) {
+    const safeValues = (values ?? []).map((value) => Number(value)).filter((value) => Number.isFinite(value));
+    if (safeValues.length === 0) {
+        return [];
+    }
+
+    const safeWinsorizePct = clampNumber(toFiniteNumber(winsorizePct, 0), 0, 0.49);
+    if (safeWinsorizePct <= 0 || safeValues.length < 3) {
+        return [...safeValues];
+    }
+
+    const sorted = [...safeValues].sort((a, b) => a - b);
+    const lower = computePercentileFromSorted(sorted, safeWinsorizePct);
+    const upper = computePercentileFromSorted(sorted, 1 - safeWinsorizePct);
+    return safeValues.map((value) => clampNumber(value, lower, upper));
+}
+
+function computeConfidenceFromValues(values, centerValue) {
+    const safeValues = (values ?? []).map((value) => Number(value)).filter((value) => Number.isFinite(value));
+    const sampleCount = safeValues.length;
+    if (sampleCount <= 1) {
+        return 0;
+    }
+
+    const mean = computeArithmeticMean(safeValues, 0);
+    const variance = safeValues.reduce((acc, cur) => acc + ((cur - mean) ** 2), 0) / sampleCount;
+    const std = Math.sqrt(Math.max(0, variance));
+    const ciHalfWidth95 = 1.96 * std / Math.sqrt(sampleCount);
+    const scaleBase = Math.max(Math.abs(toFiniteNumber(centerValue, 0)), std, 1e-6);
+    const intervalConfidence = 1 / (1 + ciHalfWidth95 / scaleBase);
+
+    const sizeScale = Math.max(1, toFiniteNumber(QUEUE_MULTI_ROUND_CONFIDENCE_SIZE_SCALE, 8));
+    const sizeConfidence = 1 - Math.exp(-1 * (sampleCount - 1) / sizeScale);
+
+    return clampNumber(intervalConfidence * sizeConfidence, 0, 1);
+}
+
 function summarizeMetric(values, deltaPctValues) {
     const safeValues = values.map((value) => toFiniteNumber(value, 0));
+    const blendWeight = clampNumber(toFiniteNumber(QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT, 0.5), 0, 1);
+    const meanWeight = 1 - blendWeight;
     if (safeValues.length === 0) {
         return {
             mean: 0,
+            winsorizedMean: 0,
+            robustMean: 0,
             min: 0,
             max: 0,
             std: 0,
             p50: 0,
             p90: 0,
             cv: 1,
+            robustCv: 1,
             meanDeltaPct: 0,
+            rawMeanDeltaPct: 0,
+            winsorizedMeanDeltaPct: 0,
+            medianDeltaPct: 0,
+            robustMeanDeltaPct: 0,
+            confidence: 0,
+            confidenceDeltaPct: 0,
+            sampleCount: 0,
+            deltaSampleCount: 0,
         };
     }
 
-    const sum = safeValues.reduce((acc, cur) => acc + cur, 0);
-    const mean = sum / safeValues.length;
-    const min = Math.min(...safeValues);
-    const max = Math.max(...safeValues);
-    const variance = safeValues.reduce((acc, cur) => acc + ((cur - mean) ** 2), 0) / safeValues.length;
-    const std = Math.sqrt(Math.max(0, variance));
-    const cv = Math.abs(mean) > 1e-9 ? Math.abs(std / mean) : 1;
-    const sorted = [...safeValues].sort((a, b) => a - b);
+    const rawMean = computeArithmeticMean(safeValues, 0);
+    const winsorizedValues = winsorizeValues(safeValues, QUEUE_MULTI_ROUND_WINSORIZE_PCT);
+    const winsorizedMean = computeArithmeticMean(winsorizedValues, rawMean);
+    const sorted = [...winsorizedValues].sort((a, b) => a - b);
     const p50 = computePercentileFromSorted(sorted, 0.5);
     const p90 = computePercentileFromSorted(sorted, 0.9);
+    const robustMean = meanWeight * winsorizedMean + blendWeight * p50;
 
-    const safeDeltaPctValues = deltaPctValues.filter((value) => Number.isFinite(value));
-    const meanDeltaPct = safeDeltaPctValues.length > 0
-        ? safeDeltaPctValues.reduce((acc, cur) => acc + cur, 0) / safeDeltaPctValues.length
-        : 0;
+    const min = Math.min(...winsorizedValues);
+    const max = Math.max(...winsorizedValues);
+    const variance = winsorizedValues.reduce((acc, cur) => acc + ((cur - robustMean) ** 2), 0) / winsorizedValues.length;
+    const std = Math.sqrt(Math.max(0, variance));
+    const robustCv = Math.abs(robustMean) > 1e-9 ? Math.abs(std / robustMean) : 1;
+    const confidence = computeConfidenceFromValues(winsorizedValues, robustMean);
+
+    const safeDeltaPctValues = deltaPctValues.filter((value) => Number.isFinite(value)).map((value) => Number(value));
+    const rawMeanDeltaPct = computeArithmeticMean(safeDeltaPctValues, 0);
+    const winsorizedDeltaPctValues = winsorizeValues(safeDeltaPctValues, QUEUE_MULTI_ROUND_WINSORIZE_PCT);
+    const winsorizedMeanDeltaPct = computeArithmeticMean(winsorizedDeltaPctValues, rawMeanDeltaPct);
+    const sortedDelta = [...winsorizedDeltaPctValues].sort((a, b) => a - b);
+    const medianDeltaPct = sortedDelta.length > 0 ? computePercentileFromSorted(sortedDelta, 0.5) : rawMeanDeltaPct;
+    const robustMeanDeltaPct = meanWeight * winsorizedMeanDeltaPct + blendWeight * medianDeltaPct;
+    const confidenceDeltaPct = computeConfidenceFromValues(winsorizedDeltaPctValues, robustMeanDeltaPct);
 
     return {
-        mean: toFiniteNumber(mean, 0),
+        mean: toFiniteNumber(rawMean, 0),
+        winsorizedMean: toFiniteNumber(winsorizedMean, 0),
+        robustMean: toFiniteNumber(robustMean, 0),
         min: toFiniteNumber(min, 0),
         max: toFiniteNumber(max, 0),
         std: toFiniteNumber(std, 0),
         p50: toFiniteNumber(p50, 0),
         p90: toFiniteNumber(p90, 0),
-        cv: toFiniteNumber(cv, 1),
-        meanDeltaPct: toFiniteNumber(meanDeltaPct, 0),
+        cv: toFiniteNumber(robustCv, 1),
+        robustCv: toFiniteNumber(robustCv, 1),
+        meanDeltaPct: toFiniteNumber(robustMeanDeltaPct, 0),
+        rawMeanDeltaPct: toFiniteNumber(rawMeanDeltaPct, 0),
+        winsorizedMeanDeltaPct: toFiniteNumber(winsorizedMeanDeltaPct, 0),
+        medianDeltaPct: toFiniteNumber(medianDeltaPct, 0),
+        robustMeanDeltaPct: toFiniteNumber(robustMeanDeltaPct, 0),
+        confidence: toFiniteNumber(confidence, 0),
+        confidenceDeltaPct: toFiniteNumber(confidenceDeltaPct, 0),
+        sampleCount: safeValues.length,
+        deltaSampleCount: safeDeltaPctValues.length,
     };
 }
 
@@ -6979,7 +7059,10 @@ function buildQueueItemCostInsights(queueState, queueItem, metricSummary) {
 
     let goldPerPoint01Pct = {};
     for (const metricKey of QUEUE_MULTI_ROUND_METRIC_KEYS) {
-        const meanDeltaPct = Number(metricSummary?.[metricKey]?.meanDeltaPct);
+        const robustDeltaPct = Number(metricSummary?.[metricKey]?.robustMeanDeltaPct);
+        const meanDeltaPct = Number.isFinite(robustDeltaPct)
+            ? robustDeltaPct
+            : Number(metricSummary?.[metricKey]?.meanDeltaPct);
         goldPerPoint01Pct[metricKey] = computeGoldPerPoint01Pct(totalUpgradeCost, { pct: meanDeltaPct });
     }
 
@@ -7000,7 +7083,11 @@ function buildMultiRoundRanking(metricSummaryByQueueItem) {
     const normalizedScoresByMetric = {};
 
     for (const metricKey of QUEUE_MULTI_ROUND_METRIC_KEYS) {
-        const scoreValues = metricSummaryByQueueItem.map((entry) => toFiniteNumber(entry.metricSummary?.[metricKey]?.meanDeltaPct, 0));
+        const scoreValues = metricSummaryByQueueItem.map((entry) => {
+            const robustDeltaPct = Number(entry.metricSummary?.[metricKey]?.robustMeanDeltaPct);
+            const fallbackDeltaPct = Number(entry.metricSummary?.[metricKey]?.meanDeltaPct);
+            return toFiniteNumber(Number.isFinite(robustDeltaPct) ? robustDeltaPct : fallbackDeltaPct, 0);
+        });
         normalizedScoresByMetric[metricKey] = normalizeScoreList(scoreValues, {
             higherIsBetter: true,
             tieScore: 50,
@@ -7043,10 +7130,23 @@ function buildMultiRoundRanking(metricSummaryByQueueItem) {
         const performanceScore = performanceScores.reduce((acc, cur) => acc + cur, 0) / Math.max(1, performanceScores.length);
 
         const cvList = QUEUE_MULTI_ROUND_METRIC_KEYS.map((metricKey) => {
-            return toFiniteNumber(entry.metricSummary?.[metricKey]?.cv, 1);
+            const robustCv = Number(entry.metricSummary?.[metricKey]?.robustCv);
+            const fallbackCv = Number(entry.metricSummary?.[metricKey]?.cv);
+            return toFiniteNumber(Number.isFinite(robustCv) ? robustCv : fallbackCv, 1);
         });
         const avgCv = cvList.reduce((acc, cur) => acc + cur, 0) / Math.max(1, cvList.length);
         const stabilityScore = clampNumber(100 * (1 - Math.min(avgCv, 1)), 0, 100);
+
+        const confidenceList = QUEUE_MULTI_ROUND_METRIC_KEYS.map((metricKey) => {
+            const confidenceDeltaPct = Number(entry.metricSummary?.[metricKey]?.confidenceDeltaPct);
+            const fallbackConfidence = Number(entry.metricSummary?.[metricKey]?.confidence);
+            return clampNumber(
+                toFiniteNumber(Number.isFinite(confidenceDeltaPct) ? confidenceDeltaPct : fallbackConfidence, 0),
+                0,
+                1
+            );
+        });
+        const avgConfidence = confidenceList.reduce((acc, cur) => acc + cur, 0) / Math.max(1, confidenceList.length);
 
         // Cost score weights:
         // upgrade cost 25% + purchase time 35% + gold per 0.01% 40%
@@ -7057,17 +7157,31 @@ function buildMultiRoundRanking(metricSummaryByQueueItem) {
         );
 
         // Final score weights:
-        // performance 55% + stability 20% + cost efficiency 25%
-        const finalScore = 0.55 * performanceScore + 0.20 * stabilityScore + 0.25 * costScore;
+        // performance 45% + stability 20% + cost efficiency 35%
+        const baseFinalScore = 0.45 * performanceScore + 0.20 * stabilityScore + 0.35 * costScore;
+        const confidencePenaltyStrength = clampNumber(
+            toFiniteNumber(QUEUE_MULTI_ROUND_CONFIDENCE_PENALTY_STRENGTH, 0.35),
+            0,
+            1
+        );
+        const confidencePenaltyFactor = clampNumber(
+            (1 - confidencePenaltyStrength) + confidencePenaltyStrength * avgConfidence,
+            0,
+            1
+        );
+        const finalScore = baseFinalScore * confidencePenaltyFactor;
 
         return {
             queueItemId: entry.queueItemId,
             displayName: entry.displayName,
             order: entry.order,
             finalScore: toFiniteNumber(finalScore, 0),
+            baseFinalScore: toFiniteNumber(baseFinalScore, 0),
             performanceScore: toFiniteNumber(performanceScore, 0),
             stabilityScore: toFiniteNumber(stabilityScore, 0),
             costScore: toFiniteNumber(costScore, 0),
+            confidenceScore: toFiniteNumber(avgConfidence * 100, 0),
+            confidencePenaltyFactor: toFiniteNumber(confidencePenaltyFactor, 1),
             metricSummary: entry.metricSummary,
             costInsights: entry.costInsights,
         };
@@ -7956,6 +8070,11 @@ function renderMultiRoundResultsForCurrentPlayer() {
     const finishedAtText = Number.isFinite(config.finishedAt) ? new Date(config.finishedAt).toLocaleString() : "-";
     const totalRuns = rawRows.length;
     const totalRoundCount = Math.max(0, Math.floor(toFiniteNumber(config.roundCount, 0)));
+    const robustWinsorPctText = formatMetricValue(QUEUE_MULTI_ROUND_WINSORIZE_PCT * 100, 1);
+    const robustMeanWeightPctText = formatMetricValue((1 - QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT) * 100, 0);
+    const robustMedianWeightPctText = formatMetricValue(QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT * 100, 0);
+    const confidencePenaltyBasePctText = formatMetricValue((1 - QUEUE_MULTI_ROUND_CONFIDENCE_PENALTY_STRENGTH) * 100, 0);
+    const confidencePenaltyWeightPctText = formatMetricValue(QUEUE_MULTI_ROUND_CONFIDENCE_PENALTY_STRENGTH * 100, 0);
     const simCountByQueueItemId = new Map();
     for (const rawRowData of rawRows) {
         const queueItemId = String(rawRowData?.queueItemId ?? "");
@@ -7978,6 +8097,9 @@ function renderMultiRoundResultsForCurrentPlayer() {
                 <div>${i18next.t("common:multiRound.scoreModelParamPerformance")}</div>
                 <div>${i18next.t("common:multiRound.scoreModelParamStability")}</div>
                 <div>${i18next.t("common:multiRound.scoreModelParamCost")}</div>
+                <div>${i18next.t("common:multiRound.scoreModelParamRobustWinsorize", { winsorPct: robustWinsorPctText })}</div>
+                <div>${i18next.t("common:multiRound.scoreModelParamRobustMedianBlend", { meanWeight: robustMeanWeightPctText, medianWeight: robustMedianWeightPctText })}</div>
+                <div>${i18next.t("common:multiRound.scoreModelParamRobustConfidencePenalty", { baseWeight: confidencePenaltyBasePctText, penaltyWeight: confidencePenaltyWeightPctText })}</div>
             </div>
         </div>
     `;

@@ -1482,7 +1482,7 @@ class Trigger {
   \************************/
 /***/ ((module) => {
 
-module.exports = /*#__PURE__*/JSON.parse('{"2026年2月24日":["新增装备变化模拟功能","新增队列多轮模拟，支持预设/自定义轮次（1-200）与并行、串行两种执行模式","新增“多轮结果”页面，提供汇总信息、评分排名和每轮原始数据（含DPS/利润/XP/h/Kills/h变化）","加入多轮综合评分模型：性能55% + 稳定20% + 成本25%，用于队列项排序","成本分析纳入升级成本、购买所需时间与“每0.01%提升所需金币（均值）”指标","补充中英文菜单与多轮模拟相关文案，并在基准或队列变更后清空旧多轮结果避免误读"],"2026年2月1日":["修正战斗等级计算的精度","修正地下城完成或失败后重新进入战斗的时间间隔 by wangchyan","修正诅咒和削弱的持续时间 by wangchyan","修正诅咒和狂怒的触发逻辑 by wangchyan","修正地下城团灭重置机制的部分逻辑 by wangchyan","修复守护光环和速度光环部分增益未正确受对应等级加强的异常 by wangchyan","修复无敌技能未正确影响韧性数值的缺陷 by wangchyan","修复初次进入战斗时未能优先吃喝的异常 by wangchyan","战斗时长相关的统计现在仅计算已完成的战斗，不再包含当前未结束的战斗 by wangchyan"],"2026年1月11日":["修复trigger错误计算已阵亡单位的问题 by wangchyan"],"2025年12月31日":["实验性功能新增HP/MP可视化图表 by wangchyan","修复防御伤害未正确受damge加成的异常 by wangchyan","修复守护光环的治疗加成效果未生效的异常 by wangchyan","修复快速治疗等技能未正确选择最低%生命为目标的错误 by wangchyan"],"2025年12月30日":["地下城增加最短完成时间记录"],"2025年12月24日":["修复技能释放选择的缺陷，之前可能存在异常缺蓝等情况"],"2025年12月18日":["支持成就系统及对应buff效果","地下城怪物的掉落不再生效"],"2025年12月6日":["修复游戏更新后技能在无trigger情况下由[]变为null时造成的异常"],"2025年11月7日":["兼容支持从CN镜像站调用API获取价格"],"2025年10月14日":["修复怪物攻击间隔数值未能适配攻击等级的问题"],"2025年9月17日":["修复暴击光环的trigger缺陷"],"2025年9月9日":["复活时不再错误的清空所有buff","团灭日志增加反伤、荆棘和DOT伤害记录"],"2025年8月21日":["增加单挑战斗批量模拟和对应怪物选项","增加MooPass和社区buff的选项及对应功能","精炼装备数值加强","秘法主教属性削弱","init_client_info_v1.20250819.0.json游戏数据更新"],"2025年8月20日":["修复经验和掉落计算在极端情况下的可能异常"],"2025年8月19日":["合并Test和Temp分支的rework内容","init_client_info_v1.20250818.0.json游戏数据更新"],"2025年8月18日":["修复贯穿技能可能对相同目标造成重复伤害的问题","修复团灭日志在黑夜模式下的显示异常","战斗等级公式更新","钟乳石魔像的荆棘数值调整","init_client_info_v1.20250626.0_0817.json游戏数据更新"],"2025年8月16日":["增加停止模拟按钮 by BKN46","增加技能顺序调整按钮 by BKN46","增加团灭日志 by TruthLight","怪物属性更新","奥术反射更名为报应","init_client_info_v1.20250626.0_0815.json游戏数据更新"],"2025年8月14日":["怪物属性更新","远程和法师装备属性调整","反伤计算上限调整","修复战斗间隔释放技能的异常","修复技能释放判断逻辑的异常","法力值耗尽比例更加准确","调整远程经验的15%和魔法经验的12%映射到攻击经验","init_client_info_v1.20250626.0_0813.json游戏数据更新"],"2025年8月11日":["怪物属性更新","近战和物理技能施法时间更新","盾击和重锤数值调整","双手盾防御经验加成调整","init_client_info_v1.20250626.0_0811.json游戏数据更新"],"2025年8月8日":["实现组队等级差过大时对掉落和经验的惩罚","实现怪物经验随狂暴进度百分比增加","暴击光环数值调整","增加战斗等级数值显示","增加等级差距惩罚数值显示","init_client_info_v1.20250626.0_0807.json游戏数据更新"],"2025年8月7日":["修复组队战斗时一些重复物品掉落数量异常的缺陷 by contr4l","init_client_info_v1.20250626.0_0806.json游戏数据更新"],"2025年8月3日":["怪物狂暴机制及对应trigger生效","精炼装备更新，护符数值调整，守护光环增加闪避率","init_client_info_v1.20250626.0_0802.json游戏数据更新","狂怒层数修正为5层","招架结算机制调整"],"2025年7月31日":["物品数据和怪物属性更新","尖刺外壳和奥术反射重做","强化数值更新","删除异常trigger","狮鹫盾的虚弱重做","君王剑招架对队友生效","狂怒特效最大层数修正为6层","涟漪特效增加10MP恢复","反伤正确显示其命中率","反伤机制调整","同步双手盾属性和反伤荆棘技能数值的调整"],"2025年7月22日":["暴击光环受远程等级加成","光环基础数值和等级加成调整"],"2025年7月17日":["批量模拟支持勾选星球","经验分配比例调整至30%+70%","光环及对应trigger，并按对应技能等级百分比加成","水火自然默认调整为元素光环","init_client_info_v1.20250626.0_0717.json游戏数据更新"],"2025年7月11日":["怪物经验和技能等级公式更新","闪避和抗性计算公式更新","力量更替为近战以及对应的兼容","init_client_info_v1.20250626.0_0711.json游戏数据更新"],"2025年7月10日":["修复贯穿技能由敌人释放时可能多次击中相同目标的缺陷"],"2025年7月9日":["掉落和掉率调整","经验调整","疫病射击和破甲之刺调整","怪物自动恢复移除","疫病射击trigger调整","获取价格使用官方API"],"2025年7月7日":["怪物属性缩放和地图多难度","法师技能调整和装备上\'技能伤害\'词缀生效","攻击等级和房屋等级对施法速度的影响生效","物品调整","精准重做以攻击等级计算","TEST 远程魔法经验的10%映射到攻击经验！","经验重做和护符装备"]}');
+module.exports = /*#__PURE__*/JSON.parse('{"2026年2月25日":["多轮模拟改为按轮次推进，运行中可实时更新排名和原始数据","评分排名新增“模拟次数”列，显示已完成轮次/目标轮次","评分排名新增 Top1-Top5 高亮样式，并适配亮色/暗色主题","优化并行执行与失败重试逻辑，并补充“模拟次数”中英文文案"],"2026年2月24日":["新增装备变化模拟功能","新增队列多轮模拟，支持预设/自定义轮次（1-200）与并行、串行两种执行模式","新增“多轮结果”页面，提供汇总信息、评分排名和每轮原始数据（含DPS/利润/XP/h/Kills/h变化）","加入多轮综合评分模型：性能55% + 稳定20% + 成本25%，用于队列项排序","成本分析纳入升级成本、购买所需时间与“每0.01%提升所需金币（均值）”指标","补充中英文菜单与多轮模拟相关文案，并在基准或队列变更后清空旧多轮结果避免误读"],"2026年2月1日":["修正战斗等级计算的精度","修正地下城完成或失败后重新进入战斗的时间间隔 by wangchyan","修正诅咒和削弱的持续时间 by wangchyan","修正诅咒和狂怒的触发逻辑 by wangchyan","修正地下城团灭重置机制的部分逻辑 by wangchyan","修复守护光环和速度光环部分增益未正确受对应等级加强的异常 by wangchyan","修复无敌技能未正确影响韧性数值的缺陷 by wangchyan","修复初次进入战斗时未能优先吃喝的异常 by wangchyan","战斗时长相关的统计现在仅计算已完成的战斗，不再包含当前未结束的战斗 by wangchyan"],"2026年1月11日":["修复trigger错误计算已阵亡单位的问题 by wangchyan"],"2025年12月31日":["实验性功能新增HP/MP可视化图表 by wangchyan","修复防御伤害未正确受damge加成的异常 by wangchyan","修复守护光环的治疗加成效果未生效的异常 by wangchyan","修复快速治疗等技能未正确选择最低%生命为目标的错误 by wangchyan"],"2025年12月30日":["地下城增加最短完成时间记录"],"2025年12月24日":["修复技能释放选择的缺陷，之前可能存在异常缺蓝等情况"],"2025年12月18日":["支持成就系统及对应buff效果","地下城怪物的掉落不再生效"],"2025年12月6日":["修复游戏更新后技能在无trigger情况下由[]变为null时造成的异常"],"2025年11月7日":["兼容支持从CN镜像站调用API获取价格"],"2025年10月14日":["修复怪物攻击间隔数值未能适配攻击等级的问题"],"2025年9月17日":["修复暴击光环的trigger缺陷"],"2025年9月9日":["复活时不再错误的清空所有buff","团灭日志增加反伤、荆棘和DOT伤害记录"],"2025年8月21日":["增加单挑战斗批量模拟和对应怪物选项","增加MooPass和社区buff的选项及对应功能","精炼装备数值加强","秘法主教属性削弱","init_client_info_v1.20250819.0.json游戏数据更新"],"2025年8月20日":["修复经验和掉落计算在极端情况下的可能异常"],"2025年8月19日":["合并Test和Temp分支的rework内容","init_client_info_v1.20250818.0.json游戏数据更新"],"2025年8月18日":["修复贯穿技能可能对相同目标造成重复伤害的问题","修复团灭日志在黑夜模式下的显示异常","战斗等级公式更新","钟乳石魔像的荆棘数值调整","init_client_info_v1.20250626.0_0817.json游戏数据更新"],"2025年8月16日":["增加停止模拟按钮 by BKN46","增加技能顺序调整按钮 by BKN46","增加团灭日志 by TruthLight","怪物属性更新","奥术反射更名为报应","init_client_info_v1.20250626.0_0815.json游戏数据更新"],"2025年8月14日":["怪物属性更新","远程和法师装备属性调整","反伤计算上限调整","修复战斗间隔释放技能的异常","修复技能释放判断逻辑的异常","法力值耗尽比例更加准确","调整远程经验的15%和魔法经验的12%映射到攻击经验","init_client_info_v1.20250626.0_0813.json游戏数据更新"],"2025年8月11日":["怪物属性更新","近战和物理技能施法时间更新","盾击和重锤数值调整","双手盾防御经验加成调整","init_client_info_v1.20250626.0_0811.json游戏数据更新"],"2025年8月8日":["实现组队等级差过大时对掉落和经验的惩罚","实现怪物经验随狂暴进度百分比增加","暴击光环数值调整","增加战斗等级数值显示","增加等级差距惩罚数值显示","init_client_info_v1.20250626.0_0807.json游戏数据更新"],"2025年8月7日":["修复组队战斗时一些重复物品掉落数量异常的缺陷 by contr4l","init_client_info_v1.20250626.0_0806.json游戏数据更新"],"2025年8月3日":["怪物狂暴机制及对应trigger生效","精炼装备更新，护符数值调整，守护光环增加闪避率","init_client_info_v1.20250626.0_0802.json游戏数据更新","狂怒层数修正为5层","招架结算机制调整"],"2025年7月31日":["物品数据和怪物属性更新","尖刺外壳和奥术反射重做","强化数值更新","删除异常trigger","狮鹫盾的虚弱重做","君王剑招架对队友生效","狂怒特效最大层数修正为6层","涟漪特效增加10MP恢复","反伤正确显示其命中率","反伤机制调整","同步双手盾属性和反伤荆棘技能数值的调整"],"2025年7月22日":["暴击光环受远程等级加成","光环基础数值和等级加成调整"],"2025年7月17日":["批量模拟支持勾选星球","经验分配比例调整至30%+70%","光环及对应trigger，并按对应技能等级百分比加成","水火自然默认调整为元素光环","init_client_info_v1.20250626.0_0717.json游戏数据更新"],"2025年7月11日":["怪物经验和技能等级公式更新","闪避和抗性计算公式更新","力量更替为近战以及对应的兼容","init_client_info_v1.20250626.0_0711.json游戏数据更新"],"2025年7月10日":["修复贯穿技能由敌人释放时可能多次击中相同目标的缺陷"],"2025年7月9日":["掉落和掉率调整","经验调整","疫病射击和破甲之刺调整","怪物自动恢复移除","疫病射击trigger调整","获取价格使用官方API"],"2025年7月7日":["怪物属性缩放和地图多难度","法师技能调整和装备上\'技能伤害\'词缀生效","攻击等级和房屋等级对施法速度的影响生效","物品调整","精准重做以攻击等级计算","TEST 远程魔法经验的10%映射到攻击经验！","经验重做和护符装备"]}');
 
 /***/ }),
 
@@ -1860,6 +1860,10 @@ const QUEUE_MULTI_ROUND_MIN = 1;
 const QUEUE_MULTI_ROUND_MAX = 200;
 const QUEUE_MULTI_ROUND_METRIC_KEYS = ["dps", "dailyNoRngProfit", "xpPerHour", "killsPerHour"];
 const QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS = 4;
+const QUEUE_MULTI_ROUND_WINSORIZE_PCT = 0.05;
+const QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT = 0.5;
+const QUEUE_MULTI_ROUND_CONFIDENCE_SIZE_SCALE = 8;
+const QUEUE_MULTI_ROUND_CONFIDENCE_PENALTY_STRENGTH = 0.35;
 const abilityBookInfoByAbilityHrid = buildAbilityBookInfoByAbilityHrid();
 
 const WATCHED_CONTROL_IDS = new Set([
@@ -8670,46 +8674,122 @@ function computePercentileFromSorted(sortedValues, percentile) {
     return sortedValues[lowerIndex] + (sortedValues[upperIndex] - sortedValues[lowerIndex]) * interpolation;
 }
 
+function computeArithmeticMean(values, fallback = 0) {
+    if (!Array.isArray(values) || values.length === 0) {
+        return fallback;
+    }
+    return values.reduce((acc, cur) => acc + toFiniteNumber(cur, 0), 0) / values.length;
+}
+
+function winsorizeValues(values, winsorizePct = 0) {
+    const safeValues = (values ?? []).map((value) => Number(value)).filter((value) => Number.isFinite(value));
+    if (safeValues.length === 0) {
+        return [];
+    }
+
+    const safeWinsorizePct = clampNumber(toFiniteNumber(winsorizePct, 0), 0, 0.49);
+    if (safeWinsorizePct <= 0 || safeValues.length < 3) {
+        return [...safeValues];
+    }
+
+    const sorted = [...safeValues].sort((a, b) => a - b);
+    const lower = computePercentileFromSorted(sorted, safeWinsorizePct);
+    const upper = computePercentileFromSorted(sorted, 1 - safeWinsorizePct);
+    return safeValues.map((value) => clampNumber(value, lower, upper));
+}
+
+function computeConfidenceFromValues(values, centerValue) {
+    const safeValues = (values ?? []).map((value) => Number(value)).filter((value) => Number.isFinite(value));
+    const sampleCount = safeValues.length;
+    if (sampleCount <= 1) {
+        return 0;
+    }
+
+    const mean = computeArithmeticMean(safeValues, 0);
+    const variance = safeValues.reduce((acc, cur) => acc + ((cur - mean) ** 2), 0) / sampleCount;
+    const std = Math.sqrt(Math.max(0, variance));
+    const ciHalfWidth95 = 1.96 * std / Math.sqrt(sampleCount);
+    const scaleBase = Math.max(Math.abs(toFiniteNumber(centerValue, 0)), std, 1e-6);
+    const intervalConfidence = 1 / (1 + ciHalfWidth95 / scaleBase);
+
+    const sizeScale = Math.max(1, toFiniteNumber(QUEUE_MULTI_ROUND_CONFIDENCE_SIZE_SCALE, 8));
+    const sizeConfidence = 1 - Math.exp(-1 * (sampleCount - 1) / sizeScale);
+
+    return clampNumber(intervalConfidence * sizeConfidence, 0, 1);
+}
+
 function summarizeMetric(values, deltaPctValues) {
     const safeValues = values.map((value) => toFiniteNumber(value, 0));
+    const blendWeight = clampNumber(toFiniteNumber(QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT, 0.5), 0, 1);
+    const meanWeight = 1 - blendWeight;
     if (safeValues.length === 0) {
         return {
             mean: 0,
+            winsorizedMean: 0,
+            robustMean: 0,
             min: 0,
             max: 0,
             std: 0,
             p50: 0,
             p90: 0,
             cv: 1,
+            robustCv: 1,
             meanDeltaPct: 0,
+            rawMeanDeltaPct: 0,
+            winsorizedMeanDeltaPct: 0,
+            medianDeltaPct: 0,
+            robustMeanDeltaPct: 0,
+            confidence: 0,
+            confidenceDeltaPct: 0,
+            sampleCount: 0,
+            deltaSampleCount: 0,
         };
     }
 
-    const sum = safeValues.reduce((acc, cur) => acc + cur, 0);
-    const mean = sum / safeValues.length;
-    const min = Math.min(...safeValues);
-    const max = Math.max(...safeValues);
-    const variance = safeValues.reduce((acc, cur) => acc + ((cur - mean) ** 2), 0) / safeValues.length;
-    const std = Math.sqrt(Math.max(0, variance));
-    const cv = Math.abs(mean) > 1e-9 ? Math.abs(std / mean) : 1;
-    const sorted = [...safeValues].sort((a, b) => a - b);
+    const rawMean = computeArithmeticMean(safeValues, 0);
+    const winsorizedValues = winsorizeValues(safeValues, QUEUE_MULTI_ROUND_WINSORIZE_PCT);
+    const winsorizedMean = computeArithmeticMean(winsorizedValues, rawMean);
+    const sorted = [...winsorizedValues].sort((a, b) => a - b);
     const p50 = computePercentileFromSorted(sorted, 0.5);
     const p90 = computePercentileFromSorted(sorted, 0.9);
+    const robustMean = meanWeight * winsorizedMean + blendWeight * p50;
 
-    const safeDeltaPctValues = deltaPctValues.filter((value) => Number.isFinite(value));
-    const meanDeltaPct = safeDeltaPctValues.length > 0
-        ? safeDeltaPctValues.reduce((acc, cur) => acc + cur, 0) / safeDeltaPctValues.length
-        : 0;
+    const min = Math.min(...winsorizedValues);
+    const max = Math.max(...winsorizedValues);
+    const variance = winsorizedValues.reduce((acc, cur) => acc + ((cur - robustMean) ** 2), 0) / winsorizedValues.length;
+    const std = Math.sqrt(Math.max(0, variance));
+    const robustCv = Math.abs(robustMean) > 1e-9 ? Math.abs(std / robustMean) : 1;
+    const confidence = computeConfidenceFromValues(winsorizedValues, robustMean);
+
+    const safeDeltaPctValues = deltaPctValues.filter((value) => Number.isFinite(value)).map((value) => Number(value));
+    const rawMeanDeltaPct = computeArithmeticMean(safeDeltaPctValues, 0);
+    const winsorizedDeltaPctValues = winsorizeValues(safeDeltaPctValues, QUEUE_MULTI_ROUND_WINSORIZE_PCT);
+    const winsorizedMeanDeltaPct = computeArithmeticMean(winsorizedDeltaPctValues, rawMeanDeltaPct);
+    const sortedDelta = [...winsorizedDeltaPctValues].sort((a, b) => a - b);
+    const medianDeltaPct = sortedDelta.length > 0 ? computePercentileFromSorted(sortedDelta, 0.5) : rawMeanDeltaPct;
+    const robustMeanDeltaPct = meanWeight * winsorizedMeanDeltaPct + blendWeight * medianDeltaPct;
+    const confidenceDeltaPct = computeConfidenceFromValues(winsorizedDeltaPctValues, robustMeanDeltaPct);
 
     return {
-        mean: toFiniteNumber(mean, 0),
+        mean: toFiniteNumber(rawMean, 0),
+        winsorizedMean: toFiniteNumber(winsorizedMean, 0),
+        robustMean: toFiniteNumber(robustMean, 0),
         min: toFiniteNumber(min, 0),
         max: toFiniteNumber(max, 0),
         std: toFiniteNumber(std, 0),
         p50: toFiniteNumber(p50, 0),
         p90: toFiniteNumber(p90, 0),
-        cv: toFiniteNumber(cv, 1),
-        meanDeltaPct: toFiniteNumber(meanDeltaPct, 0),
+        cv: toFiniteNumber(robustCv, 1),
+        robustCv: toFiniteNumber(robustCv, 1),
+        meanDeltaPct: toFiniteNumber(robustMeanDeltaPct, 0),
+        rawMeanDeltaPct: toFiniteNumber(rawMeanDeltaPct, 0),
+        winsorizedMeanDeltaPct: toFiniteNumber(winsorizedMeanDeltaPct, 0),
+        medianDeltaPct: toFiniteNumber(medianDeltaPct, 0),
+        robustMeanDeltaPct: toFiniteNumber(robustMeanDeltaPct, 0),
+        confidence: toFiniteNumber(confidence, 0),
+        confidenceDeltaPct: toFiniteNumber(confidenceDeltaPct, 0),
+        sampleCount: safeValues.length,
+        deltaSampleCount: safeDeltaPctValues.length,
     };
 }
 
@@ -8771,7 +8851,10 @@ function buildQueueItemCostInsights(queueState, queueItem, metricSummary) {
 
     let goldPerPoint01Pct = {};
     for (const metricKey of QUEUE_MULTI_ROUND_METRIC_KEYS) {
-        const meanDeltaPct = Number(metricSummary?.[metricKey]?.meanDeltaPct);
+        const robustDeltaPct = Number(metricSummary?.[metricKey]?.robustMeanDeltaPct);
+        const meanDeltaPct = Number.isFinite(robustDeltaPct)
+            ? robustDeltaPct
+            : Number(metricSummary?.[metricKey]?.meanDeltaPct);
         goldPerPoint01Pct[metricKey] = computeGoldPerPoint01Pct(totalUpgradeCost, { pct: meanDeltaPct });
     }
 
@@ -8792,7 +8875,11 @@ function buildMultiRoundRanking(metricSummaryByQueueItem) {
     const normalizedScoresByMetric = {};
 
     for (const metricKey of QUEUE_MULTI_ROUND_METRIC_KEYS) {
-        const scoreValues = metricSummaryByQueueItem.map((entry) => toFiniteNumber(entry.metricSummary?.[metricKey]?.meanDeltaPct, 0));
+        const scoreValues = metricSummaryByQueueItem.map((entry) => {
+            const robustDeltaPct = Number(entry.metricSummary?.[metricKey]?.robustMeanDeltaPct);
+            const fallbackDeltaPct = Number(entry.metricSummary?.[metricKey]?.meanDeltaPct);
+            return toFiniteNumber(Number.isFinite(robustDeltaPct) ? robustDeltaPct : fallbackDeltaPct, 0);
+        });
         normalizedScoresByMetric[metricKey] = normalizeScoreList(scoreValues, {
             higherIsBetter: true,
             tieScore: 50,
@@ -8835,10 +8922,23 @@ function buildMultiRoundRanking(metricSummaryByQueueItem) {
         const performanceScore = performanceScores.reduce((acc, cur) => acc + cur, 0) / Math.max(1, performanceScores.length);
 
         const cvList = QUEUE_MULTI_ROUND_METRIC_KEYS.map((metricKey) => {
-            return toFiniteNumber(entry.metricSummary?.[metricKey]?.cv, 1);
+            const robustCv = Number(entry.metricSummary?.[metricKey]?.robustCv);
+            const fallbackCv = Number(entry.metricSummary?.[metricKey]?.cv);
+            return toFiniteNumber(Number.isFinite(robustCv) ? robustCv : fallbackCv, 1);
         });
         const avgCv = cvList.reduce((acc, cur) => acc + cur, 0) / Math.max(1, cvList.length);
         const stabilityScore = clampNumber(100 * (1 - Math.min(avgCv, 1)), 0, 100);
+
+        const confidenceList = QUEUE_MULTI_ROUND_METRIC_KEYS.map((metricKey) => {
+            const confidenceDeltaPct = Number(entry.metricSummary?.[metricKey]?.confidenceDeltaPct);
+            const fallbackConfidence = Number(entry.metricSummary?.[metricKey]?.confidence);
+            return clampNumber(
+                toFiniteNumber(Number.isFinite(confidenceDeltaPct) ? confidenceDeltaPct : fallbackConfidence, 0),
+                0,
+                1
+            );
+        });
+        const avgConfidence = confidenceList.reduce((acc, cur) => acc + cur, 0) / Math.max(1, confidenceList.length);
 
         // Cost score weights:
         // upgrade cost 25% + purchase time 35% + gold per 0.01% 40%
@@ -8849,17 +8949,31 @@ function buildMultiRoundRanking(metricSummaryByQueueItem) {
         );
 
         // Final score weights:
-        // performance 55% + stability 20% + cost efficiency 25%
-        const finalScore = 0.55 * performanceScore + 0.20 * stabilityScore + 0.25 * costScore;
+        // performance 45% + stability 20% + cost efficiency 35%
+        const baseFinalScore = 0.45 * performanceScore + 0.20 * stabilityScore + 0.35 * costScore;
+        const confidencePenaltyStrength = clampNumber(
+            toFiniteNumber(QUEUE_MULTI_ROUND_CONFIDENCE_PENALTY_STRENGTH, 0.35),
+            0,
+            1
+        );
+        const confidencePenaltyFactor = clampNumber(
+            (1 - confidencePenaltyStrength) + confidencePenaltyStrength * avgConfidence,
+            0,
+            1
+        );
+        const finalScore = baseFinalScore * confidencePenaltyFactor;
 
         return {
             queueItemId: entry.queueItemId,
             displayName: entry.displayName,
             order: entry.order,
             finalScore: toFiniteNumber(finalScore, 0),
+            baseFinalScore: toFiniteNumber(baseFinalScore, 0),
             performanceScore: toFiniteNumber(performanceScore, 0),
             stabilityScore: toFiniteNumber(stabilityScore, 0),
             costScore: toFiniteNumber(costScore, 0),
+            confidenceScore: toFiniteNumber(avgConfidence * 100, 0),
+            confidencePenaltyFactor: toFiniteNumber(confidencePenaltyFactor, 1),
             metricSummary: entry.metricSummary,
             costInsights: entry.costInsights,
         };
@@ -9748,6 +9862,11 @@ function renderMultiRoundResultsForCurrentPlayer() {
     const finishedAtText = Number.isFinite(config.finishedAt) ? new Date(config.finishedAt).toLocaleString() : "-";
     const totalRuns = rawRows.length;
     const totalRoundCount = Math.max(0, Math.floor(toFiniteNumber(config.roundCount, 0)));
+    const robustWinsorPctText = formatMetricValue(QUEUE_MULTI_ROUND_WINSORIZE_PCT * 100, 1);
+    const robustMeanWeightPctText = formatMetricValue((1 - QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT) * 100, 0);
+    const robustMedianWeightPctText = formatMetricValue(QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT * 100, 0);
+    const confidencePenaltyBasePctText = formatMetricValue((1 - QUEUE_MULTI_ROUND_CONFIDENCE_PENALTY_STRENGTH) * 100, 0);
+    const confidencePenaltyWeightPctText = formatMetricValue(QUEUE_MULTI_ROUND_CONFIDENCE_PENALTY_STRENGTH * 100, 0);
     const simCountByQueueItemId = new Map();
     for (const rawRowData of rawRows) {
         const queueItemId = String(rawRowData?.queueItemId ?? "");
@@ -9770,6 +9889,9 @@ function renderMultiRoundResultsForCurrentPlayer() {
                 <div>${i18next.t("common:multiRound.scoreModelParamPerformance")}</div>
                 <div>${i18next.t("common:multiRound.scoreModelParamStability")}</div>
                 <div>${i18next.t("common:multiRound.scoreModelParamCost")}</div>
+                <div>${i18next.t("common:multiRound.scoreModelParamRobustWinsorize", { winsorPct: robustWinsorPctText })}</div>
+                <div>${i18next.t("common:multiRound.scoreModelParamRobustMedianBlend", { meanWeight: robustMeanWeightPctText, medianWeight: robustMedianWeightPctText })}</div>
+                <div>${i18next.t("common:multiRound.scoreModelParamRobustConfidencePenalty", { baseWeight: confidencePenaltyBasePctText, penaltyWeight: confidencePenaltyWeightPctText })}</div>
             </div>
         </div>
     `;
