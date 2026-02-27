@@ -44,11 +44,11 @@ let currentSimResults = {};
 
 let currentPlayerTabId = '1';
 let playerDataMap = {
-    "1": "{\"player\":{\"attackLevel\":1,\"magicLevel\":1,\"meleeLevel\":1,\"rangedLevel\":1,\"defenseLevel\":1,\"staminaLevel\":1,\"intelligenceLevel\":1,\"equipment\":[]},\"food\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"drinks\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"abilities\":[{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"}],\"triggerMap\":{},\"zone\":\"/actions/combat/fly\",\"simulationTime\":\"100\",\"houseRooms\":{\"/house_rooms/dairy_barn\":0,\"/house_rooms/garden\":0,\"/house_rooms/log_shed\":0,\"/house_rooms/forge\":0,\"/house_rooms/workshop\":0,\"/house_rooms/sewing_parlor\":0,\"/house_rooms/kitchen\":0,\"/house_rooms/brewery\":0,\"/house_rooms/laboratory\":0,\"/house_rooms/dining_room\":0,\"/house_rooms/library\":0,\"/house_rooms/dojo\":0,\"/house_rooms/gym\":0,\"/house_rooms/armory\":0,\"/house_rooms/archery_range\":0,\"/house_rooms/mystical_study\":0,\"/house_rooms/observatory\":0},\"achievements\":{}}",
-    "2": "{\"player\":{\"attackLevel\":1,\"magicLevel\":1,\"meleeLevel\":1,\"rangedLevel\":1,\"defenseLevel\":1,\"staminaLevel\":1,\"intelligenceLevel\":1,\"equipment\":[]},\"food\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"drinks\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"abilities\":[{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"}],\"triggerMap\":{},\"zone\":\"/actions/combat/fly\",\"simulationTime\":\"100\",\"houseRooms\":{\"/house_rooms/dairy_barn\":0,\"/house_rooms/garden\":0,\"/house_rooms/log_shed\":0,\"/house_rooms/forge\":0,\"/house_rooms/workshop\":0,\"/house_rooms/sewing_parlor\":0,\"/house_rooms/kitchen\":0,\"/house_rooms/brewery\":0,\"/house_rooms/laboratory\":0,\"/house_rooms/dining_room\":0,\"/house_rooms/library\":0,\"/house_rooms/dojo\":0,\"/house_rooms/gym\":0,\"/house_rooms/armory\":0,\"/house_rooms/archery_range\":0,\"/house_rooms/mystical_study\":0,\"/house_rooms/observatory\":0},\"achievements\":{}}",
-    "3": "{\"player\":{\"attackLevel\":1,\"magicLevel\":1,\"meleeLevel\":1,\"rangedLevel\":1,\"defenseLevel\":1,\"staminaLevel\":1,\"intelligenceLevel\":1,\"equipment\":[]},\"food\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"drinks\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"abilities\":[{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"}],\"triggerMap\":{},\"zone\":\"/actions/combat/fly\",\"simulationTime\":\"100\",\"houseRooms\":{\"/house_rooms/dairy_barn\":0,\"/house_rooms/garden\":0,\"/house_rooms/log_shed\":0,\"/house_rooms/forge\":0,\"/house_rooms/workshop\":0,\"/house_rooms/sewing_parlor\":0,\"/house_rooms/kitchen\":0,\"/house_rooms/brewery\":0,\"/house_rooms/laboratory\":0,\"/house_rooms/dining_room\":0,\"/house_rooms/library\":0,\"/house_rooms/dojo\":0,\"/house_rooms/gym\":0,\"/house_rooms/armory\":0,\"/house_rooms/archery_range\":0,\"/house_rooms/mystical_study\":0,\"/house_rooms/observatory\":0},\"achievements\":{}}",
-    "4": "{\"player\":{\"attackLevel\":1,\"magicLevel\":1,\"meleeLevel\":1,\"rangedLevel\":1,\"defenseLevel\":1,\"staminaLevel\":1,\"intelligenceLevel\":1,\"equipment\":[]},\"food\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"drinks\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"abilities\":[{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"}],\"triggerMap\":{},\"zone\":\"/actions/combat/fly\",\"simulationTime\":\"100\",\"houseRooms\":{\"/house_rooms/dairy_barn\":0,\"/house_rooms/garden\":0,\"/house_rooms/log_shed\":0,\"/house_rooms/forge\":0,\"/house_rooms/workshop\":0,\"/house_rooms/sewing_parlor\":0,\"/house_rooms/kitchen\":0,\"/house_rooms/brewery\":0,\"/house_rooms/laboratory\":0,\"/house_rooms/dining_room\":0,\"/house_rooms/library\":0,\"/house_rooms/dojo\":0,\"/house_rooms/gym\":0,\"/house_rooms/armory\":0,\"/house_rooms/archery_range\":0,\"/house_rooms/mystical_study\":0,\"/house_rooms/observatory\":0},\"achievements\":{}}",
-    "5": "{\"player\":{\"attackLevel\":1,\"magicLevel\":1,\"meleeLevel\":1,\"rangedLevel\":1,\"defenseLevel\":1,\"staminaLevel\":1,\"intelligenceLevel\":1,\"equipment\":[]},\"food\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"drinks\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"abilities\":[{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"}],\"triggerMap\":{},\"zone\":\"/actions/combat/fly\",\"simulationTime\":\"100\",\"houseRooms\":{\"/house_rooms/dairy_barn\":0,\"/house_rooms/garden\":0,\"/house_rooms/log_shed\":0,\"/house_rooms/forge\":0,\"/house_rooms/workshop\":0,\"/house_rooms/sewing_parlor\":0,\"/house_rooms/kitchen\":0,\"/house_rooms/brewery\":0,\"/house_rooms/laboratory\":0,\"/house_rooms/dining_room\":0,\"/house_rooms/library\":0,\"/house_rooms/dojo\":0,\"/house_rooms/gym\":0,\"/house_rooms/armory\":0,\"/house_rooms/archery_range\":0,\"/house_rooms/mystical_study\":0,\"/house_rooms/observatory\":0},\"achievements\":{}}"
+    "1": "{\"player\":{\"attackLevel\":1,\"magicLevel\":1,\"meleeLevel\":1,\"rangedLevel\":1,\"defenseLevel\":1,\"staminaLevel\":1,\"intelligenceLevel\":1,\"equipment\":[]},\"food\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"drinks\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"abilities\":[{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"}],\"triggerMap\":{},\"zone\":\"/actions/combat/fly\",\"simulationTime\":\"24\",\"houseRooms\":{\"/house_rooms/dairy_barn\":0,\"/house_rooms/garden\":0,\"/house_rooms/log_shed\":0,\"/house_rooms/forge\":0,\"/house_rooms/workshop\":0,\"/house_rooms/sewing_parlor\":0,\"/house_rooms/kitchen\":0,\"/house_rooms/brewery\":0,\"/house_rooms/laboratory\":0,\"/house_rooms/dining_room\":0,\"/house_rooms/library\":0,\"/house_rooms/dojo\":0,\"/house_rooms/gym\":0,\"/house_rooms/armory\":0,\"/house_rooms/archery_range\":0,\"/house_rooms/mystical_study\":0,\"/house_rooms/observatory\":0},\"achievements\":{}}",
+    "2": "{\"player\":{\"attackLevel\":1,\"magicLevel\":1,\"meleeLevel\":1,\"rangedLevel\":1,\"defenseLevel\":1,\"staminaLevel\":1,\"intelligenceLevel\":1,\"equipment\":[]},\"food\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"drinks\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"abilities\":[{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"}],\"triggerMap\":{},\"zone\":\"/actions/combat/fly\",\"simulationTime\":\"24\",\"houseRooms\":{\"/house_rooms/dairy_barn\":0,\"/house_rooms/garden\":0,\"/house_rooms/log_shed\":0,\"/house_rooms/forge\":0,\"/house_rooms/workshop\":0,\"/house_rooms/sewing_parlor\":0,\"/house_rooms/kitchen\":0,\"/house_rooms/brewery\":0,\"/house_rooms/laboratory\":0,\"/house_rooms/dining_room\":0,\"/house_rooms/library\":0,\"/house_rooms/dojo\":0,\"/house_rooms/gym\":0,\"/house_rooms/armory\":0,\"/house_rooms/archery_range\":0,\"/house_rooms/mystical_study\":0,\"/house_rooms/observatory\":0},\"achievements\":{}}",
+    "3": "{\"player\":{\"attackLevel\":1,\"magicLevel\":1,\"meleeLevel\":1,\"rangedLevel\":1,\"defenseLevel\":1,\"staminaLevel\":1,\"intelligenceLevel\":1,\"equipment\":[]},\"food\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"drinks\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"abilities\":[{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"}],\"triggerMap\":{},\"zone\":\"/actions/combat/fly\",\"simulationTime\":\"24\",\"houseRooms\":{\"/house_rooms/dairy_barn\":0,\"/house_rooms/garden\":0,\"/house_rooms/log_shed\":0,\"/house_rooms/forge\":0,\"/house_rooms/workshop\":0,\"/house_rooms/sewing_parlor\":0,\"/house_rooms/kitchen\":0,\"/house_rooms/brewery\":0,\"/house_rooms/laboratory\":0,\"/house_rooms/dining_room\":0,\"/house_rooms/library\":0,\"/house_rooms/dojo\":0,\"/house_rooms/gym\":0,\"/house_rooms/armory\":0,\"/house_rooms/archery_range\":0,\"/house_rooms/mystical_study\":0,\"/house_rooms/observatory\":0},\"achievements\":{}}",
+    "4": "{\"player\":{\"attackLevel\":1,\"magicLevel\":1,\"meleeLevel\":1,\"rangedLevel\":1,\"defenseLevel\":1,\"staminaLevel\":1,\"intelligenceLevel\":1,\"equipment\":[]},\"food\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"drinks\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"abilities\":[{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"}],\"triggerMap\":{},\"zone\":\"/actions/combat/fly\",\"simulationTime\":\"24\",\"houseRooms\":{\"/house_rooms/dairy_barn\":0,\"/house_rooms/garden\":0,\"/house_rooms/log_shed\":0,\"/house_rooms/forge\":0,\"/house_rooms/workshop\":0,\"/house_rooms/sewing_parlor\":0,\"/house_rooms/kitchen\":0,\"/house_rooms/brewery\":0,\"/house_rooms/laboratory\":0,\"/house_rooms/dining_room\":0,\"/house_rooms/library\":0,\"/house_rooms/dojo\":0,\"/house_rooms/gym\":0,\"/house_rooms/armory\":0,\"/house_rooms/archery_range\":0,\"/house_rooms/mystical_study\":0,\"/house_rooms/observatory\":0},\"achievements\":{}}",
+    "5": "{\"player\":{\"attackLevel\":1,\"magicLevel\":1,\"meleeLevel\":1,\"rangedLevel\":1,\"defenseLevel\":1,\"staminaLevel\":1,\"intelligenceLevel\":1,\"equipment\":[]},\"food\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"drinks\":{\"/action_types/combat\":[{\"itemHrid\":\"\"},{\"itemHrid\":\"\"},{\"itemHrid\":\"\"}]},\"abilities\":[{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"},{\"abilityHrid\":\"\",\"level\":\"1\"}],\"triggerMap\":{},\"zone\":\"/actions/combat/fly\",\"simulationTime\":\"24\",\"houseRooms\":{\"/house_rooms/dairy_barn\":0,\"/house_rooms/garden\":0,\"/house_rooms/log_shed\":0,\"/house_rooms/forge\":0,\"/house_rooms/workshop\":0,\"/house_rooms/sewing_parlor\":0,\"/house_rooms/kitchen\":0,\"/house_rooms/brewery\":0,\"/house_rooms/laboratory\":0,\"/house_rooms/dining_room\":0,\"/house_rooms/library\":0,\"/house_rooms/dojo\":0,\"/house_rooms/gym\":0,\"/house_rooms/armory\":0,\"/house_rooms/archery_range\":0,\"/house_rooms/mystical_study\":0,\"/house_rooms/observatory\":0},\"achievements\":{}}"
 };
 window.revenue = 0;
 window.noRngRevenue = 0;
@@ -79,6 +79,21 @@ const QUEUE_MULTI_ROUND_SCORE_INVALID = 0;
 const QUEUE_MULTI_ROUND_FINAL_WEIGHT_PERFORMANCE = 0.40;
 const QUEUE_MULTI_ROUND_FINAL_WEIGHT_STABILITY = 0.20;
 const QUEUE_MULTI_ROUND_FINAL_WEIGHT_COST = 0.40;
+const QUEUE_SETTINGS_STORAGE_KEY = "mwi.queue.settings.v1";
+const QUEUE_SETTINGS_STORAGE_VERSION = 1;
+const PLAYER_DATA_SNAPSHOT_STORAGE_KEY = "mwi.player.data.snapshot.v1";
+const PLAYER_DATA_SNAPSHOT_STORAGE_VERSION = 1;
+const QUEUE_PARALLEL_WORKER_LIMIT_MIN = 1;
+const QUEUE_PARALLEL_WORKER_LIMIT_MAX = 64;
+const QUEUE_WEIGHT_SUM_EPSILON = 1e-6;
+const SIMULATION_SETTING_DEFAULTS = Object.freeze({
+    zone: "/actions/combat/fly",
+    dungeon: "",
+    difficulty: "0",
+    simulationTime: "24",
+    labyrinth: "",
+    roomLevel: "100",
+});
 const abilityBookInfoByAbilityHrid = buildAbilityBookInfoByAbilityHrid();
 
 const WATCHED_CONTROL_IDS = new Set([
@@ -93,6 +108,7 @@ const WATCHED_CONTROL_IDS = new Set([
 let queueStateByPlayer = createInitialQueueState();
 let importedProfileByPlayer = Object.fromEntries(QUEUE_PLAYER_IDS.map((playerId) => [playerId, false]));
 let activeLeftPage = "home";
+let queueRuntimeSettings = loadQueueSettingsFromStorageOrDefault();
 window.jigsAbilityXpLevels = [];
 window.jigsSpellBookXpByName = {};
 
@@ -4734,9 +4750,154 @@ function doGroupExport() {
     }
 }
 
+function getFirstSelectOptionValue(selectElement) {
+    const options = Array.from(selectElement?.options ?? []);
+    if (options.length === 0) {
+        return "";
+    }
+    return String(options[0]?.value ?? "");
+}
+
+function resolveNormalizedSelectValue(selectElement, value, fallbackValue = "") {
+    const options = Array.from(selectElement?.options ?? []);
+    if (options.length === 0) {
+        return String(fallbackValue ?? "");
+    }
+
+    const desiredValue = String(value ?? "");
+    if (options.some((option) => option.value === desiredValue)) {
+        return desiredValue;
+    }
+
+    const fallback = String(fallbackValue ?? "");
+    if (options.some((option) => option.value === fallback)) {
+        return fallback;
+    }
+
+    return String(options[0].value ?? "");
+}
+
+function getDefaultSimulationSettings() {
+    const zoneSelect = document.getElementById("selectZone");
+    const dungeonSelect = document.getElementById("selectDungeon");
+    const difficultySelect = document.getElementById("selectDifficulty");
+    const simulationTimeInput = document.getElementById("inputSimulationTime");
+    const labyrinthSelect = document.getElementById("selectLabyrinth");
+    const roomLevelInput = document.getElementById("inputRoomLevel");
+
+    const simulationTimeDefault = simulationTimeInput?.value ?? simulationTimeInput?.defaultValue ?? SIMULATION_SETTING_DEFAULTS.simulationTime;
+    const roomLevelDefault = roomLevelInput?.value ?? roomLevelInput?.defaultValue ?? SIMULATION_SETTING_DEFAULTS.roomLevel;
+
+    return {
+        zone: resolveNormalizedSelectValue(zoneSelect, SIMULATION_SETTING_DEFAULTS.zone, getFirstSelectOptionValue(zoneSelect)),
+        dungeon: resolveNormalizedSelectValue(dungeonSelect, SIMULATION_SETTING_DEFAULTS.dungeon, getFirstSelectOptionValue(dungeonSelect)),
+        difficulty: resolveNormalizedSelectValue(difficultySelect, SIMULATION_SETTING_DEFAULTS.difficulty, getFirstSelectOptionValue(difficultySelect)),
+        simulationTime: String(simulationTimeDefault ?? SIMULATION_SETTING_DEFAULTS.simulationTime),
+        labyrinth: resolveNormalizedSelectValue(labyrinthSelect, SIMULATION_SETTING_DEFAULTS.labyrinth, getFirstSelectOptionValue(labyrinthSelect)),
+        roomLevel: String(roomLevelDefault ?? SIMULATION_SETTING_DEFAULTS.roomLevel),
+    };
+}
+
+function normalizeSimulationSettings(rawSettings) {
+    const settings = rawSettings && typeof rawSettings === "object" ? rawSettings : {};
+    const defaults = getDefaultSimulationSettings();
+    const zoneSelect = document.getElementById("selectZone");
+    const dungeonSelect = document.getElementById("selectDungeon");
+    const difficultySelect = document.getElementById("selectDifficulty");
+    const labyrinthSelect = document.getElementById("selectLabyrinth");
+
+    return {
+        zone: resolveNormalizedSelectValue(zoneSelect, settings.zone, defaults.zone),
+        dungeon: resolveNormalizedSelectValue(dungeonSelect, settings.dungeon, defaults.dungeon),
+        difficulty: resolveNormalizedSelectValue(difficultySelect, settings.difficulty, defaults.difficulty),
+        simulationTime: String(settings.simulationTime ?? defaults.simulationTime),
+        labyrinth: resolveNormalizedSelectValue(labyrinthSelect, settings.labyrinth, defaults.labyrinth),
+        roomLevel: String(settings.roomLevel ?? defaults.roomLevel),
+    };
+}
+
+function normalizePlayerDataJsonSimulationSettings(playerDataJson) {
+    if (typeof playerDataJson !== "string" || playerDataJson.trim().length === 0) {
+        return playerDataJson;
+    }
+
+    try {
+        const parsed = JSON.parse(playerDataJson);
+        if (!parsed || typeof parsed !== "object") {
+            return playerDataJson;
+        }
+
+        const normalizedSimulationSettings = normalizeSimulationSettings(parsed);
+        return JSON.stringify({
+            ...parsed,
+            ...normalizedSimulationSettings,
+        });
+    } catch (error) {
+        return playerDataJson;
+    }
+}
+
+function normalizePlayerDataMapSimulationSettings(rawPlayerDataMap) {
+    const snapshot = snapshotPlayerDataMap(rawPlayerDataMap);
+    const normalized = {};
+    for (const playerId of QUEUE_PLAYER_IDS) {
+        normalized[playerId] = normalizePlayerDataJsonSimulationSettings(snapshot[playerId]);
+    }
+    return normalized;
+}
+
+function collectSimulationSettingsFromUI() {
+    const zoneSelect = document.getElementById("selectZone");
+    const dungeonSelect = document.getElementById("selectDungeon");
+    const difficultySelect = document.getElementById("selectDifficulty");
+    const simulationTimeInput = document.getElementById("inputSimulationTime");
+    const labyrinthSelect = document.getElementById("selectLabyrinth");
+    const roomLevelInput = document.getElementById("inputRoomLevel");
+
+    return normalizeSimulationSettings({
+        zone: zoneSelect?.value ?? "",
+        dungeon: dungeonSelect?.value ?? "",
+        difficulty: difficultySelect?.value ?? "",
+        simulationTime: simulationTimeInput?.value ?? "",
+        labyrinth: labyrinthSelect?.value ?? "",
+        roomLevel: roomLevelInput?.value ?? "",
+    });
+}
+
+function setSelectValueIfOptionExists(selectElement, value) {
+    if (!selectElement || value == null) {
+        return;
+    }
+
+    const targetValue = String(value);
+    const hasOption = Array.from(selectElement.options ?? []).some((option) => option.value === targetValue);
+    if (hasOption) {
+        selectElement.value = targetValue;
+    }
+}
+
+function applySimulationSettingsToUI(settings) {
+    const normalizedSettings = normalizeSimulationSettings(settings);
+    const zoneSelect = document.getElementById("selectZone");
+    const dungeonSelect = document.getElementById("selectDungeon");
+    const difficultySelect = document.getElementById("selectDifficulty");
+    const simulationTimeInput = document.getElementById("inputSimulationTime");
+    const labyrinthSelect = document.getElementById("selectLabyrinth");
+    const roomLevelInput = document.getElementById("inputRoomLevel");
+
+    setSelectValueIfOptionExists(zoneSelect, normalizedSettings.zone);
+    setSelectValueIfOptionExists(dungeonSelect, normalizedSettings.dungeon);
+    setSelectValueIfOptionExists(difficultySelect, normalizedSettings.difficulty);
+    setSelectValueIfOptionExists(labyrinthSelect, normalizedSettings.labyrinth);
+    if (simulationTimeInput) {
+        simulationTimeInput.value = normalizedSettings.simulationTime;
+    }
+    if (roomLevelInput) {
+        roomLevelInput.value = normalizedSettings.roomLevel;
+    }
+}
+
 function doSoloExport() {
-    let zoneSelect = document.getElementById("selectZone");
-    let simulationTimeInput = document.getElementById("inputSimulationTime");
     let equipmentArray = [];
     for (const item in player.equipment) {
         if (player.equipment[item] != null) {
@@ -4777,8 +4938,7 @@ function doSoloExport() {
         drinks: { "/action_types/combat": drinksArray },
         abilities: abilitiesArray,
         triggerMap: triggerMap,
-        zone: zoneSelect.value,
-        simulationTime: simulationTimeInput.value,
+        ...collectSimulationSettingsFromUI(),
         houseRooms: player.houseRooms,
         achievements: player.achievements
     };
@@ -4823,6 +4983,8 @@ function doGroupImport() {
         }
         needUpdateCurrentTab = true;
     }
+
+    playerDataMap = normalizePlayerDataMapSimulationSettings(playerDataMap);
 
     for (const playerId of updatedPlayerIds) {
         resetPlayerQueueState(playerId);
@@ -4968,15 +5130,7 @@ function doSoloImport() {
     }
     refreshAchievementStatics();
 
-    if ("zone" in importSet) {
-        let zoneSelect = document.getElementById("selectZone");
-        zoneSelect.value = importSet["zone"];
-    }
-
-    if ("simulationTime" in importSet) {
-        let simulationDuration = document.getElementById("inputSimulationTime");
-        simulationDuration.value = importSet["simulationTime"];
-    }
+    applySimulationSettingsToUI(importSet);
 
     importedProfileByPlayer[currentPlayerTabId] = true;
     resetPlayerQueueState(currentPlayerTabId);
@@ -4984,8 +5138,6 @@ function doSoloImport() {
 }
 
 function savePreviousPlayer(playerId) {
-    let zoneSelect = document.getElementById("selectZone");
-    let simulationTimeInput = document.getElementById("inputSimulationTime");
     let equipmentArray = [];
     for (const item in player.equipment) {
         if (player.equipment[item] != null) {
@@ -5026,8 +5178,7 @@ function savePreviousPlayer(playerId) {
         drinks: { "/action_types/combat": drinksArray },
         abilities: abilitiesArray,
         triggerMap: triggerMap,
-        zone: zoneSelect.value,
-        simulationTime: simulationTimeInput.value,
+        ...collectSimulationSettingsFromUI(),
         houseRooms: player.houseRooms,
         achievements: player.achievements
     };
@@ -5174,6 +5325,8 @@ function updateNextPlayer(currentPlayerNumber) {
         }
     }
     refreshAchievementStatics();
+
+    applySimulationSettingsToUI(importSet);
 }
 
 function showErrorModal(error) {
@@ -5610,7 +5763,749 @@ if (typeof i18next !== "undefined" && i18next?.on) {
         refreshAbilityUpgradeCostHints();
         refreshEquipmentEnhancementHints();
         renderQueueViewsForCurrentPlayer();
+        renderPlayerSnapshotList();
+        refreshParallelWorkerHint();
     });
+}
+
+function resolveI18nText(messageKey, options = {}) {
+    if (typeof i18next === "undefined" || !i18next?.t) {
+        return messageKey;
+    }
+    return i18next.t(messageKey, options);
+}
+
+function getDefaultQueueRuntimeSettings() {
+    return {
+        finalWeights: {
+            performance: QUEUE_MULTI_ROUND_FINAL_WEIGHT_PERFORMANCE,
+            stability: QUEUE_MULTI_ROUND_FINAL_WEIGHT_STABILITY,
+            cost: QUEUE_MULTI_ROUND_FINAL_WEIGHT_COST,
+        },
+        parallelWorkerLimit: QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS,
+    };
+}
+
+function normalizeQueueScoreWeights(scoreWeights) {
+    const defaults = getDefaultQueueRuntimeSettings().finalWeights;
+    const performance = Number(scoreWeights?.performance);
+    const stability = Number(scoreWeights?.stability);
+    const cost = Number(scoreWeights?.cost);
+
+    if (
+        !Number.isFinite(performance)
+        || !Number.isFinite(stability)
+        || !Number.isFinite(cost)
+        || performance < 0
+        || stability < 0
+        || cost < 0
+        || performance > 1
+        || stability > 1
+        || cost > 1
+    ) {
+        return structuredClone(defaults);
+    }
+
+    const total = performance + stability + cost;
+    if (Math.abs(total - 1) > QUEUE_WEIGHT_SUM_EPSILON) {
+        return structuredClone(defaults);
+    }
+
+    return {
+        performance,
+        stability,
+        cost,
+    };
+}
+
+function normalizeParallelWorkerLimit(value) {
+    const parsed = Math.floor(toFiniteNumber(value, QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS));
+    return clampNumber(parsed, QUEUE_PARALLEL_WORKER_LIMIT_MIN, QUEUE_PARALLEL_WORKER_LIMIT_MAX);
+}
+
+function getDetectedHardwareCoreCount() {
+    const hardwareConcurrency = Number(typeof navigator !== "undefined" ? navigator.hardwareConcurrency : NaN);
+    if (!Number.isFinite(hardwareConcurrency) || hardwareConcurrency <= 0) {
+        return null;
+    }
+    return Math.max(1, Math.floor(hardwareConcurrency));
+}
+
+function getParallelWorkerHardMaxForCurrentMachine() {
+    const detectedCoreCount = getDetectedHardwareCoreCount();
+    if (!Number.isFinite(detectedCoreCount)) {
+        return QUEUE_PARALLEL_WORKER_LIMIT_MAX;
+    }
+    return Math.max(QUEUE_PARALLEL_WORKER_LIMIT_MIN, Math.min(QUEUE_PARALLEL_WORKER_LIMIT_MAX, detectedCoreCount));
+}
+
+function getRecommendedParallelWorkerLimit() {
+    const detectedCoreCount = getDetectedHardwareCoreCount();
+    const upperBound = Number.isFinite(detectedCoreCount)
+        ? Math.min(QUEUE_PARALLEL_WORKER_LIMIT_MAX, detectedCoreCount)
+        : QUEUE_PARALLEL_WORKER_LIMIT_MAX;
+    return Math.max(
+        QUEUE_PARALLEL_WORKER_LIMIT_MIN,
+        Math.min(QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS, upperBound)
+    );
+}
+
+function refreshParallelWorkerHint() {
+    const hintElement = document.getElementById("settingsParallelWorkerHint");
+    const inputParallelWorkerLimit = document.getElementById("inputParallelWorkerLimit");
+    if (!hintElement || !inputParallelWorkerLimit) {
+        return;
+    }
+
+    const detectedCoreCount = getDetectedHardwareCoreCount();
+    const hardMax = getParallelWorkerHardMaxForCurrentMachine();
+    const recommended = getRecommendedParallelWorkerLimit();
+    inputParallelWorkerLimit.max = String(hardMax);
+
+    if (Number.isFinite(detectedCoreCount)) {
+        hintElement.textContent = resolveI18nText("common:settingsPage.parallelWorkerHint", {
+            cores: detectedCoreCount,
+            recommended,
+        });
+    } else {
+        hintElement.textContent = resolveI18nText("common:settingsPage.parallelWorkerHintUnknown", {
+            recommended,
+        });
+    }
+}
+
+function normalizeQueueRuntimeSettings(settings) {
+    return {
+        finalWeights: normalizeQueueScoreWeights(settings?.finalWeights),
+        parallelWorkerLimit: normalizeParallelWorkerLimit(settings?.parallelWorkerLimit),
+    };
+}
+
+function loadQueueSettingsFromStorageOrDefault() {
+    const defaults = getDefaultQueueRuntimeSettings();
+    if (typeof localStorage === "undefined") {
+        return defaults;
+    }
+
+    try {
+        const rawValue = localStorage.getItem(QUEUE_SETTINGS_STORAGE_KEY);
+        if (!rawValue) {
+            return defaults;
+        }
+
+        const parsed = JSON.parse(rawValue);
+        if (!parsed || parsed.version !== QUEUE_SETTINGS_STORAGE_VERSION) {
+            return defaults;
+        }
+
+        return normalizeQueueRuntimeSettings({
+            finalWeights: parsed.finalWeights,
+            parallelWorkerLimit: parsed.parallelWorkerLimit,
+        });
+    } catch (error) {
+        return defaults;
+    }
+}
+
+function saveQueueSettingsToStorage(settings) {
+    if (typeof localStorage === "undefined") {
+        throw new Error("localStorage unavailable");
+    }
+
+    const normalized = normalizeQueueRuntimeSettings(settings);
+    const payload = {
+        version: QUEUE_SETTINGS_STORAGE_VERSION,
+        savedAt: Date.now(),
+        finalWeights: structuredClone(normalized.finalWeights),
+        parallelWorkerLimit: normalized.parallelWorkerLimit,
+    };
+    localStorage.setItem(QUEUE_SETTINGS_STORAGE_KEY, JSON.stringify(payload));
+    return normalized;
+}
+
+function snapshotPlayerDataMap(rawPlayerDataMap) {
+    let result = {};
+    for (const playerId of QUEUE_PLAYER_IDS) {
+        const sourceValue = rawPlayerDataMap?.[playerId];
+        result[playerId] = typeof sourceValue === "string" ? sourceValue : "";
+    }
+    return result;
+}
+
+function normalizeStoredPlayerDataMap(rawPlayerDataMap, options = {}) {
+    const allowPartial = options.allowPartial !== false;
+    if (!rawPlayerDataMap || typeof rawPlayerDataMap !== "object") {
+        return null;
+    }
+
+    let result = {};
+    let savedCount = 0;
+    for (const playerId of QUEUE_PLAYER_IDS) {
+        const playerDataValue = rawPlayerDataMap[playerId];
+        if (playerDataValue == null || playerDataValue === "") {
+            if (allowPartial) {
+                continue;
+            }
+            return null;
+        }
+
+        if (typeof playerDataValue !== "string" || playerDataValue.trim().length === 0) {
+            if (allowPartial) {
+                continue;
+            }
+            return null;
+        }
+
+        try {
+            JSON.parse(playerDataValue);
+        } catch (error) {
+            return null;
+        }
+
+        result[playerId] = playerDataValue;
+        savedCount += 1;
+    }
+
+    if (!allowPartial && savedCount !== QUEUE_PLAYER_IDS.length) {
+        return null;
+    }
+    if (savedCount === 0) {
+        return null;
+    }
+
+    return result;
+}
+
+function upsertPlayerDataSnapshotToStorage(normalizedPlayerDataMap) {
+    if (typeof localStorage === "undefined") {
+        throw new Error("localStorage unavailable");
+    }
+
+    const normalized = normalizeStoredPlayerDataMap(normalizedPlayerDataMap, { allowPartial: true });
+    if (!normalized) {
+        localStorage.removeItem(PLAYER_DATA_SNAPSHOT_STORAGE_KEY);
+        return null;
+    }
+
+    const payload = {
+        version: PLAYER_DATA_SNAPSHOT_STORAGE_VERSION,
+        savedAt: Date.now(),
+        playerDataMap: normalized,
+    };
+    localStorage.setItem(PLAYER_DATA_SNAPSHOT_STORAGE_KEY, JSON.stringify(payload));
+    return payload.savedAt;
+}
+
+function clearPlayerDataSnapshotFromStorage() {
+    if (typeof localStorage === "undefined") {
+        throw new Error("localStorage unavailable");
+    }
+    localStorage.removeItem(PLAYER_DATA_SNAPSHOT_STORAGE_KEY);
+}
+
+function loadPlayerDataSnapshotFromStorage() {
+    if (typeof localStorage === "undefined") {
+        return { status: "error" };
+    }
+
+    const rawValue = localStorage.getItem(PLAYER_DATA_SNAPSHOT_STORAGE_KEY);
+    if (!rawValue) {
+        return { status: "not_found" };
+    }
+
+    try {
+        const parsed = JSON.parse(rawValue);
+        if (!parsed || parsed.version !== PLAYER_DATA_SNAPSHOT_STORAGE_VERSION) {
+            return { status: "invalid" };
+        }
+
+        const normalizedPlayerDataMap = normalizeStoredPlayerDataMap(parsed.playerDataMap, { allowPartial: true });
+        if (!normalizedPlayerDataMap) {
+            return { status: "invalid" };
+        }
+
+        return {
+            status: "ok",
+            savedAt: toFiniteNumber(parsed.savedAt, 0),
+            playerDataMap: normalizedPlayerDataMap,
+        };
+    } catch (error) {
+        return { status: "invalid" };
+    }
+}
+
+function savePlayerDataSnapshotToStorage(rawPlayerDataMap) {
+    if (typeof localStorage === "undefined") {
+        throw new Error("localStorage unavailable");
+    }
+
+    const normalizedPlayerDataMap = normalizeStoredPlayerDataMap(
+        snapshotPlayerDataMap(rawPlayerDataMap),
+        { allowPartial: true }
+    );
+    if (!normalizedPlayerDataMap || Object.keys(normalizedPlayerDataMap).length === 0) {
+        throw new Error("invalid player data snapshot");
+    }
+
+    return upsertPlayerDataSnapshotToStorage(normalizedPlayerDataMap);
+}
+
+function setSettingsStatusText(elementId, messageKey, tone = "secondary", options = {}) {
+    const statusElement = document.getElementById(elementId);
+    if (!statusElement) {
+        return;
+    }
+
+    statusElement.classList.remove("text-secondary", "text-success", "text-danger");
+    if (tone === "success") {
+        statusElement.classList.add("text-success");
+    } else if (tone === "danger") {
+        statusElement.classList.add("text-danger");
+    } else {
+        statusElement.classList.add("text-secondary");
+    }
+
+    statusElement.textContent = resolveI18nText(messageKey, options);
+}
+
+function setSettingsQueueStatus(messageKey, tone = "secondary", options = {}) {
+    setSettingsStatusText("settingsQueueStatus", messageKey, tone, options);
+}
+
+function setSettingsPlayerDataStatus(messageKey, tone = "secondary", options = {}) {
+    setSettingsStatusText("settingsPlayerDataStatus", messageKey, tone, options);
+}
+
+function parsePlayerSnapshotSummary(playerDataJson) {
+    try {
+        const parsed = JSON.parse(playerDataJson);
+        const zoneHrid = String(parsed?.zone ?? "");
+        const localizedZone = zoneHrid ? getLocalizedZoneName(zoneHrid) : "";
+        const zoneDisplay = localizedZone || zoneHrid || "-";
+        const dungeonHrid = String(parsed?.dungeon ?? "");
+        const localizedDungeon = dungeonHrid ? getLocalizedZoneName(dungeonHrid) : "";
+        const dungeonDisplay = localizedDungeon || dungeonHrid || "-";
+        const difficultyRaw = String(parsed?.difficulty ?? "");
+        const difficultyDisplay = difficultyRaw
+            ? (difficultyRaw.startsWith("T") ? difficultyRaw : `T${difficultyRaw}`)
+            : "-";
+        const labyrinthHrid = String(parsed?.labyrinth ?? "");
+        const labyrinthI18nKey = "monsterNames." + labyrinthHrid;
+        const localizedLabyrinth = labyrinthHrid ? i18next.t(labyrinthI18nKey) : "";
+        const labyrinthFallbackName = combatMonsterDetailMap[labyrinthHrid]?.name ?? "";
+        const labyrinthDisplay = labyrinthHrid
+            ? ((localizedLabyrinth && localizedLabyrinth !== labyrinthI18nKey) ? localizedLabyrinth : (labyrinthFallbackName || labyrinthHrid))
+            : "-";
+        const roomLevelRaw = String(parsed?.roomLevel ?? "");
+        const roomLevelDisplay = roomLevelRaw || "-";
+        return {
+            zone: zoneDisplay,
+            zoneHrid,
+            dungeon: dungeonDisplay,
+            dungeonHrid,
+            difficulty: difficultyDisplay,
+            labyrinth: labyrinthDisplay,
+            labyrinthHrid,
+            roomLevel: roomLevelDisplay,
+            simulationTime: String(parsed?.simulationTime ?? "-"),
+        };
+    } catch (error) {
+        return {
+            zone: "-",
+            zoneHrid: "",
+            dungeon: "-",
+            dungeonHrid: "",
+            difficulty: "-",
+            labyrinth: "-",
+            labyrinthHrid: "",
+            roomLevel: "-",
+            simulationTime: "-",
+        };
+    }
+}
+
+function escapeHtml(rawText) {
+    return String(rawText ?? "")
+        .replace(/&/g, "&amp;")
+        .replace(/</g, "&lt;")
+        .replace(/>/g, "&gt;")
+        .replace(/"/g, "&quot;")
+        .replace(/'/g, "&#39;");
+}
+
+function createSnapshotHeaderText(savedAt) {
+    const savedAtText = savedAt > 0 ? new Date(savedAt).toLocaleString() : "-";
+    return resolveI18nText("common:settingsPage.playerSnapshotSavedAt", { time: savedAtText });
+}
+
+function renderPlayerSnapshotList() {
+    const container = document.getElementById("settingsPlayerSnapshotList");
+    if (!container) {
+        return;
+    }
+
+    const loadResult = loadPlayerDataSnapshotFromStorage();
+    if (loadResult.status !== "ok") {
+        container.innerHTML = `<div class="text-secondary">${resolveI18nText("common:settingsPage.playerSnapshotNoData")}</div>`;
+        return;
+    }
+
+    const playerDataSnapshot = loadResult.playerDataMap ?? {};
+    const titleText = resolveI18nText("common:settingsPage.playerSnapshotTitle");
+    const headerText = createSnapshotHeaderText(loadResult.savedAt);
+    const tableHeadPlayer = resolveI18nText("common:settingsPage.playerSnapshotTablePlayer");
+    const tableHeadZone = resolveI18nText("common:settingsPage.playerSnapshotTableZone");
+    const tableHeadDungeon = resolveI18nText("common:settingsPage.playerSnapshotTableDungeon");
+    const tableHeadDifficulty = resolveI18nText("common:settingsPage.playerSnapshotTableDifficulty");
+    const tableHeadDuration = resolveI18nText("common:settingsPage.playerSnapshotTableDuration");
+    const tableHeadLabyrinth = resolveI18nText("common:settingsPage.playerSnapshotTableLabyrinth");
+    const tableHeadRoomLevel = resolveI18nText("common:settingsPage.playerSnapshotTableRoomLevel");
+    const tableHeadActions = resolveI18nText("common:settingsPage.playerSnapshotTableActions");
+    const deleteActionText = resolveI18nText("common:settingsPage.deleteSinglePlayerConfig");
+    const missingText = resolveI18nText("common:settingsPage.playerSnapshotMissing");
+
+    const tableRowsHtml = QUEUE_PLAYER_IDS.map((playerId) => {
+        const playerDataJson = playerDataSnapshot[playerId];
+        if (!playerDataJson) {
+            return `
+                <tr>
+                    <td>Player ${escapeHtml(playerId)}</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td>-</td>
+                    <td><span class="text-secondary">${missingText}</span></td>
+                </tr>
+            `;
+        }
+
+        const summary = parsePlayerSnapshotSummary(playerDataJson);
+        return `
+            <tr>
+                <td>Player ${escapeHtml(playerId)}</td>
+                <td>${escapeHtml(summary.zone)}</td>
+                <td>${escapeHtml(summary.dungeon)}</td>
+                <td>${escapeHtml(summary.difficulty)}</td>
+                <td>${escapeHtml(summary.simulationTime)}</td>
+                <td>${escapeHtml(summary.labyrinth)}</td>
+                <td>${escapeHtml(summary.roomLevel)}</td>
+                <td>
+                    <button type="button" class="btn btn-sm btn-outline-danger" data-player-snapshot-delete="${playerId}">
+                        ${deleteActionText}
+                    </button>
+                </td>
+            </tr>
+        `;
+    }).join("");
+
+    container.innerHTML = `
+        <div class="small text-secondary mb-2">${titleText} - ${headerText}</div>
+        <div class="table-responsive">
+            <table class="table table-bordered table-sm mb-0">
+                <thead>
+                    <tr>
+                        <th>${tableHeadPlayer}</th>
+                        <th>${tableHeadZone}</th>
+                        <th>${tableHeadDungeon}</th>
+                        <th>${tableHeadDifficulty}</th>
+                        <th>${tableHeadDuration}</th>
+                        <th>${tableHeadLabyrinth}</th>
+                        <th>${tableHeadRoomLevel}</th>
+                        <th>${tableHeadActions}</th>
+                    </tr>
+                </thead>
+                <tbody>${tableRowsHtml}</tbody>
+            </table>
+        </div>
+    `;
+
+    container.querySelectorAll("[data-player-snapshot-delete]").forEach((buttonElement) => {
+        buttonElement.addEventListener("click", () => {
+            const playerId = String(buttonElement.getAttribute("data-player-snapshot-delete") ?? "");
+            if (!playerId) {
+                return;
+            }
+            handleDeleteSinglePlayerConfigSnapshotClick(playerId);
+        });
+    });
+}
+
+function formatWeightPercent(weightValue) {
+    return Number((toFiniteNumber(weightValue, 0) * 100).toFixed(2)).toString();
+}
+
+function syncQueueSettingsInputsFromRuntime() {
+    const inputScoreWeightPerformance = document.getElementById("inputScoreWeightPerformance");
+    const inputScoreWeightStability = document.getElementById("inputScoreWeightStability");
+    const inputScoreWeightCost = document.getElementById("inputScoreWeightCost");
+    const inputParallelWorkerLimit = document.getElementById("inputParallelWorkerLimit");
+    if (!inputScoreWeightPerformance || !inputScoreWeightStability || !inputScoreWeightCost || !inputParallelWorkerLimit) {
+        return;
+    }
+
+    const normalizedSettings = normalizeQueueRuntimeSettings(queueRuntimeSettings);
+    const hardMaxForMachine = getParallelWorkerHardMaxForCurrentMachine();
+    inputScoreWeightPerformance.value = formatWeightPercent(normalizedSettings.finalWeights.performance);
+    inputScoreWeightStability.value = formatWeightPercent(normalizedSettings.finalWeights.stability);
+    inputScoreWeightCost.value = formatWeightPercent(normalizedSettings.finalWeights.cost);
+    inputParallelWorkerLimit.value = String(Math.min(normalizedSettings.parallelWorkerLimit, hardMaxForMachine));
+    refreshParallelWorkerHint();
+}
+
+function readQueueSettingsFromForm() {
+    const inputScoreWeightPerformance = document.getElementById("inputScoreWeightPerformance");
+    const inputScoreWeightStability = document.getElementById("inputScoreWeightStability");
+    const inputScoreWeightCost = document.getElementById("inputScoreWeightCost");
+    const inputParallelWorkerLimit = document.getElementById("inputParallelWorkerLimit");
+    if (!inputScoreWeightPerformance || !inputScoreWeightStability || !inputScoreWeightCost || !inputParallelWorkerLimit) {
+        return {
+            ok: false,
+            messageKey: "common:settingsPage.queueSaveErrorMissingControls",
+        };
+    }
+
+    const performancePct = Number(inputScoreWeightPerformance.value);
+    const stabilityPct = Number(inputScoreWeightStability.value);
+    const costPct = Number(inputScoreWeightCost.value);
+    if (
+        !Number.isFinite(performancePct)
+        || !Number.isFinite(stabilityPct)
+        || !Number.isFinite(costPct)
+        || performancePct < 0
+        || stabilityPct < 0
+        || costPct < 0
+        || performancePct > 100
+        || stabilityPct > 100
+        || costPct > 100
+    ) {
+        return {
+            ok: false,
+            messageKey: "common:settingsPage.queueSaveErrorInvalidWeight",
+        };
+    }
+
+    const weightSum = performancePct + stabilityPct + costPct;
+    if (Math.abs(weightSum - 100) > QUEUE_WEIGHT_SUM_EPSILON) {
+        return {
+            ok: false,
+            messageKey: "common:settingsPage.queueSaveErrorWeightSum",
+        };
+    }
+
+    const parallelWorkerLimitRaw = Number(inputParallelWorkerLimit.value);
+    const hardMaxForMachine = getParallelWorkerHardMaxForCurrentMachine();
+    if (
+        !Number.isInteger(parallelWorkerLimitRaw)
+        || parallelWorkerLimitRaw < QUEUE_PARALLEL_WORKER_LIMIT_MIN
+        || parallelWorkerLimitRaw > hardMaxForMachine
+    ) {
+        const detectedCoreCount = getDetectedHardwareCoreCount();
+        if (Number.isFinite(detectedCoreCount) && parallelWorkerLimitRaw > detectedCoreCount) {
+            return {
+                ok: false,
+                messageKey: "common:settingsPage.queueSaveErrorParallelLimitByCore",
+                messageOptions: {
+                    cores: detectedCoreCount,
+                },
+            };
+        }
+
+        return {
+            ok: false,
+            messageKey: "common:settingsPage.queueSaveErrorParallelLimit",
+            messageOptions: {
+                min: QUEUE_PARALLEL_WORKER_LIMIT_MIN,
+                max: hardMaxForMachine,
+            },
+        };
+    }
+
+    return {
+        ok: true,
+        settings: {
+            finalWeights: {
+                performance: performancePct / 100,
+                stability: stabilityPct / 100,
+                cost: costPct / 100,
+            },
+            parallelWorkerLimit: parallelWorkerLimitRaw,
+        },
+    };
+}
+
+function handleSaveQueueSettingsClick() {
+    const readResult = readQueueSettingsFromForm();
+    if (!readResult.ok) {
+        const messageText = resolveI18nText(readResult.messageKey, readResult.messageOptions ?? {});
+        setSettingsQueueStatus(readResult.messageKey, "danger", readResult.messageOptions ?? {});
+        alert(messageText);
+        return;
+    }
+
+    try {
+        queueRuntimeSettings = saveQueueSettingsToStorage(readResult.settings);
+        syncQueueSettingsInputsFromRuntime();
+        setSettingsQueueStatus("common:settingsPage.queueSaveSuccess", "success");
+    } catch (error) {
+        const messageText = resolveI18nText("common:settingsPage.queueSaveErrorStorage");
+        setSettingsQueueStatus("common:settingsPage.queueSaveErrorStorage", "danger");
+        alert(messageText);
+    }
+}
+
+function handleResetQueueSettingsClick() {
+    try {
+        queueRuntimeSettings = saveQueueSettingsToStorage(getDefaultQueueRuntimeSettings());
+        syncQueueSettingsInputsFromRuntime();
+        setSettingsQueueStatus("common:settingsPage.queueResetSuccess", "success");
+    } catch (error) {
+        const messageText = resolveI18nText("common:settingsPage.queueSaveErrorStorage");
+        setSettingsQueueStatus("common:settingsPage.queueSaveErrorStorage", "danger");
+        alert(messageText);
+    }
+}
+
+function handleSavePlayerConfigsClick() {
+    savePreviousPlayer(currentPlayerTabId);
+    playerDataMap = normalizePlayerDataMapSimulationSettings(playerDataMap);
+    try {
+        savePlayerDataSnapshotToStorage(playerDataMap);
+        setSettingsPlayerDataStatus("common:settingsPage.playerSaveSuccess", "success");
+        renderPlayerSnapshotList();
+    } catch (error) {
+        const messageText = resolveI18nText("common:settingsPage.playerSaveError");
+        setSettingsPlayerDataStatus("common:settingsPage.playerSaveError", "danger");
+        alert(messageText);
+    }
+}
+
+function handleLoadPlayerConfigsClick() {
+    const loadResult = loadPlayerDataSnapshotFromStorage();
+    if (loadResult.status === "not_found") {
+        setSettingsPlayerDataStatus("common:settingsPage.playerLoadNotFound", "danger");
+        renderPlayerSnapshotList();
+        return;
+    }
+    if (loadResult.status !== "ok") {
+        setSettingsPlayerDataStatus("common:settingsPage.playerLoadInvalid", "danger");
+        renderPlayerSnapshotList();
+        return;
+    }
+
+    const loadedPlayerIds = Object.keys(loadResult.playerDataMap ?? {});
+    if (loadedPlayerIds.length === 0) {
+        setSettingsPlayerDataStatus("common:settingsPage.playerLoadInvalid", "danger");
+        renderPlayerSnapshotList();
+        return;
+    }
+
+    const mergedPlayerDataMap = snapshotPlayerDataMap(playerDataMap);
+    for (const playerId of loadedPlayerIds) {
+        mergedPlayerDataMap[playerId] = loadResult.playerDataMap[playerId];
+    }
+    playerDataMap = normalizePlayerDataMapSimulationSettings(mergedPlayerDataMap);
+
+    for (const playerId of loadedPlayerIds) {
+        importedProfileByPlayer[playerId] = true;
+        resetPlayerQueueState(playerId);
+    }
+
+    updateNextPlayer(currentPlayerTabId);
+    updateState();
+    updateUI();
+    renderQueueViewsForCurrentPlayer();
+
+    const savedAtText = loadResult.savedAt > 0
+        ? new Date(loadResult.savedAt).toLocaleString()
+        : "-";
+    setSettingsPlayerDataStatus("common:settingsPage.playerLoadSuccess", "success", { time: savedAtText });
+    renderPlayerSnapshotList();
+}
+
+function handleDeleteSinglePlayerConfigSnapshotClick(playerId) {
+    const loadResult = loadPlayerDataSnapshotFromStorage();
+    if (loadResult.status !== "ok") {
+        setSettingsPlayerDataStatus("common:settingsPage.playerLoadNotFound", "danger");
+        renderPlayerSnapshotList();
+        return;
+    }
+
+    const nextPlayerDataMap = { ...(loadResult.playerDataMap ?? {}) };
+    delete nextPlayerDataMap[playerId];
+
+    try {
+        if (Object.keys(nextPlayerDataMap).length === 0) {
+            clearPlayerDataSnapshotFromStorage();
+        } else {
+            upsertPlayerDataSnapshotToStorage(nextPlayerDataMap);
+        }
+        setSettingsPlayerDataStatus("common:settingsPage.playerDeleteSingleSuccess", "success", { playerId });
+        renderPlayerSnapshotList();
+    } catch (error) {
+        const messageText = resolveI18nText("common:settingsPage.playerDeleteError");
+        setSettingsPlayerDataStatus("common:settingsPage.playerDeleteError", "danger");
+        alert(messageText);
+    }
+}
+
+function handleDeleteAllPlayerConfigsClick() {
+    try {
+        clearPlayerDataSnapshotFromStorage();
+        setSettingsPlayerDataStatus("common:settingsPage.playerDeleteAllSuccess", "success");
+        renderPlayerSnapshotList();
+    } catch (error) {
+        const messageText = resolveI18nText("common:settingsPage.playerDeleteError");
+        setSettingsPlayerDataStatus("common:settingsPage.playerDeleteError", "danger");
+        alert(messageText);
+    }
+}
+
+function initSettingsPageControls() {
+    const buttonSaveQueueSettings = document.getElementById("buttonSaveQueueSettings");
+    const buttonResetQueueSettings = document.getElementById("buttonResetQueueSettings");
+    const buttonSavePlayerConfigs = document.getElementById("buttonSavePlayerConfigs");
+    const buttonLoadPlayerConfigs = document.getElementById("buttonLoadPlayerConfigs");
+    const buttonDeletePlayerConfigs = document.getElementById("buttonDeletePlayerConfigs");
+    const inputScoreWeightPerformance = document.getElementById("inputScoreWeightPerformance");
+    const inputScoreWeightStability = document.getElementById("inputScoreWeightStability");
+    const inputScoreWeightCost = document.getElementById("inputScoreWeightCost");
+    const inputParallelWorkerLimit = document.getElementById("inputParallelWorkerLimit");
+    const settingsParallelWorkerHint = document.getElementById("settingsParallelWorkerHint");
+    const settingsQueueStatus = document.getElementById("settingsQueueStatus");
+    const settingsPlayerDataStatus = document.getElementById("settingsPlayerDataStatus");
+    const settingsPlayerSnapshotList = document.getElementById("settingsPlayerSnapshotList");
+
+    if (
+        !buttonSaveQueueSettings
+        || !buttonResetQueueSettings
+        || !buttonSavePlayerConfigs
+        || !buttonLoadPlayerConfigs
+        || !buttonDeletePlayerConfigs
+        || !inputScoreWeightPerformance
+        || !inputScoreWeightStability
+        || !inputScoreWeightCost
+        || !inputParallelWorkerLimit
+        || !settingsParallelWorkerHint
+        || !settingsQueueStatus
+        || !settingsPlayerDataStatus
+        || !settingsPlayerSnapshotList
+    ) {
+        return;
+    }
+
+    syncQueueSettingsInputsFromRuntime();
+    refreshParallelWorkerHint();
+    setSettingsQueueStatus("common:settingsPage.statusReady");
+    setSettingsPlayerDataStatus("common:settingsPage.statusReady");
+    renderPlayerSnapshotList();
+
+    buttonSaveQueueSettings.addEventListener("click", handleSaveQueueSettingsClick);
+    buttonResetQueueSettings.addEventListener("click", handleResetQueueSettingsClick);
+    buttonSavePlayerConfigs.addEventListener("click", handleSavePlayerConfigsClick);
+    buttonLoadPlayerConfigs.addEventListener("click", handleLoadPlayerConfigsClick);
+    buttonDeletePlayerConfigs.addEventListener("click", handleDeleteAllPlayerConfigsClick);
 }
 
 // #region Baseline Queue
@@ -5648,8 +6543,9 @@ function initLeftMenuNavigation() {
     const menuQueue = document.getElementById("leftMenuQueue");
     const menuResults = document.getElementById("leftMenuResults");
     const menuMultiResults = document.getElementById("leftMenuMultiResults");
+    const menuSettings = document.getElementById("leftMenuSettings");
 
-    if (!menuHome || !menuQueue || !menuResults || !menuMultiResults) {
+    if (!menuHome || !menuQueue || !menuResults || !menuMultiResults || !menuSettings) {
         return;
     }
 
@@ -5657,6 +6553,7 @@ function initLeftMenuNavigation() {
     menuQueue.addEventListener("click", () => switchLeftPage("queue"));
     menuResults.addEventListener("click", () => switchLeftPage("results"));
     menuMultiResults.addEventListener("click", () => switchLeftPage("multiResults"));
+    menuSettings.addEventListener("click", () => switchLeftPage("settings"));
     switchLeftPage("home");
 }
 
@@ -5667,20 +6564,24 @@ function switchLeftPage(pageName) {
     const pageQueue = document.getElementById("pageQueue");
     const pageResults = document.getElementById("pageResults");
     const pageMultiResults = document.getElementById("pageMultiResults");
+    const pageSettings = document.getElementById("pageSettings");
     const menuHome = document.getElementById("leftMenuHome");
     const menuQueue = document.getElementById("leftMenuQueue");
     const menuResults = document.getElementById("leftMenuResults");
     const menuMultiResults = document.getElementById("leftMenuMultiResults");
+    const menuSettings = document.getElementById("leftMenuSettings");
 
     if (
         !pageHome
         || !pageQueue
         || !pageResults
         || !pageMultiResults
+        || !pageSettings
         || !menuHome
         || !menuQueue
         || !menuResults
         || !menuMultiResults
+        || !menuSettings
     ) {
         return;
     }
@@ -5689,11 +6590,13 @@ function switchLeftPage(pageName) {
     pageQueue.classList.toggle("d-none", pageName !== "queue");
     pageResults.classList.toggle("d-none", pageName !== "results");
     pageMultiResults.classList.toggle("d-none", pageName !== "multiResults");
+    pageSettings.classList.toggle("d-none", pageName !== "settings");
 
     menuHome.classList.toggle("active", pageName === "home");
     menuQueue.classList.toggle("active", pageName === "queue");
     menuResults.classList.toggle("active", pageName === "results");
     menuMultiResults.classList.toggle("active", pageName === "multiResults");
+    menuSettings.classList.toggle("active", pageName === "settings");
 
     if (pageName === "multiResults") {
         renderMultiRoundResultsForCurrentPlayer();
@@ -5879,6 +6782,8 @@ initExtraBuffSection();
 initHpMpVisualization();
 initLeftMenuNavigation();
 initBaselineQueueControls();
+initSettingsPageControls();
+playerDataMap = normalizePlayerDataMapSimulationSettings(playerDataMap);
 
 updateState();
 updateUI();
@@ -7073,12 +7978,13 @@ async function runQueueSingleRound(queueState) {
 }
 
 function resolveQueueParallelWorkerCount(roundCount) {
-    const hardwareConcurrency = toFiniteNumber(
-        typeof navigator !== "undefined" ? navigator.hardwareConcurrency : 0,
-        QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS
-    );
-    const maxWorkers = Math.max(1, Math.floor(hardwareConcurrency));
-    return Math.max(1, Math.min(QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS, maxWorkers, roundCount));
+    const detectedCoreCount = getDetectedHardwareCoreCount();
+    const maxWorkers = Number.isFinite(detectedCoreCount)
+        ? Math.max(1, Math.floor(detectedCoreCount))
+        : QUEUE_PARALLEL_WORKER_LIMIT_MAX;
+    const normalizedRoundCount = Math.max(1, Math.floor(toFiniteNumber(roundCount, 1)));
+    const configuredLimit = normalizeParallelWorkerLimit(queueRuntimeSettings?.parallelWorkerLimit);
+    return Math.max(1, Math.min(configuredLimit, maxWorkers, normalizedRoundCount));
 }
 
 async function runQueueItemRoundsSerial(queueItem, queueState, roundCount, onRoundCompleted) {
@@ -7487,7 +8393,8 @@ function buildQueueItemCostInsights(queueState, queueItem, metricSummary) {
     };
 }
 
-function buildMultiRoundRanking(metricSummaryByQueueItem) {
+function buildMultiRoundRanking(metricSummaryByQueueItem, scoreWeights = queueRuntimeSettings?.finalWeights) {
+    const normalizedScoreWeights = normalizeQueueScoreWeights(scoreWeights);
     const normalizedScoresByMetric = {};
     const invalidFlagsByMetric = {};
     for (const metricKey of QUEUE_MULTI_ROUND_METRIC_KEYS) {
@@ -7629,11 +8536,11 @@ function buildMultiRoundRanking(metricSummaryByQueueItem) {
         }
 
         // Final score weights:
-        // performance 45% + stability 20% + cost efficiency 35%
+        // performance/stability/cost weights come from runtime settings.
         const baseFinalScore = (
-            QUEUE_MULTI_ROUND_FINAL_WEIGHT_PERFORMANCE * performanceScore
-            + QUEUE_MULTI_ROUND_FINAL_WEIGHT_STABILITY * stabilityScore
-            + QUEUE_MULTI_ROUND_FINAL_WEIGHT_COST * costScore
+            normalizedScoreWeights.performance * performanceScore
+            + normalizedScoreWeights.stability * stabilityScore
+            + normalizedScoreWeights.cost * costScore
         );
         const confidencePenaltyStrength = clampNumber(
             toFiniteNumber(QUEUE_MULTI_ROUND_CONFIDENCE_PENALTY_STRENGTH, 0.35),
@@ -7723,6 +8630,7 @@ async function runQueueMultiRound(queueState, runConfig) {
     const totalRuns = queueItemMetaList.length * runConfig.roundCount;
     let completedRuns = 0;
     const startedAt = Date.now();
+    const scoreWeights = normalizeQueueScoreWeights(queueRuntimeSettings?.finalWeights);
     const parallelWorkers = runConfig.executionMode === "parallel"
         ? resolveQueueParallelWorkerCount(queueItemMetaList.length)
         : 1;
@@ -7738,6 +8646,7 @@ async function runQueueMultiRound(queueState, runConfig) {
             roundCount: runConfig.roundCount,
             executionMode: runConfig.executionMode,
             parallelWorkers,
+            scoreWeights: structuredClone(scoreWeights),
             startedAt,
             finishedAt: null,
         },
@@ -7795,7 +8704,7 @@ async function runQueueMultiRound(queueState, runConfig) {
             .filter(Boolean);
 
         queueState.multiRoundResults.ranking = realtimeMetricSummaryByQueueItem.length > 0
-            ? buildMultiRoundRanking(realtimeMetricSummaryByQueueItem)
+            ? buildMultiRoundRanking(realtimeMetricSummaryByQueueItem, scoreWeights)
             : [];
 
         if (activeLeftPage === "multiResults") {
@@ -7823,7 +8732,7 @@ async function runQueueMultiRound(queueState, runConfig) {
             };
         });
 
-        queueState.multiRoundResults.ranking = buildMultiRoundRanking(metricSummaryByQueueItem);
+        queueState.multiRoundResults.ranking = buildMultiRoundRanking(metricSummaryByQueueItem, scoreWeights);
         if (activeLeftPage === "multiResults") {
             renderMultiRoundResultsForCurrentPlayer();
         }
@@ -7843,7 +8752,7 @@ async function runQueueMultiRound(queueState, runConfig) {
     });
 
     queueState.multiRoundResults.config.finishedAt = Date.now();
-    queueState.multiRoundResults.ranking = buildMultiRoundRanking(finalMetricSummaryByQueueItem);
+    queueState.multiRoundResults.ranking = buildMultiRoundRanking(finalMetricSummaryByQueueItem, scoreWeights);
 }
 
 async function handleRunQueueClick() {
@@ -8584,9 +9493,10 @@ function renderMultiRoundResultsForCurrentPlayer() {
     const robustMedianWeightPctText = formatMetricValue(QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT * 100, 0);
     const confidencePenaltyBasePctText = formatMetricValue((1 - QUEUE_MULTI_ROUND_CONFIDENCE_PENALTY_STRENGTH) * 100, 0);
     const confidencePenaltyWeightPctText = formatMetricValue(QUEUE_MULTI_ROUND_CONFIDENCE_PENALTY_STRENGTH * 100, 0);
-    const finalWeightPerformancePctText = formatMetricValue(QUEUE_MULTI_ROUND_FINAL_WEIGHT_PERFORMANCE * 100, 0);
-    const finalWeightStabilityPctText = formatMetricValue(QUEUE_MULTI_ROUND_FINAL_WEIGHT_STABILITY * 100, 0);
-    const finalWeightCostPctText = formatMetricValue(QUEUE_MULTI_ROUND_FINAL_WEIGHT_COST * 100, 0);
+    const activeScoreWeights = normalizeQueueScoreWeights(config.scoreWeights ?? queueRuntimeSettings?.finalWeights);
+    const finalWeightPerformancePctText = formatMetricValue(activeScoreWeights.performance * 100, 0);
+    const finalWeightStabilityPctText = formatMetricValue(activeScoreWeights.stability * 100, 0);
+    const finalWeightCostPctText = formatMetricValue(activeScoreWeights.cost * 100, 0);
     const simCountByQueueItemId = new Map();
     for (const rawRowData of rawRows) {
         const queueItemId = String(rawRowData?.queueItemId ?? "");
@@ -8775,3 +9685,6 @@ function refreshHomeDiffHighlight() {
 }
 
 // #endregion
+
+
+
