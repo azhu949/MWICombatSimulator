@@ -72,6 +72,13 @@ const QUEUE_MULTI_ROUND_WINSORIZE_PCT = 0.05;
 const QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT = 0.5;
 const QUEUE_MULTI_ROUND_CONFIDENCE_SIZE_SCALE = 8;
 const QUEUE_MULTI_ROUND_CONFIDENCE_PENALTY_STRENGTH = 0.35;
+const QUEUE_MULTI_ROUND_SCORE_MIN = 5;
+const QUEUE_MULTI_ROUND_SCORE_MAX = 95;
+const QUEUE_MULTI_ROUND_SCORE_TIE = 50;
+const QUEUE_MULTI_ROUND_SCORE_INVALID = 0;
+const QUEUE_MULTI_ROUND_FINAL_WEIGHT_PERFORMANCE = 0.40;
+const QUEUE_MULTI_ROUND_FINAL_WEIGHT_STABILITY = 0.20;
+const QUEUE_MULTI_ROUND_FINAL_WEIGHT_COST = 0.40;
 const abilityBookInfoByAbilityHrid = buildAbilityBookInfoByAbilityHrid();
 
 const WATCHED_CONTROL_IDS = new Set([
@@ -7370,11 +7377,15 @@ function buildQueueItemMetricSummary(roundResults) {
     return metricSummary;
 }
 
-function normalizeScoreList(rawValues, options = {}) {
+function rankScoreList(rawValues, options = {}) {
     const higherIsBetter = options.higherIsBetter !== false;
     const logScale = Boolean(options.logScale);
-    const invalidScore = toFiniteNumber(options.invalidScore, 0);
-    const tieScore = toFiniteNumber(options.tieScore, 50);
+    const invalidScore = toFiniteNumber(options.invalidScore, QUEUE_MULTI_ROUND_SCORE_INVALID);
+    const tieScore = toFiniteNumber(options.tieScore, QUEUE_MULTI_ROUND_SCORE_TIE);
+    const minScore = toFiniteNumber(options.minScore, QUEUE_MULTI_ROUND_SCORE_MIN);
+    const maxScore = toFiniteNumber(options.maxScore, QUEUE_MULTI_ROUND_SCORE_MAX);
+    const clampedMinScore = Math.min(minScore, maxScore);
+    const clampedMaxScore = Math.max(minScore, maxScore);
 
     const preparedValues = rawValues.map((value) => {
         const numeric = Number(value);
@@ -7389,27 +7400,65 @@ function normalizeScoreList(rawValues, options = {}) {
         return numeric;
     });
 
-    const finiteValues = preparedValues.filter((value) => Number.isFinite(value));
-    if (finiteValues.length === 0) {
-        return rawValues.map(() => invalidScore);
+    const invalidFlags = preparedValues.map((value) => value == null);
+    const validEntries = preparedValues
+        .map((value, index) => ({ value, index }))
+        .filter((entry) => Number.isFinite(entry.value));
+
+    if (validEntries.length === 0) {
+        return {
+            scores: rawValues.map(() => invalidScore),
+            invalidFlags,
+        };
     }
 
-    const minValue = Math.min(...finiteValues);
-    const maxValue = Math.max(...finiteValues);
-    if (maxValue <= minValue) {
-        return preparedValues.map((value) => (value == null ? invalidScore : tieScore));
+    if (validEntries.length === 1) {
+        return {
+            scores: preparedValues.map((value) => (value == null ? invalidScore : tieScore)),
+            invalidFlags,
+        };
     }
 
-    return preparedValues.map((value) => {
+    validEntries.sort((a, b) => a.value - b.value);
+
+    const rankByIndex = new Map();
+    const tieEpsilon = 1e-12;
+    let cursor = 0;
+    while (cursor < validEntries.length) {
+        let nextCursor = cursor;
+        while (
+            nextCursor + 1 < validEntries.length
+            && Math.abs(validEntries[nextCursor + 1].value - validEntries[cursor].value) <= tieEpsilon
+        ) {
+            nextCursor += 1;
+        }
+
+        const averageRank = (cursor + nextCursor) / 2;
+        for (let rankIndex = cursor; rankIndex <= nextCursor; rankIndex++) {
+            rankByIndex.set(validEntries[rankIndex].index, averageRank);
+        }
+        cursor = nextCursor + 1;
+    }
+
+    const denominator = Math.max(1, validEntries.length - 1);
+    const scoreRange = clampedMaxScore - clampedMinScore;
+    const scores = preparedValues.map((value, index) => {
         if (value == null) {
             return invalidScore;
         }
 
-        const ratio = higherIsBetter
-            ? (value - minValue) / (maxValue - minValue)
-            : (maxValue - value) / (maxValue - minValue);
-        return clampNumber(ratio * 100, 0, 100);
+        const rankValue = toFiniteNumber(rankByIndex.get(index), 0);
+        const percentile = higherIsBetter
+            ? rankValue / denominator
+            : 1 - rankValue / denominator;
+        const rankedScore = clampedMinScore + percentile * scoreRange;
+        return clampNumber(rankedScore, clampedMinScore, clampedMaxScore);
     });
+
+    return {
+        scores,
+        invalidFlags,
+    };
 }
 
 function buildQueueItemCostInsights(queueState, queueItem, metricSummary) {
@@ -7440,61 +7489,102 @@ function buildQueueItemCostInsights(queueState, queueItem, metricSummary) {
 
 function buildMultiRoundRanking(metricSummaryByQueueItem) {
     const normalizedScoresByMetric = {};
-
+    const invalidFlagsByMetric = {};
     for (const metricKey of QUEUE_MULTI_ROUND_METRIC_KEYS) {
         const scoreValues = metricSummaryByQueueItem.map((entry) => {
             const robustDeltaPct = Number(entry.metricSummary?.[metricKey]?.robustMeanDeltaPct);
             const fallbackDeltaPct = Number(entry.metricSummary?.[metricKey]?.meanDeltaPct);
-            return toFiniteNumber(Number.isFinite(robustDeltaPct) ? robustDeltaPct : fallbackDeltaPct, 0);
+            if (Number.isFinite(robustDeltaPct)) {
+                return robustDeltaPct;
+            }
+            if (Number.isFinite(fallbackDeltaPct)) {
+                return fallbackDeltaPct;
+            }
+            return null;
         });
-        normalizedScoresByMetric[metricKey] = normalizeScoreList(scoreValues, {
+        const rankedMetricScores = rankScoreList(scoreValues, {
             higherIsBetter: true,
-            tieScore: 50,
-            invalidScore: 0,
+            tieScore: QUEUE_MULTI_ROUND_SCORE_TIE,
+            invalidScore: QUEUE_MULTI_ROUND_SCORE_INVALID,
+            minScore: QUEUE_MULTI_ROUND_SCORE_MIN,
+            maxScore: QUEUE_MULTI_ROUND_SCORE_MAX,
         });
+        normalizedScoresByMetric[metricKey] = rankedMetricScores.scores;
+        invalidFlagsByMetric[metricKey] = rankedMetricScores.invalidFlags;
     }
 
-    const upgradeCostScores = normalizeScoreList(
+    const stabilityRawValues = metricSummaryByQueueItem.map((entry) => {
+        const cvValues = QUEUE_MULTI_ROUND_METRIC_KEYS
+            .map((metricKey) => {
+                const robustCv = Number(entry.metricSummary?.[metricKey]?.robustCv);
+                const fallbackCv = Number(entry.metricSummary?.[metricKey]?.cv);
+                if (Number.isFinite(robustCv)) {
+                    return robustCv;
+                }
+                if (Number.isFinite(fallbackCv)) {
+                    return fallbackCv;
+                }
+                return null;
+            })
+            .filter((value) => Number.isFinite(value));
+        if (cvValues.length === 0) {
+            return null;
+        }
+        return cvValues.reduce((acc, cur) => acc + cur, 0) / cvValues.length;
+    });
+    const stabilityScores = rankScoreList(stabilityRawValues, {
+        higherIsBetter: false,
+        tieScore: QUEUE_MULTI_ROUND_SCORE_TIE,
+        invalidScore: QUEUE_MULTI_ROUND_SCORE_INVALID,
+        minScore: QUEUE_MULTI_ROUND_SCORE_MIN,
+        maxScore: QUEUE_MULTI_ROUND_SCORE_MAX,
+    });
+
+    const upgradeCostScores = rankScoreList(
         metricSummaryByQueueItem.map((entry) => entry.costInsights?.totalUpgradeCost),
         {
             higherIsBetter: false,
             logScale: true,
-            tieScore: 50,
-            invalidScore: 0,
+            tieScore: QUEUE_MULTI_ROUND_SCORE_TIE,
+            invalidScore: QUEUE_MULTI_ROUND_SCORE_INVALID,
+            minScore: QUEUE_MULTI_ROUND_SCORE_MIN,
+            maxScore: QUEUE_MULTI_ROUND_SCORE_MAX,
         }
     );
-    const purchaseDaysScores = normalizeScoreList(
+    const purchaseDaysScores = rankScoreList(
         metricSummaryByQueueItem.map((entry) => entry.costInsights?.purchaseDays),
         {
             higherIsBetter: false,
             logScale: true,
-            tieScore: 50,
-            invalidScore: 0,
+            tieScore: QUEUE_MULTI_ROUND_SCORE_TIE,
+            invalidScore: QUEUE_MULTI_ROUND_SCORE_INVALID,
+            minScore: QUEUE_MULTI_ROUND_SCORE_MIN,
+            maxScore: QUEUE_MULTI_ROUND_SCORE_MAX,
         }
     );
-    const avgGoldScores = normalizeScoreList(
+    const avgGoldScores = rankScoreList(
         metricSummaryByQueueItem.map((entry) => entry.costInsights?.goldPerPoint01PctAvg),
         {
             higherIsBetter: false,
             logScale: true,
-            tieScore: 50,
-            invalidScore: 0,
+            tieScore: QUEUE_MULTI_ROUND_SCORE_TIE,
+            invalidScore: QUEUE_MULTI_ROUND_SCORE_INVALID,
+            minScore: QUEUE_MULTI_ROUND_SCORE_MIN,
+            maxScore: QUEUE_MULTI_ROUND_SCORE_MAX,
         }
     );
 
     const ranked = metricSummaryByQueueItem.map((entry, index) => {
         const performanceScores = QUEUE_MULTI_ROUND_METRIC_KEYS.map((metricKey) => {
-            return toFiniteNumber(normalizedScoresByMetric?.[metricKey]?.[index], 50);
+            return toFiniteNumber(normalizedScoresByMetric?.[metricKey]?.[index], QUEUE_MULTI_ROUND_SCORE_INVALID);
         });
         const performanceScore = performanceScores.reduce((acc, cur) => acc + cur, 0) / Math.max(1, performanceScores.length);
 
-        const cvList = QUEUE_MULTI_ROUND_METRIC_KEYS.map((metricKey) => {
-            const robustCv = Number(entry.metricSummary?.[metricKey]?.robustCv);
-            const fallbackCv = Number(entry.metricSummary?.[metricKey]?.cv);
-            return toFiniteNumber(Number.isFinite(robustCv) ? robustCv : fallbackCv, 1);
-        });
-        const avgCv = cvList.reduce((acc, cur) => acc + cur, 0) / Math.max(1, cvList.length);
-        const stabilityScore = clampNumber(100 * (1 - Math.min(avgCv, 1)), 0, 100);
+        const performanceInvalidMetricKeys = QUEUE_MULTI_ROUND_METRIC_KEYS
+            .filter((metricKey) => Boolean(invalidFlagsByMetric?.[metricKey]?.[index]));
+        const performanceInvalid = performanceInvalidMetricKeys.length > 0;
+        const stabilityScore = toFiniteNumber(stabilityScores?.scores?.[index], QUEUE_MULTI_ROUND_SCORE_INVALID);
+        const stabilityInvalid = Boolean(stabilityScores?.invalidFlags?.[index]);
 
         const confidenceList = QUEUE_MULTI_ROUND_METRIC_KEYS.map((metricKey) => {
             const confidenceDeltaPct = Number(entry.metricSummary?.[metricKey]?.confidenceDeltaPct);
@@ -7509,15 +7599,42 @@ function buildMultiRoundRanking(metricSummaryByQueueItem) {
 
         // Cost score weights:
         // upgrade cost 25% + purchase time 35% + gold per 0.01% 40%
+        const upgradeCostScore = toFiniteNumber(upgradeCostScores?.scores?.[index], QUEUE_MULTI_ROUND_SCORE_INVALID);
+        const purchaseDaysScore = toFiniteNumber(purchaseDaysScores?.scores?.[index], QUEUE_MULTI_ROUND_SCORE_INVALID);
+        const avgGoldScore = toFiniteNumber(avgGoldScores?.scores?.[index], QUEUE_MULTI_ROUND_SCORE_INVALID);
         const costScore = (
-            0.25 * toFiniteNumber(upgradeCostScores[index], 0)
-            + 0.35 * toFiniteNumber(purchaseDaysScores[index], 0)
-            + 0.40 * toFiniteNumber(avgGoldScores[index], 0)
+            0.25 * upgradeCostScore
+            + 0.35 * purchaseDaysScore
+            + 0.40 * avgGoldScore
         );
+        const costInvalid = Boolean(upgradeCostScores?.invalidFlags?.[index])
+            || Boolean(purchaseDaysScores?.invalidFlags?.[index])
+            || Boolean(avgGoldScores?.invalidFlags?.[index]);
+
+        let invalidReasons = [];
+        for (const metricKey of performanceInvalidMetricKeys) {
+            invalidReasons.push(`performance.${metricKey}.invalidDeltaPct`);
+        }
+        if (stabilityInvalid) {
+            invalidReasons.push("stability.invalidAvgCv");
+        }
+        if (upgradeCostScores?.invalidFlags?.[index]) {
+            invalidReasons.push("cost.invalidUpgradeCost");
+        }
+        if (purchaseDaysScores?.invalidFlags?.[index]) {
+            invalidReasons.push("cost.invalidPurchaseDays");
+        }
+        if (avgGoldScores?.invalidFlags?.[index]) {
+            invalidReasons.push("cost.invalidGoldPerPoint01PctAvg");
+        }
 
         // Final score weights:
         // performance 45% + stability 20% + cost efficiency 35%
-        const baseFinalScore = 0.45 * performanceScore + 0.20 * stabilityScore + 0.35 * costScore;
+        const baseFinalScore = (
+            QUEUE_MULTI_ROUND_FINAL_WEIGHT_PERFORMANCE * performanceScore
+            + QUEUE_MULTI_ROUND_FINAL_WEIGHT_STABILITY * stabilityScore
+            + QUEUE_MULTI_ROUND_FINAL_WEIGHT_COST * costScore
+        );
         const confidencePenaltyStrength = clampNumber(
             toFiniteNumber(QUEUE_MULTI_ROUND_CONFIDENCE_PENALTY_STRENGTH, 0.35),
             0,
@@ -7541,6 +7658,23 @@ function buildMultiRoundRanking(metricSummaryByQueueItem) {
             costScore: toFiniteNumber(costScore, 0),
             confidenceScore: toFiniteNumber(avgConfidence * 100, 0),
             confidencePenaltyFactor: toFiniteNumber(confidencePenaltyFactor, 1),
+            scoreFlags: {
+                performanceInvalid,
+                stabilityInvalid,
+                costInvalid,
+                invalidReasons,
+            },
+            rawComponentScores: {
+                performanceByMetric: Object.fromEntries(
+                    QUEUE_MULTI_ROUND_METRIC_KEYS.map((metricKey, metricIndex) => [metricKey, performanceScores[metricIndex]])
+                ),
+                stabilityAvgCv: stabilityRawValues[index],
+                costByMetric: {
+                    upgradeCost: upgradeCostScore,
+                    purchaseDays: purchaseDaysScore,
+                    avgGoldPerPoint01Pct: avgGoldScore,
+                },
+            },
             metricSummary: entry.metricSummary,
             costInsights: entry.costInsights,
         };
@@ -8450,6 +8584,9 @@ function renderMultiRoundResultsForCurrentPlayer() {
     const robustMedianWeightPctText = formatMetricValue(QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT * 100, 0);
     const confidencePenaltyBasePctText = formatMetricValue((1 - QUEUE_MULTI_ROUND_CONFIDENCE_PENALTY_STRENGTH) * 100, 0);
     const confidencePenaltyWeightPctText = formatMetricValue(QUEUE_MULTI_ROUND_CONFIDENCE_PENALTY_STRENGTH * 100, 0);
+    const finalWeightPerformancePctText = formatMetricValue(QUEUE_MULTI_ROUND_FINAL_WEIGHT_PERFORMANCE * 100, 0);
+    const finalWeightStabilityPctText = formatMetricValue(QUEUE_MULTI_ROUND_FINAL_WEIGHT_STABILITY * 100, 0);
+    const finalWeightCostPctText = formatMetricValue(QUEUE_MULTI_ROUND_FINAL_WEIGHT_COST * 100, 0);
     const simCountByQueueItemId = new Map();
     for (const rawRowData of rawRows) {
         const queueItemId = String(rawRowData?.queueItemId ?? "");
@@ -8468,6 +8605,7 @@ function renderMultiRoundResultsForCurrentPlayer() {
             <div class="mb-1"><span class="label">${i18next.t("common:multiRound.configFinishedAt")}:</span> ${finishedAtText}</div>
             <div class="mb-1"><span class="label">${i18next.t("common:multiRound.baselineRef")}:</span> DPS ${formatMetricValue(baselineMetrics.dps, 2)} / ${i18next.t("common:queue.dailyNoRngProfit")} ${formatQueueMetricValue("dailyNoRngProfit", baselineMetrics.dailyNoRngProfit, 2)} / XP/h ${formatQueueMetricValue("xpPerHour", baselineMetrics.xpPerHour, 0)} / Kills/h ${formatMetricValue(baselineMetrics.killsPerHour, 1)}</div>
             <div class="mb-1"><span class="label">${i18next.t("common:multiRound.scoreModel")}:</span> ${i18next.t("common:multiRound.scoreModelValue")}</div>
+            <div class="mb-1"><span class="label">${i18next.t("common:multiRound.scoreModelWeights")}:</span> ${i18next.t("common:multiRound.scoreModelWeightsValue", { performance: finalWeightPerformancePctText, stability: finalWeightStabilityPctText, cost: finalWeightCostPctText })}</div>
             <div class="small text-secondary mt-1">
                 <div>${i18next.t("common:multiRound.scoreModelParamPerformance")}</div>
                 <div>${i18next.t("common:multiRound.scoreModelParamStability")}</div>
@@ -8475,6 +8613,7 @@ function renderMultiRoundResultsForCurrentPlayer() {
                 <div>${i18next.t("common:multiRound.scoreModelParamRobustWinsorize", { winsorPct: robustWinsorPctText })}</div>
                 <div>${i18next.t("common:multiRound.scoreModelParamRobustMedianBlend", { meanWeight: robustMeanWeightPctText, medianWeight: robustMedianWeightPctText })}</div>
                 <div>${i18next.t("common:multiRound.scoreModelParamRobustConfidencePenalty", { baseWeight: confidencePenaltyBasePctText, penaltyWeight: confidencePenaltyWeightPctText })}</div>
+                <div>${i18next.t("common:multiRound.scoreInvalidZeroLegend")}</div>
             </div>
         </div>
     `;
@@ -8502,9 +8641,9 @@ function renderMultiRoundResultsForCurrentPlayer() {
             appendTextCell(row, localizedDisplayName);
             appendTextCell(row, simCountText);
             appendTextCell(row, formatMetricValue(entry.finalScore, 2));
-            appendTextCell(row, formatMetricValue(entry.performanceScore, 2));
-            appendTextCell(row, formatMetricValue(entry.stabilityScore, 2));
-            appendTextCell(row, formatMetricValue(entry.costScore, 2));
+            appendScoreCell(row, entry.performanceScore, shouldMarkInvalidZeroScore(entry?.scoreFlags?.performanceInvalid, entry.performanceScore));
+            appendScoreCell(row, entry.stabilityScore, shouldMarkInvalidZeroScore(entry?.scoreFlags?.stabilityInvalid, entry.stabilityScore));
+            appendScoreCell(row, entry.costScore, shouldMarkInvalidZeroScore(entry?.scoreFlags?.costInvalid, entry.costScore));
             appendTextCell(row, entry.costInsights?.totalUpgradeCost > 0 ? formatCompactKMBValue(entry.costInsights.totalUpgradeCost, 1) : "-");
             appendTextCell(row, formatPurchaseDuration(entry.costInsights?.purchaseDays));
             appendTextCell(row, Number.isFinite(entry.costInsights?.goldPerPoint01PctAvg) && entry.costInsights.goldPerPoint01PctAvg > 0 ? formatCompactKMBValue(entry.costInsights.goldPerPoint01PctAvg, 1) : "-");
@@ -8548,6 +8687,27 @@ function renderMultiRoundResultsForCurrentPlayer() {
 function appendTextCell(row, value) {
     const cell = document.createElement("td");
     cell.textContent = value == null || value === "" ? "-" : value;
+    row.appendChild(cell);
+}
+
+function shouldMarkInvalidZeroScore(invalidFlag, scoreValue) {
+    if (!invalidFlag) {
+        return false;
+    }
+
+    const safeScoreValue = toFiniteNumber(scoreValue, QUEUE_MULTI_ROUND_SCORE_INVALID);
+    return Math.abs(safeScoreValue - QUEUE_MULTI_ROUND_SCORE_INVALID) <= 1e-9;
+}
+
+function appendScoreCell(row, scoreValue, markInvalidZero = false) {
+    const cell = document.createElement("td");
+    const scoreText = formatMetricValue(scoreValue, 2);
+    if (markInvalidZero && scoreText !== "-") {
+        cell.textContent = `${scoreText}*`;
+        cell.title = i18next.t("common:multiRound.scoreInvalidZeroTooltip");
+    } else {
+        cell.textContent = scoreText;
+    }
     row.appendChild(cell);
 }
 
