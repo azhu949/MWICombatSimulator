@@ -391,6 +391,7 @@
                 <button id="leftMenuQueue" class="btn btn-outline-primary" type="button" data-i18n="common:menu.queue">队列</button>
                 <button id="leftMenuResults" class="btn btn-outline-primary" type="button" data-i18n="common:menu.results">结果</button>
                 <button id="leftMenuMultiResults" class="btn btn-outline-primary" type="button" data-i18n="common:menu.multiResults">多轮结果</button>
+                <button id="leftMenuSettings" class="btn btn-outline-primary" type="button" data-i18n="common:menu.settings">设置</button>
             </div>
             <div class="col-md-10">
                 <div id="pageHome">
@@ -1541,6 +1542,97 @@
                                             </thead>
                                             <tbody id="multiRoundRawTableBody"></tbody>
                                         </table>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div id="pageSettings" class="d-none">
+                    <div class="row">
+                        <div class="col-12 mb-3">
+                            <div class="card">
+                                <div class="card-header">
+                                    <b data-i18n="common:settingsPage.queueSettingsCardTitle">队列评分与线程</b>
+                                </div>
+                                <div class="card-body">
+                                    <div class="row mb-2">
+                                        <div class="col-12">
+                                            <b data-i18n="common:settingsPage.weightsSectionTitle">评分分项权重(%)</b>
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <label for="inputScoreWeightPerformance" class="col-md-3 col-form-label" data-i18n="common:settingsPage.weightPerformance">性能</label>
+                                        <div class="col-md-3">
+                                            <input id="inputScoreWeightPerformance" class="form-control" type="number" min="0" max="100" step="0.01" value="40" />
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <label for="inputScoreWeightStability" class="col-md-3 col-form-label" data-i18n="common:settingsPage.weightStability">稳定</label>
+                                        <div class="col-md-3">
+                                            <input id="inputScoreWeightStability" class="form-control" type="number" min="0" max="100" step="0.01" value="20" />
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <label for="inputScoreWeightCost" class="col-md-3 col-form-label" data-i18n="common:settingsPage.weightCost">成本</label>
+                                        <div class="col-md-3">
+                                            <input id="inputScoreWeightCost" class="form-control" type="number" min="0" max="100" step="0.01" value="40" />
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2 mt-3">
+                                        <label for="inputParallelWorkerLimit" class="col-md-3 col-form-label" data-i18n="common:settingsPage.parallelWorkerLimit">并行线程上限</label>
+                                        <div class="col-md-3">
+                                            <input id="inputParallelWorkerLimit" class="form-control" type="number" min="1" max="64" step="1" value="4" />
+                                        </div>
+                                    </div>
+                                    <div class="row mb-2">
+                                        <div class="col-md-9 offset-md-3">
+                                            <small id="settingsParallelWorkerHint" class="text-secondary"></small>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-md-auto">
+                                            <button id="buttonSaveQueueSettings" class="btn btn-primary" type="button" data-i18n="common:settingsPage.saveQueueSettings">保存队列设置</button>
+                                        </div>
+                                        <div class="col-md-auto">
+                                            <button id="buttonResetQueueSettings" class="btn btn-outline-secondary" type="button" data-i18n="common:settingsPage.resetQueueSettings">恢复默认</button>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-2">
+                                        <div class="col-12">
+                                            <small id="settingsQueueStatus" class="text-secondary"></small>
+                                        </div>
+                                    </div>
+                                </div>
+                            </div>
+                        </div>
+                        <div class="col-12">
+                            <div class="card">
+                                <div class="card-header">
+                                    <b data-i18n="common:settingsPage.playerDataCardTitle">玩家配置快照</b>
+                                </div>
+                                <div class="card-body">
+                                    <div class="mb-3 text-secondary" data-i18n="common:settingsPage.playerDataDescription">仅手动保存/恢复5名玩家构筑数据。</div>
+                                    <div class="row">
+                                        <div class="col-md-auto mb-2">
+                                            <button id="buttonSavePlayerConfigs" class="btn btn-primary" type="button" data-i18n="common:settingsPage.savePlayerConfigs">保存玩家配置</button>
+                                        </div>
+                                        <div class="col-md-auto mb-2">
+                                            <button id="buttonLoadPlayerConfigs" class="btn btn-outline-primary" type="button" data-i18n="common:settingsPage.loadPlayerConfigs">恢复玩家配置</button>
+                                        </div>
+                                        <div class="col-md-auto mb-2">
+                                            <button id="buttonDeletePlayerConfigs" class="btn btn-outline-danger" type="button" data-i18n="common:settingsPage.deleteAllPlayerConfigs">删除全部快照</button>
+                                        </div>
+                                    </div>
+                                    <div class="row">
+                                        <div class="col-12">
+                                            <small id="settingsPlayerDataStatus" class="text-secondary"></small>
+                                        </div>
+                                    </div>
+                                    <div class="row mt-3">
+                                        <div class="col-12">
+                                            <div id="settingsPlayerSnapshotList"></div>
+                                        </div>
                                     </div>
                                 </div>
                             </div>
