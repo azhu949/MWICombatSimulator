@@ -11191,7 +11191,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/butter_of_proficiency",
-                "dropRate": 3e-05,
+                "dropRate": 0.00003,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -12977,7 +12977,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/butter_of_proficiency",
-                "dropRate": 1e-05,
+                "dropRate": 0.00001,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -23772,7 +23772,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/branch_of_insight",
-                "dropRate": 3e-05,
+                "dropRate": 0.00003,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -31770,7 +31770,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/branch_of_insight",
-                "dropRate": 1e-05,
+                "dropRate": 0.00001,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -33483,7 +33483,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/thread_of_expertise",
-                "dropRate": 3e-05,
+                "dropRate": 0.00003,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -33850,7 +33850,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/thread_of_expertise",
-                "dropRate": 1e-05,
+                "dropRate": 0.00001,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -34070,7 +34070,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/thread_of_expertise",
-                "dropRate": 1e-05,
+                "dropRate": 0.00001,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -34223,7 +34223,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/thread_of_expertise",
-                "dropRate": 1e-05,
+                "dropRate": 0.00001,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -34400,7 +34400,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/thread_of_expertise",
-                "dropRate": 1e-05,
+                "dropRate": 0.00001,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -34602,7 +34602,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/thread_of_expertise",
-                "dropRate": 3e-05,
+                "dropRate": 0.00003,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -34840,7 +34840,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/thread_of_expertise",
-                "dropRate": 3e-05,
+                "dropRate": 0.00003,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -34895,7 +34895,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/thread_of_expertise",
-                "dropRate": 3e-05,
+                "dropRate": 0.00003,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -34950,7 +34950,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/thread_of_expertise",
-                "dropRate": 3e-05,
+                "dropRate": 0.00003,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -35376,7 +35376,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/butter_of_proficiency",
-                "dropRate": 3e-05,
+                "dropRate": 0.00003,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -35431,7 +35431,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/butter_of_proficiency",
-                "dropRate": 1e-05,
+                "dropRate": 0.00001,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -40832,7 +40832,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/thread_of_expertise",
-                "dropRate": 2.5e-05,
+                "dropRate": 0.000025,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -43498,7 +43498,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/thread_of_expertise",
-                "dropRate": 2.5e-05,
+                "dropRate": 0.000025,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -43615,7 +43615,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/branch_of_insight",
-                "dropRate": 3e-05,
+                "dropRate": 0.00003,
                 "minCount": 1,
                 "maxCount": 1
             },
@@ -43866,7 +43866,7 @@
         "rareDropTable": [
             {
                 "itemHrid": "/items/branch_of_insight",
-                "dropRate": 1e-05,
+                "dropRate": 0.00001,
                 "minCount": 1,
                 "maxCount": 1
             },

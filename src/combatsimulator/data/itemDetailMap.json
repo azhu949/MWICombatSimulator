@@ -8298,7 +8298,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "criticalRate": 8e-05,
+                "criticalRate": 0.00008,
                 "rangedAccuracy": 0.0032,
                 "stabEvasion": 0.004,
                 "slashEvasion": 0.004,
@@ -8370,7 +8370,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "criticalRate": 8e-05,
+                "criticalRate": 0.00008,
                 "rangedAccuracy": 0.0032,
                 "stabEvasion": 0.004,
                 "slashEvasion": 0.004,
@@ -8579,7 +8579,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "criticalRate": 8e-05,
+                "criticalRate": 0.00008,
                 "rangedAccuracy": 0.0048,
                 "stabEvasion": 0.005600000000000001,
                 "slashEvasion": 0.005600000000000001,
@@ -14396,7 +14396,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "criticalRate": 8e-05,
+                "criticalRate": 0.00008,
                 "rangedAccuracy": 0.0042,
                 "rangedDamage": 0.002,
                 "stabEvasion": 0.004,
@@ -18244,7 +18244,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "abilityDamage": 8e-05,
+                "abilityDamage": 0.00008,
                 "magicAccuracy": 0.0002,
                 "magicDamage": 0.0004,
                 "stabEvasion": 0.0008,
@@ -18372,7 +18372,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "abilityDamage": 8e-05,
+                "abilityDamage": 0.00008,
                 "magicAccuracy": 0.0002,
                 "magicDamage": 0.0004,
                 "stabEvasion": 0.0008,
@@ -18441,7 +18441,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "abilityDamage": 8e-05,
+                "abilityDamage": 0.00008,
                 "magicAccuracy": 0.0004,
                 "magicDamage": 0.0006,
                 "stabEvasion": 0.001,
@@ -29587,7 +29587,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "criticalRate": 6e-05,
+                "criticalRate": 0.00006,
                 "rangedAccuracy": 0.0024,
                 "stabEvasion": 0.003,
                 "slashEvasion": 0.003,
@@ -29659,7 +29659,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "criticalRate": 6e-05,
+                "criticalRate": 0.00006,
                 "rangedAccuracy": 0.0024,
                 "stabEvasion": 0.003,
                 "slashEvasion": 0.003,
@@ -29971,7 +29971,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "criticalRate": 6e-05,
+                "criticalRate": 0.00006,
                 "rangedAccuracy": 0.0036,
                 "stabEvasion": 0.0042,
                 "slashEvasion": 0.0042,
@@ -50289,7 +50289,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "criticalRate": 4e-05,
+                "criticalRate": 0.00004,
                 "rangedAccuracy": 0.0016,
                 "stabEvasion": 0.002,
                 "slashEvasion": 0.002,
@@ -50361,7 +50361,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "criticalRate": 4e-05,
+                "criticalRate": 0.00004,
                 "rangedAccuracy": 0.0016,
                 "stabEvasion": 0.002,
                 "slashEvasion": 0.002,
@@ -50433,7 +50433,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "criticalRate": 8e-05,
+                "criticalRate": 0.00008,
                 "rangedAccuracy": 0.0032,
                 "stabEvasion": 0.004,
                 "slashEvasion": 0.004,
@@ -50570,7 +50570,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "criticalRate": 4e-05,
+                "criticalRate": 0.00004,
                 "rangedAccuracy": 0.0024,
                 "stabEvasion": 0.0028000000000000004,
                 "slashEvasion": 0.0028000000000000004,
@@ -50707,7 +50707,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "criticalRate": 8e-05,
+                "criticalRate": 0.00008,
                 "rangedAccuracy": 0.004,
                 "stabEvasion": 0.0048,
                 "slashEvasion": 0.0048,
@@ -51836,7 +51836,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "criticalRate": 2e-05,
+                "criticalRate": 0.00002,
                 "rangedAccuracy": 0.0008,
                 "stabEvasion": 0.001,
                 "slashEvasion": 0.001,
@@ -51904,7 +51904,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "criticalRate": 2e-05,
+                "criticalRate": 0.00002,
                 "rangedAccuracy": 0.0008,
                 "stabEvasion": 0.001,
                 "slashEvasion": 0.001,
@@ -51972,7 +51972,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "criticalRate": 4e-05,
+                "criticalRate": 0.00004,
                 "rangedAccuracy": 0.0016,
                 "stabEvasion": 0.002,
                 "slashEvasion": 0.002,
@@ -52099,7 +52099,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "criticalRate": 2e-05,
+                "criticalRate": 0.00002,
                 "rangedAccuracy": 0.0012,
                 "stabEvasion": 0.0014000000000000002,
                 "slashEvasion": 0.0014000000000000002,
@@ -52226,7 +52226,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "criticalRate": 4e-05,
+                "criticalRate": 0.00004,
                 "rangedAccuracy": 0.002,
                 "stabEvasion": 0.0024,
                 "slashEvasion": 0.0024,
@@ -54768,7 +54768,7 @@
             },
             "noncombatStats": {},
             "combatEnhancementBonuses": {
-                "criticalRate": 8e-05,
+                "criticalRate": 0.00008,
                 "criticalDamage": 0.0016,
                 "rangedAccuracy": 0.0032,
                 "rangedDamage": 0.0008,
@@ -66440,7 +66440,7 @@
                 "naturePenetration": 0.004,
                 "firePenetration": 0.004,
                 "armor": 0.16,
-                "mpRegenPer10": 5e-05
+                "mpRegenPer10": 0.00005
             },
             "noncombatEnhancementBonuses": {}
         },

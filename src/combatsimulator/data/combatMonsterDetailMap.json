@@ -3480,8 +3480,8 @@
             },
             {
                 "itemHrid": "/items/blue_key_fragment",
-                "dropRate": -3e-05,
-                "dropRatePerDifficultyTier": 6e-05,
+                "dropRate": -0.00003,
+                "dropRatePerDifficultyTier": 0.00006,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -5051,8 +5051,8 @@
             },
             {
                 "itemHrid": "/items/invincible",
-                "dropRate": -5e-05,
-                "dropRatePerDifficultyTier": 5e-05,
+                "dropRate": -0.00005,
+                "dropRatePerDifficultyTier": 0.00005,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -5660,8 +5660,8 @@
             },
             {
                 "itemHrid": "/items/mystic_aura",
-                "dropRate": -5e-05,
-                "dropRatePerDifficultyTier": 5e-05,
+                "dropRate": -0.00005,
+                "dropRatePerDifficultyTier": 0.00005,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -7387,8 +7387,8 @@
             },
             {
                 "itemHrid": "/items/fierce_aura",
-                "dropRate": -3e-05,
-                "dropRatePerDifficultyTier": 3e-05,
+                "dropRate": -0.00003,
+                "dropRatePerDifficultyTier": 0.00003,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -7492,7 +7492,7 @@
             },
             {
                 "itemHrid": "/items/blue_key_fragment",
-                "dropRate": -6e-05,
+                "dropRate": -0.00006,
                 "dropRatePerDifficultyTier": 0.00012,
                 "minCount": 1,
                 "maxCount": 1
@@ -7798,8 +7798,8 @@
             },
             {
                 "itemHrid": "/items/blue_key_fragment",
-                "dropRate": -4e-05,
-                "dropRatePerDifficultyTier": 8e-05,
+                "dropRate": -0.00004,
+                "dropRatePerDifficultyTier": 0.00008,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -8506,7 +8506,7 @@
             },
             {
                 "itemHrid": "/items/blue_key_fragment",
-                "dropRate": -5e-05,
+                "dropRate": -0.00005,
                 "dropRatePerDifficultyTier": 0.0001,
                 "minCount": 1,
                 "maxCount": 1
@@ -8617,7 +8617,7 @@
             },
             {
                 "itemHrid": "/items/blue_key_fragment",
-                "dropRate": -8e-05,
+                "dropRate": -0.00008,
                 "dropRatePerDifficultyTier": 0.00016,
                 "minCount": 1,
                 "maxCount": 1
@@ -8860,8 +8860,8 @@
             },
             {
                 "itemHrid": "/items/critical_aura",
-                "dropRate": -5e-05,
-                "dropRatePerDifficultyTier": 5e-05,
+                "dropRate": -0.00005,
+                "dropRatePerDifficultyTier": 0.00005,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -9098,8 +9098,8 @@
             },
             {
                 "itemHrid": "/items/guardian_aura",
-                "dropRate": -5e-05,
-                "dropRatePerDifficultyTier": 5e-05,
+                "dropRate": -0.00005,
+                "dropRatePerDifficultyTier": 0.00005,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -9750,8 +9750,8 @@
             },
             {
                 "itemHrid": "/items/guardian_aura",
-                "dropRate": -2e-05,
-                "dropRatePerDifficultyTier": 2e-05,
+                "dropRate": -0.00002,
+                "dropRatePerDifficultyTier": 0.00002,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -10037,8 +10037,8 @@
             },
             {
                 "itemHrid": "/items/fierce_aura",
-                "dropRate": -5e-05,
-                "dropRatePerDifficultyTier": 5e-05,
+                "dropRate": -0.00005,
+                "dropRatePerDifficultyTier": 0.00005,
                 "minCount": 1,
                 "maxCount": 1
             }
@@ -10291,8 +10291,8 @@
             },
             {
                 "itemHrid": "/items/insanity",
-                "dropRate": -5e-05,
-                "dropRatePerDifficultyTier": 5e-05,
+                "dropRate": -0.00005,
+                "dropRatePerDifficultyTier": 0.00005,
                 "minCount": 1,
                 "maxCount": 1
             }

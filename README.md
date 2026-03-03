@@ -84,6 +84,12 @@ copy(localStorage.getItem("initClientData"));
 npm run extract-game-data -- --input tmp/initClientData.txt
 ```
 
+如果你想在更新 `src/combatsimulator/data` 的同时，把解压后的 6 个 JSON 也拆分到 `tmp` 目录里方便查看，执行：
+
+```bash
+npm run extract-game-data -- --input tmp/initClientData.txt --inspect-output tmp/initClientData.decoded
+```
+
 可选：指定输出目录：
 
 ```bash
@@ -94,3 +100,4 @@ npm run extract-game-data -- --input tmp/initClientData.txt --output src/combats
 
 - localStorage 中压缩的 `initClientData` 字符串
 - 已解压且包含相同 map 的 init client JSON 对象
+- `--inspect-output`：额外再导出一份 6 个 JSON 到指定目录（例如 `tmp/`）用于人工查看
