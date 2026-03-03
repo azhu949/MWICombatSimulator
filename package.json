@@ -9,7 +9,8 @@
         "preview": "vite preview",
         "start": "vite",
         "test": "vitest run",
-        "extract-game-data": "node scripts/extract-game-data.js"
+        "extract-game-data": "node scripts/extract-game-data.js",
+        "extract-game-data:official": "node scripts/extract-game-data-from-official.js"
     },
     "repository": {
         "type": "git",
@@ -28,7 +29,8 @@
         "postcss": "^8.5.6",
         "tailwindcss": "^3.4.17",
         "vite": "^5.4.21",
-        "vitest": "^2.1.9"
+        "vitest": "^2.1.9",
+        "ws": "^8.18.0"
     },
     "dependencies": {
         "chart.js": "^4.5.1",
