@@ -1,0 +1,353 @@
+<template>
+  <div class="mx-auto w-full max-w-[1440px] px-4 py-5 lg:px-8">
+    <header class="sticky top-0 z-40 mb-4">
+      <div class="panel overflow-hidden">
+        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
+          <div>
+            <h1 class="font-heading text-2xl font-bold text-amber-300">{{ t("common:title", "MWI Combat Simulator") }}</h1>
+          </div>
+
+          <div class="flex flex-wrap items-center gap-2">
+            <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/home">{{ t('common:menu.home', 'Home') }}</RouterLink>
+            <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/queue">{{ t('common:menu.queue', 'Queue') }}</RouterLink>
+            <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/results">{{ t('common:menu.results', 'Results') }}</RouterLink>
+            <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/multi-results">{{ t('common:menu.multiResults', 'Multi-round') }}</RouterLink>
+            <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/settings">{{ t('common:menu.settings', 'Settings') }}</RouterLink>
+            <button class="action-button-muted" @click="toggleTheme">
+              {{ t("common:controls.darkMode", "Dark Mode") }}: {{ themeLabel }}
+            </button>
+            <button
+              class="action-button-muted"
+              :class="language === 'en' ? 'border-amber-300 text-amber-300' : ''"
+              @click="switchLanguage('en')"
+            >
+              English
+            </button>
+            <button
+              class="action-button-muted"
+              :class="language === 'zh' ? 'border-amber-300 text-amber-300' : ''"
+              @click="switchLanguage('zh')"
+            >
+              中文
+            </button>
+          </div>
+        </div>
+
+        <div class="mt-3 rounded-xl border border-white/10 bg-slate-900/40 p-3">
+          <div class="flex flex-wrap items-center gap-2">
+            <button
+              class="action-button-muted"
+              type="button"
+              :disabled="queueActionsDisabled"
+              @click="setQueueBaselineFromTopbar"
+            >
+              {{ t("common:queue.setBaseline", "Set Baseline") }}
+            </button>
+            <button
+              class="action-button-muted"
+              type="button"
+              :disabled="queueActionsDisabled || !activeQueueHasBaseline"
+              @click="addToQueueFromTopbar"
+            >
+              {{ t("common:queue.addToQueue", "Add To Queue") }}
+            </button>
+            <button
+              class="action-button-primary"
+              type="button"
+              :disabled="queueActionsDisabled || !activeQueueHasBaseline || activeQueueItemCount === 0"
+              @click="runQueueFromTopbar"
+            >
+              {{ t("common:queue.runQueue", "Run Queue") }}
+            </button>
+            <button
+              class="action-button-danger"
+              type="button"
+              :disabled="queueActionsDisabled || activeQueueItemCount === 0"
+              @click="clearQueueFromTopbar"
+            >
+              {{ t("common:queue.clearQueue", "Clear Queue") }}
+            </button>
+            <span class="text-xs text-slate-400">
+              {{ t("common:queue.queueList", "Queue List") }}:
+              <span class="ml-1 text-slate-100">{{ activeQueueItemCount }}</span>
+            </span>
+            <span class="text-xs text-slate-400">
+              {{ t("common:vue.queue.queueProgress", "Queue Progress") }}:
+              <span class="ml-1 text-slate-100">{{ activeQueueProgressText }}</span>
+            </span>
+            <span class="text-xs text-slate-400">
+              {{ t("common:vue.queue.activePlayer", "Active player", { name: simulator.activePlayer.name }) }}
+            </span>
+          </div>
+          <p v-if="topQueueActionStatusText" class="mt-2 text-xs" :class="topQueueActionStatusClass">{{ topQueueActionStatusText }}</p>
+        </div>
+      </div>
+    </header>
+
+    <section class="panel mb-4 overflow-hidden">
+      <div class="grid gap-2 lg:grid-cols-5">
+        <button
+          v-for="player in simulator.players"
+          :key="player.id"
+          type="button"
+          class="rounded-xl border px-3 py-2 text-left transition"
+          :class="[
+            simulator.activePlayerId === player.id ? 'border-amber-300 bg-amber-300/10' : 'border-white/10 bg-slate-900/40',
+          ]"
+          @click="simulator.setActivePlayer(player.id)"
+        >
+          <div class="flex items-center justify-between gap-2">
+            <input v-model="player.name" class="w-full bg-transparent font-heading text-sm outline-none" />
+            <label class="badge flex shrink-0 items-center gap-2 text-slate-200">
+              <input v-model="player.selected" type="checkbox" />
+              {{ t("common:vue.app.simToggle", "Sim") }}
+            </label>
+          </div>
+        </button>
+      </div>
+
+      <div class="mt-4 space-y-2">
+        <div class="flex items-center justify-between text-xs uppercase tracking-[0.14em] text-slate-400">
+          <span>{{ t("common:vue.app.runtime", "Runtime") }}</span>
+          <span>{{ progressLabel }}</span>
+        </div>
+        <div class="h-2 overflow-hidden rounded-full bg-slate-800">
+          <div class="h-full bg-gradient-to-r from-teal-400 to-amber-300 transition-all" :style="{ width: `${Math.floor(simulator.runtime.progress * 100)}%` }"></div>
+        </div>
+        <div v-if="simulator.runtime.error" class="flex flex-wrap items-center gap-2">
+          <p class="text-sm text-rose-300">{{ simulator.runtime.error }}</p>
+          <button class="action-button-muted text-xs" type="button" @click="openGlobalError('runtime', simulator.runtime.error)">
+            {{ t("common:vue.app.viewErrorDetails", "Details") }}
+          </button>
+        </div>
+      </div>
+    </section>
+
+    <main>
+      <RouterView />
+    </main>
+
+    <BaseModal :open="globalErrorModalOpen" :title="t('common:vue.app.globalErrorTitle', 'Error')" @close="globalErrorModalOpen = false">
+      <p class="text-sm text-slate-300">{{ t("common:vue.app.globalErrorDesc", "Please copy the following details if you report this issue.") }}</p>
+      <pre class="max-h-[320px] overflow-auto rounded-xl border border-white/10 bg-slate-950/70 p-3 text-xs text-rose-200">{{ globalErrorText }}</pre>
+      <div class="flex flex-wrap items-center gap-2">
+        <button class="action-button-primary" type="button" @click="copyGlobalError">
+          {{ t("common:vue.common.copy", "Copy") }}
+        </button>
+        <span class="text-xs text-slate-400">{{ errorCopyStatus }}</span>
+      </div>
+    </BaseModal>
+  </div>
+</template>
+
+<script setup>
+import { computed, onMounted, onUnmounted, ref, watch } from "vue";
+import { RouterLink, RouterView } from "vue-router";
+import BaseModal from "./components/BaseModal.vue";
+import { useSimulatorStore } from "../stores/simulatorStore.js";
+import { useI18nText } from "./composables/useI18nText.js";
+
+const THEME_STORAGE_KEY = "mwi.ui.theme.v1";
+const simulator = useSimulatorStore();
+const theme = ref("dark");
+const globalErrorModalOpen = ref(false);
+const globalErrorText = ref("");
+const errorCopyStatus = ref("");
+const topQueueActionStatus = ref({
+  tone: "secondary",
+  text: "",
+});
+const { language, setLanguage, t } = useI18nText();
+
+const progressLabel = computed(() => {
+  const progress = Math.floor(simulator.runtime.progress * 100);
+  const elapsed = simulator.runtime.elapsedSeconds.toFixed(1);
+  return `${progress}% | ${elapsed}s`;
+});
+
+const themeLabel = computed(() => (
+  theme.value === "dark"
+    ? t("common:vue.app.themeDark", "Dark")
+    : t("common:vue.app.themeLight", "Light")
+));
+
+const activeQueueState = computed(() => simulator.activeQueueState || null);
+const queueActionsDisabled = computed(() => Boolean(simulator.runtime?.isRunning || activeQueueState.value?.isRunning));
+const activeQueueHasBaseline = computed(() => Boolean(activeQueueState.value?.baseline?.snapshot));
+const activeQueueItemCount = computed(() => (Array.isArray(activeQueueState.value?.items) ? activeQueueState.value.items.length : 0));
+const activeQueueProgressText = computed(() => {
+  const progress = Number(activeQueueState.value?.progress || 0);
+  if (!Number.isFinite(progress)) {
+    return "0%";
+  }
+  const clamped = Math.max(0, Math.min(1, progress));
+  return `${Math.floor(clamped * 100)}%`;
+});
+const topQueueActionStatusText = computed(() => topQueueActionStatus.value.text || "");
+const topQueueActionStatusClass = computed(() => {
+  if (topQueueActionStatus.value.tone === "success") {
+    return "text-emerald-300";
+  }
+  if (topQueueActionStatus.value.tone === "danger") {
+    return "text-rose-300";
+  }
+  return "text-slate-300";
+});
+
+function normalizeTheme(value) {
+  return value === "light" ? "light" : "dark";
+}
+
+function applyTheme(nextTheme) {
+  const normalizedTheme = normalizeTheme(nextTheme);
+  theme.value = normalizedTheme;
+  document.documentElement.dataset.theme = normalizedTheme;
+  localStorage.setItem(THEME_STORAGE_KEY, normalizedTheme);
+}
+
+function toggleTheme() {
+  applyTheme(theme.value === "dark" ? "light" : "dark");
+}
+
+function setTopQueueActionStatus(tone, text) {
+  topQueueActionStatus.value = {
+    tone: tone || "secondary",
+    text: String(text || ""),
+  };
+}
+
+function resolveQueueActionErrorMessage(error) {
+  const messageKey = typeof error === "string"
+    ? error
+    : (error?.message || String(error));
+  return t(messageKey, messageKey);
+}
+
+async function setQueueBaselineFromTopbar() {
+  try {
+    setTopQueueActionStatus("secondary", t("common:queue.baselineRunning", "Running baseline simulation..."));
+    await simulator.setQueueBaselineForActivePlayer({ runSimulation: true });
+    setTopQueueActionStatus("success", t("common:vue.queue.msgBaselineCaptured", "Baseline captured for active player."));
+  } catch (error) {
+    setTopQueueActionStatus("danger", resolveQueueActionErrorMessage(error));
+  }
+}
+
+function addToQueueFromTopbar() {
+  try {
+    const items = simulator.addActivePlayerToQueue();
+    if (!Array.isArray(items) || items.length === 0) {
+      setTopQueueActionStatus("danger", t("common:vue.queue.msgNoChanges", "No changes detected (or baseline missing)."));
+      return;
+    }
+    if (items.length === 1) {
+      setTopQueueActionStatus("success", t("common:vue.queue.msgVariantAdded", "{{name}} added to queue.", { name: items[0].name }));
+      return;
+    }
+    setTopQueueActionStatus("success", t("common:vue.queue.msgVariantsAdded", "{{count}} variants added to queue.", { count: items.length }));
+  } catch (error) {
+    setTopQueueActionStatus("danger", resolveQueueActionErrorMessage(error));
+  }
+}
+
+async function runQueueFromTopbar() {
+  try {
+    setTopQueueActionStatus("secondary", t("common:queue.queueRunning", "Running queue..."));
+    const rows = await simulator.runActiveQueue();
+    if (Array.isArray(rows) && rows.length > 0) {
+      setTopQueueActionStatus("success", t("common:vue.queue.msgRunCompleted", "Queue run completed: {{count}} variants ranked.", { count: rows.length }));
+      return;
+    }
+    if (activeQueueState.value?.error) {
+      setTopQueueActionStatus("danger", t(activeQueueState.value.error, activeQueueState.value.error));
+      return;
+    }
+    setTopQueueActionStatus("secondary", t("common:queue.emptyResults", "No queue run results yet."));
+  } catch (error) {
+    setTopQueueActionStatus("danger", resolveQueueActionErrorMessage(error));
+  }
+}
+
+function clearQueueFromTopbar() {
+  simulator.clearActiveQueue();
+  setTopQueueActionStatus("success", t("common:vue.queue.msgQueueCleared", "Queue cleared."));
+}
+
+function serializeErrorPayload(payload) {
+  if (payload instanceof Error) {
+    return payload.stack || payload.message || String(payload);
+  }
+  if (typeof payload === "string") {
+    return payload;
+  }
+  try {
+    return JSON.stringify(payload, null, 2);
+  } catch (error) {
+    return String(payload);
+  }
+}
+
+function openGlobalError(source, payload) {
+  const details = serializeErrorPayload(payload);
+  globalErrorText.value = `[${source}] ${details || "-"}`;
+  globalErrorModalOpen.value = true;
+  errorCopyStatus.value = "";
+}
+
+async function copyGlobalError() {
+  const text = String(globalErrorText.value || "");
+  if (!text.trim()) {
+    return;
+  }
+  try {
+    await navigator.clipboard.writeText(text);
+    errorCopyStatus.value = t("common:vue.app.globalErrorCopied", "Copied.");
+  } catch (error) {
+    errorCopyStatus.value = t("common:vue.app.globalErrorCopyFailed", "Copy failed.");
+  }
+}
+
+function onWindowError(event) {
+  openGlobalError("window.error", event?.error || event?.message || event);
+}
+
+function onUnhandledRejection(event) {
+  openGlobalError("unhandledrejection", event?.reason || event);
+}
+
+watch(
+  () => simulator.runtime.error,
+  (nextError, prevError) => {
+    const nextText = String(nextError || "").trim();
+    if (nextText && nextText !== String(prevError || "").trim()) {
+      openGlobalError("runtime", nextText);
+    }
+  },
+);
+
+watch(
+  () => simulator.activePlayerId,
+  () => {
+    setTopQueueActionStatus("secondary", "");
+  },
+);
+
+onMounted(() => {
+  const savedTheme = normalizeTheme(localStorage.getItem(THEME_STORAGE_KEY));
+  applyTheme(savedTheme);
+  simulator.ensureMarketPricesLoaded();
+  simulator.ensureAbilityUpgradeReferenceDataLoaded();
+  window.addEventListener("error", onWindowError);
+  window.addEventListener("unhandledrejection", onUnhandledRejection);
+});
+
+onUnmounted(() => {
+  window.removeEventListener("error", onWindowError);
+  window.removeEventListener("unhandledrejection", onUnhandledRejection);
+});
+
+async function switchLanguage(nextLanguage) {
+  await setLanguage(nextLanguage);
+  simulator.setLanguage(nextLanguage);
+}
+</script>

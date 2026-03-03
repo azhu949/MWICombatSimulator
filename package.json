@@ -2,12 +2,13 @@
     "name": "mwicombatsimulator",
     "version": "1.0.1",
     "description": "",
-    "main": "index.js",
     "scripts": {
-        "test": "echo \"Error: no test specified\" && exit 1",
-        "build": "webpack",
-        "watch": "webpack --watch",
-        "start": "webpack serve --mode development --open",
+        "dev": "vite",
+        "build": "vite build",
+        "verify-pages-build": "node scripts/verify-pages-build.js",
+        "preview": "vite preview",
+        "start": "vite",
+        "test": "vitest run",
         "extract-game-data": "node scripts/extract-game-data.js"
     },
     "repository": {
@@ -22,13 +23,19 @@
     },
     "homepage": "https://github.com/AmVoidGuy/MWICombatSimulator#readme",
     "devDependencies": {
-        "copy-webpack-plugin": "^12.0.2",
-        "webpack": "^5.93.0",
-        "webpack-cli": "^5.1.4",
-        "webpack-dev-server": "^5.0.4"
+        "@vitejs/plugin-vue": "^5.2.4",
+        "autoprefixer": "^10.4.21",
+        "postcss": "^8.5.6",
+        "tailwindcss": "^3.4.17",
+        "vite": "^5.4.21",
+        "vitest": "^2.1.9"
     },
     "dependencies": {
+        "chart.js": "^4.5.1",
         "heap-js": "^2.2.0",
-        "mwicombatsimulator": "file:"
+        "i18next": "^25.6.3",
+        "pinia": "^2.3.1",
+        "vue": "^3.5.22",
+        "vue-router": "^4.6.3"
     }
 }

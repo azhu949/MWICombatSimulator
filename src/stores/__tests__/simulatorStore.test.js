@@ -1,0 +1,805 @@
+import { beforeEach, describe, expect, it, vi } from "vitest";
+import { createPinia, setActivePinia } from "pinia";
+import abilityDetailMap from "../../combatsimulator/data/abilityDetailMap.json";
+import itemDetailMap from "../../combatsimulator/data/itemDetailMap.json";
+import { useSimulatorStore } from "../simulatorStore.js";
+
+const ONE_HOUR = 60 * 60 * 1e9;
+
+function createLocalStorageMock() {
+    const store = new Map();
+    return {
+        getItem: vi.fn((key) => (store.has(key) ? store.get(key) : null)),
+        setItem: vi.fn((key, value) => {
+            store.set(key, String(value));
+        }),
+        removeItem: vi.fn((key) => {
+            store.delete(key);
+        }),
+        clear: vi.fn(() => {
+            store.clear();
+        }),
+    };
+}
+
+function findFirstPricedItem() {
+    const item = Object.values(itemDetailMap).find((entry) => Number(entry?.sellPrice ?? 0) > 0);
+    return item?.hrid ?? "";
+}
+
+function findFirstEquipmentItem() {
+    const item = Object.values(itemDetailMap).find((entry) => (
+        entry?.categoryHrid === "/item_categories/equipment"
+        && String(entry?.equipmentDetail?.type || "").startsWith("/equipment_types/")
+    ));
+    return item?.hrid ?? "";
+}
+
+function findFirstFoodWithDefaultTriggers() {
+    const item = Object.values(itemDetailMap).find(
+        (entry) => entry.categoryHrid === "/item_categories/food" && Array.isArray(entry?.consumableDetail?.defaultCombatTriggers)
+    );
+    return item?.hrid ?? "";
+}
+
+function findFirstAbilityWithDefaultTriggers() {
+    const ability = Object.values(abilityDetailMap).find(
+        (entry) => !entry.isSpecialAbility && Array.isArray(entry.defaultCombatTriggers)
+    );
+    return ability?.hrid ?? "";
+}
+
+function findFirstAbilityBookInfo() {
+    const item = Object.values(itemDetailMap).find((entry) => (
+        entry?.categoryHrid === "/item_categories/ability_book"
+        && String(entry?.abilityBookDetail?.abilityHrid || "").startsWith("/abilities/")
+    ));
+    if (!item) {
+        return null;
+    }
+    return {
+        abilityHrid: String(item.abilityBookDetail.abilityHrid || ""),
+        xpPerBook: Number(item.abilityBookDetail.experienceGain || 0),
+        bookItemHrid: String(item.hrid || ""),
+    };
+}
+
+describe("simulatorStore", () => {
+    beforeEach(() => {
+        setActivePinia(createPinia());
+        global.localStorage = createLocalStorageMock();
+    });
+
+    it("normalizes active queue settings", () => {
+        const simulator = useSimulatorStore();
+
+        const normalized = simulator.updateActiveQueueSettings({
+            rounds: 999,
+            medianBlend: 2,
+            weightProfit: 2,
+            weightXp: 3,
+            weightDeathSafety: 5,
+            executionMode: "parallel",
+        });
+
+        expect(normalized.rounds).toBe(200);
+        expect(normalized.medianBlend).toBe(1);
+        expect(normalized.weightProfit).toBeCloseTo(0.2, 6);
+        expect(normalized.weightXp).toBeCloseTo(0.3, 6);
+        expect(normalized.weightDeathSafety).toBeCloseTo(0.5, 6);
+        expect(normalized.executionMode).toBe("parallel");
+
+        const zeroed = simulator.updateActiveQueueSettings({
+            weightProfit: -1,
+            weightXp: -1,
+            weightDeathSafety: -1,
+            executionMode: "invalid-mode",
+        });
+
+        expect(zeroed.weightProfit).toBe(0);
+        expect(zeroed.weightXp).toBe(0);
+        expect(zeroed.weightDeathSafety).toBe(0);
+        expect(zeroed.executionMode).toBe("serial");
+    });
+
+    it("validates and persists queue runtime settings", () => {
+        const simulator = useSimulatorStore();
+
+        const invalid = simulator.saveQueueRuntimeSettings({
+            performancePct: 40,
+            stabilityPct: 20,
+            costPct: 30,
+            parallelWorkerLimit: 1,
+        });
+        expect(invalid.ok).toBe(false);
+        expect(invalid.messageKey).toBe("common:settingsPage.queueSaveErrorWeightSum");
+
+        const saved = simulator.saveQueueRuntimeSettings({
+            performancePct: 40,
+            stabilityPct: 20,
+            costPct: 40,
+            parallelWorkerLimit: 1,
+        });
+        expect(saved.ok).toBe(true);
+        expect(simulator.queueRuntime.finalWeights.performance).toBeCloseTo(0.4, 6);
+        expect(simulator.queueRuntime.finalWeights.stability).toBeCloseTo(0.2, 6);
+        expect(simulator.queueRuntime.finalWeights.cost).toBeCloseTo(0.4, 6);
+        expect(simulator.queueRuntime.parallelWorkerLimit).toBe(1);
+        expect(global.localStorage.setItem).toHaveBeenCalled();
+
+        const reset = simulator.resetQueueRuntimeSettings();
+        expect(reset.ok).toBe(true);
+        expect(simulator.queueRuntime.finalWeights.performance).toBeCloseTo(0.4, 6);
+        expect(simulator.queueRuntime.finalWeights.stability).toBeCloseTo(0.2, 6);
+        expect(simulator.queueRuntime.finalWeights.cost).toBeCloseTo(0.4, 6);
+    });
+
+    it("saves, loads, and deletes player data snapshots", () => {
+        const simulator = useSimulatorStore();
+
+        simulator.players[0].levels.stamina = 77;
+        const saveResult = simulator.savePlayerDataSnapshot();
+        expect(saveResult.ok).toBe(true);
+        expect(simulator.playerDataSnapshotRows.some((row) => row.hasSnapshot)).toBe(true);
+
+        simulator.players[0].levels.stamina = 1;
+        const loadResult = simulator.loadPlayerDataSnapshot();
+        expect(loadResult.ok).toBe(true);
+        expect(simulator.players[0].levels.stamina).toBe(77);
+
+        const deleteOneResult = simulator.deleteSinglePlayerDataSnapshot("1");
+        expect(deleteOneResult.ok).toBe(true);
+
+        const deleteAllResult = simulator.deleteAllPlayerDataSnapshots();
+        expect(deleteAllResult.ok).toBe(true);
+        expect(simulator.playerDataSnapshotRows.every((row) => !row.hasSnapshot)).toBe(true);
+    });
+
+    it("keeps queue state isolated per active player", async () => {
+        const simulator = useSimulatorStore();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        expect(simulator.queue.byPlayer["1"]?.baseline).toBeTruthy();
+
+        simulator.setActivePlayer("3");
+        expect(simulator.activeQueueState.baseline).toBeNull();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        expect(simulator.queue.byPlayer["3"]?.baseline).toBeTruthy();
+
+        simulator.setActivePlayer("1");
+        expect(simulator.activeQueueState.baseline).toBeTruthy();
+    });
+
+    it("rejects queue run when run scope is not single", async () => {
+        const simulator = useSimulatorStore();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.levels.stamina = 2;
+        simulator.addActivePlayerToQueue();
+        simulator.simulationSettings.runScope = "all_group_zones";
+
+        const rows = await simulator.runActiveQueue();
+
+        expect(rows).toEqual([]);
+        expect(simulator.activeQueueState.error).toContain("Single target");
+    });
+
+    it("runs queue with multiple rounds and builds ranking output", async () => {
+        const simulator = useSimulatorStore();
+        const pricedItemHrid = findFirstPricedItem();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activeQueueState.baseline.metrics = {
+            dailyNoRngProfit: 2400,
+            dps: 100,
+            xpPerHour: 1200,
+            killsPerHour: 100,
+        };
+        simulator.activePlayer.levels.stamina = 10;
+        const addedItems = simulator.addActivePlayerToQueue();
+        expect(Array.isArray(addedItems)).toBe(true);
+        expect(addedItems).toHaveLength(1);
+
+        simulator.updateActiveQueueSettings({
+            rounds: 2,
+            executionMode: "serial",
+            medianBlend: 0.4,
+            weightProfit: 1,
+            weightXp: 0,
+            weightDeathSafety: 0,
+        });
+
+        let callCount = 0;
+        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+            callCount += 1;
+            onProgress?.({ progress: 1 });
+
+            return {
+                simulatedTime: ONE_HOUR,
+                encounters: 90,
+                experienceGained: {
+                    player1: {
+                        stamina: 900,
+                    },
+                },
+                deaths: {
+                    player1: 1,
+                },
+                consumablesUsed: !pricedItemHrid
+                    ? {}
+                    : { player1: { [pricedItemHrid]: 2 } },
+            };
+        });
+
+        const rows = await simulator.runActiveQueue();
+        const variantRow = rows[0];
+
+        expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(2);
+        expect(rows).toHaveLength(1);
+        expect(variantRow).toBeTruthy();
+        expect(simulator.activeQueueState.rawRuns).toHaveLength(2);
+        expect(simulator.activeQueueState.ranking).toHaveLength(1);
+        expect(simulator.activeQueueState.progress).toBe(1);
+        expect(simulator.runtime.isRunning).toBe(false);
+        expect(simulator.activeQueueState.isRunning).toBe(false);
+        expect(Number(variantRow.deltaProfitPerHour)).toBeLessThanOrEqual(0);
+    });
+
+    it("runs queue in parallel execution mode", async () => {
+        const simulator = useSimulatorStore();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.levels.stamina = 10;
+        simulator.addActivePlayerToQueue();
+        simulator.queueRuntime.parallelWorkerLimit = 2;
+        simulator.updateActiveQueueSettings({
+            rounds: 2,
+            executionMode: "parallel",
+            medianBlend: 0.5,
+            weightProfit: 1,
+            weightXp: 0,
+            weightDeathSafety: 0,
+        });
+
+        simulator.runSingleSimulationPayloadWithDedicatedWorker = vi.fn(async (_payload, onProgress) => {
+            onProgress?.({ progress: 0.5 });
+            onProgress?.({ progress: 1 });
+            return {
+                simulatedTime: ONE_HOUR,
+                encounters: 100,
+                experienceGained: {
+                    player1: {
+                        stamina: 1000,
+                    },
+                },
+                deaths: {
+                    player1: 0,
+                },
+                consumablesUsed: {},
+            };
+        });
+
+        const rows = await simulator.runActiveQueue();
+
+        expect(simulator.runSingleSimulationPayloadWithDedicatedWorker).toHaveBeenCalledTimes(2);
+        expect(rows).toHaveLength(1);
+        expect(simulator.activeQueueState.rawRuns).toHaveLength(2);
+        expect(simulator.activeQueueState.progress).toBe(1);
+        expect(simulator.activeQueueState.settings.executionMode).toBe("parallel");
+    });
+
+    it("splits queue variants by changes when multiple diffs exist", async () => {
+        const simulator = useSimulatorStore();
+        await simulator.setQueueBaselineForActivePlayer();
+
+        simulator.activePlayer.levels.stamina = 10;
+        simulator.activePlayer.levels.attack = 20;
+        const addedItems = simulator.addActivePlayerToQueue();
+
+        expect(Array.isArray(addedItems)).toBe(true);
+        expect(addedItems.length).toBeGreaterThanOrEqual(2);
+    });
+
+    it("creates descriptive queue item names from change summary", async () => {
+        const simulator = useSimulatorStore();
+        await simulator.setQueueBaselineForActivePlayer();
+
+        simulator.activePlayer.levels.stamina += 5;
+        const addedItems = simulator.addActivePlayerToQueue();
+
+        expect(addedItems).toHaveLength(1);
+        expect(String(addedItems[0]?.name || "")).toContain("Stamina");
+        expect(String(addedItems[0]?.name || "")).not.toMatch(/^Variant\s+\d+/);
+    });
+
+    it("restores active player snapshot to baseline after adding queue variants", async () => {
+        const simulator = useSimulatorStore();
+        await simulator.setQueueBaselineForActivePlayer();
+
+        const baselineStamina = simulator.activeQueueState.baseline.snapshot.levels.stamina;
+        simulator.activePlayer.levels.stamina = baselineStamina + 5;
+        const addedItems = simulator.addActivePlayerToQueue();
+
+        expect(addedItems.length).toBe(1);
+        expect(simulator.activePlayer.levels.stamina).toBe(baselineStamina);
+    });
+
+    it("uses manual equipment transition cost in queue ranking cost insights", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+        expect(equipmentItemHrid).toBeTruthy();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
+        const setCost = simulator.setActivePlayerEquipmentUpgradeCost("weapon", 123456);
+        expect(setCost).toBe(true);
+
+        const addedItems = simulator.addActivePlayerToQueue();
+        expect(addedItems.length).toBe(1);
+
+        simulator.updateActiveQueueSettings({
+            rounds: 1,
+            executionMode: "serial",
+            medianBlend: 0.5,
+            weightProfit: 1,
+            weightXp: 0,
+            weightDeathSafety: 0,
+        });
+        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+            onProgress?.({ progress: 1 });
+            return {
+                simulatedTime: ONE_HOUR,
+                encounters: 100,
+                experienceGained: {
+                    player1: {
+                        stamina: 1000,
+                    },
+                },
+                deaths: {
+                    player1: 0,
+                },
+                consumablesUsed: {},
+            };
+        });
+
+        const rows = await simulator.runActiveQueue();
+        const variantRow = rows[0];
+
+        expect(variantRow).toBeTruthy();
+        expect(Number(variantRow.costInsights?.totalUpgradeCost)).toBe(123456);
+    });
+
+    it("computes non-zero default ability upgrade cost from baseline snapshot", async () => {
+        const simulator = useSimulatorStore();
+        const abilityBookInfo = findFirstAbilityBookInfo();
+        expect(abilityBookInfo).toBeTruthy();
+
+        const { abilityHrid, xpPerBook, bookItemHrid } = abilityBookInfo;
+        global.jigsAbilityXpLevels = [0, 100, 700];
+        global.jigsSpellBookXpByName = {};
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.abilities[0].abilityHrid = abilityHrid;
+        simulator.activePlayer.abilities[0].level = 2;
+
+        const draft = simulator.resolveActivePlayerAbilityUpgradeCostDraft(0);
+        const expectedBooks = Math.ceil((700 - 100) / xpPerBook);
+        const expectedUnitPrice = Number(simulator.pricing?.priceTable?.[bookItemHrid]?.vendor || 0);
+
+        expect(draft).toBeTruthy();
+        expect(draft.cost).toBe(expectedBooks * expectedUnitPrice);
+        expect(draft.cost).toBeGreaterThan(0);
+    });
+
+    it("runs baseline simulation when requested", async () => {
+        const simulator = useSimulatorStore();
+        simulator.setImportedProfileState("1", true);
+        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+            onProgress?.({ progress: 0.999 });
+            return {
+                simulatedTime: ONE_HOUR,
+                encounters: 120,
+                experienceGained: {
+                    player1: {
+                        stamina: 1200,
+                    },
+                },
+                deaths: {
+                    player1: 0,
+                },
+                consumablesUsed: {},
+            };
+        });
+
+        const baseline = await simulator.setQueueBaselineForActivePlayer({ runSimulation: true });
+
+        expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(1);
+        expect(baseline?.metrics?.totalXpPerHour).toBeGreaterThan(0);
+        expect(simulator.activeQueueState.isRunning).toBe(false);
+        expect(simulator.runtime.progress).toBe(1);
+    });
+
+    it("preserves queue items when baseline simulation is rerun by default", async () => {
+        const simulator = useSimulatorStore();
+        await simulator.setQueueBaselineForActivePlayer();
+
+        simulator.activePlayer.levels.stamina += 5;
+        const appended = simulator.addActivePlayerToQueue();
+        expect(appended).toHaveLength(1);
+        const queueIdsBefore = simulator.activeQueueState.items.map((item) => item.id);
+
+        simulator.setImportedProfileState("1", true);
+        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+            onProgress?.({ progress: 1 });
+            return {
+                simulatedTime: ONE_HOUR,
+                encounters: 100,
+                experienceGained: {
+                    player1: {
+                        stamina: 1000,
+                    },
+                },
+                deaths: {
+                    player1: 0,
+                },
+                consumablesUsed: {},
+            };
+        });
+
+        await simulator.setQueueBaselineForActivePlayer({ runSimulation: true });
+        expect(simulator.activeQueueState.items.map((item) => item.id)).toEqual(queueIdsBefore);
+    });
+
+    it("clears queue items when baseline simulation rerun opts out of preserve mode", async () => {
+        const simulator = useSimulatorStore();
+        await simulator.setQueueBaselineForActivePlayer();
+
+        simulator.activePlayer.levels.stamina += 5;
+        const appended = simulator.addActivePlayerToQueue();
+        expect(appended).toHaveLength(1);
+
+        simulator.setImportedProfileState("1", true);
+        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+            onProgress?.({ progress: 1 });
+            return {
+                simulatedTime: ONE_HOUR,
+                encounters: 100,
+                experienceGained: {
+                    player1: {
+                        stamina: 1000,
+                    },
+                },
+                deaths: {
+                    player1: 0,
+                },
+                consumablesUsed: {},
+            };
+        });
+
+        await simulator.setQueueBaselineForActivePlayer({ runSimulation: true, preserveQueueItems: false });
+        expect(simulator.activeQueueState.items).toHaveLength(0);
+    });
+
+    it("requires imported profile before baseline simulation", async () => {
+        const simulator = useSimulatorStore();
+        await expect(simulator.setQueueBaselineForActivePlayer({ runSimulation: true }))
+            .rejects
+            .toThrow("common:queue.requireImportBeforeBaseline");
+    });
+
+    it("marks imported profile state after solo import", () => {
+        const simulator = useSimulatorStore();
+        const soloText = simulator.exportSoloConfig("1", "legacy");
+        simulator.setImportedProfileState("1", false);
+
+        simulator.importSoloConfig(soloText, "1");
+
+        expect(simulator.queue.importedProfileByPlayer["1"]).toBe(true);
+    });
+
+    it("returns sorted market enhancement levels for an item", () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+        expect(equipmentItemHrid).toBeTruthy();
+
+        simulator.pricing.enhancementLevelsByItem = {
+            ...simulator.pricing.enhancementLevelsByItem,
+            [equipmentItemHrid]: [5, 2, 3, 2, 1],
+        };
+
+        const levels = simulator.getMarketEnhancementLevelsForItem(equipmentItemHrid);
+        expect(levels).toEqual([1, 2, 3, 5]);
+    });
+
+    it("stores only meaningful player snapshots when saving snapshot data", () => {
+        const simulator = useSimulatorStore();
+
+        simulator.players[0].levels.stamina = 99;
+        const saveResult = simulator.savePlayerDataSnapshot();
+        expect(saveResult.ok).toBe(true);
+
+        const rowsWithSnapshot = simulator.playerDataSnapshotRows.filter((row) => row.hasSnapshot);
+        expect(rowsWithSnapshot).toHaveLength(1);
+        expect(rowsWithSnapshot[0].playerId).toBe("1");
+    });
+
+    it("restores zone and difficulty from player data snapshot without forcing labyrinth mode", () => {
+        const simulator = useSimulatorStore();
+        const payload = {
+            version: 1,
+            savedAt: Date.now(),
+            playerDataMap: {
+                "1": JSON.stringify({
+                    player: {
+                        staminaLevel: 2,
+                        equipment: [],
+                    },
+                    zone: "/actions/combat/jungle_planet",
+                    dungeon: "/actions/combat/chimerical_den",
+                    difficulty: "3",
+                    simulationTime: "24",
+                    // legacy export may still carry default labyrinth; this should not switch to labyrinth mode
+                    labyrinth: "/monsters/cyclops",
+                    roomLevel: "100",
+                }),
+            },
+        };
+        global.localStorage.setItem("mwi.player.data.snapshot.v1", JSON.stringify(payload));
+
+        const loadResult = simulator.loadPlayerDataSnapshot();
+        expect(loadResult.ok).toBe(true);
+        expect(simulator.simulationSettings.mode).toBe("zone");
+        expect(simulator.simulationSettings.useDungeon).toBe(false);
+        expect(simulator.simulationSettings.zoneHrid).toBe("/actions/combat/jungle_planet");
+        expect(simulator.simulationSettings.difficultyTier).toBe(3);
+    });
+
+    it("normalizes legacy snapshot display names to action and monster hrids", () => {
+        const simulator = useSimulatorStore();
+        const payload = {
+            version: 1,
+            savedAt: Date.now(),
+            playerDataMap: {
+                "1": JSON.stringify({
+                    player: {
+                        staminaLevel: 2,
+                        equipment: [],
+                    },
+                    zone: "Jungle Planet",
+                    dungeon: "Chimerical Den",
+                    labyrinth: "Cyclops",
+                    difficulty: "1",
+                    simulationTime: "24",
+                    roomLevel: "100",
+                }),
+            },
+        };
+        global.localStorage.setItem("mwi.player.data.snapshot.v1", JSON.stringify(payload));
+
+        simulator.refreshPlayerDataSnapshot();
+        const row = simulator.playerDataSnapshotRows.find((entry) => entry.playerId === "1");
+
+        expect(row).toBeTruthy();
+        expect(row.hasSnapshot).toBe(true);
+        expect(row.zoneHrid).toBe("/actions/combat/jungle_planet");
+        expect(row.dungeonHrid).toBe("/actions/combat/chimerical_den");
+        expect(row.labyrinthHrid).toBe("/monsters/cyclops");
+    });
+
+    it("saves queue template sets without snapshot data in store/cache", () => {
+        const simulator = useSimulatorStore();
+
+        simulator.saveEquipmentSet("Test Set");
+        expect(simulator.equipmentSetEntries[0]?.name).toBe("Test Set");
+        expect(simulator.equipmentSets["Test Set"]?.snapshot).toBeUndefined();
+
+        const persisted = JSON.parse(global.localStorage.getItem("mwi.equipmentSets.v2") || "{}");
+        expect(persisted["Test Set"]?.snapshot).toBeUndefined();
+    });
+
+    it("stores queue change templates in equipment sets without before fields", async () => {
+        const simulator = useSimulatorStore();
+        const headItemHrid = String(simulator.options?.equipmentBySlot?.head?.[0]?.hrid || "");
+
+        expect(headItemHrid).toBeTruthy();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.equipment.head.itemHrid = headItemHrid;
+        simulator.activePlayer.equipment.head.enhancementLevel = 3;
+        const appendedItems = simulator.addActivePlayerToQueue();
+        expect(Array.isArray(appendedItems)).toBe(true);
+        expect(appendedItems.length).toBeGreaterThan(0);
+
+        simulator.saveEquipmentSet("Queue Template Set");
+        const queueChanges = simulator.equipmentSets["Queue Template Set"]?.queueChanges;
+
+        expect(Array.isArray(queueChanges?.items)).toBe(true);
+        expect(queueChanges.items.length).toBeGreaterThan(0);
+        expect(Array.isArray(queueChanges.items[0]?.targets)).toBe(true);
+        expect(queueChanges.items[0].targets.length).toBeGreaterThan(0);
+        queueChanges.items[0].targets.forEach((target) => {
+            expect(Object.keys(target).some((key) => key.startsWith("before"))).toBe(false);
+        });
+    });
+
+    it("loads legacy equipment sets without queue changes metadata", () => {
+        const simulator = useSimulatorStore();
+        const legacySnapshot = JSON.parse(JSON.stringify(simulator.activePlayer));
+
+        global.localStorage.setItem("mwi.equipmentSets.v2", JSON.stringify({
+            "Legacy Set": {
+                savedAt: Date.now(),
+                snapshot: legacySnapshot,
+            },
+        }));
+
+        simulator.refreshEquipmentSets();
+        const loadedRow = simulator.equipmentSetEntries.find((entry) => entry.name === "Legacy Set");
+
+        expect(loadedRow).toBeTruthy();
+        expect(loadedRow.queueChangeCount).toBe(0);
+        expect(simulator.equipmentSets["Legacy Set"]?.snapshot).toBeUndefined();
+    });
+
+    it("imports queue changes by rebuilding baseline and resetting custom cost maps", async () => {
+        const simulator = useSimulatorStore();
+        const headItemHrid = String(simulator.options?.equipmentBySlot?.head?.[0]?.hrid || "");
+
+        expect(headItemHrid).toBeTruthy();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.equipment.head.itemHrid = headItemHrid;
+        simulator.activePlayer.equipment.head.enhancementLevel = 4;
+        const appendedItems = simulator.addActivePlayerToQueue();
+        expect(Array.isArray(appendedItems)).toBe(true);
+        expect(appendedItems.length).toBeGreaterThan(0);
+
+        simulator.activeQueueState.enhancementUpgradeCosts = { any: 123 };
+        simulator.activeQueueState.abilityUpgradeCosts = { any: 456 };
+        simulator.saveEquipmentSet("Import Queue Set");
+
+        simulator.activePlayer.equipment.head.itemHrid = headItemHrid;
+        simulator.activePlayer.equipment.head.enhancementLevel = 2;
+
+        const importResult = simulator.importEquipmentSetQueueChanges("Import Queue Set");
+        expect(importResult.ok).toBe(true);
+        expect(importResult.importedCount).toBeGreaterThan(0);
+        expect(simulator.activeQueueState.baseline?.snapshot?.equipment?.head?.enhancementLevel).toBe(2);
+        expect(simulator.activeQueueState.enhancementUpgradeCosts).toEqual({});
+        expect(simulator.activeQueueState.abilityUpgradeCosts).toEqual({});
+
+        const importedEquipmentVariant = simulator.activeQueueState.items.find((item) => (
+            String(item?.snapshot?.equipment?.head?.itemHrid || "") === headItemHrid
+            && Number(item?.snapshot?.equipment?.head?.enhancementLevel || 0) === 4
+        ));
+        expect(importedEquipmentVariant).toBeTruthy();
+
+        const loaded = simulator.loadQueueSnapshotToActivePlayer(importedEquipmentVariant.id);
+        expect(loaded).toBe(true);
+
+        const draft = simulator.resolveActivePlayerEquipmentUpgradeCostDraft("head");
+        expect(draft).toBeTruthy();
+        expect(draft.beforeLevel).toBe(2);
+        expect(draft.afterLevel).toBe(4);
+    });
+
+    it("recomputes ability upgrade draft from import-time baseline after queue change import", async () => {
+        const simulator = useSimulatorStore();
+        const abilityBookInfo = findFirstAbilityBookInfo();
+        expect(abilityBookInfo).toBeTruthy();
+        const abilityHrid = String(abilityBookInfo.abilityHrid || "");
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.abilities[0].abilityHrid = abilityHrid;
+        simulator.activePlayer.abilities[0].level = 4;
+        const appendedItems = simulator.addActivePlayerToQueue();
+        expect(Array.isArray(appendedItems)).toBe(true);
+        expect(appendedItems.length).toBeGreaterThan(0);
+        simulator.saveEquipmentSet("Import Ability Queue Set");
+
+        simulator.activePlayer.abilities[0].abilityHrid = abilityHrid;
+        simulator.activePlayer.abilities[0].level = 3;
+
+        const importResult = simulator.importEquipmentSetQueueChanges("Import Ability Queue Set");
+        expect(importResult.ok).toBe(true);
+        expect(importResult.importedCount).toBeGreaterThan(0);
+
+        const importedAbilityVariant = simulator.activeQueueState.items.find((item) => (
+            String(item?.snapshot?.abilities?.[0]?.abilityHrid || "") === abilityHrid
+            && Number(item?.snapshot?.abilities?.[0]?.level || 0) === 4
+        ));
+        expect(importedAbilityVariant).toBeTruthy();
+
+        const loaded = simulator.loadQueueSnapshotToActivePlayer(importedAbilityVariant.id);
+        expect(loaded).toBe(true);
+
+        const draft = simulator.resolveActivePlayerAbilityUpgradeCostDraft(0);
+        expect(draft).toBeTruthy();
+        expect(draft.abilityHrid).toBe(abilityHrid);
+        expect(draft.fromLevel).toBe(3);
+        expect(draft.toLevel).toBe(4);
+    });
+
+    it("returns explicit failure when importing empty queue changes and keeps existing queue", async () => {
+        const simulator = useSimulatorStore();
+        simulator.saveEquipmentSet("Empty Queue Set");
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.levels.stamina = 5;
+        simulator.addActivePlayerToQueue();
+
+        const beforeBaselineCreatedAt = simulator.activeQueueState.baseline?.createdAt;
+        const beforeItemIds = simulator.activeQueueState.items.map((item) => item.id);
+
+        const importResult = simulator.importEquipmentSetQueueChanges("Empty Queue Set");
+        expect(importResult.ok).toBe(false);
+        expect(importResult.messageKey).toBe("common:vue.settings.msgQueueChangesImportEmpty");
+        expect(simulator.activeQueueState.baseline?.createdAt).toBe(beforeBaselineCreatedAt);
+        expect(simulator.activeQueueState.items.map((item) => item.id)).toEqual(beforeItemIds);
+    });
+
+    it("applies trigger defaults and allows override", () => {
+        const simulator = useSimulatorStore();
+        const foodHrid = findFirstFoodWithDefaultTriggers();
+        const abilityHrid = findFirstAbilityWithDefaultTriggers();
+
+        expect(foodHrid).toBeTruthy();
+        expect(abilityHrid).toBeTruthy();
+
+        const defaultFoodTriggers = simulator.ensureActivePlayerTriggerDefaults(foodHrid);
+        expect(defaultFoodTriggers.length).toBeGreaterThan(0);
+
+        simulator.setActivePlayerTriggers(foodHrid, []);
+        expect(simulator.getActivePlayerTriggers(foodHrid)).toEqual([]);
+
+        const defaultAbilityTriggers = simulator.resetActivePlayerTriggersToDefault(abilityHrid);
+        expect(defaultAbilityTriggers.length).toBeGreaterThan(0);
+    });
+
+    it("supports manual price overrides and reset", () => {
+        const simulator = useSimulatorStore();
+        const itemHrid = findFirstPricedItem();
+
+        expect(itemHrid).toBeTruthy();
+
+        const baseAsk = simulator.pricing.basePriceTable[itemHrid]?.ask;
+        const baseBid = simulator.pricing.basePriceTable[itemHrid]?.bid;
+
+        simulator.setPriceOverride(itemHrid, { ask: 123, bid: 456 });
+        expect(simulator.pricing.priceTable[itemHrid]?.ask).toBe(123);
+        expect(simulator.pricing.priceTable[itemHrid]?.bid).toBe(456);
+        expect(simulator.pricing.overrides[itemHrid]).toEqual({ ask: 123, bid: 456 });
+
+        simulator.setPriceOverride(itemHrid, { ask: null });
+        expect(simulator.pricing.priceTable[itemHrid]?.ask).toBe(baseAsk);
+        expect(simulator.pricing.priceTable[itemHrid]?.bid).toBe(456);
+        expect(simulator.pricing.overrides[itemHrid]).toEqual({ bid: 456 });
+
+        const resetOne = simulator.resetPriceOverride(itemHrid);
+        expect(resetOne).toBe(true);
+        expect(simulator.pricing.overrides[itemHrid]).toBeUndefined();
+        expect(simulator.pricing.priceTable[itemHrid]?.ask).toBe(baseAsk);
+        expect(simulator.pricing.priceTable[itemHrid]?.bid).toBe(baseBid);
+
+        const resetAll = simulator.resetAllPriceOverrides();
+        expect(resetAll).toBe(false);
+    });
+
+    it("refetches market prices when cached table misses enhancement data", async () => {
+        const simulator = useSimulatorStore();
+        simulator.pricing.lastFetchedAt = Date.now();
+        simulator.pricing.sourceUrl = "https://example.com";
+        simulator.pricing.enhancementQuotesByItem = {};
+        simulator.pricing.enhancementLevelsByItem = {};
+        simulator.fetchMarketPrices = vi.fn(async () => ({
+            sourceUrl: "https://example.com",
+            lastFetchedAt: Date.now(),
+        }));
+
+        await simulator.ensureMarketPricesLoaded();
+
+        expect(simulator.fetchMarketPrices).toHaveBeenCalledTimes(1);
+    });
+});

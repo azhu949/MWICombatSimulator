@@ -19,7 +19,7 @@ onmessage = async function (event) {
                         const zoneIndex = zoneHrids.length - taskQueue.length;
                         const currentZone = taskQueue.shift();
 
-                        const simulationWorker = new Worker(new URL('worker.js', import.meta.url));
+                        const simulationWorker = new Worker(new URL("worker.js", import.meta.url), { type: "module" });
 
                         // Do simulation
                         let workerMessage = {
@@ -83,7 +83,7 @@ onmessage = async function (event) {
                         const labyrinthIndex = labyrinthHrids.length - taskQueue.length;
                         const currentLabyrinth = taskQueue.shift();
 
-                        const simulationWorker = new Worker(new URL('worker.js', import.meta.url));
+                        const simulationWorker = new Worker(new URL("worker.js", import.meta.url), { type: "module" });
 
                         // Do simulation
                         let workerMessage = {
