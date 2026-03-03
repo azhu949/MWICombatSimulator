@@ -70,6 +70,41 @@ npm test
 
 ### 刷新这 6 个模拟器 map 文件
 
+推荐：优先使用官方 websocket 自动拉取（减少手工步骤）：
+
+1. 在浏览器打开 Milky Way Idle 并登录。
+2. 在 DevTools Console 执行，拿到 `localHash`：
+
+```js
+copy(localStorage.getItem("localHash"));
+```
+
+3. 在 Console 执行，查看角色列表并确认你要使用的 `characterId`：
+
+```js
+fetch("https://api.milkywayidle.com/v1/characters", { credentials: "include" })
+  .then((r) => r.json())
+  .then((list) => console.log(list.map((x) => ({ id: x.id, name: x.name }))));
+```
+
+4. 在 DevTools `Network` 中找到任意 `https://api.milkywayidle.com/v1/characters` 请求，
+   从 `Request Headers` 复制整条 `cookie: ...` 到本地文件（例如 `tmp/api.cookie.txt`）。
+
+5. 执行命令（会自动识别最新 `gameVersion`，并直接导出 6 个 map）：
+
+```bash
+npm run extract-game-data:official -- --character-id <characterId> --hash <localHash> --cookie-file tmp/api.cookie.txt --inspect-output tmp/initClientData.decoded --save-raw tmp/initClientData.raw.json
+```
+
+说明：
+
+- `--cookie` / `--cookie-file`：用于携带登录态；若不提供，websocket 通常会被服务端立即断开。
+- `--inspect-output`：额外将 6 个 JSON 拆分到 `tmp` 目录，便于人工查看。
+- `--save-raw`：保存完整 websocket `init_client_data` 原始包，便于排查。
+- `--hash` 可省略（脚本会自动生成），但建议使用浏览器里现有 `localHash` 保持一致。
+
+如果你暂时不走 websocket，也可以继续使用下面的手工方式：
+
 1. 在浏览器打开 Milky Way Idle 并登录。
 2. 在 DevTools Console 执行：
 
