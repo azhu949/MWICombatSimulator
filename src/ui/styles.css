@@ -1,0 +1,139 @@
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+:root {
+    color-scheme: dark;
+    --app-body-text: #f1f5f9;
+    --app-bg:
+        radial-gradient(1200px 600px at -10% -10%, rgba(20, 184, 166, 0.2), transparent 60%),
+        radial-gradient(1200px 600px at 110% 0%, rgba(245, 158, 11, 0.2), transparent 60%),
+        linear-gradient(145deg, #05080f 0%, #0b1322 45%, #090f1a 100%);
+    --panel-bg: rgba(15, 23, 42, 0.62);
+    --panel-border: rgba(255, 255, 255, 0.12);
+    --field-bg: rgba(2, 6, 23, 0.72);
+    --field-border: rgba(255, 255, 255, 0.14);
+    --field-text: #f8fafc;
+    --muted-btn-bg: transparent;
+    --muted-btn-border: rgba(255, 255, 255, 0.2);
+    --muted-btn-text: #f1f5f9;
+    --muted-btn-hover: rgba(255, 255, 255, 0.1);
+    --badge-border: rgba(255, 255, 255, 0.15);
+}
+
+:root[data-theme="light"] {
+    color-scheme: light;
+    --app-body-text: #0f172a;
+    --app-bg:
+        radial-gradient(1200px 600px at -10% -10%, rgba(14, 116, 144, 0.16), transparent 60%),
+        radial-gradient(1200px 600px at 110% 0%, rgba(245, 158, 11, 0.2), transparent 60%),
+        linear-gradient(145deg, #eff6ff 0%, #f8fafc 45%, #e2e8f0 100%);
+    --panel-bg: rgba(255, 255, 255, 0.86);
+    --panel-border: rgba(15, 23, 42, 0.2);
+    --field-bg: rgba(255, 255, 255, 0.92);
+    --field-border: rgba(148, 163, 184, 0.55);
+    --field-text: #0f172a;
+    --muted-btn-bg: rgba(248, 250, 252, 0.86);
+    --muted-btn-border: rgba(30, 41, 59, 0.24);
+    --muted-btn-text: #0f172a;
+    --muted-btn-hover: rgba(203, 213, 225, 0.5);
+    --badge-border: rgba(30, 41, 59, 0.28);
+}
+
+body {
+    @apply font-body;
+    min-height: 100vh;
+    color: var(--app-body-text);
+    background: var(--app-bg);
+}
+
+#app {
+    min-height: 100vh;
+}
+
+.panel {
+    @apply rounded-2xl p-4 shadow-panel backdrop-blur-md;
+    border: 1px solid var(--panel-border);
+    background: var(--panel-bg);
+}
+
+.field-label {
+    @apply mb-1 block text-xs font-semibold uppercase tracking-[0.12em] text-slate-400;
+}
+
+.field-input {
+    @apply w-full rounded-xl px-3 py-2 text-sm outline-none transition;
+    border: 1px solid var(--field-border);
+    background: var(--field-bg);
+    color: var(--field-text);
+}
+
+.field-input::placeholder {
+    color: #94a3b8;
+}
+
+.field-input:focus {
+    border-color: #f59e0b;
+}
+
+.field-select {
+    @apply field-input;
+}
+
+.action-button {
+    @apply rounded-xl px-4 py-2 text-sm font-semibold transition;
+}
+
+.action-button-primary {
+    @apply action-button bg-accent text-slate-900 hover:bg-amber-300;
+}
+
+.action-button-muted {
+    @apply action-button;
+    border: 1px solid var(--muted-btn-border);
+    color: var(--muted-btn-text);
+    background: var(--muted-btn-bg);
+}
+
+.action-button-muted:hover {
+    background: var(--muted-btn-hover);
+}
+
+.top-nav-active {
+    border-color: rgb(252 211 77) !important;
+    background: rgba(252, 211, 77, 0.12) !important;
+    color: rgb(254 243 199) !important;
+}
+
+.action-button-danger {
+    @apply action-button bg-rose-500 text-white hover:bg-rose-400;
+}
+
+.badge {
+    @apply rounded-full px-2 py-1 text-xs;
+    border: 1px solid var(--badge-border);
+}
+
+:root[data-theme="light"] .text-slate-100 { color: #0f172a !important; }
+:root[data-theme="light"] .text-slate-200 { color: #1e293b !important; }
+:root[data-theme="light"] .text-slate-300 { color: #334155 !important; }
+:root[data-theme="light"] .text-slate-400 { color: #475569 !important; }
+:root[data-theme="light"] .text-slate-500 { color: #64748b !important; }
+:root[data-theme="light"] .bg-slate-900\/40,
+:root[data-theme="light"] .bg-slate-900\/50,
+:root[data-theme="light"] .bg-slate-900\/60,
+:root[data-theme="light"] .bg-slate-900\/70,
+:root[data-theme="light"] .bg-slate-900\/80 {
+    background-color: rgba(255, 255, 255, 0.78) !important;
+}
+:root[data-theme="light"] .bg-slate-950\/40,
+:root[data-theme="light"] .bg-slate-950\/70 {
+    background-color: rgba(248, 250, 252, 0.92) !important;
+}
+:root[data-theme="light"] .border-white\/5 { border-color: rgba(15, 23, 42, 0.08) !important; }
+:root[data-theme="light"] .border-white\/10 { border-color: rgba(15, 23, 42, 0.14) !important; }
+:root[data-theme="light"] .border-white\/15 { border-color: rgba(15, 23, 42, 0.18) !important; }
+:root[data-theme="light"] .border-white\/20 { border-color: rgba(15, 23, 42, 0.22) !important; }
+:root[data-theme="light"] .bg-white\/5 { background-color: rgba(15, 23, 42, 0.05) !important; }
+:root[data-theme="light"] .bg-white\/10 { background-color: rgba(15, 23, 42, 0.1) !important; }
+:root[data-theme="light"] .bg-black\/60 { background-color: rgba(15, 23, 42, 0.45) !important; }

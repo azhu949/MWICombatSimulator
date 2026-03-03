@@ -4,14 +4,14 @@ import achievementDetailMap from "./data/achievementDetailMap.json";
 
 class Achievement {
     constructor(achievements) {
-        this.achievements = achievements;
+        const unlockedAchievements = achievements && typeof achievements === "object" ? achievements : {};
         this.buffs = [];
 
         for(const tier of Object.values(achievementTierDetailMap)) {
             let isGetAll = true;
             let detailMap = Object.values(achievementDetailMap).filter((detail) => detail.tierHrid == tier.hrid)
             for(const achievement of Object.values(detailMap)) {
-                if(!this.achievements[achievement.hrid] || this.achievements[achievement.hrid] == false) {
+                if(!unlockedAchievements[achievement.hrid] || unlockedAchievements[achievement.hrid] == false) {
                     isGetAll = false;
                     break;
                 }

@@ -8,17 +8,45 @@
 npm install
 ```
 
-构建 webpack：
+启动开发环境（Vite）：
+
+```bash
+npm run dev
+```
+
+生产构建：
 
 ```bash
 npm run build
 ```
 
-本地启动：
+本地预览构建产物：
 
 ```bash
-npm start
+npm run preview
 ```
+
+运行测试：
+
+```bash
+npm test
+```
+
+### 入口说明（迁移期）
+
+- 新版入口：`/index.html`（Vue 3 + Vite + Tailwind）
+- 旧版入口：`/legacy.html`（原 HTML 方案，作为迁移期兜底）
+
+### Queue（多轮评分）使用说明
+
+1. 在 `Home` 页签选中要调参的角色，先完成基础配置（区域/难度/时长等）。
+2. 进入 `Queue` 页签，点击 `Set Baseline` 固定基线配置。
+3. 修改角色配置后点击 `Add Current`，可添加多个变体。
+4. 设置评分参数后点击 `Run Queue`：
+   - `Rounds`：每个变体重复模拟轮数（1-30）。
+   - `Median Blend`：均值与中位数收益混合比例（0-1）。
+   - `Profit/XP/Death Safety Weight`：评分权重，界面会显示归一化后的占比。
+5. 结果会输出 `Rank/Score`、收益均值与中位数、收益波动（StdDev）、XP 与死亡率，以及相对基线收益增量（绝对值/百分比）。
 
 ### 游戏数据来源（重要）
 
