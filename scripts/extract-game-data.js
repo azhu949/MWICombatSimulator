@@ -23,11 +23,14 @@ function usage() {
     console.log("                2) decompressed init client JSON object");
     console.log("  --output, -o   Output directory. Default:");
     console.log("                src/combatsimulator/data");
+    console.log("  --inspect-output, -p");
+    console.log("                Optional extra output directory for inspection.");
+    console.log("                Writes the same 6 JSON files again (e.g. into tmp/).");
     console.log("  --help,   -h   Show this help.");
 }
 
 function parseArgs(argv) {
-    const args = { input: null, output: "src/combatsimulator/data" };
+    const args = { input: null, output: "src/combatsimulator/data", inspectOutput: null };
 
     for (let i = 0; i < argv.length; i++) {
         const arg = argv[i];
@@ -42,6 +45,11 @@ function parseArgs(argv) {
         }
         if (arg === "--output" || arg === "-o") {
             args.output = argv[i + 1];
+            i++;
+            continue;
+        }
+        if (arg === "--inspect-output" || arg === "-p") {
+            args.inspectOutput = argv[i + 1];
             i++;
             continue;
         }
@@ -167,6 +175,7 @@ function main() {
 
     const inputPath = path.resolve(args.input);
     const outputDir = path.resolve(args.output);
+    const inspectOutputDir = args.inspectOutput ? path.resolve(args.inspectOutput) : null;
     const raw = fs.readFileSync(inputPath, "utf8");
     const clientData = resolveClientData(raw);
 
@@ -180,6 +189,14 @@ function main() {
     console.log(`Wrote ${written.length} files:`);
     for (const filePath of written) {
         console.log(`- ${filePath}`);
+    }
+
+    if (inspectOutputDir && inspectOutputDir !== outputDir) {
+        const inspectWritten = writeMapFiles(clientData, inspectOutputDir);
+        console.log(`Also wrote ${inspectWritten.length} files for inspection:`);
+        for (const filePath of inspectWritten) {
+            console.log(`- ${filePath}`);
+        }
     }
 }
 
