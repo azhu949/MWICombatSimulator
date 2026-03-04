@@ -34,6 +34,7 @@
     },
     "dependencies": {
         "chart.js": "^4.5.1",
+        "exceljs": "^4.4.0",
         "heap-js": "^2.2.0",
         "i18next": "^25.6.3",
         "pinia": "^2.3.1",

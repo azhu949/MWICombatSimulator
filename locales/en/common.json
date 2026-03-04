@@ -254,6 +254,7 @@
     "allZonesData": "All Zones Data",
     "simulateAllZonesResults": "Simulate All Zones Results",
     "exportToCSV": "Export To CSV",
+    "exportToExcel": "Export To Excel",
     "zoneName": "Zone Name",
     "immportexportSet": "Import/Export Set",
     "groupCombat": "Group Combat",
