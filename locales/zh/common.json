@@ -253,6 +253,7 @@
     "allZonesData": "批量模拟数据",
     "simulateAllZonesResults": "批量模拟结果",
     "exportToCSV": "导出为CSV",
+    "exportToExcel": "导出为Excel",
     "zoneName": "区域名称",
     "immportexportSet": "导入/导出方案",
     "groupCombat": "组队多人",
