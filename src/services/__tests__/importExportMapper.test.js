@@ -6,6 +6,7 @@ import { createEmptyPlayerConfig } from "../playerMapper.js";
 import {
     createLegacySoloPayload,
     exportGroupConfig,
+    exportSoloConfig,
     importGroupConfig,
     importSoloConfig,
 } from "../importExportMapper.js";
@@ -119,6 +120,7 @@ describe("importExportMapper", () => {
 
         expect(result.detectedFormat).toBe("legacy-solo");
         expect(result.player.levels.attack).toBe(33);
+        expect(result.player.skillExperience.attack).toBeNull();
         expect(result.simulationSettings.difficultyTier).toBe(2);
         expect(result.simulationSettings.simulationTimeHours).toBe(12);
     });
@@ -200,6 +202,7 @@ describe("importExportMapper", () => {
     it("imports modern group payload", () => {
         const players = [1, 2, 3, 4, 5].map((id) => createEmptyPlayerConfig(id));
         const settings = createSimulationSettings();
+        players[0].skillExperience.attack = 123456;
 
         const exported = exportGroupConfig(players, settings, "modern");
         const parsed = JSON.parse(exported);
@@ -210,7 +213,20 @@ describe("importExportMapper", () => {
 
         expect(result.detectedFormat).toBe("modern-group");
         expect(result.players[0].name).toBe("Edited Player");
+        expect(result.players[0].skillExperience.attack).toBe(123456);
         expect(result.simulationSettings.simulationTimeHours).toBe(6);
+    });
+
+    it("imports modern solo payload and preserves skill experience", () => {
+        const player = createEmptyPlayerConfig(2);
+        const settings = createSimulationSettings();
+        player.skillExperience.magic = 987654;
+
+        const exported = exportSoloConfig(player, settings, "modern");
+        const result = importSoloConfig(exported, createEmptyPlayerConfig(2), settings);
+
+        expect(result.detectedFormat).toBe("modern-solo");
+        expect(result.player.skillExperience.magic).toBe(987654);
     });
 
     it("preserves trigger map in modern payload", () => {
@@ -254,6 +270,15 @@ describe("importExportMapper", () => {
                 defense: 88,
                 ranged: 33,
                 magic: 22,
+            },
+            skillExperience: {
+                stamina: 44000,
+                intelligence: 55000,
+                attack: 66000,
+                melee: 77000,
+                defense: 88000,
+                ranged: 33000,
+                magic: 22000,
             },
             wearableItemMap: {
                 head: {
@@ -314,6 +339,8 @@ describe("importExportMapper", () => {
         expect(result.player.levels.defense).toBe(88);
         expect(result.player.levels.ranged).toBe(33);
         expect(result.player.levels.magic).toBe(22);
+        expect(result.player.skillExperience.stamina).toBe(44000);
+        expect(result.player.skillExperience.magic).toBe(22000);
         expect(result.player.equipment.head.itemHrid).toBe(headItemHrid);
         expect(result.player.equipment.head.enhancementLevel).toBe(3);
         expect(result.player.equipment.weapon.itemHrid).toBe(weaponItemHrid);

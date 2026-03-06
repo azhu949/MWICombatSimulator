@@ -10,6 +10,10 @@ import { sanitizeTriggerMap, toTriggerInstances } from "./triggerMapper.js";
 const LEVEL_KEYS = ["stamina", "intelligence", "attack", "melee", "defense", "ranged", "magic"];
 const EQUIPMENT_SLOT_KEYS = ["head", "body", "legs", "feet", "hands", "weapon", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"];
 
+export function createEmptySkillExperienceMap() {
+    return Object.fromEntries(LEVEL_KEYS.map((key) => [key, null]));
+}
+
 export function createEmptyPlayerConfig(id) {
     const houseRooms = {};
     Object.keys(houseRoomDetailMap).forEach((hrid) => {
@@ -17,6 +21,7 @@ export function createEmptyPlayerConfig(id) {
     });
 
     const levels = Object.fromEntries(LEVEL_KEYS.map((key) => [key, 1]));
+    const skillExperience = createEmptySkillExperienceMap();
     const equipment = Object.fromEntries(EQUIPMENT_SLOT_KEYS.map((slot) => [slot, { itemHrid: "", enhancementLevel: 0 }]));
 
     return {
@@ -24,6 +29,7 @@ export function createEmptyPlayerConfig(id) {
         name: `Player ${id}`,
         selected: Number(id) === 1,
         levels,
+        skillExperience,
         equipment,
         food: ["", "", ""],
         drinks: ["", "", ""],

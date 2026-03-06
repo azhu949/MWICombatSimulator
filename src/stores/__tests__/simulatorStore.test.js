@@ -625,6 +625,15 @@ describe("simulatorStore", () => {
                 ranged: 64,
                 magic: 74,
             },
+            skillExperience: {
+                stamina: 1400,
+                intelligence: 2400,
+                attack: 3400,
+                melee: 4400,
+                defense: 5400,
+                ranged: 6400,
+                magic: 7400,
+            },
             wearableItemMap: {
                 head: {
                     itemLocationHrid: "/item_locations/head",
@@ -679,6 +688,8 @@ describe("simulatorStore", () => {
         expect(simulator.players[2].name).toBe("Main Site Hero");
         expect(simulator.players[2].levels.stamina).toBe(14);
         expect(simulator.players[2].levels.magic).toBe(74);
+        expect(simulator.players[2].skillExperience.stamina).toBe(1400);
+        expect(simulator.players[2].skillExperience.magic).toBe(7400);
         expect(simulator.players[2].equipment.head.itemHrid).toBe(headItemHrid);
         expect(simulator.players[2].equipment.weapon.itemHrid).toBe(weaponItemHrid);
         expect(simulator.players[2].food[0]).toBe(foodItemHrid);
@@ -691,6 +702,7 @@ describe("simulatorStore", () => {
         expect(simulator.players[2].achievements[ACHIEVEMENT_HRID]).toBe(true);
         expect(simulator.players[0].name).toBe("Player 1");
         expect(simulator.queue.importedProfileByPlayer["3"]).toBe(true);
+        expect(simulator.queue.importedBaselineByPlayer["3"].skillExperience.stamina).toBe(1400);
         expect(simulator.simulationSettings.mode).toBe("zone");
         expect(simulator.simulationSettings.useDungeon).toBe(false);
         expect(simulator.simulationSettings.zoneHrid).toBe(zoneActionHrid);
@@ -716,12 +728,36 @@ describe("simulatorStore", () => {
         const simulator = useSimulatorStore();
 
         simulator.players[0].levels.stamina = 99;
+        simulator.players[0].skillExperience.stamina = 123456;
         const saveResult = simulator.savePlayerDataSnapshot();
         expect(saveResult.ok).toBe(true);
 
         const rowsWithSnapshot = simulator.playerDataSnapshotRows.filter((row) => row.hasSnapshot);
         expect(rowsWithSnapshot).toHaveLength(1);
         expect(rowsWithSnapshot[0].playerId).toBe("1");
+
+        const storedSnapshotPayload = JSON.parse(simulator.playerDataSnapshot.playerDataMap["1"]);
+        expect(storedSnapshotPayload.version).toBe(2);
+        expect(storedSnapshotPayload.player.skillExperience.stamina).toBe(123456);
+    });
+
+    it("restores imported baseline snapshot when loading player data snapshot", () => {
+        const simulator = useSimulatorStore();
+        simulator.players[0].levels.stamina = 99;
+        simulator.players[0].skillExperience.stamina = 654321;
+
+        const saveResult = simulator.savePlayerDataSnapshot();
+        expect(saveResult.ok).toBe(true);
+
+        simulator.players[0].levels.stamina = 1;
+        simulator.players[0].skillExperience.stamina = null;
+        simulator.queue.importedBaselineByPlayer["1"] = null;
+
+        const loadResult = simulator.loadPlayerDataSnapshot();
+        expect(loadResult.ok).toBe(true);
+        expect(simulator.players[0].levels.stamina).toBe(99);
+        expect(simulator.players[0].skillExperience.stamina).toBe(654321);
+        expect(simulator.queue.importedBaselineByPlayer["1"].skillExperience.stamina).toBe(654321);
     });
 
     it("restores zone and difficulty from player data snapshot without forcing labyrinth mode", () => {

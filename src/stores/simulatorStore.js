@@ -1243,16 +1243,17 @@ function createPlayerDataSnapshotState() {
 function parsePlayerSnapshotSummary(playerDataJson) {
     try {
         const parsed = JSON.parse(playerDataJson);
-        const zoneHrid = normalizeActionSnapshotValueToHrid(parsed?.zone);
-        const dungeonHrid = normalizeActionSnapshotValueToHrid(parsed?.dungeon);
-        const labyrinthHrid = normalizeMonsterSnapshotValueToHrid(parsed?.labyrinth);
-        const difficultyRaw = String(parsed?.difficulty ?? "");
+        const modernSettings = isPlainObject(parsed?.simulationSettings) ? parsed.simulationSettings : null;
+        const zoneHrid = normalizeActionSnapshotValueToHrid(modernSettings?.zoneHrid ?? parsed?.zone);
+        const dungeonHrid = normalizeActionSnapshotValueToHrid(modernSettings?.dungeonHrid ?? parsed?.dungeon);
+        const labyrinthHrid = normalizeMonsterSnapshotValueToHrid(modernSettings?.labyrinthHrid ?? parsed?.labyrinth);
+        const difficultyRaw = String(modernSettings?.difficultyTier ?? parsed?.difficulty ?? "");
         const difficultyDisplay = difficultyRaw
             ? (difficultyRaw.startsWith("T") ? difficultyRaw : `T${difficultyRaw}`)
             : "-";
-        const zoneFallback = String(parsed?.zone || zoneHrid || "-");
-        const dungeonFallback = String(parsed?.dungeon || dungeonHrid || "-");
-        const labyrinthFallback = String(parsed?.labyrinth || labyrinthHrid || "-");
+        const zoneFallback = String(modernSettings?.zoneHrid || parsed?.zone || zoneHrid || "-");
+        const dungeonFallback = String(modernSettings?.dungeonHrid || parsed?.dungeon || dungeonHrid || "-");
+        const labyrinthFallback = String(modernSettings?.labyrinthHrid || parsed?.labyrinth || labyrinthHrid || "-");
 
         return {
             zoneHrid,
@@ -1261,9 +1262,9 @@ function parsePlayerSnapshotSummary(playerDataJson) {
             zone: actionDetailMap[zoneHrid]?.name || zoneFallback,
             dungeon: actionDetailMap[dungeonHrid]?.name || dungeonFallback,
             difficulty: difficultyDisplay,
-            simulationTime: String(parsed?.simulationTime ?? "-"),
+            simulationTime: String(modernSettings?.simulationTimeHours ?? parsed?.simulationTime ?? "-"),
             labyrinth: combatMonsterDetailMap[labyrinthHrid]?.name || labyrinthFallback,
-            roomLevel: String(parsed?.roomLevel ?? "-"),
+            roomLevel: String(modernSettings?.roomLevel ?? parsed?.roomLevel ?? "-"),
         };
     } catch (error) {
         return {
@@ -1740,6 +1741,14 @@ function createImportedProfileByPlayer() {
         importedByPlayer[playerId] = false;
     }
     return importedByPlayer;
+}
+
+function createImportedBaselineByPlayer() {
+    const baselineByPlayer = {};
+    for (const playerId of QUEUE_PLAYER_IDS) {
+        baselineByPlayer[playerId] = null;
+    }
+    return baselineByPlayer;
 }
 
 function getEquipmentTransitionCostKey(slotKey, beforeItemHrid, beforeLevel, afterItemHrid, afterLevel) {
@@ -3164,6 +3173,7 @@ export const useSimulatorStore = defineStore("simulator", {
             queue: {
                 byPlayer: createQueueStateByPlayer(playerList),
                 importedProfileByPlayer: createImportedProfileByPlayer(),
+                importedBaselineByPlayer: createImportedBaselineByPlayer(),
             },
             queueRuntime: loadQueueRuntimeSettingsFromStorage(),
             playerDataSnapshot: createPlayerDataSnapshotState(),
@@ -3228,6 +3238,9 @@ export const useSimulatorStore = defineStore("simulator", {
         activeQueueState(state) {
             return state.queue.byPlayer[state.activePlayerId] ?? createQueuePlayerState();
         },
+        activeImportedBaselineSnapshot(state) {
+            return state.queue.importedBaselineByPlayer?.[state.activePlayerId] ?? null;
+        },
         isAnyQueueRunning(state) {
             return Object.values(state.queue.byPlayer).some((queueState) => Boolean(queueState?.isRunning));
         },
@@ -3290,6 +3303,22 @@ export const useSimulatorStore = defineStore("simulator", {
                 this.queue.importedProfileByPlayer = createImportedProfileByPlayer();
             }
             this.queue.importedProfileByPlayer[normalizedId] = Boolean(imported);
+            if (!imported) {
+                this.setImportedBaselineSnapshot(normalizedId, null);
+            }
+            return true;
+        },
+        setImportedBaselineSnapshot(playerId, snapshot = null) {
+            const normalizedId = String(playerId || "");
+            if (!normalizedId) {
+                return false;
+            }
+            if (!this.queue.importedBaselineByPlayer || typeof this.queue.importedBaselineByPlayer !== "object") {
+                this.queue.importedBaselineByPlayer = createImportedBaselineByPlayer();
+            }
+            this.queue.importedBaselineByPlayer[normalizedId] = isPlainObject(snapshot)
+                ? deepClone(snapshot)
+                : null;
             return true;
         },
         getMarketEnhancementLevelsForItem(itemHrid) {
@@ -3579,7 +3608,7 @@ export const useSimulatorStore = defineStore("simulator", {
                 if (!playerId) {
                     continue;
                 }
-                snapshotMap[playerId] = exportSoloConfig(player, this.simulationSettings, "legacy");
+                snapshotMap[playerId] = exportSoloConfig(player, this.simulationSettings, "modern");
             }
 
             try {
@@ -3652,6 +3681,7 @@ export const useSimulatorStore = defineStore("simulator", {
 
                     this.queue.byPlayer[String(playerId)] = createQueuePlayerState();
                     this.setImportedProfileState(playerId, true);
+                    this.setImportedBaselineSnapshot(playerId, parsed.player);
                 }
 
                 this.players = this.players.map((player) => {
@@ -4837,6 +4867,7 @@ export const useSimulatorStore = defineStore("simulator", {
             this.persistPlayerAchievements();
             result.players.forEach((player) => {
                 this.setImportedProfileState(player.id, true);
+                this.setImportedBaselineSnapshot(player.id, player);
             });
             this.simulationSettings = {
                 ...this.simulationSettings,
@@ -4854,6 +4885,7 @@ export const useSimulatorStore = defineStore("simulator", {
             this.players = this.players.map((player) => (player.id === targetId ? result.player : player));
             this.persistPlayerAchievements();
             this.setImportedProfileState(targetId, true);
+            this.setImportedBaselineSnapshot(targetId, result.player);
             this.simulationSettings = {
                 ...this.simulationSettings,
                 ...result.simulationSettings,

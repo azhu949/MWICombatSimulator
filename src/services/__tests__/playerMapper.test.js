@@ -26,6 +26,7 @@ describe("playerMapper", () => {
         expect(player.id).toBe("1");
         expect(player.selected).toBe(true);
         expect(player.levels.stamina).toBe(1);
+        expect(player.skillExperience.stamina).toBeNull();
         expect(player.food).toHaveLength(3);
         expect(player.drinks).toHaveLength(3);
         expect(player.abilities).toHaveLength(5);
