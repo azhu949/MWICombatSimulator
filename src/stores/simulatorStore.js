@@ -49,6 +49,8 @@ const QUEUE_SETTINGS_STORAGE_KEY = "mwi.queue.settings.v1";
 const QUEUE_SETTINGS_STORAGE_VERSION = 1;
 const PLAYER_DATA_SNAPSHOT_STORAGE_KEY = "mwi.player.data.snapshot.v1";
 const PLAYER_DATA_SNAPSHOT_STORAGE_VERSION = 1;
+const PLAYER_ACHIEVEMENTS_STORAGE_KEY = "mwi.player.achievements.v1";
+const PLAYER_ACHIEVEMENTS_STORAGE_VERSION = 1;
 const QUEUE_PLAYER_IDS = ["1", "2", "3", "4", "5"];
 const QUEUE_PARALLEL_WORKER_LIMIT_MIN = 1;
 const QUEUE_PARALLEL_WORKER_LIMIT_MAX = 64;
@@ -509,6 +511,102 @@ function persistSimulationUiSettingsToStorage(settings) {
     }
     const normalized = normalizeSimulationUiSettings(settings);
     localStorage.setItem(SIMULATION_UI_STORAGE_KEY, JSON.stringify(normalized));
+}
+
+function normalizeAchievementFlags(rawAchievements) {
+    const source = isPlainObject(rawAchievements) ? rawAchievements : {};
+    const normalized = {};
+
+    for (const [achievementHrid, unlocked] of Object.entries(source)) {
+        const normalizedHrid = String(achievementHrid || "").trim();
+        if (!normalizedHrid || !Boolean(unlocked)) {
+            continue;
+        }
+        normalized[normalizedHrid] = true;
+    }
+
+    return normalized;
+}
+
+function normalizeStoredPlayerAchievementsMap(rawPlayerAchievements) {
+    const source = isPlainObject(rawPlayerAchievements) ? rawPlayerAchievements : {};
+    const normalized = {};
+
+    for (const playerId of QUEUE_PLAYER_IDS) {
+        const normalizedAchievements = normalizeAchievementFlags(source[playerId]);
+        if (Object.keys(normalizedAchievements).length > 0) {
+            normalized[playerId] = normalizedAchievements;
+        }
+    }
+
+    return normalized;
+}
+
+function collectPlayerAchievementsById(players) {
+    const normalized = {};
+
+    for (const player of players || []) {
+        const playerId = String(player?.id || "").trim();
+        if (!QUEUE_PLAYER_IDS.includes(playerId)) {
+            continue;
+        }
+
+        const achievements = normalizeAchievementFlags(player?.achievements);
+        if (Object.keys(achievements).length > 0) {
+            normalized[playerId] = achievements;
+        }
+    }
+
+    return normalized;
+}
+
+function loadPlayerAchievementsFromStorage() {
+    const payload = readJsonStorage(PLAYER_ACHIEVEMENTS_STORAGE_KEY);
+    if (payload.version != null && Number(payload.version) !== PLAYER_ACHIEVEMENTS_STORAGE_VERSION) {
+        return {};
+    }
+
+    const sourceMap = isPlainObject(payload.achievementsByPlayer)
+        ? payload.achievementsByPlayer
+        : payload;
+
+    return normalizeStoredPlayerAchievementsMap(sourceMap);
+}
+
+function persistPlayerAchievementsToStorage(players) {
+    if (typeof localStorage === "undefined") {
+        return;
+    }
+
+    const achievementsByPlayer = collectPlayerAchievementsById(players);
+    if (Object.keys(achievementsByPlayer).length <= 0) {
+        localStorage.removeItem(PLAYER_ACHIEVEMENTS_STORAGE_KEY);
+        return;
+    }
+
+    localStorage.setItem(PLAYER_ACHIEVEMENTS_STORAGE_KEY, JSON.stringify({
+        version: PLAYER_ACHIEVEMENTS_STORAGE_VERSION,
+        achievementsByPlayer,
+    }));
+}
+
+function clearPlayerAchievementsFromStorage() {
+    if (typeof localStorage === "undefined") {
+        return;
+    }
+
+    localStorage.removeItem(PLAYER_ACHIEVEMENTS_STORAGE_KEY);
+}
+
+function applyPersistedAchievementsToPlayers(players, achievementsByPlayer) {
+    const normalizedAchievementsByPlayer = normalizeStoredPlayerAchievementsMap(achievementsByPlayer);
+    return (players || []).map((player) => {
+        const playerId = String(player?.id || "").trim();
+        return {
+            ...player,
+            achievements: deepClone(normalizedAchievementsByPlayer[playerId] ?? {}),
+        };
+    });
 }
 
 function getVendorPriceByItemHrid(itemHrid) {
@@ -2994,7 +3092,11 @@ function resolveQueueRowRoundCount(row = {}) {
 
 export const useSimulatorStore = defineStore("simulator", {
     state: () => {
-        const playerList = [1, 2, 3, 4, 5].map((id) => createEmptyPlayerConfig(id));
+        const playerAchievementsById = loadPlayerAchievementsFromStorage();
+        const playerList = applyPersistedAchievementsToPlayers(
+            [1, 2, 3, 4, 5].map((id) => createEmptyPlayerConfig(id)),
+            playerAchievementsById,
+        );
         const simulationUiSettings = loadSimulationUiSettingsFromStorage();
         const { zones, dungeons } = getZoneOptions();
         const labyrinths = getLabyrinthOptions();
@@ -3556,6 +3658,7 @@ export const useSimulatorStore = defineStore("simulator", {
                     const resolved = nextPlayers.find((candidate) => String(candidate.id) === String(player.id));
                     return resolved || player;
                 });
+                this.persistPlayerAchievements();
 
                 const nextSimulationSettings = preferredSimulationSettings || fallbackSimulationSettings;
                 if (nextSimulationSettings) {
@@ -3658,6 +3761,12 @@ export const useSimulatorStore = defineStore("simulator", {
                     messageKey: "common:settingsPage.playerDeleteError",
                 };
             }
+        },
+        persistPlayerAchievements() {
+            persistPlayerAchievementsToStorage(this.players);
+        },
+        clearPersistedPlayerAchievements() {
+            clearPlayerAchievementsFromStorage();
         },
         ensureActivePlayerTriggerDefaults(targetHrid) {
             const hrid = String(targetHrid || "");
@@ -4102,6 +4211,7 @@ export const useSimulatorStore = defineStore("simulator", {
                     selected: currentSelected,
                 };
             });
+            this.persistPlayerAchievements();
 
             return true;
         },
@@ -4724,6 +4834,7 @@ export const useSimulatorStore = defineStore("simulator", {
             const result = parseGroupImportConfig(text, this.players, this.simulationSettings);
             const byId = Object.fromEntries(result.players.map((player) => [String(player.id), player]));
             this.players = this.players.map((player) => byId[String(player.id)] || player);
+            this.persistPlayerAchievements();
             result.players.forEach((player) => {
                 this.setImportedProfileState(player.id, true);
             });
@@ -4741,6 +4852,7 @@ export const useSimulatorStore = defineStore("simulator", {
             const result = parseSoloImportConfig(text, currentPlayer, this.simulationSettings);
 
             this.players = this.players.map((player) => (player.id === targetId ? result.player : player));
+            this.persistPlayerAchievements();
             this.setImportedProfileState(targetId, true);
             this.simulationSettings = {
                 ...this.simulationSettings,

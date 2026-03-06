@@ -470,8 +470,13 @@
       </div>
     </BaseModal>
 
-    <BaseModal :open="openAchievementsModal" :title="t('common:vue.home.achievementsTitle', 'Achievements')" @close="openAchievementsModal = false">
-      <div class="space-y-3">
+    <BaseModal
+      :open="openAchievementsModal"
+      :title="t('common:vue.home.achievementsTitle', 'Achievements')"
+      panel-class="max-w-[96vw] xl:max-w-[1200px]"
+      @close="openAchievementsModal = false"
+    >
+      <div class="max-h-[70vh] space-y-3 overflow-y-auto pr-1">
         <DisclosurePanel
           v-for="section in achievementTierSections"
           :key="section.tierHrid"
@@ -486,14 +491,15 @@
               {{ t("common:vue.home.clearAll", "Clear All") }}
             </button>
           </div>
-          <div class="grid gap-2 sm:grid-cols-2">
+          <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 2xl:grid-cols-4">
             <label
               v-for="detail in section.details"
               :key="detail.hrid"
-              class="badge flex items-center justify-between gap-2 text-sm text-slate-100"
+              class="badge flex items-start gap-2 text-sm text-slate-100"
             >
-              <span>{{ t(`achievementNames.${detail.hrid}`, detail.name) }}</span>
+              <span class="min-w-0 flex-1 leading-snug">{{ t(`achievementNames.${detail.hrid}`, detail.name) }}</span>
               <input
+                class="mt-0.5 shrink-0"
                 :checked="Boolean(activePlayer.achievements?.[detail.hrid])"
                 type="checkbox"
                 @change="setAchievement(detail.hrid, $event.target.checked)"
@@ -1602,6 +1608,7 @@ function ensureActivePlayerAdvancedState() {
 function setAchievement(achievementHrid, checked) {
   ensureActivePlayerAdvancedState();
   activePlayer.value.achievements[achievementHrid] = Boolean(checked);
+  simulator.persistPlayerAchievements();
 }
 
 function setTierAchievements(tierHrid, checked) {
@@ -1610,6 +1617,7 @@ function setTierAchievements(tierHrid, checked) {
   for (const detail of details) {
     activePlayer.value.achievements[detail.hrid] = Boolean(checked);
   }
+  simulator.persistPlayerAchievements();
 }
 
 function cloneValue(value) {
