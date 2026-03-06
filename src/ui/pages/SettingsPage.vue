@@ -299,7 +299,7 @@
       </div>
 
       <p class="text-xs text-slate-400">
-        {{ t("common:vue.settings.priceHint", "Results and Queue profit metrics use these modes with vendor fallback.") }}
+        {{ t("common:vue.settings.priceHint", "Home results and Queue profit metrics use these modes with vendor fallback.") }}
       </p>
     </div>
 

@@ -1,13 +1,6 @@
 <template>
   <section class="space-y-4">
-    <div class="panel" v-if="!hasSingleResult && !hasBatchResult">
-      <h2 class="font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.results.noResultsTitle", "No Results Yet") }}</h2>
-      <p class="mt-2 text-sm text-slate-300">
-        {{ t("common:vue.results.noResultsDesc", "Run a simulation from Home to populate summary metrics and charts.") }}
-      </p>
-    </div>
-
-    <template v-else-if="hasBatchResult">
+    <template v-if="hasBatchResult">
       <div class="panel">
         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h2 class="font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.results.batchResultsTitle", "Batch Results") }}</h2>
@@ -111,10 +104,9 @@
         </table>
       </div>
 
-      <div class="grid gap-4 lg:grid-cols-3">
-        <div class="panel lg:col-span-2">
+      <div class="panel">
           <h2 class="mb-3 font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.results.detailsTitle", "Result Details") }}</h2>
-          <div class="grid gap-3 sm:grid-cols-3">
+          <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
             <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
               <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:player", "Player") }}</p>
               <p class="mt-1 font-heading text-lg text-slate-100">{{ activeResultRow?.playerName ?? '-' }}</p>
@@ -122,6 +114,16 @@
             <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
               <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:vue.results.simulatedTime", "Simulated Time") }}</p>
               <p class="mt-1 font-heading text-lg text-slate-100">{{ simulatedHoursText }}</p>
+            </div>
+            <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
+              <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:zoneName", "Zone") }}</p>
+              <p class="mt-1 font-heading text-lg text-slate-100">{{ zoneLabel }}</p>
+              <p class="mt-1 text-xs text-slate-400">{{ t("common:vue.results.difficulty", "Difficulty") }}: {{ simulator.results.simResult?.difficultyTier ?? 0 }}</p>
+            </div>
+            <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
+              <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:vue.results.workerRuntime", "Worker Runtime") }}</p>
+              <p class="mt-1 font-heading text-lg text-slate-100">{{ t("common:vue.results.elapsed", "Elapsed", { seconds: simulator.runtime.elapsedSeconds.toFixed(1) }) }}</p>
+              <p class="mt-1 text-xs text-slate-400">{{ t("common:vue.results.protocol", "Protocol") }}: {{ singleProtocolLabel }}</p>
             </div>
             <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
               <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:revenue", "Revenue") }}</p>
@@ -435,21 +437,6 @@
           </div>
         </div>
 
-        <div class="space-y-4">
-          <div class="panel">
-            <h3 class="font-heading text-sm uppercase tracking-[0.14em] text-slate-300">{{ t("common:zoneName", "Zone") }}</h3>
-            <p class="mt-2 text-sm text-slate-100">{{ zoneLabel }}</p>
-            <p class="mt-1 text-xs text-slate-400">{{ t("common:vue.results.difficulty", "Difficulty") }}: {{ simulator.results.simResult?.difficultyTier ?? 0 }}</p>
-          </div>
-
-          <div class="panel">
-            <h3 class="font-heading text-sm uppercase tracking-[0.14em] text-slate-300">{{ t("common:vue.results.workerRuntime", "Worker Runtime") }}</h3>
-            <p class="mt-2 text-sm text-slate-100">{{ t("common:vue.results.elapsed", "Elapsed", { seconds: simulator.runtime.elapsedSeconds.toFixed(1) }) }}</p>
-            <p class="mt-1 text-xs text-slate-400">{{ t("common:vue.results.protocol", "Protocol") }}: {{ singleProtocolLabel }}</p>
-          </div>
-        </div>
-      </div>
-
       <div v-if="simulator.simulationSettings.enableHpMpVisualization && simulator.results.timeSeriesData" class="space-y-3">
         <TimeSeriesChart :time-series-data="simulator.results.timeSeriesData" />
       </div>
@@ -520,8 +507,8 @@ import actionDetailMap from "../../combatsimulator/data/actionDetailMap.json";
 import combatMonsterDetailMap from "../../combatsimulator/data/combatMonsterDetailMap.json";
 import itemDetailMap from "../../combatsimulator/data/itemDetailMap.json";
 import { buildNoRngProfitBreakdown, buildRandomProfitBreakdown } from "../../services/profitEstimator.js";
-import DisclosurePanel from "../components/DisclosurePanel.vue";
-import TimeSeriesChart from "../components/TimeSeriesChart.vue";
+import DisclosurePanel from "./DisclosurePanel.vue";
+import TimeSeriesChart from "./TimeSeriesChart.vue";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { useI18nText } from "../composables/useI18nText.js";
 
@@ -548,7 +535,6 @@ const batchTableColumns = Object.freeze([
   { key: "noRngProfit", labelKey: "common:noRNGProfit", fallback: "No RNG Profit", sortable: true, format: "decimal", csvDigits: 2, highlightMax: true },
 ]);
 
-const hasSingleResult = computed(() => Boolean(simulator.results.simResult));
 const hasBatchResult = computed(() => simulator.results.batchRows.length > 0);
 const isBatchLabyrinth = computed(() => Boolean(simulator.results.simResults?.[0]?.isLabyrinth));
 const singleProtocolLabel = computed(() => t(

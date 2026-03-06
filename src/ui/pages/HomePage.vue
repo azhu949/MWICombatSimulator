@@ -1,7 +1,36 @@
 <template>
   <section class="space-y-4">
-    <div class="grid gap-4 xl:grid-cols-12">
-      <div class="space-y-4 xl:col-span-4">
+    <HomeWorkspaceTabs
+      v-model="activeWorkspaceTab"
+      :tabs="workspaceTabs"
+      :aria-label="t('common:vue.home.workspaceTabsAria', 'Home workspace sections')"
+    />
+
+    <HomeSummaryPanel
+      class="xl:hidden"
+      :eyebrow="t('common:vue.home.workspaceEyebrow', 'Workspace')"
+      :title="t('common:vue.home.workspaceTitle', 'Simulation Workspace')"
+      :description="t('common:vue.home.workspaceDesc', 'Keep key metrics visible while you configure and run simulations.')"
+      :status-label="workspaceStatusLabel"
+      :status-text="workspaceStatusText"
+      :status-tone="workspaceStatusTone"
+      :is-running="simulator.runtime.isRunning"
+      :progress-text="homeResultsProgressText"
+      :progress-percent="homeResultsProgressPercent"
+      :config-rows="summaryConfigRows"
+      :metric-rows="summaryMetricRows"
+      :build-rows="summaryBuildRows"
+      :metrics-title="t('common:vue.home.workspaceMetricsTitle', 'Key Metrics')"
+      :build-title="t('common:vue.home.workspaceBuildTitle', 'Build Snapshot')"
+      :can-open-results="homeCanOpenResults"
+      :results-button-label="fullResultsButtonLabel"
+      @view-results="openHomeResultsPanel"
+    />
+
+    <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+      <div class="space-y-4">
+      <div class="grid gap-4 xl:grid-cols-12">
+      <div v-if="activeWorkspaceTab === 'base'" class="grid gap-4 xl:grid-cols-[minmax(0,340px)_minmax(0,1fr)] xl:col-span-12">
       <div class="panel">
         <h2 class="mb-3 font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.home.levelsTitle", "Levels") }}</h2>
         <div class="grid grid-cols-2 gap-3">
@@ -19,14 +48,6 @@
               type="number"
             />
           </label>
-        </div>
-        <div class="mt-4 grid gap-2 sm:grid-cols-2">
-          <button type="button" class="action-button-muted" @click="openHouseRoomsModal = true">
-            {{ t("common:vue.home.houseRoomsButton", "House Rooms") }}
-          </button>
-          <button type="button" class="action-button-muted" @click="openAchievementsModal = true">
-            {{ t("common:vue.home.achievementsButton", "Achievements") }}
-          </button>
         </div>
       </div>
 
@@ -134,7 +155,7 @@
         </div>
 
         <p v-if="simulator.simulationSettings.runScope !== 'single'" class="mb-3 text-xs text-slate-400">
-          {{ t("common:vue.home.batchHint", "Batch mode will run multiple targets and aggregate results in the Results page.") }}
+          {{ t("common:vue.home.batchHint", "Batch mode will run multiple targets and aggregate results in the Home results section.") }}
         </p>
 
         <div v-if="simulator.simulationSettings.mode === 'zone' && simulator.simulationSettings.runScope === 'all_group_zones'" class="mb-3 rounded-xl border border-white/10 bg-slate-900/40 p-3">
@@ -266,14 +287,20 @@
         </div>
 
         <div class="flex flex-wrap gap-2">
-          <button type="button" class="action-button-muted" @click="openPlayerImportExportModal">
-            {{ t("common:controls.importExport", "Import/Export") }}
-          </button>
           <button type="button" class="action-button-primary" :disabled="simulator.runtime.isRunning" @click="simulator.startSimulation()">
             {{ t("common:controls.startSimulation", "Start Simulation") }}
           </button>
           <button type="button" class="action-button-danger" :disabled="!simulator.runtime.isRunning" @click="simulator.stopSimulation()">
             {{ t("common:controls.stopSimulation", "Stop") }}
+          </button>
+          <button type="button" class="action-button-muted" @click="openPlayerImportExportModal">
+            {{ t("common:controls.importExport", "Import/Export") }}
+          </button>
+          <button type="button" class="action-button-muted" @click="openHouseRoomsModal = true">
+            {{ t("common:vue.home.houseRoomsButton", "House Rooms") }}
+          </button>
+          <button type="button" class="action-button-muted" @click="openAchievementsModal = true">
+            {{ t("common:vue.home.achievementsButton", "Achievements") }}
           </button>
           <button type="button" class="action-button-muted" @click="openExperimentalModal = true">
             {{ t("common:Experiment.ExperimentalFeatures", "Experimental Features") }}
@@ -282,7 +309,7 @@
       </div>
       </div>
 
-      <div class="space-y-4 xl:col-span-8">
+      <div v-if="activeWorkspaceTab === 'build'" class="space-y-4 xl:col-span-12">
         <div class="panel">
         <h2 class="mb-3 font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.home.equipmentTitle", "Equipment") }}</h2>
         <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -345,7 +372,7 @@
       </div>
     </div>
 
-    <div class="grid gap-4 lg:grid-cols-2">
+    <div v-if="activeWorkspaceTab === 'build'" class="grid gap-4 lg:grid-cols-2">
         <div class="panel">
           <h2 class="mb-3 font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.home.foodDrinksTitle", "Food & Drinks") }}</h2>
             <div class="space-y-3">
@@ -443,14 +470,47 @@
         </div>
     </div>
 
-    <div class="panel">
-        <h2 class="mb-3 font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.home.combatStatsTitle", "Combat Stats") }}</h2>
-        <div class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-4">
-          <div v-for="entry in combatStatRows" :key="entry.label" class="rounded-xl border border-white/10 bg-slate-900/40 px-3 py-2 text-sm">
-            <p class="text-xs uppercase tracking-[0.12em] text-slate-400">{{ entry.label }}</p>
-            <p class="mt-1 text-slate-100">{{ entry.value }}</p>
-          </div>
+    <div v-if="activeWorkspaceTab === 'advanced'" class="panel space-y-4">
+      <div>
+        <h2 class="font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.home.workspaceAdvancedTitle", "Battle Attributes") }}</h2>
+        <p class="mt-1 text-sm text-slate-400">{{ t("common:vue.home.workspaceAdvancedDesc", "Review the full derived combat attributes for the current build.") }}</p>
+      </div>
+
+      <div v-if="combatStatRows.length > 0" class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
+        <div v-for="entry in combatStatRows" :key="entry.label" class="rounded-xl border border-white/10 bg-slate-900/40 px-3 py-2 text-sm">
+          <p class="text-xs uppercase tracking-[0.12em] text-slate-400">{{ entry.label }}</p>
+          <p class="mt-1 text-slate-100">{{ entry.value }}</p>
         </div>
+      </div>
+      <p v-else class="text-sm text-slate-400">{{ t("common:multiRound.noData", "No data") }}</p>
+    </div>
+      </div>
+
+      <div class="hidden xl:block xl:self-start xl:sticky xl:top-24">
+        <HomeSummaryPanel
+          eyebrow=""
+          :title="t('common:vue.home.workspaceTitle', 'Simulation Workspace')"
+          :description="t('common:vue.home.workspaceDesc', 'Keep key metrics visible while you configure and run simulations.')"
+          :compact-header="true"
+          :show-description="false"
+          :status-label="workspaceStatusLabel"
+          :status-text="workspaceStatusText"
+          :show-status-card="false"
+          :status-tone="workspaceStatusTone"
+          :is-running="simulator.runtime.isRunning"
+          :progress-text="homeResultsProgressText"
+          :progress-percent="homeResultsProgressPercent"
+          :config-rows="summaryConfigRows"
+          :show-config-rows="false"
+          :metric-rows="summaryMetricRows"
+          :build-rows="summaryBuildRows"
+          :metrics-title="t('common:vue.home.workspaceMetricsTitle', 'Key Metrics')"
+          :build-title="t('common:vue.home.workspaceBuildTitle', 'Build Snapshot')"
+          :can-open-results="homeCanOpenResults"
+          :results-button-label="fullResultsButtonLabel"
+          @view-results="openHomeResultsPanel"
+        />
+      </div>
     </div>
 
     <BaseModal :open="openHouseRoomsModal" :title="t('common:vue.home.houseRoomsTitle', 'House Rooms')" @close="openHouseRoomsModal = false">
@@ -698,11 +758,39 @@
         </div>
       </div>
     </BaseModal>
+    <section ref="homeResultsSection" class="panel space-y-4">
+      <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
+        <div>
+          <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:vue.home.completeResultsEyebrow", "Results") }}</p>
+          <h2 class="font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.home.completeResultsTitle", "Complete Results") }}</h2>
+          <p class="mt-1 text-sm text-slate-400">
+            {{ simulator.runtime.isRunning
+              ? t("common:vue.home.completeResultsRunningDesc", "The full report stays collapsed until you want the detailed breakdown, while progress remains visible here.")
+              : t("common:vue.home.completeResultsDesc", "Open the detailed report only when you need tables, charts, and per-source breakdowns.") }}
+          </p>
+        </div>
+        <button type="button" class="action-button-muted" :disabled="!homeCanOpenResults" @click="toggleCompleteResultsPanel">
+          {{ completeResultsToggleLabel }}
+        </button>
+      </div>
+
+      <div v-if="completeResultsExpanded" class="space-y-4">
+        <AsyncSimulationResultsView v-if="homeHasResults" />
+        <div v-else class="rounded-xl border border-dashed border-white/15 bg-slate-900/40 p-4">
+          <p class="text-sm text-slate-300">{{ t("common:vue.home.homeResultsEmpty", "Your next simulation result will appear here as soon as it finishes.") }}</p>
+        </div>
+      </div>
+
+      <div v-else class="rounded-xl border border-dashed border-white/15 bg-slate-900/40 p-4">
+        <p class="text-sm text-slate-300">{{ t("common:vue.home.completeResultsCollapsed", "Keep the full report collapsed until you need detailed breakdowns.") }}</p>
+      </div>
+    </section>
   </section>
 </template>
 
 <script setup>
-import { computed, reactive, ref, watch } from "vue";
+import { computed, defineAsyncComponent, nextTick, reactive, ref, watch } from "vue";
+import { useRoute, useRouter } from "vue-router";
 import achievementDetailMap from "../../combatsimulator/data/achievementDetailMap.json";
 import achievementTierMap from "../../combatsimulator/data/achievementTierDetailMap.json";
 import abilityDetailMap from "../../combatsimulator/data/abilityDetailMap.json";
@@ -721,15 +809,271 @@ import {
 } from "../../services/triggerMapper.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { buildPlayersForSimulation, calcCombatLevel, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../../services/playerMapper.js";
+import { buildNoRngProfitBreakdown, buildRandomProfitBreakdown } from "../../services/profitEstimator.js";
 import { useI18nText } from "../composables/useI18nText.js";
 import BaseModal from "../components/BaseModal.vue";
 import DisclosurePanel from "../components/DisclosurePanel.vue";
+import HomeSummaryPanel from "../components/home/HomeSummaryPanel.vue";
+import HomeWorkspaceTabs from "../components/home/HomeWorkspaceTabs.vue";
 
 const simulator = useSimulatorStore();
+const route = useRoute();
+const router = useRouter();
 const { t } = useI18nText();
+const AsyncSimulationResultsView = defineAsyncComponent(() => import("../components/SimulationResultsView.vue"));
 
 const levelKeys = LEVEL_KEYS;
 const equipmentSlots = EQUIPMENT_SLOT_KEYS;
+const homeResultsSection = ref(null);
+const activeWorkspaceTab = ref("base");
+const completeResultsExpanded = ref(false);
+const homeHasResults = computed(() => (
+  Boolean(simulator.results.simResult)
+  || (Array.isArray(simulator.results.simResults) && simulator.results.simResults.length > 0)
+  || (Array.isArray(simulator.results.summaryRows) && simulator.results.summaryRows.length > 0)
+  || (Array.isArray(simulator.results.batchRows) && simulator.results.batchRows.length > 0)
+));
+const homeCanOpenResults = computed(() => Boolean(simulator.runtime.isRunning || homeHasResults.value));
+const activeHomeResultRow = computed(() => simulator.activeResultRow || simulator.results.summaryRows[0] || null);
+const activeHomeResultPlayerHrid = computed(() => (
+  activeHomeResultRow.value?.playerHrid
+  || simulator.results.activeResultPlayerHrid
+  || `player${simulator.activePlayerId}`
+));
+const homeResultsProgressPercent = computed(() => {
+  const progress = Number(simulator.runtime.progress || 0);
+  if (!Number.isFinite(progress)) {
+    return 0;
+  }
+  return Math.max(0, Math.min(100, Math.floor(progress * 100)));
+});
+const homeResultsProgressText = computed(() => `${homeResultsProgressPercent.value}% | ${Number(simulator.runtime.elapsedSeconds || 0).toFixed(1)}s`);
+const workspaceTabs = computed(() => ([
+  {
+    value: "base",
+    label: t("common:vue.home.workspaceTabs.base", "Base Setup"),
+    description: t("common:vue.home.workspaceTabs.baseDesc", "Player, target, mode, run scope, and launch controls."),
+  },
+  {
+    value: "build",
+    label: t("common:vue.home.workspaceTabs.build", "Build & Skills"),
+    description: t("common:vue.home.workspaceTabs.buildDesc", "Equipment, consumables, abilities, and trigger entry points."),
+  },
+  {
+    value: "advanced",
+    label: t("common:vue.home.workspaceTabs.advanced", "Battle Attributes"),
+    description: t("common:vue.home.workspaceTabs.advancedDesc", "Full derived combat attributes for the current build."),
+  },
+]));
+const currentRunScopeLabel = computed(() => {
+  const currentScope = simulator.availableRunScopes.find((scope) => scope.value === simulator.simulationSettings.runScope);
+  return t(`common:vue.home.runScopeOptions.${currentScope?.value || simulator.simulationSettings.runScope}`, currentScope?.label || simulator.simulationSettings.runScope || "-");
+});
+const currentModeLabel = computed(() => {
+  if (simulator.simulationSettings.mode === "labyrinth") {
+    return t("common:vue.home.modeLabyrinth", "Labyrinth");
+  }
+  if (simulator.simulationSettings.useDungeon) {
+    return t("common:vue.home.dungeon", "Dungeon");
+  }
+  return t("common:vue.home.modeZone", "Zone");
+});
+const currentTargetLabel = computed(() => {
+  const settings = simulator.simulationSettings;
+  if (settings.mode === "labyrinth" && settings.runScope === "single") {
+    const selectedLabyrinth = simulator.options.labyrinths.find((entry) => entry.hrid === settings.labyrinthHrid);
+    const labyrinthName = selectedLabyrinth?.name || settings.labyrinthHrid || t("common:labyrinth", "Labyrinth");
+    return `${labyrinthName} • ${t("common:roomLevel", "Room Level")} ${formatNumber(settings.roomLevel, 0)}`;
+  }
+  if (settings.mode === "zone" && settings.runScope === "single") {
+    const selectedAction = simulator.currentActionOptions.find((entry) => entry.hrid === selectedActionHrid.value);
+    return `${formatActionName(selectedActionHrid.value, selectedAction?.name || "")} • T${Number(settings.difficultyTier || 0)}`;
+  }
+  if (settings.mode === "zone" && settings.runScope === "all_group_zones") {
+    return t("common:vue.home.workspaceTargets.groupZones", "{{count}} group zones selected", { count: selectedGroupZoneSet.value.size });
+  }
+  if (settings.mode === "zone" && settings.runScope === "all_solo_zones") {
+    return t("common:vue.home.workspaceTargets.soloZones", "{{count}} solo zones selected", { count: selectedSoloZoneSet.value.size });
+  }
+  return currentRunScopeLabel.value;
+});
+const workspaceStatusTone = computed(() => {
+  if (simulator.runtime.isRunning) {
+    return "running";
+  }
+  if (homeHasResults.value) {
+    return "ready";
+  }
+  return "idle";
+});
+const workspaceStatusLabel = computed(() => {
+  if (simulator.runtime.isRunning) {
+    return t("common:vue.home.homeResultsRunningTitle", "Simulation in progress");
+  }
+  if (homeHasResults.value) {
+    return t("common:vue.home.workspaceStatusReady", "Results ready");
+  }
+  return t("common:vue.home.workspaceStatusIdle", "Ready to run");
+});
+const workspaceStatusText = computed(() => {
+  if (simulator.runtime.isRunning) {
+    return t("common:vue.home.workspaceStatusRunningDesc", "Progress and summary metrics stay visible while the simulation runs.");
+  }
+  if (homeHasResults.value) {
+    return t("common:vue.home.workspaceStatusReadyDesc", "Latest results are ready. Open the full report whenever you want deeper detail.");
+  }
+  return t("common:vue.home.workspaceStatusIdleDesc", "Start a simulation to populate the workspace summary and results area.");
+});
+const summaryConfigRows = computed(() => ([
+  {
+    label: t("common:vue.home.workspaceSummary.player", "Active Player"),
+    value: activePlayer.value?.name || `Player ${simulator.activePlayerId}`,
+  },
+  {
+    label: t("common:vue.home.workspaceSummary.profile", "Profile"),
+    value: activeProfileImported.value
+      ? t("common:vue.home.profileStatusImported", "Imported")
+      : t("common:vue.home.profileStatusNotImported", "Not imported"),
+    tone: activeProfileImported.value ? "success" : "accent",
+  },
+  {
+    label: t("common:vue.home.workspaceSummary.modeScope", "Mode / Scope"),
+    value: `${currentModeLabel.value} • ${currentRunScopeLabel.value}`,
+  },
+  {
+    label: t("common:vue.home.workspaceSummary.target", "Target"),
+    value: currentTargetLabel.value,
+  },
+]));
+const summaryMetricRows = computed(() => {
+  const row = activeHomeResultRow.value;
+  const hasDetailedBreakdown = Boolean(simulator.results.simResult);
+  const randomBreakdown = hasDetailedBreakdown
+    ? buildRandomProfitBreakdown(simulator.results.simResult, activeHomeResultPlayerHrid.value, {
+      consumableMode: simulator.pricing.consumableMode,
+      dropMode: simulator.pricing.dropMode,
+      priceTable: simulator.pricing.priceTable,
+    })
+    : { revenue: 0, expenses: 0, profit: 0 };
+  const noRngBreakdown = hasDetailedBreakdown
+    ? buildNoRngProfitBreakdown(simulator.results.simResult, activeHomeResultPlayerHrid.value, {
+      consumableMode: simulator.pricing.consumableMode,
+      dropMode: simulator.pricing.dropMode,
+      priceTable: simulator.pricing.priceTable,
+    })
+    : { profit: 0 };
+  return [
+    {
+      label: t("common:vue.results.xpPerHour", "XP/h"),
+      value: row ? formatNumber(row.totalXpPerHour, 0) : "-",
+      tone: "accent",
+    },
+    {
+      label: t("common:vue.results.deathsPerHour", "Deaths/h"),
+      value: row ? formatNumber(row.deathsPerHour, 2) : "-",
+      tone: "danger",
+    },
+    {
+      label: t("common:vue.results.encountersPerHour", "Battles/h"),
+      value: row ? formatNumber(row.encountersPerHour, 1) : "-",
+    },
+    {
+      label: hasDetailedBreakdown
+        ? t("common:revenue", "Revenue")
+        : t("common:vue.results.revenuePerHour", "Revenue/h"),
+      value: hasDetailedBreakdown
+        ? formatCurrency(randomBreakdown.revenue)
+        : (row ? formatCurrency(row.revenuePerHour) : "-"),
+      tone: "success",
+    },
+    {
+      label: hasDetailedBreakdown
+        ? t("common:expense", "Expense")
+        : t("common:vue.results.expensesPerHour", "Expenses/h"),
+      value: hasDetailedBreakdown
+        ? formatCurrency(randomBreakdown.expenses)
+        : (row ? formatCurrency(row.expensesPerHour) : "-"),
+      tone: "danger",
+    },
+    {
+      label: hasDetailedBreakdown
+        ? t("common:profit", "Profit")
+        : t("common:vue.results.profitPerHour", "Profit/h"),
+      value: hasDetailedBreakdown
+        ? formatCurrency(randomBreakdown.profit)
+        : (row ? formatCurrency(row.profitPerHour) : "-"),
+      tone: (hasDetailedBreakdown ? Number(randomBreakdown.profit || 0) : Number(row?.profitPerHour || 0)) >= 0 ? "success" : "danger",
+    },
+    {
+      label: hasDetailedBreakdown
+        ? t("common:noRNGProfit", "No RNG Profit")
+        : t("common:noRNGProfit", "No RNG Profit"),
+      value: hasDetailedBreakdown
+        ? formatCurrency(noRngBreakdown.profit)
+        : (row ? formatCurrency(row.profitPerHour) : "-"),
+      tone: Number(hasDetailedBreakdown ? noRngBreakdown.profit : row?.profitPerHour || 0) >= 0 ? "success" : "danger",
+    },
+  ];
+});
+const summaryBuildRows = computed(() => {
+  const details = combatDetails.value;
+  const stats = combatStats.value;
+  const attackIntervalSeconds = Number(stats?.attackInterval || 0) / 1e9;
+  return [
+    {
+      label: t("common:vue.home.averageCombatLevel", "Combat Level"),
+      value: activePlayerCombatLevelLabel.value,
+    },
+    {
+      label: t("common:vue.home.combatStats.combatStyle", "Combat Style"),
+      value: stats ? formatCombatStyleName(stats.combatStyleHrid, combatStyleDetailMap?.[stats.combatStyleHrid]?.name || "") : "-",
+    },
+    {
+      label: t("common:vue.home.combatStats.damageType", "Damage Type"),
+      value: stats ? formatDamageTypeName(stats.damageType, damageTypeDetailMap?.[stats.damageType]?.name || "") : "-",
+    },
+    {
+      label: t("common:vue.home.combatStats.maxHp", "Max HP"),
+      value: details ? formatInt(details.maxHitpoints) : "-",
+    },
+    {
+      label: t("common:vue.home.combatStats.attackInterval", "Attack Interval"),
+      value: stats ? `${formatNumber(attackIntervalSeconds, 2)}s` : "-",
+    },
+    {
+      label: t("common:vue.home.combatStats.armor", "Armor"),
+      value: details ? formatInt(details.totalArmor) : "-",
+    },
+  ];
+});
+const fullResultsButtonLabel = computed(() => (
+  simulator.runtime.isRunning
+    ? t("common:vue.home.workspaceOpenResultsArea", "Open Results Area")
+    : t("common:vue.home.workspaceViewFullResults", "View Full Results")
+));
+const completeResultsToggleLabel = computed(() => (
+  completeResultsExpanded.value
+    ? t("common:vue.common.hide", "Hide")
+    : t("common:vue.home.workspaceViewFullResults", "View Full Results")
+));
+
+async function scrollToHomeResults(clearFocus = false) {
+  await nextTick();
+  homeResultsSection.value?.scrollIntoView({ behavior: "smooth", block: "start" });
+
+  if (clearFocus && route.name === "home" && route.query.focus === "results") {
+    await router.replace({ name: "home" });
+  }
+}
+
+async function openHomeResultsPanel(clearFocus = false) {
+  completeResultsExpanded.value = true;
+  await scrollToHomeResults(clearFocus);
+}
+
+function toggleCompleteResultsPanel() {
+  completeResultsExpanded.value = !completeResultsExpanded.value;
+}
 
 const levelLabelMap = computed(() => ({
   stamina: t("common:vue.home.levelLabels.stamina", "Stamina"),
@@ -1135,6 +1479,12 @@ function formatInt(value) {
 function formatNumber(value, digits = 2) {
   const numeric = Number(value || 0);
   return Number.isFinite(numeric) ? numeric.toLocaleString(undefined, { maximumFractionDigits: digits }) : "-";
+}
+
+function formatCurrency(value) {
+  return Number(value || 0).toLocaleString(undefined, {
+    maximumFractionDigits: 0,
+  });
 }
 
 function formatUpgradeCost(value) {
@@ -1808,6 +2158,18 @@ watch(
   ]),
   () => {
     simulator.persistSimulationUiSettings();
+  },
+  { immediate: true },
+);
+
+watch(
+  () => route.query.focus,
+  async (nextFocus) => {
+    if (route.name !== "home" || nextFocus !== "results") {
+      return;
+    }
+
+    await openHomeResultsPanel(true);
   },
   { immediate: true },
 );
