@@ -412,7 +412,8 @@
             "completeResultsTitle": "Complete Results",
             "completeResultsRunningDesc": "The full report stays collapsed until you want the detailed breakdown, while progress remains visible here.",
             "completeResultsDesc": "Open the detailed report only when you need tables, charts, and per-source breakdowns.",
-            "completeResultsCollapsed": "Keep the full report collapsed until you need detailed breakdowns.",            "simulationHours": "Simulation Hours",
+            "completeResultsCollapsed": "Keep the full report collapsed until you need detailed breakdowns.",
+            "simulationHours": "Simulation Hours",
             "visualization": "Visualization",
             "hpmpOn": "HP/MP On",
             "hpmpOff": "HP/MP Off",
@@ -769,8 +770,11 @@
             "msgPriceOverrideReset": "Price overrides reset: {{item}}",
             "msgAllPriceOverridesCleared": "All manual price overrides cleared.",
             "msgNoPriceOverrides": "No manual price overrides to clear.",
-            "msgInvalidPriceInput": "Invalid price input for {{item}}."
+            "msgInvalidPriceInput": "Invalid price input for {{item}}.",
+            "mainSiteImportScriptTitle": "Main-site Import Script",
+            "mainSiteImportScriptDescription": "Install the Tampermonkey helper to add one-click import from the main site into the active player slot.",
+            "installMainSiteImportScript": "Install Script",
+            "mainSiteImportScriptPending": "Script link pending"
         }
     }
 }
-

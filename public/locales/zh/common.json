@@ -1,4 +1,4 @@
-{
+﻿{
     "title": "MWI 战斗模拟器",
     "priceSettings": {
         "title": "价格设置",
@@ -228,7 +228,7 @@
         "source": "来源",
         "hitChance": "命中率",
         "totalExperience": "总经验",
-        "maxWaveReached" : "已完成最大波次",
+        "maxWaveReached": "已完成最大波次",
         "dungeonsCompleted": "地下城的完成次数",
         "dungeonsFailed": "地下城的团灭次数",
         "averageTime": "平均完成时间",
@@ -237,7 +237,7 @@
         "debuffOnLevelGap": "等级差距惩罚"
     },
     "selectPlayer": "选择玩家",
-    "selectAllOrNot" : "全选/取消全选",
+    "selectAllOrNot": "全选/取消全选",
     "simAllZones": "模拟所有星球",
     "simAllSolos": "模拟所有单刷",
     "selectSolo": "选择单人目标",
@@ -251,8 +251,8 @@
     "foodCrate": "食物箱",
     "simulationSettings": "模拟配置",
     "allZonesData": "批量模拟数据",
-    "simulateAllZonesResults" : "批量模拟结果",
-    "exportToCSV" : "导出为CSV",
+    "simulateAllZonesResults": "批量模拟结果",
+    "exportToCSV": "导出为CSV",
     "zoneName": "区域名称",
     "immportexportSet": "导入/导出方案",
     "groupCombat": "组队多人",
@@ -293,7 +293,11 @@
             "msgQueueChangesImportedAndBaselineReset": "已导入队列变更：{{name}}（{{count}} 项），并已重新设置基准。",
             "msgQueueChangesImportedButBaselineResetFailed": "已导入队列变更：{{name}}（{{count}} 项），但重新设置基准失败：{{error}}",
             "msgQueueChangesImportEmpty": "该装备预设没有可导入的队列变更：{{name}}",
-            "msgQueueChangesImportFailed": "导入队列变更失败：{{name}}"
+            "msgQueueChangesImportFailed": "导入队列变更失败：{{name}}",
+            "mainSiteImportScriptTitle": "主站导入脚本",
+            "mainSiteImportScriptDescription": "安装 Tampermonkey 辅助脚本后，可将主站当前角色一键导入到当前激活玩家槽位。",
+            "installMainSiteImportScript": "安装脚本",
+            "mainSiteImportScriptPending": "脚本链接待配置"
         },
         "results": {
             "workerRuntime": "运行时",
@@ -303,18 +307,18 @@
             "protocolAllLabyrinths": "开始全部迷宫模拟 / 批量模拟结果"
         }
     },
-    "Experiment" : {
-        "ExperimentalFeatures" : "实验性功能",
-        "batchSimFromJson" : "批量运行模拟（json压缩包）",
-        "uploadAndRun" : "上传并运行",
-        "download" : "下载结果",
-        "dungeonStartWave" : "地下城模拟起始波次",
-        "wave" : "波次",
-        "hpMpVisualization" : "HP/MP 可视化图表",
-        "enableHpMpVisualization" : "启用 HP/MP 变化折线图",
-        "hpOverTime" : "HP 随时间变化",
-        "mpOverTime" : "MP 随时间变化",
-        "timeInSeconds" : "时间 (秒)",
-        "waitingForData" : "等待模拟数据..."
+    "Experiment": {
+        "ExperimentalFeatures": "实验性功能",
+        "batchSimFromJson": "批量运行模拟（json压缩包）",
+        "uploadAndRun": "上传并运行",
+        "download": "下载结果",
+        "dungeonStartWave": "地下城模拟起始波次",
+        "wave": "波次",
+        "hpMpVisualization": "HP/MP 可视化图表",
+        "enableHpMpVisualization": "启用 HP/MP 变化折线图",
+        "hpOverTime": "HP 随时间变化",
+        "mpOverTime": "MP 随时间变化",
+        "timeInSeconds": "时间 (秒)",
+        "waitingForData": "等待模拟数据..."
     }
 }

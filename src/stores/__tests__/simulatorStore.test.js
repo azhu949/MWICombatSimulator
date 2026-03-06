@@ -1,7 +1,9 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
+import actionDetailMap from "../../combatsimulator/data/actionDetailMap.json";
 import abilityDetailMap from "../../combatsimulator/data/abilityDetailMap.json";
 import itemDetailMap from "../../combatsimulator/data/itemDetailMap.json";
+import { createMainSiteShareProfileFixture } from "../../services/__tests__/fixtures/mainSiteShareProfileFixture.js";
 import { useSimulatorStore } from "../simulatorStore.js";
 
 const ONE_HOUR = 60 * 60 * 1e9;
@@ -38,11 +40,34 @@ function findFirstEquipmentItem() {
     return item?.hrid ?? "";
 }
 
+function findFirstEquipmentItemByType(equipmentTypeHrid) {
+    const item = Object.values(itemDetailMap).find((entry) => (
+        entry?.categoryHrid === "/item_categories/equipment"
+        && String(entry?.equipmentDetail?.type || "") === equipmentTypeHrid
+    ));
+    return item?.hrid ?? "";
+}
+
 function findFirstFoodWithDefaultTriggers() {
     const item = Object.values(itemDetailMap).find(
         (entry) => entry.categoryHrid === "/item_categories/food" && Array.isArray(entry?.consumableDetail?.defaultCombatTriggers)
     );
     return item?.hrid ?? "";
+}
+
+function findFirstDrinkWithDefaultTriggers() {
+    const item = Object.values(itemDetailMap).find(
+        (entry) => entry.categoryHrid === "/item_categories/drink" && Array.isArray(entry?.consumableDetail?.defaultCombatTriggers)
+    );
+    return item?.hrid ?? "";
+}
+
+function findFirstCombatAction(isDungeon = false) {
+    const action = Object.values(actionDetailMap).find((entry) => (
+        String(entry?.type || "") === "/action_types/combat"
+        && Boolean(entry?.combatZoneInfo?.isDungeon) === isDungeon
+    ));
+    return action?.hrid ?? "";
 }
 
 function findFirstAbilityWithDefaultTriggers() {
@@ -561,6 +586,116 @@ describe("simulatorStore", () => {
         expect(simulator.players[0].achievements[ACHIEVEMENT_HRID]).toBe(true);
         expect(JSON.parse(global.localStorage.getItem(PLAYER_ACHIEVEMENTS_STORAGE_KEY)).achievementsByPlayer["1"])
             .toEqual({ [ACHIEVEMENT_HRID]: true });
+    });
+
+    it("imports main-site shareable profile into the active player without changing simulation settings", () => {
+        const simulator = useSimulatorStore();
+        const headItemHrid = findFirstEquipmentItemByType("/equipment_types/head");
+        const weaponItemHrid = findFirstEquipmentItemByType("/equipment_types/two_hand");
+        const foodItemHrid = findFirstFoodWithDefaultTriggers();
+        const drinkItemHrid = findFirstDrinkWithDefaultTriggers();
+        const abilityHrid = findFirstAbilityWithDefaultTriggers();
+        const zoneActionHrid = findFirstCombatAction(false);
+        const houseRoomHrid = Object.keys(simulator.players[2].houseRooms)[0];
+
+        expect(headItemHrid).toBeTruthy();
+        expect(weaponItemHrid).toBeTruthy();
+        expect(foodItemHrid).toBeTruthy();
+        expect(drinkItemHrid).toBeTruthy();
+        expect(abilityHrid).toBeTruthy();
+        expect(zoneActionHrid).toBeTruthy();
+        expect(houseRoomHrid).toBeTruthy();
+
+        simulator.setActivePlayer("3");
+        simulator.simulationSettings.mode = "zone";
+        simulator.simulationSettings.useDungeon = true;
+        simulator.simulationSettings.zoneHrid = "/actions/combat/jungle_planet";
+        simulator.simulationSettings.dungeonHrid = "/actions/combat/chimerical_den";
+        simulator.simulationSettings.difficultyTier = 2;
+        simulator.simulationSettings.simulationTimeHours = 48;
+
+        const payload = {
+            profile: createMainSiteShareProfileFixture({
+            skills: {
+                stamina: 14,
+                intelligence: 24,
+                attack: 34,
+                melee: 44,
+                defense: 54,
+                ranged: 64,
+                magic: 74,
+            },
+            wearableItemMap: {
+                head: {
+                    itemLocationHrid: "/item_locations/head",
+                    itemHrid: headItemHrid,
+                    enhancementLevel: 2,
+                },
+                weapon: {
+                    itemLocationHrid: "/item_locations/two_hand",
+                    itemHrid: weaponItemHrid,
+                    enhancementLevel: 5,
+                },
+            },
+            equippedAbilities: [
+                {
+                    slotNumber: 1,
+                    abilityHrid,
+                    level: 6,
+                    experience: 0,
+                },
+            ],
+            foodItemHrids: [foodItemHrid, "", ""],
+            drinkItemHrids: [drinkItemHrid, "", ""],
+            consumableCombatTriggersMap: {
+                [foodItemHrid]: itemDetailMap[foodItemHrid].consumableDetail.defaultCombatTriggers,
+                [drinkItemHrid]: itemDetailMap[drinkItemHrid].consumableDetail.defaultCombatTriggers,
+            },
+            abilityCombatTriggersMap: {
+                [abilityHrid]: abilityDetailMap[abilityHrid].defaultCombatTriggers,
+            },
+            characterHouseRoomMap: {
+                [houseRoomHrid]: {
+                    level: 5,
+                },
+            },
+            characterAchievements: [
+                {
+                    achievementHrid: ACHIEVEMENT_HRID,
+                    progress: 1,
+                    isCompleted: true,
+                },
+            ],
+            }),
+            mainSiteCombat: {
+                actionHrid: zoneActionHrid,
+                difficultyTier: 1,
+            },
+        };
+
+        const result = simulator.importSoloConfig(JSON.stringify(payload), "3");
+
+        expect(result.detectedFormat).toBe("main-site-share-profile");
+        expect(simulator.players[2].name).toBe("Main Site Hero");
+        expect(simulator.players[2].levels.stamina).toBe(14);
+        expect(simulator.players[2].levels.magic).toBe(74);
+        expect(simulator.players[2].equipment.head.itemHrid).toBe(headItemHrid);
+        expect(simulator.players[2].equipment.weapon.itemHrid).toBe(weaponItemHrid);
+        expect(simulator.players[2].food[0]).toBe(foodItemHrid);
+        expect(simulator.players[2].drinks[0]).toBe(drinkItemHrid);
+        expect(simulator.players[2].abilities[0].abilityHrid).toBe(abilityHrid);
+        expect(simulator.players[2].triggerMap[foodItemHrid]).toEqual(itemDetailMap[foodItemHrid].consumableDetail.defaultCombatTriggers);
+        expect(simulator.players[2].triggerMap[drinkItemHrid]).toEqual(itemDetailMap[drinkItemHrid].consumableDetail.defaultCombatTriggers);
+        expect(simulator.players[2].triggerMap[abilityHrid]).toEqual(abilityDetailMap[abilityHrid].defaultCombatTriggers);
+        expect(simulator.players[2].houseRooms[houseRoomHrid]).toBe(5);
+        expect(simulator.players[2].achievements[ACHIEVEMENT_HRID]).toBe(true);
+        expect(simulator.players[0].name).toBe("Player 1");
+        expect(simulator.queue.importedProfileByPlayer["3"]).toBe(true);
+        expect(simulator.simulationSettings.mode).toBe("zone");
+        expect(simulator.simulationSettings.useDungeon).toBe(false);
+        expect(simulator.simulationSettings.zoneHrid).toBe(zoneActionHrid);
+        expect(simulator.simulationSettings.difficultyTier).toBe(1);
+        expect(simulator.simulationSettings.simulationTimeHours).toBe(48);
     });
 
     it("returns sorted market enhancement levels for an item", () => {
