@@ -169,6 +169,7 @@
         "playerDataDescription": "Manually save/restore build data for 5 players only.",
         "savePlayerConfigs": "Save Player Configs",
         "loadPlayerConfigs": "Load Player Configs",
+        "viewPlayerSnapshotInfo": "View Snapshot Info",
         "deleteAllPlayerConfigs": "Delete All Snapshots",
         "deleteSinglePlayerConfig": "Delete",
         "playerSnapshotTitle": "Saved Snapshot",

@@ -169,6 +169,7 @@
         "playerDataDescription": "仅手动保存/恢复5名玩家构筑数据。",
         "savePlayerConfigs": "保存玩家配置",
         "loadPlayerConfigs": "恢复玩家配置",
+        "viewPlayerSnapshotInfo": "查看快照信息",
         "deleteAllPlayerConfigs": "删除全部快照",
         "deleteSinglePlayerConfig": "删除",
         "playerSnapshotTitle": "已保存快照",

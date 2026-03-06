@@ -168,6 +168,7 @@
         "playerDataDescription": "Manually save/restore build data for 5 players only.",
         "savePlayerConfigs": "Save Player Configs",
         "loadPlayerConfigs": "Load Player Configs",
+        "viewPlayerSnapshotInfo": "View Snapshot Info",
         "deleteAllPlayerConfigs": "Delete All Snapshots",
         "deleteSinglePlayerConfig": "Delete",
         "playerSnapshotTitle": "Saved Snapshot",
@@ -664,10 +665,6 @@
             "breakdownTrimHint": "Showing first entries only."
         },
         "settings": {
-            "generalTitle": "General",
-            "enableHpMpVisualization": "Enable HP/MP visualization",
-            "defaultModeLabyrinth": "Default mode is Labyrinth",
-            "resetPlayers": "Reset Players",
             "openMigrationNote": "Open Migration Note",
             "migrationStageTitle": "Migration Stage",
             "migrationStage1": "Vue + Vite shell with Tailwind styles",
@@ -718,7 +715,6 @@
             "msgQueueChangesImportedButBaselineResetFailed": "Queue changes imported from {{name}}: {{count}} items, but baseline reset failed: {{error}}",
             "msgQueueChangesImportEmpty": "No queue changes found in equipment set: {{name}}",
             "msgQueueChangesImportFailed": "Import queue changes failed: {{name}}",
-            "msgPlayersReset": "Players reset to defaults.",
             "msgGroupExported": "Group exported in {{format}} format.",
             "msgSoloExported": "Player {{player}} exported in {{format}} format.",
             "msgGroupImportSuccess": "Group import success ({{format}}).",

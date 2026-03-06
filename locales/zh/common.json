@@ -168,6 +168,7 @@
         "playerDataDescription": "仅手动保存/恢复5名玩家构筑数据。",
         "savePlayerConfigs": "保存玩家配置",
         "loadPlayerConfigs": "恢复玩家配置",
+        "viewPlayerSnapshotInfo": "查看快照信息",
         "deleteAllPlayerConfigs": "删除全部快照",
         "deleteSinglePlayerConfig": "删除",
         "playerSnapshotTitle": "已保存快照",
@@ -663,10 +664,6 @@
             "breakdownTrimHint": "仅显示前部分条目。"
         },
         "settings": {
-            "generalTitle": "通用",
-            "enableHpMpVisualization": "启用 HP/MP 可视化",
-            "defaultModeLabyrinth": "默认模式为迷宫",
-            "resetPlayers": "重置玩家",
             "openMigrationNote": "打开迁移说明",
             "migrationStageTitle": "迁移阶段",
             "migrationStage1": "Vue + Vite 壳体与 Tailwind 样式",
@@ -717,7 +714,6 @@
             "msgQueueChangesImportedButBaselineResetFailed": "已导入队列变更：{{name}}（{{count}} 项），但重新设置基准失败：{{error}}",
             "msgQueueChangesImportEmpty": "该装备预设没有可导入的队列变更：{{name}}",
             "msgQueueChangesImportFailed": "导入队列变更失败：{{name}}",
-            "msgPlayersReset": "玩家已重置为默认值。",
             "msgGroupExported": "组队配置已按 {{format}} 格式导出。",
             "msgSoloExported": "玩家 {{player}} 已按 {{format}} 格式导出。",
             "msgGroupImportSuccess": "组队导入成功（{{format}}）。",
