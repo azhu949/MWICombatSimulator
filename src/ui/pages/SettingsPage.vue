@@ -1,25 +1,5 @@
 <template>
   <section class="space-y-4">
-    <div class="grid gap-4">
-      <div class="panel">
-        <h2 class="mb-3 font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.settings.generalTitle", "General") }}</h2>
-        <div class="space-y-3 text-sm text-slate-200">
-          <label class="badge flex items-center justify-between">
-            <span>{{ t("common:vue.settings.enableHpMpVisualization", "Enable HP/MP visualization") }}</span>
-            <input v-model="simulator.simulationSettings.enableHpMpVisualization" type="checkbox" />
-          </label>
-          <label class="badge flex items-center justify-between">
-            <span>{{ t("common:vue.settings.defaultModeLabyrinth", "Default mode is Labyrinth") }}</span>
-            <input v-model="labyrinthModeProxy" type="checkbox" />
-          </label>
-        </div>
-
-        <div class="mt-4 flex flex-wrap gap-2">
-          <button type="button" class="action-button-muted" @click="resetPlayers">{{ t("common:vue.settings.resetPlayers", "Reset Players") }}</button>
-        </div>
-      </div>
-    </div>
-
     <div class="panel space-y-3">
       <div class="flex flex-wrap items-center justify-between gap-2">
         <h3 class="font-heading text-base font-semibold text-amber-200">{{ t("common:settingsPage.queueSettingsCardTitle", "Queue Scoring & Workers") }}</h3>
@@ -196,71 +176,6 @@
       </div>
     </div>
 
-    <div class="panel space-y-3">
-      <div class="flex flex-wrap items-center justify-between gap-2">
-        <h3 class="font-heading text-base font-semibold text-amber-200">{{ t("common:settingsPage.playerDataCardTitle", "Player Config Snapshot") }}</h3>
-        <span class="text-xs" :class="playerSnapshotStatusClass">{{ playerSnapshotStatusText }}</span>
-      </div>
-
-      <p class="text-sm text-slate-300">{{ t("common:settingsPage.playerDataDescription", "Manually save/restore build data for 5 players only.") }}</p>
-
-      <div class="flex flex-wrap gap-2">
-        <button type="button" class="action-button-primary" @click="savePlayerDataSnapshot">
-          {{ t("common:settingsPage.savePlayerConfigs", "Save Player Configs") }}
-        </button>
-        <button type="button" class="action-button-muted" @click="loadPlayerDataSnapshot">
-          {{ t("common:settingsPage.loadPlayerConfigs", "Load Player Configs") }}
-        </button>
-        <button type="button" class="action-button-danger" @click="deleteAllPlayerDataSnapshots">
-          {{ t("common:settingsPage.deleteAllPlayerConfigs", "Delete All Snapshots") }}
-        </button>
-      </div>
-
-      <div v-if="!hasPlayerSnapshotData" class="rounded-xl border border-white/10 bg-slate-900/50 px-3 py-4 text-sm text-slate-400">
-        {{ t("common:settingsPage.playerSnapshotNoData", "No player snapshot data is currently saved.") }}
-      </div>
-
-      <div v-else class="space-y-2">
-        <p class="text-xs text-slate-400">{{ playerSnapshotSavedAtLabel }}</p>
-
-        <div class="overflow-x-auto">
-          <table class="min-w-full text-sm">
-            <thead>
-              <tr class="border-b border-white/10 text-left text-xs uppercase tracking-[0.14em] text-slate-400">
-                <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTablePlayer", "Player") }}</th>
-                <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableZone", "Zone") }}</th>
-                <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableDungeon", "Dungeon") }}</th>
-                <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableDifficulty", "Difficulty") }}</th>
-                <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableDuration", "Duration(h)") }}</th>
-                <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableLabyrinth", "Labyrinth") }}</th>
-                <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableRoomLevel", "Room Level") }}</th>
-                <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableActions", "Actions") }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="row in playerSnapshotRows" :key="row.playerId" class="border-b border-white/5 text-slate-200">
-                <td class="px-2 py-2">Player {{ row.playerId }}</td>
-                <td class="px-2 py-2">{{ row.hasSnapshot ? formatSnapshotActionName(row.zoneHrid, row.zone) : "-" }}</td>
-                <td class="px-2 py-2">{{ row.hasSnapshot ? formatSnapshotActionName(row.dungeonHrid, row.dungeon) : "-" }}</td>
-                <td class="px-2 py-2">{{ row.hasSnapshot ? row.difficulty : "-" }}</td>
-                <td class="px-2 py-2">{{ row.hasSnapshot ? row.simulationTime : "-" }}</td>
-                <td class="px-2 py-2">{{ row.hasSnapshot ? formatSnapshotMonsterName(row.labyrinthHrid, row.labyrinth) : "-" }}</td>
-                <td class="px-2 py-2">{{ row.hasSnapshot ? row.roomLevel : "-" }}</td>
-                <td class="px-2 py-2">
-                  <button type="button"
-                    class="action-button-muted"
-                    :disabled="!row.hasSnapshot"
-                    @click="deleteSinglePlayerDataSnapshot(row.playerId)"
-                  >
-                    {{ t("common:settingsPage.deleteSinglePlayerConfig", "Delete") }}
-                  </button>
-                </td>
-              </tr>
-            </tbody>
-          </table>
-        </div>
-      </div>
-    </div>
 
     <div class="panel space-y-3">
       <div class="flex flex-wrap items-center justify-between gap-2">
@@ -611,38 +526,13 @@
       </div>
     </BaseModal>
 
-    <BaseModal
-      :open="openRestoreNavigateModal"
-      :title="t('common:settingsPage.restoreCompleteTitle', 'Restore Complete')"
-      panel-class="max-w-xl"
-      @close="closeRestoreNavigateModal"
-    >
-      <div class="space-y-3">
-        <p class="text-sm text-slate-200">
-          {{ t("common:settingsPage.playerLoadSuccess", "Player configs restored", { time: restoredSnapshotSavedAtText }) }}
-        </p>
-        <p class="text-sm text-slate-300">
-          {{ t("common:settingsPage.promptGoHomeAfterRestore", "Player configs restored. Go to Home page now?") }}
-        </p>
-        <div class="flex flex-wrap justify-end gap-2">
-          <button type="button" class="action-button-muted" @click="closeRestoreNavigateModal">
-            {{ t("common:vue.common.cancel", "Cancel") }}
-          </button>
-          <button type="button" class="action-button-primary" @click="confirmGoHomeAfterRestore">
-            {{ t("common:menu.home", "Home") }}
-          </button>
-        </div>
-      </div>
-    </BaseModal>
   </section>
 </template>
 
 <script setup>
 import { computed, reactive, ref, watch } from "vue";
-import { useRouter } from "vue-router";
 import patchNote from "../../../patchNote.json";
 import itemDetailMap from "../../combatsimulator/data/itemDetailMap.json";
-import { createEmptyPlayerConfig } from "../../services/playerMapper.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { useI18nText } from "../composables/useI18nText.js";
 import DisclosurePanel from "../components/DisclosurePanel.vue";
@@ -650,7 +540,6 @@ import BaseModal from "../components/BaseModal.vue";
 
 const simulator = useSimulatorStore();
 const { t } = useI18nText();
-const router = useRouter();
 
 const equipmentSetName = ref("");
 const priceSearchKeyword = ref("");
@@ -658,8 +547,6 @@ const selectedPriceCategory = ref("__all__");
 const openEditPricesModal = ref(false);
 const openPatchNotesModal = ref(false);
 const openImportQueueChangesModal = ref(false);
-const openRestoreNavigateModal = ref(false);
-const restoredSnapshotSavedAtText = ref("-");
 const pendingImportQueueSetName = ref("");
 const pendingImportQueueChangeCount = ref(0);
 const pendingImportAndResetBaseline = ref(false);
@@ -694,20 +581,6 @@ const queueRunRoundPreset = ref("30");
 const queueSettingsStatus = ref({
   tone: "secondary",
   text: t("common:settingsPage.statusReady", "Ready."),
-});
-
-const playerSnapshotStatus = ref({
-  tone: "secondary",
-  text: t("common:settingsPage.statusReady", "Ready."),
-});
-
-const labyrinthModeProxy = computed({
-  get() {
-    return simulator.simulationSettings.mode === "labyrinth";
-  },
-  set(enabled) {
-    simulator.setSimulationMode(enabled ? "labyrinth" : "zone");
-  },
 });
 
 const consumablePriceModeProxy = computed({
@@ -951,27 +824,6 @@ const queueSettingsStatusClass = computed(() => {
 
 const queueSettingsStatusText = computed(() => queueSettingsStatus.value.text || "");
 
-const playerSnapshotRows = computed(() => simulator.playerDataSnapshotRows || []);
-const hasPlayerSnapshotData = computed(() => playerSnapshotRows.value.some((row) => row.hasSnapshot));
-
-const playerSnapshotSavedAtLabel = computed(() => {
-  const savedAt = Number(simulator.playerDataSnapshot?.savedAt || 0);
-  const savedAtText = savedAt > 0 ? new Date(savedAt).toLocaleString() : "-";
-  return t("common:settingsPage.playerSnapshotSavedAt", "", { time: savedAtText });
-});
-
-const playerSnapshotStatusClass = computed(() => {
-  if (playerSnapshotStatus.value.tone === "success") {
-    return "text-emerald-300";
-  }
-  if (playerSnapshotStatus.value.tone === "danger") {
-    return "text-rose-300";
-  }
-  return "text-slate-400";
-});
-
-const playerSnapshotStatusText = computed(() => playerSnapshotStatus.value.text || "");
-
 watch(priceSearchKeyword, () => {
   priceRowLimit.value = PRICE_ROWS_STEP;
 });
@@ -1087,123 +939,12 @@ function resetQueueRuntimeSettings() {
   setMessage("ok", queueSettingsStatus.value.text);
 }
 
-function setPlayerSnapshotStatus(messageKey, tone = "secondary", options = {}) {
-  playerSnapshotStatus.value = {
-    tone,
-    text: t(messageKey, messageKey, options),
-  };
-}
-
-function savePlayerDataSnapshot() {
-  const result = simulator.savePlayerDataSnapshot();
-  if (!result.ok) {
-    setPlayerSnapshotStatus(result.messageKey || "common:settingsPage.playerSaveError", "danger");
-    setMessage("error", playerSnapshotStatus.value.text);
-    return;
-  }
-
-  setPlayerSnapshotStatus("common:settingsPage.playerSaveSuccess", "success");
-  setMessage("ok", playerSnapshotStatus.value.text);
-}
-
-function loadPlayerDataSnapshot() {
-  const result = simulator.loadPlayerDataSnapshot();
-  if (!result.ok) {
-    setPlayerSnapshotStatus(result.messageKey || "common:settingsPage.playerLoadInvalid", "danger");
-    setMessage("error", playerSnapshotStatus.value.text);
-    return;
-  }
-
-  const savedAtText = result.savedAt > 0 ? new Date(result.savedAt).toLocaleString() : "-";
-  setPlayerSnapshotStatus(result.messageKey || "common:settingsPage.playerLoadSuccess", "success", { time: savedAtText });
-  setMessage("ok", playerSnapshotStatus.value.text);
-  restoredSnapshotSavedAtText.value = savedAtText;
-  openRestoreNavigateModal.value = true;
-}
-
-function closeRestoreNavigateModal() {
-  openRestoreNavigateModal.value = false;
-  restoredSnapshotSavedAtText.value = "-";
-}
-
-function confirmGoHomeAfterRestore() {
-  openRestoreNavigateModal.value = false;
-  restoredSnapshotSavedAtText.value = "-";
-  router.push("/home");
-}
-
-function deleteSinglePlayerDataSnapshot(playerId) {
-  const result = simulator.deleteSinglePlayerDataSnapshot(playerId);
-  if (!result.ok) {
-    setPlayerSnapshotStatus(result.messageKey || "common:settingsPage.playerDeleteError", "danger", result.messageOptions || {});
-    setMessage("error", playerSnapshotStatus.value.text);
-    return;
-  }
-
-  setPlayerSnapshotStatus(result.messageKey || "common:settingsPage.playerDeleteSingleSuccess", "success", result.messageOptions || {});
-  setMessage("ok", playerSnapshotStatus.value.text);
-}
-
-function deleteAllPlayerDataSnapshots() {
-  const result = simulator.deleteAllPlayerDataSnapshots();
-  if (!result.ok) {
-    setPlayerSnapshotStatus(result.messageKey || "common:settingsPage.playerDeleteError", "danger");
-    setMessage("error", playerSnapshotStatus.value.text);
-    return;
-  }
-
-  setPlayerSnapshotStatus(result.messageKey || "common:settingsPage.playerDeleteAllSuccess", "success");
-  setMessage("ok", playerSnapshotStatus.value.text);
-}
-
 function formatTimestamp(timestamp) {
   const value = Number(timestamp || 0);
   if (!Number.isFinite(value) || value <= 0) {
     return "-";
   }
   return new Date(value).toLocaleString();
-}
-
-function formatSnapshotActionName(actionHrid, fallbackName = "-") {
-  const hrid = String(actionHrid || "");
-  if (!hrid) {
-    return fallbackName || "-";
-  }
-
-  const translationKey = `translation:actionNames.${hrid}`;
-  const fromTranslation = t(translationKey, translationKey);
-  if (fromTranslation !== translationKey) {
-    return fromTranslation;
-  }
-
-  const commonKey = `actionNames.${hrid}`;
-  const fromCommon = t(commonKey, commonKey);
-  if (fromCommon !== commonKey) {
-    return fromCommon;
-  }
-
-  return fallbackName || hrid;
-}
-
-function formatSnapshotMonsterName(monsterHrid, fallbackName = "-") {
-  const hrid = String(monsterHrid || "");
-  if (!hrid) {
-    return fallbackName || "-";
-  }
-
-  const translationKey = `translation:monsterNames.${hrid}`;
-  const fromTranslation = t(translationKey, translationKey);
-  if (fromTranslation !== translationKey) {
-    return fromTranslation;
-  }
-
-  const commonKey = `monsterNames.${hrid}`;
-  const fromCommon = t(commonKey, commonKey);
-  if (fromCommon !== commonKey) {
-    return fromCommon;
-  }
-
-  return fallbackName || hrid;
 }
 
 function refreshEquipmentSets() {
@@ -1451,29 +1192,6 @@ function deleteEquipmentSet(setName) {
     return;
   }
   setMessage("error", t("common:vue.settings.msgEquipmentSetNotFound", "Equipment set not found: {{name}}", { name: setName }));
-}
-
-function resetPlayers() {
-  simulator.players = [1, 2, 3, 4, 5].map((id) => createEmptyPlayerConfig(id));
-  simulator.clearPersistedPlayerAchievements();
-  simulator.activePlayerId = "1";
-  simulator.results.simResult = null;
-  simulator.results.summaryRows = [];
-  simulator.results.batchRows = [];
-  ["1", "2", "3", "4", "5"].forEach((playerId) => {
-    simulator.setImportedProfileState(playerId, false);
-    const queueState = simulator.ensureQueueState(playerId);
-    queueState.baseline = null;
-    queueState.items = [];
-    queueState.results = [];
-    queueState.rawRuns = [];
-    queueState.ranking = [];
-    queueState.isRunning = false;
-    queueState.progress = 0;
-    queueState.error = "";
-    queueState.lastRunAt = 0;
-  });
-  setMessage("ok", t("common:vue.settings.msgPlayersReset", "Players reset to defaults."));
 }
 
 </script>

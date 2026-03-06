@@ -246,17 +246,10 @@
           </div>
         </div>
 
-        <div class="mb-3 grid gap-3 sm:grid-cols-2">
-          <label class="block">
+        <div class="mb-3 grid gap-3 sm:grid-cols-1">
+          <label class="block max-w-sm">
             <span class="field-label">{{ t("common:vue.home.simulationHours", "Simulation Hours") }}</span>
             <input v-model.number="simulator.simulationSettings.simulationTimeHours" class="field-input" type="number" min="1" max="72" />
-          </label>
-          <label class="block">
-            <span class="field-label">{{ t("common:vue.home.visualization", "Visualization") }}</span>
-            <select v-model="visualizationProxy" class="field-select">
-              <option :value="true">{{ t("common:vue.home.hpmpOn", "HP/MP On") }}</option>
-              <option :value="false">{{ t("common:vue.home.hpmpOff", "HP/MP Off") }}</option>
-            </select>
           </label>
         </div>
 
@@ -305,7 +298,17 @@
           <button type="button" class="action-button-muted" @click="openExperimentalModal = true">
             {{ t("common:Experiment.ExperimentalFeatures", "Experimental Features") }}
           </button>
+          <button type="button" class="action-button-muted" @click="savePlayerDataSnapshotFromHome">
+            {{ t("common:settingsPage.savePlayerConfigs", "Save Player Configs") }}
+          </button>
+          <button type="button" class="action-button-muted" @click="loadPlayerDataSnapshotFromHome">
+            {{ t("common:settingsPage.loadPlayerConfigs", "Load Player Configs") }}
+          </button>
+          <button type="button" class="action-button-muted" @click="openPlayerSnapshotInfoModal = true">
+            {{ t("common:settingsPage.viewPlayerSnapshotInfo", "View Snapshot Info") }}
+          </button>
         </div>
+        <p v-if="playerSnapshotStatusText" class="mt-2 text-xs" :class="playerSnapshotStatusClass">{{ playerSnapshotStatusText }}</p>
       </div>
       </div>
 
@@ -718,6 +721,13 @@
     <BaseModal :open="openExperimentalModal" :title="t('common:Experiment.ExperimentalFeatures', 'Experimental Features')" @close="openExperimentalModal = false">
       <div class="space-y-3">
         <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
+          <label class="badge flex items-center justify-between gap-3 text-sm text-slate-100">
+            <span>{{ t("common:Experiment.enableHpMpVisualization", "Enable HP/MP Timeline Charts") }}</span>
+            <input v-model="simulator.simulationSettings.enableHpMpVisualization" type="checkbox" />
+          </label>
+        </div>
+
+        <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
           <p class="field-label">{{ t("common:Experiment.batchSimFromJson", "Run batch simulations from JSON files") }}</p>
           <div class="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
             <input
@@ -755,6 +765,69 @@
             <span class="text-xs text-slate-400">{{ t("common:Experiment.wave", "Wave") }}</span>
           </div>
           <p class="mt-2 text-xs text-slate-400">{{ t("common:Experiment.dungeonStartWaveNotConnected", "Start wave is not connected to worker runtime yet.") }}</p>
+        </div>
+      </div>
+    </BaseModal>
+
+    <BaseModal
+      :open="openPlayerSnapshotInfoModal"
+      :title="t('common:settingsPage.playerDataCardTitle', 'Player Config Snapshot')"
+      panel-class="max-w-[96vw] xl:max-w-[1200px]"
+      @close="openPlayerSnapshotInfoModal = false"
+    >
+      <div class="space-y-3">
+        <p class="text-sm text-slate-300">{{ t("common:settingsPage.playerDataDescription", "Manually save/restore build data for 5 players only.") }}</p>
+        <p v-if="playerSnapshotStatusText" class="text-xs" :class="playerSnapshotStatusClass">{{ playerSnapshotStatusText }}</p>
+        <div class="flex flex-wrap justify-end gap-2">
+          <button type="button" class="action-button-danger" @click="deleteAllPlayerDataSnapshotsFromHome">
+            {{ t("common:settingsPage.deleteAllPlayerConfigs", "Delete All Snapshots") }}
+          </button>
+        </div>
+
+        <div v-if="!hasPlayerSnapshotData" class="rounded-xl border border-white/10 bg-slate-900/50 px-3 py-4 text-sm text-slate-400">
+          {{ t("common:settingsPage.playerSnapshotNoData", "No player snapshot data is currently saved.") }}
+        </div>
+
+        <div v-else class="space-y-2">
+          <p class="text-xs text-slate-400">{{ playerSnapshotSavedAtLabel }}</p>
+
+          <div class="overflow-x-auto">
+            <table class="min-w-full text-sm">
+              <thead>
+                <tr class="border-b border-white/10 text-left text-xs uppercase tracking-[0.14em] text-slate-400">
+                  <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTablePlayer", "Player") }}</th>
+                  <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableZone", "Zone") }}</th>
+                  <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableDungeon", "Dungeon") }}</th>
+                  <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableDifficulty", "Difficulty") }}</th>
+                  <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableDuration", "Duration(h)") }}</th>
+                  <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableLabyrinth", "Labyrinth") }}</th>
+                  <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableRoomLevel", "Room Level") }}</th>
+                  <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableActions", "Actions") }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr v-for="row in playerSnapshotRows" :key="row.playerId" class="border-b border-white/5 text-slate-200">
+                  <td class="px-2 py-2">Player {{ row.playerId }}</td>
+                  <td class="px-2 py-2">{{ row.hasSnapshot ? formatActionName(row.zoneHrid, row.zone) : "-" }}</td>
+                  <td class="px-2 py-2">{{ row.hasSnapshot ? formatActionName(row.dungeonHrid, row.dungeon) : "-" }}</td>
+                  <td class="px-2 py-2">{{ row.hasSnapshot ? row.difficulty : "-" }}</td>
+                  <td class="px-2 py-2">{{ row.hasSnapshot ? row.simulationTime : "-" }}</td>
+                  <td class="px-2 py-2">{{ row.hasSnapshot ? formatMonsterName(row.labyrinthHrid, row.labyrinth) : "-" }}</td>
+                  <td class="px-2 py-2">{{ row.hasSnapshot ? row.roomLevel : "-" }}</td>
+                  <td class="px-2 py-2">
+                    <button
+                      type="button"
+                      class="action-button-muted"
+                      :disabled="!row.hasSnapshot"
+                      @click="deleteSinglePlayerDataSnapshotFromHome(row.playerId)"
+                    >
+                      {{ t("common:settingsPage.deleteSinglePlayerConfig", "Delete") }}
+                    </button>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </BaseModal>
@@ -1188,6 +1261,7 @@ const triggerDependencyOptions = getTriggerDependencies();
 const openHouseRoomsModal = ref(false);
 const openAchievementsModal = ref(false);
 const openPlayerImportModal = ref(false);
+const openPlayerSnapshotInfoModal = ref(false);
 const openExperimentalModal = ref(false);
 const experimentalFileInput = ref(null);
 const experimentalFileReady = ref(false);
@@ -1213,6 +1287,10 @@ const importExportStatus = ref({
   tone: "secondary",
   text: "",
 });
+const playerSnapshotStatus = ref({
+  tone: "secondary",
+  text: "",
+});
 
 const dungeonToggleProxy = computed({
   get() {
@@ -1221,15 +1299,6 @@ const dungeonToggleProxy = computed({
   set(value) {
     simulator.simulationSettings.useDungeon = Boolean(value);
     simulator.normalizeDifficulty();
-  },
-});
-
-const visualizationProxy = computed({
-  get() {
-    return simulator.simulationSettings.enableHpMpVisualization;
-  },
-  set(value) {
-    simulator.simulationSettings.enableHpMpVisualization = Boolean(value);
   },
 });
 
@@ -1339,6 +1408,23 @@ const importExportStatusClass = computed(() => {
   return "text-slate-400";
 });
 const importExportStatusText = computed(() => importExportStatus.value.text || "");
+const playerSnapshotRows = computed(() => simulator.playerDataSnapshotRows || []);
+const hasPlayerSnapshotData = computed(() => playerSnapshotRows.value.some((row) => row.hasSnapshot));
+const playerSnapshotSavedAtLabel = computed(() => {
+  const savedAt = Number(simulator.playerDataSnapshot?.savedAt || 0);
+  const savedAtText = savedAt > 0 ? new Date(savedAt).toLocaleString() : "-";
+  return t("common:settingsPage.playerSnapshotSavedAt", "", { time: savedAtText });
+});
+const playerSnapshotStatusClass = computed(() => {
+  if (playerSnapshotStatus.value.tone === "success") {
+    return "text-emerald-300";
+  }
+  if (playerSnapshotStatus.value.tone === "danger") {
+    return "text-rose-300";
+  }
+  return "text-slate-400";
+});
+const playerSnapshotStatusText = computed(() => playerSnapshotStatus.value.text || "");
 
 const combatDetails = computed(() => {
   if (!activePlayer.value) {
@@ -1550,6 +1636,14 @@ function formatActionName(actionHrid, fallbackName = "") {
   return t(`actionNames.${hrid}`, fallbackName || hrid);
 }
 
+function formatMonsterName(monsterHrid, fallbackName = "") {
+  const hrid = String(monsterHrid || "");
+  if (!hrid) {
+    return fallbackName || "-";
+  }
+  return t(`monsterNames.${hrid}`, fallbackName || hrid);
+}
+
 function formatItemName(itemHrid, fallbackName = "") {
   const hrid = String(itemHrid || "");
   if (!hrid) {
@@ -1725,6 +1819,54 @@ function setImportExportStatus(tone, text) {
     tone: tone || "secondary",
     text: String(text || ""),
   };
+}
+
+function setPlayerSnapshotStatus(messageKey, tone = "secondary", options = {}) {
+  playerSnapshotStatus.value = {
+    tone,
+    text: t(messageKey, messageKey, options),
+  };
+}
+
+function savePlayerDataSnapshotFromHome() {
+  const result = simulator.savePlayerDataSnapshot();
+  if (!result.ok) {
+    setPlayerSnapshotStatus(result.messageKey || "common:settingsPage.playerSaveError", "danger");
+    return;
+  }
+
+  setPlayerSnapshotStatus("common:settingsPage.playerSaveSuccess", "success");
+}
+
+function loadPlayerDataSnapshotFromHome() {
+  const result = simulator.loadPlayerDataSnapshot();
+  if (!result.ok) {
+    setPlayerSnapshotStatus(result.messageKey || "common:settingsPage.playerLoadInvalid", "danger");
+    return;
+  }
+
+  const savedAtText = result.savedAt > 0 ? new Date(result.savedAt).toLocaleString() : "-";
+  setPlayerSnapshotStatus(result.messageKey || "common:settingsPage.playerLoadSuccess", "success", { time: savedAtText });
+}
+
+function deleteSinglePlayerDataSnapshotFromHome(playerId) {
+  const result = simulator.deleteSinglePlayerDataSnapshot(playerId);
+  if (!result.ok) {
+    setPlayerSnapshotStatus(result.messageKey || "common:settingsPage.playerDeleteError", "danger", result.messageOptions || {});
+    return;
+  }
+
+  setPlayerSnapshotStatus(result.messageKey || "common:settingsPage.playerDeleteSingleSuccess", "success", result.messageOptions || {});
+}
+
+function deleteAllPlayerDataSnapshotsFromHome() {
+  const result = simulator.deleteAllPlayerDataSnapshots();
+  if (!result.ok) {
+    setPlayerSnapshotStatus(result.messageKey || "common:settingsPage.playerDeleteError", "danger");
+    return;
+  }
+
+  setPlayerSnapshotStatus(result.messageKey || "common:settingsPage.playerDeleteAllSuccess", "success");
 }
 
 function openPlayerImportExportModal() {
