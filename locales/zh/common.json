@@ -411,7 +411,8 @@
             "completeResultsTitle": "完整结果",
             "completeResultsRunningDesc": "详细报告默认收起；运行时先在这里查看进度，想看明细时再展开。",
             "completeResultsDesc": "只有在需要表格、图表和细分明细时再展开完整报告。",
-            "completeResultsCollapsed": "完整报告默认保持收起，只有需要明细时再展开。",            "simulationHours": "模拟时长（小时）",
+            "completeResultsCollapsed": "完整报告默认保持收起，只有需要明细时再展开。",
+            "simulationHours": "模拟时长（小时）",
             "visualization": "可视化",
             "hpmpOn": "开启 HP/MP",
             "hpmpOff": "关闭 HP/MP",
@@ -768,8 +769,11 @@
             "msgPriceOverrideReset": "已重置 {{item}} 的价格覆盖",
             "msgAllPriceOverridesCleared": "已清空全部手工价格覆盖。",
             "msgNoPriceOverrides": "当前没有可清除的手工价格覆盖。",
-            "msgInvalidPriceInput": "{{item}} 的价格输入无效。"
+            "msgInvalidPriceInput": "{{item}} 的价格输入无效。",
+            "mainSiteImportScriptTitle": "主站导入脚本",
+            "mainSiteImportScriptDescription": "安装 Tampermonkey 辅助脚本后，可将主站当前角色一键导入到当前激活玩家槽位。",
+            "installMainSiteImportScript": "安装脚本",
+            "mainSiteImportScriptPending": "脚本链接待配置"
         }
     }
 }
-

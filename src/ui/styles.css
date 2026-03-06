@@ -88,6 +88,31 @@ body {
     @apply action-button bg-accent text-slate-900 hover:bg-amber-300;
 }
 
+.action-button-tool {
+    @apply action-button text-slate-950;
+    border: 1px solid rgba(94, 234, 212, 0.35);
+    background: linear-gradient(135deg, rgba(45, 212, 191, 0.96), rgba(34, 211, 238, 0.88));
+    box-shadow: 0 12px 28px rgba(13, 148, 136, 0.22);
+}
+
+.action-button-tool:hover:not(:disabled) {
+    background: linear-gradient(135deg, rgba(94, 234, 212, 1), rgba(103, 232, 249, 0.96));
+    box-shadow: 0 16px 32px rgba(6, 182, 212, 0.24);
+}
+
+.action-button-tool:focus-visible {
+    outline: 2px solid rgba(103, 232, 249, 0.55);
+    outline-offset: 2px;
+}
+
+.action-button-tool:disabled {
+    color: rgba(226, 232, 240, 0.72);
+    border-color: rgba(148, 163, 184, 0.28);
+    background: linear-gradient(135deg, rgba(45, 212, 191, 0.16), rgba(34, 211, 238, 0.12));
+    box-shadow: none;
+    cursor: not-allowed;
+}
+
 .action-button-muted {
     @apply action-button;
     border: 1px solid var(--muted-btn-border);

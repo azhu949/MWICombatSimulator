@@ -1,4 +1,4 @@
-{
+﻿{
     "title": "MWI Combat Simulator",
     "priceSettings": {
         "title": "Price Settings",
@@ -228,7 +228,7 @@
         "source": "Source",
         "hitChance": "Hitchance",
         "totalExperience": "Total Experience",
-        "maxWaveReached" : "Max Wave Reached",
+        "maxWaveReached": "Max Wave Reached",
         "dungeonsCompleted": "Dungeons Completed",
         "dungeonsFailed": "Dungeons Failed",
         "averageTime": "Average Time",
@@ -252,8 +252,8 @@
     "foodCrate": "Food Crate",
     "simulationSettings": "Simulation Settings",
     "allZonesData": "All Zones Data",
-    "simulateAllZonesResults" : "Simulate All Zones Results",
-    "exportToCSV" : "Export To CSV",
+    "simulateAllZonesResults": "Simulate All Zones Results",
+    "exportToCSV": "Export To CSV",
     "zoneName": "Zone Name",
     "immportexportSet": "Import/Export Set",
     "groupCombat": "Group Combat",
@@ -294,7 +294,11 @@
             "msgQueueChangesImportedAndBaselineReset": "Queue changes imported from {{name}}: {{count}} items. Baseline has been reset.",
             "msgQueueChangesImportedButBaselineResetFailed": "Queue changes imported from {{name}}: {{count}} items, but baseline reset failed: {{error}}",
             "msgQueueChangesImportEmpty": "No queue changes found in equipment set: {{name}}",
-            "msgQueueChangesImportFailed": "Import queue changes failed: {{name}}"
+            "msgQueueChangesImportFailed": "Import queue changes failed: {{name}}",
+            "mainSiteImportScriptTitle": "Main-site Import Script",
+            "mainSiteImportScriptDescription": "Install the Tampermonkey helper to add one-click import from the main site into the active player slot.",
+            "installMainSiteImportScript": "Install Script",
+            "mainSiteImportScriptPending": "Script link pending"
         },
         "results": {
             "workerRuntime": "Worker Runtime",
@@ -304,18 +308,18 @@
             "protocolAllLabyrinths": "start_simulation_all_labyrinths / simulation_result_allLabyrinths"
         }
     },
-    "Experiment" : {
-        "ExperimentalFeatures" : "Experimental Features",
-        "batchSimFromJson" : "Run batch simulations from JSON files",
-        "uploadAndRun" : "Upload & Run",
-        "download" : "Download Results",
-        "dungeonStartWave" : "Dungeon Start Wave",
-        "wave" : "Wave",
-        "hpMpVisualization" : "HP/MP Visualization Charts",
-        "enableHpMpVisualization" : "Enable HP/MP Timeline Charts",
-        "hpOverTime" : "HP Over Time",
-        "mpOverTime" : "MP Over Time",
-        "timeInSeconds" : "Time (seconds)",
-        "waitingForData" : "Waiting for simulation data..."
+    "Experiment": {
+        "ExperimentalFeatures": "Experimental Features",
+        "batchSimFromJson": "Run batch simulations from JSON files",
+        "uploadAndRun": "Upload & Run",
+        "download": "Download Results",
+        "dungeonStartWave": "Dungeon Start Wave",
+        "wave": "Wave",
+        "hpMpVisualization": "HP/MP Visualization Charts",
+        "enableHpMpVisualization": "Enable HP/MP Timeline Charts",
+        "hpOverTime": "HP Over Time",
+        "mpOverTime": "MP Over Time",
+        "timeInSeconds": "Time (seconds)",
+        "waitingForData": "Waiting for simulation data..."
     }
 }

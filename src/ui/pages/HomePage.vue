@@ -279,14 +279,14 @@
           </label>
         </div>
 
-        <div class="flex flex-wrap gap-2">
+        <div class="flex flex-wrap gap-2" data-tm-import-anchor="simulator-home-actions">
           <button type="button" class="action-button-primary" :disabled="simulator.runtime.isRunning" @click="simulator.startSimulation()">
             {{ t("common:controls.startSimulation", "Start Simulation") }}
           </button>
           <button type="button" class="action-button-danger" :disabled="!simulator.runtime.isRunning" @click="simulator.stopSimulation()">
             {{ t("common:controls.stopSimulation", "Stop") }}
           </button>
-          <button type="button" class="action-button-muted" @click="openPlayerImportExportModal">
+          <button type="button" class="action-button-muted" data-tm-import-reference="import-export" @click="openPlayerImportExportModal">
             {{ t("common:controls.importExport", "Import/Export") }}
           </button>
           <button type="button" class="action-button-muted" @click="openHouseRoomsModal = true">
@@ -653,6 +653,29 @@
       @close="closePlayerImportModal"
     >
       <div class="space-y-3">
+        <div class="flex flex-col gap-3 rounded-2xl border border-teal-300/20 bg-slate-900/70 p-4 shadow-lg shadow-cyan-950/20 sm:flex-row sm:items-center sm:justify-between">
+          <div class="space-y-1">
+            <p class="font-heading text-sm font-semibold uppercase tracking-[0.14em] text-teal-100">
+              {{ t("common:vue.settings.mainSiteImportScriptTitle", "Main-site Import Script") }}
+            </p>
+            <p class="text-sm text-slate-300">
+              {{ t("common:vue.settings.mainSiteImportScriptDescription", "Install the Tampermonkey helper to add one-click import from the main site into the active player slot.") }}
+            </p>
+            <p v-if="!hasMainSiteImportScriptUrl" class="text-xs text-cyan-200">
+              {{ t("common:vue.settings.mainSiteImportScriptPending", "Script link pending") }}
+            </p>
+          </div>
+
+          <button
+            type="button"
+            class="action-button-tool shrink-0"
+            :disabled="!hasMainSiteImportScriptUrl"
+            @click="openMainSiteImportScript"
+          >
+            {{ t("common:vue.settings.installMainSiteImportScript", "Install Script") }}
+          </button>
+        </div>
+
         <div class="grid gap-4 lg:grid-cols-2">
           <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3 space-y-3">
             <div class="flex items-center justify-between gap-2">
@@ -862,7 +885,7 @@
 </template>
 
 <script setup>
-import { computed, defineAsyncComponent, nextTick, reactive, ref, watch } from "vue";
+import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
 import { useRoute, useRouter } from "vue-router";
 import achievementDetailMap from "../../combatsimulator/data/achievementDetailMap.json";
 import achievementTierMap from "../../combatsimulator/data/achievementTierDetailMap.json";
@@ -894,6 +917,9 @@ const route = useRoute();
 const router = useRouter();
 const { t } = useI18nText();
 const AsyncSimulationResultsView = defineAsyncComponent(() => import("../components/SimulationResultsView.vue"));
+const TAMPERMONKEY_BRIDGE_CHANNEL = "mwi-tm-bridge";
+const MAIN_SITE_IMPORT_SCRIPT_URL = "https://greasyfork.org/zh-CN/scripts/568613-mwi-combat-simulator-%E4%B8%BB%E7%AB%99%E4%B8%80%E9%94%AE%E5%AF%BC%E5%85%A5";
+const hasMainSiteImportScriptUrl = MAIN_SITE_IMPORT_SCRIPT_URL.trim().length > 0;
 
 const levelKeys = LEVEL_KEYS;
 const equipmentSlots = EQUIPMENT_SLOT_KEYS;
@@ -1880,6 +1906,14 @@ function closePlayerImportModal() {
   setImportExportStatus("secondary", "");
 }
 
+function openMainSiteImportScript() {
+  if (!hasMainSiteImportScriptUrl) {
+    return;
+  }
+
+  window.open(MAIN_SITE_IMPORT_SCRIPT_URL, "_blank", "noopener,noreferrer");
+}
+
 function handleGroupExport() {
   groupText.value = simulator.exportGroupConfig(groupFormat.value);
   setImportExportStatus("success", t("common:vue.settings.msgGroupExported", "Group exported in {{format}} format.", {
@@ -1979,6 +2013,51 @@ async function onImportExportFileSelected(event, target) {
     }));
   } finally {
     event.target.value = "";
+  }
+}
+
+function postTampermonkeyImportResult(payload) {
+  window.postMessage({
+    channel: TAMPERMONKEY_BRIDGE_CHANNEL,
+    ...payload,
+  }, window.location.origin);
+}
+
+function handleTampermonkeyImportWindowMessage(event) {
+  if (event.source !== window || event.origin !== window.location.origin) {
+    return;
+  }
+
+  const data = event.data;
+  if (!data || typeof data !== "object") {
+    return;
+  }
+
+  if (data.channel !== TAMPERMONKEY_BRIDGE_CHANNEL || data.type !== "mwi-tm-import") {
+    return;
+  }
+
+  const requestId = String(data.requestId || "").trim();
+  if (!requestId) {
+    return;
+  }
+
+  try {
+    const result = simulator.importSoloConfig(JSON.stringify(data.payload || {}), simulator.activePlayerId);
+    postTampermonkeyImportResult({
+      type: "mwi-tm-import-result",
+      requestId,
+      ok: true,
+      detectedFormat: result?.detectedFormat || "",
+      message: `Imported main-site profile into player ${simulator.activePlayerId}.`,
+    });
+  } catch (error) {
+    postTampermonkeyImportResult({
+      type: "mwi-tm-import-result",
+      requestId,
+      ok: false,
+      message: error?.message || String(error),
+    });
   }
 }
 
@@ -2315,4 +2394,12 @@ watch(
   },
   { immediate: true },
 );
+
+onMounted(() => {
+  window.addEventListener("message", handleTampermonkeyImportWindowMessage);
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("message", handleTampermonkeyImportWindowMessage);
+});
 </script>

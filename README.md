@@ -136,3 +136,35 @@ npm run extract-game-data -- --input tmp/initClientData.txt --output src/combats
 - localStorage 中压缩的 `initClientData` 字符串
 - 已解压且包含相同 map 的 init client JSON 对象
 - `--inspect-output`：额外再导出一份 6 个 JSON 到指定目录（例如 `tmp/`）用于人工查看
+
+### Tampermonkey 一键导入主站角色
+
+仓库已提供单文件 userscript：`scripts/mwi-main-site-import.user.js`。在线安装页：`https://greasyfork.org/zh-CN/scripts/568613-mwi-combat-simulator-%E4%B8%BB%E7%AB%99%E4%B8%80%E9%94%AE%E5%AF%BC%E5%85%A5`。
+
+支持页面：
+
+- 主站：`https://www.milkywayidle.com/*`
+- 模拟器线上：`https://azhu949.github.io/MWICombatSimulator/*`
+- 模拟器本地：`http://localhost:5173/*`
+- 模拟器本地：`http://127.0.0.1:5173/*`
+
+使用方式：
+
+1. 在 Tampermonkey 中安装 `scripts/mwi-main-site-import.user.js`，或直接打开发布页安装：`https://greasyfork.org/zh-CN/scripts/568613-mwi-combat-simulator-%E4%B8%BB%E7%AB%99%E4%B8%80%E9%94%AE%E5%AF%BC%E5%85%A5`。
+2. 打开并登录 Milky Way Idle 主站，至少保留一个主站标签页。
+3. 打开本项目模拟器首页 `Home`。
+4. 在操作区点击 `从主站导入`（英文界面显示 `Import from Main Site`）。
+5. 当前主站角色会导入到模拟器当前激活的玩家槽位。
+6. 如果主站当前正在进行战斗行动，还会同步当前战斗区域/地下城与难度。
+
+实现说明：
+
+- userscript 复用主站现有的 `view_profile -> profile_shared` 消息链读取 shareable profile。
+- 不直接写入主站，不额外调用游戏 HTTP API。
+- 数据转换在本项目内完成，导入格式标记为 `main-site-share-profile`。
+
+限制与排查：
+
+- 第一次安装脚本后，如果主站标签页早已打开，建议刷新一次主站页面，让 websocket bridge 完整接管连接。
+- 如果点击后一直超时，请确认主站标签页已登录、未断线，并且 userscript 在主站与模拟器页面都已启用。
+- v1 仅支持“当前主站角色 -> 当前激活玩家槽位”，不做多角色批量导入。
