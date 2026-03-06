@@ -1,7 +1,7 @@
 import itemDetailMap from "../combatsimulator/data/itemDetailMap.json";
 import actionDetailMap from "../combatsimulator/data/actionDetailMap.json";
 import combatMonsterDetailMap from "../combatsimulator/data/combatMonsterDetailMap.json";
-import { createEmptyPlayerConfig, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "./playerMapper.js";
+import { createEmptyPlayerConfig, createEmptySkillExperienceMap, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "./playerMapper.js";
 import { sanitizeTriggerList, sanitizeTriggerMap } from "./triggerMapper.js";
 
 const NON_WEAPON_SLOTS = EQUIPMENT_SLOT_KEYS.filter((slot) => slot !== "weapon");
@@ -30,6 +30,19 @@ function normalizeAbilityHrid(abilityHrid) {
 function clampEnhancementLevel(level) {
     const parsed = Math.floor(toFiniteNumber(level, 0));
     return parsed < 0 ? 0 : parsed;
+}
+
+function normalizeSkillExperience(value) {
+    if (value == null || value === "") {
+        return null;
+    }
+
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+        return null;
+    }
+
+    return parsed;
 }
 
 function getWeaponItemLocationFromHrid(itemHrid) {
@@ -105,6 +118,9 @@ function getLegacyAbilityEntry(rawAbilities, absoluteIndex) {
 function sanitizePlayerConfig(raw, fallbackPlayer) {
     const fallback = deepClone(fallbackPlayer || createEmptyPlayerConfig(1));
     const source = raw && typeof raw === "object" ? raw : {};
+    const sourceSkillExperience = source.skillExperience && typeof source.skillExperience === "object"
+        ? source.skillExperience
+        : null;
 
     const normalized = deepClone(fallback);
     normalized.id = String(source.id || fallback.id);
@@ -113,6 +129,9 @@ function sanitizePlayerConfig(raw, fallbackPlayer) {
 
     for (const key of LEVEL_KEYS) {
         normalized.levels[key] = Math.max(1, Math.floor(toFiniteNumber(source.levels?.[key], fallback.levels[key] || 1)));
+        normalized.skillExperience[key] = sourceSkillExperience
+            ? normalizeSkillExperience(sourceSkillExperience[key])
+            : null;
     }
 
     for (const slot of EQUIPMENT_SLOT_KEYS) {
@@ -154,6 +173,7 @@ function applyLegacySoloToPlayer(legacySoloPayload, fallbackPlayer) {
     const payload = legacySoloPayload && typeof legacySoloPayload === "object" ? legacySoloPayload : {};
 
     const merged = deepClone(fallback);
+    merged.skillExperience = createEmptySkillExperienceMap();
 
     for (const key of LEVEL_KEYS) {
         const sourceKey = `${key}Level`;
@@ -525,6 +545,7 @@ function importShareableProfile(parsed, existingPlayer, existingSimulationSettin
         id: String(fallbackPlayer.id || "1"),
         name: String(profile?.sharableCharacter?.name || profile?.name || fallbackPlayer.name || `Player ${fallbackPlayer.id}`),
         levels: Object.fromEntries(LEVEL_KEYS.map((key) => [key, 1])),
+        skillExperience: createEmptySkillExperienceMap(),
         equipment: {},
         food: extractShareableFoodItemHrids(candidateLoadouts, parsed),
         drinks: extractShareableDrinkItemHrids(candidateLoadouts, parsed),
@@ -538,6 +559,7 @@ function importShareableProfile(parsed, existingPlayer, existingSimulationSettin
         }
 
         rawPlayer.levels[levelKey] = Math.max(1, Math.floor(toFiniteNumber(skill?.level, 1)));
+        rawPlayer.skillExperience[levelKey] = normalizeSkillExperience(skill?.experience);
     }
 
     const wearableEntries = profile?.wearableItemMap && typeof profile.wearableItemMap === "object"

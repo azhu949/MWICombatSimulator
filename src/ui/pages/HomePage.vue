@@ -49,6 +49,26 @@
             />
           </label>
         </div>
+        <div v-if="levelEtaCards.length > 0" class="mt-4 space-y-3">
+          <article
+            v-for="card in levelEtaCards"
+            :key="card.skillKey"
+            :class="['rounded-lg border p-3 text-[11px] text-slate-200', card.borderClass, card.bgClass]"
+          >
+            <h3 class="mb-2 font-medium" :class="card.titleClass">{{ card.title }}</h3>
+            <div v-if="card.details" class="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1">
+              <span class="text-slate-400">{{ t("common:vue.home.levelEtaTotalExperience", "Total XP") }}</span>
+              <span class="text-right">{{ card.details.totalExperience }}</span>
+              <span class="text-slate-400">{{ t("common:vue.home.levelEtaRequiredExperience", "XP Needed") }}</span>
+              <span class="text-right">{{ card.details.requiredExperience }}</span>
+              <span class="text-slate-400">{{ t("common:vue.home.levelEtaRequiredTime", "Time Needed") }}</span>
+              <span class="text-right">{{ card.details.requiredTime }}</span>
+              <span class="text-slate-400">{{ t("common:vue.home.levelEtaCompletionTime", "Completion Time") }}</span>
+              <span class="text-right">{{ card.details.completionTime }}</span>
+            </div>
+            <p v-else class="text-xs leading-5" :class="card.messageClass">{{ card.message }}</p>
+          </article>
+        </div>
       </div>
 
       <div class="panel">
@@ -906,6 +926,7 @@ import {
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { buildPlayersForSimulation, calcCombatLevel, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../../services/playerMapper.js";
 import { buildNoRngProfitBreakdown, buildRandomProfitBreakdown } from "../../services/profitEstimator.js";
+import { calculateSkillUpgradeEta } from "../../services/levelExperience.js";
 import { useI18nText } from "../composables/useI18nText.js";
 import BaseModal from "../components/BaseModal.vue";
 import DisclosurePanel from "../components/DisclosurePanel.vue";
@@ -1113,6 +1134,119 @@ const summaryMetricRows = computed(() => {
       tone: Number(hasDetailedBreakdown ? noRngBreakdown.profit : row?.profitPerHour || 0) >= 0 ? "success" : "danger",
     },
   ];
+});
+const levelEtaCards = computed(() => {
+  const cards = [];
+  const importedBaseline = importedBaselineSnapshot.value;
+  const currentPlayer = activePlayer.value;
+  const resultRow = activeSingleTargetResultRow.value;
+
+  if (!importedBaseline || !currentPlayer) {
+    return cards;
+  }
+
+  for (const levelKey of levelKeys) {
+    const importedLevel = normalizeLevel(importedBaseline?.levels?.[levelKey], 1);
+    const targetLevel = normalizeLevel(currentPlayer?.levels?.[levelKey], importedLevel);
+    if (targetLevel <= importedLevel) {
+      continue;
+    }
+
+    const skillLabel = levelLabelMap.value?.[levelKey] || levelKey;
+    const title = `${skillLabel} → ${t("common:vue.home.levelShort", "Lv")}.${targetLevel}`;
+
+    const eta = calculateSkillUpgradeEta({
+      currentLevel: importedLevel,
+      currentExperience: importedBaseline?.skillExperience?.[levelKey],
+      targetLevel,
+      xpPerHour: resultRow?.[`${levelKey}XpPerHour`],
+    });
+
+    if (eta.status === "ok") {
+      cards.push({
+        skillKey: levelKey,
+        skillLabel,
+        targetLevel,
+        status: eta.status,
+        title,
+        borderClass: "border-emerald-400/20",
+        bgClass: "bg-emerald-400/5",
+        titleClass: "text-emerald-300",
+        details: {
+          totalExperience: `${formatNumber(eta.currentExperience, 0)} / ${formatNumber(eta.targetExperience, 0)}`,
+          requiredExperience: formatNumber(eta.xpNeeded, 0),
+          requiredTime: formatEtaDuration(eta.hoursNeeded),
+          completionTime: formatEtaCompletionTime(eta.hoursNeeded),
+        },
+      });
+      continue;
+    }
+
+    if (eta.status === "missing_current_experience") {
+      cards.push({
+        skillKey: levelKey,
+        skillLabel,
+        targetLevel,
+        status: eta.status,
+        title,
+        borderClass: "border-amber-400/20",
+        bgClass: "bg-amber-400/5",
+        titleClass: "text-amber-300",
+        messageClass: "text-amber-200",
+        message: t("common:vue.home.levelEtaMissingProgress", "Current imported data has no level progress."),
+      });
+      continue;
+    }
+
+    if (eta.status === "target_out_of_range") {
+      cards.push({
+        skillKey: levelKey,
+        skillLabel,
+        targetLevel,
+        status: eta.status,
+        title,
+        borderClass: "border-amber-400/20",
+        bgClass: "bg-amber-400/5",
+        titleClass: "text-amber-300",
+        messageClass: "text-amber-200",
+        message: t("common:vue.home.levelEtaOutOfRange", "Target level is outside the current experience table range."),
+      });
+      continue;
+    }
+
+    if (!resultRow || !simulator.results.simResult || eta.status === "missing_xp_rate") {
+      cards.push({
+        skillKey: levelKey,
+        skillLabel,
+        targetLevel,
+        status: "missing_xp_rate",
+        title,
+        borderClass: "border-white/10",
+        bgClass: "bg-slate-900/40",
+        titleClass: "text-slate-200",
+        messageClass: "text-slate-300",
+        message: t("common:vue.home.levelEtaMissingResult", "Run a single-target simulation first to show upgrade time."),
+      });
+      continue;
+    }
+
+    if (eta.status === "zero_xp_rate") {
+      cards.push({
+        skillKey: levelKey,
+        skillLabel,
+        targetLevel,
+        status: eta.status,
+        title,
+        borderClass: "border-amber-400/20",
+        bgClass: "bg-amber-400/5",
+        titleClass: "text-amber-300",
+        messageClass: "text-amber-200",
+        message: t("common:vue.home.levelEtaZeroRate", "Current simulation has 0 XP/h for this skill, so ETA is unavailable."),
+      });
+    }
+  }
+
+  return cards;
 });
 const summaryBuildRows = computed(() => {
   const details = combatDetails.value;
@@ -1394,6 +1528,13 @@ const profileSelectorPlayerId = computed({
 });
 const activeProfileImported = computed(() => simulator.queue?.importedProfileByPlayer?.[simulator.activePlayerId] === true);
 const baselineSnapshot = computed(() => simulator.activeQueueState?.baseline?.snapshot || null);
+const importedBaselineSnapshot = computed(() => simulator.activeImportedBaselineSnapshot || null);
+const levelComparisonBaselineSnapshot = computed(() => importedBaselineSnapshot.value || baselineSnapshot.value || null);
+const activeSingleTargetResultRow = computed(() => (
+  simulator.results.simResult
+    ? (simulator.results.summaryRows.find((row) => row.playerHrid === `player${simulator.activePlayerId}`) || null)
+    : null
+));
 const equipmentHintViewModel = computed(() => {
   const player = activePlayer.value;
   const model = {};
@@ -1626,6 +1767,57 @@ function formatPercent(value, digits = 2) {
   return `${(numeric * 100).toFixed(digits)}%`;
 }
 
+function formatEtaDuration(hours) {
+  const numericHours = Number(hours);
+  if (!Number.isFinite(numericHours) || numericHours < 0) {
+    return "-";
+  }
+
+  const totalMinutes = Math.max(1, Math.ceil(numericHours * 60));
+  const minutesPerYear = 60 * 24 * 365;
+  const minutesPerDay = 60 * 24;
+  const minutesPerHour = 60;
+
+  const years = Math.floor(totalMinutes / minutesPerYear);
+  const days = Math.floor((totalMinutes % minutesPerYear) / minutesPerDay);
+  const hoursPart = Math.floor((totalMinutes % minutesPerDay) / minutesPerHour);
+  const minutes = totalMinutes % minutesPerHour;
+  const parts = [];
+
+  if (years > 0) {
+    parts.push(`${years}y`);
+  }
+  if (days > 0) {
+    parts.push(`${days}d`);
+  }
+  if (hoursPart > 0) {
+    parts.push(`${hoursPart}h`);
+  }
+  parts.push(`${minutes}m`);
+
+  return parts.join(" ");
+}
+
+function formatEtaCompletionTime(hours) {
+  const numericHours = Number(hours);
+  if (!Number.isFinite(numericHours) || numericHours < 0) {
+    return "-";
+  }
+
+  const completionDate = new Date(Date.now() + numericHours * 60 * 60 * 1000);
+  const now = new Date();
+  const isSameYear = completionDate.getFullYear() === now.getFullYear();
+
+  return completionDate.toLocaleString(undefined, {
+    year: isSameYear ? undefined : "numeric",
+    month: "2-digit",
+    day: "2-digit",
+    hour: "2-digit",
+    minute: "2-digit",
+    hour12: false,
+  });
+}
+
 function formatSkillName(skillHrid) {
   const hrid = String(skillHrid || "");
   if (!hrid) {
@@ -1766,7 +1958,7 @@ function hasTriggerChangeForHrids(hrids = []) {
 }
 
 function isLevelChanged(levelKey) {
-  const baseline = baselineSnapshot.value;
+  const baseline = levelComparisonBaselineSnapshot.value;
   if (!baseline) {
     return false;
   }
