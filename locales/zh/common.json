@@ -334,6 +334,8 @@
             "simulationCompleteTitle": "模拟完成",
             "simulationCompleteDesc": "模拟已完成，是否前往结果页面查看？",
             "goToResults": "前往结果页",
+            "queueCompleteDesc": "队列已开始运行，是否前往多轮结果页面查看？",
+            "goToMultiResults": "前往多轮结果页",
             "stayHere": "留在当前页",
             "active": "已激活",
             "setActive": "设为激活"

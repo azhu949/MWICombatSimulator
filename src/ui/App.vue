@@ -174,6 +174,28 @@
         </button>
       </div>
     </BaseModal>
+
+    <BaseModal
+      :open="queueCompleteModalOpen"
+      :title="t('common:queue.queueRunning', 'Running queue...')"
+      initial-focus-selector="[data-multi-results-confirm]"
+      @close="closeQueueCompleteModal"
+    >
+      <p class="text-sm text-slate-300">{{ t("common:vue.app.queueCompleteDesc", "Queue run started. Go to the Multi-round page now?") }}</p>
+      <div class="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          class="action-button-primary"
+          data-multi-results-confirm
+          @click="goToMultiResults"
+        >
+          {{ t("common:vue.app.goToMultiResults", "Go to Multi-round") }}
+        </button>
+        <button type="button" class="action-button-muted" @click="closeQueueCompleteModal">
+          {{ t("common:vue.app.stayHere", "Stay Here") }}
+        </button>
+      </div>
+    </BaseModal>
   </div>
 </template>
 
@@ -194,6 +216,7 @@ const globalErrorModalOpen = ref(false);
 const globalErrorText = ref("");
 const errorCopyStatus = ref("");
 const simulationCompleteModalOpen = ref(false);
+const queueCompleteModalOpen = ref(false);
 const topQueueActionStatus = ref({
   tone: "secondary",
   text: "",
@@ -326,8 +349,13 @@ function addToQueueFromTopbar() {
 
 async function runQueueFromTopbar() {
   try {
+    closeQueueCompleteModal();
     setTopQueueActionStatus("secondary", t("common:queue.queueRunning", "Running queue..."));
-    const rows = await simulator.runActiveQueue();
+    const queueRunPromise = simulator.runActiveQueue();
+    if (route.name !== "multi-results" && (simulator.runtime.isRunning || activeQueueState.value?.isRunning)) {
+      queueCompleteModalOpen.value = true;
+    }
+    const rows = await queueRunPromise;
     if (Array.isArray(rows) && rows.length > 0) {
       setTopQueueActionStatus("success", t("common:vue.queue.msgRunCompleted", "Queue run completed: {{count}} variants ranked.", { count: rows.length }));
       return;
@@ -393,10 +421,21 @@ function closeSimulationCompleteModal() {
   simulationCompleteModalOpen.value = false;
 }
 
+function closeQueueCompleteModal() {
+  queueCompleteModalOpen.value = false;
+}
+
 async function goToSimulationResults() {
   closeSimulationCompleteModal();
   if (route.name !== "results") {
     await router.push({ name: "results" });
+  }
+}
+
+async function goToMultiResults() {
+  closeQueueCompleteModal();
+  if (route.name !== "multi-results") {
+    await router.push({ name: "multi-results" });
   }
 }
 
@@ -436,6 +475,9 @@ watch(
   (nextRouteName) => {
     if (nextRouteName === "results") {
       closeSimulationCompleteModal();
+    }
+    if (nextRouteName === "multi-results") {
+      closeQueueCompleteModal();
     }
   },
 );
