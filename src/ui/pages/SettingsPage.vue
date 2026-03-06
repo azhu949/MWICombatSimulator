@@ -1455,6 +1455,7 @@ function deleteEquipmentSet(setName) {
 
 function resetPlayers() {
   simulator.players = [1, 2, 3, 4, 5].map((id) => createEmptyPlayerConfig(id));
+  simulator.clearPersistedPlayerAchievements();
   simulator.activePlayerId = "1";
   simulator.results.simResult = null;
   simulator.results.summaryRows = [];

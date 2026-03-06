@@ -5,6 +5,9 @@ import itemDetailMap from "../../combatsimulator/data/itemDetailMap.json";
 import { useSimulatorStore } from "../simulatorStore.js";
 
 const ONE_HOUR = 60 * 60 * 1e9;
+const PLAYER_ACHIEVEMENTS_STORAGE_KEY = "mwi.player.achievements.v1";
+const ACHIEVEMENT_HRID = "/achievements/total_level_100";
+const SECOND_ACHIEVEMENT_HRID = "/achievements/total_level_250";
 
 function createLocalStorageMock() {
     const store = new Map();
@@ -138,14 +141,19 @@ describe("simulatorStore", () => {
         const simulator = useSimulatorStore();
 
         simulator.players[0].levels.stamina = 77;
+        simulator.players[0].achievements[ACHIEVEMENT_HRID] = true;
         const saveResult = simulator.savePlayerDataSnapshot();
         expect(saveResult.ok).toBe(true);
         expect(simulator.playerDataSnapshotRows.some((row) => row.hasSnapshot)).toBe(true);
 
         simulator.players[0].levels.stamina = 1;
+        simulator.players[0].achievements = {};
         const loadResult = simulator.loadPlayerDataSnapshot();
         expect(loadResult.ok).toBe(true);
         expect(simulator.players[0].levels.stamina).toBe(77);
+        expect(simulator.players[0].achievements[ACHIEVEMENT_HRID]).toBe(true);
+        expect(JSON.parse(global.localStorage.getItem(PLAYER_ACHIEVEMENTS_STORAGE_KEY)).achievementsByPlayer["1"])
+            .toEqual({ [ACHIEVEMENT_HRID]: true });
 
         const deleteOneResult = simulator.deleteSinglePlayerDataSnapshot("1");
         expect(deleteOneResult.ok).toBe(true);
@@ -153,6 +161,52 @@ describe("simulatorStore", () => {
         const deleteAllResult = simulator.deleteAllPlayerDataSnapshots();
         expect(deleteAllResult.ok).toBe(true);
         expect(simulator.playerDataSnapshotRows.every((row) => !row.hasSnapshot)).toBe(true);
+    });
+
+    it("hydrates persisted achievements on store creation", () => {
+        global.localStorage.setItem(PLAYER_ACHIEVEMENTS_STORAGE_KEY, JSON.stringify({
+            version: 1,
+            achievementsByPlayer: {
+                "1": {
+                    [ACHIEVEMENT_HRID]: true,
+                    [SECOND_ACHIEVEMENT_HRID]: 1,
+                },
+                "2": {
+                    [ACHIEVEMENT_HRID]: false,
+                },
+                "8": {
+                    "/achievements/ignored": true,
+                },
+            },
+        }));
+
+        const simulator = useSimulatorStore();
+
+        expect(simulator.players[0].achievements).toEqual({
+            [ACHIEVEMENT_HRID]: true,
+            [SECOND_ACHIEVEMENT_HRID]: true,
+        });
+        expect(simulator.players[1].achievements).toEqual({});
+    });
+
+    it("persists and clears achievements independently from player snapshots", () => {
+        const simulator = useSimulatorStore();
+
+        simulator.players[0].achievements[ACHIEVEMENT_HRID] = true;
+        simulator.persistPlayerAchievements();
+
+        expect(JSON.parse(global.localStorage.getItem(PLAYER_ACHIEVEMENTS_STORAGE_KEY)).achievementsByPlayer["1"])
+            .toEqual({ [ACHIEVEMENT_HRID]: true });
+
+        const deleteAllResult = simulator.deleteAllPlayerDataSnapshots();
+        expect(deleteAllResult.ok).toBe(true);
+        expect(JSON.parse(global.localStorage.getItem(PLAYER_ACHIEVEMENTS_STORAGE_KEY)).achievementsByPlayer["1"])
+            .toEqual({ [ACHIEVEMENT_HRID]: true });
+
+        simulator.players[0].achievements = {};
+        simulator.persistPlayerAchievements();
+
+        expect(global.localStorage.getItem(PLAYER_ACHIEVEMENTS_STORAGE_KEY)).toBeNull();
     });
 
     it("keeps queue state isolated per active player", async () => {
@@ -491,12 +545,22 @@ describe("simulatorStore", () => {
 
     it("marks imported profile state after solo import", () => {
         const simulator = useSimulatorStore();
-        const soloText = simulator.exportSoloConfig("1", "legacy");
+        const soloText = JSON.stringify({
+            version: 2,
+            player: {
+                achievements: {
+                    [ACHIEVEMENT_HRID]: true,
+                },
+            },
+        });
         simulator.setImportedProfileState("1", false);
 
         simulator.importSoloConfig(soloText, "1");
 
         expect(simulator.queue.importedProfileByPlayer["1"]).toBe(true);
+        expect(simulator.players[0].achievements[ACHIEVEMENT_HRID]).toBe(true);
+        expect(JSON.parse(global.localStorage.getItem(PLAYER_ACHIEVEMENTS_STORAGE_KEY)).achievementsByPlayer["1"])
+            .toEqual({ [ACHIEVEMENT_HRID]: true });
     });
 
     it("returns sorted market enhancement levels for an item", () => {
@@ -554,6 +618,77 @@ describe("simulatorStore", () => {
         expect(simulator.simulationSettings.useDungeon).toBe(false);
         expect(simulator.simulationSettings.zoneHrid).toBe("/actions/combat/jungle_planet");
         expect(simulator.simulationSettings.difficultyTier).toBe(3);
+    });
+
+    it("preserves achievements when restoring player snapshot without achievements field", () => {
+        const simulator = useSimulatorStore();
+        simulator.players[0].achievements = {
+            [ACHIEVEMENT_HRID]: true,
+        };
+
+        const payload = {
+            version: 1,
+            savedAt: Date.now(),
+            playerDataMap: {
+                "1": JSON.stringify({
+                    player: {
+                        staminaLevel: 2,
+                        equipment: [],
+                    },
+                    zone: "/actions/combat/jungle_planet",
+                    difficulty: "1",
+                    simulationTime: "24",
+                }),
+            },
+        };
+        global.localStorage.setItem("mwi.player.data.snapshot.v1", JSON.stringify(payload));
+
+        const loadResult = simulator.loadPlayerDataSnapshot();
+
+        expect(loadResult.ok).toBe(true);
+        expect(simulator.players[0].achievements).toEqual({
+            [ACHIEVEMENT_HRID]: true,
+        });
+    });
+
+    it("preserves achievements on modern solo import when achievements field is missing", () => {
+        const simulator = useSimulatorStore();
+        simulator.players[0].achievements = {
+            [ACHIEVEMENT_HRID]: true,
+        };
+
+        simulator.importSoloConfig(JSON.stringify({
+            version: 2,
+            player: {
+                levels: {
+                    stamina: 2,
+                },
+            },
+        }), "1");
+
+        expect(simulator.players[0].achievements).toEqual({
+            [ACHIEVEMENT_HRID]: true,
+        });
+    });
+
+    it("clears achievements only when import explicitly provides empty achievements", () => {
+        const simulator = useSimulatorStore();
+        simulator.players[0].achievements = {
+            [ACHIEVEMENT_HRID]: true,
+        };
+
+        simulator.importSoloConfig(JSON.stringify({
+            player: {
+                staminaLevel: 2,
+                equipment: [],
+            },
+            achievements: {},
+            zone: "/actions/combat/jungle_planet",
+            difficulty: "1",
+            simulationTime: "24",
+        }), "1");
+
+        expect(simulator.players[0].achievements).toEqual({});
     });
 
     it("normalizes legacy snapshot display names to action and monster hrids", () => {
@@ -720,6 +855,25 @@ describe("simulatorStore", () => {
         expect(draft.abilityHrid).toBe(abilityHrid);
         expect(draft.fromLevel).toBe(3);
         expect(draft.toLevel).toBe(4);
+    });
+
+    it("persists achievements when loading a queue snapshot to the active player", () => {
+        const simulator = useSimulatorStore();
+        const snapshot = JSON.parse(JSON.stringify(simulator.activePlayer));
+        snapshot.achievements = {
+            [ACHIEVEMENT_HRID]: true,
+        };
+        simulator.activeQueueState.items = [{
+            id: "achievement-snapshot",
+            snapshot,
+        }];
+
+        const loaded = simulator.loadQueueSnapshotToActivePlayer("achievement-snapshot");
+
+        expect(loaded).toBe(true);
+        expect(simulator.activePlayer.achievements[ACHIEVEMENT_HRID]).toBe(true);
+        expect(JSON.parse(global.localStorage.getItem(PLAYER_ACHIEVEMENTS_STORAGE_KEY)).achievementsByPlayer["1"])
+            .toEqual({ [ACHIEVEMENT_HRID]: true });
     });
 
     it("returns explicit failure when importing empty queue changes and keeps existing queue", async () => {

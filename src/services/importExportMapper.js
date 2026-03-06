@@ -140,9 +140,11 @@ function sanitizePlayerConfig(raw, fallbackPlayer) {
         ? deepClone(source.houseRooms)
         : deepClone(fallback.houseRooms);
 
-    normalized.achievements = source.achievements && typeof source.achievements === "object"
-        ? deepClone(source.achievements)
-        : {};
+    normalized.achievements = Object.prototype.hasOwnProperty.call(source, "achievements")
+        ? (source.achievements && typeof source.achievements === "object"
+            ? deepClone(source.achievements)
+            : {})
+        : deepClone(fallback.achievements ?? {});
 
     return normalized;
 }
@@ -220,9 +222,11 @@ function applyLegacySoloToPlayer(legacySoloPayload, fallbackPlayer) {
         ? deepClone(payload.houseRooms)
         : deepClone(fallback.houseRooms);
 
-    merged.achievements = payload.achievements && typeof payload.achievements === "object"
-        ? deepClone(payload.achievements)
-        : {};
+    merged.achievements = Object.prototype.hasOwnProperty.call(payload, "achievements")
+        ? (payload.achievements && typeof payload.achievements === "object"
+            ? deepClone(payload.achievements)
+            : {})
+        : deepClone(fallback.achievements ?? {});
 
     return merged;
 }
