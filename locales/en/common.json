@@ -188,6 +188,7 @@
         "playerLoadSuccess": "Player configs restored (saved at: {{time}}).",
         "playerLoadNotFound": "No player config snapshot found. Save one first.",
         "playerLoadInvalid": "Player config snapshot is invalid and cannot be restored.",
+        "restoreCompleteTitle": "Restore Complete",
         "promptGoHomeAfterRestore": "Player configs restored. Go to Home page now?",
         "playerDeleteAllSuccess": "Deleted all player snapshot data.",
         "playerDeleteSingleSuccess": "Deleted snapshot data for player {{playerId}}.",
@@ -311,7 +312,8 @@
             "download": "Download",
             "loadFile": "Load File",
             "clear": "Clear",
-            "refresh": "Refresh"
+            "refresh": "Refresh",
+            "cancel": "Cancel"
         },
         "app": {
             "runtime": "Runtime",
@@ -323,13 +325,19 @@
             "languageEnglish": "English",
             "languageChinese": "Chinese",
             "simToggle": "Sim",
+            "active": "Active",
+            "setActive": "Set Active",
             "themeDark": "Dark",
             "themeLight": "Light",
             "viewErrorDetails": "Details",
             "globalErrorTitle": "Error",
             "globalErrorDesc": "Please copy the following details if you report this issue.",
             "globalErrorCopied": "Copied.",
-            "globalErrorCopyFailed": "Copy failed."
+            "globalErrorCopyFailed": "Copy failed.",
+            "simulationCompleteTitle": "Simulation completed",
+            "simulationCompleteDesc": "Simulation completed. Go to the Results page now?",
+            "goToResults": "Go to Results",
+            "stayHere": "Stay Here"
         },
         "home": {
             "levelsTitle": "Levels",

@@ -11,9 +11,9 @@
       <div class="panel">
         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h2 class="font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.results.batchResultsTitle", "Batch Results") }}</h2>
-          <button
+          <button type="button"
             class="action-button-muted"
-            type="button"
+           
             :disabled="simulator.results.batchRows.length === 0"
             @click="exportBatchRowsCsv"
           >
@@ -43,10 +43,10 @@
           <thead>
             <tr class="border-b border-white/10 text-left text-xs uppercase tracking-[0.14em] text-slate-400">
               <th v-for="column in batchTableColumns" :key="column.key" class="px-2 py-2">
-                <button
+                <button type="button"
                   v-if="column.sortable"
                   class="inline-flex items-center gap-1 text-left transition hover:text-slate-200"
-                  type="button"
+                 
                   @click="toggleBatchSort(column.key)"
                 >
                   <span>{{ t(column.labelKey, column.fallback) }}</span>
@@ -89,11 +89,19 @@
             <tr
               v-for="row in simulator.results.summaryRows"
               :key="row.playerHrid"
-              class="cursor-pointer border-b border-white/5 text-slate-200 transition hover:bg-white/5"
+              class="border-b border-white/5 text-slate-200 transition hover:bg-white/5"
               :class="row.playerHrid === simulator.results.activeResultPlayerHrid ? 'bg-white/10' : ''"
-              @click="simulator.results.activeResultPlayerHrid = row.playerHrid"
+              :aria-selected="row.playerHrid === simulator.results.activeResultPlayerHrid ? 'true' : 'false'"
             >
-              <td class="px-2 py-2">{{ row.playerName }}</td>
+              <td class="px-2 py-2">
+                <button type="button"
+                  class="w-full rounded-md px-1 py-1 text-left transition hover:text-amber-200"
+                 
+                  @click="selectSummaryRow(row.playerHrid)"
+                >
+                  {{ row.playerName }}
+                </button>
+              </td>
               <td class="px-2 py-2">{{ formatNumber(row.encountersPerHour) }}</td>
               <td class="px-2 py-2">{{ formatNumber(row.deathsPerHour) }}</td>
               <td class="px-2 py-2">{{ formatNumber(row.totalXpPerHour) }}</td>
@@ -627,6 +635,10 @@ const DETAIL_ROW_LIMIT = 200;
 
 const activeResultRow = computed(() => simulator.activeResultRow);
 const activePlayerHrid = computed(() => String(simulator.results.activeResultPlayerHrid || "player1"));
+
+function selectSummaryRow(playerHrid) {
+  simulator.results.activeResultPlayerHrid = String(playerHrid || "");
+}
 
 const simulatedHours = computed(() => {
   const seconds = Number(simulator.results.simResult?.simulatedTime ?? 0) / 1e9;

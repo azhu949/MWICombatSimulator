@@ -171,36 +171,54 @@ function destroyCharts() {
   }
 }
 
-async function renderCharts(timeSeriesData) {
-  await nextTick();
+function createChart(canvasElement, yLabel) {
+  return new Chart(canvasElement, {
+    type: "line",
+    data: {
+      labels: [],
+      datasets: [],
+    },
+    options: createBaseOptions(yLabel),
+  });
+}
 
+function ensureCharts() {
   if (!hpCanvas.value || !mpCanvas.value) {
-    return;
+    return false;
   }
 
-  destroyCharts();
+  if (!hpChart) {
+    hpChart = createChart(hpCanvas.value, "HP");
+  }
+  if (!mpChart) {
+    mpChart = createChart(mpCanvas.value, "MP");
+  }
+  return true;
+}
+
+function updateChartData(timeSeriesData) {
+  if (!ensureCharts()) {
+    return;
+  }
 
   const normalized = normalizeTimeSeriesData(timeSeriesData);
   const labels = (normalized.timestamps || []).map((value) => (Number(value) / 1e9).toFixed(1));
   const players = normalized.players || {};
+  const hpDatasets = buildDatasets(players, "hp");
+  const mpDatasets = buildDatasets(players, "mp");
 
-  hpChart = new Chart(hpCanvas.value, {
-    type: "line",
-    data: {
-      labels,
-      datasets: buildDatasets(players, "hp"),
-    },
-    options: createBaseOptions("HP"),
-  });
+  hpChart.data.labels = labels;
+  hpChart.data.datasets = hpDatasets;
+  hpChart.update("none");
 
-  mpChart = new Chart(mpCanvas.value, {
-    type: "line",
-    data: {
-      labels,
-      datasets: buildDatasets(players, "mp"),
-    },
-    options: createBaseOptions("MP"),
-  });
+  mpChart.data.labels = labels;
+  mpChart.data.datasets = mpDatasets;
+  mpChart.update("none");
+}
+
+async function renderCharts(timeSeriesData) {
+  await nextTick();
+  updateChartData(timeSeriesData);
 }
 
 watch(
