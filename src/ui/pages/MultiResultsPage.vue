@@ -62,9 +62,9 @@
       <div class="panel overflow-x-auto">
         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
           <h3 class="font-heading text-sm uppercase tracking-[0.14em] text-slate-300">{{ t("common:multiRound.rankingTitle", "Scored Ranking") }}</h3>
-          <button
+          <button type="button"
             class="action-button-muted"
-            type="button"
+           
             :disabled="rankingRowsForDisplay.length === 0 || isExportingRankingExcel"
             @click="exportRankingRowsExcel"
           >
@@ -184,6 +184,8 @@ const simulator = useSimulatorStore();
 const { t, language } = useI18nText();
 const ABILITY_BOOK_CATEGORY_HRID = "/item_categories/ability_book";
 const ONE_HOUR = 60 * 60 * 1e9;
+const RANKING_ROWS_LIMIT = 300;
+const RAW_ROWS_LIMIT = 800;
 const SLOT_I18N_KEY_MAP = {
   head: "characterItemsUtil.head",
   body: "characterItemsUtil.body",
@@ -203,8 +205,14 @@ const SLOT_I18N_KEY_MAP = {
 };
 
 const queueState = computed(() => simulator.activeQueueState);
-const rankingRowsForDisplay = computed(() => (queueState.value?.ranking || []).slice(0, 300));
-const rawRowsForDisplay = computed(() => (queueState.value?.rawRuns || []).slice(0, 800));
+const rankingRowsForDisplay = computed(() => {
+  const rows = Array.isArray(queueState.value?.ranking) ? queueState.value.ranking : [];
+  return rows.length > RANKING_ROWS_LIMIT ? rows.slice(0, RANKING_ROWS_LIMIT) : rows;
+});
+const rawRowsForDisplay = computed(() => {
+  const rows = Array.isArray(queueState.value?.rawRuns) ? queueState.value.rawRuns : [];
+  return rows.length > RAW_ROWS_LIMIT ? rows.slice(0, RAW_ROWS_LIMIT) : rows;
+});
 const isExportingRankingExcel = ref(false);
 const hasMultiData = computed(() => rankingRowsForDisplay.value.length > 0 || rawRowsForDisplay.value.length > 0);
 const queueRoundCount = computed(() => Math.max(0, Math.floor(Number(queueState.value?.settings?.rounds || 0))));

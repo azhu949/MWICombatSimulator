@@ -62,7 +62,7 @@ body {
 }
 
 .field-input {
-    @apply w-full rounded-xl px-3 py-2 text-sm outline-none transition;
+    @apply w-full rounded-xl px-3 py-2 text-sm transition;
     border: 1px solid var(--field-border);
     background: var(--field-bg);
     color: var(--field-text);
@@ -112,6 +112,12 @@ body {
 .badge {
     @apply rounded-full px-2 py-1 text-xs;
     border: 1px solid var(--badge-border);
+}
+
+:where(button, [role="button"], a, input, select, textarea, [tabindex]:not([tabindex="-1"])):focus-visible {
+    outline: 2px solid #f59e0b;
+    outline-offset: 2px;
+    box-shadow: 0 0 0 2px rgba(245, 158, 11, 0.22);
 }
 
 :root[data-theme="light"] .text-slate-100 { color: #0f172a !important; }

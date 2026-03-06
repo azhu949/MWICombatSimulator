@@ -13,18 +13,20 @@
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/results">{{ t('common:menu.results', 'Results') }}</RouterLink>
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/multi-results">{{ t('common:menu.multiResults', 'Multi-round') }}</RouterLink>
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/settings">{{ t('common:menu.settings', 'Settings') }}</RouterLink>
-            <button class="action-button-muted" @click="toggleTheme">
+            <button type="button" class="action-button-muted" @click="toggleTheme">
               {{ t("common:controls.darkMode", "Dark Mode") }}: {{ themeLabel }}
             </button>
-            <button
+            <button type="button"
               class="action-button-muted"
+             
               :class="language === 'en' ? 'border-amber-300 text-amber-300' : ''"
               @click="switchLanguage('en')"
             >
               English
             </button>
-            <button
+            <button type="button"
               class="action-button-muted"
+             
               :class="language === 'zh' ? 'border-amber-300 text-amber-300' : ''"
               @click="switchLanguage('zh')"
             >
@@ -34,93 +36,106 @@
         </div>
 
         <div class="mt-3 rounded-xl border border-white/10 bg-slate-900/40 p-3">
-          <div class="flex flex-wrap items-center gap-2">
-            <button
-              class="action-button-muted"
-              type="button"
-              :disabled="queueActionsDisabled"
-              @click="setQueueBaselineFromTopbar"
-            >
-              {{ t("common:queue.setBaseline", "Set Baseline") }}
-            </button>
-            <button
-              class="action-button-muted"
-              type="button"
-              :disabled="queueActionsDisabled || !activeQueueHasBaseline"
-              @click="addToQueueFromTopbar"
-            >
-              {{ t("common:queue.addToQueue", "Add To Queue") }}
-            </button>
-            <button
-              class="action-button-primary"
-              type="button"
-              :disabled="queueActionsDisabled || !activeQueueHasBaseline || activeQueueItemCount === 0"
-              @click="runQueueFromTopbar"
-            >
-              {{ t("common:queue.runQueue", "Run Queue") }}
-            </button>
-            <button
-              class="action-button-danger"
-              type="button"
-              :disabled="queueActionsDisabled || activeQueueItemCount === 0"
-              @click="clearQueueFromTopbar"
-            >
-              {{ t("common:queue.clearQueue", "Clear Queue") }}
-            </button>
-            <span class="text-xs text-slate-400">
-              {{ t("common:queue.queueList", "Queue List") }}:
-              <span class="ml-1 text-slate-100">{{ activeQueueItemCount }}</span>
-            </span>
-            <span class="text-xs text-slate-400">
-              {{ t("common:vue.queue.queueProgress", "Queue Progress") }}:
-              <span class="ml-1 text-slate-100">{{ activeQueueProgressText }}</span>
-            </span>
-            <span class="text-xs text-slate-400">
-              {{ t("common:vue.queue.activePlayer", "Active player", { name: simulator.activePlayer.name }) }}
-            </span>
+          <div class="flex flex-col gap-3">
+            <div class="flex flex-wrap items-center gap-2">
+              <button type="button"
+                class="action-button-muted"
+               
+                :disabled="queueActionsDisabled"
+                @click="setQueueBaselineFromTopbar"
+              >
+                {{ t("common:queue.setBaseline", "Set Baseline") }}
+              </button>
+              <button type="button"
+                class="action-button-muted"
+               
+                :disabled="queueActionsDisabled || !activeQueueHasBaseline"
+                @click="addToQueueFromTopbar"
+              >
+                {{ t("common:queue.addToQueue", "Add To Queue") }}
+              </button>
+              <button type="button"
+                class="action-button-primary"
+               
+                :disabled="queueActionsDisabled || !activeQueueHasBaseline || activeQueueItemCount === 0"
+                @click="runQueueFromTopbar"
+              >
+                {{ t("common:queue.runQueue", "Run Queue") }}
+              </button>
+              <button type="button"
+                class="action-button-danger"
+               
+                :disabled="queueActionsDisabled || activeQueueItemCount === 0"
+                @click="clearQueueFromTopbar"
+              >
+                {{ t("common:queue.clearQueue", "Clear Queue") }}
+              </button>
+              <span class="text-xs text-slate-400">
+                {{ t("common:queue.queueList", "Queue List") }}:
+                <span class="ml-1 text-slate-100">{{ activeQueueItemCount }}</span>
+              </span>
+              <span class="text-xs text-slate-400">
+                {{ t("common:vue.queue.queueProgress", "Queue Progress") }}:
+                <span class="ml-1 text-slate-100">{{ activeQueueProgressText }}</span>
+              </span>
+              <span class="text-xs text-slate-400">
+                {{ t("common:vue.queue.activePlayer", "Active player", { name: simulator.activePlayer.name }) }}
+              </span>
+            </div>
+            <p v-if="topQueueActionStatusText" class="text-xs" :class="topQueueActionStatusClass">{{ topQueueActionStatusText }}</p>
+            <div v-if="showRuntimeSummary" class="space-y-2 border-t border-white/10 pt-3">
+              <div class="flex flex-wrap items-center justify-between gap-2 text-xs uppercase tracking-[0.14em] text-slate-400">
+                <span>{{ t("common:vue.app.runtime", "Runtime") }}</span>
+                <span class="text-slate-300">{{ progressLabel }}</span>
+              </div>
+              <div class="h-2 overflow-hidden rounded-full bg-slate-800">
+                <div class="h-full bg-gradient-to-r from-teal-400 to-amber-300 transition-all" :style="{ width: `${Math.floor(simulator.runtime.progress * 100)}%` }"></div>
+              </div>
+              <div v-if="simulator.runtime.error" class="flex flex-wrap items-center gap-2">
+                <p class="text-sm text-rose-300">{{ simulator.runtime.error }}</p>
+                <button type="button" class="action-button-muted text-xs" @click="openGlobalError('runtime', simulator.runtime.error)">
+                  {{ t("common:vue.app.viewErrorDetails", "Details") }}
+                </button>
+              </div>
+            </div>
           </div>
-          <p v-if="topQueueActionStatusText" class="mt-2 text-xs" :class="topQueueActionStatusClass">{{ topQueueActionStatusText }}</p>
         </div>
       </div>
     </header>
 
     <section class="panel mb-4 overflow-hidden">
       <div class="grid gap-2 lg:grid-cols-5">
-        <button
+        <div
           v-for="player in simulator.players"
           :key="player.id"
-          type="button"
-          class="rounded-xl border px-3 py-2 text-left transition"
+          class="rounded-xl border px-3 py-2 transition"
           :class="[
             simulator.activePlayerId === player.id ? 'border-amber-300 bg-amber-300/10' : 'border-white/10 bg-slate-900/40',
           ]"
-          @click="simulator.setActivePlayer(player.id)"
         >
           <div class="flex items-center justify-between gap-2">
-            <input v-model="player.name" class="w-full bg-transparent font-heading text-sm outline-none" />
+            <button type="button"
+              class="action-button-muted shrink-0 px-2 py-1 text-xs"
+             
+              :aria-pressed="simulator.activePlayerId === player.id ? 'true' : 'false'"
+              :class="simulator.activePlayerId === player.id ? 'border-amber-300 text-amber-300' : ''"
+              @click="simulator.setActivePlayer(player.id)"
+            >
+              {{ simulator.activePlayerId === player.id ? t("common:vue.app.active", "Active") : t("common:vue.app.setActive", "Set Active") }}
+            </button>
+            <input
+              v-model="player.name"
+              :aria-label="t('common:player', 'Player')"
+              class="w-full bg-transparent font-heading text-sm"
+            />
             <label class="badge flex shrink-0 items-center gap-2 text-slate-200">
               <input v-model="player.selected" type="checkbox" />
               {{ t("common:vue.app.simToggle", "Sim") }}
             </label>
           </div>
-        </button>
+        </div>
       </div>
 
-      <div class="mt-4 space-y-2">
-        <div class="flex items-center justify-between text-xs uppercase tracking-[0.14em] text-slate-400">
-          <span>{{ t("common:vue.app.runtime", "Runtime") }}</span>
-          <span>{{ progressLabel }}</span>
-        </div>
-        <div class="h-2 overflow-hidden rounded-full bg-slate-800">
-          <div class="h-full bg-gradient-to-r from-teal-400 to-amber-300 transition-all" :style="{ width: `${Math.floor(simulator.runtime.progress * 100)}%` }"></div>
-        </div>
-        <div v-if="simulator.runtime.error" class="flex flex-wrap items-center gap-2">
-          <p class="text-sm text-rose-300">{{ simulator.runtime.error }}</p>
-          <button class="action-button-muted text-xs" type="button" @click="openGlobalError('runtime', simulator.runtime.error)">
-            {{ t("common:vue.app.viewErrorDetails", "Details") }}
-          </button>
-        </div>
-      </div>
     </section>
 
     <main>
@@ -131,10 +146,32 @@
       <p class="text-sm text-slate-300">{{ t("common:vue.app.globalErrorDesc", "Please copy the following details if you report this issue.") }}</p>
       <pre class="max-h-[320px] overflow-auto rounded-xl border border-white/10 bg-slate-950/70 p-3 text-xs text-rose-200">{{ globalErrorText }}</pre>
       <div class="flex flex-wrap items-center gap-2">
-        <button class="action-button-primary" type="button" @click="copyGlobalError">
+        <button type="button" class="action-button-primary" @click="copyGlobalError">
           {{ t("common:vue.common.copy", "Copy") }}
         </button>
         <span class="text-xs text-slate-400">{{ errorCopyStatus }}</span>
+      </div>
+    </BaseModal>
+
+    <BaseModal
+      :open="simulationCompleteModalOpen"
+      :title="t('common:vue.app.simulationCompleteTitle', 'Simulation completed')"
+      initial-focus-selector="[data-simulation-results-confirm]"
+      @close="closeSimulationCompleteModal"
+    >
+      <p class="text-sm text-slate-300">{{ t("common:vue.app.simulationCompleteDesc", "Simulation completed. Go to the Results page now?") }}</p>
+      <div class="flex flex-wrap items-center gap-2">
+        <button
+          type="button"
+          class="action-button-primary"
+          data-simulation-results-confirm
+          @click="goToSimulationResults"
+        >
+          {{ t("common:vue.app.goToResults", "Go to Results") }}
+        </button>
+        <button type="button" class="action-button-muted" @click="closeSimulationCompleteModal">
+          {{ t("common:vue.app.stayHere", "Stay Here") }}
+        </button>
       </div>
     </BaseModal>
   </div>
@@ -142,17 +179,21 @@
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
-import { RouterLink, RouterView } from "vue-router";
+import { RouterLink, RouterView, useRoute, useRouter } from "vue-router";
 import BaseModal from "./components/BaseModal.vue";
 import { useSimulatorStore } from "../stores/simulatorStore.js";
 import { useI18nText } from "./composables/useI18nText.js";
 
 const THEME_STORAGE_KEY = "mwi.ui.theme.v1";
 const simulator = useSimulatorStore();
+const router = useRouter();
+const route = useRoute();
 const theme = ref("dark");
+let deferredInitHandle = null;
 const globalErrorModalOpen = ref(false);
 const globalErrorText = ref("");
 const errorCopyStatus = ref("");
+const simulationCompleteModalOpen = ref(false);
 const topQueueActionStatus = ref({
   tone: "secondary",
   text: "",
@@ -175,6 +216,7 @@ const activeQueueState = computed(() => simulator.activeQueueState || null);
 const queueActionsDisabled = computed(() => Boolean(simulator.runtime?.isRunning || activeQueueState.value?.isRunning));
 const activeQueueHasBaseline = computed(() => Boolean(activeQueueState.value?.baseline?.snapshot));
 const activeQueueItemCount = computed(() => (Array.isArray(activeQueueState.value?.items) ? activeQueueState.value.items.length : 0));
+const showRuntimeSummary = computed(() => Boolean(simulator.runtime.isRunning || simulator.runtime.error));
 const activeQueueProgressText = computed(() => {
   const progress = Number(activeQueueState.value?.progress || 0);
   if (!Number.isFinite(progress)) {
@@ -183,6 +225,12 @@ const activeQueueProgressText = computed(() => {
   const clamped = Math.max(0, Math.min(1, progress));
   return `${Math.floor(clamped * 100)}%`;
 });
+const hasSimulationResults = computed(() => (
+  Boolean(simulator.results.simResult)
+  || (Array.isArray(simulator.results.simResults) && simulator.results.simResults.length > 0)
+  || (Array.isArray(simulator.results.summaryRows) && simulator.results.summaryRows.length > 0)
+  || (Array.isArray(simulator.results.batchRows) && simulator.results.batchRows.length > 0)
+));
 const topQueueActionStatusText = computed(() => topQueueActionStatus.value.text || "");
 const topQueueActionStatusClass = computed(() => {
   if (topQueueActionStatus.value.tone === "success") {
@@ -207,6 +255,32 @@ function applyTheme(nextTheme) {
 
 function toggleTheme() {
   applyTheme(theme.value === "dark" ? "light" : "dark");
+}
+
+function runDeferredInitialization() {
+  simulator.ensureMarketPricesLoaded();
+  simulator.ensureAbilityUpgradeReferenceDataLoaded();
+}
+
+function scheduleDeferredInitialization() {
+  if (typeof window.requestIdleCallback === "function") {
+    deferredInitHandle = window.requestIdleCallback(runDeferredInitialization, { timeout: 1200 });
+    return;
+  }
+  deferredInitHandle = window.setTimeout(runDeferredInitialization, 60);
+}
+
+function cancelDeferredInitialization() {
+  if (deferredInitHandle == null) {
+    return;
+  }
+
+  if (typeof window.cancelIdleCallback === "function") {
+    window.cancelIdleCallback(deferredInitHandle);
+  } else {
+    clearTimeout(deferredInitHandle);
+  }
+  deferredInitHandle = null;
 }
 
 function setTopQueueActionStatus(tone, text) {
@@ -315,12 +389,53 @@ function onUnhandledRejection(event) {
   openGlobalError("unhandledrejection", event?.reason || event);
 }
 
+function closeSimulationCompleteModal() {
+  simulationCompleteModalOpen.value = false;
+}
+
+async function goToSimulationResults() {
+  closeSimulationCompleteModal();
+  if (route.name !== "results") {
+    await router.push({ name: "results" });
+  }
+}
+
 watch(
   () => simulator.runtime.error,
   (nextError, prevError) => {
     const nextText = String(nextError || "").trim();
     if (nextText && nextText !== String(prevError || "").trim()) {
       openGlobalError("runtime", nextText);
+    }
+  },
+);
+
+watch(
+  () => simulator.runtime.completionNoticeId,
+  (nextNoticeId, prevNoticeId) => {
+    const nextId = Number(nextNoticeId || 0);
+    const prevId = Number(prevNoticeId || 0);
+    if (nextId <= prevId || !hasSimulationResults.value || route.name === "results") {
+      return;
+    }
+    simulationCompleteModalOpen.value = true;
+  },
+);
+
+watch(
+  () => simulator.runtime.isRunning,
+  (nextRunning) => {
+    if (nextRunning) {
+      closeSimulationCompleteModal();
+    }
+  },
+);
+
+watch(
+  () => route.name,
+  (nextRouteName) => {
+    if (nextRouteName === "results") {
+      closeSimulationCompleteModal();
     }
   },
 );
@@ -335,13 +450,13 @@ watch(
 onMounted(() => {
   const savedTheme = normalizeTheme(localStorage.getItem(THEME_STORAGE_KEY));
   applyTheme(savedTheme);
-  simulator.ensureMarketPricesLoaded();
-  simulator.ensureAbilityUpgradeReferenceDataLoaded();
+  scheduleDeferredInitialization();
   window.addEventListener("error", onWindowError);
   window.addEventListener("unhandledrejection", onUnhandledRejection);
 });
 
 onUnmounted(() => {
+  cancelDeferredInitialization();
   window.removeEventListener("error", onWindowError);
   window.removeEventListener("unhandledrejection", onUnhandledRejection);
 });

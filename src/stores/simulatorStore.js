@@ -3048,6 +3048,7 @@ export const useSimulatorStore = defineStore("simulator", {
                 startedAt: 0,
                 elapsedSeconds: 0,
                 workerMode: "single",
+                completionNoticeId: 0,
             },
             results: {
                 simResult: null,
@@ -4196,9 +4197,10 @@ export const useSimulatorStore = defineStore("simulator", {
                 )
                 : 1;
 
-            const rawRuns = [];
             const variantSamplesById = new Map(entries.map((entry) => [entry.id, []]));
             const entrySortIndexById = new Map(entries.map((entry, index) => [entry.id, index]));
+            const REALTIME_RANKING_THROTTLE_MS = 250;
+            let lastRealtimeRankingAt = 0;
             const updateQueueRunProgress = () => {
                 const inProgress = Array.from(runProgressByRunKey.values())
                     .reduce((sum, value) => sum + clamp(Number(value || 0), 0, 1), 0);
@@ -4207,8 +4209,7 @@ export const useSimulatorStore = defineStore("simulator", {
                 this.runtime.progress = queueState.progress;
                 this.runtime.elapsedSeconds = (Date.now() - this.runtime.startedAt) / 1000;
             };
-            const sortRawRuns = () => rawRuns
-                .slice()
+            const sortRawRuns = (rows = []) => rows
                 .sort((a, b) => {
                     const roundDiff = Number(a.round || 0) - Number(b.round || 0);
                     if (roundDiff !== 0) {
@@ -4377,6 +4378,19 @@ export const useSimulatorStore = defineStore("simulator", {
                     };
                 });
             };
+            const updateRealtimeRanking = (force = false) => {
+                const now = Date.now();
+                if (!force && now - lastRealtimeRankingAt < REALTIME_RANKING_THROTTLE_MS) {
+                    return;
+                }
+                const realtimeRows = buildRankedRowsFromSamples(false);
+                if (realtimeRows.length <= 0) {
+                    return;
+                }
+                queueState.results = realtimeRows;
+                queueState.ranking = realtimeRows;
+                lastRealtimeRankingAt = now;
+            };
 
             const buildScenarioPlayers = (entrySnapshot) => {
                 const scenarioPlayers = this.players.map((player) => {
@@ -4427,19 +4441,13 @@ export const useSimulatorStore = defineStore("simulator", {
                         changes: Array.isArray(entry.changes) ? [...entry.changes] : [],
                         changeDetails: Array.isArray(entry.changeDetails) ? deepClone(entry.changeDetails) : [],
                         round: roundIndex + 1,
-                        simResult,
                         metrics,
                         deltas,
                         ...summary,
                     };
-                    rawRuns.push(sampleRow);
                     variantSamplesById.get(entry.id).push(sampleRow);
-                    queueState.rawRuns = sortRawRuns();
-                    const realtimeRows = buildRankedRowsFromSamples(false);
-                    if (realtimeRows.length > 0) {
-                        queueState.results = realtimeRows;
-                        queueState.ranking = realtimeRows;
-                    }
+                    queueState.rawRuns.push(sampleRow);
+                    updateRealtimeRanking(false);
                 } finally {
                     runProgressByRunKey.delete(runKey);
                     completedRuns += 1;
@@ -4474,7 +4482,7 @@ export const useSimulatorStore = defineStore("simulator", {
                 const rankedRows = buildRankedRowsFromSamples(true);
                 queueState.results = rankedRows;
                 queueState.ranking = rankedRows;
-                queueState.rawRuns = sortRawRuns();
+                queueState.rawRuns = sortRawRuns(queueState.rawRuns.slice());
                 queueState.lastRunAt = Date.now();
                 return rankedRows;
             } catch (error) {
@@ -4959,6 +4967,7 @@ export const useSimulatorStore = defineStore("simulator", {
                             if (this.results.summaryRows.length > 0) {
                                 this.results.activeResultPlayerHrid = this.results.summaryRows[0].playerHrid;
                             }
+                            this.runtime.completionNoticeId += 1;
                         },
                         onError,
                     }
@@ -4992,6 +5001,7 @@ export const useSimulatorStore = defineStore("simulator", {
                             this.results.simResults = simResults;
                             this.results.batchRows = summarizeBatchResults(simResults, selectedPlayersSnapshot, pricingOptions);
                             this.results.batchResultType = batchResultType || "simulation_result_allLabyrinths";
+                            this.runtime.completionNoticeId += 1;
                         },
                         onError,
                     }
@@ -5027,6 +5037,7 @@ export const useSimulatorStore = defineStore("simulator", {
                         this.results.simResults = simResults;
                         this.results.batchRows = summarizeBatchResults(simResults, selectedPlayersSnapshot, pricingOptions);
                         this.results.batchResultType = batchResultType || "simulation_result_allZones";
+                        this.runtime.completionNoticeId += 1;
                     },
                     onError,
                 }

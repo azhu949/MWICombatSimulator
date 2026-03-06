@@ -21,10 +21,10 @@
           </label>
         </div>
         <div class="mt-4 grid gap-2 sm:grid-cols-2">
-          <button class="action-button-muted" type="button" @click="openHouseRoomsModal = true">
+          <button type="button" class="action-button-muted" @click="openHouseRoomsModal = true">
             {{ t("common:vue.home.houseRoomsButton", "House Rooms") }}
           </button>
-          <button class="action-button-muted" type="button" @click="openAchievementsModal = true">
+          <button type="button" class="action-button-muted" @click="openAchievementsModal = true">
             {{ t("common:vue.home.achievementsButton", "Achievements") }}
           </button>
         </div>
@@ -266,16 +266,16 @@
         </div>
 
         <div class="flex flex-wrap gap-2">
-          <button class="action-button-muted" type="button" @click="openPlayerImportExportModal">
+          <button type="button" class="action-button-muted" @click="openPlayerImportExportModal">
             {{ t("common:controls.importExport", "Import/Export") }}
           </button>
-          <button class="action-button-primary" :disabled="simulator.runtime.isRunning" @click="simulator.startSimulation()">
+          <button type="button" class="action-button-primary" :disabled="simulator.runtime.isRunning" @click="simulator.startSimulation()">
             {{ t("common:controls.startSimulation", "Start Simulation") }}
           </button>
-          <button class="action-button-danger" :disabled="!simulator.runtime.isRunning" @click="simulator.stopSimulation()">
+          <button type="button" class="action-button-danger" :disabled="!simulator.runtime.isRunning" @click="simulator.stopSimulation()">
             {{ t("common:controls.stopSimulation", "Stop") }}
           </button>
-          <button class="action-button-muted" type="button" @click="openExperimentalModal = true">
+          <button type="button" class="action-button-muted" @click="openExperimentalModal = true">
             {{ t("common:Experiment.ExperimentalFeatures", "Experimental Features") }}
           </button>
         </div>
@@ -308,10 +308,10 @@
             <div class="mt-2">
               <p class="field-label">{{ t("common:vue.home.marketEnhancements", "Market Enhancements") }}</p>
               <div v-if="equipmentHintViewModel[slot]?.levels?.length > 0" class="mt-1 flex flex-wrap gap-1">
-                <button
+                <button type="button"
                   v-for="level in equipmentHintViewModel[slot].levels"
                   :key="`${slot}-enh-${level}`"
-                  type="button"
+                 
                   class="rounded-md border px-2 py-0.5 text-xs transition"
                   :class="Number(activePlayer.equipment[slot].enhancementLevel || 0) === level
                     ? 'border-amber-300 bg-amber-300/20 text-amber-200'
@@ -358,9 +358,9 @@
                     {{ t("common:vue.home.levelShort", "Lv") }}{{ item.itemLevel }} {{ formatItemName(item.hrid, item.name) }}
                   </option>
                 </select>
-                <button
+                <button type="button"
                   class="action-button-muted mt-2 w-full"
-                  type="button"
+                 
                   :disabled="!activePlayer.food[slotIndex - 1]"
                   @click="openTriggerEditor('food', slotIndex - 1)"
                 >
@@ -375,9 +375,9 @@
                     {{ t("common:vue.home.levelShort", "Lv") }}{{ item.itemLevel }} {{ formatItemName(item.hrid, item.name) }}
                   </option>
                 </select>
-                <button
+                <button type="button"
                   class="action-button-muted mt-2 w-full"
-                  type="button"
+                 
                   :disabled="!activePlayer.drinks[slotIndex - 1]"
                   @click="openTriggerEditor('drink', slotIndex - 1)"
                 >
@@ -414,9 +414,9 @@
                   <input v-model.number="activePlayer.abilities[slotIndex - 1].level" class="field-input" type="number" min="1" max="400" />
                 </div>
                 <div class="sm:pt-[22px]">
-                  <button
+                  <button type="button"
                     class="action-button-muted w-full"
-                    type="button"
+                   
                     :disabled="!activePlayer.abilities[slotIndex - 1].abilityHrid"
                     @click="openTriggerEditor('ability', slotIndex - 1)"
                   >
@@ -479,10 +479,10 @@
         >
           <div class="mb-3 flex flex-wrap items-center gap-2 text-xs text-slate-300">
             <span>{{ section.buffText }}</span>
-            <button class="action-button-muted" type="button" @click="setTierAchievements(section.tierHrid, true)">
+            <button type="button" class="action-button-muted" @click="setTierAchievements(section.tierHrid, true)">
               {{ t("common:vue.home.selectAll", "Select All") }}
             </button>
-            <button class="action-button-muted" type="button" @click="setTierAchievements(section.tierHrid, false)">
+            <button type="button" class="action-button-muted" @click="setTierAchievements(section.tierHrid, false)">
               {{ t("common:vue.home.clearAll", "Clear All") }}
             </button>
           </div>
@@ -559,18 +559,18 @@
               </label>
             </div>
             <div class="mt-2">
-              <button class="action-button-danger" type="button" @click="removeTriggerRow(rowIndex)">{{ t("common:vue.common.remove", "Remove") }}</button>
+              <button type="button" class="action-button-danger" @click="removeTriggerRow(rowIndex)">{{ t("common:vue.common.remove", "Remove") }}</button>
             </div>
           </div>
         </div>
 
         <div class="flex flex-wrap gap-2">
-          <button class="action-button-muted" type="button" :disabled="triggerModal.draft.length >= MAX_TRIGGER_COUNT" @click="addTriggerRow">
+          <button type="button" class="action-button-muted" :disabled="triggerModal.draft.length >= MAX_TRIGGER_COUNT" @click="addTriggerRow">
             {{ t("common:vue.home.trigger.addRule", "Add Rule") }}
           </button>
-          <button class="action-button-muted" type="button" @click="useDefaultTriggers">{{ t("common:vue.home.trigger.useDefault", "Use Default") }}</button>
-          <button class="action-button-muted" type="button" @click="clearTriggerRules">{{ t("common:vue.home.trigger.clearRules", "Clear Rules") }}</button>
-          <button class="action-button-primary" type="button" :disabled="!isTriggerDraftValid" @click="saveTriggerRules">
+          <button type="button" class="action-button-muted" @click="useDefaultTriggers">{{ t("common:vue.home.trigger.useDefault", "Use Default") }}</button>
+          <button type="button" class="action-button-muted" @click="clearTriggerRules">{{ t("common:vue.home.trigger.clearRules", "Clear Rules") }}</button>
+          <button type="button" class="action-button-primary" :disabled="!isTriggerDraftValid" @click="saveTriggerRules">
             {{ t("common:controls.save", "Save") }}
           </button>
         </div>
@@ -595,9 +595,9 @@
             </div>
 
             <div class="flex flex-wrap gap-2">
-              <button class="action-button-primary" type="button" @click="handleGroupExport">{{ t("common:vue.settings.exportGroup", "Export Group") }}</button>
-              <button class="action-button-muted" type="button" @click="copyImportExportText(groupText)">{{ t("common:vue.common.copy", "Copy") }}</button>
-              <button class="action-button-muted" type="button" @click="downloadImportExportText(`mwi-group-${groupFormat}.json`, groupText)">{{ t("common:vue.common.download", "Download") }}</button>
+              <button type="button" class="action-button-primary" @click="handleGroupExport">{{ t("common:vue.settings.exportGroup", "Export Group") }}</button>
+              <button type="button" class="action-button-muted" @click="copyImportExportText(groupText)">{{ t("common:vue.common.copy", "Copy") }}</button>
+              <button type="button" class="action-button-muted" @click="downloadImportExportText(`mwi-group-${groupFormat}.json`, groupText)">{{ t("common:vue.common.download", "Download") }}</button>
               <label class="action-button-muted cursor-pointer">
                 {{ t("common:vue.common.loadFile", "Load File") }}
                 <input class="hidden" type="file" accept="application/json,.json,.txt" @change="onImportExportFileSelected($event, 'group')" />
@@ -607,8 +607,8 @@
             <textarea v-model="groupText" class="field-input min-h-[220px] font-mono text-xs" spellcheck="false"></textarea>
 
             <div class="flex flex-wrap gap-2">
-              <button class="action-button-primary" type="button" @click="handleGroupImport">{{ t("common:vue.settings.importGroup", "Import Group") }}</button>
-              <button class="action-button-muted" type="button" @click="groupText = ''">{{ t("common:vue.common.clear", "Clear") }}</button>
+              <button type="button" class="action-button-primary" @click="handleGroupImport">{{ t("common:vue.settings.importGroup", "Import Group") }}</button>
+              <button type="button" class="action-button-muted" @click="groupText = ''">{{ t("common:vue.common.clear", "Clear") }}</button>
             </div>
           </div>
 
@@ -627,9 +627,9 @@
             </div>
 
             <div class="flex flex-wrap gap-2">
-              <button class="action-button-primary" type="button" @click="handleSoloExport">{{ t("common:vue.settings.exportSolo", "Export Solo") }}</button>
-              <button class="action-button-muted" type="button" @click="copyImportExportText(soloText)">{{ t("common:vue.common.copy", "Copy") }}</button>
-              <button class="action-button-muted" type="button" @click="downloadImportExportText(`mwi-solo-${soloTargetPlayerId}-${soloFormat}.json`, soloText)">{{ t("common:vue.common.download", "Download") }}</button>
+              <button type="button" class="action-button-primary" @click="handleSoloExport">{{ t("common:vue.settings.exportSolo", "Export Solo") }}</button>
+              <button type="button" class="action-button-muted" @click="copyImportExportText(soloText)">{{ t("common:vue.common.copy", "Copy") }}</button>
+              <button type="button" class="action-button-muted" @click="downloadImportExportText(`mwi-solo-${soloTargetPlayerId}-${soloFormat}.json`, soloText)">{{ t("common:vue.common.download", "Download") }}</button>
               <label class="action-button-muted cursor-pointer">
                 {{ t("common:vue.common.loadFile", "Load File") }}
                 <input class="hidden" type="file" accept="application/json,.json,.txt" @change="onImportExportFileSelected($event, 'solo')" />
@@ -639,8 +639,8 @@
             <textarea v-model="soloText" class="field-input min-h-[220px] font-mono text-xs" spellcheck="false"></textarea>
 
             <div class="flex flex-wrap gap-2">
-              <button class="action-button-primary" type="button" @click="handleSoloImport">{{ t("common:vue.settings.importToPlayer", "Import To Player") }}</button>
-              <button class="action-button-muted" type="button" @click="soloText = ''">{{ t("common:vue.common.clear", "Clear") }}</button>
+              <button type="button" class="action-button-primary" @click="handleSoloImport">{{ t("common:vue.settings.importToPlayer", "Import To Player") }}</button>
+              <button type="button" class="action-button-muted" @click="soloText = ''">{{ t("common:vue.common.clear", "Clear") }}</button>
             </div>
           </div>
         </div>
@@ -661,10 +661,10 @@
               accept="application/json,.json,.txt"
               @change="onExperimentalFileSelected"
             />
-            <button class="action-button-primary" type="button" :disabled="!experimentalFileReady || experimentalRunning" @click="runExperimentalBatch">
+            <button type="button" class="action-button-primary" :disabled="!experimentalFileReady || experimentalRunning" @click="runExperimentalBatch">
               {{ t("common:Experiment.uploadAndRun", "Upload & Run") }}
             </button>
-            <button class="action-button-muted" type="button" :disabled="!experimentalDownloadText" @click="downloadExperimentalResults">
+            <button type="button" class="action-button-muted" :disabled="!experimentalDownloadText" @click="downloadExperimentalResults">
               {{ t("common:Experiment.download", "Download Results") }}
             </button>
           </div>

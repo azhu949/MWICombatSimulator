@@ -15,7 +15,7 @@
         </div>
 
         <div class="mt-4 flex flex-wrap gap-2">
-          <button class="action-button-muted" @click="resetPlayers">{{ t("common:vue.settings.resetPlayers", "Reset Players") }}</button>
+          <button type="button" class="action-button-muted" @click="resetPlayers">{{ t("common:vue.settings.resetPlayers", "Reset Players") }}</button>
         </div>
       </div>
     </div>
@@ -187,10 +187,10 @@
       </div>
 
       <div class="flex flex-wrap gap-2">
-        <button class="action-button-primary" @click="saveQueueRuntimeSettings">
+        <button type="button" class="action-button-primary" @click="saveQueueRuntimeSettings">
           {{ t("common:settingsPage.saveQueueSettings", "Save Queue Settings") }}
         </button>
-        <button class="action-button-muted" @click="resetQueueRuntimeSettings">
+        <button type="button" class="action-button-muted" @click="resetQueueRuntimeSettings">
           {{ t("common:settingsPage.resetQueueSettings", "Reset To Defaults") }}
         </button>
       </div>
@@ -205,13 +205,13 @@
       <p class="text-sm text-slate-300">{{ t("common:settingsPage.playerDataDescription", "Manually save/restore build data for 5 players only.") }}</p>
 
       <div class="flex flex-wrap gap-2">
-        <button class="action-button-primary" @click="savePlayerDataSnapshot">
+        <button type="button" class="action-button-primary" @click="savePlayerDataSnapshot">
           {{ t("common:settingsPage.savePlayerConfigs", "Save Player Configs") }}
         </button>
-        <button class="action-button-muted" @click="loadPlayerDataSnapshot">
+        <button type="button" class="action-button-muted" @click="loadPlayerDataSnapshot">
           {{ t("common:settingsPage.loadPlayerConfigs", "Load Player Configs") }}
         </button>
-        <button class="action-button-danger" @click="deleteAllPlayerDataSnapshots">
+        <button type="button" class="action-button-danger" @click="deleteAllPlayerDataSnapshots">
           {{ t("common:settingsPage.deleteAllPlayerConfigs", "Delete All Snapshots") }}
         </button>
       </div>
@@ -247,7 +247,7 @@
                 <td class="px-2 py-2">{{ row.hasSnapshot ? formatSnapshotMonsterName(row.labyrinthHrid, row.labyrinth) : "-" }}</td>
                 <td class="px-2 py-2">{{ row.hasSnapshot ? row.roomLevel : "-" }}</td>
                 <td class="px-2 py-2">
-                  <button
+                  <button type="button"
                     class="action-button-muted"
                     :disabled="!row.hasSnapshot"
                     @click="deleteSinglePlayerDataSnapshot(row.playerId)"
@@ -287,13 +287,13 @@
       </div>
 
       <div class="flex flex-wrap gap-2">
-        <button class="action-button-primary" :disabled="simulator.pricing.isLoading" @click="fetchMarketPrices">
+        <button type="button" class="action-button-primary" :disabled="simulator.pricing.isLoading" @click="fetchMarketPrices">
           {{ simulator.pricing.isLoading ? t("common:vue.settings.loading", "Loading...") : t("common:vue.settings.fetchMarketPrices", "Get Prices") }}
         </button>
-        <button class="action-button-muted" :disabled="simulator.pricing.isLoading" @click="resetPricesToVendor">
+        <button type="button" class="action-button-muted" :disabled="simulator.pricing.isLoading" @click="resetPricesToVendor">
           {{ t("common:vue.settings.resetVendorPrices", "Reset Vendor Prices") }}
         </button>
-        <button class="action-button-muted" @click="openEditPricesModal = true">
+        <button type="button" class="action-button-muted" @click="openEditPricesModal = true">
           {{ t("common:editPrices", "Edit Prices") }}
         </button>
       </div>
@@ -322,7 +322,7 @@
           <span class="text-xs text-slate-400">
             {{ t("common:vue.settings.priceOverridesCount", "Overridden items", { count: priceOverrideCount }) }}
           </span>
-          <button class="action-button-muted" :disabled="priceOverrideCount === 0" @click="resetAllPriceOverrides">
+          <button type="button" class="action-button-muted" :disabled="priceOverrideCount === 0" @click="resetAllPriceOverrides">
             {{ t("common:vue.settings.clearAllPriceOverrides", "Clear All Overrides") }}
           </button>
         </div>
@@ -337,8 +337,8 @@
 
           <div class="overflow-x-auto">
             <div class="inline-flex min-w-full gap-2 rounded-xl border border-white/10 bg-slate-900/50 p-2">
-              <button
-                type="button"
+              <button type="button"
+               
                 class="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition"
                 :class="selectedPriceCategory === '__all__'
                   ? 'bg-amber-300 text-slate-900'
@@ -347,10 +347,10 @@
               >
                 {{ t("common:vue.settings.priceCategoryAll", "All Types") }} ({{ allPriceRows.length }})
               </button>
-              <button
+              <button type="button"
                 v-for="option in priceCategoryOptions"
                 :key="option.value"
-                type="button"
+               
                 class="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition"
                 :class="selectedPriceCategory === option.value
                   ? 'bg-amber-300 text-slate-900'
@@ -417,7 +417,7 @@
                     </div>
                   </td>
                   <td class="px-2 py-2">
-                    <button class="action-button-muted" @click="resetItemPriceOverride(row.hrid)">
+                    <button type="button" class="action-button-muted" @click="resetItemPriceOverride(row.hrid)">
                       {{ t("common:vue.settings.resetRowPrice", "Reset") }}
                     </button>
                   </td>
@@ -431,7 +431,7 @@
           <span>
             {{ t("common:vue.settings.priceRowsVisible", "Showing items", { shown: visiblePriceRows.length, total: filteredPriceRows.length }) }}
           </span>
-          <button v-if="hasMorePriceRows" class="action-button-muted" @click="loadMorePriceRows">
+          <button type="button" v-if="hasMorePriceRows" class="action-button-muted" @click="loadMorePriceRows">
             {{ t("common:vue.settings.loadMorePriceRows", "Load More") }}
           </button>
         </div>
@@ -442,7 +442,7 @@
       <div class="panel space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-2">
           <h3 class="font-heading text-base font-semibold text-amber-200">{{ t("common:controls.equipmentSets", "Equipment Sets") }}</h3>
-          <button class="action-button-muted" @click="refreshEquipmentSets">{{ t("common:vue.common.refresh", "Refresh") }}</button>
+          <button type="button" class="action-button-muted" @click="refreshEquipmentSets">{{ t("common:vue.common.refresh", "Refresh") }}</button>
         </div>
 
         <div class="grid gap-2 sm:grid-cols-[1fr_auto]">
@@ -452,7 +452,7 @@
             type="text"
             :placeholder="t('common:vue.settings.setNamePlaceholder', 'Set name, e.g. Fly AFK')"
           />
-          <button class="action-button-primary" @click="saveEquipmentSet">{{ t("common:vue.settings.saveCurrent", "Save Current") }}</button>
+          <button type="button" class="action-button-primary" @click="saveEquipmentSet">{{ t("common:vue.settings.saveCurrent", "Save Current") }}</button>
         </div>
 
         <div v-if="equipmentSetEntries.length === 0" class="rounded-xl border border-white/10 bg-slate-900/50 px-3 py-4 text-sm text-slate-400">
@@ -476,21 +476,21 @@
                 <td class="px-2 py-2">{{ entry.queueChangeCount }}</td>
                 <td class="px-2 py-2">
                   <div class="flex flex-wrap gap-2">
-                    <button
+                    <button type="button"
                       class="action-button-muted"
                       :disabled="entry.queueChangeCount <= 0"
                       @click="openImportQueueChangesConfirm(entry.name, entry.queueChangeCount, false)"
                     >
                       {{ t("common:vue.settings.importQueueChanges", "Import Queue Changes") }}
                     </button>
-                    <button
+                    <button type="button"
                       class="action-button-primary"
                       :disabled="entry.queueChangeCount <= 0"
                       @click="openImportQueueChangesConfirm(entry.name, entry.queueChangeCount, true)"
                     >
                       {{ t("common:vue.settings.importQueueChangesAndResetBaseline", "Import + Reset Baseline") }}
                     </button>
-                    <button class="action-button-danger" @click="deleteEquipmentSet(entry.name)">{{ t("common:controls.delete", "Delete") }}</button>
+                    <button type="button" class="action-button-danger" @click="deleteEquipmentSet(entry.name)">{{ t("common:controls.delete", "Delete") }}</button>
                   </div>
                 </td>
               </tr>
@@ -525,7 +525,7 @@
         </div>
 
         <div class="flex justify-end">
-          <button class="action-button-muted" @click="openPatchNotesModalList">
+          <button type="button" class="action-button-muted" @click="openPatchNotesModalList">
             {{ t("common:vue.settings.patchNotesViewMore", "View More") }}
           </button>
         </div>
@@ -561,10 +561,10 @@
         </div>
 
         <div class="flex flex-wrap items-center justify-end gap-2">
-          <button class="action-button-muted" :disabled="patchNotesPage <= 1" @click="goToPatchNotesPrevPage">
+          <button type="button" class="action-button-muted" :disabled="patchNotesPage <= 1" @click="goToPatchNotesPrevPage">
             {{ t("common:vue.settings.patchNotesPrevPage", "Prev") }}
           </button>
-          <button class="action-button-muted" :disabled="patchNotesPage >= patchNotesTotalPages" @click="goToPatchNotesNextPage">
+          <button type="button" class="action-button-muted" :disabled="patchNotesPage >= patchNotesTotalPages" @click="goToPatchNotesNextPage">
             {{ t("common:vue.settings.patchNotesNextPage", "Next") }}
           </button>
         </div>
@@ -598,14 +598,38 @@
           }}
         </div>
         <div class="flex flex-wrap justify-end gap-2">
-          <button class="action-button-muted" @click="closeImportQueueChangesModal">
+          <button type="button" class="action-button-muted" @click="closeImportQueueChangesModal">
             {{ t("common:vue.settings.cancelImportQueueChanges", "Cancel") }}
           </button>
-          <button class="action-button-primary" @click="confirmImportQueueChanges">
+          <button type="button" class="action-button-primary" @click="confirmImportQueueChanges">
             {{ pendingImportAndResetBaseline
               ? t("common:vue.settings.confirmImportQueueChangesAndBaseline", "Confirm Import + Baseline")
               : t("common:vue.settings.confirmImportQueueChanges", "Confirm Import")
             }}
+          </button>
+        </div>
+      </div>
+    </BaseModal>
+
+    <BaseModal
+      :open="openRestoreNavigateModal"
+      :title="t('common:settingsPage.restoreCompleteTitle', 'Restore Complete')"
+      panel-class="max-w-xl"
+      @close="closeRestoreNavigateModal"
+    >
+      <div class="space-y-3">
+        <p class="text-sm text-slate-200">
+          {{ t("common:settingsPage.playerLoadSuccess", "Player configs restored", { time: restoredSnapshotSavedAtText }) }}
+        </p>
+        <p class="text-sm text-slate-300">
+          {{ t("common:settingsPage.promptGoHomeAfterRestore", "Player configs restored. Go to Home page now?") }}
+        </p>
+        <div class="flex flex-wrap justify-end gap-2">
+          <button type="button" class="action-button-muted" @click="closeRestoreNavigateModal">
+            {{ t("common:vue.common.cancel", "Cancel") }}
+          </button>
+          <button type="button" class="action-button-primary" @click="confirmGoHomeAfterRestore">
+            {{ t("common:menu.home", "Home") }}
           </button>
         </div>
       </div>
@@ -634,6 +658,8 @@ const selectedPriceCategory = ref("__all__");
 const openEditPricesModal = ref(false);
 const openPatchNotesModal = ref(false);
 const openImportQueueChangesModal = ref(false);
+const openRestoreNavigateModal = ref(false);
+const restoredSnapshotSavedAtText = ref("-");
 const pendingImportQueueSetName = ref("");
 const pendingImportQueueChangeCount = ref(0);
 const pendingImportAndResetBaseline = ref(false);
@@ -1091,13 +1117,19 @@ function loadPlayerDataSnapshot() {
   const savedAtText = result.savedAt > 0 ? new Date(result.savedAt).toLocaleString() : "-";
   setPlayerSnapshotStatus(result.messageKey || "common:settingsPage.playerLoadSuccess", "success", { time: savedAtText });
   setMessage("ok", playerSnapshotStatus.value.text);
+  restoredSnapshotSavedAtText.value = savedAtText;
+  openRestoreNavigateModal.value = true;
+}
 
-  const shouldGoHome = window.confirm(
-    t("common:settingsPage.promptGoHomeAfterRestore", "Player configs restored. Go to Home page now?")
-  );
-  if (shouldGoHome) {
-    router.push("/home");
-  }
+function closeRestoreNavigateModal() {
+  openRestoreNavigateModal.value = false;
+  restoredSnapshotSavedAtText.value = "-";
+}
+
+function confirmGoHomeAfterRestore() {
+  openRestoreNavigateModal.value = false;
+  restoredSnapshotSavedAtText.value = "-";
+  router.push("/home");
 }
 
 function deleteSinglePlayerDataSnapshot(playerId) {

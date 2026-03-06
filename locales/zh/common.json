@@ -192,7 +192,8 @@
         "playerDeleteAllSuccess": "已删除全部玩家快照。",
         "playerDeleteSingleSuccess": "已删除玩家 {{playerId}} 的快照数据。",
         "playerDeleteError": "删除玩家快照失败，请检查浏览器存储权限。",
-        "statusReady": "就绪。"
+        "statusReady": "就绪。",
+        "restoreCompleteTitle": "恢复完成"
     },
     "amount": "数量",
     "total": "合计",
@@ -310,7 +311,8 @@
             "download": "下载",
             "loadFile": "载入文件",
             "clear": "清空",
-            "refresh": "刷新"
+            "refresh": "刷新",
+            "cancel": "取消"
         },
         "app": {
             "runtime": "运行状态",
@@ -328,7 +330,13 @@
             "globalErrorTitle": "错误",
             "globalErrorDesc": "如果你要提交问题，请复制下面的错误详情。",
             "globalErrorCopied": "已复制。",
-            "globalErrorCopyFailed": "复制失败。"
+            "globalErrorCopyFailed": "复制失败。",
+            "simulationCompleteTitle": "模拟完成",
+            "simulationCompleteDesc": "模拟已完成，是否前往结果页面查看？",
+            "goToResults": "前往结果页",
+            "stayHere": "留在当前页",
+            "active": "已激活",
+            "setActive": "设为激活"
         },
         "home": {
             "levelsTitle": "等级",
