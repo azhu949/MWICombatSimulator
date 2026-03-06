@@ -160,6 +160,7 @@ npm run extract-game-data -- --input tmp/initClientData.txt --output src/combats
 实现说明：
 
 - userscript 复用主站现有的 `view_profile -> profile_shared` 消息链读取 shareable profile。
+- 主站侧边菜单会在 `新闻 / News` 上方额外注入一个 `战斗模拟器 / Combat Simulator` 快捷入口。
 - 不直接写入主站，不额外调用游戏 HTTP API。
 - 数据转换在本项目内完成，导入格式标记为 `main-site-share-profile`。
 
