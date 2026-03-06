@@ -337,6 +337,8 @@
             "simulationCompleteTitle": "Simulation completed",
             "simulationCompleteDesc": "Simulation completed. Go to the Results page now?",
             "goToResults": "Go to Results",
+            "queueCompleteDesc": "Queue run started. Go to the Multi-round page now?",
+            "goToMultiResults": "Go to Multi-round",
             "stayHere": "Stay Here"
         },
         "home": {
