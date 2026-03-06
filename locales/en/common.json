@@ -1,4 +1,4 @@
-{
+﻿{
     "title": "MWI Combat Simulator",
     "priceSettings": {
         "title": "Price Settings",
@@ -38,7 +38,6 @@
     "menu": {
         "home": "Home",
         "queue": "Queue",
-        "results": "Results",
         "multiResults": "Multi-round",
         "settings": "Settings"
     },
@@ -335,8 +334,8 @@
             "globalErrorCopied": "Copied.",
             "globalErrorCopyFailed": "Copy failed.",
             "simulationCompleteTitle": "Simulation completed",
-            "simulationCompleteDesc": "Simulation completed. Go to the Results page now?",
-            "goToResults": "Go to Results",
+            "simulationCompleteDesc": "Simulation completed. Go to Home results now?",
+            "goToHomeResults": "Go to Home Results",
             "queueCompleteDesc": "Queue run started. Go to the Multi-round page now?",
             "goToMultiResults": "Go to Multi-round",
             "stayHere": "Stay Here"
@@ -364,8 +363,55 @@
             "dungeon": "Dungeon",
             "zone": "Zone",
             "difficultyMax": "Difficulty (max {{max}})",
-            "batchHint": "Batch mode will run multiple targets and aggregate results in the Results page.",
-            "simulationHours": "Simulation Hours",
+            "batchHint": "Batch mode will run multiple targets and aggregate results in the Home results section.",
+            "homeResultsTitle": "Simulation Results",
+            "homeResultsDesc": "Start a simulation and the results will appear here without leaving Home.",
+            "homeResultsEmpty": "Your next simulation result will appear here as soon as it finishes.",
+            "homeResultsRunningTitle": "Simulation in progress",
+            "homeResultsRunning": "Simulation is running. Results will appear here automatically.",
+            "workspaceTabsAria": "Home workspace sections",
+            "workspaceEyebrow": "Workspace",
+            "workspaceTitle": "Simulation Workspace",
+            "workspaceDesc": "Keep key metrics visible while you configure and run simulations.",
+            "workspaceBaseDesc": "Configure the active player, target, and run settings without leaving the main workflow.",
+            "workspaceBuildDesc": "Tune equipment, consumables, and abilities without burying the run controls.",
+            "workspaceMetricsTitle": "Key Metrics",
+            "workspaceBuildTitle": "Build Snapshot",
+            "workspaceAdvancedTitle": "Battle Attributes",
+            "workspaceAdvancedDesc": "Review the full derived combat attributes for the current build.",
+            "workspaceImportExportDesc": "Open the import/export workspace for full player or group config transfer.",
+            "workspaceExperimentalDesc": "Run JSON batch experiments and inspect developer-only simulation controls.",
+            "workspaceCombatSnapshotTitle": "Battle Attributes",
+            "workspaceOpenResultsArea": "Open Results Area",
+            "workspaceViewFullResults": "View Full Results",
+            "workspaceStatusReady": "Results ready",
+            "workspaceStatusIdle": "Ready to run",
+            "workspaceStatusRunningDesc": "Progress and summary metrics stay visible while the simulation runs.",
+            "workspaceStatusReadyDesc": "Latest results are ready. Open the full report whenever you want deeper detail.",
+            "workspaceStatusIdleDesc": "Start a simulation to populate the workspace summary and results area.",
+            "workspaceTabs": {
+                "base": "Base Setup",
+                "baseDesc": "Player, target, mode, run scope, and launch controls.",
+                "build": "Build & Skills",
+                "buildDesc": "Equipment, consumables, abilities, and trigger entry points.",
+                "advanced": "Battle Attributes",
+                "advancedDesc": "Full derived combat attributes for the current build."
+            },
+            "workspaceTargets": {
+                "groupZones": "{{count}} group zones selected",
+                "soloZones": "{{count}} solo zones selected"
+            },
+            "workspaceSummary": {
+                "player": "Active Player",
+                "profile": "Profile",
+                "modeScope": "Mode / Scope",
+                "target": "Target"
+            },
+            "completeResultsEyebrow": "Results",
+            "completeResultsTitle": "Complete Results",
+            "completeResultsRunningDesc": "The full report stays collapsed until you want the detailed breakdown, while progress remains visible here.",
+            "completeResultsDesc": "Open the detailed report only when you need tables, charts, and per-source breakdowns.",
+            "completeResultsCollapsed": "Keep the full report collapsed until you need detailed breakdowns.",            "simulationHours": "Simulation Hours",
             "visualization": "Visualization",
             "hpmpOn": "HP/MP On",
             "hpmpOff": "HP/MP Off",
@@ -571,7 +617,7 @@
             "xpPerHourShort": "XP/h",
             "profitPerHourShort": "Profit/h",
             "summaryTitle": "Summary",
-            "encountersPerHour": "Encounters/h",
+            "encountersPerHour": "Battles/h",
             "deathsPerHour": "Deaths/h",
             "xpPerHour": "XP/h",
             "profitPerHour": "Profit/h",
@@ -694,7 +740,7 @@
             "loading": "Loading...",
             "fetchMarketPrices": "Get Prices",
             "resetVendorPrices": "Reset Vendor Prices",
-            "priceHint": "Results and Queue profit metrics use these modes with vendor fallback.",
+            "priceHint": "Home results and Queue profit metrics use these modes with vendor fallback.",
             "pricesLoading": "Loading market prices...",
             "pricesFetchedAt": "Last fetched: {{time}}",
             "pricesUsingVendor": "Using vendor fallback prices.",
@@ -731,3 +777,4 @@
         }
     }
 }
+

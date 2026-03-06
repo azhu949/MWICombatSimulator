@@ -1,4 +1,4 @@
-{
+﻿{
     "title": "MWI 战斗模拟器",
     "priceSettings": {
         "title": "价格设置",
@@ -38,7 +38,6 @@
     "menu": {
         "home": "主页",
         "queue": "队列",
-        "results": "结果",
         "multiResults": "多轮结果",
         "settings": "设置"
     },
@@ -332,8 +331,8 @@
             "globalErrorCopied": "已复制。",
             "globalErrorCopyFailed": "复制失败。",
             "simulationCompleteTitle": "模拟完成",
-            "simulationCompleteDesc": "模拟已完成，是否前往结果页面查看？",
-            "goToResults": "前往结果页",
+            "simulationCompleteDesc": "模拟已完成，是否前往首页结果区查看？",
+            "goToHomeResults": "前往首页结果区",
             "queueCompleteDesc": "队列已开始运行，是否前往多轮结果页面查看？",
             "goToMultiResults": "前往多轮结果页",
             "stayHere": "留在当前页",
@@ -363,8 +362,55 @@
             "dungeon": "地下城",
             "zone": "区域",
             "difficultyMax": "难度（最大 {{max}}）",
-            "batchHint": "批量模式会运行多个目标，并在结果页聚合展示。",
-            "simulationHours": "模拟时长（小时）",
+            "batchHint": "批量模式会运行多个目标，并在首页结果区聚合展示。",
+            "homeResultsTitle": "模拟结果",
+            "homeResultsDesc": "开始模拟后，结果会直接显示在首页，无需跳转页面。",
+            "homeResultsEmpty": "下一次模拟完成后，结果会直接显示在这里。",
+            "homeResultsRunningTitle": "模拟进行中",
+            "homeResultsRunning": "模拟正在运行，结果会在完成后自动显示在这里。",
+            "workspaceTabsAria": "首页工作区分区",
+            "workspaceEyebrow": "工作台",
+            "workspaceTitle": "模拟工作台",
+            "workspaceDesc": "在配置和运行模拟时，始终保持关键指标可见。",
+            "workspaceBaseDesc": "在主流程中完成角色、目标和运行设置，不必来回滚动页面。",
+            "workspaceBuildDesc": "集中调整装备、消耗品和技能，不让运行控制被淹没。",
+            "workspaceMetricsTitle": "关键指标",
+            "workspaceBuildTitle": "配装快照",
+            "workspaceAdvancedTitle": "战斗属性",
+            "workspaceAdvancedDesc": "查看当前配装完整推导后的战斗属性。",
+            "workspaceImportExportDesc": "打开导入导出工作区，处理完整玩家或队伍配置。",
+            "workspaceExperimentalDesc": "运行 JSON 批量实验，并查看开发中的模拟控制项。",
+            "workspaceCombatSnapshotTitle": "战斗属性",
+            "workspaceOpenResultsArea": "打开结果区域",
+            "workspaceViewFullResults": "查看完整结果",
+            "workspaceStatusReady": "结果已就绪",
+            "workspaceStatusIdle": "可开始模拟",
+            "workspaceStatusRunningDesc": "模拟运行时，进度和摘要指标会一直显示。",
+            "workspaceStatusReadyDesc": "最新结果已准备好，随时可以展开查看完整报告。",
+            "workspaceStatusIdleDesc": "开始一次模拟后，这里会显示摘要指标和结果入口。",
+            "workspaceTabs": {
+                "base": "基础设置",
+                "baseDesc": "角色、目标、模式、范围和启动控制。",
+                "build": "配装与技能",
+                "buildDesc": "装备、消耗品、技能，以及触发器入口。",
+                "advanced": "战斗属性",
+                "advancedDesc": "当前配装完整推导后的战斗属性。"
+            },
+            "workspaceTargets": {
+                "groupZones": "已选择 {{count}} 个组队区域",
+                "soloZones": "已选择 {{count}} 个单人区域"
+            },
+            "workspaceSummary": {
+                "player": "当前玩家",
+                "profile": "档案状态",
+                "modeScope": "模式 / 范围",
+                "target": "目标"
+            },
+            "completeResultsEyebrow": "结果",
+            "completeResultsTitle": "完整结果",
+            "completeResultsRunningDesc": "详细报告默认收起；运行时先在这里查看进度，想看明细时再展开。",
+            "completeResultsDesc": "只有在需要表格、图表和细分明细时再展开完整报告。",
+            "completeResultsCollapsed": "完整报告默认保持收起，只有需要明细时再展开。",            "simulationHours": "模拟时长（小时）",
             "visualization": "可视化",
             "hpmpOn": "开启 HP/MP",
             "hpmpOff": "关闭 HP/MP",
@@ -570,7 +616,7 @@
             "xpPerHourShort": "XP/h",
             "profitPerHourShort": "收益/h",
             "summaryTitle": "汇总",
-            "encountersPerHour": "遭遇/h",
+            "encountersPerHour": "战斗次数/h",
             "deathsPerHour": "死亡/h",
             "xpPerHour": "XP/h",
             "profitPerHour": "收益/h",
@@ -693,7 +739,7 @@
             "loading": "加载中...",
             "fetchMarketPrices": "获取价格",
             "resetVendorPrices": "重置为商店价",
-            "priceHint": "结果页与队列页的收益计算将使用这些模式，并在缺价时回退到商店价。",
+            "priceHint": "首页结果区与队列页的收益计算将使用这些模式，并在缺价时回退到商店价。",
             "pricesLoading": "正在加载市场价格...",
             "pricesFetchedAt": "最近拉取：{{time}}",
             "pricesUsingVendor": "当前使用商店回退价格。",
@@ -730,3 +776,4 @@
         }
     }
 }
+

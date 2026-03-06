@@ -10,7 +10,6 @@
           <div class="flex flex-wrap items-center gap-2">
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/home">{{ t('common:menu.home', 'Home') }}</RouterLink>
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/queue">{{ t('common:menu.queue', 'Queue') }}</RouterLink>
-            <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/results">{{ t('common:menu.results', 'Results') }}</RouterLink>
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/multi-results">{{ t('common:menu.multiResults', 'Multi-round') }}</RouterLink>
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/settings">{{ t('common:menu.settings', 'Settings') }}</RouterLink>
             <button type="button" class="action-button-muted" @click="toggleTheme">
@@ -159,15 +158,15 @@
       initial-focus-selector="[data-simulation-results-confirm]"
       @close="closeSimulationCompleteModal"
     >
-      <p class="text-sm text-slate-300">{{ t("common:vue.app.simulationCompleteDesc", "Simulation completed. Go to the Results page now?") }}</p>
+      <p class="text-sm text-slate-300">{{ t("common:vue.app.simulationCompleteDesc", "Simulation completed. Go to Home results now?") }}</p>
       <div class="flex flex-wrap items-center gap-2">
         <button
           type="button"
           class="action-button-primary"
           data-simulation-results-confirm
-          @click="goToSimulationResults"
+          @click="goToHomeResults"
         >
-          {{ t("common:vue.app.goToResults", "Go to Results") }}
+          {{ t("common:vue.app.goToHomeResults", "Go to Home Results") }}
         </button>
         <button type="button" class="action-button-muted" @click="closeSimulationCompleteModal">
           {{ t("common:vue.app.stayHere", "Stay Here") }}
@@ -425,10 +424,10 @@ function closeQueueCompleteModal() {
   queueCompleteModalOpen.value = false;
 }
 
-async function goToSimulationResults() {
+async function goToHomeResults() {
   closeSimulationCompleteModal();
-  if (route.name !== "results") {
-    await router.push({ name: "results" });
+  if (route.name !== "home" || route.query.focus !== "results") {
+    await router.push({ name: "home", query: { focus: "results" } });
   }
 }
 
@@ -454,7 +453,7 @@ watch(
   (nextNoticeId, prevNoticeId) => {
     const nextId = Number(nextNoticeId || 0);
     const prevId = Number(prevNoticeId || 0);
-    if (nextId <= prevId || !hasSimulationResults.value || route.name === "results") {
+    if (nextId <= prevId || !hasSimulationResults.value || route.name === "home") {
       return;
     }
     simulationCompleteModalOpen.value = true;
@@ -473,7 +472,7 @@ watch(
 watch(
   () => route.name,
   (nextRouteName) => {
-    if (nextRouteName === "results") {
+    if (nextRouteName === "home") {
       closeSimulationCompleteModal();
     }
     if (nextRouteName === "multi-results") {
