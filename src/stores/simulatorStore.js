@@ -4682,9 +4682,17 @@ export const useSimulatorStore = defineStore("simulator", {
             this.pricing.error = "";
             clearMarketCacheFromStorage();
         },
-        async ensureMarketPricesLoaded() {
+        async ensureMarketPricesLoaded(forceRefresh = false) {
             if (this.pricing.isLoading) {
                 return null;
+            }
+
+            if (forceRefresh) {
+                try {
+                    return await this.fetchMarketPrices();
+                } catch (error) {
+                    return null;
+                }
             }
 
             const hasEnhancementQuotes = Object.keys(this.pricing?.enhancementQuotesByItem || {}).length > 0;

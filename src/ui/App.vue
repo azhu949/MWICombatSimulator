@@ -280,7 +280,7 @@ function toggleTheme() {
 }
 
 function runDeferredInitialization() {
-  simulator.ensureMarketPricesLoaded();
+  simulator.ensureMarketPricesLoaded(true);
   simulator.ensureAbilityUpgradeReferenceDataLoaded();
 }
 
