@@ -3,7 +3,7 @@
 // @name:zh      MWI Combat Simulator 主站一键导入
 // @name:zh-CN   MWI Combat Simulator 主站一键导入
 // @namespace    https://azhu949.github.io/MWICombatSimulator
-// @version      0.1.11
+// @version      0.1.12
 // @license      ISC
 // @description  Import the current Milky Way Idle character into MWI Combat Simulator with one click.
 // @description:zh      一键将 Milky Way Idle 主站当前角色导入到 MWI Combat Simulator。
@@ -39,6 +39,12 @@
     const PAGE_REQUEST_TIMEOUT_MS = 10000;
     const APP_IMPORT_TIMEOUT_MS = 8000;
     const STORAGE_POLL_INTERVAL_MS = 250;
+    const SHAREABLE_PROFILE_MODAL_SELECTOR = '[class*="SharableProfile_modalContainer__"]';
+    const SHAREABLE_PROFILE_BACKGROUND_SELECTOR = '[class*="SharableProfile_background__"]';
+    const SHAREABLE_PROFILE_CLOSE_BUTTON_SELECTOR = '[class*="SharableProfile_closeButton__"]';
+    const SHAREABLE_PROFILE_NAME_SELECTOR = '[class*="SharableProfile_name__"]';
+    const SHAREABLE_PROFILE_CLEANUP_TIMEOUT_MS = 2500;
+    const SHAREABLE_PROFILE_CLEANUP_POLL_INTERVAL_MS = 100;
     const UI_TEXT = {
         en: {
             button: "Import from Main Site",
@@ -181,6 +187,204 @@
 
     function clonePlainObject(value) {
         return value && typeof value === "object" ? JSON.parse(JSON.stringify(value)) : {};
+    }
+
+    function normalizeComparableText(value) {
+        return String(value || "")
+            .trim()
+            .replace(/\s+/g, " ")
+            .toLowerCase();
+    }
+
+    function isCloseLabelText(value) {
+        const normalized = normalizeComparableText(value);
+        return normalized === "close" || normalized === "关闭";
+    }
+
+    function isDomElement(value) {
+        return Boolean(value)
+            && typeof value === "object"
+            && Number(value.nodeType) === 1
+            && typeof value.querySelector === "function";
+    }
+
+    function isConnectedDomElement(value) {
+        return isDomElement(value) && value.isConnected !== false;
+    }
+
+    function isClickableDomElement(value) {
+        return isConnectedDomElement(value)
+            && typeof value.dispatchEvent === "function";
+    }
+
+    function getSharableProfileModalContainers() {
+        return Array.from(document.querySelectorAll(SHAREABLE_PROFILE_MODAL_SELECTOR))
+            .filter((element) => isConnectedDomElement(element));
+    }
+
+    function readSharableProfileCharacterName(container) {
+        if (!isDomElement(container)) {
+            return "";
+        }
+
+        const explicitName = String(container.querySelector(SHAREABLE_PROFILE_NAME_SELECTOR)?.textContent || "").trim();
+        if (explicitName) {
+            return explicitName;
+        }
+
+        const headingCandidates = container.querySelectorAll("h1, h2, h3, [data-character-name]");
+        for (const candidate of headingCandidates) {
+            const text = String(candidate?.textContent || "").trim();
+            if (text && !isCloseLabelText(text)) {
+                return text;
+            }
+        }
+
+        return "";
+    }
+
+    function getLatestSharableProfileModalContainer(containers) {
+        const list = Array.isArray(containers) ? containers.filter((container) => isConnectedDomElement(container)) : [];
+        return list.length > 0 ? list[list.length - 1] : null;
+    }
+
+    function createSharableProfileModalSnapshot() {
+        const containers = getSharableProfileModalContainers();
+        return {
+            count: containers.length,
+            characterNames: containers
+                .map((container) => readSharableProfileCharacterName(container))
+                .filter((name) => String(name || "").trim().length > 0),
+            capturedAt: Date.now(),
+        };
+    }
+
+    function snapshotHasSharableProfileCharacter(snapshot, characterName) {
+        const normalizedCharacterName = normalizeComparableText(characterName);
+        if (!normalizedCharacterName) {
+            return false;
+        }
+
+        const characterNames = Array.isArray(snapshot?.characterNames) ? snapshot.characterNames : [];
+        return characterNames.some((name) => normalizeComparableText(name) === normalizedCharacterName);
+    }
+
+    function findSharableProfileCloseControl(container) {
+        if (!isDomElement(container)) {
+            return null;
+        }
+
+        const directCloseButton = container.querySelector(SHAREABLE_PROFILE_CLOSE_BUTTON_SELECTOR);
+        if (isClickableDomElement(directCloseButton)) {
+            return directCloseButton;
+        }
+
+        const candidateSelectors = [
+            "button",
+            "[role=button]",
+            "img[alt]",
+            "[aria-label]",
+            "[title]",
+            "div",
+            "span",
+        ].join(", ");
+
+        const candidateElements = container.querySelectorAll(candidateSelectors);
+        for (const candidate of candidateElements) {
+            const labels = [
+                candidate.getAttribute?.("aria-label"),
+                candidate.getAttribute?.("title"),
+                candidate.getAttribute?.("alt"),
+                candidate.textContent,
+            ];
+
+            if (!labels.some((label) => isCloseLabelText(label))) {
+                continue;
+            }
+
+            const clickableAncestor = candidate.closest("button, [role=button], div, span");
+            if (isClickableDomElement(clickableAncestor)) {
+                return clickableAncestor;
+            }
+
+            if (isClickableDomElement(candidate)) {
+                return candidate;
+            }
+        }
+
+        return null;
+    }
+
+    function clickSharableProfileCloseTarget(target) {
+        if (!isClickableDomElement(target)) {
+            return false;
+        }
+
+        try {
+            if (typeof target.click === "function") {
+                target.click();
+                return true;
+            }
+
+            target.dispatchEvent(new MouseEvent("click", {
+                bubbles: true,
+                cancelable: true,
+                view: window,
+            }));
+            return true;
+        } catch (_error) {
+            return false;
+        }
+    }
+
+    function scheduleSharableProfileModalCleanup(pendingRequest, characterName) {
+        const normalizedCharacterName = normalizeComparableText(characterName || pendingRequest?.characterName);
+        if (!normalizedCharacterName) {
+            return;
+        }
+
+        const modalSnapshot = pendingRequest?.modalSnapshot;
+        if (snapshotHasSharableProfileCharacter(modalSnapshot, normalizedCharacterName)) {
+            return;
+        }
+
+        const baselineCount = Math.max(0, Number(modalSnapshot?.count || 0));
+        const canCloseWithoutNewModalCount = baselineCount === 0;
+        const deadlineAt = Date.now() + SHAREABLE_PROFILE_CLEANUP_TIMEOUT_MS;
+
+        function attemptCleanup() {
+            const containers = getSharableProfileModalContainers();
+            const matchingContainers = containers.filter((container) => {
+                return normalizeComparableText(readSharableProfileCharacterName(container)) === normalizedCharacterName;
+            });
+
+            const hasNewTopLevelModal = containers.length > baselineCount;
+            const targetContainer = matchingContainers.length > 0
+                ? matchingContainers[matchingContainers.length - 1]
+                : ((canCloseWithoutNewModalCount || hasNewTopLevelModal)
+                    ? getLatestSharableProfileModalContainer(containers)
+                    : null);
+
+            if (targetContainer) {
+                const background = targetContainer.querySelector(SHAREABLE_PROFILE_BACKGROUND_SELECTOR);
+                if (clickSharableProfileCloseTarget(background)) {
+                    return;
+                }
+
+                const closeControl = findSharableProfileCloseControl(targetContainer);
+                if (clickSharableProfileCloseTarget(closeControl)) {
+                    return;
+                }
+            }
+
+            if (Date.now() >= deadlineAt) {
+                return;
+            }
+
+            window.setTimeout(attemptCleanup, SHAREABLE_PROFILE_CLEANUP_POLL_INTERVAL_MS);
+        }
+
+        window.setTimeout(attemptCleanup, 0);
     }
 
     function replaceConsumableSlotMaps(foodMap, drinkMap) {
@@ -738,6 +942,8 @@
                 continue;
             }
 
+            scheduleSharableProfileModalCleanup(pendingRequest, characterName);
+
             resolveMainSitePendingRequest(requestId, {
                 requestId,
                 ok: true,
@@ -906,6 +1112,8 @@
 
             mainSiteState.pendingRequests.set(normalizedRequestId, {
                 characterName,
+                requestStartedAt: Date.now(),
+                modalSnapshot: createSharableProfileModalSnapshot(),
                 timeoutId,
                 resolve,
             });
