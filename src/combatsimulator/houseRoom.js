@@ -25,6 +25,23 @@ class HouseRoom {
             }
         }
     }
+
+    static createFromDTO(dto) {
+        if (Array.isArray(dto)) {
+            return HouseRoom.createFromDTO({
+                hrid: dto[0],
+                level: dto[1],
+            });
+        }
+
+        const hrid = String(dto?.hrid ?? "");
+        const level = Number(dto?.level ?? 0);
+        if (!hrid || level <= 0) {
+            return null;
+        }
+
+        return new HouseRoom(hrid, level);
+    }
 }
 
 export default HouseRoom;
