@@ -1,16 +1,14 @@
-const TA_MARKER = "const Ta =";
-const LABYRINTH_PATCH_MARKER = "const LABYRINTH_TRANSLATION_PATCH =";
 const OFFICIAL_GAME_ORIGIN = "https://www.milkywayidle.com";
 const OFFICIAL_ASSET_MANIFEST_PATH = "/asset-manifest.json";
 const OFFICIAL_MAIN_CHUNK_REGEX = /<script[^>]+src=["'](\/static\/js\/main\.[^"']+?\.chunk\.js)["']/i;
 const OFFICIAL_INIT_RESOURCES_REGEX = /\.init\(\{resources:([A-Za-z_$][\w$]*),fallbackLng:/;
 
-let legacyTranslationPromise = null;
+let translationBundlePromise = null;
 
-function resolveLegacyI18nUrl() {
+function resolveLocalTranslationUrl(language) {
     const baseUrl = import.meta?.env?.BASE_URL || "/";
     const normalizedBase = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
-    return `${normalizedBase}js/i18n.js`;
+    return `${normalizedBase}locales/${language}/translation.json`;
 }
 
 function extractObjectLiteralAfter(source, marker) {
@@ -60,7 +58,7 @@ function extractObjectLiteralAfter(source, marker) {
         }
 
         if (inDoubleQuote) {
-            if (!escaped && char === "\"") {
+            if (!escaped && char === '"') {
                 inDoubleQuote = false;
             }
             escaped = !escaped && char === "\\";
@@ -93,7 +91,7 @@ function extractObjectLiteralAfter(source, marker) {
             continue;
         }
 
-        if (char === "\"") {
+        if (char === '"') {
             inDoubleQuote = true;
             escaped = false;
             continue;
@@ -123,12 +121,14 @@ function extractObjectLiteralAfter(source, marker) {
 
 function parseObjectLiteral(literal, label) {
     if (!literal) {
-        throw new Error(`Cannot parse legacy i18n object: ${label} missing`);
+        throw new Error(`Missing ${label} literal`);
     }
 
-    // The source is local project data and is parsed only to recover the literal object.
-    const factory = new Function(`"use strict"; return (${literal});`);
-    return factory();
+    try {
+        return Function(`"use strict"; return (${literal});`)();
+    } catch (error) {
+        throw new Error(`Failed to parse ${label}: ${error.message || error}`);
+    }
 }
 
 function extractResourcesVariableName(source) {
@@ -136,15 +136,18 @@ function extractResourcesVariableName(source) {
     return match?.[1] || "";
 }
 
-function extractObjectLiteralForVariable(source, variableName) {
-    const name = String(variableName || "").trim();
+function extractObjectLiteralForVariable(source, name) {
     if (!name) {
         return "";
     }
 
     const candidates = [
         `const ${name}=`,
+        `const ${name} =`,
+        `let ${name}=`,
+        `let ${name} =`,
         `var ${name}=`,
+        `var ${name} =`,
         `${name}=`,
     ];
 
@@ -158,22 +161,9 @@ function extractObjectLiteralForVariable(source, variableName) {
     return "";
 }
 
-function mergeLabyrinthPatch(translationMap, labyrinthPatch) {
-    if (!translationMap || !labyrinthPatch) {
-        return;
-    }
-
-    if (translationMap.monsterNames && labyrinthPatch.monsterNames) {
-        Object.assign(translationMap.monsterNames, labyrinthPatch.monsterNames);
-    }
-
-    if (translationMap.itemNames && labyrinthPatch.itemNames) {
-        Object.assign(translationMap.itemNames, labyrinthPatch.itemNames);
-    }
-}
-
 async function resolveOfficialMainChunkUrl() {
     let manifestError = null;
+
     try {
         const manifestResponse = await fetch(`${OFFICIAL_GAME_ORIGIN}${OFFICIAL_ASSET_MANIFEST_PATH}`);
         if (manifestResponse.ok) {
@@ -207,7 +197,7 @@ async function resolveOfficialMainChunkUrl() {
     }
 }
 
-async function loadLegacyTranslationBundlesFromOfficialClient() {
+async function loadOfficialTranslationBundles() {
     const mainChunkUrl = await resolveOfficialMainChunkUrl();
     const mainChunkResponse = await fetch(mainChunkUrl);
     if (!mainChunkResponse.ok) {
@@ -236,45 +226,43 @@ async function loadLegacyTranslationBundlesFromOfficialClient() {
     };
 }
 
-async function loadLegacyTranslationBundlesFromLocalFile() {
-    const response = await fetch(resolveLegacyI18nUrl());
-    if (!response.ok) {
-        throw new Error(`Failed to load legacy i18n source: ${response.status}`);
+async function loadLocalTranslationBundles() {
+    const [enResponse, zhResponse] = await Promise.all([
+        fetch(resolveLocalTranslationUrl("en")),
+        fetch(resolveLocalTranslationUrl("zh")),
+    ]);
+
+    if (!enResponse.ok) {
+        throw new Error(`Failed to load local en translation bundle: ${enResponse.status}`);
     }
 
-    const source = await response.text();
-    const taLiteral = extractObjectLiteralAfter(source, TA_MARKER);
-    const patchLiteral = extractObjectLiteralAfter(source, LABYRINTH_PATCH_MARKER);
-
-    const ta = parseObjectLiteral(taLiteral, "Ta");
-    const patch = patchLiteral ? parseObjectLiteral(patchLiteral, "LABYRINTH_TRANSLATION_PATCH") : null;
-
-    const enTranslation = { ...(ta?.en?.translation || {}) };
-    const zhTranslation = { ...(ta?.zh?.translation || {}) };
-
-    if (patch) {
-        mergeLabyrinthPatch(enTranslation, patch?.en);
-        mergeLabyrinthPatch(zhTranslation, patch?.zh);
+    if (!zhResponse.ok) {
+        throw new Error(`Failed to load local zh translation bundle: ${zhResponse.status}`);
     }
 
     return {
-        en: enTranslation,
-        zh: zhTranslation,
+        en: await enResponse.json(),
+        zh: await zhResponse.json(),
     };
 }
 
-async function loadLegacyTranslationBundlesInternal() {
+async function loadTranslationBundlesInternal() {
     try {
-        return await loadLegacyTranslationBundlesFromOfficialClient();
+        return await loadOfficialTranslationBundles();
     } catch (officialError) {
-        console.warn("Failed to load official translation bundle, fallback to local js/i18n.js", officialError);
-        return loadLegacyTranslationBundlesFromLocalFile();
+        console.warn("Failed to load official translation bundle, fallback to local translation.json", officialError);
+        return loadLocalTranslationBundles();
     }
 }
 
-export function loadLegacyTranslationBundles() {
-    if (!legacyTranslationPromise) {
-        legacyTranslationPromise = loadLegacyTranslationBundlesInternal();
+export function loadTranslationBundles() {
+    if (!translationBundlePromise) {
+        translationBundlePromise = loadTranslationBundlesInternal();
     }
-    return legacyTranslationPromise;
+
+    return translationBundlePromise;
+}
+
+export function resetTranslationBundleCache() {
+    translationBundlePromise = null;
 }

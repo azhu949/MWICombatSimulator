@@ -760,24 +760,30 @@ describe("simulatorStore", () => {
         expect(simulator.queue.importedBaselineByPlayer["1"].skillExperience.stamina).toBe(654321);
     });
 
-    it("restores zone and difficulty from player data snapshot without forcing labyrinth mode", () => {
+    it("restores zone and difficulty from modern player data snapshot without forcing labyrinth mode", () => {
         const simulator = useSimulatorStore();
         const payload = {
             version: 1,
             savedAt: Date.now(),
             playerDataMap: {
                 "1": JSON.stringify({
+                    version: 2,
                     player: {
-                        staminaLevel: 2,
-                        equipment: [],
+                        levels: {
+                            stamina: 2,
+                        },
                     },
-                    zone: "/actions/combat/jungle_planet",
-                    dungeon: "/actions/combat/chimerical_den",
-                    difficulty: "3",
-                    simulationTime: "24",
-                    // legacy export may still carry default labyrinth; this should not switch to labyrinth mode
-                    labyrinth: "/monsters/cyclops",
-                    roomLevel: "100",
+                    simulationSettings: {
+                        mode: "zone",
+                        runScope: "single",
+                        useDungeon: false,
+                        zoneHrid: "/actions/combat/jungle_planet",
+                        dungeonHrid: "/actions/combat/chimerical_den",
+                        difficultyTier: 3,
+                        simulationTimeHours: 24,
+                        labyrinthHrid: "/monsters/cyclops",
+                        roomLevel: 100,
+                    },
                 }),
             },
         };
@@ -802,13 +808,20 @@ describe("simulatorStore", () => {
             savedAt: Date.now(),
             playerDataMap: {
                 "1": JSON.stringify({
+                    version: 2,
                     player: {
-                        staminaLevel: 2,
-                        equipment: [],
+                        levels: {
+                            stamina: 2,
+                        },
                     },
-                    zone: "/actions/combat/jungle_planet",
-                    difficulty: "1",
-                    simulationTime: "24",
+                    simulationSettings: {
+                        mode: "zone",
+                        runScope: "single",
+                        useDungeon: false,
+                        zoneHrid: "/actions/combat/jungle_planet",
+                        difficultyTier: 1,
+                        simulationTimeHours: 24,
+                    },
                 }),
             },
         };
@@ -842,6 +855,67 @@ describe("simulatorStore", () => {
         });
     });
 
+    it("supports manual legacy solo import payloads", () => {
+        const simulator = useSimulatorStore();
+
+        const result = simulator.importSoloConfig(JSON.stringify({
+            player: {
+                intelligenceLevel: 102,
+                magicLevel: 125,
+                staminaLevel: 103,
+                defenseLevel: 112,
+                meleeLevel: 66,
+                attackLevel: 117,
+                rangedLevel: 52,
+                equipment: [
+                    {
+                        itemLocationHrid: "/item_locations/head",
+                        itemHrid: "/items/magicians_hat",
+                        enhancementLevel: 6,
+                    },
+                    {
+                        itemLocationHrid: "/item_locations/main_hand",
+                        itemHrid: "/items/blazing_trident",
+                        enhancementLevel: 10,
+                    },
+                ],
+            },
+            food: {
+                "/action_types/combat": [
+                    { itemHrid: "/items/star_fruit_gummy" },
+                    { itemHrid: "/items/dragon_fruit_yogurt" },
+                    { itemHrid: "/items/marsberry_cake" },
+                ],
+            },
+            drinks: {
+                "/action_types/combat": [
+                    { itemHrid: "/items/wisdom_coffee" },
+                    { itemHrid: "/items/super_magic_coffee" },
+                    { itemHrid: "/items/channeling_coffee" },
+                ],
+            },
+            abilities: [
+                { abilityHrid: "/abilities/mystic_aura", level: 26 },
+                { abilityHrid: "/abilities/elemental_affinity", level: 60 },
+                { abilityHrid: "/abilities/firestorm", level: 60 },
+                { abilityHrid: "/abilities/flame_blast", level: 70 },
+                { abilityHrid: "/abilities/fireball", level: 70 },
+            ],
+            triggerMap: {
+                "/abilities/mystic_aura": [],
+            },
+            houseRooms: {
+                "/house_rooms/archery_range": 1,
+            },
+        }), "1");
+
+        expect(result.detectedFormat).toBe("legacy-solo");
+        expect(simulator.players[0].levels.attack).toBe(117);
+        expect(simulator.players[0].equipment.weapon.itemHrid).toBe("/items/blazing_trident");
+        expect(simulator.players[0].food[0]).toBe("/items/star_fruit_gummy");
+        expect(simulator.players[0].abilities[4].abilityHrid).toBe("/abilities/fireball");
+    });
+
     it("clears achievements only when import explicitly provides empty achievements", () => {
         const simulator = useSimulatorStore();
         simulator.players[0].achievements = {
@@ -849,36 +923,50 @@ describe("simulatorStore", () => {
         };
 
         simulator.importSoloConfig(JSON.stringify({
+            version: 2,
             player: {
-                staminaLevel: 2,
-                equipment: [],
+                levels: {
+                    stamina: 2,
+                },
+                achievements: {},
             },
-            achievements: {},
-            zone: "/actions/combat/jungle_planet",
-            difficulty: "1",
-            simulationTime: "24",
+            simulationSettings: {
+                mode: "zone",
+                runScope: "single",
+                useDungeon: false,
+                zoneHrid: "/actions/combat/jungle_planet",
+                difficultyTier: 1,
+                simulationTimeHours: 24,
+            },
         }), "1");
 
         expect(simulator.players[0].achievements).toEqual({});
     });
 
-    it("normalizes legacy snapshot display names to action and monster hrids", () => {
+    it("reads modern snapshot hrids for summary rows", () => {
         const simulator = useSimulatorStore();
         const payload = {
             version: 1,
             savedAt: Date.now(),
             playerDataMap: {
                 "1": JSON.stringify({
+                    version: 2,
                     player: {
-                        staminaLevel: 2,
-                        equipment: [],
+                        levels: {
+                            stamina: 2,
+                        },
                     },
-                    zone: "Jungle Planet",
-                    dungeon: "Chimerical Den",
-                    labyrinth: "Cyclops",
-                    difficulty: "1",
-                    simulationTime: "24",
-                    roomLevel: "100",
+                    simulationSettings: {
+                        mode: "zone",
+                        runScope: "single",
+                        useDungeon: false,
+                        zoneHrid: "/actions/combat/jungle_planet",
+                        dungeonHrid: "/actions/combat/chimerical_den",
+                        labyrinthHrid: "/monsters/cyclops",
+                        difficultyTier: 1,
+                        simulationTimeHours: 24,
+                        roomLevel: 100,
+                    },
                 }),
             },
         };
@@ -930,7 +1018,7 @@ describe("simulatorStore", () => {
         });
     });
 
-    it("loads legacy equipment sets without queue changes metadata", () => {
+    it("ignores non-modern equipment sets without queue changes metadata", () => {
         const simulator = useSimulatorStore();
         const legacySnapshot = JSON.parse(JSON.stringify(simulator.activePlayer));
 
@@ -944,9 +1032,8 @@ describe("simulatorStore", () => {
         simulator.refreshEquipmentSets();
         const loadedRow = simulator.equipmentSetEntries.find((entry) => entry.name === "Legacy Set");
 
-        expect(loadedRow).toBeTruthy();
-        expect(loadedRow.queueChangeCount).toBe(0);
-        expect(simulator.equipmentSets["Legacy Set"]?.snapshot).toBeUndefined();
+        expect(loadedRow).toBeUndefined();
+        expect(simulator.equipmentSets["Legacy Set"]).toBeUndefined();
     });
 
     it("imports queue changes by rebuilding baseline and resetting custom cost maps", async () => {

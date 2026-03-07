@@ -1,7 +1,7 @@
 import i18next from "i18next";
 import enCommon from "../../../locales/en/common.json";
 import zhCommon from "../../../locales/zh/common.json";
-import { loadLegacyTranslationBundles } from "./legacyTranslationBundle.js";
+import { loadTranslationBundles } from "./translationBundle.js";
 
 let initialized = false;
 
@@ -36,12 +36,11 @@ export async function initI18n() {
     });
 
     try {
-        const legacyBundles = await loadLegacyTranslationBundles();
-        i18next.addResourceBundle("en", "translation", legacyBundles.en, true, true);
-        i18next.addResourceBundle("zh", "translation", legacyBundles.zh, true, true);
+        const translationBundles = await loadTranslationBundles();
+        i18next.addResourceBundle("en", "translation", translationBundles.en, true, true);
+        i18next.addResourceBundle("zh", "translation", translationBundles.zh, true, true);
     } catch (error) {
-        // Keep UI usable when legacy bundle loading fails; fields will fall back to game data names.
-        console.warn("Failed to load legacy translation bundle", error);
+        console.warn("Failed to load translation bundle", error);
     }
 
     initialized = true;

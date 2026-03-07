@@ -6,7 +6,7 @@ import Player from "../../combatsimulator/player.js";
 import Zone from "../../combatsimulator/zone.js";
 import { importSoloConfig } from "../importExportMapper.js";
 import { buildPlayersForSimulation, createEmptyPlayerConfig } from "../playerMapper.js";
-import legacySoloJunglePlanetFixture from "./fixtures/legacySoloJunglePlanetFixture.json";
+import modernPlayerJunglePlanetFixture from "./fixtures/modernPlayerJunglePlanetFixture.json";
 
 const ONE_HOUR = 60 * 60 * 1e9;
 const FIXTURE_ZONE_HRID = "/actions/combat/jungle_planet";
@@ -65,7 +65,7 @@ function createCompletedAchievementMapForFirstTier() {
 
 function createImportedPlayerConfig(overrides = {}) {
     const result = importSoloConfig(
-        JSON.stringify(legacySoloJunglePlanetFixture),
+        JSON.stringify(modernPlayerJunglePlanetFixture),
         createEmptyPlayerConfig(1),
         createSimulationSettings()
     );
@@ -117,7 +117,7 @@ function totalExperience(simResult, playerHrid = "player1") {
 }
 
 describe("player worker roundtrip parity", () => {
-    it("preserves imported legacy permanent buffs across worker roundtrip", () => {
+    it("preserves imported permanent buffs across worker roundtrip", () => {
         const achievementMap = createCompletedAchievementMapForFirstTier();
         const directPlayer = activatePermanentBuffs(createSimulationPlayer({ achievements: achievementMap }));
         const roundtripPlayer = activatePermanentBuffs(Player.createFromDTO(structuredClone(directPlayer)));
@@ -129,7 +129,7 @@ describe("player worker roundtrip parity", () => {
         expect(capturePermanentBuffCombatStats(roundtripPlayer)).toEqual(capturePermanentBuffCombatStats(directPlayer));
     });
 
-    it("matches deterministic combat results after worker roundtrip for the jungle planet legacy fixture", async () => {
+    it("matches deterministic combat results after worker roundtrip for the jungle planet modern fixture", async () => {
         const seed = 20260307;
         const directResult = await runDeterministicSimulation(createSimulationPlayer(), seed);
         const roundtripResult = await runDeterministicSimulation(
