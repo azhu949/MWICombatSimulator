@@ -1214,4 +1214,78 @@ describe("simulatorStore", () => {
 
         expect(simulator.fetchMarketPrices).toHaveBeenCalledTimes(1);
     });
+
+    it("does not refetch market prices when cached data is complete and refresh is not forced", async () => {
+        const simulator = useSimulatorStore();
+        simulator.pricing.lastFetchedAt = Date.now();
+        simulator.pricing.sourceUrl = "https://example.com";
+        simulator.pricing.enhancementQuotesByItem = {
+            "/items/test_item": {
+                "0": { ask: 10, bid: 9 },
+            },
+        };
+        simulator.pricing.enhancementLevelsByItem = {
+            "/items/test_item": [1],
+        };
+        simulator.fetchMarketPrices = vi.fn(async () => ({
+            sourceUrl: "https://example.com",
+            lastFetchedAt: Date.now(),
+        }));
+
+        await simulator.ensureMarketPricesLoaded();
+
+        expect(simulator.fetchMarketPrices).not.toHaveBeenCalled();
+    });
+
+    it("force refreshes market prices when cached data already exists", async () => {
+        const simulator = useSimulatorStore();
+        simulator.pricing.lastFetchedAt = Date.now();
+        simulator.pricing.sourceUrl = "https://example.com";
+        simulator.pricing.enhancementQuotesByItem = {
+            "/items/test_item": {
+                "0": { ask: 10, bid: 9 },
+            },
+        };
+        simulator.pricing.enhancementLevelsByItem = {
+            "/items/test_item": [1],
+        };
+        simulator.fetchMarketPrices = vi.fn(async () => ({
+            sourceUrl: "https://example.com",
+            lastFetchedAt: Date.now(),
+        }));
+
+        await simulator.ensureMarketPricesLoaded(true);
+
+        expect(simulator.fetchMarketPrices).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not force refresh market prices while a load is already in progress", async () => {
+        const simulator = useSimulatorStore();
+        simulator.pricing.isLoading = true;
+        simulator.fetchMarketPrices = vi.fn(async () => ({
+            sourceUrl: "https://example.com",
+            lastFetchedAt: Date.now(),
+        }));
+
+        const result = await simulator.ensureMarketPricesLoaded(true);
+
+        expect(result).toBeNull();
+        expect(simulator.fetchMarketPrices).not.toHaveBeenCalled();
+    });
+
+    it("swallows force refresh errors and preserves pricing error state", async () => {
+        const simulator = useSimulatorStore();
+        simulator.pricing.lastFetchedAt = Date.now();
+        simulator.pricing.sourceUrl = "https://example.com";
+        simulator.fetchMarketPrices = vi.fn(async () => {
+            simulator.pricing.error = "boom";
+            throw new Error("boom");
+        });
+
+        const result = await simulator.ensureMarketPricesLoaded(true);
+
+        expect(result).toBeNull();
+        expect(simulator.fetchMarketPrices).toHaveBeenCalledTimes(1);
+        expect(simulator.pricing.error).toBe("boom");
+    });
 });
