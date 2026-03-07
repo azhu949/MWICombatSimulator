@@ -10,10 +10,7 @@ export default defineConfig({
     },
     build: {
         rollupOptions: {
-            input: {
-                main: resolve(process.cwd(), "index.html"),
-                legacy: resolve(process.cwd(), "legacy.html"),
-            },
+            input: resolve(process.cwd(), "index.html"),
         },
     },
 });

@@ -42,7 +42,9 @@ if (fileExists(indexHtmlPath)) {
 
 const localeFiles = [
     path.join(distDir, "locales", "en", "common.json"),
+    path.join(distDir, "locales", "en", "translation.json"),
     path.join(distDir, "locales", "zh", "common.json"),
+    path.join(distDir, "locales", "zh", "translation.json"),
 ];
 
 localeFiles.forEach((localeFile) => {
@@ -58,7 +60,7 @@ let multiWorkerBundleName = "";
 
 if (fileExists(assetsDir)) {
     const assetFileNames = fs.readdirSync(assetsDir);
-    const mainBundleName = assetFileNames.find((name) => /^main-.*\.js$/.test(name));
+    const mainBundleName = assetFileNames.find((name) => /^(main|index)-.*\.js$/.test(name));
     workerBundleName = assetFileNames.find((name) => /^worker-.*\.js$/.test(name)) || "";
     multiWorkerBundleName = assetFileNames.find((name) => /^multiWorker-.*\.js$/.test(name)) || "";
 
@@ -88,20 +90,6 @@ if (mainBundlePath && fileExists(mainBundlePath)) {
         );
     }
 }
-
-const legacyHtmlPath = path.join(distDir, "legacy.html");
-assertCondition(fileExists(legacyHtmlPath), "Missing dist/legacy.html.");
-
-if (fileExists(legacyHtmlPath)) {
-    const legacyHtml = readText(legacyHtmlPath);
-    assertCondition(
-        legacyHtml.includes('src="js/i18n.js"'),
-        "legacy.html should include js/i18n.js for legacy i18n fallback."
-    );
-}
-
-const legacyI18nPath = path.join(distDir, "js", "i18n.js");
-assertCondition(fileExists(legacyI18nPath), "Missing dist/js/i18n.js.");
 
 if (errors.length > 0) {
     errors.forEach((message) => console.error(`[verify-pages-build] ${message}`));

@@ -1,4 +1,3 @@
-import itemDetailMap from "../combatsimulator/data/itemDetailMap.json";
 import actionDetailMap from "../combatsimulator/data/actionDetailMap.json";
 import combatMonsterDetailMap from "../combatsimulator/data/combatMonsterDetailMap.json";
 import { createEmptyPlayerConfig, createEmptySkillExperienceMap, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "./playerMapper.js";
@@ -30,38 +29,6 @@ function normalizeAbilityHrid(abilityHrid) {
 function clampEnhancementLevel(level) {
     const parsed = Math.floor(toFiniteNumber(level, 0));
     return parsed < 0 ? 0 : parsed;
-}
-
-function normalizeSkillExperience(value) {
-    if (value == null || value === "") {
-        return null;
-    }
-
-    const parsed = Number(value);
-    if (!Number.isFinite(parsed) || parsed < 0) {
-        return null;
-    }
-
-    return parsed;
-}
-
-function getWeaponItemLocationFromHrid(itemHrid) {
-    const type = itemDetailMap[itemHrid]?.equipmentDetail?.type || "";
-    if (type === "/equipment_types/two_hand") {
-        return "/item_locations/two_hand";
-    }
-    return "/item_locations/main_hand";
-}
-
-function getDefaultLegacySimulationSettings(simulationSettings) {
-    return {
-        zone: String(simulationSettings?.zoneHrid || ""),
-        dungeon: String(simulationSettings?.dungeonHrid || ""),
-        difficulty: String(toFiniteNumber(simulationSettings?.difficultyTier, 0)),
-        simulationTime: String(toFiniteNumber(simulationSettings?.simulationTimeHours, 24)),
-        labyrinth: String(simulationSettings?.labyrinthHrid || ""),
-        roomLevel: String(toFiniteNumber(simulationSettings?.roomLevel, 100)),
-    };
 }
 
 function getLegacyAbilityEntryCount(rawAbilities) {
@@ -113,6 +80,19 @@ function getLegacyAbilityEntry(rawAbilities, absoluteIndex) {
     }
 
     return null;
+}
+
+function normalizeSkillExperience(value) {
+    if (value == null || value === "") {
+        return null;
+    }
+
+    const parsed = Number(value);
+    if (!Number.isFinite(parsed) || parsed < 0) {
+        return null;
+    }
+
+    return parsed;
 }
 
 function sanitizePlayerConfig(raw, fallbackPlayer) {
@@ -625,76 +605,8 @@ function importShareableProfile(parsed, existingPlayer, existingSimulationSettin
     };
 }
 
-export function createLegacySoloPayload(playerConfig, simulationSettings) {
-    const player = sanitizePlayerConfig(playerConfig, playerConfig);
-    const equipment = [];
-
-    for (const slot of NON_WEAPON_SLOTS) {
-        const setting = player.equipment?.[slot];
-        if (!setting?.itemHrid) {
-            continue;
-        }
-
-        equipment.push({
-            itemLocationHrid: `/item_locations/${slot}`,
-            itemHrid: setting.itemHrid,
-            enhancementLevel: clampEnhancementLevel(setting.enhancementLevel),
-        });
-    }
-
-    const weapon = player.equipment?.weapon;
-    if (weapon?.itemHrid) {
-        equipment.push({
-            itemLocationHrid: getWeaponItemLocationFromHrid(weapon.itemHrid),
-            itemHrid: weapon.itemHrid,
-            enhancementLevel: clampEnhancementLevel(weapon.enhancementLevel),
-        });
-    }
-
-    const legacySimSettings = getDefaultLegacySimulationSettings(simulationSettings);
-
-    return {
-        player: {
-            attackLevel: player.levels.attack,
-            magicLevel: player.levels.magic,
-            meleeLevel: player.levels.melee,
-            rangedLevel: player.levels.ranged,
-            defenseLevel: player.levels.defense,
-            staminaLevel: player.levels.stamina,
-            intelligenceLevel: player.levels.intelligence,
-            equipment,
-        },
-        food: {
-            "/action_types/combat": player.food.map((itemHrid) => ({ itemHrid: itemHrid || "" })),
-        },
-        drinks: {
-            "/action_types/combat": player.drinks.map((itemHrid) => ({ itemHrid: itemHrid || "" })),
-        },
-        abilities: player.abilities.map((ability) => ({
-            abilityHrid: ability.abilityHrid || "",
-            level: String(Math.max(1, Math.floor(toFiniteNumber(ability.level, 1)))),
-        })),
-        triggerMap: sanitizeTriggerMap(player.triggerMap || {}),
-        ...legacySimSettings,
-        houseRooms: deepClone(player.houseRooms || {}),
-        achievements: deepClone(player.achievements || {}),
-    };
-}
-
-export function exportGroupConfig(players, simulationSettings, format = "modern") {
+export function exportGroupConfig(players, simulationSettings) {
     const playerList = Array.isArray(players) ? players : [];
-
-    if (format === "legacy") {
-        const result = {};
-        for (const player of playerList) {
-            const playerId = String(player?.id || "");
-            if (!playerId) {
-                continue;
-            }
-            result[playerId] = JSON.stringify(createLegacySoloPayload(player, simulationSettings));
-        }
-        return JSON.stringify(result, null, 2);
-    }
 
     return JSON.stringify(
         {
@@ -708,15 +620,13 @@ export function exportGroupConfig(players, simulationSettings, format = "modern"
     );
 }
 
-export function exportSoloConfig(player, simulationSettings, format = "legacy") {
-    const payload = format === "modern"
-        ? {
-            version: 2,
-            format: "mwi-vue-solo",
-            simulationSettings: deepClone(simulationSettings || {}),
-            player: sanitizePlayerConfig(player, player),
-        }
-        : createLegacySoloPayload(player, simulationSettings);
+export function exportSoloConfig(player, simulationSettings) {
+    const payload = {
+        version: 2,
+        format: "mwi-vue-solo",
+        simulationSettings: deepClone(simulationSettings || {}),
+        player: sanitizePlayerConfig(player, player),
+    };
 
     return JSON.stringify(payload, null, 2);
 }
@@ -790,7 +700,6 @@ function normalizeImportedSimulationSettings(raw, existingSettings) {
         baseline.labyrinthHrid = labyrinthHrid;
         baseline.roomLevel = Math.max(20, Math.floor(toFiniteNumber(source.roomLevel, baseline.roomLevel || 100)));
 
-        // Legacy exports always include labyrinth; do not let that force labyrinth mode when zone/dungeon exists.
         if (dungeonHrid) {
             baseline.mode = "zone";
             baseline.useDungeon = true;
@@ -834,37 +743,6 @@ export function importGroupConfig(text, existingPlayers, existingSimulationSetti
             simulationSettings: normalizeImportedSimulationSettings(parsed, existingSimulationSettings),
             detectedFormat: "modern-group",
         };
-    }
-
-    if (parsed && typeof parsed === "object" && !Array.isArray(parsed)) {
-        const candidateKeys = ["1", "2", "3", "4", "5", "player1", "player2", "player3", "player4", "player5"];
-        const hasLegacyPlayerMap = candidateKeys.some((key) => Object.prototype.hasOwnProperty.call(parsed, key));
-
-        if (hasLegacyPlayerMap) {
-            for (const id of ["1", "2", "3", "4", "5"]) {
-                const rawValue = parsed[id] ?? parsed[`player${id}`];
-                if (!rawValue) {
-                    continue;
-                }
-
-                let legacySoloPayload = rawValue;
-                if (typeof rawValue === "string") {
-                    legacySoloPayload = parseJsonText(rawValue);
-                }
-
-                if (!legacySoloPayload || typeof legacySoloPayload !== "object") {
-                    continue;
-                }
-
-                playersById[id] = applyLegacySoloToPlayer(legacySoloPayload, playersById[id]);
-            }
-
-            return {
-                players: Object.values(playersById),
-                simulationSettings: normalizeImportedSimulationSettings(parsed, existingSimulationSettings),
-                detectedFormat: "legacy-group",
-            };
-        }
     }
 
     throw new Error("Unsupported group import format.");

@@ -700,16 +700,13 @@
           <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3 space-y-3">
             <div class="flex items-center justify-between gap-2">
               <h3 class="font-heading text-base font-semibold text-amber-200">{{ t("common:vue.settings.groupImportExportTitle", "Group Import/Export") }}</h3>
-              <select v-model="groupFormat" class="field-select max-w-[180px]">
-                <option value="modern">{{ t("common:vue.settings.modernJson", "Modern JSON") }}</option>
-                <option value="legacy">{{ t("common:vue.settings.legacyMap", "Legacy Map") }}</option>
-              </select>
+              <span class="badge">{{ t("common:vue.settings.modernJson", "Modern JSON") }}</span>
             </div>
 
             <div class="flex flex-wrap gap-2">
               <button type="button" class="action-button-primary" @click="handleGroupExport">{{ t("common:vue.settings.exportGroup", "Export Group") }}</button>
               <button type="button" class="action-button-muted" @click="copyImportExportText(groupText)">{{ t("common:vue.common.copy", "Copy") }}</button>
-              <button type="button" class="action-button-muted" @click="downloadImportExportText(`mwi-group-${groupFormat}.json`, groupText)">{{ t("common:vue.common.download", "Download") }}</button>
+              <button type="button" class="action-button-muted" @click="downloadImportExportText('mwi-group-modern.json', groupText)">{{ t("common:vue.common.download", "Download") }}</button>
               <label class="action-button-muted cursor-pointer">
                 {{ t("common:vue.common.loadFile", "Load File") }}
                 <input class="hidden" type="file" accept="application/json,.json,.txt" @change="onImportExportFileSelected($event, 'group')" />
@@ -731,17 +728,14 @@
                 <select v-model="soloTargetPlayerId" class="field-select max-w-[140px]">
                   <option v-for="player in simulator.players" :key="player.id" :value="player.id">{{ player.name }}</option>
                 </select>
-                <select v-model="soloFormat" class="field-select max-w-[150px]">
-                  <option value="legacy">{{ t("common:vue.settings.legacySolo", "Legacy Solo") }}</option>
-                  <option value="modern">{{ t("common:vue.settings.modernSolo", "Modern Solo") }}</option>
-                </select>
+                <span class="badge">{{ t("common:vue.settings.modernSolo", "Modern Solo") }}</span>
               </div>
             </div>
 
             <div class="flex flex-wrap gap-2">
               <button type="button" class="action-button-primary" @click="handleSoloExport">{{ t("common:vue.settings.exportSolo", "Export Solo") }}</button>
               <button type="button" class="action-button-muted" @click="copyImportExportText(soloText)">{{ t("common:vue.common.copy", "Copy") }}</button>
-              <button type="button" class="action-button-muted" @click="downloadImportExportText(`mwi-solo-${soloTargetPlayerId}-${soloFormat}.json`, soloText)">{{ t("common:vue.common.download", "Download") }}</button>
+              <button type="button" class="action-button-muted" @click="downloadImportExportText(`mwi-solo-${soloTargetPlayerId}-modern.json`, soloText)">{{ t("common:vue.common.download", "Download") }}</button>
               <label class="action-button-muted cursor-pointer">
                 {{ t("common:vue.common.loadFile", "Load File") }}
                 <input class="hidden" type="file" accept="application/json,.json,.txt" @change="onImportExportFileSelected($event, 'solo')" />
@@ -1438,8 +1432,6 @@ const triggerModal = reactive({
   label: "",
   draft: [],
 });
-const groupFormat = ref("modern");
-const soloFormat = ref("legacy");
 const groupText = ref("");
 const soloText = ref("");
 const soloTargetPlayerId = ref(simulator.activePlayerId);
@@ -2107,17 +2099,17 @@ function openMainSiteImportScript() {
 }
 
 function handleGroupExport() {
-  groupText.value = simulator.exportGroupConfig(groupFormat.value);
+  groupText.value = simulator.exportGroupConfig();
   setImportExportStatus("success", t("common:vue.settings.msgGroupExported", "Group exported in {{format}} format.", {
-    format: groupFormat.value,
+    format: "modern",
   }));
 }
 
 function handleSoloExport() {
-  soloText.value = simulator.exportSoloConfig(soloTargetPlayerId.value, soloFormat.value);
+  soloText.value = simulator.exportSoloConfig(soloTargetPlayerId.value);
   setImportExportStatus("success", t("common:vue.settings.msgSoloExported", "Player {{player}} exported in {{format}} format.", {
     player: soloTargetPlayerId.value,
-    format: soloFormat.value,
+    format: "modern",
   }));
 }
 

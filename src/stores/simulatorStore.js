@@ -40,7 +40,6 @@ const LABYRINTH_COFFEE_CRATE_HRIDS = ["/items/basic_coffee_crate", "/items/advan
 const LABYRINTH_FOOD_CRATE_HRIDS = ["/items/basic_food_crate", "/items/advanced_food_crate", "/items/expert_food_crate"];
 
 const EQUIPMENT_SET_STORAGE_KEY = "mwi.equipmentSets.v2";
-const LEGACY_EQUIPMENT_SET_STORAGE_KEY = "equipmentSets";
 const EQUIPMENT_SET_QUEUE_CHANGES_VERSION = 1;
 const PRICE_SETTINGS_STORAGE_KEY = "mwi.price.settings.v1";
 const PRICE_MARKET_CACHE_STORAGE_KEY = "mwi.price.marketCache.v1";
@@ -1041,49 +1040,6 @@ function hasMeaningfulModernPlayerData(player) {
     return false;
 }
 
-function hasMeaningfulLegacyPlayerData(snapshotPayload) {
-    if (!isPlainObject(snapshotPayload)) {
-        return false;
-    }
-
-    const player = isPlainObject(snapshotPayload.player) ? snapshotPayload.player : {};
-    const legacyLevelKeys = ["staminaLevel", "intelligenceLevel", "attackLevel", "meleeLevel", "defenseLevel", "rangedLevel", "magicLevel"];
-    for (const key of legacyLevelKeys) {
-        if (toFiniteNumber(player?.[key], 1) > 1) {
-            return true;
-        }
-    }
-
-    if (Array.isArray(player?.equipment) && player.equipment.some((entry) => String(entry?.itemHrid || "").trim().length > 0 || toFiniteNumber(entry?.enhancementLevel, 0) > 0)) {
-        return true;
-    }
-
-    const legacyFood = snapshotPayload?.food?.["/action_types/combat"];
-    if (Array.isArray(legacyFood) && legacyFood.some((entry) => String(entry?.itemHrid || "").trim().length > 0)) {
-        return true;
-    }
-    const legacyDrinks = snapshotPayload?.drinks?.["/action_types/combat"];
-    if (Array.isArray(legacyDrinks) && legacyDrinks.some((entry) => String(entry?.itemHrid || "").trim().length > 0)) {
-        return true;
-    }
-
-    if (Array.isArray(snapshotPayload?.abilities) && snapshotPayload.abilities.some((entry) => String(entry?.abilityHrid || "").trim().length > 0 || toFiniteNumber(entry?.level, 1) > 1)) {
-        return true;
-    }
-
-    if (isPlainObject(snapshotPayload.triggerMap) && Object.keys(snapshotPayload.triggerMap).length > 0) {
-        return true;
-    }
-    if (isPlainObject(snapshotPayload.houseRooms) && Object.values(snapshotPayload.houseRooms).some((value) => toFiniteNumber(value, 0) > 0)) {
-        return true;
-    }
-    if (hasAnyTruthyValue(snapshotPayload.achievements)) {
-        return true;
-    }
-
-    return false;
-}
-
 function hasMeaningfulPlayerSnapshotData(parsedSnapshot) {
     if (!isPlainObject(parsedSnapshot)) {
         return false;
@@ -1095,16 +1051,12 @@ function hasMeaningfulPlayerSnapshotData(parsedSnapshot) {
     }
 
     if (isPlainObject(parsedSnapshot.player)) {
-        // modern solo payload
         if (isPlainObject(parsedSnapshot.player.levels) || isPlainObject(parsedSnapshot.player.equipment)) {
             return hasMeaningfulModernPlayerData(parsedSnapshot.player);
         }
-        // legacy solo payload
-        return hasMeaningfulLegacyPlayerData(parsedSnapshot);
     }
 
-    // keep unknown schemas to avoid breaking external custom snapshots
-    return true;
+    return false;
 }
 
 function normalizeStoredPlayerDataMap(rawPlayerDataMap, allowPartial = true) {
@@ -1244,16 +1196,16 @@ function parsePlayerSnapshotSummary(playerDataJson) {
     try {
         const parsed = JSON.parse(playerDataJson);
         const modernSettings = isPlainObject(parsed?.simulationSettings) ? parsed.simulationSettings : null;
-        const zoneHrid = normalizeActionSnapshotValueToHrid(modernSettings?.zoneHrid ?? parsed?.zone);
-        const dungeonHrid = normalizeActionSnapshotValueToHrid(modernSettings?.dungeonHrid ?? parsed?.dungeon);
-        const labyrinthHrid = normalizeMonsterSnapshotValueToHrid(modernSettings?.labyrinthHrid ?? parsed?.labyrinth);
-        const difficultyRaw = String(modernSettings?.difficultyTier ?? parsed?.difficulty ?? "");
+        const zoneHrid = normalizeActionSnapshotValueToHrid(modernSettings?.zoneHrid);
+        const dungeonHrid = normalizeActionSnapshotValueToHrid(modernSettings?.dungeonHrid);
+        const labyrinthHrid = normalizeMonsterSnapshotValueToHrid(modernSettings?.labyrinthHrid);
+        const difficultyRaw = String(modernSettings?.difficultyTier ?? "");
         const difficultyDisplay = difficultyRaw
             ? (difficultyRaw.startsWith("T") ? difficultyRaw : `T${difficultyRaw}`)
             : "-";
-        const zoneFallback = String(modernSettings?.zoneHrid || parsed?.zone || zoneHrid || "-");
-        const dungeonFallback = String(modernSettings?.dungeonHrid || parsed?.dungeon || dungeonHrid || "-");
-        const labyrinthFallback = String(modernSettings?.labyrinthHrid || parsed?.labyrinth || labyrinthHrid || "-");
+        const zoneFallback = String(modernSettings?.zoneHrid || zoneHrid || "-");
+        const dungeonFallback = String(modernSettings?.dungeonHrid || dungeonHrid || "-");
+        const labyrinthFallback = String(modernSettings?.labyrinthHrid || labyrinthHrid || "-");
 
         return {
             zoneHrid,
@@ -1262,9 +1214,9 @@ function parsePlayerSnapshotSummary(playerDataJson) {
             zone: actionDetailMap[zoneHrid]?.name || zoneFallback,
             dungeon: actionDetailMap[dungeonHrid]?.name || dungeonFallback,
             difficulty: difficultyDisplay,
-            simulationTime: String(modernSettings?.simulationTimeHours ?? parsed?.simulationTime ?? "-"),
+            simulationTime: String(modernSettings?.simulationTimeHours ?? "-"),
             labyrinth: combatMonsterDetailMap[labyrinthHrid]?.name || labyrinthFallback,
-            roomLevel: String(modernSettings?.roomLevel ?? parsed?.roomLevel ?? "-"),
+            roomLevel: String(modernSettings?.roomLevel ?? "-"),
         };
     } catch (error) {
         return {
@@ -1651,8 +1603,7 @@ function buildQueueItemsFromQueueChangeTemplates(baseSnapshot, queueChangeItems 
 
 function loadEquipmentSetsFromStorage() {
     const modernData = readJsonStorage(EQUIPMENT_SET_STORAGE_KEY);
-    const legacyData = readJsonStorage(LEGACY_EQUIPMENT_SET_STORAGE_KEY);
-    const source = Object.keys(modernData).length > 0 ? modernData : legacyData;
+    const source = modernData;
 
     const normalized = {};
     for (const [rawName, rawEntry] of Object.entries(source)) {
@@ -1662,13 +1613,8 @@ function loadEquipmentSetsFromStorage() {
         }
 
         const entry = isPlainObject(rawEntry) ? rawEntry : {};
-        const hasModernShape = isPlainObject(rawEntry) && (
-            Object.prototype.hasOwnProperty.call(rawEntry, "savedAt")
-            || Object.prototype.hasOwnProperty.call(rawEntry, "queueChanges")
-            || Object.prototype.hasOwnProperty.call(rawEntry, "snapshot")
-        );
-        const looksLikeLegacySnapshot = !hasModernShape && normalizeEquipmentSetSnapshot(rawEntry, "1");
-        if (!hasModernShape && !looksLikeLegacySnapshot) {
+        const hasModernShape = isPlainObject(rawEntry) && Object.prototype.hasOwnProperty.call(rawEntry, "queueChanges");
+        if (!hasModernShape) {
             continue;
         }
 
@@ -1678,7 +1624,6 @@ function loadEquipmentSetsFromStorage() {
         };
     }
 
-    // Strip legacy snapshot payloads from cache on load.
     persistEquipmentSetsToStorage(normalized);
     return normalized;
 }
@@ -1755,59 +1700,25 @@ function getEquipmentTransitionCostKey(slotKey, beforeItemHrid, beforeLevel, aft
     return `${slotKey}|${beforeItemHrid}|${beforeLevel}|${afterItemHrid}|${afterLevel}`;
 }
 
-function getLegacyEnhancementCostKeyForTransition(slotKey, beforeItemHrid, beforeLevel, afterItemHrid, afterLevel) {
-    if (
-        !afterItemHrid
-        || beforeItemHrid !== afterItemHrid
-        || !Number.isFinite(beforeLevel)
-        || !Number.isFinite(afterLevel)
-        || afterLevel <= beforeLevel
-    ) {
-        return "";
-    }
-    return `${slotKey}|${afterItemHrid}|${beforeLevel}|${afterLevel}`;
-}
-
 function readEquipmentTransitionCostFromMap(costMap, slotKey, beforeItemHrid, beforeLevel, afterItemHrid, afterLevel) {
     const transitionCostKey = getEquipmentTransitionCostKey(slotKey, beforeItemHrid, beforeLevel, afterItemHrid, afterLevel);
-    const legacyCostKey = getLegacyEnhancementCostKeyForTransition(
-        slotKey,
-        beforeItemHrid,
-        beforeLevel,
-        afterItemHrid,
-        afterLevel
-    );
 
     if (Object.prototype.hasOwnProperty.call(costMap, transitionCostKey)) {
         return {
             value: costMap[transitionCostKey],
             transitionCostKey,
-            legacyCostKey,
-        };
-    }
-    if (legacyCostKey && Object.prototype.hasOwnProperty.call(costMap, legacyCostKey)) {
-        return {
-            value: costMap[legacyCostKey],
-            transitionCostKey,
-            legacyCostKey,
         };
     }
 
     return {
         value: null,
         transitionCostKey,
-        legacyCostKey,
     };
 }
 
 function writeEquipmentTransitionCostToMap(costMap, slotKey, beforeItemHrid, beforeLevel, afterItemHrid, afterLevel, value) {
     const transitionCostKey = getEquipmentTransitionCostKey(slotKey, beforeItemHrid, beforeLevel, afterItemHrid, afterLevel);
     costMap[transitionCostKey] = value;
-
-    const legacyCostKey = getLegacyEnhancementCostKeyForTransition(slotKey, beforeItemHrid, beforeLevel, afterItemHrid, afterLevel);
-    if (legacyCostKey) {
-        costMap[legacyCostKey] = value;
-    }
 
     return transitionCostKey;
 }
@@ -3608,7 +3519,7 @@ export const useSimulatorStore = defineStore("simulator", {
                 if (!playerId) {
                     continue;
                 }
-                snapshotMap[playerId] = exportSoloConfig(player, this.simulationSettings, "modern");
+                snapshotMap[playerId] = exportSoloConfig(player, this.simulationSettings);
             }
 
             try {
@@ -4852,13 +4763,13 @@ export const useSimulatorStore = defineStore("simulator", {
         setLanguage(language) {
             this.ui.language = language === "zh" ? "zh" : "en";
         },
-        exportGroupConfig(format = "modern") {
-            return exportGroupConfig(this.players, this.simulationSettings, format);
+        exportGroupConfig() {
+            return exportGroupConfig(this.players, this.simulationSettings);
         },
-        exportSoloConfig(playerId, format = "legacy") {
+        exportSoloConfig(playerId) {
             const targetId = String(playerId || this.activePlayerId);
             const targetPlayer = this.players.find((player) => player.id === targetId) || this.activePlayer;
-            return exportSoloConfig(targetPlayer, this.simulationSettings, format);
+            return exportSoloConfig(targetPlayer, this.simulationSettings);
         },
         importGroupConfig(text) {
             const result = parseGroupImportConfig(text, this.players, this.simulationSettings);
