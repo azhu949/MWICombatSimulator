@@ -46,13 +46,22 @@ class Player extends CombatUnit {
         player.food = dto.food.map((food) => (food ? Consumable.createFromDTO(food) : null));
         player.drinks = dto.drinks.map((drink) => (drink ? Consumable.createFromDTO(drink) : null));
         player.abilities = dto.abilities.map((ability) => (ability ? Ability.createFromDTO(ability) : null));
-        Object.entries(dto.houseRooms).forEach(houseRoom => {
-            if (houseRoom[1] > 0) {
-                player.houseRooms.push(new HouseRoom(houseRoom[0], houseRoom[1]))
+
+        let houseRoomDtos = [];
+        if (Array.isArray(dto.houseRooms)) {
+            houseRoomDtos = dto.houseRooms;
+        } else if (dto.houseRooms && typeof dto.houseRooms === "object") {
+            houseRoomDtos = Object.entries(dto.houseRooms).map(([hrid, level]) => ({ hrid, level }));
+        }
+
+        houseRoomDtos.forEach((houseRoomDto) => {
+            const houseRoom = HouseRoom.createFromDTO(houseRoomDto);
+            if (houseRoom) {
+                player.houseRooms.push(houseRoom)
             }
         });
 
-        player.achievements = new Achievement(dto.achievements);
+        player.achievements = Achievement.createFromDTO(dto.achievements);
 
         player.debuffOnLevelGap = dto.debuffOnLevelGap;
 

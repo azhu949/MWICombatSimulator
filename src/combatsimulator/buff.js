@@ -10,6 +10,21 @@ class Buff {
         this.multiplierForSkillHrid = buff.multiplierForSkillHrid ?? "";
         this.multiplierPerSkillLevel = buff.multiplierPerSkillLevel ?? 0;
     }
+
+    static createFromDTO(dto) {
+        let buff = Object.create(Buff.prototype);
+
+        buff.uniqueHrid = dto?.uniqueHrid ?? "";
+        buff.typeHrid = dto?.typeHrid ?? "";
+        buff.ratioBoost = Number(dto?.ratioBoost ?? 0);
+        buff.flatBoost = Number(dto?.flatBoost ?? 0);
+        buff.duration = Number(dto?.duration ?? 0);
+        buff.startTime = dto?.startTime ?? null;
+        buff.multiplierForSkillHrid = dto?.multiplierForSkillHrid ?? "";
+        buff.multiplierPerSkillLevel = Number(dto?.multiplierPerSkillLevel ?? 0);
+
+        return buff;
+    }
 }
 
 export default Buff;

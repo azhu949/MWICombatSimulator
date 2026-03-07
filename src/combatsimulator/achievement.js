@@ -22,6 +22,17 @@ class Achievement {
             }
         }
     }
+
+    static createFromDTO(dto) {
+        if (Array.isArray(dto?.buffs)) {
+            let achievement = Object.create(Achievement.prototype);
+            achievement.buffs = dto.buffs.map((buff) => Buff.createFromDTO(buff));
+
+            return achievement;
+        }
+
+        return new Achievement(dto);
+    }
 }
 
 export default Achievement;
