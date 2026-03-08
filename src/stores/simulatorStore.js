@@ -2,6 +2,7 @@ import { defineStore } from "pinia";
 import abilityDetailMap from "../combatsimulator/data/abilityDetailMap.json";
 import actionDetailMap from "../combatsimulator/data/actionDetailMap.json";
 import combatMonsterDetailMap from "../combatsimulator/data/combatMonsterDetailMap.json";
+import houseRoomDetailMap from "../combatsimulator/data/houseRoomDetailMap.json";
 import itemDetailMap from "../combatsimulator/data/itemDetailMap.json";
 import workerClient, { WorkerClient } from "../services/workerClient.js";
 import { buildPlayersForSimulation, createEmptyPlayerConfig, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../services/playerMapper.js";
@@ -1786,6 +1787,14 @@ function formatQueueEquipmentSlotName(slotKey) {
     return normalized || "Equipment";
 }
 
+function formatQueueHouseRoomNameFromHrid(roomHrid) {
+    const hrid = String(roomHrid || "");
+    if (!hrid) {
+        return "House Room";
+    }
+    return String(houseRoomDetailMap?.[hrid]?.name || hrid);
+}
+
 function computeQueueChangeSummary(baselinePlayer, candidatePlayer) {
     const baseline = baselinePlayer || {};
     const candidate = candidatePlayer || {};
@@ -1880,6 +1889,27 @@ function computeQueueChangeSummary(baselinePlayer, candidatePlayer) {
         }
     }
 
+    for (const room of Object.values(houseRoomDetailMap || {})) {
+        const roomHrid = String(room?.hrid || "");
+        if (!roomHrid) {
+            continue;
+        }
+
+        const beforeLevel = Math.max(0, Math.floor(toFiniteNumber(baseline?.houseRooms?.[roomHrid], 0)));
+        const afterLevel = Math.max(0, Math.floor(toFiniteNumber(candidate?.houseRooms?.[roomHrid], 0)));
+        if (beforeLevel !== afterLevel) {
+            pushChange(
+                `${formatQueueHouseRoomNameFromHrid(roomHrid)}: Lv${beforeLevel} -> Lv${afterLevel}`,
+                {
+                    kind: "house_room",
+                    roomHrid,
+                    beforeLevel,
+                    afterLevel,
+                }
+            );
+        }
+    }
+
     return {
         count: labels.length,
         labels,
@@ -1954,6 +1984,18 @@ function applySingleQueueChange(snapshot, targetSnapshot, change) {
             abilityHrid: "",
             level: 1,
         });
+        return true;
+    }
+
+    if (change.kind === "house_room") {
+        const roomHrid = String(change.roomHrid || "");
+        if (!roomHrid || !Object.prototype.hasOwnProperty.call(houseRoomDetailMap || {}, roomHrid)) {
+            return false;
+        }
+        if (!isPlainObject(snapshot.houseRooms)) {
+            snapshot.houseRooms = {};
+        }
+        snapshot.houseRooms[roomHrid] = clampPositiveInteger(targetSnapshot?.houseRooms?.[roomHrid], 0);
         return true;
     }
 
@@ -2407,6 +2449,151 @@ function computeDefaultAbilityUpgradeCost(baseAbility, toLevel, pricingState) {
     return totalCost > 0 ? totalCost : 0;
 }
 
+function normalizeHouseRoomLevelMap(source) {
+    const normalizedSource = isPlainObject(source) ? source : {};
+    const normalized = {};
+
+    for (const room of Object.values(houseRoomDetailMap || {})) {
+        const roomHrid = String(room?.hrid || "");
+        if (!roomHrid) {
+            continue;
+        }
+        normalized[roomHrid] = clampPositiveInteger(normalizedSource[roomHrid], 0);
+    }
+
+    return normalized;
+}
+
+function resolveHouseRoomMaterialPricing(itemHrid, pricingState) {
+    const normalizedItemHrid = String(itemHrid || "");
+    if (!normalizedItemHrid) {
+        return {
+            unitPrice: 0,
+            priced: false,
+        };
+    }
+
+    if (normalizedItemHrid === "/items/coin") {
+        return {
+            unitPrice: 1,
+            priced: true,
+        };
+    }
+
+    const resolvedPrice = Math.max(0, toFiniteNumber(
+        resolveItemPriceFromPricingState(pricingState, normalizedItemHrid, "ask"),
+        0
+    ));
+
+    return {
+        unitPrice: resolvedPrice,
+        priced: resolvedPrice > 0,
+    };
+}
+
+function buildHouseRoomUpgradeCostPreview(baseHouseRooms, targetHouseRooms, pricingState) {
+    const normalizedBase = normalizeHouseRoomLevelMap(baseHouseRooms);
+    const normalizedTarget = normalizeHouseRoomLevelMap(targetHouseRooms);
+    const roomDetails = Object.values(houseRoomDetailMap || {})
+        .slice()
+        .sort((left, right) => (
+            Number(left?.sortIndex ?? 0) - Number(right?.sortIndex ?? 0)
+            || String(left?.name || "").localeCompare(String(right?.name || ""))
+        ));
+    const roomRows = [];
+    const materialCountMap = {};
+
+    for (const room of roomDetails) {
+        const roomHrid = String(room?.hrid || "");
+        if (!roomHrid) {
+            continue;
+        }
+
+        const fromLevel = clampPositiveInteger(normalizedBase[roomHrid], 0);
+        const toLevel = clampPositiveInteger(normalizedTarget[roomHrid], 0);
+        if (toLevel <= fromLevel) {
+            continue;
+        }
+
+        const roomMaterialCountMap = {};
+        const upgradeCostsMap = isPlainObject(room?.upgradeCostsMap) ? room.upgradeCostsMap : {};
+
+        for (let level = fromLevel + 1; level <= toLevel; level++) {
+            const levelCosts = Array.isArray(upgradeCostsMap[String(level)]) ? upgradeCostsMap[String(level)] : [];
+            for (const costEntry of levelCosts) {
+                const itemHrid = String(costEntry?.itemHrid || "");
+                const count = Math.max(0, toFiniteNumber(costEntry?.count, 0));
+                if (!itemHrid || count <= 0) {
+                    continue;
+                }
+
+                roomMaterialCountMap[itemHrid] = toFiniteNumber(roomMaterialCountMap[itemHrid], 0) + count;
+                materialCountMap[itemHrid] = toFiniteNumber(materialCountMap[itemHrid], 0) + count;
+            }
+        }
+
+        const subtotal = Object.entries(roomMaterialCountMap).reduce((sum, [itemHrid, count]) => {
+            const safeCount = Math.max(0, toFiniteNumber(count, 0));
+            if (safeCount <= 0) {
+                return sum;
+            }
+            const pricing = resolveHouseRoomMaterialPricing(itemHrid, pricingState);
+            return sum + (pricing.priced ? safeCount * pricing.unitPrice : 0);
+        }, 0);
+
+        roomRows.push({
+            roomHrid,
+            fromLevel,
+            toLevel,
+            subtotal: toFiniteNumber(subtotal, 0),
+        });
+    }
+
+    const materials = Object.entries(materialCountMap)
+        .map(([itemHrid, count]) => {
+            const safeCount = Math.max(0, toFiniteNumber(count, 0));
+            const pricing = resolveHouseRoomMaterialPricing(itemHrid, pricingState);
+            const subtotal = pricing.priced ? safeCount * pricing.unitPrice : 0;
+            return {
+                itemHrid,
+                count: safeCount,
+                unitPrice: pricing.unitPrice,
+                subtotal: toFiniteNumber(subtotal, 0),
+                priced: pricing.priced,
+            };
+        })
+        .filter((entry) => entry.count > 0)
+        .sort((left, right) => {
+            if (left.itemHrid === "/items/coin" && right.itemHrid !== "/items/coin") {
+                return -1;
+            }
+            if (right.itemHrid === "/items/coin" && left.itemHrid !== "/items/coin") {
+                return 1;
+            }
+            return Number(right.subtotal || 0) - Number(left.subtotal || 0)
+                || String(itemDetailMap?.[left.itemHrid]?.name || left.itemHrid).localeCompare(
+                    String(itemDetailMap?.[right.itemHrid]?.name || right.itemHrid)
+                );
+        });
+
+    const coinCost = materials.reduce((sum, entry) => (
+        entry.itemHrid === "/items/coin" ? sum + entry.subtotal : sum
+    ), 0);
+    const materialValue = materials.reduce((sum, entry) => (
+        entry.itemHrid !== "/items/coin" && entry.priced ? sum + entry.subtotal : sum
+    ), 0);
+
+    return {
+        rooms: roomRows,
+        materials,
+        totals: {
+            coinCost: toFiniteNumber(coinCost, 0),
+            materialValue: toFiniteNumber(materialValue, 0),
+            totalCost: toFiniteNumber(coinCost + materialValue, 0),
+        },
+    };
+}
+
 function computeQueueItemUpgradeCost(baselineSnapshot, targetSnapshot, pricingState, options = {}) {
     if (!baselineSnapshot || !targetSnapshot) {
         return 0;
@@ -2476,6 +2663,13 @@ function computeQueueItemUpgradeCost(baselineSnapshot, targetSnapshot, pricingSt
             : toFiniteNumber(defaultCost, 0);
         totalCost += Math.max(0, estimatedCost);
     }
+
+    const houseRoomUpgradePreview = buildHouseRoomUpgradeCostPreview(
+        baselineSnapshot?.houseRooms,
+        targetSnapshot?.houseRooms,
+        pricingState
+    );
+    totalCost += Math.max(0, toFiniteNumber(houseRoomUpgradePreview?.totals?.totalCost, 0));
 
     return toFiniteNumber(totalCost, 0);
 }
@@ -3401,6 +3595,9 @@ export const useSimulatorStore = defineStore("simulator", {
             costMap[draft.costKey] = Math.max(0, toFiniteNumber(rawCost, 0));
             queueState.abilityUpgradeCosts = costMap;
             return true;
+        },
+        previewHouseRoomUpgradeCost(baseHouseRooms, targetHouseRooms) {
+            return buildHouseRoomUpgradeCostPreview(baseHouseRooms, targetHouseRooms, this.pricing);
         },
         validateQueueRuntimeSettingsInput(payload = {}) {
             const performancePct = Number(payload.performancePct);

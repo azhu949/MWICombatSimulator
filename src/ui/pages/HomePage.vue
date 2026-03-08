@@ -536,19 +536,160 @@
       </div>
     </div>
 
-    <BaseModal :open="openHouseRoomsModal" :title="t('common:vue.home.houseRoomsTitle', 'House Rooms')" @close="openHouseRoomsModal = false">
-      <div class="space-y-3">
-        <div class="grid gap-2 sm:grid-cols-2">
-          <label v-for="room in houseRoomOptions" :key="room.hrid" class="block rounded-xl border border-white/10 bg-slate-900/50 p-3">
-            <span class="field-label">{{ t(`houseRoomNames.${room.hrid}`, room.name) }}</span>
-            <input
-              v-model.number="activePlayer.houseRooms[room.hrid]"
-              class="field-input"
-              type="number"
-              min="0"
-              max="8"
-            />
-          </label>
+    <BaseModal
+      :open="openHouseRoomsModal"
+      :title="t('common:vue.home.houseRoomsTitle', 'House Rooms')"
+      panel-class="max-w-[96vw] xl:max-w-[1280px]"
+      @close="openHouseRoomsModal = false"
+    >
+      <div class="max-h-[75vh] space-y-4 overflow-y-auto pr-1">
+        <div class="grid gap-4 xl:grid-cols-[minmax(0,1.2fr)_minmax(320px,0.8fr)]">
+          <div class="space-y-3">
+            <div class="grid gap-2 sm:grid-cols-2">
+              <label
+                v-for="room in houseRoomOptions"
+                :key="room.hrid"
+                class="block rounded-xl border border-white/10 bg-slate-900/50 p-3 transition-colors"
+                :class="houseRoomPreviewByHrid[room.hrid] ? 'border-amber-300/30 bg-amber-300/5' : ''"
+              >
+                <div class="mb-2 flex items-start justify-between gap-3">
+                  <div class="min-w-0">
+                    <span class="field-label">{{ t(`houseRoomNames.${room.hrid}`, room.name) }}</span>
+                    <p class="mt-1 text-xs text-slate-400">
+                      {{ formatHouseRoomTransition(houseRoomBaselineLevelMap[room.hrid] ?? 0, activePlayer.houseRooms[room.hrid] ?? 0) }}
+                    </p>
+                  </div>
+                  <span class="rounded-full border border-amber-300/20 bg-amber-300/10 px-2.5 py-1 text-[11px] font-medium text-amber-100">
+                    {{ formatUpgradeCost(houseRoomPreviewByHrid[room.hrid]?.subtotal ?? 0) }}
+                  </span>
+                </div>
+                <input
+                  v-model.number="activePlayer.houseRooms[room.hrid]"
+                  class="field-input"
+                  type="number"
+                  min="0"
+                  max="8"
+                />
+              </label>
+            </div>
+          </div>
+
+          <div class="space-y-3">
+            <div class="grid gap-3 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3">
+              <article class="rounded-2xl border border-amber-300/25 bg-gradient-to-br from-amber-300/15 via-amber-300/5 to-transparent p-4">
+                <p class="text-[11px] uppercase tracking-[0.18em] text-amber-200/80">
+                  {{ t('common:vue.home.houseRoomsSummaryTotal', 'Total Cost') }}
+                </p>
+                <p class="mt-2 font-heading text-2xl text-amber-50">{{ formatUpgradeCost(houseRoomUpgradePreview.totals.totalCost) }}</p>
+                <p class="mt-1 text-xs text-slate-300">{{ formatCurrency(houseRoomUpgradePreview.totals.totalCost) }}</p>
+              </article>
+              <article class="rounded-2xl border border-emerald-300/20 bg-emerald-300/5 p-4">
+                <p class="text-[11px] uppercase tracking-[0.18em] text-emerald-200/80">
+                  {{ t('common:vue.home.houseRoomsSummaryCoins', 'Coins Needed') }}
+                </p>
+                <p class="mt-2 font-heading text-2xl text-emerald-100">{{ formatUpgradeCost(houseRoomUpgradePreview.totals.coinCost) }}</p>
+                <p class="mt-1 text-xs text-slate-300">{{ formatCurrency(houseRoomUpgradePreview.totals.coinCost) }}</p>
+              </article>
+              <article class="rounded-2xl border border-sky-300/20 bg-sky-300/5 p-4">
+                <p class="text-[11px] uppercase tracking-[0.18em] text-sky-200/80">
+                  {{ t('common:vue.home.houseRoomsSummaryKinds', 'Material Types') }}
+                </p>
+                <p class="mt-2 font-heading text-2xl text-sky-100">{{ formatInt(houseRoomMaterialKindCount) }}</p>
+                <p class="mt-1 text-xs text-slate-300">
+                  {{ formatHouseRoomChangedRoomsText(houseRoomChangedRooms.length) }}
+                </p>
+              </article>
+            </div>
+
+            <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+              <div class="mb-3 flex items-center justify-between gap-3">
+                <div>
+                  <h3 class="font-heading text-sm font-semibold text-slate-100">
+                    {{ t('common:vue.home.houseRoomsChangedTitle', 'Upgrade Summary') }}
+                  </h3>
+                  <p class="mt-1 text-xs text-slate-400">
+                    {{ t('common:vue.home.houseRoomsChangedHint', 'Costs accumulate from the levels captured when this dialog opened.') }}
+                  </p>
+                </div>
+                <span
+                  v-if="houseRoomMissingPriceCount > 0"
+                  class="rounded-full border border-rose-300/20 bg-rose-300/10 px-2.5 py-1 text-[11px] font-medium text-rose-100"
+                >
+                  {{ formatHouseRoomMissingPriceHint(houseRoomMissingPriceCount) }}
+                </span>
+              </div>
+
+              <div v-if="houseRoomChangedRooms.length === 0" class="rounded-xl border border-dashed border-white/10 bg-slate-900/40 px-4 py-5 text-sm text-slate-400">
+                {{ t('common:vue.home.houseRoomsNoUpgrades', 'No room upgrades selected yet.') }}
+              </div>
+              <div v-else class="space-y-2">
+                <div
+                  v-for="room in houseRoomChangedRooms"
+                  :key="room.roomHrid"
+                  class="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-900/45 px-3 py-2.5"
+                >
+                  <div class="min-w-0">
+                    <p class="truncate text-sm font-medium text-slate-100">{{ t(`houseRoomNames.${room.roomHrid}`, houseRoomDetailMap?.[room.roomHrid]?.name || room.roomHrid) }}</p>
+                    <p class="mt-1 text-xs text-slate-400">{{ formatHouseRoomTransition(room.fromLevel, room.toLevel) }}</p>
+                  </div>
+                  <span class="text-sm font-semibold text-amber-100">{{ formatUpgradeCost(room.subtotal) }}</span>
+                </div>
+              </div>
+            </div>
+          </div>
+        </div>
+
+        <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+          <div class="mb-3 flex items-center justify-between gap-3">
+            <div>
+              <h3 class="font-heading text-sm font-semibold text-slate-100">
+                {{ t('common:vue.home.houseRoomsMaterialsTitle', 'Material Breakdown') }}
+              </h3>
+              <p class="mt-1 text-xs text-slate-400">
+                {{ t('common:vue.home.houseRoomsMaterialsHint', 'Market value uses the current buy-side price with vendor fallback.') }}
+              </p>
+            </div>
+            <span class="text-xs text-slate-400">{{ formatInt(houseRoomUpgradePreview.materials.length) }}</span>
+          </div>
+
+          <div v-if="houseRoomUpgradePreview.materials.length === 0" class="rounded-xl border border-dashed border-white/10 bg-slate-900/40 px-4 py-5 text-sm text-slate-400">
+            {{ t('common:vue.home.houseRoomsNoUpgrades', 'No room upgrades selected yet.') }}
+          </div>
+          <div v-else class="overflow-x-auto">
+            <table class="min-w-full table-auto text-left text-sm text-slate-200">
+              <thead>
+                <tr class="border-b border-white/10 text-xs uppercase tracking-[0.16em] text-slate-400">
+                  <th class="px-2 py-2">{{ t('common:vue.home.houseRoomsMaterialName', 'Material') }}</th>
+                  <th class="px-2 py-2 text-right">{{ t('common:vue.home.houseRoomsMaterialCount', 'Quantity') }}</th>
+                  <th class="px-2 py-2 text-right">{{ t('common:vue.home.houseRoomsMaterialUnitPrice', 'Unit Price') }}</th>
+                  <th class="px-2 py-2 text-right">{{ t('common:vue.home.houseRoomsMaterialSubtotal', 'Subtotal') }}</th>
+                  <th class="px-2 py-2 text-right">{{ t('common:vue.home.houseRoomsMaterialStatus', 'Status') }}</th>
+                </tr>
+              </thead>
+              <tbody>
+                <tr
+                  v-for="material in houseRoomUpgradePreview.materials"
+                  :key="material.itemHrid"
+                  class="border-b border-white/5 last:border-b-0"
+                >
+                  <td class="px-2 py-2">{{ formatItemName(material.itemHrid) }}</td>
+                  <td class="px-2 py-2 text-right">{{ formatInt(material.count) }}</td>
+                  <td class="px-2 py-2 text-right">{{ material.priced ? formatCurrency(material.unitPrice) : '-' }}</td>
+                  <td class="px-2 py-2 text-right">{{ material.priced ? formatCurrency(material.subtotal) : '-' }}</td>
+                  <td class="px-2 py-2 text-right">
+                    <span
+                      class="inline-flex rounded-full border px-2 py-0.5 text-[11px] font-medium"
+                      :class="material.priced ? 'border-emerald-300/20 bg-emerald-300/10 text-emerald-100' : 'border-rose-300/20 bg-rose-300/10 text-rose-100'"
+                    >
+                      {{ material.priced
+                        ? t('common:vue.home.houseRoomsMaterialStatusReady', 'Priced')
+                        : t('common:vue.home.houseRoomsMaterialStatusMissing', 'Missing price') }}
+                    </span>
+                  </td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </div>
       </div>
     </BaseModal>
@@ -1413,6 +1554,7 @@ const achievementTierSections = computed(() => {
 
 const triggerDependencyOptions = getTriggerDependencies();
 const openHouseRoomsModal = ref(false);
+const houseRoomBaselineLevels = ref({});
 const openAchievementsModal = ref(false);
 const openPlayerImportModal = ref(false);
 const openPlayerSnapshotInfoModal = ref(false);
@@ -1424,6 +1566,29 @@ const experimentalStatusText = ref(t("common:Experiment.statusIdle", "-"));
 const experimentalDownloadText = ref("");
 const experimentalDungeonStartWaveEnabled = ref(false);
 const experimentalDungeonStartWave = ref(1);
+const houseRoomUpgradePreview = computed(() => simulator.previewHouseRoomUpgradeCost(
+  houseRoomBaselineLevels.value,
+  activePlayer.value?.houseRooms ?? {},
+));
+const houseRoomPreviewByHrid = computed(() => Object.fromEntries(
+  (houseRoomUpgradePreview.value?.rooms ?? []).map((row) => [row.roomHrid, row]),
+));
+const houseRoomBaselineLevelMap = computed(() => {
+  const baseline = houseRoomBaselineLevels.value && typeof houseRoomBaselineLevels.value === "object"
+    ? houseRoomBaselineLevels.value
+    : {};
+  return Object.fromEntries(houseRoomOptions.value.map((room) => [
+    room.hrid,
+    Number(baseline?.[room.hrid] ?? activePlayer.value?.houseRooms?.[room.hrid] ?? 0),
+  ]));
+});
+const houseRoomChangedRooms = computed(() => houseRoomUpgradePreview.value?.rooms ?? []);
+const houseRoomMaterialKindCount = computed(() => (
+  houseRoomUpgradePreview.value?.materials?.filter((entry) => entry.itemHrid !== "/items/coin").length ?? 0
+));
+const houseRoomMissingPriceCount = computed(() => (
+  houseRoomUpgradePreview.value?.materials?.filter((entry) => entry.itemHrid !== "/items/coin" && !entry.priced).length ?? 0
+));
 const triggerModal = reactive({
   open: false,
   kind: "",
@@ -1749,6 +1914,21 @@ function formatUpgradeCost(value) {
     return `${formatNumber(numeric / 1e3, 1)}k`;
   }
   return formatNumber(numeric, 0);
+}
+
+function formatHouseRoomTransition(fromLevel, toLevel) {
+  return t("common:vue.home.houseRoomsTransition", "Lv {{from}} -> Lv {{to}}", {
+    from: formatInt(fromLevel),
+    to: formatInt(toLevel),
+  });
+}
+
+function formatHouseRoomChangedRoomsText(count) {
+  return t("common:vue.home.houseRoomsSummaryChangedRooms", "{{count}} rooms changed", { count: formatInt(count) });
+}
+
+function formatHouseRoomMissingPriceHint(count) {
+  return t("common:vue.home.houseRoomsMissingPriceHint", "{{count}} lines missing price", { count: formatInt(count) });
 }
 
 function formatPercent(value, digits = 2) {
@@ -2360,6 +2540,11 @@ function ensureActivePlayerAdvancedState() {
   }
 }
 
+function captureHouseRoomBaselineLevels() {
+  ensureActivePlayerAdvancedState();
+  houseRoomBaselineLevels.value = cloneValue(activePlayer.value?.houseRooms ?? {});
+}
+
 function setAchievement(achievementHrid, checked) {
   ensureActivePlayerAdvancedState();
   activePlayer.value.achievements[achievementHrid] = Boolean(checked);
@@ -2549,8 +2734,22 @@ watch(
   () => activePlayer.value?.id,
   () => {
     ensureActivePlayerAdvancedState();
+    if (openHouseRoomsModal.value) {
+      captureHouseRoomBaselineLevels();
+    }
   },
   { immediate: true },
+);
+
+watch(
+  () => openHouseRoomsModal.value,
+  (isOpen) => {
+    if (isOpen) {
+      captureHouseRoomBaselineLevels();
+      return;
+    }
+    houseRoomBaselineLevels.value = {};
+  },
 );
 
 watch(
