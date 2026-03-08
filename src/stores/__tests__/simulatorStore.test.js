@@ -1,4 +1,4 @@
-import { beforeEach, describe, expect, it, vi } from "vitest";
+import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import actionDetailMap from "../../combatsimulator/data/actionDetailMap.json";
 import abilityDetailMap from "../../combatsimulator/data/abilityDetailMap.json";
@@ -93,6 +93,13 @@ function findFirstAbilityBookInfo() {
     };
 }
 
+function createAbilityReferencePayload() {
+    return {
+        abilityXp: [0, 100, 700, 2000],
+        spellBookXp: {},
+    };
+}
+
 function findHouseRoomWithUpgradeLevels(minLevels = 1, excludeHrid = "") {
     return Object.values(houseRoomDetailMap).find((entry) => {
         if (String(entry?.hrid || "") === String(excludeHrid || "")) {
@@ -176,6 +183,14 @@ describe("simulatorStore", () => {
     beforeEach(() => {
         setActivePinia(createPinia());
         global.localStorage = createLocalStorageMock();
+    });
+
+    afterEach(() => {
+        delete global.fetch;
+        delete global.window;
+        delete global.jigsAbilityXpLevels;
+        delete global.jigsSpellBookXpByName;
+        vi.restoreAllMocks();
     });
 
     it("normalizes active queue settings", () => {
@@ -626,6 +641,140 @@ describe("simulatorStore", () => {
         expect(draft).toBeTruthy();
         expect(draft.cost).toBe(expectedBooks * expectedUnitPrice);
         expect(draft.cost).toBeGreaterThan(0);
+    });
+
+    it("marks skill-only queue upgrade cost as unknown when ability references fail to load", async () => {
+        const simulator = useSimulatorStore();
+        const abilityBookInfo = findFirstAbilityBookInfo();
+        expect(abilityBookInfo).toBeTruthy();
+
+        global.fetch = vi.fn(async () => ({ ok: false }));
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.abilities[0].abilityHrid = abilityBookInfo.abilityHrid;
+        simulator.activePlayer.abilities[0].level = 2;
+        const addedItems = simulator.addActivePlayerToQueue();
+
+        expect(addedItems).toHaveLength(1);
+        expect(addedItems[0].changeDetails?.[0]?.kind).toBe("ability");
+
+        simulator.updateActiveQueueSettings({
+            rounds: 1,
+            executionMode: "serial",
+            medianBlend: 0.5,
+            weightProfit: 1,
+            weightXp: 0,
+            weightDeathSafety: 0,
+        });
+        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+            onProgress?.({ progress: 1 });
+            return {
+                simulatedTime: ONE_HOUR,
+                encounters: 100,
+                experienceGained: {
+                    player1: {
+                        stamina: 1000,
+                    },
+                },
+                deaths: {
+                    player1: 0,
+                },
+                consumablesUsed: {},
+            };
+        });
+
+        const rows = await simulator.runActiveQueue();
+        const variantRow = rows[0];
+
+        expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(1);
+        expect(global.fetch).toHaveBeenCalledTimes(1);
+        expect(variantRow).toBeTruthy();
+        expect(variantRow.costInsights?.totalUpgradeCost).toBeNull();
+        expect(variantRow.costInsights?.purchaseDays).toBeNull();
+        expect(variantRow.costInsights?.goldPerPoint01PctAvg).toBeNull();
+        expect(variantRow.scoreFlags?.costInvalid).toBe(true);
+    });
+
+    it("auto-refreshes existing queue ranking after ability references load without rerunning simulations", async () => {
+        const simulator = useSimulatorStore();
+        const abilityBookInfo = findFirstAbilityBookInfo();
+        expect(abilityBookInfo).toBeTruthy();
+
+        global.fetch = vi.fn()
+            .mockResolvedValueOnce({ ok: false })
+            .mockResolvedValueOnce({
+                ok: true,
+                json: async () => createAbilityReferencePayload(),
+            });
+
+        await simulator.setQueueBaselineForActivePlayer();
+
+        simulator.activePlayer.abilities[0].abilityHrid = abilityBookInfo.abilityHrid;
+        simulator.activePlayer.abilities[0].level = 3;
+        const expensiveItems = simulator.addActivePlayerToQueue();
+        expect(expensiveItems).toHaveLength(1);
+
+        simulator.activePlayer.abilities[0].abilityHrid = abilityBookInfo.abilityHrid;
+        simulator.activePlayer.abilities[0].level = 2;
+        const cheaperItems = simulator.addActivePlayerToQueue();
+        expect(cheaperItems).toHaveLength(1);
+
+        const expensiveVariantId = expensiveItems[0].id;
+        const cheaperVariantId = cheaperItems[0].id;
+
+        simulator.queueRuntime.finalWeights = {
+            performance: 0,
+            stability: 0,
+            cost: 1,
+        };
+        simulator.updateActiveQueueSettings({
+            rounds: 1,
+            executionMode: "serial",
+            medianBlend: 0.5,
+            weightProfit: 1,
+            weightXp: 0,
+            weightDeathSafety: 0,
+        });
+        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+            onProgress?.({ progress: 1 });
+            return {
+                simulatedTime: ONE_HOUR,
+                encounters: 100,
+                experienceGained: {
+                    player1: {
+                        stamina: 1000,
+                    },
+                },
+                deaths: {
+                    player1: 0,
+                },
+                consumablesUsed: {},
+            };
+        });
+
+        const rowsBeforeRefresh = await simulator.runActiveQueue();
+
+        expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(2);
+        expect(rowsBeforeRefresh).toHaveLength(2);
+        expect(rowsBeforeRefresh[0].id).toBe(expensiveVariantId);
+        expect(rowsBeforeRefresh[0].costInsights?.totalUpgradeCost).toBeNull();
+        expect(rowsBeforeRefresh[1].costInsights?.totalUpgradeCost).toBeNull();
+
+        const refreshResult = await simulator.ensureAbilityUpgradeReferenceDataLoaded(true);
+        const refreshedRows = simulator.activeQueueState.ranking;
+        const refreshedCheaperRow = refreshedRows.find((row) => row.id === cheaperVariantId);
+        const refreshedExpensiveRow = refreshedRows.find((row) => row.id === expensiveVariantId);
+
+        expect(refreshResult?.loaded).toBe(true);
+        expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(2);
+        expect(global.fetch).toHaveBeenCalledTimes(2);
+        expect(refreshedRows).toHaveLength(2);
+        expect(refreshedRows[0].id).toBe(cheaperVariantId);
+        expect(refreshedCheaperRow).toBeTruthy();
+        expect(refreshedExpensiveRow).toBeTruthy();
+        expect(Number(refreshedCheaperRow.costInsights?.totalUpgradeCost)).toBeGreaterThan(0);
+        expect(Number(refreshedExpensiveRow.costInsights?.totalUpgradeCost)).toBeGreaterThan(Number(refreshedCheaperRow.costInsights?.totalUpgradeCost));
+        expect(refreshedCheaperRow.finalScore).toBeGreaterThan(refreshedExpensiveRow.finalScore);
     });
 
     it("runs baseline simulation when requested", async () => {

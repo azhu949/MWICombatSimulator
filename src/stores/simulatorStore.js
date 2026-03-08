@@ -2350,6 +2350,11 @@ function ensureAbilityUpgradeReferenceGlobals() {
     return target;
 }
 
+function hasAbilityUpgradeReferenceDataLoaded() {
+    const globalRef = ensureAbilityUpgradeReferenceGlobals();
+    return Array.isArray(globalRef.jigsAbilityXpLevels) && globalRef.jigsAbilityXpLevels.length > 1;
+}
+
 function getAbilityXpForLevel(level) {
     const abilityXpLevels = ensureAbilityUpgradeReferenceGlobals().jigsAbilityXpLevels;
     if (!Array.isArray(abilityXpLevels)) {
@@ -2422,7 +2427,7 @@ function computeDefaultAbilityUpgradeCost(baseAbility, toLevel, pricingState) {
     const startXp = getAbilityXpForLevel(fromLevel);
     const endXp = getAbilityXpForLevel(targetLevel);
     if (startXp == null || endXp == null) {
-        return 0;
+        return null;
     }
 
     const xpNeeded = endXp - startXp;
@@ -2432,7 +2437,7 @@ function computeDefaultAbilityUpgradeCost(baseAbility, toLevel, pricingState) {
 
     const xpPerBook = getSpellBookXpForAbility(abilityHrid);
     if (!Number.isFinite(xpPerBook) || xpPerBook <= 0) {
-        return 0;
+        return null;
     }
 
     const booksNeeded = Math.ceil(xpNeeded / xpPerBook);
@@ -2442,7 +2447,7 @@ function computeDefaultAbilityUpgradeCost(baseAbility, toLevel, pricingState) {
 
     const pricePerBook = resolveAbilityBookPriceFromPricingState(pricingState, abilityHrid);
     if (!Number.isFinite(pricePerBook) || pricePerBook < 0) {
-        return 0;
+        return null;
     }
 
     const totalCost = booksNeeded * pricePerBook;
@@ -2602,6 +2607,7 @@ function computeQueueItemUpgradeCost(baselineSnapshot, targetSnapshot, pricingSt
     const enhancementCostMap = isPlainObject(options?.enhancementCostMap) ? options.enhancementCostMap : {};
     const abilityCostMap = isPlainObject(options?.abilityCostMap) ? options.abilityCostMap : {};
     let totalCost = 0;
+    let hasUnknownAbilityUpgradeCost = false;
 
     for (const slotKey of EQUIPMENT_SLOT_KEYS) {
         const beforeEquipment = baselineSnapshot?.equipment?.[slotKey] ?? { itemHrid: "", enhancementLevel: 0 };
@@ -2658,9 +2664,18 @@ function computeQueueItemUpgradeCost(baselineSnapshot, targetSnapshot, pricingSt
             abilityHrid: afterHrid,
             level: fromLevel,
         }, afterLevel, pricingState);
-        const estimatedCost = Object.prototype.hasOwnProperty.call(abilityCostMap, costKey)
-            ? toFiniteNumber(abilityCostMap[costKey], 0)
-            : toFiniteNumber(defaultCost, 0);
+        let estimatedCost = null;
+        if (Object.prototype.hasOwnProperty.call(abilityCostMap, costKey)) {
+            estimatedCost = toFiniteNumber(abilityCostMap[costKey], 0);
+        } else if (defaultCost == null) {
+            hasUnknownAbilityUpgradeCost = true;
+        } else {
+            estimatedCost = toFiniteNumber(defaultCost, 0);
+        }
+
+        if (estimatedCost == null) {
+            continue;
+        }
         totalCost += Math.max(0, estimatedCost);
     }
 
@@ -2670,6 +2685,10 @@ function computeQueueItemUpgradeCost(baselineSnapshot, targetSnapshot, pricingSt
         pricingState
     );
     totalCost += Math.max(0, toFiniteNumber(houseRoomUpgradePreview?.totals?.totalCost, 0));
+
+    if (hasUnknownAbilityUpgradeCost) {
+        return null;
+    }
 
     return toFiniteNumber(totalCost, 0);
 }
@@ -2854,6 +2873,9 @@ function rankScoreList(rawValues, options = {}) {
     const clampedMaxScore = Math.max(minScore, maxScore);
 
     const preparedValues = rawValues.map((value) => {
+        if (value == null) {
+            return null;
+        }
         const numeric = Number(value);
         if (!Number.isFinite(numeric)) {
             return null;
@@ -2920,20 +2942,29 @@ function rankScoreList(rawValues, options = {}) {
     };
 }
 
+function createEmptyQueueCostInsights() {
+    return {
+        totalUpgradeCost: null,
+        purchaseDays: null,
+        goldPerPoint01Pct: {},
+        goldPerPoint01PctAvg: null,
+    };
+}
+
 function buildQueueItemCostInsights(queueState, queueItemSnapshot, metricSummary, pricingState) {
     const baselineSnapshot = queueState?.baseline?.snapshot ?? null;
-    const totalUpgradeCost = toFiniteNumber(
-        computeQueueItemUpgradeCost(
-            baselineSnapshot,
-            queueItemSnapshot,
-            pricingState,
-            {
-                enhancementCostMap: queueState?.enhancementUpgradeCosts,
-                abilityCostMap: queueState?.abilityUpgradeCosts,
-            }
-        ),
-        0
+    const totalUpgradeCostRaw = computeQueueItemUpgradeCost(
+        baselineSnapshot,
+        queueItemSnapshot,
+        pricingState,
+        {
+            enhancementCostMap: queueState?.enhancementUpgradeCosts,
+            abilityCostMap: queueState?.abilityUpgradeCosts,
+        }
     );
+    const totalUpgradeCost = totalUpgradeCostRaw != null && Number.isFinite(Number(totalUpgradeCostRaw))
+        ? Math.max(0, toFiniteNumber(totalUpgradeCostRaw, 0))
+        : null;
     const purchaseDays = computePurchaseDaysByBaselineProfit(totalUpgradeCost, queueState?.baseline?.metrics?.dailyNoRngProfit);
 
     const goldPerPoint01Pct = {};
@@ -3193,6 +3224,251 @@ function normalizeQueueSettings(settings) {
 function resolveQueueRowRoundCount(row = {}) {
     const samples = QUEUE_MULTI_ROUND_METRIC_KEYS.map((metricKey) => toFiniteNumber(row?.metricSummary?.[metricKey]?.sampleCount, 0));
     return Math.max(0, ...samples);
+}
+
+function buildQueueEntriesFromState(queueState) {
+    const baselineSnapshot = queueState?.baseline?.snapshot ?? null;
+    if (!baselineSnapshot) {
+        return [];
+    }
+
+    return (Array.isArray(queueState?.items) ? queueState.items : []).map((item, index) => {
+        const summary = computeQueueChangeSummary(baselineSnapshot, item?.snapshot);
+        const fallbackLabels = Array.isArray(summary?.labels) ? summary.labels : [];
+        const fallbackChangeDetails = Array.isArray(summary?.changes) ? summary.changes : [];
+        const changes = Array.isArray(item?.changes) && item.changes.length > 0
+            ? item.changes
+            : fallbackLabels;
+        const changeDetails = Array.isArray(item?.changeDetails) && item.changeDetails.length > 0
+            ? deepClone(item.changeDetails)
+            : deepClone(fallbackChangeDetails);
+        const itemName = String(item?.name || "").trim();
+        const label = itemName || deriveQueueVariantNameFromLabels(changes, index + 1);
+
+        return {
+            id: item?.id,
+            label,
+            snapshot: deepClone(item?.snapshot),
+            changes,
+            changeDetails,
+        };
+    }).filter((entry) => Boolean(entry.id));
+}
+
+function sortQueueRawRuns(rows = [], entrySortIndexById = new Map()) {
+    return (Array.isArray(rows) ? rows.slice() : []).sort((a, b) => {
+        const roundDiff = Number(a?.round || 0) - Number(b?.round || 0);
+        if (roundDiff !== 0) {
+            return roundDiff;
+        }
+        return (entrySortIndexById.get(a?.id) ?? 999) - (entrySortIndexById.get(b?.id) ?? 999);
+    });
+}
+
+function queueChangeNeedsAbilityUpgradeReference(change) {
+    if (String(change?.kind || "") !== "ability") {
+        return false;
+    }
+
+    const afterHrid = String(change?.afterAbilityHrid || "");
+    if (!afterHrid) {
+        return false;
+    }
+
+    const beforeHrid = String(change?.beforeAbilityHrid || "");
+    const beforeLevel = Math.max(1, Math.floor(toFiniteNumber(change?.beforeLevel, 1)));
+    const afterLevel = Math.max(1, Math.floor(toFiniteNumber(change?.afterLevel, 1)));
+    const fromLevel = beforeHrid && beforeHrid === afterHrid ? beforeLevel : 1;
+    return afterLevel > fromLevel;
+}
+
+function queueEntriesNeedAbilityUpgradeReference(entries = []) {
+    return (entries ?? []).some((entry) => (
+        Array.isArray(entry?.changeDetails)
+        && entry.changeDetails.some((change) => queueChangeNeedsAbilityUpgradeReference(change))
+    ));
+}
+
+function buildQueueRankedRowsFromSampleState({
+    entries = [],
+    rawRuns = [],
+    queueSettings,
+    queueState,
+    baselineMetrics,
+    pricingState,
+    scoreWeights,
+    includeEmptyEntries = false,
+}) {
+    const safeEntries = Array.isArray(entries) ? entries : [];
+    if (safeEntries.length === 0) {
+        return [];
+    }
+
+    const entrySortIndexById = new Map(safeEntries.map((entry, index) => [entry.id, index]));
+    const variantSamplesById = new Map(safeEntries.map((entry) => [entry.id, []]));
+    for (const rawRun of Array.isArray(rawRuns) ? rawRuns : []) {
+        const entryId = String(rawRun?.id || "");
+        if (!variantSamplesById.has(entryId)) {
+            continue;
+        }
+        variantSamplesById.get(entryId).push(rawRun);
+    }
+
+    const sourceEntries = includeEmptyEntries
+        ? safeEntries
+        : safeEntries.filter((entry) => (variantSamplesById.get(entry.id) || []).length > 0);
+
+    if (sourceEntries.length === 0) {
+        return [];
+    }
+
+    const safeQueueSettings = normalizeQueueSettings(queueSettings);
+    const normalizedScoreWeights = normalizeQueueScoreWeights(scoreWeights);
+    const variantAggregates = sourceEntries.map((entry) => {
+        const variantSamples = (variantSamplesById.get(entry.id) || [])
+            .slice()
+            .sort((a, b) => Number(a?.round || 0) - Number(b?.round || 0));
+        const profits = variantSamples.map((sample) => sample.profitPerHour);
+        const xps = variantSamples.map((sample) => sample.totalXpPerHour);
+        const deaths = variantSamples.map((sample) => sample.deathsPerHour);
+        const meanProfit = getMean(profits);
+        const medianProfit = getMedian(profits);
+        const meanXp = getMean(xps);
+        const meanDeaths = getMean(deaths);
+        const stdProfit = getStdDev(profits, meanProfit);
+        const coefficientOfVariation = Math.abs(meanProfit) > 1e-9 ? (stdProfit / Math.abs(meanProfit)) : stdProfit;
+        const stability = 1 / (1 + coefficientOfVariation);
+        const scoringProfitPerHour = meanProfit * (1 - safeQueueSettings.medianBlend) + medianProfit * safeQueueSettings.medianBlend;
+
+        return {
+            id: entry.id,
+            label: entry.label,
+            changeCount: entry.changes.length,
+            changes: entry.changes,
+            changeDetails: Array.isArray(entry.changeDetails) ? deepClone(entry.changeDetails) : [],
+            rounds: variantSamples.length,
+            meanProfitPerHour: meanProfit,
+            medianProfitPerHour: medianProfit,
+            stdProfitPerHour: stdProfit,
+            scoringProfitPerHour,
+            meanXpPerHour: meanXp,
+            meanDeathsPerHour: meanDeaths,
+            stability,
+            sampleResults: variantSamples,
+        };
+    });
+    const variantAggregateById = new Map(variantAggregates.map((entry) => [entry.id, entry]));
+    const metricSummaryByQueueItem = sourceEntries.map((entry) => {
+        const roundResults = (variantSamplesById.get(entry.id) || [])
+            .map((sample) => ({
+                metrics: sample.metrics,
+                deltas: sample.deltas,
+            }));
+        const metricSummary = buildQueueItemMetricSummary(roundResults);
+        return {
+            queueItemId: entry.id,
+            displayName: entry.label,
+            order: entrySortIndexById.get(entry.id) ?? 0,
+            metricSummary,
+            costInsights: buildQueueItemCostInsights(queueState, entry.snapshot, metricSummary, pricingState),
+        };
+    });
+    const multiRoundRanking = buildMultiRoundRanking(metricSummaryByQueueItem, normalizedScoreWeights);
+    const baselineDailyNoRngProfitPerDay = toFiniteNumber(
+        baselineMetrics?.dailyNoRngProfit,
+        0
+    );
+    const baselineScoringProfit = baselineDailyNoRngProfitPerDay / 24;
+    const baselineDps = toFiniteNumber(
+        baselineMetrics?.dps,
+        0
+    );
+    const baselineXpPerHour = toFiniteNumber(
+        baselineMetrics?.xpPerHour,
+        0
+    );
+    const baselineKillsPerHour = toFiniteNumber(
+        baselineMetrics?.killsPerHour,
+        0
+    );
+
+    return multiRoundRanking.map((entry) => {
+        const aggregate = variantAggregateById.get(entry.queueItemId) || {
+            id: entry.queueItemId,
+            label: entry.displayName,
+            changeCount: 0,
+            changes: [],
+            rounds: 0,
+            meanProfitPerHour: toFiniteNumber(entry.metricSummary?.dailyNoRngProfit?.mean, 0) / 24,
+            medianProfitPerHour: toFiniteNumber(entry.metricSummary?.dailyNoRngProfit?.p50, 0) / 24,
+            stdProfitPerHour: toFiniteNumber(entry.metricSummary?.dailyNoRngProfit?.std, 0) / 24,
+            scoringProfitPerHour: toFiniteNumber(entry.metricSummary?.dailyNoRngProfit?.robustMean, 0) / 24,
+            meanXpPerHour: toFiniteNumber(entry.metricSummary?.xpPerHour?.mean, 0),
+            meanDeathsPerHour: 0,
+            stability: 0,
+        };
+
+        const scoringProfitPerHour = toFiniteNumber(aggregate.scoringProfitPerHour, 0);
+        const deltaProfitPerHour = scoringProfitPerHour - baselineScoringProfit;
+        const deltaProfitPct = Math.abs(baselineScoringProfit) > 1e-9
+            ? (deltaProfitPerHour / baselineScoringProfit) * 100
+            : 0;
+
+        const metricSummary = entry.metricSummary ?? {};
+        const dailyNoRngProfitPerDay = toFiniteNumber(metricSummary?.dailyNoRngProfit?.mean, 0);
+        const dps = toFiniteNumber(metricSummary?.dps?.mean, 0);
+        const xpPerHour = toFiniteNumber(metricSummary?.xpPerHour?.mean, 0);
+        const killsPerHour = toFiniteNumber(metricSummary?.killsPerHour?.mean, 0);
+
+        return {
+            id: entry.queueItemId,
+            label: entry.displayName,
+            rank: entry.rank,
+            order: entry.order,
+            score: toFiniteNumber(entry.finalScore, 0) / 100,
+            finalScore: toFiniteNumber(entry.finalScore, 0),
+            baseFinalScore: toFiniteNumber(entry.baseFinalScore, 0),
+            performanceScore: toFiniteNumber(entry.performanceScore, 0),
+            stabilityScore: toFiniteNumber(entry.stabilityScore, 0),
+            costScore: toFiniteNumber(entry.costScore, 0),
+            confidenceScore: toFiniteNumber(entry.confidenceScore, 0),
+            confidencePenaltyFactor: toFiniteNumber(entry.confidencePenaltyFactor, 1),
+            scoreFlags: entry.scoreFlags ?? {
+                performanceInvalid: false,
+                stabilityInvalid: false,
+                costInvalid: false,
+                invalidReasons: [],
+            },
+            rawComponentScores: entry.rawComponentScores ?? {},
+            changeCount: aggregate.changeCount,
+            changes: aggregate.changes,
+            changeDetails: Array.isArray(aggregate.changeDetails) ? deepClone(aggregate.changeDetails) : [],
+            rounds: aggregate.rounds || resolveQueueRowRoundCount(entry),
+            meanProfitPerHour: toFiniteNumber(aggregate.meanProfitPerHour, 0),
+            medianProfitPerHour: toFiniteNumber(aggregate.medianProfitPerHour, 0),
+            stdProfitPerHour: toFiniteNumber(aggregate.stdProfitPerHour, 0),
+            scoringProfitPerHour,
+            meanXpPerHour: toFiniteNumber(aggregate.meanXpPerHour, xpPerHour),
+            meanDeathsPerHour: toFiniteNumber(aggregate.meanDeathsPerHour, 0),
+            stability: toFiniteNumber(aggregate.stability, 0),
+            deltaProfitPerHour: toFiniteNumber(deltaProfitPerHour, 0),
+            deltaProfitPct: toFiniteNumber(deltaProfitPct, 0),
+            dailyNoRngProfitPerDay,
+            deltaDailyNoRngProfitPerDay: dailyNoRngProfitPerDay - baselineDailyNoRngProfitPerDay,
+            deltaDailyNoRngProfitPct: toFiniteNumber(metricSummary?.dailyNoRngProfit?.meanDeltaPct, 0),
+            dps,
+            deltaDpsPerSecond: dps - baselineDps,
+            deltaDpsPct: toFiniteNumber(metricSummary?.dps?.meanDeltaPct, 0),
+            xpPerHour,
+            deltaXpPerHour: xpPerHour - baselineXpPerHour,
+            deltaXpPct: toFiniteNumber(metricSummary?.xpPerHour?.meanDeltaPct, 0),
+            killsPerHour,
+            deltaKillsPerHour: killsPerHour - baselineKillsPerHour,
+            deltaKillsPct: toFiniteNumber(metricSummary?.killsPerHour?.meanDeltaPct, 0),
+            metricSummary,
+            costInsights: entry.costInsights ?? createEmptyQueueCostInsights(),
+        };
+    });
 }
 
 /**
@@ -4353,6 +4629,56 @@ export const useSimulatorStore = defineStore("simulator", {
 
             return true;
         },
+        async refreshQueueResultsFromRawRuns(options = {}) {
+            const playerId = String(options?.playerId || this.activePlayerId);
+            const queueState = this.ensureQueueState(playerId);
+            const entries = buildQueueEntriesFromState(queueState);
+            const entrySortIndexById = new Map(entries.map((entry, index) => [entry.id, index]));
+            const includeEmptyEntries = options?.includeEmptyEntries === true;
+            const allowReferenceLoad = options?.allowReferenceLoad !== false;
+
+            if (entries.length === 0) {
+                queueState.results = [];
+                queueState.ranking = [];
+                if (options?.sortRawRuns !== false) {
+                    queueState.rawRuns = [];
+                }
+                return [];
+            }
+
+            if (
+                allowReferenceLoad
+                && queueEntriesNeedAbilityUpgradeReference(entries)
+                && !hasAbilityUpgradeReferenceDataLoaded()
+            ) {
+                await this.ensureAbilityUpgradeReferenceDataLoaded();
+            }
+
+            const queueSettings = normalizeQueueSettings(queueState.settings);
+            queueState.settings = queueSettings;
+            const baselineMetrics = isPlainObject(queueState?.baseline?.metrics) ? queueState.baseline.metrics : {};
+            const rankedRows = buildQueueRankedRowsFromSampleState({
+                entries,
+                rawRuns: queueState.rawRuns,
+                queueSettings,
+                queueState,
+                baselineMetrics,
+                pricingState: this.pricing,
+                scoreWeights: this.queueRuntime?.finalWeights,
+                includeEmptyEntries,
+            });
+
+            queueState.results = rankedRows;
+            queueState.ranking = rankedRows;
+            if (options?.sortRawRuns !== false) {
+                queueState.rawRuns = sortQueueRawRuns(queueState.rawRuns, entrySortIndexById);
+            }
+            if (options?.updateLastRunAt === true) {
+                queueState.lastRunAt = Date.now();
+            }
+
+            return rankedRows;
+        },
         async runActiveQueue() {
             const queueState = this.ensureQueueState(this.activePlayerId);
             queueState.error = "";
@@ -4397,27 +4723,7 @@ export const useSimulatorStore = defineStore("simulator", {
             }
             const baselineMetrics = isPlainObject(queueState?.baseline?.metrics) ? queueState.baseline.metrics : {};
 
-            const entries = queueState.items.map((item, index) => {
-                const summary = computeQueueChangeSummary(queueState.baseline.snapshot, item?.snapshot);
-                const fallbackLabels = Array.isArray(summary?.labels) ? summary.labels : [];
-                const fallbackChangeDetails = Array.isArray(summary?.changes) ? summary.changes : [];
-                const changes = Array.isArray(item?.changes) && item.changes.length > 0
-                    ? item.changes
-                    : fallbackLabels;
-                const changeDetails = Array.isArray(item?.changeDetails) && item.changeDetails.length > 0
-                    ? deepClone(item.changeDetails)
-                    : deepClone(fallbackChangeDetails);
-                const itemName = String(item?.name || "").trim();
-                const label = itemName || deriveQueueVariantNameFromLabels(changes, index + 1);
-
-                return {
-                    id: item.id,
-                    label,
-                    snapshot: deepClone(item.snapshot),
-                    changes,
-                    changeDetails,
-                };
-            });
+            const entries = buildQueueEntriesFromState(queueState);
 
             queueState.isRunning = true;
             queueState.progress = 0;
@@ -4445,8 +4751,6 @@ export const useSimulatorStore = defineStore("simulator", {
                 )
                 : 1;
 
-            const variantSamplesById = new Map(entries.map((entry) => [entry.id, []]));
-            const entrySortIndexById = new Map(entries.map((entry, index) => [entry.id, index]));
             const REALTIME_RANKING_THROTTLE_MS = 250;
             let lastRealtimeRankingAt = 0;
             const updateQueueRunProgress = () => {
@@ -4457,181 +4761,21 @@ export const useSimulatorStore = defineStore("simulator", {
                 this.runtime.progress = queueState.progress;
                 this.runtime.elapsedSeconds = (Date.now() - this.runtime.startedAt) / 1000;
             };
-            const sortRawRuns = (rows = []) => rows
-                .sort((a, b) => {
-                    const roundDiff = Number(a.round || 0) - Number(b.round || 0);
-                    if (roundDiff !== 0) {
-                        return roundDiff;
-                    }
-                    return (entrySortIndexById.get(a.id) ?? 999) - (entrySortIndexById.get(b.id) ?? 999);
-                });
-            const buildRankedRowsFromSamples = (includeEmptyEntries = false) => {
-                const sourceEntries = includeEmptyEntries
-                    ? entries
-                    : entries.filter((entry) => (variantSamplesById.get(entry.id) || []).length > 0);
-
-                if (sourceEntries.length === 0) {
-                    return [];
-                }
-
-                const variantAggregates = sourceEntries.map((entry) => {
-                    const variantSamples = (variantSamplesById.get(entry.id) || [])
-                        .slice()
-                        .sort((a, b) => Number(a.round || 0) - Number(b.round || 0));
-                    const profits = variantSamples.map((sample) => sample.profitPerHour);
-                    const xps = variantSamples.map((sample) => sample.totalXpPerHour);
-                    const deaths = variantSamples.map((sample) => sample.deathsPerHour);
-                    const meanProfit = getMean(profits);
-                    const medianProfit = getMedian(profits);
-                    const meanXp = getMean(xps);
-                    const meanDeaths = getMean(deaths);
-                    const stdProfit = getStdDev(profits, meanProfit);
-                    const coefficientOfVariation = Math.abs(meanProfit) > 1e-9 ? (stdProfit / Math.abs(meanProfit)) : stdProfit;
-                    const stability = 1 / (1 + coefficientOfVariation);
-                    const scoringProfitPerHour = meanProfit * (1 - queueSettings.medianBlend) + medianProfit * queueSettings.medianBlend;
-
-                    return {
-                        id: entry.id,
-                        label: entry.label,
-                        changeCount: entry.changes.length,
-                        changes: entry.changes,
-                        changeDetails: Array.isArray(entry.changeDetails) ? deepClone(entry.changeDetails) : [],
-                        rounds: variantSamples.length,
-                        meanProfitPerHour: meanProfit,
-                        medianProfitPerHour: medianProfit,
-                        stdProfitPerHour: stdProfit,
-                        scoringProfitPerHour,
-                        meanXpPerHour: meanXp,
-                        meanDeathsPerHour: meanDeaths,
-                        stability,
-                        sampleResults: variantSamples,
-                    };
-                });
-                const variantAggregateById = new Map(variantAggregates.map((entry) => [entry.id, entry]));
-                const scoreWeights = normalizeQueueScoreWeights(this.queueRuntime?.finalWeights);
-                const metricSummaryByQueueItem = sourceEntries.map((entry) => {
-                    const roundResults = (variantSamplesById.get(entry.id) || [])
-                        .map((sample) => ({
-                            metrics: sample.metrics,
-                            deltas: sample.deltas,
-                        }));
-                    const metricSummary = buildQueueItemMetricSummary(roundResults);
-                    return {
-                        queueItemId: entry.id,
-                        displayName: entry.label,
-                        order: entrySortIndexById.get(entry.id) ?? 0,
-                        metricSummary,
-                        costInsights: buildQueueItemCostInsights(queueState, entry.snapshot, metricSummary, this.pricing),
-                    };
-                });
-                const multiRoundRanking = buildMultiRoundRanking(metricSummaryByQueueItem, scoreWeights);
-                const baselineDailyNoRngProfitPerDay = toFiniteNumber(
-                    baselineMetrics?.dailyNoRngProfit,
-                    0
-                );
-                const baselineScoringProfit = baselineDailyNoRngProfitPerDay / 24;
-                const baselineDps = toFiniteNumber(
-                    baselineMetrics?.dps,
-                    0
-                );
-                const baselineXpPerHour = toFiniteNumber(
-                    baselineMetrics?.xpPerHour,
-                    0
-                );
-                const baselineKillsPerHour = toFiniteNumber(
-                    baselineMetrics?.killsPerHour,
-                    0
-                );
-
-                return multiRoundRanking.map((entry) => {
-                    const aggregate = variantAggregateById.get(entry.queueItemId) || {
-                        id: entry.queueItemId,
-                        label: entry.displayName,
-                        changeCount: 0,
-                        changes: [],
-                        rounds: 0,
-                        meanProfitPerHour: toFiniteNumber(entry.metricSummary?.dailyNoRngProfit?.mean, 0) / 24,
-                        medianProfitPerHour: toFiniteNumber(entry.metricSummary?.dailyNoRngProfit?.p50, 0) / 24,
-                        stdProfitPerHour: toFiniteNumber(entry.metricSummary?.dailyNoRngProfit?.std, 0) / 24,
-                        scoringProfitPerHour: toFiniteNumber(entry.metricSummary?.dailyNoRngProfit?.robustMean, 0) / 24,
-                        meanXpPerHour: toFiniteNumber(entry.metricSummary?.xpPerHour?.mean, 0),
-                        meanDeathsPerHour: 0,
-                        stability: 0,
-                    };
-
-                    const scoringProfitPerHour = toFiniteNumber(aggregate.scoringProfitPerHour, 0);
-                    const deltaProfitPerHour = scoringProfitPerHour - baselineScoringProfit;
-                    const deltaProfitPct = Math.abs(baselineScoringProfit) > 1e-9
-                        ? (deltaProfitPerHour / baselineScoringProfit) * 100
-                        : 0;
-
-                    const metricSummary = entry.metricSummary ?? {};
-                    const dailyNoRngProfitPerDay = toFiniteNumber(metricSummary?.dailyNoRngProfit?.mean, 0);
-                    const dps = toFiniteNumber(metricSummary?.dps?.mean, 0);
-                    const xpPerHour = toFiniteNumber(metricSummary?.xpPerHour?.mean, 0);
-                    const killsPerHour = toFiniteNumber(metricSummary?.killsPerHour?.mean, 0);
-
-                    return {
-                        id: entry.queueItemId,
-                        label: entry.displayName,
-                        rank: entry.rank,
-                        order: entry.order,
-                        score: toFiniteNumber(entry.finalScore, 0) / 100,
-                        finalScore: toFiniteNumber(entry.finalScore, 0),
-                        baseFinalScore: toFiniteNumber(entry.baseFinalScore, 0),
-                        performanceScore: toFiniteNumber(entry.performanceScore, 0),
-                        stabilityScore: toFiniteNumber(entry.stabilityScore, 0),
-                        costScore: toFiniteNumber(entry.costScore, 0),
-                        confidenceScore: toFiniteNumber(entry.confidenceScore, 0),
-                        confidencePenaltyFactor: toFiniteNumber(entry.confidencePenaltyFactor, 1),
-                        scoreFlags: entry.scoreFlags ?? {
-                            performanceInvalid: false,
-                            stabilityInvalid: false,
-                            costInvalid: false,
-                            invalidReasons: [],
-                        },
-                        rawComponentScores: entry.rawComponentScores ?? {},
-                        changeCount: aggregate.changeCount,
-                        changes: aggregate.changes,
-                        changeDetails: Array.isArray(aggregate.changeDetails) ? deepClone(aggregate.changeDetails) : [],
-                        rounds: aggregate.rounds || resolveQueueRowRoundCount(entry),
-                        meanProfitPerHour: toFiniteNumber(aggregate.meanProfitPerHour, 0),
-                        medianProfitPerHour: toFiniteNumber(aggregate.medianProfitPerHour, 0),
-                        stdProfitPerHour: toFiniteNumber(aggregate.stdProfitPerHour, 0),
-                        scoringProfitPerHour,
-                        meanXpPerHour: toFiniteNumber(aggregate.meanXpPerHour, xpPerHour),
-                        meanDeathsPerHour: toFiniteNumber(aggregate.meanDeathsPerHour, 0),
-                        stability: toFiniteNumber(aggregate.stability, 0),
-                        deltaProfitPerHour: toFiniteNumber(deltaProfitPerHour, 0),
-                        deltaProfitPct: toFiniteNumber(deltaProfitPct, 0),
-                        dailyNoRngProfitPerDay,
-                        deltaDailyNoRngProfitPerDay: dailyNoRngProfitPerDay - baselineDailyNoRngProfitPerDay,
-                        deltaDailyNoRngProfitPct: toFiniteNumber(metricSummary?.dailyNoRngProfit?.meanDeltaPct, 0),
-                        dps,
-                        deltaDpsPerSecond: dps - baselineDps,
-                        deltaDpsPct: toFiniteNumber(metricSummary?.dps?.meanDeltaPct, 0),
-                        xpPerHour,
-                        deltaXpPerHour: xpPerHour - baselineXpPerHour,
-                        deltaXpPct: toFiniteNumber(metricSummary?.xpPerHour?.meanDeltaPct, 0),
-                        killsPerHour,
-                        deltaKillsPerHour: killsPerHour - baselineKillsPerHour,
-                        deltaKillsPct: toFiniteNumber(metricSummary?.killsPerHour?.meanDeltaPct, 0),
-                        metricSummary,
-                        costInsights: entry.costInsights ?? {
-                            totalUpgradeCost: 0,
-                            purchaseDays: null,
-                            goldPerPoint01Pct: {},
-                            goldPerPoint01PctAvg: null,
-                        },
-                    };
-                });
-            };
             const updateRealtimeRanking = (force = false) => {
                 const now = Date.now();
                 if (!force && now - lastRealtimeRankingAt < REALTIME_RANKING_THROTTLE_MS) {
                     return;
                 }
-                const realtimeRows = buildRankedRowsFromSamples(false);
+                const realtimeRows = buildQueueRankedRowsFromSampleState({
+                    entries,
+                    rawRuns: queueState.rawRuns,
+                    queueSettings,
+                    queueState,
+                    baselineMetrics,
+                    pricingState: this.pricing,
+                    scoreWeights: this.queueRuntime?.finalWeights,
+                    includeEmptyEntries: false,
+                });
                 if (realtimeRows.length <= 0) {
                     return;
                 }
@@ -4693,7 +4837,6 @@ export const useSimulatorStore = defineStore("simulator", {
                         deltas,
                         ...summary,
                     };
-                    variantSamplesById.get(entry.id).push(sampleRow);
                     queueState.rawRuns.push(sampleRow);
                     updateRealtimeRanking(false);
                 } finally {
@@ -4727,11 +4870,13 @@ export const useSimulatorStore = defineStore("simulator", {
                     }
                 }
 
-                const rankedRows = buildRankedRowsFromSamples(true);
-                queueState.results = rankedRows;
-                queueState.ranking = rankedRows;
-                queueState.rawRuns = sortRawRuns(queueState.rawRuns.slice());
-                queueState.lastRunAt = Date.now();
+                const rankedRows = await this.refreshQueueResultsFromRawRuns({
+                    playerId: activePlayerId,
+                    includeEmptyEntries: true,
+                    allowReferenceLoad: true,
+                    sortRawRuns: true,
+                    updateLastRunAt: true,
+                });
                 return rankedRows;
             } catch (error) {
                 queueState.error = typeof error === "string" ? error : (error?.message || JSON.stringify(error));
@@ -4910,11 +5055,11 @@ export const useSimulatorStore = defineStore("simulator", {
         },
         async ensureAbilityUpgradeReferenceDataLoaded(forceRefresh = false) {
             const globalRef = ensureAbilityUpgradeReferenceGlobals();
-            const hasCachedAbilityXp = Array.isArray(globalRef.jigsAbilityXpLevels) && globalRef.jigsAbilityXpLevels.length > 1;
+            const hasCachedAbilityXp = hasAbilityUpgradeReferenceDataLoaded();
             const hasCachedSpellBookXp = globalRef.jigsSpellBookXpByName
                 && typeof globalRef.jigsSpellBookXpByName === "object"
                 && Object.keys(globalRef.jigsSpellBookXpByName).length > 0;
-            const hasCachedReference = hasCachedAbilityXp && hasCachedSpellBookXp;
+            const hasCachedReference = hasCachedAbilityXp && (hasCachedSpellBookXp || Object.keys(abilityBookInfoByAbilityHrid).length > 0);
 
             if (hasCachedReference && !forceRefresh) {
                 return {
@@ -4947,6 +5092,19 @@ export const useSimulatorStore = defineStore("simulator", {
                     }
 
                     this.abilityUpgradeReferenceVersion = Date.now();
+                    const queueStates = Object.entries(this.queue?.byPlayer || {})
+                        .filter(([, queueState]) => Array.isArray(queueState?.rawRuns) && queueState.rawRuns.length > 0);
+
+                    await Promise.all(queueStates.map(async ([playerId, queueState]) => {
+                        await this.refreshQueueResultsFromRawRuns({
+                            playerId,
+                            includeEmptyEntries: queueState?.isRunning !== true,
+                            allowReferenceLoad: false,
+                            sortRawRuns: false,
+                            updateLastRunAt: false,
+                        });
+                    }));
+
                     return {
                         loaded: true,
                         source: "network",
