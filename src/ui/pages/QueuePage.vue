@@ -87,6 +87,7 @@
 <script setup>
 import { computed } from "vue";
 import abilityDetailMap from "../../combatsimulator/data/abilityDetailMap.json";
+import houseRoomDetailMap from "../../combatsimulator/data/houseRoomDetailMap.json";
 import itemDetailMap from "../../combatsimulator/data/itemDetailMap.json";
 import { EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../../services/playerMapper.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
@@ -116,11 +117,12 @@ const SLOT_I18N_KEY_MAP = {
 };
 const CHANGE_CATEGORY_PRIORITY = {
   item: 0,
-  food: 1,
-  drink: 2,
-  skill: 3,
-  trigger: 4,
-  profession: 5,
+  house_room: 1,
+  food: 2,
+  drink: 3,
+  skill: 4,
+  trigger: 5,
+  profession: 6,
 };
 
 const queueState = computed(() => simulator.activeQueueState);
@@ -338,6 +340,23 @@ function buildQueueChangesFromSnapshots(baselineSnapshot, targetSnapshot) {
     }
   }
 
+  for (const room of Object.values(houseRoomDetailMap || {})) {
+    const roomHrid = String(room?.hrid || "");
+    if (!roomHrid) {
+      continue;
+    }
+    const beforeLevel = Math.max(0, Math.floor(Number(baseline?.houseRooms?.[roomHrid] ?? 0)));
+    const afterLevel = Math.max(0, Math.floor(Number(target?.houseRooms?.[roomHrid] ?? 0)));
+    if (beforeLevel !== afterLevel) {
+      changes.push({
+        category: "house_room",
+        label: roomHrid,
+        before: { level: beforeLevel },
+        after: { level: afterLevel },
+      });
+    }
+  }
+
   return changes;
 }
 
@@ -476,6 +495,9 @@ function localizeQueueChangeLabel(change) {
     const index = Number(label.replace(/\D/g, "")) || 1;
     return t("common:queue.abilitySlot", "Ability Slot {{index}}", { index });
   }
+  if (category === "house_room") {
+    return t(`houseRoomNames.${label}`, houseRoomDetailMap?.[label]?.name || label || "House Room");
+  }
   if (category === "trigger") {
     if (label.startsWith(TRIGGER_CHANGE_LABEL_PREFIX)) {
       const triggerHrid = label.substring(TRIGGER_CHANGE_LABEL_PREFIX.length);
@@ -554,6 +576,11 @@ function formatQueueChangeValue(change, side = "after") {
     }
     const level = Math.max(1, Math.floor(Number(payload?.level || 1)));
     return `${localizeHridDisplayName(abilityHrid)}(Lv.${level})`;
+  }
+
+  if (category === "house_room") {
+    const level = Math.max(0, Math.floor(Number(payload?.level || 0)));
+    return `${level}`;
   }
 
   return "-";

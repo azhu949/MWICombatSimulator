@@ -176,6 +176,7 @@
 import { computed, ref } from "vue";
 import DisclosurePanel from "../components/DisclosurePanel.vue";
 import abilityDetailMap from "../../combatsimulator/data/abilityDetailMap.json";
+import houseRoomDetailMap from "../../combatsimulator/data/houseRoomDetailMap.json";
 import itemDetailMap from "../../combatsimulator/data/itemDetailMap.json";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { useI18nText } from "../composables/useI18nText.js";
@@ -592,6 +593,17 @@ function formatQueueChangeDetailLine(change) {
       name: formatSkillName(change?.key),
       from: Number.isFinite(before) ? before : 1,
       to: Number.isFinite(after) ? after : 1,
+    });
+  }
+
+  if (kind === "house_room") {
+    const before = Math.max(0, Math.floor(Number(change?.beforeLevel || 0)));
+    const after = Math.max(0, Math.floor(Number(change?.afterLevel || 0)));
+    const roomHrid = String(change?.roomHrid || "");
+    return t("common:queue.houseRoomLevelChange", "{{name}}: Level {{from}} -> {{to}}", {
+      name: t(`houseRoomNames.${roomHrid}`, houseRoomDetailMap?.[roomHrid]?.name || roomHrid || "House Room"),
+      from: before,
+      to: after,
     });
   }
 

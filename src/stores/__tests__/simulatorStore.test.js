@@ -2,6 +2,7 @@ import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import actionDetailMap from "../../combatsimulator/data/actionDetailMap.json";
 import abilityDetailMap from "../../combatsimulator/data/abilityDetailMap.json";
+import houseRoomDetailMap from "../../combatsimulator/data/houseRoomDetailMap.json";
 import itemDetailMap from "../../combatsimulator/data/itemDetailMap.json";
 import { createMainSiteShareProfileFixture } from "../../services/__tests__/fixtures/mainSiteShareProfileFixture.js";
 import { useSimulatorStore } from "../simulatorStore.js";
@@ -90,6 +91,85 @@ function findFirstAbilityBookInfo() {
         xpPerBook: Number(item.abilityBookDetail.experienceGain || 0),
         bookItemHrid: String(item.hrid || ""),
     };
+}
+
+function findHouseRoomWithUpgradeLevels(minLevels = 1, excludeHrid = "") {
+    return Object.values(houseRoomDetailMap).find((entry) => {
+        if (String(entry?.hrid || "") === String(excludeHrid || "")) {
+            return false;
+        }
+
+        const upgradeLevels = Object.keys(entry?.upgradeCostsMap || {}).filter((level) => {
+            const costs = entry?.upgradeCostsMap?.[level];
+            return Array.isArray(costs) && costs.length > 0;
+        });
+        return upgradeLevels.length >= minLevels;
+    }) ?? null;
+}
+
+function aggregateHouseRoomUpgradeCounts(roomHrid, fromLevel, toLevel) {
+    const room = houseRoomDetailMap?.[roomHrid];
+    const upgradeCostsMap = room?.upgradeCostsMap || {};
+    const counts = {};
+
+    for (let level = fromLevel + 1; level <= toLevel; level++) {
+        const levelCosts = Array.isArray(upgradeCostsMap[String(level)]) ? upgradeCostsMap[String(level)] : [];
+        for (const costEntry of levelCosts) {
+            const itemHrid = String(costEntry?.itemHrid || "");
+            const count = Number(costEntry?.count || 0);
+            if (!itemHrid || !Number.isFinite(count) || count <= 0) {
+                continue;
+            }
+            counts[itemHrid] = Number(counts[itemHrid] || 0) + count;
+        }
+    }
+
+    return counts;
+}
+
+function mergeMaterialCountMaps(...maps) {
+    return maps.reduce((acc, map) => {
+        for (const [itemHrid, count] of Object.entries(map || {})) {
+            acc[itemHrid] = Number(acc[itemHrid] || 0) + Number(count || 0);
+        }
+        return acc;
+    }, {});
+}
+
+function resolvePreviewAskSidePrice(priceTable, itemHrid) {
+    const normalizedItemHrid = String(itemHrid || "");
+    if (!normalizedItemHrid) {
+        return 0;
+    }
+    if (normalizedItemHrid === "/items/coin") {
+        return 1;
+    }
+
+    const entry = priceTable?.[normalizedItemHrid] ?? {};
+    const ask = Number(entry?.ask ?? -1);
+    if (ask > 0) {
+        return ask;
+    }
+
+    const vendorFallback = Number(itemDetailMap?.[normalizedItemHrid]?.sellPrice ?? 0);
+    const vendor = Math.max(0, Number(entry?.vendor ?? vendorFallback));
+    if (vendor > 0) {
+        return vendor;
+    }
+
+    const bid = Number(entry?.bid ?? -1);
+    return bid > 0 ? bid : 0;
+}
+
+function computePreviewTotalFromCounts(counts, priceTable) {
+    return Object.entries(counts || {}).reduce((sum, [itemHrid, count]) => {
+        const safeCount = Number(count || 0);
+        if (!Number.isFinite(safeCount) || safeCount <= 0) {
+            return sum;
+        }
+        const price = resolvePreviewAskSidePrice(priceTable, itemHrid);
+        return sum + ((itemHrid === "/items/coin" || price > 0) ? safeCount * price : 0);
+    }, 0);
 }
 
 describe("simulatorStore", () => {
@@ -404,6 +484,33 @@ describe("simulatorStore", () => {
         expect(simulator.activePlayer.levels.stamina).toBe(baselineStamina);
     });
 
+    it("builds separate queue variants for house room changes", async () => {
+        const simulator = useSimulatorStore();
+        const firstRoom = findHouseRoomWithUpgradeLevels(1);
+        const secondRoom = findHouseRoomWithUpgradeLevels(1, firstRoom?.hrid);
+        expect(firstRoom).toBeTruthy();
+        expect(secondRoom).toBeTruthy();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.houseRooms[firstRoom.hrid] = 1;
+        simulator.activePlayer.houseRooms[secondRoom.hrid] = 2;
+
+        const addedItems = simulator.addActivePlayerToQueue();
+
+        expect(addedItems).toHaveLength(2);
+        expect(addedItems.every((item) => Array.isArray(item.changeDetails) && item.changeDetails.length === 1)).toBe(true);
+        expect(addedItems.every((item) => item.changeDetails[0]?.kind === "house_room")).toBe(true);
+
+        const firstVariant = addedItems.find((item) => item.changeDetails[0]?.roomHrid === firstRoom.hrid);
+        const secondVariant = addedItems.find((item) => item.changeDetails[0]?.roomHrid === secondRoom.hrid);
+        expect(firstVariant?.snapshot?.houseRooms?.[firstRoom.hrid]).toBe(1);
+        expect(firstVariant?.snapshot?.houseRooms?.[secondRoom.hrid]).toBe(0);
+        expect(secondVariant?.snapshot?.houseRooms?.[firstRoom.hrid]).toBe(0);
+        expect(secondVariant?.snapshot?.houseRooms?.[secondRoom.hrid]).toBe(2);
+        expect(simulator.activePlayer.houseRooms[firstRoom.hrid]).toBe(0);
+        expect(simulator.activePlayer.houseRooms[secondRoom.hrid]).toBe(0);
+    });
+
     it("uses manual equipment transition cost in queue ranking cost insights", async () => {
         const simulator = useSimulatorStore();
         const equipmentItemHrid = findFirstEquipmentItem();
@@ -448,6 +555,55 @@ describe("simulatorStore", () => {
 
         expect(variantRow).toBeTruthy();
         expect(Number(variantRow.costInsights?.totalUpgradeCost)).toBe(123456);
+    });
+
+    it("includes house room upgrade cost in queue ranking cost insights", async () => {
+        const simulator = useSimulatorStore();
+        const room = findHouseRoomWithUpgradeLevels(1);
+        expect(room).toBeTruthy();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.houseRooms[room.hrid] = 1;
+        const expectedPreview = simulator.previewHouseRoomUpgradeCost(
+            simulator.activeQueueState.baseline.snapshot.houseRooms,
+            simulator.activePlayer.houseRooms
+        );
+
+        const addedItems = simulator.addActivePlayerToQueue();
+        expect(addedItems.length).toBe(1);
+        expect(addedItems[0].changeDetails?.[0]?.kind).toBe("house_room");
+
+        simulator.updateActiveQueueSettings({
+            rounds: 1,
+            executionMode: "serial",
+            medianBlend: 0.5,
+            weightProfit: 1,
+            weightXp: 0,
+            weightDeathSafety: 0,
+        });
+        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+            onProgress?.({ progress: 1 });
+            return {
+                simulatedTime: ONE_HOUR,
+                encounters: 100,
+                experienceGained: {
+                    player1: {
+                        stamina: 1000,
+                    },
+                },
+                deaths: {
+                    player1: 0,
+                },
+                consumablesUsed: {},
+            };
+        });
+
+        const rows = await simulator.runActiveQueue();
+        const variantRow = rows[0];
+
+        expect(variantRow).toBeTruthy();
+        expect(Number(variantRow.costInsights?.totalUpgradeCost)).toBe(expectedPreview.totals.totalCost);
+        expect(Number(variantRow.costInsights?.totalUpgradeCost)).toBeGreaterThan(0);
     });
 
     it("computes non-zero default ability upgrade cost from baseline snapshot", async () => {
@@ -722,6 +878,135 @@ describe("simulatorStore", () => {
 
         const levels = simulator.getMarketEnhancementLevelsForItem(equipmentItemHrid);
         expect(levels).toEqual([1, 2, 3, 5]);
+    });
+
+    it("accumulates single house room upgrade cost from current to target level", () => {
+        const simulator = useSimulatorStore();
+        const room = findHouseRoomWithUpgradeLevels(2);
+        expect(room).toBeTruthy();
+
+        const preview = simulator.previewHouseRoomUpgradeCost(
+            { [room.hrid]: 0 },
+            { [room.hrid]: 2 }
+        );
+        const expectedCounts = aggregateHouseRoomUpgradeCounts(room.hrid, 0, 2);
+        const expectedTotal = computePreviewTotalFromCounts(expectedCounts, simulator.pricing.priceTable);
+
+        expect(preview.rooms).toEqual([
+            {
+                roomHrid: room.hrid,
+                fromLevel: 0,
+                toLevel: 2,
+                subtotal: expectedTotal,
+            },
+        ]);
+        expect(preview.materials).toHaveLength(Object.keys(expectedCounts).length);
+        for (const [itemHrid, count] of Object.entries(expectedCounts)) {
+            const materialRow = preview.materials.find((entry) => entry.itemHrid === itemHrid);
+            expect(materialRow).toBeTruthy();
+            expect(materialRow.count).toBe(count);
+        }
+        expect(preview.totals.totalCost).toBe(expectedTotal);
+    });
+
+    it("aggregates multi-room upgrade materials and keeps totals aligned", () => {
+        const simulator = useSimulatorStore();
+        const firstRoom = findHouseRoomWithUpgradeLevels(1);
+        const secondRoom = findHouseRoomWithUpgradeLevels(2, firstRoom?.hrid);
+        expect(firstRoom).toBeTruthy();
+        expect(secondRoom).toBeTruthy();
+
+        const preview = simulator.previewHouseRoomUpgradeCost(
+            {
+                [firstRoom.hrid]: 0,
+                [secondRoom.hrid]: 1,
+            },
+            {
+                [firstRoom.hrid]: 1,
+                [secondRoom.hrid]: 2,
+            }
+        );
+
+        const firstCounts = aggregateHouseRoomUpgradeCounts(firstRoom.hrid, 0, 1);
+        const secondCounts = aggregateHouseRoomUpgradeCounts(secondRoom.hrid, 1, 2);
+        const expectedCounts = mergeMaterialCountMaps(firstCounts, secondCounts);
+        const expectedFirstSubtotal = computePreviewTotalFromCounts(firstCounts, simulator.pricing.priceTable);
+        const expectedSecondSubtotal = computePreviewTotalFromCounts(secondCounts, simulator.pricing.priceTable);
+        const expectedTotal = computePreviewTotalFromCounts(expectedCounts, simulator.pricing.priceTable);
+
+        const roomRowsByHrid = Object.fromEntries(preview.rooms.map((entry) => [entry.roomHrid, entry]));
+
+        expect(preview.rooms).toHaveLength(2);
+        expect(roomRowsByHrid[firstRoom.hrid]).toEqual({
+            roomHrid: firstRoom.hrid,
+            fromLevel: 0,
+            toLevel: 1,
+            subtotal: expectedFirstSubtotal,
+        });
+        expect(roomRowsByHrid[secondRoom.hrid]).toEqual({
+            roomHrid: secondRoom.hrid,
+            fromLevel: 1,
+            toLevel: 2,
+            subtotal: expectedSecondSubtotal,
+        });
+        for (const [itemHrid, count] of Object.entries(expectedCounts)) {
+            const materialRow = preview.materials.find((entry) => entry.itemHrid === itemHrid);
+            expect(materialRow).toBeTruthy();
+            expect(materialRow.count).toBe(count);
+        }
+        expect(preview.totals.totalCost).toBe(expectedTotal);
+        expect(preview.rooms.reduce((sum, room) => sum + Number(room.subtotal || 0), 0)).toBe(expectedTotal);
+    });
+
+    it("returns zero house room upgrade cost when target level is not above baseline", () => {
+        const simulator = useSimulatorStore();
+        const room = findHouseRoomWithUpgradeLevels(1);
+        expect(room).toBeTruthy();
+
+        const preview = simulator.previewHouseRoomUpgradeCost(
+            { [room.hrid]: 3 },
+            { [room.hrid]: 1 }
+        );
+
+        expect(preview.rooms).toEqual([]);
+        expect(preview.materials).toEqual([]);
+        expect(preview.totals).toEqual({
+            coinCost: 0,
+            materialValue: 0,
+            totalCost: 0,
+        });
+    });
+
+    it("marks missing house room material prices and excludes them from total", () => {
+        const simulator = useSimulatorStore();
+        const room = findHouseRoomWithUpgradeLevels(1);
+        expect(room).toBeTruthy();
+
+        const firstLevelCosts = Array.isArray(room?.upgradeCostsMap?.["1"]) ? room.upgradeCostsMap["1"] : [];
+        const missingPriceMaterial = firstLevelCosts.find((entry) => String(entry?.itemHrid || "") !== "/items/coin");
+        expect(missingPriceMaterial).toBeTruthy();
+
+        simulator.pricing.priceTable = {
+            ...simulator.pricing.priceTable,
+            [missingPriceMaterial.itemHrid]: {
+                ask: -1,
+                bid: -1,
+                vendor: 0,
+            },
+        };
+
+        const preview = simulator.previewHouseRoomUpgradeCost(
+            { [room.hrid]: 0 },
+            { [room.hrid]: 1 }
+        );
+        const missingRow = preview.materials.find((entry) => entry.itemHrid === missingPriceMaterial.itemHrid);
+        const expectedCounts = aggregateHouseRoomUpgradeCounts(room.hrid, 0, 1);
+        const expectedTotal = computePreviewTotalFromCounts(expectedCounts, simulator.pricing.priceTable);
+
+        expect(missingRow).toBeTruthy();
+        expect(missingRow.priced).toBe(false);
+        expect(missingRow.subtotal).toBe(0);
+        expect(preview.totals.totalCost).toBe(expectedTotal);
     });
 
     it("stores only meaningful player snapshots when saving snapshot data", () => {
