@@ -3,7 +3,7 @@
 // @name:zh      MWI Combat Simulator 主站一键导入
 // @name:zh-CN   MWI Combat Simulator 主站一键导入
 // @namespace    https://azhu949.github.io/MWICombatSimulator
-// @version      0.1.12
+// @version      0.1.13
 // @license      ISC
 // @description  Import the current Milky Way Idle character into MWI Combat Simulator with one click.
 // @description:zh      一键将 Milky Way Idle 主站当前角色导入到 MWI Combat Simulator。
@@ -489,6 +489,121 @@
             .filter(Boolean);
     }
 
+    function getElementSearchText(element) {
+        if (!isDomElement(element)) {
+            return "";
+        }
+
+        const values = [
+            element.textContent,
+            element.getAttribute("aria-label"),
+            element.getAttribute("title"),
+        ];
+
+        return normalizeText(values.filter((value) => String(value || "").trim()).join(" "));
+    }
+
+    function getElementSemanticText(element) {
+        if (!isDomElement(element)) {
+            return "";
+        }
+
+        const className = typeof element.className === "string"
+            ? element.className
+            : element.getAttribute("class");
+
+        const values = [
+            element.tagName,
+            element.getAttribute("role"),
+            element.getAttribute("id"),
+            className,
+            element.getAttribute("aria-label"),
+            element.getAttribute("title"),
+        ];
+
+        return normalizeText(values.filter((value) => String(value || "").trim()).join(" "));
+    }
+
+    function hasMainSiteNavigationContext(element) {
+        if (!isDomElement(element)) {
+            return false;
+        }
+
+        if (element.closest("nav, header, aside, [role='navigation'], [role='tablist'], [role='menu']")) {
+            return true;
+        }
+
+        const semanticText = [
+            getElementSemanticText(element),
+            getElementSemanticText(element.parentElement),
+        ]
+            .filter(Boolean)
+            .join(" ");
+
+        return /(^|[\s_-])(nav|menu|sidebar|drawer|tab|tabs|toolbar)([\s_-]|$)/.test(semanticText);
+    }
+
+    function getMainSiteMenuItemElement(element) {
+        if (!isDomElement(element)) {
+            return null;
+        }
+
+        const interactiveAncestor = element.closest("a, button, [role='button'], [role='link'], [role='tab'], [role='menuitem']");
+        if (interactiveAncestor && isVisibleElement(interactiveAncestor)) {
+            return interactiveAncestor;
+        }
+
+        return isVisibleElement(element) ? element : null;
+    }
+
+    function scoreMainSiteNewsCandidate(menuItem, text, labels) {
+        const rect = menuItem.getBoundingClientRect();
+        const roleText = normalizeText(menuItem.getAttribute("role"));
+        const semanticText = [
+            getElementSemanticText(menuItem),
+            getElementSemanticText(menuItem.parentElement),
+            getElementSemanticText(menuItem.closest("nav, header, aside, [role='navigation'], [role='tablist'], [role='menu']")),
+        ]
+            .filter(Boolean)
+            .join(" ");
+
+        let score = 0;
+        if (/^(A|BUTTON)$/.test(menuItem.tagName)) {
+            score += 120;
+        }
+        if (/(^|[\s_-])(button|link|tab|menuitem)([\s_-]|$)/.test(`${roleText} ${semanticText}`)) {
+            score += 80;
+        }
+        if (hasMainSiteNavigationContext(menuItem)) {
+            score += 160;
+        }
+        if (labels.includes(text)) {
+            score += 60;
+        }
+        if (rect.width >= 36) {
+            score += 20;
+        }
+        if (rect.width >= 60 && rect.width < 140) {
+            score += 35;
+        } else if (rect.width >= 140 && rect.width < 320) {
+            score += 20;
+        }
+        if (rect.height >= 20 && rect.height <= 112) {
+            score += 30;
+        }
+        if (rect.top >= 0 && rect.top < Math.max(window.innerHeight * 0.65, 320)) {
+            score += 20;
+        }
+        if (rect.width > Math.max(window.innerWidth * 0.8, 480)) {
+            score -= 120;
+        }
+        if (rect.height > 140) {
+            score -= 120;
+        }
+
+        return { rect, score };
+    }
+
     function textMatchesLabel(text, labels) {
         const normalized = normalizeText(text);
         return labels.some((label) => (
@@ -541,38 +656,47 @@
 
     function findMainSiteNewsMenuItem() {
         const newsLabels = getMainSiteNewsLabels();
-        const candidates = Array.from(document.querySelectorAll("a, button, [role='button'], div"))
-            .filter((element) => isVisibleElement(element))
-            .map((element) => ({
-                element,
-                text: normalizeText(element.textContent),
-                rect: element.getBoundingClientRect(),
-                interactiveRank: /^(A|BUTTON)$/.test(element.tagName) ? 0 : 1,
-            }))
-            .filter(({ text, rect }) => (
-                text
-                && textMatchesLabel(text, newsLabels)
-                && rect.width >= 120
-                && rect.height >= 28
-                && rect.height <= 96
-            ))
-            .sort((a, b) => (
-                a.interactiveRank - b.interactiveRank
-                || a.rect.top - b.rect.top
-                || a.element.querySelectorAll("*").length - b.element.querySelectorAll("*").length
-            ));
+        const dedupedCandidates = new Map();
 
-        for (const candidate of candidates) {
-            const interactiveAncestor = candidate.element.closest("a, button, [role='button']");
-            const menuItem = interactiveAncestor && isVisibleElement(interactiveAncestor)
-                ? interactiveAncestor
-                : candidate.element;
-            if (menuItem.parentElement) {
-                return menuItem;
+        for (const element of Array.from(document.querySelectorAll("a, button, [role='button'], [role='link'], [role='tab'], [role='menuitem'], div"))) {
+            if (!isVisibleElement(element)) {
+                continue;
+            }
+
+            const menuItem = getMainSiteMenuItemElement(element);
+            if (!menuItem || !menuItem.parentElement) {
+                continue;
+            }
+
+            const text = getElementSearchText(menuItem) || getElementSearchText(element);
+            if (!text || !textMatchesLabel(text, newsLabels)) {
+                continue;
+            }
+
+            const { rect, score } = scoreMainSiteNewsCandidate(menuItem, text, newsLabels);
+            if (rect.width < 28 || rect.height < 18) {
+                continue;
+            }
+
+            const existingCandidate = dedupedCandidates.get(menuItem);
+            if (!existingCandidate || score > existingCandidate.score) {
+                dedupedCandidates.set(menuItem, {
+                    menuItem,
+                    rect,
+                    score,
+                });
             }
         }
 
-        return null;
+        const bestCandidate = Array.from(dedupedCandidates.values())
+            .sort((left, right) => (
+                right.score - left.score
+                || left.rect.top - right.rect.top
+                || left.rect.left - right.rect.left
+                || left.menuItem.querySelectorAll("*").length - right.menuItem.querySelectorAll("*").length
+            ))[0];
+
+        return bestCandidate?.menuItem || null;
     }
 
     function openSimulatorPage() {
@@ -637,13 +761,24 @@
         return label;
     }
 
+    function isCompactMainSiteMenuItem(referenceItem) {
+        if (!isVisibleElement(referenceItem)) {
+            return false;
+        }
+
+        const rect = referenceItem.getBoundingClientRect();
+        return rect.width > 0 && rect.width < 120;
+    }
+
     function createMainSiteShortcut(referenceItem) {
         const shortcut = referenceItem.cloneNode(true);
         const preferredLanguage = detectMainSiteMenuLanguage(referenceItem);
+        const compactLayout = isCompactMainSiteMenuItem(referenceItem);
 
         shortcut.id = MAIN_SITE_SHORTCUT_ID;
         shortcut.setAttribute("data-mwi-tm-main-shortcut", "simulator");
         shortcut.removeAttribute("aria-current");
+        shortcut.setAttribute("aria-label", getUiText("mainSiteShortcut", preferredLanguage));
         shortcut.title = getUiText("mainSiteShortcutTitle", preferredLanguage);
         shortcut.style.textDecoration = "none";
 
@@ -679,14 +814,18 @@
         const content = document.createElement("span");
         content.style.display = "flex";
         content.style.alignItems = "center";
-        content.style.gap = "12px";
+        content.style.justifyContent = compactLayout ? "center" : "flex-start";
+        content.style.gap = compactLayout ? "0" : "12px";
         content.style.width = "100%";
+        content.style.minWidth = "0";
 
         const icon = createMainSiteShortcutIcon();
-        const label = createMainSiteShortcutLabel(preferredLanguage);
 
         content.appendChild(icon);
-        content.appendChild(label);
+        if (!compactLayout) {
+            const label = createMainSiteShortcutLabel(preferredLanguage);
+            content.appendChild(label);
+        }
         shortcut.appendChild(content);
         return shortcut;
     }
