@@ -36975,8 +36975,9 @@
         "categoryHrid": "/item_categories/resource",
         "sellPrice": 300,
         "isTradable": true,
+        "itemLevel": 95,
         "alchemyDetail": {
-            "bulkMultiplier": 1,
+            "bulkMultiplier": 5,
             "isCoinifiable": true,
             "decomposeItems": null,
             "transmuteSuccessRate": 0,
@@ -53664,9 +53665,9 @@
     },
     "/items/seal_of_action_speed": {
         "hrid": "/items/seal_of_action_speed",
-        "name": "Seal Of Action Speed",
-        "description": "Received from the Labyrinth. Grants 30 minutes of +15% Action Speed when opened.",
-        "categoryHrid": "/item_categories/loot",
+        "name": "Scroll Of Action Speed",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened.",
+        "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
         "alchemyDetail": {
@@ -53718,14 +53719,17 @@
                     "maxCount": 1
                 }
             ]
+        },
+        "scrollDetail": {
+            "personalBuffTypeHrid": "/personal_buff_types/action_speed"
         },
         "sortIndex": 35
     },
     "/items/seal_of_attack_speed": {
         "hrid": "/items/seal_of_attack_speed",
-        "name": "Seal Of Attack Speed",
-        "description": "Received from the Labyrinth. Grants 30 minutes of +15% Attack Speed when opened.",
-        "categoryHrid": "/item_categories/loot",
+        "name": "Scroll Of Attack Speed",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened.",
+        "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
         "alchemyDetail": {
@@ -53777,14 +53781,17 @@
                     "maxCount": 1
                 }
             ]
+        },
+        "scrollDetail": {
+            "personalBuffTypeHrid": "/personal_buff_types/attack_speed"
         },
         "sortIndex": 37
     },
     "/items/seal_of_cast_speed": {
         "hrid": "/items/seal_of_cast_speed",
-        "name": "Seal Of Cast Speed",
-        "description": "Received from the Labyrinth. Grants 30 minutes of +15% Cast Speed when opened.",
-        "categoryHrid": "/item_categories/loot",
+        "name": "Scroll Of Cast Speed",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened.",
+        "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
         "alchemyDetail": {
@@ -53836,14 +53843,17 @@
                     "maxCount": 1
                 }
             ]
+        },
+        "scrollDetail": {
+            "personalBuffTypeHrid": "/personal_buff_types/cast_speed"
         },
         "sortIndex": 38
     },
     "/items/seal_of_combat_drop": {
         "hrid": "/items/seal_of_combat_drop",
-        "name": "Seal Of Combat Drop",
-        "description": "Received from the Labyrinth. Grants 30 minutes of +15% Combat Drop Quantity when opened.",
-        "categoryHrid": "/item_categories/loot",
+        "name": "Scroll Of Combat Drop",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened.",
+        "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
         "alchemyDetail": {
@@ -53895,14 +53905,17 @@
                     "maxCount": 1
                 }
             ]
+        },
+        "scrollDetail": {
+            "personalBuffTypeHrid": "/personal_buff_types/combat_drop"
         },
         "sortIndex": 36
     },
     "/items/seal_of_critical_rate": {
         "hrid": "/items/seal_of_critical_rate",
-        "name": "Seal Of Critical Rate",
-        "description": "Received from the Labyrinth. Grants 30 minutes of +10% Critical Rate when opened.",
-        "categoryHrid": "/item_categories/loot",
+        "name": "Scroll Of Critical Rate",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened.",
+        "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
         "alchemyDetail": {
@@ -53954,14 +53967,17 @@
                     "maxCount": 1
                 }
             ]
+        },
+        "scrollDetail": {
+            "personalBuffTypeHrid": "/personal_buff_types/critical_rate"
         },
         "sortIndex": 40
     },
     "/items/seal_of_damage": {
         "hrid": "/items/seal_of_damage",
-        "name": "Seal Of Damage",
-        "description": "Received from the Labyrinth. Grants 30 minutes of +8% Damage when opened.",
-        "categoryHrid": "/item_categories/loot",
+        "name": "Scroll Of Damage",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened.",
+        "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
         "alchemyDetail": {
@@ -54013,14 +54029,17 @@
                     "maxCount": 1
                 }
             ]
+        },
+        "scrollDetail": {
+            "personalBuffTypeHrid": "/personal_buff_types/damage"
         },
         "sortIndex": 39
     },
     "/items/seal_of_efficiency": {
         "hrid": "/items/seal_of_efficiency",
-        "name": "Seal Of Efficiency",
-        "description": "Received from the Labyrinth. Grants 30 minutes of +14% Efficiency when opened.",
-        "categoryHrid": "/item_categories/loot",
+        "name": "Scroll Of Efficiency",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened.",
+        "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
         "alchemyDetail": {
@@ -54072,14 +54091,17 @@
                     "maxCount": 1
                 }
             ]
+        },
+        "scrollDetail": {
+            "personalBuffTypeHrid": "/personal_buff_types/efficiency"
         },
         "sortIndex": 34
     },
     "/items/seal_of_gathering": {
         "hrid": "/items/seal_of_gathering",
-        "name": "Seal Of Gathering",
-        "description": "Received from the Labyrinth. Grants 30 minutes of +18% Gathering when opened.",
-        "categoryHrid": "/item_categories/loot",
+        "name": "Scroll Of Gathering",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened.",
+        "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
         "alchemyDetail": {
@@ -54131,14 +54153,17 @@
                     "maxCount": 1
                 }
             ]
+        },
+        "scrollDetail": {
+            "personalBuffTypeHrid": "/personal_buff_types/gathering"
         },
         "sortIndex": 31
     },
     "/items/seal_of_gourmet": {
         "hrid": "/items/seal_of_gourmet",
-        "name": "Seal Of Gourmet",
-        "description": "Received from the Labyrinth. Grants 30 minutes of +16% Gourmet when opened.",
-        "categoryHrid": "/item_categories/loot",
+        "name": "Scroll Of Gourmet",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened.",
+        "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
         "alchemyDetail": {
@@ -54190,14 +54215,17 @@
                     "maxCount": 1
                 }
             ]
+        },
+        "scrollDetail": {
+            "personalBuffTypeHrid": "/personal_buff_types/gourmet"
         },
         "sortIndex": 32
     },
     "/items/seal_of_processing": {
         "hrid": "/items/seal_of_processing",
-        "name": "Seal Of Processing",
-        "description": "Received from the Labyrinth. Grants 30 minutes of +20% Processing when opened.",
-        "categoryHrid": "/item_categories/loot",
+        "name": "Scroll Of Processing",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened.",
+        "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
         "alchemyDetail": {
@@ -54250,13 +54278,16 @@
                 }
             ]
         },
+        "scrollDetail": {
+            "personalBuffTypeHrid": "/personal_buff_types/processing"
+        },
         "sortIndex": 33
     },
     "/items/seal_of_rare_find": {
         "hrid": "/items/seal_of_rare_find",
-        "name": "Seal Of Rare Find",
-        "description": "Received from the Labyrinth. Grants 30 minutes of +60% Rare Find when opened.",
-        "categoryHrid": "/item_categories/loot",
+        "name": "Scroll Of Rare Find",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened.",
+        "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
         "alchemyDetail": {
@@ -54327,13 +54358,16 @@
                 }
             ]
         },
+        "scrollDetail": {
+            "personalBuffTypeHrid": "/personal_buff_types/rare_find"
+        },
         "sortIndex": 42
     },
     "/items/seal_of_wisdom": {
         "hrid": "/items/seal_of_wisdom",
-        "name": "Seal Of Wisdom",
-        "description": "Received from the Labyrinth. Grants 30 minutes of +20% Wisdom when opened.",
-        "categoryHrid": "/item_categories/loot",
+        "name": "Scroll Of Wisdom",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened.",
+        "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
         "alchemyDetail": {
@@ -54403,6 +54437,9 @@
                     "maxCount": 1
                 }
             ]
+        },
+        "scrollDetail": {
+            "personalBuffTypeHrid": "/personal_buff_types/wisdom"
         },
         "sortIndex": 41
     },

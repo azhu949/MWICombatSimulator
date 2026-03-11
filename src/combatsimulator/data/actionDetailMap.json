@@ -40542,7 +40542,7 @@
         "baseTimeCost": 60000000000,
         "experienceGain": {
             "skillHrid": "/skills/tailoring",
-            "value": 120000
+            "value": 100000
         },
         "dropTable": null,
         "essenceDropTable": [
