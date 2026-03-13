@@ -14,7 +14,7 @@
 ## 主要功能
 
 - 一键导入主站当前角色到模拟器当前激活玩家槽位
-- 在主站侧边菜单里于 `新闻 / News` 上方注入 `战斗模拟器 / Combat Simulator` 快捷入口
+- 在主站侧边菜单里于 `新闻 / News` 上方注入 `战斗模拟器 / Combat Simulator` 快捷入口（点击弹窗选择 Cloudflare / GitHub Pages）
 - 自动导入玩家配置：`levels`、`equipment`、`food`、`drinks`、`abilities`、`triggerMap`、`houseRooms`、`achievements`
 - 如果主站当前角色正在战斗，还会同步当前战斗区域 / 地下城与难度
 - 同时支持线上模拟器和本地开发环境
@@ -29,6 +29,7 @@
 
 ### 模拟器
 
+- `https://mwi-combatsi-mulator.pages.dev/*`
 - `https://azhu949.github.io/MWICombatSimulator/*`
 - `http://localhost:5173/*`
 - `http://127.0.0.1:5173/*`
@@ -92,12 +93,3 @@
 - 不会发起额外的游戏 API 写请求
 - 只读取浏览器里当前主站页面已经能导出的角色数据
 - 传输发生在本地浏览器标签页与 Tampermonkey 存储之间
-
-## 发布建议
-
-如果你要把这个脚本发布到脚本平台，建议发布名称使用：
-
-- 中文：`MWI Combat Simulator 主站一键导入`
-- 英文：`MWI Combat Simulator Main-Site Import`
-
-项目内的 `Import/Export` 弹窗安装入口已接入正式脚本地址：`https://greasyfork.org/zh-CN/scripts/568613-mwi-combat-simulator-%E4%B8%BB%E7%AB%99%E4%B8%80%E9%94%AE%E5%AF%BC%E5%85%A5`。

@@ -3,7 +3,7 @@
 // @name:zh      MWI Combat Simulator 主站一键导入
 // @name:zh-CN   MWI Combat Simulator 主站一键导入
 // @namespace    https://azhu949.github.io/MWICombatSimulator
-// @version      0.1.13
+// @version      0.1.14
 // @license      ISC
 // @description  Import the current Milky Way Idle character into MWI Combat Simulator with one click.
 // @description:zh      一键将 Milky Way Idle 主站当前角色导入到 MWI Combat Simulator。
@@ -11,6 +11,7 @@
 // @match        https://www.milkywayidle.com/*
 // @match        https://milkywayidle.com/*
 // @match        https://azhu949.github.io/MWICombatSimulator/*
+// @match        https://mwi-combatsi-mulator.pages.dev/*
 // @match        http://localhost:5173/*
 // @match        http://127.0.0.1:5173/*
 // @grant        GM_getValue
@@ -34,7 +35,10 @@
     const CONTROL_ID = "mwi-tm-import-control";
     const STATUS_ID = "mwi-tm-import-status";
     const MAIN_SITE_SHORTCUT_ID = "mwi-tm-main-site-simulator-link";
-    const SIMULATOR_APP_URL = "https://azhu949.github.io/MWICombatSimulator/";
+    const SIMULATOR_GITHUB_PAGES_URL = "https://azhu949.github.io/MWICombatSimulator/";
+    const SIMULATOR_CLOUDFLARE_URL = "https://mwi-combatsi-mulator.pages.dev/";
+    const SIMULATOR_FALLBACK_URL = SIMULATOR_GITHUB_PAGES_URL;
+    const SIMULATOR_MIRROR_MODAL_ID = "mwi-tm-simulator-mirror-modal";
     const REQUEST_TIMEOUT_MS = 12000;
     const PAGE_REQUEST_TIMEOUT_MS = 10000;
     const APP_IMPORT_TIMEOUT_MS = 8000;
@@ -65,6 +69,11 @@
             unableToReadCurrentProfile: "Unable to read the current profile.",
             mainSiteShortcut: "Combat Simulator",
             mainSiteShortcutTitle: "Open MWI Combat Simulator",
+            mirrorModalTitle: "Open Combat Simulator",
+            mirrorModalDescription: "Choose which address you want to open.",
+            mirrorModalGithub: "GitHub Pages",
+            mirrorModalCloudflare: "Global (Cloudflare)",
+            mirrorModalCancel: "Cancel",
             mainSiteNews: "News",
         },
         zh: {
@@ -86,6 +95,11 @@
             unableToReadCurrentProfile: "无法读取当前角色资料。",
             mainSiteShortcut: "战斗模拟器",
             mainSiteShortcutTitle: "打开 MWI Combat Simulator",
+            mirrorModalTitle: "打开战斗模拟器",
+            mirrorModalDescription: "请选择要跳转的地址。",
+            mirrorModalGithub: "GitHub Pages",
+            mirrorModalCloudflare: "全球地址（Cloudflare）",
+            mirrorModalCancel: "取消",
             mainSiteNews: "新闻",
         },
     };
@@ -423,6 +437,7 @@
     function isSimulatorPage() {
         const origin = window.location.origin;
         return origin === "https://azhu949.github.io"
+            || origin === "https://mwi-combatsi-mulator.pages.dev"
             || origin === "http://localhost:5173"
             || origin === "http://127.0.0.1:5173";
     }
@@ -699,8 +714,250 @@
         return bestCandidate?.menuItem || null;
     }
 
-    function openSimulatorPage() {
-        window.open(SIMULATOR_APP_URL, "_blank", "noopener,noreferrer");
+    function openSimulatorPage(preferredLanguage = "") {
+        if (!document?.body) {
+            window.open(SIMULATOR_FALLBACK_URL, "_blank", "noopener,noreferrer");
+            return;
+        }
+
+        const existingModal = document.getElementById(SIMULATOR_MIRROR_MODAL_ID);
+        if (existingModal && existingModal.isConnected) {
+            const preferredButton = existingModal.querySelector('[data-mwi-tm-mirror="cloudflare"]');
+            if (preferredButton && typeof preferredButton.focus === "function") {
+                preferredButton.focus();
+            }
+            return;
+        }
+
+        const previousFocus = document.activeElement;
+        const titleId = `${SIMULATOR_MIRROR_MODAL_ID}-title`;
+        const descriptionId = `${SIMULATOR_MIRROR_MODAL_ID}-desc`;
+
+        const overlay = document.createElement("div");
+        overlay.id = SIMULATOR_MIRROR_MODAL_ID;
+        overlay.style.position = "fixed";
+        overlay.style.inset = "0";
+        overlay.style.zIndex = "2147483647";
+        overlay.style.display = "flex";
+        overlay.style.alignItems = "center";
+        overlay.style.justifyContent = "center";
+        overlay.style.padding = "24px";
+        overlay.style.background = "rgba(2, 6, 23, 0.72)";
+        overlay.style.backdropFilter = "blur(8px)";
+        overlay.style.WebkitBackdropFilter = "blur(8px)";
+        overlay.style.boxSizing = "border-box";
+
+        function closeModal() {
+            document.removeEventListener("keydown", handleKeydown, true);
+            overlay.remove();
+            if (previousFocus && typeof previousFocus.focus === "function") {
+                previousFocus.focus();
+            }
+        }
+
+        function handleKeydown(event) {
+            if (event.key !== "Escape") {
+                return;
+            }
+            event.preventDefault();
+            event.stopPropagation();
+            closeModal();
+        }
+
+        document.addEventListener("keydown", handleKeydown, true);
+        overlay.addEventListener("click", (event) => {
+            if (event.target !== overlay) {
+                return;
+            }
+            closeModal();
+        });
+
+        const dialog = document.createElement("div");
+        dialog.setAttribute("role", "dialog");
+        dialog.setAttribute("aria-modal", "true");
+        dialog.setAttribute("aria-labelledby", titleId);
+        dialog.setAttribute("aria-describedby", descriptionId);
+        dialog.style.width = "min(460px, 100%)";
+        dialog.style.borderRadius = "16px";
+        dialog.style.padding = "18px 18px 14px";
+        dialog.style.background = "linear-gradient(180deg, rgba(15, 23, 42, 0.98), rgba(15, 23, 42, 0.92))";
+        dialog.style.border = "1px solid rgba(148, 163, 184, 0.22)";
+        dialog.style.boxShadow = "0 24px 80px rgba(0, 0, 0, 0.65)";
+        dialog.style.color = "#e2e8f0";
+        dialog.style.boxSizing = "border-box";
+        dialog.addEventListener("click", (event) => {
+            event.stopPropagation();
+        });
+
+        const header = document.createElement("div");
+        header.style.display = "flex";
+        header.style.alignItems = "flex-start";
+        header.style.justifyContent = "space-between";
+        header.style.gap = "12px";
+
+        const title = document.createElement("div");
+        title.id = titleId;
+        title.textContent = getUiText("mirrorModalTitle", preferredLanguage);
+        title.style.fontSize = "16px";
+        title.style.fontWeight = "750";
+        title.style.letterSpacing = "0.01em";
+        title.style.lineHeight = "1.25";
+
+        const closeButton = document.createElement("button");
+        closeButton.type = "button";
+        closeButton.textContent = "×";
+        closeButton.setAttribute("aria-label", getUiText("mirrorModalCancel", preferredLanguage));
+        closeButton.style.border = "1px solid rgba(148, 163, 184, 0.22)";
+        closeButton.style.background = "rgba(30, 41, 59, 0.48)";
+        closeButton.style.color = "#e2e8f0";
+        closeButton.style.width = "34px";
+        closeButton.style.height = "34px";
+        closeButton.style.borderRadius = "12px";
+        closeButton.style.cursor = "pointer";
+        closeButton.style.display = "inline-flex";
+        closeButton.style.alignItems = "center";
+        closeButton.style.justifyContent = "center";
+        closeButton.style.fontSize = "20px";
+        closeButton.style.lineHeight = "1";
+        closeButton.style.padding = "0";
+        closeButton.style.flexShrink = "0";
+        closeButton.addEventListener("click", closeModal);
+
+        const description = document.createElement("div");
+        description.id = descriptionId;
+        description.textContent = getUiText("mirrorModalDescription", preferredLanguage);
+        description.style.marginTop = "8px";
+        description.style.fontSize = "13px";
+        description.style.color = "rgba(148, 163, 184, 0.95)";
+        description.style.lineHeight = "1.45";
+
+        const options = document.createElement("div");
+        options.style.display = "grid";
+        options.style.gap = "10px";
+        options.style.marginTop = "16px";
+
+        function createOptionButton({ id, label, url, accentColor }) {
+            const button = document.createElement("button");
+            button.type = "button";
+            button.setAttribute("data-mwi-tm-mirror", id);
+            button.style.width = "100%";
+            button.style.textAlign = "left";
+            button.style.cursor = "pointer";
+            button.style.border = `1px solid ${accentColor}`;
+            button.style.background = "rgba(2, 6, 23, 0.25)";
+            button.style.borderRadius = "14px";
+            button.style.padding = "12px 12px";
+            button.style.display = "flex";
+            button.style.alignItems = "center";
+            button.style.justifyContent = "space-between";
+            button.style.gap = "12px";
+            button.style.color = "#e2e8f0";
+            button.style.boxShadow = "inset 0 1px 0 rgba(255, 255, 255, 0.04)";
+            button.style.transition = "transform 80ms ease, background 120ms ease, border-color 120ms ease";
+            button.addEventListener("mouseenter", () => {
+                button.style.background = "rgba(30, 41, 59, 0.45)";
+                button.style.transform = "translateY(-1px)";
+                button.style.borderColor = accentColor;
+            });
+            button.addEventListener("mouseleave", () => {
+                button.style.background = "rgba(2, 6, 23, 0.25)";
+                button.style.transform = "";
+                button.style.borderColor = accentColor;
+            });
+            button.addEventListener("click", () => {
+                window.open(url, "_blank", "noopener,noreferrer");
+                closeModal();
+            });
+
+            const labelBlock = document.createElement("div");
+            labelBlock.style.display = "flex";
+            labelBlock.style.flexDirection = "column";
+            labelBlock.style.gap = "4px";
+            labelBlock.style.minWidth = "0";
+
+            const labelRow = document.createElement("div");
+            labelRow.textContent = label;
+            labelRow.style.fontSize = "14px";
+            labelRow.style.fontWeight = "750";
+            labelRow.style.letterSpacing = "0.01em";
+            labelRow.style.color = "#e2e8f0";
+
+            const urlRow = document.createElement("div");
+            urlRow.textContent = url.replace(/^https?:\/\//, "");
+            urlRow.style.fontSize = "12px";
+            urlRow.style.color = "rgba(148, 163, 184, 0.95)";
+            urlRow.style.overflow = "hidden";
+            urlRow.style.textOverflow = "ellipsis";
+            urlRow.style.whiteSpace = "nowrap";
+
+            labelBlock.appendChild(labelRow);
+            labelBlock.appendChild(urlRow);
+
+            const arrow = document.createElement("span");
+            arrow.setAttribute("aria-hidden", "true");
+            arrow.textContent = "↗";
+            arrow.style.fontSize = "16px";
+            arrow.style.fontWeight = "700";
+            arrow.style.color = accentColor;
+            arrow.style.flexShrink = "0";
+
+            button.appendChild(labelBlock);
+            button.appendChild(arrow);
+            return button;
+        }
+
+        const cloudflareButton = createOptionButton({
+            id: "cloudflare",
+            label: getUiText("mirrorModalCloudflare", preferredLanguage),
+            url: SIMULATOR_CLOUDFLARE_URL,
+            accentColor: "rgba(249, 115, 22, 0.72)",
+        });
+
+        const githubButton = createOptionButton({
+            id: "github",
+            label: getUiText("mirrorModalGithub", preferredLanguage),
+            url: SIMULATOR_GITHUB_PAGES_URL,
+            accentColor: "rgba(56, 189, 248, 0.78)",
+        });
+
+        const footer = document.createElement("div");
+        footer.style.display = "flex";
+        footer.style.justifyContent = "flex-end";
+        footer.style.gap = "10px";
+        footer.style.marginTop = "14px";
+
+        const cancelButton = document.createElement("button");
+        cancelButton.type = "button";
+        cancelButton.textContent = getUiText("mirrorModalCancel", preferredLanguage);
+        cancelButton.style.cursor = "pointer";
+        cancelButton.style.border = "1px solid rgba(148, 163, 184, 0.22)";
+        cancelButton.style.background = "rgba(30, 41, 59, 0.25)";
+        cancelButton.style.color = "#e2e8f0";
+        cancelButton.style.borderRadius = "12px";
+        cancelButton.style.padding = "10px 14px";
+        cancelButton.style.fontSize = "13px";
+        cancelButton.style.fontWeight = "700";
+        cancelButton.addEventListener("click", closeModal);
+
+        header.appendChild(title);
+        header.appendChild(closeButton);
+
+        options.appendChild(cloudflareButton);
+        options.appendChild(githubButton);
+
+        footer.appendChild(cancelButton);
+
+        dialog.appendChild(header);
+        dialog.appendChild(description);
+        dialog.appendChild(options);
+        dialog.appendChild(footer);
+
+        overlay.appendChild(dialog);
+        document.body.appendChild(overlay);
+
+        window.setTimeout(() => {
+            cloudflareButton.focus();
+        }, 0);
     }
 
     function createMainSiteShortcutIcon() {
@@ -787,9 +1044,22 @@
         });
 
         if (shortcut.tagName === "A") {
-            shortcut.href = SIMULATOR_APP_URL;
+            shortcut.href = SIMULATOR_FALLBACK_URL;
             shortcut.target = "_blank";
             shortcut.rel = "noopener noreferrer";
+            shortcut.addEventListener("click", (event) => {
+                event.preventDefault();
+                event.stopPropagation();
+                openSimulatorPage(preferredLanguage);
+            });
+            shortcut.addEventListener("keydown", (event) => {
+                if (event.key !== " ") {
+                    return;
+                }
+                event.preventDefault();
+                event.stopPropagation();
+                openSimulatorPage(preferredLanguage);
+            });
         } else {
             shortcut.setAttribute("role", "link");
             shortcut.tabIndex = 0;
@@ -797,7 +1067,7 @@
             shortcut.addEventListener("click", (event) => {
                 event.preventDefault();
                 event.stopPropagation();
-                openSimulatorPage();
+                openSimulatorPage(preferredLanguage);
             });
             shortcut.addEventListener("keydown", (event) => {
                 if (event.key !== "Enter" && event.key !== " ") {
@@ -805,7 +1075,7 @@
                 }
                 event.preventDefault();
                 event.stopPropagation();
-                openSimulatorPage();
+                openSimulatorPage(preferredLanguage);
             });
         }
 

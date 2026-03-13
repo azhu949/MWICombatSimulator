@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import actionDetailMap from "../../combatsimulator/data/actionDetailMap.json";
 import abilityDetailMap from "../../combatsimulator/data/abilityDetailMap.json";
+import abilityXpLevels from "../../combatsimulator/data/abilityXpLevels.json";
 import houseRoomDetailMap from "../../combatsimulator/data/houseRoomDetailMap.json";
 import itemDetailMap from "../../combatsimulator/data/itemDetailMap.json";
 import { createMainSiteShareProfileFixture } from "../../services/__tests__/fixtures/mainSiteShareProfileFixture.js";
@@ -90,13 +91,6 @@ function findFirstAbilityBookInfo() {
         abilityHrid: String(item.abilityBookDetail.abilityHrid || ""),
         xpPerBook: Number(item.abilityBookDetail.experienceGain || 0),
         bookItemHrid: String(item.hrid || ""),
-    };
-}
-
-function createAbilityReferencePayload() {
-    return {
-        abilityXp: [0, 100, 700, 2000],
-        spellBookXp: {},
     };
 }
 
@@ -191,6 +185,34 @@ describe("simulatorStore", () => {
         delete global.jigsAbilityXpLevels;
         delete global.jigsSpellBookXpByName;
         vi.restoreAllMocks();
+    });
+
+    it("defaults simulation UI flags when missing storage", () => {
+        const simulator = useSimulatorStore();
+
+        expect(simulator.simulationSettings.mooPass).toBe(true);
+        expect(simulator.simulationSettings.comExpEnabled).toBe(true);
+        expect(simulator.simulationSettings.comDropEnabled).toBe(true);
+        expect(simulator.simulationSettings.comExp).toBe(20);
+        expect(simulator.simulationSettings.comDrop).toBe(20);
+    });
+
+    it("does not override stored simulation UI flags", () => {
+        global.localStorage.setItem("mwi.simulation.ui.v1", JSON.stringify({
+            mooPass: false,
+            comExpEnabled: false,
+            comExp: 17,
+            comDropEnabled: false,
+            comDrop: 18,
+        }));
+
+        const simulator = useSimulatorStore();
+
+        expect(simulator.simulationSettings.mooPass).toBe(false);
+        expect(simulator.simulationSettings.comExpEnabled).toBe(false);
+        expect(simulator.simulationSettings.comDropEnabled).toBe(false);
+        expect(simulator.simulationSettings.comExp).toBe(17);
+        expect(simulator.simulationSettings.comDrop).toBe(18);
     });
 
     it("normalizes active queue settings", () => {
@@ -643,7 +665,7 @@ describe("simulatorStore", () => {
         expect(draft.cost).toBeGreaterThan(0);
     });
 
-    it("marks skill-only queue upgrade cost as unknown when ability references fail to load", async () => {
+    it("computes skill-only queue upgrade cost without fetching external ability reference data", async () => {
         const simulator = useSimulatorStore();
         const abilityBookInfo = findFirstAbilityBookInfo();
         expect(abilityBookInfo).toBeTruthy();
@@ -687,12 +709,9 @@ describe("simulatorStore", () => {
         const variantRow = rows[0];
 
         expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(1);
-        expect(global.fetch).toHaveBeenCalledTimes(1);
         expect(variantRow).toBeTruthy();
-        expect(variantRow.costInsights?.totalUpgradeCost).toBeNull();
-        expect(variantRow.costInsights?.purchaseDays).toBeNull();
-        expect(variantRow.costInsights?.goldPerPoint01PctAvg).toBeNull();
-        expect(variantRow.scoreFlags?.costInvalid).toBe(true);
+        expect(global.fetch).toHaveBeenCalledTimes(0);
+        expect(Number(variantRow.costInsights?.totalUpgradeCost)).toBeGreaterThan(0);
     });
 
     it("auto-refreshes existing queue ranking after ability references load without rerunning simulations", async () => {
@@ -700,22 +719,39 @@ describe("simulatorStore", () => {
         const abilityBookInfo = findFirstAbilityBookInfo();
         expect(abilityBookInfo).toBeTruthy();
 
-        global.fetch = vi.fn()
-            .mockResolvedValueOnce({ ok: false })
-            .mockResolvedValueOnce({
-                ok: true,
-                json: async () => createAbilityReferencePayload(),
-            });
+        const xpPerBook = Number(abilityBookInfo?.xpPerBook || 0);
+        expect(xpPerBook).toBeGreaterThan(0);
+
+        const startXp = Number(abilityXpLevels?.[1] ?? 0);
+        const cheaperLevel = 2;
+        const cheaperXp = Number(abilityXpLevels?.[cheaperLevel] ?? 0);
+        const cheaperBooks = Math.ceil(Math.max(0, cheaperXp - startXp) / xpPerBook);
+        expect(cheaperBooks).toBeGreaterThan(0);
+
+        let expensiveLevel = cheaperLevel + 1;
+        while (expensiveLevel < (abilityXpLevels?.length ?? 0)) {
+            const xpValue = Number(abilityXpLevels?.[expensiveLevel] ?? 0);
+            const booksNeeded = Math.ceil(Math.max(0, xpValue - startXp) / xpPerBook);
+            if (booksNeeded > cheaperBooks) {
+                break;
+            }
+            expensiveLevel += 1;
+        }
+        expect(expensiveLevel).toBeLessThan(abilityXpLevels.length);
+
+        global.fetch = vi.fn(async () => ({ ok: false }));
+        global.jigsAbilityXpLevels = [0, 0];
+        global.jigsSpellBookXpByName = {};
 
         await simulator.setQueueBaselineForActivePlayer();
 
         simulator.activePlayer.abilities[0].abilityHrid = abilityBookInfo.abilityHrid;
-        simulator.activePlayer.abilities[0].level = 3;
+        simulator.activePlayer.abilities[0].level = expensiveLevel;
         const expensiveItems = simulator.addActivePlayerToQueue();
         expect(expensiveItems).toHaveLength(1);
 
         simulator.activePlayer.abilities[0].abilityHrid = abilityBookInfo.abilityHrid;
-        simulator.activePlayer.abilities[0].level = 2;
+        simulator.activePlayer.abilities[0].level = cheaperLevel;
         const cheaperItems = simulator.addActivePlayerToQueue();
         expect(cheaperItems).toHaveLength(1);
 
@@ -767,7 +803,7 @@ describe("simulatorStore", () => {
 
         expect(refreshResult?.loaded).toBe(true);
         expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(2);
-        expect(global.fetch).toHaveBeenCalledTimes(2);
+        expect(global.fetch).toHaveBeenCalledTimes(0);
         expect(refreshedRows).toHaveLength(2);
         expect(refreshedRows[0].id).toBe(cheaperVariantId);
         expect(refreshedCheaperRow).toBeTruthy();

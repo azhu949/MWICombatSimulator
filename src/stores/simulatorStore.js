@@ -4,6 +4,7 @@ import actionDetailMap from "../combatsimulator/data/actionDetailMap.json";
 import combatMonsterDetailMap from "../combatsimulator/data/combatMonsterDetailMap.json";
 import houseRoomDetailMap from "../combatsimulator/data/houseRoomDetailMap.json";
 import itemDetailMap from "../combatsimulator/data/itemDetailMap.json";
+import abilityXpLevels from "../combatsimulator/data/abilityXpLevels.json";
 import workerClient, { WorkerClient } from "../services/workerClient.js";
 import { buildPlayersForSimulation, createEmptyPlayerConfig, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../services/playerMapper.js";
 import { estimateNoRngProfit } from "../services/profitEstimator.js";
@@ -46,7 +47,6 @@ const RUN_SCOPE_ALL_GROUP_ZONES = "all_group_zones";
 const RUN_SCOPE_ALL_SOLO_ZONES = "all_solo_zones";
 const RUN_SCOPE_ALL_LABYRINTHS = "all_labyrinths";
 const ABILITY_BOOK_CATEGORY_HRID = "/item_categories/ability_book";
-const JIGS_DATA_URL = "https://gist.githubusercontent.com/JigglyMoose/79db9d275a73a26dec30305865692525/raw/jigs_data.json";
 const LABYRINTH_COFFEE_CRATE_HRIDS = ["/items/basic_coffee_crate", "/items/advanced_coffee_crate", "/items/expert_coffee_crate"];
 const LABYRINTH_FOOD_CRATE_HRIDS = ["/items/basic_food_crate", "/items/advanced_food_crate", "/items/expert_food_crate"];
 
@@ -542,7 +542,13 @@ function normalizeSimulationUiSettings(rawSettings) {
 }
 
 function loadSimulationUiSettingsFromStorage() {
-    return normalizeSimulationUiSettings(readJsonStorage(SIMULATION_UI_STORAGE_KEY));
+    const stored = readJsonStorage(SIMULATION_UI_STORAGE_KEY);
+    return normalizeSimulationUiSettings({
+        mooPass: true,
+        comExpEnabled: true,
+        comDropEnabled: true,
+        ...stored,
+    });
 }
 
 function persistSimulationUiSettingsToStorage(settings) {
@@ -5330,25 +5336,20 @@ export const useSimulatorStore = defineStore("simulator", {
                 return abilityUpgradeReferenceLoadPromise;
             }
 
-            const fetchTask = (async () => {
+            const loadTask = (async () => {
                 try {
-                    const response = await fetch(JIGS_DATA_URL, { mode: "cors" });
-                    if (!response?.ok) {
+                    const bundledXpLevels = Array.isArray(abilityXpLevels)
+                        ? abilityXpLevels.map((value) => toFiniteNumber(value, 0))
+                        : [];
+                    if (bundledXpLevels.length <= 1) {
                         return {
                             loaded: false,
-                            source: "network",
+                            source: "bundle",
+                            error: "Bundled ability XP levels are missing or invalid.",
                         };
                     }
 
-                    const payload = await response.json();
-                    if (Array.isArray(payload?.abilityXp)) {
-                        globalRef.jigsAbilityXpLevels = payload.abilityXp
-                            .map((value) => toFiniteNumber(value, 0));
-                    }
-                    if (payload?.spellBookXp && typeof payload.spellBookXp === "object") {
-                        globalRef.jigsSpellBookXpByName = { ...payload.spellBookXp };
-                    }
-
+                    globalRef.jigsAbilityXpLevels = bundledXpLevels;
                     this.abilityUpgradeReferenceVersion = Date.now();
                     const queueStates = Object.entries(this.queue?.byPlayer || {})
                         .filter(([, queueState]) => Array.isArray(queueState?.rawRuns) && queueState.rawRuns.length > 0);
@@ -5365,12 +5366,12 @@ export const useSimulatorStore = defineStore("simulator", {
 
                     return {
                         loaded: true,
-                        source: "network",
+                        source: "bundle",
                     };
                 } catch (error) {
                     return {
                         loaded: false,
-                        source: "network",
+                        source: "bundle",
                         error: typeof error === "string" ? error : (error?.message || "Failed to load ability upgrade references."),
                     };
                 } finally {
@@ -5378,8 +5379,8 @@ export const useSimulatorStore = defineStore("simulator", {
                 }
             })();
 
-            abilityUpgradeReferenceLoadPromise = fetchTask;
-            return fetchTask;
+            abilityUpgradeReferenceLoadPromise = loadTask;
+            return loadTask;
         },
         setLanguage(language) {
             this.ui.language = language === "zh" ? "zh" : "en";
