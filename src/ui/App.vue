@@ -9,6 +9,7 @@
 
           <div class="flex flex-wrap items-center gap-2">
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/home">{{ t('common:menu.home', 'Home') }}</RouterLink>
+            <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/advisor">{{ t('common:menu.advisor', 'Advisor / 刷图推荐') }}</RouterLink>
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/queue">{{ t('common:menu.queue', 'Queue') }}</RouterLink>
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/multi-results">{{ t('common:menu.multiResults', 'Multi-round') }}</RouterLink>
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/settings">{{ t('common:menu.settings', 'Settings') }}</RouterLink>

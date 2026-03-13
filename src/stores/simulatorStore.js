@@ -27,6 +27,16 @@ import {
     sanitizeTriggerList,
     sanitizeTriggerMap,
 } from "../services/triggerMapper.js";
+import {
+    ADVISOR_GOAL_PRESET_BALANCED,
+    ADVISOR_GOAL_PRESET_CUSTOM,
+    buildAdvisorMetricSummary,
+    buildAdvisorTopCards,
+    getAdvisorPresetWeights,
+    normalizeAdvisorGoalPreset,
+    normalizeAdvisorWeights,
+    rankAdvisorRows,
+} from "../services/advisorScoring.js";
 
 const ONE_SECOND = 1e9;
 const ONE_HOUR = 60 * 60 * ONE_SECOND;
@@ -71,6 +81,12 @@ const QUEUE_MULTI_ROUND_FINAL_WEIGHT_COST = 0.4;
 const QUEUE_COST_SCORE_WEIGHT_UPGRADE = 0.25;
 const QUEUE_COST_SCORE_WEIGHT_PURCHASE_DAYS = 0.35;
 const QUEUE_COST_SCORE_WEIGHT_GOLD_PER_POINT = 0.4;
+const ADVISOR_REFINE_TOP_COUNT_DEFAULT = 8;
+const ADVISOR_REFINE_ROUNDS_DEFAULT = 10;
+const ADVISOR_REFINE_TOP_COUNT_MIN = 1;
+const ADVISOR_REFINE_TOP_COUNT_MAX = 32;
+const ADVISOR_REFINE_ROUNDS_MIN = 1;
+const ADVISOR_REFINE_ROUNDS_MAX = 30;
 const queueWorkerClients = new Set();
 let abilityUpgradeReferenceLoadPromise = null;
 
@@ -132,6 +148,30 @@ function runSingleSimulationPayloadWithDedicatedWorker(payload, onProgress = () 
                 dedicatedClient.stopSimulation();
                 unregisterQueueWorkerClient(dedicatedClient);
                 resolve(simResult);
+            },
+            onError: (error) => {
+                dedicatedClient.stopSimulation();
+                unregisterQueueWorkerClient(dedicatedClient);
+                reject(error);
+            },
+        });
+    });
+}
+
+function runMultiSimulationPayloadWithDedicatedWorker(payload, onProgress = () => {}) {
+    return new Promise((resolve, reject) => {
+        const dedicatedClient = new WorkerClient();
+        registerQueueWorkerClient(dedicatedClient);
+
+        dedicatedClient.startMultiSimulation(payload, {
+            onProgress,
+            onBatchResult: (simResults, batchResultType) => {
+                dedicatedClient.stopSimulation();
+                unregisterQueueWorkerClient(dedicatedClient);
+                resolve({
+                    simResults: Array.isArray(simResults) ? simResults : [],
+                    batchResultType: String(batchResultType || ""),
+                });
             },
             onError: (error) => {
                 dedicatedClient.stopSimulation();
@@ -1671,6 +1711,223 @@ function createQueuePlayerState() {
         error: "",
         lastRunAt: 0,
     };
+}
+
+function normalizeAdvisorFilters(rawFilters = {}) {
+    const source = isPlainObject(rawFilters) ? rawFilters : {};
+    return {
+        includeGroupZones: source.includeGroupZones !== false,
+        includeSoloZones: Boolean(source.includeSoloZones),
+        includeLabyrinths: Boolean(source.includeLabyrinths),
+        refineTopEnabled: source.refineTopEnabled !== false,
+        refineTopCount: clamp(
+            Math.floor(toFiniteNumber(source.refineTopCount, ADVISOR_REFINE_TOP_COUNT_DEFAULT)),
+            ADVISOR_REFINE_TOP_COUNT_MIN,
+            ADVISOR_REFINE_TOP_COUNT_MAX
+        ),
+        refineRounds: clamp(
+            Math.floor(toFiniteNumber(source.refineRounds, ADVISOR_REFINE_ROUNDS_DEFAULT)),
+            ADVISOR_REFINE_ROUNDS_MIN,
+            ADVISOR_REFINE_ROUNDS_MAX
+        ),
+    };
+}
+
+function createAdvisorState() {
+    return {
+        filters: normalizeAdvisorFilters(),
+        goalPreset: ADVISOR_GOAL_PRESET_BALANCED,
+        customWeights: getAdvisorPresetWeights(ADVISOR_GOAL_PRESET_BALANCED),
+        quickRows: [],
+        refinedRows: [],
+        topCards: [],
+        runtime: {
+            isRunning: false,
+            phase: "idle",
+            progress: 0,
+            startedAt: 0,
+            elapsedSeconds: 0,
+            quickCompleted: 0,
+            quickTotal: 0,
+            refineCompleted: 0,
+            refineTotal: 0,
+            lastRunAt: 0,
+        },
+        error: "",
+    };
+}
+
+function buildAdvisorTargetId(targetType, targetHrid, targetLevel) {
+    return `${String(targetType || "zone")}:${String(targetHrid || "")}#${Math.floor(toFiniteNumber(targetLevel, 0))}`;
+}
+
+function createAdvisorZoneCandidate(zoneTarget, category, order) {
+    const zoneHrid = String(zoneTarget?.zoneHrid || "");
+    const difficultyTier = Math.max(0, Math.floor(toFiniteNumber(zoneTarget?.difficultyTier, 0)));
+    return {
+        id: buildAdvisorTargetId("zone", zoneHrid, difficultyTier),
+        order,
+        targetType: "zone",
+        category,
+        targetHrid: zoneHrid,
+        targetName: String(actionDetailMap?.[zoneHrid]?.name || zoneHrid),
+        difficultyTier,
+        roomLevel: null,
+        isRefined: false,
+        refineRounds: 0,
+        successfulRounds: 0,
+    };
+}
+
+function createAdvisorLabyrinthCandidate(labyrinthTarget, order) {
+    const labyrinthHrid = String(labyrinthTarget?.labyrinthHrid || "");
+    const roomLevel = Math.max(1, Math.floor(toFiniteNumber(labyrinthTarget?.roomLevel, 1)));
+    return {
+        id: buildAdvisorTargetId("labyrinth", labyrinthHrid, roomLevel),
+        order,
+        targetType: "labyrinth",
+        category: "labyrinth",
+        targetHrid: labyrinthHrid,
+        targetName: String(combatMonsterDetailMap?.[labyrinthHrid]?.name || labyrinthHrid),
+        difficultyTier: null,
+        roomLevel,
+        isRefined: false,
+        refineRounds: 0,
+        successfulRounds: 0,
+    };
+}
+
+function summarizeAdvisorTargetResult(simResult, selectedPlayers, pricingOptions = {}) {
+    const playerRows = summarizeResult(simResult, selectedPlayers, pricingOptions);
+    const hours = Math.max(1e-9, Number(simResult?.simulatedTime ?? 0) / ONE_HOUR);
+    return {
+        playerRows,
+        profitPerHour: playerRows.reduce((sum, row) => sum + toFiniteNumber(row?.profitPerHour, 0), 0),
+        xpPerHour: playerRows.reduce((sum, row) => sum + toFiniteNumber(row?.totalXpPerHour, 0), 0),
+        killsPerHour: playerRows.length > 0
+            ? toFiniteNumber(playerRows[0]?.encountersPerHour, 0)
+            : (toFiniteNumber(simResult?.encounters, 0) / hours),
+        deathsPerHour: playerRows.reduce((sum, row) => sum + toFiniteNumber(row?.deathsPerHour, 0), 0),
+    };
+}
+
+function buildAdvisorBaseRow(candidate, sample) {
+    return {
+        ...candidate,
+        profitPerHour: toFiniteNumber(sample?.profitPerHour, 0),
+        xpPerHour: toFiniteNumber(sample?.xpPerHour, 0),
+        killsPerHour: toFiniteNumber(sample?.killsPerHour, 0),
+        deathsPerHour: toFiniteNumber(sample?.deathsPerHour, 0),
+        reasons: [],
+        normalizedMetrics: {
+            profitPerHour: 0,
+            xpPerHour: 0,
+            killsPerHour: 0,
+            safety: 0,
+        },
+        finalScore: 0,
+        baseFinalScore: 0,
+        confidenceScore: null,
+        confidencePenaltyFactor: 1,
+        stabilityScore: 50,
+        metricSummary: null,
+    };
+}
+
+function buildAdvisorCandidates(filters = {}) {
+    const normalizedFilters = normalizeAdvisorFilters(filters);
+    const candidates = [];
+    let order = 0;
+
+    if (normalizedFilters.includeSoloZones) {
+        const soloTargets = buildZoneTargetsByScope(RUN_SCOPE_ALL_SOLO_ZONES);
+        for (const zoneTarget of soloTargets) {
+            candidates.push(createAdvisorZoneCandidate(zoneTarget, "solo_zone", order));
+            order += 1;
+        }
+    }
+
+    if (normalizedFilters.includeGroupZones) {
+        const groupTargets = buildZoneTargetsByScope(RUN_SCOPE_ALL_GROUP_ZONES);
+        for (const zoneTarget of groupTargets) {
+            candidates.push(createAdvisorZoneCandidate(zoneTarget, "group_zone", order));
+            order += 1;
+        }
+    }
+
+    if (normalizedFilters.includeLabyrinths) {
+        const labyrinthTargets = buildAllLabyrinthTargets();
+        for (const labyrinthTarget of labyrinthTargets) {
+            candidates.push(createAdvisorLabyrinthCandidate(labyrinthTarget, order));
+            order += 1;
+        }
+    }
+
+    return candidates;
+}
+
+function createAdvisorSimulationPayload(candidate, players, simulationTimeLimit, extra, crates = []) {
+    if (candidate?.targetType === "labyrinth") {
+        return {
+            type: "start_simulation",
+            workerId: Math.floor(Math.random() * 1e9).toString(),
+            players,
+            zone: null,
+            labyrinth: {
+                labyrinthHrid: candidate.targetHrid,
+                roomLevel: Math.max(1, Math.floor(toFiniteNumber(candidate.roomLevel, 1))),
+                crates: Array.isArray(crates) ? [...crates] : [],
+            },
+            simulationTimeLimit,
+            extra,
+        };
+    }
+
+    return {
+        type: "start_simulation",
+        workerId: Math.floor(Math.random() * 1e9).toString(),
+        players,
+        zone: {
+            zoneHrid: candidate.targetHrid,
+            difficultyTier: Math.max(0, Math.floor(toFiniteNumber(candidate.difficultyTier, 0))),
+        },
+        labyrinth: null,
+        simulationTimeLimit,
+        extra,
+    };
+}
+
+function buildAdvisorRowFromRoundMetrics(candidate, roundMetrics = [], options = {}) {
+    const safeRounds = Array.isArray(roundMetrics) ? roundMetrics.filter(Boolean) : [];
+    const metricSummary = buildAdvisorMetricSummary(safeRounds);
+    const fallbackSample = safeRounds[safeRounds.length - 1] || {};
+    const profitSummary = metricSummary?.profitPerHour || {};
+    const xpSummary = metricSummary?.xpPerHour || {};
+    const killsSummary = metricSummary?.killsPerHour || {};
+    const deathsSummary = metricSummary?.deathsPerHour || {};
+    const sample = {
+        profitPerHour: Number.isFinite(profitSummary.robustMean) ? profitSummary.robustMean : fallbackSample?.profitPerHour,
+        xpPerHour: Number.isFinite(xpSummary.robustMean) ? xpSummary.robustMean : fallbackSample?.xpPerHour,
+        killsPerHour: Number.isFinite(killsSummary.robustMean) ? killsSummary.robustMean : fallbackSample?.killsPerHour,
+        deathsPerHour: Number.isFinite(deathsSummary.robustMean) ? deathsSummary.robustMean : fallbackSample?.deathsPerHour,
+    };
+
+    return {
+        ...buildAdvisorBaseRow(candidate, sample),
+        isRefined: options.isRefined === true,
+        refineRounds: Math.max(0, Math.floor(toFiniteNumber(options.refineRounds, candidate?.refineRounds ?? 0))),
+        successfulRounds: safeRounds.length,
+        metricSummary,
+    };
+}
+
+function buildAdvisorPartialErrorText(stageLabel, failedCandidates = []) {
+    const safeStageLabel = String(stageLabel || "scan");
+    const failedCount = Array.isArray(failedCandidates) ? failedCandidates.length : 0;
+    if (failedCount <= 0) {
+        return "";
+    }
+    return `${failedCount} target(s) failed during ${safeStageLabel}. Showing successful results only.`;
 }
 
 function createQueueStateByPlayer(playerList) {
@@ -3551,6 +3808,7 @@ export const useSimulatorStore = defineStore("simulator", {
                 activeResultPlayerHrid: "player1",
                 timeSeriesData: null,
             },
+            advisor: createAdvisorState(),
             queue: {
                 byPlayer: createQueueStateByPlayer(playerList),
                 importedProfileByPlayer: createImportedProfileByPlayer(),
@@ -4447,7 +4705,7 @@ export const useSimulatorStore = defineStore("simulator", {
                 throw new Error("common:queue.requireImportBeforeBaseline");
             }
 
-            if (this.runtime.isRunning || this.isAnyQueueRunning) {
+            if (this.runtime.isRunning || this.isAnyQueueRunning || this.advisor.runtime?.isRunning) {
                 throw new Error("Another simulation is already running.");
             }
 
@@ -5280,6 +5538,315 @@ export const useSimulatorStore = defineStore("simulator", {
             this.results.batchResultType = "";
             this.results.timeSeriesData = null;
         },
+        resetAdvisorState() {
+            this.advisor = createAdvisorState();
+            return this.advisor;
+        },
+        rerankAdvisorResults(options = {}) {
+            const normalizedGoalPreset = normalizeAdvisorGoalPreset(options.goalPreset ?? this.advisor.goalPreset);
+            const normalizedCustomWeights = normalizeAdvisorWeights(
+                options.customWeights ?? this.advisor.customWeights,
+                ADVISOR_GOAL_PRESET_BALANCED
+            );
+            const quickRowsSource = Array.isArray(options.quickRows) ? options.quickRows : this.advisor.quickRows;
+            const refinedRowsSource = Array.isArray(options.refinedRows) ? options.refinedRows : this.advisor.refinedRows;
+            const rankedQuickRows = rankAdvisorRows(quickRowsSource, {
+                goalPreset: normalizedGoalPreset,
+                customWeights: normalizedCustomWeights,
+            });
+            const quickRankById = new Map(rankedQuickRows.map((row, index) => [row.id, index + 1]));
+            const rankedRefinedRows = rankAdvisorRows(refinedRowsSource, {
+                goalPreset: normalizedGoalPreset,
+                customWeights: normalizedCustomWeights,
+                quickRankById,
+            });
+            const activeRows = rankedRefinedRows.length > 0 ? rankedRefinedRows : rankedQuickRows;
+
+            this.advisor.goalPreset = normalizedGoalPreset;
+            this.advisor.customWeights = normalizedCustomWeights;
+            this.advisor.quickRows = rankedQuickRows;
+            this.advisor.refinedRows = rankedRefinedRows;
+            this.advisor.topCards = buildAdvisorTopCards(activeRows);
+            return activeRows;
+        },
+        async runAdvisorScan() {
+            this.advisor.error = "";
+
+            if (this.runtime.isRunning || this.isAnyQueueRunning || this.advisor.runtime?.isRunning) {
+                this.advisor.error = "Another simulation is already running.";
+                return [];
+            }
+
+            const selectedPlayersSnapshot = this.selectedPlayers.map((player) => ({ id: player.id, name: player.name }));
+            if (selectedPlayersSnapshot.length === 0) {
+                this.advisor.error = "Please select at least one player.";
+                return [];
+            }
+
+            const playersToSim = buildPlayersForSimulation(this.players);
+            if (playersToSim.length === 0) {
+                this.advisor.error = "Unable to build player simulation data.";
+                return [];
+            }
+
+            const normalizedFilters = normalizeAdvisorFilters(this.advisor.filters);
+            const normalizedGoalPreset = normalizeAdvisorGoalPreset(this.advisor.goalPreset);
+            const normalizedCustomWeights = normalizeAdvisorWeights(this.advisor.customWeights, ADVISOR_GOAL_PRESET_BALANCED);
+            const candidates = buildAdvisorCandidates(normalizedFilters);
+            const activeLabyrinthCrates = this.getActiveLabyrinthCrates();
+
+            this.advisor.filters = normalizedFilters;
+            this.advisor.goalPreset = normalizedGoalPreset;
+            this.advisor.customWeights = normalizedCustomWeights;
+            this.advisor.quickRows = [];
+            this.advisor.refinedRows = [];
+            this.advisor.topCards = [];
+
+            if (candidates.length === 0) {
+                this.advisor.error = "No advisor targets available for the current filters.";
+                return [];
+            }
+
+            const simulationTimeHours = Math.max(1, Number(this.simulationSettings.simulationTimeHours || 24));
+            const simulationTimeLimit = simulationTimeHours * ONE_HOUR;
+            const extra = {
+                ...buildSimulationExtra(this.simulationSettings),
+                enableHpMpVisualization: false,
+            };
+            const pricingOptions = createProfitPricingOptions(this.pricing);
+            const refineTopCount = normalizedFilters.refineTopEnabled
+                ? Math.min(normalizedFilters.refineTopCount, candidates.length)
+                : 0;
+            const refineTotal = refineTopCount * normalizedFilters.refineRounds;
+            const totalWorkUnits = Math.max(1, candidates.length + refineTotal);
+            const startedAt = Date.now();
+            let quickCompleted = 0;
+            let refineCompleted = 0;
+            const errorMessages = [];
+
+            const updateAdvisorRuntime = (phase, quickFraction = 0, refineFraction = 0) => {
+                this.advisor.runtime.isRunning = true;
+                this.advisor.runtime.phase = phase;
+                this.advisor.runtime.startedAt = startedAt;
+                this.advisor.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
+                this.advisor.runtime.quickCompleted = quickCompleted;
+                this.advisor.runtime.quickTotal = candidates.length;
+                this.advisor.runtime.refineCompleted = refineCompleted;
+                this.advisor.runtime.refineTotal = refineTotal;
+                const completedUnits = quickCompleted + quickFraction + refineCompleted + refineFraction;
+                this.advisor.runtime.progress = clamp(completedUnits / totalWorkUnits, 0, 1);
+            };
+
+            const zoneCandidates = candidates.filter((candidate) => candidate.targetType === "zone");
+            const labyrinthCandidates = candidates.filter((candidate) => candidate.targetType === "labyrinth");
+            const quickRows = [];
+
+            const collectQuickRows = async (batchCandidates, payloadBuilder, stageLabel) => {
+                if (batchCandidates.length === 0) {
+                    return;
+                }
+
+                try {
+                    const payload = payloadBuilder();
+                    const batchResult = await runMultiSimulationPayloadWithDedicatedWorker(payload, (data) => {
+                        updateAdvisorRuntime("quick_scan", clamp(Number(data?.progress || 0), 0, 1) * batchCandidates.length, 0);
+                    });
+                    const simResults = Array.isArray(batchResult?.simResults) ? batchResult.simResults : [];
+                    batchCandidates.forEach((candidate, index) => {
+                        const simResult = simResults[index];
+                        if (!simResult) {
+                            return;
+                        }
+                        const sample = summarizeAdvisorTargetResult(simResult, selectedPlayersSnapshot, pricingOptions);
+                        quickRows.push(buildAdvisorRowFromRoundMetrics(candidate, [sample], {
+                            isRefined: false,
+                            refineRounds: 0,
+                        }));
+                    });
+                    quickCompleted += batchCandidates.length;
+                    updateAdvisorRuntime("quick_scan", 0, 0);
+                } catch (batchError) {
+                    const failedCandidates = [];
+                    for (const candidate of batchCandidates) {
+                        try {
+                            const simResult = await runSingleSimulationPayloadWithDedicatedWorker(
+                                createAdvisorSimulationPayload(candidate, playersToSim, simulationTimeLimit, extra, activeLabyrinthCrates)
+                            );
+                            const sample = summarizeAdvisorTargetResult(simResult, selectedPlayersSnapshot, pricingOptions);
+                            quickRows.push(buildAdvisorRowFromRoundMetrics(candidate, [sample], {
+                                isRefined: false,
+                                refineRounds: 0,
+                            }));
+                        } catch (error) {
+                            failedCandidates.push(candidate);
+                        } finally {
+                            quickCompleted += 1;
+                            updateAdvisorRuntime("quick_scan", 0, 0);
+                        }
+                    }
+                    const partialError = buildAdvisorPartialErrorText(stageLabel, failedCandidates);
+                    if (partialError) {
+                        errorMessages.push(partialError);
+                    }
+                }
+            };
+
+            try {
+                updateAdvisorRuntime("quick_scan", 0, 0);
+                await collectQuickRows(
+                    zoneCandidates,
+                    () => ({
+                        type: "start_simulation_all_zones",
+                        players: playersToSim,
+                        zones: zoneCandidates.map((candidate) => ({
+                            zoneHrid: candidate.targetHrid,
+                            difficultyTier: candidate.difficultyTier,
+                        })),
+                        simulationTimeLimit,
+                        extra,
+                    }),
+                    "quick scan"
+                );
+                await collectQuickRows(
+                    labyrinthCandidates,
+                    () => ({
+                        type: "start_simulation_all_labyrinths",
+                        players: playersToSim,
+                        labyrinths: labyrinthCandidates.map((candidate) => ({
+                            labyrinthHrid: candidate.targetHrid,
+                            roomLevel: candidate.roomLevel,
+                            crates: [...activeLabyrinthCrates],
+                        })),
+                        simulationTimeLimit,
+                        extra,
+                    }),
+                    "quick scan"
+                );
+
+                if (quickRows.length === 0) {
+                    throw new Error(errorMessages[0] || "Advisor scan did not produce any successful result.");
+                }
+
+                this.rerankAdvisorResults({
+                    goalPreset: normalizedGoalPreset,
+                    customWeights: normalizedCustomWeights,
+                    quickRows,
+                    refinedRows: [],
+                });
+
+                if (normalizedFilters.refineTopEnabled && refineTopCount > 0) {
+                    updateAdvisorRuntime("refine_top", 0, 0);
+                    const quickRowsForRefine = this.advisor.quickRows.slice(0, refineTopCount);
+                    const refinedRowsById = new Map();
+                    const roundMetricsById = new Map(quickRowsForRefine.map((row) => [row.id, []]));
+                    const refineParallelWorkerLimit = Math.max(
+                        1,
+                        Math.min(
+                            normalizeParallelWorkerLimit(this.queueRuntime?.parallelWorkerLimit, this.queueParallelWorkerHardMax),
+                            quickRowsForRefine.length
+                        )
+                    );
+
+                    const runRefineRoundForRow = async (row) => {
+                        try {
+                            const simResult = await runSingleSimulationPayloadWithDedicatedWorker(
+                                createAdvisorSimulationPayload(row, playersToSim, simulationTimeLimit, extra, activeLabyrinthCrates)
+                            );
+                            const roundMetrics = roundMetricsById.get(row.id) || [];
+                            roundMetrics.push(summarizeAdvisorTargetResult(simResult, selectedPlayersSnapshot, pricingOptions));
+                            roundMetricsById.set(row.id, roundMetrics);
+                        } catch (error) {
+                            // keep best-effort quick result if refinement partially fails
+                        } finally {
+                            refineCompleted += 1;
+                            updateAdvisorRuntime("refine_top", 0, 0);
+                        }
+                    };
+
+                    for (let roundIndex = 0; roundIndex < normalizedFilters.refineRounds; roundIndex += 1) {
+                        if (refineParallelWorkerLimit > 1 && quickRowsForRefine.length > 1) {
+                            let nextRowIndex = 0;
+                            const workerLoop = async () => {
+                                while (nextRowIndex < quickRowsForRefine.length) {
+                                    const currentRowIndex = nextRowIndex;
+                                    nextRowIndex += 1;
+                                    const row = quickRowsForRefine[currentRowIndex];
+                                    // eslint-disable-next-line no-await-in-loop
+                                    await runRefineRoundForRow(row);
+                                }
+                            };
+                            await Promise.all(Array.from({ length: refineParallelWorkerLimit }, () => workerLoop()));
+                            continue;
+                        }
+
+                        for (const row of quickRowsForRefine) {
+                            // eslint-disable-next-line no-await-in-loop
+                            await runRefineRoundForRow(row);
+                        }
+                    }
+
+                    for (const row of quickRowsForRefine) {
+                        const roundMetrics = roundMetricsById.get(row.id) || [];
+                        if (roundMetrics.length > 0) {
+                            refinedRowsById.set(row.id, buildAdvisorRowFromRoundMetrics(row, roundMetrics, {
+                                isRefined: true,
+                                refineRounds: normalizedFilters.refineRounds,
+                            }));
+                        }
+                    }
+
+                    const refinedFailures = quickRowsForRefine.filter((row) => !refinedRowsById.has(row.id));
+                    const refinePartialError = buildAdvisorPartialErrorText("refine step", refinedFailures);
+                    if (refinePartialError) {
+                        errorMessages.push(refinePartialError);
+                    }
+
+                    const mergedRows = this.advisor.quickRows.map((row) => refinedRowsById.get(row.id) || row);
+                    this.rerankAdvisorResults({
+                        goalPreset: normalizedGoalPreset,
+                        customWeights: normalizedCustomWeights,
+                        quickRows: this.advisor.quickRows,
+                        refinedRows: mergedRows,
+                    });
+                }
+
+                this.advisor.error = errorMessages.join(" ").trim();
+                this.advisor.runtime.isRunning = false;
+                this.advisor.runtime.phase = "done";
+                this.advisor.runtime.progress = 1;
+                this.advisor.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
+                this.advisor.runtime.lastRunAt = Date.now();
+                return this.advisor.refinedRows.length > 0 ? this.advisor.refinedRows : this.advisor.quickRows;
+            } catch (error) {
+                this.advisor.error = typeof error === "string"
+                    ? error
+                    : (error?.message || JSON.stringify(error));
+                this.advisor.runtime.isRunning = false;
+                this.advisor.runtime.phase = "idle";
+                this.advisor.runtime.progress = 0;
+                this.advisor.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
+                return [];
+            }
+        },
+        applyAdvisorTarget(row) {
+            const targetType = String(row?.targetType || "zone");
+            if (targetType === "labyrinth") {
+                this.simulationSettings.mode = "labyrinth";
+                this.simulationSettings.runScope = RUN_SCOPE_SINGLE;
+                this.simulationSettings.useDungeon = false;
+                this.simulationSettings.labyrinthHrid = String(row?.targetHrid || "");
+                this.simulationSettings.roomLevel = Math.max(1, Math.floor(toFiniteNumber(row?.roomLevel, this.simulationSettings.roomLevel || 100)));
+                return true;
+            }
+
+            this.simulationSettings.mode = "zone";
+            this.simulationSettings.runScope = RUN_SCOPE_SINGLE;
+            this.simulationSettings.useDungeon = false;
+            this.simulationSettings.zoneHrid = String(row?.targetHrid || this.simulationSettings.zoneHrid || "");
+            this.simulationSettings.difficultyTier = Math.max(0, Math.floor(toFiniteNumber(row?.difficultyTier, this.simulationSettings.difficultyTier || 0)));
+            this.normalizeDifficulty();
+            return true;
+        },
         stopSimulation() {
             workerClient.stopSimulation();
             stopQueueWorkerClients();
@@ -5288,6 +5855,10 @@ export const useSimulatorStore = defineStore("simulator", {
             this.runtime.startedAt = 0;
             this.runtime.elapsedSeconds = 0;
             this.runtime.workerMode = "single";
+            this.advisor.runtime.isRunning = false;
+            this.advisor.runtime.phase = "idle";
+            this.advisor.runtime.progress = 0;
+            this.advisor.runtime.elapsedSeconds = 0;
             for (const queueState of Object.values(this.queue.byPlayer)) {
                 queueState.isRunning = false;
             }
@@ -5298,6 +5869,11 @@ export const useSimulatorStore = defineStore("simulator", {
 
             if (this.isAnyQueueRunning) {
                 this.runtime.error = "Queue run is in progress. Stop queue run before starting a manual simulation.";
+                return;
+            }
+
+            if (this.advisor.runtime?.isRunning) {
+                this.runtime.error = "Advisor scan is in progress. Stop the advisor scan before starting a manual simulation.";
                 return;
             }
 
