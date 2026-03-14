@@ -823,6 +823,7 @@
         "phaseRefine": "Refining top picks",
         "phaseDone": "Scan complete",
         "players": "Players",
+        "metricPlayer": "Metric Player",
         "none": "None",
         "pricing": "Pricing",
         "lastRun": "Last Run",

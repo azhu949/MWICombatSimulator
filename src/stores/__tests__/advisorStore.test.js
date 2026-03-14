@@ -21,10 +21,10 @@ function createLocalStorageMock() {
 }
 
 vi.mock("../../services/profitEstimator.js", () => ({
-    estimateNoRngProfit: (simResult) => ({
-        revenue: Number(simResult?.mockProfit || 0),
+    estimateNoRngProfit: (simResult, playerHrid) => ({
+        revenue: Number(simResult?.mockProfitByPlayer?.[playerHrid] ?? simResult?.mockProfit ?? 0),
         expenses: 0,
-        profit: Number(simResult?.mockProfit || 0),
+        profit: Number(simResult?.mockProfitByPlayer?.[playerHrid] ?? simResult?.mockProfit ?? 0),
     }),
 }));
 
@@ -84,10 +84,50 @@ vi.mock("../../services/workerClient.js", () => {
         };
     }
 
+    function resolvePlayerMetric(metric, playerHrid) {
+        const defaultMetric = {
+            profitPerHour: Number(metric?.profitPerHour || 0),
+            xpPerHour: Number(metric?.xpPerHour || 0),
+            deathsPerHour: Number(metric?.deathsPerHour || 0),
+        };
+        const scopedMetric = metric?.playerMetrics?.[playerHrid];
+        return {
+            ...defaultMetric,
+            ...(scopedMetric && typeof scopedMetric === "object" ? scopedMetric : {}),
+        };
+    }
+
     function createSimResult(payload, metric) {
-        const xp = Number(metric?.xpPerHour || 0);
-        const deathsPerHour = Number(metric?.deathsPerHour || 0);
         const killsPerHour = Number(metric?.killsPerHour || 0);
+        const players = Array.isArray(payload?.players) && payload.players.length > 0
+            ? payload.players
+            : [{ hrid: "player1" }];
+        const experienceGained = {};
+        const deaths = {};
+        const consumablesUsed = {};
+        const manaUsed = {};
+        const dropRateMultiplier = {};
+        const rareFindMultiplier = {};
+        const combatDropQuantity = {};
+        const debuffOnLevelGap = {};
+        const mockProfitByPlayer = {};
+
+        players.forEach((player, index) => {
+            const playerHrid = String(player?.hrid || `player${index + 1}`);
+            const playerMetric = resolvePlayerMetric(metric, playerHrid);
+            experienceGained[playerHrid] = {
+                attack: Number(playerMetric?.xpPerHour || 0),
+            };
+            deaths[playerHrid] = Number(playerMetric?.deathsPerHour || 0);
+            consumablesUsed[playerHrid] = {};
+            manaUsed[playerHrid] = 0;
+            dropRateMultiplier[playerHrid] = 1;
+            rareFindMultiplier[playerHrid] = 1;
+            combatDropQuantity[playerHrid] = 0;
+            debuffOnLevelGap[playerHrid] = 0;
+            mockProfitByPlayer[playerHrid] = Number(playerMetric?.profitPerHour || 0);
+        });
+
         return {
             simulatedTime: ONE_HOUR,
             isLabyrinth: Boolean(payload?.labyrinth),
@@ -96,34 +136,17 @@ vi.mock("../../services/workerClient.js", () => {
             zoneName: String(payload?.zone?.zoneHrid || ""),
             labyrinthName: String(payload?.labyrinth?.labyrinthHrid || ""),
             encounters: killsPerHour,
-            numberOfPlayers: 1,
-            experienceGained: {
-                player1: {
-                    attack: xp,
-                },
-            },
-            deaths: {
-                player1: deathsPerHour,
-            },
-            consumablesUsed: {
-                player1: {},
-            },
-            manaUsed: {
-                player1: 0,
-            },
-            dropRateMultiplier: {
-                player1: 1,
-            },
-            rareFindMultiplier: {
-                player1: 1,
-            },
-            combatDropQuantity: {
-                player1: 0,
-            },
-            debuffOnLevelGap: {
-                player1: 0,
-            },
+            numberOfPlayers: players.length,
+            experienceGained,
+            deaths,
+            consumablesUsed,
+            manaUsed,
+            dropRateMultiplier,
+            rareFindMultiplier,
+            combatDropQuantity,
+            debuffOnLevelGap,
             mockProfit: Number(metric?.profitPerHour || 0),
+            mockProfitByPlayer,
         };
     }
 
@@ -250,6 +273,138 @@ describe("advisor store", () => {
             "start_simulation_all_zones",
             "start_simulation_all_labyrinths",
         ]));
+    });
+
+    it("uses the active player metrics instead of summing selected party members", async () => {
+        const { simulator, mockWorkerState } = createStoreWithMocks();
+        simulator.players[1].selected = true;
+        simulator.advisor.filters = {
+            ...simulator.advisor.filters,
+            includeLabyrinths: false,
+            refineTopEnabled: false,
+        };
+        mockWorkerState.zoneMetricResolver = () => ({
+            profitPerHour: 0,
+            xpPerHour: 0,
+            killsPerHour: 14,
+            deathsPerHour: 0,
+            playerMetrics: {
+                player1: {
+                    profitPerHour: 111,
+                    xpPerHour: 222,
+                    deathsPerHour: 0.25,
+                },
+                player2: {
+                    profitPerHour: 999,
+                    xpPerHour: 888,
+                    deathsPerHour: 3.5,
+                },
+            },
+        });
+
+        const rows = await simulator.runAdvisorScan();
+
+        expect(rows.length).toBeGreaterThan(0);
+        expect(rows[0].profitPerHour).toBe(111);
+        expect(rows[0].xpPerHour).toBe(222);
+        expect(rows[0].deathsPerHour).toBe(0.25);
+        expect(simulator.advisor.metricPlayerId).toBe("1");
+        expect(simulator.advisor.metricPlayerName).toBe("Player 1");
+    });
+
+    it("ranks advisor targets by the active player metrics rather than party totals", async () => {
+        const { simulator, mockWorkerState } = createStoreWithMocks();
+        simulator.players[1].selected = true;
+        simulator.advisor.filters = {
+            ...simulator.advisor.filters,
+            includeLabyrinths: false,
+            refineTopEnabled: false,
+        };
+        simulator.advisor.goalPreset = "profit";
+        mockWorkerState.zoneMetricResolver = (_zone, index) => {
+            if (index === 0) {
+                return {
+                    profitPerHour: 0,
+                    xpPerHour: 0,
+                    killsPerHour: 10,
+                    deathsPerHour: 0.1,
+                    playerMetrics: {
+                        player1: { profitPerHour: 50, xpPerHour: 50, deathsPerHour: 0.1 },
+                        player2: { profitPerHour: 500, xpPerHour: 500, deathsPerHour: 0.1 },
+                    },
+                };
+            }
+            if (index === 1) {
+                return {
+                    profitPerHour: 0,
+                    xpPerHour: 0,
+                    killsPerHour: 11,
+                    deathsPerHour: 0.1,
+                    playerMetrics: {
+                        player1: { profitPerHour: 400, xpPerHour: 400, deathsPerHour: 0.1 },
+                        player2: { profitPerHour: 0, xpPerHour: 0, deathsPerHour: 0.1 },
+                    },
+                };
+            }
+            return {
+                profitPerHour: 0,
+                xpPerHour: 0,
+                killsPerHour: 5,
+                deathsPerHour: 0.2,
+                playerMetrics: {
+                    player1: { profitPerHour: 10, xpPerHour: 10, deathsPerHour: 0.2 },
+                    player2: { profitPerHour: 10, xpPerHour: 10, deathsPerHour: 0.2 },
+                },
+            };
+        };
+
+        const rows = await simulator.runAdvisorScan();
+        const zonePayload = mockWorkerState.multiCalls.find((payload) => payload.type === "start_simulation_all_zones");
+        const expectedTopZone = zonePayload?.zones?.[1];
+
+        expect(rows[0].profitPerHour).toBe(400);
+        expect(rows[0].targetHrid).toBe(expectedTopZone?.zoneHrid);
+        expect(rows[0].difficultyTier).toBe(expectedTopZone?.difficultyTier);
+    });
+
+    it("falls back to the first selected player when the active player is not selected", async () => {
+        const { simulator, mockWorkerState } = createStoreWithMocks();
+        simulator.players[1].selected = false;
+        simulator.players[2].selected = true;
+        simulator.setActivePlayer("2");
+        simulator.advisor.filters = {
+            ...simulator.advisor.filters,
+            includeLabyrinths: false,
+            refineTopEnabled: false,
+        };
+        mockWorkerState.zoneMetricResolver = () => ({
+            profitPerHour: 0,
+            xpPerHour: 0,
+            killsPerHour: 9,
+            deathsPerHour: 0,
+            playerMetrics: {
+                player1: {
+                    profitPerHour: 123,
+                    xpPerHour: 456,
+                    deathsPerHour: 0.5,
+                },
+                player3: {
+                    profitPerHour: 789,
+                    xpPerHour: 999,
+                    deathsPerHour: 1.5,
+                },
+            },
+        });
+
+        const rows = await simulator.runAdvisorScan();
+
+        expect(simulator.resolvedAdvisorMetricPlayer.id).toBe("1");
+        expect(simulator.resolvedAdvisorMetricPlayer.name).toBe("Player 1");
+        expect(simulator.advisor.metricPlayerId).toBe("1");
+        expect(simulator.advisor.metricPlayerName).toBe("Player 1");
+        expect(rows[0].profitPerHour).toBe(123);
+        expect(rows[0].xpPerHour).toBe(456);
+        expect(rows[0].deathsPerHour).toBe(0.5);
     });
 
     it("refines only the configured top rows in parallel by round", async () => {

@@ -1747,6 +1747,8 @@ function createAdvisorState() {
         quickRows: [],
         refinedRows: [],
         topCards: [],
+        metricPlayerId: "",
+        metricPlayerName: "",
         runtime: {
             isRunning: false,
             phase: "idle",
@@ -1803,17 +1805,34 @@ function createAdvisorLabyrinthCandidate(labyrinthTarget, order) {
     };
 }
 
-function summarizeAdvisorTargetResult(simResult, selectedPlayers, pricingOptions = {}) {
+function resolveAdvisorMetricPlayer(selectedPlayers = [], preferredPlayerId = "1") {
+    const safePlayers = Array.isArray(selectedPlayers) ? selectedPlayers.filter(Boolean) : [];
+    const normalizedPreferredId = String(preferredPlayerId || "1");
+    const preferredPlayer = safePlayers.find((player) => String(player?.id || "") === normalizedPreferredId);
+    const fallbackPlayer = preferredPlayer || safePlayers[0] || null;
+    const resolvedId = String(fallbackPlayer?.id || normalizedPreferredId || "1");
+    return {
+        id: resolvedId,
+        name: String(fallbackPlayer?.name || `Player ${resolvedId}`),
+    };
+}
+
+function summarizeAdvisorTargetResult(simResult, selectedPlayers, preferredPlayerId, pricingOptions = {}) {
     const playerRows = summarizeResult(simResult, selectedPlayers, pricingOptions);
     const hours = Math.max(1e-9, Number(simResult?.simulatedTime ?? 0) / ONE_HOUR);
+    const metricPlayer = resolveAdvisorMetricPlayer(selectedPlayers, preferredPlayerId);
+    const metricPlayerHrid = toPlayerHrid(metricPlayer.id);
+    const metricRow = playerRows.find((row) => row?.playerHrid === metricPlayerHrid) || playerRows[0] || null;
     return {
         playerRows,
-        profitPerHour: playerRows.reduce((sum, row) => sum + toFiniteNumber(row?.profitPerHour, 0), 0),
-        xpPerHour: playerRows.reduce((sum, row) => sum + toFiniteNumber(row?.totalXpPerHour, 0), 0),
+        metricPlayerId: metricPlayer.id,
+        metricPlayerName: metricPlayer.name,
+        profitPerHour: toFiniteNumber(metricRow?.profitPerHour, 0),
+        xpPerHour: toFiniteNumber(metricRow?.totalXpPerHour, 0),
         killsPerHour: playerRows.length > 0
             ? toFiniteNumber(playerRows[0]?.encountersPerHour, 0)
             : (toFiniteNumber(simResult?.encounters, 0) / hours),
-        deathsPerHour: playerRows.reduce((sum, row) => sum + toFiniteNumber(row?.deathsPerHour, 0), 0),
+        deathsPerHour: toFiniteNumber(metricRow?.deathsPerHour, 0),
     };
 }
 
@@ -3841,6 +3860,12 @@ export const useSimulatorStore = defineStore("simulator", {
         selectedPlayers(state) {
             return state.players.filter((player) => player.selected);
         },
+        resolvedAdvisorMetricPlayer(state) {
+            const selectedPlayers = state.players
+                .filter((player) => player.selected)
+                .map((player) => ({ id: player.id, name: player.name }));
+            return resolveAdvisorMetricPlayer(selectedPlayers, state.activePlayerId);
+        },
         currentActionOptions(state) {
             if (state.simulationSettings.mode === "labyrinth") {
                 return state.options.labyrinths;
@@ -5642,6 +5667,7 @@ export const useSimulatorStore = defineStore("simulator", {
             const normalizedCustomWeights = normalizeAdvisorWeights(this.advisor.customWeights, ADVISOR_GOAL_PRESET_BALANCED);
             const candidates = buildAdvisorCandidates(normalizedFilters);
             const activeLabyrinthCrates = this.getActiveLabyrinthCrates();
+            const metricPlayer = resolveAdvisorMetricPlayer(selectedPlayersSnapshot, this.activePlayerId);
 
             this.advisor.filters = normalizedFilters;
             this.advisor.goalPreset = normalizedGoalPreset;
@@ -5649,6 +5675,8 @@ export const useSimulatorStore = defineStore("simulator", {
             this.advisor.quickRows = [];
             this.advisor.refinedRows = [];
             this.advisor.topCards = [];
+            this.advisor.metricPlayerId = metricPlayer.id;
+            this.advisor.metricPlayerName = metricPlayer.name;
 
             if (candidates.length === 0) {
                 this.advisor.error = "No advisor targets available for the current filters.";
@@ -5705,7 +5733,7 @@ export const useSimulatorStore = defineStore("simulator", {
                         if (!simResult) {
                             return;
                         }
-                        const sample = summarizeAdvisorTargetResult(simResult, selectedPlayersSnapshot, pricingOptions);
+                        const sample = summarizeAdvisorTargetResult(simResult, selectedPlayersSnapshot, metricPlayer.id, pricingOptions);
                         quickRows.push(buildAdvisorRowFromRoundMetrics(candidate, [sample], {
                             isRefined: false,
                             refineRounds: 0,
@@ -5720,7 +5748,7 @@ export const useSimulatorStore = defineStore("simulator", {
                             const simResult = await runSingleSimulationPayloadWithDedicatedWorker(
                                 createAdvisorSimulationPayload(candidate, playersToSim, simulationTimeLimit, extra, activeLabyrinthCrates)
                             );
-                            const sample = summarizeAdvisorTargetResult(simResult, selectedPlayersSnapshot, pricingOptions);
+                            const sample = summarizeAdvisorTargetResult(simResult, selectedPlayersSnapshot, metricPlayer.id, pricingOptions);
                             quickRows.push(buildAdvisorRowFromRoundMetrics(candidate, [sample], {
                                 isRefined: false,
                                 refineRounds: 0,
@@ -5801,7 +5829,7 @@ export const useSimulatorStore = defineStore("simulator", {
                                 createAdvisorSimulationPayload(row, playersToSim, simulationTimeLimit, extra, activeLabyrinthCrates)
                             );
                             const roundMetrics = roundMetricsById.get(row.id) || [];
-                            roundMetrics.push(summarizeAdvisorTargetResult(simResult, selectedPlayersSnapshot, pricingOptions));
+                            roundMetrics.push(summarizeAdvisorTargetResult(simResult, selectedPlayersSnapshot, metricPlayer.id, pricingOptions));
                             roundMetricsById.set(row.id, roundMetrics);
                         } catch (error) {
                             // keep best-effort quick result if refinement partially fails

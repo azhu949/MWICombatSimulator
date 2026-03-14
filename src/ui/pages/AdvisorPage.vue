@@ -11,6 +11,7 @@
             </p>
             <div class="flex flex-wrap items-center gap-2 text-xs text-slate-400">
               <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">{{ selectedPlayersLabel }}</span>
+              <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">{{ metricPlayerLabel }}</span>
               <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">{{ runtimeStatusText }}</span>
               <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">{{ pricingModeText }}</span>
             </div>
@@ -409,6 +410,14 @@ const pricingModeText = computed(() => {
 const selectedPlayersLabel = computed(() => {
   const names = simulator.selectedPlayers.map((player) => player.name || `Player ${player.id}`);
   return `${t("common:advisor.players", "Players")}: ${names.join(", ") || t("common:advisor.none", "None")}`;
+});
+const metricPlayerLabel = computed(() => {
+  const name = String(
+    simulator.advisor.metricPlayerName
+    || simulator.resolvedAdvisorMetricPlayer?.name
+    || ""
+  ).trim();
+  return `${t("common:advisor.metricPlayer", "Metric Player")}: ${name || t("common:advisor.none", "None")}`;
 });
 const runtimeStatusText = computed(() => {
   if (isRunning.value) {

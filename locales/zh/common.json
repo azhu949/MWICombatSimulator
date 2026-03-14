@@ -822,6 +822,7 @@
         "phaseRefine": "正在复核前排目标",
         "phaseDone": "扫描完成",
         "players": "玩家",
+        "metricPlayer": "指标角色",
         "none": "无",
         "pricing": "价格",
         "lastRun": "上次运行",
