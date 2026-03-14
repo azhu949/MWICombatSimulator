@@ -1091,10 +1091,9 @@ const homeHasResults = computed(() => (
   || (Array.isArray(simulator.results.batchRows) && simulator.results.batchRows.length > 0)
 ));
 const homeCanOpenResults = computed(() => Boolean(simulator.runtime.isRunning || homeHasResults.value));
-const activeHomeResultRow = computed(() => simulator.activeResultRow || simulator.results.summaryRows[0] || null);
+const activeHomeResultRow = computed(() => simulator.activeResultRow || null);
 const activeHomeResultPlayerHrid = computed(() => (
-  activeHomeResultRow.value?.playerHrid
-  || simulator.results.activeResultPlayerHrid
+  simulator.results.activeResultPlayerHrid
   || `player${simulator.activePlayerId}`
 ));
 const homeResultsProgressPercent = computed(() => {

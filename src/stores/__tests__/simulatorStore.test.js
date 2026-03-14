@@ -367,6 +367,36 @@ describe("simulatorStore", () => {
         expect(simulator.activeQueueState.baseline).toBeTruthy();
     });
 
+    it("syncs active single-simulation result selection when active player changes", () => {
+        const simulator = useSimulatorStore();
+        simulator.results.summaryRows = [
+            { playerHrid: "player1", playerName: "Player 1", totalXpPerHour: 100 },
+            { playerHrid: "player2", playerName: "Player 2", totalXpPerHour: 200 },
+        ];
+        simulator.results.activeResultPlayerHrid = "player1";
+
+        simulator.setActivePlayer("2");
+        expect(simulator.results.activeResultPlayerHrid).toBe("player2");
+        expect(simulator.activeResultRow).toMatchObject({ playerHrid: "player2", playerName: "Player 2" });
+
+        simulator.setActivePlayer("1");
+        expect(simulator.results.activeResultPlayerHrid).toBe("player1");
+        expect(simulator.activeResultRow).toMatchObject({ playerHrid: "player1", playerName: "Player 1" });
+    });
+
+    it("keeps active result aligned to the selected player even when that player has no result row", () => {
+        const simulator = useSimulatorStore();
+        simulator.results.summaryRows = [
+            { playerHrid: "player1", playerName: "Player 1", totalXpPerHour: 100 },
+            { playerHrid: "player2", playerName: "Player 2", totalXpPerHour: 200 },
+        ];
+        simulator.results.activeResultPlayerHrid = "player1";
+
+        simulator.setActivePlayer("4");
+        expect(simulator.results.activeResultPlayerHrid).toBe("player4");
+        expect(simulator.activeResultRow).toBeNull();
+    });
+
     it("rejects queue run when run scope is not single", async () => {
         const simulator = useSimulatorStore();
 

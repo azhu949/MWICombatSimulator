@@ -2375,8 +2375,7 @@ function getStdDev(values, meanValue) {
 }
 
 function resolveSimResultPlayerHrid(simResult, preferredPlayerId = "1") {
-    const normalizedPlayerId = String(preferredPlayerId || "1").replace(/^player/i, "") || "1";
-    const preferredPlayerHrid = `player${normalizedPlayerId}`;
+    const preferredPlayerHrid = toPlayerHrid(preferredPlayerId);
     const candidateMaps = [
         simResult?.experienceGained,
         simResult?.deaths,
@@ -2401,6 +2400,11 @@ function resolveSimResultPlayerHrid(simResult, preferredPlayerId = "1") {
     }
 
     return preferredPlayerHrid;
+}
+
+function toPlayerHrid(playerId = "1") {
+    const normalizedPlayerId = String(playerId || "1").replace(/^player/i, "") || "1";
+    return `player${normalizedPlayerId}`;
 }
 
 function computeQueueMetrics(simResult, preferredPlayerId, pricingOptions = {}) {
@@ -3939,6 +3943,14 @@ export const useSimulatorStore = defineStore("simulator", {
             }
             return this.queue.byPlayer[normalizedId];
         },
+        syncActiveResultPlayerToActivePlayer(playerId = this.activePlayerId) {
+            const targetPlayerHrid = toPlayerHrid(playerId);
+            const summaryRow = Array.isArray(this.results.summaryRows)
+                ? this.results.summaryRows.find((row) => String(row?.playerHrid || "") === targetPlayerHrid)
+                : null;
+            this.results.activeResultPlayerHrid = summaryRow?.playerHrid || targetPlayerHrid;
+            return this.results.activeResultPlayerHrid;
+        },
         setImportedProfileState(playerId, imported = true) {
             const normalizedId = String(playerId || "");
             if (!normalizedId) {
@@ -5163,6 +5175,7 @@ export const useSimulatorStore = defineStore("simulator", {
             if (player && !isPlainObject(player.triggerMap)) {
                 player.triggerMap = {};
             }
+            this.syncActiveResultPlayerToActivePlayer(this.activePlayerId);
         },
         setConsumablePriceMode(mode) {
             this.pricing.consumableMode = normalizePriceMode(mode, PRICE_MODE_ASK);
@@ -5538,6 +5551,7 @@ export const useSimulatorStore = defineStore("simulator", {
             this.results.batchRows = [];
             this.results.batchResultType = "";
             this.results.timeSeriesData = null;
+            this.syncActiveResultPlayerToActivePlayer(this.activePlayerId);
         },
         resetAdvisorState() {
             this.advisor = createAdvisorState();
@@ -5959,9 +5973,7 @@ export const useSimulatorStore = defineStore("simulator", {
                             this.results.simResult = simResult;
                             this.results.timeSeriesData = simResult?.timeSeriesData ?? this.results.timeSeriesData;
                             this.results.summaryRows = summarizeResult(simResult, selectedPlayersSnapshot, pricingOptions);
-                            if (this.results.summaryRows.length > 0) {
-                                this.results.activeResultPlayerHrid = this.results.summaryRows[0].playerHrid;
-                            }
+                            this.syncActiveResultPlayerToActivePlayer(this.activePlayerId);
                             this.runtime.completionNoticeId += 1;
                         },
                         onError,
