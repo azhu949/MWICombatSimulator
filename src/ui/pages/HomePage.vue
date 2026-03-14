@@ -2412,6 +2412,10 @@ function handleTampermonkeyImportWindowMessage(event) {
       ? candidatePlayerId
       : simulator.activePlayerId;
 
+    if (data.clearOtherPlayers === true) {
+      simulator.clearOtherPlayersForSoloImport(resolvedPlayerId);
+    }
+
     if (data.resetTeamSelection === true) {
       simulator.players.forEach((player) => {
         player.selected = false;

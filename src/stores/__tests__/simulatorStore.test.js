@@ -1081,6 +1081,85 @@ describe("simulatorStore", () => {
         expect(simulator.simulationSettings.simulationTimeHours).toBe(48);
     });
 
+    it("clears other players before a post-party solo main-site import", () => {
+        const simulator = useSimulatorStore();
+        const headItemHrid = findFirstEquipmentItemByType("/equipment_types/head");
+        const zoneActionHrid = findFirstCombatAction(false);
+
+        expect(headItemHrid).toBeTruthy();
+        expect(zoneActionHrid).toBeTruthy();
+
+        simulator.players[0].selected = true;
+
+        simulator.players[1].name = "Party Mate";
+        simulator.players[1].selected = true;
+        simulator.players[1].levels.stamina = 88;
+        simulator.players[1].equipment.head.itemHrid = headItemHrid;
+        simulator.players[1].achievements[ACHIEVEMENT_HRID] = true;
+        simulator.queue.byPlayer["2"].items = [{ slot: "head" }];
+        simulator.queue.byPlayer["2"].results = [{ score: 1 }];
+        simulator.queue.byPlayer["2"].rawRuns = [{ score: 1 }];
+        simulator.queue.byPlayer["2"].ranking = [{ playerId: "2" }];
+        simulator.queue.byPlayer["2"].isRunning = true;
+        simulator.queue.byPlayer["2"].error = "stale queue";
+        simulator.queue.byPlayer["2"].progress = 0.5;
+        simulator.setImportedProfileState("2", true);
+        simulator.setImportedBaselineSnapshot("2", JSON.parse(JSON.stringify(simulator.players[1])));
+
+        simulator.players[2].name = "Party Mate Two";
+        simulator.players[2].selected = true;
+        simulator.players[2].levels.magic = 77;
+        simulator.players[2].equipment.head.itemHrid = headItemHrid;
+        simulator.players[2].achievements[SECOND_ACHIEVEMENT_HRID] = true;
+        simulator.queue.byPlayer["3"].items = [{ slot: "weapon" }];
+        simulator.queue.byPlayer["3"].results = [{ score: 2 }];
+        simulator.queue.byPlayer["3"].rawRuns = [{ score: 2 }];
+        simulator.queue.byPlayer["3"].ranking = [{ playerId: "3" }];
+        simulator.queue.byPlayer["3"].isRunning = true;
+        simulator.queue.byPlayer["3"].error = "stale queue";
+        simulator.queue.byPlayer["3"].progress = 0.75;
+        simulator.setImportedProfileState("3", true);
+        simulator.setImportedBaselineSnapshot("3", JSON.parse(JSON.stringify(simulator.players[2])));
+
+        const payload = {
+            profile: createMainSiteShareProfileFixture({
+                characterName: "Solo Hero",
+            }),
+            mainSiteCombat: {
+                actionHrid: zoneActionHrid,
+                difficultyTier: 0,
+            },
+        };
+
+        simulator.clearOtherPlayersForSoloImport("1");
+        const result = simulator.importSoloConfig(JSON.stringify(payload), "1");
+
+        expect(result.detectedFormat).toBe("main-site-share-profile");
+        expect(simulator.players[0].name).toBe("Solo Hero");
+        expect(simulator.players[0].selected).toBe(true);
+        expect(simulator.queue.importedProfileByPlayer["1"]).toBe(true);
+
+        for (const playerId of ["2", "3", "4", "5"]) {
+            const player = simulator.players.find((entry) => entry.id === playerId);
+            expect(player).toBeTruthy();
+            expect(player.name).toBe(`Player ${playerId}`);
+            expect(player.selected).toBe(false);
+            expect(player.levels.stamina).toBe(1);
+            expect(player.levels.magic).toBe(1);
+            expect(player.equipment.head.itemHrid).toBe("");
+            expect(player.achievements).toEqual({});
+            expect(simulator.queue.importedProfileByPlayer[playerId]).toBe(false);
+            expect(simulator.queue.importedBaselineByPlayer[playerId]).toBeNull();
+            expect(simulator.queue.byPlayer[playerId].items).toEqual([]);
+            expect(simulator.queue.byPlayer[playerId].results).toEqual([]);
+            expect(simulator.queue.byPlayer[playerId].rawRuns).toEqual([]);
+            expect(simulator.queue.byPlayer[playerId].ranking).toEqual([]);
+            expect(simulator.queue.byPlayer[playerId].isRunning).toBe(false);
+            expect(simulator.queue.byPlayer[playerId].error).toBe("");
+            expect(simulator.queue.byPlayer[playerId].progress).toBe(0);
+        }
+    });
+
     it("returns sorted market enhancement levels for an item", () => {
         const simulator = useSimulatorStore();
         const equipmentItemHrid = findFirstEquipmentItem();

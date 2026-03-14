@@ -3,7 +3,7 @@
 // @name:zh      MWI Combat Simulator 主站一键导入
 // @name:zh-CN   MWI Combat Simulator 主站一键导入
 // @namespace    https://azhu949.github.io/MWICombatSimulator
-// @version      0.1.19
+// @version      0.1.20
 // @license      ISC
 // @description  Import the current Milky Way Idle character or detected team into MWI Combat Simulator with one click.
 // @description:zh      一键将 Milky Way Idle 主站当前角色或已识别队伍导入到 MWI Combat Simulator。
@@ -152,19 +152,28 @@
     }
 
     function refreshCurrentCombatAction() {
+        const previousPartyId = Number(mainSiteState.currentCombatAction?.partyId || 0);
         const currentAction = mainSiteState.characterActions.find((action) => isCombatActionHrid(action?.actionHrid)) || null;
         if (!currentAction) {
             mainSiteState.currentCombatAction = null;
+            if (previousPartyId !== 0) {
+                clearStaleTeamRosterState(mainSiteState.currentCharacterName);
+            }
             return;
         }
 
         const partyId = Number(currentAction?.partyID ?? currentAction?.partyId ?? 0);
+        const nextPartyId = Number.isFinite(partyId) ? partyId : 0;
 
         mainSiteState.currentCombatAction = {
             actionHrid: String(currentAction.actionHrid || "").trim(),
             difficultyTier: normalizeDifficultyTier(currentAction.difficultyTier),
-            partyId: Number.isFinite(partyId) ? partyId : 0,
+            partyId: nextPartyId,
         };
+
+        if (previousPartyId !== 0 && nextPartyId === 0) {
+            clearStaleTeamRosterState(mainSiteState.currentCharacterName);
+        }
     }
 
     function replaceTrackedCharacterActions(nextActions) {
@@ -428,6 +437,58 @@
         return true;
     }
 
+    function clearRecentPartyMessages() {
+        mainSiteState.recentPartyMessages = [];
+    }
+
+    function clearTeamRosterCacheForCharacter(characterName) {
+        const comparableCharacterName = normalizeComparableText(characterName);
+        if (!comparableCharacterName) {
+            return false;
+        }
+
+        const store = loadTeamRosterCacheStore();
+        let changed = false;
+        const cacheKeyPrefix = `${comparableCharacterName}|`;
+
+        for (const bucket of ["exact", "loose"]) {
+            for (const key of Object.keys(store[bucket] || {})) {
+                if (!String(key || "").startsWith(cacheKeyPrefix)) {
+                    continue;
+                }
+
+                delete store[bucket][key];
+                changed = true;
+            }
+        }
+
+        if (!changed) {
+            return false;
+        }
+
+        GM_setValue(TEAM_ROSTER_CACHE_KEY, {
+            exact: pruneTeamRosterCacheBucket(store.exact),
+            loose: pruneTeamRosterCacheBucket(store.loose),
+        });
+
+        return true;
+    }
+
+    function clearStaleTeamRosterState(characterName = mainSiteState.currentCharacterName) {
+        clearRecentPartyMessages();
+        clearTeamRosterCacheForCharacter(characterName);
+    }
+
+    function countPartyInfoMembers(partyInfo) {
+        if (!partyInfo || typeof partyInfo !== "object" || Array.isArray(partyInfo)) {
+            return 0;
+        }
+
+        return readCollectionEntries(partyInfo?.partySlotMap)
+            .filter((entry) => entry && typeof entry === "object")
+            .length;
+    }
+
     function collectStructuredPartyInfoSources(source, path, depth, results, visited) {
         if (!source || typeof source !== "object" || Array.isArray(source) || depth > 2) {
             return;
@@ -673,6 +734,7 @@
         return {
             partyInfoNames: partyInfoCandidate?.names ?? [],
             partyInfo,
+            partyInfoMemberCount: countPartyInfoMembers(partyInfo),
             partyInfoResolvedFromPath: partyInfoCandidate?.path || "",
         };
     }
@@ -703,24 +765,29 @@
         };
     }
 
-    function selectAutoDetectedTeamRoster({ gameStateResult, wsPartyResult, cacheMatch }) {
+    function selectAutoDetectedTeamRoster({ gameStateResult, wsPartyResult, cacheMatch, allowFallbackSources = false }) {
         const candidates = [
             {
                 source: "game-state:partyInfo",
                 names: gameStateResult?.partyInfoNames ?? [],
                 resolvedFromPath: gameStateResult?.partyInfoResolvedFromPath || "",
             },
-            {
-                source: "ws-party",
-                names: wsPartyResult?.names ?? [],
-                resolvedFromPath: wsPartyResult?.resolvedFromPath || "",
-            },
-            {
-                source: "cache",
-                names: cacheMatch?.exactCharacterNames ?? [],
-                resolvedFromPath: "",
-            },
         ];
+
+        if (allowFallbackSources) {
+            candidates.push(
+                {
+                    source: "ws-party",
+                    names: wsPartyResult?.names ?? [],
+                    resolvedFromPath: wsPartyResult?.resolvedFromPath || "",
+                },
+                {
+                    source: "cache",
+                    names: cacheMatch?.exactCharacterNames ?? [],
+                    resolvedFromPath: "",
+                }
+            );
+        }
 
         for (const candidate of candidates) {
             if (Array.isArray(candidate.names) && candidate.names.length >= 2) {
@@ -2144,23 +2211,30 @@
         const cacheMatch = readTeamRosterCache(teamContext);
         const gameStateResult = resolveTeamMemberNamesFromGameState();
         const wsPartyResult = resolveTeamMemberNamesFromRecentPartyMessages();
+        const hasActivePartyEvidence = Number(gameStateResult?.partyInfoMemberCount || 0) >= 2
+            || Number(teamContext?.partyId || 0) > 0;
         const selectedAutoDetectedRoster = selectAutoDetectedTeamRoster({
             gameStateResult,
             wsPartyResult,
             cacheMatch,
+            allowFallbackSources: hasActivePartyEvidence,
         });
 
         debugTeamRosterAutoDetection({
             context: teamContext,
+            hasActivePartyEvidence,
             selectedSource: selectedAutoDetectedRoster.source,
             resolvedFromPath: selectedAutoDetectedRoster.resolvedFromPath,
             partyInfoResolvedRoster: gameStateResult.partyInfoNames,
+            partyInfoMemberCount: gameStateResult.partyInfoMemberCount,
             gameStatePartyInfo: gameStateResult.partyInfo,
             wsPartyResolvedRoster: wsPartyResult.names,
             wsPartyMessages: wsPartyResult.messages,
+            cacheExactRoster: cacheMatch.exactCharacterNames,
         });
 
         if (selectedAutoDetectedRoster.names.length < 2 || selectedAutoDetectedRoster.source === "request") {
+            clearStaleTeamRosterState(teamContext.currentCharacterName);
             return null;
         }
 
@@ -2388,7 +2462,11 @@
             }
 
             setStatusKey("importingSimulator", "idle");
-            const appResponse = await importPayloadIntoSimulator(requestId, mainSiteResponse.payload);
+            const appResponse = await importPayloadIntoSimulator(requestId, mainSiteResponse.payload, {
+                clearOtherPlayers: true,
+                resetTeamSelection: true,
+                selectAfterImport: true,
+            });
             if (!appResponse || appResponse.ok !== true) {
                 throw new Error(appResponse?.message || getUiText("simulatorImportFailed", state.uiLanguage));
             }

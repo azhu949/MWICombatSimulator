@@ -3978,6 +3978,39 @@ export const useSimulatorStore = defineStore("simulator", {
                 : null;
             return true;
         },
+        clearOtherPlayersForSoloImport(targetPlayerId = this.activePlayerId) {
+            const normalizedTargetId = String(targetPlayerId || this.activePlayerId);
+            const hasTargetPlayer = this.players.some((player) => String(player.id) === normalizedTargetId);
+            if (!hasTargetPlayer) {
+                return false;
+            }
+
+            this.players = this.players.map((player) => {
+                if (String(player.id) === normalizedTargetId) {
+                    return player;
+                }
+
+                const clearedPlayer = createEmptyPlayerConfig(player.id);
+                clearedPlayer.selected = false;
+                return clearedPlayer;
+            });
+
+            if (!this.queue.byPlayer || typeof this.queue.byPlayer !== "object") {
+                this.queue.byPlayer = createQueueStateByPlayer(this.players);
+            }
+
+            for (const player of this.players) {
+                if (String(player.id) === normalizedTargetId) {
+                    continue;
+                }
+
+                this.queue.byPlayer[String(player.id)] = createQueuePlayerState();
+                this.setImportedProfileState(player.id, false);
+            }
+
+            this.persistPlayerAchievements();
+            return true;
+        },
         getMarketEnhancementLevelsForItem(itemHrid) {
             const hrid = String(itemHrid || "");
             if (!hrid) {
