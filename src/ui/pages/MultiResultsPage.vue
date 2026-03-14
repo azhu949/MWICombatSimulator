@@ -179,10 +179,12 @@ import abilityDetailMap from "../../combatsimulator/data/abilityDetailMap.json";
 import houseRoomDetailMap from "../../combatsimulator/data/houseRoomDetailMap.json";
 import itemDetailMap from "../../combatsimulator/data/itemDetailMap.json";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
+import { useAbilityText } from "../composables/useAbilityText.js";
 import { useI18nText } from "../composables/useI18nText.js";
 
 const simulator = useSimulatorStore();
 const { t, language } = useI18nText();
+const { getAbilityName } = useAbilityText();
 const ABILITY_BOOK_CATEGORY_HRID = "/item_categories/ability_book";
 const ONE_HOUR = 60 * 60 * 1e9;
 const RANKING_ROWS_LIMIT = 300;
@@ -456,7 +458,7 @@ function resolveAbilityName(abilityHrid) {
   if (!hrid) {
     return "";
   }
-  return t(`abilityNames.${hrid}`, abilityDetailMap?.[hrid]?.name || hrid);
+  return getAbilityName(hrid, hrid);
 }
 
 function formatSkillName(skillKey) {

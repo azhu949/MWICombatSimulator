@@ -1062,6 +1062,7 @@ import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { buildPlayersForSimulation, calcCombatLevel, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../../services/playerMapper.js";
 import { buildNoRngProfitBreakdown, buildRandomProfitBreakdown } from "../../services/profitEstimator.js";
 import { calculateSkillUpgradeEta } from "../../services/levelExperience.js";
+import { useAbilityText } from "../composables/useAbilityText.js";
 import { useI18nText } from "../composables/useI18nText.js";
 import BaseModal from "../components/BaseModal.vue";
 import DisclosurePanel from "../components/DisclosurePanel.vue";
@@ -1072,6 +1073,7 @@ const simulator = useSimulatorStore();
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18nText();
+const { getAbilityName } = useAbilityText();
 const AsyncSimulationResultsView = defineAsyncComponent(() => import("../components/SimulationResultsView.vue"));
 const TAMPERMONKEY_BRIDGE_CHANNEL = "mwi-tm-bridge";
 const MAIN_SITE_IMPORT_SCRIPT_URL = "https://greasyfork.org/zh-CN/scripts/568613-mwi-combat-simulator-%E4%B8%BB%E7%AB%99%E4%B8%80%E9%94%AE%E5%AF%BC%E5%85%A5";
@@ -2048,8 +2050,7 @@ function formatAbilityName(abilityHrid, fallbackName = "") {
   if (!hrid) {
     return fallbackName || "-";
   }
-  const defaultLabel = fallbackName || abilityDetailMap?.[hrid]?.name || hrid;
-  return t(`abilityNames.${hrid}`, defaultLabel);
+  return getAbilityName(hrid, fallbackName || hrid);
 }
 
 function formatTriggerDependencyName(dependencyHrid, fallbackName = "") {
@@ -2598,7 +2599,7 @@ function resolveTriggerTarget(kind, index) {
     const hrid = String(activePlayer.value.abilities?.[index]?.abilityHrid || "");
     return {
       hrid,
-      label: hrid ? formatAbilityName(hrid, abilityDetailMap[hrid]?.name || getAbilitySlotLabel(index)) : getAbilitySlotLabel(index),
+      label: hrid ? formatAbilityName(hrid, getAbilitySlotLabel(index)) : getAbilitySlotLabel(index),
     };
   }
 

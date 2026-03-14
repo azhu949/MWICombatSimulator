@@ -510,10 +510,12 @@ import { buildNoRngProfitBreakdown, buildRandomProfitBreakdown } from "../../ser
 import DisclosurePanel from "./DisclosurePanel.vue";
 import TimeSeriesChart from "./TimeSeriesChart.vue";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
+import { useAbilityText } from "../composables/useAbilityText.js";
 import { useI18nText } from "../composables/useI18nText.js";
 
 const simulator = useSimulatorStore();
 const { t } = useI18nText();
+const { getAbilityName } = useAbilityText();
 const PLAYER_HRIDS = new Set(["player1", "player2", "player3", "player4", "player5"]);
 const batchSort = ref({ key: "", direction: "desc" });
 const batchTableColumns = Object.freeze([
@@ -1227,8 +1229,9 @@ function formatAbilityLabel(abilityHrid) {
   if (hrid === "blaze") {
     return t("common:vue.home.combatStats.blaze", "Blaze");
   }
-  if (abilityDetailMap?.[hrid]?.name) {
-    return t(`abilityNames.${hrid}`, abilityDetailMap[hrid].name);
+  const abilityName = getAbilityName(hrid, hrid);
+  if (abilityName !== hrid) {
+    return abilityName;
   }
   return hrid;
 }
@@ -1389,6 +1392,9 @@ function formatRestoreSourceLabel(source, resourceType) {
   if (source === "manaLeech") {
     return t("common:vue.home.combatStats.manaLeech", "Mana Leech");
   }
+  if (source === "blaze") {
+    return t("common:vue.home.combatStats.blaze", "Blaze");
+  }
   if (source === "bloom") {
     return t("common:vue.home.combatStats.bloom", "Bloom");
   }
@@ -1398,8 +1404,9 @@ function formatRestoreSourceLabel(source, resourceType) {
   if (itemDetailMap?.[source]?.name) {
     return t(`itemNames.${source}`, itemDetailMap[source].name);
   }
-  if (abilityDetailMap?.[source]?.name) {
-    return t(`abilityNames.${source}`, abilityDetailMap[source].name);
+  const abilityName = getAbilityName(source, source || "-");
+  if (abilityName !== (source || "-")) {
+    return abilityName;
   }
   return source || "-";
 }

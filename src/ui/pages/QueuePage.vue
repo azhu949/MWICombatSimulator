@@ -91,10 +91,12 @@ import houseRoomDetailMap from "../../combatsimulator/data/houseRoomDetailMap.js
 import itemDetailMap from "../../combatsimulator/data/itemDetailMap.json";
 import { EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../../services/playerMapper.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
+import { useAbilityText } from "../composables/useAbilityText.js";
 import { useI18nText } from "../composables/useI18nText.js";
 
 const simulator = useSimulatorStore();
 const { t } = useI18nText();
+const { getAbilityName } = useAbilityText();
 const ONE_HOUR = 60 * 60 * 1e9;
 const ABILITY_BOOK_CATEGORY_HRID = "/item_categories/ability_book";
 const TRIGGER_CHANGE_LABEL_PREFIX = "trigger:";
@@ -523,15 +525,15 @@ function localizeHridDisplayName(hrid) {
     return "-";
   }
 
-  const fallback = itemDetailMap?.[value]?.name || abilityDetailMap?.[value]?.name || actionNameFallbackMap.value?.[value] || value;
+  const fallback = itemDetailMap?.[value]?.name || actionNameFallbackMap.value?.[value] || value;
 
   const itemName = t(`itemNames.${value}`, `itemNames.${value}`);
   if (itemName !== `itemNames.${value}`) {
     return itemName;
   }
 
-  const abilityName = t(`abilityNames.${value}`, `abilityNames.${value}`);
-  if (abilityName !== `abilityNames.${value}`) {
+  const abilityName = getAbilityName(value, "");
+  if (abilityName && abilityName !== value) {
     return abilityName;
   }
 
