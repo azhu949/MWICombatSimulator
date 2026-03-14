@@ -792,7 +792,7 @@
             "msgNoPriceOverrides": "当前没有可清除的手工价格覆盖。",
             "msgInvalidPriceInput": "{{item}} 的价格输入无效。",
             "mainSiteImportScriptTitle": "主站导入脚本",
-            "mainSiteImportScriptDescription": "安装 Tampermonkey 辅助脚本后，可将主站当前角色一键导入到当前激活玩家槽位。",
+            "mainSiteImportScriptDescription": "安装 Tampermonkey 辅助脚本后，可通过单个主站导入按钮自动导入：识别到队伍时写入 Player 1..N（最多 5）槽位，否则导入当前激活玩家槽位。",
             "installMainSiteImportScript": "安装脚本",
             "mainSiteImportScriptPending": "脚本链接待配置"
         }

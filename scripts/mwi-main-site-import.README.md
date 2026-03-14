@@ -1,19 +1,19 @@
 # MWI Combat Simulator 主站一键导入脚本
 
-`scripts/mwi-main-site-import.user.js` 是一个单文件 Tampermonkey userscript，用来把 **Milky Way Idle 主站当前角色** 一键导入到 **MWI Combat Simulator 当前激活玩家槽位**。
+`scripts/mwi-main-site-import.user.js` 是一个单文件 Tampermonkey userscript，用来通过 **单个导入按钮** 把 **Milky Way Idle 主站当前角色或当前队伍** 一键导入到 **MWI Combat Simulator**。
 
 ## 脚本定位
 
 这个脚本只做两件事：
 
 - 在模拟器首页操作区注入一个 `从主站导入` 按钮
-- 从已打开的主站标签页读取当前角色的 shareable profile，并交给模拟器完成导入
+- 从已打开的主站标签页自动判断当前是单人还是队伍导入，并把 shareable profile 交给模拟器完成导入
 
 它不会直接调用游戏 HTTP API，也不会向主站发送写请求。
 
 ## 主要功能
 
-- 一键导入主站当前角色到模拟器当前激活玩家槽位
+- 单按钮自动导入：有可识别队伍时导入到模拟器 `Player 1..N` 槽位（最多 5），否则导入当前激活玩家槽位
 - 在主站侧边菜单里于 `新闻 / News` 上方注入 `战斗模拟器 / Combat Simulator` 快捷入口（点击弹窗选择 Cloudflare / GitHub Pages）
 - 自动导入玩家配置：`levels`、`equipment`、`food`、`drinks`、`abilities`、`triggerMap`、`houseRooms`、`achievements`
 - 如果主站当前角色正在战斗，还会同步当前战斗区域 / 地下城与难度
@@ -42,7 +42,10 @@
 4. 在操作区点击 `从主站导入`（英文界面显示 `Import from Main Site`）
 5. 等待按钮旁状态提示显示导入结果
 
-导入成功后，数据会写入 **当前激活玩家槽位**。
+导入成功后：
+
+- 若当前不在可识别队伍中，会写入 **当前激活玩家槽位**
+- 若当前在可识别队伍中，会按顺序写入 `Player 1..N` 槽位（最多 5）
 
 ## 导入内容
 
@@ -82,7 +85,9 @@
 
 ## 限制说明
 
-- v1 只支持 **当前主站角色 -> 当前激活玩家槽位**
+- 单人导入支持 **当前主站角色 -> 当前激活玩家槽位**
+- 队伍导入会覆盖 `Player 1..N` 槽位（最多 5）
+- 队伍成员自动识别依赖主站当前队伍/战斗信息；识别不到时会直接按单人导入处理
 - 不支持账号下多角色批量映射
 - 必须至少保留一个已登录的主站标签页
 - 脚本依赖主站现有的分享导出链路；如果主站未来改动该链路，脚本需要跟进更新

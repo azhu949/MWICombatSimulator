@@ -3,11 +3,11 @@
 // @name:zh      MWI Combat Simulator 主站一键导入
 // @name:zh-CN   MWI Combat Simulator 主站一键导入
 // @namespace    https://azhu949.github.io/MWICombatSimulator
-// @version      0.1.14
+// @version      0.1.19
 // @license      ISC
-// @description  Import the current Milky Way Idle character into MWI Combat Simulator with one click.
-// @description:zh      一键将 Milky Way Idle 主站当前角色导入到 MWI Combat Simulator。
-// @description:zh-CN   一键将 Milky Way Idle 主站当前角色导入到 MWI Combat Simulator。
+// @description  Import the current Milky Way Idle character or detected team into MWI Combat Simulator with one click.
+// @description:zh      一键将 Milky Way Idle 主站当前角色或已识别队伍导入到 MWI Combat Simulator。
+// @description:zh-CN   一键将 Milky Way Idle 主站当前角色或已识别队伍导入到 MWI Combat Simulator。
 // @match        https://www.milkywayidle.com/*
 // @match        https://milkywayidle.com/*
 // @match        https://azhu949.github.io/MWICombatSimulator/*
@@ -34,6 +34,7 @@
     const BUTTON_ID = "mwi-tm-import-button";
     const CONTROL_ID = "mwi-tm-import-control";
     const STATUS_ID = "mwi-tm-import-status";
+    const TEAM_ROSTER_CACHE_KEY = "mwi.tm.import.teamRosterCache.v1";
     const MAIN_SITE_SHORTCUT_ID = "mwi-tm-main-site-simulator-link";
     const SIMULATOR_GITHUB_PAGES_URL = "https://azhu949.github.io/MWICombatSimulator/";
     const SIMULATOR_CLOUDFLARE_URL = "https://mwi-combatsi-mulator.pages.dev/";
@@ -43,6 +44,8 @@
     const PAGE_REQUEST_TIMEOUT_MS = 10000;
     const APP_IMPORT_TIMEOUT_MS = 8000;
     const STORAGE_POLL_INTERVAL_MS = 250;
+    const TEAM_ROSTER_CACHE_BUCKET_LIMIT = 24;
+    const RECENT_PARTY_MESSAGE_LIMIT = 20;
     const SHAREABLE_PROFILE_MODAL_SELECTOR = '[class*="SharableProfile_modalContainer__"]';
     const SHAREABLE_PROFILE_BACKGROUND_SELECTOR = '[class*="SharableProfile_background__"]';
     const SHAREABLE_PROFILE_CLOSE_BUTTON_SELECTOR = '[class*="SharableProfile_closeButton__"]';
@@ -110,6 +113,7 @@
         lastGameSocket: null,
         currentCharacterName: "",
         characterActions: [],
+        recentPartyMessages: [],
         currentCombatAction: null,
         actionTypeFoodSlotsMap: {},
         actionTypeDrinkSlotsMap: {},
@@ -134,8 +138,8 @@
 
     function sortTrackedCharacterActions(actions) {
         return [...actions].sort((left, right) => {
-            const leftPartyId = Number(left?.partyID || 0);
-            const rightPartyId = Number(right?.partyID || 0);
+            const leftPartyId = Number(left?.partyID ?? left?.partyId ?? 0);
+            const rightPartyId = Number(right?.partyID ?? right?.partyId ?? 0);
             if (leftPartyId !== 0 && rightPartyId === 0) {
                 return -1;
             }
@@ -154,9 +158,12 @@
             return;
         }
 
+        const partyId = Number(currentAction?.partyID ?? currentAction?.partyId ?? 0);
+
         mainSiteState.currentCombatAction = {
             actionHrid: String(currentAction.actionHrid || "").trim(),
             difficultyTier: normalizeDifficultyTier(currentAction.difficultyTier),
+            partyId: Number.isFinite(partyId) ? partyId : 0,
         };
     }
 
@@ -208,6 +215,531 @@
             .trim()
             .replace(/\s+/g, " ")
             .toLowerCase();
+    }
+
+    function normalizeCharacterName(value) {
+        return String(value || "")
+            .trim()
+            .replace(/\s+/g, " ");
+    }
+
+    function normalizeCharacterNameList(rawNames, maxCount = 5) {
+        const list = Array.isArray(rawNames) ? rawNames : [];
+        const deduped = new Map();
+        for (const entry of list) {
+            const name = normalizeCharacterName(entry);
+            if (!name) {
+                continue;
+            }
+
+            const key = normalizeComparableText(name);
+            if (!key || deduped.has(key)) {
+                continue;
+            }
+
+            deduped.set(key, name);
+            if (deduped.size >= maxCount) {
+                break;
+            }
+        }
+
+        return Array.from(deduped.values());
+    }
+
+    function isLikelyCharacterName(value) {
+        const normalized = normalizeCharacterName(value);
+        if (!normalized) {
+            return false;
+        }
+
+        if (normalized.startsWith("/")) {
+            return false;
+        }
+
+        if (/^\d+$/.test(normalized)) {
+            return false;
+        }
+
+        if (/^\d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}(?:\.\d+)?z$/i.test(normalized)) {
+            return false;
+        }
+
+        if (/^\{.+\}$/.test(normalized) || /^\[.+\]$/.test(normalized)) {
+            return false;
+        }
+
+        if (/^systemchatmessage\./i.test(normalized)) {
+            return false;
+        }
+
+        return true;
+    }
+
+    function normalizeDetectedCharacterName(value) {
+        return isLikelyCharacterName(value) ? normalizeCharacterName(value) : "";
+    }
+
+    function readCharacterNameCandidate(source) {
+        if (!source || typeof source !== "object") {
+            return "";
+        }
+
+        const candidates = [
+            source.characterName,
+            source.name,
+            source.displayName,
+            source.playerName,
+            source.character?.name,
+            source.character?.characterName,
+            source.player?.name,
+        ];
+
+        for (const candidate of candidates) {
+            const normalized = normalizeDetectedCharacterName(candidate);
+            if (normalized) {
+                return normalized;
+            }
+        }
+
+        return "";
+    }
+
+    function buildTeamRosterContext() {
+        return {
+            currentCharacterName: normalizeCharacterName(mainSiteState.currentCharacterName),
+            partyId: Number(mainSiteState.currentCombatAction?.partyId || 0),
+            actionHrid: String(mainSiteState.currentCombatAction?.actionHrid || "").trim(),
+            difficultyTier: normalizeDifficultyTier(mainSiteState.currentCombatAction?.difficultyTier),
+        };
+    }
+
+    function buildTeamRosterExactCacheKey(context) {
+        const currentCharacterName = normalizeComparableText(context?.currentCharacterName);
+        const actionHrid = String(context?.actionHrid || "").trim();
+        const difficultyTier = normalizeDifficultyTier(context?.difficultyTier);
+        const partyId = Number(context?.partyId || 0);
+        if (!currentCharacterName || !actionHrid) {
+            return "";
+        }
+
+        return `${currentCharacterName}|${partyId}|${actionHrid}|${difficultyTier}`;
+    }
+
+    function buildTeamRosterLooseCacheKey(context) {
+        const currentCharacterName = normalizeComparableText(context?.currentCharacterName);
+        const actionHrid = String(context?.actionHrid || "").trim();
+        const difficultyTier = normalizeDifficultyTier(context?.difficultyTier);
+        if (!currentCharacterName || !actionHrid) {
+            return "";
+        }
+
+        return `${currentCharacterName}|${actionHrid}|${difficultyTier}`;
+    }
+
+    function sanitizeTeamRosterCacheEntry(value) {
+        const characterNames = normalizeCharacterNameList(value?.characterNames ?? value?.names ?? [], 5);
+        if (characterNames.length < 2) {
+            return null;
+        }
+
+        return {
+            characterNames,
+            updatedAt: Number(value?.updatedAt || Date.now()),
+        };
+    }
+
+    function loadTeamRosterCacheStore() {
+        const rawValue = GM_getValue(TEAM_ROSTER_CACHE_KEY, null);
+        const exactSource = rawValue?.exact && typeof rawValue.exact === "object" ? rawValue.exact : {};
+        const looseSource = rawValue?.loose && typeof rawValue.loose === "object" ? rawValue.loose : {};
+        const exact = {};
+        const loose = {};
+
+        for (const [key, value] of Object.entries(exactSource)) {
+            const normalized = sanitizeTeamRosterCacheEntry(value);
+            if (normalized) {
+                exact[key] = normalized;
+            }
+        }
+
+        for (const [key, value] of Object.entries(looseSource)) {
+            const normalized = sanitizeTeamRosterCacheEntry(value);
+            if (normalized) {
+                loose[key] = normalized;
+            }
+        }
+
+        return { exact, loose };
+    }
+
+    function pruneTeamRosterCacheBucket(bucket) {
+        const entries = Object.entries(bucket || {})
+            .sort((left, right) => Number(right?.[1]?.updatedAt || 0) - Number(left?.[1]?.updatedAt || 0))
+            .slice(0, TEAM_ROSTER_CACHE_BUCKET_LIMIT);
+        return Object.fromEntries(entries);
+    }
+
+    function readTeamRosterCache(context) {
+        const store = loadTeamRosterCacheStore();
+        const exactKey = buildTeamRosterExactCacheKey(context);
+        const looseKey = buildTeamRosterLooseCacheKey(context);
+        const exactEntry = exactKey ? sanitizeTeamRosterCacheEntry(store.exact?.[exactKey]) : null;
+        const looseEntry = looseKey ? sanitizeTeamRosterCacheEntry(store.loose?.[looseKey]) : null;
+
+        return {
+            exactKey,
+            looseKey,
+            exactCharacterNames: exactEntry?.characterNames ?? [],
+            looseCharacterNames: looseEntry?.characterNames ?? [],
+        };
+    }
+
+    function persistTeamRosterCache(context, characterNames) {
+        const normalizedNames = normalizeCharacterNameList(characterNames, 5);
+        if (normalizedNames.length < 2) {
+            return false;
+        }
+
+        const exactKey = buildTeamRosterExactCacheKey(context);
+        const looseKey = buildTeamRosterLooseCacheKey(context);
+        if (!exactKey && !looseKey) {
+            return false;
+        }
+
+        const store = loadTeamRosterCacheStore();
+        const entry = {
+            characterNames: normalizedNames,
+            updatedAt: Date.now(),
+        };
+
+        if (exactKey) {
+            store.exact[exactKey] = entry;
+        }
+
+        if (looseKey) {
+            store.loose[looseKey] = entry;
+        }
+
+        GM_setValue(TEAM_ROSTER_CACHE_KEY, {
+            exact: pruneTeamRosterCacheBucket(store.exact),
+            loose: pruneTeamRosterCacheBucket(store.loose),
+        });
+
+        return true;
+    }
+
+    function collectStructuredPartyInfoSources(source, path, depth, results, visited) {
+        if (!source || typeof source !== "object" || Array.isArray(source) || depth > 2) {
+            return;
+        }
+
+        if (visited.has(source)) {
+            return;
+        }
+
+        visited.add(source);
+
+        const isPartyInfoPath = path.split(".").pop() === "partyInfo";
+        const hasPartySlotMap = source?.partySlotMap && typeof source.partySlotMap === "object" && !Array.isArray(source.partySlotMap);
+        const hasSharableCharacterMap = source?.sharableCharacterMap && typeof source.sharableCharacterMap === "object" && !Array.isArray(source.sharableCharacterMap);
+        if (isPartyInfoPath && hasPartySlotMap && hasSharableCharacterMap) {
+            results.push({
+                path,
+                value: source,
+            });
+        }
+
+        if (depth >= 2) {
+            return;
+        }
+
+        [
+            ["partyInfo", source?.partyInfo],
+            ["payload", source?.payload],
+            ["data", source?.data],
+        ].forEach(([key, value]) => {
+            if (!value || typeof value !== "object" || Array.isArray(value)) {
+                return;
+            }
+
+            const nextPath = path ? `${path}.${key}` : key;
+            collectStructuredPartyInfoSources(value, nextPath, depth + 1, results, visited);
+        });
+    }
+
+    function getStructuredPartyInfoSources(source, path = "") {
+        const results = [];
+        collectStructuredPartyInfoSources(source, path, 0, results, new WeakSet());
+        return Array.from(new Map(results.map((entry) => [entry.path, entry])).values());
+    }
+
+    function rememberRecentPartyMessage(message) {
+        const structuredSources = getStructuredPartyInfoSources(message);
+        if (structuredSources.length === 0) {
+            return;
+        }
+
+        const snapshots = structuredSources
+            .map((entry) => clonePlainObject(entry.value))
+            .filter((entry) => entry && typeof entry === "object" && !Array.isArray(entry))
+            .map((partyInfo) => ({ partyInfo }));
+        if (snapshots.length === 0) {
+            return;
+        }
+
+        mainSiteState.recentPartyMessages = [...snapshots, ...mainSiteState.recentPartyMessages]
+            .slice(0, RECENT_PARTY_MESSAGE_LIMIT);
+    }
+
+    function getMainSiteGameState() {
+        const candidates = [
+            pageWindow?.mwi,
+            pageWindow?.MWI,
+            pageWindow?.Mwi,
+        ];
+
+        for (const candidate of candidates) {
+            const state = candidate?.game?.state;
+            if (state && typeof state === "object") {
+                return state;
+            }
+        }
+
+        return null;
+    }
+
+    function toCollectionValues(source) {
+        if (Array.isArray(source)) {
+            return source;
+        }
+
+        if (source instanceof Map || source instanceof Set) {
+            return Array.from(source.values());
+        }
+
+        return null;
+    }
+
+    function readCollectionEntries(source) {
+        const collectionValues = toCollectionValues(source);
+        if (Array.isArray(collectionValues)) {
+            return collectionValues;
+        }
+
+        if (source && typeof source === "object" && !Array.isArray(source)) {
+            return Object.values(source);
+        }
+
+        return [];
+    }
+
+    function readCollectionValue(source, key) {
+        if (!source || typeof source !== "object") {
+            return null;
+        }
+
+        if (source instanceof Map) {
+            return source.get(key) ?? source.get(String(key)) ?? null;
+        }
+
+        return source[key] ?? source[String(key)] ?? null;
+    }
+
+    function buildCurrentCharacterLookup(gameState) {
+        const rawCurrentCharacterId = Number(gameState?.character?.id || 0);
+        return {
+            currentCharacterId: Number.isFinite(rawCurrentCharacterId) ? rawCurrentCharacterId : 0,
+            currentCharacterName: normalizeCharacterName(gameState?.character?.name || mainSiteState.currentCharacterName),
+            comparableCurrentCharacterName: normalizeComparableText(gameState?.character?.name || mainSiteState.currentCharacterName),
+        };
+    }
+
+    function sortResolvedTeamMembers(members) {
+        return [...members].sort((left, right) => {
+            if (Boolean(left?.isCurrent) !== Boolean(right?.isCurrent)) {
+                return left?.isCurrent ? -1 : 1;
+            }
+
+            if (Boolean(left?.isLeader) !== Boolean(right?.isLeader)) {
+                return left?.isLeader ? -1 : 1;
+            }
+
+            if (Boolean(left?.isReady) !== Boolean(right?.isReady)) {
+                return left?.isReady ? -1 : 1;
+            }
+
+            const leftSortId = Number.isFinite(Number(left?.sortId)) ? Number(left.sortId) : Number.MAX_SAFE_INTEGER;
+            const rightSortId = Number.isFinite(Number(right?.sortId)) ? Number(right.sortId) : Number.MAX_SAFE_INTEGER;
+            if (leftSortId !== rightSortId) {
+                return leftSortId - rightSortId;
+            }
+
+            const leftOrderIndex = Number.isFinite(Number(left?.orderIndex)) ? Number(left.orderIndex) : Number.MAX_SAFE_INTEGER;
+            const rightOrderIndex = Number.isFinite(Number(right?.orderIndex)) ? Number(right.orderIndex) : Number.MAX_SAFE_INTEGER;
+            if (leftOrderIndex !== rightOrderIndex) {
+                return leftOrderIndex - rightOrderIndex;
+            }
+
+            return String(left?.name || "").localeCompare(String(right?.name || ""));
+        });
+    }
+
+    function buildStructuredRosterCandidate(path, members) {
+        const normalizedMembers = Array.isArray(members)
+            ? members.filter((entry) => entry && typeof entry === "object")
+            : [];
+        const orderedMembers = sortResolvedTeamMembers(normalizedMembers);
+        const includesCurrentCharacter = orderedMembers.some((entry) => {
+            return entry.isCurrent === true && normalizeCharacterName(entry?.name || "").length > 0;
+        });
+        if (!includesCurrentCharacter) {
+            return null;
+        }
+
+        const names = normalizeCharacterNameList(
+            orderedMembers
+                .map((entry) => normalizeCharacterName(entry?.name || ""))
+                .filter(Boolean),
+            5
+        );
+        if (names.length < 2) {
+            return null;
+        }
+
+        return {
+            path,
+            names,
+        };
+    }
+
+    function resolvePartyInfoRosterCandidate(partyInfo, path, currentCharacterLookup) {
+        if (!partyInfo || typeof partyInfo !== "object" || Array.isArray(partyInfo)) {
+            return null;
+        }
+
+        const partySlotEntries = readCollectionEntries(partyInfo?.partySlotMap)
+            .filter((entry) => entry && typeof entry === "object");
+        if (partySlotEntries.length < 2) {
+            return null;
+        }
+
+        const sharableCharacterMap = partyInfo?.sharableCharacterMap;
+        if (!sharableCharacterMap || typeof sharableCharacterMap !== "object") {
+            return null;
+        }
+
+        const currentCharacterId = Number(currentCharacterLookup?.currentCharacterId || 0);
+        const currentCharacterName = normalizeCharacterName(currentCharacterLookup?.currentCharacterName || "");
+        const comparableCurrentCharacterName = normalizeComparableText(currentCharacterLookup?.comparableCurrentCharacterName || currentCharacterName);
+
+        const members = partySlotEntries.map((partySlot, index) => {
+            const rawCharacterId = Number(partySlot?.characterID ?? partySlot?.characterId ?? 0);
+            const characterId = Number.isFinite(rawCharacterId) ? rawCharacterId : 0;
+            const sharedCharacter = characterId !== 0
+                ? readCollectionValue(sharableCharacterMap, characterId)
+                : null;
+            const nameFromSharedCharacter = readCharacterNameCandidate(sharedCharacter);
+            const comparableName = normalizeComparableText(nameFromSharedCharacter);
+            const isCurrentById = currentCharacterId !== 0 && characterId === currentCharacterId;
+            const isCurrentByName = comparableCurrentCharacterName
+                ? comparableName === comparableCurrentCharacterName
+                : false;
+            const rawSlotId = Number(partySlot?.id || 0);
+
+            return {
+                name: nameFromSharedCharacter || ((isCurrentById || isCurrentByName) ? currentCharacterName : ""),
+                characterId,
+                isCurrent: isCurrentById || isCurrentByName,
+                isLeader: partySlot?.isLeader === true,
+                isReady: partySlot?.isReady === true,
+                sortId: Number.isFinite(rawSlotId) ? rawSlotId : Number.MAX_SAFE_INTEGER,
+                orderIndex: index,
+            };
+        });
+
+        return buildStructuredRosterCandidate(path, members);
+    }
+
+    function resolveTeamMemberNamesFromGameState() {
+        const gameState = getMainSiteGameState();
+        const currentCharacterLookup = buildCurrentCharacterLookup(gameState);
+        const partyInfo = gameState?.partyInfo ?? null;
+        const partyInfoCandidate = resolvePartyInfoRosterCandidate(
+            partyInfo,
+            "mwi.game.state.partyInfo",
+            currentCharacterLookup
+        );
+
+        return {
+            partyInfoNames: partyInfoCandidate?.names ?? [],
+            partyInfo,
+            partyInfoResolvedFromPath: partyInfoCandidate?.path || "",
+        };
+    }
+
+    function resolveTeamMemberNamesFromRecentPartyMessages() {
+        const messages = Array.isArray(mainSiteState.recentPartyMessages) ? mainSiteState.recentPartyMessages : [];
+        const currentCharacterLookup = buildCurrentCharacterLookup(getMainSiteGameState());
+
+        for (let messageIndex = 0; messageIndex < messages.length; messageIndex += 1) {
+            const candidate = resolvePartyInfoRosterCandidate(
+                messages[messageIndex]?.partyInfo,
+                `wsPartyMessages[${messageIndex}].partyInfo`,
+                currentCharacterLookup
+            );
+            if (candidate) {
+                return {
+                    names: candidate.names,
+                    messages,
+                    resolvedFromPath: candidate.path,
+                };
+            }
+        }
+
+        return {
+            names: [],
+            messages,
+            resolvedFromPath: "",
+        };
+    }
+
+    function selectAutoDetectedTeamRoster({ gameStateResult, wsPartyResult, cacheMatch }) {
+        const candidates = [
+            {
+                source: "game-state:partyInfo",
+                names: gameStateResult?.partyInfoNames ?? [],
+                resolvedFromPath: gameStateResult?.partyInfoResolvedFromPath || "",
+            },
+            {
+                source: "ws-party",
+                names: wsPartyResult?.names ?? [],
+                resolvedFromPath: wsPartyResult?.resolvedFromPath || "",
+            },
+            {
+                source: "cache",
+                names: cacheMatch?.exactCharacterNames ?? [],
+                resolvedFromPath: "",
+            },
+        ];
+
+        for (const candidate of candidates) {
+            if (Array.isArray(candidate.names) && candidate.names.length >= 2) {
+                return candidate;
+            }
+        }
+
+        return {
+            source: "request",
+            names: [],
+            resolvedFromPath: "",
+        };
+    }
+
+    function debugTeamRosterAutoDetection(details) {
+        try {
+            console.debug("[MWI TM] Team roster auto-detect", details);
+        } catch (_error) {
+        }
     }
 
     function isCloseLabelText(value) {
@@ -1339,6 +1871,7 @@
         }
 
         const characterName = String(message.profile?.sharableCharacter?.name || mainSiteState.currentCharacterName || "").trim();
+        const comparableCharacterName = normalizeComparableText(characterName);
         const characterId = String(
             message.profile?.sharableCharacter?.id
             || message.profile?.sharableCharacter?.characterID
@@ -1347,8 +1880,15 @@
         ).trim();
 
         for (const [requestId, pendingRequest] of Array.from(mainSiteState.pendingRequests.entries())) {
-            if (pendingRequest.characterName && characterName && pendingRequest.characterName !== characterName) {
-                continue;
+            const pendingName = normalizeComparableText(pendingRequest.characterName);
+            if (pendingName) {
+                if (!comparableCharacterName) {
+                    continue;
+                }
+
+                if (pendingName !== comparableCharacterName) {
+                    continue;
+                }
             }
 
             scheduleSharableProfileModalCleanup(pendingRequest, characterName);
@@ -1389,6 +1929,8 @@
 
         socket.addEventListener("message", (event) => {
             const parsed = parseMainSiteJsonPayload(event.data);
+            rememberRecentPartyMessage(parsed);
+
             if (!isMainSiteGameMessage(parsed)) {
                 return;
             }
@@ -1461,7 +2003,7 @@
         return null;
     }
 
-    function requestCurrentMainSiteProfile(requestId, preferredLanguage = "") {
+    function requestMainSiteProfileByCharacterName(requestId, characterName, preferredLanguage = "", missingCharacterNameMessageKey = "unableToReadCurrentProfile") {
         return new Promise((resolve) => {
             if (!installMainSiteSocketBridge()) {
                 resolve({
@@ -1492,12 +2034,12 @@
                 return;
             }
 
-            const characterName = String(mainSiteState.currentCharacterName || "").trim();
-            if (!characterName) {
+            const normalizedCharacterName = normalizeCharacterName(characterName);
+            if (!normalizedCharacterName) {
                 resolve({
                     requestId: normalizedRequestId,
                     ok: false,
-                    message: getUiText("currentCharacterNotInitialized", preferredLanguage),
+                    message: getUiText(missingCharacterNameMessageKey, preferredLanguage),
                 });
                 return;
             }
@@ -1515,12 +2057,14 @@
                 resolveMainSitePendingRequest(normalizedRequestId, {
                     requestId: normalizedRequestId,
                     ok: false,
+                    characterId: "",
+                    characterName: normalizedCharacterName,
                     message: getUiText("profileSharedTimeout", preferredLanguage),
                 });
             }, PAGE_REQUEST_TIMEOUT_MS);
 
             mainSiteState.pendingRequests.set(normalizedRequestId, {
-                characterName,
+                characterName: normalizedCharacterName,
                 requestStartedAt: Date.now(),
                 modalSnapshot: createSharableProfileModalSnapshot(),
                 timeoutId,
@@ -1530,9 +2074,126 @@
             socket.send(JSON.stringify({
                 type: "view_profile",
                 viewProfileData: {
-                    characterName,
+                    characterName: normalizedCharacterName,
                 },
             }));
+        });
+    }
+
+    function requestCurrentMainSiteProfile(requestId, preferredLanguage = "") {
+        return requestMainSiteProfileByCharacterName(
+            requestId,
+            mainSiteState.currentCharacterName,
+            preferredLanguage,
+            "currentCharacterNotInitialized"
+        );
+    }
+
+    function buildTeamProfilesResponse(requestIdPrefix, rosterSource, rosterNames, preferredLanguage = "", extraPayload = {}) {
+        const normalizedRosterNames = normalizeCharacterNameList(rosterNames, 5);
+        const tasks = normalizedRosterNames.map((name, index) => {
+            return requestMainSiteProfileByCharacterName(`${requestIdPrefix}:${index}`, name, preferredLanguage);
+        });
+
+        return Promise.all(tasks)
+            .then((responses) => {
+                const members = responses.map((response, index) => {
+                    const fallbackName = normalizedRosterNames[index] || "";
+                    const resolvedName = normalizeCharacterName(response?.characterName || fallbackName) || fallbackName;
+                    const ok = response?.ok === true && response?.payload && typeof response.payload === "object";
+                    return {
+                        characterName: resolvedName,
+                        characterId: String(response?.characterId || "").trim(),
+                        ok,
+                        message: ok ? "" : normalizeErrorMessage(response?.message, getUiText("unableToReadCurrentProfile", preferredLanguage)),
+                        payload: ok ? response.payload : null,
+                    };
+                });
+
+                const hasSuccess = members.some((member) => member.ok === true);
+                return {
+                    ok: hasSuccess,
+                    message: hasSuccess ? "" : getUiText("noMainSiteData", preferredLanguage),
+                    payload: {
+                        rosterSource,
+                        members,
+                        ...extraPayload,
+                    },
+                };
+            })
+            .catch((error) => {
+                return {
+                    ok: false,
+                    message: normalizeErrorMessage(error, getUiText("unableToReadCurrentProfile", preferredLanguage)),
+                    payload: {
+                        rosterSource,
+                        members: [],
+                        ...extraPayload,
+                    },
+                };
+            });
+    }
+
+    async function requestTeamProfiles(requestId, preferredLanguage = "") {
+        const requestIdPrefix = String(requestId || "").trim();
+        if (!requestIdPrefix) {
+            return null;
+        }
+
+        const teamContext = buildTeamRosterContext();
+        const cacheMatch = readTeamRosterCache(teamContext);
+        const gameStateResult = resolveTeamMemberNamesFromGameState();
+        const wsPartyResult = resolveTeamMemberNamesFromRecentPartyMessages();
+        const selectedAutoDetectedRoster = selectAutoDetectedTeamRoster({
+            gameStateResult,
+            wsPartyResult,
+            cacheMatch,
+        });
+
+        debugTeamRosterAutoDetection({
+            context: teamContext,
+            selectedSource: selectedAutoDetectedRoster.source,
+            resolvedFromPath: selectedAutoDetectedRoster.resolvedFromPath,
+            partyInfoResolvedRoster: gameStateResult.partyInfoNames,
+            gameStatePartyInfo: gameStateResult.partyInfo,
+            wsPartyResolvedRoster: wsPartyResult.names,
+            wsPartyMessages: wsPartyResult.messages,
+        });
+
+        if (selectedAutoDetectedRoster.names.length < 2 || selectedAutoDetectedRoster.source === "request") {
+            return null;
+        }
+
+        const extraPayload = {
+            context: teamContext,
+        };
+        if (selectedAutoDetectedRoster.source !== "cache") {
+            extraPayload.resolvedFromPath = selectedAutoDetectedRoster.resolvedFromPath;
+        }
+
+        return buildTeamProfilesResponse(
+            requestIdPrefix,
+            selectedAutoDetectedRoster.source,
+            selectedAutoDetectedRoster.names,
+            preferredLanguage,
+            extraPayload
+        );
+    }
+
+    function writeMainSiteImportResponse(requestId, format, response, preferredLanguage = "") {
+        const isTeamResponse = format === "shareable-profile-team";
+        const payload = response?.payload;
+        GM_setValue(RESPONSE_KEY, {
+            version: isTeamResponse ? 2 : 1,
+            requestId,
+            source: "milkywayidle",
+            format,
+            ok: response?.ok === true,
+            message: response?.ok === true ? "" : normalizeErrorMessage(response?.message, getUiText("unableToReadCurrentProfile", preferredLanguage)),
+            characterId: isTeamResponse ? "" : String(response?.characterId || ""),
+            characterName: isTeamResponse ? "" : String(response?.characterName || ""),
+            exportedAt: Date.now(),
+            payload: payload && typeof payload === "object" ? payload : null,
         });
     }
 
@@ -1556,22 +2217,27 @@
             handledRequestIds.add(requestId);
 
             const preferredLanguage = resolveUiLanguage(request?.language);
+            const target = String(request?.target || "active-player").trim().toLowerCase();
+
+            if (target === "auto") {
+                requestTeamProfiles(requestId, preferredLanguage)
+                    .then((teamResponse) => {
+                        if (Array.isArray(teamResponse?.payload?.members) && teamResponse.payload.members.length > 0) {
+                            writeMainSiteImportResponse(requestId, "shareable-profile-team", teamResponse, preferredLanguage);
+                            return;
+                        }
+
+                        requestCurrentMainSiteProfile(requestId, preferredLanguage)
+                            .then((pageResponse) => {
+                                writeMainSiteImportResponse(requestId, "shareable-profile", pageResponse, preferredLanguage);
+                            });
+                    });
+                return true;
+            }
 
             requestCurrentMainSiteProfile(requestId, preferredLanguage)
                 .then((pageResponse) => {
-                    const payload = pageResponse?.payload;
-                    GM_setValue(RESPONSE_KEY, {
-                        version: 1,
-                        requestId,
-                        source: "milkywayidle",
-                        format: "shareable-profile",
-                        ok: pageResponse?.ok === true,
-                        message: pageResponse?.ok === true ? "" : normalizeErrorMessage(pageResponse?.message, getUiText("unableToReadCurrentProfile", preferredLanguage)),
-                        characterId: String(pageResponse?.characterId || ""),
-                        characterName: String(pageResponse?.characterName || ""),
-                        exportedAt: Date.now(),
-                        payload: payload && typeof payload === "object" ? payload : null,
-                    });
+                    writeMainSiteImportResponse(requestId, "shareable-profile", pageResponse, preferredLanguage);
                 });
 
             return true;
@@ -1642,22 +2308,24 @@
             renderControlState();
         }
 
-        async function requestMainSiteProfile(requestId) {
+        async function requestMainSiteAutoImport(requestId) {
             GM_setValue(REQUEST_KEY, {
-                version: 1,
+                version: 2,
                 requestId,
                 createdAt: Date.now(),
-                target: "active-player",
+                target: "auto",
                 language: state.uiLanguage,
             });
 
             return waitForSharedValue(RESPONSE_KEY, requestId, REQUEST_TIMEOUT_MS);
         }
 
-        async function importPayloadIntoSimulator(requestId, payload) {
+        async function importPayloadIntoSimulator(requestId, payload, options = {}) {
             const responsePromise = waitForWindowMessage(APP_BRIDGE_CHANNEL, "mwi-tm-import-result", requestId, APP_IMPORT_TIMEOUT_MS);
+            const safeOptions = options && typeof options === "object" ? options : {};
 
             window.postMessage({
+                ...safeOptions,
                 channel: APP_BRIDGE_CHANNEL,
                 type: "mwi-tm-import",
                 requestId,
@@ -1666,6 +2334,140 @@
             }, window.location.origin);
 
             return responsePromise;
+        }
+
+        function formatTeamImportSummary(successCount, failureEntries = []) {
+            const failures = Array.isArray(failureEntries) ? failureEntries : [];
+            const failedCount = failures.length;
+            if (failedCount <= 0) {
+                return "";
+            }
+
+            const preview = failures
+                .slice(0, 2)
+                .map((entry) => {
+                    const name = normalizeCharacterName(entry?.name || "") || "-";
+                    const message = normalizeCharacterName(entry?.message || "") || getUiText("importFailed", state.uiLanguage);
+                    return `${name}: ${message}`;
+                })
+                .join(state.uiLanguage === "zh" ? "；" : "; ");
+
+            const suffix = failedCount > 2
+                ? (state.uiLanguage === "zh" ? `……另有 ${failedCount - 2} 个失败` : `… +${failedCount - 2} more`)
+                : "";
+
+            if (state.uiLanguage === "zh") {
+                return `成功 ${successCount} 人，失败 ${failedCount} 人（${preview}${suffix}）。`;
+            }
+
+            return `${successCount} succeeded, ${failedCount} failed (${preview}${suffix}).`;
+        }
+
+        function isTeamImportResponse(response) {
+            return String(response?.format || "") === "shareable-profile-team"
+                && response?.payload
+                && typeof response.payload === "object";
+        }
+
+        function persistImportedTeamRoster(teamPayload, members) {
+            const cacheContext = teamPayload?.context;
+            const cacheNames = (Array.isArray(members) ? members : [])
+                .filter((member) => member?.ok === true)
+                .map((member) => normalizeCharacterName(member?.characterName || ""))
+                .filter(Boolean);
+            if (cacheNames.length < 2) {
+                return;
+            }
+
+            persistTeamRosterCache(cacheContext, cacheNames);
+        }
+
+        async function importSingleMainSiteResponse(mainSiteResponse, requestId) {
+            if (!mainSiteResponse || mainSiteResponse.ok !== true || !mainSiteResponse.payload) {
+                throw new Error(mainSiteResponse?.message || getUiText("noMainSiteData", state.uiLanguage));
+            }
+
+            setStatusKey("importingSimulator", "idle");
+            const appResponse = await importPayloadIntoSimulator(requestId, mainSiteResponse.payload);
+            if (!appResponse || appResponse.ok !== true) {
+                throw new Error(appResponse?.message || getUiText("simulatorImportFailed", state.uiLanguage));
+            }
+
+            setStatusKey("importSuccess", "success");
+        }
+
+        async function importTeamMainSiteResponse(mainSiteResponse) {
+            const payload = mainSiteResponse?.payload;
+            const members = Array.isArray(payload?.members) ? payload.members : [];
+            if (mainSiteResponse?.ok !== true || members.length === 0) {
+                throw new Error(mainSiteResponse?.message || getUiText("noMainSiteData", state.uiLanguage));
+            }
+
+            const failureEntries = [];
+            for (const member of members) {
+                if (!member || typeof member !== "object" || member.ok === true) {
+                    continue;
+                }
+
+                failureEntries.push({
+                    name: String(member.characterName || "").trim() || "-",
+                    message: String(member.message || "").trim() || getUiText("importFailed", state.uiLanguage),
+                });
+            }
+
+            const successfulMembers = members.filter((member) => {
+                return member
+                    && typeof member === "object"
+                    && member.ok === true
+                    && member.payload
+                    && typeof member.payload === "object";
+            });
+
+            if (successfulMembers.length === 0) {
+                throw new Error(mainSiteResponse?.message || getUiText("noMainSiteData", state.uiLanguage));
+            }
+
+            setStatusKey("importingSimulator", "idle");
+
+            let importedCount = 0;
+            const maxImports = Math.min(5, successfulMembers.length);
+            for (let index = 0; index < maxImports; index += 1) {
+                const member = successfulMembers[index];
+                const targetPlayerId = String(index + 1);
+                const appRequestId = createRequestId();
+
+                // eslint-disable-next-line no-await-in-loop
+                const appResponse = await importPayloadIntoSimulator(appRequestId, member.payload, {
+                    targetPlayerId,
+                    resetTeamSelection: index === 0,
+                    selectAfterImport: true,
+                });
+
+                if (!appResponse || appResponse.ok !== true) {
+                    failureEntries.push({
+                        name: String(member.characterName || "").trim() || `Player ${targetPlayerId}`,
+                        message: String(appResponse?.message || "").trim() || getUiText("simulatorImportFailed", state.uiLanguage),
+                    });
+                    continue;
+                }
+
+                importedCount += 1;
+            }
+
+            if (importedCount <= 0) {
+                const firstFailure = failureEntries[0];
+                throw new Error(firstFailure ? `${firstFailure.name}: ${firstFailure.message}` : getUiText("importFailed", state.uiLanguage));
+            }
+
+            persistImportedTeamRoster(payload, members);
+
+            if (failureEntries.length === 0) {
+                setStatusKey("importSuccess", "success");
+                return;
+            }
+
+            const summary = formatTeamImportSummary(importedCount, failureEntries);
+            setStatus(state.uiLanguage === "zh" ? `导入完成：${summary}` : `Import finished: ${summary}`, "success");
         }
 
         async function handleImportButtonClick() {
@@ -1678,18 +2480,12 @@
             setStatusKey("waitingMainSite", "idle");
 
             try {
-                const mainSiteResponse = await requestMainSiteProfile(requestId);
-                if (!mainSiteResponse || mainSiteResponse.ok !== true || !mainSiteResponse.payload) {
-                    throw new Error(mainSiteResponse?.message || getUiText("noMainSiteData", state.uiLanguage));
+                const mainSiteResponse = await requestMainSiteAutoImport(requestId);
+                if (isTeamImportResponse(mainSiteResponse)) {
+                    await importTeamMainSiteResponse(mainSiteResponse);
+                } else {
+                    await importSingleMainSiteResponse(mainSiteResponse, requestId);
                 }
-
-                setStatusKey("importingSimulator", "idle");
-                const appResponse = await importPayloadIntoSimulator(requestId, mainSiteResponse.payload);
-                if (!appResponse || appResponse.ok !== true) {
-                    throw new Error(appResponse?.message || getUiText("simulatorImportFailed", state.uiLanguage));
-                }
-
-                setStatusKey("importSuccess", "success");
             } catch (error) {
                 setStatus(normalizeErrorMessage(error, getUiText("importFailed", state.uiLanguage)), "error");
             } finally {

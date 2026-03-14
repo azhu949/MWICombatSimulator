@@ -793,7 +793,7 @@
             "msgNoPriceOverrides": "No manual price overrides to clear.",
             "msgInvalidPriceInput": "Invalid price input for {{item}}.",
             "mainSiteImportScriptTitle": "Main-site Import Script",
-            "mainSiteImportScriptDescription": "Install the Tampermonkey helper to add one-click import from the main site into the active player slot.",
+            "mainSiteImportScriptDescription": "Install the Tampermonkey helper to add a single main-site import button that auto-detects teams: imports to Player 1..N slots (up to 5) when a team is detected, otherwise imports into the active player slot.",
             "installMainSiteImportScript": "Install Script",
             "mainSiteImportScriptPending": "Script link pending"
         }

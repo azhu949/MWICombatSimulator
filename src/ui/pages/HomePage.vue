@@ -820,7 +820,7 @@
               {{ t("common:vue.settings.mainSiteImportScriptTitle", "Main-site Import Script") }}
             </p>
             <p class="text-sm text-slate-300">
-              {{ t("common:vue.settings.mainSiteImportScriptDescription", "Install the Tampermonkey helper to add one-click import from the main site into the active player slot.") }}
+              {{ t("common:vue.settings.mainSiteImportScriptDescription", "Install the Tampermonkey helper to add a single main-site import button that auto-detects teams and otherwise imports into the active player slot.") }}
             </p>
             <p v-if="!hasMainSiteImportScriptUrl" class="text-xs text-cyan-200">
               {{ t("common:vue.settings.mainSiteImportScriptPending", "Script link pending") }}
@@ -2408,13 +2408,31 @@ function handleTampermonkeyImportWindowMessage(event) {
   }
 
   try {
-    const result = simulator.importSoloConfig(JSON.stringify(data.payload || {}), simulator.activePlayerId);
+    const candidatePlayerId = String(data.targetPlayerId || "").trim();
+    const resolvedPlayerId = candidatePlayerId && simulator.players.some((player) => player.id === candidatePlayerId)
+      ? candidatePlayerId
+      : simulator.activePlayerId;
+
+    if (data.resetTeamSelection === true) {
+      simulator.players.forEach((player) => {
+        player.selected = false;
+      });
+    }
+
+    const result = simulator.importSoloConfig(JSON.stringify(data.payload || {}), resolvedPlayerId);
+
+    if (data.selectAfterImport === true) {
+      const importedPlayer = simulator.players.find((player) => player.id === resolvedPlayerId);
+      if (importedPlayer) {
+        importedPlayer.selected = true;
+      }
+    }
     postTampermonkeyImportResult({
       type: "mwi-tm-import-result",
       requestId,
       ok: true,
       detectedFormat: result?.detectedFormat || "",
-      message: `Imported main-site profile into player ${simulator.activePlayerId}.`,
+      message: `Imported main-site profile into player ${resolvedPlayerId}.`,
     });
   } catch (error) {
     postTampermonkeyImportResult({
