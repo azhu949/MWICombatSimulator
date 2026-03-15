@@ -215,6 +215,38 @@ describe("simulatorStore", () => {
         expect(simulator.simulationSettings.comDrop).toBe(18);
     });
 
+    it("sorts food options by restore type and duration", () => {
+        const simulator = useSimulatorStore();
+
+        function resolveFoodGroupId(option) {
+            const item = itemDetailMap?.[String(option?.hrid || "")];
+            const detail = item?.consumableDetail;
+            const hitpointRestore = Number(detail?.hitpointRestore ?? 0);
+            const manapointRestore = Number(detail?.manapointRestore ?? 0);
+            const recoveryDuration = Number(detail?.recoveryDuration ?? 0);
+
+            if (hitpointRestore > 0 && manapointRestore <= 0) {
+                return recoveryDuration > 0 ? 1 : 0;
+            }
+
+            if (manapointRestore > 0 && hitpointRestore <= 0) {
+                return recoveryDuration > 0 ? 3 : 2;
+            }
+
+            return 99;
+        }
+
+        const foodGroups = simulator.options.food.map(resolveFoodGroupId);
+        expect(foodGroups).toContain(0);
+        expect(foodGroups).toContain(1);
+        expect(foodGroups).toContain(2);
+        expect(foodGroups).toContain(3);
+
+        for (let i = 1; i < foodGroups.length; i += 1) {
+            expect(foodGroups[i]).toBeGreaterThanOrEqual(foodGroups[i - 1]);
+        }
+    });
+
     it("normalizes active queue settings", () => {
         const simulator = useSimulatorStore();
 

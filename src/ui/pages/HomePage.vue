@@ -1218,6 +1218,45 @@ const summaryMetricRows = computed(() => {
       priceTable: simulator.pricing.priceTable,
     })
     : { profit: 0 };
+
+  let manaRunOutValue = "-";
+  let manaRunOutTone;
+
+  if (hasDetailedBreakdown) {
+    const simResult = simulator.results.simResult;
+    const playerHrid = String(activeHomeResultPlayerHrid.value || "");
+    const ranOut = Boolean(simResult?.playerRanOutOfMana?.[playerHrid]);
+
+    manaRunOutTone = ranOut ? "danger" : "success";
+
+    if (!ranOut) {
+      manaRunOutValue = t("common:simulationResults.No", "No");
+    } else {
+      const yesText = t("common:simulationResults.Yes", "Yes");
+      const stat = simResult?.playerRanOutOfManaTime?.[playerHrid];
+      const simulatedTime = Number(simResult?.simulatedTime || 0);
+
+      if (stat && simulatedTime > 0) {
+        const totalOutTime = Number(stat.totalTimeForOutOfMana || 0)
+          + (stat.isOutOfMana ? (simulatedTime - Number(stat.startTimeForOutOfMana || 0)) : 0);
+        const ratio = simulatedTime > 0
+          ? (totalOutTime / simulatedTime) * 100
+          : 0;
+
+        manaRunOutValue = Number.isFinite(ratio)
+          ? `${yesText} (${ratio.toFixed(2)}%)`
+          : yesText;
+      } else {
+        manaRunOutValue = yesText;
+      }
+    }
+  }
+
+  const manaRunOutRow = {
+    label: t("common:simulationResults.ranOutOfMana", "Mana Run Out"),
+    value: manaRunOutValue,
+    ...(manaRunOutTone ? { tone: manaRunOutTone } : {}),
+  };
   return [
     {
       label: t("common:vue.results.xpPerHour", "XP/h"),
@@ -1229,6 +1268,7 @@ const summaryMetricRows = computed(() => {
       value: row ? formatNumber(row.deathsPerHour, 2) : "-",
       tone: "danger",
     },
+    manaRunOutRow,
     {
       label: t("common:vue.results.encountersPerHour", "Battles/h"),
       value: row ? formatNumber(row.encountersPerHour, 1) : "-",

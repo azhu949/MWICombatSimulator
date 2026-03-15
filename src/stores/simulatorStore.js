@@ -189,6 +189,25 @@ function sortByNameThenLevel(a, b) {
     return a.name.localeCompare(b.name);
 }
 
+function resolveFoodConsumableSortGroup(option) {
+    const itemHrid = String(option?.hrid || "");
+    const item = itemDetailMap?.[itemHrid];
+    const detail = item?.consumableDetail;
+    const hitpointRestore = Number(detail?.hitpointRestore ?? 0);
+    const manapointRestore = Number(detail?.manapointRestore ?? 0);
+    const recoveryDuration = Number(detail?.recoveryDuration ?? 0);
+
+    if (hitpointRestore > 0 && manapointRestore <= 0) {
+        return recoveryDuration > 0 ? 1 : 0;
+    }
+
+    if (manapointRestore > 0 && hitpointRestore <= 0) {
+        return recoveryDuration > 0 ? 3 : 2;
+    }
+
+    return 99;
+}
+
 function getEquipmentOptionsBySlot() {
     const grouped = Object.fromEntries(EQUIPMENT_SLOT_KEYS.map((slot) => [slot, []]));
     grouped.weapon = [];
@@ -224,14 +243,22 @@ function getEquipmentOptionsBySlot() {
 }
 
 function getConsumableOptions(categoryHrid) {
-    return Object.values(itemDetailMap)
+    const options = Object.values(itemDetailMap)
         .filter((item) => item.categoryHrid === categoryHrid)
         .map((item) => ({
             hrid: item.hrid,
             name: item.name,
             itemLevel: Number(item.itemLevel ?? 0),
-        }))
-        .sort(sortByNameThenLevel);
+        }));
+
+    if (categoryHrid === "/item_categories/food") {
+        return options.sort((left, right) => (
+            resolveFoodConsumableSortGroup(left) - resolveFoodConsumableSortGroup(right)
+            || sortByNameThenLevel(left, right)
+        ));
+    }
+
+    return options.sort(sortByNameThenLevel);
 }
 
 function getAbilityOptions() {
