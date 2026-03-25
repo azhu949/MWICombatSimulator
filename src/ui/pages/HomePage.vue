@@ -1058,6 +1058,7 @@ import {
   isComparatorValueRequired,
   sanitizeTriggerList,
 } from "../../services/triggerMapper.js";
+import { applyTampermonkeyImportMessage } from "../../services/tampermonkeyImportBridge.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { buildPlayersForSimulation, calcCombatLevel, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../../services/playerMapper.js";
 import { buildNoRngProfitBreakdown, buildRandomProfitBreakdown } from "../../services/profitEstimator.js";
@@ -2447,46 +2448,13 @@ function handleTampermonkeyImportWindowMessage(event) {
   }
 
   try {
-    const candidatePlayerId = String(data.targetPlayerId || "").trim();
-    const resolvedPlayerId = candidatePlayerId && simulator.players.some((player) => player.id === candidatePlayerId)
-      ? candidatePlayerId
-      : simulator.activePlayerId;
-    const clearPlayerIds = Array.isArray(data.clearPlayerIds)
-      ? data.clearPlayerIds
-        .map((playerId) => String(playerId || "").trim())
-        .filter((playerId) => simulator.players.some((player) => player.id === playerId))
-      : [];
-    const clearPlayerIdsAfterImport = clearPlayerIds.filter((playerId) => playerId !== resolvedPlayerId);
-
-    if (data.clearOtherPlayers === true) {
-      simulator.clearOtherPlayersForSoloImport(resolvedPlayerId);
-    }
-
-    if (data.resetTeamSelection === true) {
-      simulator.players.forEach((player) => {
-        player.selected = false;
-      });
-    }
-
-    const result = simulator.importSoloConfig(JSON.stringify(data.payload || {}), resolvedPlayerId);
-
-    if (clearPlayerIdsAfterImport.length > 0) {
-      simulator.clearPlayerSlots(clearPlayerIdsAfterImport);
-    }
-
-    if (data.selectAfterImport === true) {
-      simulator.setActivePlayer(resolvedPlayerId);
-      const importedPlayer = simulator.players.find((player) => player.id === resolvedPlayerId);
-      if (importedPlayer) {
-        importedPlayer.selected = true;
-      }
-    }
+    const result = applyTampermonkeyImportMessage(simulator, data);
     postTampermonkeyImportResult({
       type: "mwi-tm-import-result",
       requestId,
       ok: true,
       detectedFormat: result?.detectedFormat || "",
-      message: `Imported main-site profile into player ${resolvedPlayerId}.`,
+      message: result?.message || "",
     });
   } catch (error) {
     postTampermonkeyImportResult({

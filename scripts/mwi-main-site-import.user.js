@@ -3,7 +3,7 @@
 // @name:zh      MWI Combat Simulator 主站一键导入
 // @name:zh-CN   MWI Combat Simulator 主站一键导入
 // @namespace    https://azhu949.github.io/MWICombatSimulator
-// @version      0.1.22
+// @version      0.1.23
 // @license      ISC
 // @description  Import the current Milky Way Idle character or manually cached detected team into MWI Combat Simulator with one click.
 // @description:zh      一键将 Milky Way Idle 主站当前角色或已手动缓存资料的已识别队伍导入到 MWI Combat Simulator。
@@ -2520,6 +2520,7 @@
                 clearOtherPlayers: true,
                 resetTeamSelection: true,
                 selectAfterImport: true,
+                activateAfterImport: true,
                 format: String(mainSiteResponse?.format || "shareable-profile"),
             });
             if (!appResponse || appResponse.ok !== true) {
@@ -2583,6 +2584,7 @@
                     clearPlayerIds,
                     resetTeamSelection: !didResetTeamSelection,
                     selectAfterImport: true,
+                    activateAfterImport: false,
                     format: String(member?.format || "shareable-profile"),
                 });
 
