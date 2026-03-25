@@ -1,9 +1,14 @@
 import actionDetailMap from "../combatsimulator/data/actionDetailMap.json";
+import abilityDetailMap from "../combatsimulator/data/abilityDetailMap.json";
 import combatMonsterDetailMap from "../combatsimulator/data/combatMonsterDetailMap.json";
+import itemDetailMap from "../combatsimulator/data/itemDetailMap.json";
 import { createEmptyPlayerConfig, createEmptySkillExperienceMap, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "./playerMapper.js";
 import { sanitizeTriggerList, sanitizeTriggerMap } from "./triggerMapper.js";
 
 const NON_WEAPON_SLOTS = EQUIPMENT_SLOT_KEYS.filter((slot) => slot !== "weapon");
+const COMBAT_ABILITY_SLOT_COUNT = 5;
+const SPECIAL_ABILITY_SLOT_INDEX = 0;
+const FIRST_STANDARD_ABILITY_SLOT_INDEX = SPECIAL_ABILITY_SLOT_INDEX + 1;
 
 const LEGACY_ABILITY_ALIAS_MAP = {
     "/abilities/aqua_aura": "/abilities/mystic_aura",
@@ -251,6 +256,24 @@ function isShareableProfilePayload(parsed) {
     return Boolean(source?.sharableCharacter && Array.isArray(source?.characterSkills));
 }
 
+function isMainSiteCurrentCharacterPayload(parsed) {
+    if (!parsed || typeof parsed !== "object" || isShareableProfilePayload(parsed)) {
+        return false;
+    }
+
+    return Boolean(
+        parsed?.character
+        && typeof parsed.character === "object"
+        && Array.isArray(parsed?.characterSkills)
+        && (
+            Object.prototype.hasOwnProperty.call(parsed, "characterItems")
+            || Object.prototype.hasOwnProperty.call(parsed, "combatUnit")
+            || Object.prototype.hasOwnProperty.call(parsed, "actionTypeFoodSlotsMap")
+            || Object.prototype.hasOwnProperty.call(parsed, "actionTypeDrinkSlotsMap")
+        )
+    );
+}
+
 function mapShareableSkillHridToLevelKey(skillHrid) {
     const normalized = String(skillHrid || "").trim();
     if (!normalized.startsWith("/skills/")) {
@@ -335,6 +358,307 @@ function pickShareableCandidateValue(candidates, resolvers, fallbackValue = null
     return fallbackValue;
 }
 
+function toObjectValueList(source) {
+    if (Array.isArray(source)) {
+        return source;
+    }
+
+    if (source && typeof source === "object") {
+        return Object.values(source);
+    }
+
+    return [];
+}
+
+function createEmptyAbilitySlots() {
+    return Array.from({ length: COMBAT_ABILITY_SLOT_COUNT }, () => ({ abilityHrid: "", level: 1 }));
+}
+
+function buildNormalizedCombatAbilityEntry(rawAbility) {
+    if (!rawAbility || typeof rawAbility !== "object") {
+        return null;
+    }
+
+    const abilityHrid = normalizeAbilityHrid(rawAbility?.abilityHrid || rawAbility?.ability?.abilityHrid || rawAbility?.ability || "");
+    if (!abilityHrid) {
+        return null;
+    }
+
+    const rawSlotNumber = rawAbility?.slotNumber
+        ?? rawAbility?.slot
+        ?? rawAbility?.slotIndex
+        ?? rawAbility?.position;
+    const explicitSlotNumber = Math.floor(toFiniteNumber(rawSlotNumber, Number.NaN));
+
+    return {
+        abilityHrid,
+        level: Math.max(1, Math.floor(toFiniteNumber(rawAbility?.level ?? rawAbility?.abilityLevel, 1))),
+        isSpecialAbility: abilityDetailMap?.[abilityHrid]?.isSpecialAbility === true,
+        explicitSlotNumber,
+        hasExplicitSlot: Number.isFinite(explicitSlotNumber),
+    };
+}
+
+function resolveExplicitNormalAbilitySlotStrategy(normalEntries, explicitSpecialEntries) {
+    const explicitSpecialSlotNumbers = explicitSpecialEntries
+        .map((entry) => entry.explicitSlotNumber)
+        .filter((slotNumber) => Number.isFinite(slotNumber));
+    if (explicitSpecialSlotNumbers.some((slotNumber) => slotNumber <= 0)) {
+        return "zero-based-all-slots";
+    }
+    if (explicitSpecialSlotNumbers.length > 0) {
+        return "one-based-all-slots";
+    }
+
+    const explicitNormalSlotNumbers = normalEntries
+        .map((entry) => entry.explicitSlotNumber)
+        .filter((slotNumber) => Number.isFinite(slotNumber));
+
+    if (explicitNormalSlotNumbers.length === 0) {
+        return "one-based-standard-slots";
+    }
+
+    const minExplicitNormalSlot = Math.min(...explicitNormalSlotNumbers);
+    const maxExplicitNormalSlot = Math.max(...explicitNormalSlotNumbers);
+
+    if (minExplicitNormalSlot <= 0) {
+        return maxExplicitNormalSlot <= COMBAT_ABILITY_SLOT_COUNT - 2
+            ? "zero-based-standard-slots"
+            : "zero-based-all-slots";
+    }
+
+    if (maxExplicitNormalSlot >= COMBAT_ABILITY_SLOT_COUNT || minExplicitNormalSlot >= FIRST_STANDARD_ABILITY_SLOT_INDEX + 1) {
+        return "one-based-all-slots";
+    }
+
+    return "one-based-standard-slots";
+}
+
+function resolveExplicitNormalAbilitySlotIndex(explicitSlotNumber, strategy) {
+    if (!Number.isFinite(explicitSlotNumber)) {
+        return null;
+    }
+
+    if (strategy === "zero-based-all-slots") {
+        return explicitSlotNumber;
+    }
+
+    if (strategy === "zero-based-standard-slots") {
+        return explicitSlotNumber + 1;
+    }
+
+    if (strategy === "one-based-all-slots") {
+        return explicitSlotNumber - 1;
+    }
+
+    return explicitSlotNumber;
+}
+
+function normalizeCombatAbilities(rawAbilities) {
+    const normalized = createEmptyAbilitySlots();
+    const abilityEntries = toObjectValueList(rawAbilities)
+        .map((rawAbility) => buildNormalizedCombatAbilityEntry(rawAbility))
+        .filter((entry) => entry !== null);
+
+    const explicitSpecialEntries = abilityEntries.filter((entry) => entry.isSpecialAbility && entry.hasExplicitSlot);
+    const implicitSpecialEntries = abilityEntries.filter((entry) => entry.isSpecialAbility && !entry.hasExplicitSlot);
+    const explicitNormalEntries = abilityEntries.filter((entry) => !entry.isSpecialAbility && entry.hasExplicitSlot);
+    const sequentialNormalEntries = abilityEntries.filter((entry) => !entry.isSpecialAbility && !entry.hasExplicitSlot);
+
+    if (explicitSpecialEntries.length > 0) {
+        const specialEntry = explicitSpecialEntries[explicitSpecialEntries.length - 1];
+        normalized[SPECIAL_ABILITY_SLOT_INDEX] = {
+            abilityHrid: specialEntry.abilityHrid,
+            level: specialEntry.level,
+        };
+    } else if (implicitSpecialEntries.length > 0) {
+        const specialEntry = implicitSpecialEntries[0];
+        normalized[SPECIAL_ABILITY_SLOT_INDEX] = {
+            abilityHrid: specialEntry.abilityHrid,
+            level: specialEntry.level,
+        };
+    }
+
+    const explicitNormalSlotStrategy = resolveExplicitNormalAbilitySlotStrategy(explicitNormalEntries, explicitSpecialEntries);
+
+    for (const entry of explicitNormalEntries) {
+        const targetSlotIndex = resolveExplicitNormalAbilitySlotIndex(entry.explicitSlotNumber, explicitNormalSlotStrategy);
+        if (
+            !Number.isFinite(targetSlotIndex)
+            || targetSlotIndex < FIRST_STANDARD_ABILITY_SLOT_INDEX
+            || targetSlotIndex >= COMBAT_ABILITY_SLOT_COUNT
+        ) {
+            sequentialNormalEntries.push(entry);
+            continue;
+        }
+
+        normalized[targetSlotIndex] = {
+            abilityHrid: entry.abilityHrid,
+            level: entry.level,
+        };
+    }
+
+    let nextSequentialNormalSlotIndex = FIRST_STANDARD_ABILITY_SLOT_INDEX;
+    for (const entry of sequentialNormalEntries) {
+        while (
+            nextSequentialNormalSlotIndex < COMBAT_ABILITY_SLOT_COUNT
+            && String(normalized[nextSequentialNormalSlotIndex]?.abilityHrid || "").trim()
+        ) {
+            nextSequentialNormalSlotIndex += 1;
+        }
+
+        if (nextSequentialNormalSlotIndex >= COMBAT_ABILITY_SLOT_COUNT) {
+            break;
+        }
+
+        normalized[nextSequentialNormalSlotIndex] = {
+            abilityHrid: entry.abilityHrid,
+            level: entry.level,
+        };
+        nextSequentialNormalSlotIndex += 1;
+    }
+
+    return normalized;
+}
+
+function resolveCurrentCharacterItemEntry(rawEntry) {
+    if (!rawEntry || typeof rawEntry !== "object") {
+        return null;
+    }
+
+    const nestedCurrentItem = rawEntry?.currentItem;
+    if (nestedCurrentItem && typeof nestedCurrentItem === "object") {
+        return nestedCurrentItem;
+    }
+
+    const nestedItem = rawEntry?.item;
+    if (nestedItem && typeof nestedItem === "object") {
+        return nestedItem;
+    }
+
+    return rawEntry;
+}
+
+function normalizeCurrentCharacterSlotItemHrid(slotValue) {
+    if (!slotValue) {
+        return "";
+    }
+
+    if (typeof slotValue === "string") {
+        return String(slotValue || "");
+    }
+
+    if (typeof slotValue === "object") {
+        return String(slotValue?.itemHrid || slotValue?.hrid || "");
+    }
+
+    return "";
+}
+
+function extractCurrentCharacterConsumableHrids(actionTypeMap) {
+    const combatSlots = Array.isArray(actionTypeMap?.[SHAREABLE_PROFILE_COMBAT_ACTION_TYPE_HRID])
+        ? actionTypeMap[SHAREABLE_PROFILE_COMBAT_ACTION_TYPE_HRID]
+        : [];
+
+    return [0, 1, 2].map((index) => normalizeCurrentCharacterSlotItemHrid(combatSlots[index]));
+}
+
+function extractCurrentCharacterEquipment(parsed, fallbackPlayer) {
+    const equipment = deepClone(fallbackPlayer?.equipment || {});
+    for (const slot of EQUIPMENT_SLOT_KEYS) {
+        equipment[slot] = {
+            itemHrid: "",
+            enhancementLevel: 0,
+        };
+    }
+
+    for (const rawEntry of toObjectValueList(parsed?.characterItems)) {
+        const entry = resolveCurrentCharacterItemEntry(rawEntry);
+        const location = String(entry?.itemLocationHrid || rawEntry?.itemLocationHrid || "").trim();
+        const itemHrid = String(entry?.itemHrid || entry?.hrid || "").trim();
+        const enhancementLevel = clampEnhancementLevel(entry?.enhancementLevel ?? rawEntry?.enhancementLevel);
+
+        if (!location || !itemHrid) {
+            continue;
+        }
+
+        if (location === "/item_locations/main_hand" || location === "/item_locations/two_hand") {
+            equipment.weapon = { itemHrid, enhancementLevel };
+            continue;
+        }
+
+        const slot = location.replace("/item_locations/", "");
+        if (NON_WEAPON_SLOTS.includes(slot)) {
+            equipment[slot] = { itemHrid, enhancementLevel };
+        }
+    }
+
+    return equipment;
+}
+
+function extractCurrentCharacterAbilities(parsed) {
+    return normalizeCombatAbilities(parsed?.combatUnit?.combatAbilities);
+}
+
+function extractCurrentCharacterTriggerMap(parsed) {
+    const triggerMap = {};
+    const rawMaps = [
+        parsed?.consumableCombatTriggersMap,
+        parsed?.abilityCombatTriggersMap,
+    ];
+
+    for (const rawMap of rawMaps) {
+        if (!rawMap || typeof rawMap !== "object" || Array.isArray(rawMap)) {
+            continue;
+        }
+
+        for (const [targetHrid, triggerList] of Object.entries(rawMap)) {
+            const hrid = String(targetHrid || "").trim();
+            if (!hrid) {
+                continue;
+            }
+            triggerMap[hrid] = sanitizeTriggerList(triggerList);
+        }
+    }
+
+    return triggerMap;
+}
+
+function hasCurrentCharacterTriggerPayload(parsed) {
+    return Boolean(
+        parsed
+        && typeof parsed === "object"
+        && (
+            Object.prototype.hasOwnProperty.call(parsed, "consumableCombatTriggersMap")
+            || Object.prototype.hasOwnProperty.call(parsed, "abilityCombatTriggersMap")
+        )
+    );
+}
+
+function normalizeShareableCombatConsumableArray(rawConsumables, categoryHrid) {
+    if (!Array.isArray(rawConsumables)) {
+        return null;
+    }
+
+    const resolved = rawConsumables
+        .map((entry) => {
+            const itemHrid = String(entry?.itemHrid || entry?.hrid || "").trim();
+            if (!itemHrid) {
+                return "";
+            }
+
+            return itemDetailMap?.[itemHrid]?.categoryHrid === categoryHrid ? itemHrid : "";
+        })
+        .filter(Boolean)
+        .slice(0, 3);
+
+    if (resolved.length === 0) {
+        return null;
+    }
+
+    return [0, 1, 2].map((index) => String(resolved[index] || ""));
+}
+
 function extractShareableFoodItemHrids(candidates, parsed) {
     const mainSiteFoodItemHrids = Array.isArray(parsed?.mainSiteConsumables?.foodItemHrids)
         ? parsed.mainSiteConsumables.foodItemHrids
@@ -348,6 +672,7 @@ function extractShareableFoodItemHrids(candidates, parsed) {
         (candidate) => Array.isArray(candidate?.combatConsumables?.foodItemHrids)
             ? candidate.combatConsumables.foodItemHrids
             : null,
+        (candidate) => normalizeShareableCombatConsumableArray(candidate?.combatConsumables, "/item_categories/food"),
         (candidate) => Array.isArray(candidate?.foodHrids) ? candidate.foodHrids : null,
     ], []);
 
@@ -367,10 +692,56 @@ function extractShareableDrinkItemHrids(candidates, parsed) {
         (candidate) => Array.isArray(candidate?.combatConsumables?.drinkItemHrids)
             ? candidate.combatConsumables.drinkItemHrids
             : null,
+        (candidate) => normalizeShareableCombatConsumableArray(candidate?.combatConsumables, "/item_categories/drink"),
         (candidate) => Array.isArray(candidate?.drinkHrids) ? candidate.drinkHrids : null,
     ], []);
 
     return [0, 1, 2].map((index) => String(resolved?.[index] || ""));
+}
+
+function hasShareableTriggerPayload(candidates, parsed) {
+    if (
+        parsed?.mainSiteConsumables
+        && typeof parsed.mainSiteConsumables === "object"
+        && (
+            Object.prototype.hasOwnProperty.call(parsed.mainSiteConsumables, "consumableCombatTriggersMap")
+            || Object.prototype.hasOwnProperty.call(parsed.mainSiteConsumables, "abilityCombatTriggersMap")
+        )
+    ) {
+        return true;
+    }
+
+    for (const candidate of Array.isArray(candidates) ? candidates : []) {
+        if (!candidate || typeof candidate !== "object") {
+            continue;
+        }
+
+        if (
+            Object.prototype.hasOwnProperty.call(candidate, "consumableCombatTriggersMap")
+            || Object.prototype.hasOwnProperty.call(candidate, "abilityCombatTriggersMap")
+            || Object.prototype.hasOwnProperty.call(candidate, "triggerMap")
+        ) {
+            return true;
+        }
+
+        if (
+            candidate?.combatConsumables
+            && typeof candidate.combatConsumables === "object"
+            && Object.prototype.hasOwnProperty.call(candidate.combatConsumables, "consumableCombatTriggersMap")
+        ) {
+            return true;
+        }
+
+        if (
+            candidate?.combatAbilities
+            && typeof candidate.combatAbilities === "object"
+            && Object.prototype.hasOwnProperty.call(candidate.combatAbilities, "abilityCombatTriggersMap")
+        ) {
+            return true;
+        }
+    }
+
+    return false;
 }
 
 function extractShareableTriggerMap(candidates, parsed) {
@@ -446,8 +817,14 @@ function extractShareableHouseRooms(profile, fallbackPlayer) {
         baseline[roomHrid] = 0;
     }
 
-    for (const [roomHrid, rawValue] of Object.entries(sourceMap)) {
-        const normalizedHrid = String(roomHrid || "").trim();
+    for (const [roomKey, rawValue] of Object.entries(sourceMap)) {
+        const normalizedHrid = String(
+            rawValue?.houseRoomHrid
+            || rawValue?.roomHrid
+            || rawValue?.hrid
+            || roomKey
+            || ""
+        ).trim();
         if (!normalizedHrid) {
             continue;
         }
@@ -481,8 +858,63 @@ function extractShareableAchievements(profile) {
         return achievementMap;
     }
 
+    if (profile?.characterAchievements && typeof profile.characterAchievements === "object") {
+        const achievementMap = {};
+
+        for (const [achievementKey, rawValue] of Object.entries(profile.characterAchievements)) {
+            const achievementHrid = String(
+                rawValue?.achievementHrid
+                || rawValue?.hrid
+                || achievementKey
+                || ""
+            ).trim();
+            if (!achievementHrid) {
+                continue;
+            }
+
+            const isCompleted = rawValue === true
+                || rawValue?.isCompleted === true
+                || rawValue?.completed === true;
+            if (!isCompleted) {
+                continue;
+            }
+
+            achievementMap[achievementHrid] = true;
+        }
+
+        return achievementMap;
+    }
+
     if (profile?.achievements && typeof profile.achievements === "object") {
-        return deepClone(profile.achievements);
+        const entries = Object.entries(profile.achievements);
+        const isNormalizedAchievementMap = entries.every(([achievementHrid]) => String(achievementHrid || "").trim().startsWith("/achievements/"));
+        if (isNormalizedAchievementMap) {
+            return deepClone(profile.achievements);
+        }
+
+        const achievementMap = {};
+        for (const [achievementKey, rawValue] of entries) {
+            const achievementHrid = String(
+                rawValue?.achievementHrid
+                || rawValue?.hrid
+                || achievementKey
+                || ""
+            ).trim();
+            if (!achievementHrid) {
+                continue;
+            }
+
+            const isCompleted = rawValue === true
+                || rawValue?.isCompleted === true
+                || rawValue?.completed === true;
+            if (!isCompleted) {
+                continue;
+            }
+
+            achievementMap[achievementHrid] = true;
+        }
+
+        return achievementMap;
     }
 
     return {};
@@ -568,23 +1000,10 @@ function importShareableProfile(parsed, existingPlayer, existingSimulationSettin
         }
     }
 
-    const equippedAbilities = Array.isArray(profile?.equippedAbilities)
-        ? profile.equippedAbilities
-        : [];
-    for (const rawAbility of equippedAbilities) {
-        const slotNumber = Math.max(1, Math.min(5, Math.floor(toFiniteNumber(rawAbility?.slotNumber, 0))));
-        if (!slotNumber) {
-            continue;
-        }
-
-        rawPlayer.abilities[slotNumber - 1] = {
-            abilityHrid: normalizeAbilityHrid(rawAbility?.abilityHrid || rawAbility?.ability || ""),
-            level: Math.max(1, Math.floor(toFiniteNumber(rawAbility?.level, 1))),
-        };
-    }
+    rawPlayer.abilities = normalizeCombatAbilities(profile?.equippedAbilities);
 
     const triggerMap = extractShareableTriggerMap(candidateLoadouts, parsed);
-    if (Object.keys(triggerMap).length > 0) {
+    if (hasShareableTriggerPayload(candidateLoadouts, parsed)) {
         rawPlayer.triggerMap = triggerMap;
     }
 
@@ -602,6 +1021,51 @@ function importShareableProfile(parsed, existingPlayer, existingSimulationSettin
         player: sanitizePlayerConfig(rawPlayer, fallbackPlayer),
         simulationSettings: extractShareableSimulationSettings(parsed, existingSimulationSettings),
         detectedFormat: "main-site-share-profile",
+    };
+}
+
+function importMainSiteCurrentCharacter(parsed, existingPlayer, existingSimulationSettings) {
+    const fallbackPlayer = deepClone(existingPlayer || createEmptyPlayerConfig(1));
+    const rawPlayer = {
+        id: String(fallbackPlayer.id || "1"),
+        name: String(parsed?.character?.name || fallbackPlayer.name || `Player ${fallbackPlayer.id}`),
+        levels: Object.fromEntries(LEVEL_KEYS.map((key) => [key, 1])),
+        skillExperience: createEmptySkillExperienceMap(),
+        equipment: extractCurrentCharacterEquipment(parsed, fallbackPlayer),
+        food: extractCurrentCharacterConsumableHrids(parsed?.actionTypeFoodSlotsMap),
+        drinks: extractCurrentCharacterConsumableHrids(parsed?.actionTypeDrinkSlotsMap),
+        abilities: extractCurrentCharacterAbilities(parsed),
+    };
+
+    for (const skill of Array.isArray(parsed?.characterSkills) ? parsed.characterSkills : []) {
+        const levelKey = mapShareableSkillHridToLevelKey(skill?.skillHrid);
+        if (!levelKey) {
+            continue;
+        }
+
+        rawPlayer.levels[levelKey] = Math.max(1, Math.floor(toFiniteNumber(skill?.level, 1)));
+        rawPlayer.skillExperience[levelKey] = normalizeSkillExperience(skill?.experience);
+    }
+
+    const triggerMap = extractCurrentCharacterTriggerMap(parsed);
+    if (hasCurrentCharacterTriggerPayload(parsed)) {
+        rawPlayer.triggerMap = triggerMap;
+    }
+
+    const houseRooms = extractShareableHouseRooms(parsed, fallbackPlayer);
+    if (houseRooms !== undefined) {
+        rawPlayer.houseRooms = houseRooms;
+    }
+
+    const achievements = extractShareableAchievements(parsed);
+    if (achievements !== undefined) {
+        rawPlayer.achievements = achievements;
+    }
+
+    return {
+        player: sanitizePlayerConfig(rawPlayer, fallbackPlayer),
+        simulationSettings: extractShareableSimulationSettings(parsed, existingSimulationSettings),
+        detectedFormat: "main-site-current-character",
     };
 }
 
@@ -753,6 +1217,10 @@ export function importSoloConfig(text, existingPlayer, existingSimulationSetting
 
     if (isShareableProfilePayload(parsed)) {
         return importShareableProfile(parsed, existingPlayer, existingSimulationSettings);
+    }
+
+    if (isMainSiteCurrentCharacterPayload(parsed)) {
+        return importMainSiteCurrentCharacter(parsed, existingPlayer, existingSimulationSettings);
     }
 
     if (parsed && parsed.version === 2 && parsed.player) {

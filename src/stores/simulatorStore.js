@@ -4063,6 +4063,39 @@ export const useSimulatorStore = defineStore("simulator", {
             this.persistPlayerAchievements();
             return true;
         },
+        clearPlayerSlots(playerIds = []) {
+            const normalizedIds = Array.from(new Set(
+                (Array.isArray(playerIds) ? playerIds : [])
+                    .map((playerId) => String(playerId || "").trim())
+                    .filter((playerId) => this.players.some((player) => String(player.id) === playerId))
+            ));
+            if (normalizedIds.length === 0) {
+                return false;
+            }
+
+            const targetIdSet = new Set(normalizedIds);
+            this.players = this.players.map((player) => {
+                if (!targetIdSet.has(String(player.id))) {
+                    return player;
+                }
+
+                const clearedPlayer = createEmptyPlayerConfig(player.id);
+                clearedPlayer.selected = false;
+                return clearedPlayer;
+            });
+
+            if (!this.queue.byPlayer || typeof this.queue.byPlayer !== "object") {
+                this.queue.byPlayer = createQueueStateByPlayer(this.players);
+            }
+
+            for (const playerId of normalizedIds) {
+                this.queue.byPlayer[playerId] = createQueuePlayerState();
+                this.setImportedProfileState(playerId, false);
+            }
+
+            this.persistPlayerAchievements();
+            return true;
+        },
         getMarketEnhancementLevelsForItem(itemHrid) {
             const hrid = String(itemHrid || "");
             if (!hrid) {

@@ -9,7 +9,10 @@ import {
     importGroupConfig,
     importSoloConfig,
 } from "../importExportMapper.js";
-import { createMainSiteShareProfileFixture } from "./fixtures/mainSiteShareProfileFixture.js";
+import {
+    createMainSiteCurrentCharacterFixture,
+    createMainSiteShareProfileFixture,
+} from "./fixtures/mainSiteShareProfileFixture.js";
 
 function createSimulationSettings() {
     return {
@@ -62,6 +65,20 @@ function findFirstAbilityWithDefaultTriggers() {
         !entry?.isSpecialAbility
         && Array.isArray(entry?.defaultCombatTriggers)
         && entry.defaultCombatTriggers.length > 0
+    ));
+    return ability?.hrid ?? "";
+}
+
+function findFirstSpecialAbility() {
+    const ability = Object.values(abilityDetailMap).find((entry) => entry?.isSpecialAbility === true);
+    return ability?.hrid ?? "";
+}
+
+function findAnotherStandardAbility(excludedHrid = "") {
+    const excluded = String(excludedHrid || "");
+    const ability = Object.values(abilityDetailMap).find((entry) => (
+        !entry?.isSpecialAbility
+        && String(entry?.hrid || "") !== excluded
     ));
     return ability?.hrid ?? "";
 }
@@ -246,10 +263,27 @@ describe("importExportMapper", () => {
 
     it("imports main-site share profile payload", () => {
         const fallbackPlayer = createEmptyPlayerConfig(3);
+        const abilityHrid = findFirstAbilityWithDefaultTriggers();
+        const specialAbilityHrid = findFirstSpecialAbility();
         const zoneActionHrid = findFirstCombatAction(false);
+
+        expect(abilityHrid).toBeTruthy();
+        expect(specialAbilityHrid).toBeTruthy();
+
         const fixture = {
             ...createMainSiteShareProfileFixture({
-            characterName: "Fixture Hero",
+                characterName: "Fixture Hero",
+                equippedAbilities: [
+                    {
+                        slotNumber: 1,
+                        abilityHrid,
+                        level: 6,
+                    },
+                    {
+                        abilityHrid: specialAbilityHrid,
+                        level: 4,
+                    },
+                ],
             }),
             mainSiteCombat: {
                 actionHrid: zoneActionHrid,
@@ -262,6 +296,426 @@ describe("importExportMapper", () => {
         expect(result.detectedFormat).toBe("main-site-share-profile");
         expect(result.player.id).toBe("3");
         expect(result.player.name).toBe("Fixture Hero");
+        expect(result.player.abilities[0]).toEqual({
+            abilityHrid: specialAbilityHrid,
+            level: 4,
+        });
+        expect(result.player.abilities[1]).toEqual({
+            abilityHrid,
+            level: 6,
+        });
         expect(result.simulationSettings.zoneHrid).toBe(zoneActionHrid);
+    });
+
+    it("imports main-site current character payload", () => {
+        const fallbackPlayer = createEmptyPlayerConfig(4);
+        const headItemHrid = findFirstEquipmentItemByType("/equipment_types/head");
+        const weaponItemHrid = findFirstEquipmentItemByType("/equipment_types/two_hand");
+        const foodItemHrid = findFirstFoodWithDefaultTriggers();
+        const drinkItemHrid = findFirstDrinkWithDefaultTriggers();
+        const abilityHrid = findFirstAbilityWithDefaultTriggers();
+        const specialAbilityHrid = findFirstSpecialAbility();
+        const zoneActionHrid = findFirstCombatAction(false);
+        const houseRoomHrid = Object.keys(fallbackPlayer.houseRooms)[0];
+
+        expect(specialAbilityHrid).toBeTruthy();
+
+        const fixture = {
+            ...createMainSiteCurrentCharacterFixture({
+                characterName: "Current Fixture Hero",
+                skills: {
+                    stamina: 16,
+                    intelligence: 26,
+                    attack: 36,
+                    melee: 46,
+                    defense: 56,
+                    ranged: 66,
+                    magic: 76,
+                },
+                skillExperience: {
+                    stamina: 1600,
+                    intelligence: 2600,
+                    attack: 3600,
+                    melee: 4600,
+                    defense: 5600,
+                    ranged: 6600,
+                    magic: 7600,
+                },
+                characterItems: [
+                    {
+                        itemLocationHrid: "/item_locations/head",
+                        itemHrid: headItemHrid,
+                        enhancementLevel: 3,
+                    },
+                    {
+                        currentItem: {
+                            itemLocationHrid: "/item_locations/two_hand",
+                            itemHrid: weaponItemHrid,
+                            enhancementLevel: 4,
+                        },
+                    },
+                ],
+                combatAbilities: [
+                    {
+                        abilityHrid: specialAbilityHrid,
+                        level: 9,
+                    },
+                    {
+                        abilityHrid,
+                        level: 7,
+                    },
+                ],
+                actionTypeFoodSlotsMap: {
+                    "/action_types/combat": [foodItemHrid, "", ""],
+                },
+                actionTypeDrinkSlotsMap: {
+                    "/action_types/combat": [drinkItemHrid, "", ""],
+                },
+                consumableCombatTriggersMap: {
+                    [foodItemHrid]: itemDetailMap[foodItemHrid].consumableDetail.defaultCombatTriggers,
+                    [drinkItemHrid]: itemDetailMap[drinkItemHrid].consumableDetail.defaultCombatTriggers,
+                },
+                abilityCombatTriggersMap: {
+                    [abilityHrid]: abilityDetailMap[abilityHrid].defaultCombatTriggers,
+                },
+                characterHouseRoomMap: {
+                    "11": {
+                        houseRoomHrid,
+                        level: 4,
+                    },
+                },
+                characterAchievements: {
+                    "7": {
+                        achievementHrid: "/achievements/current_fixture",
+                        isCompleted: true,
+                    },
+                },
+            }),
+            mainSiteCombat: {
+                actionHrid: zoneActionHrid,
+                difficultyTier: 2,
+            },
+        };
+
+        const result = importSoloConfig(JSON.stringify(fixture), fallbackPlayer, createSimulationSettings());
+
+        expect(result.detectedFormat).toBe("main-site-current-character");
+        expect(result.player.id).toBe("4");
+        expect(result.player.name).toBe("Current Fixture Hero");
+        expect(result.player.levels.stamina).toBe(16);
+        expect(result.player.skillExperience.magic).toBe(7600);
+        expect(result.player.equipment.head.itemHrid).toBe(headItemHrid);
+        expect(result.player.equipment.weapon.itemHrid).toBe(weaponItemHrid);
+        expect(result.player.food[0]).toBe(foodItemHrid);
+        expect(result.player.drinks[0]).toBe(drinkItemHrid);
+        expect(result.player.abilities[0]).toEqual({
+            abilityHrid: specialAbilityHrid,
+            level: 9,
+        });
+        expect(result.player.abilities[1]).toEqual({
+            abilityHrid,
+            level: 7,
+        });
+        expect(result.player.triggerMap[foodItemHrid]).toEqual(itemDetailMap[foodItemHrid].consumableDetail.defaultCombatTriggers);
+        expect(result.player.triggerMap[abilityHrid]).toEqual(abilityDetailMap[abilityHrid].defaultCombatTriggers);
+        expect(result.player.houseRooms[houseRoomHrid]).toBe(4);
+        expect(result.player.achievements["/achievements/current_fixture"]).toBe(true);
+        expect(result.simulationSettings.zoneHrid).toBe(zoneActionHrid);
+        expect(result.simulationSettings.difficultyTier).toBe(2);
+    });
+
+    it("imports shareable profile food and drinks from combatConsumables arrays in cached profiles", () => {
+        const fallbackPlayer = createEmptyPlayerConfig(11);
+        const foodItemHrid = findFirstFoodWithDefaultTriggers();
+        const drinkItemHrid = findFirstDrinkWithDefaultTriggers();
+
+        expect(foodItemHrid).toBeTruthy();
+        expect(drinkItemHrid).toBeTruthy();
+
+        const fixture = createMainSiteShareProfileFixture({
+            characterName: "Cached Shareable Consumables Hero",
+            foodItemHrids: ["", "", ""],
+            drinkItemHrids: ["", "", ""],
+        });
+        delete fixture.foodItemHrids;
+        delete fixture.drinkItemHrids;
+        fixture.combatConsumables = [
+            { itemHrid: foodItemHrid },
+            { itemHrid: drinkItemHrid },
+        ];
+
+        const result = importSoloConfig(JSON.stringify(fixture), fallbackPlayer, createSimulationSettings());
+
+        expect(result.detectedFormat).toBe("main-site-share-profile");
+        expect(result.player.food[0]).toBe(foodItemHrid);
+        expect(result.player.drinks[0]).toBe(drinkItemHrid);
+    });
+
+    it("clears fallback triggers when a shareable profile explicitly provides empty trigger maps", () => {
+        const fallbackPlayer = createEmptyPlayerConfig(9);
+        const foodItemHrid = findFirstFoodWithDefaultTriggers();
+        const abilityHrid = findFirstAbilityWithDefaultTriggers();
+
+        expect(foodItemHrid).toBeTruthy();
+        expect(abilityHrid).toBeTruthy();
+
+        fallbackPlayer.triggerMap = {
+            [foodItemHrid]: itemDetailMap[foodItemHrid].consumableDetail.defaultCombatTriggers,
+            [abilityHrid]: abilityDetailMap[abilityHrid].defaultCombatTriggers,
+        };
+
+        const fixture = createMainSiteShareProfileFixture({
+            characterName: "Explicit Empty Shareable Triggers",
+            consumableCombatTriggersMap: {},
+            abilityCombatTriggersMap: {},
+        });
+
+        const result = importSoloConfig(JSON.stringify(fixture), fallbackPlayer, createSimulationSettings());
+
+        expect(result.detectedFormat).toBe("main-site-share-profile");
+        expect(result.player.triggerMap).toEqual({});
+    });
+
+    it("clears fallback triggers when a current-character payload explicitly provides empty trigger maps", () => {
+        const fallbackPlayer = createEmptyPlayerConfig(10);
+        const foodItemHrid = findFirstFoodWithDefaultTriggers();
+        const abilityHrid = findFirstAbilityWithDefaultTriggers();
+
+        expect(foodItemHrid).toBeTruthy();
+        expect(abilityHrid).toBeTruthy();
+
+        fallbackPlayer.triggerMap = {
+            [foodItemHrid]: itemDetailMap[foodItemHrid].consumableDetail.defaultCombatTriggers,
+            [abilityHrid]: abilityDetailMap[abilityHrid].defaultCombatTriggers,
+        };
+
+        const fixture = createMainSiteCurrentCharacterFixture({
+            characterName: "Explicit Empty Current Triggers",
+            actionTypeFoodSlotsMap: {
+                "/action_types/combat": ["", "", ""],
+            },
+            actionTypeDrinkSlotsMap: {
+                "/action_types/combat": ["", "", ""],
+            },
+            consumableCombatTriggersMap: {},
+            abilityCombatTriggersMap: {},
+        });
+
+        const result = importSoloConfig(JSON.stringify(fixture), fallbackPlayer, createSimulationSettings());
+
+        expect(result.detectedFormat).toBe("main-site-current-character");
+        expect(result.player.triggerMap).toEqual({});
+    });
+
+    it("imports partial current-character trigger payloads without falling back to stale triggers", () => {
+        const fallbackPlayer = createEmptyPlayerConfig(12);
+        const foodItemHrid = findFirstFoodWithDefaultTriggers();
+        const abilityHrid = findFirstAbilityWithDefaultTriggers();
+
+        expect(foodItemHrid).toBeTruthy();
+        expect(abilityHrid).toBeTruthy();
+
+        fallbackPlayer.triggerMap = {
+            [foodItemHrid]: itemDetailMap[foodItemHrid].consumableDetail.defaultCombatTriggers,
+            [abilityHrid]: abilityDetailMap[abilityHrid].defaultCombatTriggers,
+        };
+
+        const fixture = createMainSiteCurrentCharacterFixture({
+            characterName: "Partial Current Trigger Payload",
+            actionTypeFoodSlotsMap: {
+                "/action_types/combat": [foodItemHrid, "", ""],
+            },
+            actionTypeDrinkSlotsMap: {
+                "/action_types/combat": ["", "", ""],
+            },
+            consumableCombatTriggersMap: {
+                [foodItemHrid]: itemDetailMap[foodItemHrid].consumableDetail.defaultCombatTriggers,
+            },
+        });
+
+        const result = importSoloConfig(JSON.stringify(fixture), fallbackPlayer, createSimulationSettings());
+
+        expect(result.detectedFormat).toBe("main-site-current-character");
+        expect(result.player.triggerMap).toEqual({
+            [foodItemHrid]: itemDetailMap[foodItemHrid].consumableDetail.defaultCombatTriggers,
+        });
+    });
+
+    it("imports main-site share profile payload with zero-based explicit ability slots", () => {
+        const fallbackPlayer = createEmptyPlayerConfig(5);
+        const standardAbilityHrid = findFirstAbilityWithDefaultTriggers();
+        const secondAbilityHrid = findAnotherStandardAbility(standardAbilityHrid);
+        const specialAbilityHrid = findFirstSpecialAbility();
+
+        expect(standardAbilityHrid).toBeTruthy();
+        expect(secondAbilityHrid).toBeTruthy();
+        expect(specialAbilityHrid).toBeTruthy();
+
+        const fixture = createMainSiteShareProfileFixture({
+            characterName: "Zero Based Share Hero",
+            equippedAbilities: [
+                {
+                    abilityHrid: specialAbilityHrid,
+                    level: 11,
+                    slotIndex: 0,
+                },
+                {
+                    abilityHrid: standardAbilityHrid,
+                    level: 7,
+                    slotIndex: 1,
+                },
+                {
+                    abilityHrid: secondAbilityHrid,
+                    level: 5,
+                    slotIndex: 2,
+                },
+            ],
+        });
+
+        const result = importSoloConfig(JSON.stringify(fixture), fallbackPlayer, createSimulationSettings());
+
+        expect(result.detectedFormat).toBe("main-site-share-profile");
+        expect(result.player.abilities[0]).toEqual({
+            abilityHrid: specialAbilityHrid,
+            level: 11,
+        });
+        expect(result.player.abilities[1]).toEqual({
+            abilityHrid: standardAbilityHrid,
+            level: 7,
+        });
+        expect(result.player.abilities[2]).toEqual({
+            abilityHrid: secondAbilityHrid,
+            level: 5,
+        });
+    });
+
+    it("imports main-site current character payload with zero-based explicit ability slots", () => {
+        const fallbackPlayer = createEmptyPlayerConfig(6);
+        const standardAbilityHrid = findFirstAbilityWithDefaultTriggers();
+        const secondAbilityHrid = findAnotherStandardAbility(standardAbilityHrid);
+        const specialAbilityHrid = findFirstSpecialAbility();
+
+        expect(standardAbilityHrid).toBeTruthy();
+        expect(secondAbilityHrid).toBeTruthy();
+        expect(specialAbilityHrid).toBeTruthy();
+
+        const fixture = createMainSiteCurrentCharacterFixture({
+            characterName: "Zero Based Current Hero",
+            combatAbilities: [
+                {
+                    abilityHrid: specialAbilityHrid,
+                    level: 9,
+                    slotIndex: 0,
+                },
+                {
+                    abilityHrid: standardAbilityHrid,
+                    level: 6,
+                    slotIndex: 1,
+                },
+                {
+                    abilityHrid: secondAbilityHrid,
+                    level: 4,
+                    slotIndex: 2,
+                },
+            ],
+        });
+
+        const result = importSoloConfig(JSON.stringify(fixture), fallbackPlayer, createSimulationSettings());
+
+        expect(result.detectedFormat).toBe("main-site-current-character");
+        expect(result.player.abilities[0]).toEqual({
+            abilityHrid: specialAbilityHrid,
+            level: 9,
+        });
+        expect(result.player.abilities[1]).toEqual({
+            abilityHrid: standardAbilityHrid,
+            level: 6,
+        });
+        expect(result.player.abilities[2]).toEqual({
+            abilityHrid: secondAbilityHrid,
+            level: 4,
+        });
+    });
+
+    it("imports main-site share profile payload with zero-based standard ability slots and no explicit special ability", () => {
+        const fallbackPlayer = createEmptyPlayerConfig(7);
+        const firstAbilityHrid = findFirstAbilityWithDefaultTriggers();
+        const secondAbilityHrid = findAnotherStandardAbility(firstAbilityHrid);
+
+        expect(firstAbilityHrid).toBeTruthy();
+        expect(secondAbilityHrid).toBeTruthy();
+
+        const fixture = createMainSiteShareProfileFixture({
+            characterName: "Zero Based Standard Share Hero",
+            equippedAbilities: [
+                {
+                    abilityHrid: firstAbilityHrid,
+                    level: 8,
+                    slotIndex: 0,
+                },
+                {
+                    abilityHrid: secondAbilityHrid,
+                    level: 6,
+                    slotIndex: 1,
+                },
+            ],
+        });
+
+        const result = importSoloConfig(JSON.stringify(fixture), fallbackPlayer, createSimulationSettings());
+
+        expect(result.detectedFormat).toBe("main-site-share-profile");
+        expect(result.player.abilities[0]).toEqual({
+            abilityHrid: "",
+            level: 1,
+        });
+        expect(result.player.abilities[1]).toEqual({
+            abilityHrid: firstAbilityHrid,
+            level: 8,
+        });
+        expect(result.player.abilities[2]).toEqual({
+            abilityHrid: secondAbilityHrid,
+            level: 6,
+        });
+    });
+
+    it("imports main-site current character payload with zero-based standard ability slots and no explicit special ability", () => {
+        const fallbackPlayer = createEmptyPlayerConfig(8);
+        const firstAbilityHrid = findFirstAbilityWithDefaultTriggers();
+        const secondAbilityHrid = findAnotherStandardAbility(firstAbilityHrid);
+
+        expect(firstAbilityHrid).toBeTruthy();
+        expect(secondAbilityHrid).toBeTruthy();
+
+        const fixture = createMainSiteCurrentCharacterFixture({
+            characterName: "Zero Based Standard Current Hero",
+            combatAbilities: [
+                {
+                    abilityHrid: firstAbilityHrid,
+                    level: 10,
+                    slotIndex: 0,
+                },
+                {
+                    abilityHrid: secondAbilityHrid,
+                    level: 7,
+                    slotIndex: 1,
+                },
+            ],
+        });
+
+        const result = importSoloConfig(JSON.stringify(fixture), fallbackPlayer, createSimulationSettings());
+
+        expect(result.detectedFormat).toBe("main-site-current-character");
+        expect(result.player.abilities[0]).toEqual({
+            abilityHrid: "",
+            level: 1,
+        });
+        expect(result.player.abilities[1]).toEqual({
+            abilityHrid: firstAbilityHrid,
+            level: 10,
+        });
+        expect(result.player.abilities[2]).toEqual({
+            abilityHrid: secondAbilityHrid,
+            level: 7,
+        });
     });
 });
