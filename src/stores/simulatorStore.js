@@ -1751,7 +1751,6 @@ function normalizeAdvisorFilters(rawFilters = {}) {
     return {
         includeGroupZones: source.includeGroupZones !== false,
         includeSoloZones: Boolean(source.includeSoloZones),
-        includeLabyrinths: Boolean(source.includeLabyrinths),
         refineTopEnabled: source.refineTopEnabled !== false,
         refineTopCount: clamp(
             Math.floor(toFiniteNumber(source.refineTopCount, ADVISOR_REFINE_TOP_COUNT_DEFAULT)),
@@ -1808,24 +1807,6 @@ function createAdvisorZoneCandidate(zoneTarget, category, order) {
         targetName: String(actionDetailMap?.[zoneHrid]?.name || zoneHrid),
         difficultyTier,
         roomLevel: null,
-        isRefined: false,
-        refineRounds: 0,
-        successfulRounds: 0,
-    };
-}
-
-function createAdvisorLabyrinthCandidate(labyrinthTarget, order) {
-    const labyrinthHrid = String(labyrinthTarget?.labyrinthHrid || "");
-    const roomLevel = Math.max(1, Math.floor(toFiniteNumber(labyrinthTarget?.roomLevel, 1)));
-    return {
-        id: buildAdvisorTargetId("labyrinth", labyrinthHrid, roomLevel),
-        order,
-        targetType: "labyrinth",
-        category: "labyrinth",
-        targetHrid: labyrinthHrid,
-        targetName: String(combatMonsterDetailMap?.[labyrinthHrid]?.name || labyrinthHrid),
-        difficultyTier: null,
-        roomLevel,
         isRefined: false,
         refineRounds: 0,
         successfulRounds: 0,
@@ -1907,34 +1888,10 @@ function buildAdvisorCandidates(filters = {}) {
         }
     }
 
-    if (normalizedFilters.includeLabyrinths) {
-        const labyrinthTargets = buildAllLabyrinthTargets();
-        for (const labyrinthTarget of labyrinthTargets) {
-            candidates.push(createAdvisorLabyrinthCandidate(labyrinthTarget, order));
-            order += 1;
-        }
-    }
-
     return candidates;
 }
 
-function createAdvisorSimulationPayload(candidate, players, simulationTimeLimit, extra, crates = []) {
-    if (candidate?.targetType === "labyrinth") {
-        return {
-            type: "start_simulation",
-            workerId: Math.floor(Math.random() * 1e9).toString(),
-            players,
-            zone: null,
-            labyrinth: {
-                labyrinthHrid: candidate.targetHrid,
-                roomLevel: Math.max(1, Math.floor(toFiniteNumber(candidate.roomLevel, 1))),
-                crates: Array.isArray(crates) ? [...crates] : [],
-            },
-            simulationTimeLimit,
-            extra,
-        };
-    }
-
+function createAdvisorSimulationPayload(candidate, players, simulationTimeLimit, extra) {
     return {
         type: "start_simulation",
         workerId: Math.floor(Math.random() * 1e9).toString(),
@@ -5726,7 +5683,6 @@ export const useSimulatorStore = defineStore("simulator", {
             const normalizedGoalPreset = normalizeAdvisorGoalPreset(this.advisor.goalPreset);
             const normalizedCustomWeights = normalizeAdvisorWeights(this.advisor.customWeights, ADVISOR_GOAL_PRESET_BALANCED);
             const candidates = buildAdvisorCandidates(normalizedFilters);
-            const activeLabyrinthCrates = this.getActiveLabyrinthCrates();
             const metricPlayer = resolveAdvisorMetricPlayer(selectedPlayersSnapshot, this.activePlayerId);
 
             this.advisor.filters = normalizedFilters;
@@ -5773,8 +5729,6 @@ export const useSimulatorStore = defineStore("simulator", {
                 this.advisor.runtime.progress = clamp(completedUnits / totalWorkUnits, 0, 1);
             };
 
-            const zoneCandidates = candidates.filter((candidate) => candidate.targetType === "zone");
-            const labyrinthCandidates = candidates.filter((candidate) => candidate.targetType === "labyrinth");
             const quickRows = [];
 
             const collectQuickRows = async (batchCandidates, payloadBuilder, stageLabel) => {
@@ -5806,7 +5760,7 @@ export const useSimulatorStore = defineStore("simulator", {
                     for (const candidate of batchCandidates) {
                         try {
                             const simResult = await runSingleSimulationPayloadWithDedicatedWorker(
-                                createAdvisorSimulationPayload(candidate, playersToSim, simulationTimeLimit, extra, activeLabyrinthCrates)
+                                createAdvisorSimulationPayload(candidate, playersToSim, simulationTimeLimit, extra)
                             );
                             const sample = summarizeAdvisorTargetResult(simResult, selectedPlayersSnapshot, metricPlayer.id, pricingOptions);
                             quickRows.push(buildAdvisorRowFromRoundMetrics(candidate, [sample], {
@@ -5830,28 +5784,13 @@ export const useSimulatorStore = defineStore("simulator", {
             try {
                 updateAdvisorRuntime("quick_scan", 0, 0);
                 await collectQuickRows(
-                    zoneCandidates,
+                    candidates,
                     () => ({
                         type: "start_simulation_all_zones",
                         players: playersToSim,
-                        zones: zoneCandidates.map((candidate) => ({
+                        zones: candidates.map((candidate) => ({
                             zoneHrid: candidate.targetHrid,
                             difficultyTier: candidate.difficultyTier,
-                        })),
-                        simulationTimeLimit,
-                        extra,
-                    }),
-                    "quick scan"
-                );
-                await collectQuickRows(
-                    labyrinthCandidates,
-                    () => ({
-                        type: "start_simulation_all_labyrinths",
-                        players: playersToSim,
-                        labyrinths: labyrinthCandidates.map((candidate) => ({
-                            labyrinthHrid: candidate.targetHrid,
-                            roomLevel: candidate.roomLevel,
-                            crates: [...activeLabyrinthCrates],
                         })),
                         simulationTimeLimit,
                         extra,
@@ -5886,7 +5825,7 @@ export const useSimulatorStore = defineStore("simulator", {
                     const runRefineRoundForRow = async (row) => {
                         try {
                             const simResult = await runSingleSimulationPayloadWithDedicatedWorker(
-                                createAdvisorSimulationPayload(row, playersToSim, simulationTimeLimit, extra, activeLabyrinthCrates)
+                                createAdvisorSimulationPayload(row, playersToSim, simulationTimeLimit, extra)
                             );
                             const roundMetrics = roundMetricsById.get(row.id) || [];
                             roundMetrics.push(summarizeAdvisorTargetResult(simResult, selectedPlayersSnapshot, metricPlayer.id, pricingOptions));
@@ -5966,13 +5905,8 @@ export const useSimulatorStore = defineStore("simulator", {
         },
         applyAdvisorTarget(row) {
             const targetType = String(row?.targetType || "zone");
-            if (targetType === "labyrinth") {
-                this.simulationSettings.mode = "labyrinth";
-                this.simulationSettings.runScope = RUN_SCOPE_SINGLE;
-                this.simulationSettings.useDungeon = false;
-                this.simulationSettings.labyrinthHrid = String(row?.targetHrid || "");
-                this.simulationSettings.roomLevel = Math.max(1, Math.floor(toFiniteNumber(row?.roomLevel, this.simulationSettings.roomLevel || 100)));
-                return true;
+            if (targetType !== "zone") {
+                return false;
             }
 
             this.simulationSettings.mode = "zone";

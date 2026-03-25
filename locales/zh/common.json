@@ -360,8 +360,8 @@
             "runScope": "运行范围",
             "runScopeOptions": {
                 "single": "单目标",
-                "all_group_zones": "全部组队区域",
-                "all_solo_zones": "全部单人区域",
+                "all_group_zones": "全部星球区域",
+                "all_solo_zones": "全部单刷区域",
                 "all_labyrinths": "全部迷宫"
             },
             "profileSelectorLabel": "角色档案",
@@ -408,8 +408,8 @@
                 "advancedDesc": "当前配装完整推导后的战斗属性。"
             },
             "workspaceTargets": {
-                "groupZones": "已选择 {{count}} 个组队区域",
-                "soloZones": "已选择 {{count}} 个单人区域"
+                "groupZones": "已选择 {{count}} 个星球区域",
+                "soloZones": "已选择 {{count}} 个单刷区域"
             },
             "workspaceSummary": {
                 "player": "当前玩家",
@@ -803,16 +803,15 @@
     "advisor": {
         "eyebrow": "推荐器",
         "title": "刷图推荐器",
-        "desc": "基于当前队伍、Buff、成就、房屋、价格与模拟时长，自动对单人区域、多人区域和迷宫进行刷图推荐排序。",
+        "desc": "基于当前队伍、Buff、成就、房屋、价格与模拟时长，自动对单刷区域和星球区域进行刷图推荐排序。",
         "goal": "推荐目标",
         "presetBalanced": "均衡",
         "presetProfit": "收益",
         "presetXp": "经验",
         "presetSafe": "稳健",
         "presetCustom": "自定义",
-        "includeSolo": "单人区域",
-        "includeGroup": "多人区域",
-        "includeLabyrinth": "迷宫",
+        "includeSolo": "单刷区域",
+        "includeGroup": "星球区域",
         "refineTop": "复核前 8 名",
         "refineCount": "复核数量",
         "refineRounds": "复核轮次",
@@ -834,7 +833,6 @@
         "bestProfit": "收益最佳",
         "bestXp": "经验最佳",
         "safest": "最稳目标",
-        "bestLabyrinth": "迷宫最佳",
         "profitPerHour": "每小时收益",
         "xpPerHour": "每小时经验",
         "killsPerHour": "每小时击杀",
@@ -844,7 +842,6 @@
         "target": "目标",
         "difficulty": "难度",
         "difficultyTier": "难度 {{level}}",
-        "roomLevel": "房间等级 {{level}}",
         "score": "综合分",
         "reason": "推荐理由",
         "reasonTopProfit": "收益最高",
@@ -864,9 +861,8 @@
         "rowCount": "条目数",
         "tableEmpty": "当前还没有排序结果。",
         "tableSummary": "共排序 {{rows}} 条目标，其中 {{refined}} 条经过复核。",
-        "soloZone": "单人区域",
-        "groupZone": "多人区域",
-        "labyrinth": "迷宫",
+        "soloZone": "单刷区域",
+        "groupZone": "星球区域",
         "errorBusy": "已有其他模拟正在运行。",
         "errorNoPlayer": "请至少选择一名玩家。",
         "errorBuildPlayer": "无法构建玩家模拟数据。",

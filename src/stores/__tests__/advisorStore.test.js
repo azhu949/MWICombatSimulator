@@ -242,11 +242,10 @@ describe("advisor store", () => {
         return { simulator, mockWorkerState };
     }
 
-    it("runs advisor across zone and labyrinth targets and sorts the quick list", async () => {
+    it("runs advisor across zone targets only and sorts the quick list", async () => {
         const { simulator, mockWorkerState } = createStoreWithMocks();
         simulator.advisor.filters = {
             ...simulator.advisor.filters,
-            includeLabyrinths: true,
             refineTopEnabled: false,
         };
         simulator.advisor.goalPreset = "profit";
@@ -256,23 +255,14 @@ describe("advisor store", () => {
             killsPerHour: 12 + index,
             deathsPerHour: 0.3 + Number(zone?.difficultyTier || 0) * 0.2,
         });
-        mockWorkerState.labyrinthMetricResolver = (labyrinth, index) => ({
-            profitPerHour: 1000 + index,
-            xpPerHour: 60 + index,
-            killsPerHour: 6 + index * 0.1,
-            deathsPerHour: 0.08 + Number(labyrinth?.roomLevel || 40) / 1000,
-        });
 
         const rows = await simulator.runAdvisorScan();
         expect(rows.length).toBeGreaterThan(0);
         expect(rows.some((row) => row.targetType === "zone")).toBe(true);
-        expect(rows.some((row) => row.targetType === "labyrinth")).toBe(true);
-        expect(rows[0].targetType).toBe("labyrinth");
-        expect(simulator.advisor.topCards.some((card) => card.key === "labyrinth")).toBe(true);
-        expect(mockWorkerState.multiCalls.map((payload) => payload.type)).toEqual(expect.arrayContaining([
-            "start_simulation_all_zones",
-            "start_simulation_all_labyrinths",
-        ]));
+        expect(rows.some((row) => row.targetType === "labyrinth")).toBe(false);
+        expect(simulator.advisor.filters).not.toHaveProperty("includeLabyrinths");
+        expect(simulator.advisor.topCards.some((card) => card.key === "labyrinth")).toBe(false);
+        expect(mockWorkerState.multiCalls.map((payload) => payload.type)).toEqual(["start_simulation_all_zones"]);
     });
 
     it("uses the active player metrics instead of summing selected party members", async () => {
@@ -280,7 +270,6 @@ describe("advisor store", () => {
         simulator.players[1].selected = true;
         simulator.advisor.filters = {
             ...simulator.advisor.filters,
-            includeLabyrinths: false,
             refineTopEnabled: false,
         };
         mockWorkerState.zoneMetricResolver = () => ({
@@ -317,7 +306,6 @@ describe("advisor store", () => {
         simulator.players[1].selected = true;
         simulator.advisor.filters = {
             ...simulator.advisor.filters,
-            includeLabyrinths: false,
             refineTopEnabled: false,
         };
         simulator.advisor.goalPreset = "profit";
@@ -374,7 +362,6 @@ describe("advisor store", () => {
         simulator.setActivePlayer("2");
         simulator.advisor.filters = {
             ...simulator.advisor.filters,
-            includeLabyrinths: false,
             refineTopEnabled: false,
         };
         mockWorkerState.zoneMetricResolver = () => ({
@@ -412,7 +399,6 @@ describe("advisor store", () => {
         simulator.queueRuntime.parallelWorkerLimit = 3;
         simulator.advisor.filters = {
             ...simulator.advisor.filters,
-            includeLabyrinths: false,
             refineTopEnabled: true,
             refineTopCount: 8,
             refineRounds: 2,
@@ -440,7 +426,6 @@ describe("advisor store", () => {
         simulator.queueRuntime.parallelWorkerLimit = 1;
         simulator.advisor.filters = {
             ...simulator.advisor.filters,
-            includeLabyrinths: false,
             refineTopEnabled: true,
             refineTopCount: 4,
             refineRounds: 2,
@@ -464,7 +449,6 @@ describe("advisor store", () => {
         simulator.queueRuntime.parallelWorkerLimit = 4;
         simulator.advisor.filters = {
             ...simulator.advisor.filters,
-            includeLabyrinths: false,
             refineTopEnabled: false,
             refineTopCount: 2,
             refineRounds: 2,
@@ -508,6 +492,7 @@ describe("advisor store", () => {
         simulator.simulationSettings.comExpEnabled = true;
         simulator.simulationSettings.comExp = 55;
         simulator.pricing.dropMode = "ask";
+        const previousLabyrinthHrid = simulator.simulationSettings.labyrinthHrid;
         const validZone = Object.values(actionDetailMap).find((entry) => (
             String(entry?.type || "") === "/action_types/combat"
             && entry?.combatZoneInfo?.isDungeon !== true
@@ -532,10 +517,9 @@ describe("advisor store", () => {
             targetHrid: "/combat_monsters/gobo_guardian",
             roomLevel: 140,
         });
-        expect(appliedLabyrinth).toBe(true);
-        expect(simulator.simulationSettings.mode).toBe("labyrinth");
-        expect(simulator.simulationSettings.labyrinthHrid).toBe("/combat_monsters/gobo_guardian");
-        expect(simulator.simulationSettings.roomLevel).toBe(140);
+        expect(appliedLabyrinth).toBe(false);
+        expect(simulator.simulationSettings.mode).toBe("zone");
+        expect(simulator.simulationSettings.labyrinthHrid).toBe(previousLabyrinthHrid);
         expect(simulator.simulationSettings.mooPass).toBe(true);
         expect(simulator.pricing.dropMode).toBe("ask");
     });

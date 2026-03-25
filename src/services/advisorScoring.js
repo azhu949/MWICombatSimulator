@@ -464,11 +464,6 @@ export function buildAdvisorTopCards(rows = []) {
     const bestProfit = getSortedBestRow(safeRows, (row) => row.profitPerHour, "desc");
     const bestXp = getSortedBestRow(safeRows, (row) => row.xpPerHour, "desc");
     const safest = getSortedBestRow(safeRows, (row) => row.deathsPerHour, "asc");
-    const bestLabyrinth = getSortedBestRow(
-        safeRows.filter((row) => row.targetType === "labyrinth"),
-        (row) => row.finalScore,
-        "desc"
-    );
 
     const definitions = [
         { key: "overall", titleKey: "best_overall", row: bestOverall },
@@ -476,10 +471,6 @@ export function buildAdvisorTopCards(rows = []) {
         { key: "xp", titleKey: "best_xp", row: bestXp },
         { key: "safe", titleKey: "safest", row: safest },
     ];
-
-    if (bestLabyrinth) {
-        definitions.push({ key: "labyrinth", titleKey: "best_labyrinth", row: bestLabyrinth });
-    }
 
     for (const definition of definitions) {
         if (!definition.row) {

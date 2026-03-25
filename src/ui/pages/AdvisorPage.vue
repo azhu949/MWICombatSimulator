@@ -7,7 +7,7 @@
             <p class="text-xs uppercase tracking-[0.18em] text-amber-300/80">{{ t("common:advisor.eyebrow", "Advisor") }}</p>
             <h2 class="font-heading text-2xl font-semibold text-slate-100">{{ t("common:advisor.title", "刷图推荐器") }}</h2>
             <p class="max-w-3xl text-sm leading-6 text-slate-300">
-              {{ t("common:advisor.desc", "Use your current team, buffs, achievements, housing, pricing, and run duration to rank the best farming targets across solo zones, group zones, and labyrinths.") }}
+              {{ t("common:advisor.desc", "Use your current team, buffs, achievements, housing, pricing, and run duration to rank the best farming targets across solo zones and group zones.") }}
             </p>
             <div class="flex flex-wrap items-center gap-2 text-xs text-slate-400">
               <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">{{ selectedPlayersLabel }}</span>
@@ -86,10 +86,6 @@
               <label class="flex items-center gap-2 rounded-xl border border-white/10 bg-slate-950/40 px-3 py-2 text-sm text-slate-200">
                 <input v-model="filterDraft.includeGroupZones" type="checkbox" class="accent-amber-300" />
                 <span>{{ t("common:advisor.includeGroup", "Group zones") }}</span>
-              </label>
-              <label class="flex items-center gap-2 rounded-xl border border-white/10 bg-slate-950/40 px-3 py-2 text-sm text-slate-200">
-                <input v-model="filterDraft.includeLabyrinths" type="checkbox" class="accent-amber-300" />
-                <span>{{ t("common:advisor.includeLabyrinth", "Labyrinths") }}</span>
               </label>
               <label class="flex items-center gap-2 rounded-xl border border-white/10 bg-slate-950/40 px-3 py-2 text-sm text-slate-200">
                 <input v-model="filterDraft.refineTopEnabled" type="checkbox" class="accent-amber-300" />
@@ -269,7 +265,6 @@
  import { computed, reactive, ref, watch } from "vue";
  import { useRouter } from "vue-router";
  import actionDetailMap from "../../combatsimulator/data/actionDetailMap.json";
- import combatMonsterDetailMap from "../../combatsimulator/data/combatMonsterDetailMap.json";
 import { formatAdvisorCompactValue, formatAdvisorDailyProfitValue } from "../../services/advisorFormatting.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import {
@@ -312,7 +307,6 @@ const summaryWeightFields = computed(() => [
 const filterDraft = reactive({
   includeSoloZones: false,
   includeGroupZones: true,
-  includeLabyrinths: false,
   refineTopEnabled: true,
   refineTopCount: 8,
   refineRounds: 10,
@@ -340,10 +334,19 @@ function syncCustomWeightDraft(source) {
   customWeightDraft.safety = Number.isFinite(safetyValue) ? safetyValue : 0.1;
 }
 
+function syncFilterDraft(source) {
+  const safeSource = source || {};
+  filterDraft.includeSoloZones = Boolean(safeSource.includeSoloZones);
+  filterDraft.includeGroupZones = safeSource.includeGroupZones !== false;
+  filterDraft.refineTopEnabled = safeSource.refineTopEnabled !== false;
+  filterDraft.refineTopCount = Number(safeSource.refineTopCount ?? filterDraft.refineTopCount);
+  filterDraft.refineRounds = Number(safeSource.refineRounds ?? filterDraft.refineRounds);
+}
+
  watch(
    () => simulator.advisor.filters,
    (value) => {
-     Object.assign(filterDraft, value || {});
+     syncFilterDraft(value);
    },
   { deep: true, immediate: true }
 );
@@ -497,21 +500,15 @@ function getTopCardTitle(titleKey) {
     best_profit: t("common:advisor.bestProfit", "Best Profit"),
     best_xp: t("common:advisor.bestXp", "Best XP"),
     safest: t("common:advisor.safest", "Safest"),
-    best_labyrinth: t("common:advisor.bestLabyrinth", "Best Labyrinth"),
   };
   return titleMap[titleKey] || titleKey;
 }
 
 function getTargetLabel(row) {
-  const targetType = String(row?.targetType || row?.category || "zone");
   const hrid = String(row?.targetHrid || "");
   const fallback = String(row?.targetName || hrid || "-");
   if (!hrid) {
     return fallback;
-  }
-  if (targetType === "labyrinth" || String(row?.category || "") === "labyrinth") {
-    const defaultLabel = String(combatMonsterDetailMap?.[hrid]?.name || fallback);
-    return t(`monsterNames.${hrid}`, defaultLabel);
   }
   const defaultLabel = String(actionDetailMap?.[hrid]?.name || fallback);
   return t(`actionNames.${hrid}`, defaultLabel);
@@ -525,13 +522,10 @@ function getContentTypeLabel(row) {
   if (category === "group_zone") {
     return t("common:advisor.groupZone", "Group Zone");
   }
-  return t("common:advisor.labyrinth", "Labyrinth");
+  return t("common:advisor.soloZone", "Solo Zone");
 }
 
 function getDifficultyLabel(row) {
-  if (String(row?.targetType || "zone") === "labyrinth") {
-    return t("common:advisor.roomLevel", "Room {level}", { level: row?.roomLevel ?? 0 });
-  }
   return t("common:advisor.difficultyTier", "Tier {level}", { level: row?.difficultyTier ?? 0 });
 }
 
@@ -576,7 +570,7 @@ function setPreset(preset) {
    applyStatus.value = "";
    simulator.advisor.filters = { ...filterDraft };
    await simulator.runAdvisorScan();
-   Object.assign(filterDraft, simulator.advisor.filters || {});
+   syncFilterDraft(simulator.advisor.filters);
    syncCustomWeightDraft(simulator.advisor.customWeights);
  }
 
