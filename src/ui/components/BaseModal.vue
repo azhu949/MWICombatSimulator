@@ -2,13 +2,13 @@
   <Teleport to="body">
     <div
       v-if="open"
-      class="fixed inset-0 z-50 flex items-center justify-center bg-black/60 px-4"
+      class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center px-4"
       @click.self="onBackdropClick"
     >
       <div
         ref="dialogRef"
         :class="[
-          'w-full rounded-2xl border border-white/15 bg-slate-950 p-6 shadow-2xl',
+          'modal-panel w-full rounded-2xl p-6',
           panelClass || 'max-w-xl',
         ]"
         role="dialog"
@@ -20,7 +20,7 @@
           <h2 :id="titleId" class="font-heading text-xl font-semibold text-amber-300">{{ title }}</h2>
           <button type="button" class="action-button-muted" @click="emit('close')">{{ t("common:controls.close", "Close") }}</button>
         </div>
-        <div class="space-y-3 text-sm text-slate-200">
+        <div class="modal-body-text space-y-3 text-sm">
           <slot />
         </div>
       </div>

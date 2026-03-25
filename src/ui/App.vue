@@ -158,6 +158,60 @@
     </BaseModal>
 
     <BaseModal
+      :open="versionAnnouncementModalOpen"
+      :title="versionAnnouncementModalTitle"
+      panel-class="max-w-2xl max-h-[85vh]"
+      initial-focus-selector="[data-version-announcement-start]"
+      @close="dismissVersionAnnouncementModal"
+    >
+      <div class="space-y-4">
+        <div
+          class="announcement-scroll-area max-h-[58vh] space-y-4 overflow-y-auto pr-1 outline-none"
+          data-version-announcement-start
+          tabindex="-1"
+        >
+          <article
+            v-for="entry in versionAnnouncementModalEntries"
+            :key="entry.announcementId"
+            class="announcement-entry space-y-3 rounded-2xl p-4"
+          >
+            <div class="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.14em] text-slate-400">
+              <span v-if="entry.dateLabel" class="rounded-full border border-white/10 bg-slate-950/70 px-2 py-1">{{ entry.dateLabel }}</span>
+              <span
+                v-if="entry.versionLabel"
+                class="rounded-full border border-amber-300/25 bg-amber-300/10 px-2 py-1 text-amber-200"
+              >
+                {{ entry.versionLabel }}
+              </span>
+            </div>
+            <h3 class="font-heading text-base font-semibold text-amber-200">
+              {{ entry.title || versionAnnouncementFallbackItemTitle }}
+            </h3>
+            <ul class="space-y-2">
+              <li
+                v-for="(line, index) in entry.bodyLines"
+                :key="`${entry.announcementId}-${index}`"
+                class="announcement-note rounded-xl px-3 py-2 text-sm text-slate-200"
+              >
+                {{ line }}
+              </li>
+            </ul>
+          </article>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            class="action-button-primary"
+            data-version-announcement-confirm
+            @click="dismissVersionAnnouncementModal"
+          >
+            {{ t("common:vue.app.versionAnnouncementAcknowledge", "Got it") }}
+          </button>
+        </div>
+      </div>
+    </BaseModal>
+
+    <BaseModal
       :open="simulationCompleteModalOpen"
       :title="t('common:vue.app.simulationCompleteTitle', 'Simulation completed')"
       initial-focus-selector="[data-simulation-results-confirm]"
@@ -209,6 +263,11 @@ import { RouterLink, RouterView, useRoute, useRouter } from "vue-router";
 import BaseModal from "./components/BaseModal.vue";
 import { useSimulatorStore } from "../stores/simulatorStore.js";
 import { useI18nText } from "./composables/useI18nText.js";
+import {
+  dismissVersionAnnouncements,
+  getUnreadVersionAnnouncements,
+  versionAnnouncements,
+} from "./versionAnnouncement.js";
 
 const THEME_STORAGE_KEY = "mwi.ui.theme.v1";
 const appVersion = __APP_VERSION__;
@@ -222,6 +281,9 @@ const globalErrorText = ref("");
 const errorCopyStatus = ref("");
 const simulationCompleteModalOpen = ref(false);
 const queueCompleteModalOpen = ref(false);
+const versionAnnouncementModalOpen = ref(false);
+const versionAnnouncementModalEntries = ref([]);
+const versionAnnouncementPendingReadIds = ref([]);
 const topQueueActionStatus = ref({
   tone: "secondary",
   text: "",
@@ -269,6 +331,8 @@ const topQueueActionStatusClass = computed(() => {
   }
   return "text-slate-300";
 });
+const versionAnnouncementModalTitle = computed(() => t("common:vue.app.versionAnnouncementTitle", "Update Announcement"));
+const versionAnnouncementFallbackItemTitle = computed(() => versionAnnouncementModalTitle.value);
 
 function normalizeTheme(value) {
   return value === "light" ? "light" : "dark";
@@ -430,6 +494,40 @@ function closeQueueCompleteModal() {
   queueCompleteModalOpen.value = false;
 }
 
+function maybeOpenVersionAnnouncements() {
+  if (versionAnnouncementModalOpen.value) {
+    return;
+  }
+
+  const unreadAnnouncements = getUnreadVersionAnnouncements({
+    announcements: versionAnnouncements,
+    language: language.value,
+  });
+
+  if (unreadAnnouncements.length === 0) {
+    versionAnnouncementModalEntries.value = [];
+    versionAnnouncementPendingReadIds.value = [];
+    return;
+  }
+
+  versionAnnouncementModalEntries.value = unreadAnnouncements;
+  versionAnnouncementPendingReadIds.value = unreadAnnouncements.map((entry) => entry.announcementId);
+  versionAnnouncementModalOpen.value = true;
+}
+
+function dismissVersionAnnouncementModal() {
+  const announcementIds = versionAnnouncementPendingReadIds.value.slice();
+  versionAnnouncementModalOpen.value = false;
+  versionAnnouncementModalEntries.value = [];
+  versionAnnouncementPendingReadIds.value = [];
+
+  if (announcementIds.length > 0) {
+    dismissVersionAnnouncements({
+      announcementIds,
+    });
+  }
+}
+
 async function goToHomeResults() {
   closeSimulationCompleteModal();
   if (route.name !== "home" || route.query.focus !== "results") {
@@ -494,12 +592,19 @@ watch(
   },
 );
 
+watch(language, () => {
+  if (!versionAnnouncementModalOpen.value) {
+    maybeOpenVersionAnnouncements();
+  }
+});
+
 onMounted(() => {
   const savedTheme = normalizeTheme(localStorage.getItem(THEME_STORAGE_KEY));
   applyTheme(savedTheme);
   scheduleDeferredInitialization();
   window.addEventListener("error", onWindowError);
   window.addEventListener("unhandledrejection", onUnhandledRejection);
+  maybeOpenVersionAnnouncements();
 });
 
 onUnmounted(() => {
