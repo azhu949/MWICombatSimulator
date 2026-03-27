@@ -16,6 +16,19 @@
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/queue">{{ t('common:menu.queue', 'Queue') }}</RouterLink>
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/multi-results">{{ t('common:menu.multiResults', 'Multi-round') }}</RouterLink>
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/settings">{{ t('common:menu.settings', 'Settings') }}</RouterLink>
+            <button
+              type="button"
+              class="action-button-muted patch-notes-trigger"
+              :class="{ 'patch-notes-trigger-unread': hasUnreadPatchNotes }"
+              :aria-label="patchNotesButtonAriaLabel"
+              :title="patchNotesButtonAriaLabel"
+              @click="openPatchNotesModal"
+            >
+              <span>{{ t("common:patchNotes", "Patch Notes") }}</span>
+              <span v-if="hasUnreadPatchNotes" class="patch-notes-unread-badge" aria-hidden="true">
+                {{ t("common:vue.app.patchNotesUnreadBadge", "Unread") }}
+              </span>
+            </button>
             <button type="button" class="action-button-muted" @click="toggleTheme">
               {{ t("common:controls.darkMode", "Dark Mode") }}: {{ themeLabel }}
             </button>
@@ -158,56 +171,45 @@
     </BaseModal>
 
     <BaseModal
-      :open="versionAnnouncementModalOpen"
-      :title="versionAnnouncementModalTitle"
-      panel-class="max-w-2xl max-h-[85vh]"
-      initial-focus-selector="[data-version-announcement-start]"
-      @close="dismissVersionAnnouncementModal"
+      :open="patchNotesModalOpen"
+      :title="t('common:patchNotes', 'Patch Notes')"
+      panel-class="max-w-[96vw] xl:max-w-[1100px]"
+      initial-focus-selector="[data-patch-notes-start]"
+      @close="closePatchNotesModal"
     >
-      <div class="space-y-4">
+      <div class="space-y-3">
+        <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
+          <span>{{ t("common:vue.settings.versionsCount", "Versions", { count: patchNotesEntries.length }) }}</span>
+          <span v-if="hasUnreadPatchNotes">
+            {{ t("common:vue.app.patchNotesUnreadStatus", "Unread updates", { count: patchNotesUnreadCount }) }}
+          </span>
+        </div>
+
+        <p class="text-xs text-slate-400">
+          {{ t("common:vue.app.patchNotesMarkReadHint", "Unread patch notes will be marked as read when you close this dialog.") }}
+        </p>
+
         <div
-          class="announcement-scroll-area max-h-[58vh] space-y-4 overflow-y-auto pr-1 outline-none"
-          data-version-announcement-start
+          v-if="patchNotesEntries.length > 0"
+          class="max-h-[65vh] space-y-2 overflow-y-auto pr-1 outline-none"
+          data-patch-notes-start
           tabindex="-1"
         >
-          <article
-            v-for="entry in versionAnnouncementModalEntries"
-            :key="entry.announcementId"
-            class="announcement-entry space-y-3 rounded-2xl p-4"
+          <DisclosurePanel
+            v-for="entry in patchNotesEntries"
+            :key="entry.entryId"
+            :title="entry.label"
+            :default-open="entry.entryId === patchNotesDefaultOpenEntryId"
           >
-            <div class="flex flex-wrap items-center gap-2 text-xs uppercase tracking-[0.14em] text-slate-400">
-              <span v-if="entry.dateLabel" class="rounded-full border border-white/10 bg-slate-950/70 px-2 py-1">{{ entry.dateLabel }}</span>
-              <span
-                v-if="entry.versionLabel"
-                class="rounded-full border border-amber-300/25 bg-amber-300/10 px-2 py-1 text-amber-200"
-              >
-                {{ entry.versionLabel }}
-              </span>
-            </div>
-            <h3 class="font-heading text-base font-semibold text-amber-200">
-              {{ entry.title || versionAnnouncementFallbackItemTitle }}
-            </h3>
-            <ul class="space-y-2">
-              <li
-                v-for="(line, index) in entry.bodyLines"
-                :key="`${entry.announcementId}-${index}`"
-                class="announcement-note rounded-xl px-3 py-2 text-sm text-slate-200"
-              >
-                {{ line }}
-              </li>
+            <ul class="list-disc space-y-1 pl-5 text-sm text-slate-200">
+              <li v-for="note in entry.notes" :key="note">{{ note }}</li>
             </ul>
-          </article>
+          </DisclosurePanel>
         </div>
-        <div class="flex flex-wrap items-center gap-2">
-          <button
-            type="button"
-            class="action-button-primary"
-            data-version-announcement-confirm
-            @click="dismissVersionAnnouncementModal"
-          >
-            {{ t("common:vue.app.versionAnnouncementAcknowledge", "Got it") }}
-          </button>
-        </div>
+
+        <p v-else class="text-sm text-slate-300" data-patch-notes-start tabindex="-1">
+          {{ t("common:vue.app.patchNotesEmpty", "No patch notes yet.") }}
+        </p>
       </div>
     </BaseModal>
 
@@ -261,13 +263,15 @@
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { RouterLink, RouterView, useRoute, useRouter } from "vue-router";
 import BaseModal from "./components/BaseModal.vue";
+import DisclosurePanel from "./components/DisclosurePanel.vue";
 import { useSimulatorStore } from "../stores/simulatorStore.js";
 import { useI18nText } from "./composables/useI18nText.js";
 import {
-  dismissVersionAnnouncements,
-  getUnreadVersionAnnouncements,
-  versionAnnouncements,
-} from "./versionAnnouncement.js";
+  getUnreadPatchNoteEntries,
+  initializePatchNotesState,
+  markPatchNoteEntriesAsRead,
+  patchNoteEntries,
+} from "./patchNotes.js";
 
 const THEME_STORAGE_KEY = "mwi.ui.theme.v1";
 const appVersion = __APP_VERSION__;
@@ -281,9 +285,8 @@ const globalErrorText = ref("");
 const errorCopyStatus = ref("");
 const simulationCompleteModalOpen = ref(false);
 const queueCompleteModalOpen = ref(false);
-const versionAnnouncementModalOpen = ref(false);
-const versionAnnouncementModalEntries = ref([]);
-const versionAnnouncementPendingReadIds = ref([]);
+const patchNotesModalOpen = ref(false);
+const patchNotesUnreadEntries = ref([]);
 const topQueueActionStatus = ref({
   tone: "secondary",
   text: "",
@@ -335,8 +338,19 @@ const topQueueActionStatusClass = computed(() => {
   }
   return "text-slate-300";
 });
-const versionAnnouncementModalTitle = computed(() => t("common:vue.app.versionAnnouncementTitle", "Update Announcement"));
-const versionAnnouncementFallbackItemTitle = computed(() => versionAnnouncementModalTitle.value);
+const patchNotesEntries = patchNoteEntries;
+const patchNotesUnreadCount = computed(() => patchNotesUnreadEntries.value.length);
+const hasUnreadPatchNotes = computed(() => patchNotesUnreadCount.value > 0);
+const patchNotesDefaultOpenEntryId = computed(() => (
+  patchNotesUnreadEntries.value[0]?.entryId
+  || patchNotesEntries[0]?.entryId
+  || ""
+));
+const patchNotesButtonAriaLabel = computed(() => (
+  hasUnreadPatchNotes.value
+    ? t("common:vue.app.patchNotesUnreadAriaLabel", "Patch Notes, {{count}} unread updates", { count: patchNotesUnreadCount.value })
+    : t("common:patchNotes", "Patch Notes")
+));
 
 function normalizeTheme(value) {
   return value === "light" ? "light" : "dark";
@@ -515,37 +529,25 @@ function closeQueueCompleteModal() {
   queueCompleteModalOpen.value = false;
 }
 
-function maybeOpenVersionAnnouncements() {
-  if (versionAnnouncementModalOpen.value) {
-    return;
-  }
-
-  const unreadAnnouncements = getUnreadVersionAnnouncements({
-    announcements: versionAnnouncements,
-    language: language.value,
+function refreshPatchNoteUnreadEntries() {
+  patchNotesUnreadEntries.value = getUnreadPatchNoteEntries({
+    entries: patchNotesEntries,
   });
-
-  if (unreadAnnouncements.length === 0) {
-    versionAnnouncementModalEntries.value = [];
-    versionAnnouncementPendingReadIds.value = [];
-    return;
-  }
-
-  versionAnnouncementModalEntries.value = unreadAnnouncements;
-  versionAnnouncementPendingReadIds.value = unreadAnnouncements.map((entry) => entry.announcementId);
-  versionAnnouncementModalOpen.value = true;
 }
 
-function dismissVersionAnnouncementModal() {
-  const announcementIds = versionAnnouncementPendingReadIds.value.slice();
-  versionAnnouncementModalOpen.value = false;
-  versionAnnouncementModalEntries.value = [];
-  versionAnnouncementPendingReadIds.value = [];
+function openPatchNotesModal() {
+  patchNotesModalOpen.value = true;
+}
 
-  if (announcementIds.length > 0) {
-    dismissVersionAnnouncements({
-      announcementIds,
+function closePatchNotesModal() {
+  const unreadEntryIds = patchNotesUnreadEntries.value.map((entry) => entry.entryId);
+  patchNotesModalOpen.value = false;
+
+  if (unreadEntryIds.length > 0) {
+    markPatchNoteEntriesAsRead({
+      entryIds: unreadEntryIds,
     });
+    refreshPatchNoteUnreadEntries();
   }
 }
 
@@ -613,19 +615,16 @@ watch(
   },
 );
 
-watch(language, () => {
-  if (!versionAnnouncementModalOpen.value) {
-    maybeOpenVersionAnnouncements();
-  }
-});
-
 onMounted(() => {
   const savedTheme = normalizeTheme(localStorage.getItem(THEME_STORAGE_KEY));
   applyTheme(savedTheme);
+  initializePatchNotesState({
+    entries: patchNotesEntries,
+  });
+  refreshPatchNoteUnreadEntries();
   scheduleDeferredInitialization();
   window.addEventListener("error", onWindowError);
   window.addEventListener("unhandledrejection", onUnhandledRejection);
-  maybeOpenVersionAnnouncements();
 });
 
 onUnmounted(() => {

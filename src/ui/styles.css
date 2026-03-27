@@ -184,6 +184,51 @@ body {
     background: var(--muted-btn-hover);
 }
 
+.patch-notes-trigger {
+    @apply inline-flex items-center gap-2;
+}
+
+.patch-notes-unread-badge {
+    @apply rounded-full px-2 py-0.5 text-[10px] font-semibold uppercase tracking-[0.12em];
+    border: 1px solid rgba(252, 211, 77, 0.34);
+    background: rgba(245, 158, 11, 0.18);
+    color: rgb(254 243 199);
+}
+
+.patch-notes-trigger-unread {
+    border-color: rgba(252, 211, 77, 0.7);
+    background:
+        linear-gradient(135deg, rgba(245, 158, 11, 0.18), rgba(20, 184, 166, 0.12)),
+        var(--muted-btn-bg);
+    box-shadow:
+        0 0 0 1px rgba(252, 211, 77, 0.1),
+        0 0 24px rgba(245, 158, 11, 0.18);
+    animation: patch-notes-unread-pulse 1.4s ease-in-out infinite;
+}
+
+.patch-notes-trigger-unread:hover:not(:disabled) {
+    background:
+        linear-gradient(135deg, rgba(245, 158, 11, 0.24), rgba(45, 212, 191, 0.16)),
+        var(--muted-btn-hover);
+}
+
+@keyframes patch-notes-unread-pulse {
+    0%,
+    100% {
+        transform: translateY(0);
+        box-shadow:
+            0 0 0 1px rgba(252, 211, 77, 0.1),
+            0 0 18px rgba(245, 158, 11, 0.12);
+    }
+
+    50% {
+        transform: translateY(-1px);
+        box-shadow:
+            0 0 0 1px rgba(252, 211, 77, 0.18),
+            0 0 30px rgba(45, 212, 191, 0.2);
+    }
+}
+
 .top-nav-active {
     border-color: rgb(252 211 77) !important;
     background: rgba(252, 211, 77, 0.12) !important;
@@ -221,6 +266,28 @@ body {
         var(--panel-bg);
     color: var(--light-amber-text);
     box-shadow: 0 18px 32px rgba(15, 23, 42, 0.12);
+}
+
+:root[data-theme="light"] .patch-notes-unread-badge {
+    border-color: rgba(180, 83, 9, 0.34);
+    background: rgba(245, 158, 11, 0.16);
+    color: var(--light-amber-text-strong);
+}
+
+:root[data-theme="light"] .patch-notes-trigger-unread {
+    border-color: rgba(180, 83, 9, 0.54);
+    background:
+        linear-gradient(135deg, rgba(245, 158, 11, 0.15), rgba(13, 148, 136, 0.08)),
+        var(--muted-btn-bg);
+    box-shadow:
+        0 0 0 1px rgba(180, 83, 9, 0.08),
+        0 0 22px rgba(180, 83, 9, 0.12);
+}
+
+:root[data-theme="light"] .patch-notes-trigger-unread:hover:not(:disabled) {
+    background:
+        linear-gradient(135deg, rgba(245, 158, 11, 0.2), rgba(13, 148, 136, 0.12)),
+        var(--muted-btn-hover);
 }
 
 .badge {
@@ -310,4 +377,10 @@ body {
     border-color: rgba(180, 83, 9, 0.44) !important;
     background: rgba(245, 158, 11, 0.14) !important;
     color: var(--light-amber-text) !important;
+}
+
+@media (prefers-reduced-motion: reduce) {
+    .patch-notes-trigger-unread {
+        animation: none;
+    }
 }

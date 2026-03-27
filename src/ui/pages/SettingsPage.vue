@@ -414,77 +414,7 @@
         </div>
       </div>
 
-      <div class="panel space-y-3">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <h3 class="font-heading text-base font-semibold text-amber-200">{{ t("common:patchNotes", "Patch Notes") }}</h3>
-          <span class="text-xs uppercase tracking-[0.12em] text-slate-400">
-            {{ t("common:vue.settings.versionsCount", "Versions", { count: patchNoteEntries.length }) }}
-          </span>
-        </div>
-
-        <p class="text-xs text-slate-400">
-          {{ t("common:vue.settings.patchNotesPreviewHint", "Showing patch notes preview.", { count: PATCH_NOTE_PREVIEW_COUNT }) }}
-        </p>
-
-        <div class="space-y-2">
-          <DisclosurePanel
-            v-for="(entry, index) in patchNotePreviewEntries"
-            :key="entry.date"
-            :title="entry.date"
-            :default-open="index === 0"
-          >
-            <ul class="list-disc space-y-1 pl-5 text-sm text-slate-200">
-              <li v-for="note in entry.notes" :key="note">{{ note }}</li>
-            </ul>
-          </DisclosurePanel>
-        </div>
-
-        <div class="flex justify-end">
-          <button type="button" class="action-button-muted" @click="openPatchNotesModalList">
-            {{ t("common:vue.settings.patchNotesViewMore", "View More") }}
-          </button>
-        </div>
-      </div>
     </div>
-
-    <BaseModal
-      :open="openPatchNotesModal"
-      :title="t('common:patchNotes', 'Patch Notes')"
-      panel-class="max-w-[96vw] xl:max-w-[1100px]"
-      @close="closePatchNotesModalList"
-    >
-      <div class="space-y-3">
-        <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
-          <span>{{ t("common:vue.settings.versionsCount", "Versions", { count: patchNoteEntries.length }) }}</span>
-          <span>{{ t("common:vue.settings.patchNotesPageInfo", "Page info", {
-            page: patchNotesPage,
-            total: patchNotesTotalPages,
-          }) }}</span>
-        </div>
-
-        <div class="max-h-[65vh] space-y-2 overflow-y-auto pr-1">
-          <DisclosurePanel
-            v-for="(entry, index) in patchNotePageEntries"
-            :key="`${entry.date}-${patchNotesPage}-${index}`"
-            :title="entry.date"
-            :default-open="index === 0"
-          >
-            <ul class="list-disc space-y-1 pl-5 text-sm text-slate-200">
-              <li v-for="note in entry.notes" :key="note">{{ note }}</li>
-            </ul>
-          </DisclosurePanel>
-        </div>
-
-        <div class="flex flex-wrap items-center justify-end gap-2">
-          <button type="button" class="action-button-muted" :disabled="patchNotesPage <= 1" @click="goToPatchNotesPrevPage">
-            {{ t("common:vue.settings.patchNotesPrevPage", "Prev") }}
-          </button>
-          <button type="button" class="action-button-muted" :disabled="patchNotesPage >= patchNotesTotalPages" @click="goToPatchNotesNextPage">
-            {{ t("common:vue.settings.patchNotesNextPage", "Next") }}
-          </button>
-        </div>
-      </div>
-    </BaseModal>
 
     <BaseModal
       :open="openImportQueueChangesModal"
@@ -531,11 +461,9 @@
 
 <script setup>
 import { computed, reactive, ref, watch } from "vue";
-import patchNote from "../../../patchNote.json";
 import itemDetailMap from "../../combatsimulator/data/itemDetailMap.json";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { useI18nText } from "../composables/useI18nText.js";
-import DisclosurePanel from "../components/DisclosurePanel.vue";
 import BaseModal from "../components/BaseModal.vue";
 
 const simulator = useSimulatorStore();
@@ -545,16 +473,12 @@ const equipmentSetName = ref("");
 const priceSearchKeyword = ref("");
 const selectedPriceCategory = ref("__all__");
 const openEditPricesModal = ref(false);
-const openPatchNotesModal = ref(false);
 const openImportQueueChangesModal = ref(false);
 const pendingImportQueueSetName = ref("");
 const pendingImportQueueChangeCount = ref(0);
 const pendingImportAndResetBaseline = ref(false);
-const patchNotesPage = ref(1);
 
 const PRICE_ROWS_STEP = 200;
-const PATCH_NOTE_PREVIEW_COUNT = 5;
-const PATCH_NOTE_PAGE_SIZE = 10;
 const priceRowLimit = ref(PRICE_ROWS_STEP);
 
 const message = ref({
@@ -760,18 +684,6 @@ const hasMorePriceRows = computed(() => visiblePriceRows.value.length < filtered
 const priceOverrideCount = computed(() => Object.keys(simulator.pricing.overrides || {}).length);
 
 const equipmentSetEntries = computed(() => simulator.equipmentSetEntries);
-
-const patchNoteEntries = computed(() => Object.entries(patchNote).map(([date, notes]) => ({
-  date,
-  notes: Array.isArray(notes) ? notes : [],
-})));
-const patchNotePreviewEntries = computed(() => patchNoteEntries.value.slice(0, PATCH_NOTE_PREVIEW_COUNT));
-const patchNotesTotalPages = computed(() => Math.max(1, Math.ceil(patchNoteEntries.value.length / PATCH_NOTE_PAGE_SIZE)));
-const patchNotePageEntries = computed(() => {
-  const safePage = Math.min(patchNotesTotalPages.value, Math.max(1, Number(patchNotesPage.value || 1)));
-  const start = (safePage - 1) * PATCH_NOTE_PAGE_SIZE;
-  return patchNoteEntries.value.slice(start, start + PATCH_NOTE_PAGE_SIZE);
-});
 
 const pricingStatusText = computed(() => {
   if (simulator.pricing.isLoading) {
@@ -1040,15 +952,6 @@ function loadMorePriceRows() {
   priceRowLimit.value += PRICE_ROWS_STEP;
 }
 
-function openPatchNotesModalList() {
-  patchNotesPage.value = 1;
-  openPatchNotesModal.value = true;
-}
-
-function closePatchNotesModalList() {
-  openPatchNotesModal.value = false;
-}
-
 function openImportQueueChangesConfirm(setName, queueChangeCount = 0, importAndResetBaseline = false) {
   pendingImportQueueSetName.value = String(setName || "").trim();
   pendingImportQueueChangeCount.value = Math.max(0, Math.floor(Number(queueChangeCount || 0)));
@@ -1085,14 +988,6 @@ async function confirmImportQueueChanges() {
     return;
   }
   importEquipmentSetQueueChanges(setName);
-}
-
-function goToPatchNotesPrevPage() {
-  patchNotesPage.value = Math.max(1, Number(patchNotesPage.value || 1) - 1);
-}
-
-function goToPatchNotesNextPage() {
-  patchNotesPage.value = Math.min(patchNotesTotalPages.value, Number(patchNotesPage.value || 1) + 1);
 }
 
 function saveEquipmentSet() {
