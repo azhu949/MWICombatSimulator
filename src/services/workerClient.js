@@ -14,6 +14,7 @@
  * @property {"start_simulation_all_zones"} type
  * @property {Array<any>} players
  * @property {Array<{ zoneHrid: string, difficultyTier: number }>} zones
+ * @property {number} [parallelWorkerLimit]
  * @property {number} simulationTimeLimit
  * @property {{ mooPass: boolean, comExp: number, comDrop: number, enableHpMpVisualization: boolean }} extra
  */
@@ -23,6 +24,7 @@
  * @property {"start_simulation_all_labyrinths"} type
  * @property {Array<any>} players
  * @property {Array<{ labyrinthHrid: string, roomLevel: number, crates: string[] }>} labyrinths
+ * @property {number} [parallelWorkerLimit]
  * @property {number} simulationTimeLimit
  * @property {{ mooPass: boolean, comExp: number, comDrop: number, enableHpMpVisualization: boolean }} extra
  */

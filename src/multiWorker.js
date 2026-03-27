@@ -26,6 +26,21 @@ function getHardwareWorkerLimit() {
     return Math.max(1, Math.floor(rawLimit));
 }
 
+function getEffectiveWorkerLimit(eventData = {}, targetCount = 0) {
+    const normalizedTargetCount = Math.max(0, Math.floor(Number(targetCount || 0)));
+    if (normalizedTargetCount <= 0) {
+        return 0;
+    }
+
+    const hardwareWorkerLimit = getHardwareWorkerLimit();
+    const requestedWorkerLimit = Math.floor(Number(eventData?.parallelWorkerLimit));
+    if (!Number.isFinite(requestedWorkerLimit) || requestedWorkerLimit <= 0) {
+        return Math.min(hardwareWorkerLimit, normalizedTargetCount);
+    }
+
+    return Math.min(hardwareWorkerLimit, normalizedTargetCount, requestedWorkerLimit);
+}
+
 function buildMultiSimulationConfig(eventData = {}) {
     if (eventData?.type === "start_simulation_all_zones") {
         return {
@@ -189,7 +204,7 @@ export async function handleMultiSimulationMessage(eventData = {}, workerScope =
     };
 
     try {
-        const maxWorkers = Math.min(getHardwareWorkerLimit(), config.targets.length);
+        const maxWorkers = getEffectiveWorkerLimit(eventData, config.targets.length);
         const workers = Array.from({ length: maxWorkers }, () => processTaskQueue());
         await Promise.all(workers);
         if (!aborted) {
