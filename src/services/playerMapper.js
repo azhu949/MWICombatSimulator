@@ -3,58 +3,24 @@ import Consumable from "../combatsimulator/consumable.js";
 import Equipment from "../combatsimulator/equipment.js";
 import Player from "../combatsimulator/player.js";
 import abilitySlotsLevelRequirementList from "../combatsimulator/data/abilitySlotsLevelRequirementList.json";
-import houseRoomDetailMap from "../combatsimulator/data/houseRoomDetailMap.json";
-import itemDetailMap from "../combatsimulator/data/itemDetailMap.json";
+import { itemDetailIndex } from "../shared/gameDataIndex.js";
+import {
+    calcCombatLevel,
+    createEmptyPlayerConfig,
+    createEmptySkillExperienceMap,
+    EQUIPMENT_SLOT_KEYS,
+    LEVEL_KEYS,
+} from "../shared/playerConfig.js";
 import { sanitizeTriggerMap, toTriggerInstances } from "./triggerMapper.js";
 
-const LEVEL_KEYS = ["stamina", "intelligence", "attack", "melee", "defense", "ranged", "magic"];
-const EQUIPMENT_SLOT_KEYS = ["head", "body", "legs", "feet", "hands", "weapon", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"];
-
-export function createEmptySkillExperienceMap() {
-    return Object.fromEntries(LEVEL_KEYS.map((key) => [key, null]));
-}
-
-export function createEmptyPlayerConfig(id) {
-    const houseRooms = {};
-    Object.keys(houseRoomDetailMap).forEach((hrid) => {
-        houseRooms[hrid] = 0;
-    });
-
-    const levels = Object.fromEntries(LEVEL_KEYS.map((key) => [key, 1]));
-    const skillExperience = createEmptySkillExperienceMap();
-    const equipment = Object.fromEntries(EQUIPMENT_SLOT_KEYS.map((slot) => [slot, { itemHrid: "", enhancementLevel: 0 }]));
-
-    return {
-        id: String(id),
-        name: `Player ${id}`,
-        selected: Number(id) === 1,
-        levels,
-        skillExperience,
-        equipment,
-        food: ["", "", ""],
-        drinks: ["", "", ""],
-        abilities: [
-            { abilityHrid: "", level: 1 },
-            { abilityHrid: "", level: 1 },
-            { abilityHrid: "", level: 1 },
-            { abilityHrid: "", level: 1 },
-            { abilityHrid: "", level: 1 },
-        ],
-        triggerMap: {},
-        houseRooms,
-        achievements: {},
-    };
-}
-
 function mapWeaponType(itemHrid) {
-    const item = itemDetailMap[itemHrid];
-    if (!item?.equipmentDetail?.type) {
+    const equipmentType = String(itemDetailIndex?.[itemHrid]?.equipmentType || "");
+    if (!equipmentType) {
         return "";
     }
 
-    const type = String(item.equipmentDetail.type);
-    if (type === "/equipment_types/main_hand" || type === "/equipment_types/two_hand") {
-        return type;
+    if (equipmentType === "/equipment_types/main_hand" || equipmentType === "/equipment_types/two_hand") {
+        return equipmentType;
     }
 
     return "";
@@ -67,13 +33,6 @@ function normalizeEnhancementLevel(value) {
     }
 
     return Math.floor(parsed);
-}
-
-export function calcCombatLevel(staminaLevel, intelligenceLevel, defenseLevel, attackLevel, meleeLevel, rangedLevel, magicLevel) {
-    return (
-        0.1 * (staminaLevel + intelligenceLevel + attackLevel + defenseLevel + Math.max(meleeLevel, rangedLevel, magicLevel)) +
-        0.5 * Math.max(attackLevel, defenseLevel, meleeLevel, rangedLevel, magicLevel)
-    );
 }
 
 function applyDebuffOnLevelGap(playersToSim) {
@@ -201,4 +160,10 @@ export function buildPlayersForSimulation(playerConfigs) {
     return simulationPlayers;
 }
 
-export { LEVEL_KEYS, EQUIPMENT_SLOT_KEYS };
+export {
+    calcCombatLevel,
+    createEmptyPlayerConfig,
+    createEmptySkillExperienceMap,
+    EQUIPMENT_SLOT_KEYS,
+    LEVEL_KEYS,
+};

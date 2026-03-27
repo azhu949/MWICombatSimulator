@@ -91,10 +91,12 @@
 
 <script setup>
 import { computed } from "vue";
-import abilityDetailMap from "../../combatsimulator/data/abilityDetailMap.json";
-import houseRoomDetailMap from "../../combatsimulator/data/houseRoomDetailMap.json";
-import itemDetailMap from "../../combatsimulator/data/itemDetailMap.json";
-import { EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../../services/playerMapper.js";
+import {
+  abilityDetailIndex as abilityDetailMap,
+  houseRoomDetailIndex as houseRoomDetailMap,
+  itemDetailIndex as itemDetailMap,
+} from "../../shared/gameDataIndex.js";
+import { EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../../shared/playerConfig.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { useAbilityText } from "../composables/useAbilityText.js";
 import { useI18nText } from "../composables/useI18nText.js";

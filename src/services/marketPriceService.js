@@ -1,5 +1,5 @@
-import itemDetailMap from "../combatsimulator/data/itemDetailMap.json";
 import openableLootDropMap from "../combatsimulator/data/openableLootDropMap.json";
+import { itemDetailIndex, itemVendorPriceByHrid } from "../shared/gameDataIndex.js";
 
 export const PRICE_MODE_ASK = "ask";
 export const PRICE_MODE_BID = "bid";
@@ -22,8 +22,7 @@ function toFiniteNumber(value, fallback = 0) {
 }
 
 function getVendorPriceByItemHrid(itemHrid) {
-    const item = itemDetailMap[itemHrid];
-    return Math.max(0, toFiniteNumber(item?.sellPrice, 0));
+    return Math.max(0, toFiniteNumber(itemVendorPriceByHrid?.[itemHrid], 0));
 }
 
 export function normalizePriceMode(mode, fallback = PRICE_MODE_BID) {
@@ -107,7 +106,7 @@ function addSyntheticEntries(table) {
 export function createDefaultPriceTable() {
     const table = {};
 
-    for (const item of Object.values(itemDetailMap)) {
+    for (const item of Object.values(itemDetailIndex || {})) {
         const hrid = String(item?.hrid || "");
         if (!hrid) {
             continue;

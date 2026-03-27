@@ -5,6 +5,7 @@
     "scripts": {
         "dev": "vite",
         "build": "vite build",
+        "build-game-data-index": "node scripts/build-game-data-index.mjs",
         "verify-pages-build": "node scripts/verify-pages-build.js",
         "preview": "vite preview",
         "start": "vite",

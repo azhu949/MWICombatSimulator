@@ -1044,11 +1044,13 @@ import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, r
 import { useRoute, useRouter } from "vue-router";
 import achievementDetailMap from "../../combatsimulator/data/achievementDetailMap.json";
 import achievementTierMap from "../../combatsimulator/data/achievementTierDetailMap.json";
-import abilityDetailMap from "../../combatsimulator/data/abilityDetailMap.json";
 import combatStyleDetailMap from "../../combatsimulator/data/combatStyleDetailMap.json";
 import damageTypeDetailMap from "../../combatsimulator/data/damageTypeDetailMap.json";
-import houseRoomDetailMap from "../../combatsimulator/data/houseRoomDetailMap.json";
-import itemDetailMap from "../../combatsimulator/data/itemDetailMap.json";
+import {
+  abilityDetailIndex as abilityDetailMap,
+  houseRoomDetailIndex as houseRoomDetailMap,
+  itemDetailIndex as itemDetailMap,
+} from "../../shared/gameDataIndex.js";
 import {
   MAX_TRIGGER_COUNT,
   getDefaultTriggerDtosForHrid,
@@ -1060,7 +1062,8 @@ import {
 } from "../../services/triggerMapper.js";
 import { applyTampermonkeyImportMessage } from "../../services/tampermonkeyImportBridge.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
-import { buildPlayersForSimulation, calcCombatLevel, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../../services/playerMapper.js";
+import { buildPlayersForSimulation } from "../../services/playerMapper.js";
+import { calcCombatLevel, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../../shared/playerConfig.js";
 import { buildNoRngProfitBreakdown, buildRandomProfitBreakdown } from "../../services/profitEstimator.js";
 import { calculateSkillUpgradeEta } from "../../services/levelExperience.js";
 import { useAbilityText } from "../composables/useAbilityText.js";
