@@ -5,6 +5,10 @@
         <div>
           <h2 class="font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.queue.title", "Queue Runner") }}</h2>
           <p class="text-sm text-slate-300">{{ t("common:vue.queue.activePlayer", "Active player", { name: simulator.activePlayer.name }) }}</p>
+          <p v-if="queuePartySummaryText" class="mt-1 text-xs text-slate-400">
+            {{ t("common:queue.partyLockedMembers", "Locked party") }}:
+            <span class="ml-1 text-slate-200">{{ queuePartySummaryText }}</span>
+          </p>
         </div>
       </div>
 
@@ -41,6 +45,7 @@
       </div>
 
       <p v-if="queueState.error" class="text-sm text-rose-300">{{ t(queueState.error, queueState.error) }}</p>
+      <p v-if="queuePartyWarningText" class="text-sm text-amber-300">{{ queuePartyWarningText }}</p>
     </div>
 
     <div class="panel" v-if="queueState.baseline">
@@ -128,6 +133,17 @@ const CHANGE_CATEGORY_PRIORITY = {
 };
 
 const queueState = computed(() => simulator.activeQueueState);
+const queuePartyStatus = computed(() => simulator.activeQueuePartyStatus || { hasMismatch: false, messageKey: "", memberNames: [] });
+const queuePartySummaryText = computed(() => (
+  Array.isArray(queuePartyStatus.value?.memberNames) && queuePartyStatus.value.memberNames.length > 0
+    ? queuePartyStatus.value.memberNames.join(" / ")
+    : ""
+));
+const queuePartyWarningText = computed(() => (
+  queuePartyStatus.value?.hasMismatch
+    ? t(queuePartyStatus.value?.messageKey || "common:queue.partyChangedSinceBaseline", queuePartyStatus.value?.messageKey || "common:queue.partyChangedSinceBaseline")
+    : ""
+));
 const baselineNeedsResetPrompt = computed(() => {
   const baseline = queueState.value?.baseline;
   if (!baseline) {

@@ -408,6 +408,13 @@ describe("simulatorStore", () => {
         expect(simulator.activeQueueState.baseline).toBeTruthy();
     });
 
+    it("does not mark party mismatch before a queue baseline exists", () => {
+        const simulator = useSimulatorStore();
+        simulator.players[1].selected = true;
+
+        expect(simulator.activeQueuePartyStatus?.hasMismatch).toBe(false);
+    });
+
     it("syncs active single-simulation result selection when active player changes", () => {
         const simulator = useSimulatorStore();
         simulator.results.summaryRows = [
@@ -525,6 +532,97 @@ describe("simulatorStore", () => {
         expect(simulator.runtime.isRunning).toBe(false);
         expect(simulator.activeQueueState.isRunning).toBe(false);
         expect(Number(variantRow.deltaProfitPerHour)).toBeLessThanOrEqual(0);
+    });
+
+    it("runs queue entries with the frozen selected party snapshot", async () => {
+        const simulator = useSimulatorStore();
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.players[1].selected = true;
+        simulator.players[1].name = "Support";
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activeQueueState.baseline.metrics = {
+            dailyNoRngProfit: 2400,
+            dps: 100,
+            xpPerHour: 1200,
+            killsPerHour: 100,
+        };
+        simulator.activePlayer.levels.stamina = 10;
+        const addedItems = simulator.addActivePlayerToQueue();
+        expect(addedItems).toHaveLength(1);
+
+        simulator.updateActiveQueueSettings({
+            rounds: 1,
+            executionMode: "serial",
+            medianBlend: 0.5,
+            weightProfit: 1,
+            weightXp: 0,
+            weightDeathSafety: 0,
+        });
+
+        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+            onProgress?.({ progress: 1 });
+            return {
+                simulatedTime: ONE_HOUR,
+                encounters: 100,
+                experienceGained: {
+                    player1: {
+                        stamina: 1000,
+                    },
+                    player2: {
+                        stamina: 500,
+                    },
+                },
+                deaths: {
+                    player1: 0,
+                    player2: 0,
+                },
+                consumablesUsed: {},
+            };
+        });
+
+        const rows = await simulator.runActiveQueue();
+        const payload = simulator.runSingleSimulationPayload.mock.calls[0][0];
+
+        expect(payload.players.map((player) => player.hrid)).toEqual(["player1", "player2"]);
+        expect(rows).toHaveLength(1);
+    });
+
+    it("rejects queue run when a frozen teammate configuration changes", async () => {
+        const simulator = useSimulatorStore();
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.players[1].selected = true;
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activeQueueState.baseline.metrics = {
+            dailyNoRngProfit: 2400,
+            dps: 100,
+            xpPerHour: 1200,
+            killsPerHour: 100,
+        };
+        simulator.activePlayer.levels.stamina = 10;
+        const addedItems = simulator.addActivePlayerToQueue();
+        expect(addedItems).toHaveLength(1);
+
+        simulator.players[1].levels.stamina += 1;
+
+        expect(simulator.activeQueuePartyStatus?.hasMismatch).toBe(true);
+
+        const rows = await simulator.runActiveQueue();
+
+        expect(rows).toEqual([]);
+        expect(simulator.activeQueueState.error).toBe("common:queue.partyChangedSinceBaseline");
+    });
+
+    it("does not add queue items when a frozen teammate configuration changes", async () => {
+        const simulator = useSimulatorStore();
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.players[1].selected = true;
+        await simulator.setQueueBaselineForActivePlayer();
+
+        simulator.players[1].levels.stamina += 1;
+        simulator.activePlayer.levels.stamina = 10;
+
+        expect(simulator.activeQueuePartyStatus?.hasMismatch).toBe(true);
+        expect(simulator.addActivePlayerToQueue()).toEqual([]);
     });
 
     it("runs queue in parallel execution mode", async () => {
@@ -1206,6 +1304,41 @@ describe("simulatorStore", () => {
         expect(baseline?.metrics?.totalXpPerHour).toBeGreaterThan(0);
         expect(simulator.activeQueueState.isRunning).toBe(false);
         expect(simulator.runtime.progress).toBe(1);
+    });
+
+    it("captures selected party snapshot when baseline simulation runs", async () => {
+        const simulator = useSimulatorStore();
+        simulator.setImportedProfileState("1", true);
+        simulator.players[1].selected = true;
+        simulator.players[1].name = "Support";
+        simulator.players[1].levels.stamina = 77;
+        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+            onProgress?.({ progress: 1 });
+            return {
+                simulatedTime: ONE_HOUR,
+                encounters: 120,
+                experienceGained: {
+                    player1: {
+                        stamina: 1200,
+                    },
+                    player2: {
+                        stamina: 800,
+                    },
+                },
+                deaths: {
+                    player1: 0,
+                    player2: 0,
+                },
+                consumablesUsed: {},
+            };
+        });
+
+        const baseline = await simulator.setQueueBaselineForActivePlayer({ runSimulation: true });
+        const payload = simulator.runSingleSimulationPayload.mock.calls[0][0];
+
+        expect(payload.players.map((player) => player.hrid)).toEqual(["player1", "player2"]);
+        expect(baseline?.partySnapshot?.selectedPlayers.map((player) => player.id)).toEqual(["1", "2"]);
+        expect(baseline?.partySnapshot?.selectedPlayers.map((player) => player.selected)).toEqual([true, true]);
     });
 
     it("resets cancelled queue status when baseline is rebuilt without simulation", async () => {

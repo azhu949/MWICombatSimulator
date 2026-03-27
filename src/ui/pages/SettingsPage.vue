@@ -65,6 +65,11 @@
           <h4 class="font-heading text-sm uppercase tracking-[0.14em] text-slate-300">{{ t("common:queue.runQueueSettings", "Run Queue Settings") }}</h4>
           <span class="text-xs text-slate-400">{{ t("common:vue.queue.activePlayer", "Active player", { name: simulator.activePlayer.name }) }}</span>
         </div>
+        <p v-if="queuePartySummaryText" class="mt-2 text-xs text-slate-400">
+          {{ t("common:queue.partyLockedMembers", "Locked party") }}:
+          <span class="ml-1 text-slate-200">{{ queuePartySummaryText }}</span>
+        </p>
+        <p v-if="queuePartyWarningText" class="mt-2 text-xs text-amber-300">{{ queuePartyWarningText }}</p>
 
         <div class="mt-3 grid gap-3 lg:grid-cols-3">
           <div class="space-y-2">
@@ -506,6 +511,17 @@ const queueSettingsStatus = ref({
   tone: "secondary",
   text: t("common:settingsPage.statusReady", "Ready."),
 });
+const queuePartyStatus = computed(() => simulator.activeQueuePartyStatus || { hasMismatch: false, messageKey: "", memberNames: [] });
+const queuePartySummaryText = computed(() => (
+  Array.isArray(queuePartyStatus.value?.memberNames) && queuePartyStatus.value.memberNames.length > 0
+    ? queuePartyStatus.value.memberNames.join(" / ")
+    : ""
+));
+const queuePartyWarningText = computed(() => (
+  queuePartyStatus.value?.hasMismatch
+    ? t(queuePartyStatus.value?.messageKey || "common:queue.partyChangedSinceBaseline", queuePartyStatus.value?.messageKey || "common:queue.partyChangedSinceBaseline")
+    : ""
+));
 
 const consumablePriceModeProxy = computed({
   get() {

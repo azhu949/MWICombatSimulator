@@ -1929,6 +1929,64 @@ function createQueuePlayerState() {
     };
 }
 
+function buildQueuePartySelectedPlayers(players = [], activePlayerId = "1") {
+    const normalizedActivePlayerId = String(activePlayerId || "1");
+    const safePlayers = Array.isArray(players) ? players : [];
+    const selectedPlayers = [];
+    let activeIncluded = false;
+
+    for (const player of safePlayers) {
+        if (!player) {
+            continue;
+        }
+
+        const clonedPlayer = deepClone(player);
+        const isActivePlayer = String(clonedPlayer.id || "") === normalizedActivePlayerId;
+        if (!isActivePlayer && clonedPlayer.selected !== true) {
+            continue;
+        }
+
+        clonedPlayer.selected = true;
+        selectedPlayers.push(clonedPlayer);
+        activeIncluded = activeIncluded || isActivePlayer;
+    }
+
+    if (!activeIncluded) {
+        const activePlayer = safePlayers.find((player) => String(player?.id || "") === normalizedActivePlayerId);
+        if (activePlayer) {
+            const clonedPlayer = deepClone(activePlayer);
+            clonedPlayer.selected = true;
+            selectedPlayers.unshift(clonedPlayer);
+        }
+    }
+
+    return selectedPlayers;
+}
+
+function buildQueuePartyComparisonPlayers(players = [], activePlayerId = "1") {
+    const normalizedActivePlayerId = String(activePlayerId || "1");
+    return buildQueuePartySelectedPlayers(players, activePlayerId)
+        .filter((player) => String(player?.id || "") !== normalizedActivePlayerId)
+        .map((player) => ({
+            ...deepClone(player),
+            selected: true,
+        }))
+        .sort((left, right) => String(left?.id || "").localeCompare(String(right?.id || "")));
+}
+
+function buildQueuePartySignature(players = [], activePlayerId = "1") {
+    return JSON.stringify(buildQueuePartyComparisonPlayers(players, activePlayerId));
+}
+
+function createQueuePartySnapshot(players = [], activePlayerId = "1") {
+    const selectedPlayers = buildQueuePartySelectedPlayers(players, activePlayerId);
+    return {
+        selectedPlayers,
+        signature: buildQueuePartySignature(selectedPlayers, activePlayerId),
+        createdAt: Date.now(),
+    };
+}
+
 function normalizeAdvisorFilters(rawFilters = {}) {
     const source = isPlainObject(rawFilters) ? rawFilters : {};
     return {
@@ -4081,6 +4139,43 @@ export const useSimulatorStore = defineStore("simulator", {
         activeQueueState(state) {
             return state.queue.byPlayer[state.activePlayerId] ?? createQueuePlayerState();
         },
+        activeQueuePartyStatus(state) {
+            const queueState = state.queue.byPlayer[state.activePlayerId] ?? createQueuePlayerState();
+            const hasBaselineSnapshot = Boolean(queueState?.baseline?.snapshot);
+            if (!hasBaselineSnapshot) {
+                return {
+                    hasMismatch: false,
+                    messageKey: "",
+                    memberNames: [],
+                };
+            }
+            const baselinePartyPlayers = Array.isArray(queueState?.baseline?.partySnapshot?.selectedPlayers)
+                ? queueState.baseline.partySnapshot.selectedPlayers
+                : [];
+            const memberNames = baselinePartyPlayers
+                .map((player) => String(player?.name || `Player ${player?.id || ""}`).trim())
+                .filter(Boolean);
+            const selectedTeammateCount = buildQueuePartyComparisonPlayers(state.players, state.activePlayerId).length;
+            if (baselinePartyPlayers.length <= 0) {
+                return {
+                    hasMismatch: selectedTeammateCount > 0,
+                    messageKey: selectedTeammateCount > 0 ? "common:queue.partyChangedSinceBaseline" : "",
+                    memberNames: [],
+                };
+            }
+
+            const baselineSignature = String(
+                queueState?.baseline?.partySnapshot?.signature
+                || buildQueuePartySignature(baselinePartyPlayers, state.activePlayerId)
+            );
+            const currentSignature = buildQueuePartySignature(state.players, state.activePlayerId);
+            const hasMismatch = baselineSignature !== currentSignature;
+            return {
+                hasMismatch,
+                messageKey: hasMismatch ? "common:queue.partyChangedSinceBaseline" : "",
+                memberNames,
+            };
+        },
         activeImportedBaselineSnapshot(state) {
             return state.queue.importedBaselineByPlayer?.[state.activePlayerId] ?? null;
         },
@@ -4946,6 +5041,7 @@ export const useSimulatorStore = defineStore("simulator", {
             const preserveQueueItems = options?.preserveQueueItems !== false;
             const activePlayerId = String(this.activePlayerId);
             const activePlayer = this.players.find((player) => String(player.id) === activePlayerId) ?? this.activePlayer;
+            const partySnapshot = createQueuePartySnapshot(this.players, activePlayerId);
             const preservedQueueItems = preserveQueueItems && Array.isArray(queueState.items)
                 ? queueState.items.slice()
                 : [];
@@ -4957,6 +5053,7 @@ export const useSimulatorStore = defineStore("simulator", {
             if (!shouldRunSimulation) {
                 queueState.baseline = {
                     snapshot: deepClone(this.activePlayer),
+                    partySnapshot,
                     settings: buildQueueBaselineSettings(this.simulationSettings),
                     metrics: null,
                     simResult: null,
@@ -4991,11 +5088,10 @@ export const useSimulatorStore = defineStore("simulator", {
                 throw new Error("Queue baseline does not support labyrinth mode yet.");
             }
 
-            const scenarioPlayers = this.players.map((player) => {
-                const cloned = deepClone(player);
-                cloned.selected = String(cloned.id) === activePlayerId;
-                return cloned;
-            });
+            const scenarioPlayers = partySnapshot.selectedPlayers.map((player) => ({
+                ...deepClone(player),
+                selected: true,
+            }));
             const playersToSim = buildPlayersForSimulation(scenarioPlayers);
             if (playersToSim.length === 0) {
                 throw new Error("Unable to build player simulation data.");
@@ -5030,6 +5126,7 @@ export const useSimulatorStore = defineStore("simulator", {
                 const queueMetrics = computeQueueMetrics(simResult, activePlayerId, pricingOptions);
                 queueState.baseline = {
                     snapshot: deepClone(this.activePlayer),
+                    partySnapshot,
                     settings: buildQueueBaselineSettings(this.simulationSettings),
                     metrics: {
                         ...summaryMetrics,
@@ -5067,6 +5164,10 @@ export const useSimulatorStore = defineStore("simulator", {
         },
         addActivePlayerToQueue() {
             const queueState = this.ensureQueueState(this.activePlayerId);
+            if (this.activeQueuePartyStatus?.hasMismatch) {
+                queueState.error = this.activeQueuePartyStatus.messageKey || "common:queue.partyChangedSinceBaseline";
+                return [];
+            }
             if (!queueState.baseline?.snapshot) {
                 return [];
             }
@@ -5241,6 +5342,11 @@ export const useSimulatorStore = defineStore("simulator", {
                 return [];
             }
 
+            if (this.activeQueuePartyStatus?.hasMismatch) {
+                queueState.error = this.activeQueuePartyStatus.messageKey || "common:queue.partyChangedSinceBaseline";
+                return [];
+            }
+
             if (queueState.items.length === 0) {
                 queueState.error = "Queue is empty.";
                 return [];
@@ -5351,11 +5457,14 @@ export const useSimulatorStore = defineStore("simulator", {
             };
 
             const buildScenarioPlayers = (entrySnapshot) => {
-                const scenarioPlayers = this.players.map((player) => {
-                    const cloned = deepClone(player);
-                    cloned.selected = String(cloned.id) === activePlayerId;
-                    return cloned;
-                });
+                const basePartyPlayers = Array.isArray(queueState?.baseline?.partySnapshot?.selectedPlayers)
+                    && queueState.baseline.partySnapshot.selectedPlayers.length > 0
+                    ? queueState.baseline.partySnapshot.selectedPlayers
+                    : buildQueuePartySelectedPlayers(this.players, activePlayerId);
+                const scenarioPlayers = basePartyPlayers.map((player) => ({
+                    ...deepClone(player),
+                    selected: true,
+                }));
 
                 const activeIndex = scenarioPlayers.findIndex((player) => String(player.id) === activePlayerId);
                 if (activeIndex === -1) {
