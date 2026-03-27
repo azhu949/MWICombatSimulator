@@ -303,7 +303,11 @@ const themeLabel = computed(() => (
 ));
 
 const activeQueueState = computed(() => simulator.activeQueueState || null);
-const queueActionsDisabled = computed(() => Boolean(simulator.runtime?.isRunning || activeQueueState.value?.isRunning));
+const queueActionsDisabled = computed(() => Boolean(
+  simulator.runtime?.isRunning
+  || activeQueueState.value?.isRunning
+  || simulator.advisor.runtime?.isRunning
+));
 const activeQueueHasBaseline = computed(() => Boolean(activeQueueState.value?.baseline?.snapshot));
 const activeQueueItemCount = computed(() => (Array.isArray(activeQueueState.value?.items) ? activeQueueState.value.items.length : 0));
 const showRuntimeSummary = computed(() => Boolean(simulator.runtime.isRunning || simulator.runtime.error));
@@ -389,12 +393,20 @@ function resolveQueueActionErrorMessage(error) {
   return t(messageKey, messageKey);
 }
 
+function isQueueActionCancelled(error) {
+  return Boolean(error?.code === "cancelled");
+}
+
 async function setQueueBaselineFromTopbar() {
   try {
     setTopQueueActionStatus("secondary", t("common:queue.baselineRunning", "Running baseline simulation..."));
     await simulator.setQueueBaselineForActivePlayer({ runSimulation: true });
     setTopQueueActionStatus("success", t("common:vue.queue.msgBaselineCaptured", "Baseline captured for active player."));
   } catch (error) {
+    if (isQueueActionCancelled(error)) {
+      setTopQueueActionStatus("secondary", t("common:vue.queue.msgBaselineCancelled", "Baseline simulation stopped."));
+      return;
+    }
     setTopQueueActionStatus("danger", resolveQueueActionErrorMessage(error));
   }
 }
@@ -425,6 +437,15 @@ async function runQueueFromTopbar() {
       queueCompleteModalOpen.value = true;
     }
     const rows = await queueRunPromise;
+    if (activeQueueState.value?.lastRunStatus === "cancelled") {
+      const partialCount = Array.isArray(activeQueueState.value?.ranking) ? activeQueueState.value.ranking.length : 0;
+      if (partialCount > 0) {
+        setTopQueueActionStatus("secondary", t("common:vue.queue.msgRunCancelledPartial", "Queue run stopped. Kept {{count}} ranked variants.", { count: partialCount }));
+        return;
+      }
+      setTopQueueActionStatus("secondary", t("common:vue.queue.msgRunCancelled", "Queue run stopped."));
+      return;
+    }
     if (Array.isArray(rows) && rows.length > 0) {
       setTopQueueActionStatus("success", t("common:vue.queue.msgRunCompleted", "Queue run completed: {{count}} variants ranked.", { count: rows.length }));
       return;

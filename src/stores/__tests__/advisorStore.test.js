@@ -39,6 +39,8 @@ vi.mock("../../services/workerClient.js", () => {
         singleMetricSequenceByKey: new Map(),
         failSingleRemainingByKey: new Map(),
         asyncSingleDelayMs: 0,
+        asyncMultiItemDelayMs: 0,
+        asyncMultiBatchDelayMs: 0,
         activeSingleRuns: 0,
         maxConcurrentSingleRuns: 0,
         reset() {
@@ -51,6 +53,8 @@ vi.mock("../../services/workerClient.js", () => {
             this.singleMetricSequenceByKey = new Map();
             this.failSingleRemainingByKey = new Map();
             this.asyncSingleDelayMs = 0;
+            this.asyncMultiItemDelayMs = 0;
+            this.asyncMultiBatchDelayMs = 0;
             this.activeSingleRuns = 0;
             this.maxConcurrentSingleRuns = 0;
         },
@@ -199,14 +203,58 @@ vi.mock("../../services/workerClient.js", () => {
                 handlers.onError?.(`forced multi failure: ${payload.type}`);
                 return;
             }
-            handlers.onProgress?.({ progress: 1 });
-            if (payload.type === "start_simulation_all_zones") {
-                const simResults = payload.zones.map((zone, index) => createSimResult({ zone }, workerState.zoneMetricResolver?.(zone, index, "multi") || defaultMetricFromZone(zone, index)));
-                handlers.onBatchResult?.(simResults, "simulation_result_allZones");
+            const isZonePayload = payload.type === "start_simulation_all_zones";
+            const targets = isZonePayload ? payload.zones : payload.labyrinths;
+            const batchResultType = isZonePayload ? "simulation_result_allZones" : "simulation_result_allLabyrinths";
+            const simResults = targets.map((target, index) => (
+                isZonePayload
+                    ? createSimResult(
+                        { zone: target, players: payload.players },
+                        workerState.zoneMetricResolver?.(target, index, "multi") || defaultMetricFromZone(target, index)
+                    )
+                    : createSimResult(
+                        { labyrinth: target, players: payload.players },
+                        workerState.labyrinthMetricResolver?.(target, index, "multi") || defaultMetricFromLabyrinth(target, index)
+                    )
+            ));
+            const emitItemResult = (target, index) => {
+                handlers.onProgress?.({ progress: (index + 1) / Math.max(1, targets.length) });
+                handlers.onItemResult?.(isZonePayload
+                    ? {
+                        index,
+                        zone: target,
+                        zoneHrid: target.zoneHrid,
+                        difficultyTier: target.difficultyTier,
+                        simResult: simResults[index],
+                    }
+                    : {
+                        index,
+                        labyrinth: target,
+                        labyrinthHrid: target.labyrinthHrid,
+                        roomLevel: target.roomLevel,
+                        simResult: simResults[index],
+                    });
+            };
+            const emitBatchResult = () => {
+                handlers.onProgress?.({ progress: 1 });
+                handlers.onBatchResult?.(simResults, batchResultType);
+            };
+
+            if (workerState.asyncMultiItemDelayMs > 0 || workerState.asyncMultiBatchDelayMs > 0) {
+                targets.forEach((target, index) => {
+                    const delayMs = workerState.asyncMultiItemDelayMs * (index + 1);
+                    setTimeout(() => emitItemResult(target, index), delayMs);
+                });
+                const batchDelayMs = Math.max(
+                    workerState.asyncMultiBatchDelayMs,
+                    workerState.asyncMultiItemDelayMs * Math.max(1, targets.length)
+                );
+                setTimeout(() => emitBatchResult(), batchDelayMs);
                 return;
             }
-            const simResults = payload.labyrinths.map((labyrinth, index) => createSimResult({ labyrinth }, workerState.labyrinthMetricResolver?.(labyrinth, index, "multi") || defaultMetricFromLabyrinth(labyrinth, index)));
-            handlers.onBatchResult?.(simResults, "simulation_result_allLabyrinths");
+
+            targets.forEach((target, index) => emitItemResult(target, index));
+            emitBatchResult();
         }
 
         stopSimulation() {}
@@ -222,6 +270,12 @@ vi.mock("../../services/workerClient.js", () => {
 
 import { useSimulatorStore } from "../simulatorStore.js";
 import { mockWorkerState } from "../../services/workerClient.js";
+
+function waitForMs(delayMs) {
+    return new Promise((resolve) => {
+        setTimeout(resolve, delayMs);
+    });
+}
 
 describe("advisor store", () => {
     beforeEach(() => {
@@ -421,6 +475,36 @@ describe("advisor store", () => {
         expect(refinedRows.every((row) => row.successfulRounds === 2)).toBe(true);
     });
 
+    it("streams quick scan rows before the batch run finishes", async () => {
+        const { simulator, mockWorkerState } = createStoreWithMocks();
+        simulator.advisor.filters = {
+            ...simulator.advisor.filters,
+            refineTopEnabled: false,
+        };
+        simulator.advisor.goalPreset = "profit";
+        mockWorkerState.asyncMultiItemDelayMs = 3;
+        mockWorkerState.asyncMultiBatchDelayMs = 40;
+        mockWorkerState.zoneMetricResolver = (zone, index) => ({
+            profitPerHour: 900 - index,
+            xpPerHour: 400 + index,
+            killsPerHour: 30 + index,
+            deathsPerHour: 0.05 + Number(zone?.difficultyTier || 0) * 0.02,
+        });
+
+        const runPromise = simulator.runAdvisorScan();
+        await waitForMs(10);
+
+        const zonePayload = mockWorkerState.multiCalls.find((payload) => payload.type === "start_simulation_all_zones");
+        expect(zonePayload?.zones?.length).toBeGreaterThan(3);
+        expect(simulator.advisor.runtime.isRunning).toBe(true);
+        expect(simulator.advisor.quickRows.length).toBeGreaterThan(0);
+        expect(simulator.advisor.quickRows.length).toBeLessThan(zonePayload.zones.length);
+        expect(simulator.advisor.topCards.length).toBeGreaterThan(0);
+
+        const rows = await runPromise;
+        expect(rows).toHaveLength(zonePayload.zones.length);
+    });
+
     it("keeps refining serial when parallel worker limit is 1", async () => {
         const { simulator, mockWorkerState } = createStoreWithMocks();
         simulator.queueRuntime.parallelWorkerLimit = 1;
@@ -484,6 +568,98 @@ describe("advisor store", () => {
         expect(survivorRow.isRefined).toBe(true);
         expect(survivorRow.successfulRounds).toBe(2);
         expect(simulator.advisor.error).toContain('refine step');
+    });
+
+    it("stops advisor scans without clearing partial results", async () => {
+        const { simulator, mockWorkerState } = createStoreWithMocks();
+        simulator.advisor.filters = {
+            ...simulator.advisor.filters,
+            refineTopEnabled: false,
+        };
+        mockWorkerState.asyncMultiItemDelayMs = 3;
+        mockWorkerState.asyncMultiBatchDelayMs = 40;
+        mockWorkerState.zoneMetricResolver = (zone, index) => ({
+            profitPerHour: 700 - index,
+            xpPerHour: 300 + index,
+            killsPerHour: 18 + index,
+            deathsPerHour: 0.1 + Number(zone?.difficultyTier || 0) * 0.02,
+        });
+
+        const runPromise = simulator.runAdvisorScan();
+        await waitForMs(10);
+
+        const partialRowsBeforeStop = simulator.advisor.quickRows.length;
+        expect(partialRowsBeforeStop).toBeGreaterThan(0);
+        expect(simulator.stopAdvisorScan()).toBe(true);
+
+        const rows = await runPromise;
+        expect(rows).toHaveLength(partialRowsBeforeStop);
+        expect(simulator.advisor.quickRows).toHaveLength(partialRowsBeforeStop);
+        expect(simulator.advisor.runtime.isRunning).toBe(false);
+        expect(simulator.advisor.runtime.phase).toBe("cancelled");
+        expect(simulator.advisor.error).toBe("");
+    });
+
+    it("surfaces streaming callback failures as advisor errors", async () => {
+        const { simulator, mockWorkerState } = createStoreWithMocks();
+        simulator.advisor.filters = {
+            ...simulator.advisor.filters,
+            refineTopEnabled: false,
+        };
+        mockWorkerState.asyncMultiItemDelayMs = 2;
+        mockWorkerState.asyncMultiBatchDelayMs = 20;
+
+        simulator.rerankAdvisorResults = vi.fn(() => {
+            throw new Error("forced rerank failure");
+        });
+
+        const rows = await simulator.runAdvisorScan();
+
+        expect(rows).toEqual([]);
+        expect(simulator.advisor.error).toBe("forced rerank failure");
+        expect(simulator.advisor.runtime.isRunning).toBe(false);
+        expect(simulator.advisor.runtime.phase).toBe("idle");
+    });
+
+    it("ignores late callbacks from a cancelled run after a new run starts", async () => {
+        const { simulator, mockWorkerState } = createStoreWithMocks();
+        simulator.advisor.filters = {
+            ...simulator.advisor.filters,
+            refineTopEnabled: false,
+        };
+        simulator.advisor.goalPreset = "profit";
+        mockWorkerState.asyncMultiItemDelayMs = 3;
+        mockWorkerState.asyncMultiBatchDelayMs = 40;
+        mockWorkerState.zoneMetricResolver = (_zone, index) => ({
+            profitPerHour: 100 + index,
+            xpPerHour: 50 + index,
+            killsPerHour: 10 + index,
+            deathsPerHour: 0.2,
+        });
+
+        const cancelledRunPromise = simulator.runAdvisorScan();
+        await waitForMs(10);
+        expect(simulator.advisor.quickRows.length).toBeGreaterThan(0);
+        simulator.stopAdvisorScan();
+        await cancelledRunPromise;
+
+        mockWorkerState.asyncMultiItemDelayMs = 1;
+        mockWorkerState.asyncMultiBatchDelayMs = 10;
+        mockWorkerState.zoneMetricResolver = (_zone, index) => ({
+            profitPerHour: 5000 - index,
+            xpPerHour: 1200 + index,
+            killsPerHour: 60 + index,
+            deathsPerHour: 0.01,
+        });
+
+        const rerunRows = await simulator.runAdvisorScan();
+        const topProfitAfterRerun = rerunRows[0]?.profitPerHour;
+        await waitForMs(50);
+
+        expect(simulator.advisor.runtime.phase).toBe("done");
+        expect(simulator.advisor.error).toBe("");
+        expect(simulator.advisor.quickRows[0]?.profitPerHour).toBe(topProfitAfterRerun);
+        expect(topProfitAfterRerun).toBeGreaterThan(4000);
     });
 
     it("applyAdvisorTarget backfills Home target without touching unrelated settings", async () => {

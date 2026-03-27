@@ -87,7 +87,10 @@ const ADVISOR_REFINE_TOP_COUNT_MIN = 1;
 const ADVISOR_REFINE_TOP_COUNT_MAX = 32;
 const ADVISOR_REFINE_ROUNDS_MIN = 1;
 const ADVISOR_REFINE_ROUNDS_MAX = 30;
-const queueWorkerClients = new Set();
+const DEDICATED_WORKER_SCOPE_QUEUE = "queue";
+const DEDICATED_WORKER_SCOPE_ADVISOR = "advisor";
+const dedicatedWorkerRuns = new Set();
+let sharedWorkerRunHandle = null;
 let abilityUpgradeReferenceLoadPromise = null;
 
 const abilityBookInfoByAbilityHrid = (() => {
@@ -114,71 +117,248 @@ const abilityBookInfoByAbilityHrid = (() => {
     return result;
 })();
 
-function registerQueueWorkerClient(workerClientInstance) {
-    if (workerClientInstance) {
-        queueWorkerClients.add(workerClientInstance);
+function createWorkerRunCancellationError(message = "Simulation cancelled.") {
+    const error = new Error(message);
+    error.code = "cancelled";
+    return error;
+}
+
+function isWorkerRunCancelledError(error) {
+    return Boolean(error?.code === "cancelled");
+}
+
+function registerDedicatedWorkerRun(workerRunHandle) {
+    if (workerRunHandle) {
+        dedicatedWorkerRuns.add(workerRunHandle);
     }
 }
 
-function unregisterQueueWorkerClient(workerClientInstance) {
-    if (workerClientInstance) {
-        queueWorkerClients.delete(workerClientInstance);
+function unregisterDedicatedWorkerRun(workerRunHandle) {
+    if (workerRunHandle) {
+        dedicatedWorkerRuns.delete(workerRunHandle);
+    }
+}
+
+function cancelDedicatedWorkerRuns(predicate = () => true, cancellationError = createWorkerRunCancellationError()) {
+    for (const workerRunHandle of Array.from(dedicatedWorkerRuns)) {
+        if (!predicate(workerRunHandle)) {
+            continue;
+        }
+        try {
+            workerRunHandle.cancel(cancellationError);
+        } catch (error) {
+            // ignore cancel errors while cleaning dedicated workers
+        }
     }
 }
 
 function stopQueueWorkerClients() {
-    for (const workerClientInstance of queueWorkerClients) {
-        try {
-            workerClientInstance.stopSimulation();
-        } catch (error) {
-            // ignore stop errors while cleaning queue workers
-        }
-    }
-    queueWorkerClients.clear();
+    cancelDedicatedWorkerRuns((workerRunHandle) => workerRunHandle.scope === DEDICATED_WORKER_SCOPE_QUEUE);
 }
 
-function runSingleSimulationPayloadWithDedicatedWorker(payload, onProgress = () => {}) {
+function stopAdvisorWorkerRuns() {
+    cancelDedicatedWorkerRuns((workerRunHandle) => workerRunHandle.scope === DEDICATED_WORKER_SCOPE_ADVISOR);
+}
+
+function unregisterSharedWorkerRun(workerRunHandle) {
+    if (sharedWorkerRunHandle === workerRunHandle) {
+        sharedWorkerRunHandle = null;
+    }
+}
+
+function cancelSharedWorkerRun(cancellationError = createWorkerRunCancellationError()) {
+    if (!sharedWorkerRunHandle) {
+        return;
+    }
+
+    try {
+        sharedWorkerRunHandle.cancel(cancellationError);
+    } catch (error) {
+        // ignore cancel errors while cleaning shared workers
+    }
+}
+
+function runSingleSimulationPayloadWithDedicatedWorker(payload, onProgress = () => {}, options = {}) {
     return new Promise((resolve, reject) => {
         const dedicatedClient = new WorkerClient();
-        registerQueueWorkerClient(dedicatedClient);
+        const scope = String(options?.scope || DEDICATED_WORKER_SCOPE_QUEUE);
+        let settled = false;
+        let workerRunHandle = null;
 
-        dedicatedClient.startSimulation(payload, {
-            onProgress,
-            onResult: (simResult) => {
+        const settle = (callback, value) => {
+            if (settled) {
+                return;
+            }
+
+            settled = true;
+
+            try {
                 dedicatedClient.stopSimulation();
-                unregisterQueueWorkerClient(dedicatedClient);
-                resolve(simResult);
+            } catch (error) {
+                // ignore stop errors while settling dedicated workers
+            }
+
+            unregisterDedicatedWorkerRun(workerRunHandle);
+            callback(value);
+        };
+
+        workerRunHandle = {
+            scope,
+            cancel: (error = createWorkerRunCancellationError()) => {
+                settle(reject, error);
             },
-            onError: (error) => {
-                dedicatedClient.stopSimulation();
-                unregisterQueueWorkerClient(dedicatedClient);
-                reject(error);
-            },
-        });
+        };
+        registerDedicatedWorkerRun(workerRunHandle);
+
+        try {
+            dedicatedClient.startSimulation(payload, {
+                onProgress: (data) => {
+                    if (settled) {
+                        return;
+                    }
+                    try {
+                        onProgress(data);
+                    } catch (error) {
+                        settle(reject, error);
+                    }
+                },
+                onResult: (simResult) => {
+                    settle(resolve, simResult);
+                },
+                onError: (error) => {
+                    settle(reject, error);
+                },
+            });
+        } catch (error) {
+            settle(reject, error);
+        }
     });
 }
 
-function runMultiSimulationPayloadWithDedicatedWorker(payload, onProgress = () => {}) {
+function runMultiSimulationPayloadWithDedicatedWorker(payload, onProgress = () => {}, options = {}) {
     return new Promise((resolve, reject) => {
         const dedicatedClient = new WorkerClient();
-        registerQueueWorkerClient(dedicatedClient);
+        const scope = String(options?.scope || DEDICATED_WORKER_SCOPE_QUEUE);
+        const onItemResult = typeof options?.onItemResult === "function" ? options.onItemResult : () => {};
+        let settled = false;
+        let workerRunHandle = null;
 
-        dedicatedClient.startMultiSimulation(payload, {
-            onProgress,
-            onBatchResult: (simResults, batchResultType) => {
+        const settle = (callback, value) => {
+            if (settled) {
+                return;
+            }
+
+            settled = true;
+
+            try {
                 dedicatedClient.stopSimulation();
-                unregisterQueueWorkerClient(dedicatedClient);
-                resolve({
-                    simResults: Array.isArray(simResults) ? simResults : [],
-                    batchResultType: String(batchResultType || ""),
-                });
+            } catch (error) {
+                // ignore stop errors while settling dedicated workers
+            }
+
+            unregisterDedicatedWorkerRun(workerRunHandle);
+            callback(value);
+        };
+
+        workerRunHandle = {
+            scope,
+            cancel: (error = createWorkerRunCancellationError()) => {
+                settle(reject, error);
             },
-            onError: (error) => {
-                dedicatedClient.stopSimulation();
-                unregisterQueueWorkerClient(dedicatedClient);
-                reject(error);
+        };
+        registerDedicatedWorkerRun(workerRunHandle);
+
+        try {
+            dedicatedClient.startMultiSimulation(payload, {
+                onProgress: (data) => {
+                    if (settled) {
+                        return;
+                    }
+                    try {
+                        onProgress(data);
+                    } catch (error) {
+                        settle(reject, error);
+                    }
+                },
+                onItemResult: (data) => {
+                    if (settled) {
+                        return;
+                    }
+                    try {
+                        onItemResult(data);
+                    } catch (error) {
+                        settle(reject, error);
+                    }
+                },
+                onBatchResult: (simResults, batchResultType) => {
+                    settle(resolve, {
+                        simResults: Array.isArray(simResults) ? simResults : [],
+                        batchResultType: String(batchResultType || ""),
+                    });
+                },
+                onError: (error) => {
+                    settle(reject, error);
+                },
+            });
+        } catch (error) {
+            settle(reject, error);
+        }
+    });
+}
+
+function runSharedSingleSimulationPayload(payload, onProgress = () => {}) {
+    return new Promise((resolve, reject) => {
+        let settled = false;
+        let workerRunHandle = null;
+
+        const settle = (callback, value, stopWorker = false) => {
+            if (settled) {
+                return;
+            }
+
+            settled = true;
+
+            if (stopWorker) {
+                try {
+                    workerClient.stopSimulation();
+                } catch (error) {
+                    // ignore stop errors while settling shared workers
+                }
+            }
+
+            unregisterSharedWorkerRun(workerRunHandle);
+            callback(value);
+        };
+
+        workerRunHandle = {
+            cancel: (error = createWorkerRunCancellationError()) => {
+                settle(reject, error, true);
             },
-        });
+        };
+        sharedWorkerRunHandle = workerRunHandle;
+
+        try {
+            workerClient.startSimulation(payload, {
+                onProgress: (data) => {
+                    if (settled) {
+                        return;
+                    }
+                    try {
+                        onProgress(data);
+                    } catch (error) {
+                        settle(reject, error, true);
+                    }
+                },
+                onResult: (simResult) => {
+                    settle(resolve, simResult);
+                },
+                onError: (error) => {
+                    settle(reject, error);
+                },
+            });
+        } catch (error) {
+            settle(reject, error, true);
+        }
     });
 }
 
@@ -1743,6 +1923,9 @@ function createQueuePlayerState() {
         progress: 0,
         error: "",
         lastRunAt: 0,
+        lastRunStatus: "idle",
+        runId: 0,
+        cancelRequested: false,
     };
 }
 
@@ -1786,6 +1969,8 @@ function createAdvisorState() {
             refineCompleted: 0,
             refineTotal: 0,
             lastRunAt: 0,
+            runId: 0,
+            cancelRequested: false,
         },
         error: "",
     };
@@ -4749,16 +4934,10 @@ export const useSimulatorStore = defineStore("simulator", {
             };
         },
         runSingleSimulationPayload(payload, onProgress = () => {}) {
-            return new Promise((resolve, reject) => {
-                workerClient.startSimulation(payload, {
-                    onProgress,
-                    onResult: (simResult) => resolve(simResult),
-                    onError: (error) => reject(error),
-                });
-            });
+            return runSharedSingleSimulationPayload(payload, onProgress);
         },
-        runSingleSimulationPayloadWithDedicatedWorker(payload, onProgress = () => {}) {
-            return runSingleSimulationPayloadWithDedicatedWorker(payload, onProgress);
+        runSingleSimulationPayloadWithDedicatedWorker(payload, onProgress = () => {}, options = {}) {
+            return runSingleSimulationPayloadWithDedicatedWorker(payload, onProgress, options);
         },
         async setQueueBaselineForActivePlayer(options = {}) {
             const queueState = this.ensureQueueState(this.activePlayerId);
@@ -4791,6 +4970,8 @@ export const useSimulatorStore = defineStore("simulator", {
                 queueState.abilityUpgradeCosts = {};
                 queueState.error = "";
                 queueState.progress = 0;
+                queueState.lastRunStatus = "idle";
+                queueState.cancelRequested = false;
                 return queueState.baseline;
             }
 
@@ -4823,14 +5004,16 @@ export const useSimulatorStore = defineStore("simulator", {
             const selectedPlayersSnapshot = [{ id: activePlayerId, name: activePlayer?.name || `Player ${activePlayerId}` }];
             const pricingOptions = createProfitPricingOptions(this.pricing);
             const payload = this.buildSingleSimulationPayload(playersToSim);
+            const startedAt = Date.now();
 
             queueState.isRunning = true;
+            queueState.cancelRequested = false;
             queueState.progress = 0;
             queueState.error = "";
             this.runtime.isRunning = true;
             this.runtime.progress = 0;
             this.runtime.error = "";
-            this.runtime.startedAt = Date.now();
+            this.runtime.startedAt = startedAt;
             this.runtime.elapsedSeconds = 0;
             this.runtime.workerMode = "single";
 
@@ -4839,7 +5022,7 @@ export const useSimulatorStore = defineStore("simulator", {
                     const progress = clamp(Number(data.progress || 0), 0, 1);
                     queueState.progress = progress;
                     this.runtime.progress = progress;
-                    this.runtime.elapsedSeconds = (Date.now() - this.runtime.startedAt) / 1000;
+                    this.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
                 });
 
                 const summaryRow = summarizeResult(simResult, selectedPlayersSnapshot, pricingOptions)[0] || null;
@@ -4862,16 +5045,23 @@ export const useSimulatorStore = defineStore("simulator", {
                 queueState.enhancementUpgradeCosts = {};
                 queueState.abilityUpgradeCosts = {};
                 queueState.progress = 1;
+                queueState.lastRunStatus = "idle";
                 this.runtime.progress = 1;
                 return queueState.baseline;
             } catch (error) {
+                if (isWorkerRunCancelledError(error)) {
+                    queueState.error = "";
+                    this.runtime.error = "";
+                    throw error;
+                }
                 const errorMessage = typeof error === "string" ? error : (error?.message || JSON.stringify(error));
                 queueState.error = errorMessage;
                 throw new Error(errorMessage);
             } finally {
                 queueState.isRunning = false;
+                queueState.cancelRequested = false;
                 this.runtime.isRunning = false;
-                this.runtime.elapsedSeconds = (Date.now() - this.runtime.startedAt) / 1000;
+                this.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
                 workerClient.stopSimulation();
             }
         },
@@ -4927,6 +5117,7 @@ export const useSimulatorStore = defineStore("simulator", {
             queueState.rawRuns = [];
             queueState.ranking = [];
             queueState.error = "";
+            queueState.lastRunStatus = "idle";
             return appendedItems;
         },
         updateActiveQueueSettings(partialSettings = {}) {
@@ -4949,6 +5140,7 @@ export const useSimulatorStore = defineStore("simulator", {
             queueState.ranking = [];
             queueState.progress = 0;
             queueState.error = "";
+            queueState.lastRunStatus = "idle";
         },
         loadQueueSnapshotToActivePlayer(snapshotId) {
             const queueState = this.ensureQueueState(this.activePlayerId);
@@ -5034,7 +5226,7 @@ export const useSimulatorStore = defineStore("simulator", {
             const queueState = this.ensureQueueState(this.activePlayerId);
             queueState.error = "";
 
-            if (this.runtime.isRunning || this.isAnyQueueRunning) {
+            if (this.runtime.isRunning || this.isAnyQueueRunning || this.advisor.runtime?.isRunning) {
                 queueState.error = "Another simulation is already running.";
                 return [];
             }
@@ -5062,6 +5254,8 @@ export const useSimulatorStore = defineStore("simulator", {
             const basePlayer = this.players.find((player) => String(player.id) === activePlayerId) ?? this.activePlayer;
             const selectedPlayersSnapshot = [{ id: activePlayerId, name: basePlayer?.name || `Player ${activePlayerId}` }];
             const pricingOptions = createProfitPricingOptions(this.pricing);
+            const queueRunId = Number(queueState.runId || 0) + 1;
+            const startedAt = Date.now();
             const recomputedBaselineMetrics = queueState?.baseline?.simResult
                 ? computeQueueMetrics(queueState.baseline.simResult, activePlayerId, pricingOptions)
                 : null;
@@ -5077,14 +5271,17 @@ export const useSimulatorStore = defineStore("simulator", {
             const entries = buildQueueEntriesFromState(queueState);
 
             queueState.isRunning = true;
+            queueState.runId = queueRunId;
+            queueState.cancelRequested = false;
             queueState.progress = 0;
             queueState.results = [];
             queueState.rawRuns = [];
             queueState.ranking = [];
+            queueState.lastRunStatus = "running";
             this.runtime.isRunning = true;
             this.runtime.progress = 0;
             this.runtime.error = "";
-            this.runtime.startedAt = Date.now();
+            this.runtime.startedAt = startedAt;
             this.runtime.elapsedSeconds = 0;
             this.runtime.workerMode = "single";
 
@@ -5092,6 +5289,18 @@ export const useSimulatorStore = defineStore("simulator", {
             const totalRuns = entries.length * roundCount;
             let completedRuns = 0;
             const runProgressByRunKey = new Map();
+            const isCurrentQueueRun = () => Number(queueState.runId || 0) === queueRunId;
+            const isActiveQueueRun = () => isCurrentQueueRun() && queueState.cancelRequested !== true;
+            const ensureCurrentQueueRun = () => {
+                if (!isCurrentQueueRun()) {
+                    throw createWorkerRunCancellationError("Queue run cancelled.");
+                }
+            };
+            const ensureQueueRunNotCancelled = () => {
+                if (!isActiveQueueRun()) {
+                    throw createWorkerRunCancellationError("Queue run cancelled.");
+                }
+            };
             const queueParallelWorkerLimit = executionMode === "parallel"
                 ? Math.max(
                     1,
@@ -5105,14 +5314,20 @@ export const useSimulatorStore = defineStore("simulator", {
             const REALTIME_RANKING_THROTTLE_MS = 250;
             let lastRealtimeRankingAt = 0;
             const updateQueueRunProgress = () => {
+                if (!isCurrentQueueRun()) {
+                    return;
+                }
                 const inProgress = Array.from(runProgressByRunKey.values())
                     .reduce((sum, value) => sum + clamp(Number(value || 0), 0, 1), 0);
                 const overall = (completedRuns + inProgress) / totalRuns;
                 queueState.progress = clamp(overall, 0, 1);
                 this.runtime.progress = queueState.progress;
-                this.runtime.elapsedSeconds = (Date.now() - this.runtime.startedAt) / 1000;
+                this.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
             };
             const updateRealtimeRanking = (force = false) => {
+                if (!isCurrentQueueRun()) {
+                    return;
+                }
                 const now = Date.now();
                 if (!force && now - lastRealtimeRankingAt < REALTIME_RANKING_THROTTLE_MS) {
                     return;
@@ -5158,9 +5373,11 @@ export const useSimulatorStore = defineStore("simulator", {
             };
 
             const runEntryRound = async (entry, roundIndex) => {
+                ensureQueueRunNotCancelled();
                 const runKey = `${entry.id}-${roundIndex + 1}`;
                 runProgressByRunKey.set(runKey, 0);
                 updateQueueRunProgress();
+                let completedSuccessfully = false;
 
                 try {
                     const playersToSim = buildPlayersForSimulation(buildScenarioPlayers(entry.snapshot));
@@ -5170,10 +5387,14 @@ export const useSimulatorStore = defineStore("simulator", {
                         : this.runSingleSimulationPayload;
 
                     const simResult = await runSingle(payload, (data) => {
+                        if (!isActiveQueueRun()) {
+                            return;
+                        }
                         runProgressByRunKey.set(runKey, clamp(Number(data.progress || 0), 0, 1));
                         updateQueueRunProgress();
                     });
 
+                    ensureCurrentQueueRun();
                     const summary = summarizeResult(simResult, selectedPlayersSnapshot, pricingOptions)[0] || {};
                     const metrics = computeQueueMetrics(simResult, activePlayerId, pricingOptions);
                     const deltas = computeQueueMetricDeltas(metrics, baselineMetrics);
@@ -5189,21 +5410,26 @@ export const useSimulatorStore = defineStore("simulator", {
                         ...summary,
                     };
                     queueState.rawRuns.push(sampleRow);
+                    completedSuccessfully = true;
                     updateRealtimeRanking(false);
                 } finally {
                     runProgressByRunKey.delete(runKey);
-                    completedRuns += 1;
+                    if (completedSuccessfully) {
+                        completedRuns += 1;
+                    }
                     updateQueueRunProgress();
                 }
             };
 
             try {
                 for (let roundIndex = 0; roundIndex < roundCount; roundIndex++) {
+                    ensureQueueRunNotCancelled();
                     if (executionMode === "parallel" && entries.length > 1) {
                         let nextEntryIndex = 0;
                         const workerCount = Math.max(1, Math.min(queueParallelWorkerLimit, entries.length));
                         const workerLoop = async () => {
                             while (nextEntryIndex < entries.length) {
+                                ensureQueueRunNotCancelled();
                                 const currentEntryIndex = nextEntryIndex;
                                 nextEntryIndex += 1;
                                 const entry = entries[currentEntryIndex];
@@ -5216,11 +5442,13 @@ export const useSimulatorStore = defineStore("simulator", {
                     }
 
                     for (const entry of entries) {
+                        ensureQueueRunNotCancelled();
                         // eslint-disable-next-line no-await-in-loop
                         await runEntryRound(entry, roundIndex);
                     }
                 }
 
+                ensureQueueRunNotCancelled();
                 const rankedRows = await this.refreshQueueResultsFromRawRuns({
                     playerId: activePlayerId,
                     includeEmptyEntries: true,
@@ -5228,14 +5456,38 @@ export const useSimulatorStore = defineStore("simulator", {
                     sortRawRuns: true,
                     updateLastRunAt: true,
                 });
+                queueState.lastRunStatus = "completed";
                 return rankedRows;
             } catch (error) {
+                if (isWorkerRunCancelledError(error)) {
+                    queueState.error = "";
+                    this.runtime.error = "";
+                    queueState.lastRunStatus = "cancelled";
+                    if (queueState.rawRuns.length > 0) {
+                        try {
+                            return await this.refreshQueueResultsFromRawRuns({
+                                playerId: activePlayerId,
+                                includeEmptyEntries: false,
+                                allowReferenceLoad: false,
+                                sortRawRuns: true,
+                                updateLastRunAt: false,
+                            });
+                        } catch (refreshError) {
+                            // keep the best partial ranking we already have if cancelled refresh fails
+                        }
+                    }
+                    return Array.isArray(queueState.ranking) ? queueState.ranking : [];
+                }
+                queueState.lastRunStatus = "failed";
                 queueState.error = typeof error === "string" ? error : (error?.message || JSON.stringify(error));
                 return [];
             } finally {
-                queueState.isRunning = false;
+                if (isCurrentQueueRun()) {
+                    queueState.isRunning = false;
+                    queueState.cancelRequested = false;
+                }
                 this.runtime.isRunning = false;
-                this.runtime.elapsedSeconds = (Date.now() - this.runtime.startedAt) / 1000;
+                this.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
                 workerClient.stopSimulation();
                 stopQueueWorkerClients();
             }
@@ -5445,7 +5697,7 @@ export const useSimulatorStore = defineStore("simulator", {
                     await Promise.all(queueStates.map(async ([playerId, queueState]) => {
                         await this.refreshQueueResultsFromRawRuns({
                             playerId,
-                            includeEmptyEntries: queueState?.isRunning !== true,
+                            includeEmptyEntries: queueState?.isRunning !== true && queueState?.lastRunStatus === "completed",
                             allowReferenceLoad: false,
                             sortRawRuns: false,
                             updateLastRunAt: false,
@@ -5712,11 +5964,34 @@ export const useSimulatorStore = defineStore("simulator", {
             const refineTotal = refineTopCount * normalizedFilters.refineRounds;
             const totalWorkUnits = Math.max(1, candidates.length + refineTotal);
             const startedAt = Date.now();
+            const runId = Number(this.advisor.runtime?.runId || 0) + 1;
             let quickCompleted = 0;
             let refineCompleted = 0;
             const errorMessages = [];
+            const quickRowsById = new Map();
+            const refinedRowsById = new Map();
+
+            this.advisor.runtime.runId = runId;
+            this.advisor.runtime.cancelRequested = false;
+
+            const isCurrentAdvisorRun = () => Number(this.advisor.runtime?.runId || 0) === runId;
+            const isActiveAdvisorRun = () => isCurrentAdvisorRun() && this.advisor.runtime?.cancelRequested !== true;
+            const getAdvisorRowsForReturn = () => (
+                Array.isArray(this.advisor.refinedRows) && this.advisor.refinedRows.length > 0
+                    ? this.advisor.refinedRows
+                    : this.advisor.quickRows
+            );
+            const ensureActiveAdvisorRun = () => {
+                if (!isActiveAdvisorRun()) {
+                    throw createWorkerRunCancellationError("Advisor scan cancelled.");
+                }
+            };
 
             const updateAdvisorRuntime = (phase, quickFraction = 0, refineFraction = 0) => {
+                if (!isActiveAdvisorRun()) {
+                    return;
+                }
+
                 this.advisor.runtime.isRunning = true;
                 this.advisor.runtime.phase = phase;
                 this.advisor.runtime.startedAt = startedAt;
@@ -5725,11 +6000,54 @@ export const useSimulatorStore = defineStore("simulator", {
                 this.advisor.runtime.quickTotal = candidates.length;
                 this.advisor.runtime.refineCompleted = refineCompleted;
                 this.advisor.runtime.refineTotal = refineTotal;
+                this.advisor.runtime.runId = runId;
+                this.advisor.runtime.cancelRequested = false;
                 const completedUnits = quickCompleted + quickFraction + refineCompleted + refineFraction;
                 this.advisor.runtime.progress = clamp(completedUnits / totalWorkUnits, 0, 1);
             };
 
-            const quickRows = [];
+            const rerankLiveQuickRows = () => {
+                if (!isActiveAdvisorRun()) {
+                    return;
+                }
+
+                this.rerankAdvisorResults({
+                    goalPreset: normalizedGoalPreset,
+                    customWeights: normalizedCustomWeights,
+                    quickRows: Array.from(quickRowsById.values()),
+                    refinedRows: [],
+                });
+            };
+
+            const rerankLiveRefinedRows = () => {
+                if (!isActiveAdvisorRun()) {
+                    return;
+                }
+
+                const mergedRows = this.advisor.quickRows.map((row) => refinedRowsById.get(row.id) || row);
+                this.rerankAdvisorResults({
+                    goalPreset: normalizedGoalPreset,
+                    customWeights: normalizedCustomWeights,
+                    quickRows: this.advisor.quickRows,
+                    refinedRows: mergedRows,
+                });
+            };
+
+            const storeQuickResult = (candidate, simResult) => {
+                if (!candidate || quickRowsById.has(candidate.id) || !simResult) {
+                    return false;
+                }
+
+                const sample = summarizeAdvisorTargetResult(simResult, selectedPlayersSnapshot, metricPlayer.id, pricingOptions);
+                quickRowsById.set(candidate.id, buildAdvisorRowFromRoundMetrics(candidate, [sample], {
+                    isRefined: false,
+                    refineRounds: 0,
+                }));
+                quickCompleted += 1;
+                updateAdvisorRuntime("quick_scan", 0, 0);
+                rerankLiveQuickRows();
+                return true;
+            };
 
             const collectQuickRows = async (batchCandidates, payloadBuilder, stageLabel) => {
                 if (batchCandidates.length === 0) {
@@ -5737,41 +6055,64 @@ export const useSimulatorStore = defineStore("simulator", {
                 }
 
                 try {
-                    const payload = payloadBuilder();
-                    const batchResult = await runMultiSimulationPayloadWithDedicatedWorker(payload, (data) => {
-                        updateAdvisorRuntime("quick_scan", clamp(Number(data?.progress || 0), 0, 1) * batchCandidates.length, 0);
-                    });
-                    const simResults = Array.isArray(batchResult?.simResults) ? batchResult.simResults : [];
-                    batchCandidates.forEach((candidate, index) => {
-                        const simResult = simResults[index];
-                        if (!simResult) {
-                            return;
+                    await runMultiSimulationPayloadWithDedicatedWorker(
+                        payloadBuilder(),
+                        (data) => {
+                            if (!isActiveAdvisorRun()) {
+                                return;
+                            }
+
+                            const completedUnits = clamp(Number(data?.progress || 0), 0, 1) * batchCandidates.length;
+                            const partialUnits = Math.max(0, completedUnits - quickCompleted);
+                            updateAdvisorRuntime("quick_scan", partialUnits, 0);
+                        },
+                        {
+                            scope: DEDICATED_WORKER_SCOPE_ADVISOR,
+                            onItemResult: (data) => {
+                                ensureActiveAdvisorRun();
+                                const candidate = batchCandidates[Number(data?.index)];
+                                if (!candidate) {
+                                    return;
+                                }
+                                storeQuickResult(candidate, data?.simResult);
+                            },
                         }
-                        const sample = summarizeAdvisorTargetResult(simResult, selectedPlayersSnapshot, metricPlayer.id, pricingOptions);
-                        quickRows.push(buildAdvisorRowFromRoundMetrics(candidate, [sample], {
-                            isRefined: false,
-                            refineRounds: 0,
-                        }));
-                    });
-                    quickCompleted += batchCandidates.length;
-                    updateAdvisorRuntime("quick_scan", 0, 0);
+                    );
                 } catch (batchError) {
+                    if (isWorkerRunCancelledError(batchError)) {
+                        throw batchError;
+                    }
+
                     const failedCandidates = [];
                     for (const candidate of batchCandidates) {
+                        if (quickRowsById.has(candidate.id)) {
+                            continue;
+                        }
+
                         try {
                             const simResult = await runSingleSimulationPayloadWithDedicatedWorker(
-                                createAdvisorSimulationPayload(candidate, playersToSim, simulationTimeLimit, extra)
+                                createAdvisorSimulationPayload(candidate, playersToSim, simulationTimeLimit, extra),
+                                (data) => {
+                                    if (!isActiveAdvisorRun()) {
+                                        return;
+                                    }
+
+                                    updateAdvisorRuntime("quick_scan", clamp(Number(data?.progress || 0), 0, 1), 0);
+                                },
+                                { scope: DEDICATED_WORKER_SCOPE_ADVISOR }
                             );
-                            const sample = summarizeAdvisorTargetResult(simResult, selectedPlayersSnapshot, metricPlayer.id, pricingOptions);
-                            quickRows.push(buildAdvisorRowFromRoundMetrics(candidate, [sample], {
-                                isRefined: false,
-                                refineRounds: 0,
-                            }));
+                            ensureActiveAdvisorRun();
+                            storeQuickResult(candidate, simResult);
                         } catch (error) {
+                            if (isWorkerRunCancelledError(error)) {
+                                throw error;
+                            }
                             failedCandidates.push(candidate);
                         } finally {
-                            quickCompleted += 1;
-                            updateAdvisorRuntime("quick_scan", 0, 0);
+                            if (!quickRowsById.has(candidate.id)) {
+                                quickCompleted += 1;
+                                updateAdvisorRuntime("quick_scan", 0, 0);
+                            }
                         }
                     }
                     const partialError = buildAdvisorPartialErrorText(stageLabel, failedCandidates);
@@ -5798,21 +6139,16 @@ export const useSimulatorStore = defineStore("simulator", {
                     "quick scan"
                 );
 
-                if (quickRows.length === 0) {
+                if (quickRowsById.size === 0) {
                     throw new Error(errorMessages[0] || "Advisor scan did not produce any successful result.");
                 }
 
-                this.rerankAdvisorResults({
-                    goalPreset: normalizedGoalPreset,
-                    customWeights: normalizedCustomWeights,
-                    quickRows,
-                    refinedRows: [],
-                });
+                ensureActiveAdvisorRun();
+                rerankLiveQuickRows();
 
                 if (normalizedFilters.refineTopEnabled && refineTopCount > 0) {
                     updateAdvisorRuntime("refine_top", 0, 0);
                     const quickRowsForRefine = this.advisor.quickRows.slice(0, refineTopCount);
-                    const refinedRowsById = new Map();
                     const roundMetricsById = new Map(quickRowsForRefine.map((row) => [row.id, []]));
                     const refineParallelWorkerLimit = Math.max(
                         1,
@@ -5825,12 +6161,25 @@ export const useSimulatorStore = defineStore("simulator", {
                     const runRefineRoundForRow = async (row) => {
                         try {
                             const simResult = await runSingleSimulationPayloadWithDedicatedWorker(
-                                createAdvisorSimulationPayload(row, playersToSim, simulationTimeLimit, extra)
+                                createAdvisorSimulationPayload(row, playersToSim, simulationTimeLimit, extra),
+                                () => {},
+                                { scope: DEDICATED_WORKER_SCOPE_ADVISOR }
                             );
+                            ensureActiveAdvisorRun();
                             const roundMetrics = roundMetricsById.get(row.id) || [];
                             roundMetrics.push(summarizeAdvisorTargetResult(simResult, selectedPlayersSnapshot, metricPlayer.id, pricingOptions));
                             roundMetricsById.set(row.id, roundMetrics);
+                            if (roundMetrics.length >= normalizedFilters.refineRounds) {
+                                refinedRowsById.set(row.id, buildAdvisorRowFromRoundMetrics(row, roundMetrics, {
+                                    isRefined: true,
+                                    refineRounds: normalizedFilters.refineRounds,
+                                }));
+                                rerankLiveRefinedRows();
+                            }
                         } catch (error) {
+                            if (isWorkerRunCancelledError(error)) {
+                                throw error;
+                            }
                             // keep best-effort quick result if refinement partially fails
                         } finally {
                             refineCompleted += 1;
@@ -5860,39 +6209,46 @@ export const useSimulatorStore = defineStore("simulator", {
                         }
                     }
 
-                    for (const row of quickRowsForRefine) {
-                        const roundMetrics = roundMetricsById.get(row.id) || [];
-                        if (roundMetrics.length > 0) {
-                            refinedRowsById.set(row.id, buildAdvisorRowFromRoundMetrics(row, roundMetrics, {
-                                isRefined: true,
-                                refineRounds: normalizedFilters.refineRounds,
-                            }));
-                        }
-                    }
-
                     const refinedFailures = quickRowsForRefine.filter((row) => !refinedRowsById.has(row.id));
                     const refinePartialError = buildAdvisorPartialErrorText("refine step", refinedFailures);
                     if (refinePartialError) {
                         errorMessages.push(refinePartialError);
                     }
 
-                    const mergedRows = this.advisor.quickRows.map((row) => refinedRowsById.get(row.id) || row);
-                    this.rerankAdvisorResults({
-                        goalPreset: normalizedGoalPreset,
-                        customWeights: normalizedCustomWeights,
-                        quickRows: this.advisor.quickRows,
-                        refinedRows: mergedRows,
-                    });
+                    ensureActiveAdvisorRun();
+                    rerankLiveRefinedRows();
                 }
 
+                ensureActiveAdvisorRun();
                 this.advisor.error = errorMessages.join(" ").trim();
                 this.advisor.runtime.isRunning = false;
                 this.advisor.runtime.phase = "done";
                 this.advisor.runtime.progress = 1;
                 this.advisor.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
                 this.advisor.runtime.lastRunAt = Date.now();
-                return this.advisor.refinedRows.length > 0 ? this.advisor.refinedRows : this.advisor.quickRows;
+                this.advisor.runtime.cancelRequested = false;
+                this.advisor.runtime.quickCompleted = quickCompleted;
+                this.advisor.runtime.quickTotal = candidates.length;
+                this.advisor.runtime.refineCompleted = refineCompleted;
+                this.advisor.runtime.refineTotal = refineTotal;
+                return getAdvisorRowsForReturn();
             } catch (error) {
+                if (!isCurrentAdvisorRun()) {
+                    return [];
+                }
+
+                if (isWorkerRunCancelledError(error) || this.advisor.runtime?.cancelRequested === true) {
+                    this.advisor.error = "";
+                    this.advisor.runtime.isRunning = false;
+                    this.advisor.runtime.phase = "cancelled";
+                    this.advisor.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
+                    this.advisor.runtime.quickCompleted = quickCompleted;
+                    this.advisor.runtime.quickTotal = candidates.length;
+                    this.advisor.runtime.refineCompleted = refineCompleted;
+                    this.advisor.runtime.refineTotal = refineTotal;
+                    return getAdvisorRowsForReturn();
+                }
+
                 this.advisor.error = typeof error === "string"
                     ? error
                     : (error?.message || JSON.stringify(error));
@@ -5900,8 +6256,24 @@ export const useSimulatorStore = defineStore("simulator", {
                 this.advisor.runtime.phase = "idle";
                 this.advisor.runtime.progress = 0;
                 this.advisor.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
+                this.advisor.runtime.cancelRequested = false;
                 return [];
             }
+        },
+        stopAdvisorScan() {
+            if (!this.advisor.runtime?.isRunning) {
+                return false;
+            }
+
+            this.advisor.error = "";
+            this.advisor.runtime.cancelRequested = true;
+            this.advisor.runtime.isRunning = false;
+            this.advisor.runtime.phase = "cancelled";
+            this.advisor.runtime.elapsedSeconds = this.advisor.runtime.startedAt > 0
+                ? (Date.now() - this.advisor.runtime.startedAt) / 1000
+                : 0;
+            stopAdvisorWorkerRuns();
+            return true;
         },
         applyAdvisorTarget(row) {
             const targetType = String(row?.targetType || "zone");
@@ -5918,19 +6290,27 @@ export const useSimulatorStore = defineStore("simulator", {
             return true;
         },
         stopSimulation() {
+            const queueRunInProgress = this.isAnyQueueRunning;
+            const advisorRunInProgress = Boolean(this.advisor.runtime?.isRunning);
+            const manualRunInProgress = Boolean(this.runtime.isRunning && !queueRunInProgress && !advisorRunInProgress);
+
+            for (const queueState of Object.values(this.queue.byPlayer)) {
+                if (queueState?.isRunning) {
+                    queueState.cancelRequested = true;
+                }
+            }
+            cancelSharedWorkerRun();
             workerClient.stopSimulation();
             stopQueueWorkerClients();
-            this.runtime.isRunning = false;
-            this.runtime.progress = 0;
-            this.runtime.startedAt = 0;
-            this.runtime.elapsedSeconds = 0;
-            this.runtime.workerMode = "single";
-            this.advisor.runtime.isRunning = false;
-            this.advisor.runtime.phase = "idle";
-            this.advisor.runtime.progress = 0;
-            this.advisor.runtime.elapsedSeconds = 0;
-            for (const queueState of Object.values(this.queue.byPlayer)) {
-                queueState.isRunning = false;
+            if (manualRunInProgress) {
+                this.runtime.isRunning = false;
+                this.runtime.progress = 0;
+                this.runtime.startedAt = 0;
+                this.runtime.elapsedSeconds = 0;
+                this.runtime.workerMode = "single";
+            }
+            if (advisorRunInProgress) {
+                this.stopAdvisorScan();
             }
         },
         startSimulation() {
@@ -5967,17 +6347,18 @@ export const useSimulatorStore = defineStore("simulator", {
             const extra = buildSimulationExtra(this.simulationSettings);
             const runScope = this.simulationSettings.runScope;
             const pricingOptions = createProfitPricingOptions(this.pricing);
+            const startedAt = Date.now();
 
             this.runtime.isRunning = true;
             this.runtime.progress = 0;
-            this.runtime.startedAt = Date.now();
+            this.runtime.startedAt = startedAt;
             this.runtime.elapsedSeconds = 0;
             this.runtime.workerMode = runScope === RUN_SCOPE_SINGLE ? "single" : "multi";
             this.resetResultsForRun();
 
             const onProgress = (data) => {
                 this.runtime.progress = clamp(Number(data.progress || 0), 0, 1);
-                this.runtime.elapsedSeconds = (Date.now() - this.runtime.startedAt) / 1000;
+                this.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
                 if (data.timeSeriesData) {
                     this.results.timeSeriesData = data.timeSeriesData;
                 }
@@ -6024,7 +6405,7 @@ export const useSimulatorStore = defineStore("simulator", {
                         onResult: (simResult) => {
                             this.runtime.progress = 1;
                             this.runtime.isRunning = false;
-                            this.runtime.elapsedSeconds = (Date.now() - this.runtime.startedAt) / 1000;
+                            this.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
                             this.results.simResult = simResult;
                             this.results.timeSeriesData = simResult?.timeSeriesData ?? this.results.timeSeriesData;
                             this.results.summaryRows = summarizeResult(simResult, selectedPlayersSnapshot, pricingOptions);
@@ -6059,7 +6440,7 @@ export const useSimulatorStore = defineStore("simulator", {
                         onBatchResult: (simResults, batchResultType) => {
                             this.runtime.progress = 1;
                             this.runtime.isRunning = false;
-                            this.runtime.elapsedSeconds = (Date.now() - this.runtime.startedAt) / 1000;
+                            this.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
                             this.results.simResults = simResults;
                             this.results.batchRows = summarizeBatchResults(simResults, selectedPlayersSnapshot, pricingOptions);
                             this.results.batchResultType = batchResultType || "simulation_result_allLabyrinths";
@@ -6095,7 +6476,7 @@ export const useSimulatorStore = defineStore("simulator", {
                     onBatchResult: (simResults, batchResultType) => {
                         this.runtime.progress = 1;
                         this.runtime.isRunning = false;
-                        this.runtime.elapsedSeconds = (Date.now() - this.runtime.startedAt) / 1000;
+                        this.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
                         this.results.simResults = simResults;
                         this.results.batchRows = summarizeBatchResults(simResults, selectedPlayersSnapshot, pricingOptions);
                         this.results.batchResultType = batchResultType || "simulation_result_allZones";

@@ -248,6 +248,13 @@ const queueDisplayItems = computed(() => {
 });
 
 const lastRunText = computed(() => {
+  if (queueState.value.lastRunStatus === "cancelled") {
+    const partialCount = Array.isArray(queueState.value.ranking) ? queueState.value.ranking.length : 0;
+    if (partialCount > 0) {
+      return t("common:vue.queue.lastRunCancelledPartial", "Stopped with {{count}} partial result(s)", { count: partialCount });
+    }
+    return t("common:vue.queue.lastRunCancelled", "Stopped");
+  }
   if (!queueState.value.lastRunAt) {
     return t("common:vue.queue.never", "Never");
   }

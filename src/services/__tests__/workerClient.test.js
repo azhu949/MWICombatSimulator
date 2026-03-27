@@ -55,6 +55,7 @@ describe("workerClient", () => {
 
     it("routes multi simulation messages", () => {
         const client = new WorkerClient();
+        const onItemResult = vi.fn();
         const onBatchResult = vi.fn();
 
         client.startMultiSimulation(
@@ -65,13 +66,27 @@ describe("workerClient", () => {
                 simulationTimeLimit: 100,
                 extra: { mooPass: false, comExp: 0, comDrop: 0, enableHpMpVisualization: false },
             },
-            { onBatchResult }
+            { onItemResult, onBatchResult }
         );
 
         expect(FakeWorker.instances).toHaveLength(1);
 
+        FakeWorker.instances[0].emit({
+            type: "simulation_item_result",
+            index: 0,
+            zoneHrid: "/actions/combat/fly",
+            difficultyTier: 0,
+            simResult: { encounters: 1 },
+        });
         FakeWorker.instances[0].emit({ type: "simulation_result_allZones", simResults: [{ encounters: 2 }] });
 
+        expect(onItemResult).toHaveBeenCalledWith({
+            type: "simulation_item_result",
+            index: 0,
+            zoneHrid: "/actions/combat/fly",
+            difficultyTier: 0,
+            simResult: { encounters: 1 },
+        });
         expect(onBatchResult).toHaveBeenCalledWith([{ encounters: 2 }], "simulation_result_allZones");
     });
 });

@@ -9,6 +9,7 @@ import {
     createMainSiteCurrentCharacterFixture,
     createMainSiteShareProfileFixture,
 } from "../../services/__tests__/fixtures/mainSiteShareProfileFixture.js";
+import workerClient from "../../services/workerClient.js";
 import { useSimulatorStore } from "../simulatorStore.js";
 
 const ONE_HOUR = 60 * 60 * 1e9;
@@ -451,6 +452,20 @@ describe("simulatorStore", () => {
         expect(simulator.activeQueueState.error).toContain("Single target");
     });
 
+    it("rejects queue run while advisor scan is active", async () => {
+        const simulator = useSimulatorStore();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.levels.stamina = 2;
+        simulator.addActivePlayerToQueue();
+        simulator.advisor.runtime.isRunning = true;
+
+        const rows = await simulator.runActiveQueue();
+
+        expect(rows).toEqual([]);
+        expect(simulator.activeQueueState.error).toBe("Another simulation is already running.");
+    });
+
     it("runs queue with multiple rounds and builds ranking output", async () => {
         const simulator = useSimulatorStore();
         const pricedItemHrid = findFirstPricedItem();
@@ -553,6 +568,220 @@ describe("simulatorStore", () => {
         expect(simulator.activeQueueState.rawRuns).toHaveLength(2);
         expect(simulator.activeQueueState.progress).toBe(1);
         expect(simulator.activeQueueState.settings.executionMode).toBe("parallel");
+    });
+
+    it("cancels shared single-worker runs when stopSimulation is invoked", async () => {
+        const simulator = useSimulatorStore();
+        const startSpy = vi.spyOn(workerClient, "startSimulation").mockImplementation(() => {});
+        const stopSpy = vi.spyOn(workerClient, "stopSimulation").mockImplementation(() => {});
+
+        const runPromise = simulator.runSingleSimulationPayload({
+            type: "start_simulation",
+            workerId: "shared-run",
+            players: [],
+            zone: null,
+            labyrinth: null,
+            simulationTimeLimit: 100,
+            extra: { mooPass: false, comExp: 0, comDrop: 0, enableHpMpVisualization: false },
+        });
+
+        simulator.stopSimulation();
+
+        await expect(runPromise).rejects.toMatchObject({ code: "cancelled" });
+        expect(startSpy).toHaveBeenCalledTimes(1);
+        expect(stopSpy).toHaveBeenCalled();
+    });
+
+    it("does not treat cancelled parallel queue runs as errors", async () => {
+        const simulator = useSimulatorStore();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.levels.stamina = 10;
+        simulator.addActivePlayerToQueue();
+        simulator.queueRuntime.parallelWorkerLimit = 2;
+        simulator.updateActiveQueueSettings({
+            rounds: 1,
+            executionMode: "parallel",
+            medianBlend: 0.5,
+            weightProfit: 1,
+            weightXp: 0,
+            weightDeathSafety: 0,
+        });
+
+        simulator.runSingleSimulationPayloadWithDedicatedWorker = vi.fn(async () => {
+            const error = new Error("Simulation cancelled.");
+            error.code = "cancelled";
+            throw error;
+        });
+
+        const rows = await simulator.runActiveQueue();
+
+        expect(rows).toEqual([]);
+        expect(simulator.activeQueueState.error).toBe("");
+        expect(simulator.runtime.error).toBe("");
+        expect(simulator.activeQueueState.lastRunStatus).toBe("cancelled");
+        expect(simulator.activeQueueState.isRunning).toBe(false);
+        expect(simulator.runtime.isRunning).toBe(false);
+    });
+
+    it("refreshes partial queue ranking when cancellation lands inside the realtime throttle window", async () => {
+        const simulator = useSimulatorStore();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.levels.stamina = 10;
+        simulator.activePlayer.levels.attack = 20;
+        const addedItems = simulator.addActivePlayerToQueue();
+        expect(addedItems.length).toBeGreaterThanOrEqual(2);
+
+        simulator.updateActiveQueueSettings({
+            rounds: 2,
+            executionMode: "serial",
+            medianBlend: 0.5,
+            weightProfit: 1,
+            weightXp: 0,
+            weightDeathSafety: 0,
+        });
+
+        vi.spyOn(Date, "now").mockImplementation(() => 1000);
+
+        let callCount = 0;
+        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+            callCount += 1;
+            onProgress?.({ progress: 1 });
+
+            if (callCount === 3) {
+                const error = new Error("Simulation cancelled.");
+                error.code = "cancelled";
+                throw error;
+            }
+
+            return {
+                simulatedTime: ONE_HOUR,
+                encounters: 100 + callCount,
+                experienceGained: {
+                    player1: {
+                        stamina: 1000 + callCount * 100,
+                    },
+                },
+                deaths: {
+                    player1: 0,
+                },
+                consumablesUsed: {},
+            };
+        });
+
+        const rows = await simulator.runActiveQueue();
+
+        expect(simulator.activeQueueState.lastRunStatus).toBe("cancelled");
+        expect(simulator.activeQueueState.rawRuns).toHaveLength(2);
+        expect(simulator.activeQueueState.ranking).toHaveLength(2);
+        expect(rows).toHaveLength(2);
+    });
+
+    it("does not start a new queue round after stopSimulation requests cancellation", async () => {
+        const simulator = useSimulatorStore();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.levels.stamina = 10;
+        simulator.addActivePlayerToQueue();
+        simulator.updateActiveQueueSettings({
+            rounds: 2,
+            executionMode: "serial",
+            medianBlend: 0.5,
+            weightProfit: 1,
+            weightXp: 0,
+            weightDeathSafety: 0,
+        });
+
+        let callCount = 0;
+        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+            callCount += 1;
+            onProgress?.({ progress: 1 });
+
+            if (callCount === 1) {
+                simulator.stopSimulation();
+            }
+
+            return {
+                simulatedTime: ONE_HOUR,
+                encounters: 100,
+                experienceGained: {
+                    player1: {
+                        stamina: 1000,
+                    },
+                },
+                deaths: {
+                    player1: 0,
+                },
+                consumablesUsed: {},
+            };
+        });
+
+        const rows = await simulator.runActiveQueue();
+
+        expect(callCount).toBe(1);
+        expect(rows).toHaveLength(1);
+        expect(simulator.activeQueueState.rawRuns).toHaveLength(1);
+        expect(simulator.activeQueueState.lastRunStatus).toBe("cancelled");
+        expect(simulator.activeQueueState.isRunning).toBe(false);
+        expect(simulator.runtime.isRunning).toBe(false);
+    });
+
+    it("does not load ability upgrade references when returning partial queue results after cancellation", async () => {
+        const simulator = useSimulatorStore();
+        const abilityBookInfo = findFirstAbilityBookInfo();
+        expect(abilityBookInfo).toBeTruthy();
+
+        global.jigsAbilityXpLevels = [0, 0];
+        global.jigsSpellBookXpByName = {};
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.abilities[0].abilityHrid = abilityBookInfo.abilityHrid;
+        simulator.activePlayer.abilities[0].level = 2;
+        const addedItems = simulator.addActivePlayerToQueue();
+        expect(addedItems).toHaveLength(1);
+
+        simulator.updateActiveQueueSettings({
+            rounds: 2,
+            executionMode: "serial",
+            medianBlend: 0.5,
+            weightProfit: 1,
+            weightXp: 0,
+            weightDeathSafety: 0,
+        });
+
+        const ensureReferenceSpy = vi.spyOn(simulator, "ensureAbilityUpgradeReferenceDataLoaded");
+        let callCount = 0;
+        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+            callCount += 1;
+            onProgress?.({ progress: 1 });
+
+            if (callCount === 2) {
+                const error = new Error("Simulation cancelled.");
+                error.code = "cancelled";
+                throw error;
+            }
+
+            return {
+                simulatedTime: ONE_HOUR,
+                encounters: 100,
+                experienceGained: {
+                    player1: {
+                        stamina: 1000,
+                    },
+                },
+                deaths: {
+                    player1: 0,
+                },
+                consumablesUsed: {},
+            };
+        });
+
+        const rows = await simulator.runActiveQueue();
+
+        expect(rows).toHaveLength(1);
+        expect(simulator.activeQueueState.lastRunStatus).toBe("cancelled");
+        expect(ensureReferenceSpy).not.toHaveBeenCalled();
     });
 
     it("splits queue variants by changes when multiple diffs exist", async () => {
@@ -883,6 +1112,74 @@ describe("simulatorStore", () => {
         expect(refreshedCheaperRow.finalScore).toBeGreaterThan(refreshedExpensiveRow.finalScore);
     });
 
+    it("keeps cancelled queue refreshes limited to completed partial rows after ability references load", async () => {
+        const simulator = useSimulatorStore();
+        const abilityBookInfo = findFirstAbilityBookInfo();
+        expect(abilityBookInfo).toBeTruthy();
+
+        global.jigsAbilityXpLevels = [0, 0];
+        global.jigsSpellBookXpByName = {};
+
+        await simulator.setQueueBaselineForActivePlayer();
+
+        simulator.activePlayer.abilities[0].abilityHrid = abilityBookInfo.abilityHrid;
+        simulator.activePlayer.abilities[0].level = 2;
+        const firstItems = simulator.addActivePlayerToQueue();
+        expect(firstItems).toHaveLength(1);
+
+        simulator.activePlayer.abilities[0].abilityHrid = abilityBookInfo.abilityHrid;
+        simulator.activePlayer.abilities[0].level = 3;
+        const secondItems = simulator.addActivePlayerToQueue();
+        expect(secondItems).toHaveLength(1);
+
+        simulator.updateActiveQueueSettings({
+            rounds: 1,
+            executionMode: "serial",
+            medianBlend: 0.5,
+            weightProfit: 1,
+            weightXp: 0,
+            weightDeathSafety: 0,
+        });
+
+        let callCount = 0;
+        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+            callCount += 1;
+            onProgress?.({ progress: 1 });
+
+            if (callCount === 2) {
+                const error = new Error("Simulation cancelled.");
+                error.code = "cancelled";
+                throw error;
+            }
+
+            return {
+                simulatedTime: ONE_HOUR,
+                encounters: 100,
+                experienceGained: {
+                    player1: {
+                        stamina: 1000,
+                    },
+                },
+                deaths: {
+                    player1: 0,
+                },
+                consumablesUsed: {},
+            };
+        });
+
+        const cancelledRows = await simulator.runActiveQueue();
+        expect(cancelledRows).toHaveLength(1);
+        expect(simulator.activeQueueState.lastRunStatus).toBe("cancelled");
+        expect(simulator.activeQueueState.ranking.map((row) => row.id)).toEqual([firstItems[0].id]);
+
+        await simulator.ensureAbilityUpgradeReferenceDataLoaded(true);
+
+        expect(simulator.activeQueueState.lastRunStatus).toBe("cancelled");
+        expect(simulator.activeQueueState.ranking.map((row) => row.id)).toEqual([firstItems[0].id]);
+        expect(simulator.activeQueueState.ranking).toHaveLength(1);
+        expect(secondItems[0].id).not.toBe(firstItems[0].id);
+    });
+
     it("runs baseline simulation when requested", async () => {
         const simulator = useSimulatorStore();
         simulator.setImportedProfileState("1", true);
@@ -909,6 +1206,23 @@ describe("simulatorStore", () => {
         expect(baseline?.metrics?.totalXpPerHour).toBeGreaterThan(0);
         expect(simulator.activeQueueState.isRunning).toBe(false);
         expect(simulator.runtime.progress).toBe(1);
+    });
+
+    it("resets cancelled queue status when baseline is rebuilt without simulation", async () => {
+        const simulator = useSimulatorStore();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activeQueueState.lastRunStatus = "cancelled";
+        simulator.activeQueueState.cancelRequested = true;
+        simulator.activeQueueState.ranking = [{ id: "partial-row" }];
+        simulator.activeQueueState.rawRuns = [{ id: "partial-row", round: 1 }];
+
+        await simulator.setQueueBaselineForActivePlayer();
+
+        expect(simulator.activeQueueState.lastRunStatus).toBe("idle");
+        expect(simulator.activeQueueState.cancelRequested).toBe(false);
+        expect(simulator.activeQueueState.ranking).toEqual([]);
+        expect(simulator.activeQueueState.rawRuns).toEqual([]);
     });
 
     it("preserves queue items when baseline simulation is rerun by default", async () => {

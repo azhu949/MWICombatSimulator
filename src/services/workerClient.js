@@ -67,7 +67,7 @@ export class WorkerClient {
 
     /**
      * @param {MultiZoneSimulationWorkerPayload | MultiLabyrinthSimulationWorkerPayload} payload
-     * @param {{ onProgress?: Function, onBatchResult?: Function, onError?: Function }} handlers
+     * @param {{ onProgress?: Function, onItemResult?: Function, onBatchResult?: Function, onError?: Function }} handlers
      */
     startMultiSimulation(payload, handlers = {}) {
         this.stopSimulation();
@@ -79,6 +79,9 @@ export class WorkerClient {
             switch (data.type) {
                 case "simulation_progress":
                     handlers.onProgress?.(data);
+                    break;
+                case "simulation_item_result":
+                    handlers.onItemResult?.(data);
                     break;
                 case "simulation_result_allZones":
                 case "simulation_result_allLabyrinths":

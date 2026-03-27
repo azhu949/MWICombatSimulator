@@ -26,6 +26,14 @@
             >
               {{ isRunning ? t("common:advisor.running", "Scanning...") : t("common:advisor.run", "Run Advisor") }}
             </button>
+            <button
+              type="button"
+              class="action-button-danger w-full justify-center"
+              :disabled="!isRunning"
+              @click="stopAdvisor"
+            >
+              {{ t("common:advisor.stop", "Stop Advisor") }}
+            </button>
             <div class="rounded-2xl border border-amber-300/20 bg-gradient-to-br from-amber-300/15 via-amber-300/5 to-transparent p-3 text-xs text-slate-300">
               <div class="flex items-center justify-between gap-2">
                 <span class="uppercase tracking-[0.14em] text-amber-200">{{ t("common:advisor.progress", "Progress") }}</span>
@@ -426,6 +434,9 @@ const runtimeStatusText = computed(() => {
   if (isRunning.value) {
     return `${t("common:advisor.status", "Status")}: ${runtimePhaseText.value}`;
   }
+  if (String(runtime.value?.phase || "idle") === "cancelled") {
+    return `${t("common:advisor.status", "Status")}: ${runtimePhaseText.value}`;
+  }
   if (runtime.value?.lastRunAt) {
     return `${t("common:advisor.lastRun", "Last Run")}: ${new Date(runtime.value.lastRunAt).toLocaleString()}`;
   }
@@ -441,6 +452,9 @@ const runtimePhaseText = computed(() => {
   }
   if (phase === "done") {
     return t("common:advisor.phaseDone", "Scan complete");
+  }
+  if (phase === "cancelled") {
+    return t("common:advisor.phaseCancelled", "Scan stopped");
   }
   return t("common:advisor.idle", "Idle");
 });
@@ -573,6 +587,11 @@ function setPreset(preset) {
    syncFilterDraft(simulator.advisor.filters);
    syncCustomWeightDraft(simulator.advisor.customWeights);
  }
+
+function stopAdvisor() {
+  applyStatus.value = "";
+  simulator.stopAdvisorScan();
+}
 
 function applyToHome(row) {
   applyStatus.value = "";
