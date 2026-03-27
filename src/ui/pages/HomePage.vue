@@ -1066,6 +1066,7 @@ import { buildPlayersForSimulation } from "../../services/playerMapper.js";
 import { calcCombatLevel, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../../shared/playerConfig.js";
 import { buildNoRngProfitBreakdown, buildRandomProfitBreakdown } from "../../services/profitEstimator.js";
 import { calculateSkillUpgradeEta } from "../../services/levelExperience.js";
+import { createCombatPreviewPlayerConfig } from "../pageOptimizationHelpers.js";
 import { useAbilityText } from "../composables/useAbilityText.js";
 import { useI18nText } from "../composables/useI18nText.js";
 import BaseModal from "../components/BaseModal.vue";
@@ -1794,15 +1795,14 @@ const playerSnapshotStatusClass = computed(() => {
   return "text-slate-400";
 });
 const playerSnapshotStatusText = computed(() => playerSnapshotStatus.value.text || "");
+const combatPreviewPlayerConfig = computed(() => createCombatPreviewPlayerConfig(activePlayer.value));
 
 const combatDetails = computed(() => {
-  if (!activePlayer.value) {
+  if (!combatPreviewPlayerConfig.value) {
     return null;
   }
 
-  const snapshot = JSON.parse(JSON.stringify(activePlayer.value));
-  snapshot.selected = true;
-  const playersToSim = buildPlayersForSimulation([snapshot]);
+  const playersToSim = buildPlayersForSimulation([combatPreviewPlayerConfig.value]);
   return playersToSim[0]?.combatDetails || null;
 });
 

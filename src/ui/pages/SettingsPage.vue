@@ -469,6 +469,7 @@ import { computed, reactive, ref, watch } from "vue";
 import { itemDetailIndex as itemDetailMap } from "../../shared/gameDataIndex.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { useI18nText } from "../composables/useI18nText.js";
+import { buildStaticPriceCatalog } from "../pageOptimizationHelpers.js";
 import BaseModal from "../components/BaseModal.vue";
 
 const simulator = useSimulatorStore();
@@ -604,34 +605,27 @@ function toFiniteNumber(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
+const staticPriceCatalog = computed(() => buildStaticPriceCatalog(itemDetailMap, {
+  formatPriceCategoryName,
+  formatPriceItemName,
+}));
+
 const allPriceRows = computed(() => {
   const table = simulator.pricing.priceTable || {};
   const overrides = simulator.pricing.overrides || {};
-  const rows = [];
-  const seen = new Set();
-
-  for (const item of Object.values(itemDetailMap)) {
-    const hrid = String(item?.hrid || "");
-    if (!hrid || seen.has(hrid)) {
-      continue;
-    }
-
-    const categoryHrid = String(item?.categoryHrid || "/item_categories/unknown");
-    seen.add(hrid);
-    const entry = table[hrid] || {};
-    const overrideEntry = overrides[hrid] || {};
-    rows.push({
-      hrid,
-      categoryHrid,
-      categoryName: formatPriceCategoryName(categoryHrid),
-      name: formatPriceItemName(hrid, String(item?.name || "")),
+  const rows = staticPriceCatalog.value.map((item) => {
+    const entry = table[item.hrid] || {};
+    const overrideEntry = overrides[item.hrid] || {};
+    return {
+      ...item,
       vendor: toFiniteNumber(entry.vendor, 0),
       ask: toFiniteNumber(entry.ask, -1),
       bid: toFiniteNumber(entry.bid, -1),
       askOverridden: hasOwn(overrideEntry, "ask"),
       bidOverridden: hasOwn(overrideEntry, "bid"),
-    });
-  }
+    };
+  });
+  const seen = new Set(staticPriceCatalog.value.map((item) => item.hrid));
 
   for (const hrid of Object.keys(table)) {
     if (seen.has(hrid)) {
