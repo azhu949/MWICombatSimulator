@@ -3,6 +3,11 @@
     <div class="panel">
       <h2 class="font-heading text-lg font-semibold text-amber-200">{{ t("common:multiRound.summaryTitle", "Multi-round Summary") }}</h2>
       <p class="mt-2 text-sm text-slate-300">{{ t("common:vue.queue.activePlayer", "Active player", { name: simulator.activePlayer.name }) }}</p>
+      <p v-if="queuePartySummaryText" class="mt-1 text-xs text-slate-400">
+        {{ t("common:queue.partyLockedMembers", "Locked party") }}:
+        <span class="ml-1 text-slate-200">{{ queuePartySummaryText }}</span>
+      </p>
+      <p v-if="queuePartyWarningText" class="mt-2 text-sm text-amber-300">{{ queuePartyWarningText }}</p>
 
       <div class="mt-3 grid gap-3 border-t border-white/10 pt-3 text-xs text-slate-300 md:grid-cols-2">
         <div class="rounded-lg border border-white/10 bg-white/[0.03] p-3">
@@ -208,6 +213,17 @@ const SLOT_I18N_KEY_MAP = {
 };
 
 const queueState = computed(() => simulator.activeQueueState);
+const queuePartyStatus = computed(() => simulator.activeQueuePartyStatus || { hasMismatch: false, messageKey: "", memberNames: [] });
+const queuePartySummaryText = computed(() => (
+  Array.isArray(queuePartyStatus.value?.memberNames) && queuePartyStatus.value.memberNames.length > 0
+    ? queuePartyStatus.value.memberNames.join(" / ")
+    : ""
+));
+const queuePartyWarningText = computed(() => (
+  queuePartyStatus.value?.hasMismatch
+    ? t(queuePartyStatus.value?.messageKey || "common:queue.partyChangedSinceBaseline", queuePartyStatus.value?.messageKey || "common:queue.partyChangedSinceBaseline")
+    : ""
+));
 const rankingRowsForDisplay = computed(() => {
   const rows = Array.isArray(queueState.value?.ranking) ? queueState.value.ranking : [];
   return rows.length > RANKING_ROWS_LIMIT ? rows.slice(0, RANKING_ROWS_LIMIT) : rows;

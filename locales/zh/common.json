@@ -81,6 +81,8 @@
         "baselineRunning": "正在运行基准模拟...",
         "baselineDone": "基准已设置。",
         "baselineNeedsResetAfterImport": "已导入队列变更，基准收益尚未重算。请点击“设为基准”重新设置基准。",
+        "partyLockedMembers": "冻结队伍",
+        "partyChangedSinceBaseline": "队伍成员或队友配置已变化，请重新点击“设为基准”后再加入或运行队列。",
         "queueNoBaseline": "请先设置基准。",
         "requireImportBeforeBaseline": "请先导入当前玩家用户信息，再设置基准。",
         "queueNoDiff": "与基准相比没有变化，无法加入队列。",

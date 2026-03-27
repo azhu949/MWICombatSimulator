@@ -81,6 +81,8 @@
         "baselineRunning": "Running baseline simulation...",
         "baselineDone": "Baseline is ready.",
         "baselineNeedsResetAfterImport": "Queue changes were imported. Please click 'Set Baseline' again to refresh baseline metrics.",
+        "partyLockedMembers": "Locked party",
+        "partyChangedSinceBaseline": "Party members or teammate configs changed since baseline. Click 'Set Baseline' again before adding or running queue variants.",
         "queueNoBaseline": "Please set baseline first.",
         "requireImportBeforeBaseline": "Please import user data for the current player before setting baseline.",
         "queueNoDiff": "No changes detected against baseline.",

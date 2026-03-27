@@ -67,7 +67,7 @@
                   <button type="button"
                     class="action-button-muted"
                    
-                    :disabled="queueActionsDisabled || !activeQueueHasBaseline"
+                    :disabled="queueActionsDisabled || !activeQueueHasBaseline || activeQueuePartyMismatch"
                     @click="addToQueueFromTopbar"
                   >
                     {{ t("common:queue.addToQueue", "Add To Queue") }}
@@ -75,7 +75,7 @@
                   <button type="button"
                     class="action-button-primary"
                    
-                    :disabled="queueActionsDisabled || !activeQueueHasBaseline || activeQueueItemCount === 0"
+                    :disabled="queueActionsDisabled || !activeQueueHasBaseline || activeQueueItemCount === 0 || activeQueuePartyMismatch"
                     @click="runQueueFromTopbar"
                   >
                     {{ t("common:queue.runQueue", "Run Queue") }}
@@ -96,8 +96,13 @@
                     {{ t("common:vue.queue.queueProgress", "Queue Progress") }}:
                     <span class="ml-1 text-slate-100">{{ activeQueueProgressText }}</span>
                   </span>
+                  <span v-if="activeQueuePartySummaryText" class="text-xs text-slate-400">
+                    {{ t("common:queue.partyLockedMembers", "Locked party") }}:
+                    <span class="ml-1 text-slate-100">{{ activeQueuePartySummaryText }}</span>
+                  </span>
                 </div>
                 <p v-if="topQueueActionStatusText" class="text-xs" :class="topQueueActionStatusClass">{{ topQueueActionStatusText }}</p>
+                <p v-if="activeQueuePartyWarningText" class="text-xs text-amber-300">{{ activeQueuePartyWarningText }}</p>
               </div>
 
               <div class="grid gap-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
@@ -306,6 +311,18 @@ const themeLabel = computed(() => (
 ));
 
 const activeQueueState = computed(() => simulator.activeQueueState || null);
+const activeQueuePartyStatus = computed(() => simulator.activeQueuePartyStatus || { hasMismatch: false, messageKey: "", memberNames: [] });
+const activeQueuePartyMismatch = computed(() => Boolean(activeQueuePartyStatus.value?.hasMismatch));
+const activeQueuePartySummaryText = computed(() => (
+  Array.isArray(activeQueuePartyStatus.value?.memberNames) && activeQueuePartyStatus.value.memberNames.length > 0
+    ? activeQueuePartyStatus.value.memberNames.join(" / ")
+    : ""
+));
+const activeQueuePartyWarningText = computed(() => (
+  activeQueuePartyMismatch.value
+    ? t(activeQueuePartyStatus.value?.messageKey || "common:queue.partyChangedSinceBaseline", activeQueuePartyStatus.value?.messageKey || "common:queue.partyChangedSinceBaseline")
+    : ""
+));
 const queueActionsDisabled = computed(() => Boolean(
   simulator.runtime?.isRunning
   || activeQueueState.value?.isRunning
