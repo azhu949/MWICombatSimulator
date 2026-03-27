@@ -98,4 +98,53 @@ describe("multiWorker", () => {
         });
         expect(workerScope.close).toHaveBeenCalledTimes(1);
     });
+
+    it("respects parallelWorkerLimit when scheduling child workers", async () => {
+        FakeChildWorker.behaviors = [
+            () => {},
+            (worker) => {
+                setTimeout(() => {
+                    worker.emit({ type: "simulation_result", simResult: { encounters: 1 } });
+                }, 0);
+            },
+            (worker) => {
+                setTimeout(() => {
+                    worker.emit({ type: "simulation_result", simResult: { encounters: 2 } });
+                }, 0);
+            },
+        ];
+
+        const workerScope = {
+            postMessage: vi.fn(),
+            close: vi.fn(),
+        };
+
+        const runPromise = handleMultiSimulationMessage(
+            {
+                type: "start_simulation_all_zones",
+                players: [],
+                zones: [
+                    { zoneHrid: "/actions/combat/fly", difficultyTier: 0 },
+                    { zoneHrid: "/actions/combat/slime", difficultyTier: 0 },
+                    { zoneHrid: "/actions/combat/bat", difficultyTier: 0 },
+                ],
+                simulationTimeLimit: 100,
+                extra: { mooPass: false, comExp: 0, comDrop: 0, enableHpMpVisualization: false },
+                parallelWorkerLimit: 1,
+            },
+            workerScope
+        );
+
+        await new Promise((resolve) => setTimeout(resolve, 0));
+        expect(FakeChildWorker.instances).toHaveLength(1);
+
+        FakeChildWorker.instances[0].emit({ type: "simulation_result", simResult: { encounters: 0 } });
+
+        await runPromise;
+
+        expect(workerScope.postMessage).toHaveBeenCalledWith({
+            type: "simulation_result_allZones",
+            simResults: [{ encounters: 0 }, { encounters: 1 }, { encounters: 2 }],
+        });
+    });
 });

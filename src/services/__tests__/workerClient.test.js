@@ -89,4 +89,25 @@ describe("workerClient", () => {
         });
         expect(onBatchResult).toHaveBeenCalledWith([{ encounters: 2 }], "simulation_result_allZones");
     });
+
+    it("passes parallelWorkerLimit to the multi worker payload", () => {
+        const client = new WorkerClient();
+
+        client.startMultiSimulation(
+            {
+                type: "start_simulation_all_zones",
+                players: [],
+                zones: [{ zoneHrid: "/actions/combat/fly", difficultyTier: 0 }],
+                simulationTimeLimit: 100,
+                extra: { mooPass: false, comExp: 0, comDrop: 0, enableHpMpVisualization: false },
+                parallelWorkerLimit: 3,
+            },
+            {}
+        );
+
+        expect(FakeWorker.instances).toHaveLength(1);
+        expect(FakeWorker.instances[0].postMessage).toHaveBeenCalledWith(expect.objectContaining({
+            parallelWorkerLimit: 3,
+        }));
+    });
 });

@@ -668,6 +668,44 @@ describe("simulatorStore", () => {
         expect(simulator.activeQueueState.settings.executionMode).toBe("parallel");
     });
 
+    it("passes queue parallelWorkerLimit to zone batch simulations", async () => {
+        const simulator = useSimulatorStore();
+        const startMultiSimulationSpy = vi.spyOn(workerClient, "startMultiSimulation").mockImplementation(() => {});
+
+        simulator.queueRuntime.parallelWorkerLimit = 2;
+        simulator.simulationSettings.mode = "zone";
+        simulator.simulationSettings.runScope = "all_group_zones";
+
+        await simulator.startSimulation();
+
+        expect(startMultiSimulationSpy).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: "start_simulation_all_zones",
+                parallelWorkerLimit: 2,
+            }),
+            expect.any(Object)
+        );
+    });
+
+    it("passes queue parallelWorkerLimit to labyrinth batch simulations", async () => {
+        const simulator = useSimulatorStore();
+        const startMultiSimulationSpy = vi.spyOn(workerClient, "startMultiSimulation").mockImplementation(() => {});
+
+        simulator.queueRuntime.parallelWorkerLimit = 2;
+        simulator.simulationSettings.mode = "labyrinth";
+        simulator.simulationSettings.runScope = "all_labyrinths";
+
+        await simulator.startSimulation();
+
+        expect(startMultiSimulationSpy).toHaveBeenCalledWith(
+            expect.objectContaining({
+                type: "start_simulation_all_labyrinths",
+                parallelWorkerLimit: 2,
+            }),
+            expect.any(Object)
+        );
+    });
+
     it("cancels shared single-worker runs when stopSimulation is invoked", async () => {
         const simulator = useSimulatorStore();
         const startSpy = vi.spyOn(workerClient, "startSimulation").mockImplementation(() => {});

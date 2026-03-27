@@ -6380,6 +6380,10 @@ export const useSimulatorStore = defineStore("simulator", {
             const simulationTimeLimit = simulationTimeHours * ONE_HOUR;
             const extra = buildSimulationExtra(this.simulationSettings);
             const runScope = this.simulationSettings.runScope;
+            const parallelWorkerLimit = normalizeParallelWorkerLimit(
+                this.queueRuntime?.parallelWorkerLimit,
+                this.queueParallelWorkerHardMax
+            );
             const pricingOptions = createProfitPricingOptions(this.pricing);
             const startedAt = Date.now();
 
@@ -6466,6 +6470,7 @@ export const useSimulatorStore = defineStore("simulator", {
                         type: "start_simulation_all_labyrinths",
                         players: playersToSim,
                         labyrinths,
+                        parallelWorkerLimit,
                         simulationTimeLimit,
                         extra,
                     },
@@ -6502,6 +6507,7 @@ export const useSimulatorStore = defineStore("simulator", {
                     type: "start_simulation_all_zones",
                     players: playersToSim,
                     zones,
+                    parallelWorkerLimit,
                     simulationTimeLimit,
                     extra,
                 },
