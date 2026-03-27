@@ -466,7 +466,7 @@
 
 <script setup>
 import { computed, reactive, ref, watch } from "vue";
-import itemDetailMap from "../../combatsimulator/data/itemDetailMap.json";
+import { itemDetailIndex as itemDetailMap } from "../../shared/gameDataIndex.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { useI18nText } from "../composables/useI18nText.js";
 import BaseModal from "../components/BaseModal.vue";

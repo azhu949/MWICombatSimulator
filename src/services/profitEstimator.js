@@ -1,4 +1,4 @@
-import combatMonsterDetailMap from "../combatsimulator/data/combatMonsterDetailMap.json";
+import { monsterDetailIndex } from "../shared/gameDataIndex.js";
 import {
     PRICE_MODE_ASK,
     PRICE_MODE_BID,
@@ -120,7 +120,7 @@ function appendExpectedDropsFromTable(dropTable = [], isRare, context, dropCount
 }
 
 function expectedDropCountMapForMonster(monsterHrid, deathsCount, simResult, playerHrid) {
-    const monster = combatMonsterDetailMap[monsterHrid];
+    const monster = monsterDetailIndex[monsterHrid];
     if (!monster || deathsCount <= 0) {
         return new Map();
     }
@@ -221,7 +221,7 @@ function buildDropMapsForProfit(simResult, playerHrid, randomSource = Math.rando
     for (const monsterHrid of monsterHrids) {
         const rawDeathsCount = simResult.deaths?.[monsterHrid];
 
-        const monster = combatMonsterDetailMap[monsterHrid];
+        const monster = monsterDetailIndex[monsterHrid];
         const deathsCount = Math.max(0, Math.floor(toFiniteNumber(rawDeathsCount, 0)));
         if (!monster || deathsCount <= 0) {
             continue;

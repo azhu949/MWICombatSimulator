@@ -1,8 +1,10 @@
-import actionDetailMap from "../combatsimulator/data/actionDetailMap.json";
-import abilityDetailMap from "../combatsimulator/data/abilityDetailMap.json";
-import combatMonsterDetailMap from "../combatsimulator/data/combatMonsterDetailMap.json";
-import itemDetailMap from "../combatsimulator/data/itemDetailMap.json";
-import { createEmptyPlayerConfig, createEmptySkillExperienceMap, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "./playerMapper.js";
+import {
+    actionDetailIndex,
+    abilityDetailIndex,
+    itemDetailIndex,
+    monsterDetailIndex,
+} from "../shared/gameDataIndex.js";
+import { createEmptyPlayerConfig, createEmptySkillExperienceMap, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../shared/playerConfig.js";
 import { sanitizeTriggerList, sanitizeTriggerMap } from "./triggerMapper.js";
 
 const NON_WEAPON_SLOTS = EQUIPMENT_SLOT_KEYS.filter((slot) => slot !== "weapon");
@@ -393,7 +395,7 @@ function buildNormalizedCombatAbilityEntry(rawAbility) {
     return {
         abilityHrid,
         level: Math.max(1, Math.floor(toFiniteNumber(rawAbility?.level ?? rawAbility?.abilityLevel, 1))),
-        isSpecialAbility: abilityDetailMap?.[abilityHrid]?.isSpecialAbility === true,
+        isSpecialAbility: abilityDetailIndex?.[abilityHrid]?.isSpecialAbility === true,
         explicitSlotNumber,
         hasExplicitSlot: Number.isFinite(explicitSlotNumber),
     };
@@ -647,7 +649,7 @@ function normalizeShareableCombatConsumableArray(rawConsumables, categoryHrid) {
                 return "";
             }
 
-            return itemDetailMap?.[itemHrid]?.categoryHrid === categoryHrid ? itemHrid : "";
+            return itemDetailIndex?.[itemHrid]?.categoryHrid === categoryHrid ? itemHrid : "";
         })
         .filter(Boolean)
         .slice(0, 3);
@@ -927,7 +929,7 @@ function extractShareableSimulationSettings(parsed, existingSimulationSettings) 
         return baseline;
     }
 
-    const action = actionDetailMap[actionHrid];
+    const action = actionDetailIndex[actionHrid];
     if (!action || String(action?.type || "") !== "/action_types/combat") {
         return baseline;
     }
@@ -1114,7 +1116,7 @@ function normalizeActionValueToHrid(value) {
     }
 
     const normalized = source.toLowerCase();
-    for (const action of Object.values(actionDetailMap || {})) {
+    for (const action of Object.values(actionDetailIndex || {})) {
         const actionName = String(action?.name || "").trim().toLowerCase();
         if (actionName && actionName === normalized) {
             return String(action?.hrid || source);
@@ -1133,7 +1135,7 @@ function normalizeMonsterValueToHrid(value) {
     }
 
     const normalized = source.toLowerCase();
-    for (const monster of Object.values(combatMonsterDetailMap || {})) {
+    for (const monster of Object.values(monsterDetailIndex || {})) {
         const monsterName = String(monster?.name || "").trim().toLowerCase();
         if (monsterName && monsterName === normalized) {
             return String(monster?.hrid || source);

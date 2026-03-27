@@ -502,10 +502,12 @@
 
 <script setup>
 import { computed, ref, watch } from "vue";
-import abilityDetailMap from "../../combatsimulator/data/abilityDetailMap.json";
-import actionDetailMap from "../../combatsimulator/data/actionDetailMap.json";
-import combatMonsterDetailMap from "../../combatsimulator/data/combatMonsterDetailMap.json";
-import itemDetailMap from "../../combatsimulator/data/itemDetailMap.json";
+import {
+  abilityDetailIndex as abilityDetailMap,
+  actionDetailIndex as actionDetailMap,
+  itemDetailIndex as itemDetailMap,
+  monsterDetailIndex as combatMonsterDetailMap,
+} from "../../shared/gameDataIndex.js";
 import { buildNoRngProfitBreakdown, buildRandomProfitBreakdown } from "../../services/profitEstimator.js";
 import DisclosurePanel from "./DisclosurePanel.vue";
 import TimeSeriesChart from "./TimeSeriesChart.vue";

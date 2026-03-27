@@ -1,9 +1,8 @@
-import abilityDetailMap from "../combatsimulator/data/abilityDetailMap.json";
 import combatTriggerComparatorDetailMap from "../combatsimulator/data/combatTriggerComparatorDetailMap.json";
 import combatTriggerConditionDetailMap from "../combatsimulator/data/combatTriggerConditionDetailMap.json";
 import combatTriggerDependencyDetailMap from "../combatsimulator/data/combatTriggerDependencyDetailMap.json";
-import itemDetailMap from "../combatsimulator/data/itemDetailMap.json";
 import Trigger from "../combatsimulator/trigger.js";
+import { abilityDetailIndex, itemDetailIndex } from "../shared/gameDataIndex.js";
 
 const MAX_TRIGGER_COUNT = 4;
 
@@ -104,12 +103,12 @@ function getDefaultTriggerDtosForHrid(targetHrid) {
         return [];
     }
 
-    const itemDefaults = itemDetailMap[hrid]?.consumableDetail?.defaultCombatTriggers;
+    const itemDefaults = itemDetailIndex[hrid]?.defaultCombatTriggers;
     if (Array.isArray(itemDefaults)) {
         return sanitizeTriggerList(itemDefaults);
     }
 
-    const abilityDefaults = abilityDetailMap[hrid]?.defaultCombatTriggers;
+    const abilityDefaults = abilityDetailIndex[hrid]?.defaultCombatTriggers;
     if (Array.isArray(abilityDefaults)) {
         return sanitizeTriggerList(abilityDefaults);
     }

@@ -1,12 +1,30 @@
 import { defineStore } from "pinia";
-import abilityDetailMap from "../combatsimulator/data/abilityDetailMap.json";
-import actionDetailMap from "../combatsimulator/data/actionDetailMap.json";
-import combatMonsterDetailMap from "../combatsimulator/data/combatMonsterDetailMap.json";
-import houseRoomDetailMap from "../combatsimulator/data/houseRoomDetailMap.json";
-import itemDetailMap from "../combatsimulator/data/itemDetailMap.json";
-import abilityXpLevels from "../combatsimulator/data/abilityXpLevels.json";
+import {
+    abilityBookInfoByAbilityHrid,
+    abilityDetailIndex,
+    abilityOptions,
+    abilityXpLevels,
+    actionDetailIndex,
+    drinkOptions,
+    dungeonOptions,
+    equipmentOptionsBySlot,
+    foodOptions,
+    getAbilityName as getIndexedAbilityName,
+    getActionName as getIndexedActionName,
+    getHouseRoomName as getIndexedHouseRoomName,
+    getItemName as getIndexedItemName,
+    getMonsterName as getIndexedMonsterName,
+    groupZoneHrids,
+    houseRoomDetailIndex,
+    itemDetailIndex,
+    labyrinthCrateOptions,
+    labyrinthOptions,
+    monsterDetailIndex,
+    soloZoneHrids,
+    zoneOptions,
+} from "../shared/gameDataIndex.js";
+import { createEmptyPlayerConfig, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../shared/playerConfig.js";
 import workerClient, { WorkerClient } from "../services/workerClient.js";
-import { buildPlayersForSimulation, createEmptyPlayerConfig, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../services/playerMapper.js";
 import { estimateNoRngProfit } from "../services/profitEstimator.js";
 import {
     createDefaultPriceTable,
@@ -92,30 +110,14 @@ const DEDICATED_WORKER_SCOPE_ADVISOR = "advisor";
 const dedicatedWorkerRuns = new Set();
 let sharedWorkerRunHandle = null;
 let abilityUpgradeReferenceLoadPromise = null;
+let playerMapperModulePromise = null;
 
-const abilityBookInfoByAbilityHrid = (() => {
-    const result = {};
-    for (const item of Object.values(itemDetailMap || {})) {
-        if (item?.categoryHrid !== ABILITY_BOOK_CATEGORY_HRID) {
-            continue;
-        }
-
-        const abilityHrid = String(item?.abilityBookDetail?.abilityHrid || "");
-        const itemHrid = String(item?.hrid || "");
-        const xpPerBook = Number(item?.abilityBookDetail?.experienceGain || 0);
-        if (!abilityHrid || !itemHrid || !Number.isFinite(xpPerBook) || xpPerBook <= 0) {
-            continue;
-        }
-
-        if (!result[abilityHrid] || xpPerBook > Number(result[abilityHrid]?.xpPerBook || 0)) {
-            result[abilityHrid] = {
-                itemHrid,
-                xpPerBook,
-            };
-        }
+function loadPlayerMapperModule() {
+    if (!playerMapperModulePromise) {
+        playerMapperModulePromise = import("../services/playerMapper.js");
     }
-    return result;
-})();
+    return playerMapperModulePromise;
+}
 
 function createWorkerRunCancellationError(message = "Simulation cancelled.") {
     const error = new Error(message);
@@ -371,11 +373,10 @@ function sortByNameThenLevel(a, b) {
 
 function resolveFoodConsumableSortGroup(option) {
     const itemHrid = String(option?.hrid || "");
-    const item = itemDetailMap?.[itemHrid];
-    const detail = item?.consumableDetail;
-    const hitpointRestore = Number(detail?.hitpointRestore ?? 0);
-    const manapointRestore = Number(detail?.manapointRestore ?? 0);
-    const recoveryDuration = Number(detail?.recoveryDuration ?? 0);
+    const item = itemDetailIndex?.[itemHrid];
+    const hitpointRestore = Number(item?.hitpointRestore ?? 0);
+    const manapointRestore = Number(item?.manapointRestore ?? 0);
+    const recoveryDuration = Number(item?.recoveryDuration ?? 0);
 
     if (hitpointRestore > 0 && manapointRestore <= 0) {
         return recoveryDuration > 0 ? 1 : 0;
@@ -389,111 +390,35 @@ function resolveFoodConsumableSortGroup(option) {
 }
 
 function getEquipmentOptionsBySlot() {
-    const grouped = Object.fromEntries(EQUIPMENT_SLOT_KEYS.map((slot) => [slot, []]));
-    grouped.weapon = [];
-
-    for (const item of Object.values(itemDetailMap)) {
-        if (item.categoryHrid !== "/item_categories/equipment" || !item.equipmentDetail?.type) {
-            continue;
-        }
-
-        const option = {
-            hrid: item.hrid,
-            name: item.name,
-            itemLevel: Number(item.itemLevel ?? 0),
-        };
-
-        const type = item.equipmentDetail.type;
-        const slotName = type.replace("/equipment_types/", "");
-        if (slotName === "main_hand" || slotName === "two_hand") {
-            grouped.weapon.push(option);
-            continue;
-        }
-
-        if (grouped[slotName]) {
-            grouped[slotName].push(option);
-        }
-    }
-
-    for (const key of Object.keys(grouped)) {
-        grouped[key] = grouped[key].sort(sortByNameThenLevel);
-    }
-
-    return grouped;
+    return equipmentOptionsBySlot;
 }
 
 function getConsumableOptions(categoryHrid) {
-    const options = Object.values(itemDetailMap)
-        .filter((item) => item.categoryHrid === categoryHrid)
-        .map((item) => ({
-            hrid: item.hrid,
-            name: item.name,
-            itemLevel: Number(item.itemLevel ?? 0),
-        }));
-
     if (categoryHrid === "/item_categories/food") {
-        return options.sort((left, right) => (
-            resolveFoodConsumableSortGroup(left) - resolveFoodConsumableSortGroup(right)
-            || sortByNameThenLevel(left, right)
-        ));
+        return foodOptions;
     }
 
-    return options.sort(sortByNameThenLevel);
+    if (categoryHrid === "/item_categories/drink") {
+        return drinkOptions;
+    }
+
+    return [];
 }
 
 function getAbilityOptions() {
-    return Object.values(abilityDetailMap)
-        .filter((ability) => !ability.isSpecialAbility)
-        .map((ability) => ({
-            hrid: ability.hrid,
-            name: ability.name,
-            sortIndex: Number(ability.sortIndex ?? 0),
-        }))
-        .sort((a, b) => a.sortIndex - b.sortIndex || a.name.localeCompare(b.name));
+    return abilityOptions;
 }
 
 function getZoneOptions() {
-    const zones = [];
-    const dungeons = [];
-
-    for (const action of Object.values(actionDetailMap)) {
-        if (action.type !== "/action_types/combat") {
-            continue;
-        }
-
-        const option = {
-            hrid: action.hrid,
-            name: action.name,
-            maxDifficulty: Number(action.maxDifficulty ?? 0),
-            sortIndex: Number(action.sortIndex ?? 0),
-        };
-
-        if (action.combatZoneInfo?.isDungeon) {
-            dungeons.push(option);
-        } else {
-            zones.push(option);
-        }
-    }
-
-    zones.sort((a, b) => a.sortIndex - b.sortIndex || a.name.localeCompare(b.name));
-    dungeons.sort((a, b) => a.sortIndex - b.sortIndex || a.name.localeCompare(b.name));
-
-    return { zones, dungeons };
+    return { zones: zoneOptions, dungeons: dungeonOptions };
 }
 
 function getLabyrinthOptions() {
-    return Object.values(combatMonsterDetailMap)
-        .filter((monster) => monster.isLabyrinthMonster === true)
-        .map((monster) => ({
-            hrid: monster.hrid,
-            name: monster.name,
-            sortIndex: Number(monster.sortIndex ?? 0),
-        }))
-        .sort((a, b) => a.sortIndex - b.sortIndex || a.name.localeCompare(b.name));
+    return labyrinthOptions;
 }
 
 function getAllNonDungeonActions() {
-    return Object.values(actionDetailMap)
+    return Object.values(actionDetailIndex)
         .filter((action) => action.type === "/action_types/combat")
         .filter((action) => action.category !== "/action_categories/combat/dungeons")
         .sort((a, b) => Number(a.sortIndex ?? 0) - Number(b.sortIndex ?? 0));
@@ -557,7 +482,7 @@ function buildZoneTargetsByScope(runScope, selectedZoneHrids = []) {
 }
 
 function buildAllLabyrinthTargets(crates = []) {
-    const labyrinthMonsters = Object.values(combatMonsterDetailMap)
+    const labyrinthMonsters = Object.values(monsterDetailIndex)
         .filter((monster) => monster.isLabyrinthMonster === true)
         .sort((a, b) => Number(a.sortIndex ?? 0) - Number(b.sortIndex ?? 0));
 
@@ -625,7 +550,7 @@ function summarizeResult(simResult, selectedPlayers, pricingOptions = {}) {
 function summarizeBatchResults(simResults, selectedPlayers, pricingOptions = {}) {
     const actionOrderMap = new Map(getAllNonDungeonActions().map((action, index) => [String(action?.hrid || ""), index]));
     const labyrinthOrderMap = new Map(
-        Object.values(combatMonsterDetailMap)
+        Object.values(monsterDetailIndex)
             .filter((monster) => monster.isLabyrinthMonster === true)
             .sort((a, b) => Number(a.sortIndex ?? 0) - Number(b.sortIndex ?? 0))
             .map((monster, index) => [String(monster?.hrid || ""), index])
@@ -867,7 +792,7 @@ function getVendorPriceByItemHrid(itemHrid) {
     if (!hrid) {
         return 0;
     }
-    return Math.max(0, toFiniteNumber(itemDetailMap?.[hrid]?.sellPrice, 0));
+    return Math.max(0, toFiniteNumber(itemDetailIndex?.[hrid]?.sellPrice, 0));
 }
 
 function normalizePriceOverrideValue(value) {
@@ -1465,11 +1390,11 @@ function parsePlayerSnapshotSummary(playerDataJson) {
             zoneHrid,
             dungeonHrid,
             labyrinthHrid,
-            zone: actionDetailMap[zoneHrid]?.name || zoneFallback,
-            dungeon: actionDetailMap[dungeonHrid]?.name || dungeonFallback,
+            zone: getIndexedActionName(zoneHrid, zoneFallback),
+            dungeon: getIndexedActionName(dungeonHrid, dungeonFallback),
             difficulty: difficultyDisplay,
             simulationTime: String(modernSettings?.simulationTimeHours ?? "-"),
-            labyrinth: combatMonsterDetailMap[labyrinthHrid]?.name || labyrinthFallback,
+            labyrinth: getIndexedMonsterName(labyrinthHrid, labyrinthFallback),
             roomLevel: String(modernSettings?.roomLevel ?? "-"),
         };
     } catch (error) {
@@ -1497,7 +1422,7 @@ function normalizeActionSnapshotValueToHrid(rawValue) {
     }
 
     const normalized = source.toLowerCase();
-    for (const action of Object.values(actionDetailMap || {})) {
+    for (const action of Object.values(actionDetailIndex || {})) {
         const actionName = String(action?.name || "").trim().toLowerCase();
         if (actionName && actionName === normalized) {
             return String(action?.hrid || source);
@@ -1517,7 +1442,7 @@ function normalizeMonsterSnapshotValueToHrid(rawValue) {
     }
 
     const normalized = source.toLowerCase();
-    for (const monster of Object.values(combatMonsterDetailMap || {})) {
+    for (const monster of Object.values(monsterDetailIndex || {})) {
         const monsterName = String(monster?.name || "").trim().toLowerCase();
         if (monsterName && monsterName === normalized) {
             return String(monster?.hrid || source);
@@ -2047,7 +1972,7 @@ function createAdvisorZoneCandidate(zoneTarget, category, order) {
         targetType: "zone",
         category,
         targetHrid: zoneHrid,
-        targetName: String(actionDetailMap?.[zoneHrid]?.name || zoneHrid),
+        targetName: getIndexedActionName(zoneHrid, zoneHrid),
         difficultyTier,
         roomLevel: null,
         isRefined: false,
@@ -2262,7 +2187,7 @@ function formatQueueItemNameFromHrid(itemHrid) {
     if (!hrid) {
         return "None";
     }
-    return String(itemDetailMap?.[hrid]?.name || hrid);
+    return getIndexedItemName(hrid, hrid);
 }
 
 function formatQueueAbilityNameFromHrid(abilityHrid) {
@@ -2270,7 +2195,7 @@ function formatQueueAbilityNameFromHrid(abilityHrid) {
     if (!hrid) {
         return "None";
     }
-    return String(abilityDetailMap?.[hrid]?.name || hrid);
+    return getIndexedAbilityName(hrid, hrid);
 }
 
 function formatQueueEquipmentSlotName(slotKey) {
@@ -2301,7 +2226,7 @@ function formatQueueHouseRoomNameFromHrid(roomHrid) {
     if (!hrid) {
         return "House Room";
     }
-    return String(houseRoomDetailMap?.[hrid]?.name || hrid);
+    return getIndexedHouseRoomName(hrid, hrid);
 }
 
 function computeQueueChangeSummary(baselinePlayer, candidatePlayer) {
@@ -2398,7 +2323,7 @@ function computeQueueChangeSummary(baselinePlayer, candidatePlayer) {
         }
     }
 
-    for (const room of Object.values(houseRoomDetailMap || {})) {
+    for (const room of Object.values(houseRoomDetailIndex || {})) {
         const roomHrid = String(room?.hrid || "");
         if (!roomHrid) {
             continue;
@@ -2498,7 +2423,7 @@ function applySingleQueueChange(snapshot, targetSnapshot, change) {
 
     if (change.kind === "house_room") {
         const roomHrid = String(change.roomHrid || "");
-        if (!roomHrid || !Object.prototype.hasOwnProperty.call(houseRoomDetailMap || {}, roomHrid)) {
+        if (!roomHrid || !Object.prototype.hasOwnProperty.call(houseRoomDetailIndex || {}, roomHrid)) {
             return false;
         }
         if (!isPlainObject(snapshot.houseRooms)) {
@@ -2747,7 +2672,7 @@ function computeEnhancementUpgradeCost(itemHrid, fromLevel, toLevel, pricingStat
         return 0;
     }
 
-    const enhancementCosts = itemDetailMap?.[hrid]?.enhancementCosts;
+    const enhancementCosts = itemDetailIndex?.[hrid]?.enhancementCosts;
     if (!Array.isArray(enhancementCosts) || enhancementCosts.length === 0) {
         return 0;
     }
@@ -2894,7 +2819,7 @@ function getSpellBookXpForAbility(abilityHrid) {
         return directBookInfo.xpPerBook;
     }
 
-    const abilityName = String(abilityDetailMap?.[normalizedAbilityHrid]?.name || "");
+    const abilityName = getIndexedAbilityName(normalizedAbilityHrid, "");
     if (!abilityName) {
         return 0;
     }
@@ -2919,7 +2844,7 @@ function resolveAbilityBookPriceFromPricingState(pricingState, abilityHrid) {
 
     const dropMode = normalizePriceMode(pricingState?.dropMode, PRICE_MODE_BID);
     if (dropMode === PRICE_MODE_VENDOR) {
-        const vendorFallback = toFiniteNumber(itemDetailMap?.[bookItemHrid]?.sellPrice, 0);
+        const vendorFallback = toFiniteNumber(itemDetailIndex?.[bookItemHrid]?.sellPrice, 0);
         const vendorPrice = Math.max(0, toFiniteNumber(pricingState?.priceTable?.[bookItemHrid]?.vendor, vendorFallback));
         return Number.isFinite(vendorPrice) ? vendorPrice : null;
     }
@@ -2971,7 +2896,7 @@ function normalizeHouseRoomLevelMap(source) {
     const normalizedSource = isPlainObject(source) ? source : {};
     const normalized = {};
 
-    for (const room of Object.values(houseRoomDetailMap || {})) {
+    for (const room of Object.values(houseRoomDetailIndex || {})) {
         const roomHrid = String(room?.hrid || "");
         if (!roomHrid) {
             continue;
@@ -3012,7 +2937,7 @@ function resolveHouseRoomMaterialPricing(itemHrid, pricingState) {
 function buildHouseRoomUpgradeCostPreview(baseHouseRooms, targetHouseRooms, pricingState) {
     const normalizedBase = normalizeHouseRoomLevelMap(baseHouseRooms);
     const normalizedTarget = normalizeHouseRoomLevelMap(targetHouseRooms);
-    const roomDetails = Object.values(houseRoomDetailMap || {})
+    const roomDetails = Object.values(houseRoomDetailIndex || {})
         .slice()
         .sort((left, right) => (
             Number(left?.sortIndex ?? 0) - Number(right?.sortIndex ?? 0)
@@ -3089,8 +3014,8 @@ function buildHouseRoomUpgradeCostPreview(baseHouseRooms, targetHouseRooms, pric
                 return 1;
             }
             return Number(right.subtotal || 0) - Number(left.subtotal || 0)
-                || String(itemDetailMap?.[left.itemHrid]?.name || left.itemHrid).localeCompare(
-                    String(itemDetailMap?.[right.itemHrid]?.name || right.itemHrid)
+                || getIndexedItemName(left.itemHrid, left.itemHrid).localeCompare(
+                    getIndexedItemName(right.itemHrid, right.itemHrid)
                 );
         });
 
@@ -4003,12 +3928,8 @@ export const useSimulatorStore = defineStore("simulator", {
         const simulationUiSettings = loadSimulationUiSettingsFromStorage();
         const { zones, dungeons } = getZoneOptions();
         const labyrinths = getLabyrinthOptions();
-        const groupZoneHrids = getZoneHridsBySpawnCount(2);
-        const soloZoneHrids = getZoneHridsBySpawnCount(1);
-        const coffeeCrates = LABYRINTH_COFFEE_CRATE_HRIDS
-            .map((hrid) => ({ hrid, name: itemDetailMap?.[hrid]?.name || hrid }));
-        const foodCrates = LABYRINTH_FOOD_CRATE_HRIDS
-            .map((hrid) => ({ hrid, name: itemDetailMap?.[hrid]?.name || hrid }));
+        const initialGroupZoneHrids = groupZoneHrids;
+        const initialSoloZoneHrids = soloZoneHrids;
 
         return {
             players: playerList,
@@ -4022,8 +3943,8 @@ export const useSimulatorStore = defineStore("simulator", {
                 dungeons,
                 labyrinths,
                 labyrinthCrates: {
-                    coffee: coffeeCrates,
-                    food: foodCrates,
+                    coffee: labyrinthCrateOptions.coffee,
+                    food: labyrinthCrateOptions.food,
                 },
             },
             simulationSettings: {
@@ -4042,8 +3963,8 @@ export const useSimulatorStore = defineStore("simulator", {
                 comDropEnabled: simulationUiSettings.comDropEnabled,
                 comDrop: simulationUiSettings.comDrop,
                 enableHpMpVisualization: true,
-                selectedGroupZoneHrids: groupZoneHrids,
-                selectedSoloZoneHrids: soloZoneHrids,
+                selectedGroupZoneHrids: initialGroupZoneHrids,
+                selectedSoloZoneHrids: initialSoloZoneHrids,
                 labyrinthCrates: normalizeLabyrinthCrates({}),
             },
             runtime: {
@@ -4101,12 +4022,12 @@ export const useSimulatorStore = defineStore("simulator", {
         },
         groupZoneOptions(state) {
             return (state.options.zones || []).filter((zone) => (
-                Number(actionDetailMap?.[zone?.hrid]?.combatZoneInfo?.fightInfo?.randomSpawnInfo?.maxSpawnCount ?? 0) > 1
+                Number(actionDetailIndex?.[zone?.hrid]?.maxSpawnCount ?? 0) > 1
             ));
         },
         soloZoneOptions(state) {
             return (state.options.zones || []).filter((zone) => (
-                Number(actionDetailMap?.[zone?.hrid]?.combatZoneInfo?.fightInfo?.randomSpawnInfo?.maxSpawnCount ?? 0) === 1
+                Number(actionDetailIndex?.[zone?.hrid]?.maxSpawnCount ?? 0) === 1
             ));
         },
         currentMaxDifficulty(state) {
@@ -5092,6 +5013,7 @@ export const useSimulatorStore = defineStore("simulator", {
                 ...deepClone(player),
                 selected: true,
             }));
+            const { buildPlayersForSimulation } = await loadPlayerMapperModule();
             const playersToSim = buildPlayersForSimulation(scenarioPlayers);
             if (playersToSim.length === 0) {
                 throw new Error("Unable to build player simulation data.");
@@ -5489,6 +5411,7 @@ export const useSimulatorStore = defineStore("simulator", {
                 let completedSuccessfully = false;
 
                 try {
+                    const { buildPlayersForSimulation } = await loadPlayerMapperModule();
                     const playersToSim = buildPlayersForSimulation(buildScenarioPlayers(entry.snapshot));
                     const payload = this.buildSingleSimulationPayload(playersToSim);
                     const runSingle = executionMode === "parallel"
@@ -6034,6 +5957,7 @@ export const useSimulatorStore = defineStore("simulator", {
                 return [];
             }
 
+            const { buildPlayersForSimulation } = await loadPlayerMapperModule();
             const playersToSim = buildPlayersForSimulation(this.players);
             if (playersToSim.length === 0) {
                 this.advisor.error = "Unable to build player simulation data.";
@@ -6422,7 +6346,7 @@ export const useSimulatorStore = defineStore("simulator", {
                 this.stopAdvisorScan();
             }
         },
-        startSimulation() {
+        async startSimulation() {
             this.runtime.error = "";
             this.normalizeRunScope();
 
@@ -6443,6 +6367,7 @@ export const useSimulatorStore = defineStore("simulator", {
                 return;
             }
 
+            const { buildPlayersForSimulation } = await loadPlayerMapperModule();
             const playersToSim = buildPlayersForSimulation(this.players);
             if (playersToSim.length === 0) {
                 this.runtime.error = "Unable to build player simulation data.";

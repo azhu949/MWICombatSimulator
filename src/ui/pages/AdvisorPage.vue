@@ -272,7 +272,7 @@
 <script setup>
  import { computed, reactive, ref, watch } from "vue";
  import { useRouter } from "vue-router";
- import actionDetailMap from "../../combatsimulator/data/actionDetailMap.json";
+ import { actionDetailIndex as actionDetailMap } from "../../shared/gameDataIndex.js";
 import { formatAdvisorCompactValue, formatAdvisorDailyProfitValue } from "../../services/advisorFormatting.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import {
