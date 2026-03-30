@@ -2781,7 +2781,10 @@
     "/items/expert_coffee_crate": "Expert Coffee Crate",
     "/items/basic_food_crate": "Basic Food Crate",
     "/items/advanced_food_crate": "Advanced Food Crate",
-    "/items/expert_food_crate": "Expert Food Crate"
+    "/items/expert_food_crate": "Expert Food Crate",
+    "/items/basic_tea_crate": "Basic Tea Crate",
+    "/items/advanced_tea_crate": "Advanced Tea Crate",
+    "/items/expert_tea_crate": "Expert Tea Crate"
   },
   "itemDescriptions": {
     "/items/coin": "Basic currency",

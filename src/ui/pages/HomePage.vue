@@ -164,7 +164,7 @@
             <span class="field-label">{{ t("common:labyrinth", "Labyrinth") }}</span>
             <select v-model="simulator.simulationSettings.labyrinthHrid" class="field-select">
               <option v-for="monster in simulator.options.labyrinths" :key="monster.hrid" :value="monster.hrid">
-                {{ monster.name }}
+                {{ formatMonsterName(monster.hrid, monster.name) }}
               </option>
             </select>
           </label>
@@ -236,7 +236,7 @@
 
         <div v-if="simulator.simulationSettings.mode === 'labyrinth'" class="mb-3 rounded-xl border border-white/10 bg-slate-900/40 p-3">
           <p class="field-label">{{ t("common:labyrinthCrates", "Crates") }}</p>
-          <div class="grid gap-3 sm:grid-cols-2">
+          <div class="grid gap-3 sm:grid-cols-3">
             <label class="block">
               <span class="field-label">{{ t("common:coffeeCrate", "Coffee Crate") }}</span>
               <select
@@ -246,7 +246,7 @@
               >
                 <option value="">{{ t("common:vue.common.none", "None") }}</option>
                 <option v-for="item in simulator.options.labyrinthCrates.coffee" :key="item.hrid" :value="item.hrid">
-                  {{ item.name }}
+                  {{ formatItemName(item.hrid, item.name) }}
                 </option>
               </select>
             </label>
@@ -259,7 +259,20 @@
               >
                 <option value="">{{ t("common:vue.common.none", "None") }}</option>
                 <option v-for="item in simulator.options.labyrinthCrates.food" :key="item.hrid" :value="item.hrid">
-                  {{ item.name }}
+                  {{ formatItemName(item.hrid, item.name) }}
+                </option>
+              </select>
+            </label>
+            <label class="block">
+              <span class="field-label">{{ t("common:teaCrate", "Tea Crate") }}</span>
+              <select
+                :value="simulator.simulationSettings.labyrinthCrates?.tea || ''"
+                class="field-select"
+                @change="simulator.setLabyrinthCrate('tea', $event.target.value)"
+              >
+                <option value="">{{ t("common:vue.common.none", "None") }}</option>
+                <option v-for="item in simulator.options.labyrinthCrates.tea" :key="item.hrid" :value="item.hrid">
+                  {{ formatItemName(item.hrid, item.name) }}
                 </option>
               </select>
             </label>
@@ -1143,7 +1156,10 @@ const currentTargetLabel = computed(() => {
   const settings = simulator.simulationSettings;
   if (settings.mode === "labyrinth" && settings.runScope === "single") {
     const selectedLabyrinth = simulator.options.labyrinths.find((entry) => entry.hrid === settings.labyrinthHrid);
-    const labyrinthName = selectedLabyrinth?.name || settings.labyrinthHrid || t("common:labyrinth", "Labyrinth");
+    const labyrinthName = formatMonsterName(
+      selectedLabyrinth?.hrid || settings.labyrinthHrid,
+      selectedLabyrinth?.name || settings.labyrinthHrid || t("common:labyrinth", "Labyrinth"),
+    );
     return `${labyrinthName} • ${t("common:roomLevel", "Room Level")} ${formatNumber(settings.roomLevel, 0)}`;
   }
   if (settings.mode === "zone" && settings.runScope === "single") {

@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-03-27T16:05:02.772Z",
+    "generatedAt": "2026-03-30T07:35:46.745Z",
     "levelKeys": [
       "stamina",
       "intelligence",
@@ -37570,6 +37570,20 @@
       {
         "hrid": "/items/expert_food_crate",
         "name": "Expert Food Crate"
+      }
+    ],
+    "tea": [
+      {
+        "hrid": "/items/basic_tea_crate",
+        "name": "Basic Tea Crate"
+      },
+      {
+        "hrid": "/items/advanced_tea_crate",
+        "name": "Advanced Tea Crate"
+      },
+      {
+        "hrid": "/items/expert_tea_crate",
+        "name": "Expert Tea Crate"
       }
     ]
   },

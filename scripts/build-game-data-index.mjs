@@ -13,6 +13,7 @@ const EQUIPMENT_SLOT_KEYS = ["head", "body", "legs", "feet", "hands", "weapon", 
 const ABILITY_BOOK_CATEGORY_HRID = "/item_categories/ability_book";
 const LABYRINTH_COFFEE_CRATE_HRIDS = ["/items/basic_coffee_crate", "/items/advanced_coffee_crate", "/items/expert_coffee_crate"];
 const LABYRINTH_FOOD_CRATE_HRIDS = ["/items/basic_food_crate", "/items/advanced_food_crate", "/items/expert_food_crate"];
+const LABYRINTH_TEA_CRATE_HRIDS = ["/items/basic_tea_crate", "/items/advanced_tea_crate", "/items/expert_tea_crate"];
 
 async function readJsonFile(filename) {
     const filePath = path.join(dataRoot, filename);
@@ -167,6 +168,10 @@ function createItemIndex(itemDetailMap) {
                 name: itemNameByHrid[hrid] || hrid,
             })),
             food: LABYRINTH_FOOD_CRATE_HRIDS.map((hrid) => ({
+                hrid,
+                name: itemNameByHrid[hrid] || hrid,
+            })),
+            tea: LABYRINTH_TEA_CRATE_HRIDS.map((hrid) => ({
                 hrid,
                 name: itemNameByHrid[hrid] || hrid,
             })),

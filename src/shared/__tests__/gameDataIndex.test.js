@@ -4,6 +4,7 @@ import {
     getItemName,
     getSortedHouseRoomOptions,
     itemDetailIndex,
+    labyrinthCrateOptions,
 } from "../gameDataIndex.js";
 
 describe("gameDataIndex", () => {
@@ -24,5 +25,23 @@ describe("gameDataIndex", () => {
             hrid: "/items/coin",
             name: "Coin",
         });
+    });
+
+    it("includes coffee, food, and tea labyrinth crate options", () => {
+        expect(labyrinthCrateOptions.coffee.map((item) => item.hrid)).toEqual([
+            "/items/basic_coffee_crate",
+            "/items/advanced_coffee_crate",
+            "/items/expert_coffee_crate",
+        ]);
+        expect(labyrinthCrateOptions.food.map((item) => item.hrid)).toEqual([
+            "/items/basic_food_crate",
+            "/items/advanced_food_crate",
+            "/items/expert_food_crate",
+        ]);
+        expect(labyrinthCrateOptions.tea.map((item) => item.hrid)).toEqual([
+            "/items/basic_tea_crate",
+            "/items/advanced_tea_crate",
+            "/items/expert_tea_crate",
+        ]);
     });
 });

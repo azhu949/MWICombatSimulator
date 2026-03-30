@@ -67,6 +67,7 @@ const RUN_SCOPE_ALL_LABYRINTHS = "all_labyrinths";
 const ABILITY_BOOK_CATEGORY_HRID = "/item_categories/ability_book";
 const LABYRINTH_COFFEE_CRATE_HRIDS = ["/items/basic_coffee_crate", "/items/advanced_coffee_crate", "/items/expert_coffee_crate"];
 const LABYRINTH_FOOD_CRATE_HRIDS = ["/items/basic_food_crate", "/items/advanced_food_crate", "/items/expert_food_crate"];
+const LABYRINTH_TEA_CRATE_HRIDS = ["/items/basic_tea_crate", "/items/advanced_tea_crate", "/items/expert_tea_crate"];
 
 const EQUIPMENT_SET_STORAGE_KEY = "mwi.equipmentSets.v2";
 const EQUIPMENT_SET_QUEUE_CHANGES_VERSION = 1;
@@ -446,9 +447,11 @@ function normalizeLabyrinthCrates(rawCrates) {
     const source = isPlainObject(rawCrates) ? rawCrates : {};
     const coffee = String(source.coffee || "");
     const food = String(source.food || "");
+    const tea = String(source.tea || "");
     return {
         coffee: LABYRINTH_COFFEE_CRATE_HRIDS.includes(coffee) ? coffee : "",
         food: LABYRINTH_FOOD_CRATE_HRIDS.includes(food) ? food : "",
+        tea: LABYRINTH_TEA_CRATE_HRIDS.includes(tea) ? tea : "",
     };
 }
 
@@ -3945,6 +3948,7 @@ export const useSimulatorStore = defineStore("simulator", {
                 labyrinthCrates: {
                     coffee: labyrinthCrateOptions.coffee,
                     food: labyrinthCrateOptions.food,
+                    tea: labyrinthCrateOptions.tea,
                 },
             },
             simulationSettings: {
@@ -5864,7 +5868,7 @@ export const useSimulatorStore = defineStore("simulator", {
         },
         getActiveLabyrinthCrates() {
             const crates = this.simulationSettings.labyrinthCrates || {};
-            const values = [String(crates.coffee || ""), String(crates.food || "")].filter(Boolean);
+            const values = [String(crates.coffee || ""), String(crates.food || ""), String(crates.tea || "")].filter(Boolean);
             return Array.from(new Set(values));
         },
         normalizeSimulationBuffLevels() {

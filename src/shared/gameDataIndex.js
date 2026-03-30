@@ -25,7 +25,7 @@ export const soloZoneHrids = Array.isArray(gameDataIndex?.soloZoneHrids) ? gameD
 export const labyrinthOptions = Array.isArray(gameDataIndex?.labyrinthOptions) ? gameDataIndex.labyrinthOptions : [];
 export const houseRoomOptions = Array.isArray(gameDataIndex?.houseRoomOptions) ? gameDataIndex.houseRoomOptions : [];
 export const houseRoomHrids = Array.isArray(gameDataIndex?.houseRoomHrids) ? gameDataIndex.houseRoomHrids : [];
-export const labyrinthCrateOptions = gameDataIndex?.labyrinthCrates || { coffee: [], food: [] };
+export const labyrinthCrateOptions = gameDataIndex?.labyrinthCrates || { coffee: [], food: [], tea: [] };
 
 export function getItemName(hrid, fallback = "") {
     const normalized = String(hrid || "");

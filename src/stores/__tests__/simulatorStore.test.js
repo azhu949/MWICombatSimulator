@@ -706,6 +706,30 @@ describe("simulatorStore", () => {
         );
     });
 
+    it("accepts tea crates as active labyrinth crate options", () => {
+        const simulator = useSimulatorStore();
+
+        simulator.setLabyrinthCrate("coffee", "/items/basic_coffee_crate");
+        simulator.setLabyrinthCrate("food", "/items/basic_food_crate");
+        simulator.setLabyrinthCrate("tea", "/items/basic_tea_crate");
+
+        expect(simulator.options.labyrinthCrates.tea.map((item) => item.hrid)).toEqual([
+            "/items/basic_tea_crate",
+            "/items/advanced_tea_crate",
+            "/items/expert_tea_crate",
+        ]);
+        expect(simulator.simulationSettings.labyrinthCrates).toMatchObject({
+            coffee: "/items/basic_coffee_crate",
+            food: "/items/basic_food_crate",
+            tea: "/items/basic_tea_crate",
+        });
+        expect(simulator.getActiveLabyrinthCrates()).toEqual([
+            "/items/basic_coffee_crate",
+            "/items/basic_food_crate",
+            "/items/basic_tea_crate",
+        ]);
+    });
+
     it("cancels shared single-worker runs when stopSimulation is invoked", async () => {
         const simulator = useSimulatorStore();
         const startSpy = vi.spyOn(workerClient, "startSimulation").mockImplementation(() => {});

@@ -2899,7 +2899,10 @@
     "/items/expert_coffee_crate": "专家咖啡箱",
     "/items/basic_food_crate": "基础食物箱",
     "/items/advanced_food_crate": "进阶食物箱",
-    "/items/expert_food_crate": "专家食物箱"
+    "/items/expert_food_crate": "专家食物箱",
+    "/items/basic_tea_crate": "基础茶叶箱",
+    "/items/advanced_tea_crate": "进阶茶叶箱",
+    "/items/expert_tea_crate": "专家茶叶箱"
   },
   "itemDescriptions": {
     "/items/coin": "基础货币",

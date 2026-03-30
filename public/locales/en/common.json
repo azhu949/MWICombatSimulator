@@ -251,6 +251,7 @@
     "labyrinthCrates": "Crates",
     "coffeeCrate": "Coffee Crate",
     "foodCrate": "Food Crate",
+    "teaCrate": "Tea Crate",
     "simulationSettings": "Simulation Settings",
     "allZonesData": "All Zones Data",
     "simulateAllZonesResults": "Simulate All Zones Results",
