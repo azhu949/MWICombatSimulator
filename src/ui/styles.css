@@ -184,13 +184,20 @@ body {
     background: var(--muted-btn-hover);
 }
 
-.header-icon-link {
+.header-icon-link,
+.header-icon-button {
     @apply inline-flex items-center justify-center;
     min-width: 42px;
     padding-inline: 0.85rem;
 }
 
-.header-icon-link:hover {
+.header-compact-button {
+    min-width: 58px;
+    padding-inline: 0.8rem;
+}
+
+.header-icon-link:hover,
+.header-icon-button:hover:not(:disabled) {
     box-shadow: 0 10px 24px rgba(15, 23, 42, 0.16);
 }
 
@@ -327,7 +334,8 @@ body {
         var(--muted-btn-hover);
 }
 
-:root[data-theme="light"] .header-icon-link:hover {
+:root[data-theme="light"] .header-icon-link:hover,
+:root[data-theme="light"] .header-icon-button:hover:not(:disabled) {
     box-shadow: 0 10px 24px rgba(15, 23, 42, 0.1);
 }
 

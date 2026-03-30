@@ -47,24 +47,50 @@
             <button type="button" class="action-button-muted" @click="openFeedbackModal">
               {{ t("common:vue.app.feedback", "Feedback") }}
             </button>
-            <button type="button" class="action-button-muted" @click="toggleTheme">
-              {{ t("common:controls.darkMode", "Dark Mode") }}: {{ themeLabel }}
-            </button>
-            <button type="button"
-              class="action-button-muted"
-             
-              :class="language === 'en' ? 'border-amber-300 text-amber-300' : ''"
-              @click="switchLanguage('en')"
+            <button
+              type="button"
+              class="action-button-muted header-icon-button"
+              :aria-label="themeToggleAriaLabel"
+              :title="themeToggleAriaLabel"
+              @click="toggleTheme"
             >
-              English
+              <svg
+                v-if="theme === 'dark'"
+                aria-hidden="true"
+                class="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.8"
+              >
+                <path d="M21.752 15.002A9.718 9.718 0 0 1 18 15.75 9.75 9.75 0 0 1 8.25 6c0-1.33.266-2.597.748-3.752A9.753 9.753 0 1 0 21.752 15.002Z" />
+              </svg>
+              <svg
+                v-else
+                aria-hidden="true"
+                class="h-4 w-4"
+                viewBox="0 0 24 24"
+                fill="none"
+                stroke="currentColor"
+                stroke-linecap="round"
+                stroke-linejoin="round"
+                stroke-width="1.8"
+              >
+                <circle cx="12" cy="12" r="4" />
+                <path d="M12 2.75v2.5M12 18.75v2.5M21.25 12h-2.5M5.25 12h-2.5M18.541 5.459l-1.768 1.768M7.227 16.773l-1.768 1.768M18.541 18.541l-1.768-1.768M7.227 7.227 5.459 5.459" />
+              </svg>
+              <span class="sr-only">{{ themeToggleAriaLabel }}</span>
             </button>
-            <button type="button"
-              class="action-button-muted"
-             
-              :class="language === 'zh' ? 'border-amber-300 text-amber-300' : ''"
-              @click="switchLanguage('zh')"
+            <button
+              type="button"
+              class="action-button-muted header-compact-button"
+              :aria-label="languageToggleAriaLabel"
+              :title="languageToggleAriaLabel"
+              @click="switchLanguage(languageToggleTarget)"
             >
-              中文
+              {{ languageToggleLabel }}
             </button>
           </div>
         </div>
@@ -361,10 +387,21 @@ const progressLabel = computed(() => {
   return `${progress}% | ${elapsed}s`;
 });
 
-const themeLabel = computed(() => (
+const themeToggleAriaLabel = computed(() => (
   theme.value === "dark"
-    ? t("common:vue.app.themeDark", "Dark")
-    : t("common:vue.app.themeLight", "Light")
+    ? t("common:vue.app.switchToLightTheme", "Switch to light mode")
+    : t("common:vue.app.switchToDarkTheme", "Switch to dark mode")
+));
+const languageToggleTarget = computed(() => (
+  language.value === "zh" ? "en" : "zh"
+));
+const languageToggleLabel = computed(() => (
+  language.value === "zh" ? "EN" : "中文"
+));
+const languageToggleAriaLabel = computed(() => (
+  language.value === "zh"
+    ? t("common:vue.app.switchToEnglish", "Switch to English")
+    : t("common:vue.app.switchToChinese", "Switch to Chinese")
 ));
 
 const activeQueueState = computed(() => simulator.activeQueueState || null);

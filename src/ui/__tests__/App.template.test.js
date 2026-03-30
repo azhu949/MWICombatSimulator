@@ -19,4 +19,24 @@ describe("App header support links", () => {
         expect(appSource).toContain('t("common:vue.app.feedbackQqLabel", "QQ")');
         expect(appSource).toContain('t("common:vue.app.feedbackEmailLabel", "QQ Email")');
     });
+
+    it("renders the theme toggle as an icon button with accessible labels", () => {
+        expect(appSource).toContain('class="action-button-muted header-icon-button"');
+        expect(appSource).toContain(':aria-label="themeToggleAriaLabel"');
+        expect(appSource).toContain(':title="themeToggleAriaLabel"');
+        expect(appSource).toContain('t("common:vue.app.switchToLightTheme", "Switch to light mode")');
+        expect(appSource).toContain('t("common:vue.app.switchToDarkTheme", "Switch to dark mode")');
+        expect(appSource).not.toContain('{{ t("common:controls.darkMode", "Dark Mode") }}: {{ themeLabel }}');
+    });
+
+    it("renders the language switcher as a single compact button", () => {
+        expect(appSource).toContain('class="action-button-muted header-compact-button"');
+        expect(appSource).toContain(':aria-label="languageToggleAriaLabel"');
+        expect(appSource).toContain(':title="languageToggleAriaLabel"');
+        expect(appSource).toContain('{{ languageToggleLabel }}');
+        expect(appSource).toContain('t("common:vue.app.switchToEnglish", "Switch to English")');
+        expect(appSource).toContain('t("common:vue.app.switchToChinese", "Switch to Chinese")');
+        expect(appSource).not.toContain("@click=\"switchLanguage('en')\"");
+        expect(appSource).not.toContain("@click=\"switchLanguage('zh')\"");
+    });
 });
