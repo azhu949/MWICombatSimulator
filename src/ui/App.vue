@@ -29,6 +29,24 @@
                 {{ t("common:vue.app.patchNotesUnreadBadge", "Unread") }}
               </span>
             </button>
+            <a
+              href="https://github.com/azhu949/MWICombatSimulator"
+              class="action-button-muted header-icon-link"
+              :aria-label="t('common:vue.app.feedbackGitHubAriaLabel', 'GitHub Repository')"
+              :title="t('common:vue.app.feedbackGitHubAriaLabel', 'GitHub Repository')"
+              target="_blank"
+              rel="noopener noreferrer"
+            >
+              <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
+                <path
+                  d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.05c-3.34.73-4.04-1.41-4.04-1.41-.55-1.38-1.33-1.74-1.33-1.74-1.09-.74.08-.73.08-.73 1.21.08 1.85 1.21 1.85 1.21 1.07 1.8 2.81 1.28 3.49.98.11-.76.42-1.28.76-1.58-2.66-.3-5.47-1.3-5.47-5.8 0-1.28.47-2.33 1.22-3.15-.12-.3-.53-1.53.12-3.18 0 0 1-.31 3.3 1.2a11.61 11.61 0 0 1 6 0c2.29-1.51 3.29-1.2 3.29-1.2.66 1.65.25 2.88.12 3.18.76.82 1.22 1.87 1.22 3.15 0 4.51-2.81 5.5-5.49 5.79.43.37.81 1.08.81 2.18v3.24c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z"
+                />
+              </svg>
+              <span class="sr-only">{{ t("common:vue.app.feedbackGitHubAriaLabel", "GitHub Repository") }}</span>
+            </a>
+            <button type="button" class="action-button-muted" @click="openFeedbackModal">
+              {{ t("common:vue.app.feedback", "Feedback") }}
+            </button>
             <button type="button" class="action-button-muted" @click="toggleTheme">
               {{ t("common:controls.darkMode", "Dark Mode") }}: {{ themeLabel }}
             </button>
@@ -176,6 +194,43 @@
     </BaseModal>
 
     <BaseModal
+      :open="feedbackModalOpen"
+      :title="t('common:vue.app.feedback', 'Feedback')"
+      initial-focus-selector="[data-feedback-copy]"
+      @close="closeFeedbackModal"
+    >
+      <div class="space-y-3">
+        <p class="text-sm text-slate-300">
+          {{ t("common:vue.app.feedbackHint", "Use the following channels for feedback, bug reports, or suggestions.") }}
+        </p>
+
+        <div class="feedback-contact-list">
+          <div class="feedback-contact-row">
+            <div class="min-w-0">
+              <p class="feedback-contact-label">{{ t("common:vue.app.feedbackQqLabel", "QQ") }}</p>
+              <p class="feedback-contact-value">596846069</p>
+            </div>
+            <button type="button" class="action-button-muted text-xs" data-feedback-copy @click="copyFeedbackContact('596846069')">
+              {{ t("common:vue.common.copy", "Copy") }}
+            </button>
+          </div>
+
+          <div class="feedback-contact-row">
+            <div class="min-w-0">
+              <p class="feedback-contact-label">{{ t("common:vue.app.feedbackEmailLabel", "QQ Email") }}</p>
+              <a class="feedback-contact-link" href="mailto:596846069@qq.com">596846069@qq.com</a>
+            </div>
+            <button type="button" class="action-button-muted text-xs" @click="copyFeedbackContact('596846069@qq.com')">
+              {{ t("common:vue.common.copy", "Copy") }}
+            </button>
+          </div>
+        </div>
+
+        <p class="text-xs text-slate-400">{{ feedbackCopyStatus }}</p>
+      </div>
+    </BaseModal>
+
+    <BaseModal
       :open="patchNotesModalOpen"
       :title="t('common:patchNotes', 'Patch Notes')"
       panel-class="max-w-[96vw] xl:max-w-[1100px]"
@@ -288,6 +343,8 @@ let deferredInitHandle = null;
 const globalErrorModalOpen = ref(false);
 const globalErrorText = ref("");
 const errorCopyStatus = ref("");
+const feedbackModalOpen = ref(false);
+const feedbackCopyStatus = ref("");
 const simulationCompleteModalOpen = ref(false);
 const queueCompleteModalOpen = ref(false);
 const patchNotesModalOpen = ref(false);
@@ -527,6 +584,30 @@ async function copyGlobalError() {
     errorCopyStatus.value = t("common:vue.app.globalErrorCopied", "Copied.");
   } catch (error) {
     errorCopyStatus.value = t("common:vue.app.globalErrorCopyFailed", "Copy failed.");
+  }
+}
+
+function openFeedbackModal() {
+  feedbackModalOpen.value = true;
+  feedbackCopyStatus.value = "";
+}
+
+function closeFeedbackModal() {
+  feedbackModalOpen.value = false;
+  feedbackCopyStatus.value = "";
+}
+
+async function copyFeedbackContact(value) {
+  const text = String(value || "").trim();
+  if (!text) {
+    return;
+  }
+
+  try {
+    await navigator.clipboard.writeText(text);
+    feedbackCopyStatus.value = t("common:vue.app.globalErrorCopied", "Copied.");
+  } catch (error) {
+    feedbackCopyStatus.value = t("common:vue.app.globalErrorCopyFailed", "Copy failed.");
   }
 }
 
