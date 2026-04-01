@@ -10,7 +10,7 @@ export const actionDetailIndex = gameDataIndex?.actionDetailIndex || {};
 export const monsterDetailIndex = gameDataIndex?.monsterDetailIndex || {};
 export const houseRoomDetailIndex = gameDataIndex?.houseRoomDetailIndex || {};
 
-export const abilityXpLevels = Array.isArray(gameDataIndex?.abilityXpLevels) ? gameDataIndex.abilityXpLevels : [];
+export const levelExperienceTable = Array.isArray(gameDataIndex?.levelExperienceTable) ? gameDataIndex.levelExperienceTable : [];
 export const abilityBookInfoByAbilityHrid = gameDataIndex?.abilityBookInfoByAbilityHrid || {};
 
 export const equipmentOptionsBySlot = gameDataIndex?.equipmentBySlot || {};

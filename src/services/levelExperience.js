@@ -1,4 +1,4 @@
-import abilityXpLevels from "../combatsimulator/data/abilityXpLevels.json";
+import levelExperienceTable from "../combatsimulator/data/levelExperienceTable.json";
 
 function toFiniteNumber(value, fallback = 0) {
     const parsed = Number(value);
@@ -6,7 +6,7 @@ function toFiniteNumber(value, fallback = 0) {
 }
 
 const SKILL_LEVEL_EXPERIENCE_TABLE = Object.freeze(
-    (Array.isArray(abilityXpLevels) ? abilityXpLevels : [])
+    (Array.isArray(levelExperienceTable) ? levelExperienceTable : [])
         .map((value) => toFiniteNumber(value, 0))
 );
 

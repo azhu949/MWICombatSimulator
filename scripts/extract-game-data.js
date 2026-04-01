@@ -2,15 +2,7 @@
 
 const fs = require("fs");
 const path = require("path");
-
-const TARGET_MAP_FILES = {
-    abilityDetailMap: "abilityDetailMap.json",
-    achievementDetailMap: "achievementDetailMap.json",
-    actionDetailMap: "actionDetailMap.json",
-    combatMonsterDetailMap: "combatMonsterDetailMap.json",
-    itemDetailMap: "itemDetailMap.json",
-    openableLootDropMap: "openableLootDropMap.json",
-};
+const { hasRequiredClientDataKeys, writeMapFiles } = require("./game-data-targets");
 
 function usage() {
     console.log("Usage:");
@@ -25,12 +17,22 @@ function usage() {
     console.log("                src/combatsimulator/data");
     console.log("  --inspect-output, -p");
     console.log("                Optional extra output directory for inspection.");
-    console.log("                Writes the same 6 JSON files again (e.g. into tmp/).");
+    console.log("                Writes the same tracked game-data JSON files again (e.g. into tmp/).");
+    console.log("                Missing tracked files are skipped with a warning.");
+    console.log("  --all         Also write the full resolved init client data JSON.");
+    console.log("  --all-output  Optional file path for the full JSON output.");
+    console.log("                Default: <input-dir>/<input-name>.full.json");
     console.log("  --help,   -h   Show this help.");
 }
 
 function parseArgs(argv) {
-    const args = { input: null, output: "src/combatsimulator/data", inspectOutput: null };
+    const args = {
+        input: null,
+        output: "src/combatsimulator/data",
+        inspectOutput: null,
+        all: false,
+        allOutput: null,
+    };
 
     for (let i = 0; i < argv.length; i++) {
         const arg = argv[i];
@@ -53,6 +55,16 @@ function parseArgs(argv) {
             i++;
             continue;
         }
+        if (arg === "--all") {
+            args.all = true;
+            continue;
+        }
+        if (arg === "--all-output" || arg === "-a") {
+            args.allOutput = argv[i + 1];
+            args.all = true;
+            i++;
+            continue;
+        }
     }
 
     return args;
@@ -64,13 +76,6 @@ function tryParseJson(text) {
     } catch {
         return null;
     }
-}
-
-function hasTargetMaps(obj) {
-    if (!obj || typeof obj !== "object") {
-        return false;
-    }
-    return Object.keys(TARGET_MAP_FILES).every((key) => Object.prototype.hasOwnProperty.call(obj, key));
 }
 
 function collectStringCandidates(raw) {
@@ -100,15 +105,15 @@ function collectStringCandidates(raw) {
 
 function resolveClientData(rawText) {
     const direct = tryParseJson(rawText);
-    if (hasTargetMaps(direct)) {
+    if (hasRequiredClientDataKeys(direct)) {
         return direct;
     }
 
     if (direct && typeof direct === "object") {
-        if (hasTargetMaps(direct.data)) {
+        if (hasRequiredClientDataKeys(direct.data)) {
             return direct.data;
         }
-        if (hasTargetMaps(direct.clientData)) {
+        if (hasRequiredClientDataKeys(direct.clientData)) {
             return direct.clientData;
         }
     }
@@ -116,7 +121,7 @@ function resolveClientData(rawText) {
     const candidates = collectStringCandidates(rawText);
     for (const candidate of candidates) {
         const parsedCandidate = tryParseJson(candidate);
-        if (hasTargetMaps(parsedCandidate)) {
+        if (hasRequiredClientDataKeys(parsedCandidate)) {
             return parsedCandidate;
         }
 
@@ -126,14 +131,14 @@ function resolveClientData(rawText) {
         }
 
         const parsedDecompressed = tryParseJson(decompressed);
-        if (hasTargetMaps(parsedDecompressed)) {
+        if (hasRequiredClientDataKeys(parsedDecompressed)) {
             return parsedDecompressed;
         }
         if (parsedDecompressed && typeof parsedDecompressed === "object") {
-            if (hasTargetMaps(parsedDecompressed.data)) {
+            if (hasRequiredClientDataKeys(parsedDecompressed.data)) {
                 return parsedDecompressed.data;
             }
-            if (hasTargetMaps(parsedDecompressed.clientData)) {
+            if (hasRequiredClientDataKeys(parsedDecompressed.clientData)) {
                 return parsedDecompressed.clientData;
             }
         }
@@ -142,22 +147,19 @@ function resolveClientData(rawText) {
     return null;
 }
 
-function writeMapFiles(clientData, outputDir) {
-    fs.mkdirSync(outputDir, { recursive: true });
-    const written = [];
-
-    for (const [mapKey, fileName] of Object.entries(TARGET_MAP_FILES)) {
-        const value = clientData[mapKey];
-        if (!value || typeof value !== "object") {
-            throw new Error(`Missing required map: ${mapKey}`);
-        }
-
-        const filePath = path.join(outputDir, fileName);
-        fs.writeFileSync(filePath, `${JSON.stringify(value, null, 4)}\n`, "utf8");
-        written.push(filePath);
+function resolveAllOutputPath(inputPath, explicitOutputPath) {
+    if (explicitOutputPath) {
+        return path.resolve(explicitOutputPath);
     }
 
-    return written;
+    const parsedInput = path.parse(inputPath);
+    return path.join(parsedInput.dir, `${parsedInput.name}.full.json`);
+}
+
+function writeFullClientDataFile(clientData, outputPath) {
+    fs.mkdirSync(path.dirname(outputPath), { recursive: true });
+    fs.writeFileSync(outputPath, `${JSON.stringify(clientData, null, 4)}\n`, "utf8");
+    return outputPath;
 }
 
 function main() {
@@ -176,6 +178,7 @@ function main() {
     const inputPath = path.resolve(args.input);
     const outputDir = path.resolve(args.output);
     const inspectOutputDir = args.inspectOutput ? path.resolve(args.inspectOutput) : null;
+    const allOutputPath = args.all ? resolveAllOutputPath(inputPath, args.allOutput) : null;
     const raw = fs.readFileSync(inputPath, "utf8");
     const clientData = resolveClientData(raw);
 
@@ -185,18 +188,36 @@ function main() {
         );
     }
 
-    const written = writeMapFiles(clientData, outputDir);
+    const { written, skipped } = writeMapFiles(clientData, outputDir);
     console.log(`Wrote ${written.length} files:`);
     for (const filePath of written) {
         console.log(`- ${filePath}`);
     }
+    if (skipped.length > 0) {
+        console.log(`Skipped ${skipped.length} tracked game-data file because the payload did not include it:`);
+        for (const fileName of skipped) {
+            console.log(`- ${fileName}`);
+        }
+    }
 
     if (inspectOutputDir && inspectOutputDir !== outputDir) {
-        const inspectWritten = writeMapFiles(clientData, inspectOutputDir);
+        const { written: inspectWritten, skipped: inspectSkipped } = writeMapFiles(clientData, inspectOutputDir);
         console.log(`Also wrote ${inspectWritten.length} files for inspection:`);
         for (const filePath of inspectWritten) {
             console.log(`- ${filePath}`);
         }
+        if (inspectSkipped.length > 0) {
+            console.log(`Also skipped ${inspectSkipped.length} tracked game-data file for inspection because the payload did not include it:`);
+            for (const fileName of inspectSkipped) {
+                console.log(`- ${fileName}`);
+            }
+        }
+    }
+
+    if (allOutputPath) {
+        const writtenPath = writeFullClientDataFile(clientData, allOutputPath);
+        console.log("Also wrote full init client data JSON:");
+        console.log(`- ${writtenPath}`);
     }
 }
 

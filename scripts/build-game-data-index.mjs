@@ -391,14 +391,14 @@ function createHouseRoomIndex(houseRoomDetailMap) {
 async function main() {
     const [
         abilityDetailMap,
-        abilityXpLevels,
+        levelExperienceTable,
         actionDetailMap,
         combatMonsterDetailMap,
         houseRoomDetailMap,
         itemDetailMap,
     ] = await Promise.all([
         readJsonFile("abilityDetailMap.json"),
-        readJsonFile("abilityXpLevels.json"),
+        readJsonFile("levelExperienceTable.json"),
         readJsonFile("actionDetailMap.json"),
         readJsonFile("combatMonsterDetailMap.json"),
         readJsonFile("houseRoomDetailMap.json"),
@@ -422,7 +422,7 @@ async function main() {
         ...actionIndex,
         ...monsterIndex,
         ...houseRoomIndex,
-        abilityXpLevels: Array.isArray(abilityXpLevels) ? abilityXpLevels : [],
+        levelExperienceTable: Array.isArray(levelExperienceTable) ? levelExperienceTable : [],
     };
 
     await mkdir(path.dirname(outputPath), { recursive: true });

@@ -3,19 +3,11 @@
 const fs = require("fs");
 const path = require("path");
 const WebSocket = require("ws");
+const { hasRequiredClientDataKeys, writeMapFiles } = require("./game-data-targets");
 
 const OFFICIAL_GAME_ORIGIN = "https://www.milkywayidle.com";
 const OFFICIAL_MAIN_CHUNK_REGEX = /<script[^>]+src=["'](\/static\/js\/main\.[^"']+?\.chunk\.js)["']/i;
 const OFFICIAL_GAME_VERSION_REGEX = /var a="production";const i="([^"]+)";/;
-
-const TARGET_MAP_FILES = {
-    abilityDetailMap: "abilityDetailMap.json",
-    achievementDetailMap: "achievementDetailMap.json",
-    actionDetailMap: "actionDetailMap.json",
-    combatMonsterDetailMap: "combatMonsterDetailMap.json",
-    itemDetailMap: "itemDetailMap.json",
-    openableLootDropMap: "openableLootDropMap.json",
-};
 
 function usage() {
     console.log("Usage:");
@@ -36,7 +28,8 @@ function usage() {
     console.log("  --cookie              Auth cookie string for api.milkywayidle.com.");
     console.log("  --cookie-file         File containing cookie string, or a full 'Cookie: ...' header.");
     console.log("  --output, -o          Output directory. Default: src/combatsimulator/data");
-    console.log("  --inspect-output, -p  Optional extra output directory (same 6 files again).");
+    console.log("  --inspect-output, -p  Optional extra output directory (same tracked files again).");
+    console.log("                        Missing tracked files are skipped with a warning.");
     console.log("  --save-raw, -r        Optional path to save the full init_client_data payload JSON.");
     console.log("  --timeout-ms, -m      Timeout waiting for init_client_data. Default: 15000");
     console.log("  --help, -h            Show this help.");
@@ -185,31 +178,6 @@ function resolveCookie(args) {
     return "";
 }
 
-function hasTargetMaps(obj) {
-    if (!obj || typeof obj !== "object") {
-        return false;
-    }
-    return Object.keys(TARGET_MAP_FILES).every((key) => Object.prototype.hasOwnProperty.call(obj, key));
-}
-
-function writeMapFiles(clientData, outputDir) {
-    fs.mkdirSync(outputDir, { recursive: true });
-    const written = [];
-
-    for (const [mapKey, fileName] of Object.entries(TARGET_MAP_FILES)) {
-        const value = clientData[mapKey];
-        if (!value || typeof value !== "object") {
-            throw new Error(`Missing required map: ${mapKey}`);
-        }
-
-        const filePath = path.join(outputDir, fileName);
-        fs.writeFileSync(filePath, `${JSON.stringify(value, null, 4)}\n`, "utf8");
-        written.push(filePath);
-    }
-
-    return written;
-}
-
 async function fetchOfficialMainChunkSource() {
     const homeResponse = await fetch(`${OFFICIAL_GAME_ORIGIN}/`);
     if (!homeResponse.ok) {
@@ -246,7 +214,7 @@ async function resolveGameVersion(explicitVersion) {
 }
 
 function extractClientDataFromMessage(payload) {
-    if (hasTargetMaps(payload)) {
+    if (hasRequiredClientDataKeys(payload)) {
         return payload;
     }
 
@@ -258,7 +226,7 @@ function extractClientDataFromMessage(payload) {
     ];
 
     for (const candidate of candidates) {
-        if (hasTargetMaps(candidate)) {
+        if (hasRequiredClientDataKeys(candidate)) {
             return candidate;
         }
     }
@@ -411,7 +379,7 @@ async function main() {
 
     const result = await waitForInitClientData(wsUrl, args.timeoutMs, wsOptions);
 
-    if (!hasTargetMaps(result.clientData)) {
+    if (!hasRequiredClientDataKeys(result.clientData)) {
         throw new Error("Received payload does not include required init client maps");
     }
 
@@ -421,17 +389,29 @@ async function main() {
         console.log(`Saved raw payload: ${saveRawPath}`);
     }
 
-    const written = writeMapFiles(result.clientData, outputDir);
+    const { written, skipped } = writeMapFiles(result.clientData, outputDir);
     console.log(`Wrote ${written.length} files:`);
     for (const filePath of written) {
         console.log(`- ${filePath}`);
     }
+    if (skipped.length > 0) {
+        console.log(`Skipped ${skipped.length} tracked game-data file because the payload did not include it:`);
+        for (const fileName of skipped) {
+            console.log(`- ${fileName}`);
+        }
+    }
 
     if (inspectOutputDir && inspectOutputDir !== outputDir) {
-        const inspectWritten = writeMapFiles(result.clientData, inspectOutputDir);
+        const { written: inspectWritten, skipped: inspectSkipped } = writeMapFiles(result.clientData, inspectOutputDir);
         console.log(`Also wrote ${inspectWritten.length} files for inspection:`);
         for (const filePath of inspectWritten) {
             console.log(`- ${filePath}`);
+        }
+        if (inspectSkipped.length > 0) {
+            console.log(`Also skipped ${inspectSkipped.length} tracked game-data file for inspection because the payload did not include it:`);
+            for (const fileName of inspectSkipped) {
+                console.log(`- ${fileName}`);
+            }
         }
     }
 }

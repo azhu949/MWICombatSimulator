@@ -3,7 +3,7 @@ import {
     abilityBookInfoByAbilityHrid,
     abilityDetailIndex,
     abilityOptions,
-    abilityXpLevels,
+    levelExperienceTable,
     actionDetailIndex,
     drinkOptions,
     dungeonOptions,
@@ -2782,8 +2782,8 @@ function computeDefaultEquipmentTransitionCost(beforeItemHrid, beforeLevel, afte
 
 function ensureAbilityUpgradeReferenceGlobals() {
     const target = typeof window !== "undefined" ? window : globalThis;
-    if (!Array.isArray(target.jigsAbilityXpLevels)) {
-        target.jigsAbilityXpLevels = [];
+    if (!Array.isArray(target.jigsLevelExperienceTable)) {
+        target.jigsLevelExperienceTable = [];
     }
     if (!target.jigsSpellBookXpByName || typeof target.jigsSpellBookXpByName !== "object" || Array.isArray(target.jigsSpellBookXpByName)) {
         target.jigsSpellBookXpByName = {};
@@ -2793,21 +2793,21 @@ function ensureAbilityUpgradeReferenceGlobals() {
 
 function hasAbilityUpgradeReferenceDataLoaded() {
     const globalRef = ensureAbilityUpgradeReferenceGlobals();
-    return Array.isArray(globalRef.jigsAbilityXpLevels) && globalRef.jigsAbilityXpLevels.length > 1;
+    return Array.isArray(globalRef.jigsLevelExperienceTable) && globalRef.jigsLevelExperienceTable.length > 1;
 }
 
 function getAbilityXpForLevel(level) {
-    const abilityXpLevels = ensureAbilityUpgradeReferenceGlobals().jigsAbilityXpLevels;
-    if (!Array.isArray(abilityXpLevels)) {
+    const table = ensureAbilityUpgradeReferenceGlobals().jigsLevelExperienceTable;
+    if (!Array.isArray(table)) {
         return null;
     }
 
     const normalizedLevel = Math.floor(toFiniteNumber(level, -1));
-    if (!Number.isInteger(normalizedLevel) || normalizedLevel < 0 || normalizedLevel >= abilityXpLevels.length) {
+    if (!Number.isInteger(normalizedLevel) || normalizedLevel < 0 || normalizedLevel >= table.length) {
         return null;
     }
 
-    const xpValue = Number(abilityXpLevels[normalizedLevel]);
+    const xpValue = Number(table[normalizedLevel]);
     return Number.isFinite(xpValue) ? xpValue : null;
 }
 
@@ -5714,18 +5714,18 @@ export const useSimulatorStore = defineStore("simulator", {
 
             const loadTask = (async () => {
                 try {
-                    const bundledXpLevels = Array.isArray(abilityXpLevels)
-                        ? abilityXpLevels.map((value) => toFiniteNumber(value, 0))
+                    const bundledLevelExperienceTable = Array.isArray(levelExperienceTable)
+                        ? levelExperienceTable.map((value) => toFiniteNumber(value, 0))
                         : [];
-                    if (bundledXpLevels.length <= 1) {
+                    if (bundledLevelExperienceTable.length <= 1) {
                         return {
                             loaded: false,
                             source: "bundle",
-                            error: "Bundled ability XP levels are missing or invalid.",
+                            error: "Bundled level experience table is missing or invalid.",
                         };
                     }
 
-                    globalRef.jigsAbilityXpLevels = bundledXpLevels;
+                    globalRef.jigsLevelExperienceTable = bundledLevelExperienceTable;
                     this.abilityUpgradeReferenceVersion = Date.now();
                     const queueStates = Object.entries(this.queue?.byPlayer || {})
                         .filter(([, queueState]) => Array.isArray(queueState?.rawRuns) && queueState.rawRuns.length > 0);

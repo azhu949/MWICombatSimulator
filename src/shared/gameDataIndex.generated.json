@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-03-30T07:35:46.745Z",
+    "generatedAt": "2026-04-01T05:15:34.275Z",
     "levelKeys": [
       "stamina",
       "intelligence",
@@ -63404,7 +63404,7 @@
     "/house_rooms/sewing_parlor",
     "/house_rooms/workshop"
   ],
-  "abilityXpLevels": [
+  "levelExperienceTable": [
     0,
     0,
     33,

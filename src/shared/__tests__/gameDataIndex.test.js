@@ -5,6 +5,7 @@ import {
     getSortedHouseRoomOptions,
     itemDetailIndex,
     labyrinthCrateOptions,
+    levelExperienceTable,
 } from "../gameDataIndex.js";
 
 describe("gameDataIndex", () => {
@@ -43,5 +44,11 @@ describe("gameDataIndex", () => {
             "/items/advanced_tea_crate",
             "/items/expert_tea_crate",
         ]);
+    });
+
+    it("exposes level experience thresholds", () => {
+        expect(Array.isArray(levelExperienceTable)).toBe(true);
+        expect(levelExperienceTable[1]).toBe(0);
+        expect(levelExperienceTable[2]).toBe(33);
     });
 });

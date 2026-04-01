@@ -498,7 +498,7 @@ function localizeEquipmentSlotLabel(slotKey) {
 }
 
 function getAbilityXpForLevel(level) {
-  const xpLevels = Array.isArray(window?.jigsAbilityXpLevels) ? window.jigsAbilityXpLevels : null;
+  const xpLevels = Array.isArray(window?.jigsLevelExperienceTable) ? window.jigsLevelExperienceTable : null;
   if (!xpLevels) {
     return null;
   }

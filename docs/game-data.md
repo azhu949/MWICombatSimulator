@@ -4,20 +4,33 @@
 
 - 模拟器使用的游戏数据来源
 - 数据使用免责声明
-- 如何刷新模拟器依赖的 6 个核心 map 文件
+- 如何刷新模拟器依赖的当前全部游戏数据 JSON 文件
 
 ## 游戏数据来源（重要）
 
-模拟器核心 map 文件来源于 Milky Way Idle 的 `init_client_data` 载荷。
+模拟器游戏数据文件来源于 Milky Way Idle 的 `init_client_data` 载荷。
 
-需要刷新的 6 个文件为：
+刷新范围以 `src/combatsimulator/data` 目录当前维护的 JSON 文件为准，目前包括：
 
 - `abilityDetailMap.json`
+- `abilitySlotsLevelRequirementList.json`
+- `levelExperienceTable.json`
 - `achievementDetailMap.json`
+- `achievementTierDetailMap.json`
 - `actionDetailMap.json`
 - `combatMonsterDetailMap.json`
+- `combatStyleDetailMap.json`
+- `combatTriggerComparatorDetailMap.json`
+- `combatTriggerConditionDetailMap.json`
+- `combatTriggerDependencyDetailMap.json`
+- `damageTypeDetailMap.json`
+- `enhancementLevelTotalBonusMultiplierTable.json`
+- `houseRoomDetailMap.json`
 - `itemDetailMap.json`
+- `labyrinthCrateDetailMap.json`
 - `openableLootDropMap.json`
+
+如果某个已维护文件对应的 key 当前不在 `init_client_data` 载荷里，脚本会跳过该文件并输出提示，不会因为单个缺失字段而整体失败。
 
 默认写入目录为：`src/combatsimulator/data`（对应导出脚本的默认输出目录）。
 
@@ -29,7 +42,7 @@
 - 请勿将本项目用于作弊、自动化刷取、商业倒卖或其他违反游戏规则与法律法规的行为。
 - 因使用本项目或其中数据造成的任何账号、经济或其他损失，使用者需自行承担风险与责任。
 
-## 刷新这 6 个模拟器 map 文件
+## 刷新当前维护的全部游戏数据 JSON 文件
 
 ### 方式：浏览器控制台直接下载 localStorage 缓存
 
@@ -70,7 +83,25 @@
 npm run extract-game-data -- --input tmp/initClientData.txt
 ```
 
-如果你想在更新 `src/combatsimulator/data` 的同时，把解压后的 6 个 JSON 也拆分到 `tmp` 目录里方便查看，执行：
+如果你还想额外导出一份完整解压后的 `clientData` JSON，执行：
+
+```bash
+npm run extract-game-data -- --input tmp/initClientData.txt --all
+```
+
+默认会额外写出：
+
+```text
+tmp/initClientData.full.json
+```
+
+如果你想自己指定完整 JSON 的输出文件路径，执行：
+
+```bash
+npm run extract-game-data -- --input tmp/initClientData.txt --all --all-output tmp/initClientData.full.json
+```
+
+如果你想在更新 `src/combatsimulator/data` 的同时，把解压后的同一批 JSON 也拆分到 `tmp` 目录里方便查看，执行：
 
 ```bash
 npm run extract-game-data -- --input tmp/initClientData.txt --inspect-output tmp/initClientData.decoded
@@ -90,4 +121,4 @@ npm run extract-game-data -- --input tmp/initClientData.txt --output src/combats
 
 ### 脚本位置
 
-- `scripts/extract-game-data.js`：从 localStorage 复制的 `initClientData`（压缩字符串或已解压 JSON）解析并导出 6 个 map。
+- `scripts/extract-game-data.js`：从 localStorage 复制的 `initClientData`（压缩字符串或已解压 JSON）解析并导出当前仓库维护的全部游戏数据 JSON。
