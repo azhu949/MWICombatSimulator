@@ -59,7 +59,7 @@ npm test
 
 ## 常用文档
 
-- [`docs/game-data.md`](docs/game-data.md)：游戏数据来源、数据使用免责声明、以及刷新 6 个模拟器 map 文件的流程
+- [`docs/game-data.md`](docs/game-data.md)：游戏数据来源、数据使用免责声明、刷新 6 个模拟器 map 文件的流程，以及在浏览器控制台直接下载 `initClientData.txt` 的方法
 - [`scripts/mwi-main-site-import.README.md`](scripts/mwi-main-site-import.README.md)：Tampermonkey「主站一键导入」脚本说明
 
 ## Fork 来源

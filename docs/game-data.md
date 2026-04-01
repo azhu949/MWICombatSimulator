@@ -31,51 +31,39 @@
 
 ## 刷新这 6 个模拟器 map 文件
 
-### 方式 A：官方 websocket 自动拉取（推荐）
+### 方式：浏览器控制台直接下载 localStorage 缓存
 
-推荐优先使用官方 websocket 自动拉取（减少手工步骤），脚本会自动识别最新 `gameVersion`，并直接导出 6 个 map。
+推荐直接在浏览器控制台把 `initClientData` 下载成文件，不要先 `copy(...)` 再手工粘贴到编辑器。
 
-1. 在浏览器打开 Milky Way Idle 并登录。
-2. 在 DevTools Console 执行，拿到 `localHash`：
+原因：
 
-```js
-copy(localStorage.getItem("localHash"));
-```
-
-3. 在 Console 执行，查看角色列表并确认你要使用的 `characterId`：
-
-```js
-fetch("https://api.milkywayidle.com/v1/characters", { credentials: "include" })
-  .then((r) => r.json())
-  .then((list) => console.log(list.map((x) => ({ id: x.id, name: x.name }))));
-```
-
-4. 在 DevTools `Network` 中找到任意 `https://api.milkywayidle.com/v1/characters` 请求，从 `Request Headers` 复制整条 `cookie: ...` 到本地文件（例如 `tmp/api.cookie.txt`）。
-5. 执行命令（默认会写入 `src/combatsimulator/data`）：
-
-```bash
-npm run extract-game-data:official -- --character-id <characterId> --hash <localHash> --cookie-file tmp/api.cookie.txt --inspect-output tmp/initClientData.decoded --save-raw tmp/initClientData.raw.json
-```
-
-说明：
-
-- `--cookie` / `--cookie-file`：用于携带登录态；若不提供，websocket 通常会被服务端立即断开。
-- `--inspect-output`：额外将 6 个 JSON 再拆分导出到指定目录（例如 `tmp/`），便于人工查看。
-- `--save-raw`：保存完整 websocket `init_client_data` 原始包，便于排查。
-- `--hash` 可省略（脚本会自动生成），但建议使用浏览器里现有 `localHash` 保持一致。
-
-### 方式 B：手工导出 localStorage（备选）
-
-如果你暂时不走 websocket，也可以继续使用手工方式：
+- `initClientData` 压缩串里可能包含特殊行分隔符字符。
+- 这些字符在剪贴板或文本编辑器里可能被自动改写成普通换行，导致后续 `npm run extract-game-data -- --input ...` 解析失败。
+- 直接在浏览器里生成并下载文件，能尽量避免这类中间环节改写。
 
 1. 在浏览器打开 Milky Way Idle 并登录。
 2. 在 DevTools Console 执行：
 
 ```js
-copy(localStorage.getItem("initClientData"));
+(() => {
+  const raw = localStorage.getItem("initClientData");
+  if (!raw) {
+    throw new Error("localStorage.initClientData is empty");
+  }
+
+  const blob = new Blob([raw], { type: "text/plain;charset=utf-8" });
+  const url = URL.createObjectURL(blob);
+  const anchor = document.createElement("a");
+  anchor.href = url;
+  anchor.download = "initClientData.txt";
+  document.body.appendChild(anchor);
+  anchor.click();
+  anchor.remove();
+  setTimeout(() => URL.revokeObjectURL(url), 1000);
+})();
 ```
 
-3. 将复制内容保存到文本文件，例如：`tmp/initClientData.txt`。
+3. 将浏览器下载得到的 `initClientData.txt` 放到本地仓库，例如：`tmp/initClientData.txt`。
 4. 执行（默认会写入 `src/combatsimulator/data`）：
 
 ```bash
@@ -94,8 +82,12 @@ npm run extract-game-data -- --input tmp/initClientData.txt --inspect-output tmp
 npm run extract-game-data -- --input tmp/initClientData.txt --output src/combatsimulator/data
 ```
 
+如果你仍然想用复制粘贴方式，请至少确保：
+
+- 不要经过会自动改写换行或字符编码的中间编辑器。
+- 不要手动格式化、自动换行、另存为其他编码。
+- 保存后不要再次打开并重新保存这个文件。
+
 ### 脚本位置
 
-- `scripts/extract-game-data-from-official.js`：通过官方 websocket 拉取 `init_client_data` 并导出 6 个 map。
 - `scripts/extract-game-data.js`：从 localStorage 复制的 `initClientData`（压缩字符串或已解压 JSON）解析并导出 6 个 map。
-
