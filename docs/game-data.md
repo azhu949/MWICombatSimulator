@@ -25,8 +25,10 @@
 - `combatTriggerDependencyDetailMap.json`
 - `damageTypeDetailMap.json`
 - `enhancementLevelTotalBonusMultiplierTable.json`
+- `equipmentTypeDetailMap.json`
 - `houseRoomDetailMap.json`
 - `itemDetailMap.json`
+- `itemLocationDetailMap.json`
 - `labyrinthCrateDetailMap.json`
 - `openableLootDropMap.json`
 

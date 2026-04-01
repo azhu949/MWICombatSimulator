@@ -1,5 +1,7 @@
 import { describe, expect, it } from "vitest";
 import {
+    EQUIPMENT_SLOT_KEYS,
+    equipmentOptionsBySlot,
     getAbilityName,
     getItemName,
     getSortedHouseRoomOptions,
@@ -50,5 +52,10 @@ describe("gameDataIndex", () => {
         expect(Array.isArray(levelExperienceTable)).toBe(true);
         expect(levelExperienceTable[1]).toBe(0);
         expect(levelExperienceTable[2]).toBe(33);
+    });
+
+    it("does not expose trinket equipment options in combat simulator slots", () => {
+        expect(EQUIPMENT_SLOT_KEYS).not.toContain("trinket");
+        expect(equipmentOptionsBySlot.trinket).toBeUndefined();
     });
 });

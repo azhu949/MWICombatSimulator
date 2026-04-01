@@ -251,6 +251,53 @@ describe("importExportMapper", () => {
         expect(result.simulationSettings.simulationTimeHours).toBe(12);
     });
 
+    it("normalizes legacy item location hrids before mapping equipment slots", () => {
+        const fallbackPlayer = createEmptyPlayerConfig(1);
+        const legacyPayload = {
+            player: {
+                equipment: [
+                    {
+                        itemLocationHrid: " /item_locations/head ",
+                        itemHrid: "/items/magicians_hat",
+                        enhancementLevel: 6,
+                    },
+                    {
+                        itemLocationHrid: " /item_locations/main_hand ",
+                        itemHrid: "/items/blazing_trident",
+                        enhancementLevel: 10,
+                    },
+                ],
+            },
+        };
+
+        const result = importSoloConfig(JSON.stringify(legacyPayload), fallbackPlayer, createSimulationSettings());
+
+        expect(result.detectedFormat).toBe("legacy-solo");
+        expect(result.player.equipment.head.itemHrid).toBe("/items/magicians_hat");
+        expect(result.player.equipment.weapon.itemHrid).toBe("/items/blazing_trident");
+    });
+
+    it("ignores legacy trinket item locations for combat simulator imports", () => {
+        const fallbackPlayer = createEmptyPlayerConfig(1);
+        const legacyPayload = {
+            player: {
+                equipment: [
+                    {
+                        itemLocationHrid: "/item_locations/trinket",
+                        itemHrid: "/items/basic_task_badge",
+                        enhancementLevel: 2,
+                    },
+                ],
+            },
+        };
+
+        const result = importSoloConfig(JSON.stringify(legacyPayload), fallbackPlayer, createSimulationSettings());
+
+        expect(result.detectedFormat).toBe("legacy-solo");
+        expect(result.player.equipment.trinket).toBeUndefined();
+        expect(Object.values(result.player.equipment).some((entry) => entry?.itemHrid === "/items/basic_task_badge")).toBe(false);
+    });
+
     it("imports modern player-only payload", () => {
         const player = createConfiguredPlayer(2);
 

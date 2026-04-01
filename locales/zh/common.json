@@ -481,7 +481,8 @@
                 "earrings": "耳饰",
                 "ring": "戒指",
                 "back": "背部",
-                "charm": "护符"
+                "charm": "护符",
+                "trinket": "饰品"
             },
             "trigger": {
                 "target": "目标",

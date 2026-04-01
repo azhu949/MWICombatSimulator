@@ -209,9 +209,28 @@ const SLOT_I18N_KEY_MAP = {
   ring: "characterItemsUtil.ring",
   back: "characterItemsUtil.back",
   charm: "characterItemsUtil.charm",
+  trinket: "characterItemsUtil.trinket",
   main_hand: "characterItemsUtil.mainHand",
   two_hand: "characterItemsUtil.mainHand",
   weapon: "characterItemsUtil.mainHand",
+};
+const SLOT_LABEL_FALLBACK_MAP = {
+  head: "Head",
+  body: "Body",
+  legs: "Legs",
+  feet: "Feet",
+  hands: "Hands",
+  off_hand: "Off Hand",
+  pouch: "Pouch",
+  neck: "Neck",
+  earrings: "Earrings",
+  ring: "Ring",
+  back: "Back",
+  charm: "Charm",
+  trinket: "Trinket",
+  main_hand: "Main Hand",
+  two_hand: "Two Hand",
+  weapon: "Weapon",
 };
 
 const queueState = computed(() => simulator.activeQueueState);
@@ -490,11 +509,12 @@ function formatSkillName(skillKey) {
 function localizeEquipmentSlotLabel(slotKey) {
   const normalized = String(slotKey || "");
   const i18nKey = SLOT_I18N_KEY_MAP[normalized];
+  const fallback = SLOT_LABEL_FALLBACK_MAP[normalized] || normalized;
   if (!i18nKey) {
-    return normalized;
+    return fallback;
   }
-  const translated = t(i18nKey, i18nKey);
-  return translated === i18nKey ? normalized : translated;
+  const translated = t(i18nKey, fallback);
+  return translated === i18nKey ? fallback : translated;
 }
 
 function getAbilityXpForLevel(level) {

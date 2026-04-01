@@ -120,9 +120,28 @@ const SLOT_I18N_KEY_MAP = {
   ring: "characterItemsUtil.ring",
   back: "characterItemsUtil.back",
   charm: "characterItemsUtil.charm",
+  trinket: "characterItemsUtil.trinket",
   main_hand: "characterItemsUtil.mainHand",
   two_hand: "characterItemsUtil.mainHand",
   weapon: "characterItemsUtil.mainHand",
+};
+const SLOT_LABEL_FALLBACK_MAP = {
+  head: "Head",
+  body: "Body",
+  legs: "Legs",
+  feet: "Feet",
+  hands: "Hands",
+  off_hand: "Off Hand",
+  pouch: "Pouch",
+  neck: "Neck",
+  earrings: "Earrings",
+  ring: "Ring",
+  back: "Back",
+  charm: "Charm",
+  trinket: "Trinket",
+  main_hand: "Main Hand",
+  two_hand: "Two Hand",
+  weapon: "Weapon",
 };
 const CHANGE_CATEGORY_PRIORITY = {
   item: 0,
@@ -536,12 +555,14 @@ function localizeQueueChangeLabel(change) {
 }
 
 function localizeEquipmentSlotLabel(slotKey) {
-  const i18nKey = SLOT_I18N_KEY_MAP[String(slotKey || "")];
+  const normalized = String(slotKey || "");
+  const i18nKey = SLOT_I18N_KEY_MAP[normalized];
+  const fallback = SLOT_LABEL_FALLBACK_MAP[normalized] || normalized;
   if (!i18nKey) {
-    return String(slotKey || "");
+    return fallback;
   }
-  const translated = t(i18nKey, i18nKey);
-  return translated === i18nKey ? String(slotKey || "") : translated;
+  const translated = t(i18nKey, fallback);
+  return translated === i18nKey ? fallback : translated;
 }
 
 function localizeHridDisplayName(hrid) {

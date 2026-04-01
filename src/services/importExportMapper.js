@@ -4,6 +4,7 @@ import {
     itemDetailIndex,
     monsterDetailIndex,
 } from "../shared/gameDataIndex.js";
+import itemLocationDetailMap from "../combatsimulator/data/itemLocationDetailMap.json";
 import { createEmptyPlayerConfig, createEmptySkillExperienceMap, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../shared/playerConfig.js";
 import { sanitizeTriggerList, sanitizeTriggerMap } from "./triggerMapper.js";
 
@@ -11,6 +12,11 @@ const NON_WEAPON_SLOTS = EQUIPMENT_SLOT_KEYS.filter((slot) => slot !== "weapon")
 const COMBAT_ABILITY_SLOT_COUNT = 5;
 const SPECIAL_ABILITY_SLOT_INDEX = 0;
 const FIRST_STANDARD_ABILITY_SLOT_INDEX = SPECIAL_ABILITY_SLOT_INDEX + 1;
+const ITEM_LOCATION_HRID_PREFIX = "/item_locations/";
+const WEAPON_ITEM_LOCATION_HRIDS = new Set([
+    "/item_locations/main_hand",
+    "/item_locations/two_hand",
+]);
 
 const LEGACY_ABILITY_ALIAS_MAP = {
     "/abilities/aqua_aura": "/abilities/mystic_aura",
@@ -36,6 +42,29 @@ function normalizeAbilityHrid(abilityHrid) {
 function clampEnhancementLevel(level) {
     const parsed = Math.floor(toFiniteNumber(level, 0));
     return parsed < 0 ? 0 : parsed;
+}
+
+function resolveEquipmentSlotFromItemLocationHrid(itemLocationHrid) {
+    const normalizedHrid = String(itemLocationHrid || "").trim();
+    if (!normalizedHrid) {
+        return "";
+    }
+
+    const locationDetail = itemLocationDetailMap?.[normalizedHrid];
+    if (!locationDetail || String(locationDetail?.type || "") !== "/item_location_types/equipment") {
+        return "";
+    }
+
+    if (WEAPON_ITEM_LOCATION_HRIDS.has(normalizedHrid)) {
+        return "weapon";
+    }
+
+    if (!normalizedHrid.startsWith(ITEM_LOCATION_HRID_PREFIX)) {
+        return "";
+    }
+
+    const slot = normalizedHrid.slice(ITEM_LOCATION_HRID_PREFIX.length);
+    return NON_WEAPON_SLOTS.includes(slot) ? slot : "";
 }
 
 function getLegacyAbilityEntryCount(rawAbilities) {
@@ -183,7 +212,7 @@ function applyLegacySoloToPlayer(legacySoloPayload, fallbackPlayer) {
     }
 
     for (const entry of equipmentEntries) {
-        const location = String(entry?.itemLocationHrid || "");
+        const location = String(entry?.itemLocationHrid || "").trim();
         const itemHrid = String(entry?.itemHrid || "");
         const enhancementLevel = clampEnhancementLevel(entry?.enhancementLevel);
 
@@ -191,13 +220,8 @@ function applyLegacySoloToPlayer(legacySoloPayload, fallbackPlayer) {
             continue;
         }
 
-        if (location === "/item_locations/main_hand" || location === "/item_locations/two_hand") {
-            merged.equipment.weapon = { itemHrid, enhancementLevel };
-            continue;
-        }
-
-        const slot = location.replace("/item_locations/", "");
-        if (NON_WEAPON_SLOTS.includes(slot)) {
+        const slot = resolveEquipmentSlotFromItemLocationHrid(location);
+        if (slot) {
             merged.equipment[slot] = { itemHrid, enhancementLevel };
         }
     }
@@ -584,13 +608,8 @@ function extractCurrentCharacterEquipment(parsed, fallbackPlayer) {
             continue;
         }
 
-        if (location === "/item_locations/main_hand" || location === "/item_locations/two_hand") {
-            equipment.weapon = { itemHrid, enhancementLevel };
-            continue;
-        }
-
-        const slot = location.replace("/item_locations/", "");
-        if (NON_WEAPON_SLOTS.includes(slot)) {
+        const slot = resolveEquipmentSlotFromItemLocationHrid(location);
+        if (slot) {
             equipment[slot] = { itemHrid, enhancementLevel };
         }
     }
@@ -991,13 +1010,8 @@ function importShareableProfile(parsed, existingPlayer, existingSimulationSettin
             continue;
         }
 
-        if (location === "/item_locations/main_hand" || location === "/item_locations/two_hand") {
-            rawPlayer.equipment.weapon = { itemHrid, enhancementLevel };
-            continue;
-        }
-
-        const slot = location.replace("/item_locations/", "");
-        if (NON_WEAPON_SLOTS.includes(slot)) {
+        const slot = resolveEquipmentSlotFromItemLocationHrid(location);
+        if (slot) {
             rawPlayer.equipment[slot] = { itemHrid, enhancementLevel };
         }
     }

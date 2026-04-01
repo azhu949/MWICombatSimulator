@@ -482,7 +482,8 @@
                 "earrings": "Earrings",
                 "ring": "Ring",
                 "back": "Back",
-                "charm": "Charm"
+                "charm": "Charm",
+                "trinket": "Trinket"
             },
             "trigger": {
                 "target": "Target",

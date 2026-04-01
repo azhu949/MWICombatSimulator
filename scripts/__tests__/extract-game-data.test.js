@@ -96,6 +96,20 @@ const BASE_CLIENT_DATA = {
             name: "Test Room",
         },
     },
+    itemLocationDetailMap: {
+        "/item_locations/test": {
+            hrid: "/item_locations/test",
+            name: "Test Item Location",
+        },
+    },
+    equipmentTypeDetailMap: {
+        "/equipment_types/test": {
+            hrid: "/equipment_types/test",
+            name: "Test Equipment Type",
+            itemLocationHrid: "/item_locations/test",
+            sortIndex: 1,
+        },
+    },
     labyrinthCrateDetailMap: {
         "/items/test_crate": {
             hrid: "/items/test_crate",
@@ -125,7 +139,9 @@ const EXPECTED_OUTPUT_FILES = [
     "damageTypeDetailMap.json",
     "enhancementLevelTotalBonusMultiplierTable.json",
     "houseRoomDetailMap.json",
+    "equipmentTypeDetailMap.json",
     "itemDetailMap.json",
+    "itemLocationDetailMap.json",
     "labyrinthCrateDetailMap.json",
     "openableLootDropMap.json",
 ].sort();

@@ -82,6 +82,24 @@ describe("playerMapper", () => {
         expect(players[0].abilities[0]?.triggers).toHaveLength(0);
     });
 
+    it("ignores stale trinket slot data when building combat players", () => {
+        const player = createEmptyPlayerConfig(1);
+        const trinket = findFirstEquipmentByType("/equipment_types/trinket");
+
+        expect(trinket).toBeTruthy();
+        expect(player.equipment).not.toHaveProperty("trinket");
+
+        player.equipment.trinket = {
+            itemHrid: trinket.hrid,
+            enhancementLevel: 0,
+        };
+
+        const players = buildPlayersForSimulation([player]);
+
+        expect(players[0].equipment["/equipment_types/trinket"]).toBeUndefined();
+        expect(players[0].combatDetails.combatStats.taskDamage).toBe(0);
+    });
+
     it("build output is worker-cloneable", () => {
         const player = createEmptyPlayerConfig(1);
         player.achievements["/achievements/gather_milk"] = true;

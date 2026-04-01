@@ -24,8 +24,10 @@ const DEFAULT_TRACKED_GAME_DATA_FILES = Object.freeze([
     "combatTriggerDependencyDetailMap.json",
     "damageTypeDetailMap.json",
     "enhancementLevelTotalBonusMultiplierTable.json",
+    "equipmentTypeDetailMap.json",
     "houseRoomDetailMap.json",
     "itemDetailMap.json",
+    "itemLocationDetailMap.json",
     "labyrinthCrateDetailMap.json",
     "openableLootDropMap.json",
 ]);
@@ -42,7 +44,14 @@ function getTrackedGameDataFileNames() {
         .map((entry) => entry.name)
         .sort((left, right) => left.localeCompare(right));
 
-    return fileNames.length > 0 ? fileNames : [...DEFAULT_TRACKED_GAME_DATA_FILES];
+    if (fileNames.length === 0) {
+        return [...DEFAULT_TRACKED_GAME_DATA_FILES];
+    }
+
+    return Array.from(new Set([
+        ...DEFAULT_TRACKED_GAME_DATA_FILES,
+        ...fileNames,
+    ])).sort((left, right) => left.localeCompare(right));
 }
 
 function createTargetMapFiles() {

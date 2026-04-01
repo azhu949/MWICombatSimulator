@@ -2217,6 +2217,7 @@ function formatQueueEquipmentSlotName(slotKey) {
         ring: "Ring",
         back: "Back",
         charm: "Charm",
+        trinket: "Trinket",
     };
     if (map[normalized]) {
         return map[normalized];

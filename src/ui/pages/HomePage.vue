@@ -1529,6 +1529,7 @@ const equipmentLabelMap = computed(() => ({
   ring: t("common:vue.home.equipmentLabels.ring", "Ring"),
   back: t("common:vue.home.equipmentLabels.back", "Back"),
   charm: t("common:vue.home.equipmentLabels.charm", "Charm"),
+  trinket: t("common:vue.home.equipmentLabels.trinket", "Trinket"),
 }));
 
 const activePlayer = computed(() => simulator.activePlayer);

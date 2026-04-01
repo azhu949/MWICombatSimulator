@@ -11,9 +11,11 @@ const outputPath = path.join(projectRoot, "src", "shared", "gameDataIndex.genera
 const LEVEL_KEYS = ["stamina", "intelligence", "attack", "melee", "defense", "ranged", "magic"];
 const EQUIPMENT_SLOT_KEYS = ["head", "body", "legs", "feet", "hands", "weapon", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"];
 const ABILITY_BOOK_CATEGORY_HRID = "/item_categories/ability_book";
+const ITEM_LOCATION_HRID_PREFIX = "/item_locations/";
 const LABYRINTH_COFFEE_CRATE_HRIDS = ["/items/basic_coffee_crate", "/items/advanced_coffee_crate", "/items/expert_coffee_crate"];
 const LABYRINTH_FOOD_CRATE_HRIDS = ["/items/basic_food_crate", "/items/advanced_food_crate", "/items/expert_food_crate"];
 const LABYRINTH_TEA_CRATE_HRIDS = ["/items/basic_tea_crate", "/items/advanced_tea_crate", "/items/expert_tea_crate"];
+const WEAPON_EQUIPMENT_TYPE_HRIDS = new Set(["/equipment_types/main_hand", "/equipment_types/two_hand"]);
 
 async function readJsonFile(filename) {
     const filePath = path.join(dataRoot, filename);
@@ -46,7 +48,26 @@ function resolveFoodConsumableSortGroup(option) {
     return 99;
 }
 
-function createItemIndex(itemDetailMap) {
+function resolveEquipmentSlotName(equipmentType, equipmentTypeDetailMap) {
+    const normalizedEquipmentType = String(equipmentType || "").trim();
+    if (!normalizedEquipmentType) {
+        return "";
+    }
+
+    if (WEAPON_EQUIPMENT_TYPE_HRIDS.has(normalizedEquipmentType)) {
+        return "weapon";
+    }
+
+    const itemLocationHrid = String(equipmentTypeDetailMap?.[normalizedEquipmentType]?.itemLocationHrid || "");
+    if (!itemLocationHrid.startsWith(ITEM_LOCATION_HRID_PREFIX)) {
+        return "";
+    }
+
+    const slotName = itemLocationHrid.slice(ITEM_LOCATION_HRID_PREFIX.length);
+    return EQUIPMENT_SLOT_KEYS.includes(slotName) ? slotName : "";
+}
+
+function createItemIndex(itemDetailMap, equipmentTypeDetailMap) {
     const itemDetailIndex = {};
     const itemNameByHrid = {};
     const itemVendorPriceByHrid = {};
@@ -121,14 +142,8 @@ function createItemIndex(itemDetailMap) {
         };
 
         if (categoryHrid === "/item_categories/equipment" && equipmentType) {
-            const slotName = equipmentType.replace("/equipment_types/", "");
-            if (slotName === "main_hand" || slotName === "two_hand") {
-                equipmentBySlot.weapon.push({
-                    hrid,
-                    name: option.name,
-                    itemLevel,
-                });
-            } else if (equipmentBySlot[slotName]) {
+            const slotName = resolveEquipmentSlotName(equipmentType, equipmentTypeDetailMap);
+            if (slotName) {
                 equipmentBySlot[slotName].push({
                     hrid,
                     name: option.name,
@@ -394,6 +409,7 @@ async function main() {
         levelExperienceTable,
         actionDetailMap,
         combatMonsterDetailMap,
+        equipmentTypeDetailMap,
         houseRoomDetailMap,
         itemDetailMap,
     ] = await Promise.all([
@@ -401,11 +417,12 @@ async function main() {
         readJsonFile("levelExperienceTable.json"),
         readJsonFile("actionDetailMap.json"),
         readJsonFile("combatMonsterDetailMap.json"),
+        readJsonFile("equipmentTypeDetailMap.json"),
         readJsonFile("houseRoomDetailMap.json"),
         readJsonFile("itemDetailMap.json"),
     ]);
 
-    const itemIndex = createItemIndex(itemDetailMap);
+    const itemIndex = createItemIndex(itemDetailMap, equipmentTypeDetailMap);
     const abilityIndex = createAbilityIndex(abilityDetailMap);
     const actionIndex = createActionIndex(actionDetailMap);
     const monsterIndex = createMonsterIndex(combatMonsterDetailMap);

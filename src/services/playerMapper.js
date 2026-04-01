@@ -89,6 +89,10 @@ function buildSimulationPlayerFromConfig(playerConfig) {
             continue;
         }
 
+        if (!EQUIPMENT_SLOT_KEYS.includes(slot)) {
+            continue;
+        }
+
         const enhancementLevel = normalizeEnhancementLevel(setting?.enhancementLevel ?? 0);
         if (slot === "weapon") {
             const weaponType = mapWeaponType(itemHrid);
