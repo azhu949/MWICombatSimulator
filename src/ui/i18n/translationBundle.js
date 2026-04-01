@@ -1,15 +1,12 @@
+import enTranslation from "../../../locales/en/translation.json";
+import zhTranslation from "../../../locales/zh/translation.json";
+
 const OFFICIAL_GAME_ORIGIN = "https://www.milkywayidle.com";
 const OFFICIAL_ASSET_MANIFEST_PATH = "/asset-manifest.json";
 const OFFICIAL_MAIN_CHUNK_REGEX = /<script[^>]+src=["'](\/static\/js\/main\.[^"']+?\.chunk\.js)["']/i;
 const OFFICIAL_INIT_RESOURCES_REGEX = /\.init\(\{resources:([A-Za-z_$][\w$]*),fallbackLng:/;
 
 let translationBundlePromise = null;
-
-function resolveLocalTranslationUrl(language) {
-    const baseUrl = import.meta?.env?.BASE_URL || "/";
-    const normalizedBase = baseUrl.endsWith("/") ? baseUrl : `${baseUrl}/`;
-    return `${normalizedBase}locales/${language}/translation.json`;
-}
 
 function extractObjectLiteralAfter(source, marker) {
     const markerIndex = source.indexOf(marker);
@@ -227,22 +224,9 @@ async function loadOfficialTranslationBundles() {
 }
 
 async function loadLocalTranslationBundles() {
-    const [enResponse, zhResponse] = await Promise.all([
-        fetch(resolveLocalTranslationUrl("en")),
-        fetch(resolveLocalTranslationUrl("zh")),
-    ]);
-
-    if (!enResponse.ok) {
-        throw new Error(`Failed to load local en translation bundle: ${enResponse.status}`);
-    }
-
-    if (!zhResponse.ok) {
-        throw new Error(`Failed to load local zh translation bundle: ${zhResponse.status}`);
-    }
-
     return {
-        en: await enResponse.json(),
-        zh: await zhResponse.json(),
+        en: structuredClone(enTranslation),
+        zh: structuredClone(zhTranslation),
     };
 }
 

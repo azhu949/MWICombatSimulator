@@ -4,7 +4,7 @@ import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
-const enTranslationPath = path.resolve(__dirname, "../../../../public/locales/en/translation.json");
+const enTranslationPath = path.resolve(__dirname, "../../../../locales/en/translation.json");
 const enCommonPath = path.resolve(__dirname, "../../../../locales/en/common.json");
 const zhCommonPath = path.resolve(__dirname, "../../../../locales/zh/common.json");
 
@@ -13,6 +13,10 @@ function readJson(filePath) {
 }
 
 describe("local english translation data", () => {
+    it("keeps translation.json in locales instead of public/locales", () => {
+        expect(fs.existsSync(enTranslationPath)).toBe(true);
+    });
+
     it("does not keep duplicated abilityNames and abilityDescriptions maps", () => {
         const enTranslation = readJson(enTranslationPath);
 

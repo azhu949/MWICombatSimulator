@@ -8,7 +8,7 @@ afterEach(() => {
 });
 
 describe("translationBundle", () => {
-    it("falls back to local translation json when official bundle loading fails", async () => {
+    it("falls back to imported local translation bundles without fetching /locales json", async () => {
         vi.spyOn(console, "warn").mockImplementation(() => {});
 
         const fetchMock = vi.fn(async (url) => {
@@ -26,20 +26,8 @@ describe("translationBundle", () => {
                 };
             }
 
-            if (href.endsWith("/locales/en/translation.json")) {
-                return {
-                    ok: true,
-                    status: 200,
-                    json: async () => ({ itemNames: { "/items/apple": "Apple" } }),
-                };
-            }
-
-            if (href.endsWith("/locales/zh/translation.json")) {
-                return {
-                    ok: true,
-                    status: 200,
-                    json: async () => ({ itemNames: { "/items/apple": "苹果" } }),
-                };
+            if (href.includes("/locales/")) {
+                throw new Error(`Unexpected local fetch url: ${href}`);
             }
 
             throw new Error(`Unexpected fetch url: ${href}`);
@@ -49,8 +37,8 @@ describe("translationBundle", () => {
 
         const bundles = await loadTranslationBundles();
 
-        expect(bundles.en.itemNames["/items/apple"]).toBe("Apple");
-        expect(bundles.zh.itemNames["/items/apple"]).toBe("苹果");
+        expect(bundles.en.itemNames).toBeTypeOf("object");
+        expect(bundles.zh.itemNames).toBeTypeOf("object");
         expect(fetchMock).toHaveBeenCalled();
     });
 });

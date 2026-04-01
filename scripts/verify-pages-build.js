@@ -40,17 +40,6 @@ if (fileExists(indexHtmlPath)) {
     );
 }
 
-const localeFiles = [
-    path.join(distDir, "locales", "en", "common.json"),
-    path.join(distDir, "locales", "en", "translation.json"),
-    path.join(distDir, "locales", "zh", "common.json"),
-    path.join(distDir, "locales", "zh", "translation.json"),
-];
-
-localeFiles.forEach((localeFile) => {
-    assertCondition(fileExists(localeFile), `Missing locale file: ${path.relative(distDir, localeFile)}`);
-});
-
 const assetsDir = path.join(distDir, "assets");
 assertCondition(fileExists(assetsDir), "Missing dist/assets directory.");
 
