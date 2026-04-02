@@ -76,9 +76,13 @@ function findFirstCombatAction(isDungeon = false) {
     return action?.hrid ?? "";
 }
 
-function findFirstAbilityWithDefaultTriggers() {
+function findFirstAbilityWithDefaultTriggers(excludeHrid = "") {
     const ability = Object.values(abilityDetailMap).find(
-        (entry) => !entry.isSpecialAbility && Array.isArray(entry.defaultCombatTriggers)
+        (entry) => (
+            !entry.isSpecialAbility
+            && String(entry?.hrid || "") !== String(excludeHrid || "")
+            && Array.isArray(entry.defaultCombatTriggers)
+        )
     );
     return ability?.hrid ?? "";
 }
@@ -978,6 +982,175 @@ describe("simulatorStore", () => {
 
         expect(addedItems.length).toBe(1);
         expect(simulator.activePlayer.levels.stamina).toBe(baselineStamina);
+    });
+
+    it("adds queue items when only active trigger conditions change", async () => {
+        const simulator = useSimulatorStore();
+        const abilityHrid = findFirstAbilityWithDefaultTriggers();
+        expect(abilityHrid).toBeTruthy();
+
+        simulator.activePlayer.abilities[0] = {
+            abilityHrid,
+            level: 1,
+        };
+        await simulator.setQueueBaselineForActivePlayer();
+
+        simulator.setActivePlayerTriggers(abilityHrid, []);
+        const addedItems = simulator.addActivePlayerToQueue();
+
+        expect(addedItems).toHaveLength(1);
+        expect(addedItems[0]?.changeDetails).toEqual([
+            expect.objectContaining({
+                kind: "trigger",
+                targetHrid: abilityHrid,
+                beforeState: "default",
+                afterState: "disabled",
+            }),
+        ]);
+    });
+
+    it("splits queue trigger variants when multiple active trigger changes exist", async () => {
+        const simulator = useSimulatorStore();
+        const foodHrid = findFirstFoodWithDefaultTriggers();
+        const abilityHrid = findFirstAbilityWithDefaultTriggers();
+        expect(foodHrid).toBeTruthy();
+        expect(abilityHrid).toBeTruthy();
+
+        simulator.activePlayer.food[0] = foodHrid;
+        simulator.activePlayer.abilities[0] = {
+            abilityHrid,
+            level: 1,
+        };
+        await simulator.setQueueBaselineForActivePlayer();
+
+        simulator.setActivePlayerTriggers(foodHrid, []);
+        simulator.setActivePlayerTriggers(abilityHrid, []);
+        const addedItems = simulator.addActivePlayerToQueue();
+
+        expect(addedItems).toHaveLength(2);
+        expect(addedItems.every((item) => Array.isArray(item.changeDetails) && item.changeDetails.length === 1)).toBe(true);
+        expect(addedItems.every((item) => item.changeDetails[0]?.kind === "trigger")).toBe(true);
+        expect(new Set(addedItems.map((item) => item.changeDetails[0]?.targetHrid))).toEqual(new Set([foodHrid, abilityHrid]));
+    });
+
+    it("keeps swapped-in trigger overrides on queue variants", async () => {
+        const simulator = useSimulatorStore();
+        const baselineAbilityHrid = findFirstAbilityWithDefaultTriggers();
+        const swappedAbilityHrid = findFirstAbilityWithDefaultTriggers(baselineAbilityHrid);
+        expect(baselineAbilityHrid).toBeTruthy();
+        expect(swappedAbilityHrid).toBeTruthy();
+
+        simulator.activePlayer.abilities[0] = {
+            abilityHrid: baselineAbilityHrid,
+            level: 1,
+        };
+        await simulator.setQueueBaselineForActivePlayer();
+
+        simulator.activePlayer.abilities[0] = {
+            abilityHrid: swappedAbilityHrid,
+            level: 1,
+        };
+        simulator.setActivePlayerTriggers(swappedAbilityHrid, []);
+        const addedItems = simulator.addActivePlayerToQueue();
+
+        expect(addedItems).toHaveLength(1);
+        expect(addedItems[0]?.changeDetails).toEqual(expect.arrayContaining([
+            expect.objectContaining({
+                kind: "ability",
+                afterAbilityHrid: swappedAbilityHrid,
+            }),
+            expect.objectContaining({
+                kind: "trigger",
+                targetHrid: swappedAbilityHrid,
+                beforeState: "default",
+                afterState: "disabled",
+            }),
+        ]));
+
+        expect(simulator.loadQueueSnapshotToActivePlayer(addedItems[0].id)).toBe(true);
+        expect(simulator.activePlayer.abilities[0]).toEqual({
+            abilityHrid: swappedAbilityHrid,
+            level: 1,
+        });
+        expect(simulator.getActivePlayerTriggers(swappedAbilityHrid)).toEqual([]);
+    });
+
+    it("ignores stale trigger map edits for inactive targets when queueing", async () => {
+        const simulator = useSimulatorStore();
+        const activeAbilityHrid = findFirstAbilityWithDefaultTriggers();
+        const inactiveAbilityHrid = Object.values(abilityDetailMap).find((entry) => (
+            String(entry?.hrid || "") !== String(activeAbilityHrid || "")
+            && entry?.isSpecialAbility !== true
+            && Array.isArray(entry?.defaultCombatTriggers)
+        ))?.hrid ?? "";
+        expect(activeAbilityHrid).toBeTruthy();
+        expect(inactiveAbilityHrid).toBeTruthy();
+
+        simulator.activePlayer.abilities[0] = {
+            abilityHrid: activeAbilityHrid,
+            level: 1,
+        };
+        await simulator.setQueueBaselineForActivePlayer();
+
+        simulator.setActivePlayerTriggers(inactiveAbilityHrid, []);
+        expect(simulator.addActivePlayerToQueue()).toEqual([]);
+    });
+
+    it("restores trigger default semantics when loading queued trigger snapshots", async () => {
+        const simulator = useSimulatorStore();
+        const abilityHrid = findFirstAbilityWithDefaultTriggers();
+        expect(abilityHrid).toBeTruthy();
+
+        simulator.activePlayer.abilities[0] = {
+            abilityHrid,
+            level: 1,
+        };
+        simulator.setActivePlayerTriggers(abilityHrid, []);
+        await simulator.setQueueBaselineForActivePlayer();
+
+        delete simulator.activePlayer.triggerMap[abilityHrid];
+        const addedItems = simulator.addActivePlayerToQueue();
+        expect(addedItems).toHaveLength(1);
+        expect(addedItems[0]?.changeDetails).toEqual([
+            expect.objectContaining({
+                kind: "trigger",
+                targetHrid: abilityHrid,
+                beforeState: "disabled",
+                afterState: "default",
+            }),
+        ]);
+
+        const loaded = simulator.loadQueueSnapshotToActivePlayer(addedItems[0].id);
+        expect(loaded).toBe(true);
+        expect(Object.prototype.hasOwnProperty.call(simulator.activePlayer.triggerMap || {}, abilityHrid)).toBe(false);
+    });
+
+    it("ignores trigger overrides for targets removed from the edited build", async () => {
+        const simulator = useSimulatorStore();
+        const abilityHrid = findFirstAbilityWithDefaultTriggers();
+        expect(abilityHrid).toBeTruthy();
+
+        simulator.activePlayer.abilities[0] = {
+            abilityHrid,
+            level: 1,
+        };
+        await simulator.setQueueBaselineForActivePlayer();
+
+        simulator.setActivePlayerTriggers(abilityHrid, []);
+        simulator.activePlayer.abilities[0] = {
+            abilityHrid: "",
+            level: 1,
+        };
+        const addedItems = simulator.addActivePlayerToQueue();
+
+        expect(addedItems).toHaveLength(1);
+        expect(addedItems[0]?.changeDetails).toEqual([
+            expect.objectContaining({
+                kind: "ability",
+                beforeAbilityHrid: abilityHrid,
+                afterAbilityHrid: "",
+            }),
+        ]);
     });
 
     it("builds separate queue variants for house room changes", async () => {
@@ -2364,6 +2537,60 @@ describe("simulatorStore", () => {
         queueChanges.items[0].targets.forEach((target) => {
             expect(Object.keys(target).some((key) => key.startsWith("before"))).toBe(false);
         });
+    });
+
+    it("saves and imports house room queue changes in equipment sets", async () => {
+        const simulator = useSimulatorStore();
+        const room = findHouseRoomWithUpgradeLevels(1);
+        expect(room).toBeTruthy();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.houseRooms[room.hrid] = 1;
+        const appendedItems = simulator.addActivePlayerToQueue();
+        expect(appendedItems).toHaveLength(1);
+        expect(appendedItems[0]?.changeDetails?.[0]?.kind).toBe("house_room");
+
+        simulator.saveEquipmentSet("House Room Queue Set");
+        const queueChanges = simulator.equipmentSets["House Room Queue Set"]?.queueChanges;
+        expect(queueChanges?.items?.[0]?.targets).toEqual([
+            expect.objectContaining({
+                kind: "house_room",
+                roomHrid: room.hrid,
+                level: 1,
+            }),
+        ]);
+
+        simulator.activeQueueState.items = [];
+        simulator.activePlayer.houseRooms[room.hrid] = 0;
+        const importResult = simulator.importEquipmentSetQueueChanges("House Room Queue Set");
+        expect(importResult.ok).toBe(true);
+        expect(importResult.importedCount).toBe(1);
+        expect(simulator.activeQueueState.items).toHaveLength(1);
+        expect(simulator.activeQueueState.items[0]?.snapshot?.houseRooms?.[room.hrid]).toBe(1);
+    });
+
+    it("blocks saving equipment sets when queue items include trigger changes", async () => {
+        const simulator = useSimulatorStore();
+        const abilityHrid = findFirstAbilityWithDefaultTriggers();
+        expect(abilityHrid).toBeTruthy();
+
+        simulator.saveEquipmentSet("Safe Set");
+        simulator.activePlayer.abilities[0] = {
+            abilityHrid,
+            level: 1,
+        };
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.setActivePlayerTriggers(abilityHrid, []);
+        const appendedItems = simulator.addActivePlayerToQueue();
+        expect(appendedItems).toHaveLength(1);
+
+        expect(() => simulator.saveEquipmentSet("Trigger Queue Set")).toThrow("common:settingsPage.queueSaveErrorUnsupportedTriggerChange");
+        expect(simulator.equipmentSets["Trigger Queue Set"]).toBeUndefined();
+        expect(simulator.equipmentSets["Safe Set"]).toBeTruthy();
+
+        const persisted = JSON.parse(global.localStorage.getItem("mwi.equipmentSets.v2") || "{}");
+        expect(persisted["Trigger Queue Set"]).toBeUndefined();
+        expect(persisted["Safe Set"]).toBeTruthy();
     });
 
     it("ignores non-modern equipment sets without queue changes metadata", () => {

@@ -41,7 +41,51 @@
     </div>
 
     <div v-if="!hasMultiData" class="panel">
-      <p class="text-sm text-slate-400">{{ t("common:multiRound.noData", "No multi-round results yet.") }}</p>
+      <div
+        v-if="showRunningPlaceholder"
+        class="flex flex-col justify-center gap-5"
+        :style="runningPlaceholderStyle"
+      >
+        <div>
+          <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:queue.queueRunning", "Running queue...") }}</p>
+          <h3 class="mt-2 font-heading text-xl font-semibold text-amber-200">
+            {{ runningPlaceholderTitle }}
+          </h3>
+          <p class="mt-2 max-w-3xl text-sm text-slate-300">
+            {{ runningPlaceholderDescription }}
+          </p>
+        </div>
+
+        <div class="grid gap-3 sm:grid-cols-3">
+          <div class="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+            <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:vue.queue.queueProgress", "Queue Progress") }}</p>
+            <p class="mt-2 font-heading text-2xl text-slate-100">{{ queueProgressPercentText }}</p>
+          </div>
+          <div class="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+            <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:multiRound.simCount", "Sim Count") }}</p>
+            <p class="mt-2 font-heading text-2xl text-slate-100">{{ completedSimCountText }}</p>
+          </div>
+          <div class="rounded-xl border border-white/10 bg-white/[0.03] p-4">
+            <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:queue.queueList", "Queue List") }}</p>
+            <p class="mt-2 font-heading text-2xl text-slate-100">{{ queueState.items?.length ?? 0 }}</p>
+          </div>
+        </div>
+
+        <div class="space-y-2">
+          <div class="flex flex-wrap items-center justify-between gap-2 text-xs uppercase tracking-[0.14em] text-slate-400">
+            <span>{{ t("common:vue.queue.queueProgress", "Queue Progress") }}</span>
+            <span class="text-slate-200">{{ queueProgressPercentText }} | {{ lastRunText }}</span>
+          </div>
+          <div class="h-2 overflow-hidden rounded-full bg-slate-800">
+            <div
+              class="h-full bg-gradient-to-r from-teal-400 to-amber-300 transition-all"
+              :style="{ width: queueProgressBarWidth }"
+            ></div>
+          </div>
+        </div>
+      </div>
+
+      <p v-else class="text-sm text-slate-400">{{ t("common:multiRound.noData", "No multi-round results yet.") }}</p>
     </div>
 
     <template v-else>
@@ -188,6 +232,8 @@ import {
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { useAbilityText } from "../composables/useAbilityText.js";
 import { useI18nText } from "../composables/useI18nText.js";
+import { isQueueRunInProgress } from "../multiResultsPresentation.js";
+import { formatQueueTriggerDetailLine } from "../queueTriggerPresentation.js";
 
 const simulator = useSimulatorStore();
 const { t, language } = useI18nText();
@@ -255,11 +301,34 @@ const rawRowsForDisplay = computed(() => {
 });
 const isExportingRankingExcel = ref(false);
 const hasMultiData = computed(() => rankingRowsForDisplay.value.length > 0 || rawRowsForDisplay.value.length > 0);
+const showRunningPlaceholder = computed(() => isQueueRunInProgress(queueState.value));
 const queueRoundCount = computed(() => Math.max(0, Math.floor(Number(queueState.value?.settings?.rounds || 0))));
 const totalRunCount = computed(() => {
   const queueSize = Math.max(0, Number(queueState.value?.items?.length || 0));
   return Math.max(0, queueRoundCount.value * queueSize);
 });
+const queueProgressPercent = computed(() => {
+  const progress = Number(queueState.value?.progress || 0);
+  if (!Number.isFinite(progress)) {
+    return 0;
+  }
+  return Math.max(0, Math.min(100, Math.floor(progress * 100)));
+});
+const queueProgressPercentText = computed(() => `${queueProgressPercent.value}%`);
+const queueProgressBarWidth = computed(() => `${queueProgressPercent.value}%`);
+const runningPlaceholderStyle = computed(() => ({
+  minHeight: "max(320px, calc(100vh - 32rem))",
+}));
+const runningPlaceholderTitle = computed(() => (
+  language.value === "zh"
+    ? "多轮排行正在准备中"
+    : "Multi-round ranking is being prepared"
+));
+const runningPlaceholderDescription = computed(() => (
+  language.value === "zh"
+    ? "队列产生首批有效样本后，排行表和原始轮次数据会显示在这里。"
+    : "The ranking and raw round tables will appear here as soon as the queue finishes the first useful samples."
+));
 const rawRunCount = computed(() => Math.max(0, Number(queueState.value?.rawRuns?.length || 0)));
 const completedSimCountText = computed(() => `${rawRunCount.value}/${totalRunCount.value}`);
 const queueRuntimeWeightText = computed(() => {
@@ -498,6 +567,20 @@ function resolveAbilityName(abilityHrid) {
   return getAbilityName(hrid, hrid);
 }
 
+function resolveTriggerTargetName(targetHrid) {
+  const hrid = String(targetHrid || "");
+  if (!hrid) {
+    return "";
+  }
+  if (Object.prototype.hasOwnProperty.call(itemDetailMap || {}, hrid)) {
+    return resolveItemName(hrid);
+  }
+  if (Object.prototype.hasOwnProperty.call(abilityDetailMap || {}, hrid)) {
+    return resolveAbilityName(hrid);
+  }
+  return hrid;
+}
+
 function formatSkillName(skillKey) {
   const normalized = String(skillKey || "").toLowerCase();
   if (!normalized) {
@@ -586,6 +669,13 @@ function computeAbilityBooksNeededForRange(abilityHrid, fromLevel, toLevel) {
 
 function formatQueueChangeDetailLine(change) {
   const kind = String(change?.kind || "");
+
+  if (kind === "trigger") {
+    return formatQueueTriggerDetailLine(change, {
+      t,
+      resolveTargetName: resolveTriggerTargetName,
+    });
+  }
 
   if (kind === "ability") {
     const beforeHrid = String(change?.beforeAbilityHrid || "");

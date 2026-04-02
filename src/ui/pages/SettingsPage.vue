@@ -1009,7 +1009,10 @@ function saveEquipmentSet() {
     setMessage("ok", t("common:vue.settings.msgEquipmentSetSaved", "Equipment set saved: {{name}}", { name: finalName }));
     equipmentSetName.value = "";
   } catch (error) {
-    setMessage("error", t("common:vue.settings.msgSaveEquipmentSetFailed", "Save equipment set failed: {{error}}", { error: error?.message || String(error) }));
+    const errorMessage = error?.message || String(error);
+    setMessage("error", t("common:vue.settings.msgSaveEquipmentSetFailed", "Save equipment set failed: {{error}}", {
+      error: t(errorMessage, errorMessage),
+    }));
   }
 }
 

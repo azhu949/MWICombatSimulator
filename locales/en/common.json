@@ -104,6 +104,11 @@
         "abilitySlot": "Ability Slot {{index}}",
         "houseRoomLevelChange": "{{name}}: Level {{from}} -> {{to}}",
         "triggerLabel": "Trigger",
+        "triggerState": {
+            "default": "Default",
+            "custom": "Custom",
+            "disabled": "Disabled"
+        },
         "settings": "Fixed Settings",
         "settingZone": "Zone",
         "settingDifficulty": "Difficulty",
@@ -165,6 +170,7 @@
         "queueSaveErrorWeightSum": "Weight sum must equal 100%.",
         "queueSaveErrorParallelLimit": "Invalid parallel worker limit: enter an integer between {{min}} and {{max}}.",
         "queueSaveErrorParallelLimitByCore": "Parallel worker limit cannot exceed current core count {{cores}}.",
+        "queueSaveErrorUnsupportedTriggerChange": "Queue includes trigger condition changes. Equipment set templates cannot save them yet.",
         "parallelWorkerHint": "Detected cores: {{cores}}, recommended: {{recommended}}",
         "parallelWorkerHintUnknown": "Core count unavailable, recommended: {{recommended}}",
         "queueSaveErrorStorage": "Failed to save queue settings. Check browser storage permissions.",

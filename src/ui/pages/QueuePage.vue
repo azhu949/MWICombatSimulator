@@ -97,16 +97,22 @@ import {
   itemDetailIndex as itemDetailMap,
 } from "../../shared/gameDataIndex.js";
 import { EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../../shared/playerConfig.js";
+import { buildTriggerChangeDescriptor, getComparableTriggerTargetHrids } from "../../services/triggerMapper.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { useAbilityText } from "../composables/useAbilityText.js";
 import { useI18nText } from "../composables/useI18nText.js";
+import {
+  buildTriggerChangeLabel,
+  formatQueueTriggerDetailLine,
+  formatQueueTriggerLabel,
+  formatQueueTriggerStateText,
+} from "../queueTriggerPresentation.js";
 
 const simulator = useSimulatorStore();
 const { t } = useI18nText();
 const { getAbilityName } = useAbilityText();
 const ONE_HOUR = 60 * 60 * 1e9;
 const ABILITY_BOOK_CATEGORY_HRID = "/item_categories/ability_book";
-const TRIGGER_CHANGE_LABEL_PREFIX = "trigger:";
 const SLOT_I18N_KEY_MAP = {
   head: "characterItemsUtil.head",
   body: "characterItemsUtil.body",
@@ -386,6 +392,35 @@ function buildQueueChangesFromSnapshots(baselineSnapshot, targetSnapshot) {
     }
   }
 
+  for (const targetHrid of getComparableTriggerTargetHrids(baseline, target)) {
+    const normalizedTargetHrid = String(targetHrid || "");
+    if (!normalizedTargetHrid) {
+      continue;
+    }
+
+    const triggerChange = buildTriggerChangeDescriptor(
+      baseline?.triggerMap,
+      target?.triggerMap,
+      normalizedTargetHrid,
+    );
+    if (!triggerChange) {
+      continue;
+    }
+
+    changes.push({
+      category: "trigger",
+      label: buildTriggerChangeLabel(normalizedTargetHrid),
+      before: {
+        state: triggerChange.beforeState,
+        triggers: triggerChange.beforeTriggers,
+      },
+      after: {
+        state: triggerChange.afterState,
+        triggers: triggerChange.afterTriggers,
+      },
+    });
+  }
+
   for (const room of Object.values(houseRoomDetailMap || {})) {
     const roomHrid = String(room?.hrid || "");
     if (!roomHrid) {
@@ -496,6 +531,14 @@ function deriveSingleQueueChangeDisplayName(change) {
     }
   }
 
+  if (change.category === "trigger") {
+    return formatQueueTriggerLabel(
+      parseTriggerTargetHridFromChange(change),
+      localizeHridDisplayName,
+      t,
+    );
+  }
+
   const afterText = formatQueueChangeValue(change, "after");
   if (afterText && afterText !== "-") {
     return afterText;
@@ -508,6 +551,18 @@ function deriveSingleQueueChangeDisplayName(change) {
 }
 
 function formatQueueChangeDetailLine(change) {
+  if (String(change?.category || "") === "trigger") {
+    return formatQueueTriggerDetailLine({
+      label: change?.label,
+      beforeState: change?.before?.state,
+      beforeTriggers: change?.before?.triggers,
+      afterState: change?.after?.state,
+      afterTriggers: change?.after?.triggers,
+    }, {
+      t,
+      resolveTargetName: localizeHridDisplayName,
+    });
+  }
   const label = localizeQueueChangeLabel(change);
   const beforeText = formatQueueChangeValue(change, "before");
   const afterText = formatQueueChangeValue(change, "after");
@@ -545,11 +600,7 @@ function localizeQueueChangeLabel(change) {
     return t(`houseRoomNames.${label}`, houseRoomDetailMap?.[label]?.name || label || "House Room");
   }
   if (category === "trigger") {
-    if (label.startsWith(TRIGGER_CHANGE_LABEL_PREFIX)) {
-      const triggerHrid = label.substring(TRIGGER_CHANGE_LABEL_PREFIX.length);
-      return `${t("common:queue.triggerLabel", "Trigger")} ${localizeHridDisplayName(triggerHrid)}`;
-    }
-    return t("common:queue.triggerLabel", "Trigger");
+    return formatQueueTriggerLabel(parseTriggerTargetHridFromChange(change), localizeHridDisplayName, t);
   }
   return label || "-";
 }
@@ -631,7 +682,17 @@ function formatQueueChangeValue(change, side = "after") {
     return `${level}`;
   }
 
+  if (category === "trigger") {
+    return formatQueueTriggerStateText(payload?.state, t);
+  }
+
   return "-";
+}
+
+function parseTriggerTargetHridFromChange(change) {
+  return String(change?.label || "").startsWith("trigger:")
+    ? String(change?.label || "").slice("trigger:".length)
+    : "";
 }
 
 function getAbilityXpForLevel(level) {

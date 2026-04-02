@@ -1066,6 +1066,7 @@ import {
 } from "../../shared/gameDataIndex.js";
 import {
   MAX_TRIGGER_COUNT,
+  buildTriggerChangeDescriptor,
   getDefaultTriggerDtosForHrid,
   getTriggerComparatorsForCondition,
   getTriggerConditionsForDependency,
@@ -2161,15 +2162,6 @@ function normalizeLevel(value, fallback = 1) {
   return Math.floor(parsed);
 }
 
-function getSanitizedTriggerText(triggerMap, hrid) {
-  const normalizedHrid = normalizeHrid(hrid);
-  if (!normalizedHrid) {
-    return "[]";
-  }
-  const source = triggerMap && typeof triggerMap === "object" ? triggerMap : {};
-  return JSON.stringify(sanitizeTriggerList(source[normalizedHrid]));
-}
-
 function hasTriggerChangeForHrids(hrids = []) {
   const baseline = baselineSnapshot.value;
   if (!baseline) {
@@ -2183,7 +2175,7 @@ function hasTriggerChangeForHrids(hrids = []) {
     if (!normalizedHrid) {
       continue;
     }
-    if (getSanitizedTriggerText(currentTriggerMap, normalizedHrid) !== getSanitizedTriggerText(baselineTriggerMap, normalizedHrid)) {
+    if (buildTriggerChangeDescriptor(baselineTriggerMap, currentTriggerMap, normalizedHrid)) {
       return true;
     }
   }
@@ -2221,7 +2213,7 @@ function isFoodSlotChanged(index) {
   if (beforeHrid !== afterHrid) {
     return true;
   }
-  return hasTriggerChangeForHrids([beforeHrid, afterHrid]);
+  return hasTriggerChangeForHrids([beforeHrid]);
 }
 
 function isDrinkSlotChanged(index) {
@@ -2234,7 +2226,7 @@ function isDrinkSlotChanged(index) {
   if (beforeHrid !== afterHrid) {
     return true;
   }
-  return hasTriggerChangeForHrids([beforeHrid, afterHrid]);
+  return hasTriggerChangeForHrids([beforeHrid]);
 }
 
 function isAbilitySlotChanged(index) {
@@ -2252,7 +2244,7 @@ function isAbilitySlotChanged(index) {
   if (normalizeLevel(before.level, 1) !== normalizeLevel(after.level, 1)) {
     return true;
   }
-  return hasTriggerChangeForHrids([beforeHrid, afterHrid]);
+  return hasTriggerChangeForHrids([beforeHrid]);
 }
 
 function toggleAllGroupZones(checked) {

@@ -1,4 +1,5 @@
 import { createRouter, createWebHashHistory } from "vue-router";
+import { appScrollBehavior } from "./scrollBehavior.js";
 
 const routes = [
     { path: "/", redirect: "/home" },
@@ -12,6 +13,7 @@ const routes = [
 const router = createRouter({
     history: createWebHashHistory(),
     routes,
+    scrollBehavior: appScrollBehavior,
 });
 
 export default router;

@@ -29,7 +29,10 @@ class Consumable {
             this.triggers = triggers;
         } else {
             this.triggers = [];
-            for (const defaultTrigger of gameConsumable.consumableDetail.defaultCombatTriggers) {
+            const defaultCombatTriggers = Array.isArray(gameConsumable.consumableDetail.defaultCombatTriggers)
+                ? gameConsumable.consumableDetail.defaultCombatTriggers
+                : [];
+            for (const defaultTrigger of defaultCombatTriggers) {
                 let trigger = new Trigger(
                     defaultTrigger.dependencyHrid,
                     defaultTrigger.conditionHrid,

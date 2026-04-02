@@ -41,8 +41,12 @@ import {
     importSoloConfig as parseSoloImportConfig,
 } from "../services/importExportMapper.js";
 import {
+    applyTriggerStateToTriggerMap,
+    buildTriggerChangeDescriptor,
+    getComparableTriggerTargetHrids,
     ensureTriggerMapEntry,
     getDefaultTriggerDtosForHrid,
+    getEffectiveTriggerState,
     sanitizeTriggerList,
     sanitizeTriggerMap,
 } from "../services/triggerMapper.js";
@@ -1593,6 +1597,18 @@ function normalizeEquipmentSetQueueChangeTarget(rawTarget) {
         };
     }
 
+    if (kind === "house_room") {
+        const roomHrid = String(rawTarget.roomHrid || "");
+        if (!roomHrid || !Object.prototype.hasOwnProperty.call(houseRoomDetailIndex || {}, roomHrid)) {
+            return null;
+        }
+        return {
+            kind: "house_room",
+            roomHrid,
+            level: clampPositiveInteger(rawTarget.level, 0),
+        };
+    }
+
     return null;
 }
 
@@ -1658,7 +1674,27 @@ function serializeQueueChangeToTarget(change) {
             level: Number(change.afterLevel || 1),
         });
     }
+    if (change.kind === "house_room") {
+        return normalizeEquipmentSetQueueChangeTarget({
+            kind: "house_room",
+            roomHrid: String(change.roomHrid || ""),
+            level: Number(change.afterLevel || 0),
+        });
+    }
     return null;
+}
+
+function queueStateHasUnsupportedEquipmentSetQueueChanges(queueState) {
+    const baselineSnapshot = queueState?.baseline?.snapshot ?? null;
+    const queueItems = Array.isArray(queueState?.items) ? queueState.items : [];
+    if (!baselineSnapshot || queueItems.length <= 0) {
+        return false;
+    }
+
+    return queueItems.some((item) => {
+        const diff = computeQueueChangeSummary(baselineSnapshot, item?.snapshot);
+        return (Array.isArray(diff?.changes) ? diff.changes : []).some((change) => !serializeQueueChangeToTarget(change));
+    });
 }
 
 function buildEquipmentSetQueueChangesFromQueueState(queueState) {
@@ -1739,6 +1775,18 @@ function applyQueueChangeTargetToSnapshot(snapshot, target) {
             abilityHrid: String(target.abilityHrid || ""),
             level: Math.max(1, clampPositiveInteger(target.level, 1)),
         };
+        return true;
+    }
+
+    if (target.kind === "house_room") {
+        const roomHrid = String(target.roomHrid || "");
+        if (!roomHrid || !Object.prototype.hasOwnProperty.call(houseRoomDetailIndex || {}, roomHrid)) {
+            return false;
+        }
+        if (!isPlainObject(snapshot.houseRooms)) {
+            snapshot.houseRooms = {};
+        }
+        snapshot.houseRooms[roomHrid] = clampPositiveInteger(target.level, 0);
         return true;
     }
 
@@ -2201,6 +2249,31 @@ function formatQueueAbilityNameFromHrid(abilityHrid) {
     return getIndexedAbilityName(hrid, hrid);
 }
 
+function formatQueueTriggerTargetNameFromHrid(targetHrid) {
+    const hrid = String(targetHrid || "");
+    if (!hrid) {
+        return "Unknown";
+    }
+    if (Object.prototype.hasOwnProperty.call(itemDetailIndex || {}, hrid)) {
+        return formatQueueItemNameFromHrid(hrid);
+    }
+    if (Object.prototype.hasOwnProperty.call(abilityDetailIndex || {}, hrid)) {
+        return formatQueueAbilityNameFromHrid(hrid);
+    }
+    return hrid;
+}
+
+function formatQueueTriggerStateLabel(state) {
+    const normalized = String(state || "default").trim().toLowerCase();
+    if (normalized === "custom") {
+        return "Custom";
+    }
+    if (normalized === "disabled") {
+        return "Disabled";
+    }
+    return "Default";
+}
+
 function formatQueueEquipmentSlotName(slotKey) {
     const normalized = String(slotKey || "").trim().toLowerCase();
     const map = {
@@ -2327,6 +2400,34 @@ function computeQueueChangeSummary(baselinePlayer, candidatePlayer) {
         }
     }
 
+    for (const targetHrid of getComparableTriggerTargetHrids(baseline, candidate)) {
+        const normalizedTargetHrid = String(targetHrid || "");
+        if (!normalizedTargetHrid) {
+            continue;
+        }
+
+        const triggerChange = buildTriggerChangeDescriptor(
+            baseline?.triggerMap,
+            candidate?.triggerMap,
+            normalizedTargetHrid
+        );
+        if (!triggerChange) {
+            continue;
+        }
+
+        pushChange(
+            `Trigger ${formatQueueTriggerTargetNameFromHrid(normalizedTargetHrid)}: ${formatQueueTriggerStateLabel(triggerChange.beforeState)} -> ${formatQueueTriggerStateLabel(triggerChange.afterState)}`,
+            {
+                kind: "trigger",
+                targetHrid: normalizedTargetHrid,
+                beforeState: triggerChange.beforeState,
+                afterState: triggerChange.afterState,
+                beforeTriggers: deepClone(triggerChange.beforeTriggers),
+                afterTriggers: deepClone(triggerChange.afterTriggers),
+            }
+        );
+    }
+
     for (const room of Object.values(houseRoomDetailIndex || {})) {
         const roomHrid = String(room?.hrid || "");
         if (!roomHrid) {
@@ -2369,6 +2470,25 @@ function deriveQueueVariantNameFromLabels(labels, fallbackIndex = 1) {
     return `Variant ${Math.max(1, Math.floor(toFiniteNumber(fallbackIndex, 1)))}`;
 }
 
+function syncTriggerStateFromSnapshot(snapshot, targetSnapshot, targetHrid) {
+    const hrid = String(targetHrid || "");
+    if (!hrid) {
+        return;
+    }
+
+    if (!isPlainObject(snapshot.triggerMap)) {
+        snapshot.triggerMap = {};
+    }
+
+    const effectiveState = getEffectiveTriggerState(targetSnapshot?.triggerMap, hrid);
+    applyTriggerStateToTriggerMap(
+        snapshot.triggerMap,
+        hrid,
+        effectiveState.state,
+        effectiveState.triggers
+    );
+}
+
 function applySingleQueueChange(snapshot, targetSnapshot, change) {
     if (!snapshot || !targetSnapshot || !change) {
         return false;
@@ -2400,7 +2520,9 @@ function applySingleQueueChange(snapshot, targetSnapshot, change) {
         if (!Number.isInteger(index) || index < 0 || index > 2) {
             return false;
         }
-        snapshot.food[index] = String(targetSnapshot?.food?.[index] || "");
+        const targetHrid = String(targetSnapshot?.food?.[index] || "");
+        snapshot.food[index] = targetHrid;
+        syncTriggerStateFromSnapshot(snapshot, targetSnapshot, targetHrid);
         return true;
     }
 
@@ -2409,7 +2531,9 @@ function applySingleQueueChange(snapshot, targetSnapshot, change) {
         if (!Number.isInteger(index) || index < 0 || index > 2) {
             return false;
         }
-        snapshot.drinks[index] = String(targetSnapshot?.drinks?.[index] || "");
+        const targetHrid = String(targetSnapshot?.drinks?.[index] || "");
+        snapshot.drinks[index] = targetHrid;
+        syncTriggerStateFromSnapshot(snapshot, targetSnapshot, targetHrid);
         return true;
     }
 
@@ -2418,10 +2542,29 @@ function applySingleQueueChange(snapshot, targetSnapshot, change) {
         if (!Number.isInteger(index) || index < 0 || index > 4) {
             return false;
         }
-        snapshot.abilities[index] = deepClone(targetSnapshot?.abilities?.[index] ?? snapshot.abilities?.[index] ?? {
+        const targetAbility = deepClone(targetSnapshot?.abilities?.[index] ?? snapshot.abilities?.[index] ?? {
             abilityHrid: "",
             level: 1,
         });
+        snapshot.abilities[index] = targetAbility;
+        syncTriggerStateFromSnapshot(snapshot, targetSnapshot, targetAbility?.abilityHrid);
+        return true;
+    }
+
+    if (change.kind === "trigger") {
+        const targetHrid = String(change.targetHrid || "");
+        if (!targetHrid) {
+            return false;
+        }
+        if (!isPlainObject(snapshot.triggerMap)) {
+            snapshot.triggerMap = {};
+        }
+        applyTriggerStateToTriggerMap(
+            snapshot.triggerMap,
+            targetHrid,
+            String(change.afterState || "default"),
+            Array.isArray(change.afterTriggers) ? change.afterTriggers : []
+        );
         return true;
     }
 
@@ -4815,6 +4958,9 @@ export const useSimulatorStore = defineStore("simulator", {
 
             const normalizedPlayerId = String(playerId || this.activePlayerId);
             const queueState = this.ensureQueueState(normalizedPlayerId);
+            if (queueStateHasUnsupportedEquipmentSetQueueChanges(queueState)) {
+                throw new Error("common:settingsPage.queueSaveErrorUnsupportedTriggerChange");
+            }
             const queueChanges = normalizeEquipmentSetQueueChanges(
                 buildEquipmentSetQueueChangesFromQueueState(queueState)
             );

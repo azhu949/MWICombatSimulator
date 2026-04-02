@@ -348,9 +348,14 @@
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
 import { RouterLink, RouterView, useRoute, useRouter } from "vue-router";
+import {
+  houseRoomDetailIndex as houseRoomDetailMap,
+  itemDetailIndex as itemDetailMap,
+} from "../shared/gameDataIndex.js";
 import BaseModal from "./components/BaseModal.vue";
 import DisclosurePanel from "./components/DisclosurePanel.vue";
 import { useSimulatorStore } from "../stores/simulatorStore.js";
+import { useAbilityText } from "./composables/useAbilityText.js";
 import { useI18nText } from "./composables/useI18nText.js";
 import {
   getUnreadPatchNoteEntries,
@@ -358,6 +363,7 @@ import {
   markPatchNoteEntriesAsRead,
   patchNoteEntries,
 } from "./patchNotes.js";
+import { deriveQueueItemStatusName } from "./queueItemStatusPresentation.js";
 
 const THEME_STORAGE_KEY = "mwi.ui.theme.v1";
 const appVersion = __APP_VERSION__;
@@ -380,6 +386,7 @@ const topQueueActionStatus = ref({
   text: "",
 });
 const { language, setLanguage, t } = useI18nText();
+const { getAbilityName } = useAbilityText();
 
 const progressLabel = computed(() => {
   const progress = Math.floor(simulator.runtime.progress * 100);
@@ -462,6 +469,21 @@ const patchNotesButtonAriaLabel = computed(() => (
     ? t("common:vue.app.patchNotesUnreadAriaLabel", "Patch Notes, {{count}} unread updates", { count: patchNotesUnreadCount.value })
     : t("common:patchNotes", "Patch Notes")
 ));
+const actionNameFallbackMap = computed(() => {
+  const map = {};
+  const actionOptions = [
+    ...(simulator.options?.zones || []),
+    ...(simulator.options?.dungeons || []),
+  ];
+  for (const option of actionOptions) {
+    const hrid = String(option?.hrid || "");
+    if (!hrid || Object.prototype.hasOwnProperty.call(map, hrid)) {
+      continue;
+    }
+    map[hrid] = String(option?.name || "");
+  }
+  return map;
+});
 
 function normalizeTheme(value) {
   return value === "light" ? "light" : "dark";
@@ -522,6 +544,54 @@ function isQueueActionCancelled(error) {
   return Boolean(error?.code === "cancelled");
 }
 
+function localizeHridDisplayName(hrid) {
+  const value = String(hrid || "");
+  if (!value) {
+    return "-";
+  }
+
+  const fallback = itemDetailMap?.[value]?.name || actionNameFallbackMap.value?.[value] || value;
+  const itemName = t(`itemNames.${value}`, `itemNames.${value}`);
+  if (itemName !== `itemNames.${value}`) {
+    return itemName;
+  }
+
+  const abilityName = getAbilityName(value, "");
+  if (abilityName && abilityName !== value) {
+    return abilityName;
+  }
+
+  const actionName = t(`actionNames.${value}`, `actionNames.${value}`);
+  if (actionName !== `actionNames.${value}`) {
+    return actionName;
+  }
+
+  return fallback;
+}
+
+function localizeQueueSkillName(skillKey) {
+  const normalized = String(skillKey || "").toLowerCase();
+  return t(`skillNames./skills/${normalized}`, skillKey || normalized);
+}
+
+function localizeHouseRoomName(roomHrid) {
+  const value = String(roomHrid || "");
+  return t(`houseRoomNames.${value}`, houseRoomDetailMap?.[value]?.name || value || "House Room");
+}
+
+function formatTopQueueVariantName(item, fallbackIndex = 1) {
+  const fallbackName = String(item?.name || `${t("common:queue.queueItem", "Queue Item")} ${fallbackIndex}`);
+  return deriveQueueItemStatusName(item?.changeDetails, {
+    t,
+    fallbackText: fallbackName,
+    resolveItemName: localizeHridDisplayName,
+    resolveAbilityName: localizeHridDisplayName,
+    resolveTriggerTargetName: localizeHridDisplayName,
+    resolveHouseRoomName: localizeHouseRoomName,
+    resolveSkillName: localizeQueueSkillName,
+  });
+}
+
 async function setQueueBaselineFromTopbar() {
   try {
     setTopQueueActionStatus("secondary", t("common:queue.baselineRunning", "Running baseline simulation..."));
@@ -544,7 +614,7 @@ function addToQueueFromTopbar() {
       return;
     }
     if (items.length === 1) {
-      setTopQueueActionStatus("success", t("common:vue.queue.msgVariantAdded", "{{name}} added to queue.", { name: items[0].name }));
+      setTopQueueActionStatus("success", t("common:vue.queue.msgVariantAdded", "{{name}} added to queue.", { name: formatTopQueueVariantName(items[0], 1) }));
       return;
     }
     setTopQueueActionStatus("success", t("common:vue.queue.msgVariantsAdded", "{{count}} variants added to queue.", { count: items.length }));

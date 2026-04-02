@@ -116,6 +116,128 @@ function getDefaultTriggerDtosForHrid(targetHrid) {
     return [];
 }
 
+function getEffectiveTriggerState(rawTriggerMap, targetHrid) {
+    const hrid = String(targetHrid || "");
+    if (!hrid) {
+        return {
+            targetHrid: "",
+            state: "default",
+            triggers: [],
+            signature: "[]",
+        };
+    }
+
+    const defaultTriggers = sanitizeTriggerList(getDefaultTriggerDtosForHrid(hrid));
+    const defaultSignature = JSON.stringify(defaultTriggers);
+    const triggerMap = rawTriggerMap && typeof rawTriggerMap === "object" ? rawTriggerMap : {};
+    if (!Object.prototype.hasOwnProperty.call(triggerMap, hrid)) {
+        return {
+            targetHrid: hrid,
+            state: "default",
+            triggers: defaultTriggers,
+            signature: defaultSignature,
+        };
+    }
+
+    const customTriggers = sanitizeTriggerList(triggerMap[hrid]);
+    if (customTriggers.length <= 0) {
+        return {
+            targetHrid: hrid,
+            state: "disabled",
+            triggers: [],
+            signature: "[]",
+        };
+    }
+
+    const customSignature = JSON.stringify(customTriggers);
+    if (customSignature === defaultSignature) {
+        return {
+            targetHrid: hrid,
+            state: "default",
+            triggers: defaultTriggers,
+            signature: defaultSignature,
+        };
+    }
+
+    return {
+        targetHrid: hrid,
+        state: "custom",
+        triggers: customTriggers,
+        signature: customSignature,
+    };
+}
+
+function buildTriggerChangeDescriptor(beforeTriggerMap, afterTriggerMap, targetHrid) {
+    const hrid = String(targetHrid || "");
+    if (!hrid) {
+        return null;
+    }
+
+    const before = getEffectiveTriggerState(beforeTriggerMap, hrid);
+    const after = getEffectiveTriggerState(afterTriggerMap, hrid);
+    if (before.signature === after.signature) {
+        return null;
+    }
+
+    return {
+        targetHrid: hrid,
+        beforeState: before.state,
+        afterState: after.state,
+        beforeTriggers: deepClone(before.triggers),
+        afterTriggers: deepClone(after.triggers),
+    };
+}
+
+function normalizeComparableTriggerTargetHrid(value) {
+    return String(value || "").trim();
+}
+
+function collectActiveTriggerTargetHrids(player = {}) {
+    const activeTargets = new Set();
+    const collectTargets = (entries, resolver) => {
+        if (!Array.isArray(entries)) {
+            return;
+        }
+        for (const entry of entries) {
+            const hrid = normalizeComparableTriggerTargetHrid(resolver(entry));
+            if (hrid) {
+                activeTargets.add(hrid);
+            }
+        }
+    };
+
+    collectTargets(player?.food, (entry) => entry);
+    collectTargets(player?.drinks, (entry) => entry);
+    collectTargets(player?.abilities, (entry) => entry?.abilityHrid);
+
+    return Array.from(activeTargets);
+}
+
+function getComparableTriggerTargetHrids(beforePlayer = {}, afterPlayer = {}) {
+    return collectActiveTriggerTargetHrids(afterPlayer);
+}
+
+function applyTriggerStateToTriggerMap(rawTriggerMap, targetHrid, state, triggerList = []) {
+    const hrid = String(targetHrid || "");
+    if (!hrid) {
+        return rawTriggerMap && typeof rawTriggerMap === "object" ? rawTriggerMap : {};
+    }
+
+    const triggerMap = rawTriggerMap && typeof rawTriggerMap === "object" ? rawTriggerMap : {};
+    if (state === "default") {
+        delete triggerMap[hrid];
+        return triggerMap;
+    }
+
+    if (state === "disabled") {
+        triggerMap[hrid] = [];
+        return triggerMap;
+    }
+
+    triggerMap[hrid] = sanitizeTriggerList(triggerList);
+    return triggerMap;
+}
+
 function ensureTriggerMapEntry(rawTriggerMap, targetHrid) {
     const hrid = String(targetHrid || "");
     if (!hrid) {
@@ -189,9 +311,13 @@ function isComparatorValueRequired(comparatorHrid) {
 
 export {
     MAX_TRIGGER_COUNT,
+    applyTriggerStateToTriggerMap,
+    buildTriggerChangeDescriptor,
     deepClone,
     ensureTriggerMapEntry,
+    getComparableTriggerTargetHrids,
     getDefaultTriggerDtosForHrid,
+    getEffectiveTriggerState,
     getTriggerComparatorsForCondition,
     getTriggerConditionsForDependency,
     getTriggerDependencies,

@@ -15,6 +15,14 @@ function findFirstItemByCategory(categoryHrid) {
     );
 }
 
+function findFirstItemWithoutDefaultTriggers(categoryHrid) {
+    return Object.values(itemDetailMap).find(
+        (item) => item.categoryHrid === categoryHrid
+            && item.consumableDetail
+            && !Array.isArray(item.consumableDetail.defaultCombatTriggers)
+    );
+}
+
 function findFirstNonSpecialAbility() {
     return Object.values(abilityDetailMap).find((ability) => !ability.isSpecialAbility && Array.isArray(ability.defaultCombatTriggers));
 }
@@ -107,5 +115,19 @@ describe("playerMapper", () => {
         const players = buildPlayersForSimulation([player]);
 
         expect(() => structuredClone({ players })).not.toThrow();
+    });
+
+    it("treats consumables without default combat triggers as triggerless", () => {
+        const player = createEmptyPlayerConfig(1);
+        const drink = findFirstItemWithoutDefaultTriggers("/item_categories/drink");
+
+        expect(drink).toBeTruthy();
+
+        player.drinks[0] = drink.hrid;
+
+        const players = buildPlayersForSimulation([player]);
+
+        expect(players[0].drinks[0]?.hrid).toBe(drink.hrid);
+        expect(players[0].drinks[0]?.triggers).toEqual([]);
     });
 });

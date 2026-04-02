@@ -104,6 +104,11 @@
         "abilitySlot": "技能槽 {{index}}",
         "houseRoomLevelChange": "{{name}}: 等级 {{from}} -> {{to}}",
         "triggerLabel": "触发器",
+        "triggerState": {
+            "default": "默认",
+            "custom": "自定义",
+            "disabled": "禁用"
+        },
         "settings": "固定参数",
         "settingZone": "战斗区域",
         "settingDifficulty": "难度",
@@ -165,6 +170,7 @@
         "queueSaveErrorWeightSum": "权重总和必须等于 100%。",
         "queueSaveErrorParallelLimit": "并行线程上限无效：请输入 {{min}} 到 {{max}} 的整数。",
         "queueSaveErrorParallelLimitByCore": "并行线程上限不能超过当前核心数 {{cores}}。",
+        "queueSaveErrorUnsupportedTriggerChange": "当前队列包含触发条件变更，装备预设暂不支持保存这类队列项。",
         "parallelWorkerHint": "当前核心数：{{cores}}，推荐配置：{{recommended}}",
         "parallelWorkerHintUnknown": "无法检测核心数，推荐配置：{{recommended}}",
         "queueSaveErrorStorage": "保存队列设置失败，请检查浏览器存储权限。",
