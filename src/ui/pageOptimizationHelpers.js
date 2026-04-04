@@ -12,21 +12,31 @@ export function createCombatPreviewPlayerConfig(playerConfig = null) {
         return null;
     }
 
+    const equipment = Object.fromEntries(
+        EQUIPMENT_SLOT_KEYS.map((slot) => {
+            const setting = playerConfig?.equipment?.[slot] ?? {};
+            return [slot, {
+                itemHrid: String(setting?.itemHrid || ""),
+                enhancementLevel: Number(setting?.enhancementLevel ?? 0),
+            }];
+        })
+    );
+
+    const legacyTrinket = playerConfig?.equipment?.trinket ?? null;
+    if (legacyTrinket && typeof legacyTrinket === "object") {
+        equipment.trinket = {
+            itemHrid: String(legacyTrinket?.itemHrid || ""),
+            enhancementLevel: Number(legacyTrinket?.enhancementLevel ?? 0),
+        };
+    }
+
     return {
         id: String(playerConfig.id || ""),
         selected: true,
         levels: Object.fromEntries(
             LEVEL_KEYS.map((key) => [key, Number(playerConfig?.levels?.[key] ?? 1)])
         ),
-        equipment: Object.fromEntries(
-            EQUIPMENT_SLOT_KEYS.map((slot) => {
-                const setting = playerConfig?.equipment?.[slot] ?? {};
-                return [slot, {
-                    itemHrid: String(setting?.itemHrid || ""),
-                    enhancementLevel: Number(setting?.enhancementLevel ?? 0),
-                }];
-            })
-        ),
+        equipment,
         food: Array.from({ length: 3 }, (_, index) => String(playerConfig?.food?.[index] || "")),
         drinks: Array.from({ length: 3 }, (_, index) => String(playerConfig?.drinks?.[index] || "")),
         abilities: Array.from({ length: 5 }, (_, index) => {

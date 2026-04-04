@@ -513,9 +513,18 @@
       </div>
 
       <div v-if="combatStatRows.length > 0" class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-        <div v-for="entry in combatStatRows" :key="entry.label" class="rounded-xl border border-white/10 bg-slate-900/40 px-3 py-2 text-sm">
+        <div v-for="entry in combatStatRows" :key="entry.key" class="rounded-xl border border-white/10 bg-slate-900/40 px-3 py-2 text-sm">
           <p class="text-xs uppercase tracking-[0.12em] text-slate-400">{{ entry.label }}</p>
-          <p class="mt-1 text-slate-100">{{ entry.value }}</p>
+          <div class="mt-1 flex flex-wrap items-center gap-2">
+            <p class="text-slate-100">{{ entry.value }}</p>
+            <span
+              v-for="highlight in entry.highlights"
+              :key="highlight.key"
+              class="rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[11px] font-medium text-amber-100"
+            >
+              {{ highlight.text }}
+            </span>
+          </div>
         </div>
       </div>
       <p v-else class="text-sm text-slate-400">{{ t("common:multiRound.noData", "No data") }}</p>
@@ -1076,7 +1085,7 @@ import {
 } from "../../services/triggerMapper.js";
 import { applyTampermonkeyImportMessage } from "../../services/tampermonkeyImportBridge.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
-import { buildPlayersForSimulation } from "../../services/playerMapper.js";
+import { buildCombatPreviewData } from "../../services/playerMapper.js";
 import { calcCombatLevel, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../../shared/playerConfig.js";
 import { buildNoRngProfitBreakdown, buildRandomProfitBreakdown } from "../../services/profitEstimator.js";
 import { calculateSkillUpgradeEta } from "../../services/levelExperience.js";
@@ -1814,18 +1823,83 @@ const playerSnapshotStatusClass = computed(() => {
 });
 const playerSnapshotStatusText = computed(() => playerSnapshotStatus.value.text || "");
 const combatPreviewPlayerConfig = computed(() => createCombatPreviewPlayerConfig(activePlayer.value));
+const combatPreviewExtra = computed(() => ({
+  mooPass: Boolean(simulator.simulationSettings.mooPass),
+  comExp: simulator.simulationSettings.comExpEnabled ? Number(simulator.simulationSettings.comExp || 20) : 0,
+  comDrop: simulator.simulationSettings.comDropEnabled ? Number(simulator.simulationSettings.comDrop || 20) : 0,
+}));
+const combatPreviewContext = computed(() => {
+  if (simulator.simulationSettings.mode === "labyrinth") {
+    const labyrinthHrid = String(simulator.simulationSettings.labyrinthHrid || "");
+    if (!labyrinthHrid) {
+      return null;
+    }
 
-const combatDetails = computed(() => {
-  if (!combatPreviewPlayerConfig.value) {
+    return {
+      mode: "labyrinth",
+      labyrinthHrid,
+      roomLevel: Math.max(20, Number(simulator.simulationSettings.roomLevel || 100)),
+      crates: simulator.getActiveLabyrinthCrates(),
+    };
+  }
+
+  const zoneHrid = String(selectedActionHrid.value || "");
+  if (!zoneHrid) {
     return null;
   }
 
-  const playersToSim = buildPlayersForSimulation([combatPreviewPlayerConfig.value]);
-  return playersToSim[0]?.combatDetails || null;
+  return {
+    mode: "zone",
+    zoneHrid,
+    difficultyTier: Number(simulator.simulationSettings.difficultyTier || 0),
+    useDungeon: Boolean(simulator.simulationSettings.useDungeon),
+  };
+});
+const combatPreviewData = computed(() => {
+  if (!combatPreviewPlayerConfig.value) {
+    return {
+      player: null,
+      drinkCards: [],
+      highlightSources: [],
+    };
+  }
+
+  return buildCombatPreviewData(combatPreviewPlayerConfig.value, combatPreviewExtra.value, combatPreviewContext.value);
+});
+
+const combatDetails = computed(() => {
+  return combatPreviewData.value.player?.combatDetails || null;
 });
 
 const combatStats = computed(() => {
   return combatDetails.value?.combatStats || null;
+});
+
+const conditionalHighlightSources = computed(() => combatPreviewData.value.highlightSources || []);
+const conditionalHighlightsByKey = computed(() => {
+  const highlights = new Map();
+
+  conditionalHighlightSources.value.forEach((source) => {
+    if (!source?.sourceKey || !Array.isArray(source.changedStats) || source.changedStats.length <= 0) {
+      return;
+    }
+
+    const sourceLabel = formatCombatPreviewHighlightLabel(source);
+    source.changedStats.forEach((stat) => {
+      const entry = {
+        key: `${source.sourceKey}-${stat.key}`,
+        text: `${formatCombatPreviewStatDelta(stat)}（${sourceLabel}）`,
+      };
+
+      if (highlights.has(stat.key)) {
+        highlights.get(stat.key).push(entry);
+      } else {
+        highlights.set(stat.key, [entry]);
+      }
+    });
+  });
+
+  return highlights;
 });
 
 const combatStatRows = computed(() => {
@@ -1854,81 +1928,90 @@ const combatStatRows = computed(() => {
     : 0;
 
   const rows = [
-    { label: t("common:vue.home.combatStats.maxHp", "Max HP"), value: formatInt(details.maxHitpoints) },
-    { label: t("common:vue.home.combatStats.maxMp", "Max MP"), value: formatInt(details.maxManapoints) },
-    { label: t("common:vue.home.combatStats.combatStyle", "Combat Style"), value: combatStyleName },
-    { label: t("common:vue.home.combatStats.damageType", "Damage Type"), value: damageTypeName },
-    { label: t("common:vue.home.combatStats.primaryTraining", "Primary Training"), value: primaryTrainingName },
-    { label: t("common:vue.home.combatStats.focusTraining", "Focus Training"), value: focusTrainingName },
-    { label: t("common:vue.home.combatStats.attackInterval", "Attack Interval"), value: `${formatNumber(attackIntervalSeconds, 2)}s` },
-    { label: t("common:vue.home.combatStats.stabAccuracy", "Stab Accuracy"), value: formatInt(details.stabAccuracyRating) },
-    { label: t("common:vue.home.combatStats.stabDamage", "Stab Damage"), value: formatInt(details.stabMaxDamage) },
-    { label: t("common:vue.home.combatStats.slashAccuracy", "Slash Accuracy"), value: formatInt(details.slashAccuracyRating) },
-    { label: t("common:vue.home.combatStats.slashDamage", "Slash Damage"), value: formatInt(details.slashMaxDamage) },
-    { label: t("common:vue.home.combatStats.smashAccuracy", "Smash Accuracy"), value: formatInt(details.smashAccuracyRating) },
-    { label: t("common:vue.home.combatStats.smashDamage", "Smash Damage"), value: formatInt(details.smashMaxDamage) },
-    { label: t("common:vue.home.combatStats.defensiveDamage", "Defensive Damage"), value: formatInt(details.defensiveMaxDamage) },
-    { label: t("common:vue.home.combatStats.rangedAccuracy", "Ranged Accuracy"), value: formatInt(details.rangedAccuracyRating) },
-    { label: t("common:vue.home.combatStats.rangedDamage", "Ranged Damage"), value: formatInt(details.rangedMaxDamage) },
-    { label: t("common:vue.home.combatStats.magicAccuracy", "Magic Accuracy"), value: formatInt(details.magicAccuracyRating) },
-    { label: t("common:vue.home.combatStats.magicDamage", "Magic Damage"), value: formatInt(details.magicMaxDamage) },
-    { label: t("common:vue.home.combatStats.evasion", "Evasion"), value: formatInt(averageEvasion) },
-    { label: t("common:vue.home.combatStats.armor", "Armor"), value: formatInt(details.totalArmor) },
-    { label: t("common:vue.home.combatStats.criticalRate", "Critical Rate"), value: formatPercent(stats.criticalRate, 2) },
-    { label: t("common:vue.home.combatStats.armorPenetration", "Armor Penetration"), value: formatPercent(stats.armorPenetration, 2) },
-    { label: t("common:vue.home.combatStats.stabEvasion", "Stab Evasion"), value: formatInt(details.stabEvasionRating) },
-    { label: t("common:vue.home.combatStats.slashEvasion", "Slash Evasion"), value: formatInt(details.slashEvasionRating) },
-    { label: t("common:vue.home.combatStats.smashEvasion", "Smash Evasion"), value: formatInt(details.smashEvasionRating) },
-    { label: t("common:vue.home.combatStats.rangedEvasion", "Ranged Evasion"), value: formatInt(details.rangedEvasionRating) },
-    { label: t("common:vue.home.combatStats.magicEvasion", "Magic Evasion"), value: formatInt(details.magicEvasionRating) },
-    { label: t("common:vue.home.combatStats.waterResistance", "Water Resistance"), value: formatInt(details.totalWaterResistance) },
-    { label: t("common:vue.home.combatStats.natureResistance", "Nature Resistance"), value: formatInt(details.totalNatureResistance) },
-    { label: t("common:vue.home.combatStats.fireResistance", "Fire Resistance"), value: formatInt(details.totalFireResistance) },
-    { label: t("common:vue.home.combatStats.physicalAmplify", "Physical Amplify"), value: formatPercent(stats.physicalAmplify, 2) },
-    { label: t("common:vue.home.combatStats.waterAmplify", "Water Amplify"), value: formatPercent(stats.waterAmplify, 2) },
-    { label: t("common:vue.home.combatStats.natureAmplify", "Nature Amplify"), value: formatPercent(stats.natureAmplify, 2) },
-    { label: t("common:vue.home.combatStats.fireAmplify", "Fire Amplify"), value: formatPercent(stats.fireAmplify, 2) },
-    { label: t("common:vue.home.combatStats.healingAmplify", "Healing Amplify"), value: formatPercent(stats.healingAmplify, 2) },
-    { label: t("common:vue.home.combatStats.lifeSteal", "Life Steal"), value: formatPercent(stats.lifeSteal, 2) },
-    { label: t("common:vue.home.combatStats.physicalThorns", "Physical Thorns"), value: formatPercent(stats.physicalThorns, 2) },
-    { label: t("common:vue.home.combatStats.elementalThorns", "Elemental Thorns"), value: formatPercent(stats.elementalThorns, 2) },
-    { label: t("common:vue.home.combatStats.hpRegen", "HP Regen"), value: formatPercent(stats.hpRegenPer10, 2) },
-    { label: t("common:vue.home.combatStats.mpRegen", "MP Regen"), value: formatPercent(stats.mpRegenPer10, 2) },
-    { label: t("common:vue.home.combatStats.criticalDamage", "Critical Damage Bonus"), value: formatPercent(stats.criticalDamage, 2) },
-    { label: t("common:vue.home.combatStats.taskDamage", "Task Damage Bonus"), value: formatPercent(stats.taskDamage, 2) },
-    { label: t("common:vue.home.combatStats.waterPenetration", "Water Penetration"), value: formatPercent(stats.waterPenetration, 2) },
-    { label: t("common:vue.home.combatStats.naturePenetration", "Nature Penetration"), value: formatPercent(stats.naturePenetration, 2) },
-    { label: t("common:vue.home.combatStats.firePenetration", "Fire Penetration"), value: formatPercent(stats.firePenetration, 2) },
-    { label: t("common:vue.home.combatStats.abilityHaste", "Ability Haste"), value: formatInt(stats.abilityHaste) },
-    { label: t("common:vue.home.combatStats.tenacity", "Tenacity"), value: formatInt(stats.tenacity) },
-    { label: t("common:vue.home.combatStats.manaLeech", "Mana Leech"), value: formatPercent(stats.manaLeech, 2) },
-    { label: t("common:vue.home.combatStats.castSpeed", "Cast Speed"), value: formatPercent(stats.castSpeed, 2) },
-    { label: t("common:vue.home.combatStats.threat", "Threat"), value: formatInt(details.totalThreat) },
-    { label: t("common:vue.home.combatStats.parry", "Parry"), value: formatPercent(stats.parry, 2) },
-    { label: t("common:vue.home.combatStats.mayhem", "Mayhem"), value: formatPercent(stats.mayhem, 2) },
-    { label: t("common:vue.home.combatStats.pierce", "Pierce"), value: formatPercent(stats.pierce, 2) },
-    { label: t("common:vue.home.combatStats.curse", "Curse"), value: formatPercent(stats.curse, 2) },
-    { label: t("common:vue.home.combatStats.fury", "Fury"), value: formatPercent(stats.fury, 2) },
-    { label: t("common:vue.home.combatStats.weaken", "Weaken"), value: formatPercent(stats.weaken, 2) },
-    { label: t("common:vue.home.combatStats.ripple", "Ripple"), value: formatPercent(stats.ripple, 2) },
-    { label: t("common:vue.home.combatStats.bloom", "Bloom"), value: formatPercent(stats.bloom, 2) },
-    { label: t("common:vue.home.combatStats.blaze", "Blaze"), value: formatPercent(stats.blaze, 2) },
-    { label: t("common:vue.home.combatStats.attackSpeed", "Attack Speed"), value: formatPercent(stats.attackSpeed, 2) },
-    { label: t("common:vue.home.combatStats.autoAttackDamage", "Auto Attack Damage"), value: formatPercent(stats.autoAttackDamage, 2) },
-    { label: t("common:vue.home.combatStats.abilityDamage", "Ability Damage"), value: formatPercent(stats.abilityDamage, 2) },
-    { label: t("common:vue.home.combatStats.drinkConcentration", "Drink Concentration"), value: formatPercent(stats.drinkConcentration, 2) },
-    { label: t("common:vue.home.combatStats.foodHaste", "Food Haste"), value: formatPercent(stats.foodHaste, 2) },
-    { label: t("common:vue.home.combatStats.combatExperience", "Experience Rate"), value: formatPercent(stats.combatExperience, 2) },
-    { label: t("common:vue.home.combatStats.staminaExperience", "Stamina Experience"), value: formatPercent(stats.staminaExperience, 2) },
-    { label: t("common:vue.home.combatStats.intelligenceExperience", "Intelligence Experience"), value: formatPercent(stats.intelligenceExperience, 2) },
-    { label: t("common:vue.home.combatStats.attackExperience", "Attack Experience"), value: formatPercent(stats.attackExperience, 2) },
-    { label: t("common:vue.home.combatStats.defenseExperience", "Defense Experience"), value: formatPercent(stats.defenseExperience, 2) },
-    { label: t("common:vue.home.combatStats.meleeExperience", "Melee Experience"), value: formatPercent(stats.meleeExperience, 2) },
-    { label: t("common:vue.home.combatStats.rangedExperience", "Ranged Experience"), value: formatPercent(stats.rangedExperience, 2) },
-    { label: t("common:vue.home.combatStats.magicExperience", "Magic Experience"), value: formatPercent(stats.magicExperience, 2) },
+    { key: "maxHitpoints", label: t("common:vue.home.combatStats.maxHp", "Max HP"), value: formatInt(details.maxHitpoints) },
+    { key: "maxManapoints", label: t("common:vue.home.combatStats.maxMp", "Max MP"), value: formatInt(details.maxManapoints) },
+    { key: "combatStyle", label: t("common:vue.home.combatStats.combatStyle", "Combat Style"), value: combatStyleName },
+    { key: "damageType", label: t("common:vue.home.combatStats.damageType", "Damage Type"), value: damageTypeName },
+    { key: "primaryTraining", label: t("common:vue.home.combatStats.primaryTraining", "Primary Training"), value: primaryTrainingName },
+    { key: "focusTraining", label: t("common:vue.home.combatStats.focusTraining", "Focus Training"), value: focusTrainingName },
+    { key: "attackIntervalSeconds", label: t("common:vue.home.combatStats.attackInterval", "Attack Interval"), value: `${formatNumber(attackIntervalSeconds, 2)}s` },
+    { key: "stabAccuracyRating", label: t("common:vue.home.combatStats.stabAccuracy", "Stab Accuracy"), value: formatInt(details.stabAccuracyRating) },
+    { key: "stabMaxDamage", label: t("common:vue.home.combatStats.stabDamage", "Stab Damage"), value: formatInt(details.stabMaxDamage) },
+    { key: "slashAccuracyRating", label: t("common:vue.home.combatStats.slashAccuracy", "Slash Accuracy"), value: formatInt(details.slashAccuracyRating) },
+    { key: "slashMaxDamage", label: t("common:vue.home.combatStats.slashDamage", "Slash Damage"), value: formatInt(details.slashMaxDamage) },
+    { key: "smashAccuracyRating", label: t("common:vue.home.combatStats.smashAccuracy", "Smash Accuracy"), value: formatInt(details.smashAccuracyRating) },
+    { key: "smashMaxDamage", label: t("common:vue.home.combatStats.smashDamage", "Smash Damage"), value: formatInt(details.smashMaxDamage) },
+    { key: "defensiveMaxDamage", label: t("common:vue.home.combatStats.defensiveDamage", "Defensive Damage"), value: formatInt(details.defensiveMaxDamage) },
+    { key: "rangedAccuracyRating", label: t("common:vue.home.combatStats.rangedAccuracy", "Ranged Accuracy"), value: formatInt(details.rangedAccuracyRating) },
+    { key: "rangedMaxDamage", label: t("common:vue.home.combatStats.rangedDamage", "Ranged Damage"), value: formatInt(details.rangedMaxDamage) },
+    { key: "magicAccuracyRating", label: t("common:vue.home.combatStats.magicAccuracy", "Magic Accuracy"), value: formatInt(details.magicAccuracyRating) },
+    { key: "magicMaxDamage", label: t("common:vue.home.combatStats.magicDamage", "Magic Damage"), value: formatInt(details.magicMaxDamage) },
+    { key: "averageEvasion", label: t("common:vue.home.combatStats.evasion", "Evasion"), value: formatInt(averageEvasion) },
+    { key: "totalArmor", label: t("common:vue.home.combatStats.armor", "Armor"), value: formatInt(details.totalArmor) },
+    { key: "criticalRate", label: t("common:vue.home.combatStats.criticalRate", "Critical Rate"), value: formatPercent(stats.criticalRate, 2) },
+    { key: "armorPenetration", label: t("common:vue.home.combatStats.armorPenetration", "Armor Penetration"), value: formatPercent(stats.armorPenetration, 2) },
+    { key: "stabEvasionRating", label: t("common:vue.home.combatStats.stabEvasion", "Stab Evasion"), value: formatInt(details.stabEvasionRating) },
+    { key: "slashEvasionRating", label: t("common:vue.home.combatStats.slashEvasion", "Slash Evasion"), value: formatInt(details.slashEvasionRating) },
+    { key: "smashEvasionRating", label: t("common:vue.home.combatStats.smashEvasion", "Smash Evasion"), value: formatInt(details.smashEvasionRating) },
+    { key: "rangedEvasionRating", label: t("common:vue.home.combatStats.rangedEvasion", "Ranged Evasion"), value: formatInt(details.rangedEvasionRating) },
+    { key: "magicEvasionRating", label: t("common:vue.home.combatStats.magicEvasion", "Magic Evasion"), value: formatInt(details.magicEvasionRating) },
+    { key: "totalWaterResistance", label: t("common:vue.home.combatStats.waterResistance", "Water Resistance"), value: formatInt(details.totalWaterResistance) },
+    { key: "totalNatureResistance", label: t("common:vue.home.combatStats.natureResistance", "Nature Resistance"), value: formatInt(details.totalNatureResistance) },
+    { key: "totalFireResistance", label: t("common:vue.home.combatStats.fireResistance", "Fire Resistance"), value: formatInt(details.totalFireResistance) },
+    { key: "physicalAmplify", label: t("common:vue.home.combatStats.physicalAmplify", "Physical Amplify"), value: formatPercent(stats.physicalAmplify, 2) },
+    { key: "waterAmplify", label: t("common:vue.home.combatStats.waterAmplify", "Water Amplify"), value: formatPercent(stats.waterAmplify, 2) },
+    { key: "natureAmplify", label: t("common:vue.home.combatStats.natureAmplify", "Nature Amplify"), value: formatPercent(stats.natureAmplify, 2) },
+    { key: "fireAmplify", label: t("common:vue.home.combatStats.fireAmplify", "Fire Amplify"), value: formatPercent(stats.fireAmplify, 2) },
+    { key: "healingAmplify", label: t("common:vue.home.combatStats.healingAmplify", "Healing Amplify"), value: formatPercent(stats.healingAmplify, 2) },
+    { key: "lifeSteal", label: t("common:vue.home.combatStats.lifeSteal", "Life Steal"), value: formatPercent(stats.lifeSteal, 2) },
+    { key: "physicalThorns", label: t("common:vue.home.combatStats.physicalThorns", "Physical Thorns"), value: formatPercent(stats.physicalThorns, 2) },
+    { key: "elementalThorns", label: t("common:vue.home.combatStats.elementalThorns", "Elemental Thorns"), value: formatPercent(stats.elementalThorns, 2) },
+    { key: "retaliation", label: t("common:vue.home.combatStats.retaliation", "Retaliation"), value: formatPercent(stats.retaliation, 2) },
+    { key: "hpRegenPer10", label: t("common:vue.home.combatStats.hpRegen", "HP Regen"), value: formatPercent(stats.hpRegenPer10, 2) },
+    { key: "mpRegenPer10", label: t("common:vue.home.combatStats.mpRegen", "MP Regen"), value: formatPercent(stats.mpRegenPer10, 2) },
+    { key: "criticalDamage", label: t("common:vue.home.combatStats.criticalDamage", "Critical Damage Bonus"), value: formatPercent(stats.criticalDamage, 2) },
+    { key: "taskDamage", label: t("common:vue.home.combatStats.taskDamage", "Task Damage Bonus"), value: formatPercent(stats.taskDamage, 2) },
+    { key: "waterPenetration", label: t("common:vue.home.combatStats.waterPenetration", "Water Penetration"), value: formatPercent(stats.waterPenetration, 2) },
+    { key: "naturePenetration", label: t("common:vue.home.combatStats.naturePenetration", "Nature Penetration"), value: formatPercent(stats.naturePenetration, 2) },
+    { key: "firePenetration", label: t("common:vue.home.combatStats.firePenetration", "Fire Penetration"), value: formatPercent(stats.firePenetration, 2) },
+    { key: "abilityHaste", label: t("common:vue.home.combatStats.abilityHaste", "Ability Haste"), value: formatInt(stats.abilityHaste) },
+    { key: "tenacity", label: t("common:vue.home.combatStats.tenacity", "Tenacity"), value: formatInt(stats.tenacity) },
+    { key: "manaLeech", label: t("common:vue.home.combatStats.manaLeech", "Mana Leech"), value: formatPercent(stats.manaLeech, 2) },
+    { key: "castSpeed", label: t("common:vue.home.combatStats.castSpeed", "Cast Speed"), value: formatPercent(stats.castSpeed, 2) },
+    { key: "totalThreat", label: t("common:vue.home.combatStats.threat", "Threat"), value: formatInt(details.totalThreat) },
+    { key: "parry", label: t("common:vue.home.combatStats.parry", "Parry"), value: formatPercent(stats.parry, 2) },
+    { key: "mayhem", label: t("common:vue.home.combatStats.mayhem", "Mayhem"), value: formatPercent(stats.mayhem, 2) },
+    { key: "pierce", label: t("common:vue.home.combatStats.pierce", "Pierce"), value: formatPercent(stats.pierce, 2) },
+    { key: "curse", label: t("common:vue.home.combatStats.curse", "Curse"), value: formatPercent(stats.curse, 2) },
+    { key: "fury", label: t("common:vue.home.combatStats.fury", "Fury"), value: formatPercent(stats.fury, 2) },
+    { key: "weaken", label: t("common:vue.home.combatStats.weaken", "Weaken"), value: formatPercent(stats.weaken, 2) },
+    { key: "ripple", label: t("common:vue.home.combatStats.ripple", "Ripple"), value: formatPercent(stats.ripple, 2) },
+    { key: "bloom", label: t("common:vue.home.combatStats.bloom", "Bloom"), value: formatPercent(stats.bloom, 2) },
+    { key: "blaze", label: t("common:vue.home.combatStats.blaze", "Blaze"), value: formatPercent(stats.blaze, 2) },
+    { key: "attackSpeed", label: t("common:vue.home.combatStats.attackSpeed", "Attack Speed"), value: formatPercent(stats.attackSpeed, 2) },
+    { key: "autoAttackDamage", label: t("common:vue.home.combatStats.autoAttackDamage", "Auto Attack Damage"), value: formatPercent(stats.autoAttackDamage, 2) },
+    { key: "abilityDamage", label: t("common:vue.home.combatStats.abilityDamage", "Ability Damage"), value: formatPercent(stats.abilityDamage, 2) },
+    { key: "drinkConcentration", label: t("common:vue.home.combatStats.drinkConcentration", "Drink Concentration"), value: formatPercent(stats.drinkConcentration, 2) },
+    { key: "foodHaste", label: t("common:vue.home.combatStats.foodHaste", "Food Haste"), value: formatPercent(stats.foodHaste, 2) },
+    { key: "combatDropRate", label: t("common:vue.home.combatStats.combatDropRate", "Drop Rate"), value: formatPercent(stats.combatDropRate, 2) },
+    { key: "combatRareFind", label: t("common:vue.home.combatStats.combatRareFind", "Rare Find"), value: formatPercent(stats.combatRareFind, 2) },
+    { key: "combatDropQuantity", label: t("common:vue.home.combatStats.combatDropQuantity", "Drop Quantity"), value: formatPercent(stats.combatDropQuantity, 2) },
+    { key: "combatExperience", label: t("common:vue.home.combatStats.combatExperience", "Experience Rate"), value: formatPercent(stats.combatExperience, 2) },
+    { key: "staminaExperience", label: t("common:vue.home.combatStats.staminaExperience", "Stamina Experience"), value: formatPercent(stats.staminaExperience, 2) },
+    { key: "intelligenceExperience", label: t("common:vue.home.combatStats.intelligenceExperience", "Intelligence Experience"), value: formatPercent(stats.intelligenceExperience, 2) },
+    { key: "attackExperience", label: t("common:vue.home.combatStats.attackExperience", "Attack Experience"), value: formatPercent(stats.attackExperience, 2) },
+    { key: "defenseExperience", label: t("common:vue.home.combatStats.defenseExperience", "Defense Experience"), value: formatPercent(stats.defenseExperience, 2) },
+    { key: "meleeExperience", label: t("common:vue.home.combatStats.meleeExperience", "Melee Experience"), value: formatPercent(stats.meleeExperience, 2) },
+    { key: "rangedExperience", label: t("common:vue.home.combatStats.rangedExperience", "Ranged Experience"), value: formatPercent(stats.rangedExperience, 2) },
+    { key: "magicExperience", label: t("common:vue.home.combatStats.magicExperience", "Magic Experience"), value: formatPercent(stats.magicExperience, 2) },
   ];
 
-  return rows.filter((entry) => entry.value !== "-");
+  return rows
+    .filter((entry) => entry.value !== "-")
+    .map((entry) => ({
+      ...entry,
+      highlights: conditionalHighlightsByKey.value.get(entry.key) || [],
+    }));
 });
 
 const triggerModalTitle = computed(() => {
@@ -2000,6 +2083,71 @@ function formatPercent(value, digits = 2) {
     return "-";
   }
   return `${(numeric * 100).toFixed(digits)}%`;
+}
+
+function formatDurationSeconds(value) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) {
+    return "-";
+  }
+  return `${formatNumber(numeric, 2)}s`;
+}
+
+function formatFlexibleNumber(value, digits = 2) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) {
+    return "-";
+  }
+  if (Number.isInteger(numeric)) {
+    return formatInt(numeric);
+  }
+  return formatNumber(numeric, digits);
+}
+
+function formatSignedFlexibleNumber(value, digits = 2) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) {
+    return "-";
+  }
+
+  const sign = numeric > 0 ? "+" : numeric < 0 ? "-" : "";
+  return `${sign}${formatFlexibleNumber(Math.abs(numeric), digits)}`;
+}
+
+function formatSignedPercent(value, digits = 2) {
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric)) {
+    return "-";
+  }
+
+  const sign = numeric > 0 ? "+" : numeric < 0 ? "-" : "";
+  return `${sign}${(Math.abs(numeric) * 100).toFixed(digits)}%`;
+}
+
+function formatCombatPreviewStatDelta(stat) {
+  if (!stat) {
+    return "-";
+  }
+
+  if (stat.format === "percent") {
+    return formatSignedPercent(stat.deltaValue, 2);
+  }
+  if (stat.format === "seconds") {
+    return `${formatSignedFlexibleNumber(stat.deltaValue, 2)}s`;
+  }
+  return formatSignedFlexibleNumber(stat.deltaValue, 2);
+}
+
+function formatCombatPreviewHighlightLabel(source) {
+  if (!source?.sourceHrid) {
+    return String(source?.sourceName || "");
+  }
+
+  if (source.sourceType === "ability") {
+    return formatAbilityName(source.sourceHrid, source.sourceName || "");
+  }
+
+  return formatItemName(source.sourceHrid, source.sourceName || "");
 }
 
 function formatEtaDuration(hours) {

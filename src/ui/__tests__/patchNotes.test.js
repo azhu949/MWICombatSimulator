@@ -31,28 +31,86 @@ afterEach(() => {
 });
 
 describe("patchNotes", () => {
-    it("resolves patch note entries in source order and trims blank lines", () => {
+    it("resolves mixed legacy and bilingual patch note entries in source order", () => {
         const patchNotes = {
-            "2026年3月25日（v1.0.7）": ["  第一条  ", "", "   ", "第二条"],
-            "2026年3月24日": [" 第三条 "],
+            "2026年3月26日（v1.0.8）": {
+                label: {
+                    zh: " 2026年3月26日（v1.0.8） ",
+                    en: " March 26, 2026 (v1.0.8) ",
+                },
+                notes: {
+                    zh: ["  第一条  ", "", "   ", "第二条"],
+                    en: [" First note ", "", "   ", "Second note"],
+                },
+            },
+            "2026年3月25日（v1.0.7）": [" 第三条 "],
+            "2026年3月24日（v1.0.6）": {
+                label: {
+                    zh: " 2026年3月24日（v1.0.6） ",
+                },
+                notes: {
+                    zh: [" 第四条 "],
+                },
+            },
             "2026年3月23日": "invalid",
         };
 
-        expect(resolvePatchNoteEntries(patchNotes)).toEqual([
+        expect(resolvePatchNoteEntries(patchNotes, "zh")).toEqual([
             {
-                entryId: "2026年3月25日（v1.0.7）",
-                label: "2026年3月25日（v1.0.7）",
+                entryId: "2026年3月26日（v1.0.8）",
+                label: "2026年3月26日（v1.0.8）",
                 notes: ["第一条", "第二条"],
             },
             {
-                entryId: "2026年3月24日",
-                label: "2026年3月24日",
+                entryId: "2026年3月25日（v1.0.7）",
+                label: "2026年3月25日（v1.0.7）",
                 notes: ["第三条"],
+            },
+            {
+                entryId: "2026年3月24日（v1.0.6）",
+                label: "2026年3月24日（v1.0.6）",
+                notes: ["第四条"],
             },
             {
                 entryId: "2026年3月23日",
                 label: "2026年3月23日",
                 notes: [],
+            },
+        ]);
+    });
+
+    it("uses english content when available and falls back to zh labels and notes otherwise", () => {
+        const patchNotes = {
+            "2026年3月26日（v1.0.8）": {
+                label: {
+                    zh: "2026年3月26日（v1.0.8）",
+                    en: "March 26, 2026 (v1.0.8)",
+                },
+                notes: {
+                    zh: ["第一条", "第二条"],
+                    en: ["First note", "Second note"],
+                },
+            },
+            "2026年3月25日（v1.0.7）": {
+                label: {
+                    zh: "2026年3月25日（v1.0.7）",
+                },
+                notes: {
+                    zh: ["第三条"],
+                },
+            },
+        };
+
+        expect(resolvePatchNoteEntries(patchNotes, "en")).toEqual([
+            {
+                entryId: "2026年3月26日（v1.0.8）",
+                label: "March 26, 2026 (v1.0.8)",
+                notes: ["First note", "Second note"],
+            },
+            {
+                entryId: "2026年3月25日（v1.0.7）",
+                label: "2026年3月25日（v1.0.7）",
+                notes: ["第三条"],
             },
         ]);
     });
@@ -108,6 +166,54 @@ describe("patchNotes", () => {
                 notes: ["最新"],
             },
         ]);
+    });
+
+    it("keeps read-state matching stable when the patch note language changes", () => {
+        const storage = createLocalStorageMock();
+        vi.spyOn(Date, "now").mockReturnValue(333);
+        const patchNotes = {
+            "2026年3月26日（v1.0.8）": {
+                label: {
+                    zh: "2026年3月26日（v1.0.8）",
+                    en: "March 26, 2026 (v1.0.8)",
+                },
+                notes: {
+                    zh: ["第一条"],
+                    en: ["First note"],
+                },
+            },
+            "2026年3月25日（v1.0.7）": {
+                label: {
+                    zh: "2026年3月25日（v1.0.7）",
+                    en: "March 25, 2026 (v1.0.7)",
+                },
+                notes: {
+                    zh: ["第二条"],
+                    en: ["Second note"],
+                },
+            },
+        };
+        const zhEntries = resolvePatchNoteEntries(patchNotes, "zh");
+        const enEntries = resolvePatchNoteEntries(patchNotes, "en");
+
+        expect(zhEntries.map((entry) => entry.entryId)).toEqual([
+            "2026年3月26日（v1.0.8）",
+            "2026年3月25日（v1.0.7）",
+        ]);
+        expect(enEntries.map((entry) => entry.entryId)).toEqual([
+            "2026年3月26日（v1.0.8）",
+            "2026年3月25日（v1.0.7）",
+        ]);
+
+        initializePatchNotesState({
+            entries: zhEntries,
+            storage,
+        });
+
+        expect(getUnreadPatchNoteEntries({
+            entries: enEntries,
+            storage,
+        })).toEqual([]);
     });
 
     it("marks unread entries as read without dropping older read ids", () => {

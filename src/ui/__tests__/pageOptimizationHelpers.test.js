@@ -99,4 +99,19 @@ describe("pageOptimizationHelpers", () => {
             },
         ]);
     });
+
+    it("preserves legacy trinket metadata for combat preview consumers", () => {
+        const player = createEmptyPlayerConfig("1");
+        player.equipment.trinket = {
+            itemHrid: "/items/expert_task_badge",
+            enhancementLevel: 3,
+        };
+
+        const previewConfig = createCombatPreviewPlayerConfig(player);
+
+        expect(previewConfig.equipment.trinket).toEqual({
+            itemHrid: "/items/expert_task_badge",
+            enhancementLevel: 3,
+        });
+    });
 });

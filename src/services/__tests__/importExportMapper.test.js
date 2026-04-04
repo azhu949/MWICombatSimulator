@@ -277,7 +277,7 @@ describe("importExportMapper", () => {
         expect(result.player.equipment.weapon.itemHrid).toBe("/items/blazing_trident");
     });
 
-    it("ignores legacy trinket item locations for combat simulator imports", () => {
+    it("preserves legacy trinket item locations for preview-only task badge highlights", () => {
         const fallbackPlayer = createEmptyPlayerConfig(1);
         const legacyPayload = {
             player: {
@@ -294,8 +294,32 @@ describe("importExportMapper", () => {
         const result = importSoloConfig(JSON.stringify(legacyPayload), fallbackPlayer, createSimulationSettings());
 
         expect(result.detectedFormat).toBe("legacy-solo");
-        expect(result.player.equipment.trinket).toBeUndefined();
-        expect(Object.values(result.player.equipment).some((entry) => entry?.itemHrid === "/items/basic_task_badge")).toBe(false);
+        expect(result.player.equipment.trinket).toEqual({
+            itemHrid: "/items/basic_task_badge",
+            enhancementLevel: 2,
+        });
+    });
+
+    it("clears fallback preview-only trinkets when a legacy import omits them", () => {
+        const fallbackPlayer = createEmptyPlayerConfig(1);
+        fallbackPlayer.equipment.trinket = {
+            itemHrid: "/items/expert_task_badge",
+            enhancementLevel: 4,
+        };
+
+        const legacyPayload = {
+            player: {
+                equipment: [],
+            },
+        };
+
+        const result = importSoloConfig(JSON.stringify(legacyPayload), fallbackPlayer, createSimulationSettings());
+
+        expect(result.detectedFormat).toBe("legacy-solo");
+        expect(result.player.equipment.trinket).toEqual({
+            itemHrid: "",
+            enhancementLevel: 0,
+        });
     });
 
     it("imports modern player-only payload", () => {
@@ -306,6 +330,24 @@ describe("importExportMapper", () => {
         expect(result.detectedFormat).toBe("modern-player-only");
         expect(result.player.levels.attack).toBe(33);
         expect(result.simulationSettings.zoneHrid).toBe(createSimulationSettings().zoneHrid);
+    });
+
+    it("clears fallback preview-only trinkets when a modern player-only import omits them", () => {
+        const fallbackPlayer = createEmptyPlayerConfig(2);
+        fallbackPlayer.equipment.trinket = {
+            itemHrid: "/items/expert_task_badge",
+            enhancementLevel: 4,
+        };
+
+        const importedPlayer = createConfiguredPlayer(2);
+
+        const result = importSoloConfig(JSON.stringify(importedPlayer), fallbackPlayer, createSimulationSettings());
+
+        expect(result.detectedFormat).toBe("modern-player-only");
+        expect(result.player.equipment.trinket).toEqual({
+            itemHrid: "",
+            enhancementLevel: 0,
+        });
     });
 
     it("imports main-site share profile payload", () => {
@@ -469,6 +511,47 @@ describe("importExportMapper", () => {
         expect(result.player.achievements["/achievements/current_fixture"]).toBe(true);
         expect(result.simulationSettings.zoneHrid).toBe(zoneActionHrid);
         expect(result.simulationSettings.difficultyTier).toBe(2);
+    });
+
+    it("preserves main-site current character trinkets for homepage preview data", () => {
+        const fallbackPlayer = createEmptyPlayerConfig(12);
+        const fixture = createMainSiteCurrentCharacterFixture({
+            characterItems: [
+                {
+                    itemLocationHrid: "/item_locations/trinket",
+                    itemHrid: "/items/expert_task_badge",
+                    enhancementLevel: 4,
+                },
+            ],
+        });
+
+        const result = importSoloConfig(JSON.stringify(fixture), fallbackPlayer, createSimulationSettings());
+
+        expect(result.detectedFormat).toBe("main-site-current-character");
+        expect(result.player.equipment.trinket).toEqual({
+            itemHrid: "/items/expert_task_badge",
+            enhancementLevel: 4,
+        });
+    });
+
+    it("clears fallback preview-only trinkets when current-character imports omit them", () => {
+        const fallbackPlayer = createEmptyPlayerConfig(12);
+        fallbackPlayer.equipment.trinket = {
+            itemHrid: "/items/expert_task_badge",
+            enhancementLevel: 4,
+        };
+
+        const fixture = createMainSiteCurrentCharacterFixture({
+            characterItems: [],
+        });
+
+        const result = importSoloConfig(JSON.stringify(fixture), fallbackPlayer, createSimulationSettings());
+
+        expect(result.detectedFormat).toBe("main-site-current-character");
+        expect(result.player.equipment.trinket).toEqual({
+            itemHrid: "",
+            enhancementLevel: 0,
+        });
     });
 
     it("imports shareable profile food and drinks from combatConsumables arrays in cached profiles", () => {

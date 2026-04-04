@@ -1,50 +1,156 @@
 {
-    "2026年4月2日（v1.0.12）":
-    [
-        "队列多轮模拟现已支持将食物、饮料与技能的触发器修改加入队列，方便批量比较不同触发方案的收益与表现",
-        "队列项名称与详情中的触发器状态展示同步优化，默认、禁用、自定义之间的前后变化提示更准确"
-    ],
-    "2026年3月30日（v1.0.11）":
-    [
-        "首页迷宫区域下拉框改为走 i18n 显示，中文环境下迷宫名称不再直接显示原始英文名",
-        "迷宫箱子区域补齐咖啡箱、食物箱与茶叶箱三类下拉框，茶叶箱现在提供基础/进阶/专家三档可选数据",
-        "“补给箱”文案调整为更明确的箱子区域展示，并补充茶叶箱相关中英文翻译词条"
-    ],
-    "2026年3月30日（v1.0.10）":
-    [
-        "主入口改为读取预生成的轻量游戏数据索引，首页、队列页、多轮结果页与设置页减少大体积数据直载，首次加载压力更低",
-        "首页战斗预览与设置页价格表等热点区域减少重复重算，频繁切换角色、调整配置或浏览价格时交互更流畅",
-        "Home 页批量 Zone / Labyrinth 模拟现在会正确沿用设置页保存的并行 worker 上限，刷新后再次运行也不会丢失该配置",
-        "补充优化路线与行为说明，便于后续跟踪性能调整与并行模拟配置"
-    ],
-    "2026年3月27日（v1.0.9）":
-    [
-        "队列收益模拟支持多人场景：设为基准时会冻结当前已选队伍，并在队列运行时带上队友一起参与模拟",
-        "队列变体仍只针对当前玩家生成与排序，避免多人组队时把队友收益错误叠加到当前玩家结果中",
-        "当队伍成员或队友配置在基准之后发生变化时，队列会提示重新设置基准，防止旧基准与新队伍混用",
-        "队列页、多轮结果页、设置页和顶部操作区新增“冻结队伍”摘要与过期提示，方便确认当前模拟口径"
-    ],
-    "2026年3月27日（v1.0.8）":
-    [
-        "更新日志改为仅维护在 patchNote.json 中，首页弹窗与后续版本说明统一共用这一份数据源",
-        "移除设置页中的更新日志区域，入口调整为顶部悬浮栏按钮手动打开",
-        "首页更新日志不再自动弹出；存在未读版本时，顶部按钮会高亮闪烁提醒",
-        "首次切换到新未读机制时，历史更新日志默认标记为已读，避免旧版本持续闪烁"
-    ],
-    "2026年3月25日（v1.0.7）":
-    [
-        "新增版本更新公告功能：支持按公告 ID 记录已读，并将多条未读版本说明合并弹窗展示",
-        "公告支持中英文内容、顶部聚焦与独立滚动查看，长内容阅读更稳定",
-        "同一版本公告仅提醒一次；后续新版本发布后会自动补发未读内容",
-        "修复混合有/无日期公告时的排序问题，保证多版本公告展示顺序稳定"
-    ],
-    "2026年3月25日（v1.0.6）":
-    [
-        "主站导入脚本完成合规性整改：导入流程调整为“当前角色直导 + 手动缓存队友资料补全”",
-        "脚本不会主动调用游戏 HTTP API，也不会自动发送 view_profile 或自动操作玩家资料弹窗",
-        "队伍导入仅使用你手动打开并缓存过的队友资料，缺失成员会跳过并提示",
-        "补充主站导入脚本的使用方式、限制说明与隐私说明"
-    ],
+    "2026年4月5日（v1.0.13）": {
+        "label": {
+            "zh": "2026年4月5日（v1.0.13）",
+            "en": "April 5, 2026 (v1.0.13)"
+        },
+        "notes": {
+            "zh": [
+                "首页“战斗属性”预览现在会按当前地图或迷宫上下文计算，并同步计入房屋常驻加成、MooPass、社区经验/掉落 Buff 与迷宫箱子效果，展示结果更接近真实开战状态。",
+                "食物、饮料、技能与任务徽章现在会在战斗属性面板中标出各自带来的属性变化；饮料与技能高亮会按触发条件、开场顺序和目标敌人重新计算，避免显示实际不会生效的增益链。",
+                "兼容保留旧版导入与主站导入中的任务徽章数据，用于首页预览任务伤害加成；该预览数据不会写入正式战斗模拟装备，避免展示专用效果误入实战模拟。"
+            ],
+            "en": [
+                "The Home \"Battle Attributes\" preview now evaluates stats in the active zone or labyrinth context, including housing permanent bonuses, MooPass, community XP/drop buffs, and labyrinth crate effects, so the panel better matches real combat start state.",
+                "Foods, drinks, abilities, and task badges now show per-source stat deltas in the Battle Attributes panel. Drink and ability highlights are recalculated from effective trigger state, opener order, and targeted enemies so inactive buff chains are no longer shown as active.",
+                "Legacy and main-site imports now preserve task badge data for Home preview-only task damage highlights, without carrying those preview-only items into actual combat simulation loadouts."
+            ]
+        }
+    },
+    "2026年4月2日（v1.0.12）": {
+        "label": {
+            "zh": "2026年4月2日（v1.0.12）",
+            "en": "April 2, 2026 (v1.0.12)"
+        },
+        "notes": {
+            "zh": [
+                "队列多轮模拟现已支持将食物、饮料与技能的触发器修改加入队列，方便批量比较不同触发方案的收益与表现",
+                "队列项名称与详情中的触发器状态展示同步优化，默认、禁用、自定义之间的前后变化提示更准确"
+            ],
+            "en": [
+                "Queue multi-round simulations now support adding food, drink, and ability trigger changes into queue items, making it easier to batch-compare the returns and performance of different trigger setups.",
+                "Queue item names and trigger-state details have been refined together, with more accurate before/after hints across default, disabled, and custom states."
+            ]
+        }
+    },
+    "2026年3月30日（v1.0.11）": {
+        "label": {
+            "zh": "2026年3月30日（v1.0.11）",
+            "en": "March 30, 2026 (v1.0.11)"
+        },
+        "notes": {
+            "zh": [
+                "首页迷宫区域下拉框改为走 i18n 显示，中文环境下迷宫名称不再直接显示原始英文名",
+                "迷宫箱子区域补齐咖啡箱、食物箱与茶叶箱三类下拉框，茶叶箱现在提供基础/进阶/专家三档可选数据",
+                "“补给箱”文案调整为更明确的箱子区域展示，并补充茶叶箱相关中英文翻译词条"
+            ],
+            "en": [
+                "The Home labyrinth selector now uses i18n labels, so labyrinth names no longer show as raw English in Chinese.",
+                "The labyrinth crate section now includes coffee, food, and tea crate dropdowns, with basic, advanced, and expert tea crate options.",
+                "The \"Supply Crate\" wording has been adjusted to clearer crate-area copy, and tea-crate related Chinese and English translations have been added."
+            ]
+        }
+    },
+    "2026年3月30日（v1.0.10）": {
+        "label": {
+            "zh": "2026年3月30日（v1.0.10）",
+            "en": "March 30, 2026 (v1.0.10)"
+        },
+        "notes": {
+            "zh": [
+                "主入口改为读取预生成的轻量游戏数据索引，首页、队列页、多轮结果页与设置页减少大体积数据直载，首次加载压力更低",
+                "首页战斗预览与设置页价格表等热点区域减少重复重算，频繁切换角色、调整配置或浏览价格时交互更流畅",
+                "Home 页批量 Zone / Labyrinth 模拟现在会正确沿用设置页保存的并行 worker 上限，刷新后再次运行也不会丢失该配置",
+                "补充优化路线与行为说明，便于后续跟踪性能调整与并行模拟配置"
+            ],
+            "en": [
+                "The main entry now loads a prebuilt lightweight game data index, reducing heavy direct data loads on Home, Queue, Multi-round Results, and Settings for a lighter first load.",
+                "Hot paths such as Home combat preview and Settings price tables now avoid repeated recomputation, making frequent character switches, config edits, and price browsing smoother.",
+                "Batch Zone / Labyrinth simulations on the Home page now correctly reuse the worker limit saved in Settings, and the setting no longer disappears after refresh.",
+                "Added optimization notes and behavior documentation to make future performance tuning and parallel simulation changes easier to track."
+            ]
+        }
+    },
+    "2026年3月27日（v1.0.9）": {
+        "label": {
+            "zh": "2026年3月27日（v1.0.9）",
+            "en": "March 27, 2026 (v1.0.9)"
+        },
+        "notes": {
+            "zh": [
+                "队列收益模拟支持多人场景：设为基准时会冻结当前已选队伍，并在队列运行时带上队友一起参与模拟",
+                "队列变体仍只针对当前玩家生成与排序，避免多人组队时把队友收益错误叠加到当前玩家结果中",
+                "当队伍成员或队友配置在基准之后发生变化时，队列会提示重新设置基准，防止旧基准与新队伍混用",
+                "队列页、多轮结果页、设置页和顶部操作区新增“冻结队伍”摘要与过期提示，方便确认当前模拟口径"
+            ],
+            "en": [
+                "Queue profit simulations now support party play: setting a baseline freezes the currently selected party and includes teammates during queue runs.",
+                "Queue variants are still generated and ranked only for the active player, preventing teammate gains from being incorrectly folded into the active player's comparison.",
+                "When party members or teammate configs change after the baseline is set, the queue now prompts you to reset the baseline so old baselines are not mixed with a new party.",
+                "Queue, Multi-round Results, Settings, and the top action bar now show a \"locked party\" summary and stale warning so you can confirm the current simulation scope."
+            ]
+        }
+    },
+    "2026年3月27日（v1.0.8）": {
+        "label": {
+            "zh": "2026年3月27日（v1.0.8）",
+            "en": "March 27, 2026 (v1.0.8)"
+        },
+        "notes": {
+            "zh": [
+                "更新日志改为仅维护在 patchNote.json 中，首页弹窗与后续版本说明统一共用这一份数据源",
+                "移除设置页中的更新日志区域，入口调整为顶部悬浮栏按钮手动打开",
+                "首页更新日志不再自动弹出；存在未读版本时，顶部按钮会高亮闪烁提醒",
+                "首次切换到新未读机制时，历史更新日志默认标记为已读，避免旧版本持续闪烁"
+            ],
+            "en": [
+                "Patch notes are now maintained only in patchNote.json, and both the Home dialog and future version announcements share the same data source.",
+                "The patch notes section has been removed from Settings, and the entry is now opened manually from the top floating bar button.",
+                "Home patch notes no longer open automatically; when unread versions exist, the top button now highlights and flashes as a reminder.",
+                "When migrating to the new unread mechanism, historical patch notes are marked as read by default so old versions do not keep flashing."
+            ]
+        }
+    },
+    "2026年3月25日（v1.0.7）": {
+        "label": {
+            "zh": "2026年3月25日（v1.0.7）",
+            "en": "March 25, 2026 (v1.0.7)"
+        },
+        "notes": {
+            "zh": [
+                "新增版本更新公告功能：支持按公告 ID 记录已读，并将多条未读版本说明合并弹窗展示",
+                "公告支持中英文内容、顶部聚焦与独立滚动查看，长内容阅读更稳定",
+                "同一版本公告仅提醒一次；后续新版本发布后会自动补发未读内容",
+                "修复混合有/无日期公告时的排序问题，保证多版本公告展示顺序稳定"
+            ],
+            "en": [
+                "Added version announcement support: announcements can track read state by announcement ID and merge multiple unread versions into a single dialog.",
+                "Announcements now support Chinese and English content, top-focused layout, and independent scrolling for more stable reading of long content.",
+                "Each version announcement is only reminded once; newly released versions will automatically deliver any unread content later.",
+                "Fixed ordering when announcements with and without dates are mixed, keeping multi-version announcement order stable."
+            ]
+        }
+    },
+    "2026年3月25日（v1.0.6）": {
+        "label": {
+            "zh": "2026年3月25日（v1.0.6）",
+            "en": "March 25, 2026 (v1.0.6)"
+        },
+        "notes": {
+            "zh": [
+                "主站导入脚本完成合规性整改：导入流程调整为“当前角色直导 + 手动缓存队友资料补全”",
+                "脚本不会主动调用游戏 HTTP API，也不会自动发送 view_profile 或自动操作玩家资料弹窗",
+                "队伍导入仅使用你手动打开并缓存过的队友资料，缺失成员会跳过并提示",
+                "补充主站导入脚本的使用方式、限制说明与隐私说明"
+            ],
+            "en": [
+                "The main-site import script has completed compliance adjustments: the import flow is now \"direct current character import + manual cached teammate profile completion\".",
+                "The script no longer actively calls game HTTP APIs, automatically sends view_profile, or auto-operates player profile dialogs.",
+                "Party import now uses only teammate profiles that you have manually opened and cached; missing members are skipped with a prompt.",
+                "Added usage instructions, limitations, and privacy notes for the main-site import script."
+            ]
+        }
+    },
     "2026年2月27日":
     [
         "多轮评分去极值、评分排名支持无效 0 分标记",

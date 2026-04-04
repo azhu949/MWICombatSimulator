@@ -11,6 +11,10 @@ function normalizeEntryId(value) {
     return normalizePatchNoteText(value);
 }
 
+function normalizePatchNoteLanguage(value) {
+    return normalizePatchNoteText(value).toLowerCase() === "en" ? "en" : "zh";
+}
+
 function normalizeEntryIdList(values) {
     if (!Array.isArray(values)) {
         return [];
@@ -71,12 +75,80 @@ function normalizePatchNoteEntries(entries) {
         .filter((entry) => entry.entryId);
 }
 
-function resolveEntries(entriesOrPatchNotes) {
+function resolveLocalizedPatchNoteText(value, language, fallbackValue = "") {
+    if (typeof value === "string") {
+        return normalizePatchNoteText(value);
+    }
+
+    if (!value || typeof value !== "object" || Array.isArray(value)) {
+        return normalizePatchNoteText(fallbackValue);
+    }
+
+    const normalizedLanguage = normalizePatchNoteLanguage(language);
+    const localizedValue = normalizePatchNoteText(value[normalizedLanguage]);
+    if (localizedValue) {
+        return localizedValue;
+    }
+
+    const zhFallback = normalizePatchNoteText(value.zh);
+    if (zhFallback) {
+        return zhFallback;
+    }
+
+    for (const candidate of Object.values(value)) {
+        const normalized = normalizePatchNoteText(candidate);
+        if (normalized) {
+            return normalized;
+        }
+    }
+
+    return normalizePatchNoteText(fallbackValue);
+}
+
+function normalizePatchNoteList(value) {
+    if (!Array.isArray(value)) {
+        return [];
+    }
+
+    return value.map((note) => normalizePatchNoteText(note)).filter(Boolean);
+}
+
+function resolveLocalizedPatchNoteList(value, language) {
+    if (Array.isArray(value)) {
+        return normalizePatchNoteList(value);
+    }
+
+    if (!value || typeof value !== "object") {
+        return [];
+    }
+
+    const normalizedLanguage = normalizePatchNoteLanguage(language);
+    const localizedList = normalizePatchNoteList(value[normalizedLanguage]);
+    if (localizedList.length > 0) {
+        return localizedList;
+    }
+
+    const zhFallback = normalizePatchNoteList(value.zh);
+    if (zhFallback.length > 0) {
+        return zhFallback;
+    }
+
+    for (const candidate of Object.values(value)) {
+        const normalizedList = normalizePatchNoteList(candidate);
+        if (normalizedList.length > 0) {
+            return normalizedList;
+        }
+    }
+
+    return [];
+}
+
+function resolveEntries(entriesOrPatchNotes, language = "zh") {
     if (Array.isArray(entriesOrPatchNotes)) {
         return normalizePatchNoteEntries(entriesOrPatchNotes);
     }
 
-    return resolvePatchNoteEntries(entriesOrPatchNotes);
+    return resolvePatchNoteEntries(entriesOrPatchNotes, language);
 }
 
 function parseStoredPatchNotesState(storage) {
@@ -136,21 +208,26 @@ function persistPatchNotesState(storage, state) {
     }
 }
 
-export function resolvePatchNoteEntries(patchNotes = patchNote) {
+export function resolvePatchNoteEntries(patchNotes = patchNote, language = "zh") {
     if (!patchNotes || typeof patchNotes !== "object" || Array.isArray(patchNotes)) {
         return [];
     }
 
-    return Object.entries(patchNotes).map(([label, notes]) => ({
-        entryId: normalizeEntryId(label),
-        label: normalizePatchNoteText(label),
-        notes: Array.isArray(notes)
-            ? notes.map((note) => normalizePatchNoteText(note)).filter(Boolean)
-            : [],
-    }));
+    const normalizedLanguage = normalizePatchNoteLanguage(language);
+    return Object.entries(patchNotes).map(([entryId, patchNoteValue]) => {
+        const isLegacyEntry = Array.isArray(patchNoteValue);
+        const rawLabel = isLegacyEntry ? entryId : patchNoteValue?.label;
+        const rawNotes = isLegacyEntry ? patchNoteValue : patchNoteValue?.notes;
+
+        return {
+            entryId: normalizeEntryId(entryId),
+            label: resolveLocalizedPatchNoteText(rawLabel, normalizedLanguage, entryId),
+            notes: resolveLocalizedPatchNoteList(rawNotes, normalizedLanguage),
+        };
+    });
 }
 
-export const patchNoteEntries = Object.freeze(resolvePatchNoteEntries());
+export const patchNoteEntries = Object.freeze(resolvePatchNoteEntries(patchNote, "zh"));
 
 export function readPatchNotesState(storage) {
     return parseStoredPatchNotesState(storage).state;

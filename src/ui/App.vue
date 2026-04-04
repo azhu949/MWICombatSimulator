@@ -361,7 +361,7 @@ import {
   getUnreadPatchNoteEntries,
   initializePatchNotesState,
   markPatchNoteEntriesAsRead,
-  patchNoteEntries,
+  resolvePatchNoteEntries,
 } from "./patchNotes.js";
 import { deriveQueueItemStatusName } from "./queueItemStatusPresentation.js";
 
@@ -456,12 +456,12 @@ const topQueueActionStatusClass = computed(() => {
   }
   return "text-slate-300";
 });
-const patchNotesEntries = patchNoteEntries;
+const patchNotesEntries = computed(() => resolvePatchNoteEntries(undefined, language.value));
 const patchNotesUnreadCount = computed(() => patchNotesUnreadEntries.value.length);
 const hasUnreadPatchNotes = computed(() => patchNotesUnreadCount.value > 0);
 const patchNotesDefaultOpenEntryId = computed(() => (
   patchNotesUnreadEntries.value[0]?.entryId
-  || patchNotesEntries[0]?.entryId
+  || patchNotesEntries.value[0]?.entryId
   || ""
 ));
 const patchNotesButtonAriaLabel = computed(() => (
@@ -736,7 +736,7 @@ function closeQueueCompleteModal() {
 
 function refreshPatchNoteUnreadEntries() {
   patchNotesUnreadEntries.value = getUnreadPatchNoteEntries({
-    entries: patchNotesEntries,
+    entries: patchNotesEntries.value,
   });
 }
 
@@ -824,7 +824,7 @@ onMounted(() => {
   const savedTheme = normalizeTheme(localStorage.getItem(THEME_STORAGE_KEY));
   applyTheme(savedTheme);
   initializePatchNotesState({
-    entries: patchNotesEntries,
+    entries: patchNotesEntries.value,
   });
   refreshPatchNoteUnreadEntries();
   scheduleDeferredInitialization();
@@ -837,6 +837,13 @@ onUnmounted(() => {
   window.removeEventListener("error", onWindowError);
   window.removeEventListener("unhandledrejection", onUnhandledRejection);
 });
+
+watch(
+  () => language.value,
+  () => {
+    refreshPatchNoteUnreadEntries();
+  },
+);
 
 async function switchLanguage(nextLanguage) {
   await setLanguage(nextLanguage);

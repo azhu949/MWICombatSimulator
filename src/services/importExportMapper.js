@@ -17,6 +17,13 @@ const WEAPON_ITEM_LOCATION_HRIDS = new Set([
     "/item_locations/main_hand",
     "/item_locations/two_hand",
 ]);
+const PREVIEW_ONLY_EQUIPMENT_SLOTS = new Set([
+    "trinket",
+]);
+const IMPORTABLE_EQUIPMENT_SLOTS = [
+    ...EQUIPMENT_SLOT_KEYS,
+    ...Array.from(PREVIEW_ONLY_EQUIPMENT_SLOTS),
+];
 
 const LEGACY_ABILITY_ALIAS_MAP = {
     "/abilities/aqua_aura": "/abilities/mystic_aura",
@@ -64,6 +71,9 @@ function resolveEquipmentSlotFromItemLocationHrid(itemLocationHrid) {
     }
 
     const slot = normalizedHrid.slice(ITEM_LOCATION_HRID_PREFIX.length);
+    if (PREVIEW_ONLY_EQUIPMENT_SLOTS.has(slot)) {
+        return slot;
+    }
     return NON_WEAPON_SLOTS.includes(slot) ? slot : "";
 }
 
@@ -150,7 +160,7 @@ function sanitizePlayerConfig(raw, fallbackPlayer) {
             : null;
     }
 
-    for (const slot of EQUIPMENT_SLOT_KEYS) {
+    for (const slot of IMPORTABLE_EQUIPMENT_SLOTS) {
         const sourceSlot = source.equipment?.[slot] ?? {};
         normalized.equipment[slot] = {
             itemHrid: String(sourceSlot.itemHrid || ""),
@@ -204,7 +214,7 @@ function applyLegacySoloToPlayer(legacySoloPayload, fallbackPlayer) {
     }
 
     const equipmentEntries = Array.isArray(payload.player?.equipment) ? payload.player.equipment : [];
-    for (const slot of EQUIPMENT_SLOT_KEYS) {
+    for (const slot of IMPORTABLE_EQUIPMENT_SLOTS) {
         merged.equipment[slot] = {
             itemHrid: "",
             enhancementLevel: 0,
@@ -591,7 +601,7 @@ function extractCurrentCharacterConsumableHrids(actionTypeMap) {
 
 function extractCurrentCharacterEquipment(parsed, fallbackPlayer) {
     const equipment = deepClone(fallbackPlayer?.equipment || {});
-    for (const slot of EQUIPMENT_SLOT_KEYS) {
+    for (const slot of IMPORTABLE_EQUIPMENT_SLOTS) {
         equipment[slot] = {
             itemHrid: "",
             enhancementLevel: 0,

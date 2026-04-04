@@ -14,4 +14,11 @@ describe("HomePage labyrinth selectors", () => {
         expect(homePageSource).toContain("simulator.options.labyrinthCrates.tea");
         expect(homePageSource).toContain("simulator.setLabyrinthCrate('tea', $event.target.value)");
     });
+
+    it("passes labyrinth preview context into combat preview data", () => {
+        expect(homePageSource).toContain('mode: "labyrinth"');
+        expect(homePageSource).toContain("labyrinthHrid");
+        expect(homePageSource).toContain("roomLevel: Math.max(20, Number(simulator.simulationSettings.roomLevel || 100))");
+        expect(homePageSource).toContain("crates: simulator.getActiveLabyrinthCrates()");
+    });
 });
