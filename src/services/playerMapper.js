@@ -1208,10 +1208,12 @@ function runCombatPreviewDeterministicAbilityUse(previewState, previewAbility) {
     previewState.player.combatDetails.combatStats.bloom = 0;
     previewState.player.combatDetails.combatStats.ripple = 0;
     previewAbility?.abilityEffects?.forEach((effect) => {
+        const originalPierceChance = Number(effect?.pierceChance || 0);
+
         effect.stunChance = 0;
         effect.blindChance = 0;
         effect.silenceChance = 0;
-        effect.pierceChance = 0;
+        effect.pierceChance = originalPierceChance >= 1 - COMBAT_PREVIEW_EPSILON ? 1 : 0;
     });
 
     try {

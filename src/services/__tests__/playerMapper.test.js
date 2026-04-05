@@ -554,6 +554,80 @@ describe("playerMapper", () => {
         expect(previewAbilityHrids).not.toContain("/abilities/elemental_affinity");
     });
 
+    it("keeps guaranteed pierce chains when evaluating all-enemies missing-hp triggers", () => {
+        const player = createEmptyPlayerConfig(1);
+        const previewContext = {
+            zoneHrid: "/actions/combat/aqua_planet",
+            difficultyTier: 0,
+        };
+
+        player.levels.attack = 40;
+        player.levels.melee = 40;
+        player.levels.ranged = 40;
+        player.levels.intelligence = 400;
+        player.levels.magic = 400;
+        player.equipment.weapon = { itemHrid: "/items/cursed_bow_refined", enhancementLevel: 10 };
+        player.abilities[0] = { abilityHrid: "/abilities/penetrating_shot", level: 80 };
+        player.abilities[1] = { abilityHrid: "/abilities/elemental_affinity", level: 80 };
+        const initialManapoints = buildPlayersForCombatPreview([player], null, previewContext)[0].combatDetails.currentManapoints;
+        player.triggerMap["/abilities/penetrating_shot"] = [{
+            dependencyHrid: "/combat_trigger_dependencies/self",
+            conditionHrid: "/combat_trigger_conditions/current_mp",
+            comparatorHrid: "/combat_trigger_comparators/greater_than_equal",
+            value: initialManapoints,
+        }];
+        player.triggerMap["/abilities/elemental_affinity"] = [{
+            dependencyHrid: "/combat_trigger_dependencies/all_enemies",
+            conditionHrid: "/combat_trigger_conditions/missing_hp",
+            comparatorHrid: "/combat_trigger_comparators/greater_than_equal",
+            value: 500,
+        }];
+
+        const previewData = buildCombatPreviewData(player, null, previewContext);
+        const previewAbilityHrids = previewData.highlightSources
+            .filter((source) => source.sourceType === "ability")
+            .map((source) => source.sourceHrid);
+
+        expect(previewAbilityHrids).toContain("/abilities/elemental_affinity");
+    });
+
+    it("does not unlock all-enemies missing-hp triggers from a non-piercing opener", () => {
+        const player = createEmptyPlayerConfig(1);
+        const previewContext = {
+            zoneHrid: "/actions/combat/aqua_planet",
+            difficultyTier: 0,
+        };
+
+        player.levels.attack = 40;
+        player.levels.melee = 40;
+        player.levels.ranged = 40;
+        player.levels.intelligence = 400;
+        player.levels.magic = 400;
+        player.equipment.weapon = { itemHrid: "/items/cursed_bow_refined", enhancementLevel: 10 };
+        player.abilities[0] = { abilityHrid: "/abilities/scratch", level: 1 };
+        player.abilities[1] = { abilityHrid: "/abilities/elemental_affinity", level: 80 };
+        const initialManapoints = buildPlayersForCombatPreview([player], null, previewContext)[0].combatDetails.currentManapoints;
+        player.triggerMap["/abilities/scratch"] = [{
+            dependencyHrid: "/combat_trigger_dependencies/self",
+            conditionHrid: "/combat_trigger_conditions/current_mp",
+            comparatorHrid: "/combat_trigger_comparators/greater_than_equal",
+            value: initialManapoints,
+        }];
+        player.triggerMap["/abilities/elemental_affinity"] = [{
+            dependencyHrid: "/combat_trigger_dependencies/all_enemies",
+            conditionHrid: "/combat_trigger_conditions/missing_hp",
+            comparatorHrid: "/combat_trigger_comparators/greater_than_equal",
+            value: 500,
+        }];
+
+        const previewData = buildCombatPreviewData(player, null, previewContext);
+        const previewAbilityHrids = previewData.highlightSources
+            .filter((source) => source.sourceType === "ability")
+            .map((source) => source.sourceHrid);
+
+        expect(previewAbilityHrids).not.toContain("/abilities/elemental_affinity");
+    });
+
     it("re-runs food triggers after ability casts before previewing later buffs", () => {
         const player = createEmptyPlayerConfig(1);
 
