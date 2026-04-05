@@ -231,6 +231,7 @@ import {
 } from "../../shared/gameDataIndex.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { useAbilityText } from "../composables/useAbilityText.js";
+import { useGameDataText } from "../composables/useGameDataText.js";
 import { useI18nText } from "../composables/useI18nText.js";
 import { isQueueRunInProgress } from "../multiResultsPresentation.js";
 import { formatQueueTriggerDetailLine } from "../queueTriggerPresentation.js";
@@ -238,6 +239,7 @@ import { formatQueueTriggerDetailLine } from "../queueTriggerPresentation.js";
 const simulator = useSimulatorStore();
 const { t, language } = useI18nText();
 const { getAbilityName } = useAbilityText();
+const { getSkillName } = useGameDataText();
 const ABILITY_BOOK_CATEGORY_HRID = "/item_categories/ability_book";
 const ONE_HOUR = 60 * 60 * 1e9;
 const RANKING_ROWS_LIMIT = 300;
@@ -582,11 +584,11 @@ function resolveTriggerTargetName(targetHrid) {
 }
 
 function formatSkillName(skillKey) {
-  const normalized = String(skillKey || "").toLowerCase();
-  if (!normalized) {
+  const raw = String(skillKey || "").trim();
+  if (!raw) {
     return "";
   }
-  return t(`skillNames./skills/${normalized}`, normalized);
+  return getSkillName(raw, raw);
 }
 
 function localizeEquipmentSlotLabel(slotKey) {

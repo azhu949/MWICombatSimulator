@@ -100,6 +100,7 @@ import { EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../../shared/playerConfig.js";
 import { buildTriggerChangeDescriptor, getComparableTriggerTargetHrids } from "../../services/triggerMapper.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { useAbilityText } from "../composables/useAbilityText.js";
+import { useGameDataText } from "../composables/useGameDataText.js";
 import { useI18nText } from "../composables/useI18nText.js";
 import {
   buildTriggerChangeLabel,
@@ -111,6 +112,7 @@ import {
 const simulator = useSimulatorStore();
 const { t } = useI18nText();
 const { getAbilityName } = useAbilityText();
+const { getSkillName } = useGameDataText();
 const ONE_HOUR = 60 * 60 * 1e9;
 const ABILITY_BOOK_CATEGORY_HRID = "/item_categories/ability_book";
 const SLOT_I18N_KEY_MAP = {
@@ -578,8 +580,7 @@ function localizeQueueChangeLabel(change) {
   const category = String(change?.category || "");
   const label = String(change?.label || "");
   if (category === "profession") {
-    const skillKey = label.toLowerCase();
-    return t(`skillNames./skills/${skillKey}`, label || skillKey);
+    return getSkillName(label, label);
   }
   if (category === "item") {
     return localizeEquipmentSlotLabel(label);

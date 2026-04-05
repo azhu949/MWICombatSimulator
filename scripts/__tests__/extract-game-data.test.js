@@ -25,6 +25,12 @@ const BASE_CLIENT_DATA = {
             name: "Test Action",
         },
     },
+    buffTypeDetailMap: {
+        "/buff_types/wisdom": {
+            hrid: "/buff_types/wisdom",
+            name: "Test Buff Type",
+        },
+    },
     combatMonsterDetailMap: {
         "/combat_monsters/test": {
             hrid: "/combat_monsters/test",
@@ -112,6 +118,13 @@ const BASE_CLIENT_DATA = {
             name: "Test Room",
         },
     },
+    itemCategoryDetailMap: {
+        "/item_categories/equipment": {
+            hrid: "/item_categories/equipment",
+            name: "Test Item Category",
+            pluralName: "Test Item Categories",
+        },
+    },
     itemLocationDetailMap: {
         "/item_locations/test": {
             hrid: "/item_locations/test",
@@ -132,6 +145,12 @@ const BASE_CLIENT_DATA = {
             name: "Test Crate",
         },
     },
+    skillDetailMap: {
+        "/skills/attack": {
+            hrid: "/skills/attack",
+            name: "Test Skill",
+        },
+    },
     versionTimestamp: 1234567890,
     extraDetailMap: {
         "/extra/test": {
@@ -147,6 +166,7 @@ const EXPECTED_OUTPUT_FILES = [
     "achievementDetailMap.json",
     "achievementTierDetailMap.json",
     "actionDetailMap.json",
+    "buffTypeDetailMap.json",
     "combatMonsterDetailMap.json",
     "combatStyleDetailMap.json",
     "combatTriggerComparatorDetailMap.json",
@@ -157,10 +177,12 @@ const EXPECTED_OUTPUT_FILES = [
     "enhancementLevelTotalBonusMultiplierTable.json",
     "houseRoomDetailMap.json",
     "equipmentTypeDetailMap.json",
+    "itemCategoryDetailMap.json",
     "itemDetailMap.json",
     "itemLocationDetailMap.json",
     "labyrinthCrateDetailMap.json",
     "openableLootDropMap.json",
+    "skillDetailMap.json",
 ].sort();
 
 const EXPECTED_OUTPUT_FILES_WITHOUT_LEVEL_EXPERIENCE_TABLE = EXPECTED_OUTPUT_FILES.filter(
@@ -293,5 +315,77 @@ describe("extract-game-data CLI", () => {
         expect(JSON.parse(fs.readFileSync(staleCommunityBuffPath, "utf8"))).toEqual({});
         expect(output).toContain("Reset 1 optional tracked game-data file to fallback because the payload did not include it:");
         expect(output).toContain("communityBuffTypeDetailMap.json");
+    });
+
+    it("resets runtime label detail maps to empty objects when the payload no longer includes them", () => {
+        const tempDir = createTempDir();
+        const inputPath = path.join(tempDir, "initClientData.json");
+        const outputDir = path.join(tempDir, "maps");
+        const clientDataWithoutRuntimeLabelMaps = { ...BASE_CLIENT_DATA };
+        const staleFilePaths = {
+            buffTypeDetailMap: path.join(outputDir, "buffTypeDetailMap.json"),
+            itemCategoryDetailMap: path.join(outputDir, "itemCategoryDetailMap.json"),
+            skillDetailMap: path.join(outputDir, "skillDetailMap.json"),
+        };
+
+        delete clientDataWithoutRuntimeLabelMaps.buffTypeDetailMap;
+        delete clientDataWithoutRuntimeLabelMaps.itemCategoryDetailMap;
+        delete clientDataWithoutRuntimeLabelMaps.skillDetailMap;
+
+        fs.mkdirSync(outputDir, { recursive: true });
+        fs.writeFileSync(
+            staleFilePaths.buffTypeDetailMap,
+            `${JSON.stringify({
+                "/buff_types/stale": {
+                    hrid: "/buff_types/stale",
+                    name: "Stale Buff Type",
+                },
+            }, null, 2)}\n`,
+            "utf8",
+        );
+        fs.writeFileSync(
+            staleFilePaths.itemCategoryDetailMap,
+            `${JSON.stringify({
+                "/item_categories/stale": {
+                    hrid: "/item_categories/stale",
+                    name: "Stale Item Category",
+                },
+            }, null, 2)}\n`,
+            "utf8",
+        );
+        fs.writeFileSync(
+            staleFilePaths.skillDetailMap,
+            `${JSON.stringify({
+                "/skills/stale": {
+                    hrid: "/skills/stale",
+                    name: "Stale Skill",
+                },
+            }, null, 2)}\n`,
+            "utf8",
+        );
+        fs.writeFileSync(inputPath, `${JSON.stringify(clientDataWithoutRuntimeLabelMaps, null, 2)}\n`, "utf8");
+
+        const output = execFileSync(
+            process.execPath,
+            [
+                SCRIPT_PATH,
+                "--input",
+                inputPath,
+                "--output",
+                outputDir,
+            ],
+            {
+                cwd: path.resolve("."),
+                stdio: "pipe",
+            },
+        ).toString("utf8");
+
+        expect(JSON.parse(fs.readFileSync(staleFilePaths.buffTypeDetailMap, "utf8"))).toEqual({});
+        expect(JSON.parse(fs.readFileSync(staleFilePaths.itemCategoryDetailMap, "utf8"))).toEqual({});
+        expect(JSON.parse(fs.readFileSync(staleFilePaths.skillDetailMap, "utf8"))).toEqual({});
+        expect(output).toContain("Reset 3 optional tracked game-data file to fallback because the payload did not include it:");
+        expect(output).toContain("buffTypeDetailMap.json");
+        expect(output).toContain("itemCategoryDetailMap.json");
+        expect(output).toContain("skillDetailMap.json");
     });
 });

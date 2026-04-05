@@ -468,12 +468,14 @@
 import { computed, reactive, ref, watch } from "vue";
 import { itemDetailIndex as itemDetailMap } from "../../shared/gameDataIndex.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
+import { useGameDataText } from "../composables/useGameDataText.js";
 import { useI18nText } from "../composables/useI18nText.js";
 import { buildStaticPriceCatalog } from "../pageOptimizationHelpers.js";
 import BaseModal from "../components/BaseModal.vue";
 
 const simulator = useSimulatorStore();
 const { t } = useI18nText();
+const { getItemCategoryName } = useGameDataText();
 
 const equipmentSetName = ref("");
 const priceSearchKeyword = ref("");
@@ -563,19 +565,7 @@ function formatPriceCategoryName(categoryHrid, fallbackName = "") {
     return fallback || t("common:vue.settings.priceCategoryUnknown", "Unknown Type");
   }
 
-  const translationKey = `translation:itemCategoryNames.${hrid}`;
-  const fromTranslation = t(translationKey, translationKey);
-  if (fromTranslation !== translationKey) {
-    return fromTranslation;
-  }
-
-  const commonKey = `itemCategoryNames.${hrid}`;
-  const fromCommon = t(commonKey, commonKey);
-  if (fromCommon !== commonKey) {
-    return fromCommon;
-  }
-
-  return fallback || inferCategoryNameFromHrid(hrid);
+  return getItemCategoryName(hrid, fallback || inferCategoryNameFromHrid(hrid));
 }
 
 function formatPriceItemName(itemHrid, fallbackName = "") {

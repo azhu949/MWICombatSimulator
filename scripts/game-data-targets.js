@@ -17,6 +17,7 @@ const DEFAULT_TRACKED_GAME_DATA_FILES = Object.freeze([
     "achievementDetailMap.json",
     "achievementTierDetailMap.json",
     "actionDetailMap.json",
+    "buffTypeDetailMap.json",
     "combatMonsterDetailMap.json",
     "combatStyleDetailMap.json",
     "combatTriggerComparatorDetailMap.json",
@@ -27,14 +28,19 @@ const DEFAULT_TRACKED_GAME_DATA_FILES = Object.freeze([
     "enhancementLevelTotalBonusMultiplierTable.json",
     "equipmentTypeDetailMap.json",
     "houseRoomDetailMap.json",
+    "itemCategoryDetailMap.json",
     "itemDetailMap.json",
     "itemLocationDetailMap.json",
     "labyrinthCrateDetailMap.json",
     "openableLootDropMap.json",
+    "skillDetailMap.json",
 ]);
 
 const OPTIONAL_TRACKED_GAME_DATA_FALLBACKS = Object.freeze({
+    buffTypeDetailMap: Object.freeze({}),
     communityBuffTypeDetailMap: Object.freeze({}),
+    itemCategoryDetailMap: Object.freeze({}),
+    skillDetailMap: Object.freeze({}),
 });
 
 const TRACKED_GAME_DATA_DIR = path.resolve(__dirname, "..", "src", "combatsimulator", "data");

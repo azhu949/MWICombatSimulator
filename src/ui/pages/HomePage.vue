@@ -1091,6 +1091,7 @@ import { buildNoRngProfitBreakdown, buildRandomProfitBreakdown } from "../../ser
 import { calculateSkillUpgradeEta } from "../../services/levelExperience.js";
 import { createCombatPreviewPlayerConfig } from "../pageOptimizationHelpers.js";
 import { useAbilityText } from "../composables/useAbilityText.js";
+import { useGameDataText } from "../composables/useGameDataText.js";
 import { useI18nText } from "../composables/useI18nText.js";
 import BaseModal from "../components/BaseModal.vue";
 import DisclosurePanel from "../components/DisclosurePanel.vue";
@@ -1102,6 +1103,7 @@ const route = useRoute();
 const router = useRouter();
 const { t } = useI18nText();
 const { getAbilityName } = useAbilityText();
+const { getBuffTypeName, getSkillName } = useGameDataText();
 const AsyncSimulationResultsView = defineAsyncComponent(() => import("../components/SimulationResultsView.vue"));
 const TAMPERMONKEY_BRIDGE_CHANNEL = "mwi-tm-bridge";
 const MAIN_SITE_IMPORT_SCRIPT_URL = "https://greasyfork.org/zh-CN/scripts/568613-mwi-combat-simulator-%E4%B8%BB%E7%AB%99%E4%B8%80%E9%94%AE%E5%AF%BC%E5%85%A5";
@@ -1607,7 +1609,7 @@ const achievementTierSections = computed(() => {
 
       const buffTypeHrid = String(tier?.buff?.typeHrid || "");
       const buffTypeName = buffTypeHrid
-        ? t(`buffTypeNames.${buffTypeHrid}`, buffTypeHrid)
+        ? getBuffTypeName(buffTypeHrid, buffTypeHrid)
         : t("common:vue.home.buff", "Buff");
       const buffValueRaw = Number(tier?.buff?.ratioBoost || tier?.buff?.flatBoost || 0);
       const buffPercent = `${(buffValueRaw * 100).toFixed(1).replace(/\\.0$/, "")}%`;
@@ -2206,7 +2208,7 @@ function formatSkillName(skillHrid) {
   if (!hrid) {
     return "-";
   }
-  return t(`skillNames.${hrid}`, hrid);
+  return getSkillName(hrid, hrid);
 }
 
 function formatCombatStyleName(combatStyleHrid, fallbackName = "") {

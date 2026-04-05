@@ -356,6 +356,7 @@ import BaseModal from "./components/BaseModal.vue";
 import DisclosurePanel from "./components/DisclosurePanel.vue";
 import { useSimulatorStore } from "../stores/simulatorStore.js";
 import { useAbilityText } from "./composables/useAbilityText.js";
+import { useGameDataText } from "./composables/useGameDataText.js";
 import { useI18nText } from "./composables/useI18nText.js";
 import {
   getUnreadPatchNoteEntries,
@@ -387,6 +388,7 @@ const topQueueActionStatus = ref({
 });
 const { language, setLanguage, t } = useI18nText();
 const { getAbilityName } = useAbilityText();
+const { getSkillName } = useGameDataText();
 
 const progressLabel = computed(() => {
   const progress = Math.floor(simulator.runtime.progress * 100);
@@ -570,8 +572,8 @@ function localizeHridDisplayName(hrid) {
 }
 
 function localizeQueueSkillName(skillKey) {
-  const normalized = String(skillKey || "").toLowerCase();
-  return t(`skillNames./skills/${normalized}`, skillKey || normalized);
+  const fallback = String(skillKey || "").trim();
+  return getSkillName(skillKey, fallback);
 }
 
 function localizeHouseRoomName(roomHrid) {
