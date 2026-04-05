@@ -18,7 +18,7 @@ function usage() {
     console.log("  --inspect-output, -p");
     console.log("                Optional extra output directory for inspection.");
     console.log("                Writes the same tracked game-data JSON files again (e.g. into tmp/).");
-    console.log("                Missing tracked files are skipped with a warning.");
+    console.log("                Missing tracked files are skipped with a warning; optional fallback-backed files are reset.");
     console.log("  --all         Also write the full resolved init client data JSON.");
     console.log("  --all-output  Optional file path for the full JSON output.");
     console.log("                Default: <input-dir>/<input-name>.full.json");
@@ -188,10 +188,16 @@ function main() {
         );
     }
 
-    const { written, skipped } = writeMapFiles(clientData, outputDir);
+    const { written, reset, skipped } = writeMapFiles(clientData, outputDir);
     console.log(`Wrote ${written.length} files:`);
     for (const filePath of written) {
         console.log(`- ${filePath}`);
+    }
+    if (reset.length > 0) {
+        console.log(`Reset ${reset.length} optional tracked game-data file to fallback because the payload did not include it:`);
+        for (const fileName of reset) {
+            console.log(`- ${fileName}`);
+        }
     }
     if (skipped.length > 0) {
         console.log(`Skipped ${skipped.length} tracked game-data file because the payload did not include it:`);
@@ -201,10 +207,20 @@ function main() {
     }
 
     if (inspectOutputDir && inspectOutputDir !== outputDir) {
-        const { written: inspectWritten, skipped: inspectSkipped } = writeMapFiles(clientData, inspectOutputDir);
+        const {
+            written: inspectWritten,
+            reset: inspectReset,
+            skipped: inspectSkipped,
+        } = writeMapFiles(clientData, inspectOutputDir);
         console.log(`Also wrote ${inspectWritten.length} files for inspection:`);
         for (const filePath of inspectWritten) {
             console.log(`- ${filePath}`);
+        }
+        if (inspectReset.length > 0) {
+            console.log(`Also reset ${inspectReset.length} optional tracked game-data file for inspection because the payload did not include it:`);
+            for (const fileName of inspectReset) {
+                console.log(`- ${fileName}`);
+            }
         }
         if (inspectSkipped.length > 0) {
             console.log(`Also skipped ${inspectSkipped.length} tracked game-data file for inspection because the payload did not include it:`);

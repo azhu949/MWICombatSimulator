@@ -22,6 +22,7 @@ const DEFAULT_TRACKED_GAME_DATA_FILES = Object.freeze([
     "combatTriggerComparatorDetailMap.json",
     "combatTriggerConditionDetailMap.json",
     "combatTriggerDependencyDetailMap.json",
+    "communityBuffTypeDetailMap.json",
     "damageTypeDetailMap.json",
     "enhancementLevelTotalBonusMultiplierTable.json",
     "equipmentTypeDetailMap.json",
@@ -31,6 +32,10 @@ const DEFAULT_TRACKED_GAME_DATA_FILES = Object.freeze([
     "labyrinthCrateDetailMap.json",
     "openableLootDropMap.json",
 ]);
+
+const OPTIONAL_TRACKED_GAME_DATA_FALLBACKS = Object.freeze({
+    communityBuffTypeDetailMap: Object.freeze({}),
+});
 
 const TRACKED_GAME_DATA_DIR = path.resolve(__dirname, "..", "src", "combatsimulator", "data");
 
@@ -83,10 +88,22 @@ function getMissingTargetKeys(clientData, targetMapFiles = TARGET_MAP_FILES) {
 function writeMapFiles(clientData, outputDir, targetMapFiles = TARGET_MAP_FILES) {
     fs.mkdirSync(outputDir, { recursive: true });
     const written = [];
+    const reset = [];
     const skipped = [];
 
     for (const [mapKey, fileName] of Object.entries(targetMapFiles)) {
         if (!clientData || typeof clientData !== "object" || !Object.prototype.hasOwnProperty.call(clientData, mapKey)) {
+            if (Object.prototype.hasOwnProperty.call(OPTIONAL_TRACKED_GAME_DATA_FALLBACKS, mapKey)) {
+                const filePath = path.join(outputDir, fileName);
+                fs.writeFileSync(
+                    filePath,
+                    `${JSON.stringify(OPTIONAL_TRACKED_GAME_DATA_FALLBACKS[mapKey], null, 4)}\n`,
+                    "utf8",
+                );
+                reset.push(fileName);
+                continue;
+            }
+
             skipped.push(fileName);
             continue;
         }
@@ -98,11 +115,13 @@ function writeMapFiles(clientData, outputDir, targetMapFiles = TARGET_MAP_FILES)
 
     return {
         written,
+        reset,
         skipped,
     };
 }
 
 module.exports = {
+    OPTIONAL_TRACKED_GAME_DATA_FALLBACKS,
     REQUIRED_CLIENT_DATA_KEYS,
     TARGET_MAP_FILES,
     TRACKED_GAME_DATA_DIR,

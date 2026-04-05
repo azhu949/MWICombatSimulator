@@ -80,6 +80,22 @@ const BASE_CLIENT_DATA = {
             name: "Test Dependency",
         },
     },
+    communityBuffTypeDetailMap: {
+        "/community_buff_types/experience": {
+            hrid: "/community_buff_types/experience",
+            name: "Test Community Buff",
+            buff: {
+                uniqueHrid: "/buff_uniques/test_community_buff",
+                typeHrid: "/buff_types/wisdom",
+                ratioBoost: 0,
+                ratioBoostLevelBonus: 0,
+                flatBoost: 0.2,
+                flatBoostLevelBonus: 0.005,
+                startTime: "0001-01-01T00:00:00Z",
+                duration: 0,
+            },
+        },
+    },
     damageTypeDetailMap: {
         "/damage_types/test": {
             hrid: "/damage_types/test",
@@ -136,6 +152,7 @@ const EXPECTED_OUTPUT_FILES = [
     "combatTriggerComparatorDetailMap.json",
     "combatTriggerConditionDetailMap.json",
     "combatTriggerDependencyDetailMap.json",
+    "communityBuffTypeDetailMap.json",
     "damageTypeDetailMap.json",
     "enhancementLevelTotalBonusMultiplierTable.json",
     "houseRoomDetailMap.json",
@@ -230,5 +247,51 @@ describe("extract-game-data CLI", () => {
         expect(output).toContain("levelExperienceTable.json");
         expect(fs.existsSync(allOutputPath)).toBe(true);
         expect(JSON.parse(fs.readFileSync(allOutputPath, "utf8"))).toEqual(clientDataWithoutLevelExperienceTable);
+    });
+
+    it("resets optional community buff data to an empty object when the payload no longer includes it", () => {
+        const tempDir = createTempDir();
+        const inputPath = path.join(tempDir, "initClientData.json");
+        const outputDir = path.join(tempDir, "maps");
+        const clientDataWithoutCommunityBuffTypeDetailMap = { ...BASE_CLIENT_DATA };
+        const staleCommunityBuffPath = path.join(outputDir, "communityBuffTypeDetailMap.json");
+
+        delete clientDataWithoutCommunityBuffTypeDetailMap.communityBuffTypeDetailMap;
+
+        fs.mkdirSync(outputDir, { recursive: true });
+        fs.writeFileSync(
+            staleCommunityBuffPath,
+            `${JSON.stringify({
+                "/community_buff_types/experience": {
+                    buff: {
+                        uniqueHrid: "/buff_uniques/stale_community_buff",
+                        typeHrid: "/buff_types/wisdom",
+                        flatBoost: 0.9,
+                        flatBoostLevelBonus: 0.1,
+                    },
+                },
+            }, null, 2)}\n`,
+            "utf8",
+        );
+        fs.writeFileSync(inputPath, `${JSON.stringify(clientDataWithoutCommunityBuffTypeDetailMap, null, 2)}\n`, "utf8");
+
+        const output = execFileSync(
+            process.execPath,
+            [
+                SCRIPT_PATH,
+                "--input",
+                inputPath,
+                "--output",
+                outputDir,
+            ],
+            {
+                cwd: path.resolve("."),
+                stdio: "pipe",
+            },
+        ).toString("utf8");
+
+        expect(JSON.parse(fs.readFileSync(staleCommunityBuffPath, "utf8"))).toEqual({});
+        expect(output).toContain("Reset 1 optional tracked game-data file to fallback because the payload did not include it:");
+        expect(output).toContain("communityBuffTypeDetailMap.json");
     });
 });

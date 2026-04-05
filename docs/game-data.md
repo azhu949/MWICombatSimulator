@@ -6,6 +6,10 @@
 - 数据使用免责声明
 - 如何刷新模拟器依赖的当前全部游戏数据 JSON 文件
 
+补充参考：
+
+- 如需查看 `initClientData` 当前 48 个顶层 key 的作用、接入状态与导出情况，可查看 [`docs/init-client-data-key-reference.md`](./init-client-data-key-reference.md)。
+
 ## 游戏数据来源（重要）
 
 模拟器游戏数据文件来源于 Milky Way Idle 的 `init_client_data` 载荷。
@@ -23,6 +27,7 @@
 - `combatTriggerComparatorDetailMap.json`
 - `combatTriggerConditionDetailMap.json`
 - `combatTriggerDependencyDetailMap.json`
+- `communityBuffTypeDetailMap.json`
 - `damageTypeDetailMap.json`
 - `enhancementLevelTotalBonusMultiplierTable.json`
 - `equipmentTypeDetailMap.json`

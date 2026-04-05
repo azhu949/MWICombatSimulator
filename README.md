@@ -59,7 +59,8 @@ npm test
 
 ## 常用文档
 
-- [`docs/game-data.md`](docs/game-data.md)：游戏数据来源、数据使用免责声明、刷新 6 个模拟器 map 文件的流程，以及在浏览器控制台直接下载 `initClientData.txt` 的方法
+- [`docs/game-data.md`](docs/game-data.md)：游戏数据来源、数据使用免责声明、刷新当前维护的游戏数据 JSON，以及在浏览器控制台直接下载 `initClientData.txt` 的方法
+- [`docs/init-client-data-key-reference.md`](docs/init-client-data-key-reference.md)：`initClientData` 当前 48 个顶层 key 的作用、接入状态和导出情况对照表
 - [`scripts/mwi-main-site-import.README.md`](scripts/mwi-main-site-import.README.md)：Tampermonkey「主站一键导入」脚本说明
 
 ## Fork 来源
