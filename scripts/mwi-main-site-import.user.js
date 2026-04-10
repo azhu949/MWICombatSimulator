@@ -3,13 +3,15 @@
 // @name:zh      MWI Combat Simulator 主站一键导入
 // @name:zh-CN   MWI Combat Simulator 主站一键导入
 // @namespace    https://azhu949.github.io/MWICombatSimulator
-// @version      0.1.23
+// @version      0.1.24
 // @license      ISC
 // @description  Import the current Milky Way Idle character or manually cached detected team into MWI Combat Simulator with one click.
 // @description:zh      一键将 Milky Way Idle 主站当前角色或已手动缓存资料的已识别队伍导入到 MWI Combat Simulator。
 // @description:zh-CN   一键将 Milky Way Idle 主站当前角色或已手动缓存资料的已识别队伍导入到 MWI Combat Simulator。
 // @match        https://www.milkywayidle.com/*
 // @match        https://milkywayidle.com/*
+// @match        https://www.milkywayidlecn.com/*
+// @match        https://milkywayidlecn.com/*
 // @match        https://azhu949.github.io/MWICombatSimulator/*
 // @match        https://mwi-combatsi-mulator.pages.dev/*
 // @match        http://localhost:5173/*
@@ -1198,8 +1200,15 @@
         }
     }
 
+    const MAIN_SITE_HOSTNAMES = new Set([
+        "www.milkywayidle.com",
+        "milkywayidle.com",
+        "www.milkywayidlecn.com",
+        "milkywayidlecn.com",
+    ]);
+
     function isMainSitePage() {
-        return window.location.hostname === "www.milkywayidle.com" || window.location.hostname === "milkywayidle.com";
+        return MAIN_SITE_HOSTNAMES.has(String(window.location.hostname || "").trim().toLowerCase());
     }
 
     function isSimulatorPage() {

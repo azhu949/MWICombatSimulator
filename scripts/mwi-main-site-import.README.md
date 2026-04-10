@@ -27,6 +27,8 @@
 
 - `https://www.milkywayidle.com/*`
 - `https://milkywayidle.com/*`
+- `https://www.milkywayidlecn.com/*`
+- `https://milkywayidlecn.com/*`
 
 ### 模拟器
 
@@ -38,7 +40,7 @@
 ## 使用方式
 
 1. 在 Tampermonkey 中安装 `scripts/mwi-main-site-import.user.js`，或直接打开发布页安装：`https://greasyfork.org/zh-CN/scripts/568613-mwi-combat-simulator-%E4%B8%BB%E7%AB%99%E4%B8%80%E9%94%AE%E5%AF%BC%E5%85%A5`
-2. 打开并登录至少一个 Milky Way Idle 主站标签页
+2. 打开并登录至少一个 Milky Way Idle 主站标签页（`.com` 或 `.cn` 均可）
 3. 打开模拟器首页 `Home`
 4. 在操作区点击 `从主站导入`（英文界面显示 `Import from Main Site`）
 5. 如果希望导入队友，请先在游戏里手动打开这些队友的资料一次，让脚本缓存 `profile_shared`

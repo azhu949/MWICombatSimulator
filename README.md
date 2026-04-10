@@ -14,7 +14,7 @@ MWICombatSimulator 用于在本地运行战斗模拟与收益评估，帮助你�
 - **Queue**：基于“基线 + 多个变体”的多轮评分与排名，对比收益增量与波动
 - **Advisor**：刷图推荐器，批量扫描 Solo/Group Zones 与 Labyrinth，输出目标排行
 - **Multi Results**：汇总多轮结果并支持导出 Excel
-- **Import/Export**：支持导入导出；可配合 Tampermonkey 脚本从主站一键导入当前角色
+- **Import/Export**：支持导入导出；可配合 Tampermonkey 脚本从主站一键导入当前角色，支持 `milkywayidle.com` 与 `milkywayidlecn.com`
 - **i18n + Web Workers**：中英界面，worker 并行计算提升批量模拟速度
 - **Parallel Worker Limit**：Settings 中保存的并行 worker 上限也会应用到 Home 页的批量 Zone / Labyrinth 模拟
 
