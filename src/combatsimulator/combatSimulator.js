@@ -365,6 +365,22 @@ class CombatSimulator extends EventTarget {
         this.startNewEncounter();
     }
 
+    calculateNextEncounterRespawnTime() {
+        const defaultRespawnTime = this.simulationTime + ENEMY_RESPAWN_INTERVAL;
+        const baseTimeCost = Number(this.zone?.baseTimeCost ?? 0);
+        if (!(baseTimeCost > 0)) {
+            return defaultRespawnTime;
+        }
+
+        const encounterStartTime = Number.isFinite(this.encounterStartTime)
+            ? this.encounterStartTime
+            : this.simulationTime;
+        const cadenceFloor = Math.max(baseTimeCost - ENEMY_RESPAWN_INTERVAL, 0);
+
+        // The action base time already includes the built-in encounter gap that we model separately.
+        return Math.max(defaultRespawnTime, encounterStartTime + cadenceFloor);
+    }
+
     startNewEncounter() {
         if (this.allPlayersDead) {
             this.allPlayersDead = false;
@@ -372,6 +388,8 @@ class CombatSimulator extends EventTarget {
                 this.zone.failWave();
             }
         }
+
+        this.encounterStartTime = this.simulationTime;
 
         if (this.zone) {
             if (!this.zone.isDungeon) {
@@ -676,7 +694,7 @@ class CombatSimulator extends EventTarget {
         if (this.enemies && !this.enemies.some((enemy) => enemy.combatDetails.currentHitpoints > 0)) {
             this.eventQueue.clearEventsOfType(AutoAttackEvent.type);
             // this.eventQueue.clearEventsOfType(AbilityCastEndEvent.type);
-            let enemyRespawnEvent = new EnemyRespawnEvent(this.simulationTime + ENEMY_RESPAWN_INTERVAL);
+            let enemyRespawnEvent = new EnemyRespawnEvent(this.calculateNextEncounterRespawnTime());
             this.eventQueue.addEvent(enemyRespawnEvent);
 
             //calc exp before clear

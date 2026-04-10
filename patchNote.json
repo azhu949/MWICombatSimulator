@@ -1,4 +1,22 @@
 {
+    "2026年4月11日（v1.0.14）": {
+        "label": {
+            "zh": "2026年4月11日（v1.0.14）",
+            "en": "April 11, 2026 (v1.0.14)"
+        },
+        "notes": {
+            "zh": [
+                "战斗模拟现在会读取地图 baseTimeCost，并将每场遭遇的最短节奏纳入下一波敌人刷新时间，避免刷图节奏被计算得过快。",
+                "这项节奏修正已同步应用到刷图推荐、首页 Zone 模拟与队列推荐模拟，相关收益、击杀频率与排行结果会更接近官方实际表现。",
+                "补充官方节奏对齐回归测试，覆盖遭遇节奏下限与 Jungle Planet 的 EPH 区间，便于后续继续校验模拟精度。"
+            ],
+            "en": [
+                "Combat simulation now reads each zone's baseTimeCost and applies the minimum encounter cadence to the next enemy respawn timing, preventing farming pace from being simulated too quickly.",
+                "This cadence fix now applies to Advisor recommendations, Home zone simulations, and queue recommendation runs, so profit, kill frequency, and rankings better match official behavior.",
+                "Added regression coverage for official cadence parity, including the encounter cadence floor and the Jungle Planet EPH band, to keep future simulation accuracy easier to verify."
+            ]
+        }
+    },
     "2026年4月5日（v1.0.13）": {
         "label": {
             "zh": "2026年4月5日（v1.0.13）",

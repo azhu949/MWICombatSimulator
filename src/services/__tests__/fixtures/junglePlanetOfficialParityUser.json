@@ -1,0 +1,381 @@
+{
+  "version": 2,
+  "format": "mwi-vue-solo",
+  "simulationSettings": {
+    "mode": "zone",
+    "runScope": "single",
+    "useDungeon": false,
+    "zoneHrid": "/actions/combat/jungle_planet",
+    "dungeonHrid": "/actions/combat/chimerical_den",
+    "difficultyTier": 2,
+    "labyrinthHrid": "/monsters/cyclops",
+    "roomLevel": 100,
+    "simulationTimeHours": 24,
+    "mooPass": true,
+    "comExpEnabled": true,
+    "comExp": 20,
+    "comDropEnabled": true,
+    "comDrop": 20,
+    "enableHpMpVisualization": true,
+    "selectedGroupZoneHrids": [
+      "/actions/combat/aqua_planet",
+      "/actions/combat/bear_with_it",
+      "/actions/combat/gobo_planet",
+      "/actions/combat/golem_cave",
+      "/actions/combat/infernal_abyss",
+      "/actions/combat/jungle_planet",
+      "/actions/combat/planet_of_the_eyes",
+      "/actions/combat/smelly_planet",
+      "/actions/combat/sorcerers_tower",
+      "/actions/combat/swamp_planet",
+      "/actions/combat/twilight_zone"
+    ],
+    "selectedSoloZoneHrids": [
+      "/actions/combat/abyssal_imp",
+      "/actions/combat/alligator",
+      "/actions/combat/aquahorse",
+      "/actions/combat/black_bear",
+      "/actions/combat/centaur_archer",
+      "/actions/combat/crab",
+      "/actions/combat/elementalist",
+      "/actions/combat/eye",
+      "/actions/combat/eyes",
+      "/actions/combat/flame_sorcerer",
+      "/actions/combat/fly",
+      "/actions/combat/frog",
+      "/actions/combat/gobo_boomy",
+      "/actions/combat/gobo_shooty",
+      "/actions/combat/gobo_slashy",
+      "/actions/combat/gobo_smashy",
+      "/actions/combat/gobo_stabby",
+      "/actions/combat/granite_golem",
+      "/actions/combat/grizzly_bear",
+      "/actions/combat/gummy_bear",
+      "/actions/combat/ice_sorcerer",
+      "/actions/combat/infernal_warlock",
+      "/actions/combat/jungle_sprite",
+      "/actions/combat/magnetic_golem",
+      "/actions/combat/myconid",
+      "/actions/combat/nom_nom",
+      "/actions/combat/novice_sorcerer",
+      "/actions/combat/panda",
+      "/actions/combat/polar_bear",
+      "/actions/combat/porcupine",
+      "/actions/combat/rat",
+      "/actions/combat/sea_snail",
+      "/actions/combat/skunk",
+      "/actions/combat/slimy",
+      "/actions/combat/snake",
+      "/actions/combat/soul_hunter",
+      "/actions/combat/stalactite_golem",
+      "/actions/combat/swampy",
+      "/actions/combat/treant",
+      "/actions/combat/turtle",
+      "/actions/combat/vampire",
+      "/actions/combat/veyes",
+      "/actions/combat/werewolf",
+      "/actions/combat/zombie"
+    ],
+    "labyrinthCrates": {
+      "coffee": "",
+      "food": "",
+      "tea": ""
+    }
+  },
+  "player": {
+    "id": "1",
+    "name": "zhy1996",
+    "selected": true,
+    "levels": {
+      "stamina": 116,
+      "intelligence": 115,
+      "attack": 120,
+      "melee": 66,
+      "defense": 115,
+      "ranged": 52,
+      "magic": 130
+    },
+    "skillExperience": {
+      "stamina": 49723091.64296711,
+      "intelligence": 46104952.037080474,
+      "attack": 69491697.62077333,
+      "melee": 467016.99284062313,
+      "ranged": 124022.33953384386,
+      "defense": 45782873.899433784,
+      "magic": 200344289.1352063
+    },
+    "equipment": {
+      "head": {
+        "itemHrid": "/items/magicians_hat",
+        "enhancementLevel": 10
+      },
+      "body": {
+        "itemHrid": "/items/royal_fire_robe_top_refined",
+        "enhancementLevel": 10
+      },
+      "legs": {
+        "itemHrid": "/items/royal_fire_robe_bottoms",
+        "enhancementLevel": 10
+      },
+      "feet": {
+        "itemHrid": "/items/sorcerer_boots",
+        "enhancementLevel": 12
+      },
+      "hands": {
+        "itemHrid": "/items/chrono_gloves",
+        "enhancementLevel": 10
+      },
+      "weapon": {
+        "itemHrid": "/items/blazing_trident",
+        "enhancementLevel": 10
+      },
+      "off_hand": {
+        "itemHrid": "/items/bishops_codex",
+        "enhancementLevel": 10
+      },
+      "pouch": {
+        "itemHrid": "/items/guzzling_pouch",
+        "enhancementLevel": 7
+      },
+      "neck": {
+        "itemHrid": "/items/necklace_of_speed",
+        "enhancementLevel": 5
+      },
+      "earrings": {
+        "itemHrid": "/items/earrings_of_regeneration",
+        "enhancementLevel": 5
+      },
+      "ring": {
+        "itemHrid": "/items/ring_of_regeneration",
+        "enhancementLevel": 5
+      },
+      "back": {
+        "itemHrid": "/items/enchanted_cloak",
+        "enhancementLevel": 0
+      },
+      "charm": {
+        "itemHrid": "/items/expert_magic_charm",
+        "enhancementLevel": 5
+      },
+      "trinket": {
+        "itemHrid": "/items/expert_task_badge",
+        "enhancementLevel": 0
+      }
+    },
+    "food": [
+      "/items/star_fruit_gummy",
+      "/items/dragon_fruit_yogurt",
+      "/items/spaceberry_cake"
+    ],
+    "drinks": [
+      "/items/wisdom_coffee",
+      "/items/super_magic_coffee",
+      "/items/channeling_coffee"
+    ],
+    "abilities": [
+      {
+        "abilityHrid": "/abilities/mystic_aura",
+        "level": 28
+      },
+      {
+        "abilityHrid": "/abilities/elemental_affinity",
+        "level": 60
+      },
+      {
+        "abilityHrid": "/abilities/firestorm",
+        "level": 60
+      },
+      {
+        "abilityHrid": "/abilities/flame_blast",
+        "level": 70
+      },
+      {
+        "abilityHrid": "/abilities/fireball",
+        "level": 71
+      }
+    ],
+    "triggerMap": {
+      "/items/channeling_coffee": [
+        {
+          "dependencyHrid": "/combat_trigger_dependencies/self",
+          "conditionHrid": "/combat_trigger_conditions/channeling_coffee",
+          "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+          "value": 0
+        }
+      ],
+      "/items/dragon_fruit_yogurt": [
+        {
+          "dependencyHrid": "/combat_trigger_dependencies/self",
+          "conditionHrid": "/combat_trigger_conditions/missing_mp",
+          "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+          "value": 300
+        }
+      ],
+      "/items/spaceberry_cake": [
+        {
+          "dependencyHrid": "/combat_trigger_dependencies/self",
+          "conditionHrid": "/combat_trigger_conditions/missing_hp",
+          "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+          "value": 200
+        }
+      ],
+      "/items/star_fruit_gummy": [
+        {
+          "dependencyHrid": "/combat_trigger_dependencies/self",
+          "conditionHrid": "/combat_trigger_conditions/missing_mp",
+          "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+          "value": 350
+        }
+      ],
+      "/items/super_magic_coffee": [
+        {
+          "dependencyHrid": "/combat_trigger_dependencies/self",
+          "conditionHrid": "/combat_trigger_conditions/magic_coffee",
+          "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+          "value": 0
+        }
+      ],
+      "/items/wisdom_coffee": [
+        {
+          "dependencyHrid": "/combat_trigger_dependencies/self",
+          "conditionHrid": "/combat_trigger_conditions/wisdom_coffee",
+          "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+          "value": 0
+        }
+      ],
+      "/abilities/elemental_affinity": [
+        {
+          "dependencyHrid": "/combat_trigger_dependencies/self",
+          "conditionHrid": "/combat_trigger_conditions/elemental_affinity",
+          "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+          "value": 0
+        }
+      ],
+      "/abilities/fireball": [
+        {
+          "dependencyHrid": "/combat_trigger_dependencies/targeted_enemy",
+          "conditionHrid": "/combat_trigger_conditions/current_hp",
+          "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+          "value": 1
+        }
+      ],
+      "/abilities/firestorm": [
+        {
+          "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+          "conditionHrid": "/combat_trigger_conditions/number_of_active_units",
+          "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+          "value": 1
+        },
+        {
+          "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+          "conditionHrid": "/combat_trigger_conditions/current_hp",
+          "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+          "value": 500
+        }
+      ],
+      "/abilities/flame_blast": [
+        {
+          "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+          "conditionHrid": "/combat_trigger_conditions/number_of_active_units",
+          "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+          "value": 1
+        },
+        {
+          "dependencyHrid": "/combat_trigger_dependencies/all_enemies",
+          "conditionHrid": "/combat_trigger_conditions/current_hp",
+          "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+          "value": 500
+        }
+      ],
+      "/abilities/mystic_aura": [
+        {
+          "dependencyHrid": "/combat_trigger_dependencies/self",
+          "conditionHrid": "/combat_trigger_conditions/mystic_aura",
+          "comparatorHrid": "/combat_trigger_comparators/is_inactive",
+          "value": 0
+        },
+        {
+          "dependencyHrid": "/combat_trigger_dependencies/self",
+          "conditionHrid": "/combat_trigger_conditions/current_mp",
+          "comparatorHrid": "/combat_trigger_comparators/greater_than_equal",
+          "value": 500
+        }
+      ]
+    },
+    "houseRooms": {
+      "/house_rooms/archery_range": 1,
+      "/house_rooms/armory": 4,
+      "/house_rooms/brewery": 2,
+      "/house_rooms/dairy_barn": 2,
+      "/house_rooms/dining_room": 4,
+      "/house_rooms/dojo": 4,
+      "/house_rooms/forge": 2,
+      "/house_rooms/garden": 5,
+      "/house_rooms/gym": 1,
+      "/house_rooms/kitchen": 2,
+      "/house_rooms/laboratory": 2,
+      "/house_rooms/library": 4,
+      "/house_rooms/log_shed": 2,
+      "/house_rooms/mystical_study": 5,
+      "/house_rooms/observatory": 2,
+      "/house_rooms/sewing_parlor": 2,
+      "/house_rooms/workshop": 2
+    },
+    "achievements": {
+      "/achievements/labyrinth_floor_2": true,
+      "/achievements/task_tokens_10": true,
+      "/achievements/total_level_500": true,
+      "/achievements/bestiary_points_20": true,
+      "/achievements/brew_gourmet_tea": true,
+      "/achievements/build_room_level_1": true,
+      "/achievements/enhance_to_10": true,
+      "/achievements/total_level_100": true,
+      "/achievements/coinify_coins_1m": true,
+      "/achievements/defeat_luna_empress": true,
+      "/achievements/defeat_marine_huntress": true,
+      "/achievements/defeat_red_panda": true,
+      "/achievements/learn_ability": true,
+      "/achievements/learn_special_ability": true,
+      "/achievements/total_level_1000": true,
+      "/achievements/bestiary_points_200": true,
+      "/achievements/complete_tutorial": true,
+      "/achievements/defeat_jerry": true,
+      "/achievements/equip_ginkgo_weapon": true,
+      "/achievements/labyrinth_floor_4": true,
+      "/achievements/labyrinth_floor_6": true,
+      "/achievements/tailor_medium_pouch": true,
+      "/achievements/bestiary_points_100": true,
+      "/achievements/build_room_level_3": true,
+      "/achievements/collection_points_100": true,
+      "/achievements/craft_jewelry": true,
+      "/achievements/tailor_umbral_tunic": true,
+      "/achievements/clear_chimerical_den": true,
+      "/achievements/collect_thread_of_expertise": true,
+      "/achievements/collection_points_1000": true,
+      "/achievements/collection_points_200": true,
+      "/achievements/cook_apple_gummy": true,
+      "/achievements/craft_wooden_bow": true,
+      "/achievements/defeat_gobo_chieftain": true,
+      "/achievements/defeat_the_watcher": true,
+      "/achievements/buy_trainee_charm": true,
+      "/achievements/decompose_bamboo_gloves": true,
+      "/achievements/enhance_to_3": true,
+      "/achievements/gather_milk": true,
+      "/achievements/total_level_1500": true,
+      "/achievements/total_level_250": true,
+      "/achievements/woodcut_arcane_tree": true,
+      "/achievements/bestiary_points_400": true,
+      "/achievements/clear_enchanted_fortress": true,
+      "/achievements/collection_points_500": true,
+      "/achievements/cook_peach_yogurt": true,
+      "/achievements/cook_spaceberry_cake": true,
+      "/achievements/defeat_jerry_t5": true,
+      "/achievements/enhance_to_6": true,
+      "/achievements/equip_expert_task_badge": true,
+      "/achievements/bestiary_points_40": true,
+      "/achievements/cheesesmith_azure_tool": true,
+      "/achievements/defeat_chronofrost_sorcerer": true,
+      "/achievements/defeat_shoebill": true
+    }
+  }
+}

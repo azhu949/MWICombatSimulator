@@ -9,6 +9,9 @@ class Zone {
         let gameZone = actionDetailMap[this.hrid];
         this.monsterSpawnInfo = gameZone.combatZoneInfo.fightInfo;
         this.dungeonSpawnInfo = gameZone.combatZoneInfo.dungeonInfo;
+        this.baseTimeCost = Number.isFinite(Number(gameZone?.baseTimeCost))
+            ? Math.max(0, Number(gameZone.baseTimeCost))
+            : 0;
         this.encountersKilled = 1;
         this.monsterSpawnInfo.battlesPerBoss = 10;
         this.buffs = gameZone.buffs;
