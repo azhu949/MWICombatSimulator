@@ -1,0 +1,12 @@
+import { readFileSync } from "node:fs";
+import { describe, expect, it } from "vitest";
+
+const queuePageSource = readFileSync(new URL("../pages/QueuePage.vue", import.meta.url), "utf8");
+
+describe("QueuePage progress presentation", () => {
+    it("keeps queue progress as a percentage summary without rendering a duplicate progress bar", () => {
+        expect(queuePageSource).toContain('t("common:vue.queue.queueProgress", "Queue Progress")');
+        expect(queuePageSource).toContain('{{ Math.floor((queueState.progress || 0) * 100) }}%');
+        expect(queuePageSource).not.toContain('width: `${Math.floor((queueState.progress || 0) * 100)}%`');
+    });
+});

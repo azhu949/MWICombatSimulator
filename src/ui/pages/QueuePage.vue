@@ -40,10 +40,6 @@
         </div>
       </div>
 
-      <div class="h-2 overflow-hidden rounded-full bg-slate-800">
-        <div class="h-full bg-gradient-to-r from-teal-400 to-amber-300 transition-all" :style="{ width: `${Math.floor((queueState.progress || 0) * 100)}%` }"></div>
-      </div>
-
       <p v-if="queueState.error" class="text-sm text-rose-300">{{ t(queueState.error, queueState.error) }}</p>
       <p v-if="queuePartyWarningText" class="text-sm text-amber-300">{{ queuePartyWarningText }}</p>
     </div>
