@@ -233,10 +233,10 @@
         <div class="feedback-contact-list">
           <div class="feedback-contact-row">
             <div class="min-w-0">
-              <p class="feedback-contact-label">{{ t("common:vue.app.feedbackQqLabel", "QQ") }}</p>
-              <p class="feedback-contact-value">596846069</p>
+              <p class="feedback-contact-label">{{ t("common:vue.app.feedbackQqLabel", "QQ Group") }}</p>
+              <p class="feedback-contact-value">993488247</p>
             </div>
-            <button type="button" class="action-button-muted text-xs" data-feedback-copy @click="copyFeedbackContact('596846069')">
+            <button type="button" class="action-button-muted text-xs" data-feedback-copy @click="copyFeedbackContact('993488247')">
               {{ t("common:vue.common.copy", "Copy") }}
             </button>
           </div>

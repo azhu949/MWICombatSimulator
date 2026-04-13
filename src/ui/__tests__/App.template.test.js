@@ -12,11 +12,11 @@ describe("App header support links", () => {
     });
 
     it("renders feedback modal contact details", () => {
-        expect(appSource).toContain("596846069");
+        expect(appSource).toContain("993488247");
         expect(appSource).toContain("mailto:596846069@qq.com");
         expect(appSource).toContain("copyFeedbackContact");
         expect(appSource).toContain('t("common:vue.app.feedbackHint", "Use the following channels for feedback, bug reports, or suggestions.")');
-        expect(appSource).toContain('t("common:vue.app.feedbackQqLabel", "QQ")');
+        expect(appSource).toContain('t("common:vue.app.feedbackQqLabel", "QQ Group")');
         expect(appSource).toContain('t("common:vue.app.feedbackEmailLabel", "QQ Email")');
     });
 

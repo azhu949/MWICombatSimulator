@@ -348,7 +348,7 @@
             "feedback": "Feedback",
             "feedbackHint": "Use the following channels for feedback, bug reports, or suggestions.",
             "feedbackGitHubAriaLabel": "GitHub Repository",
-            "feedbackQqLabel": "QQ",
+            "feedbackQqLabel": "QQ Group",
             "feedbackEmailLabel": "QQ Email",
             "patchNotesUnreadBadge": "Unread",
             "patchNotesUnreadStatus": "{{count}} unread",
