@@ -21,30 +21,25 @@ class Zone {
         this.finalWave = false;
     }
 
-    getRandomEncounter() {
-
-        if (this.monsterSpawnInfo.bossSpawns && this.encountersKilled == this.monsterSpawnInfo.battlesPerBoss) {
-            this.encountersKilled = 1;
-            return this.monsterSpawnInfo.bossSpawns.map((monster) => new Monster(monster.combatMonsterHrid, monster.difficultyTier + this.difficultyTier));
-        }
-
-        let totalWeight = this.monsterSpawnInfo.randomSpawnInfo.spawns.reduce((prev, cur) => prev + cur.rate, 0);
-
-        let encounterHrids = [];
+    buildEncounterFromSpawnInfo(randomSpawnInfo) {
+        const totalWeight = randomSpawnInfo.spawns.reduce((prev, cur) => prev + cur.rate, 0);
+        const encounterHrids = [];
         let totalStrength = 0;
 
-        outer: for (let i = 0; i < this.monsterSpawnInfo.randomSpawnInfo.maxSpawnCount; i++) {
-            let randomWeight = totalWeight * Math.random();
+        outer: for (let i = 0; i < randomSpawnInfo.maxSpawnCount; i++) {
+            const randomWeight = totalWeight * Math.random();
             let cumulativeWeight = 0;
 
-            for (const spawn of this.monsterSpawnInfo.randomSpawnInfo.spawns) {
+            for (const spawn of randomSpawnInfo.spawns) {
                 cumulativeWeight += spawn.rate;
                 if (randomWeight <= cumulativeWeight) {
                     totalStrength += spawn.strength;
 
-                    if (totalStrength <= this.monsterSpawnInfo.randomSpawnInfo.maxTotalStrength) {
-                        encounterHrids.push({ 'hrid': spawn.combatMonsterHrid, 'difficultyTier': spawn.difficultyTier});
-
+                    if (totalStrength <= randomSpawnInfo.maxTotalStrength) {
+                        encounterHrids.push({
+                            hrid: spawn.combatMonsterHrid,
+                            difficultyTier: spawn.difficultyTier,
+                        });
                     } else {
                         break outer;
                     }
@@ -52,8 +47,19 @@ class Zone {
                 }
             }
         }
+
+        return encounterHrids.map((entry) => new Monster(entry.hrid, entry.difficultyTier + this.difficultyTier));
+    }
+
+    getRandomEncounter() {
+
+        if (this.monsterSpawnInfo.bossSpawns && this.encountersKilled == this.monsterSpawnInfo.battlesPerBoss) {
+            this.encountersKilled = 1;
+            return this.monsterSpawnInfo.bossSpawns.map((monster) => new Monster(monster.combatMonsterHrid, monster.difficultyTier + this.difficultyTier));
+        }
+
         this.encountersKilled++;
-        return encounterHrids.map((hrid) => new Monster(hrid.hrid, hrid.difficultyTier + this.difficultyTier));
+        return this.buildEncounterFromSpawnInfo(this.monsterSpawnInfo.randomSpawnInfo);
     }
 
     failWave() {

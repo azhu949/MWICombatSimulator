@@ -1,4 +1,20 @@
 {
+    "2026年4月13日（v1.0.15）": {
+        "label": {
+            "zh": "2026年4月13日（v1.0.15）",
+            "en": "April 13, 2026 (v1.0.15)"
+        },
+        "notes": {
+            "zh": [
+                "战斗区域遭遇节奏重新对齐官方通用规则：普通 Zone 的下一场遭遇固定按 3 秒刷新，不再把地图基础行动耗时误当成每场遭遇之间的冷却时间。",
+                "多怪区刷怪逻辑重新校准为按权重可重复抽取，并在首次超出怪物总强度上限时停止，修复在单人和多人模拟下战斗次数与总经验偏差过大的问题。"
+            ],
+            "en": [
+                "Zone encounter cadence has been realigned with the official generic rule set: regular zone encounters now always respawn after a fixed 3 seconds, instead of incorrectly treating each map's baseTimeCost as the cooldown between every encounter.",
+                "Multi-monster spawn generation has been recalibrated to use weighted repeatable rolls that stop on the first maxTotalStrength overflow, Fixed the issue where the number of battles and total experience deviated too much in single and multiplayer simulations."
+            ]
+        }
+    },
     "2026年4月11日（v1.0.14）": {
         "label": {
             "zh": "2026年4月11日（v1.0.14）",
@@ -6,7 +22,7 @@
         },
         "notes": {
             "zh": [
-                "战斗模拟现在会读取地图 baseTimeCost，并将每场遭遇的最短节奏纳入下一波敌人刷新时间，避免刷图节奏被计算得过快。",
+                "战斗模拟现在会读取地图基础行动耗时，并将每场遭遇的最短节奏纳入下一波敌人刷新时间，避免刷图节奏被计算得过快。",
                 "这项节奏修正已同步应用到刷图推荐、首页 Zone 模拟与队列推荐模拟，相关收益、击杀频率与排行结果会更接近官方实际表现。",
                 "补充官方节奏对齐回归测试，覆盖遭遇节奏下限与 Jungle Planet 的 EPH 区间，便于后续继续校验模拟精度。"
             ],

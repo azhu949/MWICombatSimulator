@@ -366,19 +366,7 @@ class CombatSimulator extends EventTarget {
     }
 
     calculateNextEncounterRespawnTime() {
-        const defaultRespawnTime = this.simulationTime + ENEMY_RESPAWN_INTERVAL;
-        const baseTimeCost = Number(this.zone?.baseTimeCost ?? 0);
-        if (!(baseTimeCost > 0)) {
-            return defaultRespawnTime;
-        }
-
-        const encounterStartTime = Number.isFinite(this.encounterStartTime)
-            ? this.encounterStartTime
-            : this.simulationTime;
-        const cadenceFloor = Math.max(baseTimeCost - ENEMY_RESPAWN_INTERVAL, 0);
-
-        // The action base time already includes the built-in encounter gap that we model separately.
-        return Math.max(defaultRespawnTime, encounterStartTime + cadenceFloor);
+        return this.simulationTime + ENEMY_RESPAWN_INTERVAL;
     }
 
     startNewEncounter() {
