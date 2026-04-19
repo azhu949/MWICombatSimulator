@@ -9,4 +9,8 @@ describe("QueuePage progress presentation", () => {
         expect(queuePageSource).toContain('{{ Math.floor((queueState.progress || 0) * 100) }}%');
         expect(queuePageSource).not.toContain('width: `${Math.floor((queueState.progress || 0) * 100)}%`');
     });
+
+    it("explains that baseline summary values come from robust multi-round aggregation", () => {
+        expect(queuePageSource).toContain('t("common:queue.baselineSummaryAggregationHint"');
+    });
 });

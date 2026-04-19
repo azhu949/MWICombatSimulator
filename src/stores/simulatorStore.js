@@ -80,6 +80,8 @@ const PRICE_MARKET_CACHE_STORAGE_KEY = "mwi.price.marketCache.v1";
 const SIMULATION_UI_STORAGE_KEY = "mwi.simulation.ui.v1";
 const QUEUE_SETTINGS_STORAGE_KEY = "mwi.queue.settings.v1";
 const QUEUE_SETTINGS_STORAGE_VERSION = 1;
+const QUEUE_RUN_SETTINGS_STORAGE_KEY = "mwi.queue.runSettings.v1";
+const QUEUE_RUN_SETTINGS_STORAGE_VERSION = 1;
 const PLAYER_DATA_SNAPSHOT_STORAGE_KEY = "mwi.player.data.snapshot.v1";
 const PLAYER_DATA_SNAPSHOT_STORAGE_VERSION = 1;
 const PLAYER_ACHIEVEMENTS_STORAGE_KEY = "mwi.player.achievements.v1";
@@ -90,6 +92,13 @@ const QUEUE_PARALLEL_WORKER_LIMIT_MAX = 64;
 const QUEUE_WEIGHT_SUM_EPSILON = 1e-6;
 const QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS = 4;
 const QUEUE_MULTI_ROUND_METRIC_KEYS = ["dps", "dailyNoRngProfit", "xpPerHour", "killsPerHour"];
+const QUEUE_BASELINE_METRIC_KEYS = [
+    "encountersPerHour",
+    "deathsPerHour",
+    "totalXpPerHour",
+    "profitPerHour",
+    ...QUEUE_MULTI_ROUND_METRIC_KEYS,
+];
 const QUEUE_MULTI_ROUND_WINSORIZE_PCT = 0.05;
 const QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT = 0.5;
 const QUEUE_MULTI_ROUND_CONFIDENCE_SIZE_SCALE = 8;
@@ -629,11 +638,12 @@ function buildSimulationExtra(simulationSettings) {
     };
 }
 
-function buildQueueBaselineSettings(simulationSettings = {}) {
+function buildQueueBaselineSettings(simulationSettings = {}, queueSettings = null) {
     const useDungeon = Boolean(simulationSettings.useDungeon);
     const regularZoneHrid = String(simulationSettings.zoneHrid || "");
     const dungeonHrid = String(simulationSettings.dungeonHrid || "");
     const selectedZoneHrid = useDungeon ? dungeonHrid : regularZoneHrid;
+    const normalizedQueueSettings = normalizeQueueSettings(queueSettings);
 
     return {
         mode: String(simulationSettings.mode || "zone"),
@@ -644,6 +654,7 @@ function buildQueueBaselineSettings(simulationSettings = {}) {
         dungeonHrid,
         difficultyTier: Math.max(0, Math.floor(toFiniteNumber(simulationSettings.difficultyTier, 0))),
         simulationTimeHours: Math.max(1, Math.floor(toFiniteNumber(simulationSettings.simulationTimeHours, 24))),
+        baselineRounds: normalizedQueueSettings.baselineRounds,
         extra: buildSimulationExtra(simulationSettings),
     };
 }
@@ -1166,6 +1177,54 @@ function persistQueueRuntimeSettingsToStorage(settings) {
     };
     localStorage.setItem(QUEUE_SETTINGS_STORAGE_KEY, JSON.stringify(payload));
     return normalized;
+}
+
+function loadQueueRunSettingsByPlayerFromStorage() {
+    if (typeof localStorage === "undefined") {
+        return {};
+    }
+
+    try {
+        const rawValue = localStorage.getItem(QUEUE_RUN_SETTINGS_STORAGE_KEY);
+        if (!rawValue) {
+            return {};
+        }
+
+        const parsed = JSON.parse(rawValue);
+        if (!isPlainObject(parsed) || parsed.version !== QUEUE_RUN_SETTINGS_STORAGE_VERSION) {
+            return {};
+        }
+
+        const normalized = {};
+        for (const playerId of QUEUE_PLAYER_IDS) {
+            if (!isPlainObject(parsed.byPlayer?.[playerId])) {
+                continue;
+            }
+            normalized[playerId] = normalizeQueueSettings(parsed.byPlayer[playerId]);
+        }
+        return normalized;
+    } catch (error) {
+        return {};
+    }
+}
+
+function persistQueueRunSettingsByPlayerToStorage(queueStateByPlayer = {}) {
+    if (typeof localStorage === "undefined") {
+        throw new Error("localStorage unavailable");
+    }
+
+    const byPlayer = {};
+    for (const playerId of QUEUE_PLAYER_IDS) {
+        byPlayer[playerId] = normalizeQueueSettings(queueStateByPlayer?.[playerId]?.settings);
+    }
+
+    const payload = {
+        version: QUEUE_RUN_SETTINGS_STORAGE_VERSION,
+        savedAt: Date.now(),
+        byPlayer,
+    };
+    localStorage.setItem(QUEUE_RUN_SETTINGS_STORAGE_KEY, JSON.stringify(payload));
+    return byPlayer;
 }
 
 function snapshotPlayerDataMap(rawPlayerDataMap) {
@@ -1878,7 +1937,19 @@ function persistEquipmentSetsToStorage(equipmentSets) {
     localStorage.setItem(EQUIPMENT_SET_STORAGE_KEY, JSON.stringify(normalized));
 }
 
-function createQueuePlayerState() {
+function getDefaultQueueRunSettings() {
+    return {
+        rounds: 30,
+        baselineRounds: 1,
+        medianBlend: 0.5,
+        weightProfit: 0.5,
+        weightXp: 0.3,
+        weightDeathSafety: 0.2,
+        executionMode: "parallel",
+    };
+}
+
+function createQueuePlayerState(queueSettings = getDefaultQueueRunSettings()) {
     return {
         baseline: null,
         items: [],
@@ -1887,14 +1958,7 @@ function createQueuePlayerState() {
         ranking: [],
         enhancementUpgradeCosts: {},
         abilityUpgradeCosts: {},
-        settings: {
-            rounds: 30,
-            medianBlend: 0.5,
-            weightProfit: 0.5,
-            weightXp: 0.3,
-            weightDeathSafety: 0.2,
-            executionMode: "parallel",
-        },
+        settings: normalizeQueueSettings(queueSettings),
         isRunning: false,
         progress: 0,
         error: "",
@@ -2158,10 +2222,11 @@ function buildAdvisorPartialErrorText(stageLabel, failedCandidates = []) {
     return `${failedCount} target(s) failed during ${safeStageLabel}. Showing successful results only.`;
 }
 
-function createQueueStateByPlayer(playerList) {
+function createQueueStateByPlayer(playerList, settingsByPlayer = {}) {
     const stateByPlayer = {};
     for (const player of playerList) {
-        stateByPlayer[String(player.id)] = createQueuePlayerState();
+        const playerId = String(player.id);
+        stateByPlayer[playerId] = createQueuePlayerState(settingsByPlayer?.[playerId]);
     }
     return stateByPlayer;
 }
@@ -2659,6 +2724,21 @@ function summarizeQueueBaselineMetrics(summaryRow = null) {
         xpPerHour: totalXpPerHour,
         dailyProfit: profitPerHour * 24,
         dailyNoRngProfit: profitPerHour * 24,
+    };
+}
+
+function createQueueBaselineRecord(snapshot, partySnapshot, settings, overrides = {}) {
+    return {
+        snapshot: deepClone(snapshot),
+        partySnapshot: partySnapshot ? deepClone(partySnapshot) : null,
+        settings: deepClone(settings),
+        metrics: null,
+        simResult: null,
+        completedRounds: 0,
+        metricSummary: null,
+        sampleMetadata: [],
+        createdAt: Date.now(),
+        ...overrides,
     };
 }
 
@@ -3437,14 +3517,71 @@ function summarizeMetric(values, deltaPctValues) {
     };
 }
 
-function buildQueueItemMetricSummary(roundResults = []) {
+function buildMetricSummaryForKeys(roundResults = [], metricKeys = QUEUE_MULTI_ROUND_METRIC_KEYS, includeDeltaPct = true) {
     const metricSummary = {};
-    for (const metricKey of QUEUE_MULTI_ROUND_METRIC_KEYS) {
+    for (const metricKey of metricKeys) {
         const metricValues = roundResults.map((result) => toFiniteNumber(result?.metrics?.[metricKey], 0));
-        const deltaPctValues = roundResults.map((result) => Number(result?.deltas?.[metricKey]?.pct));
+        const deltaPctValues = includeDeltaPct
+            ? roundResults.map((result) => Number(result?.deltas?.[metricKey]?.pct))
+            : [];
         metricSummary[metricKey] = summarizeMetric(metricValues, deltaPctValues);
     }
     return metricSummary;
+}
+
+function buildQueueItemMetricSummary(roundResults = []) {
+    return buildMetricSummaryForKeys(roundResults, QUEUE_MULTI_ROUND_METRIC_KEYS, true);
+}
+
+function buildQueueBaselineMetricSummary(roundResults = []) {
+    return buildMetricSummaryForKeys(roundResults, QUEUE_BASELINE_METRIC_KEYS, false);
+}
+
+function resolveMetricSummaryAggregateValue(metricSummaryEntry) {
+    const robustMean = Number(metricSummaryEntry?.robustMean);
+    if (Number.isFinite(robustMean)) {
+        return robustMean;
+    }
+
+    const meanValue = Number(metricSummaryEntry?.mean);
+    if (Number.isFinite(meanValue)) {
+        return meanValue;
+    }
+
+    return 0;
+}
+
+function buildAggregatedMetricsFromMetricSummary(metricSummary = {}, metricKeys = []) {
+    const metrics = {};
+    for (const metricKey of metricKeys) {
+        metrics[metricKey] = toFiniteNumber(resolveMetricSummaryAggregateValue(metricSummary?.[metricKey]), 0);
+    }
+    return metrics;
+}
+
+function buildQueueBaselineAggregate(roundResults = []) {
+    const metricSummary = buildQueueBaselineMetricSummary(roundResults);
+    return {
+        metricSummary,
+        metrics: buildAggregatedMetricsFromMetricSummary(metricSummary, QUEUE_BASELINE_METRIC_KEYS),
+    };
+}
+
+function hasAggregatedQueueBaselineMetrics(baseline = null) {
+    if (!isPlainObject(baseline)) {
+        return false;
+    }
+
+    if (!isPlainObject(baseline.metricSummary)) {
+        return false;
+    }
+
+    const completedRounds = Math.max(0, Math.floor(toFiniteNumber(baseline.completedRounds, 0)));
+    if (completedRounds <= 0) {
+        return false;
+    }
+
+    return QUEUE_MULTI_ROUND_METRIC_KEYS.every((metricKey) => Number.isFinite(Number(baseline?.metrics?.[metricKey])));
 }
 
 function rankScoreList(rawValues, options = {}) {
@@ -3533,7 +3670,23 @@ function createEmptyQueueCostInsights() {
         purchaseDays: null,
         goldPerPoint01Pct: {},
         goldPerPoint01PctAvg: null,
+        compositeDeltaPct: null,
+        compositeGoldPerPoint01Pct: null,
     };
+}
+
+function resolveQueueMetricSummaryDeltaPct(metricSummary = {}, metricKey = "") {
+    const robustDeltaPct = Number(metricSummary?.[metricKey]?.robustMeanDeltaPct);
+    if (Number.isFinite(robustDeltaPct)) {
+        return robustDeltaPct;
+    }
+
+    const fallbackDeltaPct = Number(metricSummary?.[metricKey]?.meanDeltaPct);
+    if (Number.isFinite(fallbackDeltaPct)) {
+        return fallbackDeltaPct;
+    }
+
+    return null;
 }
 
 function buildQueueItemCostInsights(queueState, queueItemSnapshot, metricSummary, pricingState) {
@@ -3554,22 +3707,30 @@ function buildQueueItemCostInsights(queueState, queueItemSnapshot, metricSummary
 
     const goldPerPoint01Pct = {};
     for (const metricKey of QUEUE_MULTI_ROUND_METRIC_KEYS) {
-        const robustDeltaPct = Number(metricSummary?.[metricKey]?.robustMeanDeltaPct);
-        const fallbackDeltaPct = Number(metricSummary?.[metricKey]?.meanDeltaPct);
-        const meanDeltaPct = Number.isFinite(robustDeltaPct) ? robustDeltaPct : fallbackDeltaPct;
+        const meanDeltaPct = resolveQueueMetricSummaryDeltaPct(metricSummary, metricKey);
         goldPerPoint01Pct[metricKey] = computeGoldPerPoint01Pct(totalUpgradeCost, { pct: meanDeltaPct });
     }
 
-    const validGoldValues = Object.values(goldPerPoint01Pct).filter((value) => Number.isFinite(value) && value > 0);
-    const goldPerPoint01PctAvg = validGoldValues.length > 0
-        ? validGoldValues.reduce((sum, value) => sum + value, 0) / validGoldValues.length
+    const goldValues = QUEUE_MULTI_ROUND_METRIC_KEYS.map((metricKey) => goldPerPoint01Pct[metricKey]);
+    const goldPerPoint01PctAvg = goldValues.length === QUEUE_MULTI_ROUND_METRIC_KEYS.length
+        && goldValues.every((value) => Number.isFinite(value) && value > 0)
+        ? goldValues.reduce((sum, value) => sum + value, 0) / goldValues.length
         : null;
+    const compositeDeltaValues = QUEUE_MULTI_ROUND_METRIC_KEYS
+        .map((metricKey) => resolveQueueMetricSummaryDeltaPct(metricSummary, metricKey));
+    const compositeDeltaPct = compositeDeltaValues.length === QUEUE_MULTI_ROUND_METRIC_KEYS.length
+        && compositeDeltaValues.every((value) => Number.isFinite(value))
+        ? compositeDeltaValues.reduce((sum, value) => sum + value, 0) / compositeDeltaValues.length
+        : null;
+    const compositeGoldPerPoint01Pct = computeGoldPerPoint01Pct(totalUpgradeCost, { pct: compositeDeltaPct });
 
     return {
         totalUpgradeCost,
         purchaseDays,
         goldPerPoint01Pct,
         goldPerPoint01PctAvg,
+        compositeDeltaPct,
+        compositeGoldPerPoint01Pct,
     };
 }
 
@@ -3750,6 +3911,7 @@ function buildMultiRoundRanking(metricSummaryByQueueItem, scoreWeights = getDefa
                     upgradeCost: upgradeCostScore,
                     purchaseDays: purchaseDaysScore,
                     avgGoldPerPoint01Pct: avgGoldScore,
+                    compositeGoldPerPoint01Pct: toFiniteNumber(entry.costInsights?.compositeGoldPerPoint01Pct, 0),
                 },
             },
             metricSummary: entry.metricSummary,
@@ -3785,19 +3947,22 @@ function buildMultiRoundRanking(metricSummaryByQueueItem, scoreWeights = getDefa
 }
 
 function normalizeQueueSettings(settings) {
-    const rounds = clamp(Math.floor(toFiniteNumber(settings?.rounds, 30)), 1, 200);
-    const medianBlend = clamp(toFiniteNumber(settings?.medianBlend, 0.5), 0, 1);
-    const weightProfit = Math.max(0, toFiniteNumber(settings?.weightProfit, 0.5));
-    const weightXp = Math.max(0, toFiniteNumber(settings?.weightXp, 0.3));
-    const weightDeathSafety = Math.max(0, toFiniteNumber(settings?.weightDeathSafety, 0.2));
+    const defaults = getDefaultQueueRunSettings();
+    const rounds = clamp(Math.floor(toFiniteNumber(settings?.rounds, defaults.rounds)), 1, 200);
+    const baselineRounds = clamp(Math.floor(toFiniteNumber(settings?.baselineRounds, defaults.baselineRounds)), 1, 200);
+    const medianBlend = clamp(toFiniteNumber(settings?.medianBlend, defaults.medianBlend), 0, 1);
+    const weightProfit = Math.max(0, toFiniteNumber(settings?.weightProfit, defaults.weightProfit));
+    const weightXp = Math.max(0, toFiniteNumber(settings?.weightXp, defaults.weightXp));
+    const weightDeathSafety = Math.max(0, toFiniteNumber(settings?.weightDeathSafety, defaults.weightDeathSafety));
     const weightSum = weightProfit + weightXp + weightDeathSafety || 1;
     const executionModeRaw = settings?.executionMode;
     const executionMode = executionModeRaw == null
-        ? "parallel"
+        ? defaults.executionMode
         : (executionModeRaw === "parallel" ? "parallel" : "serial");
 
     return {
         rounds,
+        baselineRounds,
         medianBlend,
         weightProfit: weightProfit / weightSum,
         weightXp: weightXp / weightSum,
@@ -4072,6 +4237,7 @@ export const useSimulatorStore = defineStore("simulator", {
             [1, 2, 3, 4, 5].map((id) => createEmptyPlayerConfig(id)),
             playerAchievementsById,
         );
+        const persistedQueueRunSettingsByPlayer = loadQueueRunSettingsByPlayerFromStorage();
         const simulationUiSettings = loadSimulationUiSettingsFromStorage();
         const { zones, dungeons } = getZoneOptions();
         const labyrinths = getLabyrinthOptions();
@@ -4135,7 +4301,7 @@ export const useSimulatorStore = defineStore("simulator", {
             },
             advisor: createAdvisorState(),
             queue: {
-                byPlayer: createQueueStateByPlayer(playerList),
+                byPlayer: createQueueStateByPlayer(playerList, persistedQueueRunSettingsByPlayer),
                 importedProfileByPlayer: createImportedProfileByPlayer(),
                 importedBaselineByPlayer: createImportedBaselineByPlayer(),
             },
@@ -4297,7 +4463,9 @@ export const useSimulatorStore = defineStore("simulator", {
         ensureQueueState(playerId = this.activePlayerId) {
             const normalizedId = String(playerId || this.activePlayerId);
             if (!this.queue.byPlayer[normalizedId]) {
-                this.queue.byPlayer[normalizedId] = createQueuePlayerState();
+                this.queue.byPlayer[normalizedId] = createQueuePlayerState(
+                    loadQueueRunSettingsByPlayerFromStorage()?.[normalizedId]
+                );
             }
             return this.queue.byPlayer[normalizedId];
         },
@@ -4362,7 +4530,7 @@ export const useSimulatorStore = defineStore("simulator", {
                     continue;
                 }
 
-                this.queue.byPlayer[String(player.id)] = createQueuePlayerState();
+                this.queue.byPlayer[String(player.id)] = createQueuePlayerState(this.queue.byPlayer[String(player.id)]?.settings);
                 this.setImportedProfileState(player.id, false);
             }
 
@@ -4395,7 +4563,7 @@ export const useSimulatorStore = defineStore("simulator", {
             }
 
             for (const playerId of normalizedIds) {
-                this.queue.byPlayer[playerId] = createQueuePlayerState();
+                this.queue.byPlayer[playerId] = createQueuePlayerState(this.queue.byPlayer[playerId]?.settings);
                 this.setImportedProfileState(playerId, false);
             }
 
@@ -4763,7 +4931,7 @@ export const useSimulatorStore = defineStore("simulator", {
                         };
                     }
 
-                    this.queue.byPlayer[String(playerId)] = createQueuePlayerState();
+                    this.queue.byPlayer[String(playerId)] = createQueuePlayerState(this.queue.byPlayer[String(playerId)]?.settings);
                     this.setImportedProfileState(playerId, true);
                     this.setImportedBaselineSnapshot(playerId, parsed.player);
                 }
@@ -5027,13 +5195,11 @@ export const useSimulatorStore = defineStore("simulator", {
             }
 
             const queueState = this.ensureQueueState(normalizedPlayerId);
-            queueState.baseline = {
-                snapshot: deepClone(currentBaselineSnapshot),
-                settings: buildQueueBaselineSettings(this.simulationSettings),
-                metrics: null,
-                simResult: null,
-                createdAt: Date.now(),
-            };
+            queueState.baseline = createQueueBaselineRecord(
+                currentBaselineSnapshot,
+                null,
+                buildQueueBaselineSettings(this.simulationSettings, queueState.settings)
+            );
             queueState.items = importedItems;
             queueState.results = [];
             queueState.rawRuns = [];
@@ -5123,14 +5289,11 @@ export const useSimulatorStore = defineStore("simulator", {
             }
 
             if (!shouldRunSimulation) {
-                queueState.baseline = {
-                    snapshot: deepClone(this.activePlayer),
+                queueState.baseline = createQueueBaselineRecord(
+                    this.activePlayer,
                     partySnapshot,
-                    settings: buildQueueBaselineSettings(this.simulationSettings),
-                    metrics: null,
-                    simResult: null,
-                    createdAt: Date.now(),
-                };
+                    buildQueueBaselineSettings(this.simulationSettings, queueState.settings)
+                );
                 queueState.items = preserveQueueItems ? preservedQueueItems : [];
                 queueState.results = [];
                 queueState.rawRuns = [];
@@ -5160,6 +5323,12 @@ export const useSimulatorStore = defineStore("simulator", {
                 throw new Error("Queue baseline does not support labyrinth mode yet.");
             }
 
+            const queueSettings = normalizeQueueSettings(queueState.settings);
+            queueState.settings = queueSettings;
+            const baselineRoundCount = queueSettings.baselineRounds;
+            const executionMode = queueSettings.executionMode === "parallel" ? "parallel" : "serial";
+            const baselineSettings = buildQueueBaselineSettings(this.simulationSettings, queueSettings);
+            const baselineSnapshot = deepClone(activePlayer);
             const scenarioPlayers = partySnapshot.selectedPlayers.map((player) => ({
                 ...deepClone(player),
                 selected: true,
@@ -5172,7 +5341,6 @@ export const useSimulatorStore = defineStore("simulator", {
 
             const selectedPlayersSnapshot = [{ id: activePlayerId, name: activePlayer?.name || `Player ${activePlayerId}` }];
             const pricingOptions = createProfitPricingOptions(this.pricing);
-            const payload = this.buildSingleSimulationPayload(playersToSim);
             const startedAt = Date.now();
 
             queueState.isRunning = true;
@@ -5184,30 +5352,122 @@ export const useSimulatorStore = defineStore("simulator", {
             this.runtime.error = "";
             this.runtime.startedAt = startedAt;
             this.runtime.elapsedSeconds = 0;
-            this.runtime.workerMode = "single";
+            this.runtime.workerMode = executionMode === "parallel" ? "multi" : "single";
 
             try {
-                const simResult = await this.runSingleSimulationPayload(payload, (data) => {
-                    const progress = clamp(Number(data.progress || 0), 0, 1);
-                    queueState.progress = progress;
-                    this.runtime.progress = progress;
-                    this.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
-                });
+                let completedRounds = 0;
+                const runProgressByRunKey = new Map();
+                const roundResults = [];
+                const sampleMetadata = [];
+                let representativeSimResult = null;
+                const queueParallelWorkerLimit = executionMode === "parallel"
+                    ? Math.max(
+                        1,
+                        Math.min(
+                            normalizeParallelWorkerLimit(this.queueRuntime?.parallelWorkerLimit, this.queueParallelWorkerHardMax),
+                            this.queueParallelWorkerHardMax
+                        )
+                    )
+                    : 1;
 
-                const summaryRow = summarizeResult(simResult, selectedPlayersSnapshot, pricingOptions)[0] || null;
-                const summaryMetrics = summarizeQueueBaselineMetrics(summaryRow);
-                const queueMetrics = computeQueueMetrics(simResult, activePlayerId, pricingOptions);
-                queueState.baseline = {
-                    snapshot: deepClone(this.activePlayer),
-                    partySnapshot,
-                    settings: buildQueueBaselineSettings(this.simulationSettings),
-                    metrics: {
-                        ...summaryMetrics,
-                        ...queueMetrics,
-                    },
-                    simResult,
-                    createdAt: Date.now(),
+                const isBaselineRunActive = () => queueState.cancelRequested !== true;
+                const ensureBaselineRunNotCancelled = () => {
+                    if (!isBaselineRunActive()) {
+                        throw createWorkerRunCancellationError("Queue baseline cancelled.");
+                    }
                 };
+                const updateBaselineRunProgress = () => {
+                    const inProgress = Array.from(runProgressByRunKey.values())
+                        .reduce((sum, value) => sum + clamp(Number(value || 0), 0, 1), 0);
+                    const overall = (completedRounds + inProgress) / Math.max(1, baselineRoundCount);
+                    queueState.progress = clamp(overall, 0, 1);
+                    this.runtime.progress = queueState.progress;
+                    this.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
+                };
+                const runBaselineRound = async (roundIndex) => {
+                    ensureBaselineRunNotCancelled();
+                    const runKey = `baseline-${roundIndex + 1}`;
+                    const runSingle = executionMode === "parallel"
+                        ? this.runSingleSimulationPayloadWithDedicatedWorker
+                        : this.runSingleSimulationPayload;
+                    runProgressByRunKey.set(runKey, 0);
+                    updateBaselineRunProgress();
+                    let completedSuccessfully = false;
+
+                    try {
+                        const payload = this.buildSingleSimulationPayload(playersToSim);
+                        const simResult = await runSingle(payload, (data) => {
+                            if (!isBaselineRunActive()) {
+                                return;
+                            }
+                            runProgressByRunKey.set(runKey, clamp(Number(data.progress || 0), 0, 1));
+                            updateBaselineRunProgress();
+                        });
+
+                        ensureBaselineRunNotCancelled();
+                        const summaryRow = summarizeResult(simResult, selectedPlayersSnapshot, pricingOptions)[0] || null;
+                        const summaryMetrics = summarizeQueueBaselineMetrics(summaryRow);
+                        const queueMetrics = computeQueueMetrics(simResult, activePlayerId, pricingOptions);
+                        roundResults.push({
+                            round: roundIndex + 1,
+                            metrics: {
+                                ...summaryMetrics,
+                                ...queueMetrics,
+                            },
+                        });
+                        sampleMetadata.push({
+                            round: roundIndex + 1,
+                            simulatedTime: toFiniteNumber(simResult?.simulatedTime, 0),
+                            zoneHrid: String(simResult?.zoneHrid || simResult?.zoneName || ""),
+                            difficultyTier: Math.max(0, Math.floor(toFiniteNumber(simResult?.difficultyTier, 0))),
+                        });
+                        representativeSimResult ??= simResult;
+                        completedSuccessfully = true;
+                    } finally {
+                        runProgressByRunKey.delete(runKey);
+                        if (completedSuccessfully) {
+                            completedRounds += 1;
+                        }
+                        updateBaselineRunProgress();
+                    }
+                };
+
+                if (executionMode === "parallel" && baselineRoundCount > 1) {
+                    let nextRoundIndex = 0;
+                    const workerCount = Math.max(1, Math.min(queueParallelWorkerLimit, baselineRoundCount));
+                    const workerLoop = async () => {
+                        while (nextRoundIndex < baselineRoundCount) {
+                            ensureBaselineRunNotCancelled();
+                            const currentRoundIndex = nextRoundIndex;
+                            nextRoundIndex += 1;
+                            // eslint-disable-next-line no-await-in-loop
+                            await runBaselineRound(currentRoundIndex);
+                        }
+                    };
+                    await Promise.all(Array.from({ length: workerCount }, () => workerLoop()));
+                } else {
+                    for (let roundIndex = 0; roundIndex < baselineRoundCount; roundIndex += 1) {
+                        ensureBaselineRunNotCancelled();
+                        // eslint-disable-next-line no-await-in-loop
+                        await runBaselineRound(roundIndex);
+                    }
+                }
+
+                ensureBaselineRunNotCancelled();
+                const sortedRoundResults = roundResults.slice().sort((left, right) => left.round - right.round);
+                const baselineAggregate = buildQueueBaselineAggregate(sortedRoundResults);
+                queueState.baseline = createQueueBaselineRecord(
+                    baselineSnapshot,
+                    partySnapshot,
+                    baselineSettings,
+                    {
+                        metrics: baselineAggregate.metrics,
+                        simResult: representativeSimResult,
+                        completedRounds: sortedRoundResults.length,
+                        metricSummary: baselineAggregate.metricSummary,
+                        sampleMetadata: sampleMetadata.slice().sort((left, right) => left.round - right.round),
+                    }
+                );
                 queueState.items = preserveQueueItems ? preservedQueueItems : [];
                 queueState.results = [];
                 queueState.rawRuns = [];
@@ -5233,6 +5493,7 @@ export const useSimulatorStore = defineStore("simulator", {
                 this.runtime.isRunning = false;
                 this.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
                 workerClient.stopSimulation();
+                stopQueueWorkerClients();
             }
         },
         addActivePlayerToQueue() {
@@ -5300,6 +5561,11 @@ export const useSimulatorStore = defineStore("simulator", {
                 ...queueState.settings,
                 ...partialSettings,
             });
+            try {
+                persistQueueRunSettingsByPlayerToStorage(this.queue.byPlayer);
+            } catch (error) {
+                // Keep queue settings editable even when localStorage is unavailable or full.
+            }
             return queueState.settings;
         },
         removeQueueItem(itemId) {
@@ -5435,11 +5701,11 @@ export const useSimulatorStore = defineStore("simulator", {
             const pricingOptions = createProfitPricingOptions(this.pricing);
             const queueRunId = Number(queueState.runId || 0) + 1;
             const startedAt = Date.now();
-            const recomputedBaselineMetrics = queueState?.baseline?.simResult
+            const recomputedBaselineMetrics = !hasAggregatedQueueBaselineMetrics(queueState?.baseline) && queueState?.baseline?.simResult
                 ? computeQueueMetrics(queueState.baseline.simResult, activePlayerId, pricingOptions)
                 : null;
 
-            if (queueState?.baseline) {
+            if (queueState?.baseline && isPlainObject(recomputedBaselineMetrics)) {
                 queueState.baseline.metrics = {
                     ...(isPlainObject(queueState.baseline.metrics) ? queueState.baseline.metrics : {}),
                     ...(isPlainObject(recomputedBaselineMetrics) ? recomputedBaselineMetrics : {}),

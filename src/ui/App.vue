@@ -322,6 +322,38 @@
     </BaseModal>
 
     <BaseModal
+      :open="baselineReminderModalOpen"
+      :title="t('common:queue.baselineReminderTitle', 'Baseline Rounds Reminder')"
+      initial-focus-selector="[data-baseline-reminder-acknowledge]"
+      @close="closeBaselineReminderModal"
+    >
+      <div class="space-y-3">
+        <p class="text-sm text-slate-300">
+          {{ t("common:queue.baselineReminderBody", "Fewer baseline rounds can make the result more volatile. Adjust the setting first if you want a more stable baseline.") }}
+        </p>
+        <p class="text-sm text-amber-200">
+          {{ baselineReminderCurrentRoundsText }}
+        </p>
+        <p class="text-xs text-slate-400">
+          {{ t("common:queue.baselineReminderAggregationHint", "Set Baseline runs multiple rounds using the current baseline round count and uses the aggregated result as the queue comparison baseline.") }}
+        </p>
+        <div class="flex flex-wrap items-center gap-2">
+          <button
+            type="button"
+            class="action-button-primary"
+            data-baseline-reminder-acknowledge
+            @click="acknowledgeBaselineReminderAndRun"
+          >
+            {{ t("common:queue.baselineReminderAcknowledge", "I understand, don't show again") }}
+          </button>
+          <button type="button" class="action-button-muted" @click="openBaselineReminderSettings">
+            {{ t("common:queue.baselineReminderGoToSettings", "Go to Settings") }}
+          </button>
+        </div>
+      </div>
+    </BaseModal>
+
+    <BaseModal
       :open="queueCompleteModalOpen"
       :title="t('common:queue.queueRunning', 'Running queue...')"
       initial-focus-selector="[data-multi-results-confirm]"
@@ -364,6 +396,10 @@ import {
   markPatchNoteEntriesAsRead,
   resolvePatchNoteEntries,
 } from "./patchNotes.js";
+import {
+  dismissBaselineReminder,
+  isBaselineReminderDismissed,
+} from "./baselineReminder.js";
 import { deriveQueueItemStatusName } from "./queueItemStatusPresentation.js";
 
 const THEME_STORAGE_KEY = "mwi.ui.theme.v1";
@@ -380,6 +416,8 @@ const feedbackModalOpen = ref(false);
 const feedbackCopyStatus = ref("");
 const simulationCompleteModalOpen = ref(false);
 const queueCompleteModalOpen = ref(false);
+const baselineReminderModalOpen = ref(false);
+const baselineReminderDismissed = ref(isBaselineReminderDismissed());
 const patchNotesModalOpen = ref(false);
 const patchNotesUnreadEntries = ref([]);
 const topQueueActionStatus = ref({
@@ -433,6 +471,20 @@ const queueActionsDisabled = computed(() => Boolean(
 ));
 const activeQueueHasBaseline = computed(() => Boolean(activeQueueState.value?.baseline?.snapshot));
 const activeQueueItemCount = computed(() => (Array.isArray(activeQueueState.value?.items) ? activeQueueState.value.items.length : 0));
+const baselineReminderRoundCount = computed(() => {
+  const parsed = Number(activeQueueState.value?.settings?.baselineRounds || 1);
+  if (!Number.isFinite(parsed)) {
+    return 1;
+  }
+  return Math.max(1, Math.min(200, Math.floor(parsed)));
+});
+const baselineReminderCurrentRoundsText = computed(() => (
+  t(
+    "common:queue.baselineReminderCurrentRounds",
+    `Current baseline rounds: ${baselineReminderRoundCount.value}`,
+    { count: baselineReminderRoundCount.value }
+  )
+));
 const showRuntimeSummary = computed(() => Boolean(simulator.runtime.isRunning || simulator.runtime.error));
 const activeQueueProgressText = computed(() => {
   const progress = Number(activeQueueState.value?.progress || 0);
@@ -594,7 +646,7 @@ function formatTopQueueVariantName(item, fallbackIndex = 1) {
   });
 }
 
-async function setQueueBaselineFromTopbar() {
+async function runTopbarBaselineSimulation() {
   try {
     setTopQueueActionStatus("secondary", t("common:queue.baselineRunning", "Running baseline simulation..."));
     await simulator.setQueueBaselineForActivePlayer({ runSimulation: true });
@@ -606,6 +658,14 @@ async function setQueueBaselineFromTopbar() {
     }
     setTopQueueActionStatus("danger", resolveQueueActionErrorMessage(error));
   }
+}
+
+async function setQueueBaselineFromTopbar() {
+  if (!baselineReminderDismissed.value) {
+    baselineReminderModalOpen.value = true;
+    return;
+  }
+  await runTopbarBaselineSimulation();
 }
 
 function addToQueueFromTopbar() {
@@ -734,6 +794,25 @@ function closeSimulationCompleteModal() {
 
 function closeQueueCompleteModal() {
   queueCompleteModalOpen.value = false;
+}
+
+function closeBaselineReminderModal() {
+  baselineReminderModalOpen.value = false;
+}
+
+async function acknowledgeBaselineReminderAndRun() {
+  baselineReminderDismissed.value = true;
+  dismissBaselineReminder();
+  closeBaselineReminderModal();
+  await runTopbarBaselineSimulation();
+}
+
+async function openBaselineReminderSettings() {
+  closeBaselineReminderModal();
+  setTopQueueActionStatus("secondary", "");
+  if (route.name !== "settings") {
+    await router.push({ name: "settings" });
+  }
 }
 
 function refreshPatchNoteUnreadEntries() {

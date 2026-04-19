@@ -1,4 +1,24 @@
 {
+    "2026年4月19日（v1.0.16）": {
+        "label": {
+            "zh": "2026年4月19日（v1.0.16）",
+            "en": "April 19, 2026 (v1.0.16)"
+        },
+        "notes": {
+            "zh": [
+                "队列新增独立“基准轮次”设置，“设为基准”现在会按该轮数执行多轮基准聚合；设置页、多轮结果页和相关摘要也会同步显示基准轮次与完成样本数。",
+                "基准轮次默认值调整为 1；首次从顶部点击“设为基准”时会弹出提醒，明确显示当前基准轮数，并提供“我已知晓，并不再弹出”和“去设置”两个操作。",
+                "修复“每0.01%提升所需金币”在负提升场景下会静默剔除非正值、导致均值严重偏差的问题；现在只有当 DPS、利润、XP/h 和击杀/h 四项最终稳健增幅全部为正时才显示严格成本，否则统一记为 N/A。",
+                "多轮结果新增“综合每0.01%所需金币”参考列，并同步优化严格成本列的命名、说明文案与导出展示，帮助更直观地区分严格口径和综合口径。"
+            ],
+            "en": [
+                "Queue runs now have an independent Baseline Rounds setting, and Set Baseline performs a multi-round aggregated baseline using that count. Settings, Multi-round Results, and related summaries now also show baseline rounds and completed samples.",
+                "The default baseline round count is now 1. On the first top-bar Set Baseline click, a reminder dialog shows the current baseline round count and offers both \"I understand, don't show again\" and \"Go to Settings\" actions.",
+                "Fixed the Gold per 0.01% metric silently dropping non-positive gains in negative-upgrade cases, which could heavily skew the average. The strict cost metric now appears only when the final robust DPS, profit, XP/h, and kills/h deltas are all positive; otherwise it is shown as N/A.",
+                "Added a new Composite Gold per 0.01% reference column in Multi-round Results, and clarified the strict-cost column naming, explanatory copy, and export display so strict and composite cost views are easier to distinguish."
+            ]
+        }
+    },
     "2026年4月13日（v1.0.15）": {
         "label": {
             "zh": "2026年4月13日（v1.0.15）",

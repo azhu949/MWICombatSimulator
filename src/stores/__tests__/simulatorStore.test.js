@@ -14,6 +14,7 @@ import { useSimulatorStore } from "../simulatorStore.js";
 
 const ONE_HOUR = 60 * 60 * 1e9;
 const PLAYER_ACHIEVEMENTS_STORAGE_KEY = "mwi.player.achievements.v1";
+const QUEUE_RUN_SETTINGS_STORAGE_KEY = "mwi.queue.runSettings.v1";
 const ACHIEVEMENT_HRID = "/achievements/total_level_100";
 const SECOND_ACHIEVEMENT_HRID = "/achievements/total_level_250";
 
@@ -265,6 +266,7 @@ describe("simulatorStore", () => {
 
         const normalized = simulator.updateActiveQueueSettings({
             rounds: 999,
+            baselineRounds: 999,
             medianBlend: 2,
             weightProfit: 2,
             weightXp: 3,
@@ -273,6 +275,7 @@ describe("simulatorStore", () => {
         });
 
         expect(normalized.rounds).toBe(200);
+        expect(normalized.baselineRounds).toBe(200);
         expect(normalized.medianBlend).toBe(1);
         expect(normalized.weightProfit).toBeCloseTo(0.2, 6);
         expect(normalized.weightXp).toBeCloseTo(0.3, 6);
@@ -289,7 +292,59 @@ describe("simulatorStore", () => {
         expect(zeroed.weightProfit).toBe(0);
         expect(zeroed.weightXp).toBe(0);
         expect(zeroed.weightDeathSafety).toBe(0);
+        expect(zeroed.baselineRounds).toBe(200);
         expect(zeroed.executionMode).toBe("serial");
+
+        const persisted = JSON.parse(global.localStorage.getItem(QUEUE_RUN_SETTINGS_STORAGE_KEY) || "{}");
+        expect(persisted.byPlayer?.["1"]?.rounds).toBe(200);
+        expect(persisted.byPlayer?.["1"]?.baselineRounds).toBe(200);
+    });
+
+    it("loads stored queue run settings and migrates missing baselineRounds from rounds", () => {
+        global.localStorage.setItem(QUEUE_RUN_SETTINGS_STORAGE_KEY, JSON.stringify({
+            version: 1,
+            savedAt: Date.now(),
+            byPlayer: {
+                "1": {
+                    rounds: 12,
+                    medianBlend: 0.25,
+                    weightProfit: 1,
+                    weightXp: 1,
+                    weightDeathSafety: 0,
+                    executionMode: "serial",
+                },
+            },
+        }));
+
+        const simulator = useSimulatorStore();
+
+        expect(simulator.activeQueueState.settings.rounds).toBe(12);
+        expect(simulator.activeQueueState.settings.baselineRounds).toBe(1);
+        expect(simulator.activeQueueState.settings.executionMode).toBe("serial");
+    });
+
+    it("defaults baselineRounds to 1 for new queue settings", () => {
+        const simulator = useSimulatorStore();
+
+        expect(simulator.activeQueueState.settings.rounds).toBe(30);
+        expect(simulator.activeQueueState.settings.baselineRounds).toBe(1);
+    });
+
+    it("keeps queue settings editable when queue run settings cannot be persisted", () => {
+        const simulator = useSimulatorStore();
+        global.localStorage.setItem.mockImplementation(() => {
+            throw new Error("QuotaExceededError");
+        });
+
+        expect(() => simulator.updateActiveQueueSettings({
+            rounds: 20,
+            baselineRounds: 5,
+            executionMode: "serial",
+        })).not.toThrow();
+
+        expect(simulator.activeQueueState.settings.rounds).toBe(20);
+        expect(simulator.activeQueueState.settings.baselineRounds).toBe(5);
+        expect(simulator.activeQueueState.settings.executionMode).toBe("serial");
     });
 
     it("validates and persists queue runtime settings", () => {
@@ -536,6 +591,75 @@ describe("simulatorStore", () => {
         expect(simulator.runtime.isRunning).toBe(false);
         expect(simulator.activeQueueState.isRunning).toBe(false);
         expect(Number(variantRow.deltaProfitPerHour)).toBeLessThanOrEqual(0);
+    });
+
+    it("keeps aggregated baseline metrics when a representative baseline sim result differs", async () => {
+        const simulator = useSimulatorStore();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activeQueueState.baseline.metrics = {
+            encountersPerHour: 100,
+            deathsPerHour: 0,
+            totalXpPerHour: 1000,
+            profitPerHour: 100,
+            dps: 200,
+            dailyNoRngProfit: 2400,
+            xpPerHour: 1000,
+            killsPerHour: 100,
+        };
+        simulator.activeQueueState.baseline.metricSummary = {
+            dps: { robustMean: 200 },
+            dailyNoRngProfit: { robustMean: 2400 },
+            xpPerHour: { robustMean: 1000 },
+            killsPerHour: { robustMean: 100 },
+        };
+        simulator.activeQueueState.baseline.completedRounds = 2;
+        simulator.activeQueueState.baseline.simResult = {
+            simulatedTime: ONE_HOUR,
+            encounters: 10,
+            experienceGained: {
+                player1: {
+                    stamina: 10,
+                },
+            },
+            deaths: {
+                player1: 0,
+            },
+            consumablesUsed: {},
+        };
+
+        simulator.activePlayer.levels.stamina = 10;
+        simulator.addActivePlayerToQueue();
+        simulator.updateActiveQueueSettings({
+            rounds: 1,
+            executionMode: "serial",
+            medianBlend: 0.5,
+            weightProfit: 1,
+            weightXp: 0,
+            weightDeathSafety: 0,
+        });
+        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+            onProgress?.({ progress: 1 });
+            return {
+                simulatedTime: ONE_HOUR,
+                encounters: 100,
+                experienceGained: {
+                    player1: {
+                        stamina: 1000,
+                    },
+                },
+                deaths: {
+                    player1: 0,
+                },
+                consumablesUsed: {},
+            };
+        });
+
+        const rows = await simulator.runActiveQueue();
+
+        expect(simulator.activeQueueState.baseline.metrics.dps).toBe(200);
+        expect(simulator.activeQueueState.baseline.metrics.killsPerHour).toBe(100);
+        expect(rows[0].deltaKillsPct).toBeCloseTo(0, 6);
     });
 
     it("runs queue entries with the frozen selected party snapshot", async () => {
@@ -1226,6 +1350,69 @@ describe("simulatorStore", () => {
         expect(Number(variantRow.costInsights?.totalUpgradeCost)).toBe(123456);
     });
 
+    it("keeps strict gold per 0.01% invalid while allowing composite cost when overall gain stays positive", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+
+        expect(equipmentItemHrid).toBeTruthy();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activeQueueState.baseline.metrics = {
+            dailyNoRngProfit: 2400,
+            dps: 10,
+            xpPerHour: 900,
+            killsPerHour: 80,
+        };
+        simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
+        simulator.setActivePlayerEquipmentUpgradeCost("weapon", 123456);
+
+        const addedItems = simulator.addActivePlayerToQueue();
+        expect(addedItems.length).toBe(1);
+
+        simulator.updateActiveQueueSettings({
+            rounds: 1,
+            executionMode: "serial",
+            medianBlend: 0.5,
+            weightProfit: 1,
+            weightXp: 0,
+            weightDeathSafety: 0,
+        });
+        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+            onProgress?.({ progress: 1 });
+            return {
+                simulatedTime: ONE_HOUR,
+                encounters: 100,
+                attacks: {
+                    player1: {
+                        autoAttack: {
+                            cast1: {
+                                360000: 1,
+                            },
+                        },
+                    },
+                },
+                experienceGained: {
+                    player1: {
+                        stamina: 1000,
+                    },
+                },
+                deaths: {
+                    player1: 0,
+                },
+                consumablesUsed: {},
+            };
+        });
+
+        const rows = await simulator.runActiveQueue();
+        const variantRow = rows[0];
+
+        expect(variantRow).toBeTruthy();
+        expect(variantRow.costInsights?.goldPerPoint01PctAvg).toBeNull();
+        expect(variantRow.rawComponentScores?.costByMetric?.avgGoldPerPoint01Pct).toBe(0);
+        expect(Number(variantRow.costInsights?.compositeGoldPerPoint01Pct)).toBeGreaterThan(0);
+    });
+
     it("includes house room upgrade cost in queue ranking cost insights", async () => {
         const simulator = useSimulatorStore();
         const room = findHouseRoomWithUpgradeLevels(1);
@@ -1513,30 +1700,50 @@ describe("simulatorStore", () => {
         expect(secondItems[0].id).not.toBe(firstItems[0].id);
     });
 
-    it("runs baseline simulation when requested", async () => {
+    it("runs multi-round baseline simulation when requested", async () => {
         const simulator = useSimulatorStore();
         simulator.setImportedProfileState("1", true);
+        simulator.updateActiveQueueSettings({
+            baselineRounds: 2,
+            executionMode: "serial",
+        });
+        const baselineResults = [{
+            simulatedTime: ONE_HOUR,
+            encounters: 120,
+            experienceGained: {
+                player1: {
+                    stamina: 1200,
+                },
+            },
+            deaths: {
+                player1: 0,
+            },
+            consumablesUsed: {},
+        }, {
+            simulatedTime: ONE_HOUR,
+            encounters: 240,
+            experienceGained: {
+                player1: {
+                    stamina: 2400,
+                },
+            },
+            deaths: {
+                player1: 0,
+            },
+            consumablesUsed: {},
+        }];
         simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
             onProgress?.({ progress: 0.999 });
-            return {
-                simulatedTime: ONE_HOUR,
-                encounters: 120,
-                experienceGained: {
-                    player1: {
-                        stamina: 1200,
-                    },
-                },
-                deaths: {
-                    player1: 0,
-                },
-                consumablesUsed: {},
-            };
+            return baselineResults.shift();
         });
 
         const baseline = await simulator.setQueueBaselineForActivePlayer({ runSimulation: true });
 
-        expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(1);
-        expect(baseline?.metrics?.totalXpPerHour).toBeGreaterThan(0);
+        expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(2);
+        expect(baseline?.completedRounds).toBe(2);
+        expect(baseline?.metrics?.totalXpPerHour).toBe(1800);
+        expect(baseline?.metrics?.killsPerHour).toBe(180);
+        expect(baseline?.metricSummary?.killsPerHour?.sampleCount).toBe(2);
         expect(simulator.activeQueueState.isRunning).toBe(false);
         expect(simulator.runtime.progress).toBe(1);
     });
@@ -1544,6 +1751,7 @@ describe("simulatorStore", () => {
     it("captures selected party snapshot when baseline simulation runs", async () => {
         const simulator = useSimulatorStore();
         simulator.setImportedProfileState("1", true);
+        simulator.updateActiveQueueSettings({ baselineRounds: 1, executionMode: "serial" });
         simulator.players[1].selected = true;
         simulator.players[1].name = "Support";
         simulator.players[1].levels.stamina = 77;
@@ -1603,6 +1811,7 @@ describe("simulatorStore", () => {
         const queueIdsBefore = simulator.activeQueueState.items.map((item) => item.id);
 
         simulator.setImportedProfileState("1", true);
+        simulator.updateActiveQueueSettings({ baselineRounds: 1, executionMode: "serial" });
         simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
             onProgress?.({ progress: 1 });
             return {
@@ -1633,6 +1842,7 @@ describe("simulatorStore", () => {
         expect(appended).toHaveLength(1);
 
         simulator.setImportedProfileState("1", true);
+        simulator.updateActiveQueueSettings({ baselineRounds: 1, executionMode: "serial" });
         simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
             onProgress?.({ progress: 1 });
             return {

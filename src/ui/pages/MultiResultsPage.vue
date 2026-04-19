@@ -18,6 +18,8 @@
             <p>{{ t("common:multiRound.scoreModelParamPerformance", "Performance: DPS, No RNG Profit/day, XP/h and Kills/h gains are rank-mapped within the batch to 5-95. Higher is better.") }}</p>
             <p>{{ t("common:multiRound.scoreModelParamStability", "Stability: the average CV across the four metrics is rank-mapped within the batch to 5-95. Lower volatility scores higher.") }}</p>
             <p>{{ t("common:multiRound.scoreModelParamCost", "Cost: upgrade cost, purchase time and gold per 0.01% gain are each mapped to 5-95 (cost metrics use log scaling first). Lower cost scores higher.") }}</p>
+            <p>{{ t("common:multiRound.scoreModelParamGoldPerPointValidity", "Strict gold per 0.01% is shown only when the final robust deltas for DPS, No RNG Profit/day, XP/h and Kills/h are all positive. Otherwise it is marked N/A. This is the cost metric currently used in cost scoring.") }}</p>
+            <p>{{ t("common:multiRound.scoreModelParamCompositeGoldPerPoint", "Composite gold per 0.01% uses the equal-weight average of the four final robust deltas. It is shown when that composite delta is positive, and is provided as a user-facing reference column.") }}</p>
             <p>{{ t("common:multiRound.scoreModelParamRobustWinsorize", "Robust winsorize setting", { winsorPct: 5 }) }}</p>
             <p>{{ t("common:multiRound.scoreModelParamRobustMedianBlend", "Robust median blend setting", { meanWeight: 50, medianWeight: 50 }) }}</p>
             <p>{{ t("common:multiRound.scoreModelParamRobustConfidencePenalty", "Robust confidence penalty setting", {
@@ -33,6 +35,9 @@
               <span class="text-slate-400">{{ row.label }}:</span> {{ row.value }}
             </p>
           </div>
+          <p v-if="baselineSummaryRows.length > 0" class="mt-2 text-slate-400">
+            {{ t("common:queue.baselineSummaryAggregationHint", "Baseline values shown here come from multi-round robust aggregation: the simulator runs the configured baseline rounds and blends winsorized means with medians instead of showing a single sample.") }}
+          </p>
           <p v-else class="mt-2 text-slate-400">
             {{ t("common:queue.emptyBaseline", "No baseline yet. Click 'Set Baseline' to run and lock one.") }}
           </p>
@@ -120,7 +125,7 @@
             {{ t("common:exportToExcel", "Export To Excel") }}
           </button>
         </div>
-        <table class="min-w-[1700px] w-max text-sm">
+        <table class="min-w-[1880px] w-max text-sm">
           <thead>
             <tr class="border-b border-white/10 text-left text-xs uppercase tracking-[0.14em] text-slate-400">
               <th class="px-2 py-2">{{ t("common:multiRound.rank", "Rank") }}</th>
@@ -138,7 +143,8 @@
               <th class="px-2 py-2">{{ t("common:multiRound.deltaKillsPct", "Kills Delta%") }}</th>
               <th class="px-2 py-2">{{ t("common:equipment.upgradeCost", "Upgrade Cost") }}</th>
               <th class="px-2 py-2">{{ t("common:queue.purchaseTime", "Purchase Time") }}</th>
-              <th class="px-2 py-2">{{ t("common:multiRound.avgCostPerPoint01Pct", "Gold per 0.01% (avg)") }}</th>
+              <th class="px-2 py-2">{{ t("common:multiRound.avgCostPerPoint01Pct", "Gold per 0.01% (all four > 0)") }}</th>
+              <th class="px-2 py-2">{{ t("common:multiRound.compositeCostPerPoint01Pct", "Gold per 0.01% (composite)") }}</th>
             </tr>
           </thead>
           <tbody>
@@ -172,7 +178,8 @@
               <td class="px-2 py-2" :class="profitDeltaClass(row.deltaKillsPct)">{{ formatSignedPercent(row.deltaKillsPct) }}</td>
               <td class="px-2 py-2">{{ formatCompactCurrency(row.costInsights?.totalUpgradeCost) }}</td>
               <td class="px-2 py-2">{{ formatPurchaseDuration(row.costInsights?.purchaseDays) }}</td>
-              <td class="px-2 py-2">{{ formatCompactCurrency(row.costInsights?.goldPerPoint01PctAvg) }}</td>
+              <td class="px-2 py-2">{{ formatCostPerPoint01Pct(row.costInsights?.goldPerPoint01PctAvg) }}</td>
+              <td class="px-2 py-2">{{ formatCostPerPoint01Pct(row.costInsights?.compositeGoldPerPoint01Pct) }}</td>
             </tr>
           </tbody>
         </table>
@@ -380,6 +387,16 @@ const baselineSummaryRows = computed(() => {
       value: resolveBaselineDurationText(baseline),
     },
     {
+      key: "baselineRounds",
+      label: t("common:queue.baselineRoundCount", "Baseline Rounds"),
+      value: resolveBaselineConfiguredRoundsText(baseline),
+    },
+    {
+      key: "baselineCompletedRounds",
+      label: t("common:queue.baselineCompletedSamples", "Completed Samples"),
+      value: resolveBaselineCompletedRoundsText(baseline),
+    },
+    {
       key: "dps",
       label: t("common:queue.metricDps", "DPS"),
       value: formatNumber(metrics?.dps),
@@ -467,6 +484,13 @@ function formatCompactCurrency(value, digits = 1) {
   return formatCurrency(numeric);
 }
 
+function formatCostPerPoint01Pct(value) {
+  if (value == null || !Number.isFinite(Number(value))) {
+    return "N/A";
+  }
+  return formatCompactCurrency(value);
+}
+
 function formatSignedPercent(value) {
   if (value == null || !Number.isFinite(Number(value))) {
     return "-";
@@ -550,6 +574,28 @@ function resolveBaselineDurationText(baseline) {
     return `${rounded}h`;
   }
 
+  return "-";
+}
+
+function resolveBaselineConfiguredRoundsText(baseline) {
+  const configuredRounds = Number(baseline?.settings?.baselineRounds);
+  if (Number.isFinite(configuredRounds) && configuredRounds > 0) {
+    return `${Math.max(1, Math.floor(configuredRounds))}`;
+  }
+  if (baseline?.simResult) {
+    return "1";
+  }
+  return "-";
+}
+
+function resolveBaselineCompletedRoundsText(baseline) {
+  const completedRounds = Number(baseline?.completedRounds);
+  if (Number.isFinite(completedRounds) && completedRounds > 0) {
+    return `${Math.max(0, Math.floor(completedRounds))}`;
+  }
+  if (baseline?.simResult) {
+    return "1";
+  }
   return "-";
 }
 
@@ -917,7 +963,8 @@ async function exportRankingRowsExcel() {
       { header: t("common:multiRound.deltaKillsPct", "Kills Delta%"), key: "deltaKillsPct", width: 12 },
       { header: t("common:equipment.upgradeCost", "Upgrade Cost"), key: "upgradeCost", width: 14 },
       { header: t("common:queue.purchaseTime", "Purchase Time"), key: "purchaseTime", width: 14 },
-      { header: t("common:multiRound.avgCostPerPoint01Pct", "Gold per 0.01% (avg)"), key: "goldPerPoint01PctAvg", width: 20 },
+      { header: t("common:multiRound.avgCostPerPoint01Pct", "Gold per 0.01% (all four > 0)"), key: "goldPerPoint01PctAvg", width: 26 },
+      { header: t("common:multiRound.compositeCostPerPoint01Pct", "Gold per 0.01% (composite)"), key: "compositeGoldPerPoint01Pct", width: 24 },
     ];
 
     const bodyRows = rows.map((row) => ({
@@ -936,7 +983,8 @@ async function exportRankingRowsExcel() {
       deltaKillsPct: toFiniteForExport(row?.deltaKillsPct, 2),
       upgradeCost: formatCompactCurrency(row?.costInsights?.totalUpgradeCost),
       purchaseTime: formatPurchaseDuration(row?.costInsights?.purchaseDays),
-      goldPerPoint01PctAvg: formatCompactCurrency(row?.costInsights?.goldPerPoint01PctAvg),
+      goldPerPoint01PctAvg: formatCostPerPoint01Pct(row?.costInsights?.goldPerPoint01PctAvg),
+      compositeGoldPerPoint01Pct: formatCostPerPoint01Pct(row?.costInsights?.compositeGoldPerPoint01Pct),
     }));
     worksheet.addRows(bodyRows);
 
@@ -993,6 +1041,7 @@ async function exportRankingRowsExcel() {
       "deltaKillsPct",
       "upgradeCost",
       "goldPerPoint01PctAvg",
+      "compositeGoldPerPoint01Pct",
     ];
     for (const key of centerKeys) {
       worksheet.getColumn(key).alignment = { horizontal: "center", vertical: "middle" };

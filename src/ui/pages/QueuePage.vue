@@ -21,6 +21,9 @@
               <span class="ml-1">{{ row.value }}</span>
             </p>
           </div>
+          <p v-if="baselineSummaryRows.length > 0" class="mt-2 text-xs text-slate-400">
+            {{ t("common:queue.baselineSummaryAggregationHint", "Baseline values shown here come from multi-round robust aggregation: the simulator runs the configured baseline rounds and blends winsorized means with medians instead of showing a single sample.") }}
+          </p>
           <p v-else class="mt-1 text-sm text-slate-100">{{ t("common:queue.emptyBaseline", "No baseline yet. Click 'Set Baseline' to run and lock one.") }}</p>
           <p v-if="baselineNeedsResetPrompt" class="mt-2 text-xs text-amber-300">
             {{ t("common:queue.baselineNeedsResetAfterImport", "Queue changes were imported. Please click 'Set Baseline' again to refresh baseline metrics.") }}
@@ -239,6 +242,16 @@ const baselineSummaryRows = computed(() => {
       key: "duration",
       label: t("common:queue.settingDuration", "Duration"),
       value: resolveBaselineDurationText(baseline),
+    },
+    {
+      key: "baselineRounds",
+      label: t("common:queue.baselineRoundCount", "Baseline Rounds"),
+      value: resolveBaselineConfiguredRoundsText(baseline),
+    },
+    {
+      key: "baselineCompletedRounds",
+      label: t("common:queue.baselineCompletedSamples", "Completed Samples"),
+      value: resolveBaselineCompletedRoundsText(baseline),
     },
     {
       key: "dps",
@@ -818,6 +831,28 @@ function resolveBaselineDurationText(baseline) {
     return `${rounded}h`;
   }
 
+  return "-";
+}
+
+function resolveBaselineConfiguredRoundsText(baseline) {
+  const configuredRounds = Number(baseline?.settings?.baselineRounds);
+  if (Number.isFinite(configuredRounds) && configuredRounds > 0) {
+    return `${Math.max(1, Math.floor(configuredRounds))}`;
+  }
+  if (baseline?.simResult) {
+    return "1";
+  }
+  return "-";
+}
+
+function resolveBaselineCompletedRoundsText(baseline) {
+  const completedRounds = Number(baseline?.completedRounds);
+  if (Number.isFinite(completedRounds) && completedRounds > 0) {
+    return `${Math.max(0, Math.floor(completedRounds))}`;
+  }
+  if (baseline?.simResult) {
+    return "1";
+  }
   return "-";
 }
 

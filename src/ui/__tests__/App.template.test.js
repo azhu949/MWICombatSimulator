@@ -39,4 +39,22 @@ describe("App header support links", () => {
         expect(appSource).not.toContain("@click=\"switchLanguage('en')\"");
         expect(appSource).not.toContain("@click=\"switchLanguage('zh')\"");
     });
+
+    it("renders a baseline reminder modal before running topbar baseline", () => {
+        expect(appSource).toContain(':open="baselineReminderModalOpen"');
+        expect(appSource).toContain(`t('common:queue.baselineReminderTitle', 'Baseline Rounds Reminder')`);
+        expect(appSource).toContain('t("common:queue.baselineReminderAggregationHint"');
+        expect(appSource).toContain('data-baseline-reminder-acknowledge');
+        expect(appSource).toContain('@click="acknowledgeBaselineReminderAndRun"');
+        expect(appSource).toContain('@click="openBaselineReminderSettings"');
+    });
+
+    it("gates the topbar baseline action behind the reminder until it is dismissed", () => {
+        expect(appSource).toContain("const baselineReminderDismissed = ref(isBaselineReminderDismissed());");
+        expect(appSource).toContain("if (!baselineReminderDismissed.value) {");
+        expect(appSource).toContain("baselineReminderModalOpen.value = true;");
+        expect(appSource).toContain("baselineReminderDismissed.value = true;");
+        expect(appSource).toContain("dismissBaselineReminder();");
+        expect(appSource).toContain("await runTopbarBaselineSimulation();");
+    });
 });
