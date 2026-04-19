@@ -43,6 +43,7 @@ describe("App header support links", () => {
     it("renders a baseline reminder modal before running topbar baseline", () => {
         expect(appSource).toContain(':open="baselineReminderModalOpen"');
         expect(appSource).toContain(`t('common:queue.baselineReminderTitle', 'Baseline Rounds Reminder')`);
+        expect(appSource).toContain('t("common:queue.baselineRecommendationHint"');
         expect(appSource).toContain('t("common:queue.baselineReminderAggregationHint"');
         expect(appSource).toContain('data-baseline-reminder-acknowledge');
         expect(appSource).toContain('@click="acknowledgeBaselineReminderAndRun"');

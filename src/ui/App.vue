@@ -145,8 +145,6 @@
                     <span class="ml-1 text-slate-100">{{ activeQueuePartySummaryText }}</span>
                   </span>
                 </div>
-                <p v-if="topQueueActionStatusText" class="text-xs" :class="topQueueActionStatusClass">{{ topQueueActionStatusText }}</p>
-                <p v-if="activeQueuePartyWarningText" class="text-xs text-amber-300">{{ activeQueuePartyWarningText }}</p>
               </div>
 
               <div class="grid gap-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
@@ -183,6 +181,8 @@
                 </div>
               </div>
             </div>
+            <p v-if="topQueueActionStatusText" class="text-xs" :class="topQueueActionStatusClass">{{ topQueueActionStatusText }}</p>
+            <p v-if="activeQueuePartyWarningText" class="text-xs text-amber-300">{{ activeQueuePartyWarningText }}</p>
 
             <div v-if="showRuntimeSummary" class="space-y-2 border-t border-white/10 pt-3">
               <div class="flex flex-wrap items-center justify-between gap-2 text-xs uppercase tracking-[0.14em] text-slate-400">
@@ -333,6 +333,9 @@
         </p>
         <p class="text-sm text-amber-200">
           {{ baselineReminderCurrentRoundsText }}
+        </p>
+        <p class="text-xs text-amber-100">
+          {{ t("common:queue.baselineRecommendationHint", "Recommended: at least 10 rounds, with 20-30 as the usual stable range; use 50+ when comparing very close options.") }}
         </p>
         <p class="text-xs text-slate-400">
           {{ t("common:queue.baselineReminderAggregationHint", "Set Baseline runs multiple rounds using the current baseline round count and uses the aggregated result as the queue comparison baseline.") }}
@@ -649,8 +652,19 @@ function formatTopQueueVariantName(item, fallbackIndex = 1) {
 async function runTopbarBaselineSimulation() {
   try {
     setTopQueueActionStatus("secondary", t("common:queue.baselineRunning", "Running baseline simulation..."));
-    await simulator.setQueueBaselineForActivePlayer({ runSimulation: true });
-    setTopQueueActionStatus("success", t("common:vue.queue.msgBaselineCaptured", "Baseline captured for active player."));
+    const baseline = await simulator.setQueueBaselineForActivePlayer({ runSimulation: true });
+    const baselineRounds = Math.max(
+      1,
+      Math.floor(Number(baseline?.settings?.baselineRounds || activeQueueState.value?.settings?.baselineRounds || 1))
+    );
+    setTopQueueActionStatus(
+      "success",
+      t(
+        "common:vue.queue.msgBaselineCaptured",
+        `Baseline captured for active player. Current baseline rounds: ${baselineRounds}. Recommended: at least 10 rounds, with 20-30 as the usual stable range; use 50+ when comparing very close options.`,
+        { count: baselineRounds }
+      )
+    );
   } catch (error) {
     if (isQueueActionCancelled(error)) {
       setTopQueueActionStatus("secondary", t("common:vue.queue.msgBaselineCancelled", "Baseline simulation stopped."));
