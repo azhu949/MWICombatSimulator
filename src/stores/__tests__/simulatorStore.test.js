@@ -2,6 +2,7 @@ import { afterEach, beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import actionDetailMap from "../../combatsimulator/data/actionDetailMap.json";
 import abilityDetailMap from "../../combatsimulator/data/abilityDetailMap.json";
+import combatMonsterDetailMap from "../../combatsimulator/data/combatMonsterDetailMap.json";
 import levelExperienceTable from "../../combatsimulator/data/levelExperienceTable.json";
 import houseRoomDetailMap from "../../combatsimulator/data/houseRoomDetailMap.json";
 import itemDetailMap from "../../combatsimulator/data/itemDetailMap.json";
@@ -14,6 +15,7 @@ import { useSimulatorStore } from "../simulatorStore.js";
 
 const ONE_HOUR = 60 * 60 * 1e9;
 const PLAYER_ACHIEVEMENTS_STORAGE_KEY = "mwi.player.achievements.v1";
+const QUEUE_SETTINGS_STORAGE_KEY = "mwi.queue.settings.v1";
 const QUEUE_RUN_SETTINGS_STORAGE_KEY = "mwi.queue.runSettings.v1";
 const ACHIEVEMENT_HRID = "/achievements/total_level_100";
 const SECOND_ACHIEVEMENT_HRID = "/achievements/total_level_250";
@@ -32,6 +34,19 @@ function createLocalStorageMock() {
             store.clear();
         }),
     };
+}
+
+async function waitForCondition(predicate, timeoutMs = 100, intervalMs = 1) {
+    const startedAt = Date.now();
+    while (Date.now() - startedAt < timeoutMs) {
+        if (predicate()) {
+            return true;
+        }
+        await new Promise((resolve) => {
+            setTimeout(resolve, intervalMs);
+        });
+    }
+    return predicate();
 }
 
 function findFirstPricedItem() {
@@ -105,6 +120,130 @@ function findFirstAbilityBookInfo() {
         abilityHrid: String(item.abilityBookDetail.abilityHrid || ""),
         xpPerBook: Number(item.abilityBookDetail.experienceGain || 0),
         bookItemHrid: String(item.hrid || ""),
+    };
+}
+
+function findFirstMonsterHrid() {
+    if (combatMonsterDetailMap["/monsters/porcupine"]) {
+        return "/monsters/porcupine";
+    }
+    const firstKey = Object.keys(combatMonsterDetailMap || {})[0];
+    return String(firstKey || "");
+}
+
+function createMetricSummaryEntry(value, overrides = {}) {
+    const numericValue = Number(value || 0);
+    return {
+        mean: numericValue,
+        winsorizedMean: numericValue,
+        robustMean: numericValue,
+        min: numericValue,
+        max: numericValue,
+        std: 0,
+        p50: numericValue,
+        p90: numericValue,
+        cv: 0,
+        robustCv: 0,
+        meanDeltaPct: 0,
+        rawMeanDeltaPct: 0,
+        winsorizedMeanDeltaPct: 0,
+        medianDeltaPct: 0,
+        robustMeanDeltaPct: 0,
+        confidence: 1,
+        confidenceDeltaPct: 1,
+        sampleCount: 3,
+        deltaSampleCount: 3,
+        ...overrides,
+    };
+}
+
+function setQueueBaselineMetrics(simulator, metrics = {}) {
+    const normalizedMetrics = {
+        encountersPerHour: Number(metrics.encountersPerHour ?? 100),
+        deathsPerHour: Number(metrics.deathsPerHour ?? 0),
+        totalXpPerHour: Number(metrics.totalXpPerHour ?? metrics.xpPerHour ?? 1000),
+        profitPerHour: Number(metrics.profitPerHour ?? (Number(metrics.dailyNoRngProfit ?? 2400) / 24)),
+        dps: Number(metrics.dps ?? 100),
+        dailyNoRngProfit: Number(metrics.dailyNoRngProfit ?? 2400),
+        xpPerHour: Number(metrics.xpPerHour ?? 1000),
+        killsPerHour: Number(metrics.killsPerHour ?? 100),
+    };
+
+    simulator.activeQueueState.baseline.metrics = normalizedMetrics;
+    simulator.activeQueueState.baseline.metricSummary = {
+        encountersPerHour: createMetricSummaryEntry(normalizedMetrics.encountersPerHour),
+        deathsPerHour: createMetricSummaryEntry(normalizedMetrics.deathsPerHour),
+        totalXpPerHour: createMetricSummaryEntry(normalizedMetrics.totalXpPerHour),
+        profitPerHour: createMetricSummaryEntry(normalizedMetrics.profitPerHour),
+        dps: createMetricSummaryEntry(normalizedMetrics.dps),
+        dailyNoRngProfit: createMetricSummaryEntry(normalizedMetrics.dailyNoRngProfit),
+        xpPerHour: createMetricSummaryEntry(normalizedMetrics.xpPerHour),
+        killsPerHour: createMetricSummaryEntry(normalizedMetrics.killsPerHour),
+    };
+    simulator.activeQueueState.baseline.completedRounds = 3;
+}
+
+function createQueueRawRun(entry, round, metrics = {}, baselineMetrics = {}) {
+    const normalizedMetrics = {
+        dps: Number(metrics.dps ?? baselineMetrics.dps ?? 0),
+        dailyNoRngProfit: Number(metrics.dailyNoRngProfit ?? baselineMetrics.dailyNoRngProfit ?? 0),
+        xpPerHour: Number(metrics.xpPerHour ?? baselineMetrics.xpPerHour ?? 0),
+        killsPerHour: Number(metrics.killsPerHour ?? baselineMetrics.killsPerHour ?? 0),
+    };
+    const deltas = Object.fromEntries(
+        Object.entries(normalizedMetrics).map(([metricKey, currentValue]) => {
+            const baselineValue = Number(baselineMetrics?.[metricKey] ?? 0);
+            const deltaAbs = currentValue - baselineValue;
+            const deltaPct = Math.abs(baselineValue) <= 1e-9 ? null : (deltaAbs / baselineValue) * 100;
+            return [metricKey, {
+                abs: deltaAbs,
+                pct: Number.isFinite(deltaPct) ? deltaPct : null,
+            }];
+        })
+    );
+
+    return {
+        id: entry.id,
+        label: entry.name || entry.id,
+        changes: Array.isArray(entry.changes) ? [...entry.changes] : [],
+        changeDetails: Array.isArray(entry.changeDetails) ? JSON.parse(JSON.stringify(entry.changeDetails)) : [],
+        round,
+        metrics: normalizedMetrics,
+        deltas,
+        profitPerHour: normalizedMetrics.dailyNoRngProfit / 24,
+        totalXpPerHour: normalizedMetrics.xpPerHour,
+        deathsPerHour: 0,
+    };
+}
+
+function createQueueSimulationResult({
+    encounters = 100,
+    damage = 360000,
+    staminaXp = 1000,
+    monsterHrid = findFirstMonsterHrid(),
+} = {}) {
+    return {
+        simulatedTime: ONE_HOUR,
+        encounters,
+        attacks: {
+            player1: {
+                autoAttack: {
+                    cast1: {
+                        [String(damage)]: 1,
+                    },
+                },
+            },
+        },
+        experienceGained: {
+            player1: {
+                stamina: staminaXp,
+            },
+        },
+        deaths: {
+            player1: 0,
+            ...(monsterHrid ? { [monsterHrid]: encounters } : {}),
+        },
+        consumablesUsed: {},
     };
 }
 
@@ -277,9 +416,9 @@ describe("simulatorStore", () => {
         expect(normalized.rounds).toBe(200);
         expect(normalized.baselineRounds).toBe(200);
         expect(normalized.medianBlend).toBe(1);
-        expect(normalized.weightProfit).toBeCloseTo(0.2, 6);
-        expect(normalized.weightXp).toBeCloseTo(0.3, 6);
-        expect(normalized.weightDeathSafety).toBeCloseTo(0.5, 6);
+        expect(normalized.weightProfit).toBeCloseTo(0.4, 6);
+        expect(normalized.weightXp).toBeCloseTo(0.6, 6);
+        expect(normalized.weightDeathSafety).toBeCloseTo(0, 6);
         expect(normalized.executionMode).toBe("parallel");
 
         const zeroed = simulator.updateActiveQueueSettings({
@@ -291,13 +430,24 @@ describe("simulatorStore", () => {
 
         expect(zeroed.weightProfit).toBe(0);
         expect(zeroed.weightXp).toBe(0);
-        expect(zeroed.weightDeathSafety).toBe(0);
+        expect(zeroed.weightDeathSafety).toBe(1);
         expect(zeroed.baselineRounds).toBe(200);
         expect(zeroed.executionMode).toBe("serial");
+
+        const rounded = simulator.updateActiveQueueSettings({
+            weightProfit: 0.25,
+            weightXp: 0.85,
+        });
+
+        expect(rounded.weightProfit).toBeCloseTo(0.2, 6);
+        expect(rounded.weightXp).toBeCloseTo(0.8, 6);
+        expect(rounded.weightDeathSafety).toBeCloseTo(0, 6);
 
         const persisted = JSON.parse(global.localStorage.getItem(QUEUE_RUN_SETTINGS_STORAGE_KEY) || "{}");
         expect(persisted.byPlayer?.["1"]?.rounds).toBe(200);
         expect(persisted.byPlayer?.["1"]?.baselineRounds).toBe(200);
+        expect(persisted.byPlayer?.["1"]?.weightProfit).toBeCloseTo(0.2, 6);
+        expect(persisted.byPlayer?.["1"]?.weightXp).toBeCloseTo(0.8, 6);
     });
 
     it("loads stored queue run settings and migrates missing baselineRounds from rounds", () => {
@@ -347,6 +497,150 @@ describe("simulatorStore", () => {
         expect(simulator.activeQueueState.settings.executionMode).toBe("serial");
     });
 
+    it("resets active queue run settings to defaults", () => {
+        const simulator = useSimulatorStore();
+
+        simulator.updateActiveQueueSettings({
+            rounds: 99,
+            baselineRounds: 7,
+            medianBlend: 0.9,
+            weightProfit: 0.1,
+            weightXp: 0.8,
+            executionMode: "serial",
+        });
+
+        const reset = simulator.resetActiveQueueSettings();
+
+        expect(reset.rounds).toBe(30);
+        expect(reset.baselineRounds).toBe(1);
+        expect(reset.medianBlend).toBeCloseTo(0.5, 6);
+        expect(reset.weightProfit).toBeCloseTo(0.5, 6);
+        expect(reset.weightXp).toBeCloseTo(0.3, 6);
+        expect(reset.weightDeathSafety).toBeCloseTo(0.2, 6);
+        expect(reset.executionMode).toBe("parallel");
+
+        const persisted = JSON.parse(global.localStorage.getItem(QUEUE_RUN_SETTINGS_STORAGE_KEY) || "{}");
+        expect(persisted.byPlayer?.["1"]?.rounds).toBe(30);
+        expect(persisted.byPlayer?.["1"]?.baselineRounds).toBe(1);
+        expect(persisted.byPlayer?.["1"]?.medianBlend).toBeCloseTo(0.5, 6);
+        expect(persisted.byPlayer?.["1"]?.weightProfit).toBeCloseTo(0.5, 6);
+        expect(persisted.byPlayer?.["1"]?.weightXp).toBeCloseTo(0.3, 6);
+        expect(persisted.byPlayer?.["1"]?.weightDeathSafety).toBeCloseTo(0.2, 6);
+        expect(persisted.byPlayer?.["1"]?.executionMode).toBe("parallel");
+    });
+
+    it("rounds queue performance weights to one decimal place when unrelated settings change", () => {
+        const simulator = useSimulatorStore();
+
+        simulator.updateActiveQueueSettings({
+            weightProfit: 0.25,
+            weightXp: 0.35,
+        });
+
+        const updated = simulator.updateActiveQueueSettings({
+            rounds: 40,
+        });
+
+        expect(updated.rounds).toBe(40);
+        expect(updated.weightProfit).toBeCloseTo(0.3, 6);
+        expect(updated.weightXp).toBeCloseTo(0.4, 6);
+        expect(updated.weightDeathSafety).toBeCloseTo(0.3, 6);
+
+        const persisted = JSON.parse(global.localStorage.getItem(QUEUE_RUN_SETTINGS_STORAGE_KEY) || "{}");
+        expect(persisted.byPlayer?.["1"]?.weightProfit).toBeCloseTo(0.3, 6);
+        expect(persisted.byPlayer?.["1"]?.weightXp).toBeCloseTo(0.4, 6);
+        expect(persisted.byPlayer?.["1"]?.weightDeathSafety).toBeCloseTo(0.3, 6);
+    });
+
+    it("does not partially reset queue run settings when resetting queue defaults fails", () => {
+        const simulator = useSimulatorStore();
+
+        simulator.updateActiveQueueSettings({
+            rounds: 99,
+            baselineRounds: 7,
+            medianBlend: 0.9,
+            weightProfit: 0.25,
+            weightXp: 0.35,
+            executionMode: "serial",
+        });
+        global.localStorage.setItem.mockImplementation(() => {
+            throw new Error("QuotaExceededError");
+        });
+
+        const result = simulator.resetQueueSettingsToDefaults();
+
+        expect(result.ok).toBe(false);
+        expect(result.messageKey).toBe("common:settingsPage.queueSaveErrorStorage");
+        expect(simulator.activeQueueState.settings.rounds).toBe(99);
+        expect(simulator.activeQueueState.settings.baselineRounds).toBe(7);
+        expect(simulator.activeQueueState.settings.medianBlend).toBeCloseTo(0.9, 6);
+        expect(simulator.activeQueueState.settings.weightProfit).toBeCloseTo(0.3, 6);
+        expect(simulator.activeQueueState.settings.weightXp).toBeCloseTo(0.4, 6);
+        expect(simulator.activeQueueState.settings.weightDeathSafety).toBeCloseTo(0.3, 6);
+        expect(simulator.activeQueueState.settings.executionMode).toBe("serial");
+    });
+
+    it("rolls back runtime persistence when resetting queue defaults fails on queue settings storage", () => {
+        const simulator = useSimulatorStore();
+
+        expect(simulator.saveQueueRuntimeSettings({
+            performancePct: 30,
+            stabilityPct: 30,
+            costPct: 40,
+            costScoreGoldPerPointMode: "composite",
+            parallelWorkerLimit: 1,
+        }).ok).toBe(true);
+        simulator.updateActiveQueueSettings({
+            rounds: 99,
+            baselineRounds: 7,
+            medianBlend: 0.9,
+            weightProfit: 0.25,
+            weightXp: 0.35,
+            executionMode: "serial",
+        });
+
+        const originalSetItem = global.localStorage.setItem.getMockImplementation();
+        let setItemCallCount = 0;
+        global.localStorage.setItem.mockImplementation((key, value) => {
+            setItemCallCount += 1;
+            if (setItemCallCount === 2) {
+                throw new Error("QuotaExceededError");
+            }
+            return originalSetItem(key, value);
+        });
+
+        const result = simulator.resetQueueSettingsToDefaults();
+
+        expect(result.ok).toBe(false);
+        expect(result.messageKey).toBe("common:settingsPage.queueSaveErrorStorage");
+        expect(simulator.queueRuntime.finalWeights.performance).toBeCloseTo(0.3, 6);
+        expect(simulator.queueRuntime.finalWeights.stability).toBeCloseTo(0.3, 6);
+        expect(simulator.queueRuntime.finalWeights.cost).toBeCloseTo(0.4, 6);
+        expect(simulator.queueRuntime.costScoreGoldPerPointMode).toBe("composite");
+        expect(simulator.activeQueueState.settings.rounds).toBe(99);
+        expect(simulator.activeQueueState.settings.baselineRounds).toBe(7);
+        expect(simulator.activeQueueState.settings.medianBlend).toBeCloseTo(0.9, 6);
+        expect(simulator.activeQueueState.settings.weightProfit).toBeCloseTo(0.3, 6);
+        expect(simulator.activeQueueState.settings.weightXp).toBeCloseTo(0.4, 6);
+        expect(simulator.activeQueueState.settings.weightDeathSafety).toBeCloseTo(0.3, 6);
+        expect(simulator.activeQueueState.settings.executionMode).toBe("serial");
+
+        const persistedRuntime = JSON.parse(global.localStorage.getItem(QUEUE_SETTINGS_STORAGE_KEY) || "{}");
+        expect(persistedRuntime.finalWeights?.performance).toBeCloseTo(0.3, 6);
+        expect(persistedRuntime.finalWeights?.stability).toBeCloseTo(0.3, 6);
+        expect(persistedRuntime.finalWeights?.cost).toBeCloseTo(0.4, 6);
+        expect(persistedRuntime.costScoreGoldPerPointMode).toBe("composite");
+
+        const persistedQueueSettings = JSON.parse(global.localStorage.getItem(QUEUE_RUN_SETTINGS_STORAGE_KEY) || "{}");
+        expect(persistedQueueSettings.byPlayer?.["1"]?.rounds).toBe(99);
+        expect(persistedQueueSettings.byPlayer?.["1"]?.baselineRounds).toBe(7);
+        expect(persistedQueueSettings.byPlayer?.["1"]?.medianBlend).toBeCloseTo(0.9, 6);
+        expect(persistedQueueSettings.byPlayer?.["1"]?.weightProfit).toBeCloseTo(0.3, 6);
+        expect(persistedQueueSettings.byPlayer?.["1"]?.weightXp).toBeCloseTo(0.4, 6);
+        expect(persistedQueueSettings.byPlayer?.["1"]?.weightDeathSafety).toBeCloseTo(0.3, 6);
+        expect(persistedQueueSettings.byPlayer?.["1"]?.executionMode).toBe("serial");
+    });
+
     it("validates and persists queue runtime settings", () => {
         const simulator = useSimulatorStore();
 
@@ -359,24 +653,244 @@ describe("simulatorStore", () => {
         expect(invalid.ok).toBe(false);
         expect(invalid.messageKey).toBe("common:settingsPage.queueSaveErrorWeightSum");
 
+        const invalidMetric = simulator.saveQueueRuntimeSettings({
+            performancePct: 40,
+            stabilityPct: 20,
+            costPct: 40,
+            costScoreGoldPerPointMode: "invalid",
+            parallelWorkerLimit: 1,
+        });
+        expect(invalidMetric.ok).toBe(false);
+        expect(invalidMetric.messageKey).toBe("common:settingsPage.queueSaveErrorCostScoreGoldMetric");
+
         const saved = simulator.saveQueueRuntimeSettings({
             performancePct: 40,
             stabilityPct: 20,
             costPct: 40,
+            costScoreGoldPerPointMode: "composite",
             parallelWorkerLimit: 1,
         });
         expect(saved.ok).toBe(true);
         expect(simulator.queueRuntime.finalWeights.performance).toBeCloseTo(0.4, 6);
         expect(simulator.queueRuntime.finalWeights.stability).toBeCloseTo(0.2, 6);
         expect(simulator.queueRuntime.finalWeights.cost).toBeCloseTo(0.4, 6);
+        expect(simulator.queueRuntime.costScoreGoldPerPointMode).toBe("composite");
         expect(simulator.queueRuntime.parallelWorkerLimit).toBe(1);
         expect(global.localStorage.setItem).toHaveBeenCalled();
+        expect(JSON.parse(global.localStorage.getItem(QUEUE_SETTINGS_STORAGE_KEY) || "{}")?.costScoreGoldPerPointMode).toBe("composite");
 
         const reset = simulator.resetQueueRuntimeSettings();
         expect(reset.ok).toBe(true);
         expect(simulator.queueRuntime.finalWeights.performance).toBeCloseTo(0.4, 6);
         expect(simulator.queueRuntime.finalWeights.stability).toBeCloseTo(0.2, 6);
         expect(simulator.queueRuntime.finalWeights.cost).toBeCloseTo(0.4, 6);
+        expect(simulator.queueRuntime.costScoreGoldPerPointMode).toBe("strict");
+    });
+
+    it("loads legacy queue runtime settings without cost score metric and defaults to strict", () => {
+        global.localStorage.setItem(QUEUE_SETTINGS_STORAGE_KEY, JSON.stringify({
+            version: 1,
+            savedAt: Date.now(),
+            finalWeights: {
+                performance: 0.5,
+                stability: 0.2,
+                cost: 0.3,
+            },
+            parallelWorkerLimit: 2,
+        }));
+
+        const simulator = useSimulatorStore();
+
+        expect(simulator.queueRuntime.finalWeights.performance).toBeCloseTo(0.5, 6);
+        expect(simulator.queueRuntime.finalWeights.stability).toBeCloseTo(0.2, 6);
+        expect(simulator.queueRuntime.finalWeights.cost).toBeCloseTo(0.3, 6);
+        expect(simulator.queueRuntime.parallelWorkerLimit).toBe(2);
+        expect(simulator.queueRuntime.costScoreGoldPerPointMode).toBe("strict");
+    });
+
+    it("re-ranks existing multi-round results after queue score weights change", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+
+        expect(equipmentItemHrid).toBeTruthy();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activeQueueState.baseline.metrics = {
+            dailyNoRngProfit: 2400,
+            dps: 80,
+            xpPerHour: 900,
+            killsPerHour: 80,
+        };
+
+        simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 1;
+        expect(simulator.setActivePlayerEquipmentUpgradeCost("weapon", 100)).toBe(true);
+        const cheaperItems = simulator.addActivePlayerToQueue();
+        expect(cheaperItems).toHaveLength(1);
+
+        simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
+        expect(simulator.setActivePlayerEquipmentUpgradeCost("weapon", 1000)).toBe(true);
+        const expensiveItems = simulator.addActivePlayerToQueue();
+        expect(expensiveItems).toHaveLength(1);
+
+        simulator.updateActiveQueueSettings({
+            rounds: 1,
+            executionMode: "serial",
+            medianBlend: 0.5,
+            weightProfit: 0,
+            weightXp: 1,
+            weightDeathSafety: 0,
+        });
+        expect(simulator.saveQueueRuntimeSettings({
+            performancePct: 100,
+            stabilityPct: 0,
+            costPct: 0,
+            parallelWorkerLimit: 1,
+        }).ok).toBe(true);
+
+        let queueCallIndex = 0;
+        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+            onProgress?.({ progress: 1 });
+            queueCallIndex += 1;
+            const higherPerformance = queueCallIndex === 2;
+
+            return {
+                simulatedTime: ONE_HOUR,
+                encounters: higherPerformance ? 120 : 105,
+                attacks: {
+                    player1: {
+                        autoAttack: {
+                            cast1: {
+                                [higherPerformance ? "720000" : "360000"]: 1,
+                            },
+                        },
+                    },
+                },
+                experienceGained: {
+                    player1: {
+                        stamina: higherPerformance ? 1200 : 1000,
+                    },
+                },
+                deaths: {
+                    player1: 0,
+                },
+                consumablesUsed: {},
+            };
+        });
+
+        const expensiveVariantId = expensiveItems[0].id;
+        const cheaperVariantId = cheaperItems[0].id;
+        const rowsBeforeWeightChange = await simulator.runActiveQueue();
+
+        expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(2);
+        expect(rowsBeforeWeightChange).toHaveLength(2);
+        expect(rowsBeforeWeightChange[0].id).toBe(expensiveVariantId);
+
+        const saved = simulator.saveQueueRuntimeSettings({
+            performancePct: 0,
+            stabilityPct: 0,
+            costPct: 100,
+            parallelWorkerLimit: 1,
+        });
+        const rerankedRows = simulator.activeQueueState.ranking;
+        const cheaperRow = rerankedRows.find((row) => row.id === cheaperVariantId);
+        const expensiveRow = rerankedRows.find((row) => row.id === expensiveVariantId);
+
+        expect(saved.ok).toBe(true);
+        expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(2);
+        expect(rerankedRows).toHaveLength(2);
+        expect(rerankedRows[0].id).toBe(cheaperVariantId);
+        expect(Number(cheaperRow?.costInsights?.totalUpgradeCost)).toBeLessThan(Number(expensiveRow?.costInsights?.totalUpgradeCost));
+        expect(Number(cheaperRow?.finalScore)).toBeGreaterThan(Number(expensiveRow?.finalScore));
+    });
+
+    it("re-ranks existing multi-round results after cost score metric changes without rerunning simulations", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+
+        expect(equipmentItemHrid).toBeTruthy();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        setQueueBaselineMetrics(simulator, {
+            dailyNoRngProfit: 2400,
+            dps: 10,
+            xpPerHour: 900,
+            killsPerHour: 80,
+        });
+
+        simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
+        expect(simulator.setActivePlayerEquipmentUpgradeCost("weapon", 100)).toBe(true);
+        const cheaperItems = simulator.addActivePlayerToQueue();
+        expect(cheaperItems).toHaveLength(1);
+
+        simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 3;
+        expect(simulator.setActivePlayerEquipmentUpgradeCost("weapon", 100)).toBe(true);
+        const expensiveItems = simulator.addActivePlayerToQueue();
+        expect(expensiveItems).toHaveLength(1);
+
+        expect(simulator.saveQueueRuntimeSettings({
+            performancePct: 0,
+            stabilityPct: 0,
+            costPct: 100,
+            costScoreGoldPerPointMode: "strict",
+            parallelWorkerLimit: 1,
+        }).ok).toBe(true);
+        simulator.updateActiveQueueSettings({
+            rounds: 1,
+            executionMode: "serial",
+            medianBlend: 0.5,
+            weightProfit: 0,
+            weightXp: 1,
+            weightDeathSafety: 0,
+        });
+
+        const cheaperVariantId = cheaperItems[0].id;
+        const expensiveVariantId = expensiveItems[0].id;
+        const baselineMetrics = simulator.activeQueueState.baseline.metrics;
+        simulator.activeQueueState.rawRuns = [
+            createQueueRawRun(cheaperItems[0], 1, {
+                dps: 9,
+                dailyNoRngProfit: 2200,
+                xpPerHour: 1000,
+                killsPerHour: 70,
+            }, baselineMetrics),
+            createQueueRawRun(expensiveItems[0], 1, {
+                dps: 12,
+                dailyNoRngProfit: 2600,
+                xpPerHour: 950,
+                killsPerHour: 90,
+            }, baselineMetrics),
+        ];
+        const rowsBeforeMetricChange = await simulator.refreshQueueResultsFromRawRuns({
+            allowReferenceLoad: false,
+            sortRawRuns: false,
+        });
+        const cheaperRowBefore = rowsBeforeMetricChange.find((row) => row.id === cheaperVariantId);
+
+        expect(rowsBeforeMetricChange).toHaveLength(2);
+        expect(rowsBeforeMetricChange[0].id).toBe(expensiveVariantId);
+        expect(cheaperRowBefore?.rawComponentScores?.costByMetric?.selectedGoldPerPointMode).toBe("strict");
+
+        const saved = simulator.saveQueueRuntimeSettings({
+            performancePct: 0,
+            stabilityPct: 0,
+            costPct: 100,
+            costScoreGoldPerPointMode: "composite",
+            parallelWorkerLimit: 1,
+        });
+        const rerankedRows = simulator.activeQueueState.ranking;
+        const cheaperRow = rerankedRows.find((row) => row.id === cheaperVariantId);
+        const expensiveRow = rerankedRows.find((row) => row.id === expensiveVariantId);
+
+        expect(saved.ok).toBe(true);
+        expect(rerankedRows).toHaveLength(2);
+        expect(rerankedRows[0].id).toBe(cheaperVariantId);
+        expect(cheaperRow?.rawComponentScores?.costByMetric?.selectedGoldPerPointMode).toBe("composite");
+        expect(Number(cheaperRow?.rawComponentScores?.costByMetric?.selectedGoldPerPoint01PctScore)).toBeGreaterThan(0);
+        expect(Number(cheaperRow?.finalScore)).toBeGreaterThan(Number(expensiveRow?.finalScore));
     });
 
     it("saves, loads, and deletes player data snapshots", () => {
@@ -593,6 +1107,402 @@ describe("simulatorStore", () => {
         expect(Number(variantRow.deltaProfitPerHour)).toBeLessThanOrEqual(0);
     });
 
+    it("re-ranks existing queue results after median blend changes without rerunning simulations", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+
+        expect(equipmentItemHrid).toBeTruthy();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        setQueueBaselineMetrics(simulator, {
+            dailyNoRngProfit: 2400,
+            dps: 100,
+            xpPerHour: 1000,
+            killsPerHour: 100,
+        });
+
+        simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 1;
+        const highMeanItems = simulator.addActivePlayerToQueue();
+        expect(highMeanItems).toHaveLength(1);
+
+        simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
+        const highMedianItems = simulator.addActivePlayerToQueue();
+        expect(highMedianItems).toHaveLength(1);
+
+        const baselineMetrics = simulator.activeQueueState.baseline.metrics;
+        simulator.activeQueueState.rawRuns = [
+            createQueueRawRun(highMeanItems[0], 1, { dailyNoRngProfit: 18000 }, baselineMetrics),
+            createQueueRawRun(highMedianItems[0], 1, { dailyNoRngProfit: 4800 }, baselineMetrics),
+            createQueueRawRun(highMeanItems[0], 2, { dailyNoRngProfit: 0 }, baselineMetrics),
+            createQueueRawRun(highMedianItems[0], 2, { dailyNoRngProfit: 4800 }, baselineMetrics),
+            createQueueRawRun(highMeanItems[0], 3, { dailyNoRngProfit: 0 }, baselineMetrics),
+            createQueueRawRun(highMedianItems[0], 3, { dailyNoRngProfit: 4800 }, baselineMetrics),
+        ];
+
+        expect(simulator.saveQueueRuntimeSettings({
+            performancePct: 100,
+            stabilityPct: 0,
+            costPct: 0,
+            parallelWorkerLimit: 1,
+        }).ok).toBe(true);
+
+        simulator.updateActiveQueueSettings({
+            rounds: 3,
+            executionMode: "serial",
+            medianBlend: 0,
+            weightProfit: 1,
+            weightXp: 0,
+        });
+
+        await simulator.refreshQueueResultsFromRawRuns({
+            allowReferenceLoad: false,
+            sortRawRuns: false,
+        });
+
+        expect(simulator.activeQueueState.ranking).toHaveLength(2);
+        expect(simulator.activeQueueState.ranking[0].id).toBe(highMeanItems[0].id);
+
+        simulator.updateActiveQueueSettings({
+            medianBlend: 1,
+        });
+
+        expect(simulator.activeQueueState.ranking).toHaveLength(2);
+        expect(simulator.activeQueueState.ranking[0].id).toBe(highMedianItems[0].id);
+    });
+
+    it("recomputes stored raw-run deltas when the blended baseline changes", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+
+        expect(equipmentItemHrid).toBeTruthy();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        setQueueBaselineMetrics(simulator, {
+            dailyNoRngProfit: 2400,
+            dps: 100,
+            xpPerHour: 1000,
+            killsPerHour: 100,
+        });
+        simulator.activeQueueState.baseline.metricSummary = {
+            ...(simulator.activeQueueState.baseline.metricSummary || {}),
+            dailyNoRngProfit: createMetricSummaryEntry(2400, {
+                winsorizedMean: 2400,
+                p50: 4800,
+                robustMean: 2400,
+            }),
+        };
+        simulator.activeQueueState.baseline.completedRounds = 3;
+
+        simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 1;
+        const addedItems = simulator.addActivePlayerToQueue();
+
+        expect(addedItems).toHaveLength(1);
+        expect(simulator.saveQueueRuntimeSettings({
+            performancePct: 100,
+            stabilityPct: 0,
+            costPct: 0,
+            parallelWorkerLimit: 1,
+        }).ok).toBe(true);
+
+        simulator.updateActiveQueueSettings({
+            rounds: 1,
+            executionMode: "serial",
+            medianBlend: 0,
+            weightProfit: 1,
+            weightXp: 0,
+        });
+        simulator.activeQueueState.rawRuns = [
+            createQueueRawRun(addedItems[0], 1, {
+                dailyNoRngProfit: 7200,
+            }, simulator.activeQueueState.baseline.metrics),
+        ];
+
+        const initialRows = await simulator.refreshQueueResultsFromRawRuns({
+            allowReferenceLoad: false,
+            sortRawRuns: false,
+        });
+
+        expect(simulator.activeQueueState.baseline.metrics.dailyNoRngProfit).toBeCloseTo(2400, 6);
+        expect(simulator.activeQueueState.rawRuns[0].deltas.dailyNoRngProfit.pct).toBeCloseTo(200, 6);
+        expect(initialRows[0].deltaDailyNoRngProfitPct).toBeCloseTo(200, 6);
+
+        simulator.updateActiveQueueSettings({
+            medianBlend: 1,
+        });
+
+        expect(simulator.activeQueueState.baseline.metrics.dailyNoRngProfit).toBeCloseTo(4800, 6);
+        expect(simulator.activeQueueState.rawRuns[0].deltas.dailyNoRngProfit.pct).toBeCloseTo(50, 6);
+        expect(simulator.activeQueueState.ranking[0].deltaDailyNoRngProfitPct).toBeCloseTo(50, 6);
+    });
+
+    it("uses queue profit/xp weights for performance scoring and weighted composite cost metric", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+
+        expect(equipmentItemHrid).toBeTruthy();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        setQueueBaselineMetrics(simulator, {
+            dailyNoRngProfit: 2400,
+            dps: 100,
+            xpPerHour: 1000,
+            killsPerHour: 100,
+        });
+
+        simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 1;
+        expect(simulator.setActivePlayerEquipmentUpgradeCost("weapon", 100)).toBe(true);
+        const profitFocusedItems = simulator.addActivePlayerToQueue();
+        expect(profitFocusedItems).toHaveLength(1);
+
+        simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
+        expect(simulator.setActivePlayerEquipmentUpgradeCost("weapon", 100)).toBe(true);
+        const xpFocusedItems = simulator.addActivePlayerToQueue();
+        expect(xpFocusedItems).toHaveLength(1);
+
+        const baselineMetrics = simulator.activeQueueState.baseline.metrics;
+        simulator.activeQueueState.rawRuns = [
+            createQueueRawRun(profitFocusedItems[0], 1, {
+                dailyNoRngProfit: 7200,
+                xpPerHour: 1100,
+            }, baselineMetrics),
+            createQueueRawRun(xpFocusedItems[0], 1, {
+                dailyNoRngProfit: 4800,
+                xpPerHour: 1600,
+            }, baselineMetrics),
+        ];
+
+        expect(simulator.saveQueueRuntimeSettings({
+            performancePct: 100,
+            stabilityPct: 0,
+            costPct: 0,
+            costScoreGoldPerPointMode: "composite",
+            parallelWorkerLimit: 1,
+        }).ok).toBe(true);
+
+        simulator.updateActiveQueueSettings({
+            rounds: 1,
+            executionMode: "serial",
+            medianBlend: 0.5,
+            weightProfit: 1,
+            weightXp: 0,
+        });
+
+        await simulator.refreshQueueResultsFromRawRuns({
+            allowReferenceLoad: false,
+            sortRawRuns: false,
+        });
+
+        let ranking = simulator.activeQueueState.ranking;
+        let profitFocusedRow = ranking.find((row) => row.id === profitFocusedItems[0].id);
+
+        expect(ranking).toHaveLength(2);
+        expect(ranking[0].id).toBe(profitFocusedItems[0].id);
+        expect(profitFocusedRow?.costInsights?.compositeDeltaPct).toBeCloseTo(200, 6);
+
+        simulator.updateActiveQueueSettings({
+            weightProfit: 0,
+            weightXp: 1,
+        });
+
+        ranking = simulator.activeQueueState.ranking;
+        profitFocusedRow = ranking.find((row) => row.id === profitFocusedItems[0].id);
+
+        expect(ranking).toHaveLength(2);
+        expect(ranking[0].id).toBe(xpFocusedItems[0].id);
+        expect(profitFocusedRow?.costInsights?.compositeDeltaPct).toBeCloseTo(10, 6);
+    });
+
+    it("ignores disabled metric confidence when applying the final-score confidence penalty", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+
+        expect(equipmentItemHrid).toBeTruthy();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        setQueueBaselineMetrics(simulator, {
+            dailyNoRngProfit: 2400,
+            dps: 100,
+            xpPerHour: 1000,
+            killsPerHour: 100,
+        });
+
+        simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 1;
+        const stableItems = simulator.addActivePlayerToQueue();
+        expect(stableItems).toHaveLength(1);
+
+        simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
+        const noisyItems = simulator.addActivePlayerToQueue();
+        expect(noisyItems).toHaveLength(1);
+
+        const baselineMetrics = simulator.activeQueueState.baseline.metrics;
+        simulator.activeQueueState.rawRuns = [
+            createQueueRawRun(stableItems[0], 1, {
+                dailyNoRngProfit: 4800,
+                dps: 100,
+                xpPerHour: 1000,
+                killsPerHour: 100,
+            }, baselineMetrics),
+            createQueueRawRun(stableItems[0], 2, {
+                dailyNoRngProfit: 4800,
+                dps: 100,
+                xpPerHour: 1000,
+                killsPerHour: 100,
+            }, baselineMetrics),
+            createQueueRawRun(stableItems[0], 3, {
+                dailyNoRngProfit: 4800,
+                dps: 100,
+                xpPerHour: 1000,
+                killsPerHour: 100,
+            }, baselineMetrics),
+            createQueueRawRun(noisyItems[0], 1, {
+                dailyNoRngProfit: 4800,
+                dps: 0,
+                xpPerHour: 0,
+                killsPerHour: 0,
+            }, baselineMetrics),
+            createQueueRawRun(noisyItems[0], 2, {
+                dailyNoRngProfit: 4800,
+                dps: 200,
+                xpPerHour: 2000,
+                killsPerHour: 200,
+            }, baselineMetrics),
+            createQueueRawRun(noisyItems[0], 3, {
+                dailyNoRngProfit: 4800,
+                dps: 0,
+                xpPerHour: 0,
+                killsPerHour: 0,
+            }, baselineMetrics),
+        ];
+
+        expect(simulator.saveQueueRuntimeSettings({
+            performancePct: 100,
+            stabilityPct: 0,
+            costPct: 0,
+            parallelWorkerLimit: 1,
+        }).ok).toBe(true);
+
+        simulator.updateActiveQueueSettings({
+            rounds: 3,
+            executionMode: "serial",
+            medianBlend: 0.5,
+            weightProfit: 1,
+            weightXp: 0,
+        });
+
+        const ranking = await simulator.refreshQueueResultsFromRawRuns({
+            allowReferenceLoad: false,
+            sortRawRuns: false,
+        });
+        const stableRow = ranking.find((row) => row.id === stableItems[0].id);
+        const noisyRow = ranking.find((row) => row.id === noisyItems[0].id);
+
+        expect(ranking).toHaveLength(2);
+        expect(stableRow?.performanceScore).toBeCloseTo(noisyRow?.performanceScore ?? 0, 6);
+        expect(stableRow?.confidencePenaltyFactor).toBeCloseTo(noisyRow?.confidencePenaltyFactor ?? 0, 6);
+        expect(stableRow?.finalScore).toBeCloseTo(noisyRow?.finalScore ?? 0, 6);
+    });
+
+    it("keeps realtime ranking aligned with updated queue settings during an active run", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+
+        expect(equipmentItemHrid).toBeTruthy();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        setQueueBaselineMetrics(simulator, {
+            dailyNoRngProfit: 2400,
+            dps: 100,
+            xpPerHour: 1000,
+            killsPerHour: 100,
+        });
+
+        simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 1;
+        const profitFocusedItems = simulator.addActivePlayerToQueue();
+        expect(profitFocusedItems).toHaveLength(1);
+
+        simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
+        const xpFocusedItems = simulator.addActivePlayerToQueue();
+        expect(xpFocusedItems).toHaveLength(1);
+
+        simulator.updateActiveQueueSettings({
+            rounds: 2,
+            executionMode: "serial",
+            medianBlend: 0.5,
+            weightProfit: 1,
+            weightXp: 0,
+        });
+
+        let queueCallIndex = 0;
+        let releaseFinalRun = null;
+        const finalRunGate = new Promise((resolve) => {
+            releaseFinalRun = resolve;
+        });
+        const queueResults = [
+            createQueueSimulationResult({
+                encounters: 120,
+                damage: 720000,
+                staminaXp: 1100,
+            }),
+            createQueueSimulationResult({
+                encounters: 80,
+                damage: 360000,
+                staminaXp: 1600,
+            }),
+            createQueueSimulationResult({
+                encounters: 120,
+                damage: 720000,
+                staminaXp: 1100,
+            }),
+            createQueueSimulationResult({
+                encounters: 80,
+                damage: 360000,
+                staminaXp: 1600,
+            }),
+        ];
+        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+            onProgress?.({ progress: 1 });
+            const result = queueResults[queueCallIndex];
+            queueCallIndex += 1;
+            if (queueCallIndex === 4) {
+                await finalRunGate;
+            }
+            return result;
+        });
+
+        const runPromise = simulator.runActiveQueue();
+        expect(await waitForCondition(() => (
+            queueCallIndex >= 2
+            && simulator.activeQueueState.rawRuns.length >= 2
+        ), 500)).toBe(true);
+        expect(simulator.activeQueueState.isRunning).toBe(true);
+
+        simulator.updateActiveQueueSettings({
+            weightProfit: 0,
+            weightXp: 1,
+        });
+
+        expect(simulator.activeQueueState.ranking).toHaveLength(2);
+        expect(simulator.activeQueueState.ranking[0].id).toBe(xpFocusedItems[0].id);
+        expect(await waitForCondition(() => queueCallIndex >= 4, 500)).toBe(true);
+        expect(simulator.activeQueueState.isRunning).toBe(true);
+        expect(simulator.activeQueueState.ranking[0].id).toBe(xpFocusedItems[0].id);
+
+        releaseFinalRun?.();
+        const rows = await runPromise;
+
+        expect(rows).toHaveLength(2);
+        expect(rows[0].id).toBe(xpFocusedItems[0].id);
+    });
+
     it("keeps aggregated baseline metrics when a representative baseline sim result differs", async () => {
         const simulator = useSimulatorStore();
 
@@ -634,8 +1544,8 @@ describe("simulatorStore", () => {
             rounds: 1,
             executionMode: "serial",
             medianBlend: 0.5,
-            weightProfit: 1,
-            weightXp: 0,
+            weightProfit: 0,
+            weightXp: 1,
             weightDeathSafety: 0,
         });
         simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
@@ -1357,12 +2267,12 @@ describe("simulatorStore", () => {
         expect(equipmentItemHrid).toBeTruthy();
 
         await simulator.setQueueBaselineForActivePlayer();
-        simulator.activeQueueState.baseline.metrics = {
+        setQueueBaselineMetrics(simulator, {
             dailyNoRngProfit: 2400,
             dps: 10,
             xpPerHour: 900,
             killsPerHour: 80,
-        };
+        });
         simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
         simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
         simulator.setActivePlayerEquipmentUpgradeCost("weapon", 123456);
@@ -1374,37 +2284,23 @@ describe("simulatorStore", () => {
             rounds: 1,
             executionMode: "serial",
             medianBlend: 0.5,
-            weightProfit: 1,
-            weightXp: 0,
+            weightProfit: 0,
+            weightXp: 1,
             weightDeathSafety: 0,
         });
-        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
-            onProgress?.({ progress: 1 });
-            return {
-                simulatedTime: ONE_HOUR,
-                encounters: 100,
-                attacks: {
-                    player1: {
-                        autoAttack: {
-                            cast1: {
-                                360000: 1,
-                            },
-                        },
-                    },
-                },
-                experienceGained: {
-                    player1: {
-                        stamina: 1000,
-                    },
-                },
-                deaths: {
-                    player1: 0,
-                },
-                consumablesUsed: {},
-            };
-        });
+        simulator.activeQueueState.rawRuns = [
+            createQueueRawRun(addedItems[0], 1, {
+                dps: 9,
+                dailyNoRngProfit: 2200,
+                xpPerHour: 1000,
+                killsPerHour: 70,
+            }, simulator.activeQueueState.baseline.metrics),
+        ];
 
-        const rows = await simulator.runActiveQueue();
+        const rows = await simulator.refreshQueueResultsFromRawRuns({
+            allowReferenceLoad: false,
+            sortRawRuns: false,
+        });
         const variantRow = rows[0];
 
         expect(variantRow).toBeTruthy();

@@ -60,6 +60,7 @@ import {
     normalizeAdvisorWeights,
     rankAdvisorRows,
 } from "../services/advisorScoring.js";
+import { resolveQueuePerformanceSubweights } from "../shared/queuePerformanceWeights.js";
 
 const ONE_SECOND = 1e9;
 const ONE_HOUR = 60 * 60 * ONE_SECOND;
@@ -110,6 +111,8 @@ const QUEUE_MULTI_ROUND_SCORE_INVALID = 0;
 const QUEUE_MULTI_ROUND_FINAL_WEIGHT_PERFORMANCE = 0.4;
 const QUEUE_MULTI_ROUND_FINAL_WEIGHT_STABILITY = 0.2;
 const QUEUE_MULTI_ROUND_FINAL_WEIGHT_COST = 0.4;
+const QUEUE_COST_SCORE_GOLD_METRIC_STRICT = "strict";
+const QUEUE_COST_SCORE_GOLD_METRIC_COMPOSITE = "composite";
 const QUEUE_COST_SCORE_WEIGHT_UPGRADE = 0.25;
 const QUEUE_COST_SCORE_WEIGHT_PURCHASE_DAYS = 0.35;
 const QUEUE_COST_SCORE_WEIGHT_GOLD_PER_POINT = 0.4;
@@ -1050,8 +1053,20 @@ function getDefaultQueueRuntimeSettings() {
             stability: QUEUE_MULTI_ROUND_FINAL_WEIGHT_STABILITY,
             cost: QUEUE_MULTI_ROUND_FINAL_WEIGHT_COST,
         },
+        costScoreGoldPerPointMode: QUEUE_COST_SCORE_GOLD_METRIC_STRICT,
         parallelWorkerLimit: QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS,
     };
+}
+
+function isQueueCostScoreGoldMetricMode(value) {
+    return value === QUEUE_COST_SCORE_GOLD_METRIC_STRICT
+        || value === QUEUE_COST_SCORE_GOLD_METRIC_COMPOSITE;
+}
+
+function normalizeQueueCostScoreGoldMetricMode(value) {
+    return value === QUEUE_COST_SCORE_GOLD_METRIC_COMPOSITE
+        ? QUEUE_COST_SCORE_GOLD_METRIC_COMPOSITE
+        : QUEUE_COST_SCORE_GOLD_METRIC_STRICT;
 }
 
 function normalizeQueueScoreWeights(scoreWeights) {
@@ -1088,6 +1103,32 @@ function normalizeQueueScoreWeights(scoreWeights) {
         stability,
         cost,
     };
+}
+
+function haveQueueScoreWeightsChanged(previousWeights, nextWeights) {
+    const normalizedPrevious = normalizeQueueScoreWeights(previousWeights);
+    const normalizedNext = normalizeQueueScoreWeights(nextWeights);
+    return (
+        Math.abs(normalizedPrevious.performance - normalizedNext.performance) > QUEUE_WEIGHT_SUM_EPSILON
+        || Math.abs(normalizedPrevious.stability - normalizedNext.stability) > QUEUE_WEIGHT_SUM_EPSILON
+        || Math.abs(normalizedPrevious.cost - normalizedNext.cost) > QUEUE_WEIGHT_SUM_EPSILON
+    );
+}
+
+function haveQueueRuntimeRankingSettingsChanged(previousSettings, nextSettings) {
+    const normalizedPrevious = normalizeQueueRuntimeSettings(previousSettings);
+    const normalizedNext = normalizeQueueRuntimeSettings(nextSettings);
+    return haveQueueScoreWeightsChanged(normalizedPrevious.finalWeights, normalizedNext.finalWeights)
+        || normalizedPrevious.costScoreGoldPerPointMode !== normalizedNext.costScoreGoldPerPointMode;
+}
+
+function haveQueueRunRankingSettingsChanged(previousSettings, nextSettings) {
+    const normalizedPrevious = normalizeQueueSettings(previousSettings);
+    const normalizedNext = normalizeQueueSettings(nextSettings);
+    return Math.abs(normalizedPrevious.medianBlend - normalizedNext.medianBlend) > QUEUE_WEIGHT_SUM_EPSILON
+        || Math.abs(normalizedPrevious.weightProfit - normalizedNext.weightProfit) > QUEUE_WEIGHT_SUM_EPSILON
+        || Math.abs(normalizedPrevious.weightXp - normalizedNext.weightXp) > QUEUE_WEIGHT_SUM_EPSILON
+        || Math.abs(normalizedPrevious.weightDeathSafety - normalizedNext.weightDeathSafety) > QUEUE_WEIGHT_SUM_EPSILON;
 }
 
 function normalizeParallelWorkerLimit(value, maxLimit = QUEUE_PARALLEL_WORKER_LIMIT_MAX) {
@@ -1131,6 +1172,7 @@ function getRecommendedParallelWorkerLimit() {
 function normalizeQueueRuntimeSettings(settings) {
     return {
         finalWeights: normalizeQueueScoreWeights(settings?.finalWeights),
+        costScoreGoldPerPointMode: normalizeQueueCostScoreGoldMetricMode(settings?.costScoreGoldPerPointMode),
         parallelWorkerLimit: normalizeParallelWorkerLimit(settings?.parallelWorkerLimit),
     };
 }
@@ -1154,6 +1196,7 @@ function loadQueueRuntimeSettingsFromStorage() {
 
         return normalizeQueueRuntimeSettings({
             finalWeights: parsed.finalWeights,
+            costScoreGoldPerPointMode: parsed.costScoreGoldPerPointMode,
             parallelWorkerLimit: parsed.parallelWorkerLimit,
         });
     } catch (error) {
@@ -1173,6 +1216,7 @@ function persistQueueRuntimeSettingsToStorage(settings) {
         finalWeights: {
             ...normalized.finalWeights,
         },
+        costScoreGoldPerPointMode: normalized.costScoreGoldPerPointMode,
         parallelWorkerLimit: normalized.parallelWorkerLimit,
     };
     localStorage.setItem(QUEUE_SETTINGS_STORAGE_KEY, JSON.stringify(payload));
@@ -1947,6 +1991,10 @@ function getDefaultQueueRunSettings() {
         weightDeathSafety: 0.2,
         executionMode: "parallel",
     };
+}
+
+function getQueuePerformanceMetricWeights(queueSettings = getDefaultQueueRunSettings()) {
+    return resolveQueuePerformanceSubweights(queueSettings, getDefaultQueueRunSettings()).byMetric;
 }
 
 function createQueuePlayerState(queueSettings = getDefaultQueueRunSettings()) {
@@ -2857,6 +2905,21 @@ function computeQueueMetricDeltas(metrics = {}, baselineMetrics = {}) {
     return deltas;
 }
 
+function syncQueueRawRunDeltas(rawRuns = [], baselineMetrics = {}) {
+    if (!Array.isArray(rawRuns)) {
+        return rawRuns;
+    }
+
+    for (const rawRun of rawRuns) {
+        if (!isPlainObject(rawRun)) {
+            continue;
+        }
+        rawRun.deltas = computeQueueMetricDeltas(rawRun.metrics, baselineMetrics);
+    }
+
+    return rawRuns;
+}
+
 function resolveItemPriceFromPricingState(pricingState, itemHrid, side = "ask") {
     const hrid = String(itemHrid || "");
     if (!hrid) {
@@ -3442,9 +3505,9 @@ function computeConfidenceFromValues(values, centerValue) {
     return clamp(intervalConfidence * sizeConfidence, 0, 1);
 }
 
-function summarizeMetric(values, deltaPctValues) {
+function summarizeMetric(values, deltaPctValues, medianBlend = QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT) {
     const safeValues = (values ?? []).map((value) => toFiniteNumber(value, 0));
-    const blendWeight = clamp(toFiniteNumber(QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT, 0.5), 0, 1);
+    const blendWeight = clamp(toFiniteNumber(medianBlend, QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT), 0, 1);
     const meanWeight = 1 - blendWeight;
     if (safeValues.length === 0) {
         return {
@@ -3517,27 +3580,42 @@ function summarizeMetric(values, deltaPctValues) {
     };
 }
 
-function buildMetricSummaryForKeys(roundResults = [], metricKeys = QUEUE_MULTI_ROUND_METRIC_KEYS, includeDeltaPct = true) {
+function buildMetricSummaryForKeys(
+    roundResults = [],
+    metricKeys = QUEUE_MULTI_ROUND_METRIC_KEYS,
+    includeDeltaPct = true,
+    medianBlend = QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT
+) {
     const metricSummary = {};
     for (const metricKey of metricKeys) {
         const metricValues = roundResults.map((result) => toFiniteNumber(result?.metrics?.[metricKey], 0));
         const deltaPctValues = includeDeltaPct
             ? roundResults.map((result) => Number(result?.deltas?.[metricKey]?.pct))
             : [];
-        metricSummary[metricKey] = summarizeMetric(metricValues, deltaPctValues);
+        metricSummary[metricKey] = summarizeMetric(metricValues, deltaPctValues, medianBlend);
     }
     return metricSummary;
 }
 
-function buildQueueItemMetricSummary(roundResults = []) {
-    return buildMetricSummaryForKeys(roundResults, QUEUE_MULTI_ROUND_METRIC_KEYS, true);
+function buildQueueItemMetricSummary(roundResults = [], medianBlend = QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT) {
+    return buildMetricSummaryForKeys(roundResults, QUEUE_MULTI_ROUND_METRIC_KEYS, true, medianBlend);
 }
 
-function buildQueueBaselineMetricSummary(roundResults = []) {
-    return buildMetricSummaryForKeys(roundResults, QUEUE_BASELINE_METRIC_KEYS, false);
+function buildQueueBaselineMetricSummary(roundResults = [], medianBlend = QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT) {
+    return buildMetricSummaryForKeys(roundResults, QUEUE_BASELINE_METRIC_KEYS, false, medianBlend);
 }
 
-function resolveMetricSummaryAggregateValue(metricSummaryEntry) {
+function resolveMetricSummaryAggregateValue(metricSummaryEntry, medianBlend = null) {
+    if (medianBlend != null) {
+        const blendWeight = clamp(toFiniteNumber(medianBlend, QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT), 0, 1);
+        const meanWeight = 1 - blendWeight;
+        const winsorizedMean = Number(metricSummaryEntry?.winsorizedMean);
+        const p50 = Number(metricSummaryEntry?.p50);
+        if (Number.isFinite(winsorizedMean) && Number.isFinite(p50)) {
+            return meanWeight * winsorizedMean + blendWeight * p50;
+        }
+    }
+
     const robustMean = Number(metricSummaryEntry?.robustMean);
     if (Number.isFinite(robustMean)) {
         return robustMean;
@@ -3551,20 +3629,37 @@ function resolveMetricSummaryAggregateValue(metricSummaryEntry) {
     return 0;
 }
 
-function buildAggregatedMetricsFromMetricSummary(metricSummary = {}, metricKeys = []) {
+function buildAggregatedMetricsFromMetricSummary(metricSummary = {}, metricKeys = [], medianBlend = null) {
     const metrics = {};
     for (const metricKey of metricKeys) {
-        metrics[metricKey] = toFiniteNumber(resolveMetricSummaryAggregateValue(metricSummary?.[metricKey]), 0);
+        metrics[metricKey] = toFiniteNumber(resolveMetricSummaryAggregateValue(metricSummary?.[metricKey], medianBlend), 0);
     }
     return metrics;
 }
 
-function buildQueueBaselineAggregate(roundResults = []) {
-    const metricSummary = buildQueueBaselineMetricSummary(roundResults);
+function buildQueueBaselineAggregate(roundResults = [], medianBlend = QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT) {
+    const metricSummary = buildQueueBaselineMetricSummary(roundResults, medianBlend);
     return {
         metricSummary,
-        metrics: buildAggregatedMetricsFromMetricSummary(metricSummary, QUEUE_BASELINE_METRIC_KEYS),
+        metrics: buildAggregatedMetricsFromMetricSummary(metricSummary, QUEUE_BASELINE_METRIC_KEYS, medianBlend),
     };
+}
+
+function resolveQueueBaselineMetricsForSettings(baseline = null, queueSettings = getDefaultQueueRunSettings()) {
+    if (!isPlainObject(baseline)) {
+        return null;
+    }
+
+    if (isPlainObject(baseline.metricSummary)) {
+        const normalizedQueueSettings = normalizeQueueSettings(queueSettings);
+        return buildAggregatedMetricsFromMetricSummary(
+            baseline.metricSummary,
+            QUEUE_BASELINE_METRIC_KEYS,
+            normalizedQueueSettings.medianBlend
+        );
+    }
+
+    return isPlainObject(baseline.metrics) ? baseline.metrics : null;
 }
 
 function hasAggregatedQueueBaselineMetrics(baseline = null) {
@@ -3689,7 +3784,33 @@ function resolveQueueMetricSummaryDeltaPct(metricSummary = {}, metricKey = "") {
     return null;
 }
 
-function buildQueueItemCostInsights(queueState, queueItemSnapshot, metricSummary, pricingState) {
+function computeWeightedQueueMetricAverage(metricValues = {}, metricWeights = {}) {
+    let weightedSum = 0;
+    let totalWeight = 0;
+
+    for (const metricKey of QUEUE_MULTI_ROUND_METRIC_KEYS) {
+        const weight = Math.max(0, toFiniteNumber(metricWeights?.[metricKey], 0));
+        if (weight <= 0) {
+            continue;
+        }
+
+        const value = Number(metricValues?.[metricKey]);
+        if (!Number.isFinite(value)) {
+            return null;
+        }
+
+        weightedSum += value * weight;
+        totalWeight += weight;
+    }
+
+    if (totalWeight <= 0) {
+        return null;
+    }
+
+    return weightedSum / totalWeight;
+}
+
+function buildQueueItemCostInsights(queueState, queueItemSnapshot, metricSummary, pricingState, queueSettings) {
     const baselineSnapshot = queueState?.baseline?.snapshot ?? null;
     const totalUpgradeCostRaw = computeQueueItemUpgradeCost(
         baselineSnapshot,
@@ -3716,12 +3837,13 @@ function buildQueueItemCostInsights(queueState, queueItemSnapshot, metricSummary
         && goldValues.every((value) => Number.isFinite(value) && value > 0)
         ? goldValues.reduce((sum, value) => sum + value, 0) / goldValues.length
         : null;
-    const compositeDeltaValues = QUEUE_MULTI_ROUND_METRIC_KEYS
-        .map((metricKey) => resolveQueueMetricSummaryDeltaPct(metricSummary, metricKey));
-    const compositeDeltaPct = compositeDeltaValues.length === QUEUE_MULTI_ROUND_METRIC_KEYS.length
-        && compositeDeltaValues.every((value) => Number.isFinite(value))
-        ? compositeDeltaValues.reduce((sum, value) => sum + value, 0) / compositeDeltaValues.length
-        : null;
+    const compositeDeltaByMetric = Object.fromEntries(
+        QUEUE_MULTI_ROUND_METRIC_KEYS.map((metricKey) => [metricKey, resolveQueueMetricSummaryDeltaPct(metricSummary, metricKey)])
+    );
+    const compositeDeltaPct = computeWeightedQueueMetricAverage(
+        compositeDeltaByMetric,
+        getQueuePerformanceMetricWeights(queueSettings)
+    );
     const compositeGoldPerPoint01Pct = computeGoldPerPoint01Pct(totalUpgradeCost, { pct: compositeDeltaPct });
 
     return {
@@ -3734,8 +3856,19 @@ function buildQueueItemCostInsights(queueState, queueItemSnapshot, metricSummary
     };
 }
 
-function buildMultiRoundRanking(metricSummaryByQueueItem, scoreWeights = getDefaultQueueRuntimeSettings().finalWeights) {
-    const normalizedScoreWeights = normalizeQueueScoreWeights(scoreWeights);
+function buildMultiRoundRanking(
+    metricSummaryByQueueItem,
+    queueRuntimeSettings = getDefaultQueueRuntimeSettings(),
+    queueSettings = getDefaultQueueRunSettings()
+) {
+    const normalizedQueueRuntimeSettings = normalizeQueueRuntimeSettings(
+        isPlainObject(queueRuntimeSettings) && isPlainObject(queueRuntimeSettings.finalWeights)
+            ? queueRuntimeSettings
+            : { finalWeights: queueRuntimeSettings }
+    );
+    const normalizedScoreWeights = normalizedQueueRuntimeSettings.finalWeights;
+    const costScoreGoldPerPointMode = normalizedQueueRuntimeSettings.costScoreGoldPerPointMode;
+    const performanceMetricWeights = getQueuePerformanceMetricWeights(queueSettings);
     const normalizedScoresByMetric = {};
     const invalidFlagsByMetric = {};
 
@@ -3812,8 +3945,19 @@ function buildMultiRoundRanking(metricSummaryByQueueItem, scoreWeights = getDefa
             maxScore: QUEUE_MULTI_ROUND_SCORE_MAX,
         }
     );
-    const avgGoldScores = rankScoreList(
+    const strictGoldScores = rankScoreList(
         metricSummaryByQueueItem.map((entry) => entry.costInsights?.goldPerPoint01PctAvg),
+        {
+            higherIsBetter: false,
+            logScale: true,
+            tieScore: QUEUE_MULTI_ROUND_SCORE_TIE,
+            invalidScore: QUEUE_MULTI_ROUND_SCORE_INVALID,
+            minScore: QUEUE_MULTI_ROUND_SCORE_MIN,
+            maxScore: QUEUE_MULTI_ROUND_SCORE_MAX,
+        }
+    );
+    const compositeGoldScores = rankScoreList(
+        metricSummaryByQueueItem.map((entry) => entry.costInsights?.compositeGoldPerPoint01Pct),
         {
             higherIsBetter: false,
             logScale: true,
@@ -3825,35 +3969,58 @@ function buildMultiRoundRanking(metricSummaryByQueueItem, scoreWeights = getDefa
     );
 
     const ranked = metricSummaryByQueueItem.map((entry, index) => {
-        const performanceScores = QUEUE_MULTI_ROUND_METRIC_KEYS.map((metricKey) => (
-            toFiniteNumber(normalizedScoresByMetric?.[metricKey]?.[index], QUEUE_MULTI_ROUND_SCORE_INVALID)
-        ));
-        const performanceScore = performanceScores.reduce((sum, value) => sum + value, 0) / Math.max(1, performanceScores.length);
+        const performanceScoresByMetric = Object.fromEntries(
+            QUEUE_MULTI_ROUND_METRIC_KEYS.map((metricKey) => [
+                metricKey,
+                toFiniteNumber(normalizedScoresByMetric?.[metricKey]?.[index], QUEUE_MULTI_ROUND_SCORE_INVALID),
+            ])
+        );
+        const performanceScore = toFiniteNumber(
+            computeWeightedQueueMetricAverage(performanceScoresByMetric, performanceMetricWeights),
+            QUEUE_MULTI_ROUND_SCORE_INVALID
+        );
 
         const performanceInvalidMetricKeys = QUEUE_MULTI_ROUND_METRIC_KEYS
-            .filter((metricKey) => Boolean(invalidFlagsByMetric?.[metricKey]?.[index]));
+            .filter((metricKey) => performanceMetricWeights[metricKey] > 0 && Boolean(invalidFlagsByMetric?.[metricKey]?.[index]));
         const performanceInvalid = performanceInvalidMetricKeys.length > 0;
         const stabilityScore = toFiniteNumber(stabilityScores?.scores?.[index], QUEUE_MULTI_ROUND_SCORE_INVALID);
         const stabilityInvalid = Boolean(stabilityScores?.invalidFlags?.[index]);
 
-        const confidenceList = QUEUE_MULTI_ROUND_METRIC_KEYS.map((metricKey) => {
-            const confidenceDeltaPct = Number(entry.metricSummary?.[metricKey]?.confidenceDeltaPct);
-            const fallbackConfidence = Number(entry.metricSummary?.[metricKey]?.confidence);
-            return clamp(toFiniteNumber(Number.isFinite(confidenceDeltaPct) ? confidenceDeltaPct : fallbackConfidence, 0), 0, 1);
-        });
-        const avgConfidence = confidenceList.reduce((sum, value) => sum + value, 0) / Math.max(1, confidenceList.length);
+        const confidenceByMetric = Object.fromEntries(
+            QUEUE_MULTI_ROUND_METRIC_KEYS.map((metricKey) => {
+                const confidenceDeltaPct = Number(entry.metricSummary?.[metricKey]?.confidenceDeltaPct);
+                const fallbackConfidence = Number(entry.metricSummary?.[metricKey]?.confidence);
+                const confidenceValue = clamp(
+                    toFiniteNumber(Number.isFinite(confidenceDeltaPct) ? confidenceDeltaPct : fallbackConfidence, 0),
+                    0,
+                    1
+                );
+                return [metricKey, confidenceValue];
+            })
+        );
+        const avgConfidence = toFiniteNumber(
+            computeWeightedQueueMetricAverage(confidenceByMetric, performanceMetricWeights),
+            0
+        );
 
         const upgradeCostScore = toFiniteNumber(upgradeCostScores?.scores?.[index], QUEUE_MULTI_ROUND_SCORE_INVALID);
         const purchaseDaysScore = toFiniteNumber(purchaseDaysScores?.scores?.[index], QUEUE_MULTI_ROUND_SCORE_INVALID);
-        const avgGoldScore = toFiniteNumber(avgGoldScores?.scores?.[index], QUEUE_MULTI_ROUND_SCORE_INVALID);
+        const strictGoldScore = toFiniteNumber(strictGoldScores?.scores?.[index], QUEUE_MULTI_ROUND_SCORE_INVALID);
+        const compositeGoldScore = toFiniteNumber(compositeGoldScores?.scores?.[index], QUEUE_MULTI_ROUND_SCORE_INVALID);
+        const selectedGoldScore = costScoreGoldPerPointMode === QUEUE_COST_SCORE_GOLD_METRIC_COMPOSITE
+            ? compositeGoldScore
+            : strictGoldScore;
+        const selectedGoldInvalid = costScoreGoldPerPointMode === QUEUE_COST_SCORE_GOLD_METRIC_COMPOSITE
+            ? Boolean(compositeGoldScores?.invalidFlags?.[index])
+            : Boolean(strictGoldScores?.invalidFlags?.[index]);
         const costScore = (
             QUEUE_COST_SCORE_WEIGHT_UPGRADE * upgradeCostScore
             + QUEUE_COST_SCORE_WEIGHT_PURCHASE_DAYS * purchaseDaysScore
-            + QUEUE_COST_SCORE_WEIGHT_GOLD_PER_POINT * avgGoldScore
+            + QUEUE_COST_SCORE_WEIGHT_GOLD_PER_POINT * selectedGoldScore
         );
         const costInvalid = Boolean(upgradeCostScores?.invalidFlags?.[index])
             || Boolean(purchaseDaysScores?.invalidFlags?.[index])
-            || Boolean(avgGoldScores?.invalidFlags?.[index]);
+            || selectedGoldInvalid;
 
         const invalidReasons = [];
         for (const metricKey of performanceInvalidMetricKeys) {
@@ -3868,8 +4035,12 @@ function buildMultiRoundRanking(metricSummaryByQueueItem, scoreWeights = getDefa
         if (purchaseDaysScores?.invalidFlags?.[index]) {
             invalidReasons.push("cost.invalidPurchaseDays");
         }
-        if (avgGoldScores?.invalidFlags?.[index]) {
-            invalidReasons.push("cost.invalidGoldPerPoint01PctAvg");
+        if (selectedGoldInvalid) {
+            invalidReasons.push(
+                costScoreGoldPerPointMode === QUEUE_COST_SCORE_GOLD_METRIC_COMPOSITE
+                    ? "cost.invalidCompositeGoldPerPoint01Pct"
+                    : "cost.invalidGoldPerPoint01PctAvg"
+            );
         }
 
         const baseFinalScore = (
@@ -3903,15 +4074,18 @@ function buildMultiRoundRanking(metricSummaryByQueueItem, scoreWeights = getDefa
                 invalidReasons,
             },
             rawComponentScores: {
-                performanceByMetric: Object.fromEntries(
-                    QUEUE_MULTI_ROUND_METRIC_KEYS.map((metricKey, metricIndex) => [metricKey, performanceScores[metricIndex]])
-                ),
+                performanceByMetric: performanceScoresByMetric,
+                performanceWeights: {
+                    ...performanceMetricWeights,
+                },
                 stabilityAvgCv: stabilityRawValues[index],
                 costByMetric: {
                     upgradeCost: upgradeCostScore,
                     purchaseDays: purchaseDaysScore,
-                    avgGoldPerPoint01Pct: avgGoldScore,
-                    compositeGoldPerPoint01Pct: toFiniteNumber(entry.costInsights?.compositeGoldPerPoint01Pct, 0),
+                    avgGoldPerPoint01Pct: strictGoldScore,
+                    compositeGoldPerPoint01Pct: compositeGoldScore,
+                    selectedGoldPerPoint01PctScore: selectedGoldScore,
+                    selectedGoldPerPointMode: costScoreGoldPerPointMode,
                 },
             },
             metricSummary: entry.metricSummary,
@@ -3951,10 +4125,7 @@ function normalizeQueueSettings(settings) {
     const rounds = clamp(Math.floor(toFiniteNumber(settings?.rounds, defaults.rounds)), 1, 200);
     const baselineRounds = clamp(Math.floor(toFiniteNumber(settings?.baselineRounds, defaults.baselineRounds)), 1, 200);
     const medianBlend = clamp(toFiniteNumber(settings?.medianBlend, defaults.medianBlend), 0, 1);
-    const weightProfit = Math.max(0, toFiniteNumber(settings?.weightProfit, defaults.weightProfit));
-    const weightXp = Math.max(0, toFiniteNumber(settings?.weightXp, defaults.weightXp));
-    const weightDeathSafety = Math.max(0, toFiniteNumber(settings?.weightDeathSafety, defaults.weightDeathSafety));
-    const weightSum = weightProfit + weightXp + weightDeathSafety || 1;
+    const normalizedPerformanceWeights = resolveQueuePerformanceSubweights(settings, defaults);
     const executionModeRaw = settings?.executionMode;
     const executionMode = executionModeRaw == null
         ? defaults.executionMode
@@ -3964,9 +4135,9 @@ function normalizeQueueSettings(settings) {
         rounds,
         baselineRounds,
         medianBlend,
-        weightProfit: weightProfit / weightSum,
-        weightXp: weightXp / weightSum,
-        weightDeathSafety: weightDeathSafety / weightSum,
+        weightProfit: normalizedPerformanceWeights.weightProfit,
+        weightXp: normalizedPerformanceWeights.weightXp,
+        weightDeathSafety: normalizedPerformanceWeights.weightDeathSafety,
         executionMode,
     };
 }
@@ -4046,7 +4217,7 @@ function buildQueueRankedRowsFromSampleState({
     queueState,
     baselineMetrics,
     pricingState,
-    scoreWeights,
+    queueRuntimeSettings,
     includeEmptyEntries = false,
 }) {
     const safeEntries = Array.isArray(entries) ? entries : [];
@@ -4073,7 +4244,6 @@ function buildQueueRankedRowsFromSampleState({
     }
 
     const safeQueueSettings = normalizeQueueSettings(queueSettings);
-    const normalizedScoreWeights = normalizeQueueScoreWeights(scoreWeights);
     const variantAggregates = sourceEntries.map((entry) => {
         const variantSamples = (variantSamplesById.get(entry.id) || [])
             .slice()
@@ -4114,16 +4284,16 @@ function buildQueueRankedRowsFromSampleState({
                 metrics: sample.metrics,
                 deltas: sample.deltas,
             }));
-        const metricSummary = buildQueueItemMetricSummary(roundResults);
+        const metricSummary = buildQueueItemMetricSummary(roundResults, safeQueueSettings.medianBlend);
         return {
             queueItemId: entry.id,
             displayName: entry.label,
             order: entrySortIndexById.get(entry.id) ?? 0,
             metricSummary,
-            costInsights: buildQueueItemCostInsights(queueState, entry.snapshot, metricSummary, pricingState),
+            costInsights: buildQueueItemCostInsights(queueState, entry.snapshot, metricSummary, pricingState, safeQueueSettings),
         };
     });
-    const multiRoundRanking = buildMultiRoundRanking(metricSummaryByQueueItem, normalizedScoreWeights);
+    const multiRoundRanking = buildMultiRoundRanking(metricSummaryByQueueItem, queueRuntimeSettings, safeQueueSettings);
     const baselineDailyNoRngProfitPerDay = toFiniteNumber(
         baselineMetrics?.dailyNoRngProfit,
         0
@@ -4747,6 +4917,10 @@ export const useSimulatorStore = defineStore("simulator", {
             const performancePct = Number(payload.performancePct);
             const stabilityPct = Number(payload.stabilityPct);
             const costPct = Number(payload.costPct);
+            const rawCostScoreGoldPerPointMode = payload?.costScoreGoldPerPointMode;
+            const costScoreGoldPerPointMode = rawCostScoreGoldPerPointMode == null
+                ? normalizeQueueCostScoreGoldMetricMode(this.queueRuntime?.costScoreGoldPerPointMode)
+                : String(rawCostScoreGoldPerPointMode);
 
             if (
                 !Number.isFinite(performancePct)
@@ -4770,6 +4944,13 @@ export const useSimulatorStore = defineStore("simulator", {
                 return {
                     ok: false,
                     messageKey: "common:settingsPage.queueSaveErrorWeightSum",
+                };
+            }
+
+            if (!isQueueCostScoreGoldMetricMode(costScoreGoldPerPointMode)) {
+                return {
+                    ok: false,
+                    messageKey: "common:settingsPage.queueSaveErrorCostScoreGoldMetric",
                 };
             }
 
@@ -4809,6 +4990,7 @@ export const useSimulatorStore = defineStore("simulator", {
                         stability: stabilityPct / 100,
                         cost: costPct / 100,
                     },
+                    costScoreGoldPerPointMode,
                     parallelWorkerLimit: parallelWorkerLimitRaw,
                 },
             };
@@ -4820,8 +5002,12 @@ export const useSimulatorStore = defineStore("simulator", {
             }
 
             try {
+                const previousRuntimeSettings = this.queueRuntime;
                 const normalized = persistQueueRuntimeSettingsToStorage(validated.settings);
                 this.queueRuntime = normalized;
+                if (haveQueueRuntimeRankingSettingsChanged(previousRuntimeSettings, normalized)) {
+                    this.refreshStoredQueueRankingsForCurrentSettings();
+                }
                 return {
                     ok: true,
                     settings: normalized,
@@ -4836,11 +5022,55 @@ export const useSimulatorStore = defineStore("simulator", {
         resetQueueRuntimeSettings() {
             try {
                 const defaults = getDefaultQueueRuntimeSettings();
+                const previousRuntimeSettings = this.queueRuntime;
                 const normalized = persistQueueRuntimeSettingsToStorage(defaults);
                 this.queueRuntime = normalized;
+                if (haveQueueRuntimeRankingSettingsChanged(previousRuntimeSettings, normalized)) {
+                    this.refreshStoredQueueRankingsForCurrentSettings();
+                }
                 return {
                     ok: true,
                     settings: normalized,
+                };
+            } catch (error) {
+                return {
+                    ok: false,
+                    messageKey: "common:settingsPage.queueSaveErrorStorage",
+                };
+            }
+        },
+        resetQueueSettingsToDefaults() {
+            const previousRuntimeSettings = normalizeQueueRuntimeSettings(this.queueRuntime);
+
+            try {
+                const runtimeSettings = persistQueueRuntimeSettingsToStorage(getDefaultQueueRuntimeSettings());
+                let queueSettings = null;
+
+                try {
+                    queueSettings = this.updateQueueSettingsForPlayer(this.activePlayerId, getDefaultQueueRunSettings(), {
+                        persist: true,
+                        ignorePersistError: false,
+                    });
+                } catch (error) {
+                    try {
+                        persistQueueRuntimeSettingsToStorage(previousRuntimeSettings);
+                    } catch (rollbackError) {
+                        // Best effort rollback; keep the user-facing result as a failure.
+                    }
+                    return {
+                        ok: false,
+                        messageKey: "common:settingsPage.queueSaveErrorStorage",
+                    };
+                }
+
+                this.queueRuntime = runtimeSettings;
+                if (haveQueueRuntimeRankingSettingsChanged(previousRuntimeSettings, runtimeSettings)) {
+                    this.refreshStoredQueueRankingsForCurrentSettings();
+                }
+                return {
+                    ok: true,
+                    runtimeSettings,
+                    queueSettings,
                 };
             } catch (error) {
                 return {
@@ -5455,7 +5685,7 @@ export const useSimulatorStore = defineStore("simulator", {
 
                 ensureBaselineRunNotCancelled();
                 const sortedRoundResults = roundResults.slice().sort((left, right) => left.round - right.round);
-                const baselineAggregate = buildQueueBaselineAggregate(sortedRoundResults);
+                const baselineAggregate = buildQueueBaselineAggregate(sortedRoundResults, queueSettings.medianBlend);
                 queueState.baseline = createQueueBaselineRecord(
                     baselineSnapshot,
                     partySnapshot,
@@ -5556,17 +5786,63 @@ export const useSimulatorStore = defineStore("simulator", {
             return appendedItems;
         },
         updateActiveQueueSettings(partialSettings = {}) {
-            const queueState = this.ensureQueueState(this.activePlayerId);
-            queueState.settings = normalizeQueueSettings({
+            return this.updateQueueSettingsForPlayer(this.activePlayerId, partialSettings, {
+                persist: true,
+                ignorePersistError: true,
+            });
+        },
+        updateQueueSettingsForPlayer(playerId = this.activePlayerId, partialSettings = {}, options = {}) {
+            const normalizedPlayerId = String(playerId || this.activePlayerId);
+            const queueState = this.ensureQueueState(normalizedPlayerId);
+            const previousSettings = normalizeQueueSettings(queueState.settings);
+            const nextSettings = normalizeQueueSettings({
                 ...queueState.settings,
                 ...partialSettings,
             });
-            try {
-                persistQueueRunSettingsByPlayerToStorage(this.queue.byPlayer);
-            } catch (error) {
-                // Keep queue settings editable even when localStorage is unavailable or full.
+
+            if (options?.persist !== false) {
+                const queueStateByPlayerForPersist = {};
+                for (const queuePlayerId of QUEUE_PLAYER_IDS) {
+                    queueStateByPlayerForPersist[queuePlayerId] = {
+                        settings: String(queuePlayerId) === normalizedPlayerId
+                            ? nextSettings
+                            : this.queue.byPlayer?.[queuePlayerId]?.settings,
+                    };
+                }
+
+                try {
+                    persistQueueRunSettingsByPlayerToStorage(queueStateByPlayerForPersist);
+                } catch (error) {
+                    if (options?.ignorePersistError !== true) {
+                        throw error;
+                    }
+                }
+            }
+
+            queueState.settings = nextSettings;
+            const rankingSettingsChanged = haveQueueRunRankingSettingsChanged(previousSettings, queueState.settings);
+            if (rankingSettingsChanged && queueState?.baseline) {
+                const refreshedBaselineMetrics = resolveQueueBaselineMetricsForSettings(queueState.baseline, queueState.settings);
+                if (isPlainObject(refreshedBaselineMetrics)) {
+                    queueState.baseline.metrics = {
+                        ...(isPlainObject(queueState.baseline.metrics) ? queueState.baseline.metrics : {}),
+                        ...refreshedBaselineMetrics,
+                    };
+                }
+            }
+            if (rankingSettingsChanged && Array.isArray(queueState?.rawRuns) && queueState.rawRuns.length > 0) {
+                this.refreshQueueResultsFromRawRuns({
+                    playerId: normalizedPlayerId,
+                    includeEmptyEntries: queueState?.isRunning !== true && queueState?.lastRunStatus === "completed",
+                    allowReferenceLoad: false,
+                    sortRawRuns: false,
+                    updateLastRunAt: false,
+                });
             }
             return queueState.settings;
+        },
+        resetActiveQueueSettings() {
+            return this.updateActiveQueueSettings(getDefaultQueueRunSettings());
         },
         removeQueueItem(itemId) {
             const queueState = this.ensureQueueState(this.activePlayerId);
@@ -5639,15 +5915,22 @@ export const useSimulatorStore = defineStore("simulator", {
 
             const queueSettings = normalizeQueueSettings(queueState.settings);
             queueState.settings = queueSettings;
-            const baselineMetrics = isPlainObject(queueState?.baseline?.metrics) ? queueState.baseline.metrics : {};
+            const baselineMetrics = resolveQueueBaselineMetricsForSettings(queueState?.baseline, queueSettings);
+            if (queueState?.baseline && isPlainObject(baselineMetrics)) {
+                queueState.baseline.metrics = {
+                    ...(isPlainObject(queueState.baseline.metrics) ? queueState.baseline.metrics : {}),
+                    ...baselineMetrics,
+                };
+            }
+            syncQueueRawRunDeltas(queueState.rawRuns, isPlainObject(baselineMetrics) ? baselineMetrics : {});
             const rankedRows = buildQueueRankedRowsFromSampleState({
                 entries,
                 rawRuns: queueState.rawRuns,
                 queueSettings,
                 queueState,
-                baselineMetrics,
+                baselineMetrics: isPlainObject(baselineMetrics) ? baselineMetrics : {},
                 pricingState: this.pricing,
-                scoreWeights: this.queueRuntime?.finalWeights,
+                queueRuntimeSettings: this.queueRuntime,
                 includeEmptyEntries,
             });
 
@@ -5661,6 +5944,21 @@ export const useSimulatorStore = defineStore("simulator", {
             }
 
             return rankedRows;
+        },
+        refreshStoredQueueRankingsForCurrentSettings() {
+            for (const [playerId, queueState] of Object.entries(this.queue?.byPlayer || {})) {
+                if (!Array.isArray(queueState?.rawRuns) || queueState.rawRuns.length <= 0) {
+                    continue;
+                }
+
+                this.refreshQueueResultsFromRawRuns({
+                    playerId,
+                    includeEmptyEntries: queueState?.isRunning !== true && queueState?.lastRunStatus === "completed",
+                    allowReferenceLoad: false,
+                    sortRawRuns: false,
+                    updateLastRunAt: false,
+                });
+            }
         },
         async runActiveQueue() {
             const queueState = this.ensureQueueState(this.activePlayerId);
@@ -5701,13 +5999,15 @@ export const useSimulatorStore = defineStore("simulator", {
             const pricingOptions = createProfitPricingOptions(this.pricing);
             const queueRunId = Number(queueState.runId || 0) + 1;
             const startedAt = Date.now();
-            const recomputedBaselineMetrics = !hasAggregatedQueueBaselineMetrics(queueState?.baseline) && queueState?.baseline?.simResult
+            const aggregatedBaselineMetrics = resolveQueueBaselineMetricsForSettings(queueState?.baseline, queueSettings);
+            const recomputedBaselineMetrics = !isPlainObject(aggregatedBaselineMetrics) && !hasAggregatedQueueBaselineMetrics(queueState?.baseline) && queueState?.baseline?.simResult
                 ? computeQueueMetrics(queueState.baseline.simResult, activePlayerId, pricingOptions)
                 : null;
 
-            if (queueState?.baseline && isPlainObject(recomputedBaselineMetrics)) {
+            if (queueState?.baseline && (isPlainObject(aggregatedBaselineMetrics) || isPlainObject(recomputedBaselineMetrics))) {
                 queueState.baseline.metrics = {
                     ...(isPlainObject(queueState.baseline.metrics) ? queueState.baseline.metrics : {}),
+                    ...(isPlainObject(aggregatedBaselineMetrics) ? aggregatedBaselineMetrics : {}),
                     ...(isPlainObject(recomputedBaselineMetrics) ? recomputedBaselineMetrics : {}),
                 };
             }
@@ -5777,14 +6077,24 @@ export const useSimulatorStore = defineStore("simulator", {
                 if (!force && now - lastRealtimeRankingAt < REALTIME_RANKING_THROTTLE_MS) {
                     return;
                 }
+                const currentQueueSettings = normalizeQueueSettings(queueState.settings);
+                queueState.settings = currentQueueSettings;
+                const currentBaselineMetrics = resolveQueueBaselineMetricsForSettings(queueState?.baseline, currentQueueSettings);
+                if (queueState?.baseline && isPlainObject(currentBaselineMetrics)) {
+                    queueState.baseline.metrics = {
+                        ...(isPlainObject(queueState.baseline.metrics) ? queueState.baseline.metrics : {}),
+                        ...currentBaselineMetrics,
+                    };
+                }
+                syncQueueRawRunDeltas(queueState.rawRuns, isPlainObject(currentBaselineMetrics) ? currentBaselineMetrics : {});
                 const realtimeRows = buildQueueRankedRowsFromSampleState({
                     entries,
                     rawRuns: queueState.rawRuns,
-                    queueSettings,
+                    queueSettings: currentQueueSettings,
                     queueState,
-                    baselineMetrics,
+                    baselineMetrics: isPlainObject(currentBaselineMetrics) ? currentBaselineMetrics : {},
                     pricingState: this.pricing,
-                    scoreWeights: this.queueRuntime?.finalWeights,
+                    queueRuntimeSettings: this.queueRuntime,
                     includeEmptyEntries: false,
                 });
                 if (realtimeRows.length <= 0) {

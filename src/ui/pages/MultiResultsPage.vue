@@ -15,13 +15,15 @@
           <div class="mt-2 space-y-1">
             <p>{{ t("common:multiRound.scoreModelValue", "Performance/Stability/Cost weighted by configured settings (quantile mapped to 5-95, with confidence penalty)") }}</p>
             <p>{{ t("common:multiRound.scoreModelWeightsValue", "Score weights", queueRuntimeWeightText) }}</p>
-            <p>{{ t("common:multiRound.scoreModelParamPerformance", "Performance: DPS, No RNG Profit/day, XP/h and Kills/h gains are rank-mapped within the batch to 5-95. Higher is better.") }}</p>
+            <p>{{ t("common:multiRound.scoreModelParamPerformance", "Performance: DPS, No RNG Profit/day, XP/h and Kills/h gains are rank-mapped within the batch to 5-95, then combined using the current queue subweights. Higher is better.") }}</p>
+            <p>{{ t("common:multiRound.scoreModelParamPerformanceSubweights", "", queuePerformanceSubweightText) }}</p>
             <p>{{ t("common:multiRound.scoreModelParamStability", "Stability: the average CV across the four metrics is rank-mapped within the batch to 5-95. Lower volatility scores higher.") }}</p>
-            <p>{{ t("common:multiRound.scoreModelParamCost", "Cost: upgrade cost, purchase time and gold per 0.01% gain are each mapped to 5-95 (cost metrics use log scaling first). Lower cost scores higher.") }}</p>
-            <p>{{ t("common:multiRound.scoreModelParamGoldPerPointValidity", "Strict gold per 0.01% is shown only when the final robust deltas for DPS, No RNG Profit/day, XP/h and Kills/h are all positive. Otherwise it is marked N/A. This is the cost metric currently used in cost scoring.") }}</p>
-            <p>{{ t("common:multiRound.scoreModelParamCompositeGoldPerPoint", "Composite gold per 0.01% uses the equal-weight average of the four final robust deltas. It is shown when that composite delta is positive, and is provided as a user-facing reference column.") }}</p>
+            <p>{{ t("common:multiRound.scoreModelParamCost", "Cost: upgrade cost, purchase time and the selected gold per 0.01% metric are each mapped to 5-95 (cost metrics use log scaling first). Lower cost scores higher.") }}</p>
+            <p>{{ t("common:multiRound.scoreModelParamCostGoldMetricSelected", "", { mode: currentCostScoreModeLabel }) }}</p>
+            <p>{{ t("common:multiRound.scoreModelParamGoldPerPointValidity", "Strict gold per 0.01% is shown only when the final robust deltas for DPS, No RNG Profit/day, XP/h and Kills/h are all positive. Otherwise it is marked N/A.") }}</p>
+            <p>{{ t("common:multiRound.scoreModelParamCompositeGoldPerPoint", "", queuePerformanceSubweightText) }}</p>
             <p>{{ t("common:multiRound.scoreModelParamRobustWinsorize", "Robust winsorize setting", { winsorPct: 5 }) }}</p>
-            <p>{{ t("common:multiRound.scoreModelParamRobustMedianBlend", "Robust median blend setting", { meanWeight: 50, medianWeight: 50 }) }}</p>
+            <p>{{ t("common:multiRound.scoreModelParamRobustMedianBlend", "Robust median blend setting", queueMedianBlendText) }}</p>
             <p>{{ t("common:multiRound.scoreModelParamRobustConfidencePenalty", "Robust confidence penalty setting", {
               baseWeight: 65,
               penaltyWeight: 35,
@@ -134,7 +136,7 @@
               <th class="px-2 py-2">{{ t("common:multiRound.finalScore", "Final Score") }}</th>
               <th class="px-2 py-2">{{ t("common:multiRound.performanceScore", "Performance Score") }}</th>
               <th class="px-2 py-2">{{ t("common:multiRound.stabilityScore", "Stability Score") }}</th>
-              <th class="px-2 py-2">{{ t("common:multiRound.costScore", "Cost Score") }}</th>
+              <th class="px-2 py-2">{{ costScoreColumnHeader }}</th>
               <th class="px-2 py-2">{{ t("common:vue.queue.meanProfitPerHour", "Mean Profit/h") }}</th>
               <th class="px-2 py-2">{{ t("common:vue.queue.deltaProfitPerHour", "Delta Profit/h") }}</th>
               <th class="px-2 py-2">{{ t("common:multiRound.deltaProfitPct", "Profit Delta%") }}</th>
@@ -231,6 +233,7 @@
 <script setup>
 import { computed, ref } from "vue";
 import DisclosurePanel from "../components/DisclosurePanel.vue";
+import { resolveQueuePerformanceSubweights } from "../../shared/queuePerformanceWeights.js";
 import {
   abilityDetailIndex as abilityDetailMap,
   houseRoomDetailIndex as houseRoomDetailMap,
@@ -340,6 +343,17 @@ const runningPlaceholderDescription = computed(() => (
 ));
 const rawRunCount = computed(() => Math.max(0, Number(queueState.value?.rawRuns?.length || 0)));
 const completedSimCountText = computed(() => `${rawRunCount.value}/${totalRunCount.value}`);
+const currentCostScoreGoldMetricMode = computed(() => (
+  simulator.queueRuntime?.costScoreGoldPerPointMode === "composite" ? "composite" : "strict"
+));
+const currentCostScoreModeLabel = computed(() => (
+  currentCostScoreGoldMetricMode.value === "composite"
+    ? t("common:multiRound.costScoreModeComposite", "Composite")
+    : t("common:multiRound.costScoreModeStrict", "Strict")
+));
+const costScoreColumnHeader = computed(() => (
+  t("common:multiRound.costScoreWithMode", "Cost Score ({{mode}})", { mode: currentCostScoreModeLabel.value })
+));
 const queueRuntimeWeightText = computed(() => {
   const finalWeights = simulator.queueRuntime?.finalWeights || {};
   const toPct = (value, fallback) => Number((Number(value ?? fallback) * 100).toFixed(2));
@@ -347,6 +361,23 @@ const queueRuntimeWeightText = computed(() => {
     performance: toPct(finalWeights.performance, 0.4),
     stability: toPct(finalWeights.stability, 0.2),
     cost: toPct(finalWeights.cost, 0.4),
+  };
+});
+const queuePerformanceSubweightText = computed(() => {
+  const weights = resolveQueuePerformanceSubweights(queueState.value?.settings || {});
+  const toPct = (value) => Number((Number(value || 0) * 100).toFixed(2));
+  return {
+    profit: toPct(weights.weightProfit),
+    xp: toPct(weights.weightXp),
+    dps: toPct(weights.weightDps),
+    kills: toPct(weights.weightKills),
+  };
+});
+const queueMedianBlendText = computed(() => {
+  const medianBlend = Math.max(0, Math.min(1, Number(queueState.value?.settings?.medianBlend ?? 0.5)));
+  return {
+    meanWeight: Number(((1 - medianBlend) * 100).toFixed(2)),
+    medianWeight: Number((medianBlend * 100).toFixed(2)),
   };
 });
 const actionNameFallbackMap = computed(() => {
@@ -954,7 +985,7 @@ async function exportRankingRowsExcel() {
       { header: t("common:multiRound.finalScore", "Final Score"), key: "finalScore", width: 12 },
       { header: t("common:multiRound.performanceScore", "Performance Score"), key: "performanceScore", width: 16 },
       { header: t("common:multiRound.stabilityScore", "Stability Score"), key: "stabilityScore", width: 14 },
-      { header: t("common:multiRound.costScore", "Cost Score"), key: "costScore", width: 12 },
+      { header: costScoreColumnHeader.value, key: "costScore", width: 18 },
       { header: t("common:vue.queue.meanProfitPerHour", "Mean Profit/h"), key: "meanProfitPerHour", width: 14 },
       { header: t("common:vue.queue.deltaProfitPerHour", "Delta Profit/h"), key: "deltaProfitPerHour", width: 14 },
       { header: t("common:multiRound.deltaProfitPct", "Profit Delta%"), key: "deltaProfitPct", width: 12 },

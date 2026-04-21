@@ -7,4 +7,11 @@ describe("MultiResultsPage baseline summary copy", () => {
     it("explains that baseline summary values come from robust multi-round aggregation", () => {
         expect(multiResultsPageSource).toContain('t("common:queue.baselineSummaryAggregationHint"');
     });
+
+    it("shows the selected cost score metric and uses a dynamic cost score header", () => {
+        expect(multiResultsPageSource).toContain('t("common:multiRound.scoreModelParamCostGoldMetricSelected", "", { mode: currentCostScoreModeLabel })');
+        expect(multiResultsPageSource).toContain('const costScoreColumnHeader = computed(() =>');
+        expect(multiResultsPageSource).toContain('{{ costScoreColumnHeader }}');
+        expect(multiResultsPageSource).toContain('costScoreColumnHeader.value');
+    });
 });

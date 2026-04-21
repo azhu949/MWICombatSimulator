@@ -277,6 +277,17 @@ function waitForMs(delayMs) {
     });
 }
 
+async function waitForCondition(predicate, timeoutMs = 50, intervalMs = 1) {
+    const startedAt = Date.now();
+    while (Date.now() - startedAt < timeoutMs) {
+        if (predicate()) {
+            return true;
+        }
+        await waitForMs(intervalMs);
+    }
+    return predicate();
+}
+
 describe("advisor store", () => {
     beforeEach(() => {
         setActivePinia(createPinia());
@@ -492,7 +503,7 @@ describe("advisor store", () => {
         });
 
         const runPromise = simulator.runAdvisorScan();
-        await waitForMs(10);
+        expect(await waitForCondition(() => simulator.advisor.quickRows.length > 0, 30)).toBe(true);
 
         const zonePayload = mockWorkerState.multiCalls.find((payload) => payload.type === "start_simulation_all_zones");
         expect(zonePayload?.zones?.length).toBeGreaterThan(3);
@@ -586,7 +597,7 @@ describe("advisor store", () => {
         });
 
         const runPromise = simulator.runAdvisorScan();
-        await waitForMs(10);
+        expect(await waitForCondition(() => simulator.advisor.quickRows.length > 0, 30)).toBe(true);
 
         const partialRowsBeforeStop = simulator.advisor.quickRows.length;
         expect(partialRowsBeforeStop).toBeGreaterThan(0);
@@ -638,8 +649,7 @@ describe("advisor store", () => {
         });
 
         const cancelledRunPromise = simulator.runAdvisorScan();
-        await waitForMs(10);
-        expect(simulator.advisor.quickRows.length).toBeGreaterThan(0);
+        expect(await waitForCondition(() => simulator.advisor.quickRows.length > 0, 30)).toBe(true);
         simulator.stopAdvisorScan();
         await cancelledRunPromise;
 

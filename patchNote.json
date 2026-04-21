@@ -1,4 +1,26 @@
 {
+    "2026年4月21日（v1.0.17）": {
+        "label": {
+            "zh": "2026年4月21日（v1.0.17）",
+            "en": "April 21, 2026 (v1.0.17)"
+        },
+        "notes": {
+            "zh": [
+                "设置页新增“成本分口径”，现在可以在严格成本和综合成本之间切换。",
+                "设置页的队列配置重组为“评分模型 / 执行与线程 / 采样与统计”三块，并新增“性能分内部优先级”，可以用收益和 XP 权重决定剩余权重如何自动分配到 DPS 与 Kills。",
+                "多轮结果页和导出表头会显示当前使用的成本分口径，排名规则更容易看懂。",
+                "多轮结果页现在也会展示当前性能子权重与中位数融合比例，综合成本和稳健聚合的计算方式更直观。",
+                "调整评分权重、性能分内部优先级、中位数融合比例或成本分口径后，已有多轮结果会立即按新规则重新排名，不用重新模拟。"
+            ],
+            "en": [
+                "Added a Cost Score Metric option in Settings, so you can switch between Strict and Composite cost scoring.",
+                "Reorganized Queue Configuration in Settings into Scoring, Execution, and Sampling sections, and added Performance Priorities so Profit and XP weights can control how the remaining share is automatically split into DPS and Kills.",
+                "Multi-round Results and export headers now show the current cost-score metric, making the ranking easier to understand.",
+                "Multi-round Results now also show the active performance subweights and median-blend breakdown, so the composite cost metric and robust aggregation are easier to interpret.",
+                "Changing score weights, performance priorities, median blend, or the cost-score metric now reranks existing multi-round results immediately, without rerunning simulations."
+            ]
+        }
+    },
     "2026年4月19日（v1.0.16）": {
         "label": {
             "zh": "2026年4月19日（v1.0.16）",

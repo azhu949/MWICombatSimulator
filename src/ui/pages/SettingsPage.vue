@@ -1,210 +1,261 @@
 <template>
   <section class="space-y-4">
-    <div class="panel space-y-3">
+    <div class="panel space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <h3 class="font-heading text-base font-semibold text-amber-200">{{ t("common:settingsPage.queueSettingsCardTitle", "Queue Scoring & Workers") }}</h3>
+        <h3 class="font-heading text-base font-semibold text-amber-200">{{ t("common:settingsPage.queueSettingsCardTitle", "Queue Configuration") }}</h3>
         <span class="text-xs" :class="queueSettingsStatusClass">{{ queueSettingsStatusText }}</span>
       </div>
 
-      <div class="space-y-3">
-        <p class="field-label">{{ t("common:settingsPage.weightsSectionTitle", "Score Weights (%)") }}</p>
-        <div class="grid gap-3 sm:grid-cols-3">
-          <label class="block">
-            <span class="field-label">{{ t("common:settingsPage.weightPerformance", "Performance") }}</span>
-            <input
-              v-model.number="queueRuntimeDraft.performancePct"
-              class="field-input"
-              type="number"
-              min="0"
-              max="100"
-              step="0.01"
-            />
-          </label>
-          <label class="block">
-            <span class="field-label">{{ t("common:settingsPage.weightStability", "Stability") }}</span>
-            <input
-              v-model.number="queueRuntimeDraft.stabilityPct"
-              class="field-input"
-              type="number"
-              min="0"
-              max="100"
-              step="0.01"
-            />
-          </label>
-          <label class="block">
-            <span class="field-label">{{ t("common:settingsPage.weightCost", "Cost") }}</span>
-            <input
-              v-model.number="queueRuntimeDraft.costPct"
-              class="field-input"
-              type="number"
-              min="0"
-              max="100"
-              step="0.01"
-            />
-          </label>
-        </div>
-      </div>
-
-      <div class="space-y-2">
-        <label class="block max-w-xs">
-          <span class="field-label">{{ t("common:settingsPage.parallelWorkerLimit", "Parallel Worker Limit") }}</span>
-          <input
-            v-model.number="queueRuntimeDraft.parallelWorkerLimit"
-            class="field-input"
-            type="number"
-            min="1"
-            :max="queueParallelWorkerHardMax"
-            step="1"
-          />
-        </label>
-        <p class="text-xs text-slate-400">{{ queueParallelWorkerHintText }}</p>
-      </div>
-
-      <div class="rounded-xl border border-white/10 bg-slate-900/40 p-3">
-        <div class="flex flex-wrap items-center justify-between gap-2">
-          <h4 class="font-heading text-sm uppercase tracking-[0.14em] text-slate-300">{{ t("common:queue.runQueueSettings", "Run Queue Settings") }}</h4>
-          <span class="text-xs text-slate-400">{{ t("common:vue.queue.activePlayer", "Active player", { name: simulator.activePlayer.name }) }}</span>
-        </div>
-        <p v-if="queuePartySummaryText" class="mt-2 text-xs text-slate-400">
-          {{ t("common:queue.partyLockedMembers", "Locked party") }}:
-          <span class="ml-1 text-slate-200">{{ queuePartySummaryText }}</span>
-        </p>
-        <p v-if="queuePartyWarningText" class="mt-2 text-xs text-amber-300">{{ queuePartyWarningText }}</p>
-
-        <div class="mt-3 grid gap-3 lg:grid-cols-4">
-          <div class="space-y-2">
-            <label class="block">
-              <span class="field-label">{{ t("common:queue.roundCount", "Rounds") }}</span>
-              <select v-model="queueRunRoundPreset" class="field-select" @change="onQueueRunRoundPresetChanged">
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="30">30</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-                <option value="200">200</option>
-                <option value="custom">{{ t("common:queue.roundCustomOption", "Custom") }}</option>
-              </select>
-            </label>
-            <label v-if="queueRunRoundPreset === 'custom'" class="block">
-              <span class="field-label">{{ t("common:queue.roundCustom", "Custom Rounds") }}</span>
-              <input
-                v-model.number="queueRunDraft.rounds"
-                type="number"
-                min="1"
-                max="200"
-                step="1"
-                class="field-input"
-                @change="applyQueueRunSettings"
-              />
-            </label>
-          </div>
-
-          <div class="space-y-2">
-            <label class="block">
-              <span class="field-label">{{ t("common:queue.baselineRoundCount", "Baseline Rounds") }}</span>
-              <select v-model="queueBaselineRoundPreset" class="field-select" @change="onQueueBaselineRoundPresetChanged">
-                <option value="1">1</option>
-                <option value="5">5</option>
-                <option value="10">10</option>
-                <option value="20">20</option>
-                <option value="30">30</option>
-                <option value="50">50</option>
-                <option value="100">100</option>
-                <option value="200">200</option>
-                <option value="custom">{{ t("common:queue.roundCustomOption", "Custom") }}</option>
-              </select>
-            </label>
-            <label v-if="queueBaselineRoundPreset === 'custom'" class="block">
-              <span class="field-label">{{ t("common:queue.baselineRoundCustom", "Custom Baseline Rounds") }}</span>
-              <input
-                v-model.number="queueRunDraft.baselineRounds"
-                type="number"
-                min="1"
-                max="200"
-                step="1"
-                class="field-input"
-                @change="applyQueueRunSettings"
-              />
-            </label>
-          </div>
-
-          <label>
-            <span class="field-label">{{ t("common:queue.executionMode", "Mode") }}</span>
-            <select v-model="queueRunDraft.executionMode" class="field-select" @change="applyQueueRunSettings">
-              <option value="parallel">{{ t("common:queue.modeParallel", "Parallel") }}</option>
-              <option value="serial">{{ t("common:queue.modeSerial", "Serial") }}</option>
-            </select>
-          </label>
-
-          <label>
-            <span class="field-label">{{ t("common:vue.queue.medianBlend", "Median Blend (0-1)") }}</span>
-            <div class="flex items-center gap-3">
-              <input
-                v-model.number="queueRunDraft.medianBlend"
-                type="range"
-                min="0"
-                max="1"
-                step="0.05"
-                class="w-full accent-amber-300"
-                @change="applyQueueRunSettings"
-              />
-              <input
-                v-model.number="queueRunDraft.medianBlend"
-                type="number"
-                min="0"
-                max="1"
-                step="0.05"
-                class="field-input w-24"
-                @change="applyQueueRunSettings"
-              />
+      <div class="grid gap-4 xl:grid-cols-3">
+        <div class="rounded-2xl border border-white/10 bg-slate-950/45 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0 space-y-1">
+              <h4 class="font-heading text-sm uppercase tracking-[0.14em] text-amber-200">{{ t("common:settingsPage.queueScoringSectionTitle", "Scoring Model") }}</h4>
+              <p class="text-xs text-slate-400">{{ t("common:settingsPage.queueScoringSectionHint", "Choose how final ranking weights the three major score components, and which cost metric Cost Score should read.") }}</p>
             </div>
-          </label>
+            <span class="shrink-0 whitespace-nowrap rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-1 text-[11px] uppercase tracking-[0.14em] text-emerald-200">{{ t("common:settingsPage.queueSectionSaveTag", "Save") }}</span>
+          </div>
+
+          <div class="mt-4 space-y-3">
+            <div class="space-y-3">
+              <p class="field-label">{{ t("common:settingsPage.weightsSectionTitle", "Score Weights (%)") }}</p>
+              <div class="grid gap-3 sm:grid-cols-3">
+                <label class="block">
+                  <span class="field-label">{{ t("common:settingsPage.weightPerformance", "Performance") }}</span>
+                  <input
+                    v-model.number="queueRuntimeDraft.performancePct"
+                    class="field-input"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                  />
+                </label>
+                <label class="block">
+                  <span class="field-label">{{ t("common:settingsPage.weightStability", "Stability") }}</span>
+                  <input
+                    v-model.number="queueRuntimeDraft.stabilityPct"
+                    class="field-input"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                  />
+                </label>
+                <label class="block">
+                  <span class="field-label">{{ t("common:settingsPage.weightCost", "Cost") }}</span>
+                  <input
+                    v-model.number="queueRuntimeDraft.costPct"
+                    class="field-input"
+                    type="number"
+                    min="0"
+                    max="100"
+                    step="0.01"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <div class="space-y-2">
+              <label class="block max-w-sm">
+                <span class="field-label">{{ t("common:settingsPage.costScoreGoldMetricLabel", "Cost Score Metric") }}</span>
+                <select v-model="queueRuntimeDraft.costScoreGoldPerPointMode" class="field-select">
+                  <option value="strict">{{ t("common:settingsPage.costScoreGoldMetricStrict", "Strict") }}</option>
+                  <option value="composite">{{ t("common:settingsPage.costScoreGoldMetricComposite", "Composite") }}</option>
+                </select>
+              </label>
+              <p class="text-xs text-slate-400">{{ t("common:settingsPage.costScoreGoldMetricHint", "Only affects which gold-per-0.01% metric is used in Cost Score. Both strict and composite columns remain visible in Multi-round Results.") }}</p>
+            </div>
+
+            <div class="space-y-3 border-t border-white/8 pt-3">
+              <p class="field-label">{{ t("common:settingsPage.performanceSubweightsTitle", "Performance Priorities") }}</p>
+              <div class="grid gap-3 sm:grid-cols-2">
+                <label>
+                  <span class="field-label">{{ t("common:vue.queue.profitWeight", "Profit Weight") }}</span>
+                  <input
+                    v-model.number="queueRunDraft.weightProfit"
+                    type="number"
+                    min="0"
+                    :max="queueRunWeightProfitMax"
+                    step="0.1"
+                    class="field-input"
+                    @change="applyQueueRunWeightInput('weightProfit')"
+                  />
+                </label>
+                <label>
+                  <span class="field-label">{{ t("common:vue.queue.xpWeight", "XP Weight") }}</span>
+                  <input
+                    v-model.number="queueRunDraft.weightXp"
+                    type="number"
+                    min="0"
+                    :max="queueRunWeightXpMax"
+                    step="0.1"
+                    class="field-input"
+                    @change="applyQueueRunWeightInput('weightXp')"
+                  />
+                </label>
+              </div>
+              <div class="space-y-1 text-xs text-slate-400">
+                <p>{{ t("common:settingsPage.queueRunWeightHint", "Profit and XP weights are applied first. Any remaining weight is split evenly between DPS and Kills.") }}</p>
+                <p>{{ t("common:settingsPage.queueRunWeightBreakdown", "", queueRunPerformanceBreakdownText) }}</p>
+              </div>
+            </div>
+          </div>
         </div>
 
-        <div class="mt-3 grid gap-3 lg:grid-cols-3">
-          <label>
-            <span class="field-label">{{ t("common:vue.queue.profitWeight", "Profit Weight") }}</span>
-            <input
-              v-model.number="queueRunDraft.weightProfit"
-              type="number"
-              min="0"
-              step="0.1"
-              class="field-input"
-              @change="applyQueueRunSettings"
-            />
-          </label>
-          <label>
-            <span class="field-label">{{ t("common:vue.queue.xpWeight", "XP Weight") }}</span>
-            <input
-              v-model.number="queueRunDraft.weightXp"
-              type="number"
-              min="0"
-              step="0.1"
-              class="field-input"
-              @change="applyQueueRunSettings"
-            />
-          </label>
-          <label>
-            <span class="field-label">{{ t("common:vue.queue.deathSafetyWeight", "Death Safety Weight") }}</span>
-            <input
-              v-model.number="queueRunDraft.weightDeathSafety"
-              type="number"
-              min="0"
-              step="0.1"
-              class="field-input"
-              @change="applyQueueRunSettings"
-            />
-          </label>
+        <div class="rounded-2xl border border-white/10 bg-slate-950/45 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0 space-y-1">
+              <h4 class="font-heading text-sm uppercase tracking-[0.14em] text-sky-200">{{ t("common:settingsPage.queueExecutionSectionTitle", "Execution & Workers") }}</h4>
+              <p class="text-xs text-slate-400">{{ t("common:settingsPage.queueExecutionSectionHint", "Control how queue simulations are dispatched, and which active player or locked party snapshot the current queue run follows.") }}</p>
+            </div>
+            <span class="shrink-0 whitespace-nowrap rounded-full border border-sky-400/20 bg-sky-400/10 px-2 py-1 text-[11px] uppercase tracking-[0.14em] text-sky-100">{{ t("common:settingsPage.queueSectionAutoTag", "Auto") }}</span>
+          </div>
+
+          <div class="mt-4 space-y-3">
+            <div class="rounded-xl border border-white/8 bg-white/[0.03] p-3">
+              <div class="flex flex-wrap items-center justify-between gap-2">
+                <p class="field-label">{{ t("common:queue.runQueueSettings", "Run Queue Settings") }}</p>
+                <span class="text-xs text-slate-400">{{ t("common:vue.queue.activePlayer", "Active player", { name: simulator.activePlayer.name }) }}</span>
+              </div>
+              <p v-if="queuePartySummaryText" class="mt-2 text-xs text-slate-400">
+                {{ t("common:queue.partyLockedMembers", "Locked party") }}:
+                <span class="ml-1 text-slate-200">{{ queuePartySummaryText }}</span>
+              </p>
+              <p v-if="queuePartyWarningText" class="mt-2 text-xs text-amber-300">{{ queuePartyWarningText }}</p>
+            </div>
+
+            <div class="grid gap-3 sm:grid-cols-2">
+              <label>
+                <span class="field-label">{{ t("common:queue.executionMode", "Mode") }}</span>
+                <select v-model="queueRunDraft.executionMode" class="field-select" @change="applyQueueRunSettings">
+                  <option value="parallel">{{ t("common:queue.modeParallel", "Parallel") }}</option>
+                  <option value="serial">{{ t("common:queue.modeSerial", "Serial") }}</option>
+                </select>
+              </label>
+
+              <label class="block">
+                <span class="field-label">{{ t("common:settingsPage.parallelWorkerLimit", "Parallel Worker Limit") }}</span>
+                <input
+                  v-model.number="queueRuntimeDraft.parallelWorkerLimit"
+                  class="field-input"
+                  type="number"
+                  min="1"
+                  :max="queueParallelWorkerHardMax"
+                  step="1"
+                />
+              </label>
+            </div>
+
+            <p class="text-xs text-slate-400">{{ queueParallelWorkerHintText }}</p>
+          </div>
         </div>
 
+        <div class="rounded-2xl border border-white/10 bg-slate-950/45 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+          <div class="flex items-start justify-between gap-3">
+            <div class="min-w-0 space-y-1">
+              <h4 class="font-heading text-sm uppercase tracking-[0.14em] text-violet-200">{{ t("common:settingsPage.queueSamplingSectionTitle", "Sampling & Aggregation") }}</h4>
+              <p class="text-xs text-slate-400">{{ t("common:settingsPage.queueSamplingSectionHint", "Tune round counts, baseline sampling, robust median blending, and the Profit/XP priorities used inside Performance Score.") }}</p>
+            </div>
+            <span class="shrink-0 whitespace-nowrap rounded-full border border-violet-400/20 bg-violet-400/10 px-2 py-1 text-[11px] uppercase tracking-[0.14em] text-violet-100">{{ t("common:settingsPage.queueSectionAutoTag", "Auto") }}</span>
+          </div>
+
+          <div class="mt-4 space-y-4">
+            <div class="grid gap-3 sm:grid-cols-2">
+              <div class="space-y-2">
+                <label class="block">
+                  <span class="field-label">{{ t("common:queue.roundCount", "Rounds") }}</span>
+                  <select v-model="queueRunRoundPreset" class="field-select" @change="onQueueRunRoundPresetChanged">
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="200">200</option>
+                    <option value="custom">{{ t("common:queue.roundCustomOption", "Custom") }}</option>
+                  </select>
+                </label>
+                <label v-if="queueRunRoundPreset === 'custom'" class="block">
+                  <span class="field-label">{{ t("common:queue.roundCustom", "Custom Rounds") }}</span>
+                  <input
+                    v-model.number="queueRunDraft.rounds"
+                    type="number"
+                    min="1"
+                    max="200"
+                    step="1"
+                    class="field-input"
+                    @change="applyQueueRunSettings"
+                  />
+                </label>
+              </div>
+
+              <div class="space-y-2">
+                <label class="block">
+                  <span class="field-label">{{ t("common:queue.baselineRoundCount", "Baseline Rounds") }}</span>
+                  <select v-model="queueBaselineRoundPreset" class="field-select" @change="onQueueBaselineRoundPresetChanged">
+                    <option value="1">1</option>
+                    <option value="5">5</option>
+                    <option value="10">10</option>
+                    <option value="20">20</option>
+                    <option value="30">30</option>
+                    <option value="50">50</option>
+                    <option value="100">100</option>
+                    <option value="200">200</option>
+                    <option value="custom">{{ t("common:queue.roundCustomOption", "Custom") }}</option>
+                  </select>
+                </label>
+                <label v-if="queueBaselineRoundPreset === 'custom'" class="block">
+                  <span class="field-label">{{ t("common:queue.baselineRoundCustom", "Custom Baseline Rounds") }}</span>
+                  <input
+                    v-model.number="queueRunDraft.baselineRounds"
+                    type="number"
+                    min="1"
+                    max="200"
+                    step="1"
+                    class="field-input"
+                    @change="applyQueueRunSettings"
+                  />
+                </label>
+              </div>
+            </div>
+
+            <label class="block">
+              <span class="field-label">{{ t("common:vue.queue.medianBlend", "Median Blend (0-1)") }}</span>
+              <div class="flex items-center gap-3">
+                <input
+                  v-model.number="queueRunDraft.medianBlend"
+                  type="range"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  class="w-full accent-amber-300"
+                  @change="applyQueueRunSettings"
+                />
+                <input
+                  v-model.number="queueRunDraft.medianBlend"
+                  type="number"
+                  min="0"
+                  max="1"
+                  step="0.05"
+                  class="field-input w-24"
+                  @change="applyQueueRunSettings"
+                />
+              </div>
+              <div class="mt-2 space-y-1 text-xs text-slate-400">
+                <p>{{ t("common:settingsPage.medianBlendHint", "Lower values lean toward the robust average across all rounds. Higher values lean toward the median, which better represents a typical round when outliers appear.") }}</p>
+                <p>{{ t("common:settingsPage.medianBlendBreakdown", "", queueMedianBlendExplanationText) }}</p>
+              </div>
+            </label>
+          </div>
+        </div>
       </div>
 
       <div class="flex flex-wrap gap-2">
         <button type="button" class="action-button-primary" @click="saveQueueRuntimeSettings">
           {{ t("common:settingsPage.saveQueueSettings", "Save Queue Settings") }}
         </button>
-        <button type="button" class="action-button-muted" @click="resetQueueRuntimeSettings">
+        <button type="button" class="action-button-muted" @click="resetQueueSettings">
           {{ t("common:settingsPage.resetQueueSettings", "Reset To Defaults") }}
         </button>
       </div>
@@ -496,6 +547,10 @@
 <script setup>
 import { computed, reactive, ref, watch } from "vue";
 import { itemDetailIndex as itemDetailMap } from "../../shared/gameDataIndex.js";
+import {
+  constrainEditedQueuePerformanceWeights,
+  resolveQueuePerformanceSubweights,
+} from "../../shared/queuePerformanceWeights.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { useGameDataText } from "../composables/useGameDataText.js";
 import { useI18nText } from "../composables/useI18nText.js";
@@ -523,10 +578,17 @@ const message = ref({
   text: "",
 });
 
+const DEFAULT_COST_SCORE_GOLD_METRIC_MODE = "strict";
+
+function normalizeCostScoreGoldPerPointMode(value) {
+  return value === "composite" ? "composite" : DEFAULT_COST_SCORE_GOLD_METRIC_MODE;
+}
+
 const queueRuntimeDraft = reactive({
   performancePct: 40,
   stabilityPct: 20,
   costPct: 40,
+  costScoreGoldPerPointMode: DEFAULT_COST_SCORE_GOLD_METRIC_MODE,
   parallelWorkerLimit: 4,
 });
 const queueRunDraft = reactive({
@@ -535,7 +597,6 @@ const queueRunDraft = reactive({
   medianBlend: 0.5,
   weightProfit: 0.5,
   weightXp: 0.3,
-  weightDeathSafety: 0.2,
   executionMode: "parallel",
 });
 const queueRunRoundPreset = ref("30");
@@ -766,6 +827,28 @@ const queueSettingsStatusClass = computed(() => {
 });
 
 const queueSettingsStatusText = computed(() => queueSettingsStatus.value.text || "");
+const queueRunWeightProfitMax = computed(() => (
+  Number(Math.max(0, 1 - Number(queueRunDraft.weightXp || 0)).toFixed(1))
+));
+const queueRunWeightXpMax = computed(() => (
+  Number(Math.max(0, 1 - Number(queueRunDraft.weightProfit || 0)).toFixed(1))
+));
+const queueMedianBlendExplanationText = computed(() => {
+  const medianWeight = Number((Math.max(0, Math.min(1, Number(queueRunDraft.medianBlend || 0))) * 100).toFixed(0));
+  return {
+    mean: Math.max(0, 100 - medianWeight),
+    median: medianWeight,
+  };
+});
+const queueRunPerformanceBreakdownText = computed(() => {
+  const weights = resolveQueuePerformanceSubweights(queueRunDraft);
+  return {
+    profit: formatWeightPercent(weights.weightProfit),
+    xp: formatWeightPercent(weights.weightXp),
+    dps: formatWeightPercent(weights.weightDps),
+    kills: formatWeightPercent(weights.weightKills),
+  };
+});
 
 watch(priceSearchKeyword, () => {
   priceRowLimit.value = PRICE_ROWS_STEP;
@@ -811,6 +894,7 @@ function syncQueueRuntimeDraft(nextSettings = simulator.queueRuntime) {
   queueRuntimeDraft.performancePct = formatWeightPercent(finalWeights.performance);
   queueRuntimeDraft.stabilityPct = formatWeightPercent(finalWeights.stability);
   queueRuntimeDraft.costPct = formatWeightPercent(finalWeights.cost);
+  queueRuntimeDraft.costScoreGoldPerPointMode = normalizeCostScoreGoldPerPointMode(nextSettings?.costScoreGoldPerPointMode);
   const normalizedParallelLimit = Number(nextSettings?.parallelWorkerLimit || queueParallelWorkerRecommended.value);
   queueRuntimeDraft.parallelWorkerLimit = Math.min(
     queueParallelWorkerHardMax.value,
@@ -825,7 +909,6 @@ function syncQueueRunDraft(nextSettings = simulator.activeQueueState?.settings) 
   queueRunDraft.medianBlend = Number(source.medianBlend ?? 0.5);
   queueRunDraft.weightProfit = Number(source.weightProfit ?? 0.5);
   queueRunDraft.weightXp = Number(source.weightXp ?? 0.3);
-  queueRunDraft.weightDeathSafety = Number(source.weightDeathSafety ?? 0.2);
   queueRunDraft.executionMode = String(source.executionMode || "parallel") === "serial" ? "serial" : "parallel";
   queueRunRoundPreset.value = ["5", "10", "20", "30", "50", "100", "200"].includes(String(queueRunDraft.rounds))
     ? String(queueRunDraft.rounds)
@@ -842,10 +925,16 @@ function applyQueueRunSettings() {
     medianBlend: queueRunDraft.medianBlend,
     weightProfit: queueRunDraft.weightProfit,
     weightXp: queueRunDraft.weightXp,
-    weightDeathSafety: queueRunDraft.weightDeathSafety,
     executionMode: queueRunDraft.executionMode,
   });
   syncQueueRunDraft(normalized);
+}
+
+function applyQueueRunWeightInput(changedKey) {
+  const constrainedWeights = constrainEditedQueuePerformanceWeights(queueRunDraft, changedKey);
+  queueRunDraft.weightProfit = constrainedWeights.weightProfit;
+  queueRunDraft.weightXp = constrainedWeights.weightXp;
+  applyQueueRunSettings();
 }
 
 function onQueueRunRoundPresetChanged() {
@@ -867,6 +956,7 @@ function saveQueueRuntimeSettings() {
     performancePct: queueRuntimeDraft.performancePct,
     stabilityPct: queueRuntimeDraft.stabilityPct,
     costPct: queueRuntimeDraft.costPct,
+    costScoreGoldPerPointMode: queueRuntimeDraft.costScoreGoldPerPointMode,
     parallelWorkerLimit: queueRuntimeDraft.parallelWorkerLimit,
   });
 
@@ -881,15 +971,16 @@ function saveQueueRuntimeSettings() {
   setMessage("ok", queueSettingsStatus.value.text);
 }
 
-function resetQueueRuntimeSettings() {
-  const result = simulator.resetQueueRuntimeSettings();
+function resetQueueSettings() {
+  const result = simulator.resetQueueSettingsToDefaults();
   if (!result.ok) {
     setQueueSettingsStatus(result.messageKey || "common:settingsPage.queueSaveErrorStorage", "danger");
     setMessage("error", queueSettingsStatus.value.text);
     return;
   }
 
-  syncQueueRuntimeDraft(result.settings);
+  syncQueueRunDraft(result.queueSettings);
+  syncQueueRuntimeDraft(result.runtimeSettings);
   setQueueSettingsStatus("common:settingsPage.queueResetSuccess", "success");
   setMessage("ok", queueSettingsStatus.value.text);
 }
