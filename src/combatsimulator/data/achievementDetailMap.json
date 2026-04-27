@@ -577,8 +577,8 @@
     },
     "/achievements/refine_dungeon_equipment": {
         "hrid": "/achievements/refine_dungeon_equipment",
-        "name": "Dungeon Refiner",
-        "description": "Refine any dungeon equipment",
+        "name": "Refiner",
+        "description": "Refine any dungeon or labyrinth equipment",
         "tierHrid": "/achievement_tiers/champion",
         "sortIndex": 66,
         "steamAchievementId": "ach_refine_dungeon_equipment",

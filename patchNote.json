@@ -1,4 +1,24 @@
 {
+    "2026年4月27日（v1.0.18）": {
+        "label": {
+            "zh": "2026年4月27日（v1.0.18）",
+            "en": "April 27, 2026 (v1.0.18)"
+        },
+        "notes": {
+            "zh": [
+                "同步官方最新游戏数据：护符类装备（基础/进阶/专家/宗师）补充描述文案，明确说明其将战斗经验聚焦到对应技能",
+                "多件护甲装备新增\u201c反伤伤害\u201d属性，精炼加成同步包含该属性",
+                "迷宫卷轴（采集/美食/加工/稀有发现/智慧）描述更新，明确标注仅在迷宫外生效；新增迷宫代币分解产物",
+                "成就\u201c地下城精炼师\u201d更名为\u201c精炼师\u201d，描述扩展为包含迷宫装备精炼"
+            ],
+            "en": [
+                "Synced with the latest official game data: charm equipment (Basic/Advanced/Expert/Grandmaster) now has descriptions clarifying that they focus combat experience to the corresponding skill",
+                "Multiple armor items now include a defensive damage stat, with enhancement bonuses also covering this attribute",
+                "Labyrinth scrolls (Gathering/Gourmet/Processing/Rare Find/Wisdom) descriptions updated to note they are only effective outside the Labyrinth; they can now be decomposed into labyrinth tokens",
+                "Achievement \"Dungeon Refiner\" renamed to \"Refiner\" with expanded description including labyrinth equipment refining"
+            ]
+        }
+    },
     "2026年4月21日（v1.0.17）": {
         "label": {
             "zh": "2026年4月21日（v1.0.17）",
