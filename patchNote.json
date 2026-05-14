@@ -1,4 +1,22 @@
 {
+    "2026年5月14日（v1.0.19）": {
+        "label": {
+            "zh": "2026年5月14日（v1.0.19）",
+            "en": "May 14, 2026 (v1.0.19)"
+        },
+        "notes": {
+            "zh": [
+                "推荐刷图扫描更稳：默认快速扫描轮数由 1 提升到 3，复核轮数由 10 提升到 20，同一目标多次扫描的排名波动明显减小；扫描耗时相应增加约 2.3 倍。",
+                "推荐刷图设置新增“快速扫描轮次”（可在 1–10 之间调节），按需在速度和精度之间权衡。",
+                "排名公式优化：收益高但每轮波动稍大的目标不再被过度压低，排名更贴近实际收益预期。"
+            ],
+            "en": [
+                "Advisor scans are more stable: default quick-scan rounds raised from 1 to 3 and refine rounds from 10 to 20, noticeably reducing ranking swings between consecutive scans of the same target. Scan time roughly 2.3x.",
+                "Added a Quick Rounds setting under Advisor (range 1–10), letting you trade off scan speed against precision.",
+                "Tuned the ranking formula so high-yield targets with naturally noisier per-run results are no longer over-penalised and rank closer to their real expected payoff."
+            ]
+        }
+    },
     "2026年4月27日（v1.0.18）": {
         "label": {
             "zh": "2026年4月27日（v1.0.18）",

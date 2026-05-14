@@ -9,6 +9,28 @@
             <p class="max-w-3xl text-sm leading-6 text-slate-300">
               {{ t("common:advisor.desc", "Use your current team, buffs, achievements, housing, pricing, and run duration to rank the best farming targets across solo zones and group zones.") }}
             </p>
+            <DisclosurePanel :title="t('common:advisor.scoreExplainTitle', '评分说明：综合分与置信度怎么算')" class="max-w-3xl">
+              <div class="space-y-3 text-xs leading-6 text-slate-300">
+                <div>
+                  <p class="font-semibold text-slate-100">{{ t("common:advisor.scoreExplainCompositeHeading", "综合分怎么算？") }}</p>
+                  <ul class="mt-1 list-disc space-y-1 pl-5">
+                    <li>{{ t("common:advisor.scoreExplainComposite1", "按 4 个维度评估每个目标：每日收益、每小时经验、每小时击杀、每小时死亡（安全性）。") }}</li>
+                    <li>{{ t("common:advisor.scoreExplainComposite2", "每个维度先与所有候选目标横向对比，给出 0–100 的相对得分。") }}</li>
+                    <li>{{ t("common:advisor.scoreExplainComposite3", "再按你选择的目标偏好（均衡 / 收益优先 / 经验优先 / 自定义权重）加权汇总成“基础分”。") }}</li>
+                    <li>{{ t("common:advisor.scoreExplainComposite4", "最终综合分 = 基础分 × (0.85 + 0.15 × 置信度)。") }}</li>
+                  </ul>
+                </div>
+                <div>
+                  <p class="font-semibold text-slate-100">{{ t("common:advisor.scoreExplainConfidenceHeading", "置信度怎么算？") }}</p>
+                  <ul class="mt-1 list-disc space-y-1 pl-5">
+                    <li>{{ t("common:advisor.scoreExplainConfidence1", "反映“多次扫描结果是否一致”——多次跑出来的数据越接近，置信度越高。") }}</li>
+                    <li>{{ t("common:advisor.scoreExplainConfidence2", "样本数量：扫描轮数越多越高，复核 10–20 轮即可接近上限。") }}</li>
+                    <li>{{ t("common:advisor.scoreExplainConfidence3", "轮间波动：每轮收益、经验、死亡数据差距越小越高。") }}</li>
+                    <li>{{ t("common:advisor.scoreExplainConfidence4", "置信度对最终分影响较小（仅约 15%），即便置信度为 0，最终分仍保留基础分的 85%。") }}</li>
+                  </ul>
+                </div>
+              </div>
+            </DisclosurePanel>
             <div class="flex flex-wrap items-center gap-2 text-xs text-slate-400">
               <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">{{ selectedPlayersLabel }}</span>
               <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">{{ metricPlayerLabel }}</span>
@@ -67,20 +89,22 @@
               </button>
             </div>
 
-            <div v-if="simulator.advisor.goalPreset === ADVISOR_GOAL_PRESET_CUSTOM" class="grid gap-3 sm:grid-cols-2 xl:grid-cols-2">
+            <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-2">
               <label v-for="weight in customInputFields" :key="weight.key" class="block">
                 <span class="field-label">{{ weight.label }}</span>
                 <input
-                  v-model.number="customWeightDraft[weight.key]"
+                  :value="weightInputValue(weight.key)"
                   type="number"
                   min="0"
                   step="0.01"
                   class="field-input"
-                  @change="applyCustomWeights"
+                  :disabled="!isCustomGoal"
+                  @input="(event) => onCustomWeightInput(weight.key, event)"
+                  @change="onCustomWeightChange"
                 />
               </label>
             </div>
-            <p v-if="simulator.advisor.goalPreset === ADVISOR_GOAL_PRESET_CUSTOM" class="text-xs text-slate-400">
+            <p class="text-xs text-slate-400">
               {{ customWeightSummaryText }}
             </p>
           </div>
@@ -109,6 +133,10 @@
               <label class="block">
                 <span class="field-label">{{ t("common:advisor.refineRounds", "Refine Rounds") }}</span>
                 <input v-model.number="filterDraft.refineRounds" type="number" min="1" max="30" class="field-input" />
+              </label>
+              <label class="block">
+                <span class="field-label">{{ t("common:advisor.quickRounds", "Quick Rounds") }}</span>
+                <input v-model.number="filterDraft.quickRounds" type="number" min="1" max="10" class="field-input" />
               </label>
             </div>
           </div>
@@ -281,8 +309,10 @@ import {
   ADVISOR_GOAL_PRESET_PROFIT,
   ADVISOR_GOAL_PRESET_SAFE,
   ADVISOR_GOAL_PRESET_XP,
+  resolveAdvisorWeights,
 } from "../../services/advisorScoring.js";
 import { useI18nText } from "../composables/useI18nText.js";
+import DisclosurePanel from "../components/DisclosurePanel.vue";
 
  const simulator = useSimulatorStore();
  const router = useRouter();
@@ -306,6 +336,33 @@ const customInputFields = computed(() => [
   { key: "xpPerHour", label: t("common:advisor.xpPerHour", "XP/h") },
 ]);
 
+const isCustomGoal = computed(() => simulator.advisor.goalPreset === ADVISOR_GOAL_PRESET_CUSTOM);
+
+const resolvedDisplayWeights = computed(() => (
+  resolveAdvisorWeights(simulator.advisor.goalPreset, simulator.advisor.customWeights)
+));
+
+function weightInputValue(key) {
+  if (isCustomGoal.value) {
+    return customWeightDraft[key] ?? 0;
+  }
+  return roundTo(resolvedDisplayWeights.value[key] ?? 0, 2);
+}
+
+function onCustomWeightInput(key, event) {
+  if (!isCustomGoal.value) {
+    return;
+  }
+  const value = Number(event.target?.value);
+  customWeightDraft[key] = Number.isFinite(value) ? value : 0;
+}
+
+function onCustomWeightChange() {
+  if (isCustomGoal.value) {
+    applyCustomWeights();
+  }
+}
+
 const summaryWeightFields = computed(() => [
   { key: "profitPerHour", label: t("common:advisor.dailyProfit", "Daily Profit") },
   { key: "xpPerHour", label: t("common:advisor.xpPerHour", "XP/h") },
@@ -317,7 +374,8 @@ const filterDraft = reactive({
   includeGroupZones: true,
   refineTopEnabled: true,
   refineTopCount: 8,
-  refineRounds: 10,
+  refineRounds: 20,
+  quickRounds: 3,
 });
 
  const customWeightDraft = reactive({
@@ -349,6 +407,7 @@ function syncFilterDraft(source) {
   filterDraft.refineTopEnabled = safeSource.refineTopEnabled !== false;
   filterDraft.refineTopCount = Number(safeSource.refineTopCount ?? filterDraft.refineTopCount);
   filterDraft.refineRounds = Number(safeSource.refineRounds ?? filterDraft.refineRounds);
+  filterDraft.quickRounds = Number(safeSource.quickRounds ?? filterDraft.quickRounds);
 }
 
  watch(
@@ -460,7 +519,7 @@ const runtimePhaseText = computed(() => {
 });
 const customWeightSummaryText = computed(() => (
   `${t("common:advisor.normalizedWeights", "Normalized weights")}: `
-  + summaryWeightFields.value.map((field) => `${field.label} ${formatMetric(simulator.advisor.customWeights?.[field.key], 2)}`).join(" · ")
+  + summaryWeightFields.value.map((field) => `${field.label} ${formatMetric(resolvedDisplayWeights.value[field.key], 2)}`).join(" · ")
 ));
 const advisorErrorText = computed(() => {
   const raw = String(simulator.advisor.error || "").trim();

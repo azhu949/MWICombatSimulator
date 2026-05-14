@@ -327,7 +327,9 @@ describe("advisor store", () => {
         expect(rows.some((row) => row.targetType === "labyrinth")).toBe(false);
         expect(simulator.advisor.filters).not.toHaveProperty("includeLabyrinths");
         expect(simulator.advisor.topCards.some((card) => card.key === "labyrinth")).toBe(false);
-        expect(mockWorkerState.multiCalls.map((payload) => payload.type)).toEqual(["start_simulation_all_zones"]);
+        expect(mockWorkerState.multiCalls.map((payload) => payload.type)).toEqual(
+            Array(simulator.advisor.filters.quickRounds).fill("start_simulation_all_zones"),
+        );
     });
 
     it("uses the active player metrics instead of summing selected party members", async () => {
@@ -575,7 +577,7 @@ describe("advisor store", () => {
         const survivorRow = simulator.advisor.refinedRows.find((row) => row.id === survivingTarget.id);
         expect(mockWorkerState.singleCalls).toHaveLength(4);
         expect(failedRow.isRefined).not.toBe(true);
-        expect(failedRow.successfulRounds).toBe(1);
+        expect(failedRow.successfulRounds).toBe(simulator.advisor.filters.quickRounds);
         expect(survivorRow.isRefined).toBe(true);
         expect(survivorRow.successfulRounds).toBe(2);
         expect(simulator.advisor.error).toContain('refine step');

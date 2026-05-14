@@ -117,11 +117,14 @@ const QUEUE_COST_SCORE_WEIGHT_UPGRADE = 0.25;
 const QUEUE_COST_SCORE_WEIGHT_PURCHASE_DAYS = 0.35;
 const QUEUE_COST_SCORE_WEIGHT_GOLD_PER_POINT = 0.4;
 const ADVISOR_REFINE_TOP_COUNT_DEFAULT = 8;
-const ADVISOR_REFINE_ROUNDS_DEFAULT = 10;
+const ADVISOR_REFINE_ROUNDS_DEFAULT = 20;
 const ADVISOR_REFINE_TOP_COUNT_MIN = 1;
 const ADVISOR_REFINE_TOP_COUNT_MAX = 32;
 const ADVISOR_REFINE_ROUNDS_MIN = 1;
 const ADVISOR_REFINE_ROUNDS_MAX = 30;
+const ADVISOR_QUICK_ROUNDS_DEFAULT = 3;
+const ADVISOR_QUICK_ROUNDS_MIN = 1;
+const ADVISOR_QUICK_ROUNDS_MAX = 10;
 const DEDICATED_WORKER_SCOPE_QUEUE = "queue";
 const DEDICATED_WORKER_SCOPE_ADVISOR = "advisor";
 const dedicatedWorkerRuns = new Set();
@@ -2090,6 +2093,11 @@ function normalizeAdvisorFilters(rawFilters = {}) {
             Math.floor(toFiniteNumber(source.refineRounds, ADVISOR_REFINE_ROUNDS_DEFAULT)),
             ADVISOR_REFINE_ROUNDS_MIN,
             ADVISOR_REFINE_ROUNDS_MAX
+        ),
+        quickRounds: clamp(
+            Math.floor(toFiniteNumber(source.quickRounds, ADVISOR_QUICK_ROUNDS_DEFAULT)),
+            ADVISOR_QUICK_ROUNDS_MIN,
+            ADVISOR_QUICK_ROUNDS_MAX
         ),
     };
 }
@@ -6721,14 +6729,16 @@ export const useSimulatorStore = defineStore("simulator", {
             const refineTopCount = normalizedFilters.refineTopEnabled
                 ? Math.min(normalizedFilters.refineTopCount, candidates.length)
                 : 0;
+            let quickRoundsTotal = candidates.length * normalizedFilters.quickRounds;
             const refineTotal = refineTopCount * normalizedFilters.refineRounds;
-            const totalWorkUnits = Math.max(1, candidates.length + refineTotal);
+            let totalWorkUnits = Math.max(1, quickRoundsTotal + refineTotal);
             const startedAt = Date.now();
             const runId = Number(this.advisor.runtime?.runId || 0) + 1;
             let quickCompleted = 0;
             let refineCompleted = 0;
             const errorMessages = [];
             const quickRowsById = new Map();
+            const quickSamplesById = new Map();
             const refinedRowsById = new Map();
 
             this.advisor.runtime.runId = runId;
@@ -6757,7 +6767,7 @@ export const useSimulatorStore = defineStore("simulator", {
                 this.advisor.runtime.startedAt = startedAt;
                 this.advisor.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
                 this.advisor.runtime.quickCompleted = quickCompleted;
-                this.advisor.runtime.quickTotal = candidates.length;
+                this.advisor.runtime.quickTotal = quickRoundsTotal;
                 this.advisor.runtime.refineCompleted = refineCompleted;
                 this.advisor.runtime.refineTotal = refineTotal;
                 this.advisor.runtime.runId = runId;
@@ -6793,13 +6803,20 @@ export const useSimulatorStore = defineStore("simulator", {
                 });
             };
 
-            const storeQuickResult = (candidate, simResult) => {
-                if (!candidate || quickRowsById.has(candidate.id) || !simResult) {
+            const storeQuickResult = (candidate, simResult, roundIndex) => {
+                if (!candidate || !simResult) {
+                    return false;
+                }
+
+                const samples = quickSamplesById.get(candidate.id) || [];
+                if (samples.length > roundIndex) {
                     return false;
                 }
 
                 const sample = summarizeAdvisorTargetResult(simResult, selectedPlayersSnapshot, metricPlayer.id, pricingOptions);
-                quickRowsById.set(candidate.id, buildAdvisorRowFromRoundMetrics(candidate, [sample], {
+                samples.push(sample);
+                quickSamplesById.set(candidate.id, samples);
+                quickRowsById.set(candidate.id, buildAdvisorRowFromRoundMetrics(candidate, samples, {
                     isRefined: false,
                     refineRounds: 0,
                 }));
@@ -6809,10 +6826,17 @@ export const useSimulatorStore = defineStore("simulator", {
                 return true;
             };
 
-            const collectQuickRows = async (batchCandidates, payloadBuilder, stageLabel) => {
+            const hasSampleForRound = (candidateId, roundIndex) => {
+                const samples = quickSamplesById.get(candidateId);
+                return Array.isArray(samples) && samples.length > roundIndex;
+            };
+
+            const collectQuickRows = async (batchCandidates, payloadBuilder, stageLabel, roundIndex) => {
                 if (batchCandidates.length === 0) {
                     return;
                 }
+
+                const baselineCompleted = quickCompleted;
 
                 try {
                     await runMultiSimulationPayloadWithDedicatedWorker(
@@ -6823,7 +6847,7 @@ export const useSimulatorStore = defineStore("simulator", {
                             }
 
                             const completedUnits = clamp(Number(data?.progress || 0), 0, 1) * batchCandidates.length;
-                            const partialUnits = Math.max(0, completedUnits - quickCompleted);
+                            const partialUnits = Math.max(0, completedUnits - (quickCompleted - baselineCompleted));
                             updateAdvisorRuntime("quick_scan", partialUnits, 0);
                         },
                         {
@@ -6834,7 +6858,7 @@ export const useSimulatorStore = defineStore("simulator", {
                                 if (!candidate) {
                                     return;
                                 }
-                                storeQuickResult(candidate, data?.simResult);
+                                storeQuickResult(candidate, data?.simResult, roundIndex);
                             },
                         }
                     );
@@ -6845,7 +6869,7 @@ export const useSimulatorStore = defineStore("simulator", {
 
                     const failedCandidates = [];
                     for (const candidate of batchCandidates) {
-                        if (quickRowsById.has(candidate.id)) {
+                        if (hasSampleForRound(candidate.id, roundIndex)) {
                             continue;
                         }
 
@@ -6862,14 +6886,14 @@ export const useSimulatorStore = defineStore("simulator", {
                                 { scope: DEDICATED_WORKER_SCOPE_ADVISOR }
                             );
                             ensureActiveAdvisorRun();
-                            storeQuickResult(candidate, simResult);
+                            storeQuickResult(candidate, simResult, roundIndex);
                         } catch (error) {
                             if (isWorkerRunCancelledError(error)) {
                                 throw error;
                             }
                             failedCandidates.push(candidate);
                         } finally {
-                            if (!quickRowsById.has(candidate.id)) {
+                            if (!hasSampleForRound(candidate.id, roundIndex)) {
                                 quickCompleted += 1;
                                 updateAdvisorRuntime("quick_scan", 0, 0);
                             }
@@ -6884,20 +6908,36 @@ export const useSimulatorStore = defineStore("simulator", {
 
             try {
                 updateAdvisorRuntime("quick_scan", 0, 0);
-                await collectQuickRows(
-                    candidates,
-                    () => ({
-                        type: "start_simulation_all_zones",
-                        players: playersToSim,
-                        zones: candidates.map((candidate) => ({
-                            zoneHrid: candidate.targetHrid,
-                            difficultyTier: candidate.difficultyTier,
-                        })),
-                        simulationTimeLimit,
-                        extra,
-                    }),
-                    "quick scan"
-                );
+                for (let quickRoundIndex = 0; quickRoundIndex < normalizedFilters.quickRounds; quickRoundIndex += 1) {
+                    const roundCandidates = quickRoundIndex === 0
+                        ? candidates
+                        : candidates.filter((candidate) => quickRowsById.has(candidate.id));
+                    if (roundCandidates.length === 0) {
+                        break;
+                    }
+                    if (quickRoundIndex === 1 && roundCandidates.length < candidates.length) {
+                        const surviving = roundCandidates.length;
+                        quickRoundsTotal = candidates.length + surviving * (normalizedFilters.quickRounds - 1);
+                        totalWorkUnits = Math.max(1, quickRoundsTotal + refineTotal);
+                    }
+                    // eslint-disable-next-line no-await-in-loop
+                    await collectQuickRows(
+                        roundCandidates,
+                        () => ({
+                            type: "start_simulation_all_zones",
+                            players: playersToSim,
+                            zones: roundCandidates.map((candidate) => ({
+                                zoneHrid: candidate.targetHrid,
+                                difficultyTier: candidate.difficultyTier,
+                            })),
+                            simulationTimeLimit,
+                            extra,
+                        }),
+                        "quick scan",
+                        quickRoundIndex
+                    );
+                    ensureActiveAdvisorRun();
+                }
 
                 if (quickRowsById.size === 0) {
                     throw new Error(errorMessages[0] || "Advisor scan did not produce any successful result.");
@@ -6988,7 +7028,7 @@ export const useSimulatorStore = defineStore("simulator", {
                 this.advisor.runtime.lastRunAt = Date.now();
                 this.advisor.runtime.cancelRequested = false;
                 this.advisor.runtime.quickCompleted = quickCompleted;
-                this.advisor.runtime.quickTotal = candidates.length;
+                this.advisor.runtime.quickTotal = quickRoundsTotal;
                 this.advisor.runtime.refineCompleted = refineCompleted;
                 this.advisor.runtime.refineTotal = refineTotal;
                 return getAdvisorRowsForReturn();
@@ -7003,7 +7043,7 @@ export const useSimulatorStore = defineStore("simulator", {
                     this.advisor.runtime.phase = "cancelled";
                     this.advisor.runtime.elapsedSeconds = (Date.now() - startedAt) / 1000;
                     this.advisor.runtime.quickCompleted = quickCompleted;
-                    this.advisor.runtime.quickTotal = candidates.length;
+                    this.advisor.runtime.quickTotal = quickRoundsTotal;
                     this.advisor.runtime.refineCompleted = refineCompleted;
                     this.advisor.runtime.refineTotal = refineTotal;
                     return getAdvisorRowsForReturn();
