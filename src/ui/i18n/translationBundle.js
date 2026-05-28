@@ -230,12 +230,36 @@ async function loadLocalTranslationBundles() {
     };
 }
 
+function isPlainObject(value) {
+    return value != null && typeof value === "object" && !Array.isArray(value);
+}
+
+function mergeTranslationResource(fallbackResource, primaryResource) {
+    const merged = structuredClone(fallbackResource || {});
+
+    for (const [key, value] of Object.entries(primaryResource || {})) {
+        if (isPlainObject(value) && isPlainObject(merged[key])) {
+            merged[key] = mergeTranslationResource(merged[key], value);
+        } else {
+            merged[key] = value;
+        }
+    }
+
+    return merged;
+}
+
 async function loadTranslationBundlesInternal() {
+    const localBundles = await loadLocalTranslationBundles();
+
     try {
-        return await loadOfficialTranslationBundles();
+        const officialBundles = await loadOfficialTranslationBundles();
+        return {
+            en: mergeTranslationResource(localBundles.en, officialBundles.en),
+            zh: mergeTranslationResource(localBundles.zh, officialBundles.zh),
+        };
     } catch (officialError) {
         console.warn("Failed to load official translation bundle, fallback to local translation.json", officialError);
-        return loadLocalTranslationBundles();
+        return localBundles;
     }
 }
 

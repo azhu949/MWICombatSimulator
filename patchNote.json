@@ -1,4 +1,20 @@
 {
+    "2026年5月28日（v1.0.20）": {
+        "label": {
+            "zh": "2026年5月28日（v1.0.20）",
+            "en": "May 28, 2026 (v1.0.20)"
+        },
+        "notes": {
+            "zh": [
+                "修复配装与技能页中部分 95 级鞋子显示英文的问题；开路靴、探路靴、寻路靴以及它们的精炼版现在都会正确显示中文。",
+                "补齐相关制作项和材料名称的中文显示，查看配装、材料和制作信息时更容易对上装备。"
+            ],
+            "en": [
+                "Fixed some level 95 boots showing English names on the Loadout & Skills page. Pathbreaker, Pathfinder, and Pathseeker Boots, including refined versions, now show Chinese names correctly.",
+                "Added Chinese names for the related crafting entries and materials, making loadouts, materials, and crafting info easier to match."
+            ]
+        }
+    },
     "2026年5月14日（v1.0.19）": {
         "label": {
             "zh": "2026年5月14日（v1.0.19）",
