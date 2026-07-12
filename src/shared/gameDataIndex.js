@@ -32,6 +32,17 @@ export const labyrinthOptions = Array.isArray(gameDataIndex?.labyrinthOptions) ?
 export const houseRoomOptions = Array.isArray(gameDataIndex?.houseRoomOptions) ? gameDataIndex.houseRoomOptions : [];
 export const houseRoomHrids = Array.isArray(gameDataIndex?.houseRoomHrids) ? gameDataIndex.houseRoomHrids : [];
 export const labyrinthCrateOptions = gameDataIndex?.labyrinthCrates || { coffee: [], food: [], tea: [] };
+function deepFreeze(value) {
+    if (!value || typeof value !== "object" || Object.isFrozen(value)) {
+        return value;
+    }
+    for (const child of Object.values(value)) {
+        deepFreeze(child);
+    }
+    return Object.freeze(value);
+}
+
+export const enhancementData = deepFreeze(gameDataIndex?.enhancementData || {});
 
 function normalizeSkillHrid(skillKey) {
     const normalized = String(skillKey || "").trim();

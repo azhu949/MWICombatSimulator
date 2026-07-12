@@ -6,6 +6,7 @@ const REQUIRED_CLIENT_DATA_KEYS = Object.freeze([
     "achievementDetailMap",
     "actionDetailMap",
     "combatMonsterDetailMap",
+    "enhancementLevelSuccessRateTable",
     "itemDetailMap",
     "openableLootDropMap",
 ]);
@@ -25,6 +26,7 @@ const DEFAULT_TRACKED_GAME_DATA_FILES = Object.freeze([
     "combatTriggerDependencyDetailMap.json",
     "communityBuffTypeDetailMap.json",
     "damageTypeDetailMap.json",
+    "enhancementLevelSuccessRateTable.json",
     "enhancementLevelTotalBonusMultiplierTable.json",
     "equipmentTypeDetailMap.json",
     "houseRoomDetailMap.json",

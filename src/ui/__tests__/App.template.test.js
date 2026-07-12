@@ -4,6 +4,13 @@ import { describe, expect, it } from "vitest";
 const appSource = readFileSync(new URL("../App.vue", import.meta.url), "utf8");
 
 describe("App header support links", () => {
+    it("links to the enhancement simulator and hides combat tools through route metadata", () => {
+        expect(appSource).toContain('to="/enhancement"');
+        expect(appSource).toContain("common:menu.enhancement");
+        expect(appSource).toContain('v-if="showCombatToolbar"');
+        expect(appSource).toContain("route.meta?.showCombatToolbar !== false");
+    });
+
     it("renders GitHub and feedback entry points in the header", () => {
         expect(appSource).toContain("https://github.com/azhu949/MWICombatSimulator");
         expect(appSource).not.toContain("__REPOSITORY_URL__");

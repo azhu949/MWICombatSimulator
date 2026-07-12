@@ -29,6 +29,7 @@
 - `combatTriggerDependencyDetailMap.json`
 - `communityBuffTypeDetailMap.json`
 - `damageTypeDetailMap.json`
+- `enhancementLevelSuccessRateTable.json`
 - `enhancementLevelTotalBonusMultiplierTable.json`
 - `equipmentTypeDetailMap.json`
 - `houseRoomDetailMap.json`
@@ -38,6 +39,10 @@
 - `openableLootDropMap.json`
 
 如果某个已维护文件对应的 key 当前不在 `init_client_data` 载荷里，脚本会跳过该文件并输出提示，不会因为单个缺失字段而整体失败。
+
+### 强化模拟索引
+
+`npm run build-game-data-index` 会把上述官方数据整理到 `src/shared/gameDataIndex.generated.json` 的 `enhancementData` 中。该只读索引包含强化成功率、总加成倍率、可强化物品、材料与保护物、强化辅助装备、饮品、住宅/社区/成就增益、不可交易强化物品的地下城宝箱获取路径，以及 12 秒基础动作时间。更新原始 JSON 后应重新运行该命令并提交生成结果。
 
 默认写入目录为：`src/combatsimulator/data`（对应导出脚本的默认输出目录）。
 

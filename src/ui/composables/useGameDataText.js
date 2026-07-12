@@ -1,6 +1,7 @@
 import {
     getBuffTypeName as getIndexedBuffTypeName,
     getItemCategoryName as getIndexedItemCategoryName,
+    getItemName as getIndexedItemName,
     getSkillName as getIndexedSkillName,
 } from "../../shared/gameDataIndex.js";
 import { useI18nText } from "./useI18nText.js";
@@ -25,6 +26,14 @@ function normalizeSkillHrid(skillKey) {
 
     const shortKey = normalized.split("/").filter(Boolean).pop() || normalized;
     return `/skills/${shortKey.toLowerCase()}`;
+}
+
+function isUnresolvedTranslation(value, keys) {
+    const normalized = coerceText(value).trim();
+    return keys.some((key) => (
+        normalized === key
+        || normalized === key.split(":").slice(1).join(":")
+    ));
 }
 
 export function useGameDataText() {
@@ -84,8 +93,31 @@ export function useGameDataText() {
         return getIndexedItemCategoryName(rawHrid, fallbackText);
     }
 
+    function getItemName(itemHrid, fallbackName = "") {
+        const rawHrid = coerceText(itemHrid).trim();
+        const fallbackText = coerceText(fallbackName).trim();
+
+        if (!rawHrid) {
+            return fallbackText;
+        }
+
+        const translationKeys = [
+            `translation:itemNames.${rawHrid}`,
+            `itemNames.${rawHrid}`,
+        ];
+        for (const translationKey of translationKeys) {
+            const translated = t(translationKey, translationKey);
+            if (translated && !isUnresolvedTranslation(translated, translationKeys)) {
+                return translated;
+            }
+        }
+
+        return getIndexedItemName(rawHrid, fallbackText);
+    }
+
     return {
         getBuffTypeName,
+        getItemName,
         getSkillName,
         getItemCategoryName,
     };

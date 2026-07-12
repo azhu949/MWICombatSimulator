@@ -96,6 +96,14 @@ body {
         0 10px 24px rgba(15, 23, 42, 0.18);
 }
 
+.enhancement-price-modal {
+    background: #080f1e;
+}
+
+:root[data-theme="light"] .enhancement-price-modal {
+    background: #ffffff;
+}
+
 .modal-body-text {
     color: var(--modal-body-text);
 }
@@ -372,7 +380,14 @@ body {
 :root[data-theme="light"] .text-rose-200 { color: var(--light-rose-text-strong) !important; }
 :root[data-theme="light"] .text-rose-300 { color: var(--light-rose-text) !important; }
 :root[data-theme="light"] .text-teal-100 { color: var(--light-teal-text) !important; }
+:root[data-theme="light"] .text-teal-200 { color: var(--light-teal-text) !important; }
+:root[data-theme="light"] .text-teal-300\/80 { color: rgba(15, 118, 110, 0.86) !important; }
 :root[data-theme="light"] .text-cyan-200 { color: var(--light-cyan-text) !important; }
+
+.enhancement-item-row {
+    content-visibility: auto;
+    contain-intrinsic-size: auto 88px;
+}
 :root[data-theme="light"] .hover\:text-amber-100:hover { color: var(--light-amber-text) !important; }
 :root[data-theme="light"] .hover\:text-amber-200:hover { color: var(--light-amber-text-soft) !important; }
 :root[data-theme="light"] .border-amber-300 { border-color: rgba(180, 83, 9, 0.4) !important; }

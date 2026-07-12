@@ -13,6 +13,7 @@ MWICombatSimulator 用于在本地运行战斗模拟与收益评估，帮助你�
 - **Home**：配置角色/目标/难度/时长并运行模拟，查看关键指标与构建快照
 - **Queue**：基于“基线 + 多个变体”的多轮评分与排名，对比收益增量与波动
 - **Advisor**：刷图推荐器，批量扫描 Solo/Group Zones 与 Labyrinth，输出目标排行
+- **Enhancement**：比较不同保护阈值的期望成本，评估贤者之镜、分解价值、成本分位与预算成功率
 - **Multi Results**：汇总多轮结果并支持导出 Excel
 - **Import/Export**：支持导入导出；可配合 Tampermonkey 脚本从主站一键导入当前角色，支持 `milkywayidle.com` 与 `milkywayidlecn.com`
 - **i18n + Web Workers**：中英界面，worker 并行计算提升批量模拟速度

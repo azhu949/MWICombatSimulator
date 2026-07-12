@@ -4,5 +4,6 @@ dist/
 .worktrees/
 .idea
 .vscode
+.claude/settings.local.json
 tmp/
 docs/superpowers

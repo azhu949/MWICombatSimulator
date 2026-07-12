@@ -1,4 +1,26 @@
 {
+    "2026年7月12日（v1.0.21）": {
+        "label": {
+            "zh": "2026年7月12日（v1.0.21）",
+            "en": "July 12, 2026 (v1.0.21)"
+        },
+        "notes": {
+            "zh": [
+                "新增强化模拟器：可选择目标装备、起始与目标强化等级，并结合强化等级、辅助装备、饮品、住宅、社区增益和成就计算成功率、耗时与经验。",
+                "新增保护策略对比：自动比较不保护及不同保护起始等级，结合市场价格、保护物、材料、金币和工时成本推荐最低期望投入方案。",
+                "新增贤者之镜制作规划与强化装备分解价值参考，并支持不可交易装备的地下城宝箱获取估值。",
+                "新增成本风险分析：通过蒙特卡洛模拟或矩估计近似展示 P25–P99 成本分位、预算内成功率、随机种子和模拟进度。",
+                "强化页面支持中英文界面、配置与收藏持久化、价格覆盖及官方物品图标。"
+            ],
+            "en": [
+                "Added the Enhancement Simulator for selecting target equipment and enhancement levels, with success rate, time, and experience calculations covering skill level, support gear, drinks, housing, community buffs, and achievements.",
+                "Added protection strategy comparisons across no-protection and multiple protection thresholds, recommending the lowest expected investment using market, protection, material, coin, and labor costs.",
+                "Added Philosopher's Mirror build planning, enhanced-item decomposition value references, and dungeon chest acquisition estimates for non-tradable equipment.",
+                "Added cost risk analysis with Monte Carlo simulation or moment-based approximation, including P25–P99 cost percentiles, success-within-budget probability, seeded runs, and progress reporting.",
+                "The Enhancement page includes bilingual UI, persistent configuration and favorites, price overrides, and official item icons."
+            ]
+        }
+    },
     "2026年5月28日（v1.0.20）": {
         "label": {
             "zh": "2026年5月28日（v1.0.20）",

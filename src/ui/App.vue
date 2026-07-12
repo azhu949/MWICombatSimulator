@@ -13,6 +13,7 @@
           <div class="flex flex-wrap items-center gap-2">
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/home">{{ t('common:menu.home', 'Home') }}</RouterLink>
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/advisor">{{ t('common:menu.advisor', 'Advisor / 刷图推荐') }}</RouterLink>
+            <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/enhancement">{{ t('common:menu.enhancement', 'Enhancement') }}</RouterLink>
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/queue">{{ t('common:menu.queue', 'Queue') }}</RouterLink>
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/multi-results">{{ t('common:menu.multiResults', 'Multi-round') }}</RouterLink>
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/settings">{{ t('common:menu.settings', 'Settings') }}</RouterLink>
@@ -95,7 +96,7 @@
           </div>
         </div>
 
-        <div class="mt-3 rounded-xl border border-white/10 bg-slate-900/40 p-3">
+        <div v-if="showCombatToolbar" class="mt-3 rounded-xl border border-white/10 bg-slate-900/40 p-3">
           <div class="flex flex-col gap-3">
             <div class="flex flex-col gap-3 xl:grid xl:grid-cols-[minmax(0,1fr)_640px] xl:items-start 2xl:grid-cols-[minmax(0,1fr)_720px]">
               <div class="min-w-0 space-y-3">
@@ -430,6 +431,7 @@ const topQueueActionStatus = ref({
 const { language, setLanguage, t } = useI18nText();
 const { getAbilityName } = useAbilityText();
 const { getSkillName } = useGameDataText();
+const showCombatToolbar = computed(() => route.meta?.showCombatToolbar !== false);
 
 const progressLabel = computed(() => {
   const progress = Math.floor(simulator.runtime.progress * 100);

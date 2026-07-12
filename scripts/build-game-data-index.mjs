@@ -16,6 +16,24 @@ const LABYRINTH_COFFEE_CRATE_HRIDS = ["/items/basic_coffee_crate", "/items/advan
 const LABYRINTH_FOOD_CRATE_HRIDS = ["/items/basic_food_crate", "/items/advanced_food_crate", "/items/expert_food_crate"];
 const LABYRINTH_TEA_CRATE_HRIDS = ["/items/basic_tea_crate", "/items/advanced_tea_crate", "/items/expert_tea_crate"];
 const WEAPON_EQUIPMENT_TYPE_HRIDS = new Set(["/equipment_types/main_hand", "/equipment_types/two_hand"]);
+const ENHANCING_ACTION_TYPE_HRID = "/action_types/enhancing";
+const ENHANCEMENT_ACTION_BASE_SECONDS = 12;
+const NANOSECONDS_PER_SECOND = 1_000_000_000;
+const ENHANCEMENT_DRINK_BUFF_TYPE_HRIDS = new Set([
+    "/buff_types/blessed",
+    "/buff_types/enhancing_level",
+    "/buff_types/wisdom",
+]);
+const ENHANCEMENT_ACHIEVEMENT_BUFF_TYPE_HRIDS = new Set([
+    "/buff_types/enhancing_success",
+    "/buff_types/wisdom",
+]);
+const ENHANCEMENT_SPECIAL_ITEM_HRIDS = Object.freeze({
+    coin: "/items/coin",
+    enhancingEssence: "/items/enhancing_essence",
+    mirrorOfProtection: "/items/mirror_of_protection",
+    philosophersMirror: "/items/philosophers_mirror",
+});
 
 async function readJsonFile(filename) {
     const filePath = path.join(dataRoot, filename);
@@ -403,23 +421,391 @@ function createHouseRoomIndex(houseRoomDetailMap) {
     };
 }
 
+function normalizeNumberTable(table) {
+    if (Array.isArray(table)) {
+        return table.map((value) => Number(value ?? 0));
+    }
+
+    if (!table || typeof table !== "object") {
+        return [];
+    }
+
+    const numericEntries = Object.entries(table)
+        .map(([key, value]) => [Number(key), Number(value ?? 0)])
+        .filter(([key]) => Number.isInteger(key) && key >= 0)
+        .sort(([left], [right]) => left - right);
+    if (numericEntries.length === 0) {
+        return [];
+    }
+
+    const result = Array(numericEntries[numericEntries.length - 1][0] + 1).fill(0);
+    for (const [key, value] of numericEntries) {
+        result[key] = value;
+    }
+    return result;
+}
+
+function normalizeItemAmounts(items) {
+    if (!Array.isArray(items)) {
+        return [];
+    }
+
+    return items
+        .map((entry) => ({
+            itemHrid: String(entry?.itemHrid || ""),
+            count: Number(entry?.count ?? 0),
+        }))
+        .filter((entry) => entry.itemHrid && Number.isFinite(entry.count) && entry.count > 0);
+}
+
+function normalizeLootDrops(drops) {
+    if (!Array.isArray(drops)) {
+        return [];
+    }
+
+    return drops
+        .map((entry) => ({
+            itemHrid: String(entry?.itemHrid || ""),
+            dropRate: Number(entry?.dropRate ?? 0),
+            dropRatePerDifficultyTier: Number(entry?.dropRatePerDifficultyTier ?? 0),
+            minCount: Number(entry?.minCount ?? 0),
+            maxCount: Number(entry?.maxCount ?? 0),
+        }))
+        .filter((entry) => (
+            entry.itemHrid
+            && Number.isFinite(entry.dropRate)
+            && Number.isFinite(entry.dropRatePerDifficultyTier)
+            && Number.isFinite(entry.minCount)
+            && Number.isFinite(entry.maxCount)
+            && entry.maxCount > 0
+        ));
+}
+
+function createEnhancementAcquisitionIndex({
+    actionDetailMap,
+    enhanceableItems,
+    itemDetailMap,
+    openableLootDropMap,
+}) {
+    const nonTradableEnhanceableHrids = new Set(
+        enhanceableItems
+            .filter((item) => item?.isTradable === false)
+            .map((item) => String(item?.hrid || ""))
+            .filter(Boolean),
+    );
+    const dungeonSourcesByContainerHrid = new Map();
+
+    for (const action of Object.values(actionDetailMap || {})) {
+        if (action?.combatZoneInfo?.isDungeon !== true) {
+            continue;
+        }
+        const actionHrid = String(action?.hrid || "");
+        const entryKeyItemHrid = String(action?.combatZoneInfo?.dungeonInfo?.keyItemHrid || "");
+        if (!actionHrid) {
+            continue;
+        }
+        for (const reward of normalizeLootDrops(action?.combatZoneInfo?.dungeonInfo?.rewardDropTable)) {
+            if (reward.dropRate <= 0) {
+                continue;
+            }
+            const sources = dungeonSourcesByContainerHrid.get(reward.itemHrid) || [];
+            sources.push({
+                actionHrid,
+                difficultyTier: 0,
+                entryKeyItemHrid,
+                containerDropRate: reward.dropRate,
+                containerMinCount: reward.minCount,
+                containerMaxCount: reward.maxCount,
+            });
+            dungeonSourcesByContainerHrid.set(reward.itemHrid, sources);
+        }
+    }
+
+    const openablesByHrid = {};
+    const sourcesByItemHrid = {};
+    for (const [containerHrid, rawDrops] of Object.entries(openableLootDropMap || {})) {
+        const dungeonSources = dungeonSourcesByContainerHrid.get(containerHrid) || [];
+        if (dungeonSources.length === 0) {
+            continue;
+        }
+        const drops = normalizeLootDrops(rawDrops).filter((drop) => drop.dropRate > 0);
+        const targetHrids = Array.from(new Set(
+            drops
+                .map((drop) => drop.itemHrid)
+                .filter((itemHrid) => nonTradableEnhanceableHrids.has(itemHrid)),
+        ));
+        if (targetHrids.length === 0) {
+            continue;
+        }
+
+        openablesByHrid[containerHrid] = {
+            hrid: containerHrid,
+            openKeyItemHrid: String(itemDetailMap?.[containerHrid]?.openKeyItemHrid || ""),
+            drops,
+        };
+        for (const itemHrid of targetHrids) {
+            const itemDrops = drops.filter((drop) => drop.itemHrid === itemHrid);
+            const sources = sourcesByItemHrid[itemHrid] || [];
+            for (const dungeonSource of dungeonSources) {
+                sources.push({
+                    type: "dungeon_openable",
+                    itemHrid,
+                    containerHrid,
+                    itemDrops,
+                    ...dungeonSource,
+                });
+            }
+            sourcesByItemHrid[itemHrid] = sources;
+        }
+    }
+
+    for (const sources of Object.values(sourcesByItemHrid)) {
+        sources.sort((left, right) => (
+            String(left?.actionHrid || "").localeCompare(String(right?.actionHrid || ""))
+            || String(left?.containerHrid || "").localeCompare(String(right?.containerHrid || ""))
+        ));
+    }
+
+    return { openablesByHrid, sourcesByItemHrid };
+}
+
+function createBuffSummary(buff) {
+    const typeHrid = String(buff?.typeHrid || "");
+    if (!typeHrid) {
+        return null;
+    }
+
+    return {
+        uniqueHrid: String(buff?.uniqueHrid || ""),
+        typeHrid,
+        ratioBoost: Number(buff?.ratioBoost ?? 0),
+        ratioBoostLevelBonus: Number(buff?.ratioBoostLevelBonus ?? 0),
+        flatBoost: Number(buff?.flatBoost ?? 0),
+        flatBoostLevelBonus: Number(buff?.flatBoostLevelBonus ?? 0),
+    };
+}
+
+function normalizeBuffs(buffs) {
+    const source = Array.isArray(buffs) ? buffs : (buffs && typeof buffs === "object" ? [buffs] : []);
+    return source.map(createBuffSummary).filter(Boolean);
+}
+
+function resolveBuffDurationSeconds(buffs) {
+    const source = Array.isArray(buffs) ? buffs : (buffs && typeof buffs === "object" ? [buffs] : []);
+    const durations = source
+        .map((buff) => Number(buff?.duration ?? 0) / NANOSECONDS_PER_SECOND)
+        .filter((duration) => Number.isFinite(duration) && duration > 0);
+    return durations.length > 0 ? Math.min(...durations) : 0;
+}
+
+function createEnhancementCatalogItem(item) {
+    const hrid = String(item?.hrid || "");
+    return {
+        hrid,
+        name: String(item?.name || hrid),
+        categoryHrid: String(item?.categoryHrid || ""),
+        itemLevel: Number(item?.itemLevel ?? 0),
+        sellPrice: Math.max(0, Number(item?.sellPrice ?? 0)),
+        sortIndex: Number(item?.sortIndex ?? 0),
+        isTradable: item?.isTradable === true,
+    };
+}
+
+function hasEnhancementSupportStat(stats) {
+    return Object.keys(stats || {}).some((key) => (
+        key.startsWith("enhancing")
+        || key === "skillingSpeed"
+        || key === "skillingExperience"
+        || key === "actionSpeed"
+        || key === "wisdom"
+        || key === "drinkConcentration"
+    ));
+}
+
+function createEnhancementIndex({
+    actionDetailMap,
+    achievementTierDetailMap,
+    communityBuffTypeDetailMap,
+    enhancementLevelSuccessRateTable,
+    enhancementLevelTotalBonusMultiplierTable,
+    houseRoomDetailMap,
+    itemDetailMap,
+    openableLootDropMap,
+}) {
+    const enhanceableItems = [];
+    const materialHrids = new Set([
+        ENHANCEMENT_SPECIAL_ITEM_HRIDS.coin,
+        ENHANCEMENT_SPECIAL_ITEM_HRIDS.enhancingEssence,
+        ENHANCEMENT_SPECIAL_ITEM_HRIDS.philosophersMirror,
+    ]);
+    const protectionItemHrids = new Set([ENHANCEMENT_SPECIAL_ITEM_HRIDS.mirrorOfProtection]);
+    const supportEquipment = [];
+    const enhancingDrinks = [];
+
+    for (const item of Object.values(itemDetailMap || {})) {
+        const hrid = String(item?.hrid || "");
+        if (!hrid) {
+            continue;
+        }
+
+        const enhancementCosts = normalizeItemAmounts(item?.enhancementCosts);
+        if (enhancementCosts.length > 0) {
+            const declaredProtectionItemHrids = Array.isArray(item?.protectionItemHrids)
+                ? item.protectionItemHrids.map((value) => String(value || "")).filter(Boolean)
+                : [];
+            const baseItemHrids = Array.isArray(item?.baseItemHrids)
+                ? item.baseItemHrids.map((value) => String(value || "")).filter(Boolean)
+                : [];
+
+            enhanceableItems.push({
+                ...createEnhancementCatalogItem(item),
+                equipmentType: String(item?.equipmentDetail?.type || ""),
+                isTradable: item?.isTradable === true,
+                enhancementCosts,
+                protectionItemHrids: declaredProtectionItemHrids,
+                baseItemHrids,
+                decomposeItems: normalizeItemAmounts(item?.alchemyDetail?.decomposeItems),
+            });
+
+            for (const cost of enhancementCosts) {
+                materialHrids.add(cost.itemHrid);
+            }
+            for (const protectionItemHrid of declaredProtectionItemHrids) {
+                protectionItemHrids.add(protectionItemHrid);
+            }
+        }
+
+        const noncombatStats = item?.equipmentDetail?.noncombatStats || {};
+        const noncombatEnhancementBonuses = item?.equipmentDetail?.noncombatEnhancementBonuses || {};
+        if (hasEnhancementSupportStat(noncombatStats) || hasEnhancementSupportStat(noncombatEnhancementBonuses)) {
+            supportEquipment.push({
+                ...createEnhancementCatalogItem(item),
+                equipmentType: String(item?.equipmentDetail?.type || ""),
+                noncombatStats,
+                noncombatEnhancementBonuses,
+            });
+        }
+
+        const buffs = normalizeBuffs(item?.consumableDetail?.buffs);
+        if (
+            String(item?.categoryHrid || "") === "/item_categories/drink"
+            && buffs.some((buff) => ENHANCEMENT_DRINK_BUFF_TYPE_HRIDS.has(buff.typeHrid))
+        ) {
+            enhancingDrinks.push({
+                ...createEnhancementCatalogItem(item),
+                durationSeconds: resolveBuffDurationSeconds(item?.consumableDetail?.buffs),
+                buffs,
+            });
+            materialHrids.add(hrid);
+        }
+    }
+
+    const compareCatalogItems = (left, right) => (
+        Number(left?.itemLevel ?? 0) - Number(right?.itemLevel ?? 0)
+        || Number(left?.sortIndex ?? 0) - Number(right?.sortIndex ?? 0)
+        || String(left?.name || "").localeCompare(String(right?.name || ""))
+    );
+    enhanceableItems.sort(compareCatalogItems);
+    supportEquipment.sort(compareCatalogItems);
+    enhancingDrinks.sort(compareCatalogItems);
+
+    const catalogItemsForHrids = (hrids) => Array.from(hrids)
+        .map((hrid) => itemDetailMap?.[hrid])
+        .filter(Boolean)
+        .map(createEnhancementCatalogItem)
+        .sort(compareCatalogItems);
+
+    const observatory = houseRoomDetailMap?.["/house_rooms/observatory"] || {};
+    const roomsWithGlobalExperience = Object.values(houseRoomDetailMap || {})
+        .filter((room) => normalizeBuffs(room?.globalBuffs).some((buff) => buff.typeHrid === "/buff_types/wisdom"))
+        .sort((left, right) => Number(left?.sortIndex ?? 0) - Number(right?.sortIndex ?? 0));
+    const globalExperienceBuff = roomsWithGlobalExperience
+        .flatMap((room) => normalizeBuffs(room?.globalBuffs))
+        .find((buff) => buff.typeHrid === "/buff_types/wisdom") || null;
+
+    const communityBuffs = Object.values(communityBuffTypeDetailMap || {})
+        .filter((entry) => entry?.usableInActionTypeMap?.[ENHANCING_ACTION_TYPE_HRID] === true)
+        .map((entry) => ({
+            hrid: String(entry?.hrid || ""),
+            name: String(entry?.name || entry?.hrid || ""),
+            sortIndex: Number(entry?.sortIndex ?? 0),
+            buff: createBuffSummary(entry?.buff),
+        }))
+        .filter((entry) => entry.hrid && entry.buff)
+        .sort((left, right) => left.sortIndex - right.sortIndex || left.name.localeCompare(right.name));
+
+    const achievementBuffs = Object.values(achievementTierDetailMap || {})
+        .filter((entry) => entry?.usableInActionTypeMap?.[ENHANCING_ACTION_TYPE_HRID] === true)
+        .map((entry) => ({
+            hrid: String(entry?.hrid || ""),
+            name: String(entry?.name || entry?.hrid || ""),
+            sortIndex: Number(entry?.sortIndex ?? 0),
+            buff: createBuffSummary(entry?.buff),
+        }))
+        .filter((entry) => entry.hrid && entry.buff && ENHANCEMENT_ACHIEVEMENT_BUFF_TYPE_HRIDS.has(entry.buff.typeHrid))
+        .sort((left, right) => left.sortIndex - right.sortIndex || left.name.localeCompare(right.name));
+    const acquisition = createEnhancementAcquisitionIndex({
+        actionDetailMap,
+        enhanceableItems,
+        itemDetailMap,
+        openableLootDropMap,
+    });
+
+    return {
+        successRates: normalizeNumberTable(enhancementLevelSuccessRateTable),
+        totalBonusMultipliers: normalizeNumberTable(enhancementLevelTotalBonusMultiplierTable),
+        actionBaseSeconds: ENHANCEMENT_ACTION_BASE_SECONDS,
+        specialItemHrids: ENHANCEMENT_SPECIAL_ITEM_HRIDS,
+        enhanceableItems,
+        materialItems: catalogItemsForHrids(materialHrids),
+        protectionItems: catalogItemsForHrids(protectionItemHrids),
+        supportEquipment,
+        enhancingDrinks,
+        housing: {
+            observatory: {
+                hrid: String(observatory?.hrid || "/house_rooms/observatory"),
+                name: String(observatory?.name || "Observatory"),
+                actionBuffs: normalizeBuffs(observatory?.actionBuffs),
+                globalBuffs: normalizeBuffs(observatory?.globalBuffs),
+            },
+            globalExperience: {
+                roomHrids: roomsWithGlobalExperience.map((room) => String(room?.hrid || "")).filter(Boolean),
+                buff: globalExperienceBuff,
+            },
+        },
+        communityBuffs,
+        achievementBuffs,
+        acquisition,
+    };
+}
+
 async function main() {
     const [
         abilityDetailMap,
+        achievementTierDetailMap,
         levelExperienceTable,
         actionDetailMap,
         combatMonsterDetailMap,
+        communityBuffTypeDetailMap,
+        enhancementLevelSuccessRateTable,
+        enhancementLevelTotalBonusMultiplierTable,
         equipmentTypeDetailMap,
         houseRoomDetailMap,
         itemDetailMap,
+        openableLootDropMap,
     ] = await Promise.all([
         readJsonFile("abilityDetailMap.json"),
+        readJsonFile("achievementTierDetailMap.json"),
         readJsonFile("levelExperienceTable.json"),
         readJsonFile("actionDetailMap.json"),
         readJsonFile("combatMonsterDetailMap.json"),
+        readJsonFile("communityBuffTypeDetailMap.json"),
+        readJsonFile("enhancementLevelSuccessRateTable.json"),
+        readJsonFile("enhancementLevelTotalBonusMultiplierTable.json"),
         readJsonFile("equipmentTypeDetailMap.json"),
         readJsonFile("houseRoomDetailMap.json"),
         readJsonFile("itemDetailMap.json"),
+        readJsonFile("openableLootDropMap.json"),
     ]);
 
     const itemIndex = createItemIndex(itemDetailMap, equipmentTypeDetailMap);
@@ -427,6 +813,16 @@ async function main() {
     const actionIndex = createActionIndex(actionDetailMap);
     const monsterIndex = createMonsterIndex(combatMonsterDetailMap);
     const houseRoomIndex = createHouseRoomIndex(houseRoomDetailMap);
+    const enhancementData = createEnhancementIndex({
+        actionDetailMap,
+        achievementTierDetailMap,
+        communityBuffTypeDetailMap,
+        enhancementLevelSuccessRateTable,
+        enhancementLevelTotalBonusMultiplierTable,
+        houseRoomDetailMap,
+        itemDetailMap,
+        openableLootDropMap,
+    });
 
     const payload = {
         metadata: {
@@ -440,6 +836,7 @@ async function main() {
         ...monsterIndex,
         ...houseRoomIndex,
         levelExperienceTable: Array.isArray(levelExperienceTable) ? levelExperienceTable : [],
+        enhancementData,
     };
 
     await mkdir(path.dirname(outputPath), { recursive: true });

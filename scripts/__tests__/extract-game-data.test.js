@@ -108,6 +108,7 @@ const BASE_CLIENT_DATA = {
             name: "Test Damage Type",
         },
     },
+    enhancementLevelSuccessRateTable: [0.5, 0.45],
     enhancementLevelTotalBonusMultiplierTable: {
         "0": 1,
         "1": 1.1,
@@ -174,6 +175,7 @@ const EXPECTED_OUTPUT_FILES = [
     "combatTriggerDependencyDetailMap.json",
     "communityBuffTypeDetailMap.json",
     "damageTypeDetailMap.json",
+    "enhancementLevelSuccessRateTable.json",
     "enhancementLevelTotalBonusMultiplierTable.json",
     "houseRoomDetailMap.json",
     "equipmentTypeDetailMap.json",
@@ -204,6 +206,28 @@ afterEach(() => {
 });
 
 describe("extract-game-data CLI", () => {
+    it("rejects payloads that omit the required enhancement success-rate table", () => {
+        const tempDir = createTempDir();
+        const inputPath = path.join(tempDir, "initClientData.json");
+        const outputDir = path.join(tempDir, "maps");
+        const incompleteClientData = { ...BASE_CLIENT_DATA };
+
+        delete incompleteClientData.enhancementLevelSuccessRateTable;
+        fs.mkdirSync(outputDir, { recursive: true });
+        fs.writeFileSync(
+            path.join(outputDir, "enhancementLevelSuccessRateTable.json"),
+            "[0.99]\n",
+            "utf8",
+        );
+        fs.writeFileSync(inputPath, `${JSON.stringify(incompleteClientData, null, 2)}\n`, "utf8");
+
+        expect(() => execFileSync(
+            process.execPath,
+            [SCRIPT_PATH, "--input", inputPath, "--output", outputDir],
+            { cwd: path.resolve("."), stdio: "pipe" },
+        )).toThrow();
+    });
+
     it("writes the full resolved clientData JSON when --all is enabled", () => {
         const tempDir = createTempDir();
         const inputPath = path.join(tempDir, "initClientData.json");
@@ -231,6 +255,10 @@ describe("extract-game-data CLI", () => {
         );
 
         expect(fs.readdirSync(outputDir).sort()).toEqual(EXPECTED_OUTPUT_FILES);
+        expect(JSON.parse(fs.readFileSync(
+            path.join(outputDir, "enhancementLevelSuccessRateTable.json"),
+            "utf8",
+        ))).toEqual(BASE_CLIENT_DATA.enhancementLevelSuccessRateTable);
         expect(fs.existsSync(allOutputPath)).toBe(true);
         expect(JSON.parse(fs.readFileSync(allOutputPath, "utf8"))).toEqual(BASE_CLIENT_DATA);
     });
