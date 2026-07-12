@@ -20,6 +20,15 @@ describe("EnhancementPage tool surface", () => {
         expect(pageSource).toContain("enhancement.config.targetLevel");
     });
 
+    it("accepts enhancement-only imports from the Tampermonkey bridge", () => {
+        expect(pageSource).toContain('data-tm-import-anchor="enhancement-actions"');
+        expect(pageSource).toContain('data-tm-import-reference="enhancement-refresh"');
+        expect(pageSource).toContain("applyTampermonkeyEnhancementImportMessage");
+        expect(pageSource).toContain('data.importTarget !== "enhancement"');
+        expect(pageSource).toContain('window.addEventListener("message", handleTampermonkeyEnhancementImportWindowMessage)');
+        expect(pageSource).toContain('window.removeEventListener("message", handleTampermonkeyEnhancementImportWindowMessage)');
+    });
+
     it("renders searchable, filterable, favorite item selection", () => {
         expect(pageSource).toContain('data-enhancement-item-search');
         expect(pageSource).toContain("enhancement.itemFilters.equipmentType");

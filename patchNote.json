@@ -1,4 +1,20 @@
 {
+    "2026年7月13日（v1.0.22）": {
+        "label": {
+            "zh": "2026年7月13日（v1.0.22）",
+            "en": "July 13, 2026 (v1.0.22)"
+        },
+        "notes": {
+            "zh": [
+                "主站导入脚本新增强化模拟页入口，可导入当前角色的强化等级、强化装备、饮品、房间、社区 Buff 和成就加成。",
+                "强化装备导入现在同时读取穿戴栏和背包；背包中没有穿戴装备的槽位会自动选择等级最高的装备。"
+            ],
+            "en": [
+                "The main-site import script now adds an Enhancement-page entry for importing the current character's enhancing level, gear, drinks, housing, community buffs, and achievement bonuses.",
+                "Enhancement gear imports now include both equipped and inventory items; when a slot has no equipped support gear, the highest-level inventory item is selected automatically."
+            ]
+        }
+    },
     "2026年7月12日（v1.0.21）": {
         "label": {
             "zh": "2026年7月12日（v1.0.21）",

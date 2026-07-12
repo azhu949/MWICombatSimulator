@@ -14,9 +14,9 @@
           </span>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2">
+        <div class="flex flex-wrap items-center gap-2" data-tm-import-anchor="enhancement-actions">
           <span class="rounded border px-2 py-1 text-[11px]" :class="priceStatusClass">{{ priceStatusText }}</span>
-          <button type="button" class="action-button-muted !px-3 !py-1.5" :disabled="priceRefreshPending" @click="refreshPrices">
+          <button type="button" class="action-button-muted !px-3 !py-1.5" data-tm-import-reference="enhancement-refresh" :disabled="priceRefreshPending" @click="refreshPrices">
             {{ priceRefreshPending ? t("common:enhancement.refreshing", "Refreshing...") : t("common:enhancement.refreshPrices", "Refresh prices") }}
           </button>
           <button type="button" class="action-button-muted !px-3 !py-1.5" :disabled="enhancement.riskRunning" @click="resetConfig">
@@ -815,7 +815,7 @@
 </template>
 
 <script setup>
-import { computed, onMounted, ref, watch } from "vue";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
 import BaseModal from "../components/BaseModal.vue";
 import { useGameDataText } from "../composables/useGameDataText.js";
 import { useI18nText } from "../composables/useI18nText.js";
@@ -829,8 +829,10 @@ import {
   hasItemIconSymbol,
   itemIconHref,
 } from "../../services/itemIconSprite.js";
+import { applyTampermonkeyEnhancementImportMessage } from "../../services/tampermonkeyImportBridge.js";
 import { useEnhancementStore } from "../../stores/enhancementStore.js";
 
+const TAMPERMONKEY_BRIDGE_CHANNEL = "mwi-tm-bridge";
 const enhancement = useEnhancementStore();
 const { language, t } = useI18nText();
 const { getItemName: getGameItemName } = useGameDataText();
@@ -1120,12 +1122,56 @@ const riskFallbackLabel = computed(() => {
   return "";
 });
 
+function postTampermonkeyImportResult(payload) {
+  window.postMessage({
+    channel: TAMPERMONKEY_BRIDGE_CHANNEL,
+    ...payload,
+  }, window.location.origin);
+}
+
+function handleTampermonkeyEnhancementImportWindowMessage(event) {
+  if (event.source !== window || event.origin !== window.location.origin) return;
+  const data = event.data;
+  if (!data || typeof data !== "object") return;
+  if (
+    data.channel !== TAMPERMONKEY_BRIDGE_CHANNEL
+    || data.type !== "mwi-tm-import"
+    || data.importTarget !== "enhancement"
+  ) return;
+
+  const requestId = String(data.requestId || "").trim();
+  if (!requestId) return;
+
+  try {
+    const result = applyTampermonkeyEnhancementImportMessage(enhancement, data);
+    postTampermonkeyImportResult({
+      type: "mwi-tm-import-result",
+      requestId,
+      ok: true,
+      detectedFormat: result.detectedFormat,
+      message: result.message,
+    });
+  } catch (error) {
+    postTampermonkeyImportResult({
+      type: "mwi-tm-import-result",
+      requestId,
+      ok: false,
+      message: error?.message || String(error),
+    });
+  }
+}
+
 onMounted(async () => {
+  window.addEventListener("message", handleTampermonkeyEnhancementImportWindowMessage);
   try {
     await enhancement.initialize();
   } catch (error) {
     initializationError.value = error?.message || String(error);
   }
+});
+
+onBeforeUnmount(() => {
+  window.removeEventListener("message", handleTampermonkeyEnhancementImportWindowMessage);
 });
 
 function openItemPicker() {

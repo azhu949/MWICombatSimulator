@@ -1,3 +1,5 @@
+import { buildMainSiteEnhancementImport } from "./enhancementImportMapper.js";
+
 function resolveActivateAfterImport(message) {
     if (Object.prototype.hasOwnProperty.call(message, "activateAfterImport")) {
         return message.activateAfterImport === true;
@@ -78,5 +80,33 @@ export function applyTampermonkeyImportMessage(simulator, message) {
         resolvedPlayerId,
         detectedFormat: result?.detectedFormat || "",
         message: `Imported main-site profile into player ${resolvedPlayerId}.`,
+    };
+}
+
+/**
+ * Apply current main-site character bonuses to the enhancement simulator.
+ * Target item, price overrides, and risk settings remain unchanged.
+ */
+export function applyTampermonkeyEnhancementImportMessage(enhancement, message) {
+    if (!enhancement || typeof enhancement.patchConfig !== "function") {
+        throw new Error("Enhancement store is unavailable.");
+    }
+
+    const safeMessage = message && typeof message === "object" ? message : {};
+    const result = buildMainSiteEnhancementImport(
+        safeMessage.payload || {},
+        enhancement.config || {},
+    );
+    if (result.importedSections.length === 0) {
+        throw new Error("No enhancement character data was found in the main-site payload.");
+    }
+
+    enhancement.patchConfig(result.configPatch);
+    return {
+        detectedFormat: "main-site-enhancement-character",
+        importedSections: result.importedSections,
+        message: result.characterName
+            ? `Imported enhancement setup for ${result.characterName}.`
+            : "Imported enhancement character setup.",
     };
 }

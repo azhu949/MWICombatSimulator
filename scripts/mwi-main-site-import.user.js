@@ -3,11 +3,11 @@
 // @name:zh      MWI Combat Simulator 主站一键导入
 // @name:zh-CN   MWI Combat Simulator 主站一键导入
 // @namespace    https://azhu949.github.io/MWICombatSimulator
-// @version      0.1.24
+// @version      0.1.25
 // @license      ISC
-// @description  Import the current Milky Way Idle character or manually cached detected team into MWI Combat Simulator with one click.
-// @description:zh      一键将 Milky Way Idle 主站当前角色或已手动缓存资料的已识别队伍导入到 MWI Combat Simulator。
-// @description:zh-CN   一键将 Milky Way Idle 主站当前角色或已手动缓存资料的已识别队伍导入到 MWI Combat Simulator。
+// @description  Import the current Milky Way Idle character or manually cached detected team into MWI Combat Simulator, or import the current character setup into the enhancement simulator.
+// @description:zh      一键将 Milky Way Idle 主站当前角色或已手动缓存资料的已识别队伍导入 MWI Combat Simulator，也可将当前角色强化配置导入强化模拟器。
+// @description:zh-CN   一键将 Milky Way Idle 主站当前角色或已手动缓存资料的已识别队伍导入 MWI Combat Simulator，也可将当前角色强化配置导入强化模拟器。
 // @match        https://www.milkywayidle.com/*
 // @match        https://milkywayidle.com/*
 // @match        https://www.milkywayidlecn.com/*
@@ -54,6 +54,7 @@
     const UI_TEXT = {
         en: {
             button: "Import from Main Site",
+            enhancementButton: "Import Character Setup",
             waitingMainSite: "Waiting for main-site response…",
             importingSimulator: "Importing into simulator…",
             importSuccess: "Import successful.",
@@ -76,6 +77,7 @@
         },
         zh: {
             button: "从主站导入",
+            enhancementButton: "导入角色强化配置",
             waitingMainSite: "等待主站响应…",
             importingSimulator: "正在导入到模拟器…",
             importSuccess: "导入成功。",
@@ -123,6 +125,9 @@
         "combatUnit",
         "characterHouseRoomMap",
         "characterAchievements",
+        "communityBuffs",
+        "communityActionTypeBuffsMap",
+        "achievementActionTypeBuffsMap",
         "actionTypeFoodSlotsMap",
         "actionTypeDrinkSlotsMap",
         "consumableCombatTriggersMap",
@@ -885,6 +890,116 @@
         }
 
         mainSiteState.currentCharacterSnapshot = baseSnapshot;
+    }
+
+    function readSnapshotEntryIdentity(entry, identityKeys, fallbackIndex = -1) {
+        if (!entry || typeof entry !== "object") {
+            return fallbackIndex >= 0 ? `index:${fallbackIndex}` : "";
+        }
+
+        for (const key of identityKeys) {
+            const value = entry[key];
+            if (value == null || String(value).trim() === "") {
+                continue;
+            }
+
+            return `${key}:${String(value)}`;
+        }
+
+        return fallbackIndex >= 0 ? `index:${fallbackIndex}` : "";
+    }
+
+    function mergeCurrentCharacterSnapshotEntries(field, updates, identityKeys, removeWhen = null) {
+        if (!Array.isArray(updates) || updates.length === 0) {
+            return;
+        }
+
+        const snapshot = mainSiteState.currentCharacterSnapshot;
+        if (!snapshot || typeof snapshot !== "object") {
+            return;
+        }
+
+        const existingEntries = Array.isArray(snapshot[field])
+            ? snapshot[field].map((entry) => clonePlainObject(entry))
+            : (snapshot[field] && typeof snapshot[field] === "object"
+                ? Object.values(snapshot[field]).map((entry) => clonePlainObject(entry))
+                : []);
+
+        for (const rawUpdate of updates) {
+            if (!rawUpdate || typeof rawUpdate !== "object") {
+                continue;
+            }
+
+            const update = clonePlainObject(rawUpdate);
+            const identity = readSnapshotEntryIdentity(update, identityKeys);
+            const index = identity
+                ? existingEntries.findIndex((entry, entryIndex) => (
+                    readSnapshotEntryIdentity(entry, identityKeys, entryIndex) === identity
+                ))
+                : -1;
+
+            if (removeWhen && removeWhen(update)) {
+                if (index >= 0) {
+                    existingEntries.splice(index, 1);
+                }
+                continue;
+            }
+
+            if (index >= 0) {
+                existingEntries[index] = update;
+            } else {
+                existingEntries.push(update);
+            }
+        }
+
+        snapshot[field] = existingEntries;
+    }
+
+    function captureCurrentCharacterDataUpdate(message) {
+        const type = String(message?.type || "");
+        if (!mainSiteState.currentCharacterSnapshot || typeof mainSiteState.currentCharacterSnapshot !== "object") {
+            return;
+        }
+
+        if (type === "skills_updated") {
+            mergeCurrentCharacterSnapshotEntries(
+                "characterSkills",
+                message.endCharacterSkills,
+                ["skillHrid"]
+            );
+            return;
+        }
+
+        if (type === "items_updated") {
+            mergeCurrentCharacterSnapshotEntries(
+                "characterItems",
+                message.endCharacterItems,
+                ["hash", "id"],
+                (entry) => Number(entry.count) === 0
+            );
+            return;
+        }
+
+        if (type === "house_rooms_updated") {
+            updateCurrentCharacterSnapshot(message);
+            return;
+        }
+
+        if (type === "achievements_updated") {
+            mergeCurrentCharacterSnapshotEntries(
+                "characterAchievements",
+                message.achievements,
+                ["achievementHrid"]
+            );
+            return;
+        }
+
+        if (
+            type === "achievement_buffs_updated"
+            || type === "community_buffs_updated"
+        ) {
+            updateCurrentCharacterSnapshot(message);
+        }
     }
 
     function syncCurrentCharacterConsumableSlotMaps(message, reset = false) {
@@ -2102,6 +2217,7 @@
             }
 
             captureCurrentCharacterState(parsed);
+            captureCurrentCharacterDataUpdate(parsed);
             captureCharacterActionsUpdate(parsed);
             handleProfileSharedMessage(parsed);
         });
@@ -2410,7 +2526,11 @@
                 return;
             }
 
-            button.textContent = getUiText("button", state.uiLanguage);
+            const importMode = String(button.dataset.importMode || "player");
+            button.textContent = getUiText(
+                importMode === "enhancement" ? "enhancementButton" : "button",
+                state.uiLanguage
+            );
             status.textContent = state.statusTextKey
                 ? getUiText(state.statusTextKey, state.uiLanguage)
                 : String(state.statusText || "");
@@ -2444,12 +2564,12 @@
             renderControlState();
         }
 
-        async function requestMainSiteAutoImport(requestId) {
+        async function requestMainSiteImport(requestId, target = "auto") {
             GM_setValue(REQUEST_KEY, {
                 version: 2,
                 requestId,
                 createdAt: Date.now(),
-                target: "auto",
+                target,
                 language: state.uiLanguage,
             });
 
@@ -2531,6 +2651,23 @@
                 selectAfterImport: true,
                 activateAfterImport: true,
                 format: String(mainSiteResponse?.format || "shareable-profile"),
+            });
+            if (!appResponse || appResponse.ok !== true) {
+                throw new Error(appResponse?.message || getUiText("simulatorImportFailed", state.uiLanguage));
+            }
+
+            setStatusKey("importSuccess", "success");
+        }
+
+        async function importEnhancementMainSiteResponse(mainSiteResponse, requestId) {
+            if (!mainSiteResponse || mainSiteResponse.ok !== true || !mainSiteResponse.payload) {
+                throw new Error(mainSiteResponse?.message || getUiText("noMainSiteData", state.uiLanguage));
+            }
+
+            setStatusKey("importingSimulator", "idle");
+            const appResponse = await importPayloadIntoSimulator(requestId, mainSiteResponse.payload, {
+                importTarget: "enhancement",
+                format: String(mainSiteResponse?.format || "main-site-current-character"),
             });
             if (!appResponse || appResponse.ok !== true) {
                 throw new Error(appResponse?.message || getUiText("simulatorImportFailed", state.uiLanguage));
@@ -2626,7 +2763,7 @@
             setStatus(state.uiLanguage === "zh" ? `导入完成：${summary}` : `Import finished: ${summary}`, "success");
         }
 
-        async function handleImportButtonClick() {
+        async function handleImportButtonClick(importMode = "player") {
             if (state.isRequestPending) {
                 return;
             }
@@ -2636,8 +2773,14 @@
             setStatusKey("waitingMainSite", "idle");
 
             try {
-                const mainSiteResponse = await requestMainSiteAutoImport(requestId);
-                if (isTeamImportResponse(mainSiteResponse)) {
+                const normalizedImportMode = importMode === "enhancement" ? "enhancement" : "player";
+                const mainSiteResponse = await requestMainSiteImport(
+                    requestId,
+                    normalizedImportMode === "enhancement" ? "active-player" : "auto"
+                );
+                if (normalizedImportMode === "enhancement") {
+                    await importEnhancementMainSiteResponse(mainSiteResponse, requestId);
+                } else if (isTeamImportResponse(mainSiteResponse)) {
                     await importTeamMainSiteResponse(mainSiteResponse);
                 } else {
                     await importSingleMainSiteResponse(mainSiteResponse, requestId);
@@ -2655,12 +2798,19 @@
         }
 
         function mountImportControl() {
-            const actionBar = document.querySelector('[data-tm-import-anchor="simulator-home-actions"]');
+            const enhancementActionBar = document.querySelector('[data-tm-import-anchor="enhancement-actions"]');
+            const actionBar = enhancementActionBar
+                || document.querySelector('[data-tm-import-anchor="simulator-home-actions"]');
             if (!actionBar) {
                 return;
             }
 
-            const referenceButton = actionBar.querySelector('[data-tm-import-reference="import-export"]');
+            const importMode = enhancementActionBar ? "enhancement" : "player";
+            const referenceButton = actionBar.querySelector(
+                importMode === "enhancement"
+                    ? '[data-tm-import-reference="enhancement-refresh"]'
+                    : '[data-tm-import-reference="import-export"]'
+            );
             if (document.getElementById(CONTROL_ID)) {
                 return;
             }
@@ -2672,9 +2822,13 @@
             const button = document.createElement("button");
             button.id = BUTTON_ID;
             button.type = "button";
-            button.textContent = getUiText("button", state.uiLanguage);
+            button.dataset.importMode = importMode;
+            button.textContent = getUiText(
+                importMode === "enhancement" ? "enhancementButton" : "button",
+                state.uiLanguage
+            );
             button.className = "action-button-tool";
-            button.addEventListener("click", handleImportButtonClick);
+            button.addEventListener("click", () => handleImportButtonClick(importMode));
 
             const status = document.createElement("span");
             status.id = STATUS_ID;

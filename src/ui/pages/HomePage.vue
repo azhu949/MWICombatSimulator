@@ -2604,6 +2604,10 @@ function handleTampermonkeyImportWindowMessage(event) {
     return;
   }
 
+  if (data.importTarget === "enhancement") {
+    return;
+  }
+
   const requestId = String(data.requestId || "").trim();
   if (!requestId) {
     return;
