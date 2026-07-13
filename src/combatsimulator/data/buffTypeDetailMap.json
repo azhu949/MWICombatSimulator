@@ -109,7 +109,7 @@
         "name": "Combat Drop Quantity",
         "description": "Increases quantity of combat loot",
         "debuffDescription": "Decreases quantity of combat loot",
-        "sortIndex": 59
+        "sortIndex": 61
     },
     "/buff_types/combat_drop_rate": {
         "hrid": "/buff_types/combat_drop_rate",
@@ -117,7 +117,7 @@
         "name": "Combat Drop Rate",
         "description": "Increases drop rate of combat loot",
         "debuffDescription": "Decreases drop rate of combat loot",
-        "sortIndex": 58
+        "sortIndex": 60
     },
     "/buff_types/combat_experience": {
         "hrid": "/buff_types/combat_experience",
@@ -125,7 +125,7 @@
         "name": "Combat Experience",
         "description": "Increases combat experience gained",
         "debuffDescription": "Decreases combat experience gained",
-        "sortIndex": 63
+        "sortIndex": 65
     },
     "/buff_types/cooking_level": {
         "hrid": "/buff_types/cooking_level",
@@ -301,7 +301,7 @@
         "name": "Double Progress",
         "description": "Chance to double progress in labyrinth skilling rooms",
         "debuffDescription": "Decreases chance to double progress",
-        "sortIndex": 61
+        "sortIndex": 63
     },
     "/buff_types/life_steal": {
         "hrid": "/buff_types/life_steal",
@@ -326,6 +326,22 @@
         "description": "Gains mana leech on auto attacks",
         "debuffDescription": "Reduces mana leech",
         "sortIndex": 50
+    },
+    "/buff_types/max_hitpoints": {
+        "hrid": "/buff_types/max_hitpoints",
+        "isCombat": true,
+        "name": "Max HP",
+        "description": "Increases max HP",
+        "debuffDescription": "Decreases max HP",
+        "sortIndex": 57
+    },
+    "/buff_types/max_manapoints": {
+        "hrid": "/buff_types/max_manapoints",
+        "isCombat": true,
+        "name": "Max MP",
+        "description": "Increases max MP",
+        "debuffDescription": "Decreases max MP",
+        "sortIndex": 58
     },
     "/buff_types/melee_level": {
         "hrid": "/buff_types/melee_level",
@@ -421,7 +437,7 @@
         "name": "Skilling Experience",
         "description": "Increases skilling experience gained",
         "debuffDescription": "Decreases skilling experience gained",
-        "sortIndex": 62
+        "sortIndex": 64
     },
     "/buff_types/stamina_level": {
         "hrid": "/buff_types/stamina_level",
@@ -437,7 +453,7 @@
         "name": "Success Rate",
         "description": "Increases success rate",
         "debuffDescription": "Decreases success rate",
-        "sortIndex": 60
+        "sortIndex": 62
     },
     "/buff_types/tailoring_level": {
         "hrid": "/buff_types/tailoring_level",
@@ -469,7 +485,7 @@
         "name": "Threat",
         "description": "Increases chance of being targeted in combat",
         "debuffDescription": "Decreases chance of being targeted in combat",
-        "sortIndex": 57
+        "sortIndex": 59
     },
     "/buff_types/water_amplify": {
         "hrid": "/buff_types/water_amplify",

@@ -17,7 +17,6 @@
         },
         "description": "",
         "cowbellCost": 10,
-        "supporterPointCost": 100,
         "sortIndex": 5
     },
     "/community_buff_types/enhancing_speed": {
@@ -38,7 +37,6 @@
         },
         "description": "",
         "cowbellCost": 10,
-        "supporterPointCost": 100,
         "sortIndex": 4
     },
     "/community_buff_types/experience": {
@@ -69,7 +67,6 @@
         },
         "description": "",
         "cowbellCost": 20,
-        "supporterPointCost": 200,
         "sortIndex": 1
     },
     "/community_buff_types/gathering_quantity": {
@@ -92,7 +89,6 @@
         },
         "description": "",
         "cowbellCost": 10,
-        "supporterPointCost": 100,
         "sortIndex": 2
     },
     "/community_buff_types/production_efficiency": {
@@ -118,7 +114,6 @@
         },
         "description": "",
         "cowbellCost": 10,
-        "supporterPointCost": 100,
         "sortIndex": 3
     }
 }
