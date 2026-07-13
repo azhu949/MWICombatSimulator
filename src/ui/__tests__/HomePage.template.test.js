@@ -10,7 +10,9 @@ describe("HomePage labyrinth selectors", () => {
     });
 
     it("renders a dedicated tea crate selector", () => {
-        expect(homePageSource).toContain('t("common:teaCrate", "Tea Crate")');
+        expect(homePageSource).toContain('getOfficialGameText("labyrinthPanel", "teaCrate", "Tea Crate")');
+        expect(homePageSource).toContain('getOfficialGameText("labyrinthPanel", "coffeeCrate", "Coffee Crate")');
+        expect(homePageSource).toContain('getOfficialGameText("labyrinthPanel", "foodCrate", "Food Crate")');
         expect(homePageSource).toContain("simulator.options.labyrinthCrates.tea");
         expect(homePageSource).toContain("simulator.setLabyrinthCrate('tea', $event.target.value)");
     });
@@ -27,5 +29,21 @@ describe("HomePage labyrinth selectors", () => {
         expect(homePageSource).toContain("v-for=\"option in guildBuffOptions\"");
         expect(homePageSource).toContain("setGuildBuffLevel(option.hrid, $event.target.value)");
         expect(homePageSource).toContain("formatGuildBuffEffects(option, guildBuffLevel(option.hrid))");
+    });
+
+    it("uses official skill, equipment, combat stat, labyrinth, and MooPass labels", () => {
+        expect(homePageSource).toContain("getSkillName(`/skills/${skillKey}`");
+        expect(homePageSource).toContain("getEquipmentSlotName(slot, slot)");
+        expect(homePageSource).toContain('formatCombatStatName("retaliation", "Retaliation")');
+        expect(homePageSource).toContain('getOfficialGameText("labyrinthPanel", "labyrinth", "Labyrinth")');
+        expect(homePageSource).toContain('getOfficialGameText("shopCategoryNames", "/shop_categories/dungeon", "Dungeon")');
+        expect(homePageSource).toContain('getOfficialGameText("guildPanel", "combat", "Combat")');
+        expect(homePageSource).toContain('getOfficialGameText("mooPass", "mooPass", "MooPass")');
+        expect(homePageSource).not.toContain("common:vue.home.levelLabels");
+        expect(homePageSource).not.toContain("common:vue.home.equipmentLabels");
+        expect(homePageSource).not.toContain("common:vue.home.combatStats");
+        expect(homePageSource).not.toContain("common:vue.home.dungeon");
+        expect(homePageSource).not.toContain("common:vue.home.guildBuffCombat");
+        expect(homePageSource).not.toContain("common:settingsPage.playerSnapshotTableLabyrinth");
     });
 });

@@ -144,6 +144,31 @@ export function useGameDataText() {
         );
     }
 
+    function getEquipmentTypeName(equipmentTypeHrid, fallbackName = "") {
+        const rawHrid = coerceText(equipmentTypeHrid).trim();
+        return getOfficialGameText("equipmentTypeNames", rawHrid, coerceText(fallbackName));
+    }
+
+    function getEquipmentSlotName(slotKey, fallbackName = "") {
+        const rawSlotKey = coerceText(slotKey).trim();
+        if (!rawSlotKey) {
+            return coerceText(fallbackName);
+        }
+        const equipmentTypeKey = rawSlotKey === "weapon"
+            ? "main_hand"
+            : rawSlotKey.replace(/^\/equipment_types\//, "");
+        const fallback = coerceText(fallbackName) || equipmentTypeKey
+            .split("_")
+            .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+            .join(" ");
+        return getEquipmentTypeName(`/equipment_types/${equipmentTypeKey}`, fallback);
+    }
+
+    function getCombatStatName(statKey, fallbackName = "") {
+        const rawKey = coerceText(statKey).trim();
+        return getOfficialGameText("combatStats", rawKey, coerceText(fallbackName));
+    }
+
     function getItemName(itemHrid, fallbackName = "") {
         const rawHrid = coerceText(itemHrid).trim();
         const fallbackText = coerceText(fallbackName).trim();
@@ -197,6 +222,9 @@ export function useGameDataText() {
         getAchievementName,
         getAchievementTierName,
         getBuffTypeName,
+        getCombatStatName,
+        getEquipmentSlotName,
+        getEquipmentTypeName,
         getGuildShrineName,
         getHouseRoomName,
         getItemName,

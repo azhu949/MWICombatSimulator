@@ -7,11 +7,13 @@
         "notes": {
             "zh": [
                 "战斗模拟器新增公会神龛增益：可为每名角色配置力量、节奏、精神、稀有和学者五项战斗 Buff，并计入普通区域、地下城与迷宫模拟。",
-                "主站导入脚本现在会结合角色已购买等级和当前公会神龛等级，自动导入实际生效的神龛 Buff。"
+                "主站导入脚本现在会结合角色已购买等级和当前公会神龛等级，自动导入实际生效的神龛 Buff。",
+                "统一模拟器中的游戏实体名称为官方翻译，修复强化茶饮、装备槽、战斗属性及地下城/迷宫等位置仍使用本地自建词条的问题。"
             ],
             "en": [
                 "Added guild shrine buffs to combat simulation. Force, Tempo, Spirit, Rarity, and Scholar combat buffs can be configured per player and now affect zones, dungeons, and labyrinths.",
-                "The main-site import script now combines purchased buff levels with the current guild shrine caps to import each effective shrine buff level."
+                "The main-site import script now combines purchased buff levels with the current guild shrine caps to import each effective shrine buff level.",
+                "Unified game entity names across the simulator with the official translations, replacing remaining local labels for enhancement teas, equipment slots, combat stats, dungeons, and labyrinths."
             ]
         }
     },

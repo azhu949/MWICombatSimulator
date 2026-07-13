@@ -25,6 +25,16 @@ describe("EnhancementPage tool surface", () => {
         expect(pageSource).toContain('getGameItemName("/items/wisdom_tea"');
     });
 
+    it("uses official names for game-defined enhancement labels", () => {
+        expect(pageSource).toContain('getBuffTypeName("/buff_types/enhancing_level"');
+        expect(pageSource).toContain('getHouseRoomName("/house_rooms/observatory"');
+        expect(pageSource).toContain('getEquipmentTypeName(');
+        expect(pageSource).toContain('getAchievementTierName(tierHrid, fallbackName)');
+        expect(pageSource).toContain('getGameItemName("/items/philosophers_mirror"');
+        expect(pageSource).not.toContain("common:enhancement.observatoryLevel");
+        expect(pageSource).not.toContain("common:enhancement.slotBody");
+    });
+
     it("accepts enhancement-only imports from the Tampermonkey bridge", () => {
         expect(pageSource).toContain('data-tm-import-anchor="enhancement-actions"');
         expect(pageSource).toContain('data-tm-import-reference="enhancement-refresh"');

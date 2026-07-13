@@ -8,11 +8,9 @@ describe("common locale resources", () => {
         expect(zhCommon?.menu?.enhancement).toBe("强化模拟");
         expect(enCommon?.enhancement?.title).toBe("Enhancement Simulator");
         expect(zhCommon?.enhancement?.title).toBe("强化模拟器");
-        expect(enCommon?.enhancement?.philosophersMirror).toBe("Philosopher's Mirror");
-        expect(zhCommon?.enhancement?.philosophersMirror).toBe("贤者之镜");
         expect(zhCommon?.enhancement?.fromZeroPlanTitle).toBe("最低成本制作方案");
-        expect(zhCommon?.enhancement?.useMirror).toBe("已使用贤者之镜");
-        expect(zhCommon?.enhancement?.directEnhancement).toBe("未使用贤者之镜");
+        expect(zhCommon?.enhancement?.useMirror).toBe("已使用{{item}}");
+        expect(zhCommon?.enhancement?.directEnhancement).toBe("未使用{{item}}");
         expect(enCommon?.enhancement?.budgetSuccessProbability).toBe("Success within budget");
         expect(zhCommon?.enhancement?.budgetSuccessProbability).toBe("预算内成功率");
         expect(enCommon?.enhancement?.sourceAcquisitionEstimate).toBe("Acquisition estimate");
@@ -25,22 +23,21 @@ describe("common locale resources", () => {
         expect(Object.keys(enCommon?.enhancement || {}).sort()).toEqual(Object.keys(zhCommon?.enhancement || {}).sort());
     });
 
-    it("defines the trinket equipment label in both supported languages", () => {
-        expect(enCommon?.vue?.home?.equipmentLabels?.trinket).toBe("Trinket");
-        expect(zhCommon?.vue?.home?.equipmentLabels?.trinket).toBe("饰品");
-    });
-
-    it("defines the battle attribute drop labels in both supported languages", () => {
-        expect(enCommon?.vue?.home?.combatStats?.combatDropRate).toBe("Drop Rate");
-        expect(enCommon?.vue?.home?.combatStats?.combatRareFind).toBe("Rare Find");
-        expect(enCommon?.vue?.home?.combatStats?.combatDropQuantity).toBe("Drop Quantity");
-        expect(zhCommon?.vue?.home?.combatStats?.combatDropRate).toBe("掉落率");
-        expect(zhCommon?.vue?.home?.combatStats?.combatRareFind).toBe("稀有发现");
-        expect(zhCommon?.vue?.home?.combatStats?.combatDropQuantity).toBe("掉落数量");
-    });
-
-    it("defines the retaliation battle attribute label in both supported languages", () => {
-        expect(enCommon?.vue?.home?.combatStats?.retaliation).toBe("Retaliation");
-        expect(zhCommon?.vue?.home?.combatStats?.retaliation).toBe("反击");
+    it("does not duplicate game-defined labels in the common locale", () => {
+        for (const common of [enCommon, zhCommon]) {
+            expect(common?.vue?.home?.levelLabels).toBeUndefined();
+            expect(common?.vue?.home?.equipmentLabels).toBeUndefined();
+            expect(common?.vue?.home?.combatStats).toBeUndefined();
+            expect(common?.vue?.home?.combatStatsTitle).toBeUndefined();
+            expect(common?.vue?.home?.dungeon).toBeUndefined();
+            expect(common?.vue?.home?.guildBuffCombat).toBeUndefined();
+            expect(common?.vue?.results?.ability).toBeUndefined();
+            expect(common?.queue?.changeCategory?.food).toBeUndefined();
+            expect(common?.queue?.changeCategory?.drink).toBeUndefined();
+            expect(common?.settingsPage?.playerSnapshotTableDungeon).toBeUndefined();
+            expect(common?.settingsPage?.playerSnapshotTableLabyrinth).toBeUndefined();
+        }
+        expect(zhCommon?.enhancement?.observatoryLevel).toBeUndefined();
+        expect(zhCommon?.enhancement?.philosophersMirror).toBeUndefined();
     });
 });

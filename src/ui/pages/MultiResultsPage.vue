@@ -250,6 +250,7 @@ const { t, language } = useI18nText();
 const {
   getAbilityName,
   getActionName,
+  getEquipmentSlotName,
   getHouseRoomName,
   getItemName,
   getSkillName,
@@ -258,42 +259,6 @@ const ABILITY_BOOK_CATEGORY_HRID = "/item_categories/ability_book";
 const ONE_HOUR = 60 * 60 * 1e9;
 const RANKING_ROWS_LIMIT = 300;
 const RAW_ROWS_LIMIT = 800;
-const SLOT_I18N_KEY_MAP = {
-  head: "characterItemsUtil.head",
-  body: "characterItemsUtil.body",
-  legs: "characterItemsUtil.legs",
-  feet: "characterItemsUtil.feet",
-  hands: "characterItemsUtil.hands",
-  off_hand: "characterItemsUtil.offHand",
-  pouch: "characterItemsUtil.pouch",
-  neck: "characterItemsUtil.neck",
-  earrings: "characterItemsUtil.earrings",
-  ring: "characterItemsUtil.ring",
-  back: "characterItemsUtil.back",
-  charm: "characterItemsUtil.charm",
-  trinket: "characterItemsUtil.trinket",
-  main_hand: "characterItemsUtil.mainHand",
-  two_hand: "characterItemsUtil.mainHand",
-  weapon: "characterItemsUtil.mainHand",
-};
-const SLOT_LABEL_FALLBACK_MAP = {
-  head: "Head",
-  body: "Body",
-  legs: "Legs",
-  feet: "Feet",
-  hands: "Hands",
-  off_hand: "Off Hand",
-  pouch: "Pouch",
-  neck: "Neck",
-  earrings: "Earrings",
-  ring: "Ring",
-  back: "Back",
-  charm: "Charm",
-  trinket: "Trinket",
-  main_hand: "Main Hand",
-  two_hand: "Two Hand",
-  weapon: "Weapon",
-};
 
 const queueState = computed(() => simulator.activeQueueState);
 const queuePartyStatus = computed(() => simulator.activeQueuePartyStatus || { hasMismatch: false, messageKey: "", memberNames: [] });
@@ -661,14 +626,7 @@ function formatSkillName(skillKey) {
 }
 
 function localizeEquipmentSlotLabel(slotKey) {
-  const normalized = String(slotKey || "");
-  const i18nKey = SLOT_I18N_KEY_MAP[normalized];
-  const fallback = SLOT_LABEL_FALLBACK_MAP[normalized] || normalized;
-  if (!i18nKey) {
-    return fallback;
-  }
-  const translated = t(`translation:${i18nKey}`, fallback);
-  return translated === i18nKey ? fallback : translated;
+  return getEquipmentSlotName(String(slotKey || ""));
 }
 
 function getAbilityXpForLevel(level) {

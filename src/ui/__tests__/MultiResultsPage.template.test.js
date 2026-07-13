@@ -14,4 +14,10 @@ describe("MultiResultsPage baseline summary copy", () => {
         expect(multiResultsPageSource).toContain('{{ costScoreColumnHeader }}');
         expect(multiResultsPageSource).toContain('costScoreColumnHeader.value');
     });
+
+    it("uses official equipment type names for configuration changes", () => {
+        expect(multiResultsPageSource).toContain("getEquipmentSlotName");
+        expect(multiResultsPageSource).not.toContain("SLOT_LABEL_FALLBACK_MAP");
+        expect(multiResultsPageSource).not.toContain("characterItemsUtil.mainHand");
+    });
 });

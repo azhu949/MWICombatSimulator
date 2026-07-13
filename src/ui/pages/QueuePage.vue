@@ -112,48 +112,14 @@ const { t } = useI18nText();
 const {
   getAbilityName,
   getActionName,
+  getEquipmentSlotName,
   getHouseRoomName,
+  getItemCategoryName,
   getItemName,
   getSkillName,
 } = useGameDataText();
 const ONE_HOUR = 60 * 60 * 1e9;
 const ABILITY_BOOK_CATEGORY_HRID = "/item_categories/ability_book";
-const SLOT_I18N_KEY_MAP = {
-  head: "characterItemsUtil.head",
-  body: "characterItemsUtil.body",
-  legs: "characterItemsUtil.legs",
-  feet: "characterItemsUtil.feet",
-  hands: "characterItemsUtil.hands",
-  off_hand: "characterItemsUtil.offHand",
-  pouch: "characterItemsUtil.pouch",
-  neck: "characterItemsUtil.neck",
-  earrings: "characterItemsUtil.earrings",
-  ring: "characterItemsUtil.ring",
-  back: "characterItemsUtil.back",
-  charm: "characterItemsUtil.charm",
-  trinket: "characterItemsUtil.trinket",
-  main_hand: "characterItemsUtil.mainHand",
-  two_hand: "characterItemsUtil.mainHand",
-  weapon: "characterItemsUtil.mainHand",
-};
-const SLOT_LABEL_FALLBACK_MAP = {
-  head: "Head",
-  body: "Body",
-  legs: "Legs",
-  feet: "Feet",
-  hands: "Hands",
-  off_hand: "Off Hand",
-  pouch: "Pouch",
-  neck: "Neck",
-  earrings: "Earrings",
-  ring: "Ring",
-  back: "Back",
-  charm: "Charm",
-  trinket: "Trinket",
-  main_hand: "Main Hand",
-  two_hand: "Two Hand",
-  weapon: "Weapon",
-};
 const CHANGE_CATEGORY_PRIORITY = {
   item: 0,
   house_room: 1,
@@ -585,6 +551,12 @@ function formatQueueChangeDetailLine(change) {
 }
 
 function localizeQueueCategory(category) {
+  if (category === "food") {
+    return getItemCategoryName("/item_categories/food", "Food");
+  }
+  if (category === "drink") {
+    return getItemCategoryName("/item_categories/drink", "Drink");
+  }
   const key = `common:queue.changeCategory.${category}`;
   return t(key, category || "-");
 }
@@ -620,14 +592,7 @@ function localizeQueueChangeLabel(change) {
 }
 
 function localizeEquipmentSlotLabel(slotKey) {
-  const normalized = String(slotKey || "");
-  const i18nKey = SLOT_I18N_KEY_MAP[normalized];
-  const fallback = SLOT_LABEL_FALLBACK_MAP[normalized] || normalized;
-  if (!i18nKey) {
-    return fallback;
-  }
-  const translated = t(`translation:${i18nKey}`, fallback);
-  return translated === i18nKey ? fallback : translated;
+  return getEquipmentSlotName(String(slotKey || ""));
 }
 
 function localizeHridDisplayName(hrid) {

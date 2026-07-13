@@ -79,7 +79,7 @@
             <span class="field-label">{{ t("common:vue.home.mode", "Mode") }}</span>
             <select v-model="simulationModeProxy" class="field-select">
               <option value="zone">{{ t("common:vue.home.modeZone", "Zone") }}</option>
-              <option value="labyrinth">{{ t("common:vue.home.modeLabyrinth", "Labyrinth") }}</option>
+              <option value="labyrinth">{{ getOfficialGameText("labyrinthPanel", "labyrinth", "Labyrinth") }}</option>
             </select>
           </label>
 
@@ -120,14 +120,14 @@
             <span class="field-label">{{ t("common:vue.home.combatType", "Combat Type") }}</span>
             <select v-model="dungeonToggleProxy" class="field-select">
               <option :value="false">{{ t("common:vue.home.regularZone", "Regular Zone") }}</option>
-              <option :value="true">{{ t("common:vue.home.dungeon", "Dungeon") }}</option>
+              <option :value="true">{{ getOfficialGameText("shopCategoryNames", "/shop_categories/dungeon", "Dungeon") }}</option>
             </select>
           </label>
         </div>
 
         <div v-if="simulator.simulationSettings.mode === 'zone' && simulator.simulationSettings.runScope === 'single'" class="mb-3 grid gap-3 sm:grid-cols-2">
           <label class="block">
-            <span class="field-label">{{ simulator.simulationSettings.useDungeon ? t("common:vue.home.dungeon", "Dungeon") : t("common:vue.home.zone", "Zone") }}</span>
+            <span class="field-label">{{ simulator.simulationSettings.useDungeon ? getOfficialGameText("shopCategoryNames", "/shop_categories/dungeon", "Dungeon") : t("common:vue.home.zone", "Zone") }}</span>
             <select
               v-model="selectedActionHrid"
               class="field-select"
@@ -161,7 +161,7 @@
 
         <div v-else-if="simulator.simulationSettings.mode === 'labyrinth' && simulator.simulationSettings.runScope === 'single'" class="mb-3 grid gap-3 sm:grid-cols-2">
           <label class="block">
-            <span class="field-label">{{ t("common:labyrinth", "Labyrinth") }}</span>
+            <span class="field-label">{{ getOfficialGameText("labyrinthPanel", "labyrinth", "Labyrinth") }}</span>
             <select v-model="simulator.simulationSettings.labyrinthHrid" class="field-select">
               <option v-for="monster in simulator.options.labyrinths" :key="monster.hrid" :value="monster.hrid">
                 {{ formatMonsterName(monster.hrid, monster.name) }}
@@ -235,10 +235,10 @@
         </div>
 
         <div v-if="simulator.simulationSettings.mode === 'labyrinth'" class="mb-3 rounded-xl border border-white/10 bg-slate-900/40 p-3">
-          <p class="field-label">{{ t("common:labyrinthCrates", "Crates") }}</p>
+          <p class="field-label">{{ getOfficialGameText("labyrinthPanel", "crates", "Crates") }}</p>
           <div class="grid gap-3 sm:grid-cols-3">
             <label class="block">
-              <span class="field-label">{{ t("common:coffeeCrate", "Coffee Crate") }}</span>
+              <span class="field-label">{{ getOfficialGameText("labyrinthPanel", "coffeeCrate", "Coffee Crate") }}</span>
               <select
                 :value="simulator.simulationSettings.labyrinthCrates?.coffee || ''"
                 class="field-select"
@@ -251,7 +251,7 @@
               </select>
             </label>
             <label class="block">
-              <span class="field-label">{{ t("common:foodCrate", "Food Crate") }}</span>
+              <span class="field-label">{{ getOfficialGameText("labyrinthPanel", "foodCrate", "Food Crate") }}</span>
               <select
                 :value="simulator.simulationSettings.labyrinthCrates?.food || ''"
                 class="field-select"
@@ -264,7 +264,7 @@
               </select>
             </label>
             <label class="block">
-              <span class="field-label">{{ t("common:teaCrate", "Tea Crate") }}</span>
+              <span class="field-label">{{ getOfficialGameText("labyrinthPanel", "teaCrate", "Tea Crate") }}</span>
               <select
                 :value="simulator.simulationSettings.labyrinthCrates?.tea || ''"
                 class="field-select"
@@ -289,7 +289,7 @@
         <div class="mb-3 grid gap-3 sm:grid-cols-3">
           <label class="badge flex items-center justify-center gap-2 text-sm">
             <input v-model="simulator.simulationSettings.mooPass" type="checkbox" />
-            {{ t("common:vue.home.mooPass", "Moo Pass") }}
+            {{ getOfficialGameText("mooPass", "mooPass", "MooPass") }}
           </label>
           <label class="badge flex items-center justify-center gap-2 text-sm">
             <input v-model="simulator.simulationSettings.comExpEnabled" type="checkbox" />
@@ -326,7 +326,7 @@
             {{ t("common:vue.home.houseRoomsButton", "House Rooms") }}
           </button>
           <button type="button" class="action-button-muted" @click="openAchievementsModal = true">
-            {{ t("common:vue.home.achievementsButton", "Achievements") }}
+            {{ getOfficialGameText("achievementsPanel", "achievements", "Achievements") }}
           </button>
           <button type="button" class="action-button-muted" @click="openGuildBuffsModal = true">
             {{ t("common:vue.home.guildBuffsButton", "Guild Shrines") }}
@@ -350,7 +350,7 @@
 
       <div v-if="activeWorkspaceTab === 'build'" class="space-y-4 xl:col-span-12">
         <div class="panel">
-        <h2 class="mb-3 font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.home.equipmentTitle", "Equipment") }}</h2>
+        <h2 class="mb-3 font-heading text-lg font-semibold text-amber-200">{{ getOfficialGameText("equipmentPanel", "title", "Equipment") }}</h2>
         <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           <div
             v-for="slot in equipmentSlots"
@@ -455,7 +455,7 @@
         </div>
 
         <div class="panel">
-          <h2 class="mb-3 font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.home.abilitiesTitle", "Abilities") }}</h2>
+          <h2 class="mb-3 font-heading text-lg font-semibold text-amber-200">{{ getOfficialGameText("abilitiesPanel", "title", "Abilities") }}</h2>
           <div class="space-y-3">
             <div
               v-for="slotIndex in 5"
@@ -742,7 +742,7 @@
                 {{ getGuildShrineName(option.shrineHrid, option.shrineName) }}
               </h3>
               <span class="rounded border border-amber-300/20 bg-amber-300/10 px-2 py-0.5 text-[11px] font-medium text-amber-100">
-                {{ t("common:vue.home.guildBuffCombat", "Combat") }}
+                {{ getOfficialGameText("guildPanel", "combat", "Combat") }}
               </span>
             </div>
             <p class="mt-2 text-sm leading-6" :class="guildBuffLevel(option.hrid) > 0 ? 'text-emerald-200' : 'text-slate-400'">
@@ -769,7 +769,7 @@
 
     <BaseModal
       :open="openAchievementsModal"
-      :title="t('common:vue.home.achievementsTitle', 'Achievements')"
+      :title="getOfficialGameText('achievementsPanel', 'achievements', 'Achievements')"
       panel-class="max-w-[96vw] xl:max-w-[1200px]"
       @close="openAchievementsModal = false"
     >
@@ -1048,10 +1048,10 @@
                 <tr class="border-b border-white/10 text-left text-xs uppercase tracking-[0.14em] text-slate-400">
                   <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTablePlayer", "Player") }}</th>
                   <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableZone", "Zone") }}</th>
-                  <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableDungeon", "Dungeon") }}</th>
+                  <th class="px-2 py-2">{{ getOfficialGameText("shopCategoryNames", "/shop_categories/dungeon", "Dungeon") }}</th>
                   <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableDifficulty", "Difficulty") }}</th>
                   <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableDuration", "Duration(h)") }}</th>
-                  <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableLabyrinth", "Labyrinth") }}</th>
+                  <th class="px-2 py-2">{{ getOfficialGameText("labyrinthPanel", "labyrinth", "Labyrinth") }}</th>
                   <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableRoomLevel", "Room Level") }}</th>
                   <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableActions", "Actions") }}</th>
                 </tr>
@@ -1164,6 +1164,8 @@ const {
   getAchievementName,
   getAchievementTierName,
   getBuffTypeName,
+  getCombatStatName,
+  getEquipmentSlotName,
   getGuildShrineName,
   getHouseRoomName,
   getItemName,
@@ -1224,10 +1226,10 @@ const currentRunScopeLabel = computed(() => {
 });
 const currentModeLabel = computed(() => {
   if (simulator.simulationSettings.mode === "labyrinth") {
-    return t("common:vue.home.modeLabyrinth", "Labyrinth");
+    return getOfficialGameText("labyrinthPanel", "labyrinth", "Labyrinth");
   }
   if (simulator.simulationSettings.useDungeon) {
-    return t("common:vue.home.dungeon", "Dungeon");
+    return getOfficialGameText("shopCategoryNames", "/shop_categories/dungeon", "Dungeon");
   }
   return t("common:vue.home.modeZone", "Zone");
 });
@@ -1237,7 +1239,7 @@ const currentTargetLabel = computed(() => {
     const selectedLabyrinth = simulator.options.labyrinths.find((entry) => entry.hrid === settings.labyrinthHrid);
     const labyrinthName = formatMonsterName(
       selectedLabyrinth?.hrid || settings.labyrinthHrid,
-      selectedLabyrinth?.name || settings.labyrinthHrid || t("common:labyrinth", "Labyrinth"),
+      selectedLabyrinth?.name || settings.labyrinthHrid || getOfficialGameText("labyrinthPanel", "labyrinth", "Labyrinth"),
     );
     return `${labyrinthName} • ${t("common:roomLevel", "Room Level")} ${formatNumber(settings.roomLevel, 0)}`;
   }
@@ -1534,23 +1536,23 @@ const summaryBuildRows = computed(() => {
       value: activePlayerCombatLevelLabel.value,
     },
     {
-      label: t("common:vue.home.combatStats.combatStyle", "Combat Style"),
+      label: getCombatStatName("combatStyleHrids", "Combat Style"),
       value: stats ? formatCombatStyleName(stats.combatStyleHrid, combatStyleDetailMap?.[stats.combatStyleHrid]?.name || "") : "-",
     },
     {
-      label: t("common:vue.home.combatStats.damageType", "Damage Type"),
+      label: getCombatStatName("damageType", "Damage Type"),
       value: stats ? formatDamageTypeName(stats.damageType, damageTypeDetailMap?.[stats.damageType]?.name || "") : "-",
     },
     {
-      label: t("common:vue.home.combatStats.maxHp", "Max HP"),
+      label: getCombatStatName("maxHitpoints", "Max Hitpoints"),
       value: details ? formatInt(details.maxHitpoints) : "-",
     },
     {
-      label: t("common:vue.home.combatStats.attackInterval", "Attack Interval"),
+      label: getCombatStatName("attackInterval", "Attack Interval"),
       value: stats ? `${formatNumber(attackIntervalSeconds, 2)}s` : "-",
     },
     {
-      label: t("common:vue.home.combatStats.armor", "Armor"),
+      label: getCombatStatName("armor", "Armor"),
       value: details ? formatInt(details.totalArmor) : "-",
     },
   ];
@@ -1584,32 +1586,15 @@ function toggleCompleteResultsPanel() {
   completeResultsExpanded.value = !completeResultsExpanded.value;
 }
 
-const levelLabelMap = computed(() => ({
-  stamina: t("common:vue.home.levelLabels.stamina", "Stamina"),
-  intelligence: t("common:vue.home.levelLabels.intelligence", "Intelligence"),
-  attack: t("common:vue.home.levelLabels.attack", "Attack"),
-  melee: t("common:vue.home.levelLabels.melee", "Melee"),
-  defense: t("common:vue.home.levelLabels.defense", "Defense"),
-  ranged: t("common:vue.home.levelLabels.ranged", "Ranged"),
-  magic: t("common:vue.home.levelLabels.magic", "Magic"),
-}));
+const levelLabelMap = computed(() => Object.fromEntries(levelKeys.map((skillKey) => [
+  skillKey,
+  getSkillName(`/skills/${skillKey}`, skillKey),
+])));
 
-const equipmentLabelMap = computed(() => ({
-  head: t("common:vue.home.equipmentLabels.head", "Head"),
-  body: t("common:vue.home.equipmentLabels.body", "Body"),
-  legs: t("common:vue.home.equipmentLabels.legs", "Legs"),
-  feet: t("common:vue.home.equipmentLabels.feet", "Feet"),
-  hands: t("common:vue.home.equipmentLabels.hands", "Hands"),
-  weapon: t("common:vue.home.equipmentLabels.weapon", "Weapon"),
-  off_hand: t("common:vue.home.equipmentLabels.off_hand", "Off Hand"),
-  pouch: t("common:vue.home.equipmentLabels.pouch", "Pouch"),
-  neck: t("common:vue.home.equipmentLabels.neck", "Neck"),
-  earrings: t("common:vue.home.equipmentLabels.earrings", "Earrings"),
-  ring: t("common:vue.home.equipmentLabels.ring", "Ring"),
-  back: t("common:vue.home.equipmentLabels.back", "Back"),
-  charm: t("common:vue.home.equipmentLabels.charm", "Charm"),
-  trinket: t("common:vue.home.equipmentLabels.trinket", "Trinket"),
-}));
+const equipmentLabelMap = computed(() => Object.fromEntries(equipmentSlots.map((slot) => [
+  slot,
+  getEquipmentSlotName(slot, slot),
+])));
 
 const activePlayer = computed(() => simulator.activePlayer);
 const activePlayerCombatLevel = computed(() => {
@@ -2007,82 +1992,82 @@ const combatStatRows = computed(() => {
     : 0;
 
   const rows = [
-    { key: "maxHitpoints", label: t("common:vue.home.combatStats.maxHp", "Max HP"), value: formatInt(details.maxHitpoints) },
-    { key: "maxManapoints", label: t("common:vue.home.combatStats.maxMp", "Max MP"), value: formatInt(details.maxManapoints) },
-    { key: "combatStyle", label: t("common:vue.home.combatStats.combatStyle", "Combat Style"), value: combatStyleName },
-    { key: "damageType", label: t("common:vue.home.combatStats.damageType", "Damage Type"), value: damageTypeName },
-    { key: "primaryTraining", label: t("common:vue.home.combatStats.primaryTraining", "Primary Training"), value: primaryTrainingName },
-    { key: "focusTraining", label: t("common:vue.home.combatStats.focusTraining", "Focus Training"), value: focusTrainingName },
-    { key: "attackIntervalSeconds", label: t("common:vue.home.combatStats.attackInterval", "Attack Interval"), value: `${formatNumber(attackIntervalSeconds, 2)}s` },
-    { key: "stabAccuracyRating", label: t("common:vue.home.combatStats.stabAccuracy", "Stab Accuracy"), value: formatInt(details.stabAccuracyRating) },
-    { key: "stabMaxDamage", label: t("common:vue.home.combatStats.stabDamage", "Stab Damage"), value: formatInt(details.stabMaxDamage) },
-    { key: "slashAccuracyRating", label: t("common:vue.home.combatStats.slashAccuracy", "Slash Accuracy"), value: formatInt(details.slashAccuracyRating) },
-    { key: "slashMaxDamage", label: t("common:vue.home.combatStats.slashDamage", "Slash Damage"), value: formatInt(details.slashMaxDamage) },
-    { key: "smashAccuracyRating", label: t("common:vue.home.combatStats.smashAccuracy", "Smash Accuracy"), value: formatInt(details.smashAccuracyRating) },
-    { key: "smashMaxDamage", label: t("common:vue.home.combatStats.smashDamage", "Smash Damage"), value: formatInt(details.smashMaxDamage) },
-    { key: "defensiveMaxDamage", label: t("common:vue.home.combatStats.defensiveDamage", "Defensive Damage"), value: formatInt(details.defensiveMaxDamage) },
-    { key: "rangedAccuracyRating", label: t("common:vue.home.combatStats.rangedAccuracy", "Ranged Accuracy"), value: formatInt(details.rangedAccuracyRating) },
-    { key: "rangedMaxDamage", label: t("common:vue.home.combatStats.rangedDamage", "Ranged Damage"), value: formatInt(details.rangedMaxDamage) },
-    { key: "magicAccuracyRating", label: t("common:vue.home.combatStats.magicAccuracy", "Magic Accuracy"), value: formatInt(details.magicAccuracyRating) },
-    { key: "magicMaxDamage", label: t("common:vue.home.combatStats.magicDamage", "Magic Damage"), value: formatInt(details.magicMaxDamage) },
-    { key: "averageEvasion", label: t("common:vue.home.combatStats.evasion", "Evasion"), value: formatInt(averageEvasion) },
-    { key: "totalArmor", label: t("common:vue.home.combatStats.armor", "Armor"), value: formatInt(details.totalArmor) },
-    { key: "criticalRate", label: t("common:vue.home.combatStats.criticalRate", "Critical Rate"), value: formatPercent(stats.criticalRate, 2) },
-    { key: "armorPenetration", label: t("common:vue.home.combatStats.armorPenetration", "Armor Penetration"), value: formatPercent(stats.armorPenetration, 2) },
-    { key: "stabEvasionRating", label: t("common:vue.home.combatStats.stabEvasion", "Stab Evasion"), value: formatInt(details.stabEvasionRating) },
-    { key: "slashEvasionRating", label: t("common:vue.home.combatStats.slashEvasion", "Slash Evasion"), value: formatInt(details.slashEvasionRating) },
-    { key: "smashEvasionRating", label: t("common:vue.home.combatStats.smashEvasion", "Smash Evasion"), value: formatInt(details.smashEvasionRating) },
-    { key: "rangedEvasionRating", label: t("common:vue.home.combatStats.rangedEvasion", "Ranged Evasion"), value: formatInt(details.rangedEvasionRating) },
-    { key: "magicEvasionRating", label: t("common:vue.home.combatStats.magicEvasion", "Magic Evasion"), value: formatInt(details.magicEvasionRating) },
-    { key: "totalWaterResistance", label: t("common:vue.home.combatStats.waterResistance", "Water Resistance"), value: formatInt(details.totalWaterResistance) },
-    { key: "totalNatureResistance", label: t("common:vue.home.combatStats.natureResistance", "Nature Resistance"), value: formatInt(details.totalNatureResistance) },
-    { key: "totalFireResistance", label: t("common:vue.home.combatStats.fireResistance", "Fire Resistance"), value: formatInt(details.totalFireResistance) },
-    { key: "physicalAmplify", label: t("common:vue.home.combatStats.physicalAmplify", "Physical Amplify"), value: formatPercent(stats.physicalAmplify, 2) },
-    { key: "waterAmplify", label: t("common:vue.home.combatStats.waterAmplify", "Water Amplify"), value: formatPercent(stats.waterAmplify, 2) },
-    { key: "natureAmplify", label: t("common:vue.home.combatStats.natureAmplify", "Nature Amplify"), value: formatPercent(stats.natureAmplify, 2) },
-    { key: "fireAmplify", label: t("common:vue.home.combatStats.fireAmplify", "Fire Amplify"), value: formatPercent(stats.fireAmplify, 2) },
-    { key: "healingAmplify", label: t("common:vue.home.combatStats.healingAmplify", "Healing Amplify"), value: formatPercent(stats.healingAmplify, 2) },
-    { key: "lifeSteal", label: t("common:vue.home.combatStats.lifeSteal", "Life Steal"), value: formatPercent(stats.lifeSteal, 2) },
-    { key: "physicalThorns", label: t("common:vue.home.combatStats.physicalThorns", "Physical Thorns"), value: formatPercent(stats.physicalThorns, 2) },
-    { key: "elementalThorns", label: t("common:vue.home.combatStats.elementalThorns", "Elemental Thorns"), value: formatPercent(stats.elementalThorns, 2) },
-    { key: "retaliation", label: t("common:vue.home.combatStats.retaliation", "Retaliation"), value: formatPercent(stats.retaliation, 2) },
-    { key: "hpRegenPer10", label: t("common:vue.home.combatStats.hpRegen", "HP Regen"), value: formatPercent(stats.hpRegenPer10, 2) },
-    { key: "mpRegenPer10", label: t("common:vue.home.combatStats.mpRegen", "MP Regen"), value: formatPercent(stats.mpRegenPer10, 2) },
-    { key: "criticalDamage", label: t("common:vue.home.combatStats.criticalDamage", "Critical Damage Bonus"), value: formatPercent(stats.criticalDamage, 2) },
-    { key: "taskDamage", label: t("common:vue.home.combatStats.taskDamage", "Task Damage Bonus"), value: formatPercent(stats.taskDamage, 2) },
-    { key: "waterPenetration", label: t("common:vue.home.combatStats.waterPenetration", "Water Penetration"), value: formatPercent(stats.waterPenetration, 2) },
-    { key: "naturePenetration", label: t("common:vue.home.combatStats.naturePenetration", "Nature Penetration"), value: formatPercent(stats.naturePenetration, 2) },
-    { key: "firePenetration", label: t("common:vue.home.combatStats.firePenetration", "Fire Penetration"), value: formatPercent(stats.firePenetration, 2) },
-    { key: "abilityHaste", label: t("common:vue.home.combatStats.abilityHaste", "Ability Haste"), value: formatInt(stats.abilityHaste) },
-    { key: "tenacity", label: t("common:vue.home.combatStats.tenacity", "Tenacity"), value: formatInt(stats.tenacity) },
-    { key: "manaLeech", label: t("common:vue.home.combatStats.manaLeech", "Mana Leech"), value: formatPercent(stats.manaLeech, 2) },
-    { key: "castSpeed", label: t("common:vue.home.combatStats.castSpeed", "Cast Speed"), value: formatPercent(stats.castSpeed, 2) },
-    { key: "totalThreat", label: t("common:vue.home.combatStats.threat", "Threat"), value: formatInt(details.totalThreat) },
-    { key: "parry", label: t("common:vue.home.combatStats.parry", "Parry"), value: formatPercent(stats.parry, 2) },
-    { key: "mayhem", label: t("common:vue.home.combatStats.mayhem", "Mayhem"), value: formatPercent(stats.mayhem, 2) },
-    { key: "pierce", label: t("common:vue.home.combatStats.pierce", "Pierce"), value: formatPercent(stats.pierce, 2) },
-    { key: "curse", label: t("common:vue.home.combatStats.curse", "Curse"), value: formatPercent(stats.curse, 2) },
-    { key: "fury", label: t("common:vue.home.combatStats.fury", "Fury"), value: formatPercent(stats.fury, 2) },
-    { key: "weaken", label: t("common:vue.home.combatStats.weaken", "Weaken"), value: formatPercent(stats.weaken, 2) },
-    { key: "ripple", label: t("common:vue.home.combatStats.ripple", "Ripple"), value: formatPercent(stats.ripple, 2) },
-    { key: "bloom", label: t("common:vue.home.combatStats.bloom", "Bloom"), value: formatPercent(stats.bloom, 2) },
-    { key: "blaze", label: t("common:vue.home.combatStats.blaze", "Blaze"), value: formatPercent(stats.blaze, 2) },
-    { key: "attackSpeed", label: t("common:vue.home.combatStats.attackSpeed", "Attack Speed"), value: formatPercent(stats.attackSpeed, 2) },
-    { key: "autoAttackDamage", label: t("common:vue.home.combatStats.autoAttackDamage", "Auto Attack Damage"), value: formatPercent(stats.autoAttackDamage, 2) },
-    { key: "abilityDamage", label: t("common:vue.home.combatStats.abilityDamage", "Ability Damage"), value: formatPercent(stats.abilityDamage, 2) },
-    { key: "drinkConcentration", label: t("common:vue.home.combatStats.drinkConcentration", "Drink Concentration"), value: formatPercent(stats.drinkConcentration, 2) },
-    { key: "foodHaste", label: t("common:vue.home.combatStats.foodHaste", "Food Haste"), value: formatPercent(stats.foodHaste, 2) },
-    { key: "combatDropRate", label: t("common:vue.home.combatStats.combatDropRate", "Drop Rate"), value: formatPercent(stats.combatDropRate, 2) },
-    { key: "combatRareFind", label: t("common:vue.home.combatStats.combatRareFind", "Rare Find"), value: formatPercent(stats.combatRareFind, 2) },
-    { key: "combatDropQuantity", label: t("common:vue.home.combatStats.combatDropQuantity", "Drop Quantity"), value: formatPercent(stats.combatDropQuantity, 2) },
-    { key: "combatExperience", label: t("common:vue.home.combatStats.combatExperience", "Experience Rate"), value: formatPercent(stats.combatExperience, 2) },
-    { key: "staminaExperience", label: t("common:vue.home.combatStats.staminaExperience", "Stamina Experience"), value: formatPercent(stats.staminaExperience, 2) },
-    { key: "intelligenceExperience", label: t("common:vue.home.combatStats.intelligenceExperience", "Intelligence Experience"), value: formatPercent(stats.intelligenceExperience, 2) },
-    { key: "attackExperience", label: t("common:vue.home.combatStats.attackExperience", "Attack Experience"), value: formatPercent(stats.attackExperience, 2) },
-    { key: "defenseExperience", label: t("common:vue.home.combatStats.defenseExperience", "Defense Experience"), value: formatPercent(stats.defenseExperience, 2) },
-    { key: "meleeExperience", label: t("common:vue.home.combatStats.meleeExperience", "Melee Experience"), value: formatPercent(stats.meleeExperience, 2) },
-    { key: "rangedExperience", label: t("common:vue.home.combatStats.rangedExperience", "Ranged Experience"), value: formatPercent(stats.rangedExperience, 2) },
-    { key: "magicExperience", label: t("common:vue.home.combatStats.magicExperience", "Magic Experience"), value: formatPercent(stats.magicExperience, 2) },
+    { key: "maxHitpoints", label: formatCombatStatName("maxHitpoints", "Max Hitpoints"), value: formatInt(details.maxHitpoints) },
+    { key: "maxManapoints", label: formatCombatStatName("maxManapoints", "Max Manapoints"), value: formatInt(details.maxManapoints) },
+    { key: "combatStyle", label: formatCombatStatName("combatStyleHrids", "Combat Style"), value: combatStyleName },
+    { key: "damageType", label: formatCombatStatName("damageType", "Damage Type"), value: damageTypeName },
+    { key: "primaryTraining", label: formatCombatStatName("primaryTraining", "Primary Training"), value: primaryTrainingName },
+    { key: "focusTraining", label: formatCombatStatName("focusTraining", "Focus Training"), value: focusTrainingName },
+    { key: "attackIntervalSeconds", label: formatCombatStatName("attackInterval", "Attack Interval"), value: `${formatNumber(attackIntervalSeconds, 2)}s` },
+    { key: "stabAccuracyRating", label: formatCombatStatName("stabAccuracy", "Stab Accuracy"), value: formatInt(details.stabAccuracyRating) },
+    { key: "stabMaxDamage", label: formatCombatStatName("stabDamage", "Stab Damage"), value: formatInt(details.stabMaxDamage) },
+    { key: "slashAccuracyRating", label: formatCombatStatName("slashAccuracy", "Slash Accuracy"), value: formatInt(details.slashAccuracyRating) },
+    { key: "slashMaxDamage", label: formatCombatStatName("slashDamage", "Slash Damage"), value: formatInt(details.slashMaxDamage) },
+    { key: "smashAccuracyRating", label: formatCombatStatName("smashAccuracy", "Smash Accuracy"), value: formatInt(details.smashAccuracyRating) },
+    { key: "smashMaxDamage", label: formatCombatStatName("smashDamage", "Smash Damage"), value: formatInt(details.smashMaxDamage) },
+    { key: "defensiveMaxDamage", label: formatCombatStatName("defensiveDamage", "Defensive Damage"), value: formatInt(details.defensiveMaxDamage) },
+    { key: "rangedAccuracyRating", label: formatCombatStatName("rangedAccuracy", "Ranged Accuracy"), value: formatInt(details.rangedAccuracyRating) },
+    { key: "rangedMaxDamage", label: formatCombatStatName("rangedDamage", "Ranged Damage"), value: formatInt(details.rangedMaxDamage) },
+    { key: "magicAccuracyRating", label: formatCombatStatName("magicAccuracy", "Magic Accuracy"), value: formatInt(details.magicAccuracyRating) },
+    { key: "magicMaxDamage", label: formatCombatStatName("magicDamage", "Magic Damage"), value: formatInt(details.magicMaxDamage) },
+    { key: "averageEvasion", label: getBuffTypeName("/buff_types/evasion", "Evasion"), value: formatInt(averageEvasion) },
+    { key: "totalArmor", label: formatCombatStatName("armor", "Armor"), value: formatInt(details.totalArmor) },
+    { key: "criticalRate", label: formatCombatStatName("criticalRate", "Critical Rate"), value: formatPercent(stats.criticalRate, 2) },
+    { key: "armorPenetration", label: formatCombatStatName("armorPenetration", "Armor Penetration"), value: formatPercent(stats.armorPenetration, 2) },
+    { key: "stabEvasionRating", label: formatCombatStatName("stabEvasion", "Stab Evasion"), value: formatInt(details.stabEvasionRating) },
+    { key: "slashEvasionRating", label: formatCombatStatName("slashEvasion", "Slash Evasion"), value: formatInt(details.slashEvasionRating) },
+    { key: "smashEvasionRating", label: formatCombatStatName("smashEvasion", "Smash Evasion"), value: formatInt(details.smashEvasionRating) },
+    { key: "rangedEvasionRating", label: formatCombatStatName("rangedEvasion", "Ranged Evasion"), value: formatInt(details.rangedEvasionRating) },
+    { key: "magicEvasionRating", label: formatCombatStatName("magicEvasion", "Magic Evasion"), value: formatInt(details.magicEvasionRating) },
+    { key: "totalWaterResistance", label: formatCombatStatName("waterResistance", "Water Resistance"), value: formatInt(details.totalWaterResistance) },
+    { key: "totalNatureResistance", label: formatCombatStatName("natureResistance", "Nature Resistance"), value: formatInt(details.totalNatureResistance) },
+    { key: "totalFireResistance", label: formatCombatStatName("fireResistance", "Fire Resistance"), value: formatInt(details.totalFireResistance) },
+    { key: "physicalAmplify", label: formatCombatStatName("physicalAmplify", "Physical Amplify"), value: formatPercent(stats.physicalAmplify, 2) },
+    { key: "waterAmplify", label: formatCombatStatName("waterAmplify", "Water Amplify"), value: formatPercent(stats.waterAmplify, 2) },
+    { key: "natureAmplify", label: formatCombatStatName("natureAmplify", "Nature Amplify"), value: formatPercent(stats.natureAmplify, 2) },
+    { key: "fireAmplify", label: formatCombatStatName("fireAmplify", "Fire Amplify"), value: formatPercent(stats.fireAmplify, 2) },
+    { key: "healingAmplify", label: formatCombatStatName("healingAmplify", "Healing Amplify"), value: formatPercent(stats.healingAmplify, 2) },
+    { key: "lifeSteal", label: formatCombatStatName("lifeSteal", "Life Steal"), value: formatPercent(stats.lifeSteal, 2) },
+    { key: "physicalThorns", label: formatCombatStatName("physicalThorns", "Physical Thorns"), value: formatPercent(stats.physicalThorns, 2) },
+    { key: "elementalThorns", label: formatCombatStatName("elementalThorns", "Elemental Thorns"), value: formatPercent(stats.elementalThorns, 2) },
+    { key: "retaliation", label: formatCombatStatName("retaliation", "Retaliation"), value: formatPercent(stats.retaliation, 2) },
+    { key: "hpRegenPer10", label: formatCombatStatName("hpRegenPer10", "HP Regen"), value: formatPercent(stats.hpRegenPer10, 2) },
+    { key: "mpRegenPer10", label: formatCombatStatName("mpRegenPer10", "MP Regen"), value: formatPercent(stats.mpRegenPer10, 2) },
+    { key: "criticalDamage", label: formatCombatStatName("criticalDamage", "Critical Damage"), value: formatPercent(stats.criticalDamage, 2) },
+    { key: "taskDamage", label: formatCombatStatName("taskDamage", "Task Damage"), value: formatPercent(stats.taskDamage, 2) },
+    { key: "waterPenetration", label: formatCombatStatName("waterPenetration", "Water Penetration"), value: formatPercent(stats.waterPenetration, 2) },
+    { key: "naturePenetration", label: formatCombatStatName("naturePenetration", "Nature Penetration"), value: formatPercent(stats.naturePenetration, 2) },
+    { key: "firePenetration", label: formatCombatStatName("firePenetration", "Fire Penetration"), value: formatPercent(stats.firePenetration, 2) },
+    { key: "abilityHaste", label: formatCombatStatName("abilityHaste", "Ability Haste"), value: formatInt(stats.abilityHaste) },
+    { key: "tenacity", label: formatCombatStatName("tenacity", "Tenacity"), value: formatInt(stats.tenacity) },
+    { key: "manaLeech", label: formatCombatStatName("manaLeech", "Mana Leech"), value: formatPercent(stats.manaLeech, 2) },
+    { key: "castSpeed", label: formatCombatStatName("castSpeed", "Cast Speed"), value: formatPercent(stats.castSpeed, 2) },
+    { key: "totalThreat", label: formatCombatStatName("threat", "Threat"), value: formatInt(details.totalThreat) },
+    { key: "parry", label: formatCombatStatName("parry", "Parry"), value: formatPercent(stats.parry, 2) },
+    { key: "mayhem", label: formatCombatStatName("mayhem", "Mayhem"), value: formatPercent(stats.mayhem, 2) },
+    { key: "pierce", label: formatCombatStatName("pierce", "Pierce"), value: formatPercent(stats.pierce, 2) },
+    { key: "curse", label: formatCombatStatName("curse", "Curse"), value: formatPercent(stats.curse, 2) },
+    { key: "fury", label: formatCombatStatName("fury", "Fury"), value: formatPercent(stats.fury, 2) },
+    { key: "weaken", label: formatCombatStatName("weaken", "Weaken"), value: formatPercent(stats.weaken, 2) },
+    { key: "ripple", label: formatCombatStatName("ripple", "Ripple"), value: formatPercent(stats.ripple, 2) },
+    { key: "bloom", label: formatCombatStatName("bloom", "Bloom"), value: formatPercent(stats.bloom, 2) },
+    { key: "blaze", label: formatCombatStatName("blaze", "Blaze"), value: formatPercent(stats.blaze, 2) },
+    { key: "attackSpeed", label: formatCombatStatName("attackSpeed", "Attack Speed"), value: formatPercent(stats.attackSpeed, 2) },
+    { key: "autoAttackDamage", label: formatCombatStatName("autoAttackDamage", "Auto Attack Damage"), value: formatPercent(stats.autoAttackDamage, 2) },
+    { key: "abilityDamage", label: formatCombatStatName("abilityDamage", "Ability Damage"), value: formatPercent(stats.abilityDamage, 2) },
+    { key: "drinkConcentration", label: formatCombatStatName("drinkConcentration", "Drink Concentration"), value: formatPercent(stats.drinkConcentration, 2) },
+    { key: "foodHaste", label: formatCombatStatName("foodHaste", "Food Haste"), value: formatPercent(stats.foodHaste, 2) },
+    { key: "combatDropRate", label: formatCombatStatName("combatDropRate", "Combat Drop Rate"), value: formatPercent(stats.combatDropRate, 2) },
+    { key: "combatRareFind", label: formatCombatStatName("combatRareFind", "Combat Rare Find"), value: formatPercent(stats.combatRareFind, 2) },
+    { key: "combatDropQuantity", label: formatCombatStatName("combatDropQuantity", "Combat Drop Quantity"), value: formatPercent(stats.combatDropQuantity, 2) },
+    { key: "combatExperience", label: formatCombatStatName("combatExperience", "Combat Experience"), value: formatPercent(stats.combatExperience, 2) },
+    { key: "staminaExperience", label: formatCombatStatName("staminaExperience", "Stamina Experience"), value: formatPercent(stats.staminaExperience, 2) },
+    { key: "intelligenceExperience", label: formatCombatStatName("intelligenceExperience", "Intelligence Experience"), value: formatPercent(stats.intelligenceExperience, 2) },
+    { key: "attackExperience", label: formatCombatStatName("attackExperience", "Attack Experience"), value: formatPercent(stats.attackExperience, 2) },
+    { key: "defenseExperience", label: formatCombatStatName("defenseExperience", "Defense Experience"), value: formatPercent(stats.defenseExperience, 2) },
+    { key: "meleeExperience", label: formatCombatStatName("meleeExperience", "Melee Experience"), value: formatPercent(stats.meleeExperience, 2) },
+    { key: "rangedExperience", label: formatCombatStatName("rangedExperience", "Ranged Experience"), value: formatPercent(stats.rangedExperience, 2) },
+    { key: "magicExperience", label: formatCombatStatName("magicExperience", "Magic Experience"), value: formatPercent(stats.magicExperience, 2) },
   ];
 
   return rows
@@ -2286,6 +2271,10 @@ function formatSkillName(skillHrid) {
     return "-";
   }
   return getSkillName(hrid, hrid);
+}
+
+function formatCombatStatName(statKey, fallbackName = "") {
+  return getCombatStatName(String(statKey || ""), fallbackName);
 }
 
 function formatCombatStyleName(combatStyleHrid, fallbackName = "") {

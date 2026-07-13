@@ -13,4 +13,12 @@ describe("QueuePage progress presentation", () => {
     it("explains that baseline summary values come from robust multi-round aggregation", () => {
         expect(queuePageSource).toContain('t("common:queue.baselineSummaryAggregationHint"');
     });
+
+    it("uses official equipment type names for queue changes", () => {
+        expect(queuePageSource).toContain("getEquipmentSlotName");
+        expect(queuePageSource).toContain('getItemCategoryName("/item_categories/food", "Food")');
+        expect(queuePageSource).toContain('getItemCategoryName("/item_categories/drink", "Drink")');
+        expect(queuePageSource).not.toContain("SLOT_LABEL_FALLBACK_MAP");
+        expect(queuePageSource).not.toContain("characterItemsUtil.mainHand");
+    });
 });

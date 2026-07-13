@@ -78,14 +78,14 @@
               <input v-model.number="enhancement.config.targetLevel" class="field-input" type="number" min="1" max="20" step="1" />
             </label>
             <label>
-              <span class="field-label">{{ t("common:enhancement.skillLevel", "Enhancing level") }}</span>
+              <span class="field-label">{{ getBuffTypeName("/buff_types/enhancing_level", "Enhancing Level") }}</span>
               <input v-model.number="enhancement.config.skillLevel" class="field-input" type="number" min="1" max="200" step="1" />
             </label>
           </div>
 
           <div class="grid gap-2 border-t border-white/10 pt-3 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
             <label>
-              <span class="field-label">{{ t("common:enhancement.enhancingTea", "Enhancing tea") }}</span>
+              <span class="field-label">{{ enhancingTeaLabel }}</span>
               <select v-model="enhancement.config.teaHrid" class="field-select">
                 <option value="">{{ t("common:enhancement.none", "None") }}</option>
                 <option v-for="tea in teaOptions" :key="tea.hrid" :value="tea.hrid">{{ itemName(tea) }}</option>
@@ -93,11 +93,11 @@
             </label>
             <label class="flex min-h-10 items-center gap-2 self-end rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-slate-300">
               <input v-model="enhancement.config.blessedTea" type="checkbox" />
-              <span>{{ getGameItemName("/items/blessed_tea", t("common:enhancement.blessedTea", "Blessed Tea")) }}</span>
+              <span>{{ getGameItemName("/items/blessed_tea", "Blessed Tea") }}</span>
             </label>
             <label class="flex min-h-10 items-center gap-2 self-end rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-slate-300">
               <input v-model="enhancement.config.wisdomTea" type="checkbox" />
-              <span>{{ getGameItemName("/items/wisdom_tea", t("common:enhancement.wisdomTea", "Wisdom Tea")) }}</span>
+              <span>{{ getGameItemName("/items/wisdom_tea", "Wisdom Tea") }}</span>
             </label>
           </div>
 
@@ -118,7 +118,7 @@
               aria-haspopup="dialog"
               @click="equipmentModalOpen = true"
             >
-              <span class="min-w-0 leading-4">{{ t("common:enhancement.enhancingGear", "Enhancing gear") }}</span>
+              <span class="min-w-0 leading-4">{{ enhancingGearLabel }}</span>
               <span class="shrink-0 text-[10px] font-normal text-amber-300">{{ configuredEquipmentCount }}</span>
             </button>
             <button
@@ -179,7 +179,7 @@
             </div>
             <div class="grid gap-3 sm:grid-cols-2">
               <label>
-                <span class="field-label">{{ t("common:enhancement.observatoryLevel", "Observatory") }}</span>
+                <span class="field-label">{{ getHouseRoomName("/house_rooms/observatory", "Observatory") }}</span>
                 <input v-model.number="enhancement.config.observatoryLevel" class="field-input" type="number" min="0" max="8" step="1" />
               </label>
               <label>
@@ -187,11 +187,11 @@
                 <input v-model.number="enhancement.config.otherRoomLevels" class="field-input" type="number" min="0" step="1" />
               </label>
               <label>
-                <span class="field-label">{{ t("common:enhancement.communityEnhancing", "Community enhancing") }}</span>
+                <span class="field-label">{{ getOfficialGameText("communityBuffTypeNames", "/community_buff_types/enhancing_speed", "Enhancing Speed") }}</span>
                 <input v-model.number="enhancement.config.communityEnhancingLevel" class="field-input" type="number" min="0" max="20" step="1" />
               </label>
               <label>
-                <span class="field-label">{{ t("common:enhancement.communityExperience", "Community XP") }}</span>
+                <span class="field-label">{{ getOfficialGameText("communityBuffTypeNames", "/community_buff_types/experience", "Experience") }}</span>
                 <input v-model.number="enhancement.config.communityExperienceLevel" class="field-input" type="number" min="0" max="20" step="1" />
               </label>
             </div>
@@ -199,11 +199,11 @@
             <div class="mt-3 grid gap-2 sm:grid-cols-2">
               <label class="flex min-h-10 items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-slate-300">
                 <input v-model="enhancement.config.noviceAchievement" type="checkbox" />
-                <span>{{ t("common:enhancement.noviceAchievement", "Novice achievement") }}</span>
+                <span>{{ achievementTierBonusLabel("/achievement_tiers/novice", "Novice") }}</span>
               </label>
               <label class="flex min-h-10 items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-slate-300">
                 <input v-model="enhancement.config.championAchievement" type="checkbox" />
-                <span>{{ t("common:enhancement.championAchievement", "Champion achievement") }}</span>
+                <span>{{ achievementTierBonusLabel("/achievement_tiers/champion", "Champion") }}</span>
               </label>
             </div>
           </div>
@@ -212,7 +212,7 @@
 
         <BaseModal
           :open="equipmentModalOpen"
-          :title="t('common:enhancement.enhancingGear', 'Enhancing gear')"
+          :title="enhancingGearLabel"
           panel-class="enhancement-price-modal max-w-3xl max-h-[88vh] overflow-y-auto"
           initial-focus-selector="[data-enhancement-equipment] select"
           @close="equipmentModalOpen = false"
@@ -439,7 +439,7 @@
             aria-controls="enhancement-results-mirror"
             @click="activeResultTab = 'mirror'"
           >
-            {{ t("common:enhancement.mirrorAndDecomposition", "Mirror & decomposition") }}
+            {{ mirrorAndDecompositionLabel }}
           </button>
           <button
             type="button"
@@ -836,8 +836,13 @@ const TAMPERMONKEY_BRIDGE_CHANNEL = "mwi-tm-bridge";
 const enhancement = useEnhancementStore();
 const { language, t } = useI18nText();
 const {
+  getAchievementTierName,
+  getBuffTypeName,
+  getEquipmentTypeName,
+  getHouseRoomName,
   getItemName: getGameItemName,
   getOfficialGameText,
+  getSkillName,
 } = useGameDataText();
 const budgetUnits = Object.freeze(["K", "M", "B"]);
 const itemModalOpen = ref(false);
@@ -865,20 +870,12 @@ watch(() => enhancement.config.itemHrid, (itemHrid) => {
   if (itemHrid) void loadItemIcons([itemHrid]);
 }, { immediate: true });
 
-const equipmentSlotLabels = {
-  enhancing_tool: () => t("common:enhancement.slotEnhancingTool", "Tool"),
-  hands: () => t("common:enhancement.slotHands", "Hands"),
-  body: () => t("common:enhancement.slotBody", "Body"),
-  legs: () => t("common:enhancement.slotLegs", "Legs"),
-  pouch: () => t("common:enhancement.slotPouch", "Pouch"),
-  neck: () => t("common:enhancement.slotNeck", "Neck"),
-  back: () => t("common:enhancement.slotBack", "Back"),
-  charm: () => t("common:enhancement.slotCharm", "Charm"),
-};
 const equipmentSlots = computed(() => (enhancement.equipmentSlotKeys || []).map((key) => ({
   key,
-  label: equipmentSlotLabels[key]?.()
-    || key.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
+  label: getEquipmentTypeName(
+    `/equipment_types/${key}`,
+    key.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
+  ),
 })));
 const configuredEquipmentCount = computed(() => equipmentSlots.value.filter(
   (slot) => Boolean(enhancement.config.equipmentSlots?.[slot.key]?.itemHrid),
@@ -968,6 +965,15 @@ const markupPercent = computed({
 });
 
 const selectedItemName = computed(() => enhancement.config.itemHrid ? itemName(enhancement.selectedItem || { hrid: enhancement.config.itemHrid }) : t("common:enhancement.noItemSelected", "No item selected"));
+const philosopherMirrorName = computed(() => getGameItemName("/items/philosophers_mirror", "Philosopher's Mirror"));
+const enhancingSkillName = computed(() => getSkillName("/skills/enhancing", "Enhancing"));
+const enhancingTeaLabel = computed(() => t("common:enhancement.enhancingTea", "{{skill}} tea", { skill: enhancingSkillName.value }));
+const enhancingGearLabel = computed(() => t("common:enhancement.enhancingGear", "{{skill}} gear", { skill: enhancingSkillName.value }));
+const mirrorAndDecompositionLabel = computed(() => t(
+  "common:enhancement.mirrorAndDecomposition",
+  "{{item}} & decomposition",
+  { item: philosopherMirrorName.value },
+));
 const selectedItemType = computed(() => equipmentTypeName(enhancement.selectedItem?.equipmentType));
 const selectedRouteLabel = computed(() => enhancement.config.itemHrid
   ? t("common:enhancement.routeLabel", "{{item}} · +{{start}} → +{{target}}", {
@@ -1065,8 +1071,8 @@ const mirrorSavings = computed(() => rowValue(mirrorPlan.value, "savings", "save
 const mirrorMethodLabel = computed(() => {
   if (!mirrorPlan.value) return t("common:enhancement.unavailable", "Unavailable");
   return mirrorPlan.value.usesMirror || mirrorPlan.value.method === "mirror"
-    ? t("common:enhancement.useMirror", "Uses Philosopher's Mirror")
-    : t("common:enhancement.directEnhancement", "No Philosopher's Mirror");
+    ? t("common:enhancement.useMirror", "Uses {{item}}", { item: philosopherMirrorName.value })
+    : t("common:enhancement.directEnhancement", "No {{item}}", { item: philosopherMirrorName.value });
 });
 
 const decompositionQuantity = computed(() => rowValue(decompositionValue.value, "quantity", "essenceQuantity", "essenceCount", "expectedEssence"));
@@ -1221,6 +1227,12 @@ function itemName(item) {
   return getGameItemName(hrid, fallback);
 }
 
+function achievementTierBonusLabel(tierHrid, fallbackName) {
+  return t("common:enhancement.achievementTierBonus", "{{tier}} achievement bonus", {
+    tier: getAchievementTierName(tierHrid, fallbackName),
+  });
+}
+
 function itemIconVisible(hrid) {
   void itemIconRevision.value;
   return hasItemIconSymbol(hrid);
@@ -1237,7 +1249,7 @@ function equipmentTypeName(equipmentTypeHrid) {
     ?.split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ") || hrid;
-  return getOfficialGameText("equipmentTypeNames", hrid, fallback);
+  return getEquipmentTypeName(hrid, fallback);
 }
 
 function isFavorite(hrid) {

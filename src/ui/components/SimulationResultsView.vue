@@ -42,10 +42,10 @@
                  
                   @click="toggleBatchSort(column.key)"
                 >
-                  <span>{{ t(column.labelKey, column.fallback) }}</span>
+                  <span>{{ batchColumnLabel(column) }}</span>
                   <span class="text-[10px]" :class="batchSort.key === column.key ? 'text-amber-300' : 'text-slate-500'">{{ getBatchSortIndicator(column.key) }}</span>
                 </button>
-                <span v-else>{{ t(column.labelKey, column.fallback) }}</span>
+                <span v-else>{{ batchColumnLabel(column) }}</span>
               </th>
             </tr>
           </thead>
@@ -229,7 +229,7 @@
               </div>
             </DisclosurePanel>
 
-            <DisclosurePanel :title="t('common:simulationResults.damageDoneTotal', 'Damage Done (Total)')">
+            <DisclosurePanel :title="damageDoneTotalLabel">
               <div class="space-y-3">
                 <div class="overflow-x-auto">
                   <table class="min-w-full text-xs">
@@ -279,7 +279,7 @@
               </div>
             </DisclosurePanel>
 
-            <DisclosurePanel :title="t('common:simulationResults.damageTakenTotal', 'Damage Taken (Total)')">
+            <DisclosurePanel :title="totalResultLabel(getCombatStatName('damageTaken', 'Damage Taken'))">
               <div class="space-y-3">
                 <div class="overflow-x-auto">
                   <table class="min-w-full text-xs">
@@ -473,9 +473,9 @@
                   <th class="px-2 py-2">{{ t("common:vue.results.timeSeconds", "t(s)") }}</th>
                   <th class="px-2 py-2">{{ t("common:vue.results.wave", "Wave") }}</th>
                   <th class="px-2 py-2">{{ t("common:simulationResults.source", "Source") }}</th>
-                  <th class="px-2 py-2">{{ t("common:vue.results.ability", "Ability") }}</th>
+                  <th class="px-2 py-2">{{ getOfficialGameText("ability", "ability", "Ability") }}</th>
                   <th class="px-2 py-2">{{ t("common:vue.results.target", "Target") }}</th>
-                  <th class="px-2 py-2">{{ t("common:vue.results.damage", "Damage") }}</th>
+                  <th class="px-2 py-2">{{ getBuffTypeName("/buff_types/damage", "Damage") }}</th>
                   <th class="px-2 py-2">{{ t("common:vue.results.hpShort", "HP") }}</th>
                   <th class="px-2 py-2">{{ t("common:vue.results.crit", "Crit") }}</th>
                 </tr>
@@ -520,8 +520,12 @@ const { t } = useI18nText();
 const {
   getAbilityName,
   getActionName,
+  getBuffTypeName,
+  getCombatStatName,
   getItemName,
   getMonsterName,
+  getOfficialGameText,
+  getSkillName,
 } = useGameDataText();
 const PLAYER_HRIDS = new Set(["player1", "player2", "player3", "player4", "player5"]);
 const batchSort = ref({ key: "", direction: "desc" });
@@ -532,13 +536,13 @@ const batchTableColumns = Object.freeze([
   { key: "encountersPerHour", labelKey: "common:simulationResults.encounters", fallback: "Encounters", sortable: true, format: "decimal", csvDigits: 1, highlightMax: false },
   { key: "deathsPerHour", labelKey: "common:simulationResults.deathPerHour", fallback: "Deaths", sortable: true, format: "decimal", csvDigits: 2, highlightMax: false },
   { key: "totalXpPerHour", labelKey: "common:simulationResults.totalExperience", fallback: "Total Experience", sortable: true, format: "integer", csvDigits: 0, highlightMax: true },
-  { key: "staminaXpPerHour", labelKey: "common:vue.home.levelLabels.stamina", fallback: "Stamina", sortable: true, format: "integer", csvDigits: 0, highlightMax: true },
-  { key: "intelligenceXpPerHour", labelKey: "common:vue.home.levelLabels.intelligence", fallback: "Intelligence", sortable: true, format: "integer", csvDigits: 0, highlightMax: true },
-  { key: "attackXpPerHour", labelKey: "common:vue.home.levelLabels.attack", fallback: "Attack", sortable: true, format: "integer", csvDigits: 0, highlightMax: true },
-  { key: "magicXpPerHour", labelKey: "common:vue.home.levelLabels.magic", fallback: "Magic", sortable: true, format: "integer", csvDigits: 0, highlightMax: true },
-  { key: "rangedXpPerHour", labelKey: "common:vue.home.levelLabels.ranged", fallback: "Ranged", sortable: true, format: "integer", csvDigits: 0, highlightMax: true },
-  { key: "meleeXpPerHour", labelKey: "common:vue.home.levelLabels.melee", fallback: "Melee", sortable: true, format: "integer", csvDigits: 0, highlightMax: true },
-  { key: "defenseXpPerHour", labelKey: "common:vue.home.levelLabels.defense", fallback: "Defense", sortable: true, format: "integer", csvDigits: 0, highlightMax: true },
+  { key: "staminaXpPerHour", skillHrid: "/skills/stamina", fallback: "Stamina", sortable: true, format: "integer", csvDigits: 0, highlightMax: true },
+  { key: "intelligenceXpPerHour", skillHrid: "/skills/intelligence", fallback: "Intelligence", sortable: true, format: "integer", csvDigits: 0, highlightMax: true },
+  { key: "attackXpPerHour", skillHrid: "/skills/attack", fallback: "Attack", sortable: true, format: "integer", csvDigits: 0, highlightMax: true },
+  { key: "magicXpPerHour", skillHrid: "/skills/magic", fallback: "Magic", sortable: true, format: "integer", csvDigits: 0, highlightMax: true },
+  { key: "rangedXpPerHour", skillHrid: "/skills/ranged", fallback: "Ranged", sortable: true, format: "integer", csvDigits: 0, highlightMax: true },
+  { key: "meleeXpPerHour", skillHrid: "/skills/melee", fallback: "Melee", sortable: true, format: "integer", csvDigits: 0, highlightMax: true },
+  { key: "defenseXpPerHour", skillHrid: "/skills/defense", fallback: "Defense", sortable: true, format: "integer", csvDigits: 0, highlightMax: true },
   { key: "noRngRevenue", labelKey: "common:noRNGRevenue", fallback: "No RNG Revenue", sortable: true, format: "decimal", csvDigits: 2, highlightMax: true },
   { key: "expenses", labelKey: "common:expense", fallback: "Expense", sortable: true, format: "decimal", csvDigits: 2, highlightMax: true },
   { key: "noRngProfit", labelKey: "common:noRNGProfit", fallback: "No RNG Profit", sortable: true, format: "decimal", csvDigits: 2, highlightMax: true },
@@ -730,7 +734,7 @@ const zoneLabel = computed(() => {
   if (simResult.isLabyrinth) {
     const labyrinthHrid = String(simResult.labyrinthName || simResult.labyrinthHrid || "");
     if (!labyrinthHrid) {
-      return t("common:labyrinth", "Labyrinth");
+      return getOfficialGameText("labyrinthPanel", "labyrinth", "Labyrinth");
     }
     if (labyrinthHrid.startsWith("/monsters/")) {
       const defaultLabel = combatMonsterDetailMap?.[labyrinthHrid]?.name || labyrinthHrid;
@@ -1056,15 +1060,21 @@ const experienceRows = computed(() => {
   const experience = simulator.results.simResult?.experienceGained?.[playerHrid] ?? {};
 
   return [
-    { label: t("common:vue.results.staminaXp", "Stamina XP"), value: experience.stamina ?? 0 },
-    { label: t("common:vue.results.intelligenceXp", "Intelligence XP"), value: experience.intelligence ?? 0 },
-    { label: t("common:vue.results.attackXp", "Attack XP"), value: experience.attack ?? 0 },
-    { label: t("common:vue.results.meleeXp", "Melee XP"), value: experience.melee ?? 0 },
-    { label: t("common:vue.results.defenseXp", "Defense XP"), value: experience.defense ?? 0 },
-    { label: t("common:vue.results.rangedXp", "Ranged XP"), value: experience.ranged ?? 0 },
-    { label: t("common:vue.results.magicXp", "Magic XP"), value: experience.magic ?? 0 },
+    { label: getCombatStatName("staminaExperience", "Stamina Experience"), value: experience.stamina ?? 0 },
+    { label: getCombatStatName("intelligenceExperience", "Intelligence Experience"), value: experience.intelligence ?? 0 },
+    { label: getCombatStatName("attackExperience", "Attack Experience"), value: experience.attack ?? 0 },
+    { label: getCombatStatName("meleeExperience", "Melee Experience"), value: experience.melee ?? 0 },
+    { label: getCombatStatName("defenseExperience", "Defense Experience"), value: experience.defense ?? 0 },
+    { label: getCombatStatName("rangedExperience", "Ranged Experience"), value: experience.ranged ?? 0 },
+    { label: getCombatStatName("magicExperience", "Magic Experience"), value: experience.magic ?? 0 },
   ];
 });
+
+const damageDoneTotalLabel = computed(() => t(
+  "common:simulationResults.damageDoneTotalLabel",
+  "{{damage}} Done (Total)",
+  { damage: getBuffTypeName("/buff_types/damage", "Damage") },
+));
 
 const wipeEvents = computed(() => {
   const events = simulator.results.simResult?.wipeEvents;
@@ -1130,6 +1140,17 @@ function toggleBatchSort(columnKey) {
     key: columnKey,
     direction: "desc",
   };
+}
+
+function totalResultLabel(label) {
+  return t("common:simulationResults.totalLabel", "{{label}} (Total)", { label });
+}
+
+function batchColumnLabel(column) {
+  if (column?.skillHrid) {
+    return getSkillName(column.skillHrid, column.fallback || column.skillHrid);
+  }
+  return t(column.labelKey, column.fallback);
 }
 
 function getBatchSortIndicator(columnKey) {
@@ -1216,25 +1237,25 @@ function formatAbilityLabel(abilityHrid) {
   }
 
   if (hrid === "autoAttack") {
-    return t("common:vue.results.autoAttack", "Auto Attack");
+    return getOfficialGameText("combatUnit", "autoAttack", "Auto Attack");
   }
   if (hrid === "parry") {
-    return t("common:simulationResults.parryAttack", "Parry Attack");
+    return combatStatAttackLabel("parry", "Parry");
   }
   if (hrid === "damageOverTime") {
     return t("common:vue.results.damageOverTime", "Damage Over Time");
   }
   if (hrid === "physicalThorns") {
-    return t("common:vue.results.physicalThorns", "Physical Thorns");
+    return getCombatStatName("physicalThorns", "Physical Thorns");
   }
   if (hrid === "elementalThorns") {
-    return t("common:vue.results.elementalThorns", "Elemental Thorns");
+    return getCombatStatName("elementalThorns", "Elemental Thorns");
   }
   if (hrid === "retaliation") {
-    return t("common:vue.results.retaliation", "Retaliation");
+    return getCombatStatName("retaliation", "Retaliation");
   }
   if (hrid === "blaze") {
-    return t("common:vue.home.combatStats.blaze", "Blaze");
+    return getCombatStatName("blaze", "Blaze");
   }
   const abilityName = getAbilityName(hrid, hrid);
   if (abilityName !== hrid) {
@@ -1390,23 +1411,23 @@ function buildResourceRestoreRows(sourceMap, seconds, resourceType) {
 function formatRestoreSourceLabel(source, resourceType) {
   if (source === "regen") {
     return resourceType === "hp"
-      ? t("common:vue.home.combatStats.hpRegen", "HP Regen")
-      : t("common:vue.home.combatStats.mpRegen", "MP Regen");
+      ? getCombatStatName("hpRegenPer10", "HP Regen")
+      : getCombatStatName("mpRegenPer10", "MP Regen");
   }
   if (source === "lifesteal") {
-    return t("common:vue.home.combatStats.lifeSteal", "Life Steal");
+    return getCombatStatName("lifeSteal", "Life Steal");
   }
   if (source === "manaLeech") {
-    return t("common:vue.home.combatStats.manaLeech", "Mana Leech");
+    return getCombatStatName("manaLeech", "Mana Leech");
   }
   if (source === "blaze") {
-    return t("common:vue.home.combatStats.blaze", "Blaze");
+    return getCombatStatName("blaze", "Blaze");
   }
   if (source === "bloom") {
-    return t("common:vue.home.combatStats.bloom", "Bloom");
+    return getCombatStatName("bloom", "Bloom");
   }
   if (source === "ripple") {
-    return t("common:vue.home.combatStats.ripple", "Ripple");
+    return getCombatStatName("ripple", "Ripple");
   }
   if (itemDetailMap?.[source]?.name) {
     return getItemName(source, itemDetailMap[source].name);
@@ -1445,21 +1466,33 @@ function formatLogAbility(log) {
     return "-";
   }
   if (ability === "autoAttack") {
-    return t("common:vue.results.autoAttack", "Auto Attack");
+    return getOfficialGameText("combatUnit", "autoAttack", "Auto Attack");
+  }
+  if (ability === "parry") {
+    return combatStatAttackLabel("parry", "Parry");
   }
   if (ability === "damageOverTime") {
     return t("common:vue.results.damageOverTime", "Damage Over Time");
   }
   if (ability === "physicalThorns") {
-    return t("common:vue.results.physicalThorns", "Physical Thorns");
+    return getCombatStatName("physicalThorns", "Physical Thorns");
   }
   if (ability === "elementalThorns") {
-    return t("common:vue.results.elementalThorns", "Elemental Thorns");
+    return getCombatStatName("elementalThorns", "Elemental Thorns");
   }
   if (ability === "retaliation") {
-    return t("common:vue.results.retaliation", "Retaliation");
+    return getCombatStatName("retaliation", "Retaliation");
+  }
+  if (["blaze", "bloom", "ripple"].includes(ability)) {
+    return getCombatStatName(ability, ability);
   }
   return ability;
+}
+
+function combatStatAttackLabel(statKey, fallbackName) {
+  return t("common:simulationResults.combatStatAttack", "{{stat}} Attack", {
+    stat: getCombatStatName(statKey, fallbackName),
+  });
 }
 
 function formatCurrency(value) {
@@ -1490,7 +1523,7 @@ function exportBatchRowsCsv() {
     return;
   }
 
-  const header = batchTableColumns.map((column) => t(column.labelKey, column.fallback));
+  const header = batchTableColumns.map(batchColumnLabel);
   const csvLines = [header.map(toCsvCell).join(",")];
   for (const row of rows) {
     const fields = batchTableColumns.map((column) => toBatchCsvValue(row, column));
