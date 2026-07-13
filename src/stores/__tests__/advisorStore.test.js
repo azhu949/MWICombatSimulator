@@ -41,8 +41,16 @@ vi.mock("../../services/workerClient.js", () => {
         asyncSingleDelayMs: 0,
         asyncMultiItemDelayMs: 0,
         asyncMultiBatchDelayMs: 0,
+        deferMultiCompletion: false,
+        deferredMultiRuns: [],
+        deferredMultiRunWaiters: [],
         activeSingleRuns: 0,
         maxConcurrentSingleRuns: 0,
+        waitForDeferredMultiRun() {
+            return new Promise((resolve) => {
+                this.deferredMultiRunWaiters.push(resolve);
+            });
+        },
         reset() {
             this.multiCalls = [];
             this.singleCalls = [];
@@ -55,6 +63,9 @@ vi.mock("../../services/workerClient.js", () => {
             this.asyncSingleDelayMs = 0;
             this.asyncMultiItemDelayMs = 0;
             this.asyncMultiBatchDelayMs = 0;
+            this.deferMultiCompletion = false;
+            this.deferredMultiRuns = [];
+            this.deferredMultiRunWaiters = [];
             this.activeSingleRuns = 0;
             this.maxConcurrentSingleRuns = 0;
         },
@@ -240,6 +251,26 @@ vi.mock("../../services/workerClient.js", () => {
                 handlers.onBatchResult?.(simResults, batchResultType);
             };
 
+            if (workerState.deferMultiCompletion) {
+                let completed = false;
+                const deferredRun = {
+                    complete() {
+                        if (completed) {
+                            return;
+                        }
+                        completed = true;
+                        targets.slice(1).forEach((target, index) => emitItemResult(target, index + 1));
+                        emitBatchResult();
+                    },
+                };
+                workerState.deferredMultiRuns.push(deferredRun);
+                workerState.deferredMultiRunWaiters.shift()?.(deferredRun);
+                if (targets.length > 0) {
+                    emitItemResult(targets[0], 0);
+                }
+                return;
+            }
+
             if (workerState.asyncMultiItemDelayMs > 0 || workerState.asyncMultiBatchDelayMs > 0) {
                 targets.forEach((target, index) => {
                     const delayMs = workerState.asyncMultiItemDelayMs * (index + 1);
@@ -270,23 +301,6 @@ vi.mock("../../services/workerClient.js", () => {
 
 import { useSimulatorStore } from "../simulatorStore.js";
 import { mockWorkerState } from "../../services/workerClient.js";
-
-function waitForMs(delayMs) {
-    return new Promise((resolve) => {
-        setTimeout(resolve, delayMs);
-    });
-}
-
-async function waitForCondition(predicate, timeoutMs = 50, intervalMs = 1) {
-    const startedAt = Date.now();
-    while (Date.now() - startedAt < timeoutMs) {
-        if (predicate()) {
-            return true;
-        }
-        await waitForMs(intervalMs);
-    }
-    return predicate();
-}
 
 describe("advisor store", () => {
     beforeEach(() => {
@@ -493,10 +507,10 @@ describe("advisor store", () => {
         simulator.advisor.filters = {
             ...simulator.advisor.filters,
             refineTopEnabled: false,
+            quickRounds: 1,
         };
         simulator.advisor.goalPreset = "profit";
-        mockWorkerState.asyncMultiItemDelayMs = 3;
-        mockWorkerState.asyncMultiBatchDelayMs = 40;
+        mockWorkerState.deferMultiCompletion = true;
         mockWorkerState.zoneMetricResolver = (zone, index) => ({
             profitPerHour: 900 - index,
             xpPerHour: 400 + index,
@@ -504,9 +518,11 @@ describe("advisor store", () => {
             deathsPerHour: 0.05 + Number(zone?.difficultyTier || 0) * 0.02,
         });
 
+        const deferredRunPromise = mockWorkerState.waitForDeferredMultiRun();
         const runPromise = simulator.runAdvisorScan();
-        expect(await waitForCondition(() => simulator.advisor.quickRows.length > 0, 30)).toBe(true);
+        const deferredRun = await deferredRunPromise;
 
+        expect(deferredRun).toBeDefined();
         const zonePayload = mockWorkerState.multiCalls.find((payload) => payload.type === "start_simulation_all_zones");
         expect(zonePayload?.zones?.length).toBeGreaterThan(3);
         expect(simulator.advisor.runtime.isRunning).toBe(true);
@@ -514,6 +530,7 @@ describe("advisor store", () => {
         expect(simulator.advisor.quickRows.length).toBeLessThan(zonePayload.zones.length);
         expect(simulator.advisor.topCards.length).toBeGreaterThan(0);
 
+        deferredRun.complete();
         const rows = await runPromise;
         expect(rows).toHaveLength(zonePayload.zones.length);
     });
@@ -588,9 +605,9 @@ describe("advisor store", () => {
         simulator.advisor.filters = {
             ...simulator.advisor.filters,
             refineTopEnabled: false,
+            quickRounds: 1,
         };
-        mockWorkerState.asyncMultiItemDelayMs = 3;
-        mockWorkerState.asyncMultiBatchDelayMs = 40;
+        mockWorkerState.deferMultiCompletion = true;
         mockWorkerState.zoneMetricResolver = (zone, index) => ({
             profitPerHour: 700 - index,
             xpPerHour: 300 + index,
@@ -598,9 +615,11 @@ describe("advisor store", () => {
             deathsPerHour: 0.1 + Number(zone?.difficultyTier || 0) * 0.02,
         });
 
+        const deferredRunPromise = mockWorkerState.waitForDeferredMultiRun();
         const runPromise = simulator.runAdvisorScan();
-        expect(await waitForCondition(() => simulator.advisor.quickRows.length > 0, 30)).toBe(true);
+        const deferredRun = await deferredRunPromise;
 
+        expect(deferredRun).toBeDefined();
         const partialRowsBeforeStop = simulator.advisor.quickRows.length;
         expect(partialRowsBeforeStop).toBeGreaterThan(0);
         expect(simulator.stopAdvisorScan()).toBe(true);
@@ -611,6 +630,10 @@ describe("advisor store", () => {
         expect(simulator.advisor.runtime.isRunning).toBe(false);
         expect(simulator.advisor.runtime.phase).toBe("cancelled");
         expect(simulator.advisor.error).toBe("");
+
+        deferredRun.complete();
+        await Promise.resolve();
+        expect(simulator.advisor.quickRows).toHaveLength(partialRowsBeforeStop);
     });
 
     it("surfaces streaming callback failures as advisor errors", async () => {
@@ -639,10 +662,10 @@ describe("advisor store", () => {
         simulator.advisor.filters = {
             ...simulator.advisor.filters,
             refineTopEnabled: false,
+            quickRounds: 1,
         };
         simulator.advisor.goalPreset = "profit";
-        mockWorkerState.asyncMultiItemDelayMs = 3;
-        mockWorkerState.asyncMultiBatchDelayMs = 40;
+        mockWorkerState.deferMultiCompletion = true;
         mockWorkerState.zoneMetricResolver = (_zone, index) => ({
             profitPerHour: 100 + index,
             xpPerHour: 50 + index,
@@ -650,13 +673,15 @@ describe("advisor store", () => {
             deathsPerHour: 0.2,
         });
 
+        const cancelledDeferredRunPromise = mockWorkerState.waitForDeferredMultiRun();
         const cancelledRunPromise = simulator.runAdvisorScan();
-        expect(await waitForCondition(() => simulator.advisor.quickRows.length > 0, 30)).toBe(true);
+        const cancelledDeferredRun = await cancelledDeferredRunPromise;
+        expect(cancelledDeferredRun).toBeDefined();
+        expect(simulator.advisor.quickRows.length).toBeGreaterThan(0);
         simulator.stopAdvisorScan();
         await cancelledRunPromise;
 
-        mockWorkerState.asyncMultiItemDelayMs = 1;
-        mockWorkerState.asyncMultiBatchDelayMs = 10;
+        mockWorkerState.deferMultiCompletion = false;
         mockWorkerState.zoneMetricResolver = (_zone, index) => ({
             profitPerHour: 5000 - index,
             xpPerHour: 1200 + index,
@@ -666,7 +691,8 @@ describe("advisor store", () => {
 
         const rerunRows = await simulator.runAdvisorScan();
         const topProfitAfterRerun = rerunRows[0]?.profitPerHour;
-        await waitForMs(50);
+        cancelledDeferredRun.complete();
+        await Promise.resolve();
 
         expect(simulator.advisor.runtime.phase).toBe("done");
         expect(simulator.advisor.error).toBe("");

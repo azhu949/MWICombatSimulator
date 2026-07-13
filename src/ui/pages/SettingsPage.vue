@@ -559,7 +559,7 @@ import BaseModal from "../components/BaseModal.vue";
 
 const simulator = useSimulatorStore();
 const { t } = useI18nText();
-const { getItemCategoryName } = useGameDataText();
+const { getItemCategoryName, getItemName, getOfficialGameText } = useGameDataText();
 
 const equipmentSetName = ref("");
 const priceSearchKeyword = ref("");
@@ -666,20 +666,18 @@ function formatPriceItemName(itemHrid, fallbackName = "") {
     return String(fallbackName || "").trim();
   }
 
-  const translationKey = `translation:itemNames.${hrid}`;
-  const fromTranslation = t(translationKey, translationKey);
-  if (fromTranslation !== translationKey) {
-    return fromTranslation;
-  }
-
-  const commonKey = `itemNames.${hrid}`;
-  const fromCommon = t(commonKey, commonKey);
-  if (fromCommon !== commonKey) {
-    return fromCommon;
-  }
-
   const fallback = String(fallbackName || "").trim();
-  return fallback || inferItemNameFromHrid(hrid);
+  return getItemName(hrid, fallback || inferItemNameFromHrid(hrid));
+}
+
+function formatOfficialItemName(itemHrid, targetLanguage) {
+  const hrid = String(itemHrid || "");
+  return getOfficialGameText(
+    "itemNames",
+    hrid,
+    hrid,
+    { language: targetLanguage },
+  );
 }
 
 function toFiniteNumber(value, fallback = 0) {
@@ -767,7 +765,11 @@ const filteredPriceRows = computed(() => {
 
   return allPriceRows.value.filter((row) => (
     (selectedCategory === "__all__" || row.categoryHrid === selectedCategory)
-    && (row.name.toLowerCase().includes(keyword) || row.hrid.toLowerCase().includes(keyword))
+    && (
+      formatOfficialItemName(row.hrid, "zh").toLowerCase().includes(keyword)
+      || formatOfficialItemName(row.hrid, "en").toLowerCase().includes(keyword)
+      || row.hrid.toLowerCase().includes(keyword)
+    )
   ));
 });
 

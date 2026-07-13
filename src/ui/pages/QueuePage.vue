@@ -98,7 +98,6 @@ import {
 import { EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../../shared/playerConfig.js";
 import { buildTriggerChangeDescriptor, getComparableTriggerTargetHrids } from "../../services/triggerMapper.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
-import { useAbilityText } from "../composables/useAbilityText.js";
 import { useGameDataText } from "../composables/useGameDataText.js";
 import { useI18nText } from "../composables/useI18nText.js";
 import {
@@ -110,8 +109,13 @@ import {
 
 const simulator = useSimulatorStore();
 const { t } = useI18nText();
-const { getAbilityName } = useAbilityText();
-const { getSkillName } = useGameDataText();
+const {
+  getAbilityName,
+  getActionName,
+  getHouseRoomName,
+  getItemName,
+  getSkillName,
+} = useGameDataText();
 const ONE_HOUR = 60 * 60 * 1e9;
 const ABILITY_BOOK_CATEGORY_HRID = "/item_categories/ability_book";
 const SLOT_I18N_KEY_MAP = {
@@ -607,7 +611,7 @@ function localizeQueueChangeLabel(change) {
     return t("common:queue.abilitySlot", "Ability Slot {{index}}", { index });
   }
   if (category === "house_room") {
-    return t(`houseRoomNames.${label}`, houseRoomDetailMap?.[label]?.name || label || "House Room");
+    return getHouseRoomName(label, houseRoomDetailMap?.[label]?.name || label || "House Room");
   }
   if (category === "trigger") {
     return formatQueueTriggerLabel(parseTriggerTargetHridFromChange(change), localizeHridDisplayName, t);
@@ -622,7 +626,7 @@ function localizeEquipmentSlotLabel(slotKey) {
   if (!i18nKey) {
     return fallback;
   }
-  const translated = t(i18nKey, fallback);
+  const translated = t(`translation:${i18nKey}`, fallback);
   return translated === i18nKey ? fallback : translated;
 }
 
@@ -634,9 +638,8 @@ function localizeHridDisplayName(hrid) {
 
   const fallback = itemDetailMap?.[value]?.name || actionNameFallbackMap.value?.[value] || value;
 
-  const itemName = t(`itemNames.${value}`, `itemNames.${value}`);
-  if (itemName !== `itemNames.${value}`) {
-    return itemName;
+  if (Object.prototype.hasOwnProperty.call(itemDetailMap || {}, value)) {
+    return getItemName(value, itemDetailMap[value]?.name || value);
   }
 
   const abilityName = getAbilityName(value, "");
@@ -644,9 +647,8 @@ function localizeHridDisplayName(hrid) {
     return abilityName;
   }
 
-  const actionName = t(`actionNames.${value}`, `actionNames.${value}`);
-  if (actionName !== `actionNames.${value}`) {
-    return actionName;
+  if (Object.prototype.hasOwnProperty.call(actionNameFallbackMap.value || {}, value) || value.startsWith("/actions/")) {
+    return getActionName(value, actionNameFallbackMap.value?.[value] || value);
   }
 
   return fallback;
@@ -774,19 +776,7 @@ function formatActionName(actionHrid, fallbackName = "-") {
     return fallbackName || "-";
   }
 
-  const translationKey = `translation:actionNames.${hrid}`;
-  const fromTranslation = t(translationKey, translationKey);
-  if (fromTranslation !== translationKey) {
-    return fromTranslation;
-  }
-
-  const commonKey = `actionNames.${hrid}`;
-  const fromCommon = t(commonKey, commonKey);
-  if (fromCommon !== commonKey) {
-    return fromCommon;
-  }
-
-  return fallbackName || hrid;
+  return getActionName(hrid, fallbackName || hrid);
 }
 
 function resolveBaselineZoneName(baseline) {

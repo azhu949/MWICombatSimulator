@@ -47,7 +47,11 @@ describe("EnhancementPage tool surface", () => {
         expect(pageSource).toContain("grid-cols-3");
         expect(pageSource).toContain("lg:grid-cols-7");
         expect(pageSource).toContain('role="list"');
-        expect(pageSource).toContain("itemName(item).toLowerCase()");
+        expect(pageSource).toContain('officialItemName(item, "zh").toLowerCase()');
+        expect(pageSource).toContain('officialItemName(item, "en").toLowerCase()');
+        expect(pageSource).toContain("{ language: targetLanguage }");
+        expect(pageSource).not.toContain("equipmentTypeName(item.equipmentType).toLowerCase().includes(query)");
+        expect(pageSource).not.toContain('String(item.name || "").toLowerCase().includes(query)');
         expect(pageSource).toContain("enhancement-item-row");
         expect(pageSource).toContain("common:enhancement.expectedResets");
         expect(pageSource).toContain('rowValue(row, "expectedResetCount", "expectedResets", "resetCount")');

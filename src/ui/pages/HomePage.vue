@@ -576,7 +576,7 @@
               >
                 <div class="mb-2 flex items-start justify-between gap-3">
                   <div class="min-w-0">
-                    <span class="field-label">{{ t(`houseRoomNames.${room.hrid}`, room.name) }}</span>
+                    <span class="field-label">{{ getHouseRoomName(room.hrid, room.name) }}</span>
                     <p class="mt-1 text-xs text-slate-400">
                       {{ formatHouseRoomTransition(houseRoomBaselineLevelMap[room.hrid] ?? 0, activePlayer.houseRooms[room.hrid] ?? 0) }}
                     </p>
@@ -651,7 +651,7 @@
                   class="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-900/45 px-3 py-2.5"
                 >
                   <div class="min-w-0">
-                    <p class="truncate text-sm font-medium text-slate-100">{{ t(`houseRoomNames.${room.roomHrid}`, houseRoomDetailMap?.[room.roomHrid]?.name || room.roomHrid) }}</p>
+                    <p class="truncate text-sm font-medium text-slate-100">{{ getHouseRoomName(room.roomHrid, houseRoomDetailMap?.[room.roomHrid]?.name || room.roomHrid) }}</p>
                     <p class="mt-1 text-xs text-slate-400">{{ formatHouseRoomTransition(room.fromLevel, room.toLevel) }}</p>
                   </div>
                   <span class="text-sm font-semibold text-amber-100">{{ formatUpgradeCost(room.subtotal) }}</span>
@@ -743,7 +743,7 @@
               :key="detail.hrid"
               class="badge flex items-start gap-2 text-sm text-slate-100"
             >
-              <span class="min-w-0 flex-1 leading-snug">{{ t(`achievementNames.${detail.hrid}`, detail.name) }}</span>
+              <span class="min-w-0 flex-1 leading-snug">{{ getAchievementName(detail.hrid, detail.name) }}</span>
               <input
                 class="mt-0.5 shrink-0"
                 :checked="Boolean(activePlayer.achievements?.[detail.hrid])"
@@ -1090,7 +1090,6 @@ import { calcCombatLevel, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../../shared/p
 import { buildNoRngProfitBreakdown, buildRandomProfitBreakdown } from "../../services/profitEstimator.js";
 import { calculateSkillUpgradeEta } from "../../services/levelExperience.js";
 import { createCombatPreviewPlayerConfig } from "../pageOptimizationHelpers.js";
-import { useAbilityText } from "../composables/useAbilityText.js";
 import { useGameDataText } from "../composables/useGameDataText.js";
 import { useI18nText } from "../composables/useI18nText.js";
 import BaseModal from "../components/BaseModal.vue";
@@ -1102,8 +1101,18 @@ const simulator = useSimulatorStore();
 const route = useRoute();
 const router = useRouter();
 const { t } = useI18nText();
-const { getAbilityName } = useAbilityText();
-const { getBuffTypeName, getSkillName } = useGameDataText();
+const {
+  getAbilityName,
+  getActionName,
+  getAchievementName,
+  getAchievementTierName,
+  getBuffTypeName,
+  getHouseRoomName,
+  getItemName,
+  getMonsterName,
+  getOfficialGameText,
+  getSkillName,
+} = useGameDataText();
 const AsyncSimulationResultsView = defineAsyncComponent(() => import("../components/SimulationResultsView.vue"));
 const TAMPERMONKEY_BRIDGE_CHANNEL = "mwi-tm-bridge";
 const MAIN_SITE_IMPORT_SCRIPT_URL = "https://greasyfork.org/zh-CN/scripts/568613-mwi-combat-simulator-%E4%B8%BB%E7%AB%99%E4%B8%80%E9%94%AE%E5%AF%BC%E5%85%A5";
@@ -1617,7 +1626,7 @@ const achievementTierSections = computed(() => {
 
       return {
         tierHrid: tier.hrid,
-        tierName: t(`achievementTierNames.${tier.hrid}`, tier.name),
+        tierName: getAchievementTierName(tier.hrid, tier.name),
         buffText: `${t("common:vue.home.buff", "Buff")}: ${buffTypeName} +${buffPercent}`,
         details,
         totalCount: details.length,
@@ -2217,7 +2226,7 @@ function formatCombatStyleName(combatStyleHrid, fallbackName = "") {
     return fallbackName || "-";
   }
   const defaultLabel = fallbackName || combatStyleDetailMap?.[hrid]?.name || hrid;
-  return t(`combatStyleNames.${hrid}`, defaultLabel);
+  return getOfficialGameText("combatStyleNames", hrid, defaultLabel);
 }
 
 function formatDamageTypeName(damageTypeHrid, fallbackName = "") {
@@ -2228,7 +2237,7 @@ function formatDamageTypeName(damageTypeHrid, fallbackName = "") {
   const resolved = damageTypeDetailMap?.[hrid];
   const normalizedHrid = String(resolved?.hrid || hrid);
   const defaultLabel = fallbackName || resolved?.name || hrid;
-  return t(`damageTypeNames.${normalizedHrid}`, defaultLabel);
+  return getOfficialGameText("damageTypeNames", normalizedHrid, defaultLabel);
 }
 
 function formatActionName(actionHrid, fallbackName = "") {
@@ -2236,7 +2245,7 @@ function formatActionName(actionHrid, fallbackName = "") {
   if (!hrid) {
     return fallbackName || "-";
   }
-  return t(`actionNames.${hrid}`, fallbackName || hrid);
+  return getActionName(hrid, fallbackName || hrid);
 }
 
 function formatMonsterName(monsterHrid, fallbackName = "") {
@@ -2244,7 +2253,7 @@ function formatMonsterName(monsterHrid, fallbackName = "") {
   if (!hrid) {
     return fallbackName || "-";
   }
-  return t(`monsterNames.${hrid}`, fallbackName || hrid);
+  return getMonsterName(hrid, fallbackName || hrid);
 }
 
 function formatItemName(itemHrid, fallbackName = "") {
@@ -2253,7 +2262,7 @@ function formatItemName(itemHrid, fallbackName = "") {
     return fallbackName || "-";
   }
   const defaultLabel = fallbackName || itemDetailMap?.[hrid]?.name || hrid;
-  return t(`itemNames.${hrid}`, defaultLabel);
+  return getItemName(hrid, defaultLabel);
 }
 
 function formatAbilityName(abilityHrid, fallbackName = "") {
@@ -2269,7 +2278,7 @@ function formatTriggerDependencyName(dependencyHrid, fallbackName = "") {
   if (!hrid) {
     return fallbackName || "-";
   }
-  return t(`combatTriggerDependencyNames.${hrid}`, fallbackName || hrid);
+  return getOfficialGameText("combatTriggerDependencyNames", hrid, fallbackName || hrid);
 }
 
 function formatTriggerConditionName(conditionHrid, fallbackName = "") {
@@ -2277,7 +2286,7 @@ function formatTriggerConditionName(conditionHrid, fallbackName = "") {
   if (!hrid) {
     return fallbackName || "-";
   }
-  return t(`combatTriggerConditionNames.${hrid}`, fallbackName || hrid);
+  return getOfficialGameText("combatTriggerConditionNames", hrid, fallbackName || hrid);
 }
 
 function formatTriggerComparatorName(comparatorHrid, fallbackName = "") {
@@ -2285,13 +2294,13 @@ function formatTriggerComparatorName(comparatorHrid, fallbackName = "") {
   if (!hrid) {
     return fallbackName || "-";
   }
-  return t(`combatTriggerComparatorNames.${hrid}`, fallbackName || hrid);
+  return getOfficialGameText("combatTriggerComparatorNames", hrid, fallbackName || hrid);
 }
 
 function getAbilitySlotLabel(index) {
   const slotIndex = Number(index);
   if (slotIndex === 0) {
-    return t("abilitySlot.specialAbility", "Special Ability").replace(/<br\s*\/?>/gi, " ");
+    return t("translation:abilitySlot.specialAbility", "Special Ability").replace(/<br\s*\/?>/gi, " ");
   }
   return t("common:vue.home.abilitySlot", `Ability ${slotIndex}`, { index: slotIndex });
 }

@@ -240,7 +240,6 @@ import {
   itemDetailIndex as itemDetailMap,
 } from "../../shared/gameDataIndex.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
-import { useAbilityText } from "../composables/useAbilityText.js";
 import { useGameDataText } from "../composables/useGameDataText.js";
 import { useI18nText } from "../composables/useI18nText.js";
 import { isQueueRunInProgress } from "../multiResultsPresentation.js";
@@ -248,8 +247,13 @@ import { formatQueueTriggerDetailLine } from "../queueTriggerPresentation.js";
 
 const simulator = useSimulatorStore();
 const { t, language } = useI18nText();
-const { getAbilityName } = useAbilityText();
-const { getSkillName } = useGameDataText();
+const {
+  getAbilityName,
+  getActionName,
+  getHouseRoomName,
+  getItemName,
+  getSkillName,
+} = useGameDataText();
 const ABILITY_BOOK_CATEGORY_HRID = "/item_categories/ability_book";
 const ONE_HOUR = 60 * 60 * 1e9;
 const RANKING_ROWS_LIMIT = 300;
@@ -548,19 +552,7 @@ function formatActionName(actionHrid, fallbackName = "-") {
     return fallbackName || "-";
   }
 
-  const translationKey = `translation:actionNames.${hrid}`;
-  const fromTranslation = t(translationKey, translationKey);
-  if (fromTranslation !== translationKey) {
-    return fromTranslation;
-  }
-
-  const commonKey = `actionNames.${hrid}`;
-  const fromCommon = t(commonKey, commonKey);
-  if (fromCommon !== commonKey) {
-    return fromCommon;
-  }
-
-  return fallbackName || hrid;
+  return getActionName(hrid, fallbackName || hrid);
 }
 
 function resolveBaselineZoneName(baseline) {
@@ -635,7 +627,7 @@ function resolveItemName(itemHrid) {
   if (!hrid) {
     return "";
   }
-  return t(`itemNames.${hrid}`, itemDetailMap?.[hrid]?.name || hrid);
+  return getItemName(hrid, itemDetailMap?.[hrid]?.name || hrid);
 }
 
 function resolveAbilityName(abilityHrid) {
@@ -675,7 +667,7 @@ function localizeEquipmentSlotLabel(slotKey) {
   if (!i18nKey) {
     return fallback;
   }
-  const translated = t(i18nKey, fallback);
+  const translated = t(`translation:${i18nKey}`, fallback);
   return translated === i18nKey ? fallback : translated;
 }
 
@@ -810,7 +802,7 @@ function formatQueueChangeDetailLine(change) {
     const after = Math.max(0, Math.floor(Number(change?.afterLevel || 0)));
     const roomHrid = String(change?.roomHrid || "");
     return t("common:queue.houseRoomLevelChange", "{{name}}: Level {{from}} -> {{to}}", {
-      name: t(`houseRoomNames.${roomHrid}`, houseRoomDetailMap?.[roomHrid]?.name || roomHrid || "House Room"),
+      name: getHouseRoomName(roomHrid, houseRoomDetailMap?.[roomHrid]?.name || roomHrid || "House Room"),
       from: before,
       to: after,
     });

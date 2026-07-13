@@ -1,11 +1,13 @@
 {
     "name": "mwicombatsimulator",
-    "version": "1.0.22",
+    "version": "1.0.23",
     "description": "",
     "scripts": {
         "dev": "vite",
         "build": "vite build",
         "build-game-data-index": "node scripts/build-game-data-index.mjs",
+        "sync-official-translations": "node scripts/sync-official-translations.mjs",
+        "check-official-translations": "node scripts/sync-official-translations.mjs --check",
         "verify-pages-build": "node scripts/verify-pages-build.js",
         "preview": "vite preview",
         "start": "vite",
@@ -26,6 +28,7 @@
     "homepage": "https://github.com/AmVoidGuy/MWICombatSimulator#readme",
     "devDependencies": {
         "@vitejs/plugin-vue": "^5.2.4",
+        "acorn": "^8.12.1",
         "autoprefixer": "^10.4.21",
         "postcss": "^8.5.6",
         "tailwindcss": "^3.4.17",

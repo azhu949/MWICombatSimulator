@@ -835,7 +835,10 @@ import { useEnhancementStore } from "../../stores/enhancementStore.js";
 const TAMPERMONKEY_BRIDGE_CHANNEL = "mwi-tm-bridge";
 const enhancement = useEnhancementStore();
 const { language, t } = useI18nText();
-const { getItemName: getGameItemName } = useGameDataText();
+const {
+  getItemName: getGameItemName,
+  getOfficialGameText,
+} = useGameDataText();
 const budgetUnits = Object.freeze(["K", "M", "B"]);
 const itemModalOpen = ref(false);
 const itemIconRevision = ref(0);
@@ -932,16 +935,18 @@ const teaOptions = computed(() => {
 });
 const itemOptions = computed(() => Array.isArray(enhancement.itemOptions) ? enhancement.itemOptions : []);
 const favoriteItemOptions = computed(() => itemOptions.value.filter((item) => isFavorite(item.hrid)));
+function officialItemName(item, targetLanguage) {
+  const hrid = String(item?.hrid || item?.itemHrid || "");
+  return getOfficialGameText("itemNames", hrid, hrid, { language: targetLanguage });
+}
 const filteredItemOptions = computed(() => {
-  language.value;
   const query = String(enhancement.itemSearch || "").trim().toLowerCase();
   return itemOptions.value.filter((item) => {
     if (enhancement.itemFilters.equipmentType !== "all" && item.equipmentType !== enhancement.itemFilters.equipmentType) return false;
     if (enhancement.itemFilters.favoritesOnly && !isFavorite(item.hrid)) return false;
     return !query
-      || itemName(item).toLowerCase().includes(query)
-      || equipmentTypeName(item.equipmentType).toLowerCase().includes(query)
-      || String(item.name || "").toLowerCase().includes(query)
+      || officialItemName(item, "zh").toLowerCase().includes(query)
+      || officialItemName(item, "en").toLowerCase().includes(query)
       || String(item.hrid || "").toLowerCase().includes(query);
   });
 });
@@ -1228,13 +1233,11 @@ function itemIconFallback(item) {
 function equipmentTypeName(equipmentTypeHrid) {
   const hrid = String(equipmentTypeHrid || "").trim();
   if (!hrid) return "";
-  const key = `equipmentTypeNames.${hrid}`;
   const fallback = hrid.split("/").filter(Boolean).at(-1)
     ?.split("_")
     .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
     .join(" ") || hrid;
-  const translated = t(key, key);
-  return translated === key ? fallback : translated;
+  return getOfficialGameText("equipmentTypeNames", hrid, fallback);
 }
 
 function isFavorite(hrid) {

@@ -52,4 +52,12 @@ describe("SettingsPage baseline round defaults", () => {
         expect(settingsPageSource).toContain("syncQueueRunDraft(result.queueSettings);");
         expect(settingsPageSource).toContain("syncQueueRuntimeDraft(result.runtimeSettings);");
     });
+
+    it("searches prices by official Chinese and English item names plus HRID", () => {
+        expect(settingsPageSource).toContain('formatOfficialItemName(row.hrid, "zh").toLowerCase().includes(keyword)');
+        expect(settingsPageSource).toContain('formatOfficialItemName(row.hrid, "en").toLowerCase().includes(keyword)');
+        expect(settingsPageSource).toContain("row.hrid.toLowerCase().includes(keyword)");
+        expect(settingsPageSource).toContain("{ language: targetLanguage }");
+        expect(settingsPageSource).not.toContain("row.name.toLowerCase().includes(keyword)");
+    });
 });

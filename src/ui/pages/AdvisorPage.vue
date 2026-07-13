@@ -311,12 +311,14 @@ import {
   ADVISOR_GOAL_PRESET_XP,
   resolveAdvisorWeights,
 } from "../../services/advisorScoring.js";
+import { useGameDataText } from "../composables/useGameDataText.js";
 import { useI18nText } from "../composables/useI18nText.js";
 import DisclosurePanel from "../components/DisclosurePanel.vue";
 
  const simulator = useSimulatorStore();
  const router = useRouter();
  const { t } = useI18nText();
+ const { getActionName } = useGameDataText();
  const applyStatus = ref("");
 
 const metricValueClass = "inline-flex items-center rounded-full border border-transparent px-2.5 py-1 tabular-nums";
@@ -584,7 +586,7 @@ function getTargetLabel(row) {
     return fallback;
   }
   const defaultLabel = String(actionDetailMap?.[hrid]?.name || fallback);
-  return t(`actionNames.${hrid}`, defaultLabel);
+  return getActionName(hrid, defaultLabel);
 }
 
 function getContentTypeLabel(row) {

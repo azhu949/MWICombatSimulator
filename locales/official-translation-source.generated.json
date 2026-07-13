@@ -1,0 +1,34 @@
+{
+  "schemaVersion": 1,
+  "source": {
+    "origin": "https://www.milkywayidle.com",
+    "manifest": {
+      "path": "/asset-manifest.json",
+      "sha256": "a1149e0b5400931c96eb5ea508525a064ad269f3fcd44551eee93c2df4966b57"
+    },
+    "assets": {
+      "main": {
+        "path": "/static/js/main.3cac92f8.chunk.js",
+        "sha256": "970b462e2d272ea23d9ef6777ec9d6cee91ad39c3d8f5682699a67129c0c599f"
+      },
+      "zh": {
+        "path": "/static/js/10.8be3b319.chunk.js",
+        "moduleId": 492,
+        "chunkId": 10,
+        "sha256": "16115419d47f9b64afb0207d4fc44cebdf962e63aad8511dd706955fe9845647"
+      }
+    }
+  },
+  "resources": {
+    "en": {
+      "file": "locales/en/translation.official.generated.json",
+      "sha256": "b562936bfcf06bd4f8eff14b57437a2c4e9c01a11d258e09f585f4b9b4ede525",
+      "topLevelKeyCount": 137
+    },
+    "zh": {
+      "file": "locales/zh/translation.official.generated.json",
+      "sha256": "6ea927d637d7de97d08ed66fc5ae908d791e578d0d99dec6bf54ab6da9da9a14",
+      "topLevelKeyCount": 137
+    }
+  }
+}

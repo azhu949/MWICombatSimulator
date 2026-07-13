@@ -46,6 +46,40 @@
 
 默认写入目录为：`src/combatsimulator/data`（对应导出脚本的默认输出目录）。
 
+## 官方中英文词条快照
+
+模拟器使用 Milky Way Idle 官网客户端当前发布的英文和简体中文 `translation` 资源作为游戏词条来源。物品、装备、能力、动作、怪物、区域、Buff、成就等游戏实体均以 HRID 作为内部标识，名称与描述只用于展示。
+
+官网没有提供可直接使用且允许跨域访问的翻译 JSON API，因此项目不会在用户浏览器中抓取或执行官网脚本。发布前由 Node.js 同步脚本读取官网资源清单和 JavaScript bundle，通过 AST 仅提取静态对象字面量，校验后生成并提交本地只读快照：
+
+- `locales/en/translation.official.generated.json`
+- `locales/zh/translation.official.generated.json`
+- `locales/official-translation-source.generated.json`
+
+来源清单记录官网资源清单与 bundle 的路径和源码 SHA-256，以及生成资源 SHA-256 和顶层词域数量。同步不执行远程 JavaScript，也不与历史人工译名合并。中文词条缺失时只回退到官方英文数据或 HRID。
+
+更新快照：
+
+```bash
+npm run sync-official-translations
+```
+
+发布前只读检查当前快照是否与官网一致：
+
+```bash
+npm run check-official-translations
+```
+
+同步命令会先完成中英文资源提取和全部 HRID 覆盖校验，再写入任何目标文件。网络失败、官网打包结构变化或词条缺失都会使命令失败，并保留仓库内已有快照。普通构建和运行不访问官网翻译资源。
+
+建议发布顺序：
+
+1. 刷新 `initClientData` 游戏数据并运行 `npm run build-game-data-index`。
+2. 运行 `npm run sync-official-translations` 并审核生成文件差异。
+3. 运行 `npm run check-official-translations`、`npm test` 和 `npm run build`。
+
+这里的“官方词条”仅表示文字与官网客户端发布内容一致，不表示本项目获得 Milky Way Idle 官方授权、认可或背书。官网 bundle 也不是对外承诺稳定性的公共 API；若其结构改变，应更新同步脚本并重新校验，不得静默恢复旧译名。
+
 ## 数据使用免责声明
 
 - 本项目仅用于学习、研究和个人技术交流用途。

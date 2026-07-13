@@ -10,10 +10,10 @@ function translate(_key, fallback) {
         "common:queue.triggerState.default": "Default",
         "common:queue.triggerState.custom": "Custom",
         "common:queue.triggerState.disabled": "Disabled",
-        "combatTriggerDependencyNames./combat_trigger_dependencies/targeted_enemy": "Target Enemy's",
-        "combatTriggerConditionNames./combat_trigger_conditions/current_hp": "Current Hp",
-        "combatTriggerConditionNames./combat_trigger_conditions/number_of_active_units": "# of Active Units",
-        "combatTriggerComparatorNames./combat_trigger_comparators/greater_than_equal": ">=",
+        "translation:combatTriggerDependencyNames./combat_trigger_dependencies/targeted_enemy": "Target Enemy's",
+        "translation:combatTriggerConditionNames./combat_trigger_conditions/current_hp": "Current Hp",
+        "translation:combatTriggerConditionNames./combat_trigger_conditions/number_of_active_units": "# of Active Units",
+        "translation:combatTriggerComparatorNames./combat_trigger_comparators/greater_than_equal": ">=",
     };
     return String(table[_key] || fallback || "");
 }

@@ -391,7 +391,6 @@ import {
 import BaseModal from "./components/BaseModal.vue";
 import DisclosurePanel from "./components/DisclosurePanel.vue";
 import { useSimulatorStore } from "../stores/simulatorStore.js";
-import { useAbilityText } from "./composables/useAbilityText.js";
 import { useGameDataText } from "./composables/useGameDataText.js";
 import { useI18nText } from "./composables/useI18nText.js";
 import {
@@ -429,8 +428,13 @@ const topQueueActionStatus = ref({
   text: "",
 });
 const { language, setLanguage, t } = useI18nText();
-const { getAbilityName } = useAbilityText();
-const { getSkillName } = useGameDataText();
+const {
+  getAbilityName,
+  getActionName,
+  getHouseRoomName,
+  getItemName,
+  getSkillName,
+} = useGameDataText();
 const showCombatToolbar = computed(() => route.meta?.showCombatToolbar !== false);
 
 const progressLabel = computed(() => {
@@ -609,10 +613,8 @@ function localizeHridDisplayName(hrid) {
     return "-";
   }
 
-  const fallback = itemDetailMap?.[value]?.name || actionNameFallbackMap.value?.[value] || value;
-  const itemName = t(`itemNames.${value}`, `itemNames.${value}`);
-  if (itemName !== `itemNames.${value}`) {
-    return itemName;
+  if (Object.prototype.hasOwnProperty.call(itemDetailMap || {}, value)) {
+    return getItemName(value, itemDetailMap[value]?.name || value);
   }
 
   const abilityName = getAbilityName(value, "");
@@ -620,12 +622,11 @@ function localizeHridDisplayName(hrid) {
     return abilityName;
   }
 
-  const actionName = t(`actionNames.${value}`, `actionNames.${value}`);
-  if (actionName !== `actionNames.${value}`) {
-    return actionName;
+  if (Object.prototype.hasOwnProperty.call(actionNameFallbackMap.value || {}, value) || value.startsWith("/actions/")) {
+    return getActionName(value, actionNameFallbackMap.value?.[value] || value);
   }
 
-  return fallback;
+  return value;
 }
 
 function localizeQueueSkillName(skillKey) {
@@ -635,7 +636,7 @@ function localizeQueueSkillName(skillKey) {
 
 function localizeHouseRoomName(roomHrid) {
   const value = String(roomHrid || "");
-  return t(`houseRoomNames.${value}`, houseRoomDetailMap?.[value]?.name || value || "House Room");
+  return getHouseRoomName(value, houseRoomDetailMap?.[value]?.name || value || "House Room");
 }
 
 function formatTopQueueVariantName(item, fallbackIndex = 1) {

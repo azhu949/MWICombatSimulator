@@ -512,12 +512,17 @@ import { buildNoRngProfitBreakdown, buildRandomProfitBreakdown } from "../../ser
 import DisclosurePanel from "./DisclosurePanel.vue";
 import TimeSeriesChart from "./TimeSeriesChart.vue";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
-import { useAbilityText } from "../composables/useAbilityText.js";
+import { useGameDataText } from "../composables/useGameDataText.js";
 import { useI18nText } from "../composables/useI18nText.js";
 
 const simulator = useSimulatorStore();
 const { t } = useI18nText();
-const { getAbilityName } = useAbilityText();
+const {
+  getAbilityName,
+  getActionName,
+  getItemName,
+  getMonsterName,
+} = useGameDataText();
 const PLAYER_HRIDS = new Set(["player1", "player2", "player3", "player4", "player5"]);
 const batchSort = ref({ key: "", direction: "desc" });
 const batchTableColumns = Object.freeze([
@@ -729,7 +734,7 @@ const zoneLabel = computed(() => {
     }
     if (labyrinthHrid.startsWith("/monsters/")) {
       const defaultLabel = combatMonsterDetailMap?.[labyrinthHrid]?.name || labyrinthHrid;
-      return t(`monsterNames.${labyrinthHrid}`, defaultLabel);
+      return getMonsterName(labyrinthHrid, defaultLabel);
     }
     return labyrinthHrid;
   }
@@ -740,7 +745,7 @@ const zoneLabel = computed(() => {
   }
   if (zoneHrid.startsWith("/actions/")) {
     const defaultLabel = actionDetailMap?.[zoneHrid]?.name || zoneHrid;
-    return t(`actionNames.${zoneHrid}`, defaultLabel);
+    return getActionName(zoneHrid, defaultLabel);
   }
   return zoneHrid;
 });
@@ -1140,11 +1145,11 @@ function formatBatchCell(row, column) {
     const zoneText = String(value || "");
     if (zoneText.startsWith("/actions/")) {
       const defaultLabel = actionDetailMap?.[zoneText]?.name || zoneText;
-      return t(`actionNames.${zoneText}`, defaultLabel);
+      return getActionName(zoneText, defaultLabel);
     }
     if (zoneText.startsWith("/monsters/")) {
       const defaultLabel = combatMonsterDetailMap?.[zoneText]?.name || zoneText;
-      return t(`monsterNames.${zoneText}`, defaultLabel);
+      return getMonsterName(zoneText, defaultLabel);
     }
     return zoneText || "-";
   }
@@ -1195,13 +1200,13 @@ function formatItemName(itemHrid) {
     return "-";
   }
   const defaultLabel = itemDetailMap?.[hrid]?.name || hrid;
-  return t(`itemNames.${hrid}`, defaultLabel);
+  return getItemName(hrid, defaultLabel);
 }
 
 function formatMonsterName(monsterHrid) {
   const hrid = String(monsterHrid || "");
   const defaultLabel = combatMonsterDetailMap?.[hrid]?.name || hrid;
-  return t(`monsterNames.${hrid}`, defaultLabel);
+  return getMonsterName(hrid, defaultLabel);
 }
 
 function formatAbilityLabel(abilityHrid) {
@@ -1404,7 +1409,7 @@ function formatRestoreSourceLabel(source, resourceType) {
     return t("common:vue.home.combatStats.ripple", "Ripple");
   }
   if (itemDetailMap?.[source]?.name) {
-    return t(`itemNames.${source}`, itemDetailMap[source].name);
+    return getItemName(source, itemDetailMap[source].name);
   }
   const abilityName = getAbilityName(source, source || "-");
   if (abilityName !== (source || "-")) {

@@ -48,7 +48,7 @@ function localizeTriggerMetadata(namespaceKey, hrid, detailMap, translate) {
     if (!normalizedHrid) {
         return "";
     }
-    return t(`${namespaceKey}.${normalizedHrid}`, detailMap?.[normalizedHrid]?.name || normalizedHrid);
+    return t(`translation:${namespaceKey}.${normalizedHrid}`, detailMap?.[normalizedHrid]?.name || normalizedHrid);
 }
 
 function formatTriggerRuleValue(value) {

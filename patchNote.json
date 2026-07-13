@@ -1,4 +1,22 @@
 {
+    "2026年7月13日（v1.0.23）": {
+        "label": {
+            "zh": "2026年7月13日（v1.0.23）",
+            "en": "July 13, 2026 (v1.0.23)"
+        },
+        "notes": {
+            "zh": [
+                "游戏词条改为使用官网当前发布的中英文翻译快照，统一物品、技能、能力、动作、怪物、住宅、成就和战斗触发条件等名称。",
+                "强化模拟和设置页的物品搜索现在可同时匹配官方中文名、英文名和 HRID。",
+                "翻译资源现在随版本离线加载，并新增发布前的官方词条同步、来源记录和完整性校验流程。"
+            ],
+            "en": [
+                "Game terminology now uses snapshots of the official English and Chinese translations, unifying names for items, skills, abilities, actions, monsters, housing, achievements, and combat trigger metadata.",
+                "Item search on the Enhancement and Settings pages can now match official Chinese names, English names, and HRIDs at the same time.",
+                "Translation resources are now loaded offline with each release, backed by a pre-release synchronization, source-recording, and integrity-validation workflow."
+            ]
+        }
+    },
     "2026年7月13日（v1.0.22）": {
         "label": {
             "zh": "2026年7月13日（v1.0.22）",

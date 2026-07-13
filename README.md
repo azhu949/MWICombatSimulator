@@ -16,7 +16,7 @@ MWICombatSimulator 用于在本地运行战斗模拟与收益评估，帮助你�
 - **Enhancement**：比较不同保护阈值的期望成本，评估贤者之镜、分解价值、成本分位与预算成功率
 - **Multi Results**：汇总多轮结果并支持导出 Excel
 - **Import/Export**：支持导入导出；可配合 Tampermonkey 脚本从主站一键导入当前角色，支持 `milkywayidle.com` 与 `milkywayidlecn.com`
-- **i18n + Web Workers**：中英界面，worker 并行计算提升批量模拟速度
+- **官方中英游戏词条 + Web Workers**：发布前同步官网词条快照，运行时离线加载；worker 并行计算提升批量模拟速度
 - **Parallel Worker Limit**：Settings 中保存的并行 worker 上限也会应用到 Home 页的批量 Zone / Labyrinth 模拟
 
 ## 在线地址 / 部署地址
@@ -60,7 +60,7 @@ npm test
 
 ## 常用文档
 
-- [`docs/game-data.md`](docs/game-data.md)：游戏数据来源、数据使用免责声明、刷新当前维护的游戏数据 JSON，以及在浏览器控制台直接下载 `initClientData.txt` 的方法
+- [`docs/game-data.md`](docs/game-data.md)：游戏数据与官方中英文词条来源、同步/发布流程、使用免责声明，以及刷新当前维护数据的方法
 - [`docs/init-client-data-key-reference.md`](docs/init-client-data-key-reference.md)：`initClientData` 当前 48 个顶层 key 的作用、接入状态和导出情况对照表
 - [`scripts/mwi-main-site-import.README.md`](scripts/mwi-main-site-import.README.md)：Tampermonkey「主站一键导入」脚本说明
 

@@ -1,9 +1,14 @@
 import {
+    getAbilityName as getIndexedAbilityName,
+    getActionName as getIndexedActionName,
     getBuffTypeName as getIndexedBuffTypeName,
+    getHouseRoomName as getIndexedHouseRoomName,
     getItemCategoryName as getIndexedItemCategoryName,
     getItemName as getIndexedItemName,
+    getMonsterName as getIndexedMonsterName,
     getSkillName as getIndexedSkillName,
 } from "../../shared/gameDataIndex.js";
+import { normalizeAbilityDefinitionHrid, resolveAbilityDefinition } from "../../combatsimulator/abilityDefinitionResolver.js";
 import { useI18nText } from "./useI18nText.js";
 
 function coerceText(value) {
@@ -39,6 +44,63 @@ function isUnresolvedTranslation(value, keys) {
 export function useGameDataText() {
     const { t } = useI18nText();
 
+    function getOfficialGameText(resourceKey, hrid, fallbackText = "", options = {}) {
+        const rawHrid = coerceText(hrid).trim();
+        const normalizedFallback = coerceText(fallbackText);
+        if (!rawHrid) {
+            return normalizedFallback;
+        }
+
+        const translationKey = `translation:${resourceKey}.${rawHrid}`;
+        const translated = t(
+            translationKey,
+            translationKey,
+            options.language ? { lng: options.language } : {},
+        );
+        if (!isUnresolvedTranslation(translated, [translationKey])) {
+            return translated;
+        }
+
+        return normalizedFallback || (options.fallbackToHrid === false ? "" : rawHrid);
+    }
+
+    function getAbilityName(abilityHrid, fallbackName = "") {
+        const rawHrid = coerceText(abilityHrid).trim();
+        if (!rawHrid) {
+            return coerceText(fallbackName);
+        }
+        const normalizedHrid = normalizeAbilityDefinitionHrid(rawHrid) || rawHrid;
+        return getOfficialGameText(
+            "abilityNames",
+            normalizedHrid,
+            getIndexedAbilityName(normalizedHrid, coerceText(fallbackName)),
+        );
+    }
+
+    function getAbilityDescription(abilityHrid, fallbackDescription = "") {
+        const rawHrid = coerceText(abilityHrid).trim();
+        if (!rawHrid) {
+            return coerceText(fallbackDescription);
+        }
+        const normalizedHrid = normalizeAbilityDefinitionHrid(rawHrid) || rawHrid;
+        const definitionDescription = coerceText(resolveAbilityDefinition(normalizedHrid)?.description);
+        return getOfficialGameText(
+            "abilityDescriptions",
+            normalizedHrid,
+            definitionDescription || coerceText(fallbackDescription),
+            { fallbackToHrid: false },
+        );
+    }
+
+    function getActionName(actionHrid, fallbackName = "") {
+        const rawHrid = coerceText(actionHrid).trim();
+        return getOfficialGameText(
+            "actionNames",
+            rawHrid,
+            getIndexedActionName(rawHrid, coerceText(fallbackName)),
+        );
+    }
+
     function getBuffTypeName(buffTypeHrid, fallbackName = "") {
         const rawHrid = coerceText(buffTypeHrid).trim();
         const fallbackText = coerceText(fallbackName);
@@ -47,13 +109,7 @@ export function useGameDataText() {
             return fallbackText;
         }
 
-        const translationKey = `buffTypeNames.${rawHrid}`;
-        const translated = t(translationKey, translationKey);
-        if (translated !== translationKey) {
-            return translated;
-        }
-
-        return getIndexedBuffTypeName(rawHrid, fallbackText);
+        return getOfficialGameText("buffTypeNames", rawHrid, getIndexedBuffTypeName(rawHrid, fallbackText));
     }
 
     function getSkillName(skillKey, fallbackName = "") {
@@ -66,11 +122,7 @@ export function useGameDataText() {
 
         const normalizedHrid = normalizeSkillHrid(rawSkillKey);
         if (normalizedHrid) {
-            const translationKey = `skillNames.${normalizedHrid}`;
-            const translated = t(translationKey, translationKey);
-            if (translated !== translationKey) {
-                return translated;
-            }
+            return getOfficialGameText("skillNames", normalizedHrid, getIndexedSkillName(rawSkillKey, fallbackText));
         }
 
         return getIndexedSkillName(rawSkillKey, fallbackText);
@@ -84,13 +136,11 @@ export function useGameDataText() {
             return fallbackText;
         }
 
-        const translationKey = `itemCategoryNames.${rawHrid}`;
-        const translated = t(translationKey, translationKey);
-        if (translated !== translationKey) {
-            return translated;
-        }
-
-        return getIndexedItemCategoryName(rawHrid, fallbackText);
+        return getOfficialGameText(
+            "itemCategoryNames",
+            rawHrid,
+            getIndexedItemCategoryName(rawHrid, fallbackText),
+        );
     }
 
     function getItemName(itemHrid, fallbackName = "") {
@@ -101,23 +151,46 @@ export function useGameDataText() {
             return fallbackText;
         }
 
-        const translationKeys = [
-            `translation:itemNames.${rawHrid}`,
-            `itemNames.${rawHrid}`,
-        ];
-        for (const translationKey of translationKeys) {
-            const translated = t(translationKey, translationKey);
-            if (translated && !isUnresolvedTranslation(translated, translationKeys)) {
-                return translated;
-            }
-        }
+        return getOfficialGameText("itemNames", rawHrid, getIndexedItemName(rawHrid, fallbackText));
+    }
 
-        return getIndexedItemName(rawHrid, fallbackText);
+    function getMonsterName(monsterHrid, fallbackName = "") {
+        const rawHrid = coerceText(monsterHrid).trim();
+        return getOfficialGameText(
+            "monsterNames",
+            rawHrid,
+            getIndexedMonsterName(rawHrid, coerceText(fallbackName)),
+        );
+    }
+
+    function getHouseRoomName(roomHrid, fallbackName = "") {
+        const rawHrid = coerceText(roomHrid).trim();
+        return getOfficialGameText(
+            "houseRoomNames",
+            rawHrid,
+            getIndexedHouseRoomName(rawHrid, coerceText(fallbackName)),
+        );
+    }
+
+    function getAchievementName(achievementHrid, fallbackName = "") {
+        return getOfficialGameText("achievementNames", achievementHrid, fallbackName);
+    }
+
+    function getAchievementTierName(tierHrid, fallbackName = "") {
+        return getOfficialGameText("achievementTierNames", tierHrid, fallbackName);
     }
 
     return {
+        getAbilityDescription,
+        getAbilityName,
+        getActionName,
+        getAchievementName,
+        getAchievementTierName,
         getBuffTypeName,
+        getHouseRoomName,
         getItemName,
+        getMonsterName,
+        getOfficialGameText,
         getSkillName,
         getItemCategoryName,
     };
