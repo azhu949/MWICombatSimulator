@@ -32,6 +32,8 @@
 - `enhancementLevelSuccessRateTable.json`
 - `enhancementLevelTotalBonusMultiplierTable.json`
 - `equipmentTypeDetailMap.json`
+- `guildBuffDetailMap.json`
+- `guildShrineDetailMap.json`
 - `houseRoomDetailMap.json`
 - `itemDetailMap.json`
 - `itemLocationDetailMap.json`
@@ -50,7 +52,7 @@
 
 模拟器使用 Milky Way Idle 官网客户端当前发布的英文和简体中文 `translation` 资源作为游戏词条来源。物品、装备、能力、动作、怪物、区域、Buff、成就等游戏实体均以 HRID 作为内部标识，名称与描述只用于展示。
 
-官网没有提供可直接使用且允许跨域访问的翻译 JSON API，因此项目不会在用户浏览器中抓取或执行官网脚本。发布前由 Node.js 同步脚本读取官网资源清单和 JavaScript bundle，通过 AST 仅提取静态对象字面量，校验后生成并提交本地只读快照：
+官网没有提供可直接使用且允许跨域访问的翻译 JSON API，因此项目不会在用户浏览器中抓取或执行官网脚本。发布前由 Node.js 同步脚本读取官网主页、资源清单和 JavaScript bundle，通过 AST 仅提取静态对象字面量，校验后生成并提交本地只读快照；当资源清单短暂滞后于主页部署时，以主页实际加载的同源 main/runtime chunk 为准：
 
 - `locales/en/translation.official.generated.json`
 - `locales/zh/translation.official.generated.json`

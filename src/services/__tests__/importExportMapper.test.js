@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import actionDetailMap from "../../combatsimulator/data/actionDetailMap.json";
 import abilityDetailMap from "../../combatsimulator/data/abilityDetailMap.json";
 import itemDetailMap from "../../combatsimulator/data/itemDetailMap.json";
+import { combatGuildBuffDetails } from "../../shared/guildBuffs.js";
 import { createEmptyPlayerConfig } from "../playerMapper.js";
 import {
     exportGroupConfig,
@@ -109,6 +110,7 @@ function createConfiguredPlayer(id = 1) {
     };
     player.triggerMap[player.food[0]] = [];
     player.houseRooms[Object.keys(player.houseRooms)[0]] = 2;
+    player.guildBuffs[combatGuildBuffDetails[0].hrid] = 4;
     player.achievements = { "/achievements/test": true };
     return player;
 }
@@ -139,6 +141,7 @@ describe("importExportMapper", () => {
         expect(parsed.format).toBe("mwi-vue-solo");
         expect(parsed.player.levels.magic).toBe(44);
         expect(parsed.player.food[0]).toBe(player.food[0]);
+        expect(parsed.player.guildBuffs[combatGuildBuffDetails[0].hrid]).toBe(4);
     });
 
     it("imports modern group payload", () => {
@@ -171,13 +174,29 @@ describe("importExportMapper", () => {
         expect(result.detectedFormat).toBe("modern-solo");
         expect(result.player.levels.attack).toBe(33);
         expect(result.player.skillExperience.attack).toBeNull();
+        expect(result.player.guildBuffs[combatGuildBuffDetails[0].hrid]).toBe(4);
         expect(result.simulationSettings.zoneHrid).toBe(settings.zoneHrid);
         expect(result.simulationSettings.simulationTimeHours).toBe(12);
     });
 
+    it("defaults guild buffs to zero when an older simulator config omits them", () => {
+        const guildBuffHrid = combatGuildBuffDetails[0].hrid;
+        const fallbackPlayer = createEmptyPlayerConfig(1);
+        fallbackPlayer.guildBuffs[guildBuffHrid] = 9;
+        const payload = JSON.parse(exportSoloConfig(createConfiguredPlayer(1), createSimulationSettings()));
+        delete payload.player.guildBuffs;
+
+        const result = importSoloConfig(JSON.stringify(payload), fallbackPlayer, createSimulationSettings());
+
+        expect(result.detectedFormat).toBe("modern-solo");
+        expect(result.player.guildBuffs[guildBuffHrid]).toBe(0);
+    });
+
     it("imports legacy solo payload for manual paste compatibility", () => {
         const fallbackPlayer = createEmptyPlayerConfig(1);
+        const guildBuffHrid = combatGuildBuffDetails[0].hrid;
         fallbackPlayer.achievements = { "/achievements/existing": true };
+        fallbackPlayer.guildBuffs[guildBuffHrid] = 9;
 
         const legacyPayload = {
             player: {
@@ -246,6 +265,7 @@ describe("importExportMapper", () => {
         expect(result.player.food[0]).toBe("/items/star_fruit_gummy");
         expect(result.player.abilities[4].abilityHrid).toBe("/abilities/fireball");
         expect(result.player.achievements).toEqual({ "/achievements/existing": true });
+        expect(result.player.guildBuffs[guildBuffHrid]).toBe(0);
         expect(result.simulationSettings.zoneHrid).toBe("/actions/combat/jungle_planet");
         expect(result.simulationSettings.difficultyTier).toBe(2);
         expect(result.simulationSettings.simulationTimeHours).toBe(12);
@@ -352,9 +372,12 @@ describe("importExportMapper", () => {
 
     it("imports main-site share profile payload", () => {
         const fallbackPlayer = createEmptyPlayerConfig(3);
+        const guildBuffHrid = combatGuildBuffDetails[0].hrid;
         const abilityHrid = findFirstAbilityWithDefaultTriggers();
         const specialAbilityHrid = findFirstSpecialAbility();
         const zoneActionHrid = findFirstCombatAction(false);
+
+        fallbackPlayer.guildBuffs[guildBuffHrid] = 9;
 
         expect(abilityHrid).toBeTruthy();
         expect(specialAbilityHrid).toBeTruthy();
@@ -389,6 +412,7 @@ describe("importExportMapper", () => {
             abilityHrid: specialAbilityHrid,
             level: 4,
         });
+        expect(result.player.guildBuffs[guildBuffHrid]).toBe(9);
         expect(result.player.abilities[1]).toEqual({
             abilityHrid,
             level: 6,
@@ -847,5 +871,54 @@ describe("importExportMapper", () => {
             abilityHrid: secondAbilityHrid,
             level: 7,
         });
+    });
+
+    it("imports effective guild buff levels capped by the current guild shrines", () => {
+        const fallbackPlayer = createEmptyPlayerConfig(9);
+        const purchased = {};
+        const buildings = {};
+
+        for (let index = 0; index < combatGuildBuffDetails.length; index++) {
+            const detail = combatGuildBuffDetails[index];
+            purchased[detail.hrid] = { guildBuffHrid: detail.hrid, level: 10 + index };
+            buildings[detail.shrineHrid] = index + 2;
+        }
+
+        const fixture = createMainSiteCurrentCharacterFixture({
+            characterGuildBuffMap: purchased,
+            guildBuildingLevelMap: buildings,
+        });
+        const result = importSoloConfig(JSON.stringify(fixture), fallbackPlayer, createSimulationSettings());
+
+        for (let index = 0; index < combatGuildBuffDetails.length; index++) {
+            expect(result.player.guildBuffs[combatGuildBuffDetails[index].hrid]).toBe(index + 2);
+        }
+    });
+
+    it("preserves configured guild buffs when older main-site payloads omit guild fields", () => {
+        const fallbackPlayer = createEmptyPlayerConfig(10);
+        const guildBuffHrid = combatGuildBuffDetails[0].hrid;
+        fallbackPlayer.guildBuffs[guildBuffHrid] = 9;
+        const fixture = createMainSiteCurrentCharacterFixture();
+        delete fixture.characterGuildBuffMap;
+        delete fixture.guildBuildingLevelMap;
+
+        const result = importSoloConfig(JSON.stringify(fixture), fallbackPlayer, createSimulationSettings());
+
+        expect(result.player.guildBuffs[guildBuffHrid]).toBe(9);
+    });
+
+    it("clears effective guild buffs when the new main-site payload reports no guild data", () => {
+        const fallbackPlayer = createEmptyPlayerConfig(11);
+        const guildBuffHrid = combatGuildBuffDetails[0].hrid;
+        fallbackPlayer.guildBuffs[guildBuffHrid] = 9;
+
+        const result = importSoloConfig(
+            JSON.stringify(createMainSiteCurrentCharacterFixture()),
+            fallbackPlayer,
+            createSimulationSettings()
+        );
+
+        expect(result.player.guildBuffs[guildBuffHrid]).toBe(0);
     });
 });

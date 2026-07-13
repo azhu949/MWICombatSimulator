@@ -9,6 +9,7 @@ import {
     getSkillName as getIndexedSkillName,
 } from "../../shared/gameDataIndex.js";
 import { normalizeAbilityDefinitionHrid, resolveAbilityDefinition } from "../../combatsimulator/abilityDefinitionResolver.js";
+import { getGuildShrineName as getIndexedGuildShrineName } from "../../shared/guildBuffs.js";
 import { useI18nText } from "./useI18nText.js";
 
 function coerceText(value) {
@@ -172,6 +173,15 @@ export function useGameDataText() {
         );
     }
 
+    function getGuildShrineName(shrineHrid, fallbackName = "") {
+        const rawHrid = coerceText(shrineHrid).trim();
+        return getOfficialGameText(
+            "guildShrineNames",
+            rawHrid,
+            getIndexedGuildShrineName(rawHrid, coerceText(fallbackName)),
+        );
+    }
+
     function getAchievementName(achievementHrid, fallbackName = "") {
         return getOfficialGameText("achievementNames", achievementHrid, fallbackName);
     }
@@ -187,6 +197,7 @@ export function useGameDataText() {
         getAchievementName,
         getAchievementTierName,
         getBuffTypeName,
+        getGuildShrineName,
         getHouseRoomName,
         getItemName,
         getMonsterName,

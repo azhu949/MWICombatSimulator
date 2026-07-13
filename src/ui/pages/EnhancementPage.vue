@@ -93,11 +93,11 @@
             </label>
             <label class="flex min-h-10 items-center gap-2 self-end rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-slate-300">
               <input v-model="enhancement.config.blessedTea" type="checkbox" />
-              <span>{{ t("common:enhancement.blessedTea", "Blessed Tea") }}</span>
+              <span>{{ getGameItemName("/items/blessed_tea", t("common:enhancement.blessedTea", "Blessed Tea")) }}</span>
             </label>
             <label class="flex min-h-10 items-center gap-2 self-end rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-slate-300">
               <input v-model="enhancement.config.wisdomTea" type="checkbox" />
-              <span>{{ t("common:enhancement.wisdomTea", "Wisdom Tea") }}</span>
+              <span>{{ getGameItemName("/items/wisdom_tea", t("common:enhancement.wisdomTea", "Wisdom Tea")) }}</span>
             </label>
           </div>
 

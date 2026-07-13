@@ -7,6 +7,8 @@ const REQUIRED_CLIENT_DATA_KEYS = Object.freeze([
     "actionDetailMap",
     "combatMonsterDetailMap",
     "enhancementLevelSuccessRateTable",
+    "guildBuffDetailMap",
+    "guildShrineDetailMap",
     "itemDetailMap",
     "openableLootDropMap",
 ]);
@@ -29,6 +31,8 @@ const DEFAULT_TRACKED_GAME_DATA_FILES = Object.freeze([
     "enhancementLevelSuccessRateTable.json",
     "enhancementLevelTotalBonusMultiplierTable.json",
     "equipmentTypeDetailMap.json",
+    "guildBuffDetailMap.json",
+    "guildShrineDetailMap.json",
     "houseRoomDetailMap.json",
     "itemCategoryDetailMap.json",
     "itemDetailMap.json",
@@ -80,7 +84,20 @@ function hasRequiredClientDataKeys(obj) {
     if (!obj || typeof obj !== "object") {
         return false;
     }
-    return REQUIRED_CLIENT_DATA_KEYS.every((key) => Object.prototype.hasOwnProperty.call(obj, key));
+    return REQUIRED_CLIENT_DATA_KEYS.every((key) => {
+        if (!Object.prototype.hasOwnProperty.call(obj, key)) {
+            return false;
+        }
+
+        const value = obj[key];
+        if (Array.isArray(value)) {
+            return value.length > 0;
+        }
+        if (value && typeof value === "object") {
+            return Object.keys(value).length > 0;
+        }
+        return value != null;
+    });
 }
 
 function getMissingTargetKeys(clientData, targetMapFiles = TARGET_MAP_FILES) {

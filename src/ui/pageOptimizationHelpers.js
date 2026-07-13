@@ -48,6 +48,7 @@ export function createCombatPreviewPlayerConfig(playerConfig = null) {
         }),
         triggerMap: clonePlainValue(playerConfig?.triggerMap, {}),
         houseRooms: { ...(playerConfig?.houseRooms ?? {}) },
+        guildBuffs: { ...(playerConfig?.guildBuffs ?? {}) },
         achievements: { ...(playerConfig?.achievements ?? {}) },
     };
 }

@@ -594,6 +594,7 @@ function buildSimulationPlayerFromConfig(playerConfig) {
         drinks: [null, null, null],
         abilities: [null, null, null, null, null],
         houseRooms: playerConfig.houseRooms ?? {},
+        guildBuffs: playerConfig.guildBuffs ?? {},
         achievements: playerConfig.achievements ?? {},
         debuffOnLevelGap: 0,
     };

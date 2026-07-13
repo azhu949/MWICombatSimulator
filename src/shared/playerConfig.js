@@ -1,4 +1,5 @@
 import { EQUIPMENT_SLOT_KEYS, LEVEL_KEYS, houseRoomHrids } from "./gameDataIndex.js";
+import { combatGuildBuffHrids } from "./guildBuffs.js";
 
 export { EQUIPMENT_SLOT_KEYS, LEVEL_KEYS };
 
@@ -8,6 +9,7 @@ export function createEmptySkillExperienceMap() {
 
 export function createEmptyPlayerConfig(id) {
     const houseRooms = Object.fromEntries(houseRoomHrids.map((hrid) => [hrid, 0]));
+    const guildBuffs = Object.fromEntries(combatGuildBuffHrids.map((hrid) => [hrid, 0]));
     const levels = Object.fromEntries(LEVEL_KEYS.map((key) => [key, 1]));
     const skillExperience = createEmptySkillExperienceMap();
     const equipment = Object.fromEntries(EQUIPMENT_SLOT_KEYS.map((slot) => [slot, { itemHrid: "", enhancementLevel: 0 }]));
@@ -30,6 +32,7 @@ export function createEmptyPlayerConfig(id) {
         ],
         triggerMap: {},
         houseRooms,
+        guildBuffs,
         achievements: {},
     };
 }

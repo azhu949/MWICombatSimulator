@@ -24,6 +24,13 @@ import {
     zoneOptions,
 } from "../shared/gameDataIndex.js";
 import { createEmptyPlayerConfig, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../shared/playerConfig.js";
+import {
+    combatGuildBuffDetails,
+    getGuildBuffMaxLevel,
+    getGuildShrineName,
+    guildBuffDetailIndex,
+    normalizeGuildBuffLevels,
+} from "../shared/guildBuffs.js";
 import workerClient, { WorkerClient } from "../services/workerClient.js";
 import { estimateNoRngProfit } from "../services/profitEstimator.js";
 import {
@@ -1325,6 +1332,9 @@ function hasMeaningfulModernPlayerData(player) {
     if (isPlainObject(player.houseRooms) && Object.values(player.houseRooms).some((value) => toFiniteNumber(value, 0) > 0)) {
         return true;
     }
+    if (isPlainObject(player.guildBuffs) && Object.values(player.guildBuffs).some((value) => toFiniteNumber(value, 0) > 0)) {
+        return true;
+    }
     if (hasAnyTruthyValue(player.achievements)) {
         return true;
     }
@@ -1590,6 +1600,7 @@ function createEquipmentSetSnapshotFromPlayer(player) {
         ]),
         triggerMap: sanitizeTriggerMap(source.triggerMap ?? {}),
         houseRooms: deepClone(source.houseRooms ?? {}),
+        guildBuffs: normalizeGuildBuffLevels(source.guildBuffs),
         achievements: deepClone(source.achievements ?? {}),
     };
 }
@@ -1639,6 +1650,8 @@ function normalizeEquipmentSetSnapshot(rawSet, fallbackPlayerId = "1") {
     normalized.houseRooms = isPlainObject(source.houseRooms)
         ? deepClone(source.houseRooms)
         : deepClone(fallback.houseRooms);
+
+    normalized.guildBuffs = normalizeGuildBuffLevels(source.guildBuffs, fallback.guildBuffs);
 
     normalized.achievements = isPlainObject(source.achievements)
         ? deepClone(source.achievements)
@@ -1715,6 +1728,19 @@ function normalizeEquipmentSetQueueChangeTarget(rawTarget) {
         };
     }
 
+    if (kind === "guild_buff") {
+        const guildBuffHrid = String(rawTarget.guildBuffHrid || "");
+        const maxLevel = getGuildBuffMaxLevel(guildBuffHrid);
+        if (!guildBuffHrid || maxLevel <= 0) {
+            return null;
+        }
+        return {
+            kind: "guild_buff",
+            guildBuffHrid,
+            level: Math.min(clampPositiveInteger(rawTarget.level, 0), maxLevel),
+        };
+    }
+
     return null;
 }
 
@@ -1784,6 +1810,13 @@ function serializeQueueChangeToTarget(change) {
         return normalizeEquipmentSetQueueChangeTarget({
             kind: "house_room",
             roomHrid: String(change.roomHrid || ""),
+            level: Number(change.afterLevel || 0),
+        });
+    }
+    if (change.kind === "guild_buff") {
+        return normalizeEquipmentSetQueueChangeTarget({
+            kind: "guild_buff",
+            guildBuffHrid: String(change.guildBuffHrid || ""),
             level: Number(change.afterLevel || 0),
         });
     }
@@ -1893,6 +1926,19 @@ function applyQueueChangeTargetToSnapshot(snapshot, target) {
             snapshot.houseRooms = {};
         }
         snapshot.houseRooms[roomHrid] = clampPositiveInteger(target.level, 0);
+        return true;
+    }
+
+    if (target.kind === "guild_buff") {
+        const guildBuffHrid = String(target.guildBuffHrid || "");
+        const maxLevel = getGuildBuffMaxLevel(guildBuffHrid);
+        if (!guildBuffHrid || maxLevel <= 0) {
+            return false;
+        }
+        if (!isPlainObject(snapshot.guildBuffs)) {
+            snapshot.guildBuffs = {};
+        }
+        snapshot.guildBuffs[guildBuffHrid] = Math.min(clampPositiveInteger(target.level, 0), maxLevel);
         return true;
     }
 
@@ -2427,6 +2473,11 @@ function formatQueueHouseRoomNameFromHrid(roomHrid) {
     return getIndexedHouseRoomName(hrid, hrid);
 }
 
+function formatQueueGuildBuffNameFromHrid(guildBuffHrid) {
+    const detail = guildBuffDetailIndex?.[String(guildBuffHrid || "")];
+    return getGuildShrineName(detail?.shrineHrid, String(guildBuffHrid || "Guild Shrine"));
+}
+
 function computeQueueChangeSummary(baselinePlayer, candidatePlayer) {
     const baseline = baselinePlayer || {};
     const candidate = candidatePlayer || {};
@@ -2570,6 +2621,23 @@ function computeQueueChangeSummary(baselinePlayer, candidatePlayer) {
         }
     }
 
+    for (const detail of combatGuildBuffDetails) {
+        const guildBuffHrid = String(detail?.hrid || "");
+        const beforeLevel = Math.max(0, Math.floor(toFiniteNumber(baseline?.guildBuffs?.[guildBuffHrid], 0)));
+        const afterLevel = Math.max(0, Math.floor(toFiniteNumber(candidate?.guildBuffs?.[guildBuffHrid], 0)));
+        if (beforeLevel !== afterLevel) {
+            pushChange(
+                `${formatQueueGuildBuffNameFromHrid(guildBuffHrid)}: Lv${beforeLevel} -> Lv${afterLevel}`,
+                {
+                    kind: "guild_buff",
+                    guildBuffHrid,
+                    beforeLevel,
+                    afterLevel,
+                }
+            );
+        }
+    }
+
     return {
         count: labels.length,
         labels,
@@ -2698,6 +2766,22 @@ function applySingleQueueChange(snapshot, targetSnapshot, change) {
             snapshot.houseRooms = {};
         }
         snapshot.houseRooms[roomHrid] = clampPositiveInteger(targetSnapshot?.houseRooms?.[roomHrid], 0);
+        return true;
+    }
+
+    if (change.kind === "guild_buff") {
+        const guildBuffHrid = String(change.guildBuffHrid || "");
+        const maxLevel = getGuildBuffMaxLevel(guildBuffHrid);
+        if (!guildBuffHrid || maxLevel <= 0) {
+            return false;
+        }
+        if (!isPlainObject(snapshot.guildBuffs)) {
+            snapshot.guildBuffs = {};
+        }
+        snapshot.guildBuffs[guildBuffHrid] = Math.min(
+            clampPositiveInteger(targetSnapshot?.guildBuffs?.[guildBuffHrid], 0),
+            maxLevel
+        );
         return true;
     }
 

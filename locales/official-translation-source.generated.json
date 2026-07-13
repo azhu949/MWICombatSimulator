@@ -6,29 +6,33 @@
       "path": "/asset-manifest.json",
       "sha256": "a1149e0b5400931c96eb5ea508525a064ad269f3fcd44551eee93c2df4966b57"
     },
+    "home": {
+      "path": "/",
+      "sha256": "57f82378c2030b5cd2bbeaee8faae1794e8326f3bc2a7c36b4e53a3ee291c655"
+    },
     "assets": {
       "main": {
-        "path": "/static/js/main.3cac92f8.chunk.js",
-        "sha256": "970b462e2d272ea23d9ef6777ec9d6cee91ad39c3d8f5682699a67129c0c599f"
+        "path": "/static/js/main.aa950a59.chunk.js",
+        "sha256": "d81a8bd42f815751fa14c40b082d3fbf164ff247f41717a1d3ad20f7b36d300b"
       },
       "zh": {
-        "path": "/static/js/10.8be3b319.chunk.js",
-        "moduleId": 492,
+        "path": "/static/js/10.e7d301a4.chunk.js",
+        "moduleId": 503,
         "chunkId": 10,
-        "sha256": "16115419d47f9b64afb0207d4fc44cebdf962e63aad8511dd706955fe9845647"
+        "sha256": "5653134deef40a1497ccaa420f7b16c2858c94dd6dc7f3d52337cb455e474c13"
       }
     }
   },
   "resources": {
     "en": {
       "file": "locales/en/translation.official.generated.json",
-      "sha256": "b562936bfcf06bd4f8eff14b57437a2c4e9c01a11d258e09f585f4b9b4ede525",
-      "topLevelKeyCount": 137
+      "sha256": "e77c0607f71f8cd727c86bc1ed229219370dc94cf17b35acf0cd0d418d6c048d",
+      "topLevelKeyCount": 145
     },
     "zh": {
       "file": "locales/zh/translation.official.generated.json",
-      "sha256": "6ea927d637d7de97d08ed66fc5ae908d791e578d0d99dec6bf54ab6da9da9a14",
-      "topLevelKeyCount": 137
+      "sha256": "a0f65d3810b09aa6cf6e3761c15d596abf0736bb48d55ade3241533c48ca11d7",
+      "topLevelKeyCount": 145
     }
   }
 }

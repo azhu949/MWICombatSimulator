@@ -328,6 +328,9 @@
           <button type="button" class="action-button-muted" @click="openAchievementsModal = true">
             {{ t("common:vue.home.achievementsButton", "Achievements") }}
           </button>
+          <button type="button" class="action-button-muted" @click="openGuildBuffsModal = true">
+            {{ t("common:vue.home.guildBuffsButton", "Guild Shrines") }}
+          </button>
           <button type="button" class="action-button-muted" @click="openExperimentalModal = true">
             {{ t("common:Experiment.ExperimentalFeatures", "Experimental Features") }}
           </button>
@@ -717,6 +720,54 @@
     </BaseModal>
 
     <BaseModal
+      :open="openGuildBuffsModal"
+      :title="t('common:vue.home.guildBuffsTitle', 'Guild Shrine Buffs')"
+      panel-class="max-w-[94vw] lg:max-w-4xl"
+      @close="openGuildBuffsModal = false"
+    >
+      <div class="mb-3 flex items-center justify-end">
+        <button type="button" class="action-button-muted" @click="clearGuildBuffLevels">
+          {{ t("common:vue.home.clearAll", "Clear All") }}
+        </button>
+      </div>
+      <div class="max-h-[70vh] space-y-2 overflow-y-auto pr-1">
+        <div
+          v-for="option in guildBuffOptions"
+          :key="option.hrid"
+          class="grid gap-4 rounded-lg border border-white/10 bg-slate-950/45 p-4 md:grid-cols-[minmax(0,1fr)_10rem] md:items-center"
+        >
+          <div class="min-w-0">
+            <div class="flex flex-wrap items-center gap-2">
+              <h3 class="font-heading text-sm font-semibold text-slate-100">
+                {{ getGuildShrineName(option.shrineHrid, option.shrineName) }}
+              </h3>
+              <span class="rounded border border-amber-300/20 bg-amber-300/10 px-2 py-0.5 text-[11px] font-medium text-amber-100">
+                {{ t("common:vue.home.guildBuffCombat", "Combat") }}
+              </span>
+            </div>
+            <p class="mt-2 text-sm leading-6" :class="guildBuffLevel(option.hrid) > 0 ? 'text-emerald-200' : 'text-slate-400'">
+              {{ formatGuildBuffEffects(option, guildBuffLevel(option.hrid)) }}
+            </p>
+          </div>
+          <label class="block">
+            <span class="field-label">{{ t("common:vue.home.guildBuffEffectiveLevel", "Effective Level") }}</span>
+            <div class="flex items-center gap-2">
+              <input
+                class="field-input min-w-0"
+                type="number"
+                min="0"
+                :max="option.maxLevel"
+                :value="guildBuffLevel(option.hrid)"
+                @input="setGuildBuffLevel(option.hrid, $event.target.value)"
+              />
+              <span class="shrink-0 text-xs text-slate-400">/ {{ option.maxLevel }}</span>
+            </div>
+          </label>
+        </div>
+      </div>
+    </BaseModal>
+
+    <BaseModal
       :open="openAchievementsModal"
       :title="t('common:vue.home.achievementsTitle', 'Achievements')"
       panel-class="max-w-[96vw] xl:max-w-[1200px]"
@@ -1083,6 +1134,12 @@ import {
   isComparatorValueRequired,
   sanitizeTriggerList,
 } from "../../services/triggerMapper.js";
+import {
+  combatGuildBuffDetails,
+  getGuildBuffMaxLevel,
+  guildShrineDetailIndex,
+  normalizeGuildBuffLevels,
+} from "../../shared/guildBuffs.js";
 import { applyTampermonkeyImportMessage } from "../../services/tampermonkeyImportBridge.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { buildCombatPreviewData } from "../../services/playerMapper.js";
@@ -1107,6 +1164,7 @@ const {
   getAchievementName,
   getAchievementTierName,
   getBuffTypeName,
+  getGuildShrineName,
   getHouseRoomName,
   getItemName,
   getMonsterName,
@@ -1589,6 +1647,15 @@ const houseRoomOptions = computed(() => Object.values(houseRoomDetailMap)
     name: room.name,
   })));
 
+const guildBuffOptions = computed(() => combatGuildBuffDetails.map((detail) => {
+  const shrine = guildShrineDetailIndex?.[detail.shrineHrid] ?? {};
+  return {
+    ...detail,
+    shrineName: String(shrine?.name || detail.shrineHrid || ""),
+    maxLevel: getGuildBuffMaxLevel(detail.hrid),
+  };
+}));
+
 const achievementDetailsByTier = Object.values(achievementDetailMap).reduce((acc, detail) => {
   const tierHrid = String(detail?.tierHrid || "");
   if (!tierHrid) {
@@ -1640,6 +1707,7 @@ const triggerDependencyOptions = getTriggerDependencies();
 const openHouseRoomsModal = ref(false);
 const houseRoomBaselineLevels = ref({});
 const openAchievementsModal = ref(false);
+const openGuildBuffsModal = ref(false);
 const openPlayerImportModal = ref(false);
 const openPlayerSnapshotInfoModal = ref(false);
 const openExperimentalModal = ref(false);
@@ -2754,6 +2822,41 @@ function ensureActivePlayerAdvancedState() {
   if (!player.achievements || typeof player.achievements !== "object" || Array.isArray(player.achievements)) {
     player.achievements = {};
   }
+
+  player.guildBuffs = normalizeGuildBuffLevels(player.guildBuffs);
+}
+
+function guildBuffLevel(guildBuffHrid) {
+  return Number(activePlayer.value?.guildBuffs?.[guildBuffHrid] || 0);
+}
+
+function setGuildBuffLevel(guildBuffHrid, value) {
+  ensureActivePlayerAdvancedState();
+  const maxLevel = getGuildBuffMaxLevel(guildBuffHrid);
+  const parsed = Math.floor(Number(value));
+  activePlayer.value.guildBuffs[guildBuffHrid] = Number.isFinite(parsed)
+    ? Math.max(0, Math.min(parsed, maxLevel))
+    : 0;
+}
+
+function clearGuildBuffLevels() {
+  ensureActivePlayerAdvancedState();
+  activePlayer.value.guildBuffs = normalizeGuildBuffLevels({});
+}
+
+function formatGuildBuffEffects(option, level) {
+  const normalizedLevel = Math.max(0, Math.min(Math.floor(Number(level) || 0), option.maxLevel));
+  if (normalizedLevel <= 0) {
+    return t("common:vue.home.guildBuffInactive", "Inactive");
+  }
+
+  return (option.buffs || []).map((buff) => {
+    const ratioBoost = Number(buff?.ratioBoost || 0) + (normalizedLevel - 1) * Number(buff?.ratioBoostLevelBonus || 0);
+    const flatBoost = Number(buff?.flatBoost || 0) + (normalizedLevel - 1) * Number(buff?.flatBoostLevelBonus || 0);
+    const value = ratioBoost !== 0 ? ratioBoost : flatBoost;
+    const valueText = `${(value * 100).toFixed(1).replace(/\.0$/, "")}%`;
+    return `${getBuffTypeName(buff?.typeHrid, buff?.typeHrid)} +${valueText}`;
+  }).join(" · ");
 }
 
 function captureHouseRoomBaselineLevels() {

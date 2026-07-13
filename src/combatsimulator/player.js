@@ -4,6 +4,7 @@ import Consumable from "./consumable";
 import Equipment from "./equipment";
 import HouseRoom from "./houseRoom";
 import Achievement from "./achievement";
+import GuildBuff from "./guildBuff";
 
 class Player extends CombatUnit {
     equipment = {
@@ -58,6 +59,16 @@ class Player extends CombatUnit {
             const houseRoom = HouseRoom.createFromDTO(houseRoomDto);
             if (houseRoom) {
                 player.houseRooms.push(houseRoom)
+            }
+        });
+
+        const guildBuffDtos = Array.isArray(dto.guildBuffs)
+            ? dto.guildBuffs
+            : Object.entries(dto.guildBuffs || {}).map(([hrid, level]) => ({ hrid, level }));
+        guildBuffDtos.forEach((guildBuffDto) => {
+            const guildBuff = GuildBuff.createFromDTO(guildBuffDto);
+            if (guildBuff) {
+                player.guildBuffs.push(guildBuff);
             }
         });
 

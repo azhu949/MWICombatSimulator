@@ -6,6 +6,11 @@ import {
 } from "../shared/gameDataIndex.js";
 import itemLocationDetailMap from "../combatsimulator/data/itemLocationDetailMap.json";
 import { createEmptyPlayerConfig, createEmptySkillExperienceMap, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../shared/playerConfig.js";
+import {
+    combatGuildBuffDetails,
+    getGuildBuffMaxLevel,
+    normalizeGuildBuffLevels,
+} from "../shared/guildBuffs.js";
 import { sanitizeTriggerList, sanitizeTriggerMap } from "./triggerMapper.js";
 
 const NON_WEAPON_SLOTS = EQUIPMENT_SLOT_KEYS.filter((slot) => slot !== "weapon");
@@ -141,7 +146,7 @@ function normalizeSkillExperience(value) {
     return parsed;
 }
 
-function sanitizePlayerConfig(raw, fallbackPlayer) {
+function sanitizePlayerConfig(raw, fallbackPlayer, { preserveMissingGuildBuffs = false } = {}) {
     const fallback = deepClone(fallbackPlayer || createEmptyPlayerConfig(1));
     const source = raw && typeof raw === "object" ? raw : {};
     const sourceSkillExperience = source.skillExperience && typeof source.skillExperience === "object"
@@ -184,6 +189,11 @@ function sanitizePlayerConfig(raw, fallbackPlayer) {
     normalized.houseRooms = source.houseRooms && typeof source.houseRooms === "object"
         ? deepClone(source.houseRooms)
         : deepClone(fallback.houseRooms);
+
+    normalized.guildBuffs = normalizeGuildBuffLevels(
+        source.guildBuffs,
+        preserveMissingGuildBuffs ? fallback.guildBuffs : {}
+    );
 
     normalized.achievements = Object.prototype.hasOwnProperty.call(source, "achievements")
         ? (source.achievements && typeof source.achievements === "object"
@@ -262,6 +272,8 @@ function applyLegacySoloToPlayer(legacySoloPayload, fallbackPlayer) {
     merged.houseRooms = payload.houseRooms && typeof payload.houseRooms === "object"
         ? deepClone(payload.houseRooms)
         : deepClone(fallback.houseRooms);
+
+    merged.guildBuffs = normalizeGuildBuffLevels(payload.guildBuffs);
 
     merged.achievements = Object.prototype.hasOwnProperty.call(payload, "achievements")
         ? (payload.achievements && typeof payload.achievements === "object"
@@ -951,6 +963,46 @@ function extractShareableAchievements(profile) {
     return {};
 }
 
+function extractEffectiveGuildBuffLevels(profile) {
+    const hasCharacterGuildBuffs = Object.prototype.hasOwnProperty.call(profile || {}, "characterGuildBuffMap");
+    const hasGuildBuildingLevels = Object.prototype.hasOwnProperty.call(profile || {}, "guildBuildingLevelMap");
+    if (!hasCharacterGuildBuffs || !hasGuildBuildingLevels) {
+        return undefined;
+    }
+
+    const characterGuildBuffMap = profile?.characterGuildBuffMap;
+    const guildBuildingLevelMap = profile?.guildBuildingLevelMap;
+    const purchasedLevels = {};
+    const entries = Array.isArray(characterGuildBuffMap)
+        ? characterGuildBuffMap.map((entry, index) => [String(index), entry])
+        : Object.entries(characterGuildBuffMap && typeof characterGuildBuffMap === "object" ? characterGuildBuffMap : {});
+
+    for (const [entryKey, rawValue] of entries) {
+        const guildBuffHrid = String(rawValue?.guildBuffHrid || rawValue?.hrid || entryKey || "").trim();
+        if (!guildBuffHrid) {
+            continue;
+        }
+        purchasedLevels[guildBuffHrid] = Math.max(0, Math.floor(toFiniteNumber(rawValue?.level ?? rawValue, 0)));
+    }
+
+    const effectiveLevels = {};
+    for (const detail of combatGuildBuffDetails) {
+        const guildBuffHrid = String(detail?.hrid || "");
+        const shrineHrid = String(detail?.shrineHrid || "");
+        const rawShrineLevel = guildBuildingLevelMap && typeof guildBuildingLevelMap === "object"
+            ? guildBuildingLevelMap[shrineHrid]
+            : 0;
+        const shrineLevel = Math.max(0, Math.floor(toFiniteNumber(rawShrineLevel?.level ?? rawShrineLevel, 0)));
+        effectiveLevels[guildBuffHrid] = Math.min(
+            purchasedLevels[guildBuffHrid] || 0,
+            shrineLevel,
+            getGuildBuffMaxLevel(guildBuffHrid)
+        );
+    }
+
+    return normalizeGuildBuffLevels(effectiveLevels);
+}
+
 function extractShareableSimulationSettings(parsed, existingSimulationSettings) {
     const baseline = deepClone(existingSimulationSettings || {});
     const actionHrid = normalizeActionValueToHrid(parsed?.mainSiteCombat?.actionHrid || "");
@@ -1043,8 +1095,13 @@ function importShareableProfile(parsed, existingPlayer, existingSimulationSettin
         rawPlayer.achievements = achievements;
     }
 
+    const guildBuffs = extractEffectiveGuildBuffLevels(profile);
+    if (guildBuffs !== undefined) {
+        rawPlayer.guildBuffs = guildBuffs;
+    }
+
     return {
-        player: sanitizePlayerConfig(rawPlayer, fallbackPlayer),
+        player: sanitizePlayerConfig(rawPlayer, fallbackPlayer, { preserveMissingGuildBuffs: true }),
         simulationSettings: extractShareableSimulationSettings(parsed, existingSimulationSettings),
         detectedFormat: "main-site-share-profile",
     };
@@ -1088,8 +1145,13 @@ function importMainSiteCurrentCharacter(parsed, existingPlayer, existingSimulati
         rawPlayer.achievements = achievements;
     }
 
+    const guildBuffs = extractEffectiveGuildBuffLevels(parsed);
+    if (guildBuffs !== undefined) {
+        rawPlayer.guildBuffs = guildBuffs;
+    }
+
     return {
-        player: sanitizePlayerConfig(rawPlayer, fallbackPlayer),
+        player: sanitizePlayerConfig(rawPlayer, fallbackPlayer, { preserveMissingGuildBuffs: true }),
         simulationSettings: extractShareableSimulationSettings(parsed, existingSimulationSettings),
         detectedFormat: "main-site-current-character",
     };

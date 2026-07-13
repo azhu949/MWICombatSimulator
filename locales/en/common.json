@@ -545,6 +545,7 @@
             },
             "houseRoomsButton": "House Rooms",
             "achievementsButton": "Achievements",
+            "guildBuffsButton": "Guild Shrines",
             "houseRoomsTitle": "House Rooms",
             "houseRoomsTransition": "Lv {{from}} → Lv {{to}}",
             "houseRoomsSummaryTotal": "Total Cost",
@@ -565,6 +566,10 @@
             "houseRoomsMaterialStatusMissing": "Missing price",
             "houseRoomsMissingPriceHint": "{{count}} lines missing price",
             "achievementsTitle": "Achievements",
+            "guildBuffsTitle": "Guild Shrine Buffs",
+            "guildBuffCombat": "Combat",
+            "guildBuffEffectiveLevel": "Effective Level",
+            "guildBuffInactive": "Inactive",
             "selectAll": "Select All",
             "clearAll": "Clear All",
             "buff": "Buff",
@@ -867,7 +872,7 @@
             "msgNoPriceOverrides": "No manual price overrides to clear.",
             "msgInvalidPriceInput": "Invalid price input for {{item}}.",
             "mainSiteImportScriptTitle": "Main-site Import Script",
-            "mainSiteImportScriptDescription": "Install the Tampermonkey helper to import the current character or cached team from Home, and to import the current character's enhancement skill, gear, drinks, housing, community buffs, and achievement bonuses from Enhancement.",
+            "mainSiteImportScriptDescription": "Install the Tampermonkey helper to import the current character, including guild shrine combat buffs, or a cached team from Home, and to import the current character's enhancement skill, gear, drinks, housing, community buffs, and achievement bonuses from Enhancement.",
             "installMainSiteImportScript": "Install Script",
             "mainSiteImportScriptPending": "Script link pending"
         }

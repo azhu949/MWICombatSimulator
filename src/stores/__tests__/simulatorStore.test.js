@@ -6,6 +6,7 @@ import combatMonsterDetailMap from "../../combatsimulator/data/combatMonsterDeta
 import levelExperienceTable from "../../combatsimulator/data/levelExperienceTable.json";
 import houseRoomDetailMap from "../../combatsimulator/data/houseRoomDetailMap.json";
 import itemDetailMap from "../../combatsimulator/data/itemDetailMap.json";
+import { combatGuildBuffDetails } from "../../shared/guildBuffs.js";
 import {
     createMainSiteCurrentCharacterFixture,
     createMainSiteShareProfileFixture,
@@ -3673,6 +3674,33 @@ describe("simulatorStore", () => {
         expect(importResult.importedCount).toBe(1);
         expect(simulator.activeQueueState.items).toHaveLength(1);
         expect(simulator.activeQueueState.items[0]?.snapshot?.houseRooms?.[room.hrid]).toBe(1);
+    });
+
+    it("saves and imports guild shrine queue changes without a gold cost", async () => {
+        const simulator = useSimulatorStore();
+        const guildBuffHrid = combatGuildBuffDetails[0]?.hrid;
+        expect(guildBuffHrid).toBeTruthy();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.guildBuffs[guildBuffHrid] = 6;
+        const appendedItems = simulator.addActivePlayerToQueue();
+        expect(appendedItems).toHaveLength(1);
+        expect(appendedItems[0]?.changeDetails?.[0]?.kind).toBe("guild_buff");
+
+        simulator.saveEquipmentSet("Guild Shrine Queue Set");
+        expect(simulator.equipmentSets["Guild Shrine Queue Set"]?.queueChanges?.items?.[0]?.targets).toEqual([
+            expect.objectContaining({
+                kind: "guild_buff",
+                guildBuffHrid,
+                level: 6,
+            }),
+        ]);
+
+        simulator.activeQueueState.items = [];
+        simulator.activePlayer.guildBuffs[guildBuffHrid] = 0;
+        const importResult = simulator.importEquipmentSetQueueChanges("Guild Shrine Queue Set");
+        expect(importResult.ok).toBe(true);
+        expect(simulator.activeQueueState.items[0]?.snapshot?.guildBuffs?.[guildBuffHrid]).toBe(6);
     });
 
     it("blocks saving equipment sets when queue items include trigger changes", async () => {

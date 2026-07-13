@@ -71,6 +71,8 @@ export function createMainSiteCurrentCharacterFixture(options = {}) {
         abilityCombatTriggersMap = {},
         characterHouseRoomMap = {},
         characterAchievements = [],
+        characterGuildBuffMap = {},
+        guildBuildingLevelMap = {},
     } = options;
 
     const normalizedSkills = {
@@ -113,5 +115,7 @@ export function createMainSiteCurrentCharacterFixture(options = {}) {
         characterAchievements: Array.isArray(characterAchievements)
             ? [...characterAchievements]
             : { ...(characterAchievements || {}) },
+        characterGuildBuffMap: { ...characterGuildBuffMap },
+        guildBuildingLevelMap: { ...guildBuildingLevelMap },
     };
 }

@@ -20,6 +20,11 @@ describe("EnhancementPage tool surface", () => {
         expect(pageSource).toContain("enhancement.config.targetLevel");
     });
 
+    it("uses official item names for the fixed tea buff controls", () => {
+        expect(pageSource).toContain('getGameItemName("/items/blessed_tea"');
+        expect(pageSource).toContain('getGameItemName("/items/wisdom_tea"');
+    });
+
     it("accepts enhancement-only imports from the Tampermonkey bridge", () => {
         expect(pageSource).toContain('data-tm-import-anchor="enhancement-actions"');
         expect(pageSource).toContain('data-tm-import-reference="enhancement-refresh"');

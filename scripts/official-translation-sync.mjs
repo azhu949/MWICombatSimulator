@@ -6,6 +6,7 @@ import { parse } from "acorn";
 
 export const OFFICIAL_GAME_ORIGIN = "https://www.milkywayidle.com";
 export const OFFICIAL_ASSET_MANIFEST_PATH = "/asset-manifest.json";
+export const OFFICIAL_HOME_PATH = "/";
 
 const SCRIPT_DIR = path.dirname(fileURLToPath(import.meta.url));
 const DEFAULT_ROOT_DIR = path.resolve(SCRIPT_DIR, "..");
@@ -32,6 +33,7 @@ const DATA_RESOURCE_COVERAGE = Object.freeze([
     ["communityBuffTypeDetailMap.json", ["communityBuffTypeNames"]],
     ["damageTypeDetailMap.json", ["damageTypeNames"]],
     ["equipmentTypeDetailMap.json", ["equipmentTypeNames"]],
+    ["guildShrineDetailMap.json", ["guildShrineNames"]],
     ["houseRoomDetailMap.json", ["houseRoomNames"]],
     ["itemCategoryDetailMap.json", ["itemCategoryNames", "itemCategoryPluralNames"]],
     ["itemDetailMap.json", ["itemNames", "itemDescriptions"]],
@@ -421,6 +423,22 @@ function findChunkAssetPath(manifest, chunkId) {
     return String(candidates[0]);
 }
 
+function findHomeMainAssetPath(homeSource) {
+    const match = String(homeSource || "").match(
+        /<script[^>]+src=["'](\/static\/js\/main\.[^"']+\.chunk\.js)["']/i,
+    );
+    return String(match?.[1] || "");
+}
+
+function findHomeChunkAssetPath(homeSource, chunkId) {
+    const escapedChunkId = String(chunkId).replace(/[.*+?^${}()|[\]\\]/g, "\\$&");
+    const matcher = new RegExp(`${escapedChunkId}\\s*:\\s*["']([^"']+)["']`);
+    const hashMatch = String(homeSource || "").match(matcher);
+    return hashMatch?.[1]
+        ? `/static/js/${chunkId}.${hashMatch[1]}.chunk.js`
+        : "";
+}
+
 export async function extractOfficialTranslationResources({
     fetchImpl = globalThis.fetch,
     origin = OFFICIAL_GAME_ORIGIN,
@@ -444,7 +462,22 @@ export async function extractOfficialTranslationResources({
         throw new Error(`Failed to parse official asset manifest: ${error.message || error}`);
     }
 
-    const mainAssetPath = String(manifest?.files?.["main.js"] || "");
+    let homeSource = "";
+    try {
+        homeSource = await fetchText(resolveOfficialUrl(OFFICIAL_HOME_PATH, origin), {
+            fetchImpl,
+            timeoutMs,
+            label: "Official homepage",
+        });
+    } catch (error) {
+        if (String(error?.message || error).includes("redirected outside the official origin")) {
+            throw error;
+        }
+    }
+
+    const manifestMainAssetPath = String(manifest?.files?.["main.js"] || "");
+    const homeMainAssetPath = findHomeMainAssetPath(homeSource);
+    const mainAssetPath = homeMainAssetPath || manifestMainAssetPath;
     if (!mainAssetPath) {
         throw new Error("Official asset manifest does not contain main.js");
     }
@@ -456,7 +489,10 @@ export async function extractOfficialTranslationResources({
 
     const en = extractEnglishTranslationResource(mainSource);
     const { moduleId, chunkId } = discoverLocaleChunk(mainSource, "zh");
-    const zhAssetPath = findChunkAssetPath(manifest, chunkId);
+    const shouldUseHomeRuntime = Boolean(homeMainAssetPath && homeMainAssetPath !== manifestMainAssetPath);
+    const zhAssetPath = shouldUseHomeRuntime
+        ? (findHomeChunkAssetPath(homeSource, chunkId) || findChunkAssetPath(manifest, chunkId))
+        : findChunkAssetPath(manifest, chunkId);
     const zhSource = await fetchText(resolveOfficialUrl(zhAssetPath, origin), {
         fetchImpl,
         timeoutMs,
@@ -472,6 +508,12 @@ export async function extractOfficialTranslationResources({
                 path: OFFICIAL_ASSET_MANIFEST_PATH,
                 sha256: sha256(manifestText),
             },
+            ...(homeSource ? {
+                home: {
+                    path: OFFICIAL_HOME_PATH,
+                    sha256: sha256(homeSource),
+                },
+            } : {}),
             assets: {
                 main: {
                     path: mainAssetPath,

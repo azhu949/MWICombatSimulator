@@ -3,7 +3,7 @@
 // @name:zh      MWI Combat Simulator 主站一键导入
 // @name:zh-CN   MWI Combat Simulator 主站一键导入
 // @namespace    https://azhu949.github.io/MWICombatSimulator
-// @version      0.1.25
+// @version      0.1.26
 // @license      ISC
 // @description  Import the current Milky Way Idle character or manually cached detected team into MWI Combat Simulator, or import the current character setup into the enhancement simulator.
 // @description:zh      一键将 Milky Way Idle 主站当前角色或已手动缓存资料的已识别队伍导入 MWI Combat Simulator，也可将当前角色强化配置导入强化模拟器。
@@ -125,6 +125,8 @@
         "combatUnit",
         "characterHouseRoomMap",
         "characterAchievements",
+        "characterGuildBuffMap",
+        "guildBuildingLevelMap",
         "communityBuffs",
         "communityActionTypeBuffsMap",
         "achievementActionTypeBuffsMap",
@@ -876,6 +878,19 @@
 
     function updateCurrentCharacterSnapshot(message, reset = false) {
         const nextFields = pickCurrentCharacterSnapshotFields(message);
+        const type = String(message?.type || "");
+
+        if (reset || type === "guild_buffs_updated") {
+            nextFields.characterGuildBuffMap = hasOwnKey(message, "characterGuildBuffMap")
+                ? clonePlainObject(message.characterGuildBuffMap)
+                : {};
+        }
+        if (reset || type === "guild_updated") {
+            nextFields.guildBuildingLevelMap = hasOwnKey(message, "guildBuildingLevelMap")
+                ? clonePlainObject(message.guildBuildingLevelMap)
+                : {};
+        }
+
         const nextKeys = Object.keys(nextFields);
         if (nextKeys.length === 0) {
             return;
@@ -997,6 +1012,8 @@
         if (
             type === "achievement_buffs_updated"
             || type === "community_buffs_updated"
+            || type === "guild_buffs_updated"
+            || type === "guild_updated"
         ) {
             updateCurrentCharacterSnapshot(message);
         }

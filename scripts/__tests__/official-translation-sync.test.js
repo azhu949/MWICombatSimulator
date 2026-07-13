@@ -115,6 +115,38 @@ describe("official translation AST extraction", () => {
         expect(extracted.source.assets.zh.sha256).toBe(hash(ZH_FIXTURE));
     });
 
+    it("prefers the homepage runtime when the asset manifest is stale", async () => {
+        const staleManifest = JSON.stringify({
+            files: {
+                "main.js": "/static/js/main.stale.chunk.js",
+                "7.js": "/static/js/7.stale.chunk.js",
+            },
+        });
+        const homepage = `<script>const hashes={7:"current"};</script><script src="/static/js/main.current.chunk.js"></script>`;
+        const contentByPath = new Map([
+            ["/asset-manifest.json", staleManifest],
+            ["/", homepage],
+            ["/static/js/main.current.chunk.js", MAIN_FIXTURE],
+            ["/static/js/7.current.chunk.js", ZH_FIXTURE],
+        ]);
+        const fetchImpl = async (url) => {
+            const parsedUrl = new URL(url);
+            const content = contentByPath.get(parsedUrl.pathname);
+            return {
+                ok: content != null,
+                status: content == null ? 404 : 200,
+                url: parsedUrl.href,
+                text: async () => content || "",
+            };
+        };
+
+        const extracted = await extractOfficialTranslationResources({ fetchImpl });
+
+        expect(extracted.source.assets.main.path).toBe("/static/js/main.current.chunk.js");
+        expect(extracted.source.assets.zh.path).toBe("/static/js/7.current.chunk.js");
+        expect(extracted.source.home.path).toBe("/");
+    });
+
     it.each([
         ["call expression", "const bad = { itemNames: makeTranslations() };"],
         ["getter", "const bad = { get itemNames() { return {}; } };"],

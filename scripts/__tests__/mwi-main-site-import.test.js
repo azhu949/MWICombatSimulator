@@ -13,6 +13,14 @@ describe("mwi main-site import userscript", () => {
         expect(scriptSource).toContain('type === "house_rooms_updated"');
         expect(scriptSource).toContain('type === "achievements_updated"');
         expect(scriptSource).toContain('type === "community_buffs_updated"');
+        expect(scriptSource).toContain('"characterGuildBuffMap"');
+        expect(scriptSource).toContain('"guildBuildingLevelMap"');
+        expect(scriptSource).toContain('type === "guild_buffs_updated"');
+        expect(scriptSource).toContain('type === "guild_updated"');
+        expect(scriptSource).toContain('if (reset || type === "guild_buffs_updated")');
+        expect(scriptSource).toContain('nextFields.characterGuildBuffMap = hasOwnKey(message, "characterGuildBuffMap")');
+        expect(scriptSource).toContain('if (reset || type === "guild_updated")');
+        expect(scriptSource).toContain('nextFields.guildBuildingLevelMap = hasOwnKey(message, "guildBuildingLevelMap")');
         expect(scriptSource).toContain("captureCurrentCharacterDataUpdate(parsed);");
     });
 
@@ -21,6 +29,6 @@ describe("mwi main-site import userscript", () => {
         expect(scriptSource).toContain('normalizedImportMode === "enhancement" ? "active-player" : "auto"');
         expect(scriptSource).toContain('importTarget: "enhancement"');
         expect(scriptSource).toContain('enhancementButton: "导入角色强化配置"');
-        expect(scriptSource).toContain("// @version      0.1.25");
+        expect(scriptSource).toContain("// @version      0.1.26");
     });
 });

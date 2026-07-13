@@ -113,6 +113,22 @@ const BASE_CLIENT_DATA = {
         "0": 1,
         "1": 1.1,
     },
+    guildBuffDetailMap: {
+        "/guild_buffs/test_combat": {
+            hrid: "/guild_buffs/test_combat",
+            shrineHrid: "/guild_shrines/test",
+            isCombat: true,
+            buffs: [],
+            levelCosts: {},
+        },
+    },
+    guildShrineDetailMap: {
+        "/guild_shrines/test": {
+            hrid: "/guild_shrines/test",
+            name: "Test Shrine",
+            maxLevel: 20,
+        },
+    },
     houseRoomDetailMap: {
         "/house_rooms/test": {
             hrid: "/house_rooms/test",
@@ -177,6 +193,8 @@ const EXPECTED_OUTPUT_FILES = [
     "damageTypeDetailMap.json",
     "enhancementLevelSuccessRateTable.json",
     "enhancementLevelTotalBonusMultiplierTable.json",
+    "guildBuffDetailMap.json",
+    "guildShrineDetailMap.json",
     "houseRoomDetailMap.json",
     "equipmentTypeDetailMap.json",
     "itemCategoryDetailMap.json",
@@ -226,6 +244,48 @@ describe("extract-game-data CLI", () => {
             [SCRIPT_PATH, "--input", inputPath, "--output", outputDir],
             { cwd: path.resolve("."), stdio: "pipe" },
         )).toThrow();
+    });
+
+    it.each([
+        "guildBuffDetailMap",
+        "guildShrineDetailMap",
+    ])("rejects payloads that omit required %s", (requiredKey) => {
+        const tempDir = createTempDir();
+        const inputPath = path.join(tempDir, "initClientData.json");
+        const outputDir = path.join(tempDir, "maps");
+        const incompleteClientData = { ...BASE_CLIENT_DATA };
+
+        delete incompleteClientData[requiredKey];
+        fs.writeFileSync(inputPath, `${JSON.stringify(incompleteClientData, null, 2)}\n`, "utf8");
+
+        expect(() => execFileSync(
+            process.execPath,
+            [SCRIPT_PATH, "--input", inputPath, "--output", outputDir],
+            { cwd: path.resolve("."), stdio: "pipe" },
+        )).toThrow();
+        expect(fs.existsSync(path.join(outputDir, `${requiredKey}.json`))).toBe(false);
+    });
+
+    it.each([
+        "guildBuffDetailMap",
+        "guildShrineDetailMap",
+    ])("rejects payloads that contain empty required %s", (requiredKey) => {
+        const tempDir = createTempDir();
+        const inputPath = path.join(tempDir, "initClientData.json");
+        const outputDir = path.join(tempDir, "maps");
+        const incompleteClientData = {
+            ...BASE_CLIENT_DATA,
+            [requiredKey]: {},
+        };
+
+        fs.writeFileSync(inputPath, `${JSON.stringify(incompleteClientData, null, 2)}\n`, "utf8");
+
+        expect(() => execFileSync(
+            process.execPath,
+            [SCRIPT_PATH, "--input", inputPath, "--output", outputDir],
+            { cwd: path.resolve("."), stdio: "pipe" },
+        )).toThrow();
+        expect(fs.existsSync(path.join(outputDir, `${requiredKey}.json`))).toBe(false);
     });
 
     it("writes the full resolved clientData JSON when --all is enabled", () => {

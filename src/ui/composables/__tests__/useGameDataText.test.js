@@ -26,12 +26,13 @@ describe("useGameDataText", () => {
     });
 
     it("falls back to official game data labels when translation keys are absent", () => {
-        const { getAbilityDescription, getAbilityName, getActionName, getBuffTypeName, getItemName, getMonsterName, getSkillName, getItemCategoryName } = useGameDataText();
+        const { getAbilityDescription, getAbilityName, getActionName, getBuffTypeName, getGuildShrineName, getItemName, getMonsterName, getSkillName, getItemCategoryName } = useGameDataText();
 
         expect(getAbilityName("/abilities/aqua_arrow")).toBe("Aqua Arrow");
         expect(getAbilityDescription("/abilities/aqua_arrow")).toBe("Shoots an arrow made of water at the targeted enemy");
         expect(getActionName("/actions/alchemy/coinify")).toBe("Coinify");
         expect(getBuffTypeName("/buff_types/wisdom")).toBe("Wisdom");
+        expect(getGuildShrineName("/guild_shrines/force")).toBe("Shrine of Force");
         expect(getItemName("/items/gatherer_cape")).toBe("Gatherer Cape");
         expect(getMonsterName("/monsters/abyssal_imp")).toBe("Abyssal Imp");
         expect(getSkillName("/skills/attack")).toBe("Attack");
@@ -44,16 +45,18 @@ describe("useGameDataText", () => {
             "translation:abilityNames./abilities/aqua_arrow": "流水箭",
             "translation:abilityDescriptions./abilities/aqua_arrow": "向目标敌人射出水箭",
             "translation:buffTypeNames./buff_types/wisdom": "智慧",
+            "translation:guildShrineNames./guild_shrines/force": "力量神龛",
             "translation:itemNames./items/gatherer_cape": "采集者披风",
             "translation:skillNames./skills/attack": "攻击",
             "translation:itemCategoryNames./item_categories/equipment": "装备",
         };
 
-        const { getAbilityDescription, getAbilityName, getBuffTypeName, getItemName, getSkillName, getItemCategoryName } = useGameDataText();
+        const { getAbilityDescription, getAbilityName, getBuffTypeName, getGuildShrineName, getItemName, getSkillName, getItemCategoryName } = useGameDataText();
 
         expect(getAbilityName("/abilities/aqua_arrow")).toBe("流水箭");
         expect(getAbilityDescription("/abilities/aqua_arrow")).toBe("向目标敌人射出水箭");
         expect(getBuffTypeName("/buff_types/wisdom")).toBe("智慧");
+        expect(getGuildShrineName("/guild_shrines/force")).toBe("力量神龛");
         expect(getItemName("/items/gatherer_cape")).toBe("采集者披风");
         expect(getSkillName("/skills/attack")).toBe("攻击");
         expect(getSkillName("attack")).toBe("攻击");

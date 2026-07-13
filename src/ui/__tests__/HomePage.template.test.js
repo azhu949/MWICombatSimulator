@@ -21,4 +21,11 @@ describe("HomePage labyrinth selectors", () => {
         expect(homePageSource).toContain("roomLevel: Math.max(20, Number(simulator.simulationSettings.roomLevel || 100))");
         expect(homePageSource).toContain("crates: simulator.getActiveLabyrinthCrates()");
     });
+
+    it("renders per-player guild shrine controls", () => {
+        expect(homePageSource).toContain('t("common:vue.home.guildBuffsButton", "Guild Shrines")');
+        expect(homePageSource).toContain("v-for=\"option in guildBuffOptions\"");
+        expect(homePageSource).toContain("setGuildBuffLevel(option.hrid, $event.target.value)");
+        expect(homePageSource).toContain("formatGuildBuffEffects(option, guildBuffLevel(option.hrid))");
+    });
 });
