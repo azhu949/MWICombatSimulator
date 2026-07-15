@@ -34,6 +34,25 @@ const ENHANCEMENT_SPECIAL_ITEM_HRIDS = Object.freeze({
     mirrorOfProtection: "/items/mirror_of_protection",
     philosophersMirror: "/items/philosophers_mirror",
 });
+const SKILLING_ACTION_TYPE_HRIDS = Object.freeze([
+    "/action_types/brewing",
+    "/action_types/cheesesmithing",
+    "/action_types/cooking",
+    "/action_types/crafting",
+    "/action_types/tailoring",
+]);
+const SKILLING_ACTION_TYPE_SET = new Set(SKILLING_ACTION_TYPE_HRIDS);
+const SKILLING_SKILL_HRIDS = Object.freeze(SKILLING_ACTION_TYPE_HRIDS.map((hrid) => (
+    hrid.replace("/action_types/", "/skills/")
+)));
+const SKILLING_STAT_PREFIXES = Object.freeze([
+    "brewing",
+    "cheesesmithing",
+    "cooking",
+    "crafting",
+    "tailoring",
+    "skilling",
+]);
 
 async function readJsonFile(filename) {
     const filePath = path.join(dataRoot, filename);
@@ -779,6 +798,132 @@ function createEnhancementIndex({
     };
 }
 
+function hasSkillingSupportStat(stats) {
+    return Object.keys(stats || {}).some((key) => (
+        SKILLING_STAT_PREFIXES.some((prefix) => key.startsWith(prefix))
+        || key === "actionSpeed"
+        || key === "wisdom"
+        || key === "drinkConcentration"
+    ));
+}
+
+function createSkillingIndex({
+    actionDetailMap,
+    enhancementLevelTotalBonusMultiplierTable,
+    itemDetailMap,
+}) {
+    const actions = Object.values(actionDetailMap || {})
+        .filter((action) => (
+            action?.function === "/action_functions/production"
+            && SKILLING_ACTION_TYPE_SET.has(String(action?.type || ""))
+        ))
+        .map((action) => ({
+            hrid: String(action?.hrid || ""),
+            name: String(action?.name || action?.hrid || ""),
+            type: String(action?.type || ""),
+            category: String(action?.category || ""),
+            sortIndex: Number(action?.sortIndex ?? 0),
+            levelRequirement: {
+                skillHrid: String(action?.levelRequirement?.skillHrid || ""),
+                level: Number(action?.levelRequirement?.level ?? 1),
+            },
+            baseTimeSeconds: Number(action?.baseTimeCost ?? 0) / NANOSECONDS_PER_SECOND,
+            experienceGain: {
+                skillHrid: String(action?.experienceGain?.skillHrid || ""),
+                value: Number(action?.experienceGain?.value ?? 0),
+            },
+            inputItems: normalizeItemAmounts(action?.inputItems),
+            outputItems: normalizeItemAmounts(action?.outputItems),
+            upgradeItemHrid: String(action?.upgradeItemHrid || ""),
+            retainAllEnhancement: action?.retainAllEnhancement === true,
+            essenceDropTable: normalizeLootDrops(action?.essenceDropTable),
+            rareDropTable: normalizeLootDrops(action?.rareDropTable),
+        }))
+        .filter((action) => (
+            action.hrid
+            && action.levelRequirement.skillHrid
+            && action.baseTimeSeconds > 0
+            && action.experienceGain.value > 0
+        ))
+        .sort((left, right) => (
+            SKILLING_ACTION_TYPE_HRIDS.indexOf(left.type) - SKILLING_ACTION_TYPE_HRIDS.indexOf(right.type)
+            || left.sortIndex - right.sortIndex
+            || left.name.localeCompare(right.name)
+        ));
+
+    const equipment = [];
+    const equipmentItemHrids = [];
+    const drinks = [];
+    for (const item of Object.values(itemDetailMap || {})) {
+        const equipmentDetail = item?.equipmentDetail || {};
+        const noncombatStats = equipmentDetail?.noncombatStats || {};
+        const noncombatEnhancementBonuses = equipmentDetail?.noncombatEnhancementBonuses || {};
+        const drinkSlots = Number(equipmentDetail?.combatStats?.drinkSlots ?? 0);
+        if (String(item?.categoryHrid || "") === "/item_categories/equipment" && String(item?.hrid || "")) {
+            equipmentItemHrids.push(String(item.hrid));
+        }
+        if (
+            String(item?.categoryHrid || "") === "/item_categories/equipment"
+            && (
+                drinkSlots > 0
+                || hasSkillingSupportStat(noncombatStats)
+                || hasSkillingSupportStat(noncombatEnhancementBonuses)
+            )
+        ) {
+            equipment.push({
+                ...createEnhancementCatalogItem(item),
+                equipmentType: String(equipmentDetail?.type || ""),
+                levelRequirements: Array.isArray(equipmentDetail?.levelRequirements)
+                    ? equipmentDetail.levelRequirements.map((requirement) => ({
+                        skillHrid: String(requirement?.skillHrid || ""),
+                        level: Number(requirement?.level ?? 1),
+                    })).filter((requirement) => requirement.skillHrid)
+                    : [],
+                drinkSlots: Math.max(0, drinkSlots),
+                noncombatStats,
+                noncombatEnhancementBonuses,
+            });
+        }
+
+        const usableInActionTypeMap = Object.fromEntries(
+            SKILLING_ACTION_TYPE_HRIDS
+                .filter((actionTypeHrid) => item?.consumableDetail?.usableInActionTypeMap?.[actionTypeHrid] === true)
+                .map((actionTypeHrid) => [actionTypeHrid, true])
+        );
+        const buffs = normalizeBuffs(item?.consumableDetail?.buffs);
+        if (
+            String(item?.categoryHrid || "") === "/item_categories/drink"
+            && Object.keys(usableInActionTypeMap).length > 0
+            && buffs.length > 0
+        ) {
+            drinks.push({
+                ...createEnhancementCatalogItem(item),
+                usableInActionTypeMap,
+                durationSeconds: resolveBuffDurationSeconds(item?.consumableDetail?.buffs),
+                buffs,
+            });
+        }
+    }
+
+    const compareCatalogItems = (left, right) => (
+        Number(left?.itemLevel ?? 0) - Number(right?.itemLevel ?? 0)
+        || Number(left?.sortIndex ?? 0) - Number(right?.sortIndex ?? 0)
+        || String(left?.name || "").localeCompare(String(right?.name || ""))
+    );
+    equipment.sort(compareCatalogItems);
+    drinks.sort(compareCatalogItems);
+
+    return {
+        actionTypeHrids: SKILLING_ACTION_TYPE_HRIDS,
+        skillHrids: SKILLING_SKILL_HRIDS,
+        actions,
+        equipment,
+        equipmentItemHrids: Array.from(new Set(equipmentItemHrids)).sort(),
+        drinks,
+        totalBonusMultipliers: normalizeNumberTable(enhancementLevelTotalBonusMultiplierTable),
+    };
+}
+
 async function main() {
     const [
         abilityDetailMap,
@@ -823,6 +968,11 @@ async function main() {
         itemDetailMap,
         openableLootDropMap,
     });
+    const skillingData = createSkillingIndex({
+        actionDetailMap,
+        enhancementLevelTotalBonusMultiplierTable,
+        itemDetailMap,
+    });
 
     const payload = {
         metadata: {
@@ -837,6 +987,7 @@ async function main() {
         ...houseRoomIndex,
         levelExperienceTable: Array.isArray(levelExperienceTable) ? levelExperienceTable : [],
         enhancementData,
+        skillingData,
     };
 
     await mkdir(path.dirname(outputPath), { recursive: true });

@@ -1,4 +1,22 @@
 {
+    "2026年7月15日（v1.0.25）": {
+        "label": {
+            "zh": "2026年7月15日（v1.0.25）",
+            "en": "July 15, 2026 (v1.0.25)"
+        },
+        "notes": {
+            "zh": [
+                "新增生活技能升级推荐器：结合当前角色经验、目标等级、库存、装备、饮品、Buff 与市场价格，为酿造、奶酪锻造、烹饪、制作和裁缝规划逐级最低净成本路线。",
+                "新增路线总览与逐级明细：展示投入/产出账本、库存机会成本、市场补购、预期回收和经验效率，并支持价格刷新、手工覆盖、后台计算进度及取消。",
+                "主站一键导入脚本新增生活技能导入：读取当前角色技能经验、背包材料、穿戴及背包装备、饮品槽，以及住宅、社区、成就、卷轴与 MooPass Buff。"
+            ],
+            "en": [
+                "Added the Skilling Upgrade Planner, combining current experience, target levels, inventory, equipment, drinks, buffs, and market prices to find the lowest-net-cost route for each level of Brewing, Cheesesmithing, Cooking, Crafting, and Tailoring.",
+                "Added route overviews and per-level details covering input/output ledgers, inventory opportunity cost, market purchases, expected recovery, and experience efficiency, with price refreshes, manual overrides, background progress, and cancellation.",
+                "The main-site import script now supports Skilling snapshots, including current skill experience, inventory materials, equipped and inventory gear, drink slots, plus house, community, achievement, scroll, and MooPass buffs."
+            ]
+        }
+    },
     "2026年7月13日（v1.0.24）": {
         "label": {
             "zh": "2026年7月13日（v1.0.24）",

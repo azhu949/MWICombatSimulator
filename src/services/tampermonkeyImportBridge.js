@@ -1,4 +1,5 @@
 import { buildMainSiteEnhancementImport } from "./enhancementImportMapper.js";
+import { buildMainSiteSkillingImport } from "./skillingImportMapper.js";
 
 function resolveActivateAfterImport(message) {
     if (Object.prototype.hasOwnProperty.call(message, "activateAfterImport")) {
@@ -108,5 +109,26 @@ export function applyTampermonkeyEnhancementImportMessage(enhancement, message) 
         message: result.characterName
             ? `Imported enhancement setup for ${result.characterName}.`
             : "Imported enhancement character setup.",
+    };
+}
+
+/**
+ * Replace the skilling workspace snapshot with the current main-site character.
+ */
+export function applyTampermonkeySkillingImportMessage(skilling, message) {
+    if (!skilling || typeof skilling.importProfile !== "function") {
+        throw new Error("Skilling store is unavailable.");
+    }
+
+    const safeMessage = message && typeof message === "object" ? message : {};
+    const result = buildMainSiteSkillingImport(safeMessage.payload || {});
+    skilling.importProfile(result.profile);
+    return {
+        detectedFormat: result.detectedFormat,
+        importedSections: result.importedSections,
+        characterName: result.characterName,
+        message: result.characterName
+            ? `Imported skilling snapshot for ${result.characterName}.`
+            : "Imported current-character skilling snapshot.",
     };
 }

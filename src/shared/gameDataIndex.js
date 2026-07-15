@@ -43,6 +43,7 @@ function deepFreeze(value) {
 }
 
 export const enhancementData = deepFreeze(gameDataIndex?.enhancementData || {});
+export const skillingData = deepFreeze(gameDataIndex?.skillingData || {});
 
 function normalizeSkillHrid(skillKey) {
     const normalized = String(skillKey || "").trim();

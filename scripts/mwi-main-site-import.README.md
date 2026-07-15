@@ -6,7 +6,7 @@ Tampermonkey 脚本，用于把 Milky Way Idle 主站数据导入 MWI Combat Sim
 
 1. 安装 [`mwi-main-site-import.user.js`](./mwi-main-site-import.user.js)，或从 [GreasyFork](https://greasyfork.org/zh-CN/scripts/568613-mwi-combat-simulator-%E4%B8%BB%E7%AB%99%E4%B8%80%E9%94%AE%E5%AF%BC%E5%85%A5) 安装。
 2. 打开并登录一个 Milky Way Idle 主站标签页（`.com` 或 `.cn`）。
-3. 打开模拟器的 `Home` 或 `Enhancement` 页面。
+3. 打开模拟器的 `Home`、`Enhancement` 或 `Skilling` 页面。
 4. 点击对应的导入按钮。
 
 队伍导入前，需要先在主站手动打开队友资料，让脚本缓存队友 profile。
@@ -31,10 +31,19 @@ Tampermonkey 脚本，用于把 Milky Way Idle 主站数据导入 MWI Combat Sim
 
 强化装备会同时读取穿戴栏和背包：优先穿戴装备；没有穿戴装备时，选择背包中等级最高的同槽装备。
 
+`Skilling` 页面：
+
+- 当前角色五项制作技能的等级与累计经验
+- 背包材料、背包及当前穿戴中的生活技能装备和强化等级
+- 住宅、社区、成就、卷轴与 MooPass 的当前生活技能 Buff
+
+生活技能页只导入当前角色。导入会替换工作台中的角色快照，并把五项目标重置为当前等级加 1；市场价格与手工覆盖价保持不变。
+
 ## 注意
 
 - 安装或更新脚本后，刷新主站和模拟器标签页。
 - 队伍成员只会导入已手动打开并缓存的资料，不会自动抓取队友。
 - 强化页只导入当前角色，不会覆盖目标物品、强化区间、价格、预算或风险参数。
+- 生活技能页只导入当前角色，不会导入或切换缓存队伍成员。
 - 需要至少保留一个已登录的主站标签页；脚本不调用游戏写接口。
 - 如果提示等待主站或页面响应超时，先确认脚本已在两个页面启用并刷新页面。

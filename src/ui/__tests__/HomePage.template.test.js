@@ -46,4 +46,9 @@ describe("HomePage labyrinth selectors", () => {
         expect(homePageSource).not.toContain("common:vue.home.guildBuffCombat");
         expect(homePageSource).not.toContain("common:settingsPage.playerSnapshotTableLabyrinth");
     });
+
+    it("accepts only player-targeted Tampermonkey imports", () => {
+        expect(homePageSource).toContain('const importTarget = String(data.importTarget || "").trim()');
+        expect(homePageSource).toContain('if (importTarget && importTarget !== "player")');
+    });
 });

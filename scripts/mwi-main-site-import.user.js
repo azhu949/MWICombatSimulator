@@ -3,11 +3,11 @@
 // @name:zh      MWI Combat Simulator 主站一键导入
 // @name:zh-CN   MWI Combat Simulator 主站一键导入
 // @namespace    https://azhu949.github.io/MWICombatSimulator
-// @version      0.1.26
+// @version      0.1.27
 // @license      ISC
-// @description  Import the current Milky Way Idle character or manually cached detected team into MWI Combat Simulator, or import the current character setup into the enhancement simulator.
-// @description:zh      一键将 Milky Way Idle 主站当前角色或已手动缓存资料的已识别队伍导入 MWI Combat Simulator，也可将当前角色强化配置导入强化模拟器。
-// @description:zh-CN   一键将 Milky Way Idle 主站当前角色或已手动缓存资料的已识别队伍导入 MWI Combat Simulator，也可将当前角色强化配置导入强化模拟器。
+// @description  Import the current Milky Way Idle character or cached team into the combat simulator, enhancement simulator, or skilling planner.
+// @description:zh      将 Milky Way Idle 主站当前角色或缓存队伍导入战斗模拟器、强化模拟器或生活技能规划器。
+// @description:zh-CN   将 Milky Way Idle 主站当前角色或缓存队伍导入战斗模拟器、强化模拟器或生活技能规划器。
 // @match        https://www.milkywayidle.com/*
 // @match        https://milkywayidle.com/*
 // @match        https://www.milkywayidlecn.com/*
@@ -55,6 +55,7 @@
         en: {
             button: "Import from Main Site",
             enhancementButton: "Import Character Setup",
+            skillingButton: "Import Skilling Snapshot",
             waitingMainSite: "Waiting for main-site response…",
             importingSimulator: "Importing into simulator…",
             importSuccess: "Import successful.",
@@ -78,6 +79,7 @@
         zh: {
             button: "从主站导入",
             enhancementButton: "导入角色强化配置",
+            skillingButton: "导入生活技能快照",
             waitingMainSite: "等待主站响应…",
             importingSimulator: "正在导入到模拟器…",
             importSuccess: "导入成功。",
@@ -128,8 +130,11 @@
         "characterGuildBuffMap",
         "guildBuildingLevelMap",
         "communityBuffs",
+        "houseActionTypeBuffsMap",
         "communityActionTypeBuffsMap",
         "achievementActionTypeBuffsMap",
+        "personalActionTypeBuffsMap",
+        "mooPassActionTypeBuffsMap",
         "actionTypeFoodSlotsMap",
         "actionTypeDrinkSlotsMap",
         "consumableCombatTriggersMap",
@@ -1006,15 +1011,23 @@
                 message.achievements,
                 ["achievementHrid"]
             );
+            updateCurrentCharacterSnapshot(message);
             return;
         }
 
         if (
             type === "achievement_buffs_updated"
             || type === "community_buffs_updated"
+            || type === "personal_buffs_updated"
+            || type === "moo_pass_buffs_updated"
             || type === "guild_buffs_updated"
             || type === "guild_updated"
         ) {
+            updateCurrentCharacterSnapshot(message);
+            return;
+        }
+
+        if (CURRENT_CHARACTER_SNAPSHOT_KEYS.some((key) => hasOwnKey(message, key))) {
             updateCurrentCharacterSnapshot(message);
         }
     }
@@ -2064,6 +2077,10 @@
             }, timeoutMs);
 
             function handleWindowMessage(event) {
+                if (event.source !== window || event.origin !== window.location.origin) {
+                    return;
+                }
+
                 const data = event.data;
                 if (!data || typeof data !== "object") {
                     return;
@@ -2544,8 +2561,11 @@
             }
 
             const importMode = String(button.dataset.importMode || "player");
+            const buttonTextKey = importMode === "enhancement"
+                ? "enhancementButton"
+                : (importMode === "skilling" ? "skillingButton" : "button");
             button.textContent = getUiText(
-                importMode === "enhancement" ? "enhancementButton" : "button",
+                buttonTextKey,
                 state.uiLanguage
             );
             status.textContent = state.statusTextKey
@@ -2693,6 +2713,23 @@
             setStatusKey("importSuccess", "success");
         }
 
+        async function importSkillingMainSiteResponse(mainSiteResponse, requestId) {
+            if (!mainSiteResponse || mainSiteResponse.ok !== true || !mainSiteResponse.payload) {
+                throw new Error(mainSiteResponse?.message || getUiText("noMainSiteData", state.uiLanguage));
+            }
+
+            setStatusKey("importingSimulator", "idle");
+            const appResponse = await importPayloadIntoSimulator(requestId, mainSiteResponse.payload, {
+                importTarget: "skilling",
+                format: String(mainSiteResponse?.format || "main-site-current-character"),
+            });
+            if (!appResponse || appResponse.ok !== true) {
+                throw new Error(appResponse?.message || getUiText("simulatorImportFailed", state.uiLanguage));
+            }
+
+            setStatusKey("importSuccess", "success");
+        }
+
         async function importTeamMainSiteResponse(mainSiteResponse) {
             const payload = mainSiteResponse?.payload;
             const members = Array.isArray(payload?.members) ? payload.members : [];
@@ -2790,13 +2827,17 @@
             setStatusKey("waitingMainSite", "idle");
 
             try {
-                const normalizedImportMode = importMode === "enhancement" ? "enhancement" : "player";
+                const normalizedImportMode = importMode === "enhancement" || importMode === "skilling"
+                    ? importMode
+                    : "player";
                 const mainSiteResponse = await requestMainSiteImport(
                     requestId,
-                    normalizedImportMode === "enhancement" ? "active-player" : "auto"
+                    normalizedImportMode === "player" ? "auto" : "active-player"
                 );
                 if (normalizedImportMode === "enhancement") {
                     await importEnhancementMainSiteResponse(mainSiteResponse, requestId);
+                } else if (normalizedImportMode === "skilling") {
+                    await importSkillingMainSiteResponse(mainSiteResponse, requestId);
                 } else if (isTeamImportResponse(mainSiteResponse)) {
                     await importTeamMainSiteResponse(mainSiteResponse);
                 } else {
@@ -2815,18 +2856,24 @@
         }
 
         function mountImportControl() {
+            const skillingActionBar = document.querySelector('[data-tm-import-anchor="skilling-actions"]');
             const enhancementActionBar = document.querySelector('[data-tm-import-anchor="enhancement-actions"]');
-            const actionBar = enhancementActionBar
+            const actionBar = skillingActionBar
+                || enhancementActionBar
                 || document.querySelector('[data-tm-import-anchor="simulator-home-actions"]');
             if (!actionBar) {
                 return;
             }
 
-            const importMode = enhancementActionBar ? "enhancement" : "player";
+            const importMode = skillingActionBar
+                ? "skilling"
+                : (enhancementActionBar ? "enhancement" : "player");
             const referenceButton = actionBar.querySelector(
                 importMode === "enhancement"
                     ? '[data-tm-import-reference="enhancement-refresh"]'
-                    : '[data-tm-import-reference="import-export"]'
+                    : (importMode === "skilling"
+                        ? '[data-tm-import-reference="skilling-refresh"]'
+                        : '[data-tm-import-reference="import-export"]')
             );
             if (document.getElementById(CONTROL_ID)) {
                 return;
@@ -2840,8 +2887,11 @@
             button.id = BUTTON_ID;
             button.type = "button";
             button.dataset.importMode = importMode;
+            const buttonTextKey = importMode === "enhancement"
+                ? "enhancementButton"
+                : (importMode === "skilling" ? "skillingButton" : "button");
             button.textContent = getUiText(
-                importMode === "enhancement" ? "enhancementButton" : "button",
+                buttonTextKey,
                 state.uiLanguage
             );
             button.className = "action-button-tool";

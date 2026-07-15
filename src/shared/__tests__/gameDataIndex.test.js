@@ -15,6 +15,7 @@ import {
     labyrinthCrateOptions,
     levelExperienceTable,
     skillDetailIndex,
+    skillingData,
 } from "../gameDataIndex.js";
 
 describe("gameDataIndex", () => {
@@ -196,5 +197,40 @@ describe("gameDataIndex", () => {
         });
         expect(enhancementData.acquisition.sourcesByItemHrid["/items/chimerical_quiver"]).toBeDefined();
         expect(enhancementData.acquisition.sourcesByItemHrid["/items/sinister_cape"]).toBeDefined();
+    });
+
+    it("exposes compact production actions, equipment, and drinks", () => {
+        expect(Object.isFrozen(skillingData)).toBe(true);
+        expect(skillingData.skillHrids).toEqual([
+            "/skills/brewing",
+            "/skills/cheesesmithing",
+            "/skills/cooking",
+            "/skills/crafting",
+            "/skills/tailoring",
+        ]);
+        expect(skillingData.actions).toHaveLength(647);
+        expect(skillingData.actions.find((action) => action.hrid === "/actions/brewing/alchemy_tea")).toMatchObject({
+            baseTimeSeconds: 9,
+            levelRequirement: { skillHrid: "/skills/brewing", level: 17 },
+            experienceGain: { skillHrid: "/skills/brewing", value: 21 },
+            outputItems: [{ itemHrid: "/items/alchemy_tea", count: 1 }],
+        });
+        expect(skillingData.actions.find(
+            (action) => action.hrid === "/actions/tailoring/artificer_cape_refined",
+        )).toMatchObject({
+            upgradeItemHrid: "/items/artificer_cape",
+            retainAllEnhancement: true,
+        });
+        expect(skillingData.equipment.find((item) => item.hrid === "/items/guzzling_pouch")).toMatchObject({
+            equipmentType: "/equipment_types/pouch",
+            drinkSlots: 2,
+            noncombatStats: { drinkConcentration: 0.1 },
+        });
+        expect(skillingData.equipmentItemHrids).toContain("/items/anchorbound_plate_body");
+        expect(skillingData.drinks.find((item) => item.hrid === "/items/artisan_tea")).toMatchObject({
+            durationSeconds: 300,
+            usableInActionTypeMap: { "/action_types/crafting": true },
+        });
+        expect(skillingData.totalBonusMultipliers[20]).toBe(50);
     });
 });

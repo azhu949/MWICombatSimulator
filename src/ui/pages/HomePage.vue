@@ -2670,7 +2670,8 @@ function handleTampermonkeyImportWindowMessage(event) {
     return;
   }
 
-  if (data.importTarget === "enhancement") {
+  const importTarget = String(data.importTarget || "").trim();
+  if (importTarget && importTarget !== "player") {
     return;
   }
 

@@ -54,5 +54,6 @@ export function formatCompactAmount(value, options = {}) {
         maximumFractionDigits: 2,
         minimumFractionDigits: 0,
     });
-    return `${formatter.format(scaled)}${unit.suffix}`;
+    const suffix = options.unitCase === "lower" ? unit.suffix.toLowerCase() : unit.suffix;
+    return `${formatter.format(scaled)}${suffix}`;
 }

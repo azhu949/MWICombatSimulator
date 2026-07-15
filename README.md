@@ -1,6 +1,6 @@
 # MWICombatSimulator
 
-一个用于 **Milky Way Idle** 的非官方战斗模拟器 / 刷图推荐器（纯前端，Vue 3 + Vite + Tailwind）。
+一个用于 **Milky Way Idle** 的非官方战斗模拟器、刷图推荐器与生活技能规划工具（纯前端，Vue 3 + Vite + Tailwind）。
 
 ## 项目简介
 
@@ -14,8 +14,9 @@ MWICombatSimulator 用于在本地运行战斗模拟与收益评估，帮助你�
 - **Queue**：基于“基线 + 多个变体”的多轮评分与排名，对比收益增量与波动
 - **Advisor**：刷图推荐器，批量扫描 Solo/Group Zones 与 Labyrinth，输出目标排行
 - **Enhancement**：比较不同保护阈值的期望成本，评估贤者之镜、分解价值、成本分位与预算成功率
+- **Skilling**：结合当前角色经验、背包/穿戴装备、Buff 与市场价格，规划酿造、奶酪锻造、烹饪、制作和裁缝的逐级最低净成本路线
 - **Multi Results**：汇总多轮结果并支持导出 Excel
-- **Import/Export**：支持导入导出；可配合 Tampermonkey 脚本从主站一键导入当前角色，支持 `milkywayidle.com` 与 `milkywayidlecn.com`
+- **Import/Export**：支持导入导出；可配合 Tampermonkey 脚本从主站一键导入战斗、强化或生活技能所需的当前角色数据，支持 `milkywayidle.com` 与 `milkywayidlecn.com`
 - **官方中英游戏词条 + Web Workers**：发布前同步官网词条快照，运行时离线加载；worker 并行计算提升批量模拟速度
 - **Parallel Worker Limit**：Settings 中保存的并行 worker 上限也会应用到 Home 页的批量 Zone / Labyrinth 模拟
 

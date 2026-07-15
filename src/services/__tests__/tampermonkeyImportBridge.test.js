@@ -1,7 +1,10 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { createMainSiteShareProfileFixture } from "./fixtures/mainSiteShareProfileFixture.js";
-import { applyTampermonkeyImportMessage } from "../tampermonkeyImportBridge.js";
+import {
+    applyTampermonkeyImportMessage,
+    applyTampermonkeySkillingImportMessage,
+} from "../tampermonkeyImportBridge.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 
 function createLocalStorageMock() {
@@ -164,5 +167,20 @@ describe("tampermonkeyImportBridge", () => {
         expect(simulator.players[2].name).toBe("Player 3");
         expect(simulator.queue.importedProfileByPlayer["2"]).toBe(false);
         expect(simulator.queue.importedProfileByPlayer["3"]).toBe(false);
+    });
+
+    it("routes a current-character snapshot to the skilling store", () => {
+        const importProfile = vi.fn();
+        const payload = {
+            character: { name: "Skiller" },
+            characterSkills: [{ skillHrid: "/skills/cooking", level: 31, experience: 12345 }],
+            characterItems: [{ itemHrid: "/items/coin", itemLocationHrid: "/item_locations/inventory", count: 10 }],
+        };
+
+        const result = applyTampermonkeySkillingImportMessage({ importProfile }, { payload });
+
+        expect(importProfile).toHaveBeenCalledOnce();
+        expect(importProfile.mock.calls[0][0].characterName).toBe("Skiller");
+        expect(result.detectedFormat).toBe("main-site-skilling-character");
     });
 });

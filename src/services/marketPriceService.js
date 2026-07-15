@@ -9,6 +9,7 @@ const MARKETPLACE_SOURCE_URLS = [
     "https://www.milkywayidle.com/game_data/marketplace.json",
     "https://www.milkywayidlecn.com/game_data/marketplace.json",
 ];
+export const MARKETPLACE_REQUEST_TIMEOUT_MS = 10_000;
 
 const TREASURE_CHEST_HRIDS = [
     "/items/small_treasure_chest",
@@ -210,7 +211,42 @@ export function extractEnhancementDataFromMarketData(marketData) {
     };
 }
 
-export async function fetchMarketPriceTable(fetchImpl = globalThis.fetch) {
+async function fetchMarketplacePayload(fetchImpl, url, requestTimeoutMs) {
+    const controller = typeof AbortController === "function" ? new AbortController() : null;
+    const timeoutMs = Math.max(1, toFiniteNumber(requestTimeoutMs, MARKETPLACE_REQUEST_TIMEOUT_MS));
+    let timeoutId = null;
+    const timeoutPromise = new Promise((_, reject) => {
+        timeoutId = globalThis.setTimeout(() => {
+            controller?.abort();
+            const error = new Error(`Price request timed out after ${timeoutMs}ms: ${url}`);
+            error.name = "TimeoutError";
+            reject(error);
+        }, timeoutMs);
+    });
+    const requestPromise = (async () => {
+        const response = await fetchImpl(url, {
+            mode: "cors",
+            ...(controller ? { signal: controller.signal } : {}),
+        });
+        if (!response?.ok) {
+            throw new Error(`Price request failed: ${response?.status || "unknown"}`);
+        }
+        return response.json();
+    })();
+
+    try {
+        return await Promise.race([requestPromise, timeoutPromise]);
+    } finally {
+        if (timeoutId != null) {
+            globalThis.clearTimeout(timeoutId);
+        }
+    }
+}
+
+export async function fetchMarketPriceTable(
+    fetchImpl = globalThis.fetch,
+    { requestTimeoutMs = MARKETPLACE_REQUEST_TIMEOUT_MS } = {},
+) {
     if (typeof fetchImpl !== "function") {
         throw new Error("Fetch API is unavailable in current environment.");
     }
@@ -219,13 +255,7 @@ export async function fetchMarketPriceTable(fetchImpl = globalThis.fetch) {
 
     for (const url of MARKETPLACE_SOURCE_URLS) {
         try {
-            const response = await fetchImpl(url, { mode: "cors" });
-            if (!response?.ok) {
-                lastError = new Error(`Price request failed: ${response?.status || "unknown"}`);
-                continue;
-            }
-
-            const payload = await response.json();
+            const payload = await fetchMarketplacePayload(fetchImpl, url, requestTimeoutMs);
             const marketData = payload?.marketData;
             const priceTable = hydratePriceTableWithMarketData(marketData);
             const {

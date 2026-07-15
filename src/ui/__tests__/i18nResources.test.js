@@ -23,6 +23,14 @@ describe("common locale resources", () => {
         expect(Object.keys(enCommon?.enhancement || {}).sort()).toEqual(Object.keys(zhCommon?.enhancement || {}).sort());
     });
 
+    it("defines synchronized skilling workspace labels", () => {
+        expect(enCommon?.menu?.skilling).toBe("Skilling");
+        expect(zhCommon?.menu?.skilling).toBe("生活技能");
+        expect(enCommon?.skilling?.title).toBe("Skilling Upgrade Planner");
+        expect(zhCommon?.skilling?.title).toBe("生活技能升级推荐器");
+        expect(Object.keys(enCommon?.skilling || {}).sort()).toEqual(Object.keys(zhCommon?.skilling || {}).sort());
+    });
+
     it("does not duplicate game-defined labels in the common locale", () => {
         for (const common of [enCommon, zhCommon]) {
             expect(common?.vue?.home?.levelLabels).toBeUndefined();

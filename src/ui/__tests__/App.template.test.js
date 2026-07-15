@@ -11,6 +11,11 @@ describe("App header support links", () => {
         expect(appSource).toContain("route.meta?.showCombatToolbar !== false");
     });
 
+    it("links to the skilling planner", () => {
+        expect(appSource).toContain('to="/skilling"');
+        expect(appSource).toContain("common:menu.skilling");
+    });
+
     it("renders GitHub and feedback entry points in the header", () => {
         expect(appSource).toContain("https://github.com/azhu949/MWICombatSimulator");
         expect(appSource).not.toContain("__REPOSITORY_URL__");

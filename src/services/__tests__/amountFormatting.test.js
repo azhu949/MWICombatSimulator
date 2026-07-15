@@ -14,6 +14,12 @@ describe("formatCompactAmount", () => {
         expect(formatCompactAmount(1_500_000_000)).toBe("1.5B");
     });
 
+    it("supports locale-independent lowercase units", () => {
+        expect(formatCompactAmount(12_500, { locale: "zh-CN", unitCase: "lower" })).toBe("12.5k");
+        expect(formatCompactAmount(1_250_000, { locale: "zh-CN", unitCase: "lower" })).toBe("1.25m");
+        expect(formatCompactAmount(1_500_000_000, { locale: "zh-CN", unitCase: "lower" })).toBe("1.5b");
+    });
+
     it("supports negative amounts and invalid placeholders", () => {
         expect(formatCompactAmount(-2_500_000)).toBe("-2.5M");
         expect(formatCompactAmount(Number.NaN)).toBe("—");
