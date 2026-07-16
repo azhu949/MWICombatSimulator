@@ -1,4 +1,5 @@
 import { beforeEach, describe, expect, it, vi } from "vitest";
+import { SKILLING_OPTIMIZATION_MODE_BALANCED } from "../skillingPlanner.js";
 import { SkillingWorkerClient } from "../skillingWorkerClient.js";
 
 class FakeWorker {
@@ -29,15 +30,30 @@ describe("SkillingWorkerClient", () => {
         const client = new SkillingWorkerClient();
         const onProgress = vi.fn();
         const onResult = vi.fn();
-        client.start({ runId: "active" }, { onProgress, onResult });
+        client.start({
+            runId: "active",
+            optimizationMode: SKILLING_OPTIMIZATION_MODE_BALANCED,
+            balancedCostTolerance: 0.2,
+        }, { onProgress, onResult });
         const worker = FakeWorker.instances[0];
+
+        expect(worker.postMessage).toHaveBeenCalledWith({
+            type: "skilling_run",
+            runId: "active",
+            optimizationMode: SKILLING_OPTIMIZATION_MODE_BALANCED,
+            balancedCostTolerance: 0.2,
+        });
 
         worker.emit({ type: "skilling_progress", runId: "stale", overallProgress: 0.5 });
         worker.emit({ type: "skilling_progress", runId: "active", overallProgress: 0.5 });
-        worker.emit({ type: "skilling_result", runId: "active", result: { overview: [] } });
+        const result = {
+            optimizationMode: SKILLING_OPTIMIZATION_MODE_BALANCED,
+            overview: [{ skillHrid: "/skills/cooking" }],
+        };
+        worker.emit({ type: "skilling_result", runId: "active", result });
 
         expect(onProgress).toHaveBeenCalledOnce();
-        expect(onResult).toHaveBeenCalledWith({ overview: [] });
+        expect(onResult).toHaveBeenCalledWith(result);
         expect(worker.terminate).toHaveBeenCalledOnce();
     });
 

@@ -2,8 +2,12 @@ import { computed, reactive, ref, watch } from "vue";
 import { defineStore } from "pinia";
 import { skillingData } from "../shared/gameDataIndex.js";
 import {
+    SKILLING_BALANCED_COST_TOLERANCE,
     SKILLING_MAX_LEVEL,
+    SKILLING_OPTIMIZATION_MODE_COST,
     createDefaultSkillingTargets,
+    normalizeSkillingBalancedCostTolerance,
+    normalizeSkillingOptimizationMode,
     planSkillingUpgrades,
 } from "../services/skillingPlanner.js";
 import skillingWorkerClient from "../services/skillingWorkerClient.js";
@@ -121,17 +125,13 @@ export function normalizeSkillingStoredProfile(rawProfile) {
 
 export function normalizeSkillingPersistedState(rawState = {}) {
     const source = isPlainObject(rawState) ? rawState : {};
-    const profile = normalizeSkillingStoredProfile(source.profile);
-    const defaults = createDefaultSkillingTargets(profile, skillingData);
-    const rawTargets = isPlainObject(source.targetLevels) ? source.targetLevels : {};
-    const targetLevels = Object.fromEntries((skillingData?.skillHrids || []).map((skillHrid) => {
-        const currentLevel = clamp(integer(profile?.skills?.[skillHrid]?.level, 1), 1, SKILLING_MAX_LEVEL);
-        const requested = Object.prototype.hasOwnProperty.call(rawTargets, skillHrid)
-            ? rawTargets[skillHrid]
-            : defaults[skillHrid];
-        return [skillHrid, clamp(integer(requested, currentLevel + 1), currentLevel, SKILLING_MAX_LEVEL)];
-    }));
-    return { version: SKILLING_STORAGE_VERSION, profile, targetLevels };
+    // Imported character data and its target levels are intentionally session-only.
+    // Legacy payloads may still contain them, but loading and future writes ignore those fields.
+    return {
+        version: SKILLING_STORAGE_VERSION,
+        optimizationMode: normalizeSkillingOptimizationMode(source.optimizationMode),
+        balancedCostTolerance: normalizeSkillingBalancedCostTolerance(source.balancedCostTolerance),
+    };
 }
 
 export function loadSkillingPersistedState(storage = globalThis?.localStorage) {
@@ -164,8 +164,12 @@ function replaceReactiveObject(target, source) {
 export const useSkillingStore = defineStore("skilling", () => {
     const simulator = useSimulatorStore();
     const persisted = loadSkillingPersistedState();
-    const profile = ref(persisted.profile);
-    const targetLevels = reactive(persisted.targetLevels);
+    const profile = ref(null);
+    const targetLevels = reactive(createDefaultSkillingTargets(null, skillingData));
+    const optimizationMode = ref(persisted.optimizationMode || SKILLING_OPTIMIZATION_MODE_COST);
+    const balancedCostTolerance = ref(normalizeSkillingBalancedCostTolerance(
+        persisted.balancedCostTolerance ?? SKILLING_BALANCED_COST_TOLERANCE,
+    ));
     const selectedView = ref("overview");
     const result = ref(null);
     const resultStale = ref(false);
@@ -211,13 +215,24 @@ export const useSkillingStore = defineStore("skilling", () => {
         if (result.value) resultStale.value = true;
     }
 
-    watch([profile, targetLevels], () => {
-        persistSkillingState({ profile: profile.value, targetLevels });
-    }, { deep: true });
+    watch([optimizationMode, balancedCostTolerance], () => {
+        persistSkillingState({
+            optimizationMode: optimizationMode.value,
+            balancedCostTolerance: balancedCostTolerance.value,
+        });
+    });
 
     watch(targetLevels, () => {
         invalidateResult();
     }, { deep: true, flush: "sync" });
+
+    watch(optimizationMode, () => {
+        invalidateResult();
+    }, { flush: "sync" });
+
+    watch(balancedCostTolerance, () => {
+        invalidateResult();
+    }, { flush: "sync" });
 
     watch([
         () => simulator.pricing?.lastFetchedAt,
@@ -267,6 +282,20 @@ export const useSkillingStore = defineStore("skilling", () => {
         return true;
     }
 
+    function setOptimizationMode(mode) {
+        const normalized = normalizeSkillingOptimizationMode(mode);
+        if (normalized === optimizationMode.value) return false;
+        optimizationMode.value = normalized;
+        return true;
+    }
+
+    function setBalancedCostTolerance(value) {
+        const normalized = normalizeSkillingBalancedCostTolerance(value);
+        if (normalized === balancedCostTolerance.value) return false;
+        balancedCostTolerance.value = normalized;
+        return true;
+    }
+
     function setPriceOverride(itemHrid, patch) {
         return simulator.setPriceOverride(itemHrid, patch);
     }
@@ -301,6 +330,8 @@ export const useSkillingStore = defineStore("skilling", () => {
             runId,
             profile: cloneJsonValue(profile.value, profile.value),
             targetLevels: { ...targetLevels },
+            optimizationMode: optimizationMode.value,
+            balancedCostTolerance: balancedCostTolerance.value,
             priceTable: cloneJsonValue(simulator.pricing?.priceTable || {}, {}),
             enhancementQuotesByItem: cloneJsonValue(simulator.pricing?.enhancementQuotesByItem || {}, {}),
             now: Date.now(),
@@ -346,6 +377,8 @@ export const useSkillingStore = defineStore("skilling", () => {
     return {
         profile,
         targetLevels,
+        optimizationMode,
+        balancedCostTolerance,
         selectedView,
         result,
         resultStale,
@@ -365,6 +398,8 @@ export const useSkillingStore = defineStore("skilling", () => {
         importProfile,
         clearProfile,
         setTargetLevel,
+        setOptimizationMode,
+        setBalancedCostTolerance,
         setPriceOverride,
         resetPriceOverride,
         run,

@@ -16,6 +16,53 @@
         </div>
 
         <div class="flex flex-wrap items-center gap-2" data-tm-import-anchor="skilling-actions">
+          <div class="flex w-full min-w-0 items-center gap-1.5 sm:w-auto sm:shrink-0">
+            <div
+              class="grid min-w-0 flex-1 grid-cols-3 overflow-hidden rounded border border-white/10 bg-slate-950/40 sm:flex-none"
+              role="radiogroup"
+              :aria-label="t('common:skilling.optimizationMode', 'Optimization mode')"
+              data-skilling-optimization-mode
+            >
+              <label
+                v-for="(mode, index) in optimizationModes"
+                :key="mode.value"
+                class="relative"
+                :class="[
+                  index > 0 ? 'border-l border-white/10' : '',
+                  skilling.running ? 'cursor-not-allowed' : 'cursor-pointer',
+                ]"
+              >
+                <input
+                  class="peer sr-only"
+                  type="radio"
+                  name="skilling-optimization-mode"
+                  autocomplete="off"
+                  :value="mode.value"
+                  :checked="skilling.optimizationMode === mode.value"
+                  :disabled="skilling.running"
+                  @change="skilling.setOptimizationMode(mode.value)"
+                />
+                <span
+                  class="flex min-h-8 min-w-0 items-center justify-center px-1.5 py-1 text-center text-[11px] font-semibold leading-tight transition sm:min-w-[6.5rem] sm:px-2 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-[-2px] peer-focus-visible:outline-teal-300 peer-disabled:opacity-50"
+                  :class="skilling.optimizationMode === mode.value
+                    ? 'bg-teal-300/10 text-teal-200'
+                    : 'text-slate-400 hover:bg-white/5 hover:text-slate-200 peer-disabled:hover:bg-transparent peer-disabled:hover:text-slate-400'"
+                >
+                  {{ mode.label }}
+                </span>
+              </label>
+            </div>
+            <button
+              type="button"
+              class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-slate-950/40 text-xs font-bold text-slate-400 transition hover:border-teal-300/40 hover:text-teal-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300"
+              :aria-label="t('common:skilling.optimizationModeHelp', 'Optimization mode guide')"
+              :title="t('common:skilling.optimizationModeHelp', 'Optimization mode guide')"
+              data-skilling-optimization-help
+              @click="modeHelpModalOpen = true"
+            >
+              <span aria-hidden="true">i</span>
+            </button>
+          </div>
           <span class="rounded border px-2 py-1 text-[11px]" :class="priceStatusClass">{{ priceStatusText }}</span>
           <button type="button" class="action-button-muted !px-3 !py-1.5" :disabled="skilling.running" @click="openPricesModal">
             {{ t("common:skilling.priceDetails", "Price details") }}
@@ -27,7 +74,7 @@
             :disabled="skilling.priceStatus.loading || skilling.running"
             @click="refreshPrices"
           >
-            {{ skilling.priceStatus.loading ? t("common:skilling.refreshing", "Refreshing...") : t("common:skilling.refreshPrices", "Refresh prices") }}
+            {{ skilling.priceStatus.loading ? t("common:skilling.refreshing", "Refreshing…") : t("common:skilling.refreshPrices", "Refresh prices") }}
           </button>
           <button
             type="button"
@@ -63,7 +110,7 @@
 
     <div v-if="skilling.resultStale || snapshotIsOld || expiredBuffWarningCount > 0 || skilling.error" class="grid gap-2 sm:grid-cols-2" data-skilling-warnings aria-live="polite">
       <p v-if="skilling.resultStale" class="rounded border border-amber-300/30 bg-amber-300/10 px-3 py-2 text-xs text-amber-200">
-        {{ t("common:skilling.stale", "Results are stale because targets, prices, or the character snapshot changed.") }}
+        {{ t("common:skilling.stale", "Results are stale because targets, prices, optimization settings, or the character snapshot changed.") }}
       </p>
       <p v-if="snapshotIsOld" class="rounded border border-amber-300/30 bg-amber-300/10 px-3 py-2 text-xs text-amber-200">
         {{ t("common:skilling.oldSnapshotWarning", "This character snapshot is more than 30 minutes old.") }}
@@ -93,6 +140,9 @@
             <input
               class="field-input !rounded !px-2 !py-1.5 text-right text-xs"
               type="number"
+              :name="`skilling-target-${viewDomKey(skillHrid)}`"
+              autocomplete="off"
+              inputmode="numeric"
               :aria-label="`${skillName(skillHrid)} ${t('common:skilling.targetLevel', 'Target level')}`"
               :min="currentLevel(skillHrid)"
               max="200"
@@ -143,17 +193,18 @@
           <span v-if="skilling.result" class="text-[11px] text-slate-500">{{ resultGeneratedLabel }}</span>
         </div>
         <div class="overflow-x-auto">
-          <table class="min-w-[980px] w-full text-left text-xs">
+          <table class="min-w-[1120px] w-full text-left text-xs">
             <thead class="bg-slate-950/30 text-[10px] uppercase text-slate-500">
               <tr>
                 <th class="px-4 py-2">{{ t("common:skilling.rank", "Rank") }}</th>
                 <th class="px-3 py-2">{{ t("common:skilling.skill", "Skill") }}</th>
                 <th class="px-3 py-2">{{ t("common:skilling.current", "Current") }} -> {{ t("common:skilling.target", "Target") }}</th>
                 <th class="px-3 py-2">{{ t("common:skilling.route", "First route") }}</th>
-                <th class="px-3 py-2 text-right">{{ t("common:skilling.costPerXp", "Net cost / XP") }}</th>
+                <th class="px-3 py-2 text-right" :class="resultHighlightsCost ? 'bg-teal-300/[0.06] text-teal-300' : ''">{{ t("common:skilling.costPerXp", "Net cost / XP") }}</th>
+                <th class="px-3 py-2 text-right">{{ t("common:skilling.materialPurchasePerXp", "Material purchases / XP") }}</th>
                 <th class="px-3 py-2 text-right">{{ t("common:skilling.totalCost", "Net cost") }}</th>
                 <th class="px-3 py-2 text-right">{{ t("common:skilling.purchaseCost", "Market purchases") }}</th>
-                <th class="px-3 py-2 text-right">{{ t("common:skilling.duration", "Time") }}</th>
+                <th class="px-3 py-2 text-right" :class="resultHighlightsDuration ? 'bg-teal-300/[0.06] text-teal-300' : ''">{{ t("common:skilling.duration", "Time") }}</th>
                 <th class="px-3 py-2 text-right">{{ t("common:skilling.xpPerHour", "XP/h") }}</th>
                 <th class="px-4 py-2 text-right">{{ t("common:skilling.status", "Status") }}</th>
               </tr>
@@ -166,10 +217,11 @@
                 </td>
                 <td class="px-3 py-3 tabular-nums text-slate-300">{{ currentLevel(row.skillHrid) }} -> {{ skilling.targetLevels[row.skillHrid] }}</td>
                 <td class="max-w-[220px] truncate px-3 py-3 text-slate-300">{{ row.plan?.segments?.[0] ? actionName(row.plan.segments[0]) : "-" }}</td>
-                <td class="px-3 py-3 text-right tabular-nums" :class="amountClass(row.plan?.costPerExperience)">{{ formatAmount(row.plan?.costPerExperience) }}</td>
+                <td class="px-3 py-3 text-right tabular-nums" :class="[amountClass(row.plan?.costPerExperience), resultHighlightsCost ? 'bg-teal-300/[0.04] font-semibold' : '']">{{ formatAmount(row.plan?.costPerExperience) }}</td>
+                <td class="px-3 py-3 text-right tabular-nums text-slate-300">{{ formatAmount(row.plan?.materialPurchaseCostPerExperience) }}</td>
                 <td class="px-3 py-3 text-right tabular-nums" :class="amountClass(row.plan?.totalNetCost)">{{ formatAmount(row.plan?.totalNetCost) }}</td>
                 <td class="px-3 py-3 text-right tabular-nums text-slate-300">{{ formatAmount(row.plan?.totalPurchaseCost) }}</td>
-                <td class="px-3 py-3 text-right tabular-nums text-slate-300">{{ formatDuration(row.plan?.totalDurationHours) }}</td>
+                <td class="px-3 py-3 text-right tabular-nums" :class="resultHighlightsDuration ? 'bg-teal-300/[0.04] font-semibold text-teal-200' : 'text-slate-300'">{{ formatDuration(row.plan?.totalDurationHours) }}</td>
                 <td class="px-3 py-3 text-right tabular-nums text-slate-300">{{ formatAmount(row.plan?.experiencePerHour) }}</td>
                 <td class="px-4 py-3 text-right"><span class="rounded border px-2 py-1 text-[10px]" :class="planStatusClass(row.plan)">{{ planStatusText(row.plan) }}</span></td>
               </tr>
@@ -210,7 +262,7 @@
             <table class="min-w-[1280px] w-full text-left text-xs">
               <thead class="bg-slate-950/30 text-[10px] uppercase text-slate-500">
                 <tr>
-                  <th class="px-4 py-2">{{ t("common:skilling.levelRange", "Levels") }}</th>
+                  <th class="px-4 py-2">{{ t("common:skilling.stageLevel", "Stage levels") }}</th>
                   <th class="px-3 py-2">{{ t("common:skilling.recipe", "Recipe") }}</th>
                   <th class="px-3 py-2 text-right">{{ t("common:skilling.actions", "Actions") }}</th>
                   <th class="px-3 py-2">{{ t("common:skilling.drinks", "Drinks") }}</th>
@@ -223,17 +275,17 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-white/10">
-                <tr v-for="segment in selectedPlan.segments" :key="`${segment.fromLevel}-${segment.toLevel}-${segment.actionHrid}-${segment.bonusSignature}`" class="align-top hover:bg-white/[0.025]">
-                  <td class="px-4 py-3 font-semibold tabular-nums text-amber-200">{{ segment.fromLevel }} -> {{ segment.toLevel }}</td>
+                <tr v-for="(segment, segmentIndex) in selectedPlan.segments" :key="`${segment.fromLevel}-${segment.toLevel}-${segment.actionHrid}-${segment.equipmentSignature}-${segment.drinkSignature}-${segment.bonusSignature}-${segmentIndex}`" class="align-top hover:bg-white/[0.025]">
+                  <td class="px-4 py-3 font-semibold tabular-nums text-amber-200">{{ segmentLevelLabel(segment) }}</td>
                   <td class="max-w-[210px] px-3 py-3 font-semibold text-slate-100">{{ actionName(segment) }}</td>
                   <td class="px-3 py-3 text-right tabular-nums text-slate-300">{{ formatCount(segment.completionCount) }}</td>
-                  <td class="max-w-[200px] px-3 py-3 text-slate-400">{{ drinkSummary(segment) }}</td>
+                  <td class="max-w-[220px] whitespace-pre-line px-3 py-3 leading-5 text-slate-400">{{ drinkSummary(segment) }}</td>
                   <td class="max-w-[240px] px-3 py-3 text-slate-400">{{ equipmentSummary(segment) }}</td>
                   <td class="max-w-[220px] px-3 py-3 text-slate-400">{{ shortageSummary(segment) }}</td>
                   <td class="max-w-[220px] px-3 py-3 text-slate-400">{{ outputSummary(segment) }}</td>
                   <td class="px-3 py-3 text-right font-semibold tabular-nums" :class="amountClass(segment.netCost)">{{ formatAmount(segment.netCost) }}</td>
                   <td class="px-3 py-3 text-right tabular-nums text-slate-300">{{ formatAmount(segment.experiencePerHour) }}</td>
-                  <td class="px-4 py-3 text-right"><button type="button" class="action-button-muted !rounded !px-2 !py-1 text-[11px]" @click="openSegment(segment)">{{ t("common:skilling.details", "Details") }}</button></td>
+                  <td class="px-4 py-3 text-right"><button type="button" class="action-button-muted !rounded !px-2 !py-1 text-[11px]" :aria-label="segmentDetailsAriaLabel(segment)" @click="openSegment(segment)">{{ t("common:skilling.details", "Details") }}</button></td>
                 </tr>
               </tbody>
             </table>
@@ -242,19 +294,21 @@
         </div>
 
         <div v-if="selectedPlan?.alternatives?.length" class="panel !p-0" data-skilling-alternatives>
-          <div class="border-b border-white/10 px-4 py-3"><h3 class="font-heading text-sm font-semibold text-teal-200">{{ t("common:skilling.firstLevelAlternatives", "First-level plan comparison") }}</h3></div>
+          <div class="border-b border-white/10 px-4 py-3"><h3 class="font-heading text-sm font-semibold text-teal-200">{{ t("common:skilling.currentLevelAlternatives", "Current-level candidate comparison") }}</h3></div>
           <div class="overflow-x-auto">
-            <table class="min-w-[1200px] w-full text-left text-xs">
+            <table class="min-w-[1460px] w-full text-left text-xs">
               <thead class="bg-slate-950/30 text-[10px] uppercase text-slate-500">
                 <tr>
                   <th class="px-4 py-2">#</th>
                   <th class="px-3 py-2">{{ t("common:skilling.recipe", "Recipe") }}</th>
-                  <th class="px-3 py-2 text-right">{{ t("common:skilling.actions", "Actions") }}</th>
-                  <th class="px-3 py-2">{{ t("common:skilling.drinks", "Drinks") }}</th>
+                  <th class="px-3 py-2 text-right">{{ t("common:skilling.nextLevelActions", "Estimated actions to next level") }}</th>
+                  <th class="px-3 py-2 text-right" :class="resultHighlightsDuration ? 'bg-teal-300/[0.06] text-teal-300' : ''">{{ t("common:skilling.nextLevelTime", "Time to next level") }}</th>
+                  <th class="px-3 py-2">{{ t("common:skilling.nextLevelDrinks", "Drinks to next level") }}</th>
                   <th class="px-3 py-2">{{ t("common:skilling.equipment", "Equipment") }}</th>
-                  <th class="px-3 py-2 text-right">{{ t("common:skilling.costPerXp", "Net cost / XP") }}</th>
-                  <th class="px-3 py-2 text-right">{{ t("common:skilling.purchaseCost", "Market purchases") }}</th>
-                  <th class="px-3 py-2 text-right">{{ t("common:skilling.xpPerHour", "XP/h") }}</th>
+                  <th class="px-3 py-2 text-right" :class="resultHighlightsCost ? 'bg-teal-300/[0.06] text-teal-300' : ''">{{ t("common:skilling.nextLevelCostPerXp", "Net cost / XP to next level") }}</th>
+                  <th class="px-3 py-2 text-right">{{ t("common:skilling.nextLevelMaterialPurchasePerXp", "Material purchases / XP to next level") }}</th>
+                  <th class="px-3 py-2 text-right">{{ t("common:skilling.nextLevelPurchaseCost", "Purchases to next level") }}</th>
+                  <th class="px-3 py-2 text-right">{{ t("common:skilling.nextLevelXpPerHour", "XP/h to next level") }}</th>
                   <th class="px-4 py-2 text-right">{{ t("common:skilling.details", "Details") }}</th>
                 </tr>
               </thead>
@@ -262,13 +316,17 @@
                 <tr v-for="(candidate, index) in selectedPlan.alternatives.slice(0, 8)" :key="`${candidate.actionHrid}-${index}`" class="align-top hover:bg-white/[0.025]">
                   <td class="px-4 py-2 text-amber-300">{{ index + 1 }}</td>
                   <td class="max-w-[190px] px-3 py-2 font-medium text-slate-200">{{ actionName(candidate) }}</td>
-                  <td class="px-3 py-2 text-right tabular-nums text-slate-300">{{ formatCount(candidate.completionCount) }}</td>
-                  <td class="max-w-[190px] px-3 py-2 text-slate-400">{{ drinkSummary(candidate) }}</td>
-                  <td class="max-w-[260px] px-3 py-2 text-slate-400">{{ equipmentSummary(candidate) }}</td>
-                  <td class="px-3 py-2 text-right tabular-nums" :class="amountClass(candidate.costPerExperience)">{{ formatAmount(candidate.costPerExperience) }}</td>
+                  <td class="px-3 py-2 text-right tabular-nums text-slate-300">
+                    <span class="block whitespace-nowrap font-medium text-slate-200">{{ formatCount(candidate.completionCount) }}</span>
+                  </td>
+                  <td class="px-3 py-2 text-right tabular-nums" :class="resultHighlightsDuration ? 'bg-teal-300/[0.04] font-semibold text-teal-200' : 'text-slate-300'">{{ formatDuration(candidate.durationHours) }}</td>
+                  <td class="max-w-[220px] whitespace-pre-line px-3 py-2 leading-5 text-slate-400">{{ candidateDrinkSummary(candidate) }}</td>
+                  <td class="max-w-[260px] px-3 py-2 text-slate-400">{{ candidateEquipmentSummary(candidate) }}</td>
+                  <td class="px-3 py-2 text-right tabular-nums" :class="[amountClass(candidate.costPerExperience), resultHighlightsCost ? 'bg-teal-300/[0.04] font-semibold' : '']">{{ formatAmount(candidate.costPerExperience) }}</td>
+                  <td class="px-3 py-2 text-right tabular-nums text-slate-400">{{ formatAmount(candidate.materialPurchaseCostPerExperience) }}</td>
                   <td class="px-3 py-2 text-right tabular-nums text-slate-400">{{ formatAmount(candidate.purchaseCost) }}</td>
                   <td class="px-3 py-2 text-right tabular-nums text-slate-400">{{ formatAmount(candidate.experiencePerHour) }}</td>
-                  <td class="px-4 py-2 text-right"><button type="button" class="action-button-muted !rounded !px-2 !py-1 text-[11px]" @click="openSegment(candidate)">{{ t("common:skilling.details", "Details") }}</button></td>
+                  <td class="px-4 py-2 text-right"><button type="button" class="action-button-muted !rounded !px-2 !py-1 text-[11px]" :aria-label="candidateDetailsAriaLabel(candidate, index)" @click="openSegment(candidate, true)">{{ t("common:skilling.details", "Details") }}</button></td>
                 </tr>
               </tbody>
             </table>
@@ -277,25 +335,101 @@
       </div>
     </template>
 
-    <BaseModal :open="segmentModalOpen" :title="t('common:skilling.routeDetails', 'Route details')" panel-class="enhancement-price-modal max-w-5xl max-h-[88vh] overflow-y-auto" @close="segmentModalOpen = false">
+    <BaseModal
+      :open="modeHelpModalOpen"
+      :title="t('common:skilling.optimizationModeHelp', 'Optimization mode guide')"
+      panel-class="enhancement-price-modal max-w-3xl max-h-[88vh] overflow-y-auto overscroll-contain"
+      @close="modeHelpModalOpen = false"
+    >
+      <div class="grid border-y border-white/10 sm:grid-cols-3 sm:divide-x sm:divide-white/10" data-skilling-optimization-help-dialog>
+        <section class="border-b border-white/10 px-4 py-4 sm:border-b-0">
+          <h3 class="font-heading text-sm font-semibold text-amber-200">{{ t("common:skilling.lowestCostPerXp", "Lowest net cost / XP") }}</h3>
+          <p class="mt-2 text-xs leading-5 text-slate-400">{{ t("common:skilling.costModeDescription", "Prioritizes the lowest net cost per experience.") }}</p>
+        </section>
+        <section class="border-b border-white/10 bg-teal-300/[0.025] px-4 py-4 sm:border-b-0">
+          <h3 class="font-heading text-sm font-semibold text-teal-200">{{ t("common:skilling.balanced", "Balanced") }}</h3>
+          <p class="mt-2 text-xs leading-5 text-slate-400">{{ t("common:skilling.balancedModeDescription", `Uses the current level's lowest-net-cost-per-XP full-level route as the baseline and prefers shorter candidates within baseline + ${balancedCostTolerancePercentText}% of |baseline|.`, { percent: balancedCostTolerancePercentText }) }}</p>
+          <div class="mt-3 border-t border-teal-300/15 pt-3" data-skilling-balanced-tolerance>
+            <label class="flex items-center justify-between gap-3 text-[11px] font-semibold text-slate-300" for="skilling-balanced-cost-tolerance">
+              <span>{{ t("common:skilling.balancedCostTolerance", "Cost tolerance") }}</span>
+              <span class="font-normal text-slate-500">0–100%</span>
+            </label>
+            <div class="mt-1.5 flex items-center gap-2">
+              <input
+                id="skilling-balanced-cost-tolerance"
+                class="field-input !w-24 !rounded !px-2 !py-1.5 text-right text-xs tabular-nums"
+                type="number"
+                name="skilling-balanced-cost-tolerance"
+                autocomplete="off"
+                inputmode="decimal"
+                min="0"
+                max="100"
+                step="0.01"
+                :aria-label="t('common:skilling.balancedCostTolerancePercent', 'Balanced cost tolerance percent')"
+                :aria-describedby="balancedToleranceResultDiffers
+                  ? 'skilling-balanced-cost-tolerance-hint skilling-balanced-cost-tolerance-status'
+                  : 'skilling-balanced-cost-tolerance-hint'"
+                :disabled="skilling.running"
+                :value="balancedCostTolerancePercent"
+                @input="setBalancedCostTolerance"
+                @blur="normalizeBalancedCostToleranceInput"
+              />
+              <span class="text-xs font-semibold text-teal-200" aria-hidden="true">%</span>
+            </div>
+            <p id="skilling-balanced-cost-tolerance-hint" class="mt-2 text-[11px] leading-4 text-slate-500">{{ t("common:skilling.balancedCostToleranceHint", "Controls how much higher the current level's net cost per XP may be than its lowest-cost baseline. A higher value allows faster but more expensive routes.") }}</p>
+            <p
+              v-if="balancedToleranceResultDiffers"
+              id="skilling-balanced-cost-tolerance-status"
+              class="mt-2 rounded border border-amber-300/20 bg-amber-300/[0.06] px-2 py-1.5 text-[11px] leading-4 text-amber-200"
+              role="status"
+              aria-live="polite"
+            >
+              {{ t("common:skilling.balancedCostToleranceChanged", `The existing result used ${resultBalancedCostTolerancePercentText}%; the current ${balancedCostTolerancePercentText}% setting takes effect after recalculation.`, { resultPercent: resultBalancedCostTolerancePercentText, currentPercent: balancedCostTolerancePercentText }) }}
+            </p>
+          </div>
+        </section>
+        <section class="px-4 py-4">
+          <h3 class="font-heading text-sm font-semibold text-sky-200">{{ t("common:skilling.speedFirst", "Speed first") }}</h3>
+          <p class="mt-2 text-xs leading-5 text-slate-400">{{ t("common:skilling.speedModeDescription", "Prioritizes the shortest estimated time for each level.") }}</p>
+        </section>
+      </div>
+      <p class="border-b border-white/10 px-4 py-3 text-xs leading-5 text-slate-400">{{ t("common:skilling.optimizationModeCommonRules", "All modes calculate and show costs, require valid asks, and replan after every level.") }}</p>
+    </BaseModal>
+
+    <BaseModal
+      :open="segmentModalOpen"
+      :title="activeSegmentIsCandidate
+        ? t('common:skilling.nextLevelCandidateDetails', 'Next-level candidate details')
+        : t('common:skilling.routeDetails', 'Route details')"
+      panel-class="enhancement-price-modal max-w-5xl max-h-[88vh] overflow-y-auto overscroll-contain"
+      @close="segmentModalOpen = false"
+    >
       <template v-if="activeSegment">
         <div class="grid grid-cols-2 border-y border-white/10 sm:grid-cols-4">
           <div class="px-3 py-2"><p class="text-[10px] uppercase text-slate-500">{{ t("common:skilling.recipe", "Recipe") }}</p><p class="mt-1 font-semibold text-slate-100">{{ actionName(activeSegment) }}</p></div>
           <div class="px-3 py-2"><p class="text-[10px] uppercase text-slate-500">{{ t("common:skilling.actions", "Actions") }}</p><p class="mt-1 tabular-nums text-slate-200">{{ formatCount(activeSegment.completionCount) }}</p></div>
-          <div class="px-3 py-2"><p class="text-[10px] uppercase text-slate-500">{{ t("common:skilling.duration", "Time") }}</p><p class="mt-1 tabular-nums text-slate-200">{{ formatDuration(activeSegment.durationHours) }}</p></div>
+          <div class="px-3 py-2"><p class="text-[10px] uppercase text-slate-500">{{ activeSegmentIsCandidate ? t("common:skilling.nextLevelTime", "Time to next level") : t("common:skilling.duration", "Time") }}</p><p class="mt-1 tabular-nums text-slate-200">{{ formatDuration(activeSegment.durationHours) }}</p></div>
           <div class="px-3 py-2"><p class="text-[10px] uppercase text-slate-500">{{ t("common:skilling.netCost", "Net cost") }}</p><p class="mt-1 font-semibold tabular-nums" :class="amountClass(activeSegment.netCost)">{{ formatAmount(activeSegment.netCost) }}</p></div>
         </div>
 
         <section class="pt-2">
           <h3 class="mb-2 font-heading text-sm font-semibold text-amber-200">{{ t("common:skilling.equipment", "Equipment") }}</h3>
-          <div v-if="activeSegment.equipment?.length" class="grid border-y border-white/10 sm:grid-cols-2">
-            <div v-for="item in activeSegment.equipment" :key="`${item.equipmentType}-${item.id}`" class="flex items-center gap-2 border-b border-white/10 px-3 py-2">
-              <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded bg-white/[0.04] ring-1 ring-white/10">
-                <svg v-if="itemIconVisible(item.itemHrid)" class="h-full w-full p-1" viewBox="0 0 50 50" aria-hidden="true"><use :href="itemIconHref(item.itemHrid)"></use></svg>
-                <span v-else class="text-xs text-slate-500">{{ itemFallback(item.itemHrid) }}</span>
-              </span>
-              <span class="min-w-0 flex-1 truncate text-slate-200">{{ itemName(item.itemHrid) }}</span>
-              <span class="text-xs text-amber-300">{{ enhancementLevelLabel(item.enhancementLevel) }}</span>
+          <div v-if="activeEquipmentStrategies.length" class="space-y-3">
+            <div v-for="(strategy, strategyIndex) in activeEquipmentStrategies" :key="`${strategy.equipmentSignature || 'equipment'}-${strategyIndex}`">
+              <p v-if="activeEquipmentStrategies.length > 1" class="mb-1 px-3 text-[11px] text-slate-500">
+                {{ equipmentStageLabel(strategy, strategyIndex) }}
+              </p>
+              <div v-if="strategy.equipment?.length" class="grid border-y border-white/10 sm:grid-cols-2">
+                <div v-for="item in strategy.equipment" :key="`${item.equipmentType}-${item.id}`" class="flex items-center gap-2 border-b border-white/10 px-3 py-2">
+                  <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded bg-white/[0.04] ring-1 ring-white/10">
+                    <svg v-if="itemIconVisible(item.itemHrid)" class="h-full w-full p-1" viewBox="0 0 50 50" aria-hidden="true"><use :href="itemIconHref(item.itemHrid)"></use></svg>
+                    <span v-else class="text-xs text-slate-500">{{ itemFallback(item.itemHrid) }}</span>
+                  </span>
+                  <span class="min-w-0 flex-1 truncate text-slate-200">{{ itemName(item.itemHrid) }}</span>
+                  <span class="text-xs text-amber-300">{{ enhancementLevelLabel(item.enhancementLevel) }}</span>
+                </div>
+              </div>
+              <p v-else class="px-3 text-xs text-slate-500">{{ t("common:skilling.noEquipment", "None") }}</p>
             </div>
           </div>
           <p v-else class="text-slate-500">{{ t("common:skilling.noEquipment", "None") }}</p>
@@ -303,17 +437,17 @@
 
         <section class="pt-2">
           <h3 class="mb-2 font-heading text-sm font-semibold text-teal-200">{{ t("common:skilling.inputMaterials", "Input ledger") }}</h3>
-          <div class="overflow-x-auto"><table class="min-w-[760px] w-full text-left text-xs"><thead class="border-y border-white/10 text-[10px] uppercase text-slate-500"><tr><th class="px-3 py-2">{{ t("common:skilling.item", "Item") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.actions", "Actions") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.owned", "From inventory") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.purchase", "Purchase") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.opportunityUnit", "Opportunity unit") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.ask", "Ask") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.value", "Value") }}</th></tr></thead><tbody class="divide-y divide-white/10"><tr v-for="row in activeSegment.inputItems" :key="`${row.itemHrid}-${row.enhancementLevel || 0}`"><td class="px-3 py-2"><span class="flex items-center gap-2"><svg v-if="itemIconVisible(row.itemHrid)" class="h-7 w-7" viewBox="0 0 50 50" aria-hidden="true"><use :href="itemIconHref(row.itemHrid)"></use></svg><span>{{ itemName(row.itemHrid) }}<template v-if="row.enhancementLevel > 0"> +{{ row.enhancementLevel }}</template></span></span></td><td class="px-3 py-2 text-right tabular-nums">{{ formatCount(row.count) }}</td><td class="px-3 py-2 text-right tabular-nums">{{ formatCount(row.ownedCount) }}</td><td class="px-3 py-2 text-right tabular-nums">{{ formatCount(row.purchaseCount) }}</td><td class="px-3 py-2 text-right tabular-nums">{{ formatAmount(row.opportunityUnitPrice) }}</td><td class="px-3 py-2 text-right tabular-nums">{{ formatAmount(row.purchaseUnitPrice) }}</td><td class="px-3 py-2 text-right tabular-nums text-amber-200">{{ formatAmount(Number(row.opportunityCost || 0) + Number(row.purchaseCost || 0)) }}</td></tr></tbody></table></div>
+          <div class="overflow-x-auto"><table class="min-w-[760px] w-full text-left text-xs"><thead class="border-y border-white/10 text-[10px] uppercase text-slate-500"><tr><th class="px-3 py-2">{{ t("common:skilling.item", "Item") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.quantity", "Quantity") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.owned", "From inventory") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.purchase", "Purchase") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.opportunityUnit", "Opportunity unit") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.ask", "Ask") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.value", "Value") }}</th></tr></thead><tbody class="divide-y divide-white/10"><tr v-for="row in activeSegment.inputItems" :key="`${row.itemHrid}-${row.enhancementLevel || 0}`"><td class="px-3 py-2"><span class="flex items-center gap-2"><svg v-if="itemIconVisible(row.itemHrid)" class="h-7 w-7" viewBox="0 0 50 50" aria-hidden="true"><use :href="itemIconHref(row.itemHrid)"></use></svg><span>{{ itemName(row.itemHrid) }}<template v-if="row.enhancementLevel > 0"> +{{ row.enhancementLevel }}</template></span></span></td><td class="px-3 py-2 text-right tabular-nums">{{ formatCount(row.count) }}</td><td class="px-3 py-2 text-right tabular-nums">{{ formatCount(row.ownedCount) }}</td><td class="px-3 py-2 text-right tabular-nums">{{ formatCount(row.purchaseCount) }}</td><td class="px-3 py-2 text-right tabular-nums">{{ formatAmount(row.opportunityUnitPrice) }}</td><td class="px-3 py-2 text-right tabular-nums">{{ formatAmount(row.purchaseUnitPrice) }}</td><td class="px-3 py-2 text-right tabular-nums text-amber-200">{{ formatAmount(Number(row.opportunityCost || 0) + Number(row.purchaseCost || 0)) }}</td></tr></tbody></table></div>
         </section>
 
         <section class="pt-2">
           <h3 class="mb-2 font-heading text-sm font-semibold text-teal-200">{{ t("common:skilling.outputMaterials", "Output ledger") }}</h3>
-          <div class="overflow-x-auto"><table class="min-w-[560px] w-full text-left text-xs"><thead class="border-y border-white/10 text-[10px] uppercase text-slate-500"><tr><th class="px-3 py-2">{{ t("common:skilling.item", "Item") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.actions", "Actions") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.recoveryUnit", "Recovery unit") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.value", "Value") }}</th></tr></thead><tbody class="divide-y divide-white/10"><tr v-for="row in activeSegment.outputItems" :key="`${row.itemHrid}-${row.enhancementLevel || 0}`"><td class="px-3 py-2"><span class="flex items-center gap-2"><svg v-if="itemIconVisible(row.itemHrid)" class="h-7 w-7" viewBox="0 0 50 50" aria-hidden="true"><use :href="itemIconHref(row.itemHrid)"></use></svg><span>{{ itemName(row.itemHrid) }}<template v-if="row.enhancementLevel > 0"> +{{ row.enhancementLevel }}</template></span></span></td><td class="px-3 py-2 text-right tabular-nums">{{ formatCount(row.count) }}</td><td class="px-3 py-2 text-right tabular-nums">{{ formatAmount(row.liquidationUnitPrice) }}</td><td class="px-3 py-2 text-right tabular-nums text-teal-200">{{ formatAmount(row.liquidationValue) }}</td></tr></tbody></table></div>
+          <div class="overflow-x-auto"><table class="min-w-[560px] w-full text-left text-xs"><thead class="border-y border-white/10 text-[10px] uppercase text-slate-500"><tr><th class="px-3 py-2">{{ t("common:skilling.item", "Item") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.quantity", "Quantity") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.recoveryUnit", "Recovery unit") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.value", "Value") }}</th></tr></thead><tbody class="divide-y divide-white/10"><tr v-for="row in activeSegment.outputItems" :key="`${row.itemHrid}-${row.enhancementLevel || 0}`"><td class="px-3 py-2"><span class="flex items-center gap-2"><svg v-if="itemIconVisible(row.itemHrid)" class="h-7 w-7" viewBox="0 0 50 50" aria-hidden="true"><use :href="itemIconHref(row.itemHrid)"></use></svg><span>{{ itemName(row.itemHrid) }}<template v-if="row.enhancementLevel > 0"> +{{ row.enhancementLevel }}</template></span></span></td><td class="px-3 py-2 text-right tabular-nums">{{ formatCount(row.count) }}</td><td class="px-3 py-2 text-right tabular-nums">{{ formatAmount(row.liquidationUnitPrice) }}</td><td class="px-3 py-2 text-right tabular-nums text-teal-200">{{ formatAmount(row.liquidationValue) }}</td></tr></tbody></table></div>
         </section>
       </template>
     </BaseModal>
 
-    <BaseModal :open="pricesModalOpen" :title="t('common:skilling.marketPrices', 'Market prices and overrides')" panel-class="enhancement-price-modal max-w-6xl max-h-[88vh] overflow-y-auto" initial-focus-selector="[data-skilling-price-input]" @close="pricesModalOpen = false">
+    <BaseModal :open="pricesModalOpen" :title="t('common:skilling.marketPrices', 'Market prices and overrides')" panel-class="enhancement-price-modal max-w-6xl max-h-[88vh] overflow-y-auto overscroll-contain" initial-focus-selector="[data-skilling-price-input]" @close="pricesModalOpen = false">
       <div v-if="priceRows.length" class="overflow-x-auto" data-skilling-prices>
         <table class="min-w-[980px] w-full text-left text-xs">
           <thead class="border-y border-white/10 text-[10px] uppercase text-slate-500"><tr><th class="px-3 py-2">{{ t("common:skilling.item", "Item") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.marketAsk", "Market ask") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.marketBid", "Market bid") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.vendor", "Vendor") }}</th><th class="px-3 py-2">{{ t("common:skilling.overrideAsk", "Override ask") }}</th><th class="px-3 py-2">{{ t("common:skilling.overrideBid", "Override bid") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.clear", "Clear") }}</th></tr></thead>
@@ -321,8 +455,8 @@
             <tr v-for="row in priceRows" :key="row.priceKey">
               <th scope="row" class="px-3 py-2 text-left"><span class="flex items-center gap-2"><svg v-if="itemIconVisible(row.itemHrid)" class="h-8 w-8" viewBox="0 0 50 50" aria-hidden="true"><use :href="itemIconHref(row.itemHrid)"></use></svg><span class="font-semibold text-slate-200">{{ itemName(row.itemHrid) }}<template v-if="row.enhancementLevel > 0"> +{{ row.enhancementLevel }}</template></span></span></th>
               <td class="px-3 py-2 text-right tabular-nums">{{ formatPrice(row.marketAsk) }}</td><td class="px-3 py-2 text-right tabular-nums">{{ formatPrice(row.marketBid) }}</td><td class="px-3 py-2 text-right tabular-nums">{{ formatPrice(row.vendor) }}</td>
-              <td class="px-3 py-2"><input :data-skilling-price-input="row.overrideDisabled ? null : ''" class="field-input !rounded !px-2 !py-1.5 text-xs" type="number" min="0" step="any" :aria-label="priceOverrideAriaLabel(row, 'ask')" :disabled="row.overrideDisabled" :value="overrideValue(row, 'ask')" @change="setPriceOverride(row.itemHrid, 'ask', $event)" /></td>
-              <td class="px-3 py-2"><input class="field-input !rounded !px-2 !py-1.5 text-xs" type="number" min="0" step="any" :aria-label="priceOverrideAriaLabel(row, 'bid')" :disabled="row.overrideDisabled" :value="overrideValue(row, 'bid')" @change="setPriceOverride(row.itemHrid, 'bid', $event)" /></td>
+              <td class="px-3 py-2"><input :data-skilling-price-input="row.overrideDisabled ? null : ''" class="field-input !rounded !px-2 !py-1.5 text-xs" type="number" :name="`skilling-price-${viewDomKey(row.priceKey)}-ask`" autocomplete="off" inputmode="decimal" min="0" step="any" :aria-label="priceOverrideAriaLabel(row, 'ask')" :disabled="row.overrideDisabled" :value="overrideValue(row, 'ask')" @change="setPriceOverride(row.itemHrid, 'ask', $event)" /></td>
+              <td class="px-3 py-2"><input class="field-input !rounded !px-2 !py-1.5 text-xs" type="number" :name="`skilling-price-${viewDomKey(row.priceKey)}-bid`" autocomplete="off" inputmode="decimal" min="0" step="any" :aria-label="priceOverrideAriaLabel(row, 'bid')" :disabled="row.overrideDisabled" :value="overrideValue(row, 'bid')" @change="setPriceOverride(row.itemHrid, 'bid', $event)" /></td>
               <td class="px-3 py-2 text-right"><button type="button" class="action-button-muted !rounded !px-2 !py-1 text-[11px]" :aria-label="priceClearAriaLabel(row)" :disabled="row.overrideDisabled" @click="skilling.resetPriceOverride(row.itemHrid)">{{ t("common:skilling.clear", "Clear") }}</button></td>
             </tr>
           </tbody>
@@ -344,6 +478,7 @@ import { formatCompactAmount } from "../../services/amountFormatting.js";
 import { applyTampermonkeySkillingImportMessage } from "../../services/tampermonkeyImportBridge.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { useSkillingStore } from "../../stores/skillingStore.js";
+import { buildSkillingDrinkStatuses } from "../skillingDrinkPresentation.js";
 
 const TAMPERMONKEY_BRIDGE_CHANNEL = "mwi-tm-bridge";
 const SNAPSHOT_WARNING_MS = 30 * 60 * 1000;
@@ -353,7 +488,21 @@ const { language, t } = useI18nText();
 const { getActionName, getItemName, getSkillName } = useGameDataText();
 const pricesModalOpen = ref(false);
 const segmentModalOpen = ref(false);
+const modeHelpModalOpen = ref(false);
 const activeSegment = ref(null);
+const activeSegmentIsCandidate = ref(false);
+const activeEquipmentStrategies = computed(() => {
+  if (!activeSegment.value) return [];
+  if (activeSegmentIsCandidate.value && activeSegment.value.equipmentStrategies?.length) {
+    return activeSegment.value.equipmentStrategies;
+  }
+  return [{
+    equipmentSignature: activeSegment.value.equipmentSignature || "",
+    equipment: activeSegment.value.equipment || [],
+    completionCount: activeSegment.value.completionCount,
+    durationHours: activeSegment.value.durationHours,
+  }];
+});
 const itemIconRevision = ref(0);
 const clockNow = ref(Date.now());
 let itemIconLoadQueue = Promise.resolve(0);
@@ -364,8 +513,43 @@ const tabs = computed(() => [
   { id: "overview", label: t("common:skilling.overview", "Overview") },
   ...skillHrids.value.map((skillHrid) => ({ id: skillHrid, label: skillName(skillHrid) })),
 ]);
+const optimizationModes = computed(() => [
+  { value: "cost", label: t("common:skilling.lowestCostPerXp", "Lowest net cost / XP") },
+  { value: "balanced", label: t("common:skilling.balanced", "Balanced") },
+  { value: "speed", label: t("common:skilling.speedFirst", "Speed first") },
+]);
 const selectedSkillHrid = computed(() => skillHrids.value.includes(skilling.selectedView) ? skilling.selectedView : skillHrids.value[0]);
 const selectedPlan = computed(() => skilling.plansBySkill[selectedSkillHrid.value] || null);
+const balancedCostTolerancePercent = computed(() => normalizeTolerancePercent(skilling.balancedCostTolerance));
+const balancedCostTolerancePercentText = computed(() => formatTolerancePercent(balancedCostTolerancePercent.value));
+const resultBalancedCostTolerance = computed(() => {
+  const recordedTolerance = skilling.result?.balancedCostTolerance ?? selectedPlan.value?.balancedCostTolerance;
+  if (recordedTolerance == null || recordedTolerance === "") return null;
+  const numeric = Number(recordedTolerance);
+  return Number.isFinite(numeric) ? Math.max(0, Math.min(1, numeric)) : null;
+});
+const resultBalancedCostTolerancePercent = computed(() => (
+  resultBalancedCostTolerance.value == null ? null : normalizeTolerancePercent(resultBalancedCostTolerance.value)
+));
+const resultBalancedCostTolerancePercentText = computed(() => formatTolerancePercent(resultBalancedCostTolerancePercent.value));
+const resultRecordedOptimizationMode = computed(() => (
+  skilling.result?.optimizationMode || selectedPlan.value?.optimizationMode || ""
+));
+const balancedToleranceResultDiffers = computed(() => (
+  skilling.resultStale
+  && resultRecordedOptimizationMode.value === "balanced"
+  && resultBalancedCostTolerance.value != null
+  && Math.abs(resultBalancedCostTolerance.value - Number(skilling.balancedCostTolerance)) > 1e-12
+));
+const resultOptimizationMode = computed(() => {
+  if (skilling.resultStale) return "";
+  return skilling.result?.optimizationMode || selectedPlan.value?.optimizationMode || "";
+});
+const resultUsesCostMode = computed(() => resultOptimizationMode.value === "cost");
+const resultUsesBalancedMode = computed(() => resultOptimizationMode.value === "balanced");
+const resultUsesSpeedMode = computed(() => resultOptimizationMode.value === "speed");
+const resultHighlightsCost = computed(() => resultUsesCostMode.value || resultUsesBalancedMode.value);
+const resultHighlightsDuration = computed(() => resultUsesSpeedMode.value || resultUsesBalancedMode.value);
 const progressPercent = computed(() => Math.max(0, Math.min(100, Math.round(Number(skilling.progress?.overallProgress || 0) * 100))));
 const progressLabel = computed(() => t("common:skilling.progress", "Planning {{skill}}: {{percent}}%", {
   skill: skillName(skilling.progress?.skillHrid || selectedSkillHrid.value),
@@ -405,7 +589,7 @@ const buffExpiredSinceResult = computed(() => {
 });
 const resultGeneratedLabel = computed(() => formatDate(skilling.result?.generatedAt));
 const priceStatusText = computed(() => {
-  if (skilling.priceStatus.loading) return t("common:skilling.refreshing", "Refreshing...");
+  if (skilling.priceStatus.loading) return t("common:skilling.refreshing", "Refreshing…");
   if (skilling.priceStatus.error) return skilling.priceStatus.error;
   return skilling.priceStatus.ready
     ? t("common:skilling.pricesReady", "Prices ready")
@@ -491,6 +675,39 @@ function finiteOrNull(value) {
   return Number.isFinite(parsed) && parsed >= 0 ? parsed : null;
 }
 
+function normalizeTolerancePercent(value) {
+  const numeric = Number(value);
+  const tolerance = Number.isFinite(numeric) ? numeric : 0.1;
+  return Math.round(Math.max(0, Math.min(1, tolerance)) * 10_000) / 100;
+}
+
+function formatTolerancePercent(value) {
+  if (value == null || !Number.isFinite(Number(value))) return "-";
+  return new Intl.NumberFormat(displayLocale(), { maximumFractionDigits: 2 }).format(Number(value));
+}
+
+function tolerancePercentFromInput(input) {
+  const rawValue = String(input?.value ?? "").trim();
+  if (!rawValue) return null;
+  const parsedPercent = Number(rawValue);
+  if (!Number.isFinite(parsedPercent)) return null;
+  return Math.round(Math.max(0, Math.min(100, parsedPercent)) * 100) / 100;
+}
+
+function setBalancedCostTolerance(event) {
+  const input = event?.target;
+  const percent = tolerancePercentFromInput(input);
+  if (percent == null) return;
+  skilling.setBalancedCostTolerance(percent / 100);
+}
+
+function normalizeBalancedCostToleranceInput(event) {
+  const input = event?.target;
+  const percent = tolerancePercentFromInput(input);
+  if (percent != null) skilling.setBalancedCostTolerance(percent / 100);
+  if (input) input.value = String(balancedCostTolerancePercent.value);
+}
+
 function currentLevel(skillHrid) {
   return Math.max(1, Number(skilling.profile?.skills?.[skillHrid]?.level || 1));
 }
@@ -528,7 +745,7 @@ function formatAmount(value) {
 }
 
 function formatCount(value) {
-  if (!Number.isFinite(Number(value))) return "-";
+  if (value == null || value === "" || !Number.isFinite(Number(value))) return "-";
   return new Intl.NumberFormat(displayLocale(), { maximumFractionDigits: 2 }).format(Number(value));
 }
 
@@ -537,6 +754,7 @@ function formatPrice(value) {
 }
 
 function formatDuration(hours) {
+  if (hours == null || hours === "") return "-";
   const numeric = Number(hours);
   if (!Number.isFinite(numeric)) return "-";
   if (numeric < 1 / 60) {
@@ -597,7 +815,58 @@ function joinItemRows(rows, countField, emptyKey, emptyFallback) {
 }
 
 function drinkSummary(segment) {
-  return joinItemRows(segment?.drinks, "count", "common:skilling.noDrinks", "None");
+  const statuses = buildSkillingDrinkStatuses(segment);
+  if (!statuses.length) return t("common:skilling.noDrinks", "No new drinks this stage");
+  return statuses.map((status) => {
+    const parts = [];
+    if (status.continued && status.consumedCount > 1e-9) {
+      parts.push(t("common:skilling.drinkContinuedWithNew", "continued, plus x{{count}}", {
+        count: formatCount(status.consumedCount),
+      }));
+    } else if (status.continued) {
+      parts.push(t("common:skilling.drinkContinued", "continued"));
+    } else if (status.consumedCount > 1e-9) {
+      parts.push(t("common:skilling.drinkConsumed", "consumed x{{count}} this stage", {
+        count: formatCount(status.consumedCount),
+      }));
+    }
+    if (status.remainingSeconds > 1e-9) {
+      parts.push(t("common:skilling.drinkRemaining", "{{duration}} left", {
+        duration: formatDuration(Math.max(1, status.remainingSeconds) / 3600),
+      }));
+    } else if (status.usedUp) {
+      parts.push(t("common:skilling.drinkUsedUp", "used up this stage"));
+    }
+    return [itemName(status.itemHrid), ...parts].join(" · ");
+  }).join("\n");
+}
+
+function candidateDrinkSummary(candidate) {
+  if (!candidate?.drinks?.length) return t("common:skilling.noCandidateDrinks", "None");
+  return candidate.drinks.map((drink) => {
+    const count = Number(drink?.count);
+    if (!Number.isFinite(count) || count <= 1e-9) return itemName(drink?.itemHrid);
+    return `${itemName(drink?.itemHrid)} ${t("common:skilling.countTimes", "x{{count}}", {
+      count: formatCount(count),
+    })}`;
+  }).join("\n");
+}
+
+function segmentLevelLabel(segment) {
+  const fromLevel = Number(segment?.fromLevel);
+  const toLevel = Number(segment?.toLevel);
+  if (Number.isFinite(fromLevel) && fromLevel === toLevel) {
+    return t("common:skilling.levelInProgress", "{{level}} (in progress)", { level: fromLevel });
+  }
+  return `${formatCount(fromLevel)} -> ${formatCount(toLevel)}`;
+}
+
+function segmentDetailsAriaLabel(segment) {
+  return `${t("common:skilling.details", "Details")}: ${segmentLevelLabel(segment)} · ${actionName(segment)}`;
+}
+
+function candidateDetailsAriaLabel(candidate, index) {
+  return `${t("common:skilling.details", "Details")}: #${index + 1} · ${actionName(candidate)}`;
 }
 
 function equipmentSummary(segment) {
@@ -606,6 +875,24 @@ function equipmentSummary(segment) {
     + (segment.equipment.length > 3
       ? `, ${t("common:skilling.additionalEquipment", "… {{count}} more", { count: segment.equipment.length - 3 })}`
       : "");
+}
+
+function candidateEquipmentSummary(candidate) {
+  const strategies = candidate?.equipmentStrategies || [];
+  if (strategies.length > 1) {
+    return t("common:skilling.stagedEquipment", "Changes by stage ({{count}} loadouts; see details)", {
+      count: strategies.length,
+    });
+  }
+  return equipmentSummary(strategies[0] || candidate);
+}
+
+function equipmentStageLabel(strategy, index) {
+  return t("common:skilling.equipmentStage", "Stage {{index}} · {{actions}} actions · {{duration}}", {
+    index: index + 1,
+    actions: formatCount(strategy?.completionCount),
+    duration: formatDuration(strategy?.durationHours),
+  });
 }
 
 function shortageSummary(segment) {
@@ -645,11 +932,15 @@ async function refreshPrices() {
   await skilling.refreshPrices();
 }
 
-function openSegment(segment) {
+function openSegment(segment, isCandidate = false) {
   activeSegment.value = segment;
+  activeSegmentIsCandidate.value = isCandidate;
   segmentModalOpen.value = true;
   void loadItemIcons([
     ...(segment?.equipment || []).map((item) => item.itemHrid),
+    ...(segment?.equipmentStrategies || []).flatMap((strategy) => (
+      (strategy?.equipment || []).map((item) => item.itemHrid)
+    )),
     ...(segment?.inputItems || []).map((item) => item.itemHrid),
     ...(segment?.outputItems || []).map((item) => item.itemHrid),
   ]);

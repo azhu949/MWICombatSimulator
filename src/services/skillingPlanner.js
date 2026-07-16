@@ -3,6 +3,10 @@ import { levelExperienceTable, skillingData as defaultSkillingData } from "../sh
 export const SKILLING_MARKET_FEE_RATE = 0.02;
 export const SKILLING_MIN_ACTION_SECONDS = 3;
 export const SKILLING_MAX_LEVEL = levelExperienceTable.length - 1;
+export const SKILLING_OPTIMIZATION_MODE_COST = "cost";
+export const SKILLING_OPTIMIZATION_MODE_SPEED = "speed";
+export const SKILLING_OPTIMIZATION_MODE_BALANCED = "balanced";
+export const SKILLING_BALANCED_COST_TOLERANCE = 0.1;
 
 const EPSILON = 1e-9;
 const NANOSECONDS_PER_MILLISECOND = 1_000_000;
@@ -35,6 +39,32 @@ function clamp(value, minimum, maximum) {
 
 function normalizeHrid(value) {
     return String(value || "").trim();
+}
+
+export function normalizeSkillingOptimizationMode(value) {
+    const normalizedValue = String(value || "").toLowerCase();
+    if (normalizedValue === SKILLING_OPTIMIZATION_MODE_SPEED) return SKILLING_OPTIMIZATION_MODE_SPEED;
+    if (normalizedValue === SKILLING_OPTIMIZATION_MODE_BALANCED) return SKILLING_OPTIMIZATION_MODE_BALANCED;
+    return SKILLING_OPTIMIZATION_MODE_COST;
+}
+
+export function normalizeSkillingBalancedCostTolerance(value) {
+    if (
+        value == null
+        || typeof value === "boolean"
+        || (typeof value === "string" && value.trim() === "")
+    ) {
+        return SKILLING_BALANCED_COST_TOLERANCE;
+    }
+    let normalizedValue;
+    try {
+        normalizedValue = Number(value);
+    } catch {
+        return SKILLING_BALANCED_COST_TOLERANCE;
+    }
+    return Number.isFinite(normalizedValue)
+        ? clamp(normalizedValue, 0, 1)
+        : SKILLING_BALANCED_COST_TOLERANCE;
 }
 
 function skillKeyFromHrid(skillHrid) {
@@ -149,7 +179,16 @@ export function resolveSkillingPrice(
 ) {
     const hrid = normalizeHrid(itemHrid);
     if (hrid === "/items/coin") {
-        return { itemHrid: hrid, ask: 1, bid: 1, vendor: 1, purchasePrice: 1, liquidationPrice: 1 };
+        return {
+            itemHrid: hrid,
+            ask: 1,
+            bid: 1,
+            vendor: 1,
+            purchasePrice: 1,
+            liquidationPrice: 1,
+            hasExactEnhancementBid: true,
+            liquidationSource: "fixed",
+        };
     }
     const normalizedEnhancementLevel = Math.max(0, integer(enhancementLevel, 0));
     const baseEntry = priceTable?.[hrid] || {};
@@ -159,15 +198,28 @@ export function resolveSkillingPrice(
     const entry = normalizedEnhancementLevel > 0 ? (enhancedEntry || {}) : baseEntry;
     const ask = finiteNumber(entry?.ask, -1);
     const bid = finiteNumber(entry?.bid, -1);
+    const baseBid = finiteNumber(baseEntry?.bid, -1);
     const vendor = Math.max(0, finiteNumber(baseEntry?.vendor, 0));
-    const marketLiquidation = bid >= 0 ? bid * Math.max(0, 1 - finiteNumber(feeRate, 0)) : 0;
+    const feeMultiplier = Math.max(0, 1 - finiteNumber(feeRate, 0));
+    const hasExactEnhancementBid = normalizedEnhancementLevel === 0 || bid >= 0;
+    const marketLiquidation = bid >= 0
+        ? bid * feeMultiplier
+        : normalizedEnhancementLevel > 0 && baseBid >= 0
+            ? baseBid * feeMultiplier
+            : 0;
+    const liquidationPrice = Math.max(vendor, marketLiquidation);
+    const liquidationSource = marketLiquidation >= vendor && marketLiquidation > 0
+        ? bid >= 0 ? "market_bid" : "base_bid_floor"
+        : "vendor";
     return {
         itemHrid: hrid,
         ask,
         bid,
         vendor,
         purchasePrice: ask >= 0 ? ask : null,
-        liquidationPrice: Math.max(vendor, marketLiquidation),
+        liquidationPrice,
+        hasExactEnhancementBid,
+        liquidationSource,
     };
 }
 
@@ -552,6 +604,14 @@ function allocateOwnedRequirement({
     feeRate,
     retainedOutputValue = null,
 }) {
+    const basePurchaseQuote = resolveSkillingPrice(
+        priceTable,
+        pool?.itemHrid,
+        feeRate,
+        enhancementQuotesByItem,
+        0,
+    );
+    const destroysEnhancement = typeof retainedOutputValue !== "function";
     const candidates = (pool?.sources || [])
         .filter((source) => source.availableCount > EPSILON)
         .map((source) => {
@@ -566,6 +626,12 @@ function allocateOwnedRequirement({
                 ? finiteNumber(retainedOutputValue(source.enhancementLevel), 0)
                 : 0;
             return { ...source, quote, score: quote.liquidationPrice - retainedValue };
+        })
+        .filter((source) => {
+            if (!destroysEnhancement || source.enhancementLevel <= 0) return true;
+            if (source.quote.hasExactEnhancementBid !== true) return false;
+            return basePurchaseQuote.purchasePrice == null
+                || source.quote.liquidationPrice <= basePurchaseQuote.purchasePrice + EPSILON;
         })
         .sort((left, right) => (
             left.score - right.score
@@ -1141,6 +1207,31 @@ export function calculateSkillingActionCandidate({
         reusableOutputFraction,
         postInitialRequirementFraction,
     });
+    const remainingDrinkCounts = new Map();
+    for (const drink of drinkRows) {
+        const itemHrid = normalizeHrid(drink?.itemHrid);
+        if (!itemHrid) continue;
+        remainingDrinkCounts.set(
+            itemHrid,
+            finiteNumber(remainingDrinkCounts.get(itemHrid), 0) + Math.max(0, finiteNumber(drink?.count, 0)),
+        );
+    }
+    const drinkPurchaseCost = Math.max(0, Math.min(
+        ledger.purchaseCost,
+        ledger.inputRows.reduce((sum, row) => {
+            const itemHrid = normalizeHrid(row?.itemHrid);
+            const remainingDrinkCount = Math.max(0, finiteNumber(remainingDrinkCounts.get(itemHrid), 0));
+            const purchaseCount = Math.max(0, finiteNumber(row?.purchaseCount, 0));
+            const purchaseCost = Math.max(0, finiteNumber(row?.purchaseCost, 0));
+            if (remainingDrinkCount <= EPSILON || purchaseCount <= EPSILON || purchaseCost <= EPSILON) {
+                return sum;
+            }
+            const drinkPurchaseCount = Math.min(remainingDrinkCount, purchaseCount);
+            remainingDrinkCounts.set(itemHrid, remainingDrinkCount - drinkPurchaseCount);
+            return sum + purchaseCost * (drinkPurchaseCount / purchaseCount);
+        }, 0),
+    ));
+    const materialPurchaseCost = Math.max(0, ledger.purchaseCost - drinkPurchaseCost);
     return {
         available: ledger.available,
         actionHrid: action?.hrid,
@@ -1162,10 +1253,14 @@ export function calculateSkillingActionCandidate({
         actionsPerHour,
         actionSeconds,
         durationHours,
+        estimatedLevelDurationHours: requiredCompletionCount / actionsPerHour,
         netCost: ledger.netCost,
         costPerExperience: ledger.netCost / gainedExperience,
         opportunityCost: ledger.opportunityCost,
         purchaseCost: ledger.purchaseCost,
+        drinkPurchaseCost,
+        materialPurchaseCost,
+        materialPurchaseCostPerExperience: materialPurchaseCost / gainedExperience,
         outputValue: ledger.outputValue,
         inputItems: ledger.inputRows,
         outputItems: ledger.outputRows,
@@ -1189,22 +1284,154 @@ export function calculateSkillingActionCandidate({
             itemsByHrid: endingDrinkItemsByHrid,
         } : null,
         bonuses,
+        externalBonuses: { ...(externalBonuses || {}) },
     };
 }
 
-function compareCandidates(left, right) {
-    const costDelta = finiteNumber(left?.costPerExperience, Infinity) - finiteNumber(right?.costPerExperience, Infinity);
-    if (Math.abs(costDelta) > EPSILON) return costDelta;
-    const experienceDelta = finiteNumber(right?.experiencePerHour, 0) - finiteNumber(left?.experiencePerHour, 0);
-    if (Math.abs(experienceDelta) > EPSILON) return experienceDelta;
-    const purchaseDelta = finiteNumber(left?.purchaseCost, Infinity) - finiteNumber(right?.purchaseCost, Infinity);
-    if (Math.abs(purchaseDelta) > EPSILON) return purchaseDelta;
-    const changeDelta = finiteNumber(left?.equipmentChanges, Infinity) - finiteNumber(right?.equipmentChanges, Infinity);
-    if (Math.abs(changeDelta) > EPSILON) return changeDelta;
+function candidateRequiredDurationHours(candidate) {
+    const explicitDuration = Number(candidate?.estimatedLevelDurationHours);
+    if (Number.isFinite(explicitDuration) && explicitDuration >= 0) {
+        return explicitDuration;
+    }
+    const requiredCompletionCount = Math.max(
+        1,
+        Math.ceil(finiteNumber(candidate?.requiredCompletionCount, Infinity) - EPSILON),
+    );
+    const actionsPerHour = finiteNumber(candidate?.actionsPerHour, 0);
+    return actionsPerHour > EPSILON ? requiredCompletionCount / actionsPerHour : Infinity;
+}
+
+function candidateDrinkCycleCount(candidate) {
+    return Math.max(0, ...(candidate?.drinks || []).map((drink) => (
+        Math.max(0, integer(drink?.count, 0))
+    )));
+}
+
+function simulationDrinkCycleCount(simulation) {
+    const recordedCycleCount = Number(simulation?.primaryDrinkCycleCount);
+    if (Number.isFinite(recordedCycleCount)) {
+        return Math.max(0, integer(recordedCycleCount, 0));
+    }
+    return (simulation?.segments || []).reduce((count, segment) => (
+        count + candidateDrinkCycleCount(segment)
+    ), 0);
+}
+
+function compareCandidateStableKeys(left, right) {
     return finiteNumber(left?.actionSortIndex, 0) - finiteNumber(right?.actionSortIndex, 0)
         || String(left?.actionHrid || "").localeCompare(String(right?.actionHrid || ""))
         || String(left?.drinks?.map((drink) => drink.itemHrid).join("|") || "")
             .localeCompare(String(right?.drinks?.map((drink) => drink.itemHrid).join("|") || ""));
+}
+
+function compareBalancedCandidates(
+    left,
+    right,
+    lowestCostPerExperience = null,
+    balancedCostTolerance = SKILLING_BALANCED_COST_TOLERANCE,
+) {
+    const leftCost = finiteNumber(left?.costPerExperience, Infinity);
+    const rightCost = finiteNumber(right?.costPerExperience, Infinity);
+    const leftDuration = candidateRequiredDurationHours(left);
+    const rightDuration = candidateRequiredDurationHours(right);
+
+    const normalizedLowestCost = lowestCostPerExperience == null
+        ? NaN
+        : Number(lowestCostPerExperience);
+    if (!Number.isFinite(normalizedLowestCost)) {
+        const costDelta = leftCost - rightCost;
+        if (Math.abs(costDelta) > EPSILON) return costDelta;
+        const durationDelta = leftDuration - rightDuration;
+        if (Math.abs(durationDelta) > EPSILON) return durationDelta;
+        return compareCandidateStableKeys(left, right);
+    }
+
+    const normalizedBalancedCostTolerance = normalizeSkillingBalancedCostTolerance(balancedCostTolerance);
+    const maximumBalancedCost = normalizedLowestCost
+        + Math.abs(normalizedLowestCost) * normalizedBalancedCostTolerance;
+    const leftWithinTolerance = leftCost <= maximumBalancedCost + EPSILON;
+    const rightWithinTolerance = rightCost <= maximumBalancedCost + EPSILON;
+    if (leftWithinTolerance !== rightWithinTolerance) return leftWithinTolerance ? -1 : 1;
+
+    const costDelta = leftCost - rightCost;
+    const durationDelta = leftDuration - rightDuration;
+    const materialCostDelta = finiteNumber(left?.materialPurchaseCostPerExperience, Infinity)
+        - finiteNumber(right?.materialPurchaseCostPerExperience, Infinity);
+    if (leftWithinTolerance && Math.abs(durationDelta) > EPSILON) return durationDelta;
+    if (leftWithinTolerance && Math.abs(materialCostDelta) > EPSILON) return materialCostDelta;
+    if (Math.abs(costDelta) > EPSILON) return costDelta;
+    if (!leftWithinTolerance && Math.abs(durationDelta) > EPSILON) return durationDelta;
+    if (Math.abs(materialCostDelta) > EPSILON) return materialCostDelta;
+    const purchaseDelta = finiteNumber(left?.purchaseCost, Infinity) - finiteNumber(right?.purchaseCost, Infinity);
+    if (Math.abs(purchaseDelta) > EPSILON) return purchaseDelta;
+    const changeDelta = finiteNumber(left?.equipmentChanges, Infinity) - finiteNumber(right?.equipmentChanges, Infinity);
+    if (Math.abs(changeDelta) > EPSILON) return changeDelta;
+    return compareCandidateStableKeys(left, right);
+}
+
+function compareCandidates(
+    left,
+    right,
+    optimizationMode = SKILLING_OPTIMIZATION_MODE_COST,
+    balancedLowestCostPerExperience = null,
+    balancedCostTolerance = SKILLING_BALANCED_COST_TOLERANCE,
+) {
+    const normalizedOptimizationMode = normalizeSkillingOptimizationMode(optimizationMode);
+    if (normalizedOptimizationMode === SKILLING_OPTIMIZATION_MODE_BALANCED) {
+        return compareBalancedCandidates(
+            left,
+            right,
+            balancedLowestCostPerExperience,
+            balancedCostTolerance,
+        );
+    }
+    if (normalizedOptimizationMode === SKILLING_OPTIMIZATION_MODE_SPEED) {
+        const durationDelta = candidateRequiredDurationHours(left) - candidateRequiredDurationHours(right);
+        if (Math.abs(durationDelta) > EPSILON) return durationDelta;
+        const experienceDelta = finiteNumber(right?.experiencePerHour, 0) - finiteNumber(left?.experiencePerHour, 0);
+        if (Math.abs(experienceDelta) > EPSILON) return experienceDelta;
+    }
+    const costDelta = finiteNumber(left?.costPerExperience, Infinity) - finiteNumber(right?.costPerExperience, Infinity);
+    if (Math.abs(costDelta) > EPSILON) return costDelta;
+    if (normalizedOptimizationMode === SKILLING_OPTIMIZATION_MODE_COST) {
+        const experienceDelta = finiteNumber(right?.experiencePerHour, 0) - finiteNumber(left?.experiencePerHour, 0);
+        if (Math.abs(experienceDelta) > EPSILON) return experienceDelta;
+    }
+    const purchaseDelta = finiteNumber(left?.purchaseCost, Infinity) - finiteNumber(right?.purchaseCost, Infinity);
+    if (Math.abs(purchaseDelta) > EPSILON) return purchaseDelta;
+    const changeDelta = finiteNumber(left?.equipmentChanges, Infinity) - finiteNumber(right?.equipmentChanges, Infinity);
+    if (Math.abs(changeDelta) > EPSILON) return changeDelta;
+    return compareCandidateStableKeys(left, right);
+}
+
+function rankCandidates(
+    candidates,
+    optimizationMode,
+    balancedLowestCostPerExperience = null,
+    balancedCostTolerance = SKILLING_BALANCED_COST_TOLERANCE,
+) {
+    const normalizedOptimizationMode = normalizeSkillingOptimizationMode(optimizationMode);
+    const normalizedBalancedCostTolerance = normalizeSkillingBalancedCostTolerance(balancedCostTolerance);
+    const suppliedBalancedBaseline = balancedLowestCostPerExperience == null
+        || balancedLowestCostPerExperience === ""
+        ? NaN
+        : Number(balancedLowestCostPerExperience);
+    const lowestCostPerExperience = normalizedOptimizationMode !== SKILLING_OPTIMIZATION_MODE_BALANCED
+        ? null
+        : Number.isFinite(suppliedBalancedBaseline)
+            ? suppliedBalancedBaseline
+            : (candidates || []).reduce((minimum, candidate) => (
+                Math.min(minimum, finiteNumber(candidate?.costPerExperience, Infinity))
+            ), Infinity);
+    return [...(candidates || [])].sort((left, right) => (
+        compareCandidates(
+            left,
+            right,
+            normalizedOptimizationMode,
+            lowestCostPerExperience,
+            normalizedBalancedCostTolerance,
+        )
+    ));
 }
 
 function stableOwnedInputCycleLimit(candidate, inventory, equipmentInstances) {
@@ -1299,8 +1526,12 @@ function evaluateLevelOptions({
     renewDrinkHrids = [],
     inventoryReuseCompletionInterval = null,
     feeRate,
+    optimizationMode = SKILLING_OPTIMIZATION_MODE_COST,
+    balancedLowestCostPerExperience = null,
+    balancedCostTolerance = SKILLING_BALANCED_COST_TOLERANCE,
     collectAlternatives = false,
 }) {
+    const normalizedOptimizationMode = normalizeSkillingOptimizationMode(optimizationMode);
     const requiredActiveDrinkHrids = new Set(
         activeDrinkStateItems(drinkState).map((item) => item.itemHrid),
     );
@@ -1327,7 +1558,9 @@ function evaluateLevelOptions({
         return equipmentLoadoutCache.get(cacheKey);
     }
     const drinkCache = new Map();
-    const alternatives = [];
+    const mustRankCandidates = collectAlternatives
+        || normalizedOptimizationMode === SKILLING_OPTIMIZATION_MODE_BALANCED;
+    const candidates = mustRankCandidates ? [] : null;
     const missingPriceHrids = new Set();
     let best = null;
     for (const action of actions) {
@@ -1376,17 +1609,31 @@ function evaluateLevelOptions({
                     candidate.missingPriceHrids.forEach((hrid) => missingPriceHrids.add(hrid));
                     continue;
                 }
-                if (!best || compareCandidates(candidate, best) < 0) {
+                if (mustRankCandidates) {
+                    candidates.push(candidate);
+                } else if (!best || compareCandidates(
+                    candidate,
+                    best,
+                    normalizedOptimizationMode,
+                    null,
+                    balancedCostTolerance,
+                ) < 0) {
                     best = candidate;
                 }
-                if (collectAlternatives) alternatives.push(candidate);
             }
         }
     }
-    alternatives.sort(compareCandidates);
+    const rankedCandidates = mustRankCandidates
+        ? rankCandidates(
+            candidates,
+            normalizedOptimizationMode,
+            balancedLowestCostPerExperience,
+            balancedCostTolerance,
+        )
+        : [];
     return {
-        best,
-        alternatives: alternatives.slice(0, 25),
+        best: mustRankCandidates ? rankedCandidates[0] || null : best,
+        alternatives: collectAlternatives ? rankedCandidates.slice(0, 25) : [],
         missingPriceHrids: Array.from(missingPriceHrids).sort(),
         equipmentLoadoutCount: Array.from(equipmentLoadoutCache.values())
             .reduce((count, loadouts) => count + loadouts.length, 0),
@@ -1431,6 +1678,9 @@ function candidateToSegment(candidate, fromLevel, toLevel) {
     const bonusSignature = Object.keys(createBonusTotals())
         .map((key) => finiteNumber(candidate?.bonuses?.[key], 0).toFixed(12))
         .join("|");
+    const externalBonusSignature = Object.keys(createBonusTotals())
+        .map((key) => finiteNumber(candidate?.externalBonuses?.[key], 0).toFixed(12))
+        .join("|");
     return {
         ...candidate,
         fromLevel,
@@ -1438,10 +1688,20 @@ function candidateToSegment(candidate, fromLevel, toLevel) {
         equipmentSignature,
         drinkSignature,
         bonusSignature,
+        externalBonusSignature,
     };
 }
 
 function mergeSegment(target, addition) {
+    const mergedPhases = target?.phases || addition?.phases
+        ? [...segmentPhasesForMerge(target), ...segmentPhasesForMerge(addition)]
+        : null;
+    const mergedEquipmentStrategies = target?.equipmentStrategies || addition?.equipmentStrategies
+        ? mergeEquipmentStrategies(
+            equipmentStrategiesForMerge(target),
+            equipmentStrategiesForMerge(addition),
+        )
+        : null;
     target.toLevel = addition.toLevel;
     target.completionCount += addition.completionCount;
     target.gainedExperience += addition.gainedExperience;
@@ -1449,8 +1709,11 @@ function mergeSegment(target, addition) {
     target.netCost += addition.netCost;
     target.opportunityCost += addition.opportunityCost;
     target.purchaseCost += addition.purchaseCost;
+    target.drinkPurchaseCost += addition.drinkPurchaseCost;
+    target.materialPurchaseCost += addition.materialPurchaseCost;
     target.outputValue += addition.outputValue;
     target.costPerExperience = target.netCost / target.gainedExperience;
+    target.materialPurchaseCostPerExperience = target.materialPurchaseCost / target.gainedExperience;
     target.experiencePerHour = target.gainedExperience / target.durationHours;
     target.inputItems = mergeRows(target.inputItems, addition.inputItems, [
         "count", "ownedCount", "purchaseCount", "opportunityCost", "purchaseCost",
@@ -1458,6 +1721,14 @@ function mergeSegment(target, addition) {
     target.outputItems = mergeRows(target.outputItems, addition.outputItems, ["count", "liquidationValue"]);
     target.drinks = mergeRows(target.drinks, addition.drinks, ["count"]);
     target.endingDrinkState = addition.endingDrinkState;
+    target.equipmentChanges = finiteNumber(target?.equipmentChanges, 0)
+        + finiteNumber(addition?.equipmentChanges, 0);
+    if (target.fullLevelCandidate === true || addition.fullLevelCandidate === true) {
+        target.requiredCompletionCount = target.completionCount;
+        target.estimatedLevelDurationHours = target.durationHours;
+    }
+    if (mergedPhases) target.phases = mergedPhases;
+    if (mergedEquipmentStrategies) target.equipmentStrategies = mergedEquipmentStrategies;
     return target;
 }
 
@@ -1483,95 +1754,223 @@ function summarizeSkillingSegments(segments) {
     const totals = (segments || []).reduce((result, segment) => ({
         netCost: result.netCost + finiteNumber(segment?.netCost, 0),
         purchaseCost: result.purchaseCost + finiteNumber(segment?.purchaseCost, 0),
+        drinkPurchaseCost: result.drinkPurchaseCost + finiteNumber(segment?.drinkPurchaseCost, 0),
+        materialPurchaseCost: result.materialPurchaseCost + finiteNumber(segment?.materialPurchaseCost, 0),
         opportunityCost: result.opportunityCost + finiteNumber(segment?.opportunityCost, 0),
         outputValue: result.outputValue + finiteNumber(segment?.outputValue, 0),
         durationHours: result.durationHours + finiteNumber(segment?.durationHours, 0),
         experience: result.experience + finiteNumber(segment?.gainedExperience, 0),
-    }), { netCost: 0, purchaseCost: 0, opportunityCost: 0, outputValue: 0, durationHours: 0, experience: 0 });
+    }), {
+        netCost: 0,
+        purchaseCost: 0,
+        drinkPurchaseCost: 0,
+        materialPurchaseCost: 0,
+        opportunityCost: 0,
+        outputValue: 0,
+        durationHours: 0,
+        experience: 0,
+    });
     return {
         totalNetCost: totals.netCost,
         totalPurchaseCost: totals.purchaseCost,
+        totalDrinkPurchaseCost: totals.drinkPurchaseCost,
+        totalMaterialPurchaseCost: totals.materialPurchaseCost,
         totalOpportunityCost: totals.opportunityCost,
         totalOutputValue: totals.outputValue,
         totalDurationHours: totals.durationHours,
         totalExperience: totals.experience,
         costPerExperience: totals.experience > 0 ? totals.netCost / totals.experience : 0,
+        materialPurchaseCostPerExperience: totals.experience > 0
+            ? totals.materialPurchaseCost / totals.experience
+            : 0,
         experiencePerHour: totals.durationHours > 0 ? totals.experience / totals.durationHours : 0,
     };
 }
 
-export function planSkillingSkill({
+function cloneDrinkState(drinkState) {
+    const entries = Object.entries(drinkState?.itemsByHrid || {}).map(([itemHrid, state]) => [
+        itemHrid,
+        { ...state },
+    ]);
+    return entries.length > 0 ? { itemsByHrid: Object.fromEntries(entries) } : null;
+}
+
+function cloneSegmentForAggregation(segment) {
+    const clone = {
+        ...segment,
+        equipment: (segment?.equipment || []).map((item) => ({ ...item })),
+        drinks: (segment?.drinks || []).map((item) => ({ ...item })),
+        inputItems: (segment?.inputItems || []).map((item) => ({ ...item })),
+        outputItems: (segment?.outputItems || []).map((item) => ({ ...item })),
+        endingDrinkState: cloneDrinkState(segment?.endingDrinkState),
+        bonuses: { ...(segment?.bonuses || {}) },
+    };
+    if (Array.isArray(segment?.phases)) {
+        clone.phases = segment.phases.map((phase) => cloneSegmentForAggregation(phase));
+    }
+    if (Array.isArray(segment?.equipmentStrategies)) {
+        clone.equipmentStrategies = segment.equipmentStrategies.map((strategy) => ({
+            ...strategy,
+            equipment: (strategy?.equipment || []).map((item) => ({ ...item })),
+        }));
+    }
+    return clone;
+}
+
+function segmentPhasesForMerge(segment) {
+    const phases = Array.isArray(segment?.phases) ? segment.phases : [segment];
+    return phases.filter(Boolean).map((phase) => {
+        const clone = cloneSegmentForAggregation(phase);
+        delete clone.phases;
+        return clone;
+    });
+}
+
+function equipmentSignatureForStrategy(source) {
+    if (source?.equipmentSignature != null) return String(source.equipmentSignature);
+    return (source?.equipment || [])
+        .map((item) => `${item?.equipmentType || ""}:${item?.itemHrid || ""}:${finiteNumber(item?.enhancementLevel, 0)}`)
+        .join("|");
+}
+
+function equipmentStrategiesForMerge(segment) {
+    if (Array.isArray(segment?.equipmentStrategies)) {
+        return segment.equipmentStrategies.map((strategy) => ({
+            ...strategy,
+            equipment: (strategy?.equipment || []).map((item) => ({ ...item })),
+        }));
+    }
+    return [{
+        equipmentSignature: equipmentSignatureForStrategy(segment),
+        equipment: (segment?.equipment || []).map((item) => ({ ...item })),
+        completionCount: finiteNumber(segment?.completionCount, 0),
+        durationHours: finiteNumber(segment?.durationHours, 0),
+        gainedExperience: finiteNumber(segment?.gainedExperience, 0),
+        fromLevel: segment?.fromLevel,
+        toLevel: segment?.toLevel,
+    }];
+}
+
+function mergeEquipmentStrategies(leftStrategies, rightStrategies) {
+    const result = [];
+    for (const strategy of [...(leftStrategies || []), ...(rightStrategies || [])]) {
+        const signature = equipmentSignatureForStrategy(strategy);
+        const previous = result[result.length - 1];
+        if (previous && previous.equipmentSignature === signature) {
+            previous.completionCount += finiteNumber(strategy?.completionCount, 0);
+            previous.durationHours += finiteNumber(strategy?.durationHours, 0);
+            previous.gainedExperience += finiteNumber(strategy?.gainedExperience, 0);
+            previous.toLevel = strategy?.toLevel;
+            continue;
+        }
+        result.push({
+            ...strategy,
+            equipmentSignature: signature,
+            equipment: (strategy?.equipment || []).map((item) => ({ ...item })),
+            completionCount: finiteNumber(strategy?.completionCount, 0),
+            durationHours: finiteNumber(strategy?.durationHours, 0),
+            gainedExperience: finiteNumber(strategy?.gainedExperience, 0),
+        });
+    }
+    return result;
+}
+
+function collectEquipmentStrategies(segments) {
+    return mergeEquipmentStrategies([], (segments || []).flatMap(equipmentStrategiesForMerge));
+}
+
+function aggregateLevelActionSegments(segments, actionSortIndex = 0, includePhases = false) {
+    if (!(segments || []).length) return null;
+    const aggregate = cloneSegmentForAggregation(segments[0]);
+    for (const segment of segments.slice(1)) mergeSegment(aggregate, segment);
+    aggregate.requiredCompletionCount = aggregate.completionCount;
+    aggregate.estimatedLevelDurationHours = aggregate.durationHours;
+    aggregate.actionSortIndex = actionSortIndex;
+    aggregate.equipmentChanges = segments.reduce((sum, segment) => (
+        sum + finiteNumber(segment?.equipmentChanges, 0)
+    ), 0);
+    aggregate.drinkWindowLimited = false;
+    aggregate.fullLevelCandidate = true;
+    aggregate.equipmentStrategies = collectEquipmentStrategies(segments);
+    if (includePhases) aggregate.phases = segments.map(cloneSegmentForAggregation);
+    return aggregate;
+}
+
+function collapseDrinkOnlyLevelPhases(segments) {
+    if ((segments || []).length <= 1) return segments || [];
+    const first = segments[0];
+    const sameRecipeAndEquipment = segments.every((segment) => (
+        segment?.actionHrid === first?.actionHrid
+        && segment?.equipmentSignature === first?.equipmentSignature
+        && segment?.externalBonusSignature === first?.externalBonusSignature
+    ));
+    const onlyDrinkBoundaries = segments.slice(1).every((segment, index) => {
+        const previous = segments[index];
+        return sameSegmentStrategy(previous, segment)
+            || previous?.drinkSignature !== segment?.drinkSignature;
+    });
+    if (!sameRecipeAndEquipment || !onlyDrinkBoundaries) return segments;
+    const aggregate = aggregateLevelActionSegments(segments, first?.actionSortIndex, true);
+    aggregate.drinkSignature = segments.map((segment) => segment?.drinkSignature || "-").join("~");
+    aggregate.bonusSignature = segments.map((segment) => segment?.bonusSignature || "-").join("~");
+    return [aggregate];
+}
+
+function simulateSkillingLevelAction({
+    action,
     profile,
     skillHrid,
+    startLevel,
+    currentLevel,
     targetLevel,
+    nextThreshold,
+    currentExperience,
+    inventory,
+    equipmentInstances,
+    drinkState,
+    planningNow,
     priceTable,
-    enhancementQuotesByItem = {},
-    data = defaultSkillingData,
-    feeRate = SKILLING_MARKET_FEE_RATE,
-    now = Date.now(),
-    onProgress = () => {},
+    enhancementQuotesByItem,
+    data,
+    feeRate,
+    optimizationMode,
+    balancedLowestCostPerExperience = null,
+    balancedCostTolerance = SKILLING_BALANCED_COST_TOLERANCE,
+    fallbackOptimizationMode = null,
+    primaryDrinkCycleLimit = Infinity,
+    actionTypeHrid,
+    iterationStart = 0,
 }) {
-    const skill = profile?.skills?.[skillHrid] || { level: 1, experience: null };
-    const startLevel = clamp(integer(skill?.level, 1), 1, SKILLING_MAX_LEVEL);
-    const normalizedTarget = clamp(integer(targetLevel, startLevel + 1), startLevel, SKILLING_MAX_LEVEL);
-    const startThreshold = finiteNumber(levelExperienceTable[startLevel], 0);
-    const targetExperience = finiteNumber(levelExperienceTable[normalizedTarget], startThreshold);
-    let currentExperience = Number.isFinite(Number(skill?.experience))
-        ? clamp(Number(skill.experience), startThreshold, targetExperience)
-        : startThreshold;
-    let currentLevel = skillLevelForExperience(currentExperience, startLevel);
-    let equipmentInstances = createPlanningEquipmentInstances(profile);
-    let inventory = createPlanningInventory(profile, equipmentInstances);
-    let drinkState = null;
+    let simulatedExperience = currentExperience;
+    let simulatedInventory = { ...(inventory || {}) };
+    let simulatedEquipment = (equipmentInstances || []).map((item) => ({ ...item }));
+    let simulatedDrinkState = cloneDrinkState(drinkState);
+    let simulatedNow = planningNow;
+    let previousDrinkCycle = null;
+    let iteration = 0;
+    let minimumObservedExperiencePerCompletion = Infinity;
+    let primaryDrinkCyclesUsed = 0;
+    const normalizedPrimaryOptimizationMode = normalizeSkillingOptimizationMode(optimizationMode);
+    const normalizedFallbackOptimizationMode = fallbackOptimizationMode == null
+        ? null
+        : normalizeSkillingOptimizationMode(fallbackOptimizationMode);
+    const normalizedPrimaryDrinkCycleLimit = Number.isFinite(Number(primaryDrinkCycleLimit))
+        ? Math.max(0, integer(primaryDrinkCycleLimit, 0))
+        : Infinity;
     const segments = [];
     const missingPriceHrids = new Set();
-    let alternatives = [];
-    const actionsForSkill = (data?.actions || []).filter((action) => action?.levelRequirement?.skillHrid === skillHrid);
-    const actionTypeHrid = actionTypeForSkill(skillHrid);
-    const planningStartedAt = finiteNumber(now, Date.now());
-    let planningNow = planningStartedAt;
-    const initialExternal = collectSkillingProfileBonuses(profile, actionTypeHrid, skillHrid, planningStartedAt);
-    const expiredBuffCount = initialExternal.expiredBuffCount;
-    let iteration = 0;
-    let previousDrinkCycle = null;
 
-    if (normalizedTarget <= startLevel || currentExperience >= targetExperience - EPSILON) {
-        return {
-            status: "complete",
-            skillHrid,
-            startLevel,
-            targetLevel: normalizedTarget,
-            startExperience: currentExperience,
-            targetExperience,
-            segments: [],
-            alternatives: [],
-            totalNetCost: 0,
-            totalPurchaseCost: 0,
-            totalOpportunityCost: 0,
-            totalOutputValue: 0,
-            totalDurationHours: 0,
-            totalExperience: 0,
-            costPerExperience: 0,
-            experiencePerHour: 0,
-            missingPriceHrids: [],
-            expiredBuffCount: 0,
-            endingInventory: inventory,
-            endingEquipment: equipmentInstances,
-        };
-    }
-
-    while (currentExperience < targetExperience - EPSILON) {
-        currentLevel = skillLevelForExperience(currentExperience, currentLevel);
-        const nextLevel = Math.min(normalizedTarget, currentLevel + 1);
-        const nextThreshold = finiteNumber(levelExperienceTable[nextLevel], targetExperience);
-        const experienceNeeded = Math.max(EPSILON, nextThreshold - currentExperience);
-        const availableActions = actionsForSkill.filter((action) => finiteNumber(action?.levelRequirement?.level, 1) <= currentLevel);
-        const external = iteration === 0
-            ? initialExternal
-            : collectSkillingProfileBonuses(profile, actionTypeHrid, skillHrid, planningNow);
+    while (simulatedExperience < nextThreshold - EPSILON) {
+        const useFallbackOptimization = normalizedFallbackOptimizationMode != null
+            && primaryDrinkCyclesUsed >= normalizedPrimaryDrinkCycleLimit;
+        const activeOptimizationMode = useFallbackOptimization
+            ? normalizedFallbackOptimizationMode
+            : normalizedPrimaryOptimizationMode;
+        const experienceNeeded = Math.max(EPSILON, nextThreshold - simulatedExperience);
+        const external = collectSkillingProfileBonuses(profile, actionTypeHrid, skillHrid, simulatedNow);
         const externalStartWindowSeconds = external.nextExpirationAt == null
             ? null
-            : Math.max(0, (external.nextExpirationAt - planningNow) / 1000);
+            : Math.max(0, (external.nextExpirationAt - simulatedNow) / 1000);
         const activeImportedDrinkSlotCount = countActiveImportedDrinkSlots(
             profile,
             actionTypeHrid,
@@ -1579,55 +1978,42 @@ export function planSkillingSkill({
             data,
         );
         const evaluationInput = {
-            actions: availableActions,
-            profile: { ...profile, equipment: equipmentInstances },
+            actions: [action],
+            profile: { ...profile, equipment: simulatedEquipment },
             skillHrid,
             skillLevel: currentLevel,
             skillLevels: skillLevelsForSegment(profile, skillHrid, startLevel, currentLevel),
             experienceNeeded,
-            inventory,
+            inventory: simulatedInventory,
             priceTable,
             enhancementQuotesByItem,
             data,
             externalBonuses: external.totals,
             activeBuffUniqueHrids: external.activeUniqueHrids,
             activeImportedDrinkSlotCount,
-            drinkState,
+            drinkState: simulatedDrinkState,
             actionStartWindowSeconds: externalStartWindowSeconds,
             feeRate,
-            collectAlternatives: iteration === 0,
+            optimizationMode: activeOptimizationMode,
+            balancedLowestCostPerExperience,
+            balancedCostTolerance,
+            collectAlternatives: false,
         };
         const evaluation = evaluateLevelOptions(evaluationInput);
-        if (iteration === 0) {
-            alternatives = evaluation.alternatives;
-        }
         if (!evaluation.best) {
             evaluation.missingPriceHrids.forEach((hrid) => missingPriceHrids.add(hrid));
             return {
                 status: "blocked",
-                skillHrid,
-                startLevel,
-                targetLevel: normalizedTarget,
-                startExperience: Number(skill?.experience ?? startThreshold),
-                targetExperience,
-                currentLevel,
-                currentExperience,
-                segments,
-                alternatives,
-                ...summarizeSkillingSegments(segments),
+                actionHrid: action?.hrid,
                 missingPriceHrids: Array.from(missingPriceHrids).sort(),
-                expiredBuffCount,
-                endingInventory: inventory,
-                endingEquipment: equipmentInstances,
             };
         }
 
         let selected = evaluation.best;
         const selectedCycle = candidateToSegment(selected, currentLevel, currentLevel);
-        const repeatedDrinkStrategy = (
-            previousDrinkCycle?.level === currentLevel
-            && sameSegmentStrategy(previousDrinkCycle.segment, selectedCycle)
-        );
+        const repeatedDrinkStrategy = previousDrinkCycle != null
+            && previousDrinkCycle.optimizationMode === activeOptimizationMode
+            && sameSegmentStrategy(previousDrinkCycle.segment, selectedCycle);
         const selectedDrinkHrids = new Set((selected.drinks || [])
             .map((drink) => normalizeHrid(drink?.itemHrid))
             .filter(Boolean));
@@ -1660,12 +2046,12 @@ export function planSkillingSkill({
                 }
                 const mode = renewalModes.get(itemHrid);
                 const stableRenewal = mode?.stable === true
-                    && (mode.requiresEmptyInventory !== true || finiteNumber(inventory?.[itemHrid], 0) <= EPSILON);
+                    && (mode.requiresEmptyInventory !== true || finiteNumber(simulatedInventory?.[itemHrid], 0) <= EPSILON);
                 if (stableRenewal) {
                     batchRenewDrinkHrids.push(itemHrid);
                     continue;
                 }
-                const ownedCount = Math.floor(Math.max(0, finiteNumber(inventory?.[itemHrid], 0)) + EPSILON);
+                const ownedCount = Math.floor(Math.max(0, finiteNumber(simulatedInventory?.[itemHrid], 0)) + EPSILON);
                 if (mode?.source !== "owned" || ownedCount <= 0) continue;
                 const carriedCompletionCount = Math.max(
                     0,
@@ -1705,9 +2091,18 @@ export function planSkillingSkill({
                 .reduce((minimum, count) => Math.min(minimum, count), Infinity);
             const fullCycleCount = Math.min(
                 Math.floor(selected.requiredCompletionCount / cycleCompletionCount),
-                stableOwnedInputCycleLimit(selected, inventory, equipmentInstances),
+                stableOwnedInputCycleLimit(selected, simulatedInventory, simulatedEquipment),
                 Math.floor(carriedOwnedRenewalCompletionLimit / cycleCompletionCount),
                 Math.floor(hardWindowCompletionLimit / cycleCompletionCount),
+                !useFallbackOptimization
+                    && normalizedFallbackOptimizationMode != null
+                    && Number.isFinite(normalizedPrimaryDrinkCycleLimit)
+                    && candidateDrinkCycleCount(selected) > 0
+                    ? Math.floor(
+                        Math.max(0, normalizedPrimaryDrinkCycleLimit - primaryDrinkCyclesUsed)
+                        / candidateDrinkCycleCount(selected)
+                    )
+                    : Infinity,
             );
             const fullCycleCompletionCount = fullCycleCount * cycleCompletionCount;
             if (fullCycleCount > 1) {
@@ -1726,50 +2121,379 @@ export function planSkillingSkill({
                     && sameSegmentStrategy(selectedCycle, batchCycle)
                     && batchEvaluation.best.completionCount > selected.completionCount
                     && batchEvaluation.best.completionCount % cycleCompletionCount === 0
+                    && (
+                        useFallbackOptimization
+                        || normalizedFallbackOptimizationMode == null
+                        || !Number.isFinite(normalizedPrimaryDrinkCycleLimit)
+                        || candidateDrinkCycleCount(batchEvaluation.best)
+                            <= normalizedPrimaryDrinkCycleLimit - primaryDrinkCyclesUsed
+                    )
                 ) {
                     selected = batchEvaluation.best;
                 }
             }
         }
-        inventory = applyInventoryDelta(inventory, selected.inventoryDelta);
-        drinkState = selected.endingDrinkState;
-        equipmentInstances = applyPlanningEquipmentChanges({
-            equipmentInstances,
+
+        const experienceBeforeSegment = simulatedExperience;
+        simulatedInventory = applyInventoryDelta(simulatedInventory, selected.inventoryDelta);
+        simulatedDrinkState = selected.endingDrinkState;
+        simulatedEquipment = applyPlanningEquipmentChanges({
+            equipmentInstances: simulatedEquipment,
             consumedEquipment: selected.consumedEquipment,
             producedEquipment: selected.producedEquipment,
             selectedEquipment: selected.equipment,
             data,
-            iteration,
+            iteration: iterationStart + iteration,
         });
-        planningNow += selected.durationHours * 60 * 60 * 1000;
-        currentExperience += selected.gainedExperience;
-        const reachedLevel = skillLevelForExperience(currentExperience, currentLevel);
-        const segment = candidateToSegment(selected, currentLevel, Math.min(normalizedTarget, reachedLevel));
+        simulatedNow += selected.durationHours * 60 * 60 * 1000;
+        simulatedExperience += selected.gainedExperience;
+        if (!useFallbackOptimization) {
+            primaryDrinkCyclesUsed += candidateDrinkCycleCount(selected);
+        }
+        if (!(simulatedExperience > experienceBeforeSegment + EPSILON)) {
+            throw new Error("Skilling level simulation made no experience progress.");
+        }
+        const reachedLevel = skillLevelForExperience(simulatedExperience, currentLevel);
+        const segment = candidateToSegment(selected, currentLevel, Math.min(targetLevel, reachedLevel));
         const previous = segments[segments.length - 1];
         if (previous && sameSegmentStrategy(previous, segment)) mergeSegment(previous, segment);
         else segments.push(segment);
         previousDrinkCycle = selected.drinkWindowLimited === true
             ? {
-                level: currentLevel,
                 segment,
+                optimizationMode: activeOptimizationMode,
                 seenDrinkHrids: selectedDrinkHrids,
                 renewalModes,
             }
             : null;
+        minimumObservedExperiencePerCompletion = Math.min(
+            minimumObservedExperiencePerCompletion,
+            selected.gainedExperience / Math.max(1, integer(selected.completionCount, 1)),
+        );
         iteration += 1;
+        const progressBasedIterationLimit = Number.isFinite(minimumObservedExperiencePerCompletion)
+            && minimumObservedExperiencePerCompletion > EPSILON
+            ? Math.ceil(
+                Math.max(0, nextThreshold - currentExperience)
+                / minimumObservedExperiencePerCompletion,
+            ) + 100
+            : 0;
+        if (iteration > Math.max(SKILLING_MAX_LEVEL * 4 + 100, progressBasedIterationLimit)) {
+            throw new Error("Skilling level simulation exceeded the iteration limit.");
+        }
+    }
+
+    const alternative = aggregateLevelActionSegments(segments, finiteNumber(action?.sortIndex, 0));
+    return {
+        status: "ok",
+        actionHrid: action?.hrid,
+        actionSortIndex: finiteNumber(action?.sortIndex, 0),
+        currentExperience: simulatedExperience,
+        inventory: simulatedInventory,
+        equipmentInstances: simulatedEquipment,
+        drinkState: cloneDrinkState(simulatedDrinkState),
+        planningNow: simulatedNow,
+        iterations: iteration,
+        primaryDrinkCycleCount: primaryDrinkCyclesUsed,
+        segments,
+        displaySegments: collapseDrinkOnlyLevelPhases(segments),
+        alternative,
+        ...summarizeSkillingSegments(segments),
+        missingPriceHrids: [],
+    };
+}
+
+export function planSkillingSkill({
+    profile,
+    skillHrid,
+    targetLevel,
+    priceTable,
+    enhancementQuotesByItem = {},
+    data = defaultSkillingData,
+    feeRate = SKILLING_MARKET_FEE_RATE,
+    optimizationMode = SKILLING_OPTIMIZATION_MODE_COST,
+    balancedCostTolerance = SKILLING_BALANCED_COST_TOLERANCE,
+    now = Date.now(),
+    onProgress = () => {},
+}) {
+    const normalizedOptimizationMode = normalizeSkillingOptimizationMode(optimizationMode);
+    const normalizedBalancedCostTolerance = normalizeSkillingBalancedCostTolerance(balancedCostTolerance);
+    const skill = profile?.skills?.[skillHrid] || { level: 1, experience: null };
+    const startLevel = clamp(integer(skill?.level, 1), 1, SKILLING_MAX_LEVEL);
+    const normalizedTarget = clamp(integer(targetLevel, startLevel + 1), startLevel, SKILLING_MAX_LEVEL);
+    const startThreshold = finiteNumber(levelExperienceTable[startLevel], 0);
+    const targetExperience = finiteNumber(levelExperienceTable[normalizedTarget], startThreshold);
+    let currentExperience = Number.isFinite(Number(skill?.experience))
+        ? clamp(Number(skill.experience), startThreshold, targetExperience)
+        : startThreshold;
+    let currentLevel = skillLevelForExperience(currentExperience, startLevel);
+    let equipmentInstances = createPlanningEquipmentInstances(profile);
+    let inventory = createPlanningInventory(profile, equipmentInstances);
+    let drinkState = null;
+    const segments = [];
+    const missingPriceHrids = new Set();
+    let alternatives = [];
+    const actionsForSkill = (data?.actions || []).filter((action) => action?.levelRequirement?.skillHrid === skillHrid);
+    const actionTypeHrid = actionTypeForSkill(skillHrid);
+    const planningStartedAt = finiteNumber(now, Date.now());
+    let planningNow = planningStartedAt;
+    const initialExternal = collectSkillingProfileBonuses(profile, actionTypeHrid, skillHrid, planningStartedAt);
+    const expiredBuffCount = initialExternal.expiredBuffCount;
+    let planningIteration = 0;
+    let levelIteration = 0;
+
+    if (normalizedTarget <= startLevel || currentExperience >= targetExperience - EPSILON) {
+        return {
+            status: "complete",
+            optimizationMode: normalizedOptimizationMode,
+            balancedCostTolerance: normalizedBalancedCostTolerance,
+            skillHrid,
+            startLevel,
+            targetLevel: normalizedTarget,
+            startExperience: currentExperience,
+            targetExperience,
+            segments: [],
+            alternatives: [],
+            totalNetCost: 0,
+            totalPurchaseCost: 0,
+            totalDrinkPurchaseCost: 0,
+            totalMaterialPurchaseCost: 0,
+            totalOpportunityCost: 0,
+            totalOutputValue: 0,
+            totalDurationHours: 0,
+            totalExperience: 0,
+            costPerExperience: 0,
+            materialPurchaseCostPerExperience: 0,
+            experiencePerHour: 0,
+            missingPriceHrids: [],
+            expiredBuffCount: 0,
+            endingInventory: inventory,
+            endingEquipment: equipmentInstances,
+        };
+    }
+
+    while (currentExperience < targetExperience - EPSILON) {
+        currentLevel = skillLevelForExperience(currentExperience, currentLevel);
+        const nextLevel = Math.min(normalizedTarget, currentLevel + 1);
+        const nextThreshold = finiteNumber(levelExperienceTable[nextLevel], targetExperience);
+        const availableActions = actionsForSkill.filter((action) => finiteNumber(action?.levelRequirement?.level, 1) <= currentLevel);
+        const levelMissingPriceHrids = new Set();
+        function simulateAction(
+            action,
+            mode,
+            balancedLowestCostPerExperience = null,
+            simulationOptions = {},
+        ) {
+            const simulation = simulateSkillingLevelAction({
+                action,
+                profile,
+                skillHrid,
+                startLevel,
+                currentLevel,
+                targetLevel: normalizedTarget,
+                nextThreshold,
+                currentExperience,
+                inventory,
+                equipmentInstances,
+                drinkState,
+                planningNow,
+                priceTable,
+                enhancementQuotesByItem,
+                data,
+                feeRate,
+                optimizationMode: mode,
+                balancedLowestCostPerExperience,
+                balancedCostTolerance: normalizedBalancedCostTolerance,
+                actionTypeHrid,
+                iterationStart: planningIteration,
+                ...simulationOptions,
+            });
+            if (simulation.status !== "ok" || !simulation.alternative) {
+                (simulation.missingPriceHrids || []).forEach((hrid) => levelMissingPriceHrids.add(hrid));
+            }
+            return simulation;
+        }
+        function simulateAvailableActions(mode, balancedLowestCostPerExperience = null) {
+            return availableActions
+                .map((action) => simulateAction(action, mode, balancedLowestCostPerExperience))
+                .filter((simulation) => simulation.status === "ok" && simulation.alternative);
+        }
+
+        let balancedLowestCostPerExperience = null;
+        let simulations;
+        if (normalizedOptimizationMode === SKILLING_OPTIMIZATION_MODE_BALANCED) {
+            const costSimulations = simulateAvailableActions(SKILLING_OPTIMIZATION_MODE_COST);
+            const speedSimulations = simulateAvailableActions(SKILLING_OPTIMIZATION_MODE_SPEED);
+            const provisionalBalancedBaseline = [...costSimulations, ...speedSimulations]
+                .reduce((minimum, simulation) => (
+                    Math.min(minimum, finiteNumber(simulation?.alternative?.costPerExperience, Infinity))
+                ), Infinity);
+            const constrainedSimulations = Number.isFinite(provisionalBalancedBaseline)
+                ? simulateAvailableActions(
+                    SKILLING_OPTIMIZATION_MODE_BALANCED,
+                    provisionalBalancedBaseline,
+                )
+                : [];
+            balancedLowestCostPerExperience = [
+                ...costSimulations,
+                ...constrainedSimulations,
+                ...speedSimulations,
+            ].reduce((minimum, simulation) => (
+                Math.min(minimum, finiteNumber(simulation?.alternative?.costPerExperience, Infinity))
+            ), Infinity);
+            const costByAction = new Map(costSimulations.map((simulation) => [simulation.actionHrid, simulation]));
+            const constrainedByAction = new Map(constrainedSimulations.map((simulation) => [simulation.actionHrid, simulation]));
+            const speedByAction = new Map(speedSimulations.map((simulation) => [simulation.actionHrid, simulation]));
+            const maximumBalancedCostPerExperience = balancedLowestCostPerExperience
+                + Math.abs(balancedLowestCostPerExperience) * normalizedBalancedCostTolerance;
+            const budgetedSpeedPrefixesByAction = new Map();
+
+            // A locally constrained phase cannot spend unused budget from cheaper later phases. Explore a bounded
+            // family of speed-prefix/cost-suffix routes at the estimated whole-level budget boundary. This is not a
+            // general Pareto search across every possible phase ordering, but every retained route is validated
+            // against the whole-level cost band and stable drink renewals remain batched.
+            for (const action of availableActions) {
+                const costSimulation = costByAction.get(action?.hrid);
+                const speedSimulation = speedByAction.get(action?.hrid);
+                const costAlternative = costSimulation?.alternative;
+                const speedAlternative = speedSimulation?.alternative;
+                const speedDrinkCycleCount = simulationDrinkCycleCount(speedSimulation);
+                if (!costAlternative || !speedAlternative || speedDrinkCycleCount <= 1) continue;
+                if (candidateRequiredDurationHours(speedAlternative)
+                    >= candidateRequiredDurationHours(costAlternative) - EPSILON) continue;
+
+                const costExcess = finiteNumber(costAlternative?.netCost, Infinity)
+                    - maximumBalancedCostPerExperience
+                        * finiteNumber(costAlternative?.gainedExperience, 0);
+                const speedExcess = finiteNumber(speedAlternative?.netCost, Infinity)
+                    - maximumBalancedCostPerExperience
+                        * finiteNumber(speedAlternative?.gainedExperience, 0);
+                if (!(costExcess <= EPSILON && speedExcess > EPSILON)) continue;
+
+                const excessRange = speedExcess - costExcess;
+                const estimatedBoundary = excessRange > EPSILON
+                    ? clamp(-costExcess / excessRange, 0, 1) * speedDrinkCycleCount
+                    : 0;
+                const lowerBoundary = Math.floor(estimatedBoundary + EPSILON);
+                const upperBoundary = Math.ceil(estimatedBoundary - EPSILON);
+                const cycleLimits = Array.from(new Set([
+                    lowerBoundary,
+                    upperBoundary,
+                ])).filter((limit) => limit > 0 && limit < speedDrinkCycleCount);
+                const budgetedSimulations = cycleLimits
+                    .map((primaryDrinkCycleLimit) => simulateAction(
+                        action,
+                        SKILLING_OPTIMIZATION_MODE_SPEED,
+                        null,
+                        {
+                            fallbackOptimizationMode: SKILLING_OPTIMIZATION_MODE_COST,
+                            primaryDrinkCycleLimit,
+                        },
+                    ))
+                    .filter((simulation) => (
+                        simulation.status === "ok"
+                        && simulation.alternative
+                        && finiteNumber(simulation.alternative.costPerExperience, Infinity)
+                            <= maximumBalancedCostPerExperience + EPSILON
+                    ));
+                if (budgetedSimulations.length > 0) {
+                    budgetedSpeedPrefixesByAction.set(action?.hrid, budgetedSimulations);
+                }
+            }
+
+            const budgetedSpeedPrefixSimulations = Array.from(budgetedSpeedPrefixesByAction.values()).flat();
+            balancedLowestCostPerExperience = [
+                ...costSimulations,
+                ...constrainedSimulations,
+                ...budgetedSpeedPrefixSimulations,
+                ...speedSimulations,
+            ].reduce((minimum, simulation) => (
+                Math.min(minimum, finiteNumber(simulation?.alternative?.costPerExperience, Infinity))
+            ), Infinity);
+            simulations = availableActions.flatMap((action) => {
+                const actionSimulations = [
+                    costByAction.get(action?.hrid),
+                    constrainedByAction.get(action?.hrid),
+                    ...(budgetedSpeedPrefixesByAction.get(action?.hrid) || []),
+                    speedByAction.get(action?.hrid),
+                ].filter(Boolean);
+                if (actionSimulations.length <= 1) return actionSimulations;
+                const rankedActionAlternatives = rankCandidates(
+                    actionSimulations.map((simulation) => simulation.alternative),
+                    SKILLING_OPTIMIZATION_MODE_BALANCED,
+                    balancedLowestCostPerExperience,
+                    normalizedBalancedCostTolerance,
+                );
+                const bestAlternative = rankedActionAlternatives[0];
+                return [actionSimulations.find((simulation) => simulation.alternative === bestAlternative)];
+            });
+        } else {
+            simulations = simulateAvailableActions(normalizedOptimizationMode);
+        }
+
+        if (simulations.length === 0) {
+            levelMissingPriceHrids.forEach((hrid) => missingPriceHrids.add(hrid));
+            return {
+                status: "blocked",
+                optimizationMode: normalizedOptimizationMode,
+                balancedCostTolerance: normalizedBalancedCostTolerance,
+                skillHrid,
+                startLevel,
+                targetLevel: normalizedTarget,
+                startExperience: Number(skill?.experience ?? startThreshold),
+                targetExperience,
+                currentLevel,
+                currentExperience,
+                segments,
+                alternatives,
+                ...summarizeSkillingSegments(segments),
+                missingPriceHrids: Array.from(missingPriceHrids).sort(),
+                expiredBuffCount,
+                endingInventory: inventory,
+                endingEquipment: equipmentInstances,
+            };
+        }
+
+        const rankedAlternatives = rankCandidates(
+            simulations.map((simulation) => simulation.alternative),
+            normalizedOptimizationMode,
+            balancedLowestCostPerExperience,
+            normalizedBalancedCostTolerance,
+        );
+        const selectedAlternative = rankedAlternatives[0];
+        const selectedSimulation = simulations.find((simulation) => (
+            simulation.alternative === selectedAlternative
+        ));
+        if (levelIteration === 0) alternatives = rankedAlternatives.slice(0, 25);
+
+        for (const segment of selectedSimulation.displaySegments) {
+            const previous = segments[segments.length - 1];
+            if (previous && sameSegmentStrategy(previous, segment)) mergeSegment(previous, segment);
+            else segments.push(segment);
+        }
+        inventory = selectedSimulation.inventory;
+        equipmentInstances = selectedSimulation.equipmentInstances;
+        drinkState = selectedSimulation.drinkState;
+        planningNow = selectedSimulation.planningNow;
+        currentExperience = selectedSimulation.currentExperience;
+        planningIteration += selectedSimulation.iterations;
+        levelIteration += 1;
+        const reachedLevel = skillLevelForExperience(currentExperience, currentLevel);
         onProgress({
             skillHrid,
             currentLevel: reachedLevel,
             targetLevel: normalizedTarget,
             progress: Math.min(1, (currentExperience - startThreshold) / Math.max(1, targetExperience - startThreshold)),
         });
-        if (iteration > SKILLING_MAX_LEVEL * 4 + 100) {
-            throw new Error("Skilling planner exceeded the level iteration limit.");
+        if (levelIteration > SKILLING_MAX_LEVEL + 1) {
+            throw new Error("Skilling planner exceeded the level limit.");
         }
     }
 
     return {
         status: "ok",
+        optimizationMode: normalizedOptimizationMode,
+        balancedCostTolerance: normalizedBalancedCostTolerance,
         skillHrid,
         startLevel,
         targetLevel: normalizedTarget,
@@ -1785,18 +2509,33 @@ export function planSkillingSkill({
     };
 }
 
-export function buildSkillingOverview(plansBySkill) {
-    return Object.values(plansBySkill || {})
+export function buildSkillingOverview(
+    plansBySkill,
+    optimizationMode = SKILLING_OPTIMIZATION_MODE_COST,
+) {
+    const normalizedOptimizationMode = normalizeSkillingOptimizationMode(optimizationMode);
+    const plans = Object.values(plansBySkill || {})
         .filter((plan) => (
             plan?.status === "ok"
             && finiteNumber(plan?.totalExperience, 0) > EPSILON
             && Number.isFinite(Number(plan?.costPerExperience))
-        ))
-        .sort((left, right) => (
-            finiteNumber(left?.costPerExperience, Infinity) - finiteNumber(right?.costPerExperience, Infinity)
-            || finiteNumber(right?.experiencePerHour, 0) - finiteNumber(left?.experiencePerHour, 0)
-            || String(left?.skillHrid || "").localeCompare(String(right?.skillHrid || ""))
         ));
+    return plans.sort((left, right) => {
+        if (normalizedOptimizationMode === SKILLING_OPTIMIZATION_MODE_BALANCED) {
+            return finiteNumber(left?.costPerExperience, Infinity) - finiteNumber(right?.costPerExperience, Infinity)
+                || finiteNumber(left?.totalDurationHours, Infinity) - finiteNumber(right?.totalDurationHours, Infinity)
+                || String(left?.skillHrid || "").localeCompare(String(right?.skillHrid || ""));
+        }
+        if (normalizedOptimizationMode === SKILLING_OPTIMIZATION_MODE_SPEED) {
+            return finiteNumber(left?.totalDurationHours, Infinity) - finiteNumber(right?.totalDurationHours, Infinity)
+                || finiteNumber(right?.experiencePerHour, 0) - finiteNumber(left?.experiencePerHour, 0)
+                || finiteNumber(left?.costPerExperience, Infinity) - finiteNumber(right?.costPerExperience, Infinity)
+                || String(left?.skillHrid || "").localeCompare(String(right?.skillHrid || ""));
+        }
+        return finiteNumber(left?.costPerExperience, Infinity) - finiteNumber(right?.costPerExperience, Infinity)
+            || finiteNumber(right?.experiencePerHour, 0) - finiteNumber(left?.experiencePerHour, 0)
+            || String(left?.skillHrid || "").localeCompare(String(right?.skillHrid || ""));
+    });
 }
 
 export function planSkillingUpgrades({
@@ -1806,9 +2545,13 @@ export function planSkillingUpgrades({
     enhancementQuotesByItem = {},
     data = defaultSkillingData,
     feeRate = SKILLING_MARKET_FEE_RATE,
+    optimizationMode = SKILLING_OPTIMIZATION_MODE_COST,
+    balancedCostTolerance = SKILLING_BALANCED_COST_TOLERANCE,
     now = Date.now(),
     onProgress = () => {},
 }) {
+    const normalizedOptimizationMode = normalizeSkillingOptimizationMode(optimizationMode);
+    const normalizedBalancedCostTolerance = normalizeSkillingBalancedCostTolerance(balancedCostTolerance);
     const skills = data?.skillHrids || [];
     const plansBySkill = {};
     skills.forEach((skillHrid, index) => {
@@ -1820,6 +2563,8 @@ export function planSkillingUpgrades({
             enhancementQuotesByItem,
             data,
             feeRate,
+            optimizationMode: normalizedOptimizationMode,
+            balancedCostTolerance: normalizedBalancedCostTolerance,
             now,
             onProgress: (progress) => onProgress({
                 ...progress,
@@ -1829,9 +2574,11 @@ export function planSkillingUpgrades({
             }),
         });
     });
-    const overview = buildSkillingOverview(plansBySkill);
+    const overview = buildSkillingOverview(plansBySkill, normalizedOptimizationMode);
     return {
         generatedAt: now,
+        optimizationMode: normalizedOptimizationMode,
+        balancedCostTolerance: normalizedBalancedCostTolerance,
         plansBySkill,
         overview,
     };

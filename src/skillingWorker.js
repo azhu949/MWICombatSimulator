@@ -1,5 +1,10 @@
 import { skillingData } from "./shared/gameDataIndex.js";
-import { buildSkillingOverview, planSkillingSkill } from "./services/skillingPlanner.js";
+import {
+    buildSkillingOverview,
+    normalizeSkillingBalancedCostTolerance,
+    normalizeSkillingOptimizationMode,
+    planSkillingSkill,
+} from "./services/skillingPlanner.js";
 
 function finiteNumber(value, fallback = 0) {
     const parsed = Number(value);
@@ -37,6 +42,8 @@ export function createSkillingWorkerRuntime(options = {}) {
         const token = { runId: String(payload?.runId || ""), cancelled: false };
         activeRun = token;
         try {
+            const optimizationMode = normalizeSkillingOptimizationMode(payload?.optimizationMode);
+            const balancedCostTolerance = normalizeSkillingBalancedCostTolerance(payload?.balancedCostTolerance);
             const skillHrids = skillingData?.skillHrids || [];
             const plansBySkill = {};
             for (let index = 0; index < skillHrids.length; index += 1) {
@@ -50,6 +57,8 @@ export function createSkillingWorkerRuntime(options = {}) {
                     targetLevel: payload?.targetLevels?.[skillHrid],
                     priceTable: payload?.priceTable,
                     enhancementQuotesByItem: payload?.enhancementQuotesByItem,
+                    optimizationMode,
+                    balancedCostTolerance,
                     data: skillingData,
                     feeRate: payload?.feeRate,
                     now: payload?.now,
@@ -78,8 +87,14 @@ export function createSkillingWorkerRuntime(options = {}) {
             if (!isCurrent(token)) {
                 return null;
             }
-            const overview = buildSkillingOverview(plansBySkill);
-            const result = { generatedAt: finiteNumber(payload?.now, Date.now()), plansBySkill, overview };
+            const overview = buildSkillingOverview(plansBySkill, optimizationMode);
+            const result = {
+                generatedAt: finiteNumber(payload?.now, Date.now()),
+                optimizationMode,
+                balancedCostTolerance,
+                plansBySkill,
+                overview,
+            };
             post({ type: "skilling_result", runId: token.runId, result });
             activeRun = null;
             return result;
