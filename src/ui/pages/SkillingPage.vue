@@ -4,7 +4,7 @@
       <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div class="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
           <div class="flex shrink-0 items-baseline gap-2">
-            <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-teal-300/80">{{ t("common:skilling.eyebrow", "Production Ledger") }}</p>
+            <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-teal-300/80">{{ t("common:skilling.eyebrow", "Skilling Ledger") }}</p>
             <h2 class="font-heading text-lg font-semibold text-slate-100">{{ t("common:skilling.title", "Skilling Upgrade Planner") }}</h2>
           </div>
           <span class="hidden h-5 w-px bg-white/10 sm:block" aria-hidden="true"></span>
@@ -108,7 +108,7 @@
       </div>
     </div>
 
-    <div v-if="skilling.resultStale || snapshotIsOld || expiredBuffWarningCount > 0 || skilling.error" class="grid gap-2 sm:grid-cols-2" data-skilling-warnings aria-live="polite">
+    <div v-if="skilling.resultStale || snapshotIsOld || expiredBuffWarningCount > 0 || foragingProcessingNoticeVisible || skilling.error" class="grid gap-2 sm:grid-cols-2" data-skilling-warnings aria-live="polite">
       <p v-if="skilling.resultStale" class="rounded border border-amber-300/30 bg-amber-300/10 px-3 py-2 text-xs text-amber-200">
         {{ t("common:skilling.stale", "Results are stale because targets, prices, optimization settings, or the character snapshot changed.") }}
       </p>
@@ -117,6 +117,9 @@
       </p>
       <p v-if="expiredBuffWarningCount > 0" class="rounded border border-rose-300/30 bg-rose-300/10 px-3 py-2 text-xs text-rose-200">
         {{ expiredBuffWarningText }}
+      </p>
+      <p v-if="foragingProcessingNoticeVisible" class="rounded border border-amber-300/30 bg-amber-300/10 px-3 py-2 text-xs text-amber-200">
+        {{ t("common:skilling.processingUnsupportedWarning", "Processing effects and Processing Tea are not yet included in foraging output values; foraging routes are optimized without them.") }}
       </p>
       <p v-if="skilling.error" class="rounded border border-rose-300/30 bg-rose-300/10 px-3 py-2 text-xs text-rose-200" role="alert">{{ skilling.error }}</p>
     </div>
@@ -127,7 +130,7 @@
 
     <template v-else>
       <div class="panel overflow-hidden !p-0" data-skilling-targets>
-        <div class="grid sm:grid-cols-2 xl:grid-cols-5">
+        <div class="grid sm:grid-cols-2 xl:grid-cols-6">
           <label
             v-for="skillHrid in skillHrids"
             :key="skillHrid"
@@ -156,7 +159,7 @@
       </div>
 
       <div
-        class="grid grid-cols-3 overflow-hidden rounded border border-white/10 bg-slate-950/30 sm:grid-cols-6"
+        class="grid grid-cols-2 overflow-hidden rounded border border-white/10 bg-slate-950/30 sm:grid-cols-4 xl:grid-cols-7"
         role="tablist"
         :aria-label="t('common:skilling.title', 'Skilling Upgrade Planner')"
         data-skilling-tabs
@@ -583,6 +586,12 @@ const temporaryBuffExpirations = computed(() => {
 });
 const expiredProfileBuffCount = computed(() => temporaryBuffExpirations.value.filter((expiresAt) => expiresAt <= clockNow.value).length);
 const expiredBuffWarningCount = computed(() => Math.max(Number(skilling.expiredBuffCount || 0), expiredProfileBuffCount.value));
+const foragingProcessingNoticeVisible = computed(() => {
+  const skillHrid = "/skills/foraging";
+  const currentLevel = Math.max(1, Number(skilling.profile?.skills?.[skillHrid]?.level || 1));
+  const targetLevel = Number(skilling.targetLevels?.[skillHrid] ?? currentLevel);
+  return Boolean(skilling.profile && targetLevel > currentLevel);
+});
 const buffExpiredSinceResult = computed(() => {
   const generatedAt = Number(skilling.result?.generatedAt || 0);
   return generatedAt > 0 && temporaryBuffExpirations.value.some((expiresAt) => expiresAt > generatedAt && expiresAt <= clockNow.value);

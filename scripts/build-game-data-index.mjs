@@ -35,6 +35,7 @@ const ENHANCEMENT_SPECIAL_ITEM_HRIDS = Object.freeze({
     philosophersMirror: "/items/philosophers_mirror",
 });
 const SKILLING_ACTION_TYPE_HRIDS = Object.freeze([
+    "/action_types/foraging",
     "/action_types/brewing",
     "/action_types/cheesesmithing",
     "/action_types/cooking",
@@ -42,10 +43,16 @@ const SKILLING_ACTION_TYPE_HRIDS = Object.freeze([
     "/action_types/tailoring",
 ]);
 const SKILLING_ACTION_TYPE_SET = new Set(SKILLING_ACTION_TYPE_HRIDS);
+const SKILLING_ACTION_FUNCTION_SET = new Set([
+    "/action_functions/gathering",
+    "/action_functions/production",
+]);
 const SKILLING_SKILL_HRIDS = Object.freeze(SKILLING_ACTION_TYPE_HRIDS.map((hrid) => (
     hrid.replace("/action_types/", "/skills/")
 )));
 const SKILLING_STAT_PREFIXES = Object.freeze([
+    "foraging",
+    "gathering",
     "brewing",
     "cheesesmithing",
     "cooking",
@@ -814,7 +821,7 @@ function createSkillingIndex({
 }) {
     const actions = Object.values(actionDetailMap || {})
         .filter((action) => (
-            action?.function === "/action_functions/production"
+            SKILLING_ACTION_FUNCTION_SET.has(String(action?.function || ""))
             && SKILLING_ACTION_TYPE_SET.has(String(action?.type || ""))
         ))
         .map((action) => ({
@@ -834,6 +841,9 @@ function createSkillingIndex({
             },
             inputItems: normalizeItemAmounts(action?.inputItems),
             outputItems: normalizeItemAmounts(action?.outputItems),
+            ...(Array.isArray(action?.dropTable) && action.dropTable.length > 0
+                ? { dropTable: normalizeLootDrops(action.dropTable) }
+                : {}),
             upgradeItemHrid: String(action?.upgradeItemHrid || ""),
             retainAllEnhancement: action?.retainAllEnhancement === true,
             essenceDropTable: normalizeLootDrops(action?.essenceDropTable),

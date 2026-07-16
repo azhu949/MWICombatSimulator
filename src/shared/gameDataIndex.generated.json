@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-07-14T18:00:35.271Z",
+    "generatedAt": "2026-07-16T04:55:25.440Z",
     "levelKeys": [
       "stamina",
       "intelligence",
@@ -86473,6 +86473,7 @@
   },
   "skillingData": {
     "actionTypeHrids": [
+      "/action_types/foraging",
       "/action_types/brewing",
       "/action_types/cheesesmithing",
       "/action_types/cooking",
@@ -86480,6 +86481,7 @@
       "/action_types/tailoring"
     ],
     "skillHrids": [
+      "/skills/foraging",
       "/skills/brewing",
       "/skills/cheesesmithing",
       "/skills/cooking",
@@ -86487,6 +86489,1753 @@
       "/skills/tailoring"
     ],
     "actions": [
+      {
+        "hrid": "/actions/foraging/egg",
+        "name": "Egg",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/farmland",
+        "sortIndex": 1,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 1
+        },
+        "baseTimeSeconds": 6,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 5
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/egg",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 6
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.016833333333333332,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/small_meteorite_cache",
+            "dropRate": 0.00014027777777777777,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/wheat",
+        "name": "Wheat",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/farmland",
+        "sortIndex": 2,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 1
+        },
+        "baseTimeSeconds": 6,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 5
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/wheat",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 6
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.016833333333333332,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/small_meteorite_cache",
+            "dropRate": 0.00014027777777777777,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/sugar",
+        "name": "Sugar",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/farmland",
+        "sortIndex": 3,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 1
+        },
+        "baseTimeSeconds": 6,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 5
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/sugar",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 14
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.016833333333333332,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/small_meteorite_cache",
+            "dropRate": 0.00014027777777777777,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/cotton",
+        "name": "Cotton",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/farmland",
+        "sortIndex": 4,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 1
+        },
+        "baseTimeSeconds": 6,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 5
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/cotton",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 3
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.016833333333333332,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/small_meteorite_cache",
+            "dropRate": 0.00014027777777777777,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/farmland",
+        "name": "Farmland",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/farmland",
+        "sortIndex": 5,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 1
+        },
+        "baseTimeSeconds": 6,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 5
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/egg",
+            "dropRate": 0.3,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 6
+          },
+          {
+            "itemHrid": "/items/wheat",
+            "dropRate": 0.3,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 6
+          },
+          {
+            "itemHrid": "/items/sugar",
+            "dropRate": 0.3,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 14
+          },
+          {
+            "itemHrid": "/items/cotton",
+            "dropRate": 0.3,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 3
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.016833333333333332,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/small_meteorite_cache",
+            "dropRate": 0.00014027777777777777,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/blueberry",
+        "name": "Blueberry",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/shimmering_lake",
+        "sortIndex": 6,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 10
+        },
+        "baseTimeSeconds": 8,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 7.5
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/blueberry",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 8
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.024444444444444446,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/small_meteorite_cache",
+            "dropRate": 0.00020370370370370372,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/apple",
+        "name": "Apple",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/shimmering_lake",
+        "sortIndex": 7,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 10
+        },
+        "baseTimeSeconds": 8,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 7.5
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/apple",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 4
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.024444444444444446,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/small_meteorite_cache",
+            "dropRate": 0.00020370370370370372,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/arabica_coffee_bean",
+        "name": "Arabica Coffee Bean",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/shimmering_lake",
+        "sortIndex": 8,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 10
+        },
+        "baseTimeSeconds": 8,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 7.5
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/arabica_coffee_bean",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.024444444444444446,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/small_meteorite_cache",
+            "dropRate": 0.00020370370370370372,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/flax",
+        "name": "Flax",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/shimmering_lake",
+        "sortIndex": 9,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 10
+        },
+        "baseTimeSeconds": 8,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 7.5
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/flax",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 3
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.024444444444444446,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/small_meteorite_cache",
+            "dropRate": 0.00020370370370370372,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/shimmering_lake",
+        "name": "Shimmering Lake",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/shimmering_lake",
+        "sortIndex": 10,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 10
+        },
+        "baseTimeSeconds": 8,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 7.5
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/blueberry",
+            "dropRate": 0.3,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 8
+          },
+          {
+            "itemHrid": "/items/apple",
+            "dropRate": 0.3,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 4
+          },
+          {
+            "itemHrid": "/items/arabica_coffee_bean",
+            "dropRate": 0.3,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          },
+          {
+            "itemHrid": "/items/flax",
+            "dropRate": 0.3,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 3
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.024444444444444446,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/small_meteorite_cache",
+            "dropRate": 0.00020370370370370372,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/blackberry",
+        "name": "Blackberry",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/misty_forest",
+        "sortIndex": 11,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 20
+        },
+        "baseTimeSeconds": 11,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 12.5
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/blackberry",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 8
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.03666666666666667,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/small_meteorite_cache",
+            "dropRate": 0.0003055555555555555,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/orange",
+        "name": "Orange",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/misty_forest",
+        "sortIndex": 12,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 20
+        },
+        "baseTimeSeconds": 11,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 12.5
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/orange",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 4
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.03666666666666667,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/small_meteorite_cache",
+            "dropRate": 0.0003055555555555555,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/robusta_coffee_bean",
+        "name": "Robusta Coffee Bean",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/misty_forest",
+        "sortIndex": 13,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 20
+        },
+        "baseTimeSeconds": 11,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 12.5
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/robusta_coffee_bean",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.03666666666666667,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/small_meteorite_cache",
+            "dropRate": 0.0003055555555555555,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/misty_forest",
+        "name": "Misty Forest",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/misty_forest",
+        "sortIndex": 14,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 20
+        },
+        "baseTimeSeconds": 11,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 12.5
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/blackberry",
+            "dropRate": 0.4,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 8
+          },
+          {
+            "itemHrid": "/items/orange",
+            "dropRate": 0.4,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 4
+          },
+          {
+            "itemHrid": "/items/robusta_coffee_bean",
+            "dropRate": 0.4,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.03666666666666667,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/small_meteorite_cache",
+            "dropRate": 0.0003055555555555555,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/strawberry",
+        "name": "Strawberry",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/burble_beach",
+        "sortIndex": 15,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 35
+        },
+        "baseTimeSeconds": 14,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 20
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/strawberry",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 8
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.052500000000000005,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/medium_meteorite_cache",
+            "dropRate": 0.00021604938271604937,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/plum",
+        "name": "Plum",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/burble_beach",
+        "sortIndex": 16,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 35
+        },
+        "baseTimeSeconds": 14,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 20
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/plum",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 4
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.052500000000000005,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/medium_meteorite_cache",
+            "dropRate": 0.00021604938271604937,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/liberica_coffee_bean",
+        "name": "Liberica Coffee Bean",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/burble_beach",
+        "sortIndex": 17,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 35
+        },
+        "baseTimeSeconds": 14,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 20
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/liberica_coffee_bean",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.052500000000000005,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/medium_meteorite_cache",
+            "dropRate": 0.00021604938271604937,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/bamboo_branch",
+        "name": "Bamboo Branch",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/burble_beach",
+        "sortIndex": 18,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 35
+        },
+        "baseTimeSeconds": 14,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 20
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/bamboo_branch",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 3
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.052500000000000005,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/medium_meteorite_cache",
+            "dropRate": 0.00021604938271604937,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/burble_beach",
+        "name": "Burble Beach",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/burble_beach",
+        "sortIndex": 19,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 35
+        },
+        "baseTimeSeconds": 14,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 20
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/strawberry",
+            "dropRate": 0.3,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 8
+          },
+          {
+            "itemHrid": "/items/plum",
+            "dropRate": 0.3,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 4
+          },
+          {
+            "itemHrid": "/items/liberica_coffee_bean",
+            "dropRate": 0.3,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          },
+          {
+            "itemHrid": "/items/bamboo_branch",
+            "dropRate": 0.3,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 3
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.052500000000000005,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/medium_meteorite_cache",
+            "dropRate": 0.00021604938271604937,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/mooberry",
+        "name": "Mooberry",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/silly_cow_valley",
+        "sortIndex": 20,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 50
+        },
+        "baseTimeSeconds": 17,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 30
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/mooberry",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 8
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.07083333333333333,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/medium_meteorite_cache",
+            "dropRate": 0.00030169753086419757,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/peach",
+        "name": "Peach",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/silly_cow_valley",
+        "sortIndex": 21,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 50
+        },
+        "baseTimeSeconds": 17,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 30
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/peach",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 4
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.07083333333333333,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/medium_meteorite_cache",
+            "dropRate": 0.00030169753086419757,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/excelsa_coffee_bean",
+        "name": "Excelsa Coffee Bean",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/silly_cow_valley",
+        "sortIndex": 22,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 50
+        },
+        "baseTimeSeconds": 17,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 30
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/excelsa_coffee_bean",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.07083333333333333,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/medium_meteorite_cache",
+            "dropRate": 0.00030169753086419757,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/cocoon",
+        "name": "Cocoon",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/silly_cow_valley",
+        "sortIndex": 23,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 50
+        },
+        "baseTimeSeconds": 17,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 30
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/cocoon",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 3
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.07083333333333333,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/medium_meteorite_cache",
+            "dropRate": 0.00030169753086419757,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/silly_cow_valley",
+        "name": "Silly Cow Valley",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/silly_cow_valley",
+        "sortIndex": 24,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 50
+        },
+        "baseTimeSeconds": 17,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 30
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/mooberry",
+            "dropRate": 0.3,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 8
+          },
+          {
+            "itemHrid": "/items/peach",
+            "dropRate": 0.3,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 4
+          },
+          {
+            "itemHrid": "/items/excelsa_coffee_bean",
+            "dropRate": 0.3,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          },
+          {
+            "itemHrid": "/items/cocoon",
+            "dropRate": 0.3,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 3
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.07083333333333333,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/medium_meteorite_cache",
+            "dropRate": 0.00030169753086419757,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/marsberry",
+        "name": "Marsberry",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/olympus_mons",
+        "sortIndex": 25,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 65
+        },
+        "baseTimeSeconds": 20,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 40
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/marsberry",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 8
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.09166666666666666,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/thread_of_expertise",
+            "dropRate": 0.00001,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          },
+          {
+            "itemHrid": "/items/medium_meteorite_cache",
+            "dropRate": 0.0004012345679012346,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/dragon_fruit",
+        "name": "Dragon Fruit",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/olympus_mons",
+        "sortIndex": 26,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 65
+        },
+        "baseTimeSeconds": 20,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 40
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/dragon_fruit",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 4
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.09166666666666666,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/thread_of_expertise",
+            "dropRate": 0.00001,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          },
+          {
+            "itemHrid": "/items/medium_meteorite_cache",
+            "dropRate": 0.0004012345679012346,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/fieriosa_coffee_bean",
+        "name": "Fieriosa Coffee Bean",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/olympus_mons",
+        "sortIndex": 27,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 65
+        },
+        "baseTimeSeconds": 20,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 40
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/fieriosa_coffee_bean",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.09166666666666666,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/thread_of_expertise",
+            "dropRate": 0.00001,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          },
+          {
+            "itemHrid": "/items/medium_meteorite_cache",
+            "dropRate": 0.0004012345679012346,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/olympus_mons",
+        "name": "Olympus Mons",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/olympus_mons",
+        "sortIndex": 28,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 65
+        },
+        "baseTimeSeconds": 20,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 40
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/marsberry",
+            "dropRate": 0.4,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 8
+          },
+          {
+            "itemHrid": "/items/dragon_fruit",
+            "dropRate": 0.4,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 4
+          },
+          {
+            "itemHrid": "/items/fieriosa_coffee_bean",
+            "dropRate": 0.4,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.09166666666666666,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/thread_of_expertise",
+            "dropRate": 0.00001,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          },
+          {
+            "itemHrid": "/items/medium_meteorite_cache",
+            "dropRate": 0.0004012345679012346,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/spaceberry",
+        "name": "Spaceberry",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/asteroid_belt",
+        "sortIndex": 29,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 80
+        },
+        "baseTimeSeconds": 30,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 55
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/spaceberry",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 8
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.15,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/thread_of_expertise",
+            "dropRate": 0.00003,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          },
+          {
+            "itemHrid": "/items/large_meteorite_cache",
+            "dropRate": 0.00038194444444444446,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/star_fruit",
+        "name": "Star Fruit",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/asteroid_belt",
+        "sortIndex": 30,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 80
+        },
+        "baseTimeSeconds": 30,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 55
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/star_fruit",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 4
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.15,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/thread_of_expertise",
+            "dropRate": 0.00003,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          },
+          {
+            "itemHrid": "/items/large_meteorite_cache",
+            "dropRate": 0.00038194444444444446,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/spacia_coffee_bean",
+        "name": "Spacia Coffee Bean",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/asteroid_belt",
+        "sortIndex": 31,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 80
+        },
+        "baseTimeSeconds": 30,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 55
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/spacia_coffee_bean",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.15,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/thread_of_expertise",
+            "dropRate": 0.00003,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          },
+          {
+            "itemHrid": "/items/large_meteorite_cache",
+            "dropRate": 0.00038194444444444446,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/radiant_fiber",
+        "name": "Radiant Fiber",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/asteroid_belt",
+        "sortIndex": 32,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 80
+        },
+        "baseTimeSeconds": 30,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 55
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/radiant_fiber",
+            "dropRate": 1,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 3
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.15,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/thread_of_expertise",
+            "dropRate": 0.00003,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          },
+          {
+            "itemHrid": "/items/large_meteorite_cache",
+            "dropRate": 0.00038194444444444446,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
+      {
+        "hrid": "/actions/foraging/asteroid_belt",
+        "name": "Asteroid Belt",
+        "type": "/action_types/foraging",
+        "category": "/action_categories/foraging/asteroid_belt",
+        "sortIndex": 33,
+        "levelRequirement": {
+          "skillHrid": "/skills/foraging",
+          "level": 80
+        },
+        "baseTimeSeconds": 30,
+        "experienceGain": {
+          "skillHrid": "/skills/foraging",
+          "value": 55
+        },
+        "inputItems": [],
+        "outputItems": [],
+        "dropTable": [
+          {
+            "itemHrid": "/items/spaceberry",
+            "dropRate": 0.3,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 8
+          },
+          {
+            "itemHrid": "/items/star_fruit",
+            "dropRate": 0.3,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 4
+          },
+          {
+            "itemHrid": "/items/spacia_coffee_bean",
+            "dropRate": 0.3,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          },
+          {
+            "itemHrid": "/items/radiant_fiber",
+            "dropRate": 0.3,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 3
+          }
+        ],
+        "upgradeItemHrid": "",
+        "retainAllEnhancement": false,
+        "essenceDropTable": [
+          {
+            "itemHrid": "/items/foraging_essence",
+            "dropRate": 0.15,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ],
+        "rareDropTable": [
+          {
+            "itemHrid": "/items/thread_of_expertise",
+            "dropRate": 0.00003,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          },
+          {
+            "itemHrid": "/items/large_meteorite_cache",
+            "dropRate": 0.00038194444444444446,
+            "dropRatePerDifficultyTier": 0,
+            "minCount": 1,
+            "maxCount": 1
+          }
+        ]
+      },
       {
         "hrid": "/actions/brewing/milking_tea",
         "name": "Milking Tea",
@@ -120076,6 +121825,29 @@
     ],
     "equipment": [
       {
+        "hrid": "/items/trainee_foraging_charm",
+        "name": "Trainee Foraging Charm",
+        "categoryHrid": "/item_categories/equipment",
+        "itemLevel": 1,
+        "sellPrice": 250000,
+        "sortIndex": 570,
+        "isTradable": false,
+        "equipmentType": "/equipment_types/charm",
+        "levelRequirements": [
+          {
+            "skillHrid": "/skills/foraging",
+            "level": 1
+          }
+        ],
+        "drinkSlots": 0,
+        "noncombatStats": {
+          "foragingExperience": 0.01
+        },
+        "noncombatEnhancementBonuses": {
+          "foragingExperience": 0.001
+        }
+      },
+      {
         "hrid": "/items/trainee_cheesesmithing_charm",
         "name": "Trainee Cheesesmithing Charm",
         "categoryHrid": "/item_categories/equipment",
@@ -120188,6 +121960,29 @@
         },
         "noncombatEnhancementBonuses": {
           "brewingExperience": 0.001
+        }
+      },
+      {
+        "hrid": "/items/cheese_shears",
+        "name": "Cheese Shears",
+        "categoryHrid": "/item_categories/equipment",
+        "itemLevel": 1,
+        "sellPrice": 112,
+        "sortIndex": 678,
+        "isTradable": true,
+        "equipmentType": "/equipment_types/foraging_tool",
+        "levelRequirements": [
+          {
+            "skillHrid": "/skills/foraging",
+            "level": 1
+          }
+        ],
+        "drinkSlots": 0,
+        "noncombatStats": {
+          "foragingSpeed": 0.15
+        },
+        "noncombatEnhancementBonuses": {
+          "foragingSpeed": 0.003
         }
       },
       {
@@ -120306,6 +122101,29 @@
         }
       },
       {
+        "hrid": "/items/verdant_shears",
+        "name": "Verdant Shears",
+        "categoryHrid": "/item_categories/equipment",
+        "itemLevel": 10,
+        "sellPrice": 560,
+        "sortIndex": 679,
+        "isTradable": true,
+        "equipmentType": "/equipment_types/foraging_tool",
+        "levelRequirements": [
+          {
+            "skillHrid": "/skills/foraging",
+            "level": 10
+          }
+        ],
+        "drinkSlots": 0,
+        "noncombatStats": {
+          "foragingSpeed": 0.225
+        },
+        "noncombatEnhancementBonuses": {
+          "foragingSpeed": 0.0045000000000000005
+        }
+      },
+      {
         "hrid": "/items/verdant_hammer",
         "name": "Verdant Hammer",
         "categoryHrid": "/item_categories/equipment",
@@ -120421,6 +122239,42 @@
         }
       },
       {
+        "hrid": "/items/earrings_of_gathering",
+        "name": "Earrings Of Gathering",
+        "categoryHrid": "/item_categories/equipment",
+        "itemLevel": 15,
+        "sellPrice": 10000,
+        "sortIndex": 548,
+        "isTradable": true,
+        "equipmentType": "/equipment_types/earrings",
+        "levelRequirements": [],
+        "drinkSlots": 0,
+        "noncombatStats": {
+          "gatheringQuantity": 0.02
+        },
+        "noncombatEnhancementBonuses": {
+          "gatheringQuantity": 0.002
+        }
+      },
+      {
+        "hrid": "/items/ring_of_gathering",
+        "name": "Ring Of Gathering",
+        "categoryHrid": "/item_categories/equipment",
+        "itemLevel": 15,
+        "sellPrice": 10000,
+        "sortIndex": 556,
+        "isTradable": true,
+        "equipmentType": "/equipment_types/ring",
+        "levelRequirements": [],
+        "drinkSlots": 0,
+        "noncombatStats": {
+          "gatheringQuantity": 0.02
+        },
+        "noncombatEnhancementBonuses": {
+          "gatheringQuantity": 0.002
+        }
+      },
+      {
         "hrid": "/items/medium_pouch",
         "name": "Medium Pouch",
         "categoryHrid": "/item_categories/equipment",
@@ -120438,6 +122292,29 @@
         "drinkSlots": 1,
         "noncombatStats": {},
         "noncombatEnhancementBonuses": {}
+      },
+      {
+        "hrid": "/items/basic_foraging_charm",
+        "name": "Basic Foraging Charm",
+        "categoryHrid": "/item_categories/equipment",
+        "itemLevel": 20,
+        "sellPrice": 200000,
+        "sortIndex": 571,
+        "isTradable": true,
+        "equipmentType": "/equipment_types/charm",
+        "levelRequirements": [
+          {
+            "skillHrid": "/skills/foraging",
+            "level": 25
+          }
+        ],
+        "drinkSlots": 0,
+        "noncombatStats": {
+          "foragingExperience": 0.02
+        },
+        "noncombatEnhancementBonuses": {
+          "foragingExperience": 0.002
+        }
       },
       {
         "hrid": "/items/basic_cheesesmithing_charm",
@@ -120552,6 +122429,29 @@
         },
         "noncombatEnhancementBonuses": {
           "brewingExperience": 0.002
+        }
+      },
+      {
+        "hrid": "/items/azure_shears",
+        "name": "Azure Shears",
+        "categoryHrid": "/item_categories/equipment",
+        "itemLevel": 20,
+        "sellPrice": 2016,
+        "sortIndex": 680,
+        "isTradable": true,
+        "equipmentType": "/equipment_types/foraging_tool",
+        "levelRequirements": [
+          {
+            "skillHrid": "/skills/foraging",
+            "level": 20
+          }
+        ],
+        "drinkSlots": 0,
+        "noncombatStats": {
+          "foragingSpeed": 0.3
+        },
+        "noncombatEnhancementBonuses": {
+          "foragingSpeed": 0.006
         }
       },
       {
@@ -120724,6 +122624,29 @@
         }
       },
       {
+        "hrid": "/items/burble_shears",
+        "name": "Burble Shears",
+        "categoryHrid": "/item_categories/equipment",
+        "itemLevel": 35,
+        "sellPrice": 5040,
+        "sortIndex": 681,
+        "isTradable": true,
+        "equipmentType": "/equipment_types/foraging_tool",
+        "levelRequirements": [
+          {
+            "skillHrid": "/skills/foraging",
+            "level": 35
+          }
+        ],
+        "drinkSlots": 0,
+        "noncombatStats": {
+          "foragingSpeed": 0.45
+        },
+        "noncombatEnhancementBonuses": {
+          "foragingSpeed": 0.009000000000000001
+        }
+      },
+      {
         "hrid": "/items/burble_hammer",
         "name": "Burble Hammer",
         "categoryHrid": "/item_categories/equipment",
@@ -120858,6 +122781,29 @@
         "noncombatEnhancementBonuses": {}
       },
       {
+        "hrid": "/items/advanced_foraging_charm",
+        "name": "Advanced Foraging Charm",
+        "categoryHrid": "/item_categories/equipment",
+        "itemLevel": 40,
+        "sellPrice": 1000000,
+        "sortIndex": 572,
+        "isTradable": true,
+        "equipmentType": "/equipment_types/charm",
+        "levelRequirements": [
+          {
+            "skillHrid": "/skills/foraging",
+            "level": 50
+          }
+        ],
+        "drinkSlots": 0,
+        "noncombatStats": {
+          "foragingExperience": 0.035
+        },
+        "noncombatEnhancementBonuses": {
+          "foragingExperience": 0.0035000000000000005
+        }
+      },
+      {
         "hrid": "/items/advanced_cheesesmithing_charm",
         "name": "Advanced Cheesesmithing Charm",
         "categoryHrid": "/item_categories/equipment",
@@ -120970,6 +122916,29 @@
         },
         "noncombatEnhancementBonuses": {
           "brewingExperience": 0.0035000000000000005
+        }
+      },
+      {
+        "hrid": "/items/crimson_shears",
+        "name": "Crimson Shears",
+        "categoryHrid": "/item_categories/equipment",
+        "itemLevel": 50,
+        "sellPrice": 10752,
+        "sortIndex": 682,
+        "isTradable": true,
+        "equipmentType": "/equipment_types/foraging_tool",
+        "levelRequirements": [
+          {
+            "skillHrid": "/skills/foraging",
+            "level": 50
+          }
+        ],
+        "drinkSlots": 0,
+        "noncombatStats": {
+          "foragingSpeed": 0.6
+        },
+        "noncombatEnhancementBonuses": {
+          "foragingSpeed": 0.012
         }
       },
       {
@@ -121152,6 +123121,41 @@
         }
       },
       {
+        "hrid": "/items/collectors_boots",
+        "name": "Collector's Boots",
+        "categoryHrid": "/item_categories/equipment",
+        "itemLevel": 60,
+        "sellPrice": 200000,
+        "sortIndex": 505,
+        "isTradable": true,
+        "equipmentType": "/equipment_types/feet",
+        "levelRequirements": [
+          {
+            "skillHrid": "/skills/milking",
+            "level": 60
+          },
+          {
+            "skillHrid": "/skills/foraging",
+            "level": 60
+          },
+          {
+            "skillHrid": "/skills/woodcutting",
+            "level": 60
+          }
+        ],
+        "drinkSlots": 0,
+        "noncombatStats": {
+          "milkingEfficiency": 0.1,
+          "foragingEfficiency": 0.1,
+          "woodcuttingEfficiency": 0.1
+        },
+        "noncombatEnhancementBonuses": {
+          "milkingEfficiency": 0.002,
+          "foragingEfficiency": 0.002,
+          "woodcuttingEfficiency": 0.002
+        }
+      },
+      {
         "hrid": "/items/giant_pouch",
         "name": "Giant Pouch",
         "categoryHrid": "/item_categories/equipment",
@@ -121222,6 +123226,29 @@
         },
         "noncombatEnhancementBonuses": {
           "skillingRareFind": 0.008
+        }
+      },
+      {
+        "hrid": "/items/expert_foraging_charm",
+        "name": "Expert Foraging Charm",
+        "categoryHrid": "/item_categories/equipment",
+        "itemLevel": 60,
+        "sellPrice": 3000000,
+        "sortIndex": 573,
+        "isTradable": true,
+        "equipmentType": "/equipment_types/charm",
+        "levelRequirements": [
+          {
+            "skillHrid": "/skills/foraging",
+            "level": 75
+          }
+        ],
+        "drinkSlots": 0,
+        "noncombatStats": {
+          "foragingExperience": 0.05
+        },
+        "noncombatEnhancementBonuses": {
+          "foragingExperience": 0.005000000000000001
         }
       },
       {
@@ -121337,6 +123364,29 @@
         },
         "noncombatEnhancementBonuses": {
           "brewingExperience": 0.005000000000000001
+        }
+      },
+      {
+        "hrid": "/items/rainbow_shears",
+        "name": "Rainbow Shears",
+        "categoryHrid": "/item_categories/equipment",
+        "itemLevel": 65,
+        "sellPrice": 24864,
+        "sortIndex": 683,
+        "isTradable": true,
+        "equipmentType": "/equipment_types/foraging_tool",
+        "levelRequirements": [
+          {
+            "skillHrid": "/skills/foraging",
+            "level": 65
+          }
+        ],
+        "drinkSlots": 0,
+        "noncombatStats": {
+          "foragingSpeed": 0.75
+        },
+        "noncombatEnhancementBonuses": {
+          "foragingSpeed": 0.015
         }
       },
       {
@@ -121470,6 +123520,88 @@
         },
         "noncombatEnhancementBonuses": {
           "skillingSpeed": 0.004
+        }
+      },
+      {
+        "hrid": "/items/gatherer_cape",
+        "name": "Gatherer Cape",
+        "categoryHrid": "/item_categories/equipment",
+        "itemLevel": 80,
+        "sellPrice": 100000,
+        "sortIndex": 340,
+        "isTradable": false,
+        "equipmentType": "/equipment_types/back",
+        "levelRequirements": [
+          {
+            "skillHrid": "/skills/milking",
+            "level": 80
+          },
+          {
+            "skillHrid": "/skills/foraging",
+            "level": 80
+          },
+          {
+            "skillHrid": "/skills/woodcutting",
+            "level": 80
+          }
+        ],
+        "drinkSlots": 0,
+        "noncombatStats": {
+          "milkingSpeed": 0.05,
+          "foragingSpeed": 0.05,
+          "woodcuttingSpeed": 0.05,
+          "milkingExperience": 0.03,
+          "foragingExperience": 0.03,
+          "woodcuttingExperience": 0.03
+        },
+        "noncombatEnhancementBonuses": {
+          "milkingSpeed": 0.005000000000000001,
+          "foragingSpeed": 0.005000000000000001,
+          "woodcuttingSpeed": 0.005000000000000001,
+          "milkingExperience": 0.003,
+          "foragingExperience": 0.003,
+          "woodcuttingExperience": 0.003
+        }
+      },
+      {
+        "hrid": "/items/gatherer_cape_refined",
+        "name": "Gatherer Cape ★",
+        "categoryHrid": "/item_categories/equipment",
+        "itemLevel": 80,
+        "sellPrice": 100000,
+        "sortIndex": 341,
+        "isTradable": false,
+        "equipmentType": "/equipment_types/back",
+        "levelRequirements": [
+          {
+            "skillHrid": "/skills/milking",
+            "level": 100
+          },
+          {
+            "skillHrid": "/skills/foraging",
+            "level": 100
+          },
+          {
+            "skillHrid": "/skills/woodcutting",
+            "level": 100
+          }
+        ],
+        "drinkSlots": 0,
+        "noncombatStats": {
+          "milkingSpeed": 0.058,
+          "foragingSpeed": 0.058,
+          "woodcuttingSpeed": 0.058,
+          "milkingExperience": 0.0348,
+          "foragingExperience": 0.0348,
+          "woodcuttingExperience": 0.0348
+        },
+        "noncombatEnhancementBonuses": {
+          "milkingSpeed": 0.0058000000000000005,
+          "foragingSpeed": 0.0058000000000000005,
+          "woodcuttingSpeed": 0.0058000000000000005,
+          "milkingExperience": 0.00348,
+          "foragingExperience": 0.00348,
+          "woodcuttingExperience": 0.00348
         }
       },
       {
@@ -121621,6 +123753,29 @@
         }
       },
       {
+        "hrid": "/items/master_foraging_charm",
+        "name": "Master Foraging Charm",
+        "categoryHrid": "/item_categories/equipment",
+        "itemLevel": 80,
+        "sellPrice": 6000000,
+        "sortIndex": 574,
+        "isTradable": true,
+        "equipmentType": "/equipment_types/charm",
+        "levelRequirements": [
+          {
+            "skillHrid": "/skills/foraging",
+            "level": 100
+          }
+        ],
+        "drinkSlots": 0,
+        "noncombatStats": {
+          "foragingExperience": 0.065
+        },
+        "noncombatEnhancementBonuses": {
+          "foragingExperience": 0.006500000000000001
+        }
+      },
+      {
         "hrid": "/items/master_cheesesmithing_charm",
         "name": "Master Cheesesmithing Charm",
         "categoryHrid": "/item_categories/equipment",
@@ -121736,6 +123891,29 @@
         }
       },
       {
+        "hrid": "/items/holy_shears",
+        "name": "Holy Shears",
+        "categoryHrid": "/item_categories/equipment",
+        "itemLevel": 80,
+        "sellPrice": 61600,
+        "sortIndex": 684,
+        "isTradable": true,
+        "equipmentType": "/equipment_types/foraging_tool",
+        "levelRequirements": [
+          {
+            "skillHrid": "/skills/foraging",
+            "level": 80
+          }
+        ],
+        "drinkSlots": 0,
+        "noncombatStats": {
+          "foragingSpeed": 0.9
+        },
+        "noncombatEnhancementBonuses": {
+          "foragingSpeed": 0.018000000000000002
+        }
+      },
+      {
         "hrid": "/items/holy_hammer",
         "name": "Holy Hammer",
         "categoryHrid": "/item_categories/equipment",
@@ -121848,6 +124026,31 @@
         },
         "noncombatEnhancementBonuses": {
           "brewingSpeed": 0.018000000000000002
+        }
+      },
+      {
+        "hrid": "/items/foragers_top",
+        "name": "Forager's Top",
+        "categoryHrid": "/item_categories/equipment",
+        "itemLevel": 90,
+        "sellPrice": 3500000,
+        "sortIndex": 382,
+        "isTradable": true,
+        "equipmentType": "/equipment_types/body",
+        "levelRequirements": [
+          {
+            "skillHrid": "/skills/foraging",
+            "level": 90
+          }
+        ],
+        "drinkSlots": 0,
+        "noncombatStats": {
+          "foragingEfficiency": 0.1,
+          "foragingRareFind": 0.15
+        },
+        "noncombatEnhancementBonuses": {
+          "foragingEfficiency": 0.002,
+          "foragingRareFind": 0.003
         }
       },
       {
@@ -121973,6 +124176,31 @@
         "noncombatEnhancementBonuses": {
           "brewingEfficiency": 0.002,
           "brewingRareFind": 0.003
+        }
+      },
+      {
+        "hrid": "/items/foragers_bottoms",
+        "name": "Forager's Bottoms",
+        "categoryHrid": "/item_categories/equipment",
+        "itemLevel": 90,
+        "sellPrice": 3500000,
+        "sortIndex": 431,
+        "isTradable": true,
+        "equipmentType": "/equipment_types/legs",
+        "levelRequirements": [
+          {
+            "skillHrid": "/skills/foraging",
+            "level": 90
+          }
+        ],
+        "drinkSlots": 0,
+        "noncombatStats": {
+          "foragingEfficiency": 0.1,
+          "foragingExperience": 0.04
+        },
+        "noncombatEnhancementBonuses": {
+          "foragingEfficiency": 0.002,
+          "foragingExperience": 0.0008
         }
       },
       {
@@ -122209,6 +124437,33 @@
         }
       },
       {
+        "hrid": "/items/celestial_shears",
+        "name": "Celestial Shears",
+        "categoryHrid": "/item_categories/equipment",
+        "itemLevel": 90,
+        "sellPrice": 5000000,
+        "sortIndex": 677,
+        "isTradable": true,
+        "equipmentType": "/equipment_types/foraging_tool",
+        "levelRequirements": [
+          {
+            "skillHrid": "/skills/foraging",
+            "level": 90
+          }
+        ],
+        "drinkSlots": 0,
+        "noncombatStats": {
+          "foragingSpeed": 1.05,
+          "foragingRareFind": 0.15,
+          "foragingExperience": 0.04
+        },
+        "noncombatEnhancementBonuses": {
+          "foragingSpeed": 0.021,
+          "foragingRareFind": 0.003,
+          "foragingExperience": 0.0008
+        }
+      },
+      {
         "hrid": "/items/celestial_hammer",
         "name": "Celestial Hammer",
         "categoryHrid": "/item_categories/equipment",
@@ -122341,6 +124596,29 @@
           "brewingSpeed": 0.021,
           "brewingRareFind": 0.003,
           "brewingExperience": 0.0008
+        }
+      },
+      {
+        "hrid": "/items/grandmaster_foraging_charm",
+        "name": "Grandmaster Foraging Charm",
+        "categoryHrid": "/item_categories/equipment",
+        "itemLevel": 100,
+        "sellPrice": 10000000,
+        "sortIndex": 575,
+        "isTradable": true,
+        "equipmentType": "/equipment_types/charm",
+        "levelRequirements": [
+          {
+            "skillHrid": "/skills/foraging",
+            "level": 125
+          }
+        ],
+        "drinkSlots": 0,
+        "noncombatStats": {
+          "foragingExperience": 0.08
+        },
+        "noncombatEnhancementBonuses": {
+          "foragingExperience": 0.008
         }
       },
       {
@@ -122995,6 +125273,37 @@
     ],
     "drinks": [
       {
+        "hrid": "/items/foraging_tea",
+        "name": "Foraging Tea",
+        "categoryHrid": "/item_categories/drink",
+        "itemLevel": 1,
+        "sellPrice": 10,
+        "sortIndex": 98,
+        "isTradable": true,
+        "usableInActionTypeMap": {
+          "/action_types/foraging": true
+        },
+        "durationSeconds": 300,
+        "buffs": [
+          {
+            "uniqueHrid": "/buff_uniques/foraging_tea",
+            "typeHrid": "/buff_types/foraging_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 3,
+            "flatBoostLevelBonus": 0
+          },
+          {
+            "uniqueHrid": "/buff_uniques/foraging_tea",
+            "typeHrid": "/buff_types/efficiency",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.02,
+            "flatBoostLevelBonus": 0
+          }
+        ]
+      },
+      {
         "hrid": "/items/cooking_tea",
         "name": "Cooking Tea",
         "categoryHrid": "/item_categories/drink",
@@ -123052,6 +125361,29 @@
             "ratioBoost": 0,
             "ratioBoostLevelBonus": 0,
             "flatBoost": 0.02,
+            "flatBoostLevelBonus": 0
+          }
+        ]
+      },
+      {
+        "hrid": "/items/gathering_tea",
+        "name": "Gathering Tea",
+        "categoryHrid": "/item_categories/drink",
+        "itemLevel": 10,
+        "sellPrice": 10,
+        "sortIndex": 127,
+        "isTradable": true,
+        "usableInActionTypeMap": {
+          "/action_types/foraging": true
+        },
+        "durationSeconds": 300,
+        "buffs": [
+          {
+            "uniqueHrid": "/buff_uniques/gathering_tea",
+            "typeHrid": "/buff_types/gathering",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.15,
             "flatBoostLevelBonus": 0
           }
         ]
@@ -123182,6 +125514,7 @@
         "sortIndex": 129,
         "isTradable": true,
         "usableInActionTypeMap": {
+          "/action_types/foraging": true,
           "/action_types/brewing": true,
           "/action_types/cheesesmithing": true,
           "/action_types/cooking": true,
@@ -123196,6 +125529,60 @@
             "ratioBoost": 0,
             "ratioBoostLevelBonus": 0,
             "flatBoost": 0.12,
+            "flatBoostLevelBonus": 0
+          }
+        ]
+      },
+      {
+        "hrid": "/items/super_foraging_tea",
+        "name": "Super Foraging Tea",
+        "categoryHrid": "/item_categories/drink",
+        "itemLevel": 35,
+        "sellPrice": 60,
+        "sortIndex": 108,
+        "isTradable": true,
+        "usableInActionTypeMap": {
+          "/action_types/foraging": true
+        },
+        "durationSeconds": 300,
+        "buffs": [
+          {
+            "uniqueHrid": "/buff_uniques/foraging_tea",
+            "typeHrid": "/buff_types/foraging_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 6,
+            "flatBoostLevelBonus": 0
+          },
+          {
+            "uniqueHrid": "/buff_uniques/foraging_tea",
+            "typeHrid": "/buff_types/efficiency",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.04,
+            "flatBoostLevelBonus": 0
+          }
+        ]
+      },
+      {
+        "hrid": "/items/processing_tea",
+        "name": "Processing Tea",
+        "categoryHrid": "/item_categories/drink",
+        "itemLevel": 45,
+        "sellPrice": 60,
+        "sortIndex": 130,
+        "isTradable": true,
+        "usableInActionTypeMap": {
+          "/action_types/foraging": true
+        },
+        "durationSeconds": 300,
+        "buffs": [
+          {
+            "uniqueHrid": "/buff_uniques/processing_tea",
+            "typeHrid": "/buff_types/processing",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.15,
             "flatBoostLevelBonus": 0
           }
         ]
@@ -123263,6 +125650,37 @@
         ]
       },
       {
+        "hrid": "/items/ultra_foraging_tea",
+        "name": "Ultra Foraging Tea",
+        "categoryHrid": "/item_categories/drink",
+        "itemLevel": 55,
+        "sellPrice": 150,
+        "sortIndex": 118,
+        "isTradable": true,
+        "usableInActionTypeMap": {
+          "/action_types/foraging": true
+        },
+        "durationSeconds": 300,
+        "buffs": [
+          {
+            "uniqueHrid": "/buff_uniques/foraging_tea",
+            "typeHrid": "/buff_types/foraging_level",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 8,
+            "flatBoostLevelBonus": 0
+          },
+          {
+            "uniqueHrid": "/buff_uniques/foraging_tea",
+            "typeHrid": "/buff_types/efficiency",
+            "ratioBoost": 0,
+            "ratioBoostLevelBonus": 0,
+            "flatBoost": 0.06,
+            "flatBoostLevelBonus": 0
+          }
+        ]
+      },
+      {
         "hrid": "/items/efficiency_tea",
         "name": "Efficiency Tea",
         "categoryHrid": "/item_categories/drink",
@@ -123271,6 +125689,7 @@
         "sortIndex": 131,
         "isTradable": true,
         "usableInActionTypeMap": {
+          "/action_types/foraging": true,
           "/action_types/brewing": true,
           "/action_types/cheesesmithing": true,
           "/action_types/cooking": true,

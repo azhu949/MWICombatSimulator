@@ -263,9 +263,9 @@ export function buildMainSiteSkillingImport(payload, importedAt = Date.now()) {
         throw new Error("No current-character skilling data was found in the main-site payload.");
     }
     const profile = normalizeSkillingProfile(source, importedAt);
-    const productionSkills = (skillingData?.skillHrids || []).filter((skillHrid) => profile.skills[skillHrid]);
-    if (productionSkills.length === 0) {
-        throw new Error("No production skill levels were found in the main-site payload.");
+    const supportedSkills = (skillingData?.skillHrids || []).filter((skillHrid) => profile.skills[skillHrid]);
+    if (supportedSkills.length === 0) {
+        throw new Error("No supported skilling levels were found in the main-site payload.");
     }
     return {
         detectedFormat: "main-site-skilling-character",

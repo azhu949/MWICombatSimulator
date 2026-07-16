@@ -10,7 +10,7 @@ function completedPayload(runId) {
         profile: {
             skills: Object.fromEntries([
                 ...skillingData.skillHrids.map((skillHrid) => [skillHrid, { level: 1, experience: 0 }]),
-                ["/skills/total_level", { level: 5, experience: null }],
+                ["/skills/total_level", { level: skillingData.skillHrids.length, experience: null }],
             ]),
             inventory: {},
             equipment: [],
@@ -34,7 +34,7 @@ describe("skillingWorker runtime", () => {
 
         await runtime.handleMessage(completedPayload("complete"));
 
-        expect(messages.filter((message) => message.type === "skilling_progress")).toHaveLength(5);
+        expect(messages.filter((message) => message.type === "skilling_progress")).toHaveLength(skillingData.skillHrids.length);
         const result = messages.find((message) => message.type === "skilling_result");
         expect(result.runId).toBe("complete");
         expect(result.result.generatedAt).toBe(1234);

@@ -12,7 +12,7 @@ describe("SkillingPage workspace", () => {
         expect(routerSource).toContain("meta: { showCombatToolbar: false }");
     });
 
-    it("binds the dedicated store, worker actions, and five target controls", () => {
+    it("binds the dedicated store, worker actions, and six target controls", () => {
         expect(pageSource).toContain('useSkillingStore } from "../../stores/skillingStore.js"');
         expect(pageSource).toContain("const skilling = useSkillingStore();");
         expect(pageSource).toContain("await skilling.initialize();");
@@ -22,6 +22,8 @@ describe("SkillingPage workspace", () => {
         expect(pageSource).toContain(':disabled="skilling.priceStatus.loading || skilling.running"');
         expect(pageSource).toContain(':disabled="skilling.running"');
         expect(pageSource).toContain('!skilling.profile || skilling.priceStatus.loading');
+        expect(pageSource).toContain("xl:grid-cols-6");
+        expect(pageSource).toContain("xl:grid-cols-7");
     });
 
     it("offers accessible cost, balanced, and speed optimization modes with an explanation dialog", () => {
@@ -91,6 +93,8 @@ describe("SkillingPage workspace", () => {
 
     it("renders overview, route, price, equipment, and narrow-screen table views", () => {
         expect(pageSource).toContain("data-skilling-overview");
+        expect(pageSource).toContain("foragingProcessingNoticeVisible");
+        expect(pageSource).toContain("common:skilling.processingUnsupportedWarning");
         expect(pageSource).toContain("data-skilling-routes");
         expect(pageSource).toContain("data-skilling-prices");
         expect(pageSource).toContain("activeEquipmentStrategies");

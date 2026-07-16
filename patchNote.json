@@ -1,4 +1,22 @@
 {
+    "2026年7月16日（v1.0.27）": {
+        "label": {
+            "zh": "2026年7月16日（v1.0.27）",
+            "en": "July 16, 2026 (v1.0.27)"
+        },
+        "notes": {
+            "zh": [
+                "生活技能模拟新增采摘，覆盖 33 个采摘动作，并将主要采集产物、采集数量加成与采摘装备纳入路线计算。",
+                "新增提示：采摘产物估值暂不计入加工效果与加工茶。",
+                "强化模拟导入的当前角色数据改为仅在当前页面会话保留；刷新后需重新导入，其他模拟配置与收藏仍会缓存，已有缓存不会清理。"
+            ],
+            "en": [
+                "Added Foraging to the Skilling planner with 33 actions, including primary gathering drops, gathering quantity bonuses, and Foraging gear in route calculations.",
+                "Added a notice that Processing effects and Processing Tea are not yet included in Foraging output valuation.",
+                "Changed imported Enhancement character data to remain only for the current page session; refreshing requires another import, while other simulator settings and favorites still persist and existing cached data is left untouched."
+            ]
+        }
+    },
     "2026年7月16日（v1.0.26）": {
         "label": {
             "zh": "2026年7月16日（v1.0.26）",

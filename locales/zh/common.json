@@ -735,7 +735,7 @@
             "msgNoPriceOverrides": "当前没有可清除的手工价格覆盖。",
             "msgInvalidPriceInput": "{{item}} 的价格输入无效。",
             "mainSiteImportScriptTitle": "主站导入脚本",
-            "mainSiteImportScriptDescription": "安装 Tampermonkey 辅助脚本后，可在首页导入当前角色（含公会神龛战斗增益）或已缓存队伍，也可在强化页导入当前角色的强化等级、强化装备、饮品、房间、社区 Buff 和成就加成。",
+            "mainSiteImportScriptDescription": "安装 Tampermonkey 辅助脚本后，可在首页导入当前角色（含公会神龛战斗增益）或已缓存队伍，也可在强化页或生活技能页导入当前角色数据。强化与生活技能的角色导入数据仅在当前页面会话有效。",
             "installMainSiteImportScript": "安装脚本",
             "mainSiteImportScriptPending": "脚本链接待配置"
         }
@@ -986,7 +986,7 @@
         "achievementTierBonus": "{{tier}}成就加成"
     },
     "skilling": {
-        "eyebrow": "制作账本",
+        "eyebrow": "生活技能账本",
         "title": "生活技能升级推荐器",
         "profile": "角色",
         "imported": "快照时间 {{time}}",
@@ -1012,6 +1012,7 @@
         "cancel": "取消",
         "stale": "目标、价格、优化设置或角色快照已变化，当前结果已过期。",
         "expiredBuffWarning": "{{count}} 个临时 Buff 已过期，计算时未计入。",
+        "processingUnsupportedWarning": "加工效果与加工茶尚未计入采摘产物估值；采摘路线会在不考虑它们的情况下进行优化。",
         "oldSnapshotWarning": "角色快照已超过 30 分钟。",
         "noProfile": "尚无当前角色生活技能快照",
         "overview": "总览",

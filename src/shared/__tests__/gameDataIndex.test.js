@@ -199,16 +199,23 @@ describe("gameDataIndex", () => {
         expect(enhancementData.acquisition.sourcesByItemHrid["/items/sinister_cape"]).toBeDefined();
     });
 
-    it("exposes compact production actions, equipment, and drinks", () => {
+    it("exposes compact gathering and production actions, equipment, and drinks", () => {
         expect(Object.isFrozen(skillingData)).toBe(true);
         expect(skillingData.skillHrids).toEqual([
+            "/skills/foraging",
             "/skills/brewing",
             "/skills/cheesesmithing",
             "/skills/cooking",
             "/skills/crafting",
             "/skills/tailoring",
         ]);
-        expect(skillingData.actions).toHaveLength(647);
+        expect(skillingData.actions).toHaveLength(680);
+        expect(skillingData.actions.find((action) => action.hrid === "/actions/foraging/egg")).toMatchObject({
+            baseTimeSeconds: 6,
+            levelRequirement: { skillHrid: "/skills/foraging", level: 1 },
+            experienceGain: { skillHrid: "/skills/foraging", value: 5 },
+            dropTable: [{ itemHrid: "/items/egg", dropRate: 1, minCount: 1, maxCount: 6 }],
+        });
         expect(skillingData.actions.find((action) => action.hrid === "/actions/brewing/alchemy_tea")).toMatchObject({
             baseTimeSeconds: 9,
             levelRequirement: { skillHrid: "/skills/brewing", level: 17 },
@@ -227,6 +234,14 @@ describe("gameDataIndex", () => {
             noncombatStats: { drinkConcentration: 0.1 },
         });
         expect(skillingData.equipmentItemHrids).toContain("/items/anchorbound_plate_body");
+        expect(skillingData.equipment.find((item) => item.hrid === "/items/ring_of_gathering")).toMatchObject({
+            equipmentType: "/equipment_types/ring",
+            noncombatStats: { gatheringQuantity: 0.02 },
+        });
+        expect(skillingData.drinks.find((item) => item.hrid === "/items/gathering_tea")).toMatchObject({
+            usableInActionTypeMap: { "/action_types/foraging": true },
+            buffs: [expect.objectContaining({ typeHrid: "/buff_types/gathering", flatBoost: 0.15 })],
+        });
         expect(skillingData.drinks.find((item) => item.hrid === "/items/artisan_tea")).toMatchObject({
             durationSeconds: 300,
             usableInActionTypeMap: { "/action_types/crafting": true },

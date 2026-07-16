@@ -31,7 +31,7 @@ function priceTable(entries = {}) {
 function emptyLoadout(patch = {}) {
     return {
         items: [],
-        bonuses: { actionSpeed: 0, efficiency: 0, experience: 0, essenceFind: 0, rareFind: 0 },
+        bonuses: { actionSpeed: 0, efficiency: 0, outputQuantity: 0, experience: 0, essenceFind: 0, rareFind: 0 },
         drinkSlots: 1,
         drinkConcentration: 0,
         equipmentChanges: 0,
@@ -194,6 +194,52 @@ describe("skillingPlanner", () => {
         }, new Set());
         expect(prunedLoadouts).toHaveLength(1);
         expect(prunedLoadouts[0].items[0].itemHrid).toBe("/items/fast");
+    });
+
+    it("keeps gathering-quantity equipment in foraging loadouts", () => {
+        const skillHrid = "/skills/foraging";
+        const itemHrid = "/items/ring_of_gathering";
+        const loadouts = buildSkillingEquipmentLoadouts({
+            equipment: [{ id: "gathering-ring", itemHrid, enhancementLevel: 0, count: 1, isEquipped: false }],
+        }, skillHrid, {
+            [skillHrid]: { level: 1 },
+        }, {
+            totalBonusMultipliers: [0],
+            equipment: [{
+                hrid: itemHrid,
+                equipmentType: "/equipment_types/ring",
+                levelRequirements: [],
+                drinkSlots: 0,
+                noncombatStats: { gatheringQuantity: 0.2 },
+                noncombatEnhancementBonuses: {},
+            }],
+        }, {
+            [itemHrid]: 1,
+        }, new Set());
+
+        expect(loadouts).toHaveLength(1);
+        expect(loadouts[0].items[0].itemHrid).toBe(itemHrid);
+        expect(loadouts[0].bonuses.outputQuantity).toBeCloseTo(0.2);
+
+        const productionLoadouts = buildSkillingEquipmentLoadouts({
+            equipment: [{ id: "gathering-ring", itemHrid, enhancementLevel: 0, count: 1, isEquipped: false }],
+        }, SKILL_HRID, {
+            [SKILL_HRID]: { level: 1 },
+        }, {
+            totalBonusMultipliers: [0],
+            equipment: [{
+                hrid: itemHrid,
+                equipmentType: "/equipment_types/ring",
+                levelRequirements: [],
+                drinkSlots: 0,
+                noncombatStats: { gatheringQuantity: 0.2 },
+                noncombatEnhancementBonuses: {},
+            }],
+        }, {
+            [itemHrid]: 1,
+        }, new Set());
+        expect(productionLoadouts).toHaveLength(1);
+        expect(productionLoadouts[0].items).toEqual([]);
     });
 
     it("keeps lower-experience loadouts when they are cheaper for profitable actions", () => {
@@ -987,6 +1033,36 @@ describe("skillingPlanner", () => {
         expect(candidate.outputItems.find((item) => item.itemHrid === "/items/rare").count).toBeCloseTo(0.3);
     });
 
+    it("values foraging drop tables with gathering quantity", () => {
+        const candidate = calculateSkillingActionCandidate({
+            action: action({
+                hrid: "/actions/foraging/test",
+                type: "/action_types/foraging",
+                levelRequirement: { skillHrid: "/skills/foraging", level: 1 },
+                experienceGain: { skillHrid: "/skills/foraging", value: 10 },
+                inputItems: [],
+                outputItems: [],
+                dropTable: [{ itemHrid: "/items/gathered", dropRate: 0.5, minCount: 2, maxCount: 4 }],
+                upgradeItemHrid: "",
+            }),
+            skillHrid: "/skills/foraging",
+            skillLevel: 1,
+            experienceNeeded: 10,
+            inventory: {},
+            equipmentLoadout: emptyLoadout(),
+            externalBonuses: { outputQuantity: 0.2 },
+            priceTable: priceTable({
+                "/items/gathered": { ask: 10, bid: 10, vendor: 0 },
+                "/items/essence": { ask: 10, bid: 10, vendor: 0 },
+                "/items/rare": { ask: 50, bid: 50, vendor: 0 },
+            }),
+        });
+
+        expect(candidate.outputItems.find((item) => item.itemHrid === "/items/gathered").count).toBeCloseTo(1.8);
+        expect(candidate.outputItems.find((item) => item.itemHrid === "/items/essence").count).toBeCloseTo(0.5);
+        expect(candidate.outputItems.find((item) => item.itemHrid === "/items/rare").count).toBeCloseTo(0.2);
+    });
+
     it("excludes a candidate when inventory is short and no ask exists", () => {
         const candidate = calculateSkillingActionCandidate({
             action: action({ inputItems: [{ itemHrid: "/items/missing", count: 2 }], upgradeItemHrid: "", essenceDropTable: [], rareDropTable: [] }),
@@ -1028,6 +1104,35 @@ describe("skillingPlanner", () => {
         expect(result.totals.experience).toBeCloseTo(0.2);
         expect(result.totals.rareFind).toBe(0);
         expect(result.expiredBuffCount).toBe(1);
+    });
+
+    it("collects gathering and processing Buffs only for gathering skills", () => {
+        const profile = {
+            buffsBySource: {
+                community: {
+                    "/action_types/foraging": [
+                        { typeHrid: "/buff_types/gathering", flatBoost: 0.15, duration: 0 },
+                        { typeHrid: "/buff_types/processing", flatBoost: 0.2, duration: 0 },
+                    ],
+                },
+            },
+        };
+
+        const foraging = collectSkillingProfileBonuses(
+            profile,
+            "/action_types/foraging",
+            "/skills/foraging",
+        );
+        expect(foraging.totals.outputQuantity).toBeCloseTo(0.15);
+        expect(foraging.totals.processing).toBeCloseTo(0.2);
+
+        const brewing = collectSkillingProfileBonuses(
+            profile,
+            "/action_types/foraging",
+            SKILL_HRID,
+        );
+        expect(brewing.totals.outputQuantity).toBe(0);
+        expect(brewing.totals.processing).toBe(0);
     });
 
     it("replans actions after an active temporary Buff expires", () => {
@@ -1381,6 +1486,58 @@ describe("skillingPlanner", () => {
         expect(result.segments[1].drinks).toEqual([
             expect.objectContaining({ itemHrid: "/items/wisdom_tea", count: 1 }),
         ]);
+    });
+
+    it("excludes unsupported Processing Tea from foraging candidates", () => {
+        const skillHrid = "/skills/foraging";
+        const actionTypeHrid = "/action_types/foraging";
+        const processingTea = {
+            hrid: "/items/processing_tea",
+            sortIndex: 1,
+            durationSeconds: 300,
+            usableInActionTypeMap: { [actionTypeHrid]: true },
+            buffs: [{
+                uniqueHrid: "/buff_uniques/processing_tea",
+                typeHrid: "/buff_types/processing",
+                flatBoost: 0.15,
+            }],
+        };
+        const result = planSkillingSkill({
+            profile: {
+                skills: { [skillHrid]: { level: 1, experience: 0 }, "/skills/total_level": { level: 1 } },
+                inventory: {},
+                equipment: [],
+                buffsBySource: {},
+            },
+            skillHrid,
+            targetLevel: 2,
+            priceTable: priceTable({
+                [processingTea.hrid]: { ask: 0, bid: 0, vendor: 0 },
+            }),
+            data: {
+                skillHrids: [skillHrid],
+                drinks: [processingTea],
+                equipment: [],
+                totalBonusMultipliers: [0],
+                actions: [action({
+                    hrid: "/actions/foraging/test",
+                    type: actionTypeHrid,
+                    levelRequirement: { skillHrid, level: 1 },
+                    experienceGain: { skillHrid, value: 10 },
+                    inputItems: [],
+                    outputItems: [],
+                    dropTable: [],
+                    upgradeItemHrid: "",
+                    essenceDropTable: [],
+                    rareDropTable: [],
+                })],
+            },
+        });
+
+        expect(result.status).toBe("ok");
+        expect([...result.segments, ...result.alternatives].every((candidate) => (
+            candidate.drinks.every((drink) => drink.itemHrid !== processingTea.hrid)
+        ))).toBe(true);
     });
 
     it("reuses remaining drink duration across level boundaries", () => {
@@ -3283,12 +3440,12 @@ describe("skillingPlanner", () => {
         expect(result.endingInventory["/items/consumed_charm"]).toBeUndefined();
     });
 
-    it("plans one real level for all five indexed production skills", () => {
-        const productionSkills = skillingData.skillHrids;
+    it("plans one real level for all six indexed skilling skills", () => {
+        const supportedSkills = skillingData.skillHrids;
         const profile = {
             skills: Object.fromEntries([
-                ...productionSkills.map((skillHrid) => [skillHrid, { level: 1, experience: 0 }]),
-                ["/skills/total_level", { level: 5, experience: null }],
+                ...supportedSkills.map((skillHrid) => [skillHrid, { level: 1, experience: 0 }]),
+                ["/skills/total_level", { level: supportedSkills.length, experience: null }],
             ]),
             inventory: {},
             equipment: [],
@@ -3301,14 +3458,19 @@ describe("skillingPlanner", () => {
         }]));
         const result = planSkillingUpgrades({
             profile,
-            targetLevels: Object.fromEntries(productionSkills.map((skillHrid) => [skillHrid, 2])),
+            targetLevels: Object.fromEntries(supportedSkills.map((skillHrid) => [skillHrid, 2])),
             priceTable: realPriceTable,
             now: 1234,
         });
 
-        expect(Object.keys(result.plansBySkill)).toEqual(productionSkills);
-        expect(result.overview).toHaveLength(5);
+        expect(Object.keys(result.plansBySkill)).toEqual(supportedSkills);
+        expect(result.overview).toHaveLength(6);
         expect(Object.values(result.plansBySkill).every((plan) => plan.status === "ok")).toBe(true);
+        const foragingSegment = result.plansBySkill["/skills/foraging"].segments[0];
+        const foragingAction = skillingData.actions.find((actionEntry) => actionEntry.hrid === foragingSegment.actionHrid);
+        expect(foragingAction.dropTable.some((drop) => (
+            foragingSegment.outputItems.some((output) => output.itemHrid === drop.itemHrid && output.count > 0)
+        ))).toBe(true);
     });
 
     it("plans a real high-level tailoring level with one whole-level recipe", () => {

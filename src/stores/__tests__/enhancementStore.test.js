@@ -72,11 +72,10 @@ describe("enhancementStore", () => {
         vi.restoreAllMocks();
     });
 
-    it("normalizes damaged values and migrates legacy aliases", () => {
+    it("normalizes persisted planner settings while ignoring cached character setup", () => {
         const item = testItem();
         const support = enhancementData.supportEquipment[0];
         const supportSlot = support.equipmentType.split("/").at(-1);
-        const wrongSlot = deriveEnhancementSupportSlotKeys().find((slot) => slot !== supportSlot);
         const normalized = normalizeEnhancementPersistedState({
             version: 1,
             config: {
@@ -87,8 +86,16 @@ describe("enhancementStore", () => {
                 percent_rate: 2,
                 protectionItemHrid: "/items/not_real",
                 startingItemPriceOverride: false,
+                skillLevel: 177,
+                observatoryLevel: 8,
+                otherRoomLevels: 12,
+                communityEnhancingLevel: 9,
+                communityExperienceLevel: 7,
                 noviceAchievement: "false",
                 championAchievement: "true",
+                teaHrid: "/items/ultra_enhancing_tea",
+                blessedTea: true,
+                wisdomTea: true,
                 priceOverrides: {
                     "/items/null": null,
                     "/items/empty": " ",
@@ -97,7 +104,7 @@ describe("enhancementStore", () => {
                     "/items/valid": "34",
                 },
                 equipmentSlots: {
-                    [wrongSlot]: { itemHrid: support.hrid, enhancementLevel: 10 },
+                    [supportSlot]: { itemHrid: support.hrid, enhancementLevel: 10 },
                 },
                 equipment: [{ itemHrid: support.hrid, level: 25 }],
             },
@@ -115,19 +122,23 @@ describe("enhancementStore", () => {
                 markupRate: 0.02,
                 protectionItemHrid: "",
                 startingItemPriceOverride: null,
+                skillLevel: 100,
+                observatoryLevel: 0,
+                otherRoomLevels: 0,
+                communityEnhancingLevel: 0,
+                communityExperienceLevel: 0,
                 noviceAchievement: false,
-                championAchievement: true,
+                championAchievement: false,
+                teaHrid: "",
+                blessedTea: false,
+                wisdomTea: false,
                 priceOverrides: {
                     "/items/nested": { ask: 12 },
                     "/items/valid": 34,
                 },
             },
         });
-        expect(normalized.config.equipmentSlots[supportSlot]).toEqual({
-            itemHrid: support.hrid,
-            enhancementLevel: 20,
-        });
-        expect(normalized.config.equipmentSlots[wrongSlot].itemHrid).toBe("");
+        expect(Object.values(normalized.config.equipmentSlots).every((slot) => slot.itemHrid === "")).toBe(true);
     });
 
     it("discovers future enhancement support equipment slots", () => {
@@ -150,10 +161,28 @@ describe("enhancementStore", () => {
         expect(loaded.favorites).toEqual([item.hrid]);
     });
 
-    it("persists only versioned configuration and favorites", async () => {
+    it("persists planner settings and favorites without current-character setup", async () => {
         const store = useEnhancementStore();
         const item = testItem();
+        const support = enhancementData.supportEquipment[0];
+        const supportSlot = support.equipmentType.split("/").at(-1);
         store.selectItem(item.hrid);
+        store.config.targetLevel = 7;
+        store.config.budget = 123456;
+        store.config.skillLevel = 177;
+        store.config.observatoryLevel = 8;
+        store.config.otherRoomLevels = 12;
+        store.config.communityEnhancingLevel = 9;
+        store.config.communityExperienceLevel = 7;
+        store.config.noviceAchievement = true;
+        store.config.championAchievement = true;
+        store.config.teaHrid = "/items/ultra_enhancing_tea";
+        store.config.blessedTea = true;
+        store.config.wisdomTea = true;
+        store.config.equipmentSlots = {
+            ...store.config.equipmentSlots,
+            [supportSlot]: { itemHrid: support.hrid, enhancementLevel: 10 },
+        };
         store.toggleFavorite(item.hrid);
         store.risk = { method: "monte_carlo", mean: 123 };
         await nextTick();
@@ -161,9 +190,108 @@ describe("enhancementStore", () => {
         const payload = JSON.parse(global.localStorage.getItem(ENHANCEMENT_STORAGE_KEY));
         expect(payload.version).toBe(ENHANCEMENT_STORAGE_VERSION);
         expect(payload.config.itemHrid).toBe(item.hrid);
+        expect(payload.config.targetLevel).toBe(7);
+        expect(payload.config.budget).toBe(123456);
+        expect(payload.config).not.toHaveProperty("skillLevel");
+        expect(payload.config).not.toHaveProperty("observatoryLevel");
+        expect(payload.config).not.toHaveProperty("otherRoomLevels");
+        expect(payload.config).not.toHaveProperty("communityEnhancingLevel");
+        expect(payload.config).not.toHaveProperty("communityExperienceLevel");
+        expect(payload.config).not.toHaveProperty("noviceAchievement");
+        expect(payload.config).not.toHaveProperty("championAchievement");
+        expect(payload.config).not.toHaveProperty("teaHrid");
+        expect(payload.config).not.toHaveProperty("blessedTea");
+        expect(payload.config).not.toHaveProperty("wisdomTea");
+        expect(payload.config).not.toHaveProperty("equipmentSlots");
         expect(payload.favorites).toEqual([item.hrid]);
         expect(payload).not.toHaveProperty("risk");
+        expect(store.config.skillLevel).toBe(177);
+        expect(store.config.equipmentSlots[supportSlot].itemHrid).toBe(support.hrid);
         expect(persistEnhancementState(payload)).toBe(true);
+
+        setActivePinia(createPinia());
+        const refreshedStore = useEnhancementStore();
+        expect(refreshedStore.config.itemHrid).toBe(item.hrid);
+        expect(refreshedStore.config.targetLevel).toBe(7);
+        expect(refreshedStore.config.budget).toBe(123456);
+        expect(refreshedStore.favorites).toEqual([item.hrid]);
+        expect(refreshedStore.config.skillLevel).toBe(100);
+        expect(refreshedStore.config.observatoryLevel).toBe(0);
+        expect(refreshedStore.config.otherRoomLevels).toBe(0);
+        expect(refreshedStore.config.communityEnhancingLevel).toBe(0);
+        expect(refreshedStore.config.communityExperienceLevel).toBe(0);
+        expect(refreshedStore.config.noviceAchievement).toBe(false);
+        expect(refreshedStore.config.championAchievement).toBe(false);
+        expect(refreshedStore.config.teaHrid).toBe("");
+        expect(refreshedStore.config.blessedTea).toBe(false);
+        expect(refreshedStore.config.wisdomTea).toBe(false);
+        expect(Object.values(refreshedStore.config.equipmentSlots).every((slot) => slot.itemHrid === "")).toBe(true);
+    });
+
+    it("does not write storage when only current-character setup changes", async () => {
+        const store = useEnhancementStore();
+        const support = enhancementData.supportEquipment[0];
+        const supportSlot = support.equipmentType.split("/").at(-1);
+        global.localStorage.setItem.mockClear();
+
+        store.patchConfig({
+            skillLevel: 177,
+            observatoryLevel: 8,
+            otherRoomLevels: 12,
+            communityEnhancingLevel: 9,
+            communityExperienceLevel: 7,
+            noviceAchievement: true,
+            championAchievement: true,
+            teaHrid: "/items/ultra_enhancing_tea",
+            blessedTea: true,
+            wisdomTea: true,
+            equipmentSlots: {
+                ...store.config.equipmentSlots,
+                [supportSlot]: { itemHrid: support.hrid, enhancementLevel: 10 },
+            },
+        });
+        await nextTick();
+
+        expect(store.config.skillLevel).toBe(177);
+        expect(store.config.equipmentSlots[supportSlot].itemHrid).toBe(support.hrid);
+        expect(global.localStorage.setItem).not.toHaveBeenCalled();
+    });
+
+    it("ignores cached character setup without deleting existing storage", () => {
+        const item = testItem();
+        const support = enhancementData.supportEquipment[0];
+        const supportSlot = support.equipmentType.split("/").at(-1);
+        const cached = JSON.stringify({
+            version: ENHANCEMENT_STORAGE_VERSION,
+            config: {
+                itemHrid: item.hrid,
+                targetLevel: 7,
+                skillLevel: 177,
+                observatoryLevel: 8,
+                teaHrid: "/items/ultra_enhancing_tea",
+                championAchievement: true,
+                equipmentSlots: {
+                    [supportSlot]: { itemHrid: support.hrid, enhancementLevel: 10 },
+                },
+            },
+            favorites: [item.hrid],
+        });
+        global.localStorage.setItem(ENHANCEMENT_STORAGE_KEY, cached);
+        global.localStorage.setItem.mockClear();
+
+        const store = useEnhancementStore();
+
+        expect(store.config.itemHrid).toBe(item.hrid);
+        expect(store.config.targetLevel).toBe(7);
+        expect(store.favorites).toEqual([item.hrid]);
+        expect(store.config.skillLevel).toBe(100);
+        expect(store.config.observatoryLevel).toBe(0);
+        expect(store.config.teaHrid).toBe("");
+        expect(store.config.championAchievement).toBe(false);
+        expect(store.config.equipmentSlots[supportSlot].itemHrid).toBe("");
+        expect(global.localStorage.removeItem).not.toHaveBeenCalled();
+        expect(global.localStorage.setItem.mock.calls.some(([key]) => key === ENHANCEMENT_STORAGE_KEY)).toBe(false);
+        expect(global.localStorage.getItem(ENHANCEMENT_STORAGE_KEY)).toBe(cached);
     });
 
     it("filters enhanceable items by equipment type instead of the shared item category", () => {

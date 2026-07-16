@@ -160,7 +160,7 @@ describe("skillingStore", () => {
         setActivePinia(createPinia());
         const store = useSkillingStore();
         expect(store.profile).toBeNull();
-        expect(Object.values(store.targetLevels)).toEqual([2, 2, 2, 2, 2]);
+        expect(Object.values(store.targetLevels)).toEqual(Array(skillingData.skillHrids.length).fill(2));
         expect(store.optimizationMode).toBe(SKILLING_OPTIMIZATION_MODE_SPEED);
         expect(store.balancedCostTolerance).toBe(0.35);
         expect(global.localStorage.removeItem).not.toHaveBeenCalled();
@@ -179,7 +179,7 @@ describe("skillingStore", () => {
         const refreshedStore = useSkillingStore();
         expect(refreshedStore.profile).toBeNull();
         expect(refreshedStore.result).toBeNull();
-        expect(Object.values(refreshedStore.targetLevels)).toEqual([2, 2, 2, 2, 2]);
+        expect(Object.values(refreshedStore.targetLevels)).toEqual(Array(skillingData.skillHrids.length).fill(2));
         expect(refreshedStore.optimizationMode).toBe(SKILLING_OPTIMIZATION_MODE_BALANCED);
         expect(refreshedStore.balancedCostTolerance).toBe(0.4);
     });
@@ -196,7 +196,7 @@ describe("skillingStore", () => {
         setActivePinia(createPinia());
         const store = useSkillingStore();
         expect(store.profile).toBeNull();
-        expect(Object.values(store.targetLevels)).toEqual([2, 2, 2, 2, 2]);
+        expect(Object.values(store.targetLevels)).toEqual(Array(skillingData.skillHrids.length).fill(2));
     });
 
     it("marks an existing result stale when a target changes", () => {

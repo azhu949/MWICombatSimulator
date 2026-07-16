@@ -1,11 +1,14 @@
+import { nextTick } from "vue";
 import { beforeEach, describe, expect, it, vi } from "vitest";
 import { createPinia, setActivePinia } from "pinia";
 import { createMainSiteShareProfileFixture } from "./fixtures/mainSiteShareProfileFixture.js";
 import {
+    applyTampermonkeyEnhancementImportMessage,
     applyTampermonkeyImportMessage,
     applyTampermonkeySkillingImportMessage,
 } from "../tampermonkeyImportBridge.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
+import { ENHANCEMENT_STORAGE_KEY, useEnhancementStore } from "../../stores/enhancementStore.js";
 
 function createLocalStorageMock() {
     const store = new Map();
@@ -182,5 +185,29 @@ describe("tampermonkeyImportBridge", () => {
         expect(importProfile).toHaveBeenCalledOnce();
         expect(importProfile.mock.calls[0][0].characterName).toBe("Skiller");
         expect(result.detectedFormat).toBe("main-site-skilling-character");
+    });
+
+    it("keeps enhancement character imports in the current page session", async () => {
+        const enhancement = useEnhancementStore();
+        enhancement.config.targetLevel = 7;
+        await nextTick();
+        global.localStorage.setItem.mockClear();
+
+        const result = applyTampermonkeyEnhancementImportMessage(enhancement, {
+            payload: {
+                character: { name: "Enhancer" },
+                characterSkills: [{ skillHrid: "/skills/enhancing", level: 177 }],
+            },
+        });
+        await nextTick();
+
+        expect(result.detectedFormat).toBe("main-site-enhancement-character");
+        expect(enhancement.config.skillLevel).toBe(177);
+        expect(global.localStorage.setItem.mock.calls.some(([key]) => key === ENHANCEMENT_STORAGE_KEY)).toBe(false);
+
+        setActivePinia(createPinia());
+        const refreshedEnhancement = useEnhancementStore();
+        expect(refreshedEnhancement.config.targetLevel).toBe(7);
+        expect(refreshedEnhancement.config.skillLevel).toBe(100);
     });
 });

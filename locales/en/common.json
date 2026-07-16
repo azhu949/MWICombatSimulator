@@ -736,7 +736,7 @@
             "msgNoPriceOverrides": "No manual price overrides to clear.",
             "msgInvalidPriceInput": "Invalid price input for {{item}}.",
             "mainSiteImportScriptTitle": "Main-site Import Script",
-            "mainSiteImportScriptDescription": "Install the Tampermonkey helper to import the current character, including guild shrine combat buffs, or a cached team from Home, and to import the current character's enhancement skill, gear, drinks, housing, community buffs, and achievement bonuses from Enhancement.",
+            "mainSiteImportScriptDescription": "Install the Tampermonkey helper to import the current character, including guild shrine combat buffs, or a cached team from Home, and to import current-character data from Enhancement or Skilling. Enhancement and Skilling character imports last only for the current page session.",
             "installMainSiteImportScript": "Install Script",
             "mainSiteImportScriptPending": "Script link pending"
         }
@@ -987,7 +987,7 @@
         "achievementTierBonus": "{{tier}} achievement bonus"
     },
     "skilling": {
-        "eyebrow": "Production Ledger",
+        "eyebrow": "Skilling Ledger",
         "title": "Skilling Upgrade Planner",
         "profile": "Character",
         "imported": "Snapshot {{time}}",
@@ -1013,6 +1013,7 @@
         "cancel": "Cancel",
         "stale": "Results are stale because targets, prices, optimization settings, or the character snapshot changed.",
         "expiredBuffWarning": "{{count}} temporary Buff(s) expired and were excluded.",
+        "processingUnsupportedWarning": "Processing effects and Processing Tea are not yet included in foraging output values; foraging routes are optimized without them.",
         "oldSnapshotWarning": "This character snapshot is more than 30 minutes old.",
         "noProfile": "No current-character skilling snapshot",
         "overview": "Overview",

@@ -10,9 +10,18 @@ export const SKILLING_BALANCED_COST_TOLERANCE = 0.1;
 
 const EPSILON = 1e-9;
 const NANOSECONDS_PER_MILLISECOND = 1_000_000;
+const UNSUPPORTED_SKILLING_BUFF_TYPE_HRIDS = new Set([
+    "/buff_types/processing",
+]);
+const GATHERING_SKILL_KEYS = new Set([
+    "milking",
+    "foraging",
+    "woodcutting",
+]);
 const EQUIPMENT_STATE_KEYS = Object.freeze([
     "actionSpeed",
     "efficiency",
+    "outputQuantity",
     "experience",
     "essenceFind",
     "rareFind",
@@ -20,6 +29,7 @@ const EQUIPMENT_STATE_KEYS = Object.freeze([
 const DOMINATING_EQUIPMENT_KEYS = Object.freeze([
     "actionSpeed",
     "efficiency",
+    "outputQuantity",
     "essenceFind",
     "rareFind",
 ]);
@@ -86,6 +96,7 @@ function createBonusTotals() {
         efficiency: 0,
         artisan: 0,
         outputQuantity: 0,
+        processing: 0,
         experience: 0,
         essenceFind: 0,
         rareFind: 0,
@@ -126,6 +137,8 @@ function addBuff(totals, buff, skillHrid, multiplier = 1) {
     else if (typeHrid === "/buff_types/efficiency") totals.efficiency += value;
     else if (typeHrid === "/buff_types/artisan") totals.artisan += value;
     else if (typeHrid === "/buff_types/gourmet") totals.outputQuantity += value;
+    else if (typeHrid === "/buff_types/gathering" && GATHERING_SKILL_KEYS.has(skillKeyFromHrid(skillHrid))) totals.outputQuantity += value;
+    else if (typeHrid === "/buff_types/processing" && GATHERING_SKILL_KEYS.has(skillKeyFromHrid(skillHrid))) totals.processing += value;
     else if (typeHrid === "/buff_types/wisdom" || typeHrid === "/buff_types/skilling_experience") totals.experience += value;
     else if (typeHrid === "/buff_types/essence_find") totals.essenceFind += value;
     else if (typeHrid === "/buff_types/rare_find") totals.rareFind += value;
@@ -250,6 +263,9 @@ function equipmentBonusesForSkill(stats, skillHrid) {
             + finiteNumber(stats?.actionSpeed, 0),
         efficiency: finiteNumber(stats?.[`${key}Efficiency`], 0)
             + finiteNumber(stats?.skillingEfficiency, 0),
+        outputQuantity: GATHERING_SKILL_KEYS.has(key)
+            ? finiteNumber(stats?.gatheringQuantity, 0)
+            : 0,
         experience: finiteNumber(stats?.[`${key}Experience`], 0)
             + finiteNumber(stats?.skillingExperience, 0)
             + finiteNumber(stats?.wisdom, 0),
@@ -417,7 +433,7 @@ export function buildSkillingEquipmentLoadouts(
 
     let states = [{
         items: [],
-        bonuses: { actionSpeed: 0, efficiency: 0, experience: 0, essenceFind: 0, rareFind: 0 },
+        bonuses: { actionSpeed: 0, efficiency: 0, outputQuantity: 0, experience: 0, essenceFind: 0, rareFind: 0 },
         drinkSlots: 1,
         drinkConcentration: 0,
         equipmentChanges: 0,
@@ -438,6 +454,7 @@ export function buildSkillingEquipmentLoadouts(
                     bonuses: {
                         actionSpeed: state.bonuses.actionSpeed + finiteNumber(option?.bonuses?.actionSpeed, 0),
                         efficiency: state.bonuses.efficiency + finiteNumber(option?.bonuses?.efficiency, 0),
+                        outputQuantity: state.bonuses.outputQuantity + finiteNumber(option?.bonuses?.outputQuantity, 0),
                         experience: state.bonuses.experience + finiteNumber(option?.bonuses?.experience, 0),
                         essenceFind: state.bonuses.essenceFind + finiteNumber(option?.bonuses?.essenceFind, 0),
                         rareFind: state.bonuses.rareFind + finiteNumber(option?.bonuses?.rareFind, 0),
@@ -462,6 +479,9 @@ function buildDrinkLoadouts(data, actionTypeHrid, maximumSlots, blockedUniqueHri
         .filter((drink) => (
             drink?.usableInActionTypeMap?.[actionTypeHrid] === true
             && finiteNumber(drink?.durationSeconds, 0) > 0
+            && !(drink?.buffs || []).some((buff) => (
+                UNSUPPORTED_SKILLING_BUFF_TYPE_HRIDS.has(normalizeHrid(buff?.typeHrid))
+            ))
         ))
         .sort((left, right) => (
             finiteNumber(left?.sortIndex, 0) - finiteNumber(right?.sortIndex, 0)
@@ -1053,6 +1073,7 @@ export function calculateSkillingActionCandidate({
     const equipment = {
         actionSpeed: finiteNumber(equipmentLoadout?.bonuses?.actionSpeed, 0),
         efficiency: finiteNumber(equipmentLoadout?.bonuses?.efficiency, 0),
+        outputQuantity: finiteNumber(equipmentLoadout?.bonuses?.outputQuantity, 0),
         experience: finiteNumber(equipmentLoadout?.bonuses?.experience, 0),
         essenceFind: finiteNumber(equipmentLoadout?.bonuses?.essenceFind, 0),
         rareFind: finiteNumber(equipmentLoadout?.bonuses?.rareFind, 0),
@@ -1124,6 +1145,9 @@ export function calculateSkillingActionCandidate({
     const outputMultiplier = Math.max(0, 1 + bonuses.outputQuantity);
     for (const input of action?.inputItems || []) {
         addAmount(requiredItems, input?.itemHrid, finiteNumber(input?.count, 0) * completionCount * artisanMultiplier);
+    }
+    for (const drop of action?.dropTable || []) {
+        addAmount(outputItems, drop?.itemHrid, expectedDropCount(drop) * completionCount * outputMultiplier);
     }
     for (const drop of action?.essenceDropTable || []) {
         addAmount(outputItems, drop?.itemHrid, expectedDropCount(drop) * completionCount * Math.max(0, 1 + bonuses.essenceFind));

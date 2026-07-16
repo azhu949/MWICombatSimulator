@@ -23,6 +23,19 @@ export const LEGACY_ENHANCEMENT_STORAGE_KEYS = Object.freeze([
     "mwi.enhancement.v1",
     "mwi.enhancement",
 ]);
+const ENHANCEMENT_SESSION_CONFIG_KEYS = new Set([
+    "skillLevel",
+    "observatoryLevel",
+    "otherRoomLevels",
+    "communityEnhancingLevel",
+    "communityExperienceLevel",
+    "noviceAchievement",
+    "championAchievement",
+    "teaHrid",
+    "blessedTea",
+    "wisdomTea",
+    "equipmentSlots",
+]);
 
 const DEFAULT_SUPPORT_SLOT_KEYS = Object.freeze([
     "enhancing_tool",
@@ -80,22 +93,6 @@ function normalizePriceOverrideNumber(value) {
     return Number.isFinite(parsed) ? Math.max(0, parsed) : null;
 }
 
-function normalizeBoolean(value, fallback = false) {
-    if (value == null) {
-        return fallback;
-    }
-    if (typeof value === "string") {
-        const normalized = value.trim().toLowerCase();
-        if (["false", "0", "off", "no"].includes(normalized)) {
-            return false;
-        }
-        if (["true", "1", "on", "yes"].includes(normalized)) {
-            return true;
-        }
-    }
-    return Boolean(value);
-}
-
 function safeStorage(storage = globalThis?.localStorage) {
     return storage && typeof storage.getItem === "function" ? storage : null;
 }
@@ -136,42 +133,6 @@ export function createDefaultEnhancementConfig() {
     };
 }
 
-function normalizeEquipmentSlots(rawSlots, legacyEquipment = []) {
-    const result = createEquipmentSlots();
-    const source = isPlainObject(rawSlots) ? rawSlots : {};
-    const supportByHrid = new Map((enhancementData?.supportEquipment || []).map((item) => [item.hrid, item]));
-
-    for (const slot of SUPPORT_SLOT_KEYS) {
-        const entry = isPlainObject(source[slot]) ? source[slot] : {};
-        const itemHrid = normalizeHrid(entry.itemHrid || entry.hrid);
-        const itemSlot = String(supportByHrid.get(itemHrid)?.equipmentType || "")
-            .split("/")
-            .filter(Boolean)
-            .pop();
-        result[slot] = {
-            itemHrid: itemSlot === slot ? itemHrid : "",
-            enhancementLevel: clamp(integer(entry.enhancementLevel ?? entry.level, 0), 0, 20),
-        };
-    }
-
-    const legacyEntries = Array.isArray(legacyEquipment)
-        ? legacyEquipment
-        : Object.values(isPlainObject(legacyEquipment) ? legacyEquipment : {});
-    for (const entry of legacyEntries) {
-        const itemHrid = normalizeHrid(entry?.itemHrid || entry?.hrid);
-        const equipmentType = supportByHrid.get(itemHrid)?.equipmentType || "";
-        const slot = equipmentType.split("/").filter(Boolean).pop();
-        if (!itemHrid || !SUPPORT_SLOT_KEYS.includes(slot) || result[slot].itemHrid) {
-            continue;
-        }
-        result[slot] = {
-            itemHrid,
-            enhancementLevel: clamp(integer(entry?.enhancementLevel ?? entry?.level, 0), 0, 20),
-        };
-    }
-    return result;
-}
-
 function normalizePriceOverrides(rawOverrides) {
     const result = {};
     for (const [rawKey, rawValue] of Object.entries(isPlainObject(rawOverrides) ? rawOverrides : {})) {
@@ -205,6 +166,8 @@ export function normalizeEnhancementPersistedState(rawState = {}) {
     const source = isPlainObject(rawState) ? rawState : {};
     const rawConfig = isPlainObject(source.config) ? source.config : source;
     const defaults = createDefaultEnhancementConfig();
+    // Current-character skill, equipment, drinks, housing, community, and achievement data are session-only.
+    // Legacy payloads may still contain them, but loading and future writes intentionally keep the defaults.
     const targetLevel = clamp(integer(rawConfig.targetLevel, defaults.targetLevel), 1, 20);
     const itemHrid = normalizeHrid(rawConfig.itemHrid || rawConfig.selectedItemHrid);
     const knownItems = new Set((enhancementData?.enhanceableItems || []).map((item) => item.hrid));
@@ -223,20 +186,6 @@ export function normalizeEnhancementPersistedState(rawState = {}) {
         itemHrid: !itemHrid || knownItems.has(itemHrid) ? itemHrid : "",
         startLevel: clamp(integer(rawConfig.startLevel, defaults.startLevel), 0, targetLevel - 1),
         targetLevel,
-        skillLevel: clamp(integer(rawConfig.skillLevel ?? rawConfig.enhancingLevel, defaults.skillLevel), 1, 200),
-        observatoryLevel: clamp(integer(rawConfig.observatoryLevel, 0), 0, 8),
-        otherRoomLevels: Math.max(0, integer(rawConfig.otherRoomLevels ?? rawConfig.otherRoomLevelsTotal, 0)),
-        communityEnhancingLevel: clamp(integer(
-            rawConfig.communityEnhancingLevel ?? rawConfig.communitySpeedLevel,
-            0
-        ), 0, 20),
-        communityExperienceLevel: clamp(integer(rawConfig.communityExperienceLevel, 0), 0, 20),
-        noviceAchievement: normalizeBoolean(rawConfig.noviceAchievement, false),
-        championAchievement: normalizeBoolean(rawConfig.championAchievement, false),
-        teaHrid: normalizeHrid(rawConfig.teaHrid || rawConfig.enhancingTeaHrid),
-        blessedTea: normalizeBoolean(rawConfig.blessedTea ?? rawConfig.blessedEnabled, false),
-        wisdomTea: normalizeBoolean(rawConfig.wisdomTea ?? rawConfig.wisdomEnabled, false),
-        equipmentSlots: normalizeEquipmentSlots(rawConfig.equipmentSlots, rawConfig.equipment),
         protectionMode: rawConfig.protectionMode === "manual" ? "manual" : "auto",
         protectionItemHrid: validProtectionItemHrids.has(requestedProtectionItemHrid)
             ? requestedProtectionItemHrid
@@ -298,8 +247,13 @@ export function persistEnhancementState(state, storage = globalThis?.localStorag
         return false;
     }
     const normalized = normalizeEnhancementPersistedState(state);
+    const persistedConfig = Object.fromEntries(Object.entries(normalized.config)
+        .filter(([key]) => !ENHANCEMENT_SESSION_CONFIG_KEYS.has(key)));
     try {
-        target.setItem(ENHANCEMENT_STORAGE_KEY, JSON.stringify(normalized));
+        target.setItem(ENHANCEMENT_STORAGE_KEY, JSON.stringify({
+            ...normalized,
+            config: persistedConfig,
+        }));
         return true;
     } catch (error) {
         return false;
@@ -692,8 +646,13 @@ export const useEnhancementStore = defineStore("enhancement", () => {
         clearRiskResult();
     }, { deep: true, flush: "sync" });
 
-    watch([config, favorites], () => {
-        persistEnhancementState({ config, favorites: favorites.value });
+    const persistedState = computed(() => normalizeEnhancementPersistedState({
+        config,
+        favorites: favorites.value,
+    }));
+
+    watch(persistedState, (state) => {
+        persistEnhancementState(state);
     }, { deep: true });
 
     watch([() => config.startLevel, () => config.targetLevel], (
