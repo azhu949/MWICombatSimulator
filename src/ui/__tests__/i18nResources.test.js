@@ -29,6 +29,13 @@ describe("common locale resources", () => {
         expect(enCommon?.skilling?.title).toBe("Skilling Upgrade Planner");
         expect(zhCommon?.skilling?.title).toBe("生活技能升级推荐器");
         expect(zhCommon?.skilling?.balanced).toBe("均衡");
+        expect(zhCommon?.skilling?.runScope).toBe("模拟范围");
+        expect(zhCommon?.skilling?.runScopeSingle).toBe("单项");
+        expect(zhCommon?.skilling?.runScopeAll).toBe("全部");
+        expect(zhCommon?.skilling?.simulationSkill).toBe("指定技能");
+        expect(zhCommon?.skilling?.allSkills).toBe("全部技能");
+        expect(zhCommon?.skilling?.calculateAll).toBe("计算全部");
+        expect(zhCommon?.skilling?.calculateSelected).toContain("{{skill}}");
         expect(zhCommon?.skilling?.optimizationModeHelp).toBe("优化模式说明");
         expect(zhCommon?.skilling?.materialPurchasePerXp).toBe("材料补购/经验");
         expect(zhCommon?.skilling?.balancedModeDescription).toContain("最低净成本/经验");
@@ -40,6 +47,12 @@ describe("common locale resources", () => {
         expect(enCommon?.skilling?.balancedModeDescription).toContain("baseline + {{percent}}% of |baseline|");
         expect(enCommon?.skilling?.balancedCostTolerancePercent).toContain("percentage");
         expect(zhCommon?.skilling?.stageLevel).toBe("阶段等级");
+        expect(zhCommon?.skilling?.stageDetails).toBe("执行阶段");
+        expect(zhCommon?.skilling?.stageCount).toContain("{{count}}");
+        expect(zhCommon?.skilling?.multipleRecipes).toContain("{{count}} 个配方");
+        expect(zhCommon?.skilling?.totalDrinks).toBe("饮品总计");
+        expect(zhCommon?.skilling?.routeDetailsWithRange).toContain("{{range}}");
+        expect(zhCommon?.skilling?.rangeDetailsAriaLabel).toContain("{{skill}}");
         expect(zhCommon?.skilling?.levelInProgress).toContain("升级中");
         expect(zhCommon?.skilling?.drinkContinued).toBe("续用");
         expect(zhCommon?.skilling?.drinkRemaining).toContain("末余");

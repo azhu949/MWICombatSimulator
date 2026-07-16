@@ -82,6 +82,35 @@ describe("SkillingPage workspace", () => {
         expect(pageSource).toContain('candidate.materialPurchaseCostPerExperience');
     });
 
+    it("supports calculating one selected skill or all skills", () => {
+        expect(pageSource).toContain("data-skilling-toolbar-heading");
+        expect(pageSource).toContain("data-skilling-toolbar-controls");
+        expect(pageSource).toContain("data-skilling-planner-controls");
+        expect(pageSource).toContain("data-skilling-toolbar-actions");
+        expect(pageSource).toContain("border-t border-white/10 pt-3 2xl:flex-row 2xl:items-center");
+        expect(pageSource).toContain("2xl:w-auto 2xl:flex-1 2xl:justify-end");
+        expect(pageSource).toContain("!min-w-0 !w-auto !flex-1");
+        expect(pageSource).toContain("sm:!w-36 sm:!flex-none");
+        expect(pageSource).toContain("min-w-0 break-words font-heading");
+        expect(pageSource).not.toContain("xl:flex-row xl:items-center xl:justify-between");
+        expect(pageSource).toContain("data-skilling-run-scope-controls");
+        expect(pageSource).toContain("data-skilling-run-scope");
+        expect(pageSource).toContain("data-skilling-run-skill");
+        expect(pageSource).toContain('name="skilling-run-scope"');
+        expect(pageSource).toContain('name="skilling-run-skill"');
+        expect(pageSource).toContain('skilling.runScope === scope.value');
+        expect(pageSource).toContain('skilling.setRunScope(scope.value)');
+        expect(pageSource).toContain("skilling.selectedRunSkillHrid");
+        expect(pageSource).toContain("skilling.setSelectedRunSkillHrid(selected)");
+        expect(pageSource).toContain("requestedSkillHrids");
+        expect(pageSource).toContain("plannerActionLabel");
+        expect(pageSource).toContain("common:skilling.calculateAll");
+        expect(pageSource).toContain("common:skilling.calculateSelected");
+        expect(pageSource).toContain(":disabled=\"skilling.running || skilling.runScope === 'all'\"");
+        expect(pageSource).toContain("skilling.result?.skillHrids");
+        expect(pageSource).toContain("recordedSkillHrids");
+    });
+
     it("accepts only skilling-targeted Tampermonkey imports", () => {
         expect(pageSource).toContain('data-tm-import-anchor="skilling-actions"');
         expect(pageSource).toContain('data-tm-import-reference="skilling-refresh"');
@@ -94,10 +123,25 @@ describe("SkillingPage workspace", () => {
     it("renders overview, route, price, equipment, and narrow-screen table views", () => {
         expect(pageSource).toContain("data-skilling-overview");
         expect(pageSource).toContain("foragingProcessingNoticeVisible");
+        expect(pageSource).toContain("resultIncludesUpgrade");
+        expect(pageSource).toContain("nextRunIncludesUpgrade");
         expect(pageSource).toContain("common:skilling.processingUnsupportedWarning");
         expect(pageSource).toContain("data-skilling-routes");
+        expect(pageSource).toContain("data-skilling-range-summary");
+        expect(pageSource).toContain("data-skilling-route-stages");
+        expect(pageSource).toContain("buildSkillingRangeSummary");
+        expect(pageSource).toContain("selectedRangeSummary");
+        expect(pageSource).toContain("routeRecipeSummary(selectedRangeSummary)");
+        expect(pageSource).toContain("totalDrinkSummary(selectedRangeSummary)");
+        expect(pageSource).toContain("routeEquipmentSummary(selectedRangeSummary)");
+        expect(pageSource).toContain("rangeDetailsAriaLabel(selectedRangeSummary)");
+        expect(pageSource).not.toContain('v-for="(segment, segmentIndex) in selectedPlan.segments"');
+        expect(pageSource).toContain('v-for="(stage, stageIndex) in activeRouteStages"');
         expect(pageSource).toContain("data-skilling-prices");
         expect(pageSource).toContain("activeEquipmentStrategies");
+        expect(pageSource).toContain("activeSegment.value.equipmentStrategies?.length");
+        expect(pageSource).toContain('role="region"');
+        expect(pageSource).toContain('tabindex="0"');
         expect(pageSource).toContain("activeSegment.inputItems");
         expect(pageSource).toContain("activeSegment.outputItems");
         expect(pageSource).toContain("formatCount(candidate.completionCount)");
@@ -118,8 +162,9 @@ describe("SkillingPage workspace", () => {
         expect(pageSource).toContain("common:skilling.drinkRemaining");
         expect(pageSource).toContain("common:skilling.drinkUsedUp");
         expect(pageSource).toContain("whitespace-pre-line");
-        expect(pageSource).toContain("segmentLevelLabel(segment)");
-        expect(pageSource).toContain(":aria-label=\"segmentDetailsAriaLabel(segment)\"");
+        expect(pageSource).toContain("segmentLevelLabel(selectedRangeSummary)");
+        expect(pageSource).toContain("segmentLevelLabel(stage)");
+        expect(pageSource).toContain(":aria-label=\"rangeDetailsAriaLabel(selectedRangeSummary)\"");
         expect(pageSource).toContain(":aria-label=\"candidateDetailsAriaLabel(candidate, index)\"");
         expect(pageSource).toContain("common:skilling.levelInProgress");
         expect(pageSource).toContain("candidateEquipmentSummary(candidate)");
@@ -135,7 +180,7 @@ describe("SkillingPage workspace", () => {
         expect(pageSource).toContain("overflow-x-auto");
         expect(pageSource).toContain('min-w-[1280px]');
         expect(pageSource).toContain("handleTabKeydown");
-        expect(pageSource).toContain("segment.bonusSignature");
+        expect(pageSource).toContain("stage?.bonusSignature");
         expect(pageSource).toContain(':key="row.priceKey"');
         expect(pageSource).toContain("simulator.pricing?.enhancementQuotesByItem");
         expect(pageSource).toContain("row.enhancementLevel > 0");

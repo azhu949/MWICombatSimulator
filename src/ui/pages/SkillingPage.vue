@@ -1,21 +1,22 @@
 <template>
   <section class="space-y-4" data-skilling-page>
     <div class="panel overflow-hidden !px-4 !py-3" data-skilling-toolbar>
-      <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
-        <div class="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
-          <div class="flex shrink-0 items-baseline gap-2">
+      <div class="flex flex-col gap-3">
+        <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1" data-skilling-toolbar-heading>
+          <div class="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
             <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-teal-300/80">{{ t("common:skilling.eyebrow", "Skilling Ledger") }}</p>
-            <h2 class="font-heading text-lg font-semibold text-slate-100">{{ t("common:skilling.title", "Skilling Upgrade Planner") }}</h2>
+            <h2 class="min-w-0 break-words font-heading text-lg font-semibold text-slate-100">{{ t("common:skilling.title", "Skilling Upgrade Planner") }}</h2>
           </div>
           <span class="hidden h-5 w-px bg-white/10 sm:block" aria-hidden="true"></span>
-          <div v-if="skilling.profile" class="min-w-0 text-xs text-slate-400">
-            <span class="font-semibold text-slate-200">{{ skilling.profile.characterName || t("common:skilling.profile", "Character") }}</span>
-            <span class="ml-2">{{ snapshotLabel }}</span>
+          <div v-if="skilling.profile" class="flex min-w-0 items-center gap-2 text-xs text-slate-400">
+            <span class="shrink-0 font-semibold text-slate-200">{{ skilling.profile.characterName || t("common:skilling.profile", "Character") }}</span>
+            <span class="min-w-0 truncate">{{ snapshotLabel }}</span>
           </div>
           <span v-else class="text-xs text-slate-500">{{ t("common:skilling.noProfile", "No current-character skilling snapshot") }}</span>
         </div>
 
-        <div class="flex flex-wrap items-center gap-2" data-tm-import-anchor="skilling-actions">
+        <div class="flex flex-col gap-2 border-t border-white/10 pt-3 2xl:flex-row 2xl:items-center" data-skilling-toolbar-controls>
+          <div class="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center 2xl:shrink-0" data-skilling-planner-controls>
           <div class="flex w-full min-w-0 items-center gap-1.5 sm:w-auto sm:shrink-0">
             <div
               class="grid min-w-0 flex-1 grid-cols-3 overflow-hidden rounded border border-white/10 bg-slate-950/40 sm:flex-none"
@@ -63,6 +64,60 @@
               <span aria-hidden="true">i</span>
             </button>
           </div>
+          <div class="flex w-full min-w-0 items-center gap-1.5 sm:w-auto" data-skilling-run-scope-controls>
+            <div
+              class="grid shrink-0 grid-cols-2 overflow-hidden rounded border border-white/10 bg-slate-950/40"
+              role="radiogroup"
+              :aria-label="t('common:skilling.runScope', 'Simulation scope')"
+              data-skilling-run-scope
+            >
+              <label
+                v-for="(scope, index) in runScopes"
+                :key="scope.value"
+                class="relative"
+                :class="[
+                  index > 0 ? 'border-l border-white/10' : '',
+                  skilling.running ? 'cursor-not-allowed' : 'cursor-pointer',
+                ]"
+              >
+                <input
+                  class="peer sr-only"
+                  type="radio"
+                  name="skilling-run-scope"
+                  autocomplete="off"
+                  :value="scope.value"
+                  :checked="skilling.runScope === scope.value"
+                  :disabled="skilling.running"
+                  @change="skilling.setRunScope(scope.value)"
+                />
+                <span
+                  class="flex min-h-8 min-w-[3.5rem] items-center justify-center px-2 py-1 text-center text-[11px] font-semibold transition peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-[-2px] peer-focus-visible:outline-teal-300 peer-disabled:opacity-50"
+                  :class="skilling.runScope === scope.value
+                    ? 'bg-teal-300/10 text-teal-200'
+                    : 'text-slate-400 hover:bg-white/5 hover:text-slate-200 peer-disabled:hover:bg-transparent peer-disabled:hover:text-slate-400'"
+                >
+                  {{ scope.label }}
+                </span>
+              </label>
+            </div>
+            <select
+              class="field-select !h-8 !min-w-0 !w-auto !flex-1 !rounded !px-2 !py-1 text-xs sm:!w-36 sm:!flex-none"
+              name="skilling-run-skill"
+              autocomplete="off"
+              :aria-label="t('common:skilling.simulationSkill', 'Simulation skill')"
+              :disabled="skilling.running || skilling.runScope === 'all'"
+              :value="skilling.runScope === 'all' ? '__all__' : skilling.selectedRunSkillHrid"
+              data-skilling-run-skill
+              @change="setRunSkill"
+            >
+              <option v-if="skilling.runScope === 'all'" value="__all__">{{ t("common:skilling.allSkills", "All skills") }}</option>
+              <template v-else>
+                <option v-for="skillHrid in skillHrids" :key="skillHrid" :value="skillHrid">{{ skillName(skillHrid) }}</option>
+              </template>
+            </select>
+          </div>
+          </div>
+          <div class="flex w-full min-w-0 flex-wrap items-center gap-2 2xl:ml-auto 2xl:w-auto 2xl:flex-1 2xl:justify-end" data-skilling-toolbar-actions data-tm-import-anchor="skilling-actions">
           <span class="rounded border px-2 py-1 text-[11px]" :class="priceStatusClass">{{ priceStatusText }}</span>
           <button type="button" class="action-button-muted !px-3 !py-1.5" :disabled="skilling.running" @click="openPricesModal">
             {{ t("common:skilling.priceDetails", "Price details") }}
@@ -78,12 +133,14 @@
           </button>
           <button
             type="button"
+            class="min-w-[9.5rem] whitespace-nowrap"
             :class="skilling.running ? 'action-button-danger !px-3 !py-1.5' : 'action-button-primary !px-3 !py-1.5'"
             :disabled="!skilling.running && (!skilling.profile || skilling.priceStatus.loading)"
             @click="handlePlannerAction"
           >
-            {{ skilling.running ? t("common:skilling.cancel", "Cancel") : t("common:skilling.calculate", "Calculate routes") }}
+            {{ plannerActionLabel }}
           </button>
+          </div>
         </div>
       </div>
 
@@ -261,11 +318,11 @@
           <div v-if="!selectedPlan" class="flex min-h-44 items-center justify-center text-sm text-slate-500">
             {{ t("common:skilling.awaiting", "Awaiting calculation") }}
           </div>
-          <div v-else-if="selectedPlan.segments?.length" class="overflow-x-auto" data-skilling-routes>
+          <div v-else-if="selectedRangeSummary" class="overflow-x-auto" data-skilling-routes>
             <table class="min-w-[1280px] w-full text-left text-xs">
               <thead class="bg-slate-950/30 text-[10px] uppercase text-slate-500">
                 <tr>
-                  <th class="px-4 py-2">{{ t("common:skilling.stageLevel", "Stage levels") }}</th>
+                  <th class="px-4 py-2">{{ t("common:skilling.levelRange", "Levels") }}</th>
                   <th class="px-3 py-2">{{ t("common:skilling.recipe", "Recipe") }}</th>
                   <th class="px-3 py-2 text-right">{{ t("common:skilling.actions", "Actions") }}</th>
                   <th class="px-3 py-2">{{ t("common:skilling.drinks", "Drinks") }}</th>
@@ -278,17 +335,20 @@
                 </tr>
               </thead>
               <tbody class="divide-y divide-white/10">
-                <tr v-for="(segment, segmentIndex) in selectedPlan.segments" :key="`${segment.fromLevel}-${segment.toLevel}-${segment.actionHrid}-${segment.equipmentSignature}-${segment.drinkSignature}-${segment.bonusSignature}-${segmentIndex}`" class="align-top hover:bg-white/[0.025]">
-                  <td class="px-4 py-3 font-semibold tabular-nums text-amber-200">{{ segmentLevelLabel(segment) }}</td>
-                  <td class="max-w-[210px] px-3 py-3 font-semibold text-slate-100">{{ actionName(segment) }}</td>
-                  <td class="px-3 py-3 text-right tabular-nums text-slate-300">{{ formatCount(segment.completionCount) }}</td>
-                  <td class="max-w-[220px] whitespace-pre-line px-3 py-3 leading-5 text-slate-400">{{ drinkSummary(segment) }}</td>
-                  <td class="max-w-[240px] px-3 py-3 text-slate-400">{{ equipmentSummary(segment) }}</td>
-                  <td class="max-w-[220px] px-3 py-3 text-slate-400">{{ shortageSummary(segment) }}</td>
-                  <td class="max-w-[220px] px-3 py-3 text-slate-400">{{ outputSummary(segment) }}</td>
-                  <td class="px-3 py-3 text-right font-semibold tabular-nums" :class="amountClass(segment.netCost)">{{ formatAmount(segment.netCost) }}</td>
-                  <td class="px-3 py-3 text-right tabular-nums text-slate-300">{{ formatAmount(segment.experiencePerHour) }}</td>
-                  <td class="px-4 py-3 text-right"><button type="button" class="action-button-muted !rounded !px-2 !py-1 text-[11px]" :aria-label="segmentDetailsAriaLabel(segment)" @click="openSegment(segment)">{{ t("common:skilling.details", "Details") }}</button></td>
+                <tr class="align-top hover:bg-white/[0.025]" data-skilling-range-summary>
+                  <th scope="row" class="px-4 py-3 text-left font-semibold tabular-nums text-amber-200">
+                    <span class="block whitespace-nowrap">{{ segmentLevelLabel(selectedRangeSummary) }}</span>
+                    <span class="mt-1 block text-[10px] font-normal text-slate-500">{{ stageCountLabel(selectedRangeSummary) }}</span>
+                  </th>
+                  <td class="max-w-[210px] break-words px-3 py-3 font-semibold text-slate-100">{{ routeRecipeSummary(selectedRangeSummary) }}</td>
+                  <td class="px-3 py-3 text-right tabular-nums text-slate-300">{{ formatCount(selectedRangeSummary.completionCount) }}</td>
+                  <td class="max-w-[220px] break-words px-3 py-3 leading-5 text-slate-400">{{ totalDrinkSummary(selectedRangeSummary) }}</td>
+                  <td class="max-w-[240px] break-words px-3 py-3 text-slate-400">{{ routeEquipmentSummary(selectedRangeSummary) }}</td>
+                  <td class="max-w-[220px] break-words px-3 py-3 text-slate-400">{{ shortageSummary(selectedRangeSummary) }}</td>
+                  <td class="max-w-[220px] break-words px-3 py-3 text-slate-400">{{ outputSummary(selectedRangeSummary) }}</td>
+                  <td class="px-3 py-3 text-right font-semibold tabular-nums" :class="amountClass(selectedRangeSummary.netCost)">{{ formatAmount(selectedRangeSummary.netCost) }}</td>
+                  <td class="px-3 py-3 text-right tabular-nums text-slate-300">{{ formatAmount(selectedRangeSummary.experiencePerHour) }}</td>
+                  <td class="px-4 py-3 text-right"><button type="button" class="action-button-muted !rounded !px-2 !py-1 text-[11px]" :aria-label="rangeDetailsAriaLabel(selectedRangeSummary)" @click="openSegment(selectedRangeSummary)">{{ t("common:skilling.details", "Details") }}</button></td>
                 </tr>
               </tbody>
             </table>
@@ -401,19 +461,32 @@
 
     <BaseModal
       :open="segmentModalOpen"
-      :title="activeSegmentIsCandidate
-        ? t('common:skilling.nextLevelCandidateDetails', 'Next-level candidate details')
-        : t('common:skilling.routeDetails', 'Route details')"
+      :title="activeSegmentTitle"
       panel-class="enhancement-price-modal max-w-5xl max-h-[88vh] overflow-y-auto overscroll-contain"
       @close="segmentModalOpen = false"
     >
       <template v-if="activeSegment">
         <div class="grid grid-cols-2 border-y border-white/10 sm:grid-cols-4">
-          <div class="px-3 py-2"><p class="text-[10px] uppercase text-slate-500">{{ t("common:skilling.recipe", "Recipe") }}</p><p class="mt-1 font-semibold text-slate-100">{{ actionName(activeSegment) }}</p></div>
+          <div class="px-3 py-2"><p class="text-[10px] uppercase text-slate-500">{{ t("common:skilling.recipe", "Recipe") }}</p><p class="mt-1 font-semibold text-slate-100">{{ routeRecipeSummary(activeSegment) }}</p></div>
           <div class="px-3 py-2"><p class="text-[10px] uppercase text-slate-500">{{ t("common:skilling.actions", "Actions") }}</p><p class="mt-1 tabular-nums text-slate-200">{{ formatCount(activeSegment.completionCount) }}</p></div>
           <div class="px-3 py-2"><p class="text-[10px] uppercase text-slate-500">{{ activeSegmentIsCandidate ? t("common:skilling.nextLevelTime", "Time to next level") : t("common:skilling.duration", "Time") }}</p><p class="mt-1 tabular-nums text-slate-200">{{ formatDuration(activeSegment.durationHours) }}</p></div>
           <div class="px-3 py-2"><p class="text-[10px] uppercase text-slate-500">{{ t("common:skilling.netCost", "Net cost") }}</p><p class="mt-1 font-semibold tabular-nums" :class="amountClass(activeSegment.netCost)">{{ formatAmount(activeSegment.netCost) }}</p></div>
         </div>
+
+        <section v-if="activeSegmentIsRangeSummary" class="pt-2">
+          <h3 class="mb-2 font-heading text-sm font-semibold text-sky-200">{{ t("common:skilling.totalDrinks", "Total drinks") }}</h3>
+          <div v-if="activeConsumedDrinks.length" class="grid border-y border-white/10 sm:grid-cols-2">
+            <div v-for="drink in activeConsumedDrinks" :key="drink.itemHrid" class="flex items-center gap-2 border-b border-white/10 px-3 py-2">
+              <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded bg-white/[0.04] ring-1 ring-white/10">
+                <svg v-if="itemIconVisible(drink.itemHrid)" class="h-full w-full p-1" viewBox="0 0 50 50" aria-hidden="true"><use :href="itemIconHref(drink.itemHrid)"></use></svg>
+                <span v-else class="text-xs text-slate-500">{{ itemFallback(drink.itemHrid) }}</span>
+              </span>
+              <span class="min-w-0 flex-1 truncate text-slate-200">{{ itemName(drink.itemHrid) }}</span>
+              <span class="text-xs tabular-nums text-sky-200">{{ countTimesLabel(drink.count) }}</span>
+            </div>
+          </div>
+          <p v-else class="px-3 text-xs text-slate-500">{{ t("common:skilling.noCandidateDrinks", "None") }}</p>
+        </section>
 
         <section class="pt-2">
           <h3 class="mb-2 font-heading text-sm font-semibold text-amber-200">{{ t("common:skilling.equipment", "Equipment") }}</h3>
@@ -436,6 +509,43 @@
             </div>
           </div>
           <p v-else class="text-slate-500">{{ t("common:skilling.noEquipment", "None") }}</p>
+        </section>
+
+        <section v-if="activeRouteStages.length > 1" class="pt-2" data-skilling-route-stages>
+          <div class="mb-2 flex items-baseline justify-between gap-3">
+            <h3 class="font-heading text-sm font-semibold text-amber-200">{{ t("common:skilling.stageDetails", "Stage details") }}</h3>
+            <span class="text-[11px] tabular-nums text-slate-500">{{ stageCountLabel(activeSegment) }}</span>
+          </div>
+          <div
+            class="overflow-x-auto"
+            role="region"
+            tabindex="0"
+            :aria-label="t('common:skilling.stageDetails', 'Stage details')"
+          >
+            <table class="min-w-[1080px] w-full text-left text-xs">
+              <caption class="sr-only">{{ t("common:skilling.stageDetails", "Stage details") }}</caption>
+              <thead class="border-y border-white/10 text-[10px] uppercase text-slate-500">
+                <tr>
+                  <th scope="col" class="px-3 py-2">{{ t("common:skilling.stageLevel", "Stage levels") }}</th>
+                  <th scope="col" class="px-3 py-2">{{ t("common:skilling.recipe", "Recipe") }}</th>
+                  <th scope="col" class="px-3 py-2 text-right">{{ t("common:skilling.actions", "Actions") }}</th>
+                  <th scope="col" class="px-3 py-2">{{ t("common:skilling.drinks", "Drinks") }}</th>
+                  <th scope="col" class="px-3 py-2">{{ t("common:skilling.equipment", "Equipment") }}</th>
+                  <th scope="col" class="px-3 py-2 text-right">{{ t("common:skilling.netCost", "Net cost") }}</th>
+                </tr>
+              </thead>
+              <tbody class="divide-y divide-white/10">
+                <tr v-for="(stage, stageIndex) in activeRouteStages" :key="routeStageKey(stage, stageIndex)" class="align-top">
+                  <th scope="row" class="px-3 py-2 text-left font-semibold tabular-nums text-amber-200">{{ segmentLevelLabel(stage) }}</th>
+                  <td class="max-w-[190px] break-words px-3 py-2 font-medium text-slate-200">{{ actionName(stage) }}</td>
+                  <td class="px-3 py-2 text-right tabular-nums text-slate-300">{{ formatCount(stage.completionCount) }}</td>
+                  <td class="max-w-[240px] whitespace-pre-line break-words px-3 py-2 leading-5 text-slate-400">{{ drinkSummary(stage) }}</td>
+                  <td class="max-w-[260px] break-words px-3 py-2 text-slate-400">{{ routeEquipmentSummary(stage) }}</td>
+                  <td class="px-3 py-2 text-right font-semibold tabular-nums" :class="amountClass(stage.netCost)">{{ formatAmount(stage.netCost) }}</td>
+                </tr>
+              </tbody>
+            </table>
+          </div>
         </section>
 
         <section class="pt-2">
@@ -482,6 +592,7 @@ import { applyTampermonkeySkillingImportMessage } from "../../services/tampermon
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { useSkillingStore } from "../../stores/skillingStore.js";
 import { buildSkillingDrinkStatuses } from "../skillingDrinkPresentation.js";
+import { buildSkillingRangeSummary } from "../skillingRangeSummary.js";
 
 const TAMPERMONKEY_BRIDGE_CHANNEL = "mwi-tm-bridge";
 const SNAPSHOT_WARNING_MS = 30 * 60 * 1000;
@@ -494,9 +605,27 @@ const segmentModalOpen = ref(false);
 const modeHelpModalOpen = ref(false);
 const activeSegment = ref(null);
 const activeSegmentIsCandidate = ref(false);
+const activeSegmentIsRangeSummary = computed(() => activeSegment.value?.isRangeSummary === true);
+const activeConsumedDrinks = computed(() => (
+  (activeSegment.value?.drinks || []).filter((drink) => Number(drink?.count) > 1e-9)
+));
+const activeRouteStages = computed(() => (
+  Array.isArray(activeSegment.value?.phases) ? activeSegment.value.phases : []
+));
+const activeSegmentTitle = computed(() => {
+  if (activeSegmentIsCandidate.value) {
+    return t("common:skilling.nextLevelCandidateDetails", "Next-level candidate details");
+  }
+  if (activeSegmentIsRangeSummary.value) {
+    return t("common:skilling.routeDetailsWithRange", "Route details · {{range}}", {
+      range: segmentLevelLabel(activeSegment.value),
+    });
+  }
+  return t("common:skilling.routeDetails", "Route details");
+});
 const activeEquipmentStrategies = computed(() => {
   if (!activeSegment.value) return [];
-  if (activeSegmentIsCandidate.value && activeSegment.value.equipmentStrategies?.length) {
+  if (activeSegment.value.equipmentStrategies?.length) {
     return activeSegment.value.equipmentStrategies;
   }
   return [{
@@ -521,8 +650,25 @@ const optimizationModes = computed(() => [
   { value: "balanced", label: t("common:skilling.balanced", "Balanced") },
   { value: "speed", label: t("common:skilling.speedFirst", "Speed first") },
 ]);
+const runScopes = computed(() => [
+  { value: "single", label: t("common:skilling.runScopeSingle", "Single") },
+  { value: "all", label: t("common:skilling.runScopeAll", "All") },
+]);
+const requestedSkillHrids = computed(() => (
+  skilling.runScope === "single"
+    ? [skilling.selectedRunSkillHrid].filter((skillHrid) => skillHrids.value.includes(skillHrid))
+    : skillHrids.value
+));
 const selectedSkillHrid = computed(() => skillHrids.value.includes(skilling.selectedView) ? skilling.selectedView : skillHrids.value[0]);
 const selectedPlan = computed(() => skilling.plansBySkill[selectedSkillHrid.value] || null);
+const selectedRangeSummary = computed(() => {
+  const plan = selectedPlan.value;
+  if (!plan?.segments?.length) return null;
+  const completedRange = plan.status === "ok"
+    ? { startLevel: plan.startLevel, targetLevel: plan.targetLevel }
+    : {};
+  return buildSkillingRangeSummary(plan.segments, completedRange);
+});
 const balancedCostTolerancePercent = computed(() => normalizeTolerancePercent(skilling.balancedCostTolerance));
 const balancedCostTolerancePercentText = computed(() => formatTolerancePercent(balancedCostTolerancePercent.value));
 const resultBalancedCostTolerance = computed(() => {
@@ -558,6 +704,15 @@ const progressLabel = computed(() => t("common:skilling.progress", "Planning {{s
   skill: skillName(skilling.progress?.skillHrid || selectedSkillHrid.value),
   percent: progressPercent.value,
 }));
+const plannerActionLabel = computed(() => {
+  if (skilling.running) return t("common:skilling.cancel", "Cancel");
+  if (skilling.runScope === "single") {
+    return t("common:skilling.calculateSelected", "Calculate {{skill}}", {
+      skill: skillName(skilling.selectedRunSkillHrid),
+    });
+  }
+  return t("common:skilling.calculateAll", "Calculate all");
+});
 const snapshotIsOld = computed(() => skilling.profile?.importedAt
   ? clockNow.value - Number(skilling.profile.importedAt) > SNAPSHOT_WARNING_MS
   : false);
@@ -590,7 +745,14 @@ const foragingProcessingNoticeVisible = computed(() => {
   const skillHrid = "/skills/foraging";
   const currentLevel = Math.max(1, Number(skilling.profile?.skills?.[skillHrid]?.level || 1));
   const targetLevel = Number(skilling.targetLevels?.[skillHrid] ?? currentLevel);
-  return Boolean(skilling.profile && targetLevel > currentLevel);
+  const resultPlan = skilling.plansBySkill?.[skillHrid];
+  const resultIncludesUpgrade = Boolean(resultPlan && (
+    Number(resultPlan.targetLevel) > Number(resultPlan.startLevel)
+    || resultPlan.segments?.length > 0
+  ));
+  const nextRunIncludesUpgrade = requestedSkillHrids.value.includes(skillHrid)
+    && targetLevel > currentLevel;
+  return Boolean(skilling.profile && (resultIncludesUpgrade || nextRunIncludesUpgrade));
 });
 const buffExpiredSinceResult = computed(() => {
   const generatedAt = Number(skilling.result?.generatedAt || 0);
@@ -612,9 +774,16 @@ const priceStatusClass = computed(() => {
 const overviewRows = computed(() => {
   const rankBySkill = new Map((skilling.overview || []).map((plan, index) => [plan.skillHrid, index + 1]));
   const rankedSkillHrids = (skilling.overview || []).map((plan) => plan.skillHrid).filter((skillHrid) => skillHrids.value.includes(skillHrid));
-  const orderedSkillHrids = skilling.result
-    ? [...rankedSkillHrids, ...skillHrids.value.filter((skillHrid) => !rankedSkillHrids.includes(skillHrid))]
+  const recordedSkillHrids = Array.isArray(skilling.result?.skillHrids)
+    ? skilling.result.skillHrids.filter((skillHrid) => skillHrids.value.includes(skillHrid))
+    : Object.keys(skilling.plansBySkill || {}).filter((skillHrid) => skillHrids.value.includes(skillHrid));
+  const visibleSkillHrids = skilling.result && recordedSkillHrids.length > 0
+    ? recordedSkillHrids
     : skillHrids.value;
+  const orderedSkillHrids = [
+    ...rankedSkillHrids,
+    ...visibleSkillHrids.filter((skillHrid) => !rankedSkillHrids.includes(skillHrid)),
+  ];
   return orderedSkillHrids.map((skillHrid) => ({
     skillHrid,
     rank: rankBySkill.get(skillHrid) || 0,
@@ -731,6 +900,19 @@ function itemName(itemHrid) {
 
 function actionName(action) {
   return getActionName(action?.actionHrid, action?.actionName || String(action?.actionHrid || "").split("/").pop() || "-");
+}
+
+function routeRecipeSummary(route) {
+  const actionHrids = Array.isArray(route?.actionHrids)
+    ? route.actionHrids.filter(Boolean)
+    : [route?.actionHrid].filter(Boolean);
+  if (actionHrids.length <= 1) {
+    const actionHrid = actionHrids[0] || route?.actionHrid;
+    return getActionName(actionHrid, route?.actionName || String(actionHrid || "").split("/").pop() || "-");
+  }
+  return t("common:skilling.multipleRecipes", "{{count}} recipes (see details)", {
+    count: formatCount(actionHrids.length),
+  });
 }
 
 function displayLocale() {
@@ -870,8 +1052,15 @@ function segmentLevelLabel(segment) {
   return `${formatCount(fromLevel)} -> ${formatCount(toLevel)}`;
 }
 
-function segmentDetailsAriaLabel(segment) {
-  return `${t("common:skilling.details", "Details")}: ${segmentLevelLabel(segment)} · ${actionName(segment)}`;
+function rangeDetailsAriaLabel(summary) {
+  return t("common:skilling.rangeDetailsAriaLabel", "Details: {{skill}} {{range}}", {
+    skill: skillName(selectedSkillHrid.value),
+    range: segmentLevelLabel(summary),
+  });
+}
+
+function countTimesLabel(value) {
+  return t("common:skilling.countTimes", "x{{count}}", { count: formatCount(value) });
 }
 
 function candidateDetailsAriaLabel(candidate, index) {
@@ -886,14 +1075,41 @@ function equipmentSummary(segment) {
       : "");
 }
 
-function candidateEquipmentSummary(candidate) {
-  const strategies = candidate?.equipmentStrategies || [];
+function routeEquipmentSummary(route) {
+  const strategies = route?.equipmentStrategies || [];
   if (strategies.length > 1) {
     return t("common:skilling.stagedEquipment", "Changes by stage ({{count}} loadouts; see details)", {
       count: strategies.length,
     });
   }
-  return equipmentSummary(strategies[0] || candidate);
+  return equipmentSummary(strategies[0] || route);
+}
+
+function candidateEquipmentSummary(candidate) {
+  return routeEquipmentSummary(candidate);
+}
+
+function totalDrinkSummary(route) {
+  const consumed = (route?.drinks || []).filter((drink) => Number(drink?.count) > 1e-9);
+  return joinItemRows(consumed, "count", "common:skilling.noCandidateDrinks", "None");
+}
+
+function stageCountLabel(route) {
+  return t("common:skilling.stageCount", "{{count}} execution stages", {
+    count: formatCount(route?.phaseCount ?? route?.phases?.length ?? 1),
+  });
+}
+
+function routeStageKey(stage, index) {
+  return [
+    stage?.fromLevel,
+    stage?.toLevel,
+    stage?.actionHrid,
+    stage?.equipmentSignature,
+    stage?.drinkSignature,
+    stage?.bonusSignature,
+    index,
+  ].join("-");
 }
 
 function equipmentStageLabel(strategy, index) {
@@ -924,6 +1140,12 @@ function setTarget(skillHrid, event) {
   if (event?.target) event.target.value = String(skilling.targetLevels[skillHrid]);
 }
 
+function setRunSkill(event) {
+  const selected = String(event?.target?.value || "");
+  skilling.setSelectedRunSkillHrid(selected);
+  if (event?.target) event.target.value = skilling.selectedRunSkillHrid;
+}
+
 async function runPlanner() {
   await skilling.run();
   void loadItemIcons(priceRows.value.map((row) => row.itemHrid));
@@ -950,6 +1172,7 @@ function openSegment(segment, isCandidate = false) {
     ...(segment?.equipmentStrategies || []).flatMap((strategy) => (
       (strategy?.equipment || []).map((item) => item.itemHrid)
     )),
+    ...(segment?.drinks || []).map((item) => item.itemHrid),
     ...(segment?.inputItems || []).map((item) => item.itemHrid),
     ...(segment?.outputItems || []).map((item) => item.itemHrid),
   ]);

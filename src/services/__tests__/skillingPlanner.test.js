@@ -8,6 +8,7 @@ import {
     buildSkillingOverview,
     buildSkillingEquipmentLoadouts,
     calculateSkillingActionCandidate,
+    collapseDrinkOnlyLevelPhases,
     collectSkillingProfileBonuses,
     compareCandidates,
     normalizeSkillingBalancedCostTolerance,
@@ -57,7 +58,114 @@ function action(patch = {}) {
     };
 }
 
+function displayPhase(patch = {}) {
+    return {
+        actionHrid: "/actions/brewing/test",
+        actionSortIndex: 1,
+        equipmentSignature: "tool-a",
+        externalBonusSignature: "external-a",
+        drinkSignature: "drink-a",
+        bonusSignature: "bonus-a",
+        fromLevel: 94,
+        toLevel: 94,
+        completionCount: 1,
+        requiredCompletionCount: 1,
+        gainedExperience: 10,
+        durationHours: 1,
+        estimatedLevelDurationHours: 1,
+        netCost: 1,
+        costPerExperience: 0.1,
+        opportunityCost: 1,
+        purchaseCost: 1,
+        drinkPurchaseCost: 0,
+        materialPurchaseCost: 1,
+        materialPurchaseCostPerExperience: 0.1,
+        outputValue: 0,
+        experiencePerHour: 10,
+        inputItems: [],
+        outputItems: [],
+        drinks: [],
+        equipment: [],
+        bonuses: {},
+        endingDrinkState: null,
+        equipmentChanges: 0,
+        ...patch,
+    };
+}
+
 describe("skillingPlanner", () => {
+    it("collapses drink-only phases within each consecutive base-strategy run", () => {
+        const phases = [
+            displayPhase(),
+            displayPhase({ drinkSignature: "drink-b", bonusSignature: "bonus-b" }),
+            displayPhase({
+                equipmentSignature: "tool-b",
+                drinkSignature: "drink-a",
+                bonusSignature: "bonus-a",
+            }),
+            displayPhase({
+                equipmentSignature: "tool-b",
+                drinkSignature: "drink-b",
+                bonusSignature: "bonus-b",
+            }),
+            displayPhase({
+                equipmentSignature: "tool-b",
+                externalBonusSignature: "external-b",
+                drinkSignature: "drink-a",
+                bonusSignature: "bonus-a",
+            }),
+            displayPhase({
+                equipmentSignature: "tool-b",
+                externalBonusSignature: "external-b",
+                drinkSignature: "drink-b",
+                bonusSignature: "bonus-b",
+            }),
+            displayPhase({
+                actionHrid: "/actions/brewing/other",
+                equipmentSignature: "tool-b",
+                externalBonusSignature: "external-b",
+                drinkSignature: "drink-a",
+                bonusSignature: "bonus-a",
+            }),
+            displayPhase({
+                actionHrid: "/actions/brewing/other",
+                equipmentSignature: "tool-b",
+                externalBonusSignature: "external-b",
+                drinkSignature: "drink-b",
+                bonusSignature: "bonus-b",
+            }),
+        ];
+
+        const result = collapseDrinkOnlyLevelPhases(phases);
+
+        expect(result).toHaveLength(4);
+        expect(result.map((segment) => segment.phases)).toEqual([
+            phases.slice(0, 2),
+            phases.slice(2, 4),
+            phases.slice(4, 6),
+            phases.slice(6, 8),
+        ]);
+        expect(result.map((segment) => segment.completionCount)).toEqual([2, 2, 2, 2]);
+        expect(result.map((segment) => segment.drinkSignature)).toEqual([
+            "drink-a~drink-b",
+            "drink-a~drink-b",
+            "drink-a~drink-b",
+            "drink-a~drink-b",
+        ]);
+    });
+
+    it("preserves a bonus strategy change when the drink loadout does not change", () => {
+        const phases = [
+            displayPhase(),
+            displayPhase({ bonusSignature: "bonus-from-other-source" }),
+        ];
+
+        const result = collapseDrinkOnlyLevelPhases(phases);
+
+        expect(result).toEqual(phases);
+        expect(result.every((segment) => segment.phases == null)).toBe(true);
+    });
+
     it("normalizes optimization modes and defaults unknown values to cost", () => {
         expect(normalizeSkillingOptimizationMode("SPEED")).toBe(SKILLING_OPTIMIZATION_MODE_SPEED);
         expect(normalizeSkillingOptimizationMode("BALANCED")).toBe(SKILLING_OPTIMIZATION_MODE_BALANCED);
@@ -3464,6 +3572,7 @@ describe("skillingPlanner", () => {
         });
 
         expect(Object.keys(result.plansBySkill)).toEqual(supportedSkills);
+        expect(result.skillHrids).toEqual(supportedSkills);
         expect(result.overview).toHaveLength(6);
         expect(Object.values(result.plansBySkill).every((plan) => plan.status === "ok")).toBe(true);
         const foragingSegment = result.plansBySkill["/skills/foraging"].segments[0];
@@ -3471,6 +3580,68 @@ describe("skillingPlanner", () => {
         expect(foragingAction.dropTable.some((drop) => (
             foragingSegment.outputItems.some((output) => output.itemHrid === drop.itemHrid && output.count > 0)
         ))).toBe(true);
+    });
+
+    it("filters requested skills in indexed order and rejects an empty valid selection", () => {
+        const supportedSkills = skillingData.skillHrids;
+        const profile = {
+            skills: Object.fromEntries([
+                ...supportedSkills.map((skillHrid) => [skillHrid, { level: 1, experience: 0 }]),
+                ["/skills/total_level", { level: supportedSkills.length, experience: null }],
+            ]),
+            inventory: {},
+            equipment: [],
+            buffsBySource: {},
+        };
+        const selectedSkillHrids = [
+            supportedSkills[5],
+            "/skills/not_supported",
+            supportedSkills[1],
+            supportedSkills[5],
+        ];
+        const result = planSkillingUpgrades({
+            profile,
+            targetLevels: Object.fromEntries(supportedSkills.map((skillHrid) => [skillHrid, 1])),
+            priceTable: {},
+            skillHrids: selectedSkillHrids,
+        });
+
+        expect(result.skillHrids).toEqual([supportedSkills[1], supportedSkills[5]]);
+        expect(Object.keys(result.plansBySkill)).toEqual(result.skillHrids);
+        expect(() => planSkillingUpgrades({
+            profile,
+            targetLevels: {},
+            priceTable: {},
+            skillHrids: ["/skills/not_supported"],
+        })).toThrow("No valid skilling skills were selected.");
+    });
+
+    it("finishes scoped progress when the selected skill needs no work", () => {
+        const skillHrid = skillingData.skillHrids[0];
+        const progressEvents = [];
+        const result = planSkillingUpgrades({
+            profile: {
+                skills: {
+                    [skillHrid]: { level: 1, experience: 0 },
+                    "/skills/total_level": { level: 1, experience: null },
+                },
+                inventory: {},
+                equipment: [],
+                buffsBySource: {},
+            },
+            targetLevels: { [skillHrid]: 1 },
+            priceTable: {},
+            skillHrids: [skillHrid],
+            onProgress: (progress) => progressEvents.push(progress),
+        });
+
+        expect(result.plansBySkill[skillHrid].status).toBe("complete");
+        expect(progressEvents.at(-1)).toMatchObject({
+            skillHrid,
+            skillIndex: 0,
+            skillCount: 1,
+            overallProgress: 1,
+        });
     });
 
     it("plans a real high-level tailoring level with one whole-level recipe", () => {

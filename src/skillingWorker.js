@@ -4,6 +4,7 @@ import {
     normalizeSkillingBalancedCostTolerance,
     normalizeSkillingOptimizationMode,
     planSkillingSkill,
+    resolveSkillingSkillHrids,
 } from "./services/skillingPlanner.js";
 
 function finiteNumber(value, fallback = 0) {
@@ -44,7 +45,7 @@ export function createSkillingWorkerRuntime(options = {}) {
         try {
             const optimizationMode = normalizeSkillingOptimizationMode(payload?.optimizationMode);
             const balancedCostTolerance = normalizeSkillingBalancedCostTolerance(payload?.balancedCostTolerance);
-            const skillHrids = skillingData?.skillHrids || [];
+            const skillHrids = resolveSkillingSkillHrids(skillingData, payload?.skillHrids);
             const plansBySkill = {};
             for (let index = 0; index < skillHrids.length; index += 1) {
                 if (!isCurrent(token)) {
@@ -92,6 +93,7 @@ export function createSkillingWorkerRuntime(options = {}) {
                 generatedAt: finiteNumber(payload?.now, Date.now()),
                 optimizationMode,
                 balancedCostTolerance,
+                skillHrids,
                 plansBySkill,
                 overview,
             };

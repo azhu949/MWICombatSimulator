@@ -9,6 +9,8 @@ import {
     SKILLING_OPTIMIZATION_MODE_SPEED,
 } from "../../services/skillingPlanner.js";
 import {
+    SKILLING_RUN_SCOPE_ALL,
+    SKILLING_RUN_SCOPE_SINGLE,
     SKILLING_STORAGE_KEY,
     loadSkillingPersistedState,
     normalizeSkillingPersistedState,
@@ -94,11 +96,34 @@ describe("skillingStore", () => {
 
         store.importProfile(createProfile());
         store.setTargetLevel("/skills/cooking", 20);
+        store.setRunScope(SKILLING_RUN_SCOPE_SINGLE);
+        store.setSelectedRunSkillHrid("/skills/cooking");
         await Promise.resolve();
 
         expect(global.localStorage.setItem.mock.calls.some(([key]) => key === SKILLING_STORAGE_KEY)).toBe(false);
         expect(store.profile.characterName).toBe("Ledger");
         expect(store.targetLevels["/skills/cooking"]).toBe(20);
+        expect(store.runScope).toBe(SKILLING_RUN_SCOPE_SINGLE);
+        expect(store.selectedRunSkillHrid).toBe("/skills/cooking");
+    });
+
+    it("defaults the run scope to all and keeps scope changes from invalidating results", () => {
+        const store = useSkillingStore();
+        store.importProfile(createProfile());
+        store.result = { generatedAt: 999, plansBySkill: {} };
+        store.resultStale = false;
+
+        expect(store.runScope).toBe(SKILLING_RUN_SCOPE_ALL);
+        expect(store.selectedRunSkillHrid).toBe(skillingData.skillHrids[0]);
+        expect(store.setRunScope(SKILLING_RUN_SCOPE_SINGLE)).toBe(true);
+        expect(store.setSelectedRunSkillHrid("/skills/cooking")).toBe(true);
+        expect(store.setSelectedRunSkillHrid("/skills/not_real")).toBe(false);
+        expect(store.setRunScope("not_real")).toBe(true);
+
+        expect(store.runScope).toBe(SKILLING_RUN_SCOPE_ALL);
+        expect(store.selectedRunSkillHrid).toBe("/skills/cooking");
+        expect(store.resultStale).toBe(false);
+        expect(store.result).toEqual({ generatedAt: 999, plansBySkill: {} });
     });
 
     it("defaults old or invalid persisted optimization modes to cost", () => {
@@ -172,6 +197,8 @@ describe("skillingStore", () => {
         store.setTargetLevel("/skills/cooking", 20);
         store.setOptimizationMode(SKILLING_OPTIMIZATION_MODE_BALANCED);
         store.setBalancedCostTolerance(0.4);
+        store.setRunScope(SKILLING_RUN_SCOPE_SINGLE);
+        store.setSelectedRunSkillHrid("/skills/cooking");
         store.result = { generatedAt: 999, plansBySkill: {} };
         await Promise.resolve();
 
@@ -182,6 +209,8 @@ describe("skillingStore", () => {
         expect(Object.values(refreshedStore.targetLevels)).toEqual(Array(skillingData.skillHrids.length).fill(2));
         expect(refreshedStore.optimizationMode).toBe(SKILLING_OPTIMIZATION_MODE_BALANCED);
         expect(refreshedStore.balancedCostTolerance).toBe(0.4);
+        expect(refreshedStore.runScope).toBe(SKILLING_RUN_SCOPE_ALL);
+        expect(refreshedStore.selectedRunSkillHrid).toBe(skillingData.skillHrids[0]);
     });
 
     it("recovers from malformed storage", () => {
@@ -261,6 +290,7 @@ describe("skillingStore", () => {
         const result = await store.run();
 
         expect(receivedPayload).toMatchObject({
+            skillHrids: skillingData.skillHrids,
             optimizationMode: SKILLING_OPTIMIZATION_MODE_BALANCED,
             balancedCostTolerance: 0.3,
             profile: {
@@ -283,6 +313,47 @@ describe("skillingStore", () => {
         });
     });
 
+    it("runs only the selected skill and replaces a previous all-skills result", async () => {
+        vi.stubGlobal("Worker", vi.fn());
+        let receivedPayload = null;
+        let initialProgress = null;
+        vi.spyOn(skillingWorkerClient, "start").mockImplementation((payload, handlers) => {
+            receivedPayload = payload;
+            initialProgress = { ...store.progress };
+            handlers.onResult({
+                generatedAt: payload.now,
+                skillHrids: [...payload.skillHrids],
+                plansBySkill: {
+                    "/skills/cooking": { skillHrid: "/skills/cooking" },
+                },
+                overview: [{ skillHrid: "/skills/cooking" }],
+            });
+        });
+        const store = useSkillingStore();
+        store.importProfile(createProfile());
+        store.result = {
+            skillHrids: [...skillingData.skillHrids],
+            plansBySkill: Object.fromEntries(skillingData.skillHrids.map((skillHrid) => [skillHrid, {}])),
+            overview: skillingData.skillHrids.map((skillHrid) => ({ skillHrid })),
+        };
+        store.setRunScope(SKILLING_RUN_SCOPE_SINGLE);
+        store.setSelectedRunSkillHrid("/skills/cooking");
+
+        const result = await store.run();
+
+        expect(receivedPayload.skillHrids).toEqual(["/skills/cooking"]);
+        expect(initialProgress).toEqual({
+            skillHrid: "/skills/cooking",
+            skillIndex: 0,
+            skillCount: 1,
+            overallProgress: 0,
+        });
+        expect(store.selectedView).toBe("/skills/cooking");
+        expect(result.skillHrids).toEqual(["/skills/cooking"]);
+        expect(Object.keys(store.result.plansBySkill)).toEqual(["/skills/cooking"]);
+        expect(store.result).toEqual(result);
+    });
+
     it("uses the balanced tolerance in the main-thread fallback", async () => {
         vi.stubGlobal("Worker", undefined);
         const store = useSkillingStore();
@@ -292,13 +363,17 @@ describe("skillingStore", () => {
         }
         store.setOptimizationMode(SKILLING_OPTIMIZATION_MODE_BALANCED);
         store.setBalancedCostTolerance(0.4);
+        store.setRunScope(SKILLING_RUN_SCOPE_SINGLE);
+        store.setSelectedRunSkillHrid("/skills/cooking");
 
         const result = await store.run();
 
         expect(result).toMatchObject({
             optimizationMode: SKILLING_OPTIMIZATION_MODE_BALANCED,
             balancedCostTolerance: 0.4,
+            skillHrids: ["/skills/cooking"],
         });
+        expect(Object.keys(result.plansBySkill)).toEqual(["/skills/cooking"]);
         expect(Object.values(result.plansBySkill).every((plan) => plan.balancedCostTolerance === 0.4)).toBe(true);
     });
 });

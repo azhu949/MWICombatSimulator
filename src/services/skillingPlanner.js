@@ -1920,24 +1920,38 @@ function aggregateLevelActionSegments(segments, actionSortIndex = 0, includePhas
     return aggregate;
 }
 
-function collapseDrinkOnlyLevelPhases(segments) {
+export function collapseDrinkOnlyLevelPhases(segments) {
     if ((segments || []).length <= 1) return segments || [];
-    const first = segments[0];
-    const sameRecipeAndEquipment = segments.every((segment) => (
-        segment?.actionHrid === first?.actionHrid
-        && segment?.equipmentSignature === first?.equipmentSignature
-        && segment?.externalBonusSignature === first?.externalBonusSignature
-    ));
-    const onlyDrinkBoundaries = segments.slice(1).every((segment, index) => {
-        const previous = segments[index];
-        return sameSegmentStrategy(previous, segment)
-            || previous?.drinkSignature !== segment?.drinkSignature;
-    });
-    if (!sameRecipeAndEquipment || !onlyDrinkBoundaries) return segments;
-    const aggregate = aggregateLevelActionSegments(segments, first?.actionSortIndex, true);
-    aggregate.drinkSignature = segments.map((segment) => segment?.drinkSignature || "-").join("~");
-    aggregate.bonusSignature = segments.map((segment) => segment?.bonusSignature || "-").join("~");
-    return [aggregate];
+    const collapsed = [];
+    let run = [];
+
+    const flushRun = () => {
+        if (run.length === 1) {
+            collapsed.push(run[0]);
+        } else if (run.length > 1) {
+            const aggregate = aggregateLevelActionSegments(run, run[0]?.actionSortIndex, true);
+            aggregate.drinkSignature = run.map((segment) => segment?.drinkSignature || "-").join("~");
+            aggregate.bonusSignature = run.map((segment) => segment?.bonusSignature || "-").join("~");
+            collapsed.push(aggregate);
+        }
+        run = [];
+    };
+
+    for (const segment of segments) {
+        const previous = run[run.length - 1];
+        const sameBaseStrategy = previous
+            && segment?.actionHrid === previous?.actionHrid
+            && segment?.equipmentSignature === previous?.equipmentSignature
+            && segment?.externalBonusSignature === previous?.externalBonusSignature;
+        const drinkOnlyBoundary = sameBaseStrategy && (
+            sameSegmentStrategy(previous, segment)
+            || previous?.drinkSignature !== segment?.drinkSignature
+        );
+        if (previous && !drinkOnlyBoundary) flushRun();
+        run.push(segment);
+    }
+    flushRun();
+    return collapsed;
 }
 
 function simulateSkillingLevelAction({
@@ -2562,6 +2576,20 @@ export function buildSkillingOverview(
     });
 }
 
+export function resolveSkillingSkillHrids(data, requestedSkillHrids) {
+    const supportedSkillHrids = Array.from(new Set(
+        (data?.skillHrids || []).filter((skillHrid) => typeof skillHrid === "string" && skillHrid),
+    ));
+    if (requestedSkillHrids === undefined) return supportedSkillHrids;
+
+    const requestedSet = new Set(Array.isArray(requestedSkillHrids) ? requestedSkillHrids : []);
+    const selectedSkillHrids = supportedSkillHrids.filter((skillHrid) => requestedSet.has(skillHrid));
+    if (selectedSkillHrids.length === 0) {
+        throw new Error("No valid skilling skills were selected.");
+    }
+    return selectedSkillHrids;
+}
+
 export function planSkillingUpgrades({
     profile,
     targetLevels,
@@ -2573,10 +2601,11 @@ export function planSkillingUpgrades({
     balancedCostTolerance = SKILLING_BALANCED_COST_TOLERANCE,
     now = Date.now(),
     onProgress = () => {},
+    skillHrids,
 }) {
     const normalizedOptimizationMode = normalizeSkillingOptimizationMode(optimizationMode);
     const normalizedBalancedCostTolerance = normalizeSkillingBalancedCostTolerance(balancedCostTolerance);
-    const skills = data?.skillHrids || [];
+    const skills = resolveSkillingSkillHrids(data, skillHrids);
     const plansBySkill = {};
     skills.forEach((skillHrid, index) => {
         plansBySkill[skillHrid] = planSkillingSkill({
@@ -2597,12 +2626,19 @@ export function planSkillingUpgrades({
                 overallProgress: (index + finiteNumber(progress?.progress, 0)) / Math.max(1, skills.length),
             }),
         });
+        onProgress({
+            skillHrid,
+            skillIndex: index,
+            skillCount: skills.length,
+            overallProgress: (index + 1) / Math.max(1, skills.length),
+        });
     });
     const overview = buildSkillingOverview(plansBySkill, normalizedOptimizationMode);
     return {
         generatedAt: now,
         optimizationMode: normalizedOptimizationMode,
         balancedCostTolerance: normalizedBalancedCostTolerance,
+        skillHrids: skills,
         plansBySkill,
         overview,
     };

@@ -40,6 +40,7 @@ describe("skillingWorker runtime", () => {
         expect(result.result.generatedAt).toBe(1234);
         expect(result.result.optimizationMode).toBe(SKILLING_OPTIMIZATION_MODE_BALANCED);
         expect(result.result.balancedCostTolerance).toBe(0.25);
+        expect(result.result.skillHrids).toEqual(skillingData.skillHrids);
         expect(Object.keys(result.result.plansBySkill)).toEqual(skillingData.skillHrids);
         expect(Object.values(result.result.plansBySkill).every((plan) => plan.balancedCostTolerance === 0.25)).toBe(true);
         expect(result.result.overview).toEqual([]);
@@ -60,6 +61,53 @@ describe("skillingWorker runtime", () => {
         const result = messages.find((message) => message.type === "skilling_result");
         expect(result.result.balancedCostTolerance).toBe(1);
         expect(Object.values(result.result.plansBySkill).every((plan) => plan.balancedCostTolerance === 1)).toBe(true);
+    });
+
+    it("runs only requested skills in indexed order and scopes progress to that selection", async () => {
+        const messages = [];
+        const runtime = createSkillingWorkerRuntime({
+            postMessage: (message) => messages.push(message),
+            yieldTask: () => Promise.resolve(),
+        });
+        const payload = completedPayload("selected");
+        payload.skillHrids = [
+            skillingData.skillHrids[5],
+            "/skills/not_supported",
+            skillingData.skillHrids[0],
+            skillingData.skillHrids[5],
+        ];
+
+        await runtime.handleMessage(payload);
+
+        const selectedSkillHrids = [skillingData.skillHrids[0], skillingData.skillHrids[5]];
+        const progress = messages.filter((message) => message.type === "skilling_progress");
+        const result = messages.find((message) => message.type === "skilling_result");
+        expect(progress).toHaveLength(2);
+        expect(progress.map((message) => message.skillIndex)).toEqual([0, 1]);
+        expect(progress.every((message) => message.skillCount === 2)).toBe(true);
+        expect(progress.map((message) => message.overallProgress)).toEqual([0.5, 1]);
+        expect(result.result.skillHrids).toEqual(selectedSkillHrids);
+        expect(Object.keys(result.result.plansBySkill)).toEqual(selectedSkillHrids);
+    });
+
+    it("reports an error when an explicit selection has no supported skill", async () => {
+        const messages = [];
+        const runtime = createSkillingWorkerRuntime({
+            postMessage: (message) => messages.push(message),
+            yieldTask: () => Promise.resolve(),
+        });
+        const payload = completedPayload("invalid-selection");
+        payload.skillHrids = ["/skills/not_supported"];
+
+        await runtime.handleMessage(payload);
+
+        expect(messages).toContainEqual({
+            type: "skilling_error",
+            runId: "invalid-selection",
+            error: "No valid skilling skills were selected.",
+        });
+        expect(messages.some((message) => message.type === "skilling_result")).toBe(false);
+        expect(runtime.getActiveRunId()).toBe("");
     });
 
     it("acknowledges cancellation and suppresses the final result", async () => {

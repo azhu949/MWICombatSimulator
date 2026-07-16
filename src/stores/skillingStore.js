@@ -15,6 +15,8 @@ import { useSimulatorStore } from "./simulatorStore.js";
 
 export const SKILLING_STORAGE_VERSION = 1;
 export const SKILLING_STORAGE_KEY = "mwi.skilling.v1";
+export const SKILLING_RUN_SCOPE_ALL = "all";
+export const SKILLING_RUN_SCOPE_SINGLE = "single";
 
 function finiteNumber(value, fallback = 0) {
     const parsed = Number(value);
@@ -170,6 +172,10 @@ export const useSkillingStore = defineStore("skilling", () => {
     const balancedCostTolerance = ref(normalizeSkillingBalancedCostTolerance(
         persisted.balancedCostTolerance ?? SKILLING_BALANCED_COST_TOLERANCE,
     ));
+    const runScope = ref(SKILLING_RUN_SCOPE_ALL);
+    const selectedRunSkillHrid = ref(String(
+        (skillingData?.skillHrids || []).find((skillHrid) => typeof skillHrid === "string" && skillHrid) || "",
+    ));
     const selectedView = ref("overview");
     const result = ref(null);
     const resultStale = ref(false);
@@ -296,6 +302,24 @@ export const useSkillingStore = defineStore("skilling", () => {
         return true;
     }
 
+    function setRunScope(scope) {
+        const normalized = scope === SKILLING_RUN_SCOPE_SINGLE
+            ? SKILLING_RUN_SCOPE_SINGLE
+            : SKILLING_RUN_SCOPE_ALL;
+        if (normalized === runScope.value) return false;
+        runScope.value = normalized;
+        return true;
+    }
+
+    function setSelectedRunSkillHrid(skillHrid) {
+        const normalized = String(skillHrid || "");
+        if (!skillHrids.value.includes(normalized) || normalized === selectedRunSkillHrid.value) {
+            return false;
+        }
+        selectedRunSkillHrid.value = normalized;
+        return true;
+    }
+
     function setPriceOverride(itemHrid, patch) {
         return simulator.setPriceOverride(itemHrid, patch);
     }
@@ -325,9 +349,20 @@ export const useSkillingStore = defineStore("skilling", () => {
             return null;
         }
         cancel();
+        const selectedSkillHrid = skillHrids.value.includes(selectedRunSkillHrid.value)
+            ? selectedRunSkillHrid.value
+            : skillHrids.value[0];
+        const runSkillHrids = runScope.value === SKILLING_RUN_SCOPE_SINGLE
+            ? [selectedSkillHrid].filter(Boolean)
+            : [...skillHrids.value];
+        if (runScope.value === SKILLING_RUN_SCOPE_SINGLE && selectedSkillHrid) {
+            selectedRunSkillHrid.value = selectedSkillHrid;
+            selectedView.value = selectedSkillHrid;
+        }
         const runId = `skilling-${Date.now()}-${++runSequence}`;
         const payload = {
             runId,
+            skillHrids: runSkillHrids,
             profile: cloneJsonValue(profile.value, profile.value),
             targetLevels: { ...targetLevels },
             optimizationMode: optimizationMode.value,
@@ -338,7 +373,12 @@ export const useSkillingStore = defineStore("skilling", () => {
         };
         activeRunId.value = runId;
         running.value = true;
-        progress.value = { overallProgress: 0 };
+        progress.value = {
+            skillHrid: runSkillHrids[0] || "",
+            skillIndex: 0,
+            skillCount: runSkillHrids.length,
+            overallProgress: 0,
+        };
         error.value = "";
 
         if (typeof Worker !== "function") {
@@ -379,6 +419,8 @@ export const useSkillingStore = defineStore("skilling", () => {
         targetLevels,
         optimizationMode,
         balancedCostTolerance,
+        runScope,
+        selectedRunSkillHrid,
         selectedView,
         result,
         resultStale,
@@ -400,6 +442,8 @@ export const useSkillingStore = defineStore("skilling", () => {
         setTargetLevel,
         setOptimizationMode,
         setBalancedCostTolerance,
+        setRunScope,
+        setSelectedRunSkillHrid,
         setPriceOverride,
         resetPriceOverride,
         run,
