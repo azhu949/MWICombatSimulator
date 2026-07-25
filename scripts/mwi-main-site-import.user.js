@@ -3,7 +3,7 @@
 // @name:zh      MWI Combat Simulator 主站一键导入
 // @name:zh-CN   MWI Combat Simulator 主站一键导入
 // @namespace    https://azhu949.github.io/MWICombatSimulator
-// @version      0.1.27
+// @version      0.1.29
 // @license      ISC
 // @description  Import the current Milky Way Idle character or cached team into the combat simulator, enhancement simulator, or skilling planner.
 // @description:zh      将 Milky Way Idle 主站当前角色或缓存队伍导入战斗模拟器、强化模拟器或生活技能规划器。
@@ -49,6 +49,9 @@
     const STORAGE_POLL_INTERVAL_MS = 250;
     const TEAM_ROSTER_CACHE_BUCKET_LIMIT = 24;
     const RECENT_PARTY_MESSAGE_LIMIT = 20;
+    // WebSocket party rosters can otherwise keep authorizing themselves after a
+    // silent leave/disband that does not update the current combat action.
+    const RECENT_PARTY_MESSAGE_MAX_AGE_MS = 10 * 60 * 1000;
     const PROFILE_CACHE_LIMIT = 50;
     const TEAM_IMPORT_PLAYER_IDS = ["1", "2", "3", "4", "5"];
     const UI_TEXT = {
@@ -469,6 +472,32 @@
         mainSiteState.recentPartyMessages = [];
     }
 
+    function hasStructuredPartyInfoFieldHints(rawValue) {
+        return typeof rawValue === "string"
+            && rawValue.includes('"partySlotMap"')
+            && rawValue.includes('"sharableCharacterMap"');
+    }
+
+    function getFreshRecentPartyMessages(now = Date.now()) {
+        const currentTime = Number(now);
+        const messages = Array.isArray(mainSiteState.recentPartyMessages) ? mainSiteState.recentPartyMessages : [];
+        const freshMessages = messages.filter((message) => {
+            const receivedAt = Number(message?.receivedAt || 0);
+            if (!Number.isFinite(currentTime) || !Number.isFinite(receivedAt) || receivedAt <= 0) {
+                return false;
+            }
+
+            const age = currentTime - receivedAt;
+            return age >= 0 && age <= RECENT_PARTY_MESSAGE_MAX_AGE_MS;
+        });
+
+        if (freshMessages.length !== messages.length) {
+            mainSiteState.recentPartyMessages = freshMessages;
+        }
+
+        return freshMessages;
+    }
+
     function clearTeamRosterCacheForCharacter(characterName) {
         const comparableCharacterName = normalizeComparableText(characterName);
         if (!comparableCharacterName) {
@@ -518,7 +547,7 @@
     }
 
     function collectStructuredPartyInfoSources(source, path, depth, results, visited) {
-        if (!source || typeof source !== "object" || Array.isArray(source) || depth > 2) {
+        if (!source || typeof source !== "object" || Array.isArray(source) || depth > 3) {
             return;
         }
 
@@ -528,25 +557,23 @@
 
         visited.add(source);
 
-        const isPartyInfoPath = path.split(".").pop() === "partyInfo";
+        // Party payloads are detected structurally instead of by key name, because the
+        // main site does not always nest them under a literal `partyInfo` key.
         const hasPartySlotMap = source?.partySlotMap && typeof source.partySlotMap === "object" && !Array.isArray(source.partySlotMap);
         const hasSharableCharacterMap = source?.sharableCharacterMap && typeof source.sharableCharacterMap === "object" && !Array.isArray(source.sharableCharacterMap);
-        if (isPartyInfoPath && hasPartySlotMap && hasSharableCharacterMap) {
+        if (hasPartySlotMap && hasSharableCharacterMap) {
             results.push({
-                path,
+                path: path || "message",
                 value: source,
             });
         }
 
-        if (depth >= 2) {
+        if (depth >= 3) {
             return;
         }
 
-        [
-            ["partyInfo", source?.partyInfo],
-            ["payload", source?.payload],
-            ["data", source?.data],
-        ].forEach(([key, value]) => {
+        Object.keys(source).forEach((key) => {
+            const value = source[key];
             if (!value || typeof value !== "object" || Array.isArray(value)) {
                 return;
             }
@@ -562,7 +589,7 @@
         return Array.from(new Map(results.map((entry) => [entry.path, entry])).values());
     }
 
-    function rememberRecentPartyMessage(message) {
+    function rememberRecentPartyMessage(message, receivedAt = Date.now()) {
         const structuredSources = getStructuredPartyInfoSources(message);
         if (structuredSources.length === 0) {
             return;
@@ -571,12 +598,24 @@
         const snapshots = structuredSources
             .map((entry) => clonePlainObject(entry.value))
             .filter((entry) => entry && typeof entry === "object" && !Array.isArray(entry))
-            .map((partyInfo) => ({ partyInfo }));
+            .map((partyInfo) => ({
+                partyInfo,
+                receivedAt,
+            }));
         if (snapshots.length === 0) {
             return;
         }
 
-        mainSiteState.recentPartyMessages = [...snapshots, ...mainSiteState.recentPartyMessages]
+        // An empty/solo party snapshot is an explicit "left the party" signal, so the
+        // stale roster state is dropped. The snapshot itself is not retained: rosters
+        // with fewer than 2 members can never produce a candidate downstream.
+        const hasActiveRoster = snapshots.some((snapshot) => countPartyInfoMembers(snapshot.partyInfo) >= 2);
+        if (!hasActiveRoster) {
+            clearStaleTeamRosterState(mainSiteState.currentCharacterName);
+            return;
+        }
+
+        mainSiteState.recentPartyMessages = [...snapshots, ...getFreshRecentPartyMessages(receivedAt)]
             .slice(0, RECENT_PARTY_MESSAGE_LIMIT);
     }
 
@@ -766,27 +805,65 @@
         return buildStructuredRosterCandidate(path, members);
     }
 
+    function getGameStatePartyInfoSources(gameState) {
+        const directPartyInfo = gameState?.partyInfo ?? null;
+        const sources = [
+            ...(directPartyInfo ? [{ path: "mwi.game.state.partyInfo", value: directPartyInfo }] : []),
+            ...getStructuredPartyInfoSources(gameState, "mwi.game.state"),
+        ];
+        const seenPaths = new Set();
+
+        return sources.filter((entry) => {
+            const path = String(entry?.path || "");
+            if (!path || seenPaths.has(path)) {
+                return false;
+            }
+
+            seenPaths.add(path);
+            return true;
+        });
+    }
+
     function resolveTeamMemberNamesFromGameState() {
         const gameState = getMainSiteGameState();
         const currentCharacterLookup = buildCurrentCharacterLookup(gameState);
-        const partyInfo = gameState?.partyInfo ?? null;
-        const partyInfoCandidate = resolvePartyInfoRosterCandidate(
-            partyInfo,
-            "mwi.game.state.partyInfo",
-            currentCharacterLookup
-        );
+        const directPartyInfo = gameState?.partyInfo ?? null;
+        const partyInfoSources = getGameStatePartyInfoSources(gameState);
+
+        let partyInfoCandidate = null;
+        let resolvedPartyInfo = directPartyInfo;
+        for (const entry of partyInfoSources) {
+            const candidate = resolvePartyInfoRosterCandidate(
+                entry.value,
+                entry.path,
+                currentCharacterLookup
+            );
+            if (candidate) {
+                partyInfoCandidate = candidate;
+                resolvedPartyInfo = entry.value;
+                break;
+            }
+
+            if (countPartyInfoMembers(entry.value) > countPartyInfoMembers(resolvedPartyInfo)) {
+                resolvedPartyInfo = entry.value;
+            }
+        }
+
+        const partyInfoMemberCount = partyInfoSources.reduce((maxCount, entry) => {
+            return Math.max(maxCount, countPartyInfoMembers(entry.value));
+        }, 0);
 
         return {
             partyInfoNames: partyInfoCandidate?.names ?? [],
             partyInfoMembers: partyInfoCandidate?.members ?? [],
-            partyInfo,
-            partyInfoMemberCount: countPartyInfoMembers(partyInfo),
+            partyInfo: resolvedPartyInfo,
+            partyInfoMemberCount,
             partyInfoResolvedFromPath: partyInfoCandidate?.path || "",
         };
     }
 
-    function resolveTeamMemberNamesFromRecentPartyMessages() {
-        const messages = Array.isArray(mainSiteState.recentPartyMessages) ? mainSiteState.recentPartyMessages : [];
+    function resolveTeamMemberNamesFromRecentPartyMessages(now = Date.now()) {
+        const messages = getFreshRecentPartyMessages(now);
         const currentCharacterLookup = buildCurrentCharacterLookup(getMainSiteGameState());
 
         for (let messageIndex = 0; messageIndex < messages.length; messageIndex += 1) {
@@ -2069,6 +2146,21 @@
         return message || fallbackMessage;
     }
 
+    function isTrustedBridgeMessageSource(source) {
+        if (!source) {
+            return false;
+        }
+
+        // Userscript sandboxes expose a proxy `window`, while the page posts with the
+        // real (unsafe) window as `event.source`. Both must be accepted here.
+        return source === window || source === pageWindow;
+    }
+
+    function isTrustedBridgeMessageEvent(event) {
+        return isTrustedBridgeMessageSource(event?.source)
+            && event?.origin === window.location.origin;
+    }
+
     function waitForWindowMessage(channel, type, requestId, timeoutMs) {
         return new Promise((resolve, reject) => {
             const timeoutId = window.setTimeout(() => {
@@ -2077,7 +2169,7 @@
             }, timeoutMs);
 
             function handleWindowMessage(event) {
-                if (event.source !== window || event.origin !== window.location.origin) {
+                if (!isTrustedBridgeMessageEvent(event)) {
                     return;
                 }
 
@@ -2244,7 +2336,9 @@
 
         socket.addEventListener("message", (event) => {
             const parsed = parseMainSiteJsonPayload(event.data);
-            rememberRecentPartyMessage(parsed);
+            if (hasStructuredPartyInfoFieldHints(event.data)) {
+                rememberRecentPartyMessage(parsed);
+            }
 
             if (!isMainSiteGameMessage(parsed)) {
                 return;
@@ -2258,6 +2352,14 @@
 
         socket.addEventListener("close", () => {
             mainSiteState.sockets.delete(socket);
+            if (mainSiteState.sockets.size === 0) {
+                // Only the in-memory roster is dropped here. A closed socket is not proof
+                // that the party ended: reconnects briefly close every socket, and wiping
+                // the persisted cache would degrade team imports to the current character
+                // until a fresh party message arrives. Persisted cache invalidation is left
+                // to the real "left the party" signals (empty party snapshot / partyId -> 0).
+                clearRecentPartyMessages();
+            }
         });
 
         return socket;
@@ -2421,8 +2523,12 @@
         const cacheMatch = readTeamRosterCache(teamContext);
         const gameStateResult = resolveTeamMemberNamesFromGameState();
         const wsPartyResult = resolveTeamMemberNamesFromRecentPartyMessages();
+        // A resolved WebSocket party roster is itself valid evidence of an active party:
+        // the main site does not reliably expose `mwi.game.state.partyInfo`, and party
+        // combat actions do not always carry a non-zero partyId.
         const hasActivePartyEvidence = Number(gameStateResult?.partyInfoMemberCount || 0) >= 2
-            || Number(teamContext?.partyId || 0) > 0;
+            || Number(teamContext?.partyId || 0) > 0
+            || (Array.isArray(wsPartyResult?.names) && wsPartyResult.names.length >= 2);
         const selectedAutoDetectedRoster = selectAutoDetectedTeamRoster({
             gameStateResult,
             wsPartyResult,
@@ -2619,7 +2725,7 @@
             const format = String(safeOptions.format || "shareable-profile").trim() || "shareable-profile";
             const { format: _ignoredFormat, ...messageOptions } = safeOptions;
 
-            window.postMessage({
+            pageWindow.postMessage({
                 ...messageOptions,
                 channel: APP_BRIDGE_CHANNEL,
                 type: "mwi-tm-import",

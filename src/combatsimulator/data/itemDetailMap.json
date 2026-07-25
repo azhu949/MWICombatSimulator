@@ -59203,7 +59203,7 @@
     "/items/seal_of_action_speed": {
         "hrid": "/items/seal_of_action_speed",
         "name": "Scroll Of Action Speed",
-        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth)",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth and Guild Trials)",
         "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
@@ -59270,7 +59270,7 @@
     "/items/seal_of_attack_speed": {
         "hrid": "/items/seal_of_attack_speed",
         "name": "Scroll Of Attack Speed",
-        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth)",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth and Guild Trials)",
         "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
@@ -59337,7 +59337,7 @@
     "/items/seal_of_cast_speed": {
         "hrid": "/items/seal_of_cast_speed",
         "name": "Scroll Of Cast Speed",
-        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth)",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth and Guild Trials)",
         "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
@@ -59404,7 +59404,7 @@
     "/items/seal_of_combat_drop": {
         "hrid": "/items/seal_of_combat_drop",
         "name": "Scroll Of Combat Drop",
-        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth)",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth and Guild Trials)",
         "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
@@ -59471,7 +59471,7 @@
     "/items/seal_of_critical_rate": {
         "hrid": "/items/seal_of_critical_rate",
         "name": "Scroll Of Critical Rate",
-        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth)",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth and Guild Trials)",
         "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
@@ -59538,7 +59538,7 @@
     "/items/seal_of_damage": {
         "hrid": "/items/seal_of_damage",
         "name": "Scroll Of Damage",
-        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth)",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth and Guild Trials)",
         "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
@@ -59605,7 +59605,7 @@
     "/items/seal_of_efficiency": {
         "hrid": "/items/seal_of_efficiency",
         "name": "Scroll Of Efficiency",
-        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth)",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth and Guild Trials)",
         "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
@@ -59672,7 +59672,7 @@
     "/items/seal_of_gathering": {
         "hrid": "/items/seal_of_gathering",
         "name": "Scroll Of Gathering",
-        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth)",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth and Guild Trials)",
         "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
@@ -59739,7 +59739,7 @@
     "/items/seal_of_gourmet": {
         "hrid": "/items/seal_of_gourmet",
         "name": "Scroll Of Gourmet",
-        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth)",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth and Guild Trials)",
         "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
@@ -59806,7 +59806,7 @@
     "/items/seal_of_processing": {
         "hrid": "/items/seal_of_processing",
         "name": "Scroll Of Processing",
-        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth)",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth and Guild Trials)",
         "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
@@ -59873,7 +59873,7 @@
     "/items/seal_of_rare_find": {
         "hrid": "/items/seal_of_rare_find",
         "name": "Scroll Of Rare Find",
-        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth)",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth and Guild Trials)",
         "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
@@ -59958,7 +59958,7 @@
     "/items/seal_of_wisdom": {
         "hrid": "/items/seal_of_wisdom",
         "name": "Scroll Of Wisdom",
-        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth)",
+        "description": "Received from the Labyrinth. Grants 30 minutes of buff when opened. (Only effective outside of Labyrinth and Guild Trials)",
         "categoryHrid": "/item_categories/scroll",
         "sellPrice": 0,
         "isOpenable": true,
