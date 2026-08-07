@@ -16,6 +16,12 @@ describe("App header support links", () => {
         expect(appSource).toContain("common:menu.skilling");
     });
 
+    it("links to the in-app guide", () => {
+        expect(appSource).toContain('to="/guide"');
+        expect(appSource).not.toContain("guideRoute");
+        expect(appSource).toContain("common:menu.guide");
+    });
+
     it("renders GitHub and feedback entry points in the header", () => {
         expect(appSource).toContain("https://github.com/azhu949/MWICombatSimulator");
         expect(appSource).not.toContain("__REPOSITORY_URL__");

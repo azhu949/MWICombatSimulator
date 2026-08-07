@@ -134,7 +134,7 @@ describe("mwi main-site import userscript", () => {
         expect(scriptSource).toContain('normalizedImportMode === "player" ? "auto" : "active-player"');
         expect(scriptSource).toContain('importTarget: "enhancement"');
         expect(scriptSource).toContain('enhancementButton: "导入角色强化配置"');
-        expect(scriptSource).toContain("// @version      0.1.28");
+        expect(scriptSource).toContain("// @version      0.1.29");
     });
 
     it("uses the current character and skilling bridge target on the skilling page", () => {

@@ -19,6 +19,12 @@ const routes = [
     },
     { path: "/queue", name: "queue", component: () => import("../pages/QueuePage.vue") },
     { path: "/multi-results", name: "multi-results", component: () => import("../pages/MultiResultsPage.vue") },
+    {
+        path: "/guide",
+        name: "guide",
+        component: () => import("../pages/GuidePage.vue"),
+        meta: { showCombatToolbar: false },
+    },
     { path: "/settings", name: "settings", component: () => import("../pages/SettingsPage.vue") },
 ];
 

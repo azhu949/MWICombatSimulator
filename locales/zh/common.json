@@ -42,7 +42,8 @@
         "skilling": "生活技能",
         "queue": "队列",
         "multiResults": "多轮结果",
-        "settings": "设置"
+        "settings": "设置",
+        "guide": "教程"
     },
     "queue": {
         "setBaseline": "设为基准",

@@ -18,6 +18,7 @@
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/queue">{{ t('common:menu.queue', 'Queue') }}</RouterLink>
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/multi-results">{{ t('common:menu.multiResults', 'Multi-round') }}</RouterLink>
             <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/settings">{{ t('common:menu.settings', 'Settings') }}</RouterLink>
+            <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/guide">{{ t('common:menu.guide', 'Guide') }}</RouterLink>
             <button
               type="button"
               class="action-button-muted patch-notes-trigger"

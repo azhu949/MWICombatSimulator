@@ -1,4 +1,18 @@
 {
+    "2026年8月8日（v1.0.29）": {
+        "label": {
+            "zh": "2026年8月8日（v1.0.29）",
+            "en": "August 8, 2026 (v1.0.29)"
+        },
+        "notes": {
+            "zh": [
+                "新增中英文图文使用教程，覆盖首次使用与数据导入、战斗模拟、队列比较、刷图推荐、强化、生活技能与设置。"
+            ],
+            "en": [
+                "Added illustrated Chinese and English user guides covering first use and data import, combat simulation, queue comparisons, Advisor, Enhancement, Skilling, and Settings."
+            ]
+        }
+    },
     "2026年7月16日（v1.0.28）": {
         "label": {
             "zh": "2026年7月16日（v1.0.28）",

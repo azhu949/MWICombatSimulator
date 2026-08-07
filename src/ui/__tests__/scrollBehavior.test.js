@@ -16,6 +16,33 @@ describe("appScrollBehavior", () => {
         )).toBe(false);
     });
 
+    it("scrolls guide hash links below the sticky header", () => {
+        expect(appScrollBehavior(
+            { path: "/guide", hash: "#queue" },
+            { path: "/guide", hash: "#combat" },
+            null
+        )).toEqual({ el: "#queue", top: 144 });
+    });
+
+    it("uses the actual sticky header height on narrow layouts", () => {
+        const previousDocument = globalThis.document;
+        globalThis.document = {
+            querySelector: () => ({
+                getBoundingClientRect: () => ({ height: 296 }),
+            }),
+        };
+
+        try {
+            expect(appScrollBehavior(
+                { path: "/guide", hash: "#queue" },
+                { path: "/guide", hash: "#combat" },
+                null
+            )).toEqual({ el: "#queue", top: 312 });
+        } finally {
+            globalThis.document = previousDocument;
+        }
+    });
+
     it("resets regular route changes back to the top", () => {
         expect(appScrollBehavior(
             { path: "/home", hash: "" },

@@ -62,6 +62,7 @@ npm test
 ## 常用文档
 
 - [`docs/game-data.md`](docs/game-data.md)：游戏数据与官方中英文词条来源、同步/发布流程、使用免责声明，以及刷新当前维护数据的方法
+- [`docs/user-guide.md`](docs/user-guide.md) / [`docs/user-guide.en.md`](docs/user-guide.en.md)：中英文图文使用教程，涵盖数据导入、战斗模拟、队列比较和专项工具
 - [`docs/init-client-data-key-reference.md`](docs/init-client-data-key-reference.md)：`initClientData` 当前 48 个顶层 key 的作用、接入状态和导出情况对照表
 - [`scripts/mwi-main-site-import.README.md`](scripts/mwi-main-site-import.README.md)：Tampermonkey「主站一键导入」脚本说明
 

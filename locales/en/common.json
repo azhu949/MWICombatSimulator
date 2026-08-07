@@ -42,7 +42,8 @@
         "skilling": "Skilling",
         "queue": "Queue",
         "multiResults": "Multi-round",
-        "settings": "Settings"
+        "settings": "Settings",
+        "guide": "Guide"
     },
     "queue": {
         "setBaseline": "Set Baseline",
