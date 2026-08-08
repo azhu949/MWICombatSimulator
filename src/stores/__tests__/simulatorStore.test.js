@@ -63,6 +63,16 @@ function findFirstEquipmentItem() {
     return item?.hrid ?? "";
 }
 
+function setExactEquipmentAsk(simulator, itemHrid, level, ask) {
+    simulator.pricing.enhancementQuotesByItem = {
+        ...simulator.pricing.enhancementQuotesByItem,
+        [itemHrid]: {
+            ...(simulator.pricing.enhancementQuotesByItem?.[itemHrid] || {}),
+            [String(level)]: { ask, bid: -1 },
+        },
+    };
+}
+
 function findFirstEquipmentItemByType(equipmentTypeHrid) {
     const item = Object.values(itemDetailMap).find((entry) => (
         entry?.categoryHrid === "/item_categories/equipment"
@@ -725,13 +735,13 @@ describe("simulatorStore", () => {
 
         simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
         simulator.activePlayer.equipment.weapon.enhancementLevel = 1;
-        expect(simulator.setActivePlayerEquipmentUpgradeCost("weapon", 100)).toBe(true);
+        setExactEquipmentAsk(simulator, equipmentItemHrid, 1, 100);
         const cheaperItems = simulator.addActivePlayerToQueue();
         expect(cheaperItems).toHaveLength(1);
 
         simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
         simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
-        expect(simulator.setActivePlayerEquipmentUpgradeCost("weapon", 1000)).toBe(true);
+        setExactEquipmentAsk(simulator, equipmentItemHrid, 2, 1000);
         const expensiveItems = simulator.addActivePlayerToQueue();
         expect(expensiveItems).toHaveLength(1);
 
@@ -822,13 +832,13 @@ describe("simulatorStore", () => {
 
         simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
         simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
-        expect(simulator.setActivePlayerEquipmentUpgradeCost("weapon", 100)).toBe(true);
+        setExactEquipmentAsk(simulator, equipmentItemHrid, 2, 100);
         const cheaperItems = simulator.addActivePlayerToQueue();
         expect(cheaperItems).toHaveLength(1);
 
         simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
         simulator.activePlayer.equipment.weapon.enhancementLevel = 3;
-        expect(simulator.setActivePlayerEquipmentUpgradeCost("weapon", 100)).toBe(true);
+        setExactEquipmentAsk(simulator, equipmentItemHrid, 3, 100);
         const expensiveItems = simulator.addActivePlayerToQueue();
         expect(expensiveItems).toHaveLength(1);
 
@@ -1124,11 +1134,13 @@ describe("simulatorStore", () => {
 
         simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
         simulator.activePlayer.equipment.weapon.enhancementLevel = 1;
+        setExactEquipmentAsk(simulator, equipmentItemHrid, 1, 1);
         const highMeanItems = simulator.addActivePlayerToQueue();
         expect(highMeanItems).toHaveLength(1);
 
         simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
         simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
+        setExactEquipmentAsk(simulator, equipmentItemHrid, 2, 1);
         const highMedianItems = simulator.addActivePlayerToQueue();
         expect(highMedianItems).toHaveLength(1);
 
@@ -1198,6 +1210,7 @@ describe("simulatorStore", () => {
 
         simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
         simulator.activePlayer.equipment.weapon.enhancementLevel = 1;
+        setExactEquipmentAsk(simulator, equipmentItemHrid, 1, 1);
         const addedItems = simulator.addActivePlayerToQueue();
 
         expect(addedItems).toHaveLength(1);
@@ -1255,13 +1268,13 @@ describe("simulatorStore", () => {
 
         simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
         simulator.activePlayer.equipment.weapon.enhancementLevel = 1;
-        expect(simulator.setActivePlayerEquipmentUpgradeCost("weapon", 100)).toBe(true);
+        setExactEquipmentAsk(simulator, equipmentItemHrid, 1, 100);
         const profitFocusedItems = simulator.addActivePlayerToQueue();
         expect(profitFocusedItems).toHaveLength(1);
 
         simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
         simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
-        expect(simulator.setActivePlayerEquipmentUpgradeCost("weapon", 100)).toBe(true);
+        setExactEquipmentAsk(simulator, equipmentItemHrid, 2, 100);
         const xpFocusedItems = simulator.addActivePlayerToQueue();
         expect(xpFocusedItems).toHaveLength(1);
 
@@ -1334,11 +1347,13 @@ describe("simulatorStore", () => {
 
         simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
         simulator.activePlayer.equipment.weapon.enhancementLevel = 1;
+        setExactEquipmentAsk(simulator, equipmentItemHrid, 1, 1);
         const stableItems = simulator.addActivePlayerToQueue();
         expect(stableItems).toHaveLength(1);
 
         simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
         simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
+        setExactEquipmentAsk(simulator, equipmentItemHrid, 2, 1);
         const noisyItems = simulator.addActivePlayerToQueue();
         expect(noisyItems).toHaveLength(1);
 
@@ -1426,11 +1441,13 @@ describe("simulatorStore", () => {
 
         simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
         simulator.activePlayer.equipment.weapon.enhancementLevel = 1;
+        setExactEquipmentAsk(simulator, equipmentItemHrid, 1, 1);
         const profitFocusedItems = simulator.addActivePlayerToQueue();
         expect(profitFocusedItems).toHaveLength(1);
 
         simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
         simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
+        setExactEquipmentAsk(simulator, equipmentItemHrid, 2, 1);
         const xpFocusedItems = simulator.addActivePlayerToQueue();
         expect(xpFocusedItems).toHaveLength(1);
 
@@ -2215,7 +2232,7 @@ describe("simulatorStore", () => {
         expect(simulator.activePlayer.houseRooms[secondRoom.hrid]).toBe(0);
     });
 
-    it("uses manual equipment transition cost in queue ranking cost insights", async () => {
+    it("uses exact market equipment transition cost in queue ranking cost insights", async () => {
         const simulator = useSimulatorStore();
         const equipmentItemHrid = findFirstEquipmentItem();
         expect(equipmentItemHrid).toBeTruthy();
@@ -2223,8 +2240,7 @@ describe("simulatorStore", () => {
         await simulator.setQueueBaselineForActivePlayer();
         simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
         simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
-        const setCost = simulator.setActivePlayerEquipmentUpgradeCost("weapon", 123456);
-        expect(setCost).toBe(true);
+        setExactEquipmentAsk(simulator, equipmentItemHrid, 2, 123456);
 
         const addedItems = simulator.addActivePlayerToQueue();
         expect(addedItems.length).toBe(1);
@@ -2276,7 +2292,7 @@ describe("simulatorStore", () => {
         });
         simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
         simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
-        simulator.setActivePlayerEquipmentUpgradeCost("weapon", 123456);
+        setExactEquipmentAsk(simulator, equipmentItemHrid, 2, 123456);
 
         const addedItems = simulator.addActivePlayerToQueue();
         expect(addedItems.length).toBe(1);
@@ -3218,9 +3234,157 @@ describe("simulatorStore", () => {
             ...simulator.pricing.enhancementLevelsByItem,
             [equipmentItemHrid]: [5, 2, 3, 2, 1],
         };
+        simulator.pricing.enhancementQuotesByItem = {
+            ...simulator.pricing.enhancementQuotesByItem,
+            [equipmentItemHrid]: {
+                "1": { ask: 100, bid: 90 },
+                "2": { ask: -1, bid: 180 },
+                "3": { ask: 300, bid: 270 },
+                "5": { ask: 500, bid: 450 },
+            },
+        };
 
         const levels = simulator.getMarketEnhancementLevelsForItem(equipmentItemHrid);
-        expect(levels).toEqual([1, 2, 3, 5]);
+        expect(levels).toEqual([1, 3, 5]);
+    });
+
+    it("uses exact asks for targets and exact bid-ask-zero fallback for baseline sales", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+        expect(equipmentItemHrid).toBeTruthy();
+
+        simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 1;
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
+        simulator.pricing.enhancementQuotesByItem[equipmentItemHrid] = {
+            "1": { ask: 500, bid: 400 },
+            "2": { ask: 1000, bid: 900 },
+            "3": { ask: 25, bid: 20 },
+        };
+
+        let draft = simulator.resolveActivePlayerEquipmentUpgradeCostDraft("weapon");
+        expect(draft).toMatchObject({
+            cost: 600,
+            targetAsk: 1000,
+            baselineSaleValue: 400,
+            baselineSaleSource: "bid",
+            baselineSaleZero: false,
+        });
+
+        simulator.pricing.enhancementQuotesByItem[equipmentItemHrid]["1"] = { ask: 500, bid: -1 };
+        draft = simulator.resolveActivePlayerEquipmentUpgradeCostDraft("weapon");
+        expect(draft).toMatchObject({ cost: 500, baselineSaleValue: 500, baselineSaleSource: "ask" });
+
+        simulator.pricing.enhancementQuotesByItem[equipmentItemHrid]["1"] = { ask: -1, bid: -1 };
+        draft = simulator.resolveActivePlayerEquipmentUpgradeCostDraft("weapon");
+        expect(draft).toMatchObject({ cost: 1000, baselineSaleValue: 0, baselineSaleSource: "zero", baselineSaleZero: true });
+        const added = simulator.addActivePlayerToQueue();
+        expect(added).toHaveLength(1);
+        expect(added[0].costWarnings).toEqual([
+            expect.objectContaining({ code: "baseline_sale_zero", slotKey: "weapon", enhancementLevel: 1 }),
+        ]);
+
+    });
+
+    it("rejects a missing exact target ask without a manual-cost bypass", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+        expect(equipmentItemHrid).toBeTruthy();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
+        simulator.pricing.enhancementQuotesByItem[equipmentItemHrid] = {
+            "2": { ask: -1, bid: 1 },
+            "3": { ask: 2, bid: 1 },
+        };
+
+        const draft = simulator.resolveActivePlayerEquipmentUpgradeCostDraft("weapon");
+        expect(draft).toMatchObject({ cost: null, targetAskAvailable: false });
+        const enqueueFailure = (() => {
+            try {
+                simulator.addActivePlayerToQueue();
+                return null;
+            } catch (error) {
+                return error;
+            }
+        })();
+        expect(enqueueFailure).not.toBeNull();
+        expect(enqueueFailure).toMatchObject({
+            code: "missing_enhancement_ask",
+            queued: false,
+            message: "common:queue.missingEnhancementAsk",
+        });
+        expect(simulator.activeQueueState.items).toEqual([]);
+        expect(simulator.setActivePlayerEquipmentUpgradeCost).toBeUndefined();
+    });
+
+    it("blocks historical queue items that no longer have an exact target ask", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+        expect(equipmentItemHrid).toBeTruthy();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        const snapshot = JSON.parse(JSON.stringify(simulator.activeQueueState.baseline.snapshot));
+        snapshot.equipment.weapon = { itemHrid: equipmentItemHrid, enhancementLevel: 7 };
+        simulator.activeQueueState.items = [{
+            id: "legacy-missing-ask",
+            name: "Legacy",
+            snapshot,
+            changes: [],
+            changeDetails: [],
+        }];
+        simulator.pricing.enhancementQuotesByItem[equipmentItemHrid] = {
+            "7": { ask: -1, bid: 10 },
+        };
+
+        await expect(simulator.runActiveQueue()).rejects.toMatchObject({
+            code: "missing_enhancement_ask",
+            queued: true,
+            message: "common:queue.missingEnhancementAskQueued",
+        });
+        expect(simulator.activeQueueState.error).toBe("common:queue.missingEnhancementAskQueued");
+        expect(simulator.activeQueueState.isRunning).toBe(false);
+    });
+
+    it("removes one queue item with its samples and reranks the remainder", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+        expect(equipmentItemHrid).toBeTruthy();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        setQueueBaselineMetrics(simulator);
+        simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 1;
+        setExactEquipmentAsk(simulator, equipmentItemHrid, 1, 100);
+        const first = simulator.addActivePlayerToQueue()[0];
+        simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
+        setExactEquipmentAsk(simulator, equipmentItemHrid, 2, 200);
+        const second = simulator.addActivePlayerToQueue()[0];
+        simulator.activeQueueState.rawRuns = [
+            createQueueRawRun(first, 1, { dailyNoRngProfit: 3000 }, simulator.activeQueueState.baseline.metrics),
+            createQueueRawRun(second, 1, { dailyNoRngProfit: 3600 }, simulator.activeQueueState.baseline.metrics),
+        ];
+        await simulator.refreshQueueResultsFromRawRuns({ allowReferenceLoad: false });
+
+        expect(await simulator.removeQueueItem(first.id)).toBe(true);
+        expect(simulator.activeQueueState.items.map((item) => item.id)).toEqual([second.id]);
+        expect(simulator.activeQueueState.rawRuns.map((row) => row.id)).toEqual([second.id]);
+        expect(simulator.activeQueueState.ranking.map((row) => row.id)).toEqual([second.id]);
+
+        simulator.activeQueueState.isRunning = true;
+        expect(await simulator.removeQueueItem(second.id)).toBe(false);
+        expect(simulator.activeQueueState.items).toHaveLength(1);
+        simulator.activeQueueState.isRunning = false;
+        expect(await simulator.removeQueueItem(second.id)).toBe(true);
+        expect(simulator.activeQueueState.items).toEqual([]);
+        expect(simulator.activeQueueState.rawRuns).toEqual([]);
+        expect(simulator.activeQueueState.results).toEqual([]);
+        expect(simulator.activeQueueState.ranking).toEqual([]);
+        expect(simulator.activeQueueState.progress).toBe(0);
+        expect(simulator.activeQueueState.lastRunStatus).toBe("idle");
     });
 
     it("accumulates single house room upgrade cost from current to target level", () => {
@@ -3630,6 +3794,7 @@ describe("simulatorStore", () => {
         await simulator.setQueueBaselineForActivePlayer();
         simulator.activePlayer.equipment.head.itemHrid = headItemHrid;
         simulator.activePlayer.equipment.head.enhancementLevel = 3;
+        setExactEquipmentAsk(simulator, headItemHrid, 3, 1);
         const appendedItems = simulator.addActivePlayerToQueue();
         expect(Array.isArray(appendedItems)).toBe(true);
         expect(appendedItems.length).toBeGreaterThan(0);
@@ -3745,7 +3910,7 @@ describe("simulatorStore", () => {
         expect(simulator.equipmentSets["Legacy Set"]).toBeUndefined();
     });
 
-    it("imports queue changes by rebuilding baseline and resetting custom cost maps", async () => {
+    it("imports queue changes by rebuilding baseline and resetting custom ability costs", async () => {
         const simulator = useSimulatorStore();
         const headItemHrid = String(simulator.options?.equipmentBySlot?.head?.[0]?.hrid || "");
 
@@ -3754,11 +3919,11 @@ describe("simulatorStore", () => {
         await simulator.setQueueBaselineForActivePlayer();
         simulator.activePlayer.equipment.head.itemHrid = headItemHrid;
         simulator.activePlayer.equipment.head.enhancementLevel = 4;
+        setExactEquipmentAsk(simulator, headItemHrid, 4, 1);
         const appendedItems = simulator.addActivePlayerToQueue();
         expect(Array.isArray(appendedItems)).toBe(true);
         expect(appendedItems.length).toBeGreaterThan(0);
 
-        simulator.activeQueueState.enhancementUpgradeCosts = { any: 123 };
         simulator.activeQueueState.abilityUpgradeCosts = { any: 456 };
         simulator.saveEquipmentSet("Import Queue Set");
 
@@ -3769,7 +3934,6 @@ describe("simulatorStore", () => {
         expect(importResult.ok).toBe(true);
         expect(importResult.importedCount).toBeGreaterThan(0);
         expect(simulator.activeQueueState.baseline?.snapshot?.equipment?.head?.enhancementLevel).toBe(2);
-        expect(simulator.activeQueueState.enhancementUpgradeCosts).toEqual({});
         expect(simulator.activeQueueState.abilityUpgradeCosts).toEqual({});
 
         const importedEquipmentVariant = simulator.activeQueueState.items.find((item) => (

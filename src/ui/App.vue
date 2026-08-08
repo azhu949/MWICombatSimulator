@@ -288,6 +288,7 @@ const { language, setLanguage, t } = useI18nText();
 const {
   getAbilityName,
   getActionName,
+  getEquipmentSlotName,
   getHouseRoomName,
   getItemName,
   getSkillName,
@@ -386,6 +387,9 @@ const topQueueActionStatusClass = computed(() => {
   if (topQueueActionStatus.value.tone === "danger") {
     return "text-destructive";
   }
+  if (topQueueActionStatus.value.tone === "warning") {
+    return "text-warning";
+  }
   return "text-foreground/85";
 });
 const patchNotesEntries = computed(() => resolvePatchNoteEntries(undefined, language.value));
@@ -455,6 +459,24 @@ function resolveQueueActionErrorMessage(error) {
   const messageKey = typeof error === "string"
     ? error
     : (error?.message || String(error));
+  if (error?.code === "missing_enhancement_ask") {
+    if (error?.queued) {
+      return t(
+        messageKey,
+        "A queued enhancement no longer has an exact sell listing. Remove that variant or wait for a valid listing before running the queue.",
+      );
+    }
+    const details = error?.details || {};
+    return t(
+      messageKey,
+      "{{slot}}: {{item}} +{{level}} has no exact sell listing and cannot be added to the queue.",
+      {
+        slot: getEquipmentSlotName(details.slotKey, details.slotKey || "Equipment"),
+        item: localizeHridDisplayName(details.itemHrid),
+        level: Number(details.enhancementLevel || 0),
+      },
+    );
+  }
   return t(messageKey, messageKey);
 }
 
@@ -548,7 +570,15 @@ function addToQueueFromTopbar() {
       return;
     }
     if (items.length === 1) {
+      if (items.some((item) => Array.isArray(item?.costWarnings) && item.costWarnings.length > 0)) {
+        setTopQueueActionStatus("warning", t("common:vue.queue.msgVariantAddedWithCostWarning", "{{name}} added to queue. A baseline item has no exact quote and is valued at 0.", { name: formatTopQueueVariantName(items[0], 1) }));
+        return;
+      }
       setTopQueueActionStatus("success", t("common:vue.queue.msgVariantAdded", "{{name}} added to queue.", { name: formatTopQueueVariantName(items[0], 1) }));
+      return;
+    }
+    if (items.some((item) => Array.isArray(item?.costWarnings) && item.costWarnings.length > 0)) {
+      setTopQueueActionStatus("warning", t("common:vue.queue.msgVariantsAddedWithCostWarning", "{{count}} variants added to queue. One or more baseline items have no exact quote and are valued at 0.", { count: items.length }));
       return;
     }
     setTopQueueActionStatus("success", t("common:vue.queue.msgVariantsAdded", "{{count}} variants added to queue.", { count: items.length }));

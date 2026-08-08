@@ -1,5 +1,5 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
-import { fetchMarketPriceTable } from "../marketPriceService.js";
+import { extractEnhancementDataFromMarketData, fetchMarketPriceTable } from "../marketPriceService.js";
 
 describe("marketPriceService request timeout", () => {
     afterEach(() => {
@@ -67,5 +67,21 @@ describe("marketPriceService request timeout", () => {
         expect(fetchImpl).toHaveBeenCalledTimes(2);
         expect(signals).toHaveLength(2);
         expect(signals.every((signal) => signal?.aborted)).toBe(true);
+    });
+});
+
+describe("market enhancement levels", () => {
+    it("keeps bid-only quotes but only exposes levels with a positive ask", () => {
+        const result = extractEnhancementDataFromMarketData({
+            "/items/test": {
+                "3": { a: -1, b: 25 },
+                "4": { a: 100, b: 80 },
+                "5": { a: 0, b: 40 },
+            },
+        });
+
+        expect(result.enhancementQuotesByItem["/items/test"]["3"]).toEqual({ ask: -1, bid: 25 });
+        expect(result.enhancementQuotesByItem["/items/test"]["5"]).toEqual({ ask: 0, bid: 40 });
+        expect(result.enhancementLevelsByItem["/items/test"]).toEqual([4]);
     });
 });

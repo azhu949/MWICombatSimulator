@@ -61,7 +61,6 @@ npm test
 
 ## 常用文档
 
-- [`docs/release-2.0.0.md`](docs/release-2.0.0.md)：2.0.0 全站 UI 升级说明、兼容范围与发布验收
 - [`docs/game-data.md`](docs/game-data.md)：游戏数据与官方中英文词条来源、同步/发布流程、使用免责声明，以及刷新当前维护数据的方法
 - [`docs/user-guide.md`](docs/user-guide.md) / [`docs/user-guide.en.md`](docs/user-guide.en.md)：中英文图文使用教程，涵盖数据导入、战斗模拟、队列比较和专项工具
 - [`docs/init-client-data-key-reference.md`](docs/init-client-data-key-reference.md)：`initClientData` 当前 48 个顶层 key 的作用、接入状态和导出情况对照表

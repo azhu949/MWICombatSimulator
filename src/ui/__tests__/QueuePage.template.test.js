@@ -21,4 +21,12 @@ describe("QueuePage progress presentation", () => {
         expect(queuePageSource).not.toContain("SLOT_LABEL_FALLBACK_MAP");
         expect(queuePageSource).not.toContain("characterItemsUtil.mainHand");
     });
+
+    it("offers an accessible per-item remove action and displays cost warnings", () => {
+        expect(queuePageSource).toContain('@click="removeQueueItem(item.id)"');
+        expect(queuePageSource).toContain(':disabled="queueState.isRunning"');
+        expect(queuePageSource).toContain('t("common:queue.removeItem", "Remove from Queue")');
+        expect(queuePageSource).toContain("item.costWarnings");
+        expect(queuePageSource).toContain("common:queue.baselineSaleZeroWarning");
+    });
 });

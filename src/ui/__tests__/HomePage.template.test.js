@@ -140,3 +140,16 @@ describe("HomePage inline trigger editing", () => {
         expect(homePageSource).not.toContain('xl:top-24');
     });
 });
+
+describe("HomePage enhancement pricing", () => {
+    it("shows missing exact ask and zero baseline sale without manual equipment cost input", () => {
+        expect(homePageSource).toContain("costDraft.targetAskAvailable");
+        expect(homePageSource).toContain("common:vue.home.enhancementAskMissing");
+        expect(homePageSource).toContain("costDraft.baselineSaleZero");
+        expect(homePageSource).toContain("common:vue.home.baselineSaleZero");
+        expect(homePageSource).toContain('v-if="equipmentHintViewModel[slot].costDraft.baselineSaleZero"');
+        expect(homePageSource).not.toContain("costDraft.isManual");
+        expect(homePageSource).not.toContain("manualNetUpgradeCost");
+        expect(homePageSource).not.toContain("onEquipmentUpgradeCostChanged");
+    });
+});

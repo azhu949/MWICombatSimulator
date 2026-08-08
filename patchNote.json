@@ -1,4 +1,22 @@
 {
+    "2026年8月9日（v2.0.2）": {
+        "label": {
+            "zh": "2026年8月9日（v2.0.2）",
+            "en": "August 9, 2026 (v2.0.2)"
+        },
+        "notes": {
+            "zh": [
+                "队列装备成本改为完全采用市场定价：目标强化等级无精确卖单时禁止入队。",
+                "移除装备手填升级成本，基准装备无精确盘口时按 0 计算并提示。",
+                "队列页新增移除单个队列项。"
+            ],
+            "en": [
+                "Queue equipment costs now use market pricing only; variants without an exact sell listing are rejected.",
+                "Removed manual equipment cost input; baseline items without an exact quote are valued at 0.",
+                "Added per-item removal to the Queue page."
+            ]
+        }
+    },
     "2026年8月8日（v2.0.1）": {
         "label": {
             "zh": "2026年8月8日（v2.0.1）",

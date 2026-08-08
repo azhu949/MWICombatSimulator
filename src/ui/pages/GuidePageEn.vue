@@ -161,6 +161,10 @@
             <li><strong>Read the results.</strong> Compare overall score, profit and experience changes, stability, strict or total cost, and confidence. Export to Excel when you need a record.</li>
           </ol>
 
+          <div class="mt-5 border-l-2 border-warning/60 px-4 py-2 text-sm leading-6 text-foreground/85">
+            Equipment upgrade costs come entirely from market pricing: a variant cannot be added when the target enhancement level has no exact sell listing, and the queue re-validates on each run. A baseline item without an exact quote is valued at 0 with a note. Ability book costs are unaffected.
+          </div>
+
           <div class="mt-6 grid gap-5 xl:grid-cols-2">
             <GuideFigure
               src="/tutorial/queue.png"

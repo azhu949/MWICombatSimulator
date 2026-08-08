@@ -427,14 +427,12 @@
                 {{ t("common:equipment.upgradeCost", "Upgrade Cost") }}:
                 {{ formatUpgradeCost(equipmentHintViewModel[slot].costDraft.cost) }}
               </p>
-              <input
-                class="control-input mt-1"
-                type="number"
-                min="0"
-                step="1"
-                :value="equipmentHintViewModel[slot].costDraft.cost"
-                @change="onEquipmentUpgradeCostChanged(slot, $event.target.value)"
-              />
+              <p v-if="!equipmentHintViewModel[slot].costDraft.targetAskAvailable" class="mt-1 text-xs text-destructive">
+                {{ t("common:vue.home.enhancementAskMissing", "No exact sell listing exists for this enhancement level, so it cannot be added to the queue.") }}
+              </p>
+              <p v-if="equipmentHintViewModel[slot].costDraft.baselineSaleZero" class="mt-1 text-xs text-warning">
+                {{ t("common:vue.home.baselineSaleZero", "No exact quote exists for the baseline equipment. Its sale value is treated as 0.") }}
+              </p>
             </div>
           </div>
         </div>
@@ -2140,7 +2138,10 @@ function formatCurrency(value) {
 }
 
 function formatUpgradeCost(value) {
-  const numeric = Number(value || 0);
+  if (value === null || value === undefined || value === "") {
+    return "-";
+  }
+  const numeric = Number(value);
   if (!Number.isFinite(numeric)) {
     return "-";
   }
@@ -2981,10 +2982,6 @@ function setAbilitySelection(index, value) {
 
 function applyMarketEnhancement(slot, level) {
   simulator.applyActivePlayerEquipmentEnhancementFromMarket(slot, level);
-}
-
-function onEquipmentUpgradeCostChanged(slot, rawCost) {
-  simulator.setActivePlayerEquipmentUpgradeCost(slot, rawCost);
 }
 
 function onAbilityUpgradeCostChanged(slotIndex, rawCost) {

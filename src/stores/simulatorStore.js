@@ -2053,7 +2053,6 @@ function createQueuePlayerState(queueSettings = getDefaultQueueRunSettings()) {
         results: [],
         rawRuns: [],
         ranking: [],
-        enhancementUpgradeCosts: {},
         abilityUpgradeCosts: {},
         settings: normalizeQueueSettings(queueSettings),
         isRunning: false,
@@ -2347,33 +2346,6 @@ function createImportedBaselineByPlayer() {
         baselineByPlayer[playerId] = null;
     }
     return baselineByPlayer;
-}
-
-function getEquipmentTransitionCostKey(slotKey, beforeItemHrid, beforeLevel, afterItemHrid, afterLevel) {
-    return `${slotKey}|${beforeItemHrid}|${beforeLevel}|${afterItemHrid}|${afterLevel}`;
-}
-
-function readEquipmentTransitionCostFromMap(costMap, slotKey, beforeItemHrid, beforeLevel, afterItemHrid, afterLevel) {
-    const transitionCostKey = getEquipmentTransitionCostKey(slotKey, beforeItemHrid, beforeLevel, afterItemHrid, afterLevel);
-
-    if (Object.prototype.hasOwnProperty.call(costMap, transitionCostKey)) {
-        return {
-            value: costMap[transitionCostKey],
-            transitionCostKey,
-        };
-    }
-
-    return {
-        value: null,
-        transitionCostKey,
-    };
-}
-
-function writeEquipmentTransitionCostToMap(costMap, slotKey, beforeItemHrid, beforeLevel, afterItemHrid, afterLevel, value) {
-    const transitionCostKey = getEquipmentTransitionCostKey(slotKey, beforeItemHrid, beforeLevel, afterItemHrid, afterLevel);
-    costMap[transitionCostKey] = value;
-
-    return transitionCostKey;
 }
 
 function getAbilityUpgradeCostKey(abilitySlot, abilityHrid, fromLevel, toLevel) {
@@ -3046,37 +3018,6 @@ function resolveItemPriceFromPricingState(pricingState, itemHrid, side = "ask") 
     return bid > 0 ? bid : 0;
 }
 
-function computeEnhancementUpgradeCost(itemHrid, fromLevel, toLevel, pricingState) {
-    const hrid = String(itemHrid || "");
-    const safeFromLevel = Math.max(0, Math.floor(toFiniteNumber(fromLevel, 0)));
-    const safeToLevel = Math.max(0, Math.floor(toFiniteNumber(toLevel, 0)));
-    if (!hrid || safeToLevel <= safeFromLevel) {
-        return 0;
-    }
-
-    const enhancementCosts = itemDetailIndex?.[hrid]?.enhancementCosts;
-    if (!Array.isArray(enhancementCosts) || enhancementCosts.length === 0) {
-        return 0;
-    }
-
-    const perLevelCost = enhancementCosts.reduce((sum, costEntry) => {
-        const count = Math.max(0, toFiniteNumber(costEntry?.count, 0));
-        const materialHrid = String(costEntry?.itemHrid || "");
-        if (!materialHrid || count <= 0) {
-            return sum;
-        }
-        const unitPrice = materialHrid === "/items/coin"
-            ? 1
-            : resolveItemPriceFromPricingState(pricingState, materialHrid, "ask");
-        return sum + count * Math.max(0, unitPrice);
-    }, 0);
-
-    if (perLevelCost <= 0) {
-        return 0;
-    }
-    return perLevelCost * (safeToLevel - safeFromLevel);
-}
-
 function resolveEnhancementLevelPriceFromPricingState(itemHrid, level, pricingState, preferredSide = "ask") {
     const hrid = String(itemHrid || "");
     const normalizedLevel = Math.max(0, Math.floor(toFiniteNumber(level, 0)));
@@ -3084,79 +3025,141 @@ function resolveEnhancementLevelPriceFromPricingState(itemHrid, level, pricingSt
         return -1;
     }
 
-    const quoteMap = pricingState?.enhancementQuotesByItem?.[hrid];
-    if (isPlainObject(quoteMap)) {
-        const tryQuote = (targetLevel) => {
-            const quote = quoteMap[String(targetLevel)];
-            if (!isPlainObject(quote)) {
-                return -1;
-            }
-            const ask = toFiniteNumber(quote.ask, -1);
-            const bid = toFiniteNumber(quote.bid, -1);
-            if (preferredSide === "bid") {
-                return bid >= 0 ? bid : ask;
-            }
-            return ask >= 0 ? ask : bid;
-        };
-
-        const directPrice = tryQuote(normalizedLevel);
-        if (directPrice >= 0) {
-            return directPrice;
-        }
-
-        const candidateLevels = Object.keys(quoteMap)
-            .map((value) => Math.floor(toFiniteNumber(value, -1)))
-            .filter((value) => Number.isFinite(value) && value >= 0)
-            .sort((a, b) => Math.abs(a - normalizedLevel) - Math.abs(b - normalizedLevel) || a - b);
-
-        for (const candidateLevel of candidateLevels) {
-            const candidatePrice = tryQuote(candidateLevel);
-            if (candidatePrice >= 0) {
-                return candidatePrice;
-            }
-        }
+    const quote = normalizedLevel === 0
+        ? pricingState?.priceTable?.[hrid]
+        : pricingState?.enhancementQuotesByItem?.[hrid]?.[String(normalizedLevel)];
+    if (!isPlainObject(quote)) {
+        return -1;
     }
 
-    const basePrice = resolveItemPriceFromPricingState(
-        pricingState,
-        hrid,
-        preferredSide === "bid" ? "bid" : "ask"
-    );
-    if (normalizedLevel <= 0) {
-        return basePrice >= 0 ? basePrice : -1;
-    }
-
-    // Fallback for items without per-level market quotes.
-    const enhancementCost = computeEnhancementUpgradeCost(hrid, 0, normalizedLevel, pricingState);
-    const approximated = Math.max(0, basePrice + enhancementCost);
-    return Number.isFinite(approximated) ? approximated : -1;
+    const side = preferredSide === "bid" ? "bid" : "ask";
+    const price = toFiniteNumber(quote[side], -1);
+    return price > 0 ? price : -1;
 }
 
-function computeDefaultEquipmentTransitionCost(beforeItemHrid, beforeLevel, afterItemHrid, afterLevel, pricingState) {
+function resolveEquipmentTransitionPricing(beforeItemHrid, beforeLevel, afterItemHrid, afterLevel, pricingState) {
     const targetItemHrid = String(afterItemHrid || "");
     if (!targetItemHrid) {
-        return 0;
+        return {
+            cost: 0,
+            targetAsk: 0,
+            targetAskAvailable: true,
+            baselineSaleValue: 0,
+            baselineSaleSource: "none",
+            baselineSaleZero: false,
+        };
     }
 
     const safeBeforeLevel = Math.max(0, Math.floor(toFiniteNumber(beforeLevel, 0)));
     const safeAfterLevel = Math.max(0, Math.floor(toFiniteNumber(afterLevel, 0)));
-    let buyCost = resolveEnhancementLevelPriceFromPricingState(targetItemHrid, safeAfterLevel, pricingState, "ask");
-    if (buyCost < 0) {
-        buyCost = resolveItemPriceFromPricingState(pricingState, targetItemHrid, "ask")
-            + computeEnhancementUpgradeCost(targetItemHrid, 0, safeAfterLevel, pricingState);
-    }
+    const buyCost = resolveEnhancementLevelPriceFromPricingState(targetItemHrid, safeAfterLevel, pricingState, "ask");
 
     const sourceItemHrid = String(beforeItemHrid || "");
     let sellValue = 0;
+    let baselineSaleSource = "none";
     if (sourceItemHrid) {
         sellValue = resolveEnhancementLevelPriceFromPricingState(sourceItemHrid, safeBeforeLevel, pricingState, "bid");
         if (sellValue < 0) {
-            sellValue = resolveItemPriceFromPricingState(pricingState, sourceItemHrid, "bid")
-                + computeEnhancementUpgradeCost(sourceItemHrid, 0, safeBeforeLevel, pricingState);
+            sellValue = resolveEnhancementLevelPriceFromPricingState(sourceItemHrid, safeBeforeLevel, pricingState, "ask");
+            baselineSaleSource = sellValue > 0 ? "ask" : "zero";
+        } else {
+            baselineSaleSource = "bid";
         }
     }
 
-    return Math.max(0, buyCost - sellValue);
+    const targetAskAvailable = buyCost > 0;
+    const baselineSaleValue = sellValue > 0 ? sellValue : 0;
+    return {
+        cost: targetAskAvailable ? Math.max(0, buyCost - baselineSaleValue) : null,
+        targetAsk: targetAskAvailable ? buyCost : null,
+        targetAskAvailable,
+        baselineSaleValue,
+        baselineSaleSource,
+        baselineSaleZero: Boolean(sourceItemHrid) && baselineSaleValue === 0,
+    };
+}
+
+function computeDefaultEquipmentTransitionCost(beforeItemHrid, beforeLevel, afterItemHrid, afterLevel, pricingState) {
+    return resolveEquipmentTransitionPricing(
+        beforeItemHrid,
+        beforeLevel,
+        afterItemHrid,
+        afterLevel,
+        pricingState
+    ).cost;
+}
+
+function inspectEquipmentTransitionCost(slotKey, beforeEquipment, afterEquipment, pricingState) {
+    const beforeItemHrid = String(beforeEquipment?.itemHrid || "");
+    const afterItemHrid = String(afterEquipment?.itemHrid || "");
+    const beforeLevel = Math.max(0, Math.floor(toFiniteNumber(beforeEquipment?.enhancementLevel, 0)));
+    const afterLevel = Math.max(0, Math.floor(toFiniteNumber(afterEquipment?.enhancementLevel, 0)));
+    const pricing = resolveEquipmentTransitionPricing(
+        beforeItemHrid,
+        beforeLevel,
+        afterItemHrid,
+        afterLevel,
+        pricingState
+    );
+    return {
+        slotKey,
+        beforeItemHrid,
+        afterItemHrid,
+        beforeLevel,
+        afterLevel,
+        ...pricing,
+    };
+}
+
+function inspectQueueEquipmentPricing(baselineSnapshot, targetSnapshot, pricingState) {
+    const inspections = [];
+    for (const slotKey of EQUIPMENT_SLOT_KEYS) {
+        const beforeEquipment = baselineSnapshot?.equipment?.[slotKey] ?? { itemHrid: "", enhancementLevel: 0 };
+        const afterEquipment = targetSnapshot?.equipment?.[slotKey] ?? { itemHrid: "", enhancementLevel: 0 };
+        if (
+            String(beforeEquipment?.itemHrid || "") === String(afterEquipment?.itemHrid || "")
+            && Math.floor(toFiniteNumber(beforeEquipment?.enhancementLevel, 0)) === Math.floor(toFiniteNumber(afterEquipment?.enhancementLevel, 0))
+        ) {
+            continue;
+        }
+        if (!String(afterEquipment?.itemHrid || "")) {
+            continue;
+        }
+        inspections.push(inspectEquipmentTransitionCost(
+            slotKey,
+            beforeEquipment,
+            afterEquipment,
+            pricingState
+        ));
+    }
+    return inspections;
+}
+
+function buildQueueCostWarnings(inspections = []) {
+    return inspections
+        .filter((inspection) => inspection.baselineSaleZero)
+        .map((inspection) => ({
+            code: "baseline_sale_zero",
+            slotKey: inspection.slotKey,
+            itemHrid: inspection.beforeItemHrid,
+            enhancementLevel: inspection.beforeLevel,
+        }));
+}
+
+function createMissingEquipmentAskError(inspection, { queued = false } = {}) {
+    const error = new Error(
+        queued
+            ? "common:queue.missingEnhancementAskQueued"
+            : "common:queue.missingEnhancementAsk"
+    );
+    error.code = "missing_enhancement_ask";
+    error.queued = queued;
+    error.details = {
+        slotKey: inspection.slotKey,
+        itemHrid: inspection.afterItemHrid,
+        enhancementLevel: inspection.afterLevel,
+    };
+    return error;
 }
 
 function ensureAbilityUpgradeReferenceGlobals() {
@@ -3424,9 +3427,9 @@ function computeQueueItemUpgradeCost(baselineSnapshot, targetSnapshot, pricingSt
         return 0;
     }
 
-    const enhancementCostMap = isPlainObject(options?.enhancementCostMap) ? options.enhancementCostMap : {};
     const abilityCostMap = isPlainObject(options?.abilityCostMap) ? options.abilityCostMap : {};
     let totalCost = 0;
+    let hasUnknownEquipmentUpgradeCost = false;
     let hasUnknownAbilityUpgradeCost = false;
 
     for (const slotKey of EQUIPMENT_SLOT_KEYS) {
@@ -3441,24 +3444,18 @@ function computeQueueItemUpgradeCost(baselineSnapshot, targetSnapshot, pricingSt
             continue;
         }
 
-        const savedCostResult = readEquipmentTransitionCostFromMap(
-            enhancementCostMap,
-            slotKey,
+        const estimatedCost = computeDefaultEquipmentTransitionCost(
             beforeItemHrid,
             beforeLevel,
             afterItemHrid,
-            afterLevel
+            afterLevel,
+            pricingState
         );
-        const estimatedCost = savedCostResult.value != null
-            ? toFiniteNumber(savedCostResult.value, 0)
-            : computeDefaultEquipmentTransitionCost(
-                beforeItemHrid,
-                beforeLevel,
-                afterItemHrid,
-                afterLevel,
-                pricingState
-            );
 
+        if (estimatedCost == null || !Number.isFinite(Number(estimatedCost))) {
+            hasUnknownEquipmentUpgradeCost = true;
+            continue;
+        }
         totalCost += Math.max(0, estimatedCost);
     }
 
@@ -3506,7 +3503,7 @@ function computeQueueItemUpgradeCost(baselineSnapshot, targetSnapshot, pricingSt
     );
     totalCost += Math.max(0, toFiniteNumber(houseRoomUpgradePreview?.totals?.totalCost, 0));
 
-    if (hasUnknownAbilityUpgradeCost) {
+    if (hasUnknownEquipmentUpgradeCost || hasUnknownAbilityUpgradeCost) {
         return null;
     }
 
@@ -3909,7 +3906,6 @@ function buildQueueItemCostInsights(queueState, queueItemSnapshot, metricSummary
         queueItemSnapshot,
         pricingState,
         {
-            enhancementCostMap: queueState?.enhancementUpgradeCosts,
             abilityCostMap: queueState?.abilityUpgradeCosts,
         }
     );
@@ -4843,7 +4839,11 @@ export const useSimulatorStore = defineStore("simulator", {
             }
             return Array.from(new Set(levels
                 .map((value) => Math.floor(toFiniteNumber(value, -1)))
-                .filter((value) => Number.isFinite(value) && value > 0)))
+                .filter((value) => (
+                    Number.isFinite(value)
+                    && value > 0
+                    && resolveEnhancementLevelPriceFromPricingState(hrid, value, this.pricing, "ask") > 0
+                ))))
                 .sort((a, b) => a - b);
         },
         applyActivePlayerEquipmentEnhancementFromMarket(slotKey, enhancementLevel) {
@@ -4884,59 +4884,26 @@ export const useSimulatorStore = defineStore("simulator", {
                 return null;
             }
 
-            const costMap = isPlainObject(queueState.enhancementUpgradeCosts) ? queueState.enhancementUpgradeCosts : {};
-            const savedCostResult = readEquipmentTransitionCostFromMap(
-                costMap,
+            const inspection = inspectEquipmentTransitionCost(
                 normalizedSlotKey,
-                beforeItemHrid,
-                beforeLevel,
-                afterItemHrid,
-                afterLevel
+                baselineEquipment,
+                currentEquipment,
+                this.pricing
             );
-
-            const costValue = savedCostResult.value != null
-                ? savedCostResult.value
-                : computeDefaultEquipmentTransitionCost(
-                    beforeItemHrid,
-                    beforeLevel,
-                    afterItemHrid,
-                    afterLevel,
-                    this.pricing
-                );
 
             return {
                 slotKey: normalizedSlotKey,
-                transitionCostKey: savedCostResult.transitionCostKey,
                 beforeItemHrid,
                 afterItemHrid,
                 beforeLevel,
                 afterLevel,
-                cost: toFiniteNumber(costValue, 0),
+                cost: inspection.cost,
+                targetAskAvailable: inspection.targetAskAvailable,
+                targetAsk: inspection.targetAsk,
+                baselineSaleValue: inspection.baselineSaleValue,
+                baselineSaleSource: inspection.baselineSaleSource,
+                baselineSaleZero: inspection.baselineSaleZero,
             };
-        },
-        setActivePlayerEquipmentUpgradeCost(slotKey, rawCost) {
-            const draft = this.resolveActivePlayerEquipmentUpgradeCostDraft(slotKey);
-            if (!draft) {
-                return false;
-            }
-
-            const queueState = this.ensureQueueState(this.activePlayerId);
-            const costMap = isPlainObject(queueState.enhancementUpgradeCosts)
-                ? { ...queueState.enhancementUpgradeCosts }
-                : {};
-
-            const normalizedCost = Math.max(0, toFiniteNumber(rawCost, 0));
-            writeEquipmentTransitionCostToMap(
-                costMap,
-                draft.slotKey,
-                draft.beforeItemHrid,
-                draft.beforeLevel,
-                draft.afterItemHrid,
-                draft.afterLevel,
-                normalizedCost
-            );
-            queueState.enhancementUpgradeCosts = costMap;
-            return true;
         },
         resolveActivePlayerAbilityUpgradeCostDraft(slotIndex) {
             const index = Math.floor(toFiniteNumber(slotIndex, -1));
@@ -5526,7 +5493,6 @@ export const useSimulatorStore = defineStore("simulator", {
             queueState.results = [];
             queueState.rawRuns = [];
             queueState.ranking = [];
-            queueState.enhancementUpgradeCosts = {};
             queueState.abilityUpgradeCosts = {};
             queueState.isRunning = false;
             queueState.progress = 0;
@@ -5620,7 +5586,6 @@ export const useSimulatorStore = defineStore("simulator", {
                 queueState.results = [];
                 queueState.rawRuns = [];
                 queueState.ranking = [];
-                queueState.enhancementUpgradeCosts = {};
                 queueState.abilityUpgradeCosts = {};
                 queueState.error = "";
                 queueState.progress = 0;
@@ -5794,7 +5759,6 @@ export const useSimulatorStore = defineStore("simulator", {
                 queueState.results = [];
                 queueState.rawRuns = [];
                 queueState.ranking = [];
-                queueState.enhancementUpgradeCosts = {};
                 queueState.abilityUpgradeCosts = {};
                 queueState.progress = 1;
                 queueState.lastRunStatus = "idle";
@@ -5839,7 +5803,23 @@ export const useSimulatorStore = defineStore("simulator", {
                 return [];
             }
 
-            const appendedItems = variants.map((variant) => {
+            const variantPricing = variants.map((variant) => {
+                const inspections = inspectQueueEquipmentPricing(
+                    queueState.baseline.snapshot,
+                    variant.snapshot,
+                    this.pricing
+                );
+                const invalid = inspections.find((inspection) => !inspection.targetAskAvailable);
+                if (invalid) {
+                    throw createMissingEquipmentAskError(invalid);
+                }
+                return {
+                    inspections,
+                    warnings: buildQueueCostWarnings(inspections),
+                };
+            });
+
+            const appendedItems = variants.map((variant, variantIndex) => {
                 const fallbackName = `Variant ${queueState.items.length + 1}`;
                 const nextItem = {
                     id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
@@ -5847,6 +5827,7 @@ export const useSimulatorStore = defineStore("simulator", {
                     snapshot: deepClone(variant.snapshot),
                     changes: Array.isArray(variant.labels) ? variant.labels : [],
                     changeDetails: Array.isArray(variant.changeDetails) ? deepClone(variant.changeDetails) : [],
+                    costWarnings: deepClone(variantPricing[variantIndex].warnings),
                     createdAt: Date.now(),
                 };
                 queueState.items.push(nextItem);
@@ -5936,9 +5917,32 @@ export const useSimulatorStore = defineStore("simulator", {
         resetActiveQueueSettings() {
             return this.updateActiveQueueSettings(getDefaultQueueRunSettings());
         },
-        removeQueueItem(itemId) {
+        async removeQueueItem(itemId) {
             const queueState = this.ensureQueueState(this.activePlayerId);
-            queueState.items = queueState.items.filter((item) => item.id !== itemId);
+            const normalizedItemId = String(itemId || "");
+            if (queueState.isRunning || !queueState.items.some((item) => String(item?.id || "") === normalizedItemId)) {
+                return false;
+            }
+            queueState.items = queueState.items.filter((item) => String(item?.id || "") !== normalizedItemId);
+            queueState.rawRuns = queueState.rawRuns.filter((row) => String(row?.id || "") !== normalizedItemId);
+            if (queueState.items.length === 0) {
+                queueState.results = [];
+                queueState.ranking = [];
+                queueState.rawRuns = [];
+                queueState.progress = 0;
+                queueState.error = "";
+                queueState.lastRunAt = 0;
+                queueState.lastRunStatus = "idle";
+                return true;
+            }
+            await this.refreshQueueResultsFromRawRuns({
+                playerId: this.activePlayerId,
+                includeEmptyEntries: false,
+                allowReferenceLoad: false,
+                sortRawRuns: true,
+                updateLastRunAt: false,
+            });
+            return true;
         },
         clearActiveQueue() {
             const queueState = this.ensureQueueState(this.activePlayerId);
@@ -6079,6 +6083,20 @@ export const useSimulatorStore = defineStore("simulator", {
             if (queueState.items.length === 0) {
                 queueState.error = "Queue is empty.";
                 return [];
+            }
+
+            for (const item of queueState.items) {
+                const inspections = inspectQueueEquipmentPricing(
+                    queueState.baseline.snapshot,
+                    item?.snapshot,
+                    this.pricing
+                );
+                const invalid = inspections.find((inspection) => !inspection.targetAskAvailable);
+                if (invalid) {
+                    queueState.error = "common:queue.missingEnhancementAskQueued";
+                    throw createMissingEquipmentAskError(invalid, { queued: true });
+                }
+                item.costWarnings = buildQueueCostWarnings(inspections);
             }
 
             const queueSettings = normalizeQueueSettings(queueState.settings);

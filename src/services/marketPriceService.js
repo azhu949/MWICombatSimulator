@@ -192,7 +192,7 @@ export function extractEnhancementDataFromMarketData(marketData) {
             }
 
             quoteMap[String(level)] = normalizedQuote;
-            if (level > 0) {
+            if (level > 0 && normalizedQuote.ask > 0) {
                 levels.push(level);
             }
         }

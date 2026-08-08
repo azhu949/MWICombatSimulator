@@ -156,6 +156,10 @@
             <li><strong>阅读多轮结果。</strong>重点查看综合评分、收益和经验变化、稳定性、严格成本或综合成本，以及置信度。需要留档时导出 Excel。</li>
           </ol>
 
+          <div class="mt-5 border-l-2 border-warning/60 px-4 py-2 text-sm leading-6 text-foreground/85">
+            装备升级成本完全采用市场定价：目标强化等级没有精确卖单时，变体无法加入队列；运行队列时也会重新校验。基准装备没有精确盘口时，其出售价值按 0 计算并提示。技能书等其他成本不受影响。
+          </div>
+
           <div class="mt-6 grid gap-5 xl:grid-cols-2">
             <GuideFigure
               src="/tutorial/queue.png"

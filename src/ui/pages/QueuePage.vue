@@ -44,6 +44,7 @@
       </div>
 
       <p v-if="queueState.error" class="text-sm text-destructive">{{ t(queueState.error, queueState.error) }}</p>
+      <p v-if="removeStatus.text" :class="['text-sm', removeStatus.tone === 'danger' ? 'text-destructive' : 'text-success']">{{ removeStatus.text }}</p>
       <p v-if="queuePartyWarningText" class="text-sm text-primary">{{ queuePartyWarningText }}</p>
     </div>
 
@@ -62,12 +63,25 @@
           :key="item.id"
           class="rounded-md border border-border bg-muted/50 p-3"
         >
-          <div class="flex flex-wrap items-start gap-2">
-            <div>
+          <div class="flex flex-wrap items-start justify-between gap-2">
+            <div class="min-w-0">
               <h4 class="font-heading text-base font-semibold text-foreground">{{ item.displayName }}</h4>
               <p class="mt-1 text-xs text-muted-foreground">{{ t("common:vue.queue.changeCount", "Changes", { count: item.detailLines.length }) }}</p>
             </div>
+            <button
+              type="button"
+              class="button-danger"
+              :disabled="queueState.isRunning"
+              :aria-label="t('common:queue.removeItemAria', 'Remove {{name}} from queue', { name: item.displayName })"
+              @click="removeQueueItem(item.id)"
+            >
+              {{ t("common:queue.removeItem", "Remove from Queue") }}
+            </button>
           </div>
+
+          <p v-for="warning in item.costWarnings" :key="warning.key" class="mt-2 text-xs text-warning">
+            {{ warning.text }}
+          </p>
 
           <div v-if="item.categoryBadges.length > 0" class="mt-2 flex flex-wrap gap-2">
             <span
@@ -89,7 +103,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed, ref } from "vue";
 import {
   abilityDetailIndex as abilityDetailMap,
   houseRoomDetailIndex as houseRoomDetailMap,
@@ -131,6 +145,7 @@ const CHANGE_CATEGORY_PRIORITY = {
 };
 
 const queueState = computed(() => simulator.activeQueueState);
+const removeStatus = ref({ tone: "", text: "" });
 const queuePartyStatus = computed(() => simulator.activeQueuePartyStatus || { hasMismatch: false, messageKey: "", memberNames: [] });
 const queuePartySummaryText = computed(() => (
   Array.isArray(queuePartyStatus.value?.memberNames) && queuePartyStatus.value.memberNames.length > 0
@@ -267,9 +282,28 @@ const queueDisplayItems = computed(() => {
       displayName,
       categoryBadges,
       detailLines,
+      costWarnings: (Array.isArray(item?.costWarnings) ? item.costWarnings : []).map((warning, warningIndex) => ({
+        key: [warning?.code || "warning", warning?.slotKey || "slot", warningIndex].join("-"),
+        text: t(
+          "common:queue.baselineSaleZeroWarning",
+          "{{slot}}: {{item}} +{{level}} has no exact buy or sell quote. Its sale value is treated as 0.",
+          {
+            slot: localizeEquipmentSlotLabel(warning?.slotKey),
+            item: localizeHridDisplayName(warning?.itemHrid),
+            level: Number(warning?.enhancementLevel || 0),
+          },
+        ),
+      })),
     };
   });
 });
+
+async function removeQueueItem(itemId) {
+  const removed = await simulator.removeQueueItem(itemId);
+  removeStatus.value = removed
+    ? { tone: "success", text: t("common:queue.removeItemSuccess", "Queue item removed.") }
+    : { tone: "danger", text: t("common:queue.removeItemFailed", "Unable to remove this queue item while the queue is running or the item no longer exists.") };
+}
 
 const lastRunText = computed(() => {
   if (queueState.value.lastRunStatus === "cancelled") {
