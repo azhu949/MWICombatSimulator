@@ -120,7 +120,7 @@
         "triggerState": {
             "default": "默认",
             "custom": "自定义",
-            "disabled": "禁用"
+            "disabled": "无条件"
         },
         "settings": "固定参数",
         "settingZone": "战斗区域",
@@ -450,8 +450,7 @@
             "workspaceEyebrow": "工作台",
             "workspaceTitle": "模拟工作台",
             "workspaceDesc": "在配置和运行模拟时，始终保持关键指标可见。",
-            "workspaceBaseDesc": "在主流程中完成角色、目标和运行设置，不必来回滚动页面。",
-            "workspaceBuildDesc": "集中调整装备、消耗品和技能，不让运行控制被淹没。",
+            "workspaceBaseDesc": "在主流程中完成角色、目标、运行设置、装备、消耗品和技能配置。",
             "workspaceMetricsTitle": "关键指标",
             "workspaceBuildTitle": "配装快照",
             "workspaceAdvancedTitle": "战斗属性",
@@ -468,11 +467,11 @@
             "workspaceStatusIdleDesc": "开始一次模拟后，这里会显示摘要指标和结果入口。",
             "workspaceTabs": {
                 "base": "基础设置",
-                "baseDesc": "角色、目标、模式、范围和启动控制。",
-                "build": "配装与技能",
-                "buildDesc": "装备、消耗品、技能，以及触发器入口。",
+                "baseDesc": "角色、目标、运行设置、装备、消耗品、技能和触发器入口。",
                 "advanced": "战斗属性",
-                "advancedDesc": "当前配装完整推导后的战斗属性。"
+                "advancedDesc": "当前配装完整推导后的战斗属性。",
+                "results": "完整结果",
+                "resultsDesc": "最近一次模拟的完整表格、图表和各来源明细。"
             },
             "workspaceTargets": {
                 "groupZones": "已选择 {{count}} 个星球区域",
@@ -484,11 +483,6 @@
                 "modeScope": "模式 / 范围",
                 "target": "目标"
             },
-            "completeResultsEyebrow": "结果",
-            "completeResultsTitle": "完整结果",
-            "completeResultsRunningDesc": "详细报告默认收起；运行时先在这里查看进度，想看明细时再展开。",
-            "completeResultsDesc": "只有在需要表格、图表和细分明细时再展开完整报告。",
-            "completeResultsCollapsed": "完整报告默认保持收起，只有需要明细时再展开。",
             "simulationHours": "模拟时长（小时）",
             "visualization": "可视化",
             "hpmpOn": "开启 HP/MP",
@@ -506,18 +500,24 @@
             "drinkSlot": "饮品 {{index}}",
             "abilitySlot": "技能 {{index}}",
             "trigger": {
-                "target": "目标",
-                "noRulesHint": "无规则：技能冷却结束后立即触发。",
-                "rulesHint": "该目标需满足所有规则后才会触发。",
+                "summaryTitle": "触发条件",
+                "edit": "编辑",
+                "ruleCount": "{{count}} 条条件",
+                "firstRuleMore": "{{rule}}，另有 {{count}} 条",
+                "noConditionsSummary": "就绪后立即触发。",
+                "noRulesHint": "无条件：冷却和资源要求满足后立即触发。",
+                "rulesHint": "该目标需满足所有条件后才会触发。",
                 "dependency": "依赖",
                 "condition": "条件",
+                "conditionNumber": "条件 {{index}}",
                 "comparator": "比较器",
                 "value": "数值",
-                "addRule": "新增规则",
-                "useDefault": "使用默认",
-                "clearRules": "清空规则",
-                "editorTitle": "触发器编辑",
-                "editorTitleWithName": "触发器编辑 - {{name}}"
+                "addRule": "新增条件",
+                "useDefault": "恢复默认",
+                "noConditions": "设为无条件",
+                "cancel": "取消",
+                "unsaved": "未保存",
+                "saveOrCancelFirst": "请先保存或取消当前修改。"
             },
             "houseRoomsButton": "房间",
             "guildBuffsButton": "公会神龛",

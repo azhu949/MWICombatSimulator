@@ -4,6 +4,11 @@ import { describe, expect, it } from "vitest";
 const settingsPageSource = readFileSync(new URL("../pages/SettingsPage.vue", import.meta.url), "utf8");
 
 describe("SettingsPage baseline round defaults", () => {
+    it("keeps sticky tabs below the measured application shell", () => {
+        expect(settingsPageSource).toContain('top: var(--app-sticky-shell-height, 3rem)');
+        expect(settingsPageSource).not.toContain('sticky top-14');
+    });
+
     it("uses 1 as the default baseline round preset and draft value", () => {
         expect(settingsPageSource).toContain('baselineRounds: 1,');
         expect(settingsPageSource).toContain('const queueBaselineRoundPreset = ref("1");');

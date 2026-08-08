@@ -1,7 +1,30 @@
 <template>
-  <section class="border-b border-border bg-card/92 px-3 py-2.5 sm:px-5" aria-label="Combat command bar">
+  <section
+    ref="commandBarRoot"
+    class="sticky top-12 z-30 border-b border-border bg-card/95 px-3 py-2.5 backdrop-blur supports-[backdrop-filter]:bg-card/90 sm:px-5"
+    aria-label="Combat command bar"
+  >
     <div class="mx-auto flex max-w-[1500px] flex-col gap-2.5">
       <div class="flex min-w-0 items-center gap-2">
+        <Button
+          v-if="showSimulationActions && !simulationRunning"
+          type="button"
+          size="sm"
+          :disabled="simulationActionsDisabled"
+          @click="emit('start-simulation')"
+        >
+          <Play />{{ t("common:controls.startSimulation", "Start Simulation") }}
+        </Button>
+        <Button
+          v-else-if="showSimulationActions"
+          type="button"
+          variant="destructive"
+          size="sm"
+          @click="emit('stop-simulation')"
+        >
+          <Square />{{ t("common:controls.stopSimulation", "Stop") }}
+        </Button>
+
         <div class="hidden shrink-0 items-center gap-2 2xl:flex">
           <Button type="button" variant="outline" size="sm" :disabled="queueActionsDisabled" @click="emit('set-baseline')">
             <Gauge />{{ t("common:queue.setBaseline", "Set Baseline") }}
@@ -77,7 +100,8 @@
 </template>
 
 <script setup>
-import { CircleAlert, Ellipsis, Gauge, ListPlus, Play, Trash2 } from "@lucide/vue";
+import { nextTick, onBeforeUnmount, onMounted, ref } from "vue";
+import { CircleAlert, Ellipsis, Gauge, ListPlus, Play, Square, Trash2 } from "@lucide/vue";
 import { DropdownMenuContent, DropdownMenuItem, DropdownMenuPortal, DropdownMenuRoot, DropdownMenuTrigger } from "reka-ui";
 import { Button } from "@/ui/components/ui/button/index.js";
 import { Progress } from "@/ui/components/ui/progress/index.js";
@@ -95,14 +119,51 @@ defineProps({
   partyWarningText: { type: String, default: "" },
   actionStatusText: { type: String, default: "" },
   actionStatusClass: { type: String, default: "" },
+  showSimulationActions: { type: Boolean, default: false },
+  simulationRunning: { type: Boolean, default: false },
+  simulationActionsDisabled: { type: Boolean, default: false },
   showRuntimeSummary: { type: Boolean, default: false },
   runtimeProgress: { type: Number, default: 0 },
   runtimeError: { type: String, default: "" },
   progressLabel: { type: String, default: "" },
 });
 
-const emit = defineEmits(["set-baseline", "add-queue", "run-queue", "clear-queue", "select-player", "view-error"]);
+const emit = defineEmits([
+  "set-baseline",
+  "add-queue",
+  "run-queue",
+  "clear-queue",
+  "select-player",
+  "start-simulation",
+  "stop-simulation",
+  "height-change",
+  "view-error",
+]);
 const { t } = useI18nText();
+const commandBarRoot = ref(null);
+let resizeObserver = null;
+
+function reportCommandBarHeight() {
+  const element = commandBarRoot.value;
+  const height = element
+    ? Math.ceil(element.getBoundingClientRect().height || element.offsetHeight || 0)
+    : 0;
+  emit("height-change", height);
+}
+
+onMounted(async () => {
+  await nextTick();
+  reportCommandBarHeight();
+  if (typeof ResizeObserver === "function" && commandBarRoot.value) {
+    resizeObserver = new ResizeObserver(reportCommandBarHeight);
+    resizeObserver.observe(commandBarRoot.value);
+  }
+});
+
+onBeforeUnmount(() => {
+  resizeObserver?.disconnect();
+  resizeObserver = null;
+});
 </script>
 
 <style scoped>

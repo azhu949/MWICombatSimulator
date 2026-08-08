@@ -1,4 +1,22 @@
 {
+    "2026年8月8日（v2.0.1）": {
+        "label": {
+            "zh": "2026年8月8日（v2.0.1）",
+            "en": "August 8, 2026 (v2.0.1)"
+        },
+        "notes": {
+            "zh": [
+                "优化首页模拟工作台布局，完整结果改为独立标签页。",
+                "食物、饮品和技能新增内联触发条件编辑。",
+                "优化战斗命令栏与吸顶交互。"
+            ],
+            "en": [
+                "Improved the Home simulation workspace layout and moved complete results to a dedicated tab.",
+                "Added inline trigger-condition editing for food, drinks, and abilities.",
+                "Improved the combat command bar and sticky interactions."
+            ]
+        }
+    },
     "2026年8月8日（v2.0.0）": {
         "label": {
             "zh": "2026年8月8日（v2.0.0）",
@@ -6,20 +24,14 @@
         },
         "notes": {
             "zh": [
-                "全站界面升级为 shadcn-vue、Reka UI 与 Tailwind CSS 4，保留深色琥珀品牌特征并继续支持手动浅色主题。",
-                "新增响应式应用侧栏与战斗命令栏，桌面端支持折叠图标栏，移动端使用抽屉与紧凑操作菜单。",
-                "重构首页、模拟结果、队列、多轮结果、刷图推荐、强化、生活技能、设置和教程页面，统一高密度表单、状态、表格、空状态与响应式布局。",
-                "统一选择器、搜索选择器、数字输入、弹窗、折叠面板、标签页和手风琴组件，并完善键盘焦点、弹窗焦点闭环与长表格横向滚动。",
-                "自托管 Chakra Petch 与 IBM Plex Sans 字体，移除 Google Fonts 外链和旧版样式兼容层。",
-                "路由、存储接口、worker 消息、模拟数据结构和导入导出格式保持兼容；主站导入脚本按钮同步适配新版样式。"
+                "全站界面升级为 shadcn-vue、Reka UI 与 Tailwind CSS 4。",
+                "新增响应式侧栏与战斗命令栏，优化各页面布局。",
+                "新增亮暗主题并完善键盘操作与移动端适配。"
             ],
             "en": [
-                "Upgraded the full interface to shadcn-vue, Reka UI, and Tailwind CSS 4 while preserving the dark amber identity and manual light theme.",
-                "Added a responsive application sidebar and combat command bar, including a collapsible desktop icon rail and compact mobile drawer actions.",
-                "Reworked Home, Simulation Results, Queue, Multi Results, Advisor, Enhancement, Skilling, Settings, and Guide with consistent high-density forms, states, tables, empty states, and responsive layouts.",
-                "Standardized selects, searchable comboboxes, number fields, dialogs, collapsible panels, tabs, and accordions, with improved keyboard focus, dialog focus containment, and long-table scrolling.",
-                "Self-hosted Chakra Petch and IBM Plex Sans, removing Google Fonts requests and the legacy style compatibility layer.",
-                "Kept routes, store APIs, worker messages, simulation data, and import/export formats compatible, and updated the main-site import button for the new visual system."
+                "Upgraded the full interface to shadcn-vue, Reka UI, and Tailwind CSS 4.",
+                "Added a responsive sidebar and combat command bar, with improved page layouts.",
+                "Added light and dark themes with improved keyboard and mobile support."
             ]
         }
     },

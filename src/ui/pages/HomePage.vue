@@ -1,9 +1,10 @@
 <template>
   <section class="space-y-4">
     <HomeWorkspaceTabs
-      v-model="activeWorkspaceTab"
+      :model-value="activeWorkspaceTab"
       :tabs="workspaceTabs"
       :aria-label="t('common:vue.home.workspaceTabsAria', 'Home workspace sections')"
+      @update:model-value="requestWorkspaceTabChange"
     />
 
     <HomeSummaryPanel
@@ -27,7 +28,12 @@
       @view-results="openHomeResultsPanel"
     />
 
-    <div class="grid gap-4 xl:grid-cols-[minmax(0,1fr)_340px]">
+    <div
+      :class="[
+        'grid gap-4',
+        activeWorkspaceTab !== 'results' ? 'xl:grid-cols-[minmax(0,1fr)_340px]' : '',
+      ]"
+    >
       <div class="space-y-4">
       <div class="grid gap-4 xl:grid-cols-12">
       <div v-if="activeWorkspaceTab === 'base'" class="grid gap-4 xl:grid-cols-[minmax(0,340px)_minmax(0,1fr)] xl:col-span-12">
@@ -369,7 +375,7 @@
       </div>
       </div>
 
-      <div v-if="activeWorkspaceTab === 'build'" class="space-y-4 xl:col-span-12">
+      <div v-if="activeWorkspaceTab === 'base'" class="space-y-4 xl:col-span-12">
         <div class="surface-panel">
         <h2 class="mb-3 font-heading text-lg font-semibold text-primary">{{ getOfficialGameText("equipmentPanel", "title", "Equipment") }}</h2>
         <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
@@ -436,11 +442,11 @@
       </div>
     </div>
 
-    <div v-if="activeWorkspaceTab === 'build'" class="grid gap-4 lg:grid-cols-2">
+    <div v-if="activeWorkspaceTab === 'base'" class="grid gap-4 lg:grid-cols-2">
         <div class="surface-panel">
           <h2 class="mb-3 font-heading text-lg font-semibold text-primary">{{ t("common:vue.home.foodDrinksTitle", "Food & Drinks") }}</h2>
             <div class="space-y-3">
-              <div v-for="slotIndex in 3" :key="`food-${slotIndex}`" class="grid gap-2 sm:grid-cols-2">
+              <div v-for="slotIndex in 3" :key="`food-${slotIndex}`" class="grid gap-2">
               <div :class="['rounded-md border p-2', isFoodSlotChanged(slotIndex - 1) ? 'border-primary/40 bg-primary/10' : 'border-border']">
                 <label class="control-label">{{ t("common:vue.home.foodSlot", "Food", { index: slotIndex }) }}</label>
                 <SearchCombobox
@@ -454,15 +460,28 @@
                   :max-results="60"
                   @update:model-value="setFoodSelection(slotIndex - 1, $event)"
                 />
-                <button type="button"
-                  class="button-secondary mt-2 w-full"
-                 
-                  :disabled="!activePlayer.food[slotIndex - 1]"
-                  @click="openTriggerEditor('food', slotIndex - 1)"
-                >
-                  {{ t("common:trigger", "Trigger") }}
-                </button>
+                <InlineTriggerEditor
+                  v-if="activePlayer.food[slotIndex - 1]"
+                  :target-id="triggerTargetId('food', slotIndex - 1)"
+                  :target-name="triggerTargetView('food', slotIndex - 1).label"
+                  :state="triggerTargetView('food', slotIndex - 1).state"
+                  :current-rules="triggerTargetView('food', slotIndex - 1).rules"
+                  :default-rules="triggerTargetView('food', slotIndex - 1).defaultRules"
+                  :draft="isTriggerEditorActive('food', slotIndex - 1) ? triggerEditor.draft : []"
+                  :expanded="isTriggerEditorActive('food', slotIndex - 1)"
+                  :max-rules="MAX_TRIGGER_COUNT"
+                  :blocked-message="isTriggerEditorActive('food', slotIndex - 1) ? triggerEditor.blockedMessage : ''"
+                  @request-toggle="requestTriggerEditor('food', slotIndex - 1)"
+                  @update:draft="updateTriggerDraft"
+                  @dirty-change="updateTriggerDirty('food', slotIndex - 1, $event)"
+                  @save="saveInlineTriggerRules"
+                  @cancel="cancelInlineTriggerEditor"
+                />
               </div>
+              </div>
+            </div>
+            <div class="mt-3 space-y-3">
+              <div v-for="slotIndex in 3" :key="`drink-${slotIndex}`" class="grid gap-2">
               <div :class="['rounded-md border p-2', isDrinkSlotChanged(slotIndex - 1) ? 'border-primary/40 bg-primary/10' : 'border-border']">
                 <label class="control-label">{{ t("common:vue.home.drinkSlot", "Drink", { index: slotIndex }) }}</label>
                 <SearchCombobox
@@ -476,14 +495,23 @@
                   :max-results="60"
                   @update:model-value="setDrinkSelection(slotIndex - 1, $event)"
                 />
-                <button type="button"
-                  class="button-secondary mt-2 w-full"
-                 
-                  :disabled="!activePlayer.drinks[slotIndex - 1]"
-                  @click="openTriggerEditor('drink', slotIndex - 1)"
-                >
-                  {{ t("common:trigger", "Trigger") }}
-                </button>
+                <InlineTriggerEditor
+                  v-if="activePlayer.drinks[slotIndex - 1]"
+                  :target-id="triggerTargetId('drink', slotIndex - 1)"
+                  :target-name="triggerTargetView('drink', slotIndex - 1).label"
+                  :state="triggerTargetView('drink', slotIndex - 1).state"
+                  :current-rules="triggerTargetView('drink', slotIndex - 1).rules"
+                  :default-rules="triggerTargetView('drink', slotIndex - 1).defaultRules"
+                  :draft="isTriggerEditorActive('drink', slotIndex - 1) ? triggerEditor.draft : []"
+                  :expanded="isTriggerEditorActive('drink', slotIndex - 1)"
+                  :max-rules="MAX_TRIGGER_COUNT"
+                  :blocked-message="isTriggerEditorActive('drink', slotIndex - 1) ? triggerEditor.blockedMessage : ''"
+                  @request-toggle="requestTriggerEditor('drink', slotIndex - 1)"
+                  @update:draft="updateTriggerDraft"
+                  @dirty-change="updateTriggerDirty('drink', slotIndex - 1, $event)"
+                  @save="saveInlineTriggerRules"
+                  @cancel="cancelInlineTriggerEditor"
+                />
               </div>
             </div>
           </div>
@@ -500,7 +528,7 @@
                 isAbilitySlotChanged(slotIndex - 1) ? 'border-primary/40 bg-primary/10' : 'border-border',
               ]"
             >
-              <div class="grid gap-2 sm:grid-cols-[1fr_88px_auto]">
+              <div class="grid gap-2 sm:grid-cols-[1fr_88px]">
                 <div>
                   <label class="control-label">{{ getAbilitySlotLabel(slotIndex - 1) }}</label>
                   <SearchCombobox
@@ -519,17 +547,24 @@
                   <label class="control-label">{{ t("common:vue.home.levelShort", "Lv") }}</label>
                   <input v-model.number="activePlayer.abilities[slotIndex - 1].level" class="control-input" type="number" min="1" max="400" />
                 </div>
-                <div class="sm:pt-[22px]">
-                  <button type="button"
-                    class="button-secondary w-full"
-                   
-                    :disabled="!activePlayer.abilities[slotIndex - 1].abilityHrid"
-                    @click="openTriggerEditor('ability', slotIndex - 1)"
-                  >
-                    {{ t("common:trigger", "Trigger") }}
-                  </button>
-                </div>
               </div>
+              <InlineTriggerEditor
+                v-if="activePlayer.abilities[slotIndex - 1].abilityHrid"
+                :target-id="triggerTargetId('ability', slotIndex - 1)"
+                :target-name="triggerTargetView('ability', slotIndex - 1).label"
+                :state="triggerTargetView('ability', slotIndex - 1).state"
+                :current-rules="triggerTargetView('ability', slotIndex - 1).rules"
+                :default-rules="triggerTargetView('ability', slotIndex - 1).defaultRules"
+                :draft="isTriggerEditorActive('ability', slotIndex - 1) ? triggerEditor.draft : []"
+                :expanded="isTriggerEditorActive('ability', slotIndex - 1)"
+                :max-rules="MAX_TRIGGER_COUNT"
+                :blocked-message="isTriggerEditorActive('ability', slotIndex - 1) ? triggerEditor.blockedMessage : ''"
+                @request-toggle="requestTriggerEditor('ability', slotIndex - 1)"
+                @update:draft="updateTriggerDraft"
+                @dirty-change="updateTriggerDirty('ability', slotIndex - 1, $event)"
+                @save="saveInlineTriggerRules"
+                @cancel="cancelInlineTriggerEditor"
+              />
               <div v-if="abilityUpgradeCostDrafts[slotIndex - 1]" class="mt-2 rounded-lg border border-border bg-muted/50 p-2">
                 <p class="text-xs text-foreground/85">
                   {{ t("common:equipment.upgradeCost", "Upgrade Cost") }}:
@@ -572,9 +607,25 @@
       </div>
       <p v-else class="text-sm text-muted-foreground">{{ t("common:multiRound.noData", "No data") }}</p>
     </div>
+
+    <section v-if="activeWorkspaceTab === 'results'" ref="homeResultsSection" class="space-y-4">
+      <div v-if="simulator.runtime.isRunning" class="surface-panel">
+        <h2 class="font-heading text-lg font-semibold text-primary">{{ t("common:vue.home.homeResultsRunningTitle", "Simulation in progress") }}</h2>
+        <p class="mt-1 text-sm text-muted-foreground">{{ t("common:vue.home.homeResultsRunning", "Simulation is running. Results will appear here automatically.") }}</p>
+        <p class="mt-3 text-sm font-medium text-foreground">{{ homeResultsProgressText }}</p>
+      </div>
+      <AsyncSimulationResultsView v-if="homeHasResults" />
+      <div v-else-if="!simulator.runtime.isRunning" class="surface-panel border-dashed">
+        <p class="text-sm text-foreground/85">{{ t("common:vue.home.homeResultsEmpty", "Your next simulation result will appear here as soon as it finishes.") }}</p>
+      </div>
+    </section>
       </div>
 
-      <div class="hidden xl:block xl:self-start xl:sticky xl:top-24">
+      <div
+        v-if="activeWorkspaceTab !== 'results'"
+        class="hidden xl:block xl:self-start xl:sticky"
+        style="top: calc(var(--app-sticky-shell-height, 3rem) + 1rem)"
+      >
         <HomeSummaryPanel
           eyebrow=""
           :title="t('common:vue.home.workspaceTitle', 'Simulation Workspace')"
@@ -847,98 +898,6 @@
       </div>
     </BaseModal>
 
-    <BaseModal :open="triggerModal.open" :title="triggerModalTitle" @close="closeTriggerModal">
-      <div class="space-y-3">
-        <p class="text-xs uppercase  text-muted-foreground">{{ t("common:vue.home.trigger.target", "Target") }}</p>
-        <p class="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground">{{ triggerModal.label }}</p>
-
-        <p class="text-xs text-muted-foreground">
-          {{ triggerModal.draft.length === 0
-            ? t("common:vue.home.trigger.noRulesHint", "No rules: activate immediately when off cooldown.")
-            : t("common:vue.home.trigger.rulesHint", "All rules must pass before this target can trigger.") }}
-        </p>
-
-        <div class="space-y-2">
-          <div v-for="(trigger, rowIndex) in triggerModal.draft" :key="`trigger-${rowIndex}`" class="rounded-md border border-border bg-muted/50 p-3">
-            <div class="grid gap-2 md:grid-cols-4">
-              <label class="block">
-                <span class="control-label">{{ t("common:vue.home.trigger.dependency", "Dependency") }}</span>
-                <Select
-                  :model-value="optionalSelectValue(trigger.dependencyHrid)"
-                  @update:model-value="setTriggerDependency(rowIndex, $event)"
-                >
-                  <SelectTrigger :aria-label="t('common:vue.home.trigger.dependency', 'Dependency')" />
-                  <SelectContent>
-                  <SelectItem :value="EMPTY_SELECT_VALUE">{{ t("common:vue.common.select", "Select") }}</SelectItem>
-                  <SelectItem v-for="dependency in triggerDependencyOptions" :key="dependency.hrid" :value="dependency.hrid">
-                    {{ formatTriggerDependencyName(dependency.hrid, dependency.name) }}
-                  </SelectItem>
-                  </SelectContent>
-                </Select>
-              </label>
-
-              <label class="block">
-                <span class="control-label">{{ t("common:vue.home.trigger.condition", "Condition") }}</span>
-                <SearchCombobox
-                  :model-value="trigger.conditionHrid"
-                  :options="triggerConditionComboboxOptions(trigger.dependencyHrid)"
-                  :placeholder="t('common:vue.common.searchOptions', 'Search options')"
-                  :aria-label="t('common:vue.home.trigger.condition', 'Condition')"
-                  :empty-label="t('common:vue.common.noResults', 'No results')"
-                  :open-label="t('common:vue.common.openOptions', 'Open options')"
-                  :more-results-label="t('common:vue.common.refineSearchMoreResults', 'Refine the search to see {count} more results')"
-                  :disabled="!trigger.dependencyHrid"
-                  :max-results="60"
-                  @update:model-value="setTriggerCondition(rowIndex, $event)"
-                />
-              </label>
-
-              <label class="block">
-                <span class="control-label">{{ t("common:vue.home.trigger.comparator", "Comparator") }}</span>
-                <Select
-                  :model-value="optionalSelectValue(trigger.comparatorHrid)"
-                  :disabled="!trigger.conditionHrid"
-                  @update:model-value="setTriggerComparator(rowIndex, $event)"
-                >
-                  <SelectTrigger :aria-label="t('common:vue.home.trigger.comparator', 'Comparator')" />
-                  <SelectContent>
-                  <SelectItem :value="EMPTY_SELECT_VALUE">{{ t("common:vue.common.select", "Select") }}</SelectItem>
-                  <SelectItem v-for="comparator in getComparatorOptions(trigger.conditionHrid)" :key="comparator.hrid" :value="comparator.hrid">
-                    {{ formatTriggerComparatorName(comparator.hrid, comparator.name) }}
-                  </SelectItem>
-                  </SelectContent>
-                </Select>
-              </label>
-
-              <label class="block">
-                <span class="control-label">{{ t("common:vue.home.trigger.value", "Value") }}</span>
-                <input
-                  v-model.number="trigger.value"
-                  class="control-input"
-                  type="number"
-                  :disabled="!isComparatorValueRequired(trigger.comparatorHrid)"
-                />
-              </label>
-            </div>
-            <div class="mt-2">
-              <button type="button" class="button-danger" @click="removeTriggerRow(rowIndex)">{{ t("common:vue.common.remove", "Remove") }}</button>
-            </div>
-          </div>
-        </div>
-
-        <div class="flex flex-wrap gap-2">
-          <button type="button" class="button-secondary" :disabled="triggerModal.draft.length >= MAX_TRIGGER_COUNT" @click="addTriggerRow">
-            {{ t("common:vue.home.trigger.addRule", "Add Rule") }}
-          </button>
-          <button type="button" class="button-secondary" @click="useDefaultTriggers">{{ t("common:vue.home.trigger.useDefault", "Use Default") }}</button>
-          <button type="button" class="button-secondary" @click="clearTriggerRules">{{ t("common:vue.home.trigger.clearRules", "Clear Rules") }}</button>
-          <button type="button" class="button-primary" :disabled="!isTriggerDraftValid" @click="saveTriggerRules">
-            {{ t("common:controls.save", "Save") }}
-          </button>
-        </div>
-      </div>
-    </BaseModal>
-
     <BaseModal
       :open="openPlayerImportModal"
       :title="t('common:controls.importExport', 'Import/Export')"
@@ -1144,39 +1103,12 @@
         </div>
       </div>
     </BaseModal>
-    <section ref="homeResultsSection" class="surface-panel space-y-4">
-      <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
-        <div>
-          <p class="text-xs uppercase  text-muted-foreground">{{ t("common:vue.home.completeResultsEyebrow", "Results") }}</p>
-          <h2 class="font-heading text-lg font-semibold text-primary">{{ t("common:vue.home.completeResultsTitle", "Complete Results") }}</h2>
-          <p class="mt-1 text-sm text-muted-foreground">
-            {{ simulator.runtime.isRunning
-              ? t("common:vue.home.completeResultsRunningDesc", "The full report stays collapsed until you want the detailed breakdown, while progress remains visible here.")
-              : t("common:vue.home.completeResultsDesc", "Open the detailed report only when you need tables, charts, and per-source breakdowns.") }}
-          </p>
-        </div>
-        <button type="button" class="button-secondary" :disabled="!homeCanOpenResults" @click="toggleCompleteResultsPanel">
-          {{ completeResultsToggleLabel }}
-        </button>
-      </div>
-
-      <div v-if="completeResultsExpanded" class="space-y-4">
-        <AsyncSimulationResultsView v-if="homeHasResults" />
-        <div v-else class="rounded-md border border-dashed border-border bg-muted/50 p-4">
-          <p class="text-sm text-foreground/85">{{ t("common:vue.home.homeResultsEmpty", "Your next simulation result will appear here as soon as it finishes.") }}</p>
-        </div>
-      </div>
-
-      <div v-else class="rounded-md border border-dashed border-border bg-muted/50 p-4">
-        <p class="text-sm text-foreground/85">{{ t("common:vue.home.completeResultsCollapsed", "Keep the full report collapsed until you need detailed breakdowns.") }}</p>
-      </div>
-    </section>
   </section>
 </template>
 
 <script setup>
 import { computed, defineAsyncComponent, nextTick, onBeforeUnmount, onMounted, reactive, ref, watch } from "vue";
-import { useRoute, useRouter } from "vue-router";
+import { onBeforeRouteLeave, useRoute, useRouter } from "vue-router";
 import achievementDetailMap from "../../combatsimulator/data/achievementDetailMap.json";
 import achievementTierMap from "../../combatsimulator/data/achievementTierDetailMap.json";
 import combatStyleDetailMap from "../../combatsimulator/data/combatStyleDetailMap.json";
@@ -1190,10 +1122,7 @@ import {
   MAX_TRIGGER_COUNT,
   buildTriggerChangeDescriptor,
   getDefaultTriggerDtosForHrid,
-  getTriggerComparatorsForCondition,
-  getTriggerConditionsForDependency,
-  getTriggerDependencies,
-  isComparatorValueRequired,
+  getEffectiveTriggerState,
   sanitizeTriggerList,
 } from "../../services/triggerMapper.js";
 import {
@@ -1215,6 +1144,7 @@ import BaseModal from "../components/BaseModal.vue";
 import DisclosurePanel from "../components/DisclosurePanel.vue";
 import HomeSummaryPanel from "../components/home/HomeSummaryPanel.vue";
 import HomeWorkspaceTabs from "../components/home/HomeWorkspaceTabs.vue";
+import InlineTriggerEditor from "../components/home/InlineTriggerEditor.vue";
 import { SearchCombobox } from "../components/ui/combobox/index.js";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "../components/ui/select/index.js";
 
@@ -1247,7 +1177,6 @@ const levelKeys = LEVEL_KEYS;
 const equipmentSlots = EQUIPMENT_SLOT_KEYS;
 const homeResultsSection = ref(null);
 const activeWorkspaceTab = ref("base");
-const completeResultsExpanded = ref(false);
 const homeHasResults = computed(() => (
   Boolean(simulator.results.simResult)
   || (Array.isArray(simulator.results.simResults) && simulator.results.simResults.length > 0)
@@ -1272,17 +1201,17 @@ const workspaceTabs = computed(() => ([
   {
     value: "base",
     label: t("common:vue.home.workspaceTabs.base", "Base Setup"),
-    description: t("common:vue.home.workspaceTabs.baseDesc", "Player, target, mode, run scope, and launch controls."),
-  },
-  {
-    value: "build",
-    label: t("common:vue.home.workspaceTabs.build", "Build & Skills"),
-    description: t("common:vue.home.workspaceTabs.buildDesc", "Equipment, consumables, abilities, and trigger entry points."),
+    description: t("common:vue.home.workspaceTabs.baseDesc", "Player, target, run settings, equipment, consumables, abilities, and trigger entry points."),
   },
   {
     value: "advanced",
     label: t("common:vue.home.workspaceTabs.advanced", "Battle Attributes"),
     description: t("common:vue.home.workspaceTabs.advancedDesc", "Full derived combat attributes for the current build."),
+  },
+  {
+    value: "results",
+    label: t("common:vue.home.workspaceTabs.results", "Complete Results"),
+    description: t("common:vue.home.workspaceTabs.resultsDesc", "Full tables, charts, and per-source breakdowns from the latest simulation."),
   },
 ]));
 const currentRunScopeLabel = computed(() => {
@@ -1627,28 +1556,21 @@ const fullResultsButtonLabel = computed(() => (
     ? t("common:vue.home.workspaceOpenResultsArea", "Open Results Area")
     : t("common:vue.home.workspaceViewFullResults", "View Full Results")
 ));
-const completeResultsToggleLabel = computed(() => (
-  completeResultsExpanded.value
-    ? t("common:vue.common.hide", "Hide")
-    : t("common:vue.home.workspaceViewFullResults", "View Full Results")
-));
-
 async function scrollToHomeResults(clearFocus = false) {
   await nextTick();
   homeResultsSection.value?.scrollIntoView({ behavior: "smooth", block: "start" });
 
   if (clearFocus && route.name === "home" && route.query.focus === "results") {
-    await router.replace({ name: "home" });
+    const { focus, ...query } = route.query;
+    await router.replace({ name: "home", query, hash: route.hash });
   }
 }
 
 async function openHomeResultsPanel(clearFocus = false) {
-  completeResultsExpanded.value = true;
+  if (!requestWorkspaceTabChange("results")) {
+    return;
+  }
   await scrollToHomeResults(clearFocus);
-}
-
-function toggleCompleteResultsPanel() {
-  completeResultsExpanded.value = !completeResultsExpanded.value;
 }
 
 const levelLabelMap = computed(() => Object.fromEntries(levelKeys.map((skillKey) => [
@@ -1753,7 +1675,6 @@ const achievementTierSections = computed(() => {
     .filter(Boolean);
 });
 
-const triggerDependencyOptions = getTriggerDependencies();
 const openHouseRoomsModal = ref(false);
 const houseRoomBaselineLevels = ref({});
 const openAchievementsModal = ref(false);
@@ -1791,14 +1712,15 @@ const houseRoomMaterialKindCount = computed(() => (
 const houseRoomMissingPriceCount = computed(() => (
   houseRoomUpgradePreview.value?.materials?.filter((entry) => entry.itemHrid !== "/items/coin" && !entry.priced).length ?? 0
 ));
-const triggerModal = reactive({
-  open: false,
+const triggerEditor = reactive({
   kind: "",
   index: -1,
   hrid: "",
-  label: "",
   draft: [],
+  dirty: false,
+  blockedMessage: "",
 });
+let restoringTriggerEditorPlayer = false;
 const groupText = ref("");
 const soloText = ref("");
 const soloTargetPlayerId = ref(simulator.activePlayerId);
@@ -1874,16 +1796,6 @@ function abilityComboboxOptions(slotIndex) {
     ...getAbilityOptionsForSlot(slotIndex).map((ability) => ({
       value: ability.hrid,
       label: formatAbilityName(ability.hrid, ability.name),
-    })),
-  ];
-}
-
-function triggerConditionComboboxOptions(dependencyHrid) {
-  return [
-    { value: "", label: t("common:vue.common.select", "Select") },
-    ...getConditionOptions(dependencyHrid).map((condition) => ({
-      value: condition.hrid,
-      label: formatTriggerConditionName(condition.hrid, condition.name),
     })),
   ];
 }
@@ -2211,19 +2123,6 @@ const combatStatRows = computed(() => {
     }));
 });
 
-const triggerModalTitle = computed(() => {
-  if (!triggerModal.label) {
-    return t("common:vue.home.trigger.editorTitle", "Trigger Editor");
-  }
-  return t("common:vue.home.trigger.editorTitleWithName", "Trigger Editor - {{name}}", { name: triggerModal.label });
-});
-
-const isTriggerDraftValid = computed(() => triggerModal.draft.every((entry) => (
-  Boolean(entry?.dependencyHrid)
-  && Boolean(entry?.conditionHrid)
-  && Boolean(entry?.comparatorHrid)
-)));
-
 function formatInt(value) {
   const numeric = Number(value || 0);
   return Number.isFinite(numeric) ? Math.floor(numeric).toLocaleString() : "-";
@@ -2463,30 +2362,6 @@ function formatAbilityName(abilityHrid, fallbackName = "") {
   return getAbilityName(hrid, fallbackName || hrid);
 }
 
-function formatTriggerDependencyName(dependencyHrid, fallbackName = "") {
-  const hrid = String(dependencyHrid || "");
-  if (!hrid) {
-    return fallbackName || "-";
-  }
-  return getOfficialGameText("combatTriggerDependencyNames", hrid, fallbackName || hrid);
-}
-
-function formatTriggerConditionName(conditionHrid, fallbackName = "") {
-  const hrid = String(conditionHrid || "");
-  if (!hrid) {
-    return fallbackName || "-";
-  }
-  return getOfficialGameText("combatTriggerConditionNames", hrid, fallbackName || hrid);
-}
-
-function formatTriggerComparatorName(comparatorHrid, fallbackName = "") {
-  const hrid = String(comparatorHrid || "");
-  if (!hrid) {
-    return fallbackName || "-";
-  }
-  return getOfficialGameText("combatTriggerComparatorNames", hrid, fallbackName || hrid);
-}
-
 function getAbilitySlotLabel(index) {
   const slotIndex = Number(index);
   if (slotIndex === 0) {
@@ -2631,6 +2506,10 @@ function savePlayerDataSnapshotFromHome() {
 }
 
 function loadPlayerDataSnapshotFromHome() {
+  if (blockPlayerConfigReplacement()) {
+    setPlayerSnapshotStatus("common:vue.home.trigger.saveOrCancelFirst", "warning");
+    return;
+  }
   const result = simulator.loadPlayerDataSnapshot();
   if (!result.ok) {
     setPlayerSnapshotStatus(result.messageKey || "common:settingsPage.playerLoadInvalid", "danger");
@@ -2696,6 +2575,10 @@ function handleSoloExport() {
 }
 
 function handleGroupImport() {
+  if (blockPlayerConfigReplacement()) {
+    setImportExportStatus("warning", triggerEditor.blockedMessage);
+    return;
+  }
   try {
     const result = simulator.importGroupConfig(groupText.value);
     setImportExportStatus("success", t("common:vue.settings.msgGroupImportSuccess", "Group import success ({{format}}).", {
@@ -2709,6 +2592,10 @@ function handleGroupImport() {
 }
 
 function handleSoloImport() {
+  if (blockPlayerConfigReplacement()) {
+    setImportExportStatus("warning", triggerEditor.blockedMessage);
+    return;
+  }
   try {
     const result = simulator.importSoloConfig(soloText.value, soloTargetPlayerId.value);
     setImportExportStatus("success", t("common:vue.settings.msgSoloImportSuccess", "Solo import success ({{format}}).", {
@@ -2810,6 +2697,15 @@ function handleTampermonkeyImportWindowMessage(event) {
 
   const requestId = String(data.requestId || "").trim();
   if (!requestId) {
+    return;
+  }
+  if (blockPlayerConfigReplacement()) {
+    postTampermonkeyImportResult({
+      type: "mwi-tm-import-result",
+      requestId,
+      ok: false,
+      message: triggerEditor.blockedMessage,
+    });
     return;
   }
 
@@ -3006,15 +2902,6 @@ function cloneValue(value) {
   return JSON.parse(JSON.stringify(value));
 }
 
-function createEmptyTriggerRule() {
-  return {
-    dependencyHrid: "",
-    conditionHrid: "",
-    comparatorHrid: "",
-    value: 0,
-  };
-}
-
 function resolveTriggerTarget(kind, index) {
   if (!activePlayer.value) {
     return { hrid: "", label: "" };
@@ -3055,6 +2942,9 @@ function onFoodChanged(index) {
 }
 
 function setFoodSelection(index, value) {
+  if (!canReplaceTriggerTarget("food", index)) {
+    return;
+  }
   activePlayer.value.food[index] = String(value || "");
   onFoodChanged(index);
 }
@@ -3067,6 +2957,9 @@ function onDrinkChanged(index) {
 }
 
 function setDrinkSelection(index, value) {
+  if (!canReplaceTriggerTarget("drink", index)) {
+    return;
+  }
   activePlayer.value.drinks[index] = String(value || "");
   onDrinkChanged(index);
 }
@@ -3079,6 +2972,9 @@ function onAbilityChanged(index) {
 }
 
 function setAbilitySelection(index, value) {
+  if (!canReplaceTriggerTarget("ability", index)) {
+    return;
+  }
   activePlayer.value.abilities[index].abilityHrid = String(value || "");
   onAbilityChanged(index);
 }
@@ -3095,128 +2991,162 @@ function onAbilityUpgradeCostChanged(slotIndex, rawCost) {
   simulator.setActivePlayerAbilityUpgradeCost(slotIndex, rawCost);
 }
 
-function openTriggerEditor(kind, index) {
+function triggerTargetId(kind, index) {
+  return `${kind}:${index}`;
+}
+
+function isTriggerEditorActive(kind, index) {
+  return triggerEditor.kind === kind && triggerEditor.index === index;
+}
+
+function triggerTargetView(kind, index) {
   const target = resolveTriggerTarget(kind, index);
-  if (!target.hrid) {
+  const effective = getEffectiveTriggerState(activePlayer.value?.triggerMap, target.hrid);
+  return {
+    ...target,
+    state: effective.state,
+    rules: effective.triggers,
+    defaultRules: getDefaultTriggerDtosForHrid(target.hrid),
+  };
+}
+
+function resetTriggerEditor() {
+  triggerEditor.kind = "";
+  triggerEditor.index = -1;
+  triggerEditor.hrid = "";
+  triggerEditor.draft = [];
+  triggerEditor.dirty = false;
+  triggerEditor.blockedMessage = "";
+}
+
+function showTriggerEditorBlockedMessage() {
+  triggerEditor.blockedMessage = t(
+    "common:vue.home.trigger.saveOrCancelFirst",
+    "Save or cancel the current changes first.",
+  );
+}
+
+function blockPlayerConfigReplacement() {
+  if (!triggerEditor.kind || !triggerEditor.dirty) {
+    return false;
+  }
+  showTriggerEditorBlockedMessage();
+  return true;
+}
+
+function requestWorkspaceTabChange(nextTab) {
+  const normalizedTab = ["base", "advanced", "results"].includes(nextTab)
+    ? nextTab
+    : "base";
+  if (normalizedTab === activeWorkspaceTab.value) {
+    return true;
+  }
+  if (triggerEditor.kind && triggerEditor.dirty) {
+    showTriggerEditorBlockedMessage();
+    return false;
+  }
+  resetTriggerEditor();
+  activeWorkspaceTab.value = normalizedTab;
+  return true;
+}
+
+function requestTriggerEditor(kind, index) {
+  if (isTriggerEditorActive(kind, index)) {
+    if (triggerEditor.dirty) {
+      showTriggerEditorBlockedMessage();
+      return;
+    }
+    resetTriggerEditor();
     return;
   }
 
-  simulator.ensureActivePlayerTriggerDefaults(target.hrid);
-  const currentRules = simulator.getActivePlayerTriggers(target.hrid);
-
-  triggerModal.kind = kind;
-  triggerModal.index = index;
-  triggerModal.hrid = target.hrid;
-  triggerModal.label = target.label;
-  triggerModal.draft = cloneValue(currentRules);
-  triggerModal.open = true;
-}
-
-function closeTriggerModal() {
-  triggerModal.open = false;
-  triggerModal.kind = "";
-  triggerModal.index = -1;
-  triggerModal.hrid = "";
-  triggerModal.label = "";
-  triggerModal.draft = [];
-}
-
-function onDependencyChanged(index) {
-  const row = triggerModal.draft[index];
-  if (!row) {
-    return;
-  }
-  row.conditionHrid = "";
-  row.comparatorHrid = "";
-  row.value = 0;
-}
-
-function setTriggerDependency(index, value) {
-  const row = triggerModal.draft[index];
-  if (!row) {
-    return;
-  }
-  row.dependencyHrid = decodeOptionalSelectValue(value);
-  onDependencyChanged(index);
-}
-
-function onConditionChanged(index) {
-  const row = triggerModal.draft[index];
-  if (!row) {
-    return;
-  }
-  row.comparatorHrid = "";
-  row.value = 0;
-}
-
-function setTriggerCondition(index, value) {
-  const row = triggerModal.draft[index];
-  if (!row) {
-    return;
-  }
-  row.conditionHrid = String(value || "");
-  onConditionChanged(index);
-}
-
-function onComparatorChanged(index) {
-  const row = triggerModal.draft[index];
-  if (!row) {
+  if (triggerEditor.kind && triggerEditor.dirty) {
+    showTriggerEditorBlockedMessage();
     return;
   }
 
-  if (!isComparatorValueRequired(row.comparatorHrid)) {
-    row.value = 0;
-  }
-}
-
-function setTriggerComparator(index, value) {
-  const row = triggerModal.draft[index];
-  if (!row) {
+  const view = triggerTargetView(kind, index);
+  if (!view.hrid) {
     return;
   }
-  row.comparatorHrid = decodeOptionalSelectValue(value);
-  onComparatorChanged(index);
+  triggerEditor.kind = kind;
+  triggerEditor.index = index;
+  triggerEditor.hrid = view.hrid;
+  triggerEditor.draft = cloneValue(view.rules);
+  triggerEditor.dirty = false;
+  triggerEditor.blockedMessage = "";
 }
 
-function getConditionOptions(dependencyHrid) {
-  return getTriggerConditionsForDependency(dependencyHrid);
-}
-
-function getComparatorOptions(conditionHrid) {
-  return getTriggerComparatorsForCondition(conditionHrid);
-}
-
-function addTriggerRow() {
-  if (triggerModal.draft.length >= MAX_TRIGGER_COUNT) {
+function updateTriggerDraft(nextDraft) {
+  if (!triggerEditor.kind) {
     return;
   }
-  triggerModal.draft.push(createEmptyTriggerRule());
+  triggerEditor.draft = cloneValue(nextDraft);
+  triggerEditor.blockedMessage = "";
 }
 
-function removeTriggerRow(index) {
-  triggerModal.draft.splice(index, 1);
-}
-
-function useDefaultTriggers() {
-  triggerModal.draft = cloneValue(getDefaultTriggerDtosForHrid(triggerModal.hrid));
-}
-
-function clearTriggerRules() {
-  triggerModal.draft = [];
-}
-
-function saveTriggerRules() {
-  if (!isTriggerDraftValid.value) {
+function updateTriggerDirty(kind, index, dirty) {
+  if (!isTriggerEditorActive(kind, index)) {
     return;
   }
-  const sanitized = sanitizeTriggerList(triggerModal.draft);
-  simulator.setActivePlayerTriggers(triggerModal.hrid, sanitized);
-  closeTriggerModal();
+  triggerEditor.dirty = Boolean(dirty);
+  if (!triggerEditor.dirty) {
+    triggerEditor.blockedMessage = "";
+  }
+}
+
+function canReplaceTriggerTarget(kind, index) {
+  if (isTriggerEditorActive(kind, index) && triggerEditor.dirty) {
+    showTriggerEditorBlockedMessage();
+    return false;
+  }
+  if (isTriggerEditorActive(kind, index)) {
+    resetTriggerEditor();
+  }
+  return true;
+}
+
+function saveInlineTriggerRules(nextRules) {
+  if (!triggerEditor.hrid) {
+    return;
+  }
+  simulator.setActivePlayerTriggers(triggerEditor.hrid, sanitizeTriggerList(nextRules));
+  resetTriggerEditor();
+}
+
+function cancelInlineTriggerEditor() {
+  resetTriggerEditor();
 }
 
 watch(
-  () => activePlayer.value?.id,
-  () => {
+  () => activePlayer.value,
+  (nextPlayer, previousPlayer) => {
+    if (restoringTriggerEditorPlayer) {
+      restoringTriggerEditorPlayer = false;
+      return;
+    }
+
+    const nextPlayerId = nextPlayer?.id;
+    const previousPlayerId = previousPlayer?.id;
+
+    if (
+      triggerEditor.kind
+      && triggerEditor.dirty
+      && previousPlayerId != null
+      && String(nextPlayerId || "") !== String(previousPlayerId || "")
+    ) {
+      restoringTriggerEditorPlayer = true;
+      simulator.setActivePlayer(previousPlayerId);
+      showTriggerEditorBlockedMessage();
+      return;
+    }
+
+    // Imports, snapshots, and queue restores can replace the active player
+    // without changing its id. Never allow a draft from the old object to be
+    // saved into the replacement configuration.
+    if (triggerEditor.kind && nextPlayer !== previousPlayer) {
+      resetTriggerEditor();
+    }
     ensureActivePlayerAdvancedState();
     if (openHouseRoomsModal.value) {
       captureHouseRoomBaselineLevels();
@@ -3224,6 +3154,14 @@ watch(
   },
   { immediate: true },
 );
+
+onBeforeRouteLeave(() => {
+  if (triggerEditor.kind && triggerEditor.dirty) {
+    showTriggerEditorBlockedMessage();
+    return false;
+  }
+  return true;
+});
 
 watch(
   () => openHouseRoomsModal.value,

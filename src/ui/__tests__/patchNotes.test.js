@@ -31,24 +31,34 @@ afterEach(() => {
 });
 
 describe("patchNotes", () => {
-    it("publishes the bilingual 2.0.0 UI upgrade entry first", () => {
+    it("publishes the concise bilingual 2.0.1 and 2.0.0 entries first", () => {
         const zhEntries = resolvePatchNoteEntries(undefined, "zh");
         const enEntries = resolvePatchNoteEntries(undefined, "en");
 
         expect(zhEntries[0]).toMatchObject({
+            entryId: "2026年8月8日（v2.0.1）",
+            label: "2026年8月8日（v2.0.1）",
+        });
+        expect(zhEntries[0].notes).toContain(
+            "食物、饮品和技能新增内联触发条件编辑。"
+        );
+        expect(enEntries[0]).toMatchObject({
+            entryId: "2026年8月8日（v2.0.1）",
+            label: "August 8, 2026 (v2.0.1)",
+        });
+        expect(enEntries[0].notes).toContain(
+            "Added inline trigger-condition editing for food, drinks, and abilities."
+        );
+        expect(zhEntries[1]).toMatchObject({
             entryId: "2026年8月8日（v2.0.0）",
             label: "2026年8月8日（v2.0.0）",
         });
-        expect(zhEntries[0].notes).toContain(
-            "全站界面升级为 shadcn-vue、Reka UI 与 Tailwind CSS 4，保留深色琥珀品牌特征并继续支持手动浅色主题。"
-        );
-        expect(enEntries[0]).toMatchObject({
+        expect(zhEntries[1].notes).toHaveLength(3);
+        expect(enEntries[1]).toMatchObject({
             entryId: "2026年8月8日（v2.0.0）",
             label: "August 8, 2026 (v2.0.0)",
         });
-        expect(enEntries[0].notes).toContain(
-            "Upgraded the full interface to shadcn-vue, Reka UI, and Tailwind CSS 4 while preserving the dark amber identity and manual light theme."
-        );
+        expect(enEntries[1].notes).toHaveLength(3);
     });
 
     it("resolves mixed legacy and bilingual patch note entries in source order", () => {

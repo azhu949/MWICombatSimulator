@@ -8,7 +8,7 @@
       @feedback="openFeedbackModal"
     />
 
-    <SidebarInset>
+    <SidebarInset :style="{ '--app-sticky-shell-height': stickyShellHeight }">
       <header class="sticky top-0 z-40 border-b border-border bg-background/94 backdrop-blur supports-[backdrop-filter]:bg-background/84">
         <div class="mx-auto flex h-12 max-w-[1500px] items-center gap-2 px-3 sm:px-5">
           <SidebarTrigger class="md:hidden" mobile />
@@ -38,6 +38,9 @@
         :party-warning-text="activeQueuePartyWarningText"
         :action-status-text="topQueueActionStatusText"
         :action-status-class="topQueueActionStatusClass"
+        :show-simulation-actions="showHomeSimulationActions"
+        :simulation-running="simulator.runtime.isRunning"
+        :simulation-actions-disabled="queueActionsDisabled"
         :show-runtime-summary="showRuntimeSummary"
         :runtime-progress="simulator.runtime.progress"
         :runtime-error="simulator.runtime.error"
@@ -47,6 +50,9 @@
         @run-queue="runQueueFromTopbar"
         @clear-queue="clearQueueFromTopbar"
         @select-player="simulator.setActivePlayer"
+        @start-simulation="simulator.startSimulation()"
+        @stop-simulation="simulator.stopSimulation()"
+        @height-change="setCombatCommandBarHeight"
         @view-error="openGlobalError('runtime', $event)"
       />
 
@@ -287,10 +293,18 @@ const {
   getSkillName,
 } = useGameDataText();
 const showCombatToolbar = computed(() => route.meta?.showCombatToolbar !== false);
+const showHomeSimulationActions = computed(() => route.name === "home");
+const combatCommandBarHeight = ref(0);
+const stickyShellHeight = computed(() => `${48 + (showCombatToolbar.value ? combatCommandBarHeight.value : 0)}px`);
 const currentPageTitle = computed(() => t(
   route.meta?.navLabelKey || "common:title",
   route.meta?.navLabel || "MWI Combat Simulator",
 ));
+
+function setCombatCommandBarHeight(height) {
+  const numericHeight = Number(height);
+  combatCommandBarHeight.value = Number.isFinite(numericHeight) ? Math.max(0, numericHeight) : 0;
+}
 
 const progressLabel = computed(() => {
   const progress = Math.floor(simulator.runtime.progress * 100);

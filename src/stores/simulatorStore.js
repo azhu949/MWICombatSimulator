@@ -2436,7 +2436,7 @@ function formatQueueTriggerStateLabel(state) {
         return "Custom";
     }
     if (normalized === "disabled") {
-        return "Disabled";
+        return "No conditions";
     }
     return "Default";
 }

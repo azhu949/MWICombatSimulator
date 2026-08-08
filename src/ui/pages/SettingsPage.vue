@@ -1,7 +1,10 @@
 <template>
   <section class="space-y-4">
     <Tabs v-model="activeSettingsTab">
-      <TabsList class="sticky top-14 z-30 w-full justify-start overflow-x-auto bg-background/95 p-1 backdrop-blur">
+      <TabsList
+        class="sticky z-20 w-full justify-start overflow-x-auto bg-background/95 p-1 backdrop-blur"
+        style="top: var(--app-sticky-shell-height, 3rem)"
+      >
         <TabsTrigger value="queue">{{ t("common:settingsPage.queueSettingsCardTitle", "Queue Configuration") }}</TabsTrigger>
         <TabsTrigger value="prices">{{ t("common:vue.settings.priceSettingsTitle", "Price Settings") }}</TabsTrigger>
         <TabsTrigger value="equipment">{{ t("common:controls.equipmentSets", "Equipment Sets") }}</TabsTrigger>

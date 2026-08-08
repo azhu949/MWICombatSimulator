@@ -37,7 +37,7 @@ export function formatQueueTriggerStateText(state, translate) {
         return t("common:queue.triggerState.custom", "Custom");
     }
     if (normalizedState === "disabled") {
-        return t("common:queue.triggerState.disabled", "Disabled");
+        return t("common:queue.triggerState.disabled", "No conditions");
     }
     return t("common:queue.triggerState.default", "Default");
 }

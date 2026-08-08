@@ -9,7 +9,7 @@ function translate(_key, fallback) {
         "common:queue.triggerLabel": "Trigger",
         "common:queue.triggerState.default": "Default",
         "common:queue.triggerState.custom": "Custom",
-        "common:queue.triggerState.disabled": "Disabled",
+        "common:queue.triggerState.disabled": "No conditions",
         "translation:combatTriggerDependencyNames./combat_trigger_dependencies/targeted_enemy": "Target Enemy's",
         "translation:combatTriggerConditionNames./combat_trigger_conditions/current_hp": "Current Hp",
         "translation:combatTriggerConditionNames./combat_trigger_conditions/number_of_active_units": "# of Active Units",
@@ -40,7 +40,7 @@ describe("queueTriggerPresentation", () => {
         })).toBe("Trigger Fireball: Default -> Custom");
     });
 
-    it("formats custom to disabled trigger changes", () => {
+    it("formats custom to unconditional trigger changes", () => {
         expect(formatQueueTriggerDetailLine({
             label: buildTriggerChangeLabel("/items/sandwich"),
             beforeState: "custom",
@@ -48,10 +48,10 @@ describe("queueTriggerPresentation", () => {
         }, {
             t: translate,
             resolveTargetName,
-        })).toBe("Trigger Sandwich: Custom -> Disabled");
+        })).toBe("Trigger Sandwich: Custom -> No conditions");
     });
 
-    it("formats disabled to default trigger changes", () => {
+    it("formats unconditional to default trigger changes", () => {
         expect(formatQueueTriggerDetailLine({
             targetHrid: "/abilities/fireball",
             beforeState: "disabled",
@@ -59,7 +59,7 @@ describe("queueTriggerPresentation", () => {
         }, {
             t: translate,
             resolveTargetName,
-        })).toBe("Trigger Fireball: Disabled -> Default");
+        })).toBe("Trigger Fireball: No conditions -> Default");
     });
 
     it("includes readable trigger rule summaries when both sides are custom", () => {

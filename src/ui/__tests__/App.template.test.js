@@ -11,7 +11,7 @@ describe("App shell contracts", () => {
   it("uses the responsive sidebar shell and contextual command bar", () => {
     expect(appSource).toContain("<SidebarProvider>");
     expect(appSource).toContain("<AppSidebar");
-    expect(appSource).toContain("<SidebarInset>");
+    expect(appSource).toContain("<SidebarInset");
     expect(appSource).toContain("<CombatCommandBar");
     expect(appSource).toContain('v-if="showCombatToolbar"');
     expect(appSource).toContain("route.meta?.showCombatToolbar !== false");
@@ -48,6 +48,25 @@ describe("App shell contracts", () => {
     expect(commandBarSource).toContain("<DropdownMenuRoot>");
     expect(commandBarSource).toContain('class="2xl:hidden"');
     expect(commandBarSource).toContain("@click=\"emit('run-queue')\"");
+  });
+
+  it("keeps the command bar and live runtime progress visible below the app header", () => {
+    expect(commandBarSource).toContain("sticky top-12 z-30");
+    expect(commandBarSource).toContain('ref="commandBarRoot"');
+    expect(commandBarSource).toContain('emit("height-change", height)');
+    expect(appSource).toContain("'--app-sticky-shell-height': stickyShellHeight");
+    expect(appSource).toContain('@height-change="setCombatCommandBarHeight"');
+    expect(commandBarSource).toContain('v-if="showRuntimeSummary"');
+    expect(commandBarSource).toContain(':value="runtimeProgress * 100"');
+  });
+
+  it("exposes start and stop simulation actions from the sticky bar on Home", () => {
+    expect(appSource).toContain('const showHomeSimulationActions = computed(() => route.name === "home")');
+    expect(appSource).toContain(':show-simulation-actions="showHomeSimulationActions"');
+    expect(appSource).toContain('@start-simulation="simulator.startSimulation()"');
+    expect(appSource).toContain('@stop-simulation="simulator.stopSimulation()"');
+    expect(commandBarSource).toContain('v-if="showSimulationActions && !simulationRunning"');
+    expect(commandBarSource).toContain('v-else-if="showSimulationActions"');
   });
 
   it("keeps shared patterns in the components layer and defers offscreen enhancement rows", () => {

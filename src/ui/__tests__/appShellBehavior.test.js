@@ -93,6 +93,21 @@ describe("application shell behavior", () => {
     expect(wrapper.emitted("run-queue")).toHaveLength(1);
   });
 
+  it("switches the Home simulation action from start to stop", async () => {
+    const wrapper = mount(CombatCommandBar, {
+      props: { players: [], showSimulationActions: true, simulationRunning: false },
+    });
+
+    await wrapper.get("button").trigger("click");
+    expect(wrapper.emitted("start-simulation")).toHaveLength(1);
+
+    await wrapper.setProps({ simulationRunning: true });
+    const stopButton = wrapper.findAll("button").find((button) => button.text().includes("Stop"));
+    expect(stopButton).toBeTruthy();
+    await stopButton.trigger("click");
+    expect(wrapper.emitted("stop-simulation")).toHaveLength(1);
+  });
+
   it("shows the party locked by the active queue baseline", () => {
     const wrapper = mount(CombatCommandBar, {
       props: { players: [], partySummaryText: "Alice / Bob" },

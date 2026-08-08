@@ -70,6 +70,32 @@ describe("common locale resources", () => {
         expect(Object.keys(enCommon?.skilling || {}).sort()).toEqual(Object.keys(zhCommon?.skilling || {}).sort());
     });
 
+    it("defines the reorganized Home workspace tabs in both supported languages", () => {
+        const enTabs = enCommon?.vue?.home?.workspaceTabs || {};
+        const zhTabs = zhCommon?.vue?.home?.workspaceTabs || {};
+
+        expect(Object.keys(enTabs).sort()).toEqual(Object.keys(zhTabs).sort());
+        expect(enTabs.build).toBeUndefined();
+        expect(zhTabs.build).toBeUndefined();
+        expect(enTabs.results).toBe("Complete Results");
+        expect(zhTabs.results).toBe("完整结果");
+        expect(enTabs.baseDesc).toContain("equipment");
+        expect(zhTabs.baseDesc).toContain("装备");
+    });
+
+    it("defines synchronized inline trigger labels and names empty rules as unconditional", () => {
+        const enTrigger = enCommon?.vue?.home?.trigger || {};
+        const zhTrigger = zhCommon?.vue?.home?.trigger || {};
+
+        expect(Object.keys(enTrigger).sort()).toEqual(Object.keys(zhTrigger).sort());
+        expect(enCommon?.queue?.triggerState?.disabled).toBe("No conditions");
+        expect(zhCommon?.queue?.triggerState?.disabled).toBe("无条件");
+        expect(enTrigger.saveOrCancelFirst).toContain("Save or cancel");
+        expect(zhTrigger.saveOrCancelFirst).toContain("保存或取消");
+        expect(enTrigger.editorTitle).toBeUndefined();
+        expect(zhTrigger.editorTitle).toBeUndefined();
+    });
+
     it("does not duplicate game-defined labels in the common locale", () => {
         for (const common of [enCommon, zhCommon]) {
             expect(common?.vue?.home?.levelLabels).toBeUndefined();

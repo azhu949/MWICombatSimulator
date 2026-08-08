@@ -120,7 +120,7 @@
         "triggerState": {
             "default": "Default",
             "custom": "Custom",
-            "disabled": "Disabled"
+            "disabled": "No conditions"
         },
         "settings": "Fixed Settings",
         "settingZone": "Zone",
@@ -451,8 +451,7 @@
             "workspaceEyebrow": "Workspace",
             "workspaceTitle": "Simulation Workspace",
             "workspaceDesc": "Keep key metrics visible while you configure and run simulations.",
-            "workspaceBaseDesc": "Configure the active player, target, and run settings without leaving the main workflow.",
-            "workspaceBuildDesc": "Tune equipment, consumables, and abilities without burying the run controls.",
+            "workspaceBaseDesc": "Configure the player, target, run settings, equipment, consumables, and abilities in the main workflow.",
             "workspaceMetricsTitle": "Key Metrics",
             "workspaceBuildTitle": "Build Snapshot",
             "workspaceAdvancedTitle": "Battle Attributes",
@@ -469,11 +468,11 @@
             "workspaceStatusIdleDesc": "Start a simulation to populate the workspace summary and results area.",
             "workspaceTabs": {
                 "base": "Base Setup",
-                "baseDesc": "Player, target, mode, run scope, and launch controls.",
-                "build": "Build & Skills",
-                "buildDesc": "Equipment, consumables, abilities, and trigger entry points.",
+                "baseDesc": "Player, target, run settings, equipment, consumables, abilities, and trigger entry points.",
                 "advanced": "Battle Attributes",
-                "advancedDesc": "Full derived combat attributes for the current build."
+                "advancedDesc": "Full derived combat attributes for the current build.",
+                "results": "Complete Results",
+                "resultsDesc": "Full tables, charts, and per-source breakdowns from the latest simulation."
             },
             "workspaceTargets": {
                 "groupZones": "{{count}} group zones selected",
@@ -485,11 +484,6 @@
                 "modeScope": "Mode / Scope",
                 "target": "Target"
             },
-            "completeResultsEyebrow": "Results",
-            "completeResultsTitle": "Complete Results",
-            "completeResultsRunningDesc": "The full report stays collapsed until you want the detailed breakdown, while progress remains visible here.",
-            "completeResultsDesc": "Open the detailed report only when you need tables, charts, and per-source breakdowns.",
-            "completeResultsCollapsed": "Keep the full report collapsed until you need detailed breakdowns.",
             "simulationHours": "Simulation Hours",
             "visualization": "Visualization",
             "hpmpOn": "HP/MP On",
@@ -507,18 +501,24 @@
             "drinkSlot": "Drink {{index}}",
             "abilitySlot": "Ability {{index}}",
             "trigger": {
-                "target": "Target",
-                "noRulesHint": "No rules: activate immediately when off cooldown.",
-                "rulesHint": "All rules must pass before this target can trigger.",
+                "summaryTitle": "Trigger conditions",
+                "edit": "Edit",
+                "ruleCount": "{{count}} conditions",
+                "firstRuleMore": "{{rule}} +{{count}} more",
+                "noConditionsSummary": "Activates whenever it is ready.",
+                "noRulesHint": "No conditions: activate as soon as cooldown and resource requirements allow.",
+                "rulesHint": "All conditions must pass before this target can activate.",
                 "dependency": "Dependency",
                 "condition": "Condition",
+                "conditionNumber": "Condition {{index}}",
                 "comparator": "Comparator",
                 "value": "Value",
-                "addRule": "Add Rule",
-                "useDefault": "Use Default",
-                "clearRules": "Clear Rules",
-                "editorTitle": "Trigger Editor",
-                "editorTitleWithName": "Trigger Editor - {{name}}"
+                "addRule": "Add condition",
+                "useDefault": "Restore default",
+                "noConditions": "No conditions",
+                "cancel": "Cancel",
+                "unsaved": "Unsaved",
+                "saveOrCancelFirst": "Save or cancel the current changes first."
             },
             "houseRoomsButton": "House Rooms",
             "guildBuffsButton": "Guild Shrines",
