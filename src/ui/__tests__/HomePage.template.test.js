@@ -14,7 +14,7 @@ describe("HomePage labyrinth selectors", () => {
         expect(homePageSource).toContain('getOfficialGameText("labyrinthPanel", "coffeeCrate", "Coffee Crate")');
         expect(homePageSource).toContain('getOfficialGameText("labyrinthPanel", "foodCrate", "Food Crate")');
         expect(homePageSource).toContain("simulator.options.labyrinthCrates.tea");
-        expect(homePageSource).toContain("simulator.setLabyrinthCrate('tea', $event.target.value)");
+        expect(homePageSource).toContain("setLabyrinthCrateSelection('tea', $event)");
     });
 
     it("passes labyrinth preview context into combat preview data", () => {

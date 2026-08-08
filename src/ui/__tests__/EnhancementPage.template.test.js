@@ -8,7 +8,7 @@ describe("EnhancementPage tool surface", () => {
     it("registers a dedicated route without the combat toolbar", () => {
         expect(routerSource).toContain('path: "/enhancement"');
         expect(routerSource).toContain('name: "enhancement"');
-        expect(routerSource).toContain("meta: { showCombatToolbar: false }");
+        expect(routerSource).toContain("meta: { showCombatToolbar: false,");
         expect(routerSource).toContain('import("../pages/EnhancementPage.vue")');
     });
 
@@ -100,7 +100,7 @@ describe("EnhancementPage tool surface", () => {
         expect(pageSource).toContain(':open="equipmentModalOpen"');
         expect(pageSource).toContain(':open="pricesModalOpen"');
         expect(pageSource).toContain("common:enhancement.materialsAndPrices");
-        expect(pageSource).toContain("enhancement-price-modal");
+        expect(pageSource).toContain('panel-class="max-w-3xl max-h-[88vh] overflow-y-auto"');
         expect(pageSource).toContain("data-enhancement-starting-price");
         expect(pageSource).toContain("data-enhancement-price-grid");
         expect(pageSource).toContain("sm:grid-cols-2");

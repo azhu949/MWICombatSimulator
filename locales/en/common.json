@@ -33,6 +33,8 @@
         "delete": "Delete",
         "create": "Create",
         "close": "Close",
+        "decrease": "Decrease",
+        "increase": "Increase",
         "name": "Name"
     },
     "menu": {
@@ -354,9 +356,23 @@
             "loadFile": "Load File",
             "clear": "Clear",
             "refresh": "Refresh",
-            "cancel": "Cancel"
+            "cancel": "Cancel",
+            "searchOptions": "Search options",
+            "noResults": "No results",
+            "openOptions": "Open options",
+            "refineSearchMoreResults": "Refine the search to see {count} more results"
         },
         "app": {
+            "navSimulation": "Simulation",
+            "navTools": "Tools",
+            "navSupport": "Support",
+            "moreActions": "More actions",
+            "navigation": "Navigation",
+            "applicationNavigation": "Application navigation",
+            "openNavigation": "Open navigation",
+            "closeNavigation": "Close navigation",
+            "expandNavigation": "Expand navigation",
+            "collapseNavigation": "Collapse navigation",
             "runtime": "Runtime",
             "languageEnglish": "English",
             "languageChinese": "Chinese",
@@ -423,6 +439,7 @@
             "combatType": "Combat Type",
             "regularZone": "Regular Zone",
             "zone": "Zone",
+            "searchTarget": "Search target",
             "difficultyMax": "Difficulty (max {{max}})",
             "batchHint": "Batch mode will run multiple targets and aggregate results in the Home results section.",
             "homeResultsTitle": "Simulation Results",

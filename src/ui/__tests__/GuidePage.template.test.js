@@ -11,7 +11,7 @@ describe("GuidePage tutorial surface", () => {
         expect(routerSource).toContain('path: "/guide"');
         expect(routerSource).toContain('name: "guide"');
         expect(routerSource).toContain('import("../pages/GuidePage.vue")');
-        expect(routerSource).toContain("meta: { showCombatToolbar: false }");
+        expect(routerSource).toContain("meta: { showCombatToolbar: false,");
     });
 
     it("renders the complete English guide from the global application language", () => {

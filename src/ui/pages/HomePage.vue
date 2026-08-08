@@ -31,18 +31,18 @@
       <div class="space-y-4">
       <div class="grid gap-4 xl:grid-cols-12">
       <div v-if="activeWorkspaceTab === 'base'" class="grid gap-4 xl:grid-cols-[minmax(0,340px)_minmax(0,1fr)] xl:col-span-12">
-      <div class="panel">
-        <h2 class="mb-3 font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.home.levelsTitle", "Levels") }}</h2>
+      <div class="surface-panel">
+        <h2 class="mb-3 font-heading text-lg font-semibold text-primary">{{ t("common:vue.home.levelsTitle", "Levels") }}</h2>
         <div class="grid grid-cols-2 gap-3">
           <label class="col-span-2 block">
-            <span class="field-label">{{ t("common:vue.home.averageCombatLevel", "Combat Level") }}</span>
-            <input :value="activePlayerCombatLevelLabel" class="field-input" type="text" readonly />
+            <span class="control-label">{{ t("common:vue.home.averageCombatLevel", "Combat Level") }}</span>
+            <input :value="activePlayerCombatLevelLabel" class="control-input" type="text" readonly />
           </label>
           <label v-for="key in levelKeys" :key="key" class="block">
-            <span class="field-label">{{ levelLabelMap[key] }}</span>
+            <span class="control-label">{{ levelLabelMap[key] }}</span>
             <input
               v-model.number="activePlayer.levels[key]"
-              :class="['field-input', isLevelChanged(key) ? 'border-amber-300 bg-amber-300/10' : '']"
+              :class="['control-input', isLevelChanged(key) ? 'border-primary/40 bg-primary/10' : '']"
               min="1"
               max="400"
               type="number"
@@ -53,17 +53,17 @@
           <article
             v-for="card in levelEtaCards"
             :key="card.skillKey"
-            :class="['rounded-lg border p-3 text-[11px] text-slate-200', card.borderClass, card.bgClass]"
+            :class="['rounded-lg border p-3 text-[11px] text-foreground', card.borderClass, card.bgClass]"
           >
             <h3 class="mb-2 font-medium" :class="card.titleClass">{{ card.title }}</h3>
             <div v-if="card.details" class="grid grid-cols-[auto_1fr] gap-x-2 gap-y-1">
-              <span class="text-slate-400">{{ t("common:vue.home.levelEtaTotalExperience", "Total XP") }}</span>
+              <span class="text-muted-foreground">{{ t("common:vue.home.levelEtaTotalExperience", "Total XP") }}</span>
               <span class="text-right">{{ card.details.totalExperience }}</span>
-              <span class="text-slate-400">{{ t("common:vue.home.levelEtaRequiredExperience", "XP Needed") }}</span>
+              <span class="text-muted-foreground">{{ t("common:vue.home.levelEtaRequiredExperience", "XP Needed") }}</span>
               <span class="text-right">{{ card.details.requiredExperience }}</span>
-              <span class="text-slate-400">{{ t("common:vue.home.levelEtaRequiredTime", "Time Needed") }}</span>
+              <span class="text-muted-foreground">{{ t("common:vue.home.levelEtaRequiredTime", "Time Needed") }}</span>
               <span class="text-right">{{ card.details.requiredTime }}</span>
-              <span class="text-slate-400">{{ t("common:vue.home.levelEtaCompletionTime", "Completion Time") }}</span>
+              <span class="text-muted-foreground">{{ t("common:vue.home.levelEtaCompletionTime", "Completion Time") }}</span>
               <span class="text-right">{{ card.details.completionTime }}</span>
             </div>
             <p v-else class="text-xs leading-5" :class="card.messageClass">{{ card.message }}</p>
@@ -71,43 +71,52 @@
         </div>
       </div>
 
-      <div class="panel">
-        <h2 class="mb-3 font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.home.simulationTitle", "Simulation") }}</h2>
+      <div class="surface-panel">
+        <h2 class="mb-3 font-heading text-lg font-semibold text-primary">{{ t("common:vue.home.simulationTitle", "Simulation") }}</h2>
 
         <div class="mb-3 grid gap-3 sm:grid-cols-2">
           <label class="block">
-            <span class="field-label">{{ t("common:vue.home.mode", "Mode") }}</span>
-            <select v-model="simulationModeProxy" class="field-select">
-              <option value="zone">{{ t("common:vue.home.modeZone", "Zone") }}</option>
-              <option value="labyrinth">{{ getOfficialGameText("labyrinthPanel", "labyrinth", "Labyrinth") }}</option>
-            </select>
+            <span class="control-label">{{ t("common:vue.home.mode", "Mode") }}</span>
+            <Select v-model="simulationModeProxy">
+              <SelectTrigger />
+              <SelectContent>
+                <SelectItem value="zone">{{ t("common:vue.home.modeZone", "Zone") }}</SelectItem>
+                <SelectItem value="labyrinth">{{ getOfficialGameText("labyrinthPanel", "labyrinth", "Labyrinth") }}</SelectItem>
+              </SelectContent>
+            </Select>
           </label>
 
           <label class="block">
-            <span class="field-label">{{ t("common:vue.home.runScope", "Run Scope") }}</span>
-            <select v-model="runScopeProxy" class="field-select">
-              <option v-for="scope in simulator.availableRunScopes" :key="scope.value" :value="scope.value">
+            <span class="control-label">{{ t("common:vue.home.runScope", "Run Scope") }}</span>
+            <Select v-model="runScopeProxy">
+              <SelectTrigger />
+              <SelectContent>
+              <SelectItem v-for="scope in simulator.availableRunScopes" :key="scope.value" :value="scope.value">
                 {{ t(`common:vue.home.runScopeOptions.${scope.value}`, scope.label) }}
-              </option>
-            </select>
+              </SelectItem>
+              </SelectContent>
+            </Select>
           </label>
         </div>
 
-        <div class="mb-3 rounded-xl border border-white/10 bg-slate-900/40 p-3">
+        <div class="mb-3 rounded-md border border-border bg-muted/50 p-3">
           <label class="block">
-            <span class="field-label">{{ t("common:vue.home.profileSelectorLabel", "Character Profile") }}</span>
-            <select v-model="profileSelectorPlayerId" class="field-select">
-              <option v-for="entry in profilePlayerOptions" :key="entry.id" :value="entry.id">
+            <span class="control-label">{{ t("common:vue.home.profileSelectorLabel", "Character Profile") }}</span>
+            <Select v-model="profileSelectorPlayerId">
+              <SelectTrigger :aria-label="t('common:vue.home.profileSelectorLabel', 'Character Profile')" />
+              <SelectContent>
+              <SelectItem v-for="entry in profilePlayerOptions" :key="entry.id" :value="String(entry.id)">
                 {{ entry.label }}
-              </option>
-            </select>
+              </SelectItem>
+              </SelectContent>
+            </Select>
           </label>
-          <p class="mt-2 text-xs text-slate-400">
+          <p class="mt-2 text-xs text-muted-foreground">
             {{ t("common:vue.home.profileSelectorHint", "Baseline simulation requires imported profile data for current player.") }}
           </p>
           <p
             class="mt-1 text-xs"
-            :class="activeProfileImported ? 'text-emerald-300' : 'text-amber-300'"
+            :class="activeProfileImported ? 'text-success' : 'text-primary'"
           >
             {{ activeProfileImported
               ? t("common:vue.home.profileStatusImported", "Imported")
@@ -117,71 +126,77 @@
 
         <div class="mb-3 grid gap-3 sm:grid-cols-2" v-if="simulator.simulationSettings.mode === 'zone' && simulator.simulationSettings.runScope === 'single'">
           <label class="block">
-            <span class="field-label">{{ t("common:vue.home.combatType", "Combat Type") }}</span>
-            <select v-model="dungeonToggleProxy" class="field-select">
-              <option :value="false">{{ t("common:vue.home.regularZone", "Regular Zone") }}</option>
-              <option :value="true">{{ getOfficialGameText("shopCategoryNames", "/shop_categories/dungeon", "Dungeon") }}</option>
-            </select>
+            <span class="control-label">{{ t("common:vue.home.combatType", "Combat Type") }}</span>
+            <Select v-model="dungeonToggleProxy">
+              <SelectTrigger :aria-label="t('common:vue.home.combatType', 'Combat Type')" />
+              <SelectContent>
+                <SelectItem value="zone">{{ t("common:vue.home.regularZone", "Regular Zone") }}</SelectItem>
+                <SelectItem value="dungeon">{{ getOfficialGameText("shopCategoryNames", "/shop_categories/dungeon", "Dungeon") }}</SelectItem>
+              </SelectContent>
+            </Select>
           </label>
         </div>
 
         <div v-if="simulator.simulationSettings.mode === 'zone' && simulator.simulationSettings.runScope === 'single'" class="mb-3 grid gap-3 sm:grid-cols-2">
-          <label class="block">
-            <span class="field-label">{{ simulator.simulationSettings.useDungeon ? getOfficialGameText("shopCategoryNames", "/shop_categories/dungeon", "Dungeon") : t("common:vue.home.zone", "Zone") }}</span>
-            <select
+          <div class="block">
+            <span class="control-label">{{ simulator.simulationSettings.useDungeon ? getOfficialGameText("shopCategoryNames", "/shop_categories/dungeon", "Dungeon") : t("common:vue.home.zone", "Zone") }}</span>
+            <SearchCombobox
               v-model="selectedActionHrid"
-              class="field-select"
-              @change="simulator.normalizeDifficulty()"
-            >
-              <option v-for="zone in simulator.currentActionOptions" :key="zone.hrid" :value="zone.hrid">
-                {{ formatActionName(zone.hrid, zone.name) }}
-              </option>
-            </select>
-          </label>
+              :options="currentActionComboboxOptions"
+              :placeholder="t('common:vue.home.searchTarget', 'Search target')"
+              :aria-label="simulator.simulationSettings.useDungeon ? getOfficialGameText('shopCategoryNames', '/shop_categories/dungeon', 'Dungeon') : t('common:vue.home.zone', 'Zone')"
+              :empty-label="t('common:vue.common.noResults', 'No results')"
+              :open-label="t('common:vue.common.openOptions', 'Open options')"
+              :more-results-label="t('common:vue.common.refineSearchMoreResults', 'Refine the search to see {count} more results')"
+              :max-results="60"
+            />
+          </div>
           <label class="block">
-            <span class="field-label">
+            <span class="control-label">
               {{ t("common:vue.home.difficultyMax", "Difficulty", { max: Math.min(5, simulator.currentMaxDifficulty) }) }}
             </span>
-            <select
-              v-model.number="simulator.simulationSettings.difficultyTier"
-              class="field-select"
-              @change="simulator.normalizeDifficulty()"
-            >
-              <option
+            <Select v-model="simulator.simulationSettings.difficultyTier" @update:model-value="simulator.normalizeDifficulty()">
+              <SelectTrigger />
+              <SelectContent>
+              <SelectItem
                 v-for="option in difficultyTierOptions"
                 :key="option.value"
                 :value="option.value"
                 :disabled="option.disabled"
               >
                 {{ option.label }}
-              </option>
-            </select>
+              </SelectItem>
+              </SelectContent>
+            </Select>
           </label>
         </div>
 
         <div v-else-if="simulator.simulationSettings.mode === 'labyrinth' && simulator.simulationSettings.runScope === 'single'" class="mb-3 grid gap-3 sm:grid-cols-2">
           <label class="block">
-            <span class="field-label">{{ getOfficialGameText("labyrinthPanel", "labyrinth", "Labyrinth") }}</span>
-            <select v-model="simulator.simulationSettings.labyrinthHrid" class="field-select">
-              <option v-for="monster in simulator.options.labyrinths" :key="monster.hrid" :value="monster.hrid">
+            <span class="control-label">{{ getOfficialGameText("labyrinthPanel", "labyrinth", "Labyrinth") }}</span>
+            <Select v-model="simulator.simulationSettings.labyrinthHrid">
+              <SelectTrigger :aria-label="getOfficialGameText('labyrinthPanel', 'labyrinth', 'Labyrinth')" />
+              <SelectContent>
+              <SelectItem v-for="monster in simulator.options.labyrinths" :key="monster.hrid" :value="monster.hrid">
                 {{ formatMonsterName(monster.hrid, monster.name) }}
-              </option>
-            </select>
+              </SelectItem>
+              </SelectContent>
+            </Select>
           </label>
           <label class="block">
-            <span class="field-label">{{ t("common:roomLevel", "Room Level") }}</span>
-            <input v-model.number="simulator.simulationSettings.roomLevel" class="field-input" type="number" min="20" max="220" />
+            <span class="control-label">{{ t("common:roomLevel", "Room Level") }}</span>
+            <input v-model.number="simulator.simulationSettings.roomLevel" class="control-input" type="number" min="20" max="220" />
           </label>
         </div>
 
-        <p v-if="simulator.simulationSettings.runScope !== 'single'" class="mb-3 text-xs text-slate-400">
+        <p v-if="simulator.simulationSettings.runScope !== 'single'" class="mb-3 text-xs text-muted-foreground">
           {{ t("common:vue.home.batchHint", "Batch mode will run multiple targets and aggregate results in the Home results section.") }}
         </p>
 
-        <div v-if="simulator.simulationSettings.mode === 'zone' && simulator.simulationSettings.runScope === 'all_group_zones'" class="mb-3 rounded-xl border border-white/10 bg-slate-900/40 p-3">
+        <div v-if="simulator.simulationSettings.mode === 'zone' && simulator.simulationSettings.runScope === 'all_group_zones'" class="mb-3 rounded-md border border-border bg-muted/50 p-3">
           <div class="mb-2 flex items-center justify-between gap-2">
-            <p class="field-label mb-0">{{ t("common:simAllZones", "Sim All Zones") }}</p>
-            <label class="badge flex items-center gap-2">
+            <p class="control-label mb-0">{{ t("common:simAllZones", "Sim All Zones") }}</p>
+            <label class="status-chip flex items-center gap-2">
               <input
                 :checked="allGroupZonesChecked"
                 type="checkbox"
@@ -194,7 +209,7 @@
             <label
               v-for="zone in simulator.groupZoneOptions"
               :key="zone.hrid"
-              class="badge flex items-center justify-between gap-2 text-slate-100"
+              class="status-chip flex items-center justify-between gap-2 text-foreground"
             >
               <span>{{ formatActionName(zone.hrid, zone.name) }}</span>
               <input
@@ -206,10 +221,10 @@
           </div>
         </div>
 
-        <div v-if="simulator.simulationSettings.mode === 'zone' && simulator.simulationSettings.runScope === 'all_solo_zones'" class="mb-3 rounded-xl border border-white/10 bg-slate-900/40 p-3">
+        <div v-if="simulator.simulationSettings.mode === 'zone' && simulator.simulationSettings.runScope === 'all_solo_zones'" class="mb-3 rounded-md border border-border bg-muted/50 p-3">
           <div class="mb-2 flex items-center justify-between gap-2">
-            <p class="field-label mb-0">{{ t("common:simAllSolos", "Sim All Solos") }}</p>
-            <label class="badge flex items-center gap-2">
+            <p class="control-label mb-0">{{ t("common:simAllSolos", "Sim All Solos") }}</p>
+            <label class="status-chip flex items-center gap-2">
               <input
                 :checked="allSoloZonesChecked"
                 type="checkbox"
@@ -222,7 +237,7 @@
             <label
               v-for="zone in simulator.soloZoneOptions"
               :key="zone.hrid"
-              class="badge flex items-center justify-between gap-2 text-slate-100"
+              class="status-chip flex items-center justify-between gap-2 text-foreground"
             >
               <span>{{ formatActionName(zone.hrid, zone.name) }}</span>
               <input
@@ -234,68 +249,74 @@
           </div>
         </div>
 
-        <div v-if="simulator.simulationSettings.mode === 'labyrinth'" class="mb-3 rounded-xl border border-white/10 bg-slate-900/40 p-3">
-          <p class="field-label">{{ getOfficialGameText("labyrinthPanel", "crates", "Crates") }}</p>
+        <div v-if="simulator.simulationSettings.mode === 'labyrinth'" class="mb-3 rounded-md border border-border bg-muted/50 p-3">
+          <p class="control-label">{{ getOfficialGameText("labyrinthPanel", "crates", "Crates") }}</p>
           <div class="grid gap-3 sm:grid-cols-3">
             <label class="block">
-              <span class="field-label">{{ getOfficialGameText("labyrinthPanel", "coffeeCrate", "Coffee Crate") }}</span>
-              <select
-                :value="simulator.simulationSettings.labyrinthCrates?.coffee || ''"
-                class="field-select"
-                @change="simulator.setLabyrinthCrate('coffee', $event.target.value)"
+              <span class="control-label">{{ getOfficialGameText("labyrinthPanel", "coffeeCrate", "Coffee Crate") }}</span>
+              <Select
+                :model-value="labyrinthCrateSelectValue('coffee')"
+                @update:model-value="setLabyrinthCrateSelection('coffee', $event)"
               >
-                <option value="">{{ t("common:vue.common.none", "None") }}</option>
-                <option v-for="item in simulator.options.labyrinthCrates.coffee" :key="item.hrid" :value="item.hrid">
+                <SelectTrigger :aria-label="getOfficialGameText('labyrinthPanel', 'coffeeCrate', 'Coffee Crate')" />
+                <SelectContent>
+                <SelectItem :value="EMPTY_SELECT_VALUE">{{ t("common:vue.common.none", "None") }}</SelectItem>
+                <SelectItem v-for="item in simulator.options.labyrinthCrates.coffee" :key="item.hrid" :value="item.hrid">
                   {{ formatItemName(item.hrid, item.name) }}
-                </option>
-              </select>
+                </SelectItem>
+                </SelectContent>
+              </Select>
             </label>
             <label class="block">
-              <span class="field-label">{{ getOfficialGameText("labyrinthPanel", "foodCrate", "Food Crate") }}</span>
-              <select
-                :value="simulator.simulationSettings.labyrinthCrates?.food || ''"
-                class="field-select"
-                @change="simulator.setLabyrinthCrate('food', $event.target.value)"
+              <span class="control-label">{{ getOfficialGameText("labyrinthPanel", "foodCrate", "Food Crate") }}</span>
+              <Select
+                :model-value="labyrinthCrateSelectValue('food')"
+                @update:model-value="setLabyrinthCrateSelection('food', $event)"
               >
-                <option value="">{{ t("common:vue.common.none", "None") }}</option>
-                <option v-for="item in simulator.options.labyrinthCrates.food" :key="item.hrid" :value="item.hrid">
+                <SelectTrigger :aria-label="getOfficialGameText('labyrinthPanel', 'foodCrate', 'Food Crate')" />
+                <SelectContent>
+                <SelectItem :value="EMPTY_SELECT_VALUE">{{ t("common:vue.common.none", "None") }}</SelectItem>
+                <SelectItem v-for="item in simulator.options.labyrinthCrates.food" :key="item.hrid" :value="item.hrid">
                   {{ formatItemName(item.hrid, item.name) }}
-                </option>
-              </select>
+                </SelectItem>
+                </SelectContent>
+              </Select>
             </label>
             <label class="block">
-              <span class="field-label">{{ getOfficialGameText("labyrinthPanel", "teaCrate", "Tea Crate") }}</span>
-              <select
-                :value="simulator.simulationSettings.labyrinthCrates?.tea || ''"
-                class="field-select"
-                @change="simulator.setLabyrinthCrate('tea', $event.target.value)"
+              <span class="control-label">{{ getOfficialGameText("labyrinthPanel", "teaCrate", "Tea Crate") }}</span>
+              <Select
+                :model-value="labyrinthCrateSelectValue('tea')"
+                @update:model-value="setLabyrinthCrateSelection('tea', $event)"
               >
-                <option value="">{{ t("common:vue.common.none", "None") }}</option>
-                <option v-for="item in simulator.options.labyrinthCrates.tea" :key="item.hrid" :value="item.hrid">
+                <SelectTrigger :aria-label="getOfficialGameText('labyrinthPanel', 'teaCrate', 'Tea Crate')" />
+                <SelectContent>
+                <SelectItem :value="EMPTY_SELECT_VALUE">{{ t("common:vue.common.none", "None") }}</SelectItem>
+                <SelectItem v-for="item in simulator.options.labyrinthCrates.tea" :key="item.hrid" :value="item.hrid">
                   {{ formatItemName(item.hrid, item.name) }}
-                </option>
-              </select>
+                </SelectItem>
+                </SelectContent>
+              </Select>
             </label>
           </div>
         </div>
 
         <div class="mb-3 grid gap-3 sm:grid-cols-1">
           <label class="block max-w-sm">
-            <span class="field-label">{{ t("common:vue.home.simulationHours", "Simulation Hours") }}</span>
-            <input v-model.number="simulator.simulationSettings.simulationTimeHours" class="field-input" type="number" min="1" max="72" />
+            <span class="control-label">{{ t("common:vue.home.simulationHours", "Simulation Hours") }}</span>
+            <input v-model.number="simulator.simulationSettings.simulationTimeHours" class="control-input" type="number" min="1" max="72" />
           </label>
         </div>
 
         <div class="mb-3 grid gap-3 sm:grid-cols-3">
-          <label class="badge flex items-center justify-center gap-2 text-sm">
+          <label class="status-chip flex items-center justify-center gap-2 text-sm">
             <input v-model="simulator.simulationSettings.mooPass" type="checkbox" />
             {{ getOfficialGameText("mooPass", "mooPass", "MooPass") }}
           </label>
-          <label class="badge flex items-center justify-center gap-2 text-sm">
+          <label class="status-chip flex items-center justify-center gap-2 text-sm">
             <input v-model="simulator.simulationSettings.comExpEnabled" type="checkbox" />
             {{ t("common:vue.home.communityExp", "Community EXP") }}
           </label>
-          <label class="badge flex items-center justify-center gap-2 text-sm">
+          <label class="status-chip flex items-center justify-center gap-2 text-sm">
             <input v-model="simulator.simulationSettings.comDropEnabled" type="checkbox" />
             {{ t("common:vue.home.communityDrop", "Community Drop") }}
           </label>
@@ -303,44 +324,44 @@
 
         <div class="mb-4 grid gap-3 sm:grid-cols-2">
           <label class="block">
-            <span class="field-label">{{ t("common:vue.home.expLevel", "EXP Level") }}</span>
-            <input v-model.number="simulator.simulationSettings.comExp" class="field-input" type="number" min="1" max="99" :disabled="!simulator.simulationSettings.comExpEnabled" />
+            <span class="control-label">{{ t("common:vue.home.expLevel", "EXP Level") }}</span>
+            <input v-model.number="simulator.simulationSettings.comExp" class="control-input" type="number" min="1" max="99" :disabled="!simulator.simulationSettings.comExpEnabled" />
           </label>
           <label class="block">
-            <span class="field-label">{{ t("common:vue.home.dropLevel", "Drop Level") }}</span>
-            <input v-model.number="simulator.simulationSettings.comDrop" class="field-input" type="number" min="1" max="99" :disabled="!simulator.simulationSettings.comDropEnabled" />
+            <span class="control-label">{{ t("common:vue.home.dropLevel", "Drop Level") }}</span>
+            <input v-model.number="simulator.simulationSettings.comDrop" class="control-input" type="number" min="1" max="99" :disabled="!simulator.simulationSettings.comDropEnabled" />
           </label>
         </div>
 
         <div class="flex flex-wrap gap-2" data-tm-import-anchor="simulator-home-actions">
-          <button type="button" class="action-button-primary" :disabled="simulator.runtime.isRunning" @click="simulator.startSimulation()">
+          <button type="button" class="button-primary" :disabled="simulator.runtime.isRunning" @click="simulator.startSimulation()">
             {{ t("common:controls.startSimulation", "Start Simulation") }}
           </button>
-          <button type="button" class="action-button-danger" :disabled="!simulator.runtime.isRunning" @click="simulator.stopSimulation()">
+          <button type="button" class="button-danger" :disabled="!simulator.runtime.isRunning" @click="simulator.stopSimulation()">
             {{ t("common:controls.stopSimulation", "Stop") }}
           </button>
-          <button type="button" class="action-button-muted" data-tm-import-reference="import-export" @click="openPlayerImportExportModal">
+          <button type="button" class="button-secondary" data-tm-import-reference="import-export" @click="openPlayerImportExportModal">
             {{ t("common:controls.importExport", "Import/Export") }}
           </button>
-          <button type="button" class="action-button-muted" @click="openHouseRoomsModal = true">
+          <button type="button" class="button-secondary" @click="openHouseRoomsModal = true">
             {{ t("common:vue.home.houseRoomsButton", "House Rooms") }}
           </button>
-          <button type="button" class="action-button-muted" @click="openAchievementsModal = true">
+          <button type="button" class="button-secondary" @click="openAchievementsModal = true">
             {{ getOfficialGameText("achievementsPanel", "achievements", "Achievements") }}
           </button>
-          <button type="button" class="action-button-muted" @click="openGuildBuffsModal = true">
+          <button type="button" class="button-secondary" @click="openGuildBuffsModal = true">
             {{ t("common:vue.home.guildBuffsButton", "Guild Shrines") }}
           </button>
-          <button type="button" class="action-button-muted" @click="openExperimentalModal = true">
+          <button type="button" class="button-secondary" @click="openExperimentalModal = true">
             {{ t("common:Experiment.ExperimentalFeatures", "Experimental Features") }}
           </button>
-          <button type="button" class="action-button-muted" @click="savePlayerDataSnapshotFromHome">
+          <button type="button" class="button-secondary" @click="savePlayerDataSnapshotFromHome">
             {{ t("common:settingsPage.savePlayerConfigs", "Save Player Configs") }}
           </button>
-          <button type="button" class="action-button-muted" @click="loadPlayerDataSnapshotFromHome">
+          <button type="button" class="button-secondary" @click="loadPlayerDataSnapshotFromHome">
             {{ t("common:settingsPage.loadPlayerConfigs", "Load Player Configs") }}
           </button>
-          <button type="button" class="action-button-muted" @click="openPlayerSnapshotInfoModal = true">
+          <button type="button" class="button-secondary" @click="openPlayerSnapshotInfoModal = true">
             {{ t("common:settingsPage.viewPlayerSnapshotInfo", "View Snapshot Info") }}
           </button>
         </div>
@@ -349,30 +370,34 @@
       </div>
 
       <div v-if="activeWorkspaceTab === 'build'" class="space-y-4 xl:col-span-12">
-        <div class="panel">
-        <h2 class="mb-3 font-heading text-lg font-semibold text-amber-200">{{ getOfficialGameText("equipmentPanel", "title", "Equipment") }}</h2>
+        <div class="surface-panel">
+        <h2 class="mb-3 font-heading text-lg font-semibold text-primary">{{ getOfficialGameText("equipmentPanel", "title", "Equipment") }}</h2>
         <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
           <div
             v-for="slot in equipmentSlots"
             :key="slot"
             :class="[
-              'rounded-xl border p-3',
-              isEquipmentSlotChanged(slot) ? 'border-amber-300/70 bg-amber-300/10' : 'border-white/10',
+              'rounded-md border p-3',
+              isEquipmentSlotChanged(slot) ? 'border-primary/40 bg-primary/10' : 'border-border',
             ]"
           >
-            <label class="field-label">{{ equipmentLabelMap[slot] }}</label>
-            <select v-model="activePlayer.equipment[slot].itemHrid" class="field-select">
-              <option value="">{{ t("common:vue.common.none", "None") }}</option>
-              <option v-for="item in simulator.options.equipmentBySlot[slot]" :key="item.hrid" :value="item.hrid">
-                {{ t("common:vue.home.levelShort", "Lv") }}{{ item.itemLevel }} {{ formatItemName(item.hrid, item.name) }}
-              </option>
-            </select>
+            <label class="control-label">{{ equipmentLabelMap[slot] }}</label>
+            <SearchCombobox
+              v-model="activePlayer.equipment[slot].itemHrid"
+              :options="equipmentComboboxOptionsBySlot[slot] || []"
+              :placeholder="t('common:vue.common.searchOptions', 'Search options')"
+              :aria-label="equipmentLabelMap[slot]"
+              :empty-label="t('common:vue.common.noResults', 'No results')"
+              :open-label="t('common:vue.common.openOptions', 'Open options')"
+              :more-results-label="t('common:vue.common.refineSearchMoreResults', 'Refine the search to see {count} more results')"
+              :max-results="60"
+            />
             <div class="mt-2">
-              <label class="field-label">{{ t("common:vue.home.enhancement", "Enhancement") }}</label>
-              <input v-model.number="activePlayer.equipment[slot].enhancementLevel" class="field-input" type="number" min="0" max="30" />
+              <label class="control-label">{{ t("common:vue.home.enhancement", "Enhancement") }}</label>
+              <input v-model.number="activePlayer.equipment[slot].enhancementLevel" class="control-input" type="number" min="0" max="30" />
             </div>
             <div class="mt-2">
-              <p class="field-label">{{ t("common:vue.home.marketEnhancements", "Market Enhancements") }}</p>
+              <p class="control-label">{{ t("common:vue.home.marketEnhancements", "Market Enhancements") }}</p>
               <div v-if="equipmentHintViewModel[slot]?.levels?.length > 0" class="mt-1 flex flex-wrap gap-1">
                 <button type="button"
                   v-for="level in equipmentHintViewModel[slot].levels"
@@ -380,24 +405,24 @@
                  
                   class="rounded-md border px-2 py-0.5 text-xs transition"
                   :class="Number(activePlayer.equipment[slot].enhancementLevel || 0) === level
-                    ? 'border-amber-300 bg-amber-300/20 text-amber-200'
-                    : 'border-white/15 text-slate-300 hover:border-amber-200/70 hover:text-amber-100'"
+                    ? 'border-primary/40 bg-primary/10 text-primary'
+                    : 'border-border text-foreground/85 hover:border-primary/40 hover:text-primary'"
                   @click="applyMarketEnhancement(slot, level)"
                 >
                   +{{ level }}
                 </button>
               </div>
-              <p v-else class="mt-1 text-xs text-slate-500">
+              <p v-else class="mt-1 text-xs text-muted-foreground">
                 {{ t("common:vue.home.marketEnhancementsEmpty", "No market enhancement data.") }}
               </p>
             </div>
-            <div v-if="equipmentHintViewModel[slot]?.costDraft" class="mt-2 rounded-lg border border-white/10 bg-slate-900/50 p-2">
-              <p class="text-xs text-slate-300">
+            <div v-if="equipmentHintViewModel[slot]?.costDraft" class="mt-2 rounded-lg border border-border bg-muted/50 p-2">
+              <p class="text-xs text-foreground/85">
                 {{ t("common:equipment.upgradeCost", "Upgrade Cost") }}:
                 {{ formatUpgradeCost(equipmentHintViewModel[slot].costDraft.cost) }}
               </p>
               <input
-                class="field-input mt-1"
+                class="control-input mt-1"
                 type="number"
                 min="0"
                 step="1"
@@ -412,20 +437,25 @@
     </div>
 
     <div v-if="activeWorkspaceTab === 'build'" class="grid gap-4 lg:grid-cols-2">
-        <div class="panel">
-          <h2 class="mb-3 font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.home.foodDrinksTitle", "Food & Drinks") }}</h2>
+        <div class="surface-panel">
+          <h2 class="mb-3 font-heading text-lg font-semibold text-primary">{{ t("common:vue.home.foodDrinksTitle", "Food & Drinks") }}</h2>
             <div class="space-y-3">
               <div v-for="slotIndex in 3" :key="`food-${slotIndex}`" class="grid gap-2 sm:grid-cols-2">
-              <div :class="['rounded-xl border p-2', isFoodSlotChanged(slotIndex - 1) ? 'border-amber-300/70 bg-amber-300/10' : 'border-white/10']">
-                <label class="field-label">{{ t("common:vue.home.foodSlot", "Food", { index: slotIndex }) }}</label>
-                <select v-model="activePlayer.food[slotIndex - 1]" class="field-select" @change="onFoodChanged(slotIndex - 1)">
-                  <option value="">{{ t("common:vue.common.none", "None") }}</option>
-                  <option v-for="item in simulator.options.food" :key="item.hrid" :value="item.hrid">
-                    {{ t("common:vue.home.levelShort", "Lv") }}{{ item.itemLevel }} {{ formatItemName(item.hrid, item.name) }}
-                  </option>
-                </select>
+              <div :class="['rounded-md border p-2', isFoodSlotChanged(slotIndex - 1) ? 'border-primary/40 bg-primary/10' : 'border-border']">
+                <label class="control-label">{{ t("common:vue.home.foodSlot", "Food", { index: slotIndex }) }}</label>
+                <SearchCombobox
+                  :model-value="activePlayer.food[slotIndex - 1]"
+                  :options="foodComboboxOptions"
+                  :placeholder="t('common:vue.common.searchOptions', 'Search options')"
+                  :aria-label="t('common:vue.home.foodSlot', 'Food', { index: slotIndex })"
+                  :empty-label="t('common:vue.common.noResults', 'No results')"
+                  :open-label="t('common:vue.common.openOptions', 'Open options')"
+                  :more-results-label="t('common:vue.common.refineSearchMoreResults', 'Refine the search to see {count} more results')"
+                  :max-results="60"
+                  @update:model-value="setFoodSelection(slotIndex - 1, $event)"
+                />
                 <button type="button"
-                  class="action-button-muted mt-2 w-full"
+                  class="button-secondary mt-2 w-full"
                  
                   :disabled="!activePlayer.food[slotIndex - 1]"
                   @click="openTriggerEditor('food', slotIndex - 1)"
@@ -433,16 +463,21 @@
                   {{ t("common:trigger", "Trigger") }}
                 </button>
               </div>
-              <div :class="['rounded-xl border p-2', isDrinkSlotChanged(slotIndex - 1) ? 'border-amber-300/70 bg-amber-300/10' : 'border-white/10']">
-                <label class="field-label">{{ t("common:vue.home.drinkSlot", "Drink", { index: slotIndex }) }}</label>
-                <select v-model="activePlayer.drinks[slotIndex - 1]" class="field-select" @change="onDrinkChanged(slotIndex - 1)">
-                  <option value="">{{ t("common:vue.common.none", "None") }}</option>
-                  <option v-for="item in simulator.options.drinks" :key="item.hrid" :value="item.hrid">
-                    {{ t("common:vue.home.levelShort", "Lv") }}{{ item.itemLevel }} {{ formatItemName(item.hrid, item.name) }}
-                  </option>
-                </select>
+              <div :class="['rounded-md border p-2', isDrinkSlotChanged(slotIndex - 1) ? 'border-primary/40 bg-primary/10' : 'border-border']">
+                <label class="control-label">{{ t("common:vue.home.drinkSlot", "Drink", { index: slotIndex }) }}</label>
+                <SearchCombobox
+                  :model-value="activePlayer.drinks[slotIndex - 1]"
+                  :options="drinkComboboxOptions"
+                  :placeholder="t('common:vue.common.searchOptions', 'Search options')"
+                  :aria-label="t('common:vue.home.drinkSlot', 'Drink', { index: slotIndex })"
+                  :empty-label="t('common:vue.common.noResults', 'No results')"
+                  :open-label="t('common:vue.common.openOptions', 'Open options')"
+                  :more-results-label="t('common:vue.common.refineSearchMoreResults', 'Refine the search to see {count} more results')"
+                  :max-results="60"
+                  @update:model-value="setDrinkSelection(slotIndex - 1, $event)"
+                />
                 <button type="button"
-                  class="action-button-muted mt-2 w-full"
+                  class="button-secondary mt-2 w-full"
                  
                   :disabled="!activePlayer.drinks[slotIndex - 1]"
                   @click="openTriggerEditor('drink', slotIndex - 1)"
@@ -454,34 +489,39 @@
           </div>
         </div>
 
-        <div class="panel">
-          <h2 class="mb-3 font-heading text-lg font-semibold text-amber-200">{{ getOfficialGameText("abilitiesPanel", "title", "Abilities") }}</h2>
+        <div class="surface-panel">
+          <h2 class="mb-3 font-heading text-lg font-semibold text-primary">{{ getOfficialGameText("abilitiesPanel", "title", "Abilities") }}</h2>
           <div class="space-y-3">
             <div
               v-for="slotIndex in 5"
               :key="`ability-${slotIndex}`"
               :class="[
-                'rounded-xl border p-2',
-                isAbilitySlotChanged(slotIndex - 1) ? 'border-amber-300/70 bg-amber-300/10' : 'border-white/10',
+                'rounded-md border p-2',
+                isAbilitySlotChanged(slotIndex - 1) ? 'border-primary/40 bg-primary/10' : 'border-border',
               ]"
             >
               <div class="grid gap-2 sm:grid-cols-[1fr_88px_auto]">
                 <div>
-                  <label class="field-label">{{ getAbilitySlotLabel(slotIndex - 1) }}</label>
-                  <select v-model="activePlayer.abilities[slotIndex - 1].abilityHrid" class="field-select" @change="onAbilityChanged(slotIndex - 1)">
-                    <option value="">{{ t("common:vue.common.none", "None") }}</option>
-                    <option v-for="ability in getAbilityOptionsForSlot(slotIndex - 1)" :key="ability.hrid" :value="ability.hrid">
-                      {{ formatAbilityName(ability.hrid, ability.name) }}
-                    </option>
-                  </select>
+                  <label class="control-label">{{ getAbilitySlotLabel(slotIndex - 1) }}</label>
+                  <SearchCombobox
+                    :model-value="activePlayer.abilities[slotIndex - 1].abilityHrid"
+                    :options="abilityComboboxOptions(slotIndex - 1)"
+                    :placeholder="t('common:vue.common.searchOptions', 'Search options')"
+                    :aria-label="getAbilitySlotLabel(slotIndex - 1)"
+                    :empty-label="t('common:vue.common.noResults', 'No results')"
+                    :open-label="t('common:vue.common.openOptions', 'Open options')"
+                    :more-results-label="t('common:vue.common.refineSearchMoreResults', 'Refine the search to see {count} more results')"
+                    :max-results="60"
+                    @update:model-value="setAbilitySelection(slotIndex - 1, $event)"
+                  />
                 </div>
                 <div>
-                  <label class="field-label">{{ t("common:vue.home.levelShort", "Lv") }}</label>
-                  <input v-model.number="activePlayer.abilities[slotIndex - 1].level" class="field-input" type="number" min="1" max="400" />
+                  <label class="control-label">{{ t("common:vue.home.levelShort", "Lv") }}</label>
+                  <input v-model.number="activePlayer.abilities[slotIndex - 1].level" class="control-input" type="number" min="1" max="400" />
                 </div>
                 <div class="sm:pt-[22px]">
                   <button type="button"
-                    class="action-button-muted w-full"
+                    class="button-secondary w-full"
                    
                     :disabled="!activePlayer.abilities[slotIndex - 1].abilityHrid"
                     @click="openTriggerEditor('ability', slotIndex - 1)"
@@ -490,13 +530,13 @@
                   </button>
                 </div>
               </div>
-              <div v-if="abilityUpgradeCostDrafts[slotIndex - 1]" class="mt-2 rounded-lg border border-white/10 bg-slate-900/50 p-2">
-                <p class="text-xs text-slate-300">
+              <div v-if="abilityUpgradeCostDrafts[slotIndex - 1]" class="mt-2 rounded-lg border border-border bg-muted/50 p-2">
+                <p class="text-xs text-foreground/85">
                   {{ t("common:equipment.upgradeCost", "Upgrade Cost") }}:
                   {{ formatUpgradeCost(abilityUpgradeCostDrafts[slotIndex - 1].cost) }}
                 </p>
                 <input
-                  class="field-input mt-1"
+                  class="control-input mt-1"
                   type="number"
                   min="0"
                   step="1"
@@ -509,28 +549,28 @@
         </div>
     </div>
 
-    <div v-if="activeWorkspaceTab === 'advanced'" class="panel space-y-4">
+    <div v-if="activeWorkspaceTab === 'advanced'" class="surface-panel space-y-4">
       <div>
-        <h2 class="font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.home.workspaceAdvancedTitle", "Battle Attributes") }}</h2>
-        <p class="mt-1 text-sm text-slate-400">{{ t("common:vue.home.workspaceAdvancedDesc", "Review the full derived combat attributes for the current build.") }}</p>
+        <h2 class="font-heading text-lg font-semibold text-primary">{{ t("common:vue.home.workspaceAdvancedTitle", "Battle Attributes") }}</h2>
+        <p class="mt-1 text-sm text-muted-foreground">{{ t("common:vue.home.workspaceAdvancedDesc", "Review the full derived combat attributes for the current build.") }}</p>
       </div>
 
       <div v-if="combatStatRows.length > 0" class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-        <div v-for="entry in combatStatRows" :key="entry.key" class="rounded-xl border border-white/10 bg-slate-900/40 px-3 py-2 text-sm">
-          <p class="text-xs uppercase tracking-[0.12em] text-slate-400">{{ entry.label }}</p>
+        <div v-for="entry in combatStatRows" :key="entry.key" class="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm">
+          <p class="text-xs uppercase  text-muted-foreground">{{ entry.label }}</p>
           <div class="mt-1 flex flex-wrap items-center gap-2">
-            <p class="text-slate-100">{{ entry.value }}</p>
+            <p class="text-foreground">{{ entry.value }}</p>
             <span
               v-for="highlight in entry.highlights"
               :key="highlight.key"
-              class="rounded-full border border-amber-400/30 bg-amber-400/10 px-2 py-0.5 text-[11px] font-medium text-amber-100"
+              class="rounded-md border border-primary/40 bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary"
             >
               {{ highlight.text }}
             </span>
           </div>
         </div>
       </div>
-      <p v-else class="text-sm text-slate-400">{{ t("common:multiRound.noData", "No data") }}</p>
+      <p v-else class="text-sm text-muted-foreground">{{ t("common:multiRound.noData", "No data") }}</p>
     </div>
       </div>
 
@@ -574,23 +614,23 @@
               <label
                 v-for="room in houseRoomOptions"
                 :key="room.hrid"
-                class="block rounded-xl border border-white/10 bg-slate-900/50 p-3 transition-colors"
-                :class="houseRoomPreviewByHrid[room.hrid] ? 'border-amber-300/30 bg-amber-300/5' : ''"
+                class="block rounded-md border border-border bg-muted/50 p-3 transition-colors"
+                :class="houseRoomPreviewByHrid[room.hrid] ? 'border-primary/40 bg-primary/10' : ''"
               >
                 <div class="mb-2 flex items-start justify-between gap-3">
                   <div class="min-w-0">
-                    <span class="field-label">{{ getHouseRoomName(room.hrid, room.name) }}</span>
-                    <p class="mt-1 text-xs text-slate-400">
+                    <span class="control-label">{{ getHouseRoomName(room.hrid, room.name) }}</span>
+                    <p class="mt-1 text-xs text-muted-foreground">
                       {{ formatHouseRoomTransition(houseRoomBaselineLevelMap[room.hrid] ?? 0, activePlayer.houseRooms[room.hrid] ?? 0) }}
                     </p>
                   </div>
-                  <span class="rounded-full border border-amber-300/20 bg-amber-300/10 px-2.5 py-1 text-[11px] font-medium text-amber-100">
+                  <span class="rounded-md border border-primary/40 bg-primary/10 px-2.5 py-1 text-[11px] font-medium text-primary">
                     {{ formatUpgradeCost(houseRoomPreviewByHrid[room.hrid]?.subtotal ?? 0) }}
                   </span>
                 </div>
                 <input
                   v-model.number="activePlayer.houseRooms[room.hrid]"
-                  class="field-input"
+                  class="control-input"
                   type="number"
                   min="0"
                   max="8"
@@ -601,119 +641,119 @@
 
           <div class="space-y-3">
             <div class="grid gap-3 sm:grid-cols-3 xl:grid-cols-1 2xl:grid-cols-3">
-              <article class="rounded-2xl border border-amber-300/25 bg-gradient-to-br from-amber-300/15 via-amber-300/5 to-transparent p-4">
-                <p class="text-[11px] uppercase tracking-[0.18em] text-amber-200/80">
+              <article class="rounded-md border border-primary/40 bg-primary/10 p-4">
+                <p class="text-[11px] uppercase  text-primary">
                   {{ t('common:vue.home.houseRoomsSummaryTotal', 'Total Cost') }}
                 </p>
-                <p class="mt-2 font-heading text-2xl text-amber-50">{{ formatUpgradeCost(houseRoomUpgradePreview.totals.totalCost) }}</p>
-                <p class="mt-1 text-xs text-slate-300">{{ formatCurrency(houseRoomUpgradePreview.totals.totalCost) }}</p>
+                <p class="mt-2 font-heading text-2xl text-primary">{{ formatUpgradeCost(houseRoomUpgradePreview.totals.totalCost) }}</p>
+                <p class="mt-1 text-xs text-foreground/85">{{ formatCurrency(houseRoomUpgradePreview.totals.totalCost) }}</p>
               </article>
-              <article class="rounded-2xl border border-emerald-300/20 bg-emerald-300/5 p-4">
-                <p class="text-[11px] uppercase tracking-[0.18em] text-emerald-200/80">
+              <article class="rounded-md border border-success/40 bg-success/10 p-4">
+                <p class="text-[11px] uppercase  text-success">
                   {{ t('common:vue.home.houseRoomsSummaryCoins', 'Coins Needed') }}
                 </p>
-                <p class="mt-2 font-heading text-2xl text-emerald-100">{{ formatUpgradeCost(houseRoomUpgradePreview.totals.coinCost) }}</p>
-                <p class="mt-1 text-xs text-slate-300">{{ formatCurrency(houseRoomUpgradePreview.totals.coinCost) }}</p>
+                <p class="mt-2 font-heading text-2xl text-success">{{ formatUpgradeCost(houseRoomUpgradePreview.totals.coinCost) }}</p>
+                <p class="mt-1 text-xs text-foreground/85">{{ formatCurrency(houseRoomUpgradePreview.totals.coinCost) }}</p>
               </article>
-              <article class="rounded-2xl border border-sky-300/20 bg-sky-300/5 p-4">
-                <p class="text-[11px] uppercase tracking-[0.18em] text-sky-200/80">
+              <article class="rounded-md border border-info/40 bg-info/10 p-4">
+                <p class="text-[11px] uppercase  text-info">
                   {{ t('common:vue.home.houseRoomsSummaryKinds', 'Material Types') }}
                 </p>
-                <p class="mt-2 font-heading text-2xl text-sky-100">{{ formatInt(houseRoomMaterialKindCount) }}</p>
-                <p class="mt-1 text-xs text-slate-300">
+                <p class="mt-2 font-heading text-2xl text-info">{{ formatInt(houseRoomMaterialKindCount) }}</p>
+                <p class="mt-1 text-xs text-foreground/85">
                   {{ formatHouseRoomChangedRoomsText(houseRoomChangedRooms.length) }}
                 </p>
               </article>
             </div>
 
-            <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+            <div class="rounded-md border border-border bg-muted/50 p-4">
               <div class="mb-3 flex items-center justify-between gap-3">
                 <div>
-                  <h3 class="font-heading text-sm font-semibold text-slate-100">
+                  <h3 class="font-heading text-sm font-semibold text-foreground">
                     {{ t('common:vue.home.houseRoomsChangedTitle', 'Upgrade Summary') }}
                   </h3>
-                  <p class="mt-1 text-xs text-slate-400">
+                  <p class="mt-1 text-xs text-muted-foreground">
                     {{ t('common:vue.home.houseRoomsChangedHint', 'Costs accumulate from the levels captured when this dialog opened.') }}
                   </p>
                 </div>
                 <span
                   v-if="houseRoomMissingPriceCount > 0"
-                  class="rounded-full border border-rose-300/20 bg-rose-300/10 px-2.5 py-1 text-[11px] font-medium text-rose-100"
+                  class="rounded-md border border-destructive/40 bg-destructive/10 px-2.5 py-1 text-[11px] font-medium text-destructive"
                 >
                   {{ formatHouseRoomMissingPriceHint(houseRoomMissingPriceCount) }}
                 </span>
               </div>
 
-              <div v-if="houseRoomChangedRooms.length === 0" class="rounded-xl border border-dashed border-white/10 bg-slate-900/40 px-4 py-5 text-sm text-slate-400">
+              <div v-if="houseRoomChangedRooms.length === 0" class="rounded-md border border-dashed border-border bg-muted/50 px-4 py-5 text-sm text-muted-foreground">
                 {{ t('common:vue.home.houseRoomsNoUpgrades', 'No room upgrades selected yet.') }}
               </div>
               <div v-else class="space-y-2">
                 <div
                   v-for="room in houseRoomChangedRooms"
                   :key="room.roomHrid"
-                  class="flex items-center justify-between gap-3 rounded-xl border border-white/10 bg-slate-900/45 px-3 py-2.5"
+                  class="flex items-center justify-between gap-3 rounded-md border border-border bg-muted/50 px-3 py-2.5"
                 >
                   <div class="min-w-0">
-                    <p class="truncate text-sm font-medium text-slate-100">{{ getHouseRoomName(room.roomHrid, houseRoomDetailMap?.[room.roomHrid]?.name || room.roomHrid) }}</p>
-                    <p class="mt-1 text-xs text-slate-400">{{ formatHouseRoomTransition(room.fromLevel, room.toLevel) }}</p>
+                    <p class="truncate text-sm font-medium text-foreground">{{ getHouseRoomName(room.roomHrid, houseRoomDetailMap?.[room.roomHrid]?.name || room.roomHrid) }}</p>
+                    <p class="mt-1 text-xs text-muted-foreground">{{ formatHouseRoomTransition(room.fromLevel, room.toLevel) }}</p>
                   </div>
-                  <span class="text-sm font-semibold text-amber-100">{{ formatUpgradeCost(room.subtotal) }}</span>
+                  <span class="text-sm font-semibold text-primary">{{ formatUpgradeCost(room.subtotal) }}</span>
                 </div>
               </div>
             </div>
           </div>
         </div>
 
-        <div class="rounded-2xl border border-white/10 bg-slate-950/40 p-4">
+        <div class="rounded-md border border-border bg-muted/50 p-4">
           <div class="mb-3 flex items-center justify-between gap-3">
             <div>
-              <h3 class="font-heading text-sm font-semibold text-slate-100">
+              <h3 class="font-heading text-sm font-semibold text-foreground">
                 {{ t('common:vue.home.houseRoomsMaterialsTitle', 'Material Breakdown') }}
               </h3>
-              <p class="mt-1 text-xs text-slate-400">
+              <p class="mt-1 text-xs text-muted-foreground">
                 {{ t('common:vue.home.houseRoomsMaterialsHint', 'Market value uses the current buy-side price with vendor fallback.') }}
               </p>
             </div>
-            <span class="text-xs text-slate-400">{{ formatInt(houseRoomUpgradePreview.materials.length) }}</span>
+            <span class="text-xs text-muted-foreground">{{ formatInt(houseRoomUpgradePreview.materials.length) }}</span>
           </div>
 
-          <div v-if="houseRoomUpgradePreview.materials.length === 0" class="rounded-xl border border-dashed border-white/10 bg-slate-900/40 px-4 py-5 text-sm text-slate-400">
+          <div v-if="houseRoomUpgradePreview.materials.length === 0" class="rounded-md border border-dashed border-border bg-muted/50 px-4 py-5 text-sm text-muted-foreground">
             {{ t('common:vue.home.houseRoomsNoUpgrades', 'No room upgrades selected yet.') }}
           </div>
           <div v-else class="overflow-x-auto">
-            <table class="min-w-full table-auto text-left text-sm text-slate-200">
-              <thead>
-                <tr class="border-b border-white/10 text-xs uppercase tracking-[0.16em] text-slate-400">
-                  <th class="px-2 py-2">{{ t('common:vue.home.houseRoomsMaterialName', 'Material') }}</th>
-                  <th class="px-2 py-2 text-right">{{ t('common:vue.home.houseRoomsMaterialCount', 'Quantity') }}</th>
-                  <th class="px-2 py-2 text-right">{{ t('common:vue.home.houseRoomsMaterialUnitPrice', 'Unit Price') }}</th>
-                  <th class="px-2 py-2 text-right">{{ t('common:vue.home.houseRoomsMaterialSubtotal', 'Subtotal') }}</th>
-                  <th class="px-2 py-2 text-right">{{ t('common:vue.home.houseRoomsMaterialStatus', 'Status') }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
+            <Table class="min-w-full table-auto text-left text-sm text-foreground">
+              <TableHeader>
+                <TableRow class="border-b border-border text-xs uppercase  text-muted-foreground">
+                  <TableHead class="px-2 py-2">{{ t('common:vue.home.houseRoomsMaterialName', 'Material') }}</TableHead>
+                  <TableHead class="px-2 py-2 text-right">{{ t('common:vue.home.houseRoomsMaterialCount', 'Quantity') }}</TableHead>
+                  <TableHead class="px-2 py-2 text-right">{{ t('common:vue.home.houseRoomsMaterialUnitPrice', 'Unit Price') }}</TableHead>
+                  <TableHead class="px-2 py-2 text-right">{{ t('common:vue.home.houseRoomsMaterialSubtotal', 'Subtotal') }}</TableHead>
+                  <TableHead class="px-2 py-2 text-right">{{ t('common:vue.home.houseRoomsMaterialStatus', 'Status') }}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow
                   v-for="material in houseRoomUpgradePreview.materials"
                   :key="material.itemHrid"
-                  class="border-b border-white/5 last:border-b-0"
+                  class="border-b border-border last:border-b-0"
                 >
-                  <td class="px-2 py-2">{{ formatItemName(material.itemHrid) }}</td>
-                  <td class="px-2 py-2 text-right">{{ formatInt(material.count) }}</td>
-                  <td class="px-2 py-2 text-right">{{ material.priced ? formatCurrency(material.unitPrice) : '-' }}</td>
-                  <td class="px-2 py-2 text-right">{{ material.priced ? formatCurrency(material.subtotal) : '-' }}</td>
-                  <td class="px-2 py-2 text-right">
+                  <TableCell class="px-2 py-2">{{ formatItemName(material.itemHrid) }}</TableCell>
+                  <TableCell class="px-2 py-2 text-right">{{ formatInt(material.count) }}</TableCell>
+                  <TableCell class="px-2 py-2 text-right">{{ material.priced ? formatCurrency(material.unitPrice) : '-' }}</TableCell>
+                  <TableCell class="px-2 py-2 text-right">{{ material.priced ? formatCurrency(material.subtotal) : '-' }}</TableCell>
+                  <TableCell class="px-2 py-2 text-right">
                     <span
-                      class="inline-flex rounded-full border px-2 py-0.5 text-[11px] font-medium"
-                      :class="material.priced ? 'border-emerald-300/20 bg-emerald-300/10 text-emerald-100' : 'border-rose-300/20 bg-rose-300/10 text-rose-100'"
+                      class="inline-flex rounded-md border px-2 py-0.5 text-[11px] font-medium"
+                      :class="material.priced ? 'border-success/40 bg-success/10 text-success' : 'border-destructive/40 bg-destructive/10 text-destructive'"
                     >
                       {{ material.priced
                         ? t('common:vue.home.houseRoomsMaterialStatusReady', 'Priced')
                         : t('common:vue.home.houseRoomsMaterialStatusMissing', 'Missing price') }}
                     </span>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           </div>
         </div>
       </div>
@@ -726,7 +766,7 @@
       @close="openGuildBuffsModal = false"
     >
       <div class="mb-3 flex items-center justify-end">
-        <button type="button" class="action-button-muted" @click="clearGuildBuffLevels">
+        <button type="button" class="button-secondary" @click="clearGuildBuffLevels">
           {{ t("common:vue.home.clearAll", "Clear All") }}
         </button>
       </div>
@@ -734,33 +774,33 @@
         <div
           v-for="option in guildBuffOptions"
           :key="option.hrid"
-          class="grid gap-4 rounded-lg border border-white/10 bg-slate-950/45 p-4 md:grid-cols-[minmax(0,1fr)_10rem] md:items-center"
+          class="grid gap-4 rounded-lg border border-border bg-muted/50 p-4 md:grid-cols-[minmax(0,1fr)_10rem] md:items-center"
         >
           <div class="min-w-0">
             <div class="flex flex-wrap items-center gap-2">
-              <h3 class="font-heading text-sm font-semibold text-slate-100">
+              <h3 class="font-heading text-sm font-semibold text-foreground">
                 {{ getGuildShrineName(option.shrineHrid, option.shrineName) }}
               </h3>
-              <span class="rounded border border-amber-300/20 bg-amber-300/10 px-2 py-0.5 text-[11px] font-medium text-amber-100">
+              <span class="rounded border border-primary/40 bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary">
                 {{ getOfficialGameText("guildPanel", "combat", "Combat") }}
               </span>
             </div>
-            <p class="mt-2 text-sm leading-6" :class="guildBuffLevel(option.hrid) > 0 ? 'text-emerald-200' : 'text-slate-400'">
+            <p class="mt-2 text-sm leading-6" :class="guildBuffLevel(option.hrid) > 0 ? 'text-success' : 'text-muted-foreground'">
               {{ formatGuildBuffEffects(option, guildBuffLevel(option.hrid)) }}
             </p>
           </div>
           <label class="block">
-            <span class="field-label">{{ t("common:vue.home.guildBuffEffectiveLevel", "Effective Level") }}</span>
+            <span class="control-label">{{ t("common:vue.home.guildBuffEffectiveLevel", "Effective Level") }}</span>
             <div class="flex items-center gap-2">
               <input
-                class="field-input min-w-0"
+                class="control-input min-w-0"
                 type="number"
                 min="0"
                 :max="option.maxLevel"
                 :value="guildBuffLevel(option.hrid)"
                 @input="setGuildBuffLevel(option.hrid, $event.target.value)"
               />
-              <span class="shrink-0 text-xs text-slate-400">/ {{ option.maxLevel }}</span>
+              <span class="shrink-0 text-xs text-muted-foreground">/ {{ option.maxLevel }}</span>
             </div>
           </label>
         </div>
@@ -779,12 +819,12 @@
           :key="section.tierHrid"
           :title="`${section.tierName} (${section.checkedCount}/${section.totalCount})`"
         >
-          <div class="mb-3 flex flex-wrap items-center gap-2 text-xs text-slate-300">
+          <div class="mb-3 flex flex-wrap items-center gap-2 text-xs text-foreground/85">
             <span>{{ section.buffText }}</span>
-            <button type="button" class="action-button-muted" @click="setTierAchievements(section.tierHrid, true)">
+            <button type="button" class="button-secondary" @click="setTierAchievements(section.tierHrid, true)">
               {{ t("common:vue.home.selectAll", "Select All") }}
             </button>
-            <button type="button" class="action-button-muted" @click="setTierAchievements(section.tierHrid, false)">
+            <button type="button" class="button-secondary" @click="setTierAchievements(section.tierHrid, false)">
               {{ t("common:vue.home.clearAll", "Clear All") }}
             </button>
           </div>
@@ -792,7 +832,7 @@
             <label
               v-for="detail in section.details"
               :key="detail.hrid"
-              class="badge flex items-start gap-2 text-sm text-slate-100"
+              class="status-chip flex items-start gap-2 text-sm text-foreground"
             >
               <span class="min-w-0 flex-1 leading-snug">{{ getAchievementName(detail.hrid, detail.name) }}</span>
               <input
@@ -809,71 +849,90 @@
 
     <BaseModal :open="triggerModal.open" :title="triggerModalTitle" @close="closeTriggerModal">
       <div class="space-y-3">
-        <p class="text-xs uppercase tracking-[0.12em] text-slate-400">{{ t("common:vue.home.trigger.target", "Target") }}</p>
-        <p class="rounded-xl border border-white/10 bg-slate-900/50 px-3 py-2 text-sm text-slate-100">{{ triggerModal.label }}</p>
+        <p class="text-xs uppercase  text-muted-foreground">{{ t("common:vue.home.trigger.target", "Target") }}</p>
+        <p class="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground">{{ triggerModal.label }}</p>
 
-        <p class="text-xs text-slate-400">
+        <p class="text-xs text-muted-foreground">
           {{ triggerModal.draft.length === 0
             ? t("common:vue.home.trigger.noRulesHint", "No rules: activate immediately when off cooldown.")
             : t("common:vue.home.trigger.rulesHint", "All rules must pass before this target can trigger.") }}
         </p>
 
         <div class="space-y-2">
-          <div v-for="(trigger, rowIndex) in triggerModal.draft" :key="`trigger-${rowIndex}`" class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
+          <div v-for="(trigger, rowIndex) in triggerModal.draft" :key="`trigger-${rowIndex}`" class="rounded-md border border-border bg-muted/50 p-3">
             <div class="grid gap-2 md:grid-cols-4">
               <label class="block">
-                <span class="field-label">{{ t("common:vue.home.trigger.dependency", "Dependency") }}</span>
-                <select v-model="trigger.dependencyHrid" class="field-select" @change="onDependencyChanged(rowIndex)">
-                  <option value="">{{ t("common:vue.common.select", "Select") }}</option>
-                  <option v-for="dependency in triggerDependencyOptions" :key="dependency.hrid" :value="dependency.hrid">
+                <span class="control-label">{{ t("common:vue.home.trigger.dependency", "Dependency") }}</span>
+                <Select
+                  :model-value="optionalSelectValue(trigger.dependencyHrid)"
+                  @update:model-value="setTriggerDependency(rowIndex, $event)"
+                >
+                  <SelectTrigger :aria-label="t('common:vue.home.trigger.dependency', 'Dependency')" />
+                  <SelectContent>
+                  <SelectItem :value="EMPTY_SELECT_VALUE">{{ t("common:vue.common.select", "Select") }}</SelectItem>
+                  <SelectItem v-for="dependency in triggerDependencyOptions" :key="dependency.hrid" :value="dependency.hrid">
                     {{ formatTriggerDependencyName(dependency.hrid, dependency.name) }}
-                  </option>
-                </select>
+                  </SelectItem>
+                  </SelectContent>
+                </Select>
               </label>
 
               <label class="block">
-                <span class="field-label">{{ t("common:vue.home.trigger.condition", "Condition") }}</span>
-                <select v-model="trigger.conditionHrid" class="field-select" :disabled="!trigger.dependencyHrid" @change="onConditionChanged(rowIndex)">
-                  <option value="">{{ t("common:vue.common.select", "Select") }}</option>
-                  <option v-for="condition in getConditionOptions(trigger.dependencyHrid)" :key="condition.hrid" :value="condition.hrid">
-                    {{ formatTriggerConditionName(condition.hrid, condition.name) }}
-                  </option>
-                </select>
+                <span class="control-label">{{ t("common:vue.home.trigger.condition", "Condition") }}</span>
+                <SearchCombobox
+                  :model-value="trigger.conditionHrid"
+                  :options="triggerConditionComboboxOptions(trigger.dependencyHrid)"
+                  :placeholder="t('common:vue.common.searchOptions', 'Search options')"
+                  :aria-label="t('common:vue.home.trigger.condition', 'Condition')"
+                  :empty-label="t('common:vue.common.noResults', 'No results')"
+                  :open-label="t('common:vue.common.openOptions', 'Open options')"
+                  :more-results-label="t('common:vue.common.refineSearchMoreResults', 'Refine the search to see {count} more results')"
+                  :disabled="!trigger.dependencyHrid"
+                  :max-results="60"
+                  @update:model-value="setTriggerCondition(rowIndex, $event)"
+                />
               </label>
 
               <label class="block">
-                <span class="field-label">{{ t("common:vue.home.trigger.comparator", "Comparator") }}</span>
-                <select v-model="trigger.comparatorHrid" class="field-select" :disabled="!trigger.conditionHrid" @change="onComparatorChanged(rowIndex)">
-                  <option value="">{{ t("common:vue.common.select", "Select") }}</option>
-                  <option v-for="comparator in getComparatorOptions(trigger.conditionHrid)" :key="comparator.hrid" :value="comparator.hrid">
+                <span class="control-label">{{ t("common:vue.home.trigger.comparator", "Comparator") }}</span>
+                <Select
+                  :model-value="optionalSelectValue(trigger.comparatorHrid)"
+                  :disabled="!trigger.conditionHrid"
+                  @update:model-value="setTriggerComparator(rowIndex, $event)"
+                >
+                  <SelectTrigger :aria-label="t('common:vue.home.trigger.comparator', 'Comparator')" />
+                  <SelectContent>
+                  <SelectItem :value="EMPTY_SELECT_VALUE">{{ t("common:vue.common.select", "Select") }}</SelectItem>
+                  <SelectItem v-for="comparator in getComparatorOptions(trigger.conditionHrid)" :key="comparator.hrid" :value="comparator.hrid">
                     {{ formatTriggerComparatorName(comparator.hrid, comparator.name) }}
-                  </option>
-                </select>
+                  </SelectItem>
+                  </SelectContent>
+                </Select>
               </label>
 
               <label class="block">
-                <span class="field-label">{{ t("common:vue.home.trigger.value", "Value") }}</span>
+                <span class="control-label">{{ t("common:vue.home.trigger.value", "Value") }}</span>
                 <input
                   v-model.number="trigger.value"
-                  class="field-input"
+                  class="control-input"
                   type="number"
                   :disabled="!isComparatorValueRequired(trigger.comparatorHrid)"
                 />
               </label>
             </div>
             <div class="mt-2">
-              <button type="button" class="action-button-danger" @click="removeTriggerRow(rowIndex)">{{ t("common:vue.common.remove", "Remove") }}</button>
+              <button type="button" class="button-danger" @click="removeTriggerRow(rowIndex)">{{ t("common:vue.common.remove", "Remove") }}</button>
             </div>
           </div>
         </div>
 
         <div class="flex flex-wrap gap-2">
-          <button type="button" class="action-button-muted" :disabled="triggerModal.draft.length >= MAX_TRIGGER_COUNT" @click="addTriggerRow">
+          <button type="button" class="button-secondary" :disabled="triggerModal.draft.length >= MAX_TRIGGER_COUNT" @click="addTriggerRow">
             {{ t("common:vue.home.trigger.addRule", "Add Rule") }}
           </button>
-          <button type="button" class="action-button-muted" @click="useDefaultTriggers">{{ t("common:vue.home.trigger.useDefault", "Use Default") }}</button>
-          <button type="button" class="action-button-muted" @click="clearTriggerRules">{{ t("common:vue.home.trigger.clearRules", "Clear Rules") }}</button>
-          <button type="button" class="action-button-primary" :disabled="!isTriggerDraftValid" @click="saveTriggerRules">
+          <button type="button" class="button-secondary" @click="useDefaultTriggers">{{ t("common:vue.home.trigger.useDefault", "Use Default") }}</button>
+          <button type="button" class="button-secondary" @click="clearTriggerRules">{{ t("common:vue.home.trigger.clearRules", "Clear Rules") }}</button>
+          <button type="button" class="button-primary" :disabled="!isTriggerDraftValid" @click="saveTriggerRules">
             {{ t("common:controls.save", "Save") }}
           </button>
         </div>
@@ -887,22 +946,22 @@
       @close="closePlayerImportModal"
     >
       <div class="space-y-3">
-        <div class="flex flex-col gap-3 rounded-2xl border border-teal-300/20 bg-slate-900/70 p-4 shadow-lg shadow-cyan-950/20 sm:flex-row sm:items-center sm:justify-between">
+        <div class="flex flex-col gap-3 rounded-md border border-success/40 bg-muted/50 p-4 shadow-lg sm:flex-row sm:items-center sm:justify-between">
           <div class="space-y-1">
-            <p class="font-heading text-sm font-semibold uppercase tracking-[0.14em] text-teal-100">
+            <p class="font-heading text-sm font-semibold uppercase  text-success">
               {{ t("common:vue.settings.mainSiteImportScriptTitle", "Main-site Import Script") }}
             </p>
-            <p class="text-sm text-slate-300">
+            <p class="text-sm text-foreground/85">
               {{ t("common:vue.settings.mainSiteImportScriptDescription", "Install the Tampermonkey helper to add a single main-site import button that imports the current character directly; when a team is detected, it only uses party members whose profiles you have opened and cached manually, skips missing members, and writes to Player 1..N (up to 5).") }}
             </p>
-            <p v-if="!hasMainSiteImportScriptUrl" class="text-xs text-cyan-200">
+            <p v-if="!hasMainSiteImportScriptUrl" class="text-xs text-info">
               {{ t("common:vue.settings.mainSiteImportScriptPending", "Script link pending") }}
             </p>
           </div>
 
           <button
             type="button"
-            class="action-button-tool shrink-0"
+            class="button-tool shrink-0"
             :disabled="!hasMainSiteImportScriptUrl"
             @click="openMainSiteImportScript"
           >
@@ -911,56 +970,59 @@
         </div>
 
         <div class="grid gap-4 lg:grid-cols-2">
-          <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3 space-y-3">
+          <div class="rounded-md border border-border bg-muted/50 p-3 space-y-3">
             <div class="flex items-center justify-between gap-2">
-              <h3 class="font-heading text-base font-semibold text-amber-200">{{ t("common:vue.settings.groupImportExportTitle", "Group Import/Export") }}</h3>
-              <span class="badge">{{ t("common:vue.settings.modernJson", "Modern JSON") }}</span>
+              <h3 class="font-heading text-base font-semibold text-primary">{{ t("common:vue.settings.groupImportExportTitle", "Group Import/Export") }}</h3>
+              <span class="status-chip">{{ t("common:vue.settings.modernJson", "Modern JSON") }}</span>
             </div>
 
             <div class="flex flex-wrap gap-2">
-              <button type="button" class="action-button-primary" @click="handleGroupExport">{{ t("common:vue.settings.exportGroup", "Export Group") }}</button>
-              <button type="button" class="action-button-muted" @click="copyImportExportText(groupText)">{{ t("common:vue.common.copy", "Copy") }}</button>
-              <button type="button" class="action-button-muted" @click="downloadImportExportText('mwi-group-modern.json', groupText)">{{ t("common:vue.common.download", "Download") }}</button>
-              <label class="action-button-muted cursor-pointer">
+              <button type="button" class="button-primary" @click="handleGroupExport">{{ t("common:vue.settings.exportGroup", "Export Group") }}</button>
+              <button type="button" class="button-secondary" @click="copyImportExportText(groupText)">{{ t("common:vue.common.copy", "Copy") }}</button>
+              <button type="button" class="button-secondary" @click="downloadImportExportText('mwi-group-modern.json', groupText)">{{ t("common:vue.common.download", "Download") }}</button>
+              <label class="button-secondary cursor-pointer">
                 {{ t("common:vue.common.loadFile", "Load File") }}
                 <input class="hidden" type="file" accept="application/json,.json,.txt" @change="onImportExportFileSelected($event, 'group')" />
               </label>
             </div>
 
-            <textarea v-model="groupText" class="field-input min-h-[220px] font-mono text-xs" spellcheck="false"></textarea>
+            <textarea v-model="groupText" class="control-input min-h-[220px] font-mono text-xs" spellcheck="false"></textarea>
 
             <div class="flex flex-wrap gap-2">
-              <button type="button" class="action-button-primary" @click="handleGroupImport">{{ t("common:vue.settings.importGroup", "Import Group") }}</button>
-              <button type="button" class="action-button-muted" @click="groupText = ''">{{ t("common:vue.common.clear", "Clear") }}</button>
+              <button type="button" class="button-primary" @click="handleGroupImport">{{ t("common:vue.settings.importGroup", "Import Group") }}</button>
+              <button type="button" class="button-secondary" @click="groupText = ''">{{ t("common:vue.common.clear", "Clear") }}</button>
             </div>
           </div>
 
-          <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3 space-y-3">
+          <div class="rounded-md border border-border bg-muted/50 p-3 space-y-3">
             <div class="flex flex-wrap items-center justify-between gap-2">
-              <h3 class="font-heading text-base font-semibold text-amber-200">{{ t("common:vue.settings.soloImportExportTitle", "Solo Import/Export") }}</h3>
+              <h3 class="font-heading text-base font-semibold text-primary">{{ t("common:vue.settings.soloImportExportTitle", "Solo Import/Export") }}</h3>
               <div class="flex items-center gap-2">
-                <select v-model="soloTargetPlayerId" class="field-select max-w-[140px]">
-                  <option v-for="player in simulator.players" :key="player.id" :value="player.id">{{ player.name }}</option>
-                </select>
-                <span class="badge">{{ t("common:vue.settings.modernSolo", "Modern Solo") }}</span>
+                <Select v-model="soloTargetPlayerId">
+                  <SelectTrigger class="max-w-[140px]" :aria-label="t('common:vue.settings.soloImportExportTitle', 'Solo Import/Export')" />
+                  <SelectContent>
+                    <SelectItem v-for="player in simulator.players" :key="player.id" :value="String(player.id)">{{ player.name }}</SelectItem>
+                  </SelectContent>
+                </Select>
+                <span class="status-chip">{{ t("common:vue.settings.modernSolo", "Modern Solo") }}</span>
               </div>
             </div>
 
             <div class="flex flex-wrap gap-2">
-              <button type="button" class="action-button-primary" @click="handleSoloExport">{{ t("common:vue.settings.exportSolo", "Export Solo") }}</button>
-              <button type="button" class="action-button-muted" @click="copyImportExportText(soloText)">{{ t("common:vue.common.copy", "Copy") }}</button>
-              <button type="button" class="action-button-muted" @click="downloadImportExportText(`mwi-solo-${soloTargetPlayerId}-modern.json`, soloText)">{{ t("common:vue.common.download", "Download") }}</button>
-              <label class="action-button-muted cursor-pointer">
+              <button type="button" class="button-primary" @click="handleSoloExport">{{ t("common:vue.settings.exportSolo", "Export Solo") }}</button>
+              <button type="button" class="button-secondary" @click="copyImportExportText(soloText)">{{ t("common:vue.common.copy", "Copy") }}</button>
+              <button type="button" class="button-secondary" @click="downloadImportExportText(`mwi-solo-${soloTargetPlayerId}-modern.json`, soloText)">{{ t("common:vue.common.download", "Download") }}</button>
+              <label class="button-secondary cursor-pointer">
                 {{ t("common:vue.common.loadFile", "Load File") }}
                 <input class="hidden" type="file" accept="application/json,.json,.txt" @change="onImportExportFileSelected($event, 'solo')" />
               </label>
             </div>
 
-            <textarea v-model="soloText" class="field-input min-h-[220px] font-mono text-xs" spellcheck="false"></textarea>
+            <textarea v-model="soloText" class="control-input min-h-[220px] font-mono text-xs" spellcheck="false"></textarea>
 
             <div class="flex flex-wrap gap-2">
-              <button type="button" class="action-button-primary" @click="handleSoloImport">{{ t("common:vue.settings.importToPlayer", "Import To Player") }}</button>
-              <button type="button" class="action-button-muted" @click="soloText = ''">{{ t("common:vue.common.clear", "Clear") }}</button>
+              <button type="button" class="button-primary" @click="handleSoloImport">{{ t("common:vue.settings.importToPlayer", "Import To Player") }}</button>
+              <button type="button" class="button-secondary" @click="soloText = ''">{{ t("common:vue.common.clear", "Clear") }}</button>
             </div>
           </div>
         </div>
@@ -971,51 +1033,51 @@
 
     <BaseModal :open="openExperimentalModal" :title="t('common:Experiment.ExperimentalFeatures', 'Experimental Features')" @close="openExperimentalModal = false">
       <div class="space-y-3">
-        <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
-          <label class="badge flex items-center justify-between gap-3 text-sm text-slate-100">
+        <div class="rounded-md border border-border bg-muted/50 p-3">
+          <label class="status-chip flex items-center justify-between gap-3 text-sm text-foreground">
             <span>{{ t("common:Experiment.enableHpMpVisualization", "Enable HP/MP Timeline Charts") }}</span>
             <input v-model="simulator.simulationSettings.enableHpMpVisualization" type="checkbox" />
           </label>
         </div>
 
-        <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
-          <p class="field-label">{{ t("common:Experiment.batchSimFromJson", "Run batch simulations from JSON files") }}</p>
+        <div class="rounded-md border border-border bg-muted/50 p-3">
+          <p class="control-label">{{ t("common:Experiment.batchSimFromJson", "Run batch simulations from JSON files") }}</p>
           <div class="grid gap-2 sm:grid-cols-[1fr_auto_auto]">
             <input
               ref="experimentalFileInput"
-              class="field-input"
+              class="control-input"
               type="file"
               accept="application/json,.json,.txt"
               @change="onExperimentalFileSelected"
             />
-            <button type="button" class="action-button-primary" :disabled="!experimentalFileReady || experimentalRunning" @click="runExperimentalBatch">
+            <button type="button" class="button-primary" :disabled="!experimentalFileReady || experimentalRunning" @click="runExperimentalBatch">
               {{ t("common:Experiment.uploadAndRun", "Upload & Run") }}
             </button>
-            <button type="button" class="action-button-muted" :disabled="!experimentalDownloadText" @click="downloadExperimentalResults">
+            <button type="button" class="button-secondary" :disabled="!experimentalDownloadText" @click="downloadExperimentalResults">
               {{ t("common:Experiment.download", "Download Results") }}
             </button>
           </div>
-          <p class="mt-2 text-xs text-slate-400">{{ experimentalStatusText }}</p>
+          <p class="mt-2 text-xs text-muted-foreground">{{ experimentalStatusText }}</p>
         </div>
 
-        <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
-          <p class="field-label">{{ t("common:Experiment.dungeonStartWave", "Dungeon Start Wave") }}</p>
+        <div class="rounded-md border border-border bg-muted/50 p-3">
+          <p class="control-label">{{ t("common:Experiment.dungeonStartWave", "Dungeon Start Wave") }}</p>
           <div class="flex items-center gap-3">
-            <label class="badge flex items-center gap-2">
+            <label class="status-chip flex items-center gap-2">
               <input v-model="experimentalDungeonStartWaveEnabled" type="checkbox" />
               {{ t("common:Experiment.dungeonStartWave", "Dungeon Start Wave") }}
             </label>
             <input
               v-model.number="experimentalDungeonStartWave"
-              class="field-input max-w-[120px]"
+              class="control-input max-w-[120px]"
               type="number"
               min="1"
               max="100"
               :disabled="!experimentalDungeonStartWaveEnabled"
             />
-            <span class="text-xs text-slate-400">{{ t("common:Experiment.wave", "Wave") }}</span>
+            <span class="text-xs text-muted-foreground">{{ t("common:Experiment.wave", "Wave") }}</span>
           </div>
-          <p class="mt-2 text-xs text-slate-400">{{ t("common:Experiment.dungeonStartWaveNotConnected", "Start wave is not connected to worker runtime yet.") }}</p>
+          <p class="mt-2 text-xs text-muted-foreground">{{ t("common:Experiment.dungeonStartWaveNotConnected", "Start wave is not connected to worker runtime yet.") }}</p>
         </div>
       </div>
     </BaseModal>
@@ -1027,86 +1089,86 @@
       @close="openPlayerSnapshotInfoModal = false"
     >
       <div class="space-y-3">
-        <p class="text-sm text-slate-300">{{ t("common:settingsPage.playerDataDescription", "Manually save/restore build data for 5 players only.") }}</p>
+        <p class="text-sm text-foreground/85">{{ t("common:settingsPage.playerDataDescription", "Manually save/restore build data for 5 players only.") }}</p>
         <p v-if="playerSnapshotStatusText" class="text-xs" :class="playerSnapshotStatusClass">{{ playerSnapshotStatusText }}</p>
         <div class="flex flex-wrap justify-end gap-2">
-          <button type="button" class="action-button-danger" @click="deleteAllPlayerDataSnapshotsFromHome">
+          <button type="button" class="button-danger" @click="deleteAllPlayerDataSnapshotsFromHome">
             {{ t("common:settingsPage.deleteAllPlayerConfigs", "Delete All Snapshots") }}
           </button>
         </div>
 
-        <div v-if="!hasPlayerSnapshotData" class="rounded-xl border border-white/10 bg-slate-900/50 px-3 py-4 text-sm text-slate-400">
+        <div v-if="!hasPlayerSnapshotData" class="rounded-md border border-border bg-muted/50 px-3 py-4 text-sm text-muted-foreground">
           {{ t("common:settingsPage.playerSnapshotNoData", "No player snapshot data is currently saved.") }}
         </div>
 
         <div v-else class="space-y-2">
-          <p class="text-xs text-slate-400">{{ playerSnapshotSavedAtLabel }}</p>
+          <p class="text-xs text-muted-foreground">{{ playerSnapshotSavedAtLabel }}</p>
 
           <div class="overflow-x-auto">
-            <table class="min-w-full text-sm">
-              <thead>
-                <tr class="border-b border-white/10 text-left text-xs uppercase tracking-[0.14em] text-slate-400">
-                  <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTablePlayer", "Player") }}</th>
-                  <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableZone", "Zone") }}</th>
-                  <th class="px-2 py-2">{{ getOfficialGameText("shopCategoryNames", "/shop_categories/dungeon", "Dungeon") }}</th>
-                  <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableDifficulty", "Difficulty") }}</th>
-                  <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableDuration", "Duration(h)") }}</th>
-                  <th class="px-2 py-2">{{ getOfficialGameText("labyrinthPanel", "labyrinth", "Labyrinth") }}</th>
-                  <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableRoomLevel", "Room Level") }}</th>
-                  <th class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableActions", "Actions") }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="row in playerSnapshotRows" :key="row.playerId" class="border-b border-white/5 text-slate-200">
-                  <td class="px-2 py-2">Player {{ row.playerId }}</td>
-                  <td class="px-2 py-2">{{ row.hasSnapshot ? formatActionName(row.zoneHrid, row.zone) : "-" }}</td>
-                  <td class="px-2 py-2">{{ row.hasSnapshot ? formatActionName(row.dungeonHrid, row.dungeon) : "-" }}</td>
-                  <td class="px-2 py-2">{{ row.hasSnapshot ? row.difficulty : "-" }}</td>
-                  <td class="px-2 py-2">{{ row.hasSnapshot ? row.simulationTime : "-" }}</td>
-                  <td class="px-2 py-2">{{ row.hasSnapshot ? formatMonsterName(row.labyrinthHrid, row.labyrinth) : "-" }}</td>
-                  <td class="px-2 py-2">{{ row.hasSnapshot ? row.roomLevel : "-" }}</td>
-                  <td class="px-2 py-2">
+            <Table class="min-w-full text-sm">
+              <TableHeader>
+                <TableRow class="border-b border-border text-left text-xs uppercase  text-muted-foreground">
+                  <TableHead class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTablePlayer", "Player") }}</TableHead>
+                  <TableHead class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableZone", "Zone") }}</TableHead>
+                  <TableHead class="px-2 py-2">{{ getOfficialGameText("shopCategoryNames", "/shop_categories/dungeon", "Dungeon") }}</TableHead>
+                  <TableHead class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableDifficulty", "Difficulty") }}</TableHead>
+                  <TableHead class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableDuration", "Duration(h)") }}</TableHead>
+                  <TableHead class="px-2 py-2">{{ getOfficialGameText("labyrinthPanel", "labyrinth", "Labyrinth") }}</TableHead>
+                  <TableHead class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableRoomLevel", "Room Level") }}</TableHead>
+                  <TableHead class="px-2 py-2">{{ t("common:settingsPage.playerSnapshotTableActions", "Actions") }}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow v-for="row in playerSnapshotRows" :key="row.playerId" class="border-b border-border text-foreground">
+                  <TableCell class="px-2 py-2">Player {{ row.playerId }}</TableCell>
+                  <TableCell class="px-2 py-2">{{ row.hasSnapshot ? formatActionName(row.zoneHrid, row.zone) : "-" }}</TableCell>
+                  <TableCell class="px-2 py-2">{{ row.hasSnapshot ? formatActionName(row.dungeonHrid, row.dungeon) : "-" }}</TableCell>
+                  <TableCell class="px-2 py-2">{{ row.hasSnapshot ? row.difficulty : "-" }}</TableCell>
+                  <TableCell class="px-2 py-2">{{ row.hasSnapshot ? row.simulationTime : "-" }}</TableCell>
+                  <TableCell class="px-2 py-2">{{ row.hasSnapshot ? formatMonsterName(row.labyrinthHrid, row.labyrinth) : "-" }}</TableCell>
+                  <TableCell class="px-2 py-2">{{ row.hasSnapshot ? row.roomLevel : "-" }}</TableCell>
+                  <TableCell class="px-2 py-2">
                     <button
                       type="button"
-                      class="action-button-muted"
+                      class="button-secondary"
                       :disabled="!row.hasSnapshot"
                       @click="deleteSinglePlayerDataSnapshotFromHome(row.playerId)"
                     >
                       {{ t("common:settingsPage.deleteSinglePlayerConfig", "Delete") }}
                     </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           </div>
         </div>
       </div>
     </BaseModal>
-    <section ref="homeResultsSection" class="panel space-y-4">
+    <section ref="homeResultsSection" class="surface-panel space-y-4">
       <div class="flex flex-col gap-3 lg:flex-row lg:items-end lg:justify-between">
         <div>
-          <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:vue.home.completeResultsEyebrow", "Results") }}</p>
-          <h2 class="font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.home.completeResultsTitle", "Complete Results") }}</h2>
-          <p class="mt-1 text-sm text-slate-400">
+          <p class="text-xs uppercase  text-muted-foreground">{{ t("common:vue.home.completeResultsEyebrow", "Results") }}</p>
+          <h2 class="font-heading text-lg font-semibold text-primary">{{ t("common:vue.home.completeResultsTitle", "Complete Results") }}</h2>
+          <p class="mt-1 text-sm text-muted-foreground">
             {{ simulator.runtime.isRunning
               ? t("common:vue.home.completeResultsRunningDesc", "The full report stays collapsed until you want the detailed breakdown, while progress remains visible here.")
               : t("common:vue.home.completeResultsDesc", "Open the detailed report only when you need tables, charts, and per-source breakdowns.") }}
           </p>
         </div>
-        <button type="button" class="action-button-muted" :disabled="!homeCanOpenResults" @click="toggleCompleteResultsPanel">
+        <button type="button" class="button-secondary" :disabled="!homeCanOpenResults" @click="toggleCompleteResultsPanel">
           {{ completeResultsToggleLabel }}
         </button>
       </div>
 
       <div v-if="completeResultsExpanded" class="space-y-4">
         <AsyncSimulationResultsView v-if="homeHasResults" />
-        <div v-else class="rounded-xl border border-dashed border-white/15 bg-slate-900/40 p-4">
-          <p class="text-sm text-slate-300">{{ t("common:vue.home.homeResultsEmpty", "Your next simulation result will appear here as soon as it finishes.") }}</p>
+        <div v-else class="rounded-md border border-dashed border-border bg-muted/50 p-4">
+          <p class="text-sm text-foreground/85">{{ t("common:vue.home.homeResultsEmpty", "Your next simulation result will appear here as soon as it finishes.") }}</p>
         </div>
       </div>
 
-      <div v-else class="rounded-xl border border-dashed border-white/15 bg-slate-900/40 p-4">
-        <p class="text-sm text-slate-300">{{ t("common:vue.home.completeResultsCollapsed", "Keep the full report collapsed until you need detailed breakdowns.") }}</p>
+      <div v-else class="rounded-md border border-dashed border-border bg-muted/50 p-4">
+        <p class="text-sm text-foreground/85">{{ t("common:vue.home.completeResultsCollapsed", "Keep the full report collapsed until you need detailed breakdowns.") }}</p>
       </div>
     </section>
   </section>
@@ -1153,6 +1215,8 @@ import BaseModal from "../components/BaseModal.vue";
 import DisclosurePanel from "../components/DisclosurePanel.vue";
 import HomeSummaryPanel from "../components/home/HomeSummaryPanel.vue";
 import HomeWorkspaceTabs from "../components/home/HomeWorkspaceTabs.vue";
+import { SearchCombobox } from "../components/ui/combobox/index.js";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "../components/ui/select/index.js";
 
 const simulator = useSimulatorStore();
 const route = useRoute();
@@ -1175,6 +1239,7 @@ const {
 } = useGameDataText();
 const AsyncSimulationResultsView = defineAsyncComponent(() => import("../components/SimulationResultsView.vue"));
 const TAMPERMONKEY_BRIDGE_CHANNEL = "mwi-tm-bridge";
+const EMPTY_SELECT_VALUE = "__none__";
 const MAIN_SITE_IMPORT_SCRIPT_URL = "https://greasyfork.org/zh-CN/scripts/568613-mwi-combat-simulator-%E4%B8%BB%E7%AB%99%E4%B8%80%E9%94%AE%E5%AF%BC%E5%85%A5";
 const hasMainSiteImportScriptUrl = MAIN_SITE_IMPORT_SCRIPT_URL.trim().length > 0;
 
@@ -1447,9 +1512,9 @@ const levelEtaCards = computed(() => {
         targetLevel,
         status: eta.status,
         title,
-        borderClass: "border-emerald-400/20",
-        bgClass: "bg-emerald-400/5",
-        titleClass: "text-emerald-300",
+        borderClass: "border-success/40",
+        bgClass: "bg-success/10",
+        titleClass: "text-success",
         details: {
           totalExperience: `${formatNumber(eta.currentExperience, 0)} / ${formatNumber(eta.targetExperience, 0)}`,
           requiredExperience: formatNumber(eta.xpNeeded, 0),
@@ -1467,10 +1532,10 @@ const levelEtaCards = computed(() => {
         targetLevel,
         status: eta.status,
         title,
-        borderClass: "border-amber-400/20",
-        bgClass: "bg-amber-400/5",
-        titleClass: "text-amber-300",
-        messageClass: "text-amber-200",
+        borderClass: "border-primary/40",
+        bgClass: "bg-primary/10",
+        titleClass: "text-primary",
+        messageClass: "text-primary",
         message: t("common:vue.home.levelEtaMissingProgress", "Current imported data has no level progress."),
       });
       continue;
@@ -1483,10 +1548,10 @@ const levelEtaCards = computed(() => {
         targetLevel,
         status: eta.status,
         title,
-        borderClass: "border-amber-400/20",
-        bgClass: "bg-amber-400/5",
-        titleClass: "text-amber-300",
-        messageClass: "text-amber-200",
+        borderClass: "border-primary/40",
+        bgClass: "bg-primary/10",
+        titleClass: "text-primary",
+        messageClass: "text-primary",
         message: t("common:vue.home.levelEtaOutOfRange", "Target level is outside the current experience table range."),
       });
       continue;
@@ -1499,10 +1564,10 @@ const levelEtaCards = computed(() => {
         targetLevel,
         status: "missing_xp_rate",
         title,
-        borderClass: "border-white/10",
-        bgClass: "bg-slate-900/40",
-        titleClass: "text-slate-200",
-        messageClass: "text-slate-300",
+        borderClass: "border-border",
+        bgClass: "bg-muted/50",
+        titleClass: "text-foreground",
+        messageClass: "text-foreground/85",
         message: t("common:vue.home.levelEtaMissingResult", "Run a single-target simulation first to show upgrade time."),
       });
       continue;
@@ -1515,10 +1580,10 @@ const levelEtaCards = computed(() => {
         targetLevel,
         status: eta.status,
         title,
-        borderClass: "border-amber-400/20",
-        bgClass: "bg-amber-400/5",
-        titleClass: "text-amber-300",
-        messageClass: "text-amber-200",
+        borderClass: "border-primary/40",
+        bgClass: "bg-primary/10",
+        titleClass: "text-primary",
+        messageClass: "text-primary",
         message: t("common:vue.home.levelEtaZeroRate", "Current simulation has 0 XP/h for this skill, so ETA is unavailable."),
       });
     }
@@ -1748,10 +1813,10 @@ const playerSnapshotStatus = ref({
 
 const dungeonToggleProxy = computed({
   get() {
-    return simulator.simulationSettings.useDungeon;
+    return simulator.simulationSettings.useDungeon ? "dungeon" : "zone";
   },
   set(value) {
-    simulator.simulationSettings.useDungeon = Boolean(value);
+    simulator.simulationSettings.useDungeon = value === "dungeon";
     simulator.normalizeDifficulty();
   },
 });
@@ -1768,8 +1833,76 @@ const selectedActionHrid = computed({
     } else {
       simulator.simulationSettings.zoneHrid = value;
     }
+    simulator.normalizeDifficulty();
   },
 });
+
+const currentActionComboboxOptions = computed(() => simulator.currentActionOptions.map((action) => ({
+  value: action.hrid,
+  label: formatActionName(action.hrid, action.name),
+})));
+
+function emptyComboboxOption() {
+  return { value: "", label: t("common:vue.common.none", "None") };
+}
+
+function itemComboboxOption(item) {
+  return {
+    value: item.hrid,
+    label: `${t("common:vue.home.levelShort", "Lv")}${item.itemLevel} ${formatItemName(item.hrid, item.name)}`,
+  };
+}
+
+const equipmentComboboxOptionsBySlot = computed(() => Object.fromEntries(
+  equipmentSlots.map((slot) => [
+    slot,
+    [emptyComboboxOption(), ...(simulator.options.equipmentBySlot[slot] || []).map(itemComboboxOption)],
+  ]),
+));
+const foodComboboxOptions = computed(() => [
+  emptyComboboxOption(),
+  ...simulator.options.food.map(itemComboboxOption),
+]);
+const drinkComboboxOptions = computed(() => [
+  emptyComboboxOption(),
+  ...simulator.options.drinks.map(itemComboboxOption),
+]);
+
+function abilityComboboxOptions(slotIndex) {
+  return [
+    emptyComboboxOption(),
+    ...getAbilityOptionsForSlot(slotIndex).map((ability) => ({
+      value: ability.hrid,
+      label: formatAbilityName(ability.hrid, ability.name),
+    })),
+  ];
+}
+
+function triggerConditionComboboxOptions(dependencyHrid) {
+  return [
+    { value: "", label: t("common:vue.common.select", "Select") },
+    ...getConditionOptions(dependencyHrid).map((condition) => ({
+      value: condition.hrid,
+      label: formatTriggerConditionName(condition.hrid, condition.name),
+    })),
+  ];
+}
+
+function optionalSelectValue(value) {
+  return String(value || EMPTY_SELECT_VALUE);
+}
+
+function decodeOptionalSelectValue(value) {
+  return value === EMPTY_SELECT_VALUE ? "" : String(value || "");
+}
+
+function labyrinthCrateSelectValue(crateType) {
+  return optionalSelectValue(simulator.simulationSettings.labyrinthCrates?.[crateType]);
+}
+
+function setLabyrinthCrateSelection(crateType, value) {
+  simulator.setLabyrinthCrate(crateType, decodeOptionalSelectValue(value));
+}
 
 const simulationModeProxy = computed({
   get() {
@@ -1861,12 +1994,12 @@ const allSoloZonesChecked = computed(() => (
 ));
 const importExportStatusClass = computed(() => {
   if (importExportStatus.value.tone === "success") {
-    return "text-emerald-300";
+    return "text-success";
   }
   if (importExportStatus.value.tone === "danger") {
-    return "text-rose-300";
+    return "text-destructive";
   }
-  return "text-slate-400";
+  return "text-muted-foreground";
 });
 const importExportStatusText = computed(() => importExportStatus.value.text || "");
 const playerSnapshotRows = computed(() => simulator.playerDataSnapshotRows || []);
@@ -1878,12 +2011,12 @@ const playerSnapshotSavedAtLabel = computed(() => {
 });
 const playerSnapshotStatusClass = computed(() => {
   if (playerSnapshotStatus.value.tone === "success") {
-    return "text-emerald-300";
+    return "text-success";
   }
   if (playerSnapshotStatus.value.tone === "danger") {
-    return "text-rose-300";
+    return "text-destructive";
   }
-  return "text-slate-400";
+  return "text-muted-foreground";
 });
 const playerSnapshotStatusText = computed(() => playerSnapshotStatus.value.text || "");
 const combatPreviewPlayerConfig = computed(() => createCombatPreviewPlayerConfig(activePlayer.value));
@@ -2921,6 +3054,11 @@ function onFoodChanged(index) {
   }
 }
 
+function setFoodSelection(index, value) {
+  activePlayer.value.food[index] = String(value || "");
+  onFoodChanged(index);
+}
+
 function onDrinkChanged(index) {
   const hrid = String(activePlayer.value?.drinks?.[index] || "");
   if (hrid) {
@@ -2928,11 +3066,21 @@ function onDrinkChanged(index) {
   }
 }
 
+function setDrinkSelection(index, value) {
+  activePlayer.value.drinks[index] = String(value || "");
+  onDrinkChanged(index);
+}
+
 function onAbilityChanged(index) {
   const hrid = String(activePlayer.value?.abilities?.[index]?.abilityHrid || "");
   if (hrid) {
     simulator.ensureActivePlayerTriggerDefaults(hrid);
   }
+}
+
+function setAbilitySelection(index, value) {
+  activePlayer.value.abilities[index].abilityHrid = String(value || "");
+  onAbilityChanged(index);
 }
 
 function applyMarketEnhancement(slot, level) {
@@ -2983,6 +3131,15 @@ function onDependencyChanged(index) {
   row.value = 0;
 }
 
+function setTriggerDependency(index, value) {
+  const row = triggerModal.draft[index];
+  if (!row) {
+    return;
+  }
+  row.dependencyHrid = decodeOptionalSelectValue(value);
+  onDependencyChanged(index);
+}
+
 function onConditionChanged(index) {
   const row = triggerModal.draft[index];
   if (!row) {
@@ -2990,6 +3147,15 @@ function onConditionChanged(index) {
   }
   row.comparatorHrid = "";
   row.value = 0;
+}
+
+function setTriggerCondition(index, value) {
+  const row = triggerModal.draft[index];
+  if (!row) {
+    return;
+  }
+  row.conditionHrid = String(value || "");
+  onConditionChanged(index);
 }
 
 function onComparatorChanged(index) {
@@ -3001,6 +3167,15 @@ function onComparatorChanged(index) {
   if (!isComparatorValueRequired(row.comparatorHrid)) {
     row.value = 0;
   }
+}
+
+function setTriggerComparator(index, value) {
+  const row = triggerModal.draft[index];
+  if (!row) {
+    return;
+  }
+  row.comparatorHrid = decodeOptionalSelectValue(value);
+  onComparatorChanged(index);
 }
 
 function getConditionOptions(dependencyHrid) {

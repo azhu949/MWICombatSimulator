@@ -1,224 +1,68 @@
 <template>
-  <div class="mx-auto w-full max-w-[1440px] px-4 py-5 lg:px-8">
-    <header class="sticky top-0 z-40 mb-4">
-      <div class="panel overflow-hidden">
-        <div class="flex flex-col gap-4 lg:flex-row lg:items-center lg:justify-between">
-          <div class="flex flex-wrap items-center gap-2">
-            <h1 class="font-heading text-2xl font-bold text-amber-300">{{ t("common:title", "MWI Combat Simulator") }}</h1>
-            <span class="rounded-full border border-amber-300/30 bg-amber-300/10 px-2 py-1 text-xs font-semibold text-amber-200/80">
-              v{{ appVersion }}
-            </span>
-          </div>
+  <SidebarProvider>
+    <AppSidebar
+      :version="appVersion"
+      :has-unread-patch-notes="hasUnreadPatchNotes"
+      :patch-notes-label="patchNotesButtonAriaLabel"
+      @patch-notes="openPatchNotesModal"
+      @feedback="openFeedbackModal"
+    />
 
-          <div class="flex flex-wrap items-center gap-2">
-            <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/home">{{ t('common:menu.home', 'Home') }}</RouterLink>
-            <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/advisor">{{ t('common:menu.advisor', 'Advisor / 刷图推荐') }}</RouterLink>
-            <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/enhancement">{{ t('common:menu.enhancement', 'Enhancement') }}</RouterLink>
-            <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/skilling">{{ t('common:menu.skilling', 'Skilling') }}</RouterLink>
-            <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/queue">{{ t('common:menu.queue', 'Queue') }}</RouterLink>
-            <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/multi-results">{{ t('common:menu.multiResults', 'Multi-round') }}</RouterLink>
-            <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/settings">{{ t('common:menu.settings', 'Settings') }}</RouterLink>
-            <RouterLink class="action-button-muted" exact-active-class="top-nav-active" to="/guide">{{ t('common:menu.guide', 'Guide') }}</RouterLink>
-            <button
-              type="button"
-              class="action-button-muted patch-notes-trigger"
-              :class="{ 'patch-notes-trigger-unread': hasUnreadPatchNotes }"
-              :aria-label="patchNotesButtonAriaLabel"
-              :title="patchNotesButtonAriaLabel"
-              @click="openPatchNotesModal"
-            >
-              <span>{{ t("common:patchNotes", "Patch Notes") }}</span>
-              <span v-if="hasUnreadPatchNotes" class="patch-notes-unread-badge" aria-hidden="true">
-                {{ t("common:vue.app.patchNotesUnreadBadge", "Unread") }}
-              </span>
-            </button>
-            <a
-              href="https://github.com/azhu949/MWICombatSimulator"
-              class="action-button-muted header-icon-link"
-              :aria-label="t('common:vue.app.feedbackGitHubAriaLabel', 'GitHub Repository')"
-              :title="t('common:vue.app.feedbackGitHubAriaLabel', 'GitHub Repository')"
-              target="_blank"
-              rel="noopener noreferrer"
-            >
-              <svg aria-hidden="true" class="h-4 w-4" viewBox="0 0 24 24" fill="currentColor">
-                <path
-                  d="M12 .5a12 12 0 0 0-3.79 23.39c.6.11.82-.26.82-.58v-2.05c-3.34.73-4.04-1.41-4.04-1.41-.55-1.38-1.33-1.74-1.33-1.74-1.09-.74.08-.73.08-.73 1.21.08 1.85 1.21 1.85 1.21 1.07 1.8 2.81 1.28 3.49.98.11-.76.42-1.28.76-1.58-2.66-.3-5.47-1.3-5.47-5.8 0-1.28.47-2.33 1.22-3.15-.12-.3-.53-1.53.12-3.18 0 0 1-.31 3.3 1.2a11.61 11.61 0 0 1 6 0c2.29-1.51 3.29-1.2 3.29-1.2.66 1.65.25 2.88.12 3.18.76.82 1.22 1.87 1.22 3.15 0 4.51-2.81 5.5-5.49 5.79.43.37.81 1.08.81 2.18v3.24c0 .32.22.7.83.58A12 12 0 0 0 12 .5Z"
-                />
-              </svg>
-              <span class="sr-only">{{ t("common:vue.app.feedbackGitHubAriaLabel", "GitHub Repository") }}</span>
-            </a>
-            <button type="button" class="action-button-muted" @click="openFeedbackModal">
-              {{ t("common:vue.app.feedback", "Feedback") }}
-            </button>
-            <button
-              type="button"
-              class="action-button-muted header-icon-button"
-              :aria-label="themeToggleAriaLabel"
-              :title="themeToggleAriaLabel"
-              @click="toggleTheme"
-            >
-              <svg
-                v-if="theme === 'dark'"
-                aria-hidden="true"
-                class="h-4 w-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1.8"
-              >
-                <path d="M21.752 15.002A9.718 9.718 0 0 1 18 15.75 9.75 9.75 0 0 1 8.25 6c0-1.33.266-2.597.748-3.752A9.753 9.753 0 1 0 21.752 15.002Z" />
-              </svg>
-              <svg
-                v-else
-                aria-hidden="true"
-                class="h-4 w-4"
-                viewBox="0 0 24 24"
-                fill="none"
-                stroke="currentColor"
-                stroke-linecap="round"
-                stroke-linejoin="round"
-                stroke-width="1.8"
-              >
-                <circle cx="12" cy="12" r="4" />
-                <path d="M12 2.75v2.5M12 18.75v2.5M21.25 12h-2.5M5.25 12h-2.5M18.541 5.459l-1.768 1.768M7.227 16.773l-1.768 1.768M18.541 18.541l-1.768-1.768M7.227 7.227 5.459 5.459" />
-              </svg>
-              <span class="sr-only">{{ themeToggleAriaLabel }}</span>
-            </button>
-            <button
-              type="button"
-              class="action-button-muted header-compact-button"
-              :aria-label="languageToggleAriaLabel"
-              :title="languageToggleAriaLabel"
-              @click="switchLanguage(languageToggleTarget)"
-            >
-              {{ languageToggleLabel }}
-            </button>
-          </div>
+    <SidebarInset>
+      <header class="sticky top-0 z-40 border-b border-border bg-background/94 backdrop-blur supports-[backdrop-filter]:bg-background/84">
+        <div class="mx-auto flex h-12 max-w-[1500px] items-center gap-2 px-3 sm:px-5">
+          <SidebarTrigger class="md:hidden" mobile />
+          <SidebarTrigger class="hidden md:inline-flex" />
+          <div class="mx-1 h-4 w-px bg-border" aria-hidden="true" />
+          <h1 class="min-w-0 flex-1 truncate font-heading text-sm font-semibold text-foreground">{{ currentPageTitle }}</h1>
+          <Button type="button" variant="ghost" size="icon-sm" :aria-label="themeToggleAriaLabel" :title="themeToggleAriaLabel" @click="toggleTheme">
+            <Sun v-if="theme === 'dark'" />
+            <Moon v-else />
+          </Button>
+          <Button type="button" variant="ghost" size="sm" :aria-label="languageToggleAriaLabel" :title="languageToggleAriaLabel" @click="switchLanguage(languageToggleTarget)">
+            <Languages />{{ languageToggleLabel }}
+          </Button>
         </div>
+      </header>
 
-        <div v-if="showCombatToolbar" class="mt-3 rounded-xl border border-white/10 bg-slate-900/40 p-3">
-          <div class="flex flex-col gap-3">
-            <div class="flex flex-col gap-3 xl:grid xl:grid-cols-[minmax(0,1fr)_640px] xl:items-start 2xl:grid-cols-[minmax(0,1fr)_720px]">
-              <div class="min-w-0 space-y-3">
-                <div class="flex flex-wrap items-center gap-2">
-                  <button type="button"
-                    class="action-button-muted"
-                   
-                    :disabled="queueActionsDisabled"
-                    @click="setQueueBaselineFromTopbar"
-                  >
-                    {{ t("common:queue.setBaseline", "Set Baseline") }}
-                  </button>
-                  <button type="button"
-                    class="action-button-muted"
-                   
-                    :disabled="queueActionsDisabled || !activeQueueHasBaseline || activeQueuePartyMismatch"
-                    @click="addToQueueFromTopbar"
-                  >
-                    {{ t("common:queue.addToQueue", "Add To Queue") }}
-                  </button>
-                  <button type="button"
-                    class="action-button-primary"
-                   
-                    :disabled="queueActionsDisabled || !activeQueueHasBaseline || activeQueueItemCount === 0 || activeQueuePartyMismatch"
-                    @click="runQueueFromTopbar"
-                  >
-                    {{ t("common:queue.runQueue", "Run Queue") }}
-                  </button>
-                  <button type="button"
-                    class="action-button-danger"
-                   
-                    :disabled="queueActionsDisabled || activeQueueItemCount === 0"
-                    @click="clearQueueFromTopbar"
-                  >
-                    {{ t("common:queue.clearQueue", "Clear Queue") }}
-                  </button>
-                  <span class="text-xs text-slate-400">
-                    {{ t("common:queue.queueList", "Queue List") }}:
-                    <span class="ml-1 text-slate-100">{{ activeQueueItemCount }}</span>
-                  </span>
-                  <span class="text-xs text-slate-400">
-                    {{ t("common:vue.queue.queueProgress", "Queue Progress") }}:
-                    <span class="ml-1 text-slate-100">{{ activeQueueProgressText }}</span>
-                  </span>
-                  <span v-if="activeQueuePartySummaryText" class="text-xs text-slate-400">
-                    {{ t("common:queue.partyLockedMembers", "Locked party") }}:
-                    <span class="ml-1 text-slate-100">{{ activeQueuePartySummaryText }}</span>
-                  </span>
-                </div>
-              </div>
+      <CombatCommandBar
+        v-if="showCombatToolbar"
+        :players="simulator.players"
+        :active-player-id="simulator.activePlayerId"
+        :queue-actions-disabled="queueActionsDisabled"
+        :has-baseline="activeQueueHasBaseline"
+        :party-mismatch="activeQueuePartyMismatch"
+        :item-count="activeQueueItemCount"
+        :queue-progress-text="activeQueueProgressText"
+        :party-summary-text="activeQueuePartySummaryText"
+        :party-warning-text="activeQueuePartyWarningText"
+        :action-status-text="topQueueActionStatusText"
+        :action-status-class="topQueueActionStatusClass"
+        :show-runtime-summary="showRuntimeSummary"
+        :runtime-progress="simulator.runtime.progress"
+        :runtime-error="simulator.runtime.error"
+        :progress-label="progressLabel"
+        @set-baseline="setQueueBaselineFromTopbar"
+        @add-queue="addToQueueFromTopbar"
+        @run-queue="runQueueFromTopbar"
+        @clear-queue="clearQueueFromTopbar"
+        @select-player="simulator.setActivePlayer"
+        @view-error="openGlobalError('runtime', $event)"
+      />
 
-              <div class="grid gap-1 sm:grid-cols-2 lg:grid-cols-3 xl:grid-cols-5">
-                <div
-                  v-for="player in simulator.players"
-                  :key="player.id"
-                  class="cursor-pointer rounded-xl border px-2 py-1.5 transition"
-                  :class="[
-                    simulator.activePlayerId === player.id ? 'border-amber-300 bg-amber-300/10' : 'border-white/10 bg-slate-900/40',
-                  ]"
-                  tabindex="0"
-                  @click="simulator.setActivePlayer(player.id)"
-                  @keydown.enter.self.prevent="simulator.setActivePlayer(player.id)"
-                  @keydown.space.self.prevent="simulator.setActivePlayer(player.id)"
-                >
-                  <div class="flex items-center gap-1.5">
-                    <input
-                      v-model="player.name"
-                      :aria-label="t('common:player', 'Player')"
-                      class="w-[72px] min-w-0 flex-none bg-transparent font-heading text-[11px] leading-none"
-                      @click.stop="simulator.setActivePlayer(player.id)"
-                      @focus="simulator.setActivePlayer(player.id)"
-                    />
-                    <label class="badge flex shrink-0 items-center justify-center px-1.5 py-1 text-slate-200" @click.stop>
-                      <input
-                        v-model="player.selected"
-                        :aria-label="t('common:vue.app.simToggle', 'Sim')"
-                        class="h-3.5 w-3.5"
-                        type="checkbox"
-                        @click.stop
-                      />
-                    </label>
-                  </div>
-                </div>
-              </div>
-            </div>
-            <p v-if="topQueueActionStatusText" class="text-xs" :class="topQueueActionStatusClass">{{ topQueueActionStatusText }}</p>
-            <p v-if="activeQueuePartyWarningText" class="text-xs text-amber-300">{{ activeQueuePartyWarningText }}</p>
-
-            <div v-if="showRuntimeSummary" class="space-y-2 border-t border-white/10 pt-3">
-              <div class="flex flex-wrap items-center justify-between gap-2 text-xs uppercase tracking-[0.14em] text-slate-400">
-                <span>{{ t("common:vue.app.runtime", "Runtime") }}</span>
-                <span class="text-slate-300">{{ progressLabel }}</span>
-              </div>
-              <div class="h-2 overflow-hidden rounded-full bg-slate-800">
-                <div class="h-full bg-gradient-to-r from-teal-400 to-amber-300 transition-all" :style="{ width: `${Math.floor(simulator.runtime.progress * 100)}%` }"></div>
-              </div>
-              <div v-if="simulator.runtime.error" class="flex flex-wrap items-center gap-2">
-                <p class="text-sm text-rose-300">{{ simulator.runtime.error }}</p>
-                <button type="button" class="action-button-muted text-xs" @click="openGlobalError('runtime', simulator.runtime.error)">
-                  {{ t("common:vue.app.viewErrorDetails", "Details") }}
-                </button>
-              </div>
-            </div>
-          </div>
-        </div>
-      </div>
-    </header>
-
-    <main>
-      <RouterView />
-    </main>
+      <main class="mx-auto w-full max-w-[1500px] px-3 py-4 sm:px-5 sm:py-5">
+        <RouterView />
+      </main>
+    </SidebarInset>
 
     <BaseModal :open="globalErrorModalOpen" :title="t('common:vue.app.globalErrorTitle', 'Error')" @close="globalErrorModalOpen = false">
-      <p class="text-sm text-slate-300">{{ t("common:vue.app.globalErrorDesc", "Please copy the following details if you report this issue.") }}</p>
-      <pre class="max-h-[320px] overflow-auto rounded-xl border border-white/10 bg-slate-950/70 p-3 text-xs text-rose-200">{{ globalErrorText }}</pre>
+      <p class="text-sm text-foreground/85">{{ t("common:vue.app.globalErrorDesc", "Please copy the following details if you report this issue.") }}</p>
+      <pre class="max-h-[320px] overflow-auto rounded-md border border-border bg-muted/50 p-3 text-xs text-destructive">{{ globalErrorText }}</pre>
       <div class="flex flex-wrap items-center gap-2">
-        <button type="button" class="action-button-primary" @click="copyGlobalError">
+        <button type="button" class="button-primary" @click="copyGlobalError">
           {{ t("common:vue.common.copy", "Copy") }}
         </button>
-        <span class="text-xs text-slate-400">{{ errorCopyStatus }}</span>
+        <span class="text-xs text-muted-foreground">{{ errorCopyStatus }}</span>
       </div>
     </BaseModal>
 
@@ -229,7 +73,7 @@
       @close="closeFeedbackModal"
     >
       <div class="space-y-3">
-        <p class="text-sm text-slate-300">
+        <p class="text-sm text-foreground/85">
           {{ t("common:vue.app.feedbackHint", "Use the following channels for feedback, bug reports, or suggestions.") }}
         </p>
 
@@ -239,7 +83,7 @@
               <p class="feedback-contact-label">{{ t("common:vue.app.feedbackQqLabel", "QQ Group") }}</p>
               <p class="feedback-contact-value">993488247</p>
             </div>
-            <button type="button" class="action-button-muted text-xs" data-feedback-copy @click="copyFeedbackContact('993488247')">
+            <button type="button" class="button-secondary text-xs" data-feedback-copy @click="copyFeedbackContact('993488247')">
               {{ t("common:vue.common.copy", "Copy") }}
             </button>
           </div>
@@ -249,13 +93,13 @@
               <p class="feedback-contact-label">{{ t("common:vue.app.feedbackEmailLabel", "QQ Email") }}</p>
               <a class="feedback-contact-link" href="mailto:596846069@qq.com">596846069@qq.com</a>
             </div>
-            <button type="button" class="action-button-muted text-xs" @click="copyFeedbackContact('596846069@qq.com')">
+            <button type="button" class="button-secondary text-xs" @click="copyFeedbackContact('596846069@qq.com')">
               {{ t("common:vue.common.copy", "Copy") }}
             </button>
           </div>
         </div>
 
-        <p class="text-xs text-slate-400">{{ feedbackCopyStatus }}</p>
+        <p class="text-xs text-muted-foreground">{{ feedbackCopyStatus }}</p>
       </div>
     </BaseModal>
 
@@ -267,14 +111,14 @@
       @close="closePatchNotesModal"
     >
       <div class="space-y-3">
-        <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
+        <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
           <span>{{ t("common:vue.settings.versionsCount", "Versions", { count: patchNotesEntries.length }) }}</span>
           <span v-if="hasUnreadPatchNotes">
             {{ t("common:vue.app.patchNotesUnreadStatus", "Unread updates", { count: patchNotesUnreadCount }) }}
           </span>
         </div>
 
-        <p class="text-xs text-slate-400">
+        <p class="text-xs text-muted-foreground">
           {{ t("common:vue.app.patchNotesMarkReadHint", "Unread patch notes will be marked as read when you close this dialog.") }}
         </p>
 
@@ -290,13 +134,13 @@
             :title="entry.label"
             :default-open="entry.entryId === patchNotesDefaultOpenEntryId"
           >
-            <ul class="list-disc space-y-1 pl-5 text-sm text-slate-200">
+            <ul class="list-disc space-y-1 pl-5 text-sm text-foreground">
               <li v-for="note in entry.notes" :key="note">{{ note }}</li>
             </ul>
           </DisclosurePanel>
         </div>
 
-        <p v-else class="text-sm text-slate-300" data-patch-notes-start tabindex="-1">
+        <p v-else class="text-sm text-foreground/85" data-patch-notes-start tabindex="-1">
           {{ t("common:vue.app.patchNotesEmpty", "No patch notes yet.") }}
         </p>
       </div>
@@ -308,17 +152,17 @@
       initial-focus-selector="[data-simulation-results-confirm]"
       @close="closeSimulationCompleteModal"
     >
-      <p class="text-sm text-slate-300">{{ t("common:vue.app.simulationCompleteDesc", "Simulation completed. Go to Home results now?") }}</p>
+      <p class="text-sm text-foreground/85">{{ t("common:vue.app.simulationCompleteDesc", "Simulation completed. Go to Home results now?") }}</p>
       <div class="flex flex-wrap items-center gap-2">
         <button
           type="button"
-          class="action-button-primary"
+          class="button-primary"
           data-simulation-results-confirm
           @click="goToHomeResults"
         >
           {{ t("common:vue.app.goToHomeResults", "Go to Home Results") }}
         </button>
-        <button type="button" class="action-button-muted" @click="closeSimulationCompleteModal">
+        <button type="button" class="button-secondary" @click="closeSimulationCompleteModal">
           {{ t("common:vue.app.stayHere", "Stay Here") }}
         </button>
       </div>
@@ -331,28 +175,28 @@
       @close="closeBaselineReminderModal"
     >
       <div class="space-y-3">
-        <p class="text-sm text-slate-300">
+        <p class="text-sm text-foreground/85">
           {{ t("common:queue.baselineReminderBody", "Fewer baseline rounds can make the result more volatile. Adjust the setting first if you want a more stable baseline.") }}
         </p>
-        <p class="text-sm text-amber-200">
+        <p class="text-sm text-primary">
           {{ baselineReminderCurrentRoundsText }}
         </p>
-        <p class="text-xs text-amber-100">
+        <p class="text-xs text-primary">
           {{ t("common:queue.baselineRecommendationHint", "Recommended: at least 10 rounds, with 20-30 as the usual stable range; use 50+ when comparing very close options.") }}
         </p>
-        <p class="text-xs text-slate-400">
+        <p class="text-xs text-muted-foreground">
           {{ t("common:queue.baselineReminderAggregationHint", "Set Baseline runs multiple rounds using the current baseline round count and uses the aggregated result as the queue comparison baseline.") }}
         </p>
         <div class="flex flex-wrap items-center gap-2">
           <button
             type="button"
-            class="action-button-primary"
+            class="button-primary"
             data-baseline-reminder-acknowledge
             @click="acknowledgeBaselineReminderAndRun"
           >
             {{ t("common:queue.baselineReminderAcknowledge", "I understand, don't show again") }}
           </button>
-          <button type="button" class="action-button-muted" @click="openBaselineReminderSettings">
+          <button type="button" class="button-secondary" @click="openBaselineReminderSettings">
             {{ t("common:queue.baselineReminderGoToSettings", "Go to Settings") }}
           </button>
         </div>
@@ -365,36 +209,42 @@
       initial-focus-selector="[data-multi-results-confirm]"
       @close="closeQueueCompleteModal"
     >
-      <p class="text-sm text-slate-300">{{ t("common:vue.app.queueCompleteDesc", "Queue run started. Go to the Multi-round page now?") }}</p>
+      <p class="text-sm text-foreground/85">{{ t("common:vue.app.queueCompleteDesc", "Queue run started. Go to the Multi-round page now?") }}</p>
       <div class="flex flex-wrap items-center gap-2">
         <button
           type="button"
-          class="action-button-primary"
+          class="button-primary"
           data-multi-results-confirm
           @click="goToMultiResults"
         >
           {{ t("common:vue.app.goToMultiResults", "Go to Multi-round") }}
         </button>
-        <button type="button" class="action-button-muted" @click="closeQueueCompleteModal">
+        <button type="button" class="button-secondary" @click="closeQueueCompleteModal">
           {{ t("common:vue.app.stayHere", "Stay Here") }}
         </button>
       </div>
     </BaseModal>
-  </div>
+  </SidebarProvider>
 </template>
 
 <script setup>
 import { computed, onMounted, onUnmounted, ref, watch } from "vue";
-import { RouterLink, RouterView, useRoute, useRouter } from "vue-router";
+import { RouterView, useRoute, useRouter } from "vue-router";
+import { Languages, Moon, Sun } from "@lucide/vue";
 import {
   houseRoomDetailIndex as houseRoomDetailMap,
   itemDetailIndex as itemDetailMap,
 } from "../shared/gameDataIndex.js";
 import BaseModal from "./components/BaseModal.vue";
+import AppSidebar from "./components/AppSidebar.vue";
+import CombatCommandBar from "./components/CombatCommandBar.vue";
 import DisclosurePanel from "./components/DisclosurePanel.vue";
+import { Button } from "./components/ui/button/index.js";
+import { SidebarInset, SidebarProvider, SidebarTrigger } from "./components/ui/sidebar/index.js";
 import { useSimulatorStore } from "../stores/simulatorStore.js";
 import { useGameDataText } from "./composables/useGameDataText.js";
 import { useI18nText } from "./composables/useI18nText.js";
+import { useTheme } from "./composables/useTheme.js";
 import {
   getUnreadPatchNoteEntries,
   initializePatchNotesState,
@@ -407,12 +257,11 @@ import {
 } from "./baselineReminder.js";
 import { deriveQueueItemStatusName } from "./queueItemStatusPresentation.js";
 
-const THEME_STORAGE_KEY = "mwi.ui.theme.v1";
 const appVersion = __APP_VERSION__;
 const simulator = useSimulatorStore();
 const router = useRouter();
 const route = useRoute();
-const theme = ref("dark");
+const { theme, toggleTheme } = useTheme();
 let deferredInitHandle = null;
 const globalErrorModalOpen = ref(false);
 const globalErrorText = ref("");
@@ -438,6 +287,10 @@ const {
   getSkillName,
 } = useGameDataText();
 const showCombatToolbar = computed(() => route.meta?.showCombatToolbar !== false);
+const currentPageTitle = computed(() => t(
+  route.meta?.navLabelKey || "common:title",
+  route.meta?.navLabel || "MWI Combat Simulator",
+));
 
 const progressLabel = computed(() => {
   const progress = Math.floor(simulator.runtime.progress * 100);
@@ -514,12 +367,12 @@ const hasSimulationResults = computed(() => (
 const topQueueActionStatusText = computed(() => topQueueActionStatus.value.text || "");
 const topQueueActionStatusClass = computed(() => {
   if (topQueueActionStatus.value.tone === "success") {
-    return "text-emerald-300";
+    return "text-success";
   }
   if (topQueueActionStatus.value.tone === "danger") {
-    return "text-rose-300";
+    return "text-destructive";
   }
-  return "text-slate-300";
+  return "text-foreground/85";
 });
 const patchNotesEntries = computed(() => resolvePatchNoteEntries(undefined, language.value));
 const patchNotesUnreadCount = computed(() => patchNotesUnreadEntries.value.length);
@@ -550,20 +403,6 @@ const actionNameFallbackMap = computed(() => {
   return map;
 });
 
-function normalizeTheme(value) {
-  return value === "light" ? "light" : "dark";
-}
-
-function applyTheme(nextTheme) {
-  const normalizedTheme = normalizeTheme(nextTheme);
-  theme.value = normalizedTheme;
-  document.documentElement.dataset.theme = normalizedTheme;
-  localStorage.setItem(THEME_STORAGE_KEY, normalizedTheme);
-}
-
-function toggleTheme() {
-  applyTheme(theme.value === "dark" ? "light" : "dark");
-}
 
 function runDeferredInitialization() {
   simulator.ensureMarketPricesLoaded(true);
@@ -921,8 +760,6 @@ watch(
 );
 
 onMounted(() => {
-  const savedTheme = normalizeTheme(localStorage.getItem(THEME_STORAGE_KEY));
-  applyTheme(savedTheme);
   initializePatchNotesState({
     entries: patchNotesEntries.value,
   });

@@ -9,7 +9,7 @@ describe("SkillingPage workspace", () => {
         expect(routerSource).toContain('path: "/skilling"');
         expect(routerSource).toContain('name: "skilling"');
         expect(routerSource).toContain('import("../pages/SkillingPage.vue")');
-        expect(routerSource).toContain("meta: { showCombatToolbar: false }");
+        expect(routerSource).toContain("meta: { showCombatToolbar: false,");
     });
 
     it("binds the dedicated store, worker actions, and six target controls", () => {
@@ -22,7 +22,8 @@ describe("SkillingPage workspace", () => {
         expect(pageSource).toContain(':disabled="skilling.priceStatus.loading || skilling.running"');
         expect(pageSource).toContain(':disabled="skilling.running"');
         expect(pageSource).toContain('!skilling.profile || skilling.priceStatus.loading');
-        expect(pageSource).toContain("xl:grid-cols-6");
+        expect(pageSource).toContain("xl:grid-cols-[300px_minmax(0,1fr)]");
+        expect(pageSource).toContain("xl:sticky xl:top-16");
         expect(pageSource).toContain("xl:grid-cols-7");
     });
 
@@ -87,7 +88,7 @@ describe("SkillingPage workspace", () => {
         expect(pageSource).toContain("data-skilling-toolbar-controls");
         expect(pageSource).toContain("data-skilling-planner-controls");
         expect(pageSource).toContain("data-skilling-toolbar-actions");
-        expect(pageSource).toContain("border-t border-white/10 pt-3 2xl:flex-row 2xl:items-center");
+        expect(pageSource).toContain("border-t border-border pt-3 2xl:flex-row 2xl:items-center");
         expect(pageSource).toContain("2xl:w-auto 2xl:flex-1 2xl:justify-end");
         expect(pageSource).toContain("!min-w-0 !w-auto !flex-1");
         expect(pageSource).toContain("sm:!w-36 sm:!flex-none");
@@ -184,13 +185,14 @@ describe("SkillingPage workspace", () => {
         expect(pageSource).toContain(':key="row.priceKey"');
         expect(pageSource).toContain("simulator.pricing?.enhancementQuotesByItem");
         expect(pageSource).toContain("row.enhancementLevel > 0");
-        expect(pageSource).toContain('role="progressbar"');
+        expect(pageSource).not.toContain('role="progressbar"');
+        expect(pageSource).toContain('<Progress :value="progressPercent" :aria-label="progressLabel" />');
         expect(pageSource).toContain('role="tabpanel"');
         expect(pageSource).toContain("priceOverrideAriaLabel(row, 'ask')");
         expect(pageSource).toContain("priceOverrideAriaLabel(row, 'bid')");
 
-        const routeHeader = pageSource.match(/data-skilling-routes[\s\S]*?<thead[\s\S]*?<\/thead>/)?.[0] || "";
-        const candidateHeader = pageSource.match(/data-skilling-alternatives[\s\S]*?<thead[\s\S]*?<\/thead>/)?.[0] || "";
+        const routeHeader = pageSource.match(/data-skilling-routes[\s\S]*?<TableHeader[\s\S]*?<\/TableHeader>/)?.[0] || "";
+        const candidateHeader = pageSource.match(/data-skilling-alternatives[\s\S]*?<TableHeader[\s\S]*?<\/TableHeader>/)?.[0] || "";
         expect(routeHeader).toContain("common:skilling.actions");
         expect(routeHeader).not.toContain("common:skilling.nextLevelActions");
         expect(candidateHeader).toContain("common:skilling.nextLevelActions");

@@ -1,5 +1,6 @@
 import { defineConfig } from "vite";
 import vue from "@vitejs/plugin-vue";
+import tailwindcss from "@tailwindcss/vite";
 import { readFileSync } from "fs";
 import { resolve } from "path";
 
@@ -7,7 +8,12 @@ const packageJson = JSON.parse(readFileSync(resolve(process.cwd(), "package.json
 
 export default defineConfig({
     base: "./",
-    plugins: [vue()],
+    plugins: [vue(), tailwindcss()],
+    resolve: {
+        alias: {
+            "@": resolve(process.cwd(), "src"),
+        },
+    },
     define: {
         __APP_VERSION__: JSON.stringify(packageJson.version),
     },

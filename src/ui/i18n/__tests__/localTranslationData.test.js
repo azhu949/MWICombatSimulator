@@ -87,4 +87,43 @@ describe("official translation snapshots", () => {
         expect(zhCommon?.vue?.app?.feedbackQqLabel).toBeTypeOf("string");
         expect(zhCommon?.vue?.app?.feedbackEmailLabel).toBeTypeOf("string");
     });
+
+    it("includes application shell labels in both locale common bundles", () => {
+        const enCommon = readJson(enCommonPath);
+        const zhCommon = readJson(zhCommonPath);
+        const keys = [
+            "navSimulation",
+            "navTools",
+            "navSupport",
+            "moreActions",
+            "navigation",
+            "applicationNavigation",
+            "openNavigation",
+            "closeNavigation",
+            "expandNavigation",
+            "collapseNavigation",
+        ];
+
+        for (const key of keys) {
+            expect(enCommon?.vue?.app?.[key]).toBeTypeOf("string");
+            expect(zhCommon?.vue?.app?.[key]).toBeTypeOf("string");
+        }
+        expect(enCommon?.controls?.decrease).toBeTypeOf("string");
+        expect(enCommon?.controls?.increase).toBeTypeOf("string");
+        expect(zhCommon?.controls?.decrease).toBeTypeOf("string");
+        expect(zhCommon?.controls?.increase).toBeTypeOf("string");
+    });
+
+    it("includes search control labels in both locale common bundles", () => {
+        const enCommon = readJson(enCommonPath);
+        const zhCommon = readJson(zhCommonPath);
+        const keys = ["noResults", "openOptions", "refineSearchMoreResults"];
+
+        for (const key of keys) {
+            expect(enCommon?.vue?.common?.[key]).toBeTypeOf("string");
+            expect(zhCommon?.vue?.common?.[key]).toBeTypeOf("string");
+        }
+        expect(enCommon?.vue?.home?.searchTarget).toBeTypeOf("string");
+        expect(zhCommon?.vue?.home?.searchTarget).toBeTypeOf("string");
+    });
 });

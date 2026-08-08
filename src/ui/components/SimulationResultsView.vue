@@ -1,11 +1,11 @@
 <template>
   <section class="space-y-4">
     <template v-if="hasBatchResult">
-      <div class="panel">
+      <div class="surface-panel">
         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h2 class="font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.results.batchResultsTitle", "Batch Results") }}</h2>
+          <h2 class="font-heading text-lg font-semibold text-primary">{{ t("common:vue.results.batchResultsTitle", "Batch Results") }}</h2>
           <button type="button"
-            class="action-button-muted"
+            class="button-secondary"
            
             :disabled="simulator.results.batchRows.length === 0"
             @click="exportBatchRowsCsv"
@@ -14,134 +14,134 @@
           </button>
         </div>
         <div class="grid gap-3 sm:grid-cols-3">
-          <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
-            <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:vue.results.targets", "Targets") }}</p>
-            <p class="mt-1 font-heading text-lg text-slate-100">{{ simulator.results.simResults.length }}</p>
+          <div class="rounded-md border border-border bg-muted/50 p-3">
+            <p class="text-xs uppercase  text-muted-foreground">{{ t("common:vue.results.targets", "Targets") }}</p>
+            <p class="mt-1 font-heading text-lg text-foreground">{{ simulator.results.simResults.length }}</p>
           </div>
-          <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
-            <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:vue.results.rows", "Rows") }}</p>
-            <p class="mt-1 font-heading text-lg text-slate-100">{{ simulator.results.batchRows.length }}</p>
+          <div class="rounded-md border border-border bg-muted/50 p-3">
+            <p class="text-xs uppercase  text-muted-foreground">{{ t("common:vue.results.rows", "Rows") }}</p>
+            <p class="mt-1 font-heading text-lg text-foreground">{{ simulator.results.batchRows.length }}</p>
           </div>
-          <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
-            <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:vue.results.bestProfitPerHour", "Best Profit/h") }}</p>
-            <p class="mt-1 font-heading text-lg text-emerald-300">{{ formatCurrency(bestBatchRow?.profitPerHour ?? 0) }}</p>
+          <div class="rounded-md border border-border bg-muted/50 p-3">
+            <p class="text-xs uppercase  text-muted-foreground">{{ t("common:vue.results.bestProfitPerHour", "Best Profit/h") }}</p>
+            <p class="mt-1 font-heading text-lg text-success">{{ formatCurrency(bestBatchRow?.profitPerHour ?? 0) }}</p>
           </div>
         </div>
-        <p class="mt-3 text-xs text-slate-400">{{ t("common:vue.results.protocol", "Protocol") }}: {{ batchProtocolLabel }}</p>
+        <p class="mt-3 text-xs text-muted-foreground">{{ t("common:vue.results.protocol", "Protocol") }}: {{ batchProtocolLabel }}</p>
       </div>
 
-      <div class="panel overflow-x-auto">
-        <h3 class="mb-3 font-heading text-sm uppercase tracking-[0.14em] text-slate-300">{{ t("common:vue.results.batchTable", "Batch Table") }}</h3>
-        <table class="min-w-full text-sm">
-          <thead>
-            <tr class="border-b border-white/10 text-left text-xs uppercase tracking-[0.14em] text-slate-400">
-              <th v-for="column in batchTableColumns" :key="column.key" class="px-2 py-2">
+      <div class="surface-panel overflow-x-auto">
+        <h3 class="mb-3 font-heading text-sm uppercase  text-foreground/85">{{ t("common:vue.results.batchTable", "Batch Table") }}</h3>
+        <Table class="min-w-full text-sm">
+          <TableHeader>
+            <TableRow class="border-b border-border text-left text-xs uppercase  text-muted-foreground">
+              <TableHead v-for="column in batchTableColumns" :key="column.key" class="px-2 py-2">
                 <button type="button"
                   v-if="column.sortable"
-                  class="inline-flex items-center gap-1 text-left transition hover:text-slate-200"
+                  class="inline-flex items-center gap-1 text-left transition hover:text-foreground"
                  
                   @click="toggleBatchSort(column.key)"
                 >
                   <span>{{ batchColumnLabel(column) }}</span>
-                  <span class="text-[10px]" :class="batchSort.key === column.key ? 'text-amber-300' : 'text-slate-500'">{{ getBatchSortIndicator(column.key) }}</span>
+                  <span class="text-[10px]" :class="batchSort.key === column.key ? 'text-primary' : 'text-muted-foreground'">{{ getBatchSortIndicator(column.key) }}</span>
                 </button>
                 <span v-else>{{ batchColumnLabel(column) }}</span>
-              </th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr v-for="row in batchRowsForDisplay" :key="row.rowId" class="border-b border-white/5 text-slate-200">
-              <td
+              </TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow v-for="row in batchRowsForDisplay" :key="row.rowId" class="border-b border-border text-foreground">
+              <TableCell
                 v-for="column in batchTableColumns"
                 :key="`${row.rowId}-${column.key}`"
                 class="px-2 py-2"
                 :class="getBatchCellClass(row, column)"
               >
                 {{ formatBatchCell(row, column) }}
-              </td>
-            </tr>
-          </tbody>
-        </table>
+              </TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
       </div>
     </template>
 
     <template v-else>
-      <div class="panel overflow-x-auto">
-        <h2 class="mb-3 font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.results.summaryTitle", "Summary") }}</h2>
-        <table class="min-w-full text-sm">
-          <thead>
-            <tr class="border-b border-white/10 text-left text-xs uppercase tracking-[0.14em] text-slate-400">
-              <th class="px-2 py-2">{{ t("common:player", "Player") }}</th>
-              <th class="px-2 py-2">{{ t("common:vue.results.encountersPerHour", "Encounters/h") }}</th>
-              <th class="px-2 py-2">{{ t("common:vue.results.deathsPerHour", "Deaths/h") }}</th>
-              <th class="px-2 py-2">{{ t("common:vue.results.xpPerHour", "XP/h") }}</th>
-              <th class="px-2 py-2">{{ t("common:vue.results.profitPerHour", "Profit/h") }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
+      <div class="surface-panel overflow-x-auto">
+        <h2 class="mb-3 font-heading text-lg font-semibold text-primary">{{ t("common:vue.results.summaryTitle", "Summary") }}</h2>
+        <Table class="min-w-full text-sm">
+          <TableHeader>
+            <TableRow class="border-b border-border text-left text-xs uppercase  text-muted-foreground">
+              <TableHead class="px-2 py-2">{{ t("common:player", "Player") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:vue.results.encountersPerHour", "Encounters/h") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:vue.results.deathsPerHour", "Deaths/h") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:vue.results.xpPerHour", "XP/h") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:vue.results.profitPerHour", "Profit/h") }}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow
               v-for="row in simulator.results.summaryRows"
               :key="row.playerHrid"
-              class="border-b border-white/5 text-slate-200 transition hover:bg-white/5"
-              :class="row.playerHrid === simulator.results.activeResultPlayerHrid ? 'bg-white/10' : ''"
+              class="border-b border-border text-foreground transition hover:bg-muted/40"
+              :class="row.playerHrid === simulator.results.activeResultPlayerHrid ? 'bg-muted/40' : ''"
               :aria-selected="row.playerHrid === simulator.results.activeResultPlayerHrid ? 'true' : 'false'"
             >
-              <td class="px-2 py-2">
+              <TableCell class="px-2 py-2">
                 <button type="button"
-                  class="w-full rounded-md px-1 py-1 text-left transition hover:text-amber-200"
+                  class="w-full rounded-md px-1 py-1 text-left transition hover:text-primary"
                  
                   @click="selectSummaryRow(row.playerHrid)"
                 >
                   {{ row.playerName }}
                 </button>
-              </td>
-              <td class="px-2 py-2">{{ formatNumber(row.encountersPerHour) }}</td>
-              <td class="px-2 py-2">{{ formatNumber(row.deathsPerHour) }}</td>
-              <td class="px-2 py-2">{{ formatNumber(row.totalXpPerHour) }}</td>
-              <td class="px-2 py-2">{{ formatCurrency(row.profitPerHour) }}</td>
-            </tr>
-          </tbody>
-        </table>
+              </TableCell>
+              <TableCell class="px-2 py-2">{{ formatNumber(row.encountersPerHour) }}</TableCell>
+              <TableCell class="px-2 py-2">{{ formatNumber(row.deathsPerHour) }}</TableCell>
+              <TableCell class="px-2 py-2">{{ formatNumber(row.totalXpPerHour) }}</TableCell>
+              <TableCell class="px-2 py-2">{{ formatCurrency(row.profitPerHour) }}</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
       </div>
 
-      <div class="panel">
-          <h2 class="mb-3 font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.results.detailsTitle", "Result Details") }}</h2>
+      <div class="surface-panel">
+          <h2 class="mb-3 font-heading text-lg font-semibold text-primary">{{ t("common:vue.results.detailsTitle", "Result Details") }}</h2>
           <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-4">
-            <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
-              <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:player", "Player") }}</p>
-              <p class="mt-1 font-heading text-lg text-slate-100">{{ activeResultRow?.playerName ?? '-' }}</p>
+            <div class="rounded-md border border-border bg-muted/50 p-3">
+              <p class="text-xs uppercase  text-muted-foreground">{{ t("common:player", "Player") }}</p>
+              <p class="mt-1 font-heading text-lg text-foreground">{{ activeResultRow?.playerName ?? '-' }}</p>
             </div>
-            <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
-              <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:vue.results.simulatedTime", "Simulated Time") }}</p>
-              <p class="mt-1 font-heading text-lg text-slate-100">{{ simulatedHoursText }}</p>
+            <div class="rounded-md border border-border bg-muted/50 p-3">
+              <p class="text-xs uppercase  text-muted-foreground">{{ t("common:vue.results.simulatedTime", "Simulated Time") }}</p>
+              <p class="mt-1 font-heading text-lg text-foreground">{{ simulatedHoursText }}</p>
             </div>
-            <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
-              <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:zoneName", "Zone") }}</p>
-              <p class="mt-1 font-heading text-lg text-slate-100">{{ zoneLabel }}</p>
-              <p class="mt-1 text-xs text-slate-400">{{ t("common:vue.results.difficulty", "Difficulty") }}: {{ simulator.results.simResult?.difficultyTier ?? 0 }}</p>
+            <div class="rounded-md border border-border bg-muted/50 p-3">
+              <p class="text-xs uppercase  text-muted-foreground">{{ t("common:zoneName", "Zone") }}</p>
+              <p class="mt-1 font-heading text-lg text-foreground">{{ zoneLabel }}</p>
+              <p class="mt-1 text-xs text-muted-foreground">{{ t("common:vue.results.difficulty", "Difficulty") }}: {{ simulator.results.simResult?.difficultyTier ?? 0 }}</p>
             </div>
-            <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
-              <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:vue.results.workerRuntime", "Worker Runtime") }}</p>
-              <p class="mt-1 font-heading text-lg text-slate-100">{{ t("common:vue.results.elapsed", "Elapsed", { seconds: simulator.runtime.elapsedSeconds.toFixed(1) }) }}</p>
-              <p class="mt-1 text-xs text-slate-400">{{ t("common:vue.results.protocol", "Protocol") }}: {{ singleProtocolLabel }}</p>
+            <div class="rounded-md border border-border bg-muted/50 p-3">
+              <p class="text-xs uppercase  text-muted-foreground">{{ t("common:vue.results.workerRuntime", "Worker Runtime") }}</p>
+              <p class="mt-1 font-heading text-lg text-foreground">{{ t("common:vue.results.elapsed", "Elapsed", { seconds: simulator.runtime.elapsedSeconds.toFixed(1) }) }}</p>
+              <p class="mt-1 text-xs text-muted-foreground">{{ t("common:vue.results.protocol", "Protocol") }}: {{ singleProtocolLabel }}</p>
             </div>
-            <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
-              <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:revenue", "Revenue") }}</p>
-              <p class="mt-1 font-heading text-lg text-emerald-300">{{ formatCurrency(activeRevenueTotal) }}</p>
+            <div class="rounded-md border border-border bg-muted/50 p-3">
+              <p class="text-xs uppercase  text-muted-foreground">{{ t("common:revenue", "Revenue") }}</p>
+              <p class="mt-1 font-heading text-lg text-success">{{ formatCurrency(activeRevenueTotal) }}</p>
             </div>
-            <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
-              <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:expense", "Expense") }}</p>
-              <p class="mt-1 font-heading text-lg text-rose-300">{{ formatCurrency(activeExpensesTotal) }}</p>
+            <div class="rounded-md border border-border bg-muted/50 p-3">
+              <p class="text-xs uppercase  text-muted-foreground">{{ t("common:expense", "Expense") }}</p>
+              <p class="mt-1 font-heading text-lg text-destructive">{{ formatCurrency(activeExpensesTotal) }}</p>
             </div>
-            <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
-              <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:profit", "Profit") }}</p>
-              <p class="mt-1 font-heading text-lg" :class="activeProfitTotal >= 0 ? 'text-emerald-300' : 'text-rose-300'">
+            <div class="rounded-md border border-border bg-muted/50 p-3">
+              <p class="text-xs uppercase  text-muted-foreground">{{ t("common:profit", "Profit") }}</p>
+              <p class="mt-1 font-heading text-lg" :class="activeProfitTotal >= 0 ? 'text-success' : 'text-destructive'">
                 {{ formatCurrency(activeProfitTotal) }}
               </p>
             </div>
-            <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3">
-              <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:noRNGProfit", "No RNG Profit") }}</p>
-              <p class="mt-1 font-heading text-lg" :class="activeExpectedProfitTotal >= 0 ? 'text-emerald-300' : 'text-rose-300'">
+            <div class="rounded-md border border-border bg-muted/50 p-3">
+              <p class="text-xs uppercase  text-muted-foreground">{{ t("common:noRNGProfit", "No RNG Profit") }}</p>
+              <p class="mt-1 font-heading text-lg" :class="activeExpectedProfitTotal >= 0 ? 'text-success' : 'text-destructive'">
                 {{ formatCurrency(activeExpectedProfitTotal) }}
               </p>
             </div>
@@ -150,287 +150,287 @@
           <div class="mt-4 space-y-3">
             <DisclosurePanel :title="t('common:vue.results.experienceBreakdown', 'Experience Breakdown')" :default-open="true">
               <div class="grid gap-2 sm:grid-cols-2">
-                <div v-for="entry in experienceRows" :key="entry.label" class="rounded-lg border border-white/10 px-3 py-2 text-sm">
-                  <p class="text-xs uppercase tracking-[0.12em] text-slate-400">{{ entry.label }}</p>
-                  <p class="mt-1 text-slate-100">{{ formatNumber(entry.value) }}</p>
+                <div v-for="entry in experienceRows" :key="entry.label" class="rounded-lg border border-border px-3 py-2 text-sm">
+                  <p class="text-xs uppercase  text-muted-foreground">{{ entry.label }}</p>
+                  <p class="mt-1 text-foreground">{{ formatNumber(entry.value) }}</p>
                 </div>
               </div>
             </DisclosurePanel>
 
             <DisclosurePanel :title="t('common:simulationResults.killPerHour', 'Kills Per Hour')">
               <div class="space-y-2">
-                <div v-for="row in killMetricRows" :key="row.label" class="grid grid-cols-[1fr_auto] gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm">
-                  <p class="text-slate-300">{{ row.label }}</p>
-                  <p class="text-slate-100">{{ row.value }}</p>
+                <div v-for="row in killMetricRows" :key="row.label" class="grid grid-cols-[1fr_auto] gap-2 rounded-lg border border-border px-3 py-2 text-sm">
+                  <p class="text-foreground/85">{{ row.label }}</p>
+                  <p class="text-foreground">{{ row.value }}</p>
                 </div>
-                <div v-for="row in monsterKillRows.slice(0, DETAIL_ROW_LIMIT)" :key="row.id" class="grid grid-cols-[1fr_auto] gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm">
-                  <p class="text-slate-300">{{ row.label }}</p>
-                  <p class="text-slate-100">{{ row.value }}</p>
+                <div v-for="row in monsterKillRows.slice(0, DETAIL_ROW_LIMIT)" :key="row.id" class="grid grid-cols-[1fr_auto] gap-2 rounded-lg border border-border px-3 py-2 text-sm">
+                  <p class="text-foreground/85">{{ row.label }}</p>
+                  <p class="text-foreground">{{ row.value }}</p>
                 </div>
-                <p v-if="monsterKillRows.length === 0" class="text-xs text-slate-400">{{ t("common:multiRound.noData", "No data") }}</p>
+                <p v-if="monsterKillRows.length === 0" class="text-xs text-muted-foreground">{{ t("common:multiRound.noData", "No data") }}</p>
               </div>
             </DisclosurePanel>
 
             <DisclosurePanel :title="t('common:simulationResults.timeSpentOnBoss', 'Time Spent On Boss')">
               <div class="space-y-2">
-                <div v-for="row in bossTimeRows" :key="row.id" class="grid grid-cols-[1fr_auto_auto] gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm">
-                  <p class="text-slate-300">{{ row.label }}</p>
-                  <p class="text-slate-400">{{ row.extra || "-" }}</p>
-                  <p class="text-slate-100">{{ row.value }}</p>
+                <div v-for="row in bossTimeRows" :key="row.id" class="grid grid-cols-[1fr_auto_auto] gap-2 rounded-lg border border-border px-3 py-2 text-sm">
+                  <p class="text-foreground/85">{{ row.label }}</p>
+                  <p class="text-muted-foreground">{{ row.extra || "-" }}</p>
+                  <p class="text-foreground">{{ row.value }}</p>
                 </div>
-                <p v-if="bossTimeRows.length === 0" class="text-xs text-slate-400">{{ t("common:multiRound.noData", "No data") }}</p>
+                <p v-if="bossTimeRows.length === 0" class="text-xs text-muted-foreground">{{ t("common:multiRound.noData", "No data") }}</p>
               </div>
             </DisclosurePanel>
 
             <DisclosurePanel :title="t('common:simulationResults.hpSpentPerHour', 'HP Spent Per Hour')">
               <div class="space-y-2">
-                <div v-for="row in hpSpentRows" :key="row.id" class="grid grid-cols-[1fr_auto] gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm">
-                  <p class="text-slate-300">{{ row.label }}</p>
-                  <p class="text-slate-100">{{ formatNumber(row.value) }}</p>
+                <div v-for="row in hpSpentRows" :key="row.id" class="grid grid-cols-[1fr_auto] gap-2 rounded-lg border border-border px-3 py-2 text-sm">
+                  <p class="text-foreground/85">{{ row.label }}</p>
+                  <p class="text-foreground">{{ formatNumber(row.value) }}</p>
                 </div>
-                <p v-if="hpSpentRows.length === 0" class="text-xs text-slate-400">{{ t("common:multiRound.noData", "No data") }}</p>
+                <p v-if="hpSpentRows.length === 0" class="text-xs text-muted-foreground">{{ t("common:multiRound.noData", "No data") }}</p>
               </div>
             </DisclosurePanel>
 
             <DisclosurePanel :title="t('common:simulationResults.manaUsedPerHour', 'Mana Used Per Hour')">
               <div class="space-y-2">
-                <div v-for="row in manaUsedRows" :key="row.id" class="grid grid-cols-[1fr_auto_auto] gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm">
-                  <p class="text-slate-300">{{ row.label }}</p>
-                  <p class="text-slate-400">{{ formatNumber(row.castsPerHour) }} /h</p>
-                  <p class="text-slate-100">{{ formatNumber(row.manaPerHour) }}</p>
+                <div v-for="row in manaUsedRows" :key="row.id" class="grid grid-cols-[1fr_auto_auto] gap-2 rounded-lg border border-border px-3 py-2 text-sm">
+                  <p class="text-foreground/85">{{ row.label }}</p>
+                  <p class="text-muted-foreground">{{ formatNumber(row.castsPerHour) }} /h</p>
+                  <p class="text-foreground">{{ formatNumber(row.manaPerHour) }}</p>
                 </div>
-                <p v-if="manaUsedRows.length === 0" class="text-xs text-slate-400">{{ t("common:multiRound.noData", "No data") }}</p>
+                <p v-if="manaUsedRows.length === 0" class="text-xs text-muted-foreground">{{ t("common:multiRound.noData", "No data") }}</p>
               </div>
             </DisclosurePanel>
 
             <DisclosurePanel :title="t('common:simulationResults.healthRestoredPerSecond', 'Health Restored Per Second')">
               <div class="space-y-2">
-                <div v-for="row in hitpointsRestoredRows" :key="row.id" class="grid grid-cols-[1fr_auto_auto] gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm">
-                  <p class="text-slate-300">{{ row.label }}</p>
-                  <p class="text-slate-400">{{ formatNumber(row.perSecond) }} /s</p>
-                  <p class="text-slate-100">{{ formatPercent(row.pct, 0) }}</p>
+                <div v-for="row in hitpointsRestoredRows" :key="row.id" class="grid grid-cols-[1fr_auto_auto] gap-2 rounded-lg border border-border px-3 py-2 text-sm">
+                  <p class="text-foreground/85">{{ row.label }}</p>
+                  <p class="text-muted-foreground">{{ formatNumber(row.perSecond) }} /s</p>
+                  <p class="text-foreground">{{ formatPercent(row.pct, 0) }}</p>
                 </div>
-                <p v-if="hitpointsRestoredRows.length === 0" class="text-xs text-slate-400">{{ t("common:multiRound.noData", "No data") }}</p>
+                <p v-if="hitpointsRestoredRows.length === 0" class="text-xs text-muted-foreground">{{ t("common:multiRound.noData", "No data") }}</p>
               </div>
             </DisclosurePanel>
 
             <DisclosurePanel :title="t('common:simulationResults.manaRestoredPerSecond', 'Mana Restored Per Second')">
               <div class="space-y-2">
-                <div v-for="row in manapointsRestoredRows" :key="row.id" class="grid grid-cols-[1fr_auto_auto] gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm">
-                  <p class="text-slate-300">{{ row.label }}</p>
-                  <p class="text-slate-400">{{ formatNumber(row.perSecond) }} /s</p>
-                  <p class="text-slate-100">{{ formatPercent(row.pct, 0) }}</p>
+                <div v-for="row in manapointsRestoredRows" :key="row.id" class="grid grid-cols-[1fr_auto_auto] gap-2 rounded-lg border border-border px-3 py-2 text-sm">
+                  <p class="text-foreground/85">{{ row.label }}</p>
+                  <p class="text-muted-foreground">{{ formatNumber(row.perSecond) }} /s</p>
+                  <p class="text-foreground">{{ formatPercent(row.pct, 0) }}</p>
                 </div>
-                <div v-for="row in manaStatusRows" :key="row.id" class="grid grid-cols-[1fr_auto] gap-2 rounded-lg border border-white/10 px-3 py-2 text-sm">
-                  <p class="text-slate-300">{{ row.label }}</p>
-                  <p class="text-slate-100">{{ row.value }}</p>
+                <div v-for="row in manaStatusRows" :key="row.id" class="grid grid-cols-[1fr_auto] gap-2 rounded-lg border border-border px-3 py-2 text-sm">
+                  <p class="text-foreground/85">{{ row.label }}</p>
+                  <p class="text-foreground">{{ row.value }}</p>
                 </div>
-                <p v-if="manapointsRestoredRows.length === 0 && manaStatusRows.length === 0" class="text-xs text-slate-400">{{ t("common:multiRound.noData", "No data") }}</p>
+                <p v-if="manapointsRestoredRows.length === 0 && manaStatusRows.length === 0" class="text-xs text-muted-foreground">{{ t("common:multiRound.noData", "No data") }}</p>
               </div>
             </DisclosurePanel>
 
             <DisclosurePanel :title="damageDoneTotalLabel">
               <div class="space-y-3">
                 <div class="overflow-x-auto">
-                  <table class="min-w-full text-xs">
-                    <thead>
-                      <tr class="border-b border-white/10 text-left uppercase tracking-[0.12em] text-slate-400">
-                        <th class="px-2 py-2">{{ t("common:simulationResults.source", "Source") }}</th>
-                        <th class="px-2 py-2">{{ t("common:simulationResults.hitChance", "Hit Chance") }}</th>
-                        <th class="px-2 py-2">DPS</th>
-                        <th class="px-2 py-2">%</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="(row, index) in damageDoneSummary.totalRows" :key="`damage-done-total-${index}`" class="border-b border-white/5 text-slate-200">
-                        <td class="px-2 py-2" :class="index === 0 ? 'font-semibold text-amber-200' : ''">{{ row.label }}</td>
-                        <td class="px-2 py-2">{{ formatPercent(row.hitChance, 1) }}</td>
-                        <td class="px-2 py-2">{{ formatNumber(row.dps) }}</td>
-                        <td class="px-2 py-2">{{ formatPercent(row.pct, 0) }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  <Table class="min-w-full text-xs">
+                    <TableHeader>
+                      <TableRow class="border-b border-border text-left uppercase  text-muted-foreground">
+                        <TableHead class="px-2 py-2">{{ t("common:simulationResults.source", "Source") }}</TableHead>
+                        <TableHead class="px-2 py-2">{{ t("common:simulationResults.hitChance", "Hit Chance") }}</TableHead>
+                        <TableHead class="px-2 py-2">DPS</TableHead>
+                        <TableHead class="px-2 py-2">%</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow v-for="(row, index) in damageDoneSummary.totalRows" :key="`damage-done-total-${index}`" class="border-b border-border text-foreground">
+                        <TableCell class="px-2 py-2" :class="index === 0 ? 'font-semibold text-primary' : ''">{{ row.label }}</TableCell>
+                        <TableCell class="px-2 py-2">{{ formatPercent(row.hitChance, 1) }}</TableCell>
+                        <TableCell class="px-2 py-2">{{ formatNumber(row.dps) }}</TableCell>
+                        <TableCell class="px-2 py-2">{{ formatPercent(row.pct, 0) }}</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
                 </div>
 
-                <div v-for="detail in damageDoneSummary.detailRows.slice(0, DETAIL_ROW_LIMIT)" :key="detail.id" class="rounded-lg border border-white/10 p-3">
-                  <p class="mb-2 text-xs uppercase tracking-[0.12em] text-slate-400">{{ detail.label }}</p>
+                <div v-for="detail in damageDoneSummary.detailRows.slice(0, DETAIL_ROW_LIMIT)" :key="detail.id" class="rounded-lg border border-border p-3">
+                  <p class="mb-2 text-xs uppercase  text-muted-foreground">{{ detail.label }}</p>
                   <div class="overflow-x-auto">
-                    <table class="min-w-full text-xs">
-                      <thead>
-                        <tr class="border-b border-white/10 text-left uppercase tracking-[0.12em] text-slate-400">
-                          <th class="px-2 py-2">{{ t("common:simulationResults.source", "Source") }}</th>
-                          <th class="px-2 py-2">{{ t("common:simulationResults.hitChance", "Hit Chance") }}</th>
-                          <th class="px-2 py-2">DPS</th>
-                          <th class="px-2 py-2">%</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="(row, rowIndex) in detail.rows" :key="`damage-done-${detail.id}-${rowIndex}`" class="border-b border-white/5 text-slate-200">
-                          <td class="px-2 py-2" :class="rowIndex === 0 ? 'font-semibold text-amber-200' : ''">{{ row.label }}</td>
-                          <td class="px-2 py-2">{{ formatPercent(row.hitChance, 1) }}</td>
-                          <td class="px-2 py-2">{{ formatNumber(row.dps) }}</td>
-                          <td class="px-2 py-2">{{ formatPercent(row.pct, 0) }}</td>
-                        </tr>
-                      </tbody>
-                    </table>
+                    <Table class="min-w-full text-xs">
+                      <TableHeader>
+                        <TableRow class="border-b border-border text-left uppercase  text-muted-foreground">
+                          <TableHead class="px-2 py-2">{{ t("common:simulationResults.source", "Source") }}</TableHead>
+                          <TableHead class="px-2 py-2">{{ t("common:simulationResults.hitChance", "Hit Chance") }}</TableHead>
+                          <TableHead class="px-2 py-2">DPS</TableHead>
+                          <TableHead class="px-2 py-2">%</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow v-for="(row, rowIndex) in detail.rows" :key="`damage-done-${detail.id}-${rowIndex}`" class="border-b border-border text-foreground">
+                          <TableCell class="px-2 py-2" :class="rowIndex === 0 ? 'font-semibold text-primary' : ''">{{ row.label }}</TableCell>
+                          <TableCell class="px-2 py-2">{{ formatPercent(row.hitChance, 1) }}</TableCell>
+                          <TableCell class="px-2 py-2">{{ formatNumber(row.dps) }}</TableCell>
+                          <TableCell class="px-2 py-2">{{ formatPercent(row.pct, 0) }}</TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
                   </div>
                 </div>
-                <p v-if="damageDoneSummary.totalRows.length === 0" class="text-xs text-slate-400">{{ t("common:multiRound.noData", "No data") }}</p>
+                <p v-if="damageDoneSummary.totalRows.length === 0" class="text-xs text-muted-foreground">{{ t("common:multiRound.noData", "No data") }}</p>
               </div>
             </DisclosurePanel>
 
             <DisclosurePanel :title="totalResultLabel(getCombatStatName('damageTaken', 'Damage Taken'))">
               <div class="space-y-3">
                 <div class="overflow-x-auto">
-                  <table class="min-w-full text-xs">
-                    <thead>
-                      <tr class="border-b border-white/10 text-left uppercase tracking-[0.12em] text-slate-400">
-                        <th class="px-2 py-2">{{ t("common:simulationResults.source", "Source") }}</th>
-                        <th class="px-2 py-2">{{ t("common:simulationResults.hitChance", "Hit Chance") }}</th>
-                        <th class="px-2 py-2">DPS</th>
-                        <th class="px-2 py-2">%</th>
-                      </tr>
-                    </thead>
-                    <tbody>
-                      <tr v-for="(row, index) in damageTakenSummary.totalRows" :key="`damage-taken-total-${index}`" class="border-b border-white/5 text-slate-200">
-                        <td class="px-2 py-2" :class="index === 0 ? 'font-semibold text-amber-200' : ''">{{ row.label }}</td>
-                        <td class="px-2 py-2">{{ formatPercent(row.hitChance, 1) }}</td>
-                        <td class="px-2 py-2">{{ formatNumber(row.dps) }}</td>
-                        <td class="px-2 py-2">{{ formatPercent(row.pct, 0) }}</td>
-                      </tr>
-                    </tbody>
-                  </table>
+                  <Table class="min-w-full text-xs">
+                    <TableHeader>
+                      <TableRow class="border-b border-border text-left uppercase  text-muted-foreground">
+                        <TableHead class="px-2 py-2">{{ t("common:simulationResults.source", "Source") }}</TableHead>
+                        <TableHead class="px-2 py-2">{{ t("common:simulationResults.hitChance", "Hit Chance") }}</TableHead>
+                        <TableHead class="px-2 py-2">DPS</TableHead>
+                        <TableHead class="px-2 py-2">%</TableHead>
+                      </TableRow>
+                    </TableHeader>
+                    <TableBody>
+                      <TableRow v-for="(row, index) in damageTakenSummary.totalRows" :key="`damage-taken-total-${index}`" class="border-b border-border text-foreground">
+                        <TableCell class="px-2 py-2" :class="index === 0 ? 'font-semibold text-primary' : ''">{{ row.label }}</TableCell>
+                        <TableCell class="px-2 py-2">{{ formatPercent(row.hitChance, 1) }}</TableCell>
+                        <TableCell class="px-2 py-2">{{ formatNumber(row.dps) }}</TableCell>
+                        <TableCell class="px-2 py-2">{{ formatPercent(row.pct, 0) }}</TableCell>
+                      </TableRow>
+                    </TableBody>
+                  </Table>
                 </div>
 
-                <div v-for="detail in damageTakenSummary.detailRows.slice(0, DETAIL_ROW_LIMIT)" :key="detail.id" class="rounded-lg border border-white/10 p-3">
-                  <p class="mb-2 text-xs uppercase tracking-[0.12em] text-slate-400">{{ detail.label }}</p>
+                <div v-for="detail in damageTakenSummary.detailRows.slice(0, DETAIL_ROW_LIMIT)" :key="detail.id" class="rounded-lg border border-border p-3">
+                  <p class="mb-2 text-xs uppercase  text-muted-foreground">{{ detail.label }}</p>
                   <div class="overflow-x-auto">
-                    <table class="min-w-full text-xs">
-                      <thead>
-                        <tr class="border-b border-white/10 text-left uppercase tracking-[0.12em] text-slate-400">
-                          <th class="px-2 py-2">{{ t("common:simulationResults.source", "Source") }}</th>
-                          <th class="px-2 py-2">{{ t("common:simulationResults.hitChance", "Hit Chance") }}</th>
-                          <th class="px-2 py-2">DPS</th>
-                          <th class="px-2 py-2">%</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="(row, rowIndex) in detail.rows" :key="`damage-taken-${detail.id}-${rowIndex}`" class="border-b border-white/5 text-slate-200">
-                          <td class="px-2 py-2" :class="rowIndex === 0 ? 'font-semibold text-amber-200' : ''">{{ row.label }}</td>
-                          <td class="px-2 py-2">{{ formatPercent(row.hitChance, 1) }}</td>
-                          <td class="px-2 py-2">{{ formatNumber(row.dps) }}</td>
-                          <td class="px-2 py-2">{{ formatPercent(row.pct, 0) }}</td>
-                        </tr>
-                      </tbody>
-                    </table>
+                    <Table class="min-w-full text-xs">
+                      <TableHeader>
+                        <TableRow class="border-b border-border text-left uppercase  text-muted-foreground">
+                          <TableHead class="px-2 py-2">{{ t("common:simulationResults.source", "Source") }}</TableHead>
+                          <TableHead class="px-2 py-2">{{ t("common:simulationResults.hitChance", "Hit Chance") }}</TableHead>
+                          <TableHead class="px-2 py-2">DPS</TableHead>
+                          <TableHead class="px-2 py-2">%</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow v-for="(row, rowIndex) in detail.rows" :key="`damage-taken-${detail.id}-${rowIndex}`" class="border-b border-border text-foreground">
+                          <TableCell class="px-2 py-2" :class="rowIndex === 0 ? 'font-semibold text-primary' : ''">{{ row.label }}</TableCell>
+                          <TableCell class="px-2 py-2">{{ formatPercent(row.hitChance, 1) }}</TableCell>
+                          <TableCell class="px-2 py-2">{{ formatNumber(row.dps) }}</TableCell>
+                          <TableCell class="px-2 py-2">{{ formatPercent(row.pct, 0) }}</TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
                   </div>
                 </div>
-                <p v-if="damageTakenSummary.totalRows.length === 0" class="text-xs text-slate-400">{{ t("common:multiRound.noData", "No data") }}</p>
+                <p v-if="damageTakenSummary.totalRows.length === 0" class="text-xs text-muted-foreground">{{ t("common:multiRound.noData", "No data") }}</p>
               </div>
             </DisclosurePanel>
 
             <DisclosurePanel :title="t('common:dropTotal', 'Drops (Total)')">
               <div class="overflow-x-auto">
-                <table class="min-w-full text-xs">
-                  <thead>
-                    <tr class="border-b border-white/10 text-left uppercase tracking-[0.12em] text-slate-400">
-                      <th class="px-2 py-2">{{ t("common:vue.results.breakdownItem", "Item") }}</th>
-                      <th class="px-2 py-2">{{ t("common:vue.results.breakdownAmount", "Amount") }}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="row in totalDropsRowsForDisplay" :key="`drop-total-${row.itemHrid}`" class="border-b border-white/5 text-slate-200">
-                      <td class="px-2 py-2">{{ formatItemName(row.itemHrid) }}</td>
-                      <td class="px-2 py-2">{{ formatAmount(row.amount) }}</td>
-                    </tr>
-                  </tbody>
-                </table>
+                <Table class="min-w-full text-xs">
+                  <TableHeader>
+                    <TableRow class="border-b border-border text-left uppercase  text-muted-foreground">
+                      <TableHead class="px-2 py-2">{{ t("common:vue.results.breakdownItem", "Item") }}</TableHead>
+                      <TableHead class="px-2 py-2">{{ t("common:vue.results.breakdownAmount", "Amount") }}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow v-for="row in totalDropsRowsForDisplay" :key="`drop-total-${row.itemHrid}`" class="border-b border-border text-foreground">
+                      <TableCell class="px-2 py-2">{{ formatItemName(row.itemHrid) }}</TableCell>
+                      <TableCell class="px-2 py-2">{{ formatAmount(row.amount) }}</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
               </div>
-              <p v-if="totalDropsRowsForDisplay.length === 0" class="mt-2 text-xs text-slate-400">{{ t("common:multiRound.noData", "No data") }}</p>
+              <p v-if="totalDropsRowsForDisplay.length === 0" class="mt-2 text-xs text-muted-foreground">{{ t("common:multiRound.noData", "No data") }}</p>
             </DisclosurePanel>
 
             <DisclosurePanel :title="t('common:noRNGDrops', 'No RNG Drops')">
               <div class="overflow-x-auto">
-                <table class="min-w-full text-xs">
-                  <thead>
-                    <tr class="border-b border-white/10 text-left uppercase tracking-[0.12em] text-slate-400">
-                      <th class="px-2 py-2">{{ t("common:vue.results.breakdownItem", "Item") }}</th>
-                      <th class="px-2 py-2">{{ t("common:vue.results.breakdownAmount", "Amount") }}</th>
-                    </tr>
-                  </thead>
-                  <tbody>
-                    <tr v-for="row in noRngDropsRowsForDisplay" :key="`drop-no-rng-${row.itemHrid}`" class="border-b border-white/5 text-slate-200">
-                      <td class="px-2 py-2">{{ formatItemName(row.itemHrid) }}</td>
-                      <td class="px-2 py-2">{{ formatAmount(row.amount) }}</td>
-                    </tr>
-                  </tbody>
-                </table>
+                <Table class="min-w-full text-xs">
+                  <TableHeader>
+                    <TableRow class="border-b border-border text-left uppercase  text-muted-foreground">
+                      <TableHead class="px-2 py-2">{{ t("common:vue.results.breakdownItem", "Item") }}</TableHead>
+                      <TableHead class="px-2 py-2">{{ t("common:vue.results.breakdownAmount", "Amount") }}</TableHead>
+                    </TableRow>
+                  </TableHeader>
+                  <TableBody>
+                    <TableRow v-for="row in noRngDropsRowsForDisplay" :key="`drop-no-rng-${row.itemHrid}`" class="border-b border-border text-foreground">
+                      <TableCell class="px-2 py-2">{{ formatItemName(row.itemHrid) }}</TableCell>
+                      <TableCell class="px-2 py-2">{{ formatAmount(row.amount) }}</TableCell>
+                    </TableRow>
+                  </TableBody>
+                </Table>
               </div>
-              <p v-if="noRngDropsRowsForDisplay.length === 0" class="mt-2 text-xs text-slate-400">{{ t("common:multiRound.noData", "No data") }}</p>
-              <p v-if="hasTrimmedDropRows" class="mt-2 text-xs text-slate-400">
+              <p v-if="noRngDropsRowsForDisplay.length === 0" class="mt-2 text-xs text-muted-foreground">{{ t("common:multiRound.noData", "No data") }}</p>
+              <p v-if="hasTrimmedDropRows" class="mt-2 text-xs text-muted-foreground">
                 {{ t("common:vue.results.breakdownTrimHint", "Showing first entries only.") }}
               </p>
             </DisclosurePanel>
 
             <DisclosurePanel :title="t('common:vue.results.profitBreakdownTitle', 'Profit Breakdown')" :default-open="true">
               <div class="grid gap-3 lg:grid-cols-2">
-                <div class="rounded-lg border border-white/10 p-3">
+                <div class="rounded-lg border border-border p-3">
                   <div class="mb-2 flex items-center justify-between">
-                    <h4 class="font-heading text-sm font-semibold text-emerald-200">{{ t("common:vue.results.revenueItemsTitle", "Revenue Items") }}</h4>
-                    <span class="text-xs text-emerald-200">{{ formatCurrency(activeProfitBreakdown.revenue) }}</span>
+                    <h4 class="font-heading text-sm font-semibold text-success">{{ t("common:vue.results.revenueItemsTitle", "Revenue Items") }}</h4>
+                    <span class="text-xs text-success">{{ formatCurrency(activeProfitBreakdown.revenue) }}</span>
                   </div>
-                  <p v-if="revenueItemsForDisplay.length === 0" class="text-xs text-slate-400">{{ t("common:vue.results.breakdownNoRevenue", "No revenue items.") }}</p>
+                  <p v-if="revenueItemsForDisplay.length === 0" class="text-xs text-muted-foreground">{{ t("common:vue.results.breakdownNoRevenue", "No revenue items.") }}</p>
                   <div v-else class="overflow-x-auto">
-                    <table class="min-w-full text-xs">
-                      <thead>
-                        <tr class="border-b border-white/10 text-left uppercase tracking-[0.12em] text-slate-400">
-                          <th class="px-2 py-2">{{ t("common:vue.results.breakdownItem", "Item") }}</th>
-                          <th class="px-2 py-2">{{ t("common:vue.results.breakdownAmount", "Amount") }}</th>
-                          <th class="px-2 py-2">{{ t("common:vue.results.breakdownUnitPrice", "Unit Price") }}</th>
-                          <th class="px-2 py-2">{{ t("common:vue.results.breakdownTotal", "Total") }}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="row in revenueItemsForDisplay" :key="`revenue-${row.itemHrid}`" class="border-b border-white/5 text-slate-200">
-                          <td class="px-2 py-2">{{ formatItemName(row.itemHrid) }}</td>
-                          <td class="px-2 py-2">{{ formatAmount(row.amount) }}</td>
-                          <td class="px-2 py-2">{{ formatCurrency(row.unitPrice) }}</td>
-                          <td class="px-2 py-2">{{ formatCurrency(row.totalValue) }}</td>
-                        </tr>
-                      </tbody>
-                    </table>
+                    <Table class="min-w-full text-xs">
+                      <TableHeader>
+                        <TableRow class="border-b border-border text-left uppercase  text-muted-foreground">
+                          <TableHead class="px-2 py-2">{{ t("common:vue.results.breakdownItem", "Item") }}</TableHead>
+                          <TableHead class="px-2 py-2">{{ t("common:vue.results.breakdownAmount", "Amount") }}</TableHead>
+                          <TableHead class="px-2 py-2">{{ t("common:vue.results.breakdownUnitPrice", "Unit Price") }}</TableHead>
+                          <TableHead class="px-2 py-2">{{ t("common:vue.results.breakdownTotal", "Total") }}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow v-for="row in revenueItemsForDisplay" :key="`revenue-${row.itemHrid}`" class="border-b border-border text-foreground">
+                          <TableCell class="px-2 py-2">{{ formatItemName(row.itemHrid) }}</TableCell>
+                          <TableCell class="px-2 py-2">{{ formatAmount(row.amount) }}</TableCell>
+                          <TableCell class="px-2 py-2">{{ formatCurrency(row.unitPrice) }}</TableCell>
+                          <TableCell class="px-2 py-2">{{ formatCurrency(row.totalValue) }}</TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
                   </div>
                 </div>
 
-                <div class="rounded-lg border border-white/10 p-3">
+                <div class="rounded-lg border border-border p-3">
                   <div class="mb-2 flex items-center justify-between">
-                    <h4 class="font-heading text-sm font-semibold text-rose-200">{{ t("common:vue.results.expenseItemsTitle", "Expense Items") }}</h4>
-                    <span class="text-xs text-rose-200">{{ formatCurrency(activeProfitBreakdown.expenses) }}</span>
+                    <h4 class="font-heading text-sm font-semibold text-destructive">{{ t("common:vue.results.expenseItemsTitle", "Expense Items") }}</h4>
+                    <span class="text-xs text-destructive">{{ formatCurrency(activeProfitBreakdown.expenses) }}</span>
                   </div>
-                  <p v-if="expenseItemsForDisplay.length === 0" class="text-xs text-slate-400">{{ t("common:vue.results.breakdownNoExpenses", "No expense items.") }}</p>
+                  <p v-if="expenseItemsForDisplay.length === 0" class="text-xs text-muted-foreground">{{ t("common:vue.results.breakdownNoExpenses", "No expense items.") }}</p>
                   <div v-else class="overflow-x-auto">
-                    <table class="min-w-full text-xs">
-                      <thead>
-                        <tr class="border-b border-white/10 text-left uppercase tracking-[0.12em] text-slate-400">
-                          <th class="px-2 py-2">{{ t("common:vue.results.breakdownItem", "Item") }}</th>
-                          <th class="px-2 py-2">{{ t("common:vue.results.breakdownAmount", "Amount") }}</th>
-                          <th class="px-2 py-2">{{ t("common:vue.results.breakdownUnitPrice", "Unit Price") }}</th>
-                          <th class="px-2 py-2">{{ t("common:vue.results.breakdownTotal", "Total") }}</th>
-                        </tr>
-                      </thead>
-                      <tbody>
-                        <tr v-for="row in expenseItemsForDisplay" :key="`expense-${row.itemHrid}`" class="border-b border-white/5 text-slate-200">
-                          <td class="px-2 py-2">{{ formatItemName(row.itemHrid) }}</td>
-                          <td class="px-2 py-2">{{ formatAmount(row.amount) }}</td>
-                          <td class="px-2 py-2">{{ formatCurrency(row.unitPrice) }}</td>
-                          <td class="px-2 py-2">{{ formatCurrency(row.totalValue) }}</td>
-                        </tr>
-                      </tbody>
-                    </table>
+                    <Table class="min-w-full text-xs">
+                      <TableHeader>
+                        <TableRow class="border-b border-border text-left uppercase  text-muted-foreground">
+                          <TableHead class="px-2 py-2">{{ t("common:vue.results.breakdownItem", "Item") }}</TableHead>
+                          <TableHead class="px-2 py-2">{{ t("common:vue.results.breakdownAmount", "Amount") }}</TableHead>
+                          <TableHead class="px-2 py-2">{{ t("common:vue.results.breakdownUnitPrice", "Unit Price") }}</TableHead>
+                          <TableHead class="px-2 py-2">{{ t("common:vue.results.breakdownTotal", "Total") }}</TableHead>
+                        </TableRow>
+                      </TableHeader>
+                      <TableBody>
+                        <TableRow v-for="row in expenseItemsForDisplay" :key="`expense-${row.itemHrid}`" class="border-b border-border text-foreground">
+                          <TableCell class="px-2 py-2">{{ formatItemName(row.itemHrid) }}</TableCell>
+                          <TableCell class="px-2 py-2">{{ formatAmount(row.amount) }}</TableCell>
+                          <TableCell class="px-2 py-2">{{ formatCurrency(row.unitPrice) }}</TableCell>
+                          <TableCell class="px-2 py-2">{{ formatCurrency(row.totalValue) }}</TableCell>
+                        </TableRow>
+                      </TableBody>
+                    </Table>
                   </div>
                 </div>
               </div>
-              <p v-if="hasTrimmedBreakdownRows" class="mt-2 text-xs text-slate-400">
+              <p v-if="hasTrimmedBreakdownRows" class="mt-2 text-xs text-muted-foreground">
                 {{ t("common:vue.results.breakdownTrimHint", "Showing first entries only.") }}
               </p>
             </DisclosurePanel>
@@ -441,25 +441,28 @@
         <TimeSeriesChart :time-series-data="simulator.results.timeSeriesData" />
       </div>
 
-      <div class="panel">
-        <h2 class="mb-3 font-heading text-lg font-semibold text-amber-200">{{ t("common:WipeEvents", "Wipe Events") }}</h2>
-        <p v-if="!hasWipeEvents" class="text-sm text-slate-400">{{ t("common:noWipeEventsDetected", "No wipe events detected in this simulation.") }}</p>
+      <div class="surface-panel">
+        <h2 class="mb-3 font-heading text-lg font-semibold text-primary">{{ t("common:WipeEvents", "Wipe Events") }}</h2>
+        <p v-if="!hasWipeEvents" class="text-sm text-muted-foreground">{{ t("common:noWipeEventsDetected", "No wipe events detected in this simulation.") }}</p>
 
         <template v-else>
           <div class="grid gap-3 sm:grid-cols-[minmax(220px,1fr)_auto] sm:items-end">
             <label class="block">
-              <span class="field-label">{{ t("common:vue.results.event", "Event") }}</span>
-              <select v-model.number="selectedWipeEventIndex" class="field-select">
-                <option
+              <span class="control-label">{{ t("common:vue.results.event", "Event") }}</span>
+              <Select v-model="selectedWipeEventIndex">
+                <SelectTrigger :aria-label="t('common:vue.results.event', 'Event')" />
+                <SelectContent>
+                <SelectItem
                   v-for="(wipeEvent, index) in wipeEvents"
                   :key="`${index}-${wipeEvent.timestamp || 0}`"
                   :value="index"
                 >
                   #{{ index + 1 }} | {{ t("common:vue.results.wave", "Wave") }} {{ wipeEvent.wave || "?" }} | {{ formatSimSeconds(wipeEvent.simulationTime) }}s
-                </option>
-              </select>
+                </SelectItem>
+                </SelectContent>
+              </Select>
             </label>
-            <div class="rounded-xl border border-white/10 bg-slate-900/50 px-3 py-2 text-xs text-slate-300">
+            <div class="rounded-md border border-border bg-muted/50 px-3 py-2 text-xs text-foreground/85">
               <p>{{ t("common:vue.results.wave", "Wave") }}: {{ activeWipeEvent?.wave || "?" }}</p>
               <p>{{ t("common:vue.results.simulationTime", "Simulation Time") }}: {{ formatSimSeconds(activeWipeEvent?.simulationTime) }}s</p>
               <p>{{ t("common:combatLogs", "Logs") }}: {{ wipeLogsForDisplay.length }}</p>
@@ -467,32 +470,32 @@
           </div>
 
           <div class="mt-3 overflow-x-auto">
-            <table class="min-w-full text-sm">
-              <thead>
-                <tr class="border-b border-white/10 text-left text-xs uppercase tracking-[0.14em] text-slate-400">
-                  <th class="px-2 py-2">{{ t("common:vue.results.timeSeconds", "t(s)") }}</th>
-                  <th class="px-2 py-2">{{ t("common:vue.results.wave", "Wave") }}</th>
-                  <th class="px-2 py-2">{{ t("common:simulationResults.source", "Source") }}</th>
-                  <th class="px-2 py-2">{{ getOfficialGameText("ability", "ability", "Ability") }}</th>
-                  <th class="px-2 py-2">{{ t("common:vue.results.target", "Target") }}</th>
-                  <th class="px-2 py-2">{{ getBuffTypeName("/buff_types/damage", "Damage") }}</th>
-                  <th class="px-2 py-2">{{ t("common:vue.results.hpShort", "HP") }}</th>
-                  <th class="px-2 py-2">{{ t("common:vue.results.crit", "Crit") }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="(log, logIndex) in wipeLogsForDisplay" :key="`${selectedWipeEventIndex}-${logIndex}`" class="border-b border-white/5 text-slate-200">
-                  <td class="px-2 py-2">{{ formatSimSeconds(log.time) }}</td>
-                  <td class="px-2 py-2">{{ log.wave ?? "-" }}</td>
-                  <td class="px-2 py-2">{{ formatLogSource(log) }}</td>
-                  <td class="px-2 py-2">{{ formatLogAbility(log) }}</td>
-                  <td class="px-2 py-2">{{ log.target || "-" }}</td>
-                  <td class="px-2 py-2" :class="log.isCrit ? 'font-semibold text-amber-300' : ''">{{ formatNumber(log.damage) }}</td>
-                  <td class="px-2 py-2">{{ formatNumber(log.beforeHp) }} -> {{ formatNumber(log.afterHp) }}</td>
-                  <td class="px-2 py-2">{{ log.isCrit ? t("common:simulationResults.Yes", "Yes") : t("common:simulationResults.No", "No") }}</td>
-                </tr>
-              </tbody>
-            </table>
+            <Table class="min-w-full text-sm">
+              <TableHeader>
+                <TableRow class="border-b border-border text-left text-xs uppercase  text-muted-foreground">
+                  <TableHead class="px-2 py-2">{{ t("common:vue.results.timeSeconds", "t(s)") }}</TableHead>
+                  <TableHead class="px-2 py-2">{{ t("common:vue.results.wave", "Wave") }}</TableHead>
+                  <TableHead class="px-2 py-2">{{ t("common:simulationResults.source", "Source") }}</TableHead>
+                  <TableHead class="px-2 py-2">{{ getOfficialGameText("ability", "ability", "Ability") }}</TableHead>
+                  <TableHead class="px-2 py-2">{{ t("common:vue.results.target", "Target") }}</TableHead>
+                  <TableHead class="px-2 py-2">{{ getBuffTypeName("/buff_types/damage", "Damage") }}</TableHead>
+                  <TableHead class="px-2 py-2">{{ t("common:vue.results.hpShort", "HP") }}</TableHead>
+                  <TableHead class="px-2 py-2">{{ t("common:vue.results.crit", "Crit") }}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow v-for="(log, logIndex) in wipeLogsForDisplay" :key="`${selectedWipeEventIndex}-${logIndex}`" class="border-b border-border text-foreground">
+                  <TableCell class="px-2 py-2">{{ formatSimSeconds(log.time) }}</TableCell>
+                  <TableCell class="px-2 py-2">{{ log.wave ?? "-" }}</TableCell>
+                  <TableCell class="px-2 py-2">{{ formatLogSource(log) }}</TableCell>
+                  <TableCell class="px-2 py-2">{{ formatLogAbility(log) }}</TableCell>
+                  <TableCell class="px-2 py-2">{{ log.target || "-" }}</TableCell>
+                  <TableCell class="px-2 py-2" :class="log.isCrit ? 'font-semibold text-primary' : ''">{{ formatNumber(log.damage) }}</TableCell>
+                  <TableCell class="px-2 py-2">{{ formatNumber(log.beforeHp) }} -> {{ formatNumber(log.afterHp) }}</TableCell>
+                  <TableCell class="px-2 py-2">{{ log.isCrit ? t("common:simulationResults.Yes", "Yes") : t("common:simulationResults.No", "No") }}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           </div>
         </template>
       </div>
@@ -511,6 +514,7 @@ import {
 import { buildNoRngProfitBreakdown, buildRandomProfitBreakdown } from "../../services/profitEstimator.js";
 import DisclosurePanel from "./DisclosurePanel.vue";
 import TimeSeriesChart from "./TimeSeriesChart.vue";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "./ui/select/index.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { useGameDataText } from "../composables/useGameDataText.js";
 import { useI18nText } from "../composables/useI18nText.js";
@@ -1185,7 +1189,7 @@ function formatBatchCell(row, column) {
 
 function getBatchCellClass(row, column) {
   if (isBatchLabyrinth.value && column.key === "encountersPerHour" && toFiniteNumber(row?.encountersPerHour) >= 30) {
-    return "bg-emerald-700/40 font-semibold text-emerald-200";
+    return "bg-success/10 font-semibold text-success";
   }
 
   if (isBatchLabyrinth.value) {
@@ -1197,7 +1201,7 @@ function getBatchCellClass(row, column) {
   }
   const highlightedRowId = batchHighlightCellByColumn.value[column.key];
   if (highlightedRowId && highlightedRowId === row.rowId) {
-    return "bg-emerald-700/40 font-semibold text-emerald-200";
+    return "bg-success/10 font-semibold text-success";
   }
   return "";
 }

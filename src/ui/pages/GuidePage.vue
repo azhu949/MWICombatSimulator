@@ -1,42 +1,49 @@
 <template>
   <GuidePageEn v-if="language !== 'zh'" />
   <div v-else class="space-y-4">
-    <section class="panel overflow-hidden">
+    <section class="surface-panel overflow-hidden">
       <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-end">
         <div class="min-w-0">
-          <p class="mb-2 text-xs font-semibold text-amber-300">MWI 战斗模拟器</p>
-          <h2 class="font-heading text-2xl font-semibold text-slate-100 sm:text-3xl">使用教程</h2>
-          <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
+          <p class="mb-2 text-xs font-semibold text-primary">MWI 战斗模拟器</p>
+          <h2 class="font-heading text-2xl font-semibold text-foreground sm:text-3xl">使用教程</h2>
+          <p class="mt-3 max-w-3xl text-sm leading-7 text-foreground/85">
             从导入角色数据开始，完成一次战斗模拟，再逐步使用队列、刷图推荐、强化模拟和生活技能规划。
           </p>
         </div>
-        <div class="border-l-2 border-amber-300/70 pl-4 text-sm leading-6 text-slate-300">
-          <p class="font-semibold text-amber-200">推荐阅读顺序</p>
+        <div class="border-l-2 border-primary/40 pl-4 text-sm leading-6 text-foreground/85">
+          <p class="font-semibold text-primary">推荐阅读顺序</p>
           <p class="mt-1">首次使用 → 战斗模拟 → 队列与多轮结果。专项工具可以按需要单独阅读。</p>
         </div>
       </div>
 
-      <nav class="mt-5 grid grid-cols-2 gap-x-4 border-t border-white/10 pt-3 sm:grid-cols-4 lg:hidden" aria-label="教程目录">
-        <RouterLink
-          v-for="item in guideSections"
-          :key="item.id"
-          :to="{ path: '/guide', hash: `#${item.id}` }"
-          class="border-b border-white/10 py-2 text-sm text-slate-300 hover:text-amber-200"
-        >
-          {{ item.label }}
-        </RouterLink>
-      </nav>
+      <Accordion type="single" collapsible class="mt-5 border-t border-border lg:hidden">
+        <AccordionItem value="contents">
+          <AccordionTrigger>教程目录</AccordionTrigger>
+          <AccordionContent>
+            <nav class="grid grid-cols-2 gap-x-4 sm:grid-cols-4" aria-label="教程目录">
+              <RouterLink
+                v-for="item in guideSections"
+                :key="item.id"
+                :to="{ path: '/guide', hash: `#${item.id}` }"
+                class="border-b border-border py-2 text-sm text-foreground/85 hover:text-primary"
+              >
+                {{ item.label }}
+              </RouterLink>
+            </nav>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </section>
 
-    <div class="panel !p-0 lg:grid lg:grid-cols-[230px_minmax(0,1fr)]">
-      <aside class="hidden border-r border-white/10 lg:block">
+    <div class="surface-panel !p-0 lg:grid lg:grid-cols-[230px_minmax(0,1fr)]">
+      <aside class="hidden border-r border-border lg:block">
         <nav class="sticky top-36 max-h-[calc(100vh-10rem)] overflow-y-auto px-4 py-5" aria-label="教程目录">
-          <p class="px-2 pb-3 text-xs font-semibold text-slate-400">教程目录</p>
+          <p class="px-2 pb-3 text-xs font-semibold text-muted-foreground">教程目录</p>
           <RouterLink
             v-for="item in guideSections"
             :key="item.id"
             :to="{ path: '/guide', hash: `#${item.id}` }"
-            class="block border-l-2 border-white/10 px-3 py-2 text-sm text-slate-300 hover:border-amber-300/70 hover:text-amber-200"
+            class="block border-l-2 border-border px-3 py-2 text-sm text-foreground/85 hover:border-primary/40 hover:text-primary"
           >
             {{ item.label }}
           </RouterLink>
@@ -70,7 +77,7 @@
             </li>
           </ol>
 
-          <div class="mt-5 border-l-2 border-teal-300/70 bg-teal-300/5 px-4 py-3 text-sm leading-6 text-slate-300">
+          <div class="mt-5 border-l-2 border-success/40 bg-success/10 px-4 py-3 text-sm leading-6 text-foreground/85">
             强化模拟和生活技能导入的角色数据只在当前页面会话中保留。刷新页面后需要重新导入。
           </div>
 
@@ -166,7 +173,7 @@
             />
           </div>
 
-          <div class="mt-5 border-l-2 border-amber-300/70 px-4 py-2 text-sm leading-6 text-slate-300">
+          <div class="mt-5 border-l-2 border-primary/40 px-4 py-2 text-sm leading-6 text-foreground/85">
             比较装备收益时尽量一次只改变一个核心因素。这样队列名称和成本差异更容易解释。
           </div>
 
@@ -323,7 +330,7 @@
             <p class="guide-lead">多数空状态来自缺少对应角色快照、尚未建立基线，或还没有完成队列运行。</p>
           </div>
 
-          <div class="mt-5 border-y border-white/10">
+          <div class="mt-5 border-y border-border">
             <details class="guide-faq" open>
               <summary>为什么“设为基准”或专项计算不可用？</summary>
               <p>先确认当前玩家已经导入对应数据，并在顶部勾选参与模拟的玩家。强化和生活技能需要导入各自的数据目标，主页战斗数据不能代替。</p>
@@ -343,8 +350,8 @@
           </div>
 
           <div class="mt-6 flex flex-wrap gap-2">
-            <RouterLink class="action-button-primary" to="/home">开始一次模拟</RouterLink>
-            <RouterLink class="action-button-muted" to="/settings">检查运行设置</RouterLink>
+            <RouterLink class="button-primary" to="/home">开始一次模拟</RouterLink>
+            <RouterLink class="button-secondary" to="/settings">检查运行设置</RouterLink>
           </div>
         </section>
       </article>
@@ -356,6 +363,7 @@
 import GuideFigure from "../components/guide/GuideFigure.vue";
 import GuidePageEn from "./GuidePageEn.vue";
 import { useI18nText } from "../composables/useI18nText.js";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../components/ui/accordion/index.js";
 import "../guide.css";
 
 const { language } = useI18nText();

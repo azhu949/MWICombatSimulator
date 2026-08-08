@@ -1,25 +1,13 @@
 :root {
-  --guide-heading: rgb(241 245 249);
-  --guide-body: rgb(203 213 225);
-  --guide-muted: rgb(148 163 184);
-  --guide-accent: rgb(252 211 77);
-  --guide-accent-soft: rgb(253 230 138);
-  --guide-border: rgb(255 255 255 / 0.1);
-  --guide-note-border: rgb(255 255 255 / 0.14);
-  --guide-step-border: rgb(252 211 77 / 0.42);
-  --guide-step-bg: rgb(252 211 77 / 0.08);
-}
-
-:root[data-theme="light"] {
-  --guide-heading: rgb(15 23 42);
-  --guide-body: rgb(51 65 85);
-  --guide-muted: rgb(71 85 105);
-  --guide-accent: rgb(146 64 14);
-  --guide-accent-soft: rgb(146 64 14);
-  --guide-border: rgb(15 23 42 / 0.14);
-  --guide-note-border: rgb(15 23 42 / 0.18);
-  --guide-step-border: rgb(180 83 9 / 0.36);
-  --guide-step-bg: rgb(245 158 11 / 0.1);
+  --guide-heading: var(--foreground);
+  --guide-body: color-mix(in oklab, var(--foreground) 82%, var(--muted-foreground));
+  --guide-muted: var(--muted-foreground);
+  --guide-accent: var(--primary);
+  --guide-accent-soft: color-mix(in oklab, var(--primary) 82%, var(--foreground));
+  --guide-border: var(--border);
+  --guide-note-border: color-mix(in oklab, var(--border) 72%, var(--foreground));
+  --guide-step-border: color-mix(in oklab, var(--primary) 42%, var(--border));
+  --guide-step-bg: color-mix(in oklab, var(--primary) 10%, transparent);
 }
 
 .guide-section {
@@ -139,8 +127,8 @@
 }
 
 .guide-route-link:hover {
-  border-color: rgb(252 211 77 / 0.5);
-  background: rgb(252 211 77 / 0.08);
+  border-color: color-mix(in oklab, var(--primary) 50%, var(--border));
+  background: color-mix(in oklab, var(--primary) 8%, transparent);
 }
 
 .guide-faq {

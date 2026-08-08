@@ -1,45 +1,52 @@
 <template>
   <div class="space-y-4">
-    <section class="panel overflow-hidden">
+    <section class="surface-panel overflow-hidden">
       <div class="grid gap-5 lg:grid-cols-[minmax(0,1fr)_300px] lg:items-end">
         <div class="min-w-0">
-          <p class="mb-2 text-xs font-semibold text-amber-300">MWI Combat Simulator</p>
-          <h2 class="font-heading text-2xl font-semibold text-slate-100 sm:text-3xl">User Guide</h2>
-          <p class="mt-3 max-w-3xl text-sm leading-7 text-slate-300">
+          <p class="mb-2 text-xs font-semibold text-primary">MWI Combat Simulator</p>
+          <h2 class="font-heading text-2xl font-semibold text-foreground sm:text-3xl">User Guide</h2>
+          <p class="mt-3 max-w-3xl text-sm leading-7 text-foreground/85">
             Import character data, run your first combat simulation, then move on to queue comparisons, Advisor, Enhancement, and Skilling.
           </p>
         </div>
-        <div class="border-l-2 border-amber-300/70 pl-4 text-sm leading-6 text-slate-300">
-          <p class="font-semibold text-amber-200">Recommended order</p>
+        <div class="border-l-2 border-primary/40 pl-4 text-sm leading-6 text-foreground/85">
+          <p class="font-semibold text-primary">Recommended order</p>
           <p class="mt-1">Getting started, Combat simulation, then Queue and results. Open the specialist tools when you need them.</p>
         </div>
       </div>
 
-      <div class="mt-5 border-l-2 border-teal-300/70 bg-teal-300/5 px-4 py-3 text-sm leading-6 text-slate-300">
+      <div class="mt-5 border-l-2 border-success/40 bg-success/10 px-4 py-3 text-sm leading-6 text-foreground/85">
         Screenshots use the Chinese interface. Control positions and workflows are the same in English.
       </div>
 
-      <nav class="mt-5 grid grid-cols-2 gap-x-4 border-t border-white/10 pt-3 sm:grid-cols-4 lg:hidden" aria-label="Guide contents">
-        <RouterLink
-          v-for="item in guideSections"
-          :key="item.id"
-          :to="{ path: '/guide', hash: `#${item.id}` }"
-          class="border-b border-white/10 py-2 text-sm text-slate-300 hover:text-amber-200"
-        >
-          {{ item.label }}
-        </RouterLink>
-      </nav>
+      <Accordion type="single" collapsible class="mt-5 border-t border-border lg:hidden">
+        <AccordionItem value="contents">
+          <AccordionTrigger>Guide contents</AccordionTrigger>
+          <AccordionContent>
+            <nav class="grid grid-cols-2 gap-x-4 sm:grid-cols-4" aria-label="Guide contents">
+              <RouterLink
+                v-for="item in guideSections"
+                :key="item.id"
+                :to="{ path: '/guide', hash: `#${item.id}` }"
+                class="border-b border-border py-2 text-sm text-foreground/85 hover:text-primary"
+              >
+                {{ item.label }}
+              </RouterLink>
+            </nav>
+          </AccordionContent>
+        </AccordionItem>
+      </Accordion>
     </section>
 
-    <div class="panel !p-0 lg:grid lg:grid-cols-[230px_minmax(0,1fr)]">
-      <aside class="hidden border-r border-white/10 lg:block">
+    <div class="surface-panel !p-0 lg:grid lg:grid-cols-[230px_minmax(0,1fr)]">
+      <aside class="hidden border-r border-border lg:block">
         <nav class="sticky top-36 max-h-[calc(100vh-10rem)] overflow-y-auto px-4 py-5" aria-label="Guide contents">
-          <p class="px-2 pb-3 text-xs font-semibold text-slate-400">Guide contents</p>
+          <p class="px-2 pb-3 text-xs font-semibold text-muted-foreground">Guide contents</p>
           <RouterLink
             v-for="item in guideSections"
             :key="item.id"
             :to="{ path: '/guide', hash: `#${item.id}` }"
-            class="block border-l-2 border-white/10 px-3 py-2 text-sm text-slate-300 hover:border-amber-300/70 hover:text-amber-200"
+            class="block border-l-2 border-border px-3 py-2 text-sm text-foreground/85 hover:border-primary/40 hover:text-primary"
           >
             {{ item.label }}
           </RouterLink>
@@ -73,7 +80,7 @@
             </li>
           </ol>
 
-          <div class="mt-5 border-l-2 border-teal-300/70 bg-teal-300/5 px-4 py-3 text-sm leading-6 text-slate-300">
+          <div class="mt-5 border-l-2 border-success/40 bg-success/10 px-4 py-3 text-sm leading-6 text-foreground/85">
             Imported Enhancement and Skilling character data lasts only for the current page session. Import it again after refreshing the page.
           </div>
 
@@ -173,7 +180,7 @@
             />
           </div>
 
-          <div class="mt-5 border-l-2 border-amber-300/70 px-4 py-2 text-sm leading-6 text-slate-300">
+          <div class="mt-5 border-l-2 border-primary/40 px-4 py-2 text-sm leading-6 text-foreground/85">
             Change one major factor at a time when comparing gear. Queue labels and cost differences will be easier to interpret.
           </div>
 
@@ -334,7 +341,7 @@
             <p class="guide-lead">Most empty states mean the required character snapshot is missing, a baseline has not been set, or the queue has not finished running.</p>
           </div>
 
-          <div class="mt-5 border-y border-white/10">
+          <div class="mt-5 border-y border-border">
             <details class="guide-faq" open>
               <summary>Why is Set Baseline or a specialist calculation disabled?</summary>
               <p>Confirm that the active player has the required data and is selected for simulation. Enhancement and Skilling need their own import targets; Home combat data cannot replace them.</p>
@@ -354,8 +361,8 @@
           </div>
 
           <div class="mt-6 flex flex-wrap gap-2">
-            <RouterLink class="action-button-primary" to="/home">Start a Simulation</RouterLink>
-            <RouterLink class="action-button-muted" to="/settings">Check Runtime Settings</RouterLink>
+            <RouterLink class="button-primary" to="/home">Start a Simulation</RouterLink>
+            <RouterLink class="button-secondary" to="/settings">Check Runtime Settings</RouterLink>
           </div>
         </section>
       </article>
@@ -365,6 +372,7 @@
 
 <script setup>
 import GuideFigure from "../components/guide/GuideFigure.vue";
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../components/ui/accordion/index.js";
 import "../guide.css";
 
 const guideSections = [

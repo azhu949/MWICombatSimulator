@@ -1,185 +1,101 @@
 <template>
-  <Teleport to="body">
-    <div
-      v-if="open"
-      class="modal-backdrop fixed inset-0 z-50 flex items-center justify-center px-4"
-      @click.self="onBackdropClick"
-    >
-      <div
-        ref="dialogRef"
-        :class="[
-          'modal-panel w-full rounded-2xl p-6',
+  <DialogRoot :open="open" @update:open="onOpenChange">
+    <DialogPortal>
+      <DialogOverlay class="fixed inset-0 z-50 bg-modal-backdrop backdrop-blur-[2px] data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+      <DialogContent
+        ref="contentRef"
+        :class="cn(
+          'fixed left-1/2 top-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-lg border border-border bg-popover p-5 text-popover-foreground shadow-2xl outline-none data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:p-6',
           panelClass || 'max-w-xl',
-        ]"
-        role="dialog"
-        aria-modal="true"
-        :aria-labelledby="titleId"
-        tabindex="-1"
+        )"
+        @escape-key-down="onEscapeKeyDown"
+        @pointer-down-outside="onPointerDownOutside"
+        @open-auto-focus="onOpenAutoFocus"
       >
-        <div class="mb-4 flex items-center justify-between">
-          <h2 :id="titleId" class="font-heading text-xl font-semibold text-amber-300">{{ title }}</h2>
-          <button type="button" class="action-button-muted" @click="emit('close')">{{ t("common:controls.close", "Close") }}</button>
+        <div class="flex min-w-0 items-start justify-between gap-4">
+          <DialogTitle class="min-w-0 font-heading text-lg font-semibold text-foreground">
+            {{ title }}
+          </DialogTitle>
+          <DialogDescription class="sr-only">{{ title }}</DialogDescription>
+          <DialogClose as-child>
+            <Button
+              type="button"
+              variant="ghost"
+              size="icon-sm"
+              class="-mr-1 -mt-1 text-muted-foreground"
+              :aria-label="t('common:controls.close', 'Close')"
+            >
+              <X />
+            </Button>
+          </DialogClose>
         </div>
-        <div class="modal-body-text space-y-3 text-sm">
+        <div class="modal-body-text min-w-0 space-y-3 text-sm">
           <slot />
         </div>
-      </div>
-    </div>
-  </Teleport>
+      </DialogContent>
+    </DialogPortal>
+  </DialogRoot>
 </template>
 
 <script setup>
-import { nextTick, onBeforeUnmount, ref, watch } from "vue";
+import { nextTick, ref } from "vue";
+import { X } from "@lucide/vue";
+import {
+  DialogClose,
+  DialogContent,
+  DialogDescription,
+  DialogOverlay,
+  DialogPortal,
+  DialogRoot,
+  DialogTitle,
+} from "reka-ui";
+import { Button } from "@/ui/components/ui/button/index.js";
+import { cn } from "@/ui/lib/utils.js";
 import { useI18nText } from "../composables/useI18nText.js";
 
 const props = defineProps({
-  open: {
-    type: Boolean,
-    default: false,
-  },
-  title: {
-    type: String,
-    default: "Info",
-  },
-  panelClass: {
-    type: String,
-    default: "",
-  },
-  closeOnEsc: {
-    type: Boolean,
-    default: true,
-  },
-  closeOnBackdrop: {
-    type: Boolean,
-    default: true,
-  },
-  initialFocusSelector: {
-    type: String,
-    default: "",
-  },
+  open: { type: Boolean, default: false },
+  title: { type: String, default: "Info" },
+  panelClass: { type: String, default: "" },
+  closeOnEsc: { type: Boolean, default: true },
+  closeOnBackdrop: { type: Boolean, default: true },
+  initialFocusSelector: { type: String, default: "" },
 });
 
 const emit = defineEmits(["close"]);
 const { t } = useI18nText();
-const dialogRef = ref(null);
-const previousFocusedElement = ref(null);
-const instanceId = Math.random().toString(36).slice(2, 10);
-const titleId = `base-modal-title-${instanceId}`;
-const focusableSelector = [
-  "button:not([disabled])",
-  "[href]",
-  "input:not([disabled])",
-  "select:not([disabled])",
-  "textarea:not([disabled])",
-  "[tabindex]:not([tabindex='-1'])",
-].join(", ");
+const contentRef = ref(null);
 
-function getFocusableElements() {
-  if (!dialogRef.value) {
-    return [];
-  }
-  return Array.from(dialogRef.value.querySelectorAll(focusableSelector))
-    .filter((element) => element instanceof HTMLElement && !element.hasAttribute("disabled"));
-}
-
-function focusInitialElement() {
-  if (!dialogRef.value) {
-    return;
-  }
-
-  const selector = String(props.initialFocusSelector || "").trim();
-  if (selector) {
-    const matched = dialogRef.value.querySelector(selector);
-    if (matched instanceof HTMLElement) {
-      matched.focus();
-      return;
-    }
-  }
-
-  const focusableElements = getFocusableElements();
-  if (focusableElements.length > 0) {
-    focusableElements[0].focus();
-    return;
-  }
-
-  dialogRef.value.focus();
-}
-
-function restoreFocus() {
-  const element = previousFocusedElement.value;
-  previousFocusedElement.value = null;
-  if (element instanceof HTMLElement && element.isConnected) {
-    element.focus();
-  }
-}
-
-function onBackdropClick() {
-  if (props.closeOnBackdrop) {
+function onOpenChange(nextOpen) {
+  if (!nextOpen) {
     emit("close");
   }
 }
 
-function onDocumentKeydown(event) {
-  if (!props.open) {
-    return;
-  }
-
-  if (event.key === "Escape") {
-    if (props.closeOnEsc) {
-      event.preventDefault();
-      emit("close");
-    }
-    return;
-  }
-
-  if (event.key !== "Tab" || !dialogRef.value) {
-    return;
-  }
-
-  const focusableElements = getFocusableElements();
-  if (focusableElements.length === 0) {
+function onEscapeKeyDown(event) {
+  if (!props.closeOnEsc) {
     event.preventDefault();
-    dialogRef.value.focus();
-    return;
-  }
-
-  const first = focusableElements[0];
-  const last = focusableElements[focusableElements.length - 1];
-  const active = document.activeElement;
-
-  if (event.shiftKey) {
-    if (active === first || !dialogRef.value.contains(active)) {
-      event.preventDefault();
-      last.focus();
-    }
-    return;
-  }
-
-  if (active === last) {
-    event.preventDefault();
-    first.focus();
   }
 }
 
-watch(
-  () => props.open,
-  async (nextOpen) => {
-    if (nextOpen) {
-      previousFocusedElement.value = document.activeElement instanceof HTMLElement ? document.activeElement : null;
-      document.addEventListener("keydown", onDocumentKeydown);
-      await nextTick();
-      focusInitialElement();
-      return;
-    }
+function onPointerDownOutside(event) {
+  if (!props.closeOnBackdrop) {
+    event.preventDefault();
+  }
+}
 
-    document.removeEventListener("keydown", onDocumentKeydown);
-    restoreFocus();
-  },
-  { immediate: true },
-);
+async function onOpenAutoFocus(event) {
+  const selector = String(props.initialFocusSelector || "").trim();
+  if (!selector) {
+    return;
+  }
 
-onBeforeUnmount(() => {
-  document.removeEventListener("keydown", onDocumentKeydown);
-  restoreFocus();
-});
+  event.preventDefault();
+  await nextTick();
+  const element = contentRef.value?.$el?.querySelector?.(selector)
+    || document.querySelector(selector);
+  if (element instanceof HTMLElement) {
+    element.focus();
+  }
+}
 </script>

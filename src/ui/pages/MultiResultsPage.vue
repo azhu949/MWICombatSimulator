@@ -1,17 +1,17 @@
 <template>
   <section class="space-y-4">
-    <div class="panel">
-      <h2 class="font-heading text-lg font-semibold text-amber-200">{{ t("common:multiRound.summaryTitle", "Multi-round Summary") }}</h2>
-      <p class="mt-2 text-sm text-slate-300">{{ t("common:vue.queue.activePlayer", "Active player", { name: simulator.activePlayer.name }) }}</p>
-      <p v-if="queuePartySummaryText" class="mt-1 text-xs text-slate-400">
+    <div class="surface-panel">
+      <h2 class="font-heading text-lg font-semibold text-primary">{{ t("common:multiRound.summaryTitle", "Multi-round Summary") }}</h2>
+      <p class="mt-2 text-sm text-foreground/85">{{ t("common:vue.queue.activePlayer", "Active player", { name: simulator.activePlayer.name }) }}</p>
+      <p v-if="queuePartySummaryText" class="mt-1 text-xs text-muted-foreground">
         {{ t("common:queue.partyLockedMembers", "Locked party") }}:
-        <span class="ml-1 text-slate-200">{{ queuePartySummaryText }}</span>
+        <span class="ml-1 text-foreground">{{ queuePartySummaryText }}</span>
       </p>
-      <p v-if="queuePartyWarningText" class="mt-2 text-sm text-amber-300">{{ queuePartyWarningText }}</p>
+      <p v-if="queuePartyWarningText" class="mt-2 text-sm text-primary">{{ queuePartyWarningText }}</p>
 
-      <div class="mt-3 grid gap-3 border-t border-white/10 pt-3 text-xs text-slate-300 md:grid-cols-2">
-        <div class="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-          <p class="uppercase tracking-[0.14em] text-slate-400">{{ t("common:multiRound.scoreModel", "Score Model") }}</p>
+      <div class="mt-3 grid gap-3 border-t border-border pt-3 text-xs text-foreground/85 md:grid-cols-2">
+        <div class="rounded-lg border border-border bg-muted/40 p-3">
+          <p class="uppercase  text-muted-foreground">{{ t("common:multiRound.scoreModel", "Score Model") }}</p>
           <div class="mt-2 space-y-1">
             <p>{{ t("common:multiRound.scoreModelValue", "Performance/Stability/Cost weighted by configured settings (quantile mapped to 5-95, with confidence penalty)") }}</p>
             <p>{{ t("common:multiRound.scoreModelWeightsValue", "Score weights", queueRuntimeWeightText) }}</p>
@@ -30,96 +30,91 @@
             }) }}</p>
           </div>
         </div>
-        <div class="rounded-lg border border-white/10 bg-white/[0.03] p-3">
-          <p class="uppercase tracking-[0.14em] text-slate-400">{{ t("common:queue.baselineSummary", "Baseline Summary") }}</p>
+        <div class="rounded-lg border border-border bg-muted/40 p-3">
+          <p class="uppercase  text-muted-foreground">{{ t("common:queue.baselineSummary", "Baseline Summary") }}</p>
           <div v-if="baselineSummaryRows.length > 0" class="mt-2 space-y-1">
             <p v-for="row in baselineSummaryRows" :key="row.key">
-              <span class="text-slate-400">{{ row.label }}:</span> {{ row.value }}
+              <span class="text-muted-foreground">{{ row.label }}:</span> {{ row.value }}
             </p>
           </div>
-          <p v-if="baselineSummaryRows.length > 0" class="mt-2 text-slate-400">
+          <p v-if="baselineSummaryRows.length > 0" class="mt-2 text-muted-foreground">
             {{ t("common:queue.baselineSummaryAggregationHint", "Baseline values shown here come from multi-round robust aggregation: the simulator runs the configured baseline rounds and blends winsorized means with medians instead of showing a single sample.") }}
           </p>
-          <p v-else class="mt-2 text-slate-400">
+          <p v-else class="mt-2 text-muted-foreground">
             {{ t("common:queue.emptyBaseline", "No baseline yet. Click 'Set Baseline' to run and lock one.") }}
           </p>
         </div>
       </div>
     </div>
 
-    <div v-if="!hasMultiData" class="panel">
+    <div v-if="!hasMultiData" class="surface-panel">
       <div
         v-if="showRunningPlaceholder"
         class="flex flex-col justify-center gap-5"
         :style="runningPlaceholderStyle"
       >
         <div>
-          <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:queue.queueRunning", "Running queue...") }}</p>
-          <h3 class="mt-2 font-heading text-xl font-semibold text-amber-200">
+          <p class="text-xs uppercase  text-muted-foreground">{{ t("common:queue.queueRunning", "Running queue...") }}</p>
+          <h3 class="mt-2 font-heading text-xl font-semibold text-primary">
             {{ runningPlaceholderTitle }}
           </h3>
-          <p class="mt-2 max-w-3xl text-sm text-slate-300">
+          <p class="mt-2 max-w-3xl text-sm text-foreground/85">
             {{ runningPlaceholderDescription }}
           </p>
         </div>
 
         <div class="grid gap-3 sm:grid-cols-3">
-          <div class="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-            <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:vue.queue.queueProgress", "Queue Progress") }}</p>
-            <p class="mt-2 font-heading text-2xl text-slate-100">{{ queueProgressPercentText }}</p>
+          <div class="rounded-md border border-border bg-muted/40 p-4">
+            <p class="text-xs uppercase  text-muted-foreground">{{ t("common:vue.queue.queueProgress", "Queue Progress") }}</p>
+            <p class="mt-2 font-heading text-2xl text-foreground">{{ queueProgressPercentText }}</p>
           </div>
-          <div class="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-            <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:multiRound.simCount", "Sim Count") }}</p>
-            <p class="mt-2 font-heading text-2xl text-slate-100">{{ completedSimCountText }}</p>
+          <div class="rounded-md border border-border bg-muted/40 p-4">
+            <p class="text-xs uppercase  text-muted-foreground">{{ t("common:multiRound.simCount", "Sim Count") }}</p>
+            <p class="mt-2 font-heading text-2xl text-foreground">{{ completedSimCountText }}</p>
           </div>
-          <div class="rounded-xl border border-white/10 bg-white/[0.03] p-4">
-            <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:queue.queueList", "Queue List") }}</p>
-            <p class="mt-2 font-heading text-2xl text-slate-100">{{ queueState.items?.length ?? 0 }}</p>
+          <div class="rounded-md border border-border bg-muted/40 p-4">
+            <p class="text-xs uppercase  text-muted-foreground">{{ t("common:queue.queueList", "Queue List") }}</p>
+            <p class="mt-2 font-heading text-2xl text-foreground">{{ queueState.items?.length ?? 0 }}</p>
           </div>
         </div>
 
         <div class="space-y-2">
-          <div class="flex flex-wrap items-center justify-between gap-2 text-xs uppercase tracking-[0.14em] text-slate-400">
+          <div class="flex flex-wrap items-center justify-between gap-2 text-xs uppercase  text-muted-foreground">
             <span>{{ t("common:vue.queue.queueProgress", "Queue Progress") }}</span>
-            <span class="text-slate-200">{{ queueProgressPercentText }} | {{ lastRunText }}</span>
+            <span class="text-foreground">{{ queueProgressPercentText }} | {{ lastRunText }}</span>
           </div>
-          <div class="h-2 overflow-hidden rounded-full bg-slate-800">
-            <div
-              class="h-full bg-gradient-to-r from-teal-400 to-amber-300 transition-all"
-              :style="{ width: queueProgressBarWidth }"
-            ></div>
-          </div>
+          <Progress :value="queueProgressPercent" />
         </div>
       </div>
 
-      <p v-else class="text-sm text-slate-400">{{ t("common:multiRound.noData", "No multi-round results yet.") }}</p>
+      <p v-else class="text-sm text-muted-foreground">{{ t("common:multiRound.noData", "No multi-round results yet.") }}</p>
     </div>
 
     <template v-else>
       <div class="grid gap-3 sm:grid-cols-4">
-        <div class="panel">
-          <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:queue.roundCount", "Rounds") }}</p>
-          <p class="mt-1 font-heading text-lg text-slate-100">{{ queueState.settings?.rounds ?? 0 }}</p>
+        <div class="surface-panel">
+          <p class="text-xs uppercase  text-muted-foreground">{{ t("common:queue.roundCount", "Rounds") }}</p>
+          <p class="mt-1 font-heading text-lg text-foreground">{{ queueState.settings?.rounds ?? 0 }}</p>
         </div>
-        <div class="panel">
-          <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:queue.queueList", "Queue List") }}</p>
-          <p class="mt-1 font-heading text-lg text-slate-100">{{ queueState.items?.length ?? 0 }}</p>
+        <div class="surface-panel">
+          <p class="text-xs uppercase  text-muted-foreground">{{ t("common:queue.queueList", "Queue List") }}</p>
+          <p class="mt-1 font-heading text-lg text-foreground">{{ queueState.items?.length ?? 0 }}</p>
         </div>
-        <div class="panel">
-          <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:multiRound.simCount", "Sim Count") }}</p>
-          <p class="mt-1 font-heading text-lg text-slate-100">{{ completedSimCountText }}</p>
+        <div class="surface-panel">
+          <p class="text-xs uppercase  text-muted-foreground">{{ t("common:multiRound.simCount", "Sim Count") }}</p>
+          <p class="mt-1 font-heading text-lg text-foreground">{{ completedSimCountText }}</p>
         </div>
-        <div class="panel">
-          <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:vue.queue.lastRun", "Last Run") }}</p>
-          <p class="mt-1 font-heading text-lg text-slate-100">{{ lastRunText }}</p>
+        <div class="surface-panel">
+          <p class="text-xs uppercase  text-muted-foreground">{{ t("common:vue.queue.lastRun", "Last Run") }}</p>
+          <p class="mt-1 font-heading text-lg text-foreground">{{ lastRunText }}</p>
         </div>
       </div>
 
-      <div class="panel overflow-x-auto">
+      <div class="surface-panel overflow-x-auto">
         <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-          <h3 class="font-heading text-sm uppercase tracking-[0.14em] text-slate-300">{{ t("common:multiRound.rankingTitle", "Scored Ranking") }}</h3>
+          <h3 class="font-heading text-sm uppercase  text-foreground/85">{{ t("common:multiRound.rankingTitle", "Scored Ranking") }}</h3>
           <button type="button"
-            class="action-button-muted"
+            class="button-secondary"
            
             :disabled="rankingRowsForDisplay.length === 0 || isExportingRankingExcel"
             @click="exportRankingRowsExcel"
@@ -127,103 +122,103 @@
             {{ t("common:exportToExcel", "Export To Excel") }}
           </button>
         </div>
-        <table class="min-w-[1880px] w-max text-sm">
-          <thead>
-            <tr class="border-b border-white/10 text-left text-xs uppercase tracking-[0.14em] text-slate-400">
-              <th class="px-2 py-2">{{ t("common:multiRound.rank", "Rank") }}</th>
-              <th class="px-2 py-2">{{ t("common:vue.queue.variant", "Variant") }}</th>
-              <th class="px-2 py-2">{{ t("common:multiRound.simCount", "Sim Count") }}</th>
-              <th class="px-2 py-2">{{ t("common:multiRound.finalScore", "Final Score") }}</th>
-              <th class="px-2 py-2">{{ t("common:multiRound.performanceScore", "Performance Score") }}</th>
-              <th class="px-2 py-2">{{ t("common:multiRound.stabilityScore", "Stability Score") }}</th>
-              <th class="px-2 py-2">{{ costScoreColumnHeader }}</th>
-              <th class="px-2 py-2">{{ t("common:vue.queue.meanProfitPerHour", "Mean Profit/h") }}</th>
-              <th class="px-2 py-2">{{ t("common:vue.queue.deltaProfitPerHour", "Delta Profit/h") }}</th>
-              <th class="px-2 py-2">{{ t("common:multiRound.deltaProfitPct", "Profit Delta%") }}</th>
-              <th class="px-2 py-2">{{ t("common:multiRound.deltaDpsPct", "DPS Delta%") }}</th>
-              <th class="px-2 py-2">{{ t("common:multiRound.deltaXpPct", "XP Delta%") }}</th>
-              <th class="px-2 py-2">{{ t("common:multiRound.deltaKillsPct", "Kills Delta%") }}</th>
-              <th class="px-2 py-2">{{ t("common:equipment.upgradeCost", "Upgrade Cost") }}</th>
-              <th class="px-2 py-2">{{ t("common:queue.purchaseTime", "Purchase Time") }}</th>
-              <th class="px-2 py-2">{{ t("common:multiRound.avgCostPerPoint01Pct", "Gold per 0.01% (all four > 0)") }}</th>
-              <th class="px-2 py-2">{{ t("common:multiRound.compositeCostPerPoint01Pct", "Gold per 0.01% (composite)") }}</th>
-            </tr>
-          </thead>
-          <tbody>
-            <tr
+        <Table class="min-w-[1880px] w-max text-sm">
+          <TableHeader>
+            <TableRow class="border-b border-border text-left text-xs uppercase  text-muted-foreground">
+              <TableHead class="px-2 py-2">{{ t("common:multiRound.rank", "Rank") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:vue.queue.variant", "Variant") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:multiRound.simCount", "Sim Count") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:multiRound.finalScore", "Final Score") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:multiRound.performanceScore", "Performance Score") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:multiRound.stabilityScore", "Stability Score") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ costScoreColumnHeader }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:vue.queue.meanProfitPerHour", "Mean Profit/h") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:vue.queue.deltaProfitPerHour", "Delta Profit/h") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:multiRound.deltaProfitPct", "Profit Delta%") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:multiRound.deltaDpsPct", "DPS Delta%") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:multiRound.deltaXpPct", "XP Delta%") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:multiRound.deltaKillsPct", "Kills Delta%") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:equipment.upgradeCost", "Upgrade Cost") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:queue.purchaseTime", "Purchase Time") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:multiRound.avgCostPerPoint01Pct", "Gold per 0.01% (all four > 0)") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:multiRound.compositeCostPerPoint01Pct", "Gold per 0.01% (composite)") }}</TableHead>
+            </TableRow>
+          </TableHeader>
+          <TableBody>
+            <TableRow
               v-for="row in rankingRowsForDisplay"
               :key="row.id"
-              class="border-b border-white/5 text-slate-200"
+              class="border-b border-border text-foreground"
               :class="getRankRowClass(row)"
             >
-              <td class="px-2 py-2 font-semibold">
-                <span class="inline-flex min-w-12 items-center justify-center rounded-full border px-2 py-0.5 text-xs font-bold" :class="getRankBadgeClass(row.rank)">
+              <TableCell class="px-2 py-2 font-semibold">
+                <span class="inline-flex min-w-12 items-center justify-center rounded-md border px-2 py-0.5 text-xs font-bold" :class="getRankBadgeClass(row.rank)">
                   #{{ row.rank }}
                 </span>
-              </td>
-              <td class="px-2 py-2">
+              </TableCell>
+              <TableCell class="px-2 py-2">
                 <p>{{ formatQueueItemSummary(row) }}</p>
-                <p v-if="getHiddenChangeCount(row) > 0" class="mt-0.5 text-xs text-slate-500">
+                <p v-if="getHiddenChangeCount(row) > 0" class="mt-0.5 text-xs text-muted-foreground">
                   +{{ getHiddenChangeCount(row) }}
                 </p>
-              </td>
-              <td class="px-2 py-2">{{ formatRowSimCount(row) }}</td>
-              <td class="px-2 py-2">{{ formatNumber(row.finalScore) }}</td>
-              <td class="px-2 py-2">{{ formatNumber(row.performanceScore) }}</td>
-              <td class="px-2 py-2">{{ formatNumber(row.stabilityScore) }}</td>
-              <td class="px-2 py-2">{{ formatNumber(row.costScore) }}</td>
-              <td class="px-2 py-2">{{ formatCompactCurrency(row.meanProfitPerHour) }}</td>
-              <td class="px-2 py-2" :class="profitDeltaClass(row.deltaProfitPerHour)">{{ formatCurrency(row.deltaProfitPerHour) }}</td>
-              <td class="px-2 py-2" :class="profitDeltaClass(row.deltaProfitPct)">{{ formatSignedPercent(row.deltaProfitPct) }}</td>
-              <td class="px-2 py-2" :class="profitDeltaClass(row.deltaDpsPct)">{{ formatSignedPercent(row.deltaDpsPct) }}</td>
-              <td class="px-2 py-2" :class="profitDeltaClass(row.deltaXpPct)">{{ formatSignedPercent(row.deltaXpPct) }}</td>
-              <td class="px-2 py-2" :class="profitDeltaClass(row.deltaKillsPct)">{{ formatSignedPercent(row.deltaKillsPct) }}</td>
-              <td class="px-2 py-2">{{ formatCompactCurrency(row.costInsights?.totalUpgradeCost) }}</td>
-              <td class="px-2 py-2">{{ formatPurchaseDuration(row.costInsights?.purchaseDays) }}</td>
-              <td class="px-2 py-2">{{ formatCostPerPoint01Pct(row.costInsights?.goldPerPoint01PctAvg) }}</td>
-              <td class="px-2 py-2">{{ formatCostPerPoint01Pct(row.costInsights?.compositeGoldPerPoint01Pct) }}</td>
-            </tr>
-          </tbody>
-        </table>
+              </TableCell>
+              <TableCell class="px-2 py-2">{{ formatRowSimCount(row) }}</TableCell>
+              <TableCell class="px-2 py-2">{{ formatNumber(row.finalScore) }}</TableCell>
+              <TableCell class="px-2 py-2">{{ formatNumber(row.performanceScore) }}</TableCell>
+              <TableCell class="px-2 py-2">{{ formatNumber(row.stabilityScore) }}</TableCell>
+              <TableCell class="px-2 py-2">{{ formatNumber(row.costScore) }}</TableCell>
+              <TableCell class="px-2 py-2">{{ formatCompactCurrency(row.meanProfitPerHour) }}</TableCell>
+              <TableCell class="px-2 py-2" :class="profitDeltaClass(row.deltaProfitPerHour)">{{ formatCurrency(row.deltaProfitPerHour) }}</TableCell>
+              <TableCell class="px-2 py-2" :class="profitDeltaClass(row.deltaProfitPct)">{{ formatSignedPercent(row.deltaProfitPct) }}</TableCell>
+              <TableCell class="px-2 py-2" :class="profitDeltaClass(row.deltaDpsPct)">{{ formatSignedPercent(row.deltaDpsPct) }}</TableCell>
+              <TableCell class="px-2 py-2" :class="profitDeltaClass(row.deltaXpPct)">{{ formatSignedPercent(row.deltaXpPct) }}</TableCell>
+              <TableCell class="px-2 py-2" :class="profitDeltaClass(row.deltaKillsPct)">{{ formatSignedPercent(row.deltaKillsPct) }}</TableCell>
+              <TableCell class="px-2 py-2">{{ formatCompactCurrency(row.costInsights?.totalUpgradeCost) }}</TableCell>
+              <TableCell class="px-2 py-2">{{ formatPurchaseDuration(row.costInsights?.purchaseDays) }}</TableCell>
+              <TableCell class="px-2 py-2">{{ formatCostPerPoint01Pct(row.costInsights?.goldPerPoint01PctAvg) }}</TableCell>
+              <TableCell class="px-2 py-2">{{ formatCostPerPoint01Pct(row.costInsights?.compositeGoldPerPoint01Pct) }}</TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
       </div>
 
       <DisclosurePanel :title="t('common:multiRound.rawTitle', 'Raw Round Data')">
         <div class="overflow-x-auto">
-          <table class="min-w-[1200px] w-max text-sm">
-            <thead>
-              <tr class="border-b border-white/10 text-left text-xs uppercase tracking-[0.14em] text-slate-400">
-                <th class="px-2 py-2">{{ t("common:vue.queue.variant", "Variant") }}</th>
-                <th class="px-2 py-2">{{ t("common:vue.queue.round", "Round") }}</th>
-                <th class="px-2 py-2">{{ t("common:queue.metricDps", "DPS") }}</th>
-                <th class="px-2 py-2">{{ t("common:multiRound.deltaDpsPct", "DPS Delta%") }}</th>
-                <th class="px-2 py-2">{{ t("common:queue.dailyNoRngProfit", "Daily No RNG Profit") }}</th>
-                <th class="px-2 py-2">{{ t("common:multiRound.deltaProfitPct", "Profit Delta%") }}</th>
-                <th class="px-2 py-2">{{ t("common:vue.queue.xpPerHour", "XP/h") }}</th>
-                <th class="px-2 py-2">{{ t("common:multiRound.deltaXpPct", "XP Delta%") }}</th>
-                <th class="px-2 py-2">{{ t("common:simulationResults.killPerHour", "Kills/h") }}</th>
-                <th class="px-2 py-2">{{ t("common:multiRound.deltaKillsPct", "Kills Delta%") }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="row in rawRowsForDisplay" :key="`${row.id}-${row.round}`" class="border-b border-white/5 text-slate-200">
-                <td class="px-2 py-2">
+          <Table class="min-w-[1200px] w-max text-sm">
+            <TableHeader>
+              <TableRow class="border-b border-border text-left text-xs uppercase  text-muted-foreground">
+                <TableHead class="px-2 py-2">{{ t("common:vue.queue.variant", "Variant") }}</TableHead>
+                <TableHead class="px-2 py-2">{{ t("common:vue.queue.round", "Round") }}</TableHead>
+                <TableHead class="px-2 py-2">{{ t("common:queue.metricDps", "DPS") }}</TableHead>
+                <TableHead class="px-2 py-2">{{ t("common:multiRound.deltaDpsPct", "DPS Delta%") }}</TableHead>
+                <TableHead class="px-2 py-2">{{ t("common:queue.dailyNoRngProfit", "Daily No RNG Profit") }}</TableHead>
+                <TableHead class="px-2 py-2">{{ t("common:multiRound.deltaProfitPct", "Profit Delta%") }}</TableHead>
+                <TableHead class="px-2 py-2">{{ t("common:vue.queue.xpPerHour", "XP/h") }}</TableHead>
+                <TableHead class="px-2 py-2">{{ t("common:multiRound.deltaXpPct", "XP Delta%") }}</TableHead>
+                <TableHead class="px-2 py-2">{{ t("common:simulationResults.killPerHour", "Kills/h") }}</TableHead>
+                <TableHead class="px-2 py-2">{{ t("common:multiRound.deltaKillsPct", "Kills Delta%") }}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow v-for="row in rawRowsForDisplay" :key="`${row.id}-${row.round}`" class="border-b border-border text-foreground">
+                <TableCell class="px-2 py-2">
                   <p>{{ formatQueueItemSummary(row) }}</p>
-                  <p v-if="getHiddenChangeCount(row) > 0" class="mt-0.5 text-xs text-slate-500">
+                  <p v-if="getHiddenChangeCount(row) > 0" class="mt-0.5 text-xs text-muted-foreground">
                     +{{ getHiddenChangeCount(row) }}
                   </p>
-                </td>
-                <td class="px-2 py-2">{{ row.round }}</td>
-                <td class="px-2 py-2">{{ formatNumber(row.metrics?.dps) }}</td>
-                <td class="px-2 py-2" :class="profitDeltaClass(row.deltas?.dps?.pct)">{{ formatSignedPercent(row.deltas?.dps?.pct) }}</td>
-                <td class="px-2 py-2">{{ formatCurrency(row.metrics?.dailyNoRngProfit) }}</td>
-                <td class="px-2 py-2" :class="profitDeltaClass(row.deltas?.dailyNoRngProfit?.pct)">{{ formatSignedPercent(row.deltas?.dailyNoRngProfit?.pct) }}</td>
-                <td class="px-2 py-2">{{ formatNumber(row.metrics?.xpPerHour) }}</td>
-                <td class="px-2 py-2" :class="profitDeltaClass(row.deltas?.xpPerHour?.pct)">{{ formatSignedPercent(row.deltas?.xpPerHour?.pct) }}</td>
-                <td class="px-2 py-2">{{ formatNumber(row.metrics?.killsPerHour) }}</td>
-                <td class="px-2 py-2" :class="profitDeltaClass(row.deltas?.killsPerHour?.pct)">{{ formatSignedPercent(row.deltas?.killsPerHour?.pct) }}</td>
-              </tr>
-            </tbody>
-          </table>
+                </TableCell>
+                <TableCell class="px-2 py-2">{{ row.round }}</TableCell>
+                <TableCell class="px-2 py-2">{{ formatNumber(row.metrics?.dps) }}</TableCell>
+                <TableCell class="px-2 py-2" :class="profitDeltaClass(row.deltas?.dps?.pct)">{{ formatSignedPercent(row.deltas?.dps?.pct) }}</TableCell>
+                <TableCell class="px-2 py-2">{{ formatCurrency(row.metrics?.dailyNoRngProfit) }}</TableCell>
+                <TableCell class="px-2 py-2" :class="profitDeltaClass(row.deltas?.dailyNoRngProfit?.pct)">{{ formatSignedPercent(row.deltas?.dailyNoRngProfit?.pct) }}</TableCell>
+                <TableCell class="px-2 py-2">{{ formatNumber(row.metrics?.xpPerHour) }}</TableCell>
+                <TableCell class="px-2 py-2" :class="profitDeltaClass(row.deltas?.xpPerHour?.pct)">{{ formatSignedPercent(row.deltas?.xpPerHour?.pct) }}</TableCell>
+                <TableCell class="px-2 py-2">{{ formatNumber(row.metrics?.killsPerHour) }}</TableCell>
+                <TableCell class="px-2 py-2" :class="profitDeltaClass(row.deltas?.killsPerHour?.pct)">{{ formatSignedPercent(row.deltas?.killsPerHour?.pct) }}</TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
         </div>
       </DisclosurePanel>
     </template>
@@ -242,6 +237,7 @@ import {
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { useGameDataText } from "../composables/useGameDataText.js";
 import { useI18nText } from "../composables/useI18nText.js";
+import { Progress } from "../components/ui/progress/index.js";
 import { isQueueRunInProgress } from "../multiResultsPresentation.js";
 import { formatQueueTriggerDetailLine } from "../queueTriggerPresentation.js";
 
@@ -296,7 +292,6 @@ const queueProgressPercent = computed(() => {
   return Math.max(0, Math.min(100, Math.floor(progress * 100)));
 });
 const queueProgressPercentText = computed(() => `${queueProgressPercent.value}%`);
-const queueProgressBarWidth = computed(() => `${queueProgressPercent.value}%`);
 const runningPlaceholderStyle = computed(() => ({
   minHeight: "max(320px, calc(100vh - 32rem))",
 }));
@@ -853,19 +848,19 @@ function formatRowSimCount(row) {
 function getRankRowClass(row) {
   const rank = Math.max(0, Math.floor(Number(row?.rank || 0)));
   if (rank === 1) {
-    return "bg-amber-300/10";
+    return "bg-primary/10";
   }
   if (rank === 2) {
-    return "bg-slate-200/10";
+    return "bg-muted/50";
   }
   if (rank === 3) {
-    return "bg-orange-400/10";
+    return "bg-warning/10";
   }
   if (rank === 4) {
-    return "bg-emerald-400/10";
+    return "bg-success/10";
   }
   if (rank === 5) {
-    return "bg-sky-400/10";
+    return "bg-info/10";
   }
   return "";
 }
@@ -873,21 +868,21 @@ function getRankRowClass(row) {
 function getRankBadgeClass(rankValue) {
   const rank = Math.max(0, Math.floor(Number(rankValue || 0)));
   if (rank === 1) {
-    return "border-amber-300/80 bg-amber-300/20 text-amber-100";
+    return "border-primary/40 bg-primary/10 text-primary";
   }
   if (rank === 2) {
-    return "border-slate-200/70 bg-slate-200/15 text-slate-100";
+    return "border-border bg-muted/50 text-foreground";
   }
   if (rank === 3) {
-    return "border-orange-300/70 bg-orange-300/15 text-orange-100";
+    return "border-warning/40 bg-warning/10 text-warning";
   }
   if (rank === 4) {
-    return "border-emerald-300/70 bg-emerald-300/15 text-emerald-100";
+    return "border-success/40 bg-success/10 text-success";
   }
   if (rank === 5) {
-    return "border-sky-300/70 bg-sky-300/15 text-sky-100";
+    return "border-info/40 bg-info/10 text-info";
   }
-  return "border-white/15 bg-white/5 text-slate-200";
+  return "border-border bg-muted/40 text-foreground";
 }
 
 function toFiniteForExport(value, digits = null) {
@@ -1085,11 +1080,11 @@ async function exportRankingRowsExcel() {
 function profitDeltaClass(value) {
   const numeric = Number(value || 0);
   if (numeric > 0) {
-    return "text-emerald-300";
+    return "text-success";
   }
   if (numeric < 0) {
-    return "text-rose-300";
+    return "text-destructive";
   }
-  return "text-slate-200";
+  return "text-foreground";
 }
 </script>

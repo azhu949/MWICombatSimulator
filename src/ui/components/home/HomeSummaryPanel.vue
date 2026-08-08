@@ -1,74 +1,70 @@
 ﻿<template>
-  <aside :class="['panel', compactHeader ? 'space-y-3' : 'space-y-4']">
+  <aside :class="['surface-panel', compactHeader ? 'space-y-3' : 'space-y-4']">
     <div :class="['flex justify-between gap-3', compactHeader ? 'items-center' : 'items-start']">
       <div>
-        <p v-if="eyebrow" class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ eyebrow }}</p>
+        <p v-if="eyebrow" class="text-xs font-semibold text-muted-foreground">{{ eyebrow }}</p>
         <h2 :class="[
-          'font-heading font-semibold text-amber-200',
+          'font-heading font-semibold text-foreground',
           compactHeader ? 'text-base' : 'text-lg',
           eyebrow ? 'mt-1' : ''
         ]">{{ title }}</h2>
-        <p v-if="showDescription && description" class="mt-1 text-sm text-slate-400">{{ description }}</p>
+        <p v-if="showDescription && description" class="mt-1 text-sm text-muted-foreground">{{ description }}</p>
       </div>
-      <span class="badge shrink-0" :class="statusClass">{{ statusLabel }}</span>
+      <Badge class="shrink-0" :variant="statusVariant">{{ statusLabel }}</Badge>
     </div>
 
-    <div v-if="showStatusCard" class="rounded-2xl border border-white/10 bg-slate-900/40 p-3">
-      <p class="text-sm font-medium text-slate-100">{{ statusText }}</p>
-      <p v-if="isRunning" class="mt-1 text-xs uppercase tracking-[0.14em] text-slate-400">{{ progressText }}</p>
-      <div v-if="isRunning" class="mt-3 h-2 overflow-hidden rounded-full bg-slate-800">
-        <div
-          class="h-full bg-gradient-to-r from-teal-400 to-amber-300 transition-all"
-          :style="{ width: `${progressPercent}%` }"
-        ></div>
-      </div>
+    <div v-if="showStatusCard" class="rounded-md border border-border bg-muted/45 p-3">
+      <p class="text-sm font-medium text-foreground">{{ statusText }}</p>
+      <p v-if="isRunning" class="mt-1 text-xs text-muted-foreground">{{ progressText }}</p>
+      <Progress v-if="isRunning" class="mt-3" :value="progressPercent" />
     </div>
 
     <div v-if="showConfigRows && configRows.length > 0" class="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
       <div
         v-for="row in configRows"
         :key="row.label"
-        class="rounded-xl border border-white/10 bg-slate-900/30 px-3 py-2"
+        class="rounded-md border border-border bg-muted/30 px-3 py-2"
       >
-        <p class="text-[11px] uppercase tracking-[0.12em] text-slate-400">{{ row.label }}</p>
+        <p class="text-[11px] font-semibold text-muted-foreground">{{ row.label }}</p>
         <p class="mt-1 text-sm" :class="rowClass(row.tone)">{{ row.value }}</p>
       </div>
     </div>
 
     <div>
       <div class="mb-2 flex items-center justify-between gap-2">
-        <h3 class="font-heading text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">{{ metricsTitle }}</h3>
-        <button
+        <h3 class="font-heading text-sm font-semibold text-foreground">{{ metricsTitle }}</h3>
+        <Button
           type="button"
-          class="action-button-muted px-3 py-1.5 text-xs"
+          variant="outline"
+          size="sm"
           :disabled="!canOpenResults"
           @click="$emit('view-results')"
         >
           {{ resultsButtonLabel }}
-        </button>
+        </Button>
       </div>
       <div class="grid gap-2 sm:grid-cols-2 xl:grid-cols-2">
         <div
           v-for="metric in metricRows"
           :key="metric.label"
-          class="rounded-xl border border-white/10 bg-slate-900/45 px-3 py-3"
+          class="rounded-md border border-border bg-muted/40 px-3 py-3"
         >
-          <p class="text-[11px] uppercase tracking-[0.12em] text-slate-400">{{ metric.label }}</p>
+          <p class="text-[11px] font-semibold text-muted-foreground">{{ metric.label }}</p>
           <p class="mt-1 font-heading text-lg" :class="rowClass(metric.tone)">{{ metric.value }}</p>
         </div>
       </div>
     </div>
 
     <div>
-      <h3 class="mb-2 font-heading text-sm font-semibold uppercase tracking-[0.14em] text-slate-300">{{ buildTitle }}</h3>
+      <h3 class="mb-2 font-heading text-sm font-semibold text-foreground">{{ buildTitle }}</h3>
       <div class="space-y-2">
         <div
           v-for="row in buildRows"
           :key="row.label"
-          class="grid grid-cols-[1fr_auto] gap-3 rounded-xl border border-white/10 bg-slate-900/30 px-3 py-2 text-sm"
+          class="grid grid-cols-[1fr_auto] gap-3 rounded-md border border-border bg-muted/30 px-3 py-2 text-sm"
         >
-          <p class="text-slate-300">{{ row.label }}</p>
-          <p class="text-slate-100">{{ row.value }}</p>
+          <p class="text-muted-foreground">{{ row.label }}</p>
+          <p class="text-foreground">{{ row.value }}</p>
         </div>
       </div>
     </div>
@@ -77,6 +73,9 @@
 
 <script setup>
 import { computed } from 'vue';
+import { Badge } from "../ui/badge/index.js";
+import { Button } from "../ui/button/index.js";
+import { Progress } from "../ui/progress/index.js";
 
 const props = defineProps({
   eyebrow: {
@@ -163,27 +162,27 @@ const props = defineProps({
 
 defineEmits(['view-results']);
 
-const statusClass = computed(() => {
+const statusVariant = computed(() => {
   if (props.statusTone === 'running') {
-    return 'border-amber-300/40 bg-amber-300/10 text-amber-200';
+    return 'warning';
   }
   if (props.statusTone === 'ready') {
-    return 'border-emerald-300/40 bg-emerald-300/10 text-emerald-200';
+    return 'success';
   }
-  return 'border-white/10 bg-white/5 text-slate-300';
+  return 'secondary';
 });
 
 function rowClass(tone) {
   if (tone === 'success') {
-    return 'text-emerald-300';
+    return 'text-success';
   }
   if (tone === 'danger') {
-    return 'text-rose-300';
+    return 'text-destructive';
   }
   if (tone === 'accent') {
-    return 'text-amber-200';
+    return 'text-primary';
   }
-  return 'text-slate-100';
+  return 'text-foreground';
 }
 </script>
 

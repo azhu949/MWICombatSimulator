@@ -1,18 +1,18 @@
 <template>
   <section class="space-y-4">
     <div class="grid grid-cols-1 gap-4">
-      <div class="panel overflow-hidden">
+      <div class="surface-panel overflow-hidden">
         <div class="flex flex-col gap-4 lg:flex-row lg:items-start lg:justify-between">
           <div class="space-y-2">
-            <p class="text-xs uppercase tracking-[0.18em] text-amber-300/80">{{ t("common:advisor.eyebrow", "Advisor") }}</p>
-            <h2 class="font-heading text-2xl font-semibold text-slate-100">{{ t("common:advisor.title", "刷图推荐器") }}</h2>
-            <p class="max-w-3xl text-sm leading-6 text-slate-300">
+            <p class="text-xs uppercase  text-primary">{{ t("common:advisor.eyebrow", "Advisor") }}</p>
+            <h2 class="font-heading text-2xl font-semibold text-foreground">{{ t("common:advisor.title", "刷图推荐器") }}</h2>
+            <p class="max-w-3xl text-sm leading-6 text-foreground/85">
               {{ t("common:advisor.desc", "Use your current team, buffs, achievements, housing, pricing, and run duration to rank the best farming targets across solo zones and group zones.") }}
             </p>
             <DisclosurePanel :title="t('common:advisor.scoreExplainTitle', '评分说明：综合分与置信度怎么算')" class="max-w-3xl">
-              <div class="space-y-3 text-xs leading-6 text-slate-300">
+              <div class="space-y-3 text-xs leading-6 text-foreground/85">
                 <div>
-                  <p class="font-semibold text-slate-100">{{ t("common:advisor.scoreExplainCompositeHeading", "综合分怎么算？") }}</p>
+                  <p class="font-semibold text-foreground">{{ t("common:advisor.scoreExplainCompositeHeading", "综合分怎么算？") }}</p>
                   <ul class="mt-1 list-disc space-y-1 pl-5">
                     <li>{{ t("common:advisor.scoreExplainComposite1", "按 4 个维度评估每个目标：每日收益、每小时经验、每小时击杀、每小时死亡（安全性）。") }}</li>
                     <li>{{ t("common:advisor.scoreExplainComposite2", "每个维度先与所有候选目标横向对比，给出 0–100 的相对得分。") }}</li>
@@ -21,7 +21,7 @@
                   </ul>
                 </div>
                 <div>
-                  <p class="font-semibold text-slate-100">{{ t("common:advisor.scoreExplainConfidenceHeading", "置信度怎么算？") }}</p>
+                  <p class="font-semibold text-foreground">{{ t("common:advisor.scoreExplainConfidenceHeading", "置信度怎么算？") }}</p>
                   <ul class="mt-1 list-disc space-y-1 pl-5">
                     <li>{{ t("common:advisor.scoreExplainConfidence1", "反映“多次扫描结果是否一致”——多次跑出来的数据越接近，置信度越高。") }}</li>
                     <li>{{ t("common:advisor.scoreExplainConfidence2", "样本数量：扫描轮数越多越高，复核 10–20 轮即可接近上限。") }}</li>
@@ -31,18 +31,18 @@
                 </div>
               </div>
             </DisclosurePanel>
-            <div class="flex flex-wrap items-center gap-2 text-xs text-slate-400">
-              <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">{{ selectedPlayersLabel }}</span>
-              <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">{{ metricPlayerLabel }}</span>
-              <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">{{ runtimeStatusText }}</span>
-              <span class="rounded-full border border-white/10 bg-white/5 px-2.5 py-1">{{ pricingModeText }}</span>
+            <div class="flex flex-wrap items-center gap-2 text-xs text-muted-foreground">
+              <span class="rounded-md border border-border bg-muted/40 px-2.5 py-1">{{ selectedPlayersLabel }}</span>
+              <span class="rounded-md border border-border bg-muted/40 px-2.5 py-1">{{ metricPlayerLabel }}</span>
+              <span class="rounded-md border border-border bg-muted/40 px-2.5 py-1">{{ runtimeStatusText }}</span>
+              <span class="rounded-md border border-border bg-muted/40 px-2.5 py-1">{{ pricingModeText }}</span>
             </div>
           </div>
 
           <div class="flex w-full flex-col gap-3 lg:w-[280px]">
             <button
               type="button"
-              class="action-button-primary w-full justify-center"
+              class="button-primary w-full justify-center"
               :disabled="isRunning"
               @click="runAdvisor"
             >
@@ -50,38 +50,36 @@
             </button>
             <button
               type="button"
-              class="action-button-danger w-full justify-center"
+              class="button-danger w-full justify-center"
               :disabled="!isRunning"
               @click="stopAdvisor"
             >
               {{ t("common:advisor.stop", "Stop Advisor") }}
             </button>
-            <div class="rounded-2xl border border-amber-300/20 bg-gradient-to-br from-amber-300/15 via-amber-300/5 to-transparent p-3 text-xs text-slate-300">
+            <div class="rounded-md border border-primary/40 bg-primary/10 p-3 text-xs text-foreground/85">
               <div class="flex items-center justify-between gap-2">
-                <span class="uppercase tracking-[0.14em] text-amber-200">{{ t("common:advisor.progress", "Progress") }}</span>
+                <span class="uppercase  text-primary">{{ t("common:advisor.progress", "Progress") }}</span>
                 <span>{{ progressText }}</span>
               </div>
-              <div class="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
-                <div class="h-full rounded-full bg-amber-300 transition-all duration-300" :style="{ width: `${progressPercent}%` }"></div>
-              </div>
-              <p class="mt-2 text-[11px] text-slate-400">{{ runtimePhaseText }}</p>
+              <Progress class="mt-2" :value="progressPercent" />
+              <p class="mt-2 text-[11px] text-muted-foreground">{{ runtimePhaseText }}</p>
             </div>
           </div>
         </div>
 
         <div class="mt-4 grid gap-4 lg:grid-cols-[minmax(0,1.2fr)_minmax(0,1fr)]">
-          <div class="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+          <div class="space-y-3 rounded-md border border-border bg-muted/40 p-4">
             <div class="flex flex-wrap items-center gap-2">
-              <span class="field-label mb-0">{{ t("common:advisor.goal", "Goal") }}</span>
+              <span class="control-label mb-0">{{ t("common:advisor.goal", "Goal") }}</span>
               <button
                 v-for="preset in presetOptions"
                 :key="preset.value"
                 type="button"
                 :class="[
-                  'rounded-full border px-3 py-1.5 text-xs transition',
+                  'rounded-md border px-3 py-1.5 text-xs transition',
                   simulator.advisor.goalPreset === preset.value
-                    ? 'border-amber-300 bg-amber-300/15 text-amber-100'
-                    : 'border-white/10 bg-white/5 text-slate-300 hover:border-amber-300/40 hover:text-amber-100',
+                    ? 'border-primary/40 bg-primary/10 text-primary'
+                    : 'border-border bg-muted/40 text-foreground/85 hover:border-primary/40 hover:text-primary',
                 ]"
                 @click="setPreset(preset.value)"
               >
@@ -91,102 +89,102 @@
 
             <div class="grid gap-3 sm:grid-cols-2 xl:grid-cols-2">
               <label v-for="weight in customInputFields" :key="weight.key" class="block">
-                <span class="field-label">{{ weight.label }}</span>
+                <span class="control-label">{{ weight.label }}</span>
                 <input
                   :value="weightInputValue(weight.key)"
                   type="number"
                   min="0"
                   step="0.01"
-                  class="field-input"
+                  class="control-input"
                   :disabled="!isCustomGoal"
                   @input="(event) => onCustomWeightInput(weight.key, event)"
                   @change="onCustomWeightChange"
                 />
               </label>
             </div>
-            <p class="text-xs text-slate-400">
+            <p class="text-xs text-muted-foreground">
               {{ customWeightSummaryText }}
             </p>
           </div>
 
-          <div class="space-y-3 rounded-2xl border border-white/10 bg-white/[0.03] p-4">
+          <div class="space-y-3 rounded-md border border-border bg-muted/40 p-4">
             <div class="grid gap-3 sm:grid-cols-2">
-              <label class="flex items-center gap-2 rounded-xl border border-white/10 bg-slate-950/40 px-3 py-2 text-sm text-slate-200">
-                <input v-model="filterDraft.includeSoloZones" type="checkbox" class="accent-amber-300" />
+              <label class="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground">
+                <input v-model="filterDraft.includeSoloZones" type="checkbox" class="accent-primary" />
                 <span>{{ t("common:advisor.includeSolo", "Solo zones") }}</span>
               </label>
-              <label class="flex items-center gap-2 rounded-xl border border-white/10 bg-slate-950/40 px-3 py-2 text-sm text-slate-200">
-                <input v-model="filterDraft.includeGroupZones" type="checkbox" class="accent-amber-300" />
+              <label class="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground">
+                <input v-model="filterDraft.includeGroupZones" type="checkbox" class="accent-primary" />
                 <span>{{ t("common:advisor.includeGroup", "Group zones") }}</span>
               </label>
-              <label class="flex items-center gap-2 rounded-xl border border-white/10 bg-slate-950/40 px-3 py-2 text-sm text-slate-200">
-                <input v-model="filterDraft.refineTopEnabled" type="checkbox" class="accent-amber-300" />
+              <label class="flex items-center gap-2 rounded-md border border-border bg-muted/50 px-3 py-2 text-sm text-foreground">
+                <input v-model="filterDraft.refineTopEnabled" type="checkbox" class="accent-primary" />
                 <span>{{ t("common:advisor.refineTop", "Refine Top 8") }}</span>
               </label>
             </div>
 
             <div class="grid gap-3 sm:grid-cols-2">
-              <label class="block">
-                <span class="field-label">{{ t("common:advisor.refineCount", "Refine Count") }}</span>
-                <input v-model.number="filterDraft.refineTopCount" type="number" min="1" max="32" class="field-input" />
-              </label>
-              <label class="block">
-                <span class="field-label">{{ t("common:advisor.refineRounds", "Refine Rounds") }}</span>
-                <input v-model.number="filterDraft.refineRounds" type="number" min="1" max="30" class="field-input" />
-              </label>
-              <label class="block">
-                <span class="field-label">{{ t("common:advisor.quickRounds", "Quick Rounds") }}</span>
-                <input v-model.number="filterDraft.quickRounds" type="number" min="1" max="10" class="field-input" />
-              </label>
+              <div>
+                <label for="advisor-refine-count" class="control-label">{{ t("common:advisor.refineCount", "Refine Count") }}</label>
+                <NumberField id="advisor-refine-count" v-model="filterDraft.refineTopCount" :min="1" :max="32" />
+              </div>
+              <div>
+                <label for="advisor-refine-rounds" class="control-label">{{ t("common:advisor.refineRounds", "Refine Rounds") }}</label>
+                <NumberField id="advisor-refine-rounds" v-model="filterDraft.refineRounds" :min="1" :max="30" />
+              </div>
+              <div>
+                <label for="advisor-quick-rounds" class="control-label">{{ t("common:advisor.quickRounds", "Quick Rounds") }}</label>
+                <NumberField id="advisor-quick-rounds" v-model="filterDraft.quickRounds" :min="1" :max="10" />
+              </div>
             </div>
           </div>
         </div>
 
         <div v-if="applyStatus || simulator.advisor.error" class="mt-4 space-y-2">
-          <p v-if="applyStatus" class="rounded-xl border border-emerald-300/20 bg-emerald-400/10 px-3 py-2 text-sm text-emerald-200">
+          <p v-if="applyStatus" class="rounded-md border border-success/40 bg-success/10 px-3 py-2 text-sm text-success">
             {{ applyStatus }}
           </p>
-          <p v-if="simulator.advisor.error" class="rounded-xl border border-amber-300/20 bg-amber-300/10 px-3 py-2 text-sm text-amber-100">
+          <p v-if="simulator.advisor.error" class="rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-sm text-primary">
             {{ advisorErrorText }}
           </p>
         </div>
       </div>
 
-      <aside class="panel">
+      <aside class="surface-panel">
         <div v-if="topCardsWithRows.length === 0">
-          <p class="text-sm text-slate-400">{{ t("common:advisor.noCards", "Run the advisor to generate quick picks and top cards.") }}</p>
+          <p class="text-sm text-muted-foreground">{{ t("common:advisor.noCards", "Run the advisor to generate quick picks and top cards.") }}</p>
         </div>
 
         <div v-else class="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
             <article
              v-for="card in topCardsWithRows"
              :key="card.key"
-             class="rounded-2xl border border-white/10 bg-slate-900/80 bg-gradient-to-br from-amber-300/15 via-amber-300/5 to-transparent p-4 shadow-[0_18px_50px_rgba(15,23,42,0.35)]"
+             class="rounded-md border border-border bg-primary/10 p-4 shadow-lg"
            >
              <div class="flex items-start justify-between gap-3">
                <div>
-                 <p class="text-[11px] uppercase tracking-[0.18em] text-amber-300">{{ card.title }}</p>
-                 <h3 class="mt-1 font-heading text-lg text-slate-100">{{ getTargetLabel(card.row || card) }}</h3>
-                 <p class="mt-1 text-xs text-slate-400">{{ getContentTypeLabel(card.row || card) }} · {{ getDifficultyLabel(card.row || card) }}</p>
+                 <p class="text-[11px] uppercase  text-primary">{{ card.title }}</p>
+                 <h3 class="mt-1 font-heading text-lg text-foreground">{{ getTargetLabel(card.row || card) }}</h3>
+                 <p class="mt-1 text-xs text-muted-foreground">{{ getContentTypeLabel(card.row || card) }} · {{ getDifficultyLabel(card.row || card) }}</p>
                </div>
-              <span class="rounded-full border border-amber-300/30 bg-amber-300/10 px-2.5 py-1 text-xs text-amber-100">
+              <span class="rounded-md border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs text-primary">
                 {{ formatMetric(card.row?.finalScore ?? card.score, 1) }}
               </span>
             </div>
-            <div v-if="card.row" class="mt-3 grid grid-cols-2 gap-2 text-xs text-slate-300">
-              <div class="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
-                <p class="text-slate-400">{{ t("common:advisor.dailyProfit", "Daily Profit") }}</p>
-                <p class="mt-1 text-sm text-slate-100">{{ formatAdvisorDailyProfitValue(card.row.profitPerHour) }}</p>
+            <div v-if="card.row" class="mt-3 grid grid-cols-2 gap-2 text-xs text-foreground/85">
+              <div class="rounded-md border border-border bg-muted/40 px-3 py-2">
+                <p class="text-muted-foreground">{{ t("common:advisor.dailyProfit", "Daily Profit") }}</p>
+                <p class="mt-1 text-sm text-foreground">{{ formatAdvisorDailyProfitValue(card.row.profitPerHour) }}</p>
               </div>
-              <div class="rounded-xl border border-white/10 bg-white/5 px-3 py-2">
-                <p class="text-slate-400">{{ t("common:advisor.xpPerHour", "XP/h") }}</p>
-                <p class="mt-1 text-sm text-slate-100">{{ formatAdvisorCompactValue(card.row.xpPerHour) }}</p>
+              <div class="rounded-md border border-border bg-muted/40 px-3 py-2">
+                <p class="text-muted-foreground">{{ t("common:advisor.xpPerHour", "XP/h") }}</p>
+                <p class="mt-1 text-sm text-foreground">{{ formatAdvisorCompactValue(card.row.xpPerHour) }}</p>
               </div>
             </div>
             <button
               v-if="card.row"
               type="button"
-              class="action-button-muted mt-3 w-full justify-center"
+              class="button-secondary mt-3 w-full justify-center"
               @click="applyToHome(card.row)"
             >
               {{ t("common:advisor.applyToHome", "Apply to Home") }}
@@ -196,103 +194,103 @@
       </aside>
     </div>
 
-    <div v-if="displayRows.length === 0" class="panel">
-      <p class="text-sm text-slate-400">{{ t("common:advisor.noResults", "No advisor results yet. Click 'Run Advisor' to scan current farming targets.") }}</p>
+    <div v-if="displayRows.length === 0" class="surface-panel">
+      <p class="text-sm text-muted-foreground">{{ t("common:advisor.noResults", "No advisor results yet. Click 'Run Advisor' to scan current farming targets.") }}</p>
     </div>
 
-    <div v-else class="panel overflow-x-auto">
+    <div v-else class="surface-panel overflow-x-auto">
       <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
         <div>
-          <h3 class="font-heading text-base font-semibold text-amber-200">{{ t("common:advisor.tableTitle", "Recommended Targets") }}</h3>
-          <p class="text-xs text-slate-400">{{ tableSummaryText }}</p>
+          <h3 class="font-heading text-base font-semibold text-primary">{{ t("common:advisor.tableTitle", "Recommended Targets") }}</h3>
+          <p class="text-xs text-muted-foreground">{{ tableSummaryText }}</p>
         </div>
-        <span class="rounded-full border border-white/10 bg-white/5 px-3 py-1 text-xs text-slate-300">
+        <span class="rounded-md border border-border bg-muted/40 px-3 py-1 text-xs text-foreground/85">
           {{ t("common:advisor.rowCount", "Rows") }}: {{ displayRows.length }}
         </span>
       </div>
 
-      <table class="min-w-[1280px] w-full text-sm">
-        <thead>
-          <tr class="border-b border-white/10 text-left text-xs uppercase tracking-[0.14em] text-slate-400">
-            <th class="px-2 py-3">#</th>
-            <th class="px-2 py-3">{{ t("common:advisor.contentType", "Type") }}</th>
-            <th class="px-2 py-3">{{ t("common:advisor.target", "Target") }}</th>
-            <th class="px-2 py-3">{{ t("common:advisor.difficulty", "Difficulty") }}</th>
-            <th class="px-2 py-3">{{ t("common:advisor.dailyProfit", "Daily Profit") }}</th>
-            <th class="px-2 py-3">{{ t("common:advisor.xpPerHour", "XP/h") }}</th>
-            <th class="px-2 py-3">{{ t("common:advisor.killsPerHour", "Kills/h") }}</th>
-            <th class="px-2 py-3">{{ t("common:advisor.deathsPerHour", "Deaths/h") }}</th>
-            <th class="px-2 py-3">{{ t("common:advisor.score", "Score") }}</th>
-            <th class="px-2 py-3">{{ t("common:advisor.reason", "Reasons") }}</th>
-            <th class="px-2 py-3"></th>
-          </tr>
-        </thead>
-        <tbody>
-          <tr
+      <Table class="min-w-[1280px] w-full text-sm">
+        <TableHeader>
+          <TableRow class="border-b border-border text-left text-xs uppercase  text-muted-foreground">
+            <TableHead class="px-2 py-3">#</TableHead>
+            <TableHead class="px-2 py-3">{{ t("common:advisor.contentType", "Type") }}</TableHead>
+            <TableHead class="px-2 py-3">{{ t("common:advisor.target", "Target") }}</TableHead>
+            <TableHead class="px-2 py-3">{{ t("common:advisor.difficulty", "Difficulty") }}</TableHead>
+            <TableHead class="px-2 py-3">{{ t("common:advisor.dailyProfit", "Daily Profit") }}</TableHead>
+            <TableHead class="px-2 py-3">{{ t("common:advisor.xpPerHour", "XP/h") }}</TableHead>
+            <TableHead class="px-2 py-3">{{ t("common:advisor.killsPerHour", "Kills/h") }}</TableHead>
+            <TableHead class="px-2 py-3">{{ t("common:advisor.deathsPerHour", "Deaths/h") }}</TableHead>
+            <TableHead class="px-2 py-3">{{ t("common:advisor.score", "Score") }}</TableHead>
+            <TableHead class="px-2 py-3">{{ t("common:advisor.reason", "Reasons") }}</TableHead>
+            <TableHead class="px-2 py-3"></TableHead>
+          </TableRow>
+        </TableHeader>
+        <TableBody>
+          <TableRow
             v-for="row in displayRows"
             :key="row.id"
             :class="[
-              'border-b border-white/5 align-top transition-colors',
-              row.rank <= 3 ? 'bg-amber-300/5' : 'hover:bg-white/5',
+              'border-b border-border align-top transition-colors',
+              row.rank <= 3 ? 'bg-primary/10' : 'hover:bg-muted/40',
             ]"
           >
-            <td class="px-2 py-3 font-medium text-slate-100">{{ row.rank }}</td>
-            <td class="px-2 py-3 text-slate-300">{{ getContentTypeLabel(row) }}</td>
-            <td class="px-2 py-3">
-              <div class="font-medium text-slate-100">{{ getTargetLabel(row) }}</div>
-            </td>
-            <td class="px-2 py-3 text-slate-300">{{ getDifficultyLabel(row) }}</td>
-            <td class="px-2 py-3 text-slate-100">
+            <TableCell class="px-2 py-3 font-medium text-foreground">{{ row.rank }}</TableCell>
+            <TableCell class="px-2 py-3 text-foreground/85">{{ getContentTypeLabel(row) }}</TableCell>
+            <TableCell class="px-2 py-3">
+              <div class="font-medium text-foreground">{{ getTargetLabel(row) }}</div>
+            </TableCell>
+            <TableCell class="px-2 py-3 text-foreground/85">{{ getDifficultyLabel(row) }}</TableCell>
+            <TableCell class="px-2 py-3 text-foreground">
               <span :class="Number(row.profitPerHour) === maxAdvisorRowMetrics.profitPerHour ? maxMetricValueClass : metricValueClass">
                 {{ formatAdvisorDailyProfitValue(row.profitPerHour) }}
               </span>
-            </td>
-            <td class="px-2 py-3 text-slate-100">
+            </TableCell>
+            <TableCell class="px-2 py-3 text-foreground">
               <span :class="Number(row.xpPerHour) === maxAdvisorRowMetrics.xpPerHour ? maxMetricValueClass : metricValueClass">
                 {{ formatAdvisorCompactValue(row.xpPerHour) }}
               </span>
-            </td>
-            <td class="px-2 py-3 text-slate-100">
+            </TableCell>
+            <TableCell class="px-2 py-3 text-foreground">
               <span :class="Number(row.killsPerHour) === maxAdvisorRowMetrics.killsPerHour ? maxMetricValueClass : metricValueClass">
                 {{ formatMetric(row.killsPerHour, 1) }}
               </span>
-            </td>
-            <td class="px-2 py-3 text-slate-100">{{ formatMetric(row.deathsPerHour, 2) }}</td>
-            <td class="px-2 py-3">
+            </TableCell>
+            <TableCell class="px-2 py-3 text-foreground">{{ formatMetric(row.deathsPerHour, 2) }}</TableCell>
+            <TableCell class="px-2 py-3">
               <div class="flex flex-wrap items-center gap-2">
-                <span class="rounded-full border border-amber-300/30 bg-amber-300/10 px-2.5 py-1 text-xs text-amber-100">
+                <span class="rounded-md border border-primary/40 bg-primary/10 px-2.5 py-1 text-xs text-primary">
                   {{ formatMetric(row.finalScore, 1) }}
                 </span>
-                <span v-if="row.isRefined" class="rounded-full border border-emerald-300/20 bg-emerald-400/10 px-2.5 py-1 text-[11px] text-emerald-200">
+                <span v-if="row.isRefined" class="rounded-md border border-success/40 bg-success/10 px-2.5 py-1 text-[11px] text-success">
                   {{ t("common:advisor.confidence", "Confidence") }} {{ formatMetric(row.confidenceScore, 0) }}%
                 </span>
-                <span v-else class="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-slate-300">
+                <span v-else class="rounded-md border border-border bg-muted/40 px-2.5 py-1 text-[11px] text-foreground/85">
                   {{ t("common:advisor.quick", "Quick") }}
                 </span>
               </div>
-              <p class="mt-1 text-[11px] text-slate-500">
+              <p class="mt-1 text-[11px] text-muted-foreground">
                 {{ row.isRefined ? t("common:advisor.refinedRounds", "Refined {done}/{total} rounds", { done: row.successfulRounds, total: row.refineRounds }) : t("common:advisor.singlePass", "Single quick pass") }}
               </p>
-            </td>
-            <td class="px-2 py-3">
+            </TableCell>
+            <TableCell class="px-2 py-3">
               <div class="flex max-w-[240px] flex-wrap gap-1.5">
                 <span
                   v-for="reason in row.reasons"
                   :key="reason"
-                  class="rounded-full border border-white/10 bg-white/5 px-2.5 py-1 text-[11px] text-slate-200"
+                  class="rounded-md border border-border bg-muted/40 px-2.5 py-1 text-[11px] text-foreground"
                 >
                   {{ getReasonLabel(reason) }}
                 </span>
               </div>
-            </td>
-            <td class="px-2 py-3 text-right">
-              <button type="button" class="action-button-muted" @click="applyToHome(row)">
+            </TableCell>
+            <TableCell class="px-2 py-3 text-right">
+              <button type="button" class="button-secondary" @click="applyToHome(row)">
                 {{ t("common:advisor.applyToHome", "Apply to Home") }}
               </button>
-            </td>
-          </tr>
-        </tbody>
-      </table>
+            </TableCell>
+          </TableRow>
+        </TableBody>
+      </Table>
     </div>
   </section>
 </template>
@@ -314,6 +312,8 @@ import {
 import { useGameDataText } from "../composables/useGameDataText.js";
 import { useI18nText } from "../composables/useI18nText.js";
 import DisclosurePanel from "../components/DisclosurePanel.vue";
+import { NumberField } from "../components/ui/number-field/index.js";
+import { Progress } from "../components/ui/progress/index.js";
 
  const simulator = useSimulatorStore();
  const router = useRouter();
@@ -321,9 +321,9 @@ import DisclosurePanel from "../components/DisclosurePanel.vue";
  const { getActionName } = useGameDataText();
  const applyStatus = ref("");
 
-const metricValueClass = "inline-flex items-center rounded-full border border-transparent px-2.5 py-1 tabular-nums";
+const metricValueClass = "inline-flex items-center rounded-md border border-transparent px-2.5 py-1 tabular-nums";
 
-const maxMetricValueClass = `${metricValueClass} border-amber-300/80 bg-amber-300/20 font-semibold text-amber-50 shadow-[0_14px_32px_rgba(245,158,11,0.16)]`;
+const maxMetricValueClass = `${metricValueClass} border-primary/40 bg-primary/10 font-semibold text-primary shadow-sm`;
 
 const presetOptions = computed(() => [
   { value: ADVISOR_GOAL_PRESET_BALANCED, label: t("common:advisor.presetBalanced", "Balanced") },

@@ -11,7 +11,7 @@ describe("SettingsPage baseline round defaults", () => {
     });
 
     it("offers 1 as a selectable preset for baseline rounds", () => {
-        expect(settingsPageSource).toContain('<option value="1">1</option>');
+        expect(settingsPageSource).toContain('<SelectItem value="1">1</SelectItem>');
         expect(settingsPageSource).toContain('["1", "5", "10", "20", "30", "50", "100", "200"]');
     });
 

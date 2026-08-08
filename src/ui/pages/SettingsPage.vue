@@ -1,30 +1,38 @@
 <template>
   <section class="space-y-4">
-    <div class="panel space-y-4">
+    <Tabs v-model="activeSettingsTab">
+      <TabsList class="sticky top-14 z-30 w-full justify-start overflow-x-auto bg-background/95 p-1 backdrop-blur">
+        <TabsTrigger value="queue">{{ t("common:settingsPage.queueSettingsCardTitle", "Queue Configuration") }}</TabsTrigger>
+        <TabsTrigger value="prices">{{ t("common:vue.settings.priceSettingsTitle", "Price Settings") }}</TabsTrigger>
+        <TabsTrigger value="equipment">{{ t("common:controls.equipmentSets", "Equipment Sets") }}</TabsTrigger>
+      </TabsList>
+
+      <TabsContent value="queue">
+      <div class="surface-panel space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <h3 class="font-heading text-base font-semibold text-amber-200">{{ t("common:settingsPage.queueSettingsCardTitle", "Queue Configuration") }}</h3>
+        <h3 class="font-heading text-base font-semibold text-primary">{{ t("common:settingsPage.queueSettingsCardTitle", "Queue Configuration") }}</h3>
         <span class="text-xs" :class="queueSettingsStatusClass">{{ queueSettingsStatusText }}</span>
       </div>
 
       <div class="grid gap-4 xl:grid-cols-3">
-        <div class="rounded-2xl border border-white/10 bg-slate-950/45 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+        <div class="rounded-md border border-border bg-muted/50 p-4">
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0 space-y-1">
-              <h4 class="font-heading text-sm uppercase tracking-[0.14em] text-amber-200">{{ t("common:settingsPage.queueScoringSectionTitle", "Scoring Model") }}</h4>
-              <p class="text-xs text-slate-400">{{ t("common:settingsPage.queueScoringSectionHint", "Choose how final ranking weights the three major score components, and which cost metric Cost Score should read.") }}</p>
+              <h4 class="font-heading text-sm uppercase  text-primary">{{ t("common:settingsPage.queueScoringSectionTitle", "Scoring Model") }}</h4>
+              <p class="text-xs text-muted-foreground">{{ t("common:settingsPage.queueScoringSectionHint", "Choose how final ranking weights the three major score components, and which cost metric Cost Score should read.") }}</p>
             </div>
-            <span class="shrink-0 whitespace-nowrap rounded-full border border-emerald-400/20 bg-emerald-400/10 px-2 py-1 text-[11px] uppercase tracking-[0.14em] text-emerald-200">{{ t("common:settingsPage.queueSectionSaveTag", "Save") }}</span>
+            <span class="shrink-0 whitespace-nowrap rounded-md border border-success/40 bg-success/10 px-2 py-1 text-[11px] uppercase  text-success">{{ t("common:settingsPage.queueSectionSaveTag", "Save") }}</span>
           </div>
 
           <div class="mt-4 space-y-3">
             <div class="space-y-3">
-              <p class="field-label">{{ t("common:settingsPage.weightsSectionTitle", "Score Weights (%)") }}</p>
+              <p class="control-label">{{ t("common:settingsPage.weightsSectionTitle", "Score Weights (%)") }}</p>
               <div class="grid gap-3 sm:grid-cols-3">
                 <label class="block">
-                  <span class="field-label">{{ t("common:settingsPage.weightPerformance", "Performance") }}</span>
+                  <span class="control-label">{{ t("common:settingsPage.weightPerformance", "Performance") }}</span>
                   <input
                     v-model.number="queueRuntimeDraft.performancePct"
-                    class="field-input"
+                    class="control-input"
                     type="number"
                     min="0"
                     max="100"
@@ -32,10 +40,10 @@
                   />
                 </label>
                 <label class="block">
-                  <span class="field-label">{{ t("common:settingsPage.weightStability", "Stability") }}</span>
+                  <span class="control-label">{{ t("common:settingsPage.weightStability", "Stability") }}</span>
                   <input
                     v-model.number="queueRuntimeDraft.stabilityPct"
-                    class="field-input"
+                    class="control-input"
                     type="number"
                     min="0"
                     max="100"
@@ -43,10 +51,10 @@
                   />
                 </label>
                 <label class="block">
-                  <span class="field-label">{{ t("common:settingsPage.weightCost", "Cost") }}</span>
+                  <span class="control-label">{{ t("common:settingsPage.weightCost", "Cost") }}</span>
                   <input
                     v-model.number="queueRuntimeDraft.costPct"
-                    class="field-input"
+                    class="control-input"
                     type="number"
                     min="0"
                     max="100"
@@ -58,44 +66,47 @@
 
             <div class="space-y-2">
               <label class="block max-w-sm">
-                <span class="field-label">{{ t("common:settingsPage.costScoreGoldMetricLabel", "Cost Score Metric") }}</span>
-                <select v-model="queueRuntimeDraft.costScoreGoldPerPointMode" class="field-select">
-                  <option value="strict">{{ t("common:settingsPage.costScoreGoldMetricStrict", "Strict") }}</option>
-                  <option value="composite">{{ t("common:settingsPage.costScoreGoldMetricComposite", "Composite") }}</option>
-                </select>
+                <span class="control-label">{{ t("common:settingsPage.costScoreGoldMetricLabel", "Cost Score Metric") }}</span>
+                <Select v-model="queueRuntimeDraft.costScoreGoldPerPointMode">
+                  <SelectTrigger />
+                  <SelectContent>
+                    <SelectItem value="strict">{{ t("common:settingsPage.costScoreGoldMetricStrict", "Strict") }}</SelectItem>
+                    <SelectItem value="composite">{{ t("common:settingsPage.costScoreGoldMetricComposite", "Composite") }}</SelectItem>
+                  </SelectContent>
+                </Select>
               </label>
-              <p class="text-xs text-slate-400">{{ t("common:settingsPage.costScoreGoldMetricHint", "Only affects which gold-per-0.01% metric is used in Cost Score. Both strict and composite columns remain visible in Multi-round Results.") }}</p>
+              <p class="text-xs text-muted-foreground">{{ t("common:settingsPage.costScoreGoldMetricHint", "Only affects which gold-per-0.01% metric is used in Cost Score. Both strict and composite columns remain visible in Multi-round Results.") }}</p>
             </div>
 
-            <div class="space-y-3 border-t border-white/8 pt-3">
-              <p class="field-label">{{ t("common:settingsPage.performanceSubweightsTitle", "Performance Priorities") }}</p>
+            <div class="space-y-3 border-t border-border pt-3">
+              <p class="control-label">{{ t("common:settingsPage.performanceSubweightsTitle", "Performance Priorities") }}</p>
               <div class="grid gap-3 sm:grid-cols-2">
                 <label>
-                  <span class="field-label">{{ t("common:vue.queue.profitWeight", "Profit Weight") }}</span>
+                  <span class="control-label">{{ t("common:vue.queue.profitWeight", "Profit Weight") }}</span>
                   <input
                     v-model.number="queueRunDraft.weightProfit"
                     type="number"
                     min="0"
                     :max="queueRunWeightProfitMax"
                     step="0.1"
-                    class="field-input"
+                    class="control-input"
                     @change="applyQueueRunWeightInput('weightProfit')"
                   />
                 </label>
                 <label>
-                  <span class="field-label">{{ t("common:vue.queue.xpWeight", "XP Weight") }}</span>
+                  <span class="control-label">{{ t("common:vue.queue.xpWeight", "XP Weight") }}</span>
                   <input
                     v-model.number="queueRunDraft.weightXp"
                     type="number"
                     min="0"
                     :max="queueRunWeightXpMax"
                     step="0.1"
-                    class="field-input"
+                    class="control-input"
                     @change="applyQueueRunWeightInput('weightXp')"
                   />
                 </label>
               </div>
-              <div class="space-y-1 text-xs text-slate-400">
+              <div class="space-y-1 text-xs text-muted-foreground">
                 <p>{{ t("common:settingsPage.queueRunWeightHint", "Profit and XP weights are applied first. Any remaining weight is split evenly between DPS and Kills.") }}</p>
                 <p>{{ t("common:settingsPage.queueRunWeightBreakdown", "", queueRunPerformanceBreakdownText) }}</p>
               </div>
@@ -103,42 +114,45 @@
           </div>
         </div>
 
-        <div class="rounded-2xl border border-white/10 bg-slate-950/45 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+        <div class="rounded-md border border-border bg-muted/50 p-4">
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0 space-y-1">
-              <h4 class="font-heading text-sm uppercase tracking-[0.14em] text-sky-200">{{ t("common:settingsPage.queueExecutionSectionTitle", "Execution & Workers") }}</h4>
-              <p class="text-xs text-slate-400">{{ t("common:settingsPage.queueExecutionSectionHint", "Control how queue simulations are dispatched, and which active player or locked party snapshot the current queue run follows.") }}</p>
+              <h4 class="font-heading text-sm uppercase  text-info">{{ t("common:settingsPage.queueExecutionSectionTitle", "Execution & Workers") }}</h4>
+              <p class="text-xs text-muted-foreground">{{ t("common:settingsPage.queueExecutionSectionHint", "Control how queue simulations are dispatched, and which active player or locked party snapshot the current queue run follows.") }}</p>
             </div>
-            <span class="shrink-0 whitespace-nowrap rounded-full border border-sky-400/20 bg-sky-400/10 px-2 py-1 text-[11px] uppercase tracking-[0.14em] text-sky-100">{{ t("common:settingsPage.queueSectionAutoTag", "Auto") }}</span>
+            <span class="shrink-0 whitespace-nowrap rounded-md border border-info/40 bg-info/10 px-2 py-1 text-[11px] uppercase  text-info">{{ t("common:settingsPage.queueSectionAutoTag", "Auto") }}</span>
           </div>
 
           <div class="mt-4 space-y-3">
-            <div class="rounded-xl border border-white/8 bg-white/[0.03] p-3">
+            <div class="rounded-md border border-border bg-muted/40 p-3">
               <div class="flex flex-wrap items-center justify-between gap-2">
-                <p class="field-label">{{ t("common:queue.runQueueSettings", "Run Queue Settings") }}</p>
-                <span class="text-xs text-slate-400">{{ t("common:vue.queue.activePlayer", "Active player", { name: simulator.activePlayer.name }) }}</span>
+                <p class="control-label">{{ t("common:queue.runQueueSettings", "Run Queue Settings") }}</p>
+                <span class="text-xs text-muted-foreground">{{ t("common:vue.queue.activePlayer", "Active player", { name: simulator.activePlayer.name }) }}</span>
               </div>
-              <p v-if="queuePartySummaryText" class="mt-2 text-xs text-slate-400">
+              <p v-if="queuePartySummaryText" class="mt-2 text-xs text-muted-foreground">
                 {{ t("common:queue.partyLockedMembers", "Locked party") }}:
-                <span class="ml-1 text-slate-200">{{ queuePartySummaryText }}</span>
+                <span class="ml-1 text-foreground">{{ queuePartySummaryText }}</span>
               </p>
-              <p v-if="queuePartyWarningText" class="mt-2 text-xs text-amber-300">{{ queuePartyWarningText }}</p>
+              <p v-if="queuePartyWarningText" class="mt-2 text-xs text-primary">{{ queuePartyWarningText }}</p>
             </div>
 
             <div class="grid gap-3 sm:grid-cols-2">
               <label>
-                <span class="field-label">{{ t("common:queue.executionMode", "Mode") }}</span>
-                <select v-model="queueRunDraft.executionMode" class="field-select" @change="applyQueueRunSettings">
-                  <option value="parallel">{{ t("common:queue.modeParallel", "Parallel") }}</option>
-                  <option value="serial">{{ t("common:queue.modeSerial", "Serial") }}</option>
-                </select>
+                <span class="control-label">{{ t("common:queue.executionMode", "Mode") }}</span>
+                <Select v-model="queueRunDraft.executionMode" @update:model-value="applyQueueRunSettings">
+                  <SelectTrigger />
+                  <SelectContent>
+                    <SelectItem value="parallel">{{ t("common:queue.modeParallel", "Parallel") }}</SelectItem>
+                    <SelectItem value="serial">{{ t("common:queue.modeSerial", "Serial") }}</SelectItem>
+                  </SelectContent>
+                </Select>
               </label>
 
               <label class="block">
-                <span class="field-label">{{ t("common:settingsPage.parallelWorkerLimit", "Parallel Worker Limit") }}</span>
+                <span class="control-label">{{ t("common:settingsPage.parallelWorkerLimit", "Parallel Worker Limit") }}</span>
                 <input
                   v-model.number="queueRuntimeDraft.parallelWorkerLimit"
-                  class="field-input"
+                  class="control-input"
                   type="number"
                   min="1"
                   :max="queueParallelWorkerHardMax"
@@ -147,44 +161,47 @@
               </label>
             </div>
 
-            <p class="text-xs text-slate-400">{{ queueParallelWorkerHintText }}</p>
+            <p class="text-xs text-muted-foreground">{{ queueParallelWorkerHintText }}</p>
           </div>
         </div>
 
-        <div class="rounded-2xl border border-white/10 bg-slate-950/45 p-4 shadow-[inset_0_1px_0_rgba(255,255,255,0.04)]">
+        <div class="rounded-md border border-border bg-muted/50 p-4">
           <div class="flex items-start justify-between gap-3">
             <div class="min-w-0 space-y-1">
-              <h4 class="font-heading text-sm uppercase tracking-[0.14em] text-violet-200">{{ t("common:settingsPage.queueSamplingSectionTitle", "Sampling & Aggregation") }}</h4>
-              <p class="text-xs text-slate-400">{{ t("common:settingsPage.queueSamplingSectionHint", "Tune round counts, baseline sampling, robust median blending, and the Profit/XP priorities used inside Performance Score.") }}</p>
+              <h4 class="font-heading text-sm uppercase  text-info">{{ t("common:settingsPage.queueSamplingSectionTitle", "Sampling & Aggregation") }}</h4>
+              <p class="text-xs text-muted-foreground">{{ t("common:settingsPage.queueSamplingSectionHint", "Tune round counts, baseline sampling, robust median blending, and the Profit/XP priorities used inside Performance Score.") }}</p>
             </div>
-            <span class="shrink-0 whitespace-nowrap rounded-full border border-violet-400/20 bg-violet-400/10 px-2 py-1 text-[11px] uppercase tracking-[0.14em] text-violet-100">{{ t("common:settingsPage.queueSectionAutoTag", "Auto") }}</span>
+            <span class="shrink-0 whitespace-nowrap rounded-md border border-info/40 bg-info/10 px-2 py-1 text-[11px] uppercase  text-info">{{ t("common:settingsPage.queueSectionAutoTag", "Auto") }}</span>
           </div>
 
           <div class="mt-4 space-y-4">
             <div class="grid gap-3 sm:grid-cols-2">
               <div class="space-y-2">
                 <label class="block">
-                  <span class="field-label">{{ t("common:queue.roundCount", "Rounds") }}</span>
-                  <select v-model="queueRunRoundPreset" class="field-select" @change="onQueueRunRoundPresetChanged">
-                    <option value="5">5</option>
-                    <option value="10">10</option>
-                    <option value="20">20</option>
-                    <option value="30">30</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                    <option value="200">200</option>
-                    <option value="custom">{{ t("common:queue.roundCustomOption", "Custom") }}</option>
-                  </select>
+                  <span class="control-label">{{ t("common:queue.roundCount", "Rounds") }}</span>
+                  <Select :model-value="queueRunRoundPreset" @update:model-value="onQueueRunRoundPresetChanged">
+                    <SelectTrigger :aria-label="t('common:queue.roundCount', 'Rounds')" />
+                    <SelectContent>
+                      <SelectItem value="5">5</SelectItem>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="20">20</SelectItem>
+                      <SelectItem value="30">30</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                      <SelectItem value="200">200</SelectItem>
+                      <SelectItem value="custom">{{ t("common:queue.roundCustomOption", "Custom") }}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </label>
                 <label v-if="queueRunRoundPreset === 'custom'" class="block">
-                  <span class="field-label">{{ t("common:queue.roundCustom", "Custom Rounds") }}</span>
+                  <span class="control-label">{{ t("common:queue.roundCustom", "Custom Rounds") }}</span>
                   <input
                     v-model.number="queueRunDraft.rounds"
                     type="number"
                     min="1"
                     max="200"
                     step="1"
-                    class="field-input"
+                    class="control-input"
                     @change="applyQueueRunSettings"
                   />
                 </label>
@@ -192,28 +209,31 @@
 
               <div class="space-y-2">
                 <label class="block">
-                  <span class="field-label">{{ t("common:queue.baselineRoundCount", "Baseline Rounds") }}</span>
-                  <select v-model="queueBaselineRoundPreset" class="field-select" @change="onQueueBaselineRoundPresetChanged">
-                    <option value="1">1</option>
-                    <option value="5">5</option>
-                    <option value="10">10</option>
-                    <option value="20">20</option>
-                    <option value="30">30</option>
-                    <option value="50">50</option>
-                    <option value="100">100</option>
-                    <option value="200">200</option>
-                    <option value="custom">{{ t("common:queue.roundCustomOption", "Custom") }}</option>
-                  </select>
+                  <span class="control-label">{{ t("common:queue.baselineRoundCount", "Baseline Rounds") }}</span>
+                  <Select :model-value="queueBaselineRoundPreset" @update:model-value="onQueueBaselineRoundPresetChanged">
+                    <SelectTrigger :aria-label="t('common:queue.baselineRoundCount', 'Baseline Rounds')" />
+                    <SelectContent>
+                      <SelectItem value="1">1</SelectItem>
+                      <SelectItem value="5">5</SelectItem>
+                      <SelectItem value="10">10</SelectItem>
+                      <SelectItem value="20">20</SelectItem>
+                      <SelectItem value="30">30</SelectItem>
+                      <SelectItem value="50">50</SelectItem>
+                      <SelectItem value="100">100</SelectItem>
+                      <SelectItem value="200">200</SelectItem>
+                      <SelectItem value="custom">{{ t("common:queue.roundCustomOption", "Custom") }}</SelectItem>
+                    </SelectContent>
+                  </Select>
                 </label>
                 <label v-if="queueBaselineRoundPreset === 'custom'" class="block">
-                  <span class="field-label">{{ t("common:queue.baselineRoundCustom", "Custom Baseline Rounds") }}</span>
+                  <span class="control-label">{{ t("common:queue.baselineRoundCustom", "Custom Baseline Rounds") }}</span>
                   <input
                     v-model.number="queueRunDraft.baselineRounds"
                     type="number"
                     min="1"
                     max="200"
                     step="1"
-                    class="field-input"
+                    class="control-input"
                     @change="applyQueueRunSettings"
                   />
                 </label>
@@ -221,7 +241,7 @@
             </div>
 
             <label class="block">
-              <span class="field-label">{{ t("common:vue.queue.medianBlend", "Median Blend (0-1)") }}</span>
+              <span class="control-label">{{ t("common:vue.queue.medianBlend", "Median Blend (0-1)") }}</span>
               <div class="flex items-center gap-3">
                 <input
                   v-model.number="queueRunDraft.medianBlend"
@@ -229,7 +249,7 @@
                   min="0"
                   max="1"
                   step="0.05"
-                  class="w-full accent-amber-300"
+                  class="w-full accent-primary"
                   @change="applyQueueRunSettings"
                 />
                 <input
@@ -238,11 +258,11 @@
                   min="0"
                   max="1"
                   step="0.05"
-                  class="field-input w-24"
+                  class="control-input w-24"
                   @change="applyQueueRunSettings"
                 />
               </div>
-              <div class="mt-2 space-y-1 text-xs text-slate-400">
+              <div class="mt-2 space-y-1 text-xs text-muted-foreground">
                 <p>{{ t("common:settingsPage.medianBlendHint", "Lower values lean toward the robust average across all rounds. Higher values lean toward the median, which better represents a typical round when outliers appear.") }}</p>
                 <p>{{ t("common:settingsPage.medianBlendBreakdown", "", queueMedianBlendExplanationText) }}</p>
               </div>
@@ -252,61 +272,70 @@
       </div>
 
       <div class="flex flex-wrap gap-2">
-        <button type="button" class="action-button-primary" @click="saveQueueRuntimeSettings">
+        <button type="button" class="button-primary" @click="saveQueueRuntimeSettings">
           {{ t("common:settingsPage.saveQueueSettings", "Save Queue Settings") }}
         </button>
-        <button type="button" class="action-button-muted" @click="resetQueueSettings">
+        <button type="button" class="button-secondary" @click="resetQueueSettings">
           {{ t("common:settingsPage.resetQueueSettings", "Reset To Defaults") }}
         </button>
       </div>
-    </div>
+      </div>
+      </TabsContent>
 
 
-    <div class="panel space-y-3">
+      <TabsContent value="prices">
+      <div class="surface-panel space-y-3">
       <div class="flex flex-wrap items-center justify-between gap-2">
-        <h3 class="font-heading text-base font-semibold text-amber-200">{{ t("common:vue.settings.priceSettingsTitle", "Price Settings") }}</h3>
-        <span class="text-xs text-slate-400">{{ pricingStatusText }}</span>
+        <h3 class="font-heading text-base font-semibold text-primary">{{ t("common:vue.settings.priceSettingsTitle", "Price Settings") }}</h3>
+        <span class="text-xs text-muted-foreground">{{ pricingStatusText }}</span>
       </div>
 
       <div class="grid gap-3 sm:grid-cols-2">
         <label class="block">
-          <span class="field-label">{{ t("common:vue.settings.consumablePricesLabel", "Consumable Prices") }}</span>
-          <select v-model="consumablePriceModeProxy" class="field-select">
-            <option value="ask">{{ t("common:vue.settings.modeAsk", "Ask (SO)") }}</option>
-            <option value="bid">{{ t("common:vue.settings.modeBid", "Bid (BO)") }}</option>
-          </select>
+          <span class="control-label">{{ t("common:vue.settings.consumablePricesLabel", "Consumable Prices") }}</span>
+          <Select v-model="consumablePriceModeProxy">
+            <SelectTrigger :aria-label="t('common:vue.settings.consumablePricesLabel', 'Consumable Prices')" />
+            <SelectContent>
+              <SelectItem value="ask">{{ t("common:vue.settings.modeAsk", "Ask (SO)") }}</SelectItem>
+              <SelectItem value="bid">{{ t("common:vue.settings.modeBid", "Bid (BO)") }}</SelectItem>
+            </SelectContent>
+          </Select>
         </label>
 
         <label class="block">
-          <span class="field-label">{{ t("common:vue.settings.dropPricesLabel", "Drop Prices") }}</span>
-          <select v-model="dropPriceModeProxy" class="field-select">
-            <option value="bid">{{ t("common:vue.settings.modeBid", "Bid (BO)") }}</option>
-            <option value="ask">{{ t("common:vue.settings.modeAsk", "Ask (SO)") }}</option>
-          </select>
+          <span class="control-label">{{ t("common:vue.settings.dropPricesLabel", "Drop Prices") }}</span>
+          <Select v-model="dropPriceModeProxy">
+            <SelectTrigger :aria-label="t('common:vue.settings.dropPricesLabel', 'Drop Prices')" />
+            <SelectContent>
+              <SelectItem value="bid">{{ t("common:vue.settings.modeBid", "Bid (BO)") }}</SelectItem>
+              <SelectItem value="ask">{{ t("common:vue.settings.modeAsk", "Ask (SO)") }}</SelectItem>
+            </SelectContent>
+          </Select>
         </label>
       </div>
 
       <div class="flex flex-wrap gap-2">
-        <button type="button" class="action-button-primary" :disabled="simulator.pricing.isLoading" @click="fetchMarketPrices">
+        <button type="button" class="button-primary" :disabled="simulator.pricing.isLoading" @click="fetchMarketPrices">
           {{ simulator.pricing.isLoading ? t("common:vue.settings.loading", "Loading...") : t("common:vue.settings.fetchMarketPrices", "Get Prices") }}
         </button>
-        <button type="button" class="action-button-muted" :disabled="simulator.pricing.isLoading" @click="resetPricesToVendor">
+        <button type="button" class="button-secondary" :disabled="simulator.pricing.isLoading" @click="resetPricesToVendor">
           {{ t("common:vue.settings.resetVendorPrices", "Reset Vendor Prices") }}
         </button>
-        <button type="button" class="action-button-muted" @click="openEditPricesModal = true">
+        <button type="button" class="button-secondary" @click="openEditPricesModal = true">
           {{ t("common:editPrices", "Edit Prices") }}
         </button>
       </div>
 
-      <p class="text-xs text-slate-400">
+      <p class="text-xs text-muted-foreground">
         {{ t("common:vue.settings.priceHint", "Home results and Queue profit metrics use these modes with vendor fallback.") }}
       </p>
-    </div>
+      </div>
+      </TabsContent>
 
     <div
       v-if="message.text"
-      class="rounded-xl border px-4 py-3 text-sm"
-      :class="message.type === 'error' ? 'border-rose-300/40 bg-rose-500/10 text-rose-200' : 'border-emerald-300/40 bg-emerald-500/10 text-emerald-100'"
+      class="rounded-md border px-4 py-3 text-sm"
+      :class="message.type === 'error' ? 'border-destructive/40 bg-destructive/10 text-destructive' : 'border-success/40 bg-success/10 text-success'"
     >
       {{ message.text }}
     </div>
@@ -319,10 +348,10 @@
     >
       <div class="space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-2">
-          <span class="text-xs text-slate-400">
+          <span class="text-xs text-muted-foreground">
             {{ t("common:vue.settings.priceOverridesCount", "Overridden items", { count: priceOverrideCount }) }}
           </span>
-          <button type="button" class="action-button-muted" :disabled="priceOverrideCount === 0" @click="resetAllPriceOverrides">
+          <button type="button" class="button-secondary" :disabled="priceOverrideCount === 0" @click="resetAllPriceOverrides">
             {{ t("common:vue.settings.clearAllPriceOverrides", "Clear All Overrides") }}
           </button>
         </div>
@@ -330,19 +359,19 @@
         <div class="space-y-3">
           <input
             v-model.trim="priceSearchKeyword"
-            class="field-input"
+            class="control-input"
             type="text"
             :placeholder="t('common:vue.settings.priceSearchPlaceholder', 'Search by item name or HRID')"
           />
 
           <div class="overflow-x-auto">
-            <div class="inline-flex min-w-full gap-2 rounded-xl border border-white/10 bg-slate-900/50 p-2">
+            <div class="inline-flex min-w-full gap-2 rounded-md border border-border bg-muted/50 p-2">
               <button type="button"
                
                 class="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition"
                 :class="selectedPriceCategory === '__all__'
-                  ? 'bg-amber-300 text-slate-900'
-                  : 'border border-white/15 text-slate-300 hover:bg-white/10'"
+                  ? 'bg-primary/10 text-primary-foreground'
+                  : 'border border-border text-foreground/85 hover:bg-muted/40'"
                 @click="selectedPriceCategory = '__all__'"
               >
                 {{ t("common:vue.settings.priceCategoryAll", "All Types") }} ({{ allPriceRows.length }})
@@ -353,8 +382,8 @@
                
                 class="whitespace-nowrap rounded-lg px-3 py-1.5 text-xs font-semibold transition"
                 :class="selectedPriceCategory === option.value
-                  ? 'bg-amber-300 text-slate-900'
-                  : 'border border-white/15 text-slate-300 hover:bg-white/10'"
+                  ? 'bg-primary/10 text-primary-foreground'
+                  : 'border border-border text-foreground/85 hover:bg-muted/40'"
                 @click="selectedPriceCategory = option.value"
               >
                 {{ option.label }} ({{ option.count }})
@@ -363,143 +392,143 @@
           </div>
         </div>
 
-        <div v-if="visiblePriceRows.length === 0" class="rounded-xl border border-white/10 bg-slate-900/50 px-3 py-4 text-sm text-slate-400">
+        <div v-if="visiblePriceRows.length === 0" class="rounded-md border border-border bg-muted/50 px-3 py-4 text-sm text-muted-foreground">
           {{ t("common:vue.settings.priceNoMatches", "No items match current search.") }}
         </div>
 
         <div v-else class="max-h-[65vh] overflow-y-auto pr-1">
-          <div class="overflow-x-auto rounded-xl border border-white/10">
-            <table class="min-w-full text-sm">
-              <thead class="sticky top-0 bg-slate-950">
-                <tr class="border-b border-white/10 text-left text-xs uppercase tracking-[0.14em] text-slate-400">
-                  <th class="px-2 py-2">{{ t("common:vue.settings.priceColumnItem", "Item") }}</th>
-                  <th class="px-2 py-2">{{ t("common:vue.settings.priceColumnVendor", "Vendor") }}</th>
-                  <th class="px-2 py-2">{{ t("common:vue.settings.priceColumnAsk", "Ask") }}</th>
-                  <th class="px-2 py-2">{{ t("common:vue.settings.priceColumnBid", "Bid") }}</th>
-                  <th class="px-2 py-2">{{ t("common:vue.common.actions", "Actions") }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr v-for="row in visiblePriceRows" :key="row.hrid" class="border-b border-white/5 text-slate-200 align-top">
-                  <td class="px-2 py-2" :title="row.hrid">
+          <div class="overflow-x-auto rounded-md border border-border">
+            <Table class="min-w-full text-sm">
+              <TableHeader class="sticky top-0 bg-muted/50">
+                <TableRow class="border-b border-border text-left text-xs uppercase  text-muted-foreground">
+                  <TableHead class="px-2 py-2">{{ t("common:vue.settings.priceColumnItem", "Item") }}</TableHead>
+                  <TableHead class="px-2 py-2">{{ t("common:vue.settings.priceColumnVendor", "Vendor") }}</TableHead>
+                  <TableHead class="px-2 py-2">{{ t("common:vue.settings.priceColumnAsk", "Ask") }}</TableHead>
+                  <TableHead class="px-2 py-2">{{ t("common:vue.settings.priceColumnBid", "Bid") }}</TableHead>
+                  <TableHead class="px-2 py-2">{{ t("common:vue.common.actions", "Actions") }}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow v-for="row in visiblePriceRows" :key="row.hrid" class="border-b border-border text-foreground align-top">
+                  <TableCell class="px-2 py-2" :title="row.hrid">
                     <div>{{ row.name }}</div>
-                    <div v-if="selectedPriceCategory === '__all__'" class="text-xs text-slate-500">{{ row.categoryName }}</div>
-                  </td>
-                  <td class="px-2 py-2">{{ formatPriceForDisplay(row.vendor) }}</td>
-                  <td class="px-2 py-2">
+                    <div v-if="selectedPriceCategory === '__all__'" class="text-xs text-muted-foreground">{{ row.categoryName }}</div>
+                  </TableCell>
+                  <TableCell class="px-2 py-2">{{ formatPriceForDisplay(row.vendor) }}</TableCell>
+                  <TableCell class="px-2 py-2">
                     <div class="flex flex-wrap items-center gap-2">
                       <input
-                        class="field-input h-8 w-28"
+                        class="control-input h-8 w-28"
                         type="number"
                         min="0"
                         step="0.01"
                         :value="formatPriceForInput(row.ask)"
                         @change="onPriceInputChange(row.hrid, 'ask', $event.target.value)"
                       />
-                      <span v-if="row.askOverridden" class="badge text-[10px] uppercase tracking-[0.1em] text-amber-100">
+                      <span v-if="row.askOverridden" class="status-chip text-[10px] uppercase  text-primary">
                         {{ t("common:vue.settings.overrideTag", "Override") }}
                       </span>
                     </div>
-                  </td>
-                  <td class="px-2 py-2">
+                  </TableCell>
+                  <TableCell class="px-2 py-2">
                     <div class="flex flex-wrap items-center gap-2">
                       <input
-                        class="field-input h-8 w-28"
+                        class="control-input h-8 w-28"
                         type="number"
                         min="0"
                         step="0.01"
                         :value="formatPriceForInput(row.bid)"
                         @change="onPriceInputChange(row.hrid, 'bid', $event.target.value)"
                       />
-                      <span v-if="row.bidOverridden" class="badge text-[10px] uppercase tracking-[0.1em] text-amber-100">
+                      <span v-if="row.bidOverridden" class="status-chip text-[10px] uppercase  text-primary">
                         {{ t("common:vue.settings.overrideTag", "Override") }}
                       </span>
                     </div>
-                  </td>
-                  <td class="px-2 py-2">
-                    <button type="button" class="action-button-muted" @click="resetItemPriceOverride(row.hrid)">
+                  </TableCell>
+                  <TableCell class="px-2 py-2">
+                    <button type="button" class="button-secondary" @click="resetItemPriceOverride(row.hrid)">
                       {{ t("common:vue.settings.resetRowPrice", "Reset") }}
                     </button>
-                  </td>
-                </tr>
-              </tbody>
-            </table>
+                  </TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           </div>
         </div>
 
-        <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-slate-400">
+        <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
           <span>
             {{ t("common:vue.settings.priceRowsVisible", "Showing items", { shown: visiblePriceRows.length, total: filteredPriceRows.length }) }}
           </span>
-          <button type="button" v-if="hasMorePriceRows" class="action-button-muted" @click="loadMorePriceRows">
+          <button type="button" v-if="hasMorePriceRows" class="button-secondary" @click="loadMorePriceRows">
             {{ t("common:vue.settings.loadMorePriceRows", "Load More") }}
           </button>
         </div>
       </div>
     </BaseModal>
 
-    <div class="space-y-4">
-      <div class="panel space-y-3">
+      <TabsContent value="equipment">
+        <div class="surface-panel space-y-3">
         <div class="flex flex-wrap items-center justify-between gap-2">
-          <h3 class="font-heading text-base font-semibold text-amber-200">{{ t("common:controls.equipmentSets", "Equipment Sets") }}</h3>
-          <button type="button" class="action-button-muted" @click="refreshEquipmentSets">{{ t("common:vue.common.refresh", "Refresh") }}</button>
+          <h3 class="font-heading text-base font-semibold text-primary">{{ t("common:controls.equipmentSets", "Equipment Sets") }}</h3>
+          <button type="button" class="button-secondary" @click="refreshEquipmentSets">{{ t("common:vue.common.refresh", "Refresh") }}</button>
         </div>
 
         <div class="grid gap-2 sm:grid-cols-[1fr_auto]">
           <input
             v-model.trim="equipmentSetName"
-            class="field-input"
+            class="control-input"
             type="text"
             :placeholder="t('common:vue.settings.setNamePlaceholder', 'Set name, e.g. Fly AFK')"
           />
-          <button type="button" class="action-button-primary" @click="saveEquipmentSet">{{ t("common:vue.settings.saveCurrent", "Save Current") }}</button>
+          <button type="button" class="button-primary" @click="saveEquipmentSet">{{ t("common:vue.settings.saveCurrent", "Save Current") }}</button>
         </div>
 
-        <div v-if="equipmentSetEntries.length === 0" class="rounded-xl border border-white/10 bg-slate-900/50 px-3 py-4 text-sm text-slate-400">
+        <div v-if="equipmentSetEntries.length === 0" class="rounded-md border border-border bg-muted/50 px-3 py-4 text-sm text-muted-foreground">
           {{ t("common:vue.settings.noEquipmentSets", "No equipment sets yet.") }}
         </div>
 
         <div v-else class="overflow-x-auto">
-          <table class="min-w-full text-sm">
-            <thead>
-              <tr class="border-b border-white/10 text-left text-xs uppercase tracking-[0.14em] text-slate-400">
-                <th class="px-2 py-2">{{ t("common:controls.name", "Name") }}</th>
-                <th class="px-2 py-2">{{ t("common:vue.settings.savedAt", "Saved") }}</th>
-                <th class="px-2 py-2">{{ t("common:vue.settings.queueChangeCount", "Queue Changes") }}</th>
-                <th class="px-2 py-2">{{ t("common:vue.common.actions", "Actions") }}</th>
-              </tr>
-            </thead>
-            <tbody>
-              <tr v-for="entry in equipmentSetEntries" :key="entry.name" class="border-b border-white/5 text-slate-200">
-                <td class="px-2 py-2">{{ entry.name }}</td>
-                <td class="px-2 py-2">{{ formatTimestamp(entry.savedAt) }}</td>
-                <td class="px-2 py-2">{{ entry.queueChangeCount }}</td>
-                <td class="px-2 py-2">
+          <Table class="min-w-full text-sm">
+            <TableHeader>
+              <TableRow class="border-b border-border text-left text-xs uppercase  text-muted-foreground">
+                <TableHead class="px-2 py-2">{{ t("common:controls.name", "Name") }}</TableHead>
+                <TableHead class="px-2 py-2">{{ t("common:vue.settings.savedAt", "Saved") }}</TableHead>
+                <TableHead class="px-2 py-2">{{ t("common:vue.settings.queueChangeCount", "Queue Changes") }}</TableHead>
+                <TableHead class="px-2 py-2">{{ t("common:vue.common.actions", "Actions") }}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody>
+              <TableRow v-for="entry in equipmentSetEntries" :key="entry.name" class="border-b border-border text-foreground">
+                <TableCell class="px-2 py-2">{{ entry.name }}</TableCell>
+                <TableCell class="px-2 py-2">{{ formatTimestamp(entry.savedAt) }}</TableCell>
+                <TableCell class="px-2 py-2">{{ entry.queueChangeCount }}</TableCell>
+                <TableCell class="px-2 py-2">
                   <div class="flex flex-wrap gap-2">
                     <button type="button"
-                      class="action-button-muted"
+                      class="button-secondary"
                       :disabled="entry.queueChangeCount <= 0"
                       @click="openImportQueueChangesConfirm(entry.name, entry.queueChangeCount, false)"
                     >
                       {{ t("common:vue.settings.importQueueChanges", "Import Queue Changes") }}
                     </button>
                     <button type="button"
-                      class="action-button-primary"
+                      class="button-primary"
                       :disabled="entry.queueChangeCount <= 0"
                       @click="openImportQueueChangesConfirm(entry.name, entry.queueChangeCount, true)"
                     >
                       {{ t("common:vue.settings.importQueueChangesAndResetBaseline", "Import + Reset Baseline") }}
                     </button>
-                    <button type="button" class="action-button-danger" @click="deleteEquipmentSet(entry.name)">{{ t("common:controls.delete", "Delete") }}</button>
+                    <button type="button" class="button-danger" @click="deleteEquipmentSet(entry.name)">{{ t("common:controls.delete", "Delete") }}</button>
                   </div>
-                </td>
-              </tr>
-            </tbody>
-          </table>
+                </TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
         </div>
-      </div>
-
-    </div>
+        </div>
+      </TabsContent>
+    </Tabs>
 
     <BaseModal
       :open="openImportQueueChangesModal"
@@ -508,14 +537,14 @@
       @close="closeImportQueueChangesModal"
     >
       <div class="space-y-3">
-        <p class="text-sm text-slate-200">
+        <p class="text-sm text-foreground">
           {{ t(
             "common:vue.settings.importQueueChangesConfirmBody",
             "Import queue changes?",
             { name: pendingImportQueueSetName, count: pendingImportQueueChangeCount }
           ) }}
         </p>
-        <div class="rounded-xl border border-amber-300/40 bg-amber-500/10 px-3 py-2 text-sm text-amber-100">
+        <div class="rounded-md border border-primary/40 bg-primary/10 px-3 py-2 text-sm text-primary">
           {{ pendingImportAndResetBaseline
             ? t(
               "common:vue.settings.importQueueChangesConfirmWarningWithBaseline",
@@ -528,10 +557,10 @@
           }}
         </div>
         <div class="flex flex-wrap justify-end gap-2">
-          <button type="button" class="action-button-muted" @click="closeImportQueueChangesModal">
+          <button type="button" class="button-secondary" @click="closeImportQueueChangesModal">
             {{ t("common:vue.settings.cancelImportQueueChanges", "Cancel") }}
           </button>
-          <button type="button" class="action-button-primary" @click="confirmImportQueueChanges">
+          <button type="button" class="button-primary" @click="confirmImportQueueChanges">
             {{ pendingImportAndResetBaseline
               ? t("common:vue.settings.confirmImportQueueChangesAndBaseline", "Confirm Import + Baseline")
               : t("common:vue.settings.confirmImportQueueChanges", "Confirm Import")
@@ -556,12 +585,15 @@ import { useGameDataText } from "../composables/useGameDataText.js";
 import { useI18nText } from "../composables/useI18nText.js";
 import { buildStaticPriceCatalog } from "../pageOptimizationHelpers.js";
 import BaseModal from "../components/BaseModal.vue";
+import { Tabs, TabsContent, TabsList, TabsTrigger } from "../components/ui/tabs/index.js";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "../components/ui/select/index.js";
 
 const simulator = useSimulatorStore();
 const { t } = useI18nText();
 const { getItemCategoryName, getItemName, getOfficialGameText } = useGameDataText();
 
 const equipmentSetName = ref("");
+const activeSettingsTab = ref("queue");
 const priceSearchKeyword = ref("");
 const selectedPriceCategory = ref("__all__");
 const openEditPricesModal = ref(false);
@@ -820,12 +852,12 @@ const queueParallelWorkerHintText = computed(() => {
 
 const queueSettingsStatusClass = computed(() => {
   if (queueSettingsStatus.value.tone === "success") {
-    return "text-emerald-300";
+    return "text-success";
   }
   if (queueSettingsStatus.value.tone === "danger") {
-    return "text-rose-300";
+    return "text-destructive";
   }
-  return "text-slate-400";
+  return "text-muted-foreground";
 });
 
 const queueSettingsStatusText = computed(() => queueSettingsStatus.value.text || "");
@@ -939,14 +971,16 @@ function applyQueueRunWeightInput(changedKey) {
   applyQueueRunSettings();
 }
 
-function onQueueRunRoundPresetChanged() {
+function onQueueRunRoundPresetChanged(value) {
+  queueRunRoundPreset.value = String(value || "30");
   if (queueRunRoundPreset.value !== "custom") {
     queueRunDraft.rounds = Number(queueRunRoundPreset.value || 30);
     applyQueueRunSettings();
   }
 }
 
-function onQueueBaselineRoundPresetChanged() {
+function onQueueBaselineRoundPresetChanged(value) {
+  queueBaselineRoundPreset.value = String(value || "1");
   if (queueBaselineRoundPreset.value !== "custom") {
     queueRunDraft.baselineRounds = Number(queueBaselineRoundPreset.value || 1);
     applyQueueRunSettings();

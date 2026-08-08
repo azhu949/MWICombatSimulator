@@ -134,7 +134,18 @@ describe("mwi main-site import userscript", () => {
         expect(scriptSource).toContain('normalizedImportMode === "player" ? "auto" : "active-player"');
         expect(scriptSource).toContain('importTarget: "enhancement"');
         expect(scriptSource).toContain('enhancementButton: "导入角色强化配置"');
-        expect(scriptSource).toContain("// @version      0.1.29");
+        expect(scriptSource).toContain("// @version      0.1.30");
+    });
+
+    it("uses the migrated toolbar button and semantic status classes", () => {
+        expect(scriptSource).toContain('button.className = "button-tool";');
+        expect(scriptSource).not.toContain("action-button-tool");
+        expect(scriptSource).toContain('"text-xs text-destructive"');
+        expect(scriptSource).toContain('"text-xs text-success"');
+        expect(scriptSource).toContain('"text-xs text-muted-foreground"');
+        expect(scriptSource).not.toContain("text-rose-300");
+        expect(scriptSource).not.toContain("text-teal-200");
+        expect(scriptSource).not.toContain("text-cyan-200");
     });
 
     it("uses the current character and skilling bridge target on the skilling page", () => {

@@ -1,19 +1,19 @@
 <template>
-  <figure class="overflow-hidden rounded-lg border border-white/10 bg-slate-950/40">
+  <figure class="overflow-hidden rounded-lg border border-border bg-muted/50">
     <a :href="resolvedSrc" target="_blank" rel="noopener noreferrer" :aria-label="`${caption}, ${openLabel}`">
       <img
         :src="resolvedSrc"
         :alt="alt"
         :width="width"
         :height="height"
-        class="block h-auto w-full border-b border-white/10"
+        class="block h-auto w-full border-b border-border"
         loading="lazy"
         decoding="async"
       />
     </a>
-    <figcaption class="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-xs leading-5 text-slate-400">
+    <figcaption class="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-xs leading-5 text-muted-foreground">
       <span>{{ caption }}</span>
-      <a :href="resolvedSrc" target="_blank" rel="noopener noreferrer" class="font-semibold text-amber-200 hover:text-amber-100">
+      <a :href="resolvedSrc" target="_blank" rel="noopener noreferrer" class="font-semibold text-primary hover:text-primary">
         {{ openLabel }}
       </a>
     </figcaption>

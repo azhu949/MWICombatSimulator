@@ -33,6 +33,8 @@
         "delete": "删除",
         "create": "创建",
         "close": "关闭",
+        "decrease": "减小",
+        "increase": "增大",
         "name": "名称"
     },
     "menu": {
@@ -353,9 +355,23 @@
             "loadFile": "载入文件",
             "clear": "清空",
             "refresh": "刷新",
-            "cancel": "取消"
+            "cancel": "取消",
+            "searchOptions": "搜索选项",
+            "noResults": "没有匹配结果",
+            "openOptions": "展开选项",
+            "refineSearchMoreResults": "请缩小搜索范围以查看另外 {count} 项结果"
         },
         "app": {
+            "navSimulation": "模拟",
+            "navTools": "专项工具",
+            "navSupport": "支持",
+            "moreActions": "更多操作",
+            "navigation": "导航",
+            "applicationNavigation": "应用导航",
+            "openNavigation": "打开导航",
+            "closeNavigation": "关闭导航",
+            "expandNavigation": "展开导航",
+            "collapseNavigation": "折叠导航",
             "runtime": "运行状态",
             "languageEnglish": "英文",
             "languageChinese": "中文",
@@ -422,6 +438,7 @@
             "combatType": "战斗类型",
             "regularZone": "普通区域",
             "zone": "区域",
+            "searchTarget": "搜索目标",
             "difficultyMax": "难度（最大 {{max}}）",
             "batchHint": "批量模式会运行多个目标，并在首页结果区聚合展示。",
             "homeResultsTitle": "模拟结果",

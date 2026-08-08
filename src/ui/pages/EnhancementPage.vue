@@ -1,28 +1,28 @@
 <template>
   <section class="space-y-4" data-enhancement-page>
-    <div class="panel overflow-hidden !px-4 !py-3" data-enhancement-toolbar>
+    <div class="surface-panel overflow-hidden !px-4 !py-3" data-enhancement-toolbar>
       <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div class="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
           <div class="flex shrink-0 items-baseline gap-2">
-            <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-teal-300/80">{{ t("common:enhancement.eyebrow", "Enhancement Lab") }}</p>
-            <h2 class="font-heading text-lg font-semibold text-slate-100">{{ t("common:enhancement.title", "Enhancement Simulator") }}</h2>
+            <p class="text-[10px] font-semibold uppercase  text-success">{{ t("common:enhancement.eyebrow", "Enhancement Lab") }}</p>
+            <h2 class="font-heading text-lg font-semibold text-foreground">{{ t("common:enhancement.title", "Enhancement Simulator") }}</h2>
           </div>
-          <span class="hidden h-5 w-px bg-white/10 sm:block" aria-hidden="true"></span>
-          <p class="min-w-[180px] flex-1 truncate text-xs text-slate-400">{{ selectedRouteLabel }}</p>
-          <span class="shrink-0 rounded border border-white/10 bg-white/[0.04] px-2 py-1 text-[10px] text-slate-400">
+          <span class="hidden h-5 w-px bg-muted/40 sm:block" aria-hidden="true"></span>
+          <p class="min-w-[180px] flex-1 truncate text-xs text-muted-foreground">{{ selectedRouteLabel }}</p>
+          <span class="shrink-0 rounded border border-border bg-muted/40 px-2 py-1 text-[10px] text-muted-foreground">
             {{ t("common:enhancement.actionTimeBadge", "12s base action") }}
           </span>
         </div>
 
         <div class="flex flex-wrap items-center gap-2" data-tm-import-anchor="enhancement-actions">
           <span class="rounded border px-2 py-1 text-[11px]" :class="priceStatusClass">{{ priceStatusText }}</span>
-          <button type="button" class="action-button-muted !px-3 !py-1.5" data-tm-import-reference="enhancement-refresh" :disabled="priceRefreshPending" @click="refreshPrices">
+          <button type="button" class="button-secondary !px-3 !py-1.5" data-tm-import-reference="enhancement-refresh" :disabled="priceRefreshPending" @click="refreshPrices">
             {{ priceRefreshPending ? t("common:enhancement.refreshing", "Refreshing...") : t("common:enhancement.refreshPrices", "Refresh prices") }}
           </button>
-          <button type="button" class="action-button-muted !px-3 !py-1.5" :disabled="enhancement.riskRunning" @click="resetConfig">
+          <button type="button" class="button-secondary !px-3 !py-1.5" :disabled="enhancement.riskRunning" @click="resetConfig">
             {{ t("common:enhancement.reset", "Reset") }}
           </button>
-          <button type="button" class="action-button-primary !px-3 !py-1.5" :disabled="!enhancement.config.itemHrid || enhancement.riskRunning || !budgetInputValid" @click="runRisk">
+          <button type="button" class="button-primary !px-3 !py-1.5" :disabled="!enhancement.config.itemHrid || enhancement.riskRunning || !budgetInputValid" @click="runRisk">
             {{ t("common:enhancement.calculateRisk", "Calculate risk") }}
           </button>
         </div>
@@ -30,112 +30,118 @@
     </div>
 
     <div class="grid gap-4 xl:grid-cols-[minmax(340px,420px)_minmax(0,1fr)]">
-      <aside class="space-y-4">
-        <div class="panel space-y-3" data-enhancement-config>
+      <aside class="space-y-4 xl:sticky xl:top-16 xl:self-start">
+        <div class="surface-panel space-y-3" data-enhancement-config>
           <div class="flex items-center justify-between gap-3">
             <div>
-              <p class="text-xs uppercase tracking-[0.14em] text-slate-500">01</p>
-              <h3 class="font-heading text-base font-semibold text-amber-200">{{ t("common:enhancement.targetItem", "Target item") }}</h3>
+              <p class="text-xs uppercase  text-muted-foreground">01</p>
+              <h3 class="font-heading text-base font-semibold text-primary">{{ t("common:enhancement.targetItem", "Target item") }}</h3>
             </div>
             <button
               v-if="enhancement.config.itemHrid"
               type="button"
-              class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-white/15 text-lg text-amber-300 transition hover:bg-white/10"
+              class="inline-flex h-9 w-9 items-center justify-center rounded-lg border border-border text-lg text-primary transition hover:bg-muted/40"
               :aria-label="favoriteButtonLabel(enhancement.config.itemHrid)"
               :title="favoriteButtonLabel(enhancement.config.itemHrid)"
               @click="enhancement.toggleFavorite(enhancement.config.itemHrid)"
             >
-              <span aria-hidden="true">{{ isFavorite(enhancement.config.itemHrid) ? "★" : "☆" }}</span>
+              <Star class="size-4" :fill="isFavorite(enhancement.config.itemHrid) ? 'currentColor' : 'none'" aria-hidden="true" />
             </button>
           </div>
 
-          <button type="button" class="w-full rounded-lg border border-white/10 bg-slate-950/40 p-3 text-left transition hover:border-amber-300/50" @click="openItemPicker">
-            <span class="field-label">{{ t("common:enhancement.item", "Item") }}</span>
+          <button type="button" class="w-full rounded-lg border border-border bg-muted/50 p-3 text-left transition hover:border-primary/40" @click="openItemPicker">
+            <span class="control-label">{{ t("common:enhancement.item", "Item") }}</span>
             <span class="mt-1 flex items-center gap-2.5">
-              <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded bg-white/[0.04] ring-1 ring-inset ring-white/10" data-enhancement-selected-item-icon>
+              <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded bg-muted/40 ring-1 ring-inset ring-ring" data-enhancement-selected-item-icon>
                 <svg v-if="itemIconVisible(enhancement.config.itemHrid)" class="h-full w-full p-1" viewBox="0 0 50 50" aria-hidden="true">
                   <use :href="itemIconHref(enhancement.config.itemHrid)"></use>
                 </svg>
-                <span v-else class="text-sm font-semibold text-slate-500" aria-hidden="true">{{ itemIconFallback(enhancement.selectedItem || { name: "?" }) }}</span>
+                <span v-else class="text-sm font-semibold text-muted-foreground" aria-hidden="true">{{ itemIconFallback(enhancement.selectedItem || { name: "?" }) }}</span>
               </span>
               <span class="min-w-0 flex-1">
                 <span class="flex items-center justify-between gap-3">
-                  <span class="min-w-0 truncate text-sm font-semibold text-slate-100">{{ selectedItemName }}</span>
-                  <span class="shrink-0 text-xs text-amber-300">{{ t("common:enhancement.choose", "Choose") }}</span>
+                  <span class="min-w-0 truncate text-sm font-semibold text-foreground">{{ selectedItemName }}</span>
+                  <span class="shrink-0 text-xs text-primary">{{ t("common:enhancement.choose", "Choose") }}</span>
                 </span>
-                <span v-if="selectedItemType" class="mt-1 block text-xs text-slate-500">{{ selectedItemType }}</span>
+                <span v-if="selectedItemType" class="mt-1 block text-xs text-muted-foreground">{{ selectedItemType }}</span>
               </span>
             </span>
           </button>
 
           <div class="grid grid-cols-3 gap-3">
             <label>
-              <span class="field-label">{{ t("common:enhancement.startLevel", "Start level") }}</span>
-              <input v-model.number="enhancement.config.startLevel" class="field-input" type="number" min="0" :max="Math.max(0, Number(enhancement.config.targetLevel || 1) - 1)" step="1" />
+              <span class="control-label">{{ t("common:enhancement.startLevel", "Start level") }}</span>
+              <input v-model.number="enhancement.config.startLevel" class="control-input" type="number" min="0" :max="Math.max(0, Number(enhancement.config.targetLevel || 1) - 1)" step="1" />
             </label>
             <label>
-              <span class="field-label">{{ t("common:enhancement.targetLevel", "Target level") }}</span>
-              <input v-model.number="enhancement.config.targetLevel" class="field-input" type="number" min="1" max="20" step="1" />
+              <span class="control-label">{{ t("common:enhancement.targetLevel", "Target level") }}</span>
+              <input v-model.number="enhancement.config.targetLevel" class="control-input" type="number" min="1" max="20" step="1" />
             </label>
             <label>
-              <span class="field-label">{{ getBuffTypeName("/buff_types/enhancing_level", "Enhancing Level") }}</span>
-              <input v-model.number="enhancement.config.skillLevel" class="field-input" type="number" min="1" max="200" step="1" />
+              <span class="control-label">{{ getBuffTypeName("/buff_types/enhancing_level", "Enhancing Level") }}</span>
+              <input v-model.number="enhancement.config.skillLevel" class="control-input" type="number" min="1" max="200" step="1" />
             </label>
           </div>
 
-          <div class="grid gap-2 border-t border-white/10 pt-3 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
+          <div class="grid gap-2 border-t border-border pt-3 sm:grid-cols-[minmax(0,1fr)_auto_auto]">
             <label>
-              <span class="field-label">{{ enhancingTeaLabel }}</span>
-              <select v-model="enhancement.config.teaHrid" class="field-select">
-                <option value="">{{ t("common:enhancement.none", "None") }}</option>
-                <option v-for="tea in teaOptions" :key="tea.hrid" :value="tea.hrid">{{ itemName(tea) }}</option>
-              </select>
+              <span class="control-label">{{ enhancingTeaLabel }}</span>
+              <Select
+                :model-value="optionalEnhancementSelectValue(enhancement.config.teaHrid)"
+                @update:model-value="setEnhancementTea"
+              >
+                <SelectTrigger :aria-label="enhancingTeaLabel" />
+                <SelectContent>
+                  <SelectItem :value="EMPTY_SELECT_VALUE">{{ t("common:enhancement.none", "None") }}</SelectItem>
+                  <SelectItem v-for="tea in teaOptions" :key="tea.hrid" :value="tea.hrid">{{ itemName(tea) }}</SelectItem>
+                </SelectContent>
+              </Select>
             </label>
-            <label class="flex min-h-10 items-center gap-2 self-end rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-slate-300">
+            <label class="flex min-h-10 items-center gap-2 self-end rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-foreground/85">
               <input v-model="enhancement.config.blessedTea" type="checkbox" />
               <span>{{ getGameItemName("/items/blessed_tea", "Blessed Tea") }}</span>
             </label>
-            <label class="flex min-h-10 items-center gap-2 self-end rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-xs text-slate-300">
+            <label class="flex min-h-10 items-center gap-2 self-end rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-foreground/85">
               <input v-model="enhancement.config.wisdomTea" type="checkbox" />
               <span>{{ getGameItemName("/items/wisdom_tea", "Wisdom Tea") }}</span>
             </label>
           </div>
 
-          <div class="grid grid-cols-3 gap-2 border-t border-white/10 pt-3" data-enhancement-config-tools>
+          <div class="grid grid-cols-2 gap-2 border-t border-border pt-3" data-enhancement-config-tools>
             <button
               type="button"
-              class="flex min-h-12 min-w-0 items-center justify-between gap-2 rounded border border-white/10 bg-white/[0.03] px-3 py-2 text-left text-xs font-semibold text-slate-300 transition hover:border-teal-300/40 hover:bg-teal-300/[0.06] hover:text-slate-100"
+              class="col-span-2 flex min-h-12 min-w-0 items-center justify-between gap-2 rounded border border-border bg-muted/40 px-3 py-2 text-left text-xs font-semibold text-foreground/85 transition hover:border-success/40 hover:bg-success/10 hover:text-foreground"
               :aria-expanded="advancedOpen"
               aria-controls="enhancement-advanced-tabs"
               @click="advancedOpen = !advancedOpen"
             >
-              <span class="min-w-0 leading-4">{{ advancedOpen ? t("common:enhancement.collapseAdvancedSettings", "Collapse advanced settings") : t("common:enhancement.advancedSettings", "Advanced settings") }}</span>
-              <span class="text-base text-teal-300" aria-hidden="true">{{ advancedOpen ? "-" : "+" }}</span>
+              <span class="min-w-0 whitespace-nowrap leading-4">{{ advancedOpen ? t("common:enhancement.collapseAdvancedSettings", "Collapse advanced settings") : t("common:enhancement.advancedSettings", "Advanced settings") }}</span>
+              <span class="text-base text-success" aria-hidden="true">{{ advancedOpen ? "-" : "+" }}</span>
             </button>
             <button
               type="button"
-              class="flex min-h-12 min-w-0 items-center justify-between gap-2 rounded border border-white/10 bg-white/[0.03] px-3 py-2 text-left text-xs font-semibold text-slate-300 transition hover:border-amber-300/40 hover:bg-amber-300/[0.06] hover:text-slate-100"
+              class="flex min-h-12 min-w-0 items-center justify-between gap-2 rounded border border-border bg-muted/40 px-3 py-2 text-left text-xs font-semibold text-foreground/85 transition hover:border-primary/40 hover:bg-primary/10 hover:text-foreground"
               aria-haspopup="dialog"
               @click="equipmentModalOpen = true"
             >
-              <span class="min-w-0 leading-4">{{ enhancingGearLabel }}</span>
-              <span class="shrink-0 text-[10px] font-normal text-amber-300">{{ configuredEquipmentCount }}</span>
+              <span class="min-w-0 whitespace-nowrap leading-4">{{ enhancingGearLabel }}</span>
+              <span class="shrink-0 text-[10px] font-normal text-primary">{{ configuredEquipmentCount }}</span>
             </button>
             <button
               type="button"
-              class="flex min-h-12 min-w-0 items-center justify-between gap-2 rounded border border-white/10 bg-white/[0.03] px-3 py-2 text-left text-xs font-semibold text-slate-300 transition hover:border-amber-300/40 hover:bg-amber-300/[0.06] hover:text-slate-100"
+              class="flex min-h-12 min-w-0 items-center justify-between gap-2 rounded border border-border bg-muted/40 px-3 py-2 text-left text-xs font-semibold text-foreground/85 transition hover:border-primary/40 hover:bg-primary/10 hover:text-foreground"
               aria-haspopup="dialog"
               @click="openPricesModal"
             >
-              <span class="min-w-0 leading-4">{{ t("common:enhancement.materialsAndPrices", "Materials & prices") }}</span>
-              <span class="shrink-0 text-[10px] font-normal text-slate-500">{{ materialRows.length }}</span>
+              <span class="min-w-0 whitespace-nowrap leading-4">{{ t("common:enhancement.materialsAndPrices", "Materials & prices") }}</span>
+              <span class="shrink-0 text-[10px] font-normal text-muted-foreground">{{ materialRows.length }}</span>
             </button>
           </div>
 
           <div
             v-show="advancedOpen"
             id="enhancement-advanced-tabs"
-            class="grid grid-cols-2 overflow-hidden rounded-lg border border-white/10 bg-slate-950/30"
+            class="grid grid-cols-2 overflow-hidden rounded-lg border border-border bg-muted/50"
             role="tablist"
             :aria-label="t('common:enhancement.advancedSettings', 'Advanced settings')"
             data-enhancement-advanced-tabs
@@ -144,7 +150,7 @@
             <button
               type="button"
               class="min-h-11 border-b-2 px-2 py-2 text-[11px] font-semibold leading-4 transition"
-              :class="activeAdvancedTab === 'bonuses' ? 'border-teal-300 bg-teal-300/10 text-teal-200' : 'border-transparent text-slate-500 hover:bg-white/5 hover:text-slate-300'"
+              :class="activeAdvancedTab === 'bonuses' ? 'border-success/40 bg-success/10 text-success' : 'border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground/85'"
               role="tab"
               :aria-selected="activeAdvancedTab === 'bonuses'"
               :tabindex="activeAdvancedTab === 'bonuses' ? 0 : -1"
@@ -156,7 +162,7 @@
             <button
               type="button"
               class="min-h-11 border-b-2 px-2 py-2 text-[11px] font-semibold leading-4 transition"
-              :class="activeAdvancedTab === 'economics' ? 'border-teal-300 bg-teal-300/10 text-teal-200' : 'border-transparent text-slate-500 hover:bg-white/5 hover:text-slate-300'"
+              :class="activeAdvancedTab === 'economics' ? 'border-success/40 bg-success/10 text-success' : 'border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground/85'"
               role="tab"
               :aria-selected="activeAdvancedTab === 'economics'"
               :tabindex="activeAdvancedTab === 'economics' ? 0 : -1"
@@ -170,38 +176,38 @@
           <div
             v-show="advancedOpen && activeAdvancedTab === 'bonuses'"
             id="enhancement-advanced-bonuses"
-            class="border-t border-white/10 pt-4"
+            class="border-t border-border pt-4"
             role="tabpanel"
           >
             <div class="mb-3 flex items-center justify-between gap-2">
-              <h4 class="font-heading text-sm font-semibold text-teal-200">{{ t("common:enhancement.housingAndCommunity", "Housing & community") }}</h4>
-              <span class="text-[11px] uppercase tracking-[0.12em] text-slate-500">{{ t("common:enhancement.successBonus", "Success bonus") }}</span>
+              <h4 class="font-heading text-sm font-semibold text-success">{{ t("common:enhancement.housingAndCommunity", "Housing & community") }}</h4>
+              <span class="text-[11px] uppercase  text-muted-foreground">{{ t("common:enhancement.successBonus", "Success bonus") }}</span>
             </div>
             <div class="grid gap-3 sm:grid-cols-2">
               <label>
-                <span class="field-label">{{ getHouseRoomName("/house_rooms/observatory", "Observatory") }}</span>
-                <input v-model.number="enhancement.config.observatoryLevel" class="field-input" type="number" min="0" max="8" step="1" />
+                <span class="control-label">{{ getHouseRoomName("/house_rooms/observatory", "Observatory") }}</span>
+                <input v-model.number="enhancement.config.observatoryLevel" class="control-input" type="number" min="0" max="8" step="1" />
               </label>
               <label>
-                <span class="field-label">{{ t("common:enhancement.otherRoomLevels", "Other room levels") }}</span>
-                <input v-model.number="enhancement.config.otherRoomLevels" class="field-input" type="number" min="0" step="1" />
+                <span class="control-label">{{ t("common:enhancement.otherRoomLevels", "Other room levels") }}</span>
+                <input v-model.number="enhancement.config.otherRoomLevels" class="control-input" type="number" min="0" step="1" />
               </label>
               <label>
-                <span class="field-label">{{ getOfficialGameText("communityBuffTypeNames", "/community_buff_types/enhancing_speed", "Enhancing Speed") }}</span>
-                <input v-model.number="enhancement.config.communityEnhancingLevel" class="field-input" type="number" min="0" max="20" step="1" />
+                <span class="control-label">{{ getOfficialGameText("communityBuffTypeNames", "/community_buff_types/enhancing_speed", "Enhancing Speed") }}</span>
+                <input v-model.number="enhancement.config.communityEnhancingLevel" class="control-input" type="number" min="0" max="20" step="1" />
               </label>
               <label>
-                <span class="field-label">{{ getOfficialGameText("communityBuffTypeNames", "/community_buff_types/experience", "Experience") }}</span>
-                <input v-model.number="enhancement.config.communityExperienceLevel" class="field-input" type="number" min="0" max="20" step="1" />
+                <span class="control-label">{{ getOfficialGameText("communityBuffTypeNames", "/community_buff_types/experience", "Experience") }}</span>
+                <input v-model.number="enhancement.config.communityExperienceLevel" class="control-input" type="number" min="0" max="20" step="1" />
               </label>
             </div>
 
             <div class="mt-3 grid gap-2 sm:grid-cols-2">
-              <label class="flex min-h-10 items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-slate-300">
+              <label class="flex min-h-10 items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm text-foreground/85">
                 <input v-model="enhancement.config.noviceAchievement" type="checkbox" />
                 <span>{{ achievementTierBonusLabel("/achievement_tiers/novice", "Novice") }}</span>
               </label>
-              <label class="flex min-h-10 items-center gap-2 rounded-lg border border-white/10 bg-white/[0.03] px-3 py-2 text-sm text-slate-300">
+              <label class="flex min-h-10 items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm text-foreground/85">
                 <input v-model="enhancement.config.championAchievement" type="checkbox" />
                 <span>{{ achievementTierBonusLabel("/achievement_tiers/champion", "Champion") }}</span>
               </label>
@@ -213,27 +219,30 @@
         <BaseModal
           :open="equipmentModalOpen"
           :title="enhancingGearLabel"
-          panel-class="enhancement-price-modal max-w-3xl max-h-[88vh] overflow-y-auto"
-          initial-focus-selector="[data-enhancement-equipment] select"
+          panel-class="max-w-3xl max-h-[88vh] overflow-y-auto"
+          initial-focus-selector="[data-enhancement-equipment] input[role='combobox']"
           @close="equipmentModalOpen = false"
         >
           <div class="space-y-3" data-enhancement-equipment>
-            <p class="text-right text-xs text-slate-500">{{ t("common:enhancement.gearLevel", "Item / +Level") }}</p>
-            <div class="grid border-y border-white/10 md:grid-cols-2 md:gap-x-4">
-              <div v-for="slot in equipmentSlots" :key="slot.key" class="grid grid-cols-[76px_minmax(0,1fr)_62px] items-center gap-2 border-b border-white/10 py-2 last:border-b-0 md:[&:nth-last-child(-n+2)]:border-b-0">
-                <label class="text-xs font-semibold text-slate-400" :for="`enhancement-slot-${slot.key}`">{{ slot.label }}</label>
-                <select
-                  :id="`enhancement-slot-${slot.key}`"
-                  class="field-select py-1.5 text-xs"
-                  :value="equipmentField(slot.key, 'itemHrid')"
-                  @change="setEquipmentField(slot.key, 'itemHrid', $event.target.value)"
-                >
-                  <option value="">{{ t("common:enhancement.none", "None") }}</option>
-                  <option v-for="item in slotOptions(slot.key)" :key="item.hrid" :value="item.hrid">{{ itemName(item) }}</option>
-                </select>
+            <p class="text-right text-xs text-muted-foreground">{{ t("common:enhancement.gearLevel", "Item / +Level") }}</p>
+            <div class="grid border-y border-border md:grid-cols-2 md:gap-x-4">
+              <div v-for="slot in equipmentSlots" :key="slot.key" class="grid grid-cols-[76px_minmax(0,1fr)_62px] items-center gap-2 border-b border-border py-2 last:border-b-0 md:[&:nth-last-child(-n+2)]:border-b-0">
+                <span class="text-xs font-semibold text-muted-foreground">{{ slot.label }}</span>
+                <SearchCombobox
+                  :model-value="equipmentField(slot.key, 'itemHrid')"
+                  :options="supportEquipmentComboboxOptions(slot.key)"
+                  class="h-8"
+                  :placeholder="t('common:vue.common.searchOptions', 'Search options')"
+                  :aria-label="slot.label"
+                  :empty-label="t('common:vue.common.noResults', 'No results')"
+                  :open-label="t('common:vue.common.openOptions', 'Open options')"
+                  :more-results-label="t('common:vue.common.refineSearchMoreResults', 'Refine the search to see {count} more results')"
+                  :max-results="60"
+                  @update:model-value="setEquipmentField(slot.key, 'itemHrid', $event)"
+                />
                 <input
                   :aria-label="t('common:enhancement.gearEnhancementLevel', '{{slot}} enhancement level', { slot: slot.label })"
-                  class="field-input py-1.5 text-xs"
+                  class="control-input py-1.5 text-xs"
                   type="number"
                   min="0"
                   max="20"
@@ -249,37 +258,47 @@
         <div
           v-show="advancedOpen && activeAdvancedTab === 'economics'"
           id="enhancement-advanced-economics"
-          class="panel space-y-4"
+          class="surface-panel space-y-4"
           role="tabpanel"
           data-enhancement-economics
         >
           <div>
-            <p class="text-xs uppercase tracking-[0.14em] text-slate-500">03</p>
-            <h3 class="font-heading text-base font-semibold text-amber-200">{{ t("common:enhancement.economics", "Costs & risk") }}</h3>
+            <p class="text-xs uppercase  text-muted-foreground">03</p>
+            <h3 class="font-heading text-base font-semibold text-primary">{{ t("common:enhancement.economics", "Costs & risk") }}</h3>
           </div>
 
           <div class="grid gap-3 sm:grid-cols-2">
             <label>
-              <span class="field-label">{{ t("common:enhancement.protectionItemMode", "Protection item") }}</span>
-              <select v-model="enhancement.config.protectionMode" class="field-select">
-                <option value="auto">{{ t("common:enhancement.autoCheapest", "Auto (cheapest)") }}</option>
-                <option value="manual">{{ t("common:enhancement.manual", "Manual") }}</option>
-              </select>
+              <span class="control-label">{{ t("common:enhancement.protectionItemMode", "Protection item") }}</span>
+              <Select v-model="enhancement.config.protectionMode">
+                <SelectTrigger :aria-label="t('common:enhancement.protectionItemMode', 'Protection item')" />
+                <SelectContent>
+                  <SelectItem value="auto">{{ t("common:enhancement.autoCheapest", "Auto (cheapest)") }}</SelectItem>
+                  <SelectItem value="manual">{{ t("common:enhancement.manual", "Manual") }}</SelectItem>
+                </SelectContent>
+              </Select>
             </label>
             <label>
-              <span class="field-label">{{ t("common:enhancement.protectionChoice", "Protection choice") }}</span>
-              <select v-model="enhancement.config.protectionItemHrid" class="field-select" :disabled="enhancement.config.protectionMode !== 'manual'">
-                <option value="">{{ t("common:enhancement.autoCheapest", "Auto (cheapest)") }}</option>
-                <option v-for="item in protectionOptions" :key="item.hrid" :value="item.hrid">{{ protectionOptionLabel(item) }}</option>
-              </select>
+              <span class="control-label">{{ t("common:enhancement.protectionChoice", "Protection choice") }}</span>
+              <Select
+                :model-value="optionalEnhancementSelectValue(enhancement.config.protectionItemHrid)"
+                :disabled="enhancement.config.protectionMode !== 'manual'"
+                @update:model-value="setProtectionItem"
+              >
+                <SelectTrigger :aria-label="t('common:enhancement.protectionChoice', 'Protection choice')" />
+                <SelectContent>
+                  <SelectItem :value="EMPTY_SELECT_VALUE">{{ t("common:enhancement.autoCheapest", "Auto (cheapest)") }}</SelectItem>
+                  <SelectItem v-for="item in protectionOptions" :key="item.hrid" :value="item.hrid">{{ protectionOptionLabel(item) }}</SelectItem>
+                </SelectContent>
+              </Select>
             </label>
             <label>
-              <span class="field-label">{{ t("common:enhancement.laborRate", "Labor gold / hour") }}</span>
-              <input v-model.number="enhancement.config.laborRatePerHour" class="field-input" type="number" min="0" step="1000" />
+              <span class="control-label">{{ t("common:enhancement.laborRate", "Labor gold / hour") }}</span>
+              <input v-model.number="enhancement.config.laborRatePerHour" class="control-input" type="number" min="0" step="1000" />
             </label>
             <label>
-              <span class="field-label">{{ t("common:enhancement.markupRate", "Markup (%)") }}</span>
-              <input v-model.number="markupPercent" class="field-input" type="number" min="0" max="100" step="0.1" />
+              <span class="control-label">{{ t("common:enhancement.markupRate", "Markup (%)") }}</span>
+              <input v-model.number="markupPercent" class="control-input" type="number" min="0" max="100" step="0.1" />
             </label>
           </div>
         </div>
@@ -293,32 +312,32 @@
         >
           <div class="space-y-3" data-enhancement-prices>
             <div class="flex items-center justify-between gap-3">
-              <span class="text-xs text-slate-500">{{ t("common:enhancement.askFallback", "Market / fallback") }}</span>
-              <button type="button" class="action-button-muted !px-3 !py-1.5" :disabled="priceRefreshPending" @click="refreshPrices">
+              <span class="text-xs text-muted-foreground">{{ t("common:enhancement.askFallback", "Market / fallback") }}</span>
+              <button type="button" class="button-secondary !px-3 !py-1.5" :disabled="priceRefreshPending" @click="refreshPrices">
                 {{ priceRefreshPending ? t("common:enhancement.refreshing", "Refreshing...") : t("common:enhancement.refreshPrices", "Refresh prices") }}
               </button>
             </div>
 
-            <div class="border-y border-amber-300/20 bg-amber-300/[0.04]" data-enhancement-starting-price>
+            <div class="border-y border-primary/40 bg-primary/10" data-enhancement-starting-price>
               <div class="grid min-h-[58px] grid-cols-[minmax(0,1fr)_140px] items-center gap-3 px-3 py-2">
                 <div class="flex min-w-0 items-center gap-2.5">
-                  <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded bg-slate-950/55 ring-1 ring-inset ring-white/10" data-enhancement-starting-item-icon>
+                  <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded bg-muted/50 ring-1 ring-inset ring-ring" data-enhancement-starting-item-icon>
                     <svg v-if="itemIconVisible(enhancement.config.itemHrid)" class="h-full w-full p-1" viewBox="0 0 50 50" aria-hidden="true">
                       <use :href="itemIconHref(enhancement.config.itemHrid)"></use>
                     </svg>
-                    <span v-else class="text-xs font-semibold text-slate-500" aria-hidden="true">{{ itemIconFallback(enhancement.selectedItem || { hrid: enhancement.config.itemHrid }) }}</span>
+                    <span v-else class="text-xs font-semibold text-muted-foreground" aria-hidden="true">{{ itemIconFallback(enhancement.selectedItem || { hrid: enhancement.config.itemHrid }) }}</span>
                   </span>
                   <div class="min-w-0">
-                    <p class="truncate text-xs font-semibold text-slate-200">{{ t("common:enhancement.startingItemValue", "Starting item value") }}</p>
-                    <p class="mt-0.5 text-[11px] text-slate-500">{{ priceDetailLabel(enhancement.startingItemPrice) }}</p>
-                    <p v-if="isAcquisitionPriceRecord(enhancement.startingItemPrice)" class="mt-0.5 text-[10px] text-slate-600">
+                    <p class="truncate text-xs font-semibold text-foreground">{{ t("common:enhancement.startingItemValue", "Starting item value") }}</p>
+                    <p class="mt-0.5 text-[11px] text-muted-foreground">{{ priceDetailLabel(enhancement.startingItemPrice) }}</p>
+                    <p v-if="isAcquisitionPriceRecord(enhancement.startingItemPrice)" class="mt-0.5 text-[10px] text-muted-foreground">
                       {{ acquisitionVendorFloorLabel(enhancement.startingItemPrice) }}
                     </p>
-                    <p v-if="startingItemPriceMissing" class="mt-1 text-[11px] leading-4 text-amber-300">{{ startingItemPriceMissingText }}</p>
+                    <p v-if="startingItemPriceMissing" class="mt-1 text-[11px] leading-4 text-primary">{{ startingItemPriceMissingText }}</p>
                   </div>
                 </div>
                 <input
-                  class="field-input px-2 py-1.5 text-right text-xs"
+                  class="control-input px-2 py-1.5 text-right text-xs"
                   type="number"
                   min="0"
                   step="1"
@@ -329,31 +348,31 @@
               </div>
             </div>
 
-            <div v-if="materialRows.length" class="grid gap-x-4 border-t border-white/10 sm:grid-cols-2" data-enhancement-price-grid>
+            <div v-if="materialRows.length" class="grid gap-x-4 border-t border-border sm:grid-cols-2" data-enhancement-price-grid>
               <div
                 v-for="row in materialRows"
                 :key="row.key || `${row.kind}-${row.priceMode}-${row.hrid}`"
-                class="grid min-h-[58px] grid-cols-[minmax(0,1fr)_96px_32px] items-center gap-2 border-b border-white/10 py-2"
+                class="grid min-h-[58px] grid-cols-[minmax(0,1fr)_96px_32px] items-center gap-2 border-b border-border py-2"
               >
                 <div class="flex min-w-0 items-center gap-2">
-                  <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded bg-white/[0.03] ring-1 ring-inset ring-white/10" data-enhancement-material-icon>
+                  <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded bg-muted/40 ring-1 ring-inset ring-ring" data-enhancement-material-icon>
                     <svg v-if="itemIconVisible(row.hrid)" class="h-full w-full p-1" viewBox="0 0 50 50" aria-hidden="true">
                       <use :href="itemIconHref(row.hrid)"></use>
                     </svg>
-                    <span v-else class="text-[11px] font-semibold text-slate-500" aria-hidden="true">{{ itemIconFallback(row) }}</span>
+                    <span v-else class="text-[11px] font-semibold text-muted-foreground" aria-hidden="true">{{ itemIconFallback(row) }}</span>
                   </span>
                   <div class="min-w-0">
-                    <p class="truncate text-xs font-semibold text-slate-200">{{ itemName(row) }}</p>
-                    <p class="mt-0.5 text-[11px] text-slate-500">
+                    <p class="truncate text-xs font-semibold text-foreground">{{ itemName(row) }}</p>
+                    <p class="mt-0.5 text-[11px] text-muted-foreground">
                       {{ priceDetailLabel(row) }}<template v-if="!isAcquisitionEstimate(row)"> · {{ t("common:enhancement.quantityShort", "Qty") }} {{ formatNumber(row.quantity ?? row.expectedQuantity ?? 0) }}</template>
                     </p>
-                    <p v-if="isAcquisitionPriceRecord(row)" class="mt-0.5 text-[10px] text-slate-600">
+                    <p v-if="isAcquisitionPriceRecord(row)" class="mt-0.5 text-[10px] text-muted-foreground">
                       {{ acquisitionVendorFloorLabel(row) }}<template v-if="Number(row.quantity ?? row.expectedQuantity ?? 0) > 0"> · {{ t("common:enhancement.quantityShort", "Qty") }} {{ formatNumber(row.quantity ?? row.expectedQuantity) }}</template>
                     </p>
                   </div>
                 </div>
                 <input
-                  class="field-input px-2 py-1.5 text-right text-xs"
+                  class="control-input px-2 py-1.5 text-right text-xs"
                   type="number"
                   min="0"
                   step="1"
@@ -364,7 +383,7 @@
                 />
                 <button
                   type="button"
-                  class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-white/10 text-sm text-slate-400 transition hover:bg-white/10 hover:text-slate-100"
+                  class="inline-flex h-8 w-8 items-center justify-center rounded-lg border border-border text-sm text-muted-foreground transition hover:bg-muted/40 hover:text-foreground"
                   :aria-label="t('common:enhancement.clearPriceOverride', 'Clear price override')"
                   :title="t('common:enhancement.clearPriceOverride', 'Clear price override')"
                   @click="enhancement.clearPriceOverride(row.hrid, row.priceMode)"
@@ -373,10 +392,10 @@
                 </button>
               </div>
             </div>
-            <p v-if="materialRows.length === 0" class="text-xs text-slate-500">{{ t("common:enhancement.selectItemForMaterials", "Select an item to load its material prices.") }}</p>
+            <p v-if="materialRows.length === 0" class="text-xs text-muted-foreground">{{ t("common:enhancement.selectItemForMaterials", "Select an item to load its material prices.") }}</p>
             <p
               v-if="hasAcquisitionEstimate"
-              class="border-l-2 border-amber-300/30 bg-amber-300/[0.04] px-3 py-2 text-[11px] leading-4 text-slate-500"
+              class="border-l-2 border-primary/40 bg-primary/10 px-3 py-2 text-[11px] leading-4 text-muted-foreground"
               data-enhancement-acquisition-note
             >
               {{ t("common:enhancement.acquisitionEstimateNote", "The estimate uses key asks minus the expected liquidation value of other chest drops. Dungeon time, consumables, and drops earned during the run are excluded.") }}
@@ -386,31 +405,31 @@
       </aside>
 
       <div class="min-w-0 space-y-4">
-        <div class="panel overflow-hidden" data-enhancement-summary>
+        <div class="surface-panel overflow-hidden" data-enhancement-summary>
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p class="text-xs uppercase tracking-[0.16em] text-teal-300/80">{{ t("common:enhancement.recommendation", "Recommendation") }}</p>
-              <h3 class="mt-1 font-heading text-xl font-semibold text-slate-100">{{ recommendedStrategyLabel }}</h3>
+              <p class="text-xs uppercase  text-success">{{ t("common:enhancement.recommendation", "Recommendation") }}</p>
+              <h3 class="mt-1 font-heading text-xl font-semibold text-foreground">{{ recommendedStrategyLabel }}</h3>
             </div>
-            <span v-if="analysisReady" class="rounded-full border border-emerald-400/25 bg-emerald-400/10 px-3 py-1 text-xs text-emerald-200">
+            <span v-if="analysisReady" class="rounded-md border border-success/40 bg-success/10 px-3 py-1 text-xs text-success">
               {{ t("common:enhancement.lowestExpectedCost", "Lowest expected cost") }}
             </span>
           </div>
 
-          <div v-if="analysisReady" class="mt-3 grid gap-px overflow-hidden rounded-lg border border-white/10 bg-white/10 sm:grid-cols-2 xl:grid-cols-4">
-            <div v-for="metric in summaryMetrics" :key="metric.key" class="min-h-[76px] bg-slate-950/70 p-3">
-              <p class="text-[11px] uppercase tracking-[0.12em] text-slate-500">{{ metric.label }}</p>
+          <div v-if="analysisReady" class="mt-3 grid gap-px overflow-hidden rounded-lg border border-border bg-muted/40 sm:grid-cols-2 xl:grid-cols-4">
+            <div v-for="metric in summaryMetrics" :key="metric.key" class="min-h-[76px] bg-muted/50 p-3">
+              <p class="text-[11px] uppercase  text-muted-foreground">{{ metric.label }}</p>
               <p class="mt-2 font-heading text-lg font-semibold" :class="metric.tone">{{ metric.value }}</p>
-              <p v-if="metric.detail" class="mt-1 text-[11px] text-slate-500">{{ metric.detail }}</p>
+              <p v-if="metric.detail" class="mt-1 text-[11px] text-muted-foreground">{{ metric.detail }}</p>
             </div>
           </div>
-          <div v-else class="mt-4 border-l-2 border-amber-300/50 py-2 pl-4 text-sm text-slate-400">
+          <div v-else class="mt-4 border-l-2 border-primary/40 py-2 pl-4 text-sm text-muted-foreground">
             {{ t("common:enhancement.emptyAnalysis", "Choose an item and valid levels to compare enhancement strategies.") }}
           </div>
         </div>
 
         <div
-          class="grid grid-cols-3 overflow-hidden rounded-lg border border-white/10 bg-slate-950/30"
+          class="flex overflow-x-auto rounded-lg border border-border bg-muted/50 xl:grid xl:grid-cols-3"
           role="tablist"
           :aria-label="t('common:enhancement.resultViews', 'Result views')"
           data-enhancement-result-tabs
@@ -418,8 +437,8 @@
         >
           <button
             type="button"
-            class="min-h-12 border-b-2 px-3 py-2 text-xs font-semibold transition"
-            :class="activeResultTab === 'strategies' ? 'border-amber-300 bg-amber-300/10 text-amber-200' : 'border-transparent text-slate-500 hover:bg-white/5 hover:text-slate-300'"
+            class="min-h-12 min-w-max shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-xs font-semibold transition xl:min-w-0"
+            :class="activeResultTab === 'strategies' ? 'border-primary/40 bg-primary/10 text-primary' : 'border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground/85'"
             role="tab"
             :aria-selected="activeResultTab === 'strategies'"
             :tabindex="activeResultTab === 'strategies' ? 0 : -1"
@@ -431,8 +450,8 @@
           </button>
           <button
             type="button"
-            class="min-h-12 border-b-2 px-3 py-2 text-xs font-semibold transition"
-            :class="activeResultTab === 'mirror' ? 'border-amber-300 bg-amber-300/10 text-amber-200' : 'border-transparent text-slate-500 hover:bg-white/5 hover:text-slate-300'"
+            class="min-h-12 min-w-max shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-xs font-semibold transition xl:min-w-0"
+            :class="activeResultTab === 'mirror' ? 'border-primary/40 bg-primary/10 text-primary' : 'border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground/85'"
             role="tab"
             :aria-selected="activeResultTab === 'mirror'"
             :tabindex="activeResultTab === 'mirror' ? 0 : -1"
@@ -443,8 +462,8 @@
           </button>
           <button
             type="button"
-            class="min-h-12 border-b-2 px-3 py-2 text-xs font-semibold transition"
-            :class="activeResultTab === 'risk' ? 'border-amber-300 bg-amber-300/10 text-amber-200' : 'border-transparent text-slate-500 hover:bg-white/5 hover:text-slate-300'"
+            class="min-h-12 min-w-max shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-xs font-semibold transition xl:min-w-0"
+            :class="activeResultTab === 'risk' ? 'border-primary/40 bg-primary/10 text-primary' : 'border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground/85'"
             role="tab"
             :aria-selected="activeResultTab === 'risk'"
             :tabindex="activeResultTab === 'risk' ? 0 : -1"
@@ -458,67 +477,67 @@
         <div
           v-show="activeResultTab === 'strategies'"
           id="enhancement-results-strategies"
-          class="panel overflow-hidden"
+          class="surface-panel overflow-hidden"
           role="tabpanel"
           data-enhancement-strategies
         >
           <div class="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p class="text-xs uppercase tracking-[0.14em] text-slate-500">{{ t("common:enhancement.expectedValues", "Expected values") }}</p>
-              <h3 class="font-heading text-base font-semibold text-amber-200">{{ t("common:enhancement.strategyComparison", "Protection strategy comparison") }}</h3>
+              <p class="text-xs uppercase  text-muted-foreground">{{ t("common:enhancement.expectedValues", "Expected values") }}</p>
+              <h3 class="font-heading text-base font-semibold text-primary">{{ t("common:enhancement.strategyComparison", "Protection strategy comparison") }}</h3>
             </div>
-            <span class="text-xs text-slate-500">{{ t("common:enhancement.sortedByTotal", "Sorted by total investment") }}</span>
+            <span class="text-xs text-muted-foreground">{{ t("common:enhancement.sortedByTotal", "Sorted by total investment") }}</span>
           </div>
 
           <div class="mt-3 overflow-auto xl:max-h-[460px]">
-            <table class="w-full min-w-[1280px] text-xs">
-              <thead class="sticky top-0 z-10 bg-slate-900/95">
-                <tr class="border-b border-white/10 text-left uppercase tracking-[0.1em] text-slate-500">
-                  <th class="px-2 py-3">{{ t("common:enhancement.strategy", "Strategy") }}</th>
-                  <th
+            <Table class="w-full min-w-[1280px] text-xs">
+              <TableHeader class="sticky top-0 z-10 bg-muted/50">
+                <TableRow class="border-b border-border text-left uppercase  text-muted-foreground">
+                  <TableHead class="px-2 py-3">{{ t("common:enhancement.strategy", "Strategy") }}</TableHead>
+                  <TableHead
                     class="px-2 py-3 text-right"
                     :title="t('common:enhancement.expectedResetsHelp', 'Expected failures from +1 or above that return to +0; failures at +0 are excluded.')"
                   >
                     {{ t("common:enhancement.expectedResets", "Expected resets") }}
-                  </th>
-                  <th class="px-2 py-3 text-right">{{ t("common:enhancement.actions", "Actions") }}</th>
-                  <th class="px-2 py-3 text-right">{{ t("common:enhancement.time", "Time") }}</th>
-                  <th class="px-2 py-3 text-right">{{ t("common:enhancement.xp", "XP") }}</th>
-                  <th class="px-2 py-3 text-right">{{ t("common:enhancement.xpPerHour", "XP/h") }}</th>
-                  <th class="px-2 py-3 text-right">{{ t("common:enhancement.materialCost", "Materials") }}</th>
-                  <th class="px-2 py-3 text-right">{{ t("common:enhancement.goldCost", "Gold") }}</th>
-                  <th class="px-2 py-3 text-right">{{ t("common:enhancement.protectionCount", "Protection") }}</th>
-                  <th class="px-2 py-3 text-right">{{ t("common:enhancement.incrementalCost", "Incremental") }}</th>
-                  <th class="px-2 py-3 text-right">{{ t("common:enhancement.totalInvestment", "Total") }}</th>
-                </tr>
-              </thead>
-              <tbody>
-                <tr
+                  </TableHead>
+                  <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.actions", "Actions") }}</TableHead>
+                  <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.time", "Time") }}</TableHead>
+                  <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.xp", "XP") }}</TableHead>
+                  <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.xpPerHour", "XP/h") }}</TableHead>
+                  <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.materialCost", "Materials") }}</TableHead>
+                  <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.goldCost", "Gold") }}</TableHead>
+                  <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.protectionCount", "Protection") }}</TableHead>
+                  <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.incrementalCost", "Incremental") }}</TableHead>
+                  <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.totalInvestment", "Total") }}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody>
+                <TableRow
                   v-for="(row, index) in strategyRows"
                   :key="strategyKey(row, index)"
-                  class="border-b border-white/5 transition hover:bg-white/[0.03]"
-                  :class="{ 'bg-emerald-400/[0.05]': isRecommended(row, index) }"
+                  class="border-b border-border transition hover:bg-muted/40"
+                  :class="{ 'bg-success/10': isRecommended(row, index) }"
                 >
-                  <td class="px-2 py-3">
-                    <p class="font-semibold text-slate-100">{{ strategyLabel(row) }}</p>
-                    <p class="mt-1 text-[11px] text-slate-500">{{ protectionItemLabel(row) }}</p>
-                  </td>
-                  <td class="px-2 py-3 text-right text-slate-300">{{ formatNumber(rowValue(row, "expectedResetCount", "expectedResets", "resetCount")) }}</td>
-                  <td class="px-2 py-3 text-right text-slate-200">{{ formatNumber(rowValue(row, "expectedActions", "actions")) }}</td>
-                  <td class="px-2 py-3 text-right text-slate-300">{{ formatDuration(rowValue(row, "expectedSeconds", "seconds", "timeSeconds")) }}</td>
-                  <td class="px-2 py-3 text-right text-slate-300">{{ formatNumber(rowValue(row, "expectedXp", "expectedExperience", "xp")) }}</td>
-                  <td class="px-2 py-3 text-right text-slate-300">{{ formatNumber(rowValue(row, "xpPerHour", "experiencePerHour")) }}</td>
-                  <td class="px-2 py-3 text-right text-slate-300">{{ formatGold(strategyMaterialCost(row)) }}</td>
-                  <td class="px-2 py-3 text-right text-slate-300">{{ formatGold(strategyCoinCost(row)) }}</td>
-                  <td class="px-2 py-3 text-right text-slate-300">{{ formatNumber(rowValue(row, "expectedProtectionCount", "expectedProtections", "protectionCount")) }}</td>
-                  <td class="px-2 py-3 text-right text-slate-300">{{ formatGold(rowValue(row, "incrementalCost", "enhancementCost")) }}</td>
-                  <td class="px-2 py-3 text-right font-semibold text-amber-200">{{ formatGold(rowValue(row, "totalInvestment", "totalCost")) }}</td>
-                </tr>
-                <tr v-if="strategyRows.length === 0">
-                  <td colspan="11" class="px-2 py-8 text-center text-slate-500">{{ t("common:enhancement.noStrategies", "No strategies available for the current configuration.") }}</td>
-                </tr>
-              </tbody>
-            </table>
+                  <TableCell class="px-2 py-3">
+                    <p class="font-semibold text-foreground">{{ strategyLabel(row) }}</p>
+                    <p class="mt-1 text-[11px] text-muted-foreground">{{ protectionItemLabel(row) }}</p>
+                  </TableCell>
+                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatNumber(rowValue(row, "expectedResetCount", "expectedResets", "resetCount")) }}</TableCell>
+                  <TableCell class="px-2 py-3 text-right text-foreground">{{ formatNumber(rowValue(row, "expectedActions", "actions")) }}</TableCell>
+                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatDuration(rowValue(row, "expectedSeconds", "seconds", "timeSeconds")) }}</TableCell>
+                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatNumber(rowValue(row, "expectedXp", "expectedExperience", "xp")) }}</TableCell>
+                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatNumber(rowValue(row, "xpPerHour", "experiencePerHour")) }}</TableCell>
+                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatGold(strategyMaterialCost(row)) }}</TableCell>
+                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatGold(strategyCoinCost(row)) }}</TableCell>
+                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatNumber(rowValue(row, "expectedProtectionCount", "expectedProtections", "protectionCount")) }}</TableCell>
+                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatGold(rowValue(row, "incrementalCost", "enhancementCost")) }}</TableCell>
+                  <TableCell class="px-2 py-3 text-right font-semibold text-primary">{{ formatGold(rowValue(row, "totalInvestment", "totalCost")) }}</TableCell>
+                </TableRow>
+                <TableRow v-if="strategyRows.length === 0">
+                  <TableCell colspan="11" class="px-2 py-8 text-center text-muted-foreground">{{ t("common:enhancement.noStrategies", "No strategies available for the current configuration.") }}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           </div>
         </div>
 
@@ -528,98 +547,101 @@
           class="grid gap-4 lg:grid-cols-2"
           role="tabpanel"
         >
-          <div class="panel min-w-0" data-enhancement-mirror>
+          <div class="surface-panel min-w-0" data-enhancement-mirror>
             <div class="flex items-start justify-between gap-3">
               <div>
-                <p class="text-xs uppercase tracking-[0.14em] text-slate-500">{{ t("common:enhancement.fromZeroPlan", "Independent plan · Built from +0") }}</p>
-                <h3 class="font-heading text-base font-semibold text-cyan-200">{{ t("common:enhancement.fromZeroPlanTitle", "Lowest-cost build plan") }}</h3>
+                <p class="text-xs uppercase  text-muted-foreground">{{ t("common:enhancement.fromZeroPlan", "Independent plan · Built from +0") }}</p>
+                <h3 class="font-heading text-base font-semibold text-info">{{ t("common:enhancement.fromZeroPlanTitle", "Lowest-cost build plan") }}</h3>
               </div>
-              <span class="rounded-full border border-cyan-400/20 bg-cyan-400/10 px-2 py-1 text-xs text-cyan-200">{{ mirrorMethodLabel }}</span>
+              <span class="rounded-md border border-info/40 bg-info/10 px-2 py-1 text-xs text-info">{{ mirrorMethodLabel }}</span>
             </div>
 
             <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
               <div>
-                <dt class="text-xs text-slate-500">{{ t("common:enhancement.planCost", "Plan cost") }}</dt>
-                <dd class="mt-1 font-semibold text-slate-100">{{ formatGold(mirrorPlanCost) }}</dd>
+                <dt class="text-xs text-muted-foreground">{{ t("common:enhancement.planCost", "Plan cost") }}</dt>
+                <dd class="mt-1 font-semibold text-foreground">{{ formatGold(mirrorPlanCost) }}</dd>
               </div>
               <div>
-                <dt class="text-xs text-slate-500">{{ t("common:enhancement.savings", "Savings") }}</dt>
-                <dd class="mt-1 font-semibold text-emerald-300">{{ formatGold(mirrorSavings) }}</dd>
+                <dt class="text-xs text-muted-foreground">{{ t("common:enhancement.savings", "Savings") }}</dt>
+                <dd class="mt-1 font-semibold text-success">{{ formatGold(mirrorSavings) }}</dd>
               </div>
             </dl>
 
-            <div v-if="mirrorMaterials.length" class="mt-4 overflow-x-auto border-t border-white/10 pt-3">
-              <table class="w-full min-w-[360px] text-xs">
-                <thead class="text-left text-slate-500">
-                  <tr><th class="pb-2">{{ t("common:enhancement.material", "Material") }}</th><th class="pb-2 text-right">{{ t("common:enhancement.quantity", "Quantity") }}</th><th class="pb-2 text-right">{{ t("common:enhancement.cost", "Cost") }}</th></tr>
-                </thead>
-                <tbody>
-                  <tr
+            <div v-if="mirrorMaterials.length" class="mt-4 overflow-x-auto border-t border-border pt-3">
+              <Table class="w-full min-w-[360px] text-xs">
+                <TableHeader class="text-left text-muted-foreground">
+                  <TableRow><TableHead class="pb-2">{{ t("common:enhancement.material", "Material") }}</TableHead><TableHead class="pb-2 text-right">{{ t("common:enhancement.quantity", "Quantity") }}</TableHead><TableHead class="pb-2 text-right">{{ t("common:enhancement.cost", "Cost") }}</TableHead></TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow
                     v-for="material in mirrorMaterials"
                     :key="`${material.type || 'item'}:${material.itemHrid || material.hrid || material.name || ''}:${material.level ?? ''}`"
-                    class="border-t border-white/5"
+                    class="border-t border-border"
                   >
-                    <td class="py-2 text-slate-300">{{ mirrorMaterialLabel(material) }}</td>
-                    <td class="py-2 text-right text-slate-300">{{ formatNumber(material.quantity ?? material.count) }}</td>
-                    <td class="py-2 text-right text-slate-200">{{ formatGold(material.cost ?? material.totalCost) }}</td>
-                  </tr>
-                </tbody>
-              </table>
+                    <TableCell class="py-2 text-foreground/85">{{ mirrorMaterialLabel(material) }}</TableCell>
+                    <TableCell class="py-2 text-right text-foreground/85">{{ formatNumber(material.quantity ?? material.count) }}</TableCell>
+                    <TableCell class="py-2 text-right text-foreground">{{ formatGold(material.cost ?? material.totalCost) }}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
             </div>
-            <p v-else class="mt-4 text-xs text-slate-500">{{ t("common:enhancement.mirrorUnavailable", "Mirror plan is unavailable for this target.") }}</p>
+            <p v-else class="mt-4 text-xs text-muted-foreground">{{ t("common:enhancement.mirrorUnavailable", "Mirror plan is unavailable for this target.") }}</p>
           </div>
 
-          <div class="panel" data-enhancement-decomposition>
+          <div class="surface-panel" data-enhancement-decomposition>
             <div>
-              <p class="text-xs uppercase tracking-[0.14em] text-slate-500">{{ t("common:enhancement.recovery", "Recovery") }}</p>
-              <h3 class="font-heading text-base font-semibold text-rose-200">{{ t("common:enhancement.decomposition", "Decomposition value") }}</h3>
+              <p class="text-xs uppercase  text-muted-foreground">{{ t("common:enhancement.recovery", "Recovery") }}</p>
+              <h3 class="font-heading text-base font-semibold text-destructive">{{ t("common:enhancement.decomposition", "Decomposition value") }}</h3>
             </div>
-            <div class="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-white/10 bg-white/10">
-              <div class="bg-slate-950/70 p-3">
-                <p class="text-xs text-slate-500">{{ t("common:enhancement.essenceYield", "Essence yield") }}</p>
-                <p class="mt-2 font-heading text-lg font-semibold text-slate-100">{{ formatNumber(decompositionQuantity) }}</p>
+            <div class="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-muted/40">
+              <div class="bg-muted/50 p-3">
+                <p class="text-xs text-muted-foreground">{{ t("common:enhancement.essenceYield", "Essence yield") }}</p>
+                <p class="mt-2 font-heading text-lg font-semibold text-foreground">{{ formatNumber(decompositionQuantity) }}</p>
               </div>
-              <div class="bg-slate-950/70 p-3">
-                <p class="text-xs text-slate-500">{{ t("common:enhancement.bidValue", "Recovery value") }}</p>
-                <p class="mt-2 font-heading text-lg font-semibold text-rose-200">{{ formatGold(decompositionGold) }}</p>
+              <div class="bg-muted/50 p-3">
+                <p class="text-xs text-muted-foreground">{{ t("common:enhancement.bidValue", "Recovery value") }}</p>
+                <p class="mt-2 font-heading text-lg font-semibold text-destructive">{{ formatGold(decompositionGold) }}</p>
               </div>
             </div>
-            <p class="mt-4 text-xs text-slate-500">{{ decompositionItemLabel }}</p>
+            <p class="mt-4 text-xs text-muted-foreground">{{ decompositionItemLabel }}</p>
           </div>
         </div>
 
         <div
           v-show="activeResultTab === 'risk'"
           id="enhancement-results-risk"
-          class="panel overflow-hidden"
+          class="surface-panel overflow-hidden"
           role="tabpanel"
           data-enhancement-risk
         >
           <div>
             <div>
-              <p class="text-xs uppercase tracking-[0.14em] text-slate-500">{{ t("common:enhancement.distribution", "Distribution") }}</p>
+              <p class="text-xs uppercase  text-muted-foreground">{{ t("common:enhancement.distribution", "Distribution") }}</p>
               <div class="mt-1 flex flex-wrap items-center gap-2">
-                <h3 class="font-heading text-base font-semibold text-amber-200">{{ t("common:enhancement.riskAnalysis", "Risk & budget analysis") }}</h3>
-                <span v-if="riskMethodLabel" class="rounded-full border border-white/10 bg-white/5 px-2 py-1 text-[11px] text-slate-400">{{ riskMethodLabel }}</span>
+                <h3 class="font-heading text-base font-semibold text-primary">{{ t("common:enhancement.riskAnalysis", "Risk & budget analysis") }}</h3>
+                <span v-if="riskMethodLabel" class="rounded-md border border-border bg-muted/40 px-2 py-1 text-[11px] text-muted-foreground">{{ riskMethodLabel }}</span>
               </div>
             </div>
           </div>
 
           <div class="mt-4 grid gap-3 sm:grid-cols-2 2xl:grid-cols-[minmax(180px,1.3fr)_minmax(120px,0.8fr)_minmax(120px,0.8fr)_minmax(150px,1fr)_auto]" data-enhancement-risk-controls>
             <label>
-              <span class="field-label">{{ t("common:enhancement.riskStrategy", "Risk strategy") }}</span>
-              <select v-model="enhancement.config.riskStrategy" class="field-select">
-                <option value="recommended">{{ t("common:enhancement.useRecommended", "Use recommendation") }}</option>
-                <option v-for="(row, index) in strategyRows" :key="strategyKey(row, index)" :value="strategySelectionValue(row, index)">{{ strategyLabel(row) }}</option>
-              </select>
+              <span class="control-label">{{ t("common:enhancement.riskStrategy", "Risk strategy") }}</span>
+              <Select v-model="enhancement.config.riskStrategy">
+                <SelectTrigger :aria-label="t('common:enhancement.riskStrategy', 'Risk strategy')" />
+                <SelectContent>
+                  <SelectItem value="recommended">{{ t("common:enhancement.useRecommended", "Use recommendation") }}</SelectItem>
+                  <SelectItem v-for="(row, index) in strategyRows" :key="strategyKey(row, index)" :value="strategySelectionValue(row, index)">{{ strategyLabel(row) }}</SelectItem>
+                </SelectContent>
+              </Select>
             </label>
             <label>
-              <span class="field-label">{{ t("common:enhancement.budget", "Budget") }}</span>
+              <span class="control-label">{{ t("common:enhancement.budget", "Budget") }}</span>
               <div class="grid grid-cols-[minmax(0,1fr)_64px]">
                 <input
                   :value="budgetInputAmount"
-                  class="field-input !rounded-r-none"
-                  :class="{ '!border-rose-400/60': !budgetInputValid }"
+                  class="control-input !rounded-r-none"
+                  :class="{ '!border-destructive/40': !budgetInputValid }"
                   type="number"
                   inputmode="decimal"
                   min="0"
@@ -633,92 +655,91 @@
                   @blur="commitBudgetInput"
                   @keydown.enter.prevent="$event.currentTarget.blur()"
                 />
-                <select
-                  :value="budgetUnit"
-                  class="field-select !rounded-l-none !border-l-0 !px-2 text-center font-semibold"
-                  data-enhancement-budget-unit
-                  :aria-label="t('common:enhancement.budgetUnit', 'Budget unit')"
-                  @change="handleBudgetUnit"
-                >
-                  <option v-for="unit in budgetUnits" :key="unit" :value="unit">{{ unit }}</option>
-                </select>
+                <Select :model-value="budgetUnit" @update:model-value="handleBudgetUnit">
+                  <SelectTrigger
+                    class="!rounded-l-none !border-l-0 !px-2 text-center font-semibold"
+                    data-enhancement-budget-unit
+                    :aria-label="t('common:enhancement.budgetUnit', 'Budget unit')"
+                  />
+                  <SelectContent>
+                    <SelectItem v-for="unit in budgetUnits" :key="unit" :value="unit">{{ unit }}</SelectItem>
+                  </SelectContent>
+                </Select>
               </div>
             </label>
             <label>
-              <span class="field-label">{{ t("common:enhancement.samples", "Samples") }}</span>
-              <input v-model.number="enhancement.config.sampleCount" class="field-input" type="number" min="1024" max="1000000" step="1024" @change="normalizeRiskSampleCount" />
+              <span class="control-label">{{ t("common:enhancement.samples", "Samples") }}</span>
+              <input v-model.number="enhancement.config.sampleCount" class="control-input" type="number" min="1024" max="1000000" step="1024" @change="normalizeRiskSampleCount" />
             </label>
             <label>
-              <span class="field-label">{{ t("common:enhancement.seed", "Random seed") }}</span>
-              <input v-model="enhancement.config.seed" class="field-input" type="text" autocomplete="off" spellcheck="false" />
+              <span class="control-label">{{ t("common:enhancement.seed", "Random seed") }}</span>
+              <input v-model="enhancement.config.seed" class="control-input" type="text" autocomplete="off" spellcheck="false" />
             </label>
             <div class="flex items-end gap-2 sm:col-span-2 2xl:col-span-1">
-              <button type="button" class="action-button-primary flex-1 whitespace-nowrap 2xl:flex-none" :disabled="!enhancement.config.itemHrid || enhancement.riskRunning || !budgetInputValid" @click="runRisk">
+              <button type="button" class="button-primary flex-1 whitespace-nowrap 2xl:flex-none" :disabled="!enhancement.config.itemHrid || enhancement.riskRunning || !budgetInputValid" @click="runRisk">
                 {{ enhancement.riskRunning ? t("common:enhancement.running", "Running...") : t("common:enhancement.runRisk", "Run risk") }}
               </button>
-              <button type="button" class="action-button-danger flex-1 whitespace-nowrap 2xl:flex-none" :disabled="!enhancement.riskRunning" @click="enhancement.cancelRisk()">
+              <button type="button" class="button-danger flex-1 whitespace-nowrap 2xl:flex-none" :disabled="!enhancement.riskRunning" @click="enhancement.cancelRisk()">
                 {{ t("common:enhancement.cancel", "Cancel") }}
               </button>
             </div>
           </div>
 
           <div v-if="enhancement.riskRunning || riskProgressPercent > 0" class="mt-4" role="status" aria-live="polite">
-            <div class="flex items-center justify-between gap-3 text-xs text-slate-400">
+            <div class="flex items-center justify-between gap-3 text-xs text-muted-foreground">
               <span>{{ riskProgressLabel }}</span>
               <span>{{ riskProgressPercent }}%</span>
             </div>
-            <div class="mt-2 h-2 overflow-hidden rounded-full bg-white/10">
-              <div class="h-full rounded-full bg-teal-400 transition-all duration-300" :style="{ width: `${riskProgressPercent}%` }"></div>
-            </div>
+            <Progress class="mt-2" :value="riskProgressPercent" />
           </div>
 
-          <p v-if="riskErrorText" class="mt-4 rounded-lg border border-rose-400/20 bg-rose-400/10 p-3 text-sm text-rose-200" role="alert">{{ riskErrorText }}</p>
+          <p v-if="riskErrorText" class="mt-4 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive" role="alert">{{ riskErrorText }}</p>
 
           <div v-if="enhancement.risk" class="mt-4">
-            <div class="overflow-x-auto rounded-lg border border-white/10" data-enhancement-risk-quantiles>
-              <table class="w-full min-w-[1080px] text-xs">
-                <thead>
-                  <tr class="border-b border-white/10 text-left uppercase tracking-[0.1em] text-slate-500">
-                    <th class="px-3 py-3">P</th>
-                    <th class="px-2 py-3 text-right">{{ t("common:enhancement.totalInvestment", "Total") }}</th>
-                    <th class="px-2 py-3 text-right">{{ t("common:enhancement.incrementalCost", "Incremental") }}</th>
-                    <th class="px-2 py-3 text-right">{{ t("common:enhancement.actions", "Actions") }}</th>
-                    <th class="px-2 py-3 text-right">{{ t("common:enhancement.time", "Time") }}</th>
-                    <th class="px-2 py-3 text-right">{{ t("common:enhancement.xp", "XP") }}</th>
-                    <th class="px-2 py-3 text-right">{{ t("common:enhancement.materialCost", "Materials") }}</th>
-                    <th class="px-2 py-3 text-right">{{ t("common:enhancement.goldCost", "Gold") }}</th>
-                    <th class="px-3 py-3 text-right">{{ t("common:enhancement.protectionCount", "Protection") }}</th>
-                  </tr>
-                </thead>
-                <tbody>
-                  <tr v-for="quantile in riskQuantileRows" :key="quantile.key" class="border-b border-white/5 last:border-b-0">
-                    <td class="px-3 py-3 font-semibold text-slate-200">{{ quantile.label }}</td>
-                    <td class="px-2 py-3 text-right font-semibold text-amber-200">{{ formatGold(quantile.value) }}</td>
-                    <td class="px-2 py-3 text-right text-slate-300">{{ formatGold(rowValue(quantile.record, "incrementalCost")) }}</td>
-                    <td class="px-2 py-3 text-right text-slate-300">{{ formatNumber(rowValue(quantile.record, "actions")) }}</td>
-                    <td class="px-2 py-3 text-right text-slate-300">{{ formatDuration(rowValue(quantile.record, "seconds")) }}</td>
-                    <td class="px-2 py-3 text-right text-slate-300">{{ formatNumber(rowValue(quantile.record, "experience")) }}</td>
-                    <td class="px-2 py-3 text-right text-slate-300">{{ formatGold(rowValue(quantile.record, "materialCost")) }}</td>
-                    <td class="px-2 py-3 text-right text-slate-300">{{ formatGold(rowValue(quantile.record, "coinCost")) }}</td>
-                    <td class="px-3 py-3 text-right text-slate-300">{{ formatNumber(rowValue(quantile.record, "protections")) }}</td>
-                  </tr>
-                </tbody>
-              </table>
+            <div class="overflow-x-auto rounded-lg border border-border" data-enhancement-risk-quantiles>
+              <Table class="w-full min-w-[1080px] text-xs">
+                <TableHeader>
+                  <TableRow class="border-b border-border text-left uppercase  text-muted-foreground">
+                    <TableHead class="px-3 py-3">P</TableHead>
+                    <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.totalInvestment", "Total") }}</TableHead>
+                    <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.incrementalCost", "Incremental") }}</TableHead>
+                    <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.actions", "Actions") }}</TableHead>
+                    <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.time", "Time") }}</TableHead>
+                    <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.xp", "XP") }}</TableHead>
+                    <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.materialCost", "Materials") }}</TableHead>
+                    <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.goldCost", "Gold") }}</TableHead>
+                    <TableHead class="px-3 py-3 text-right">{{ t("common:enhancement.protectionCount", "Protection") }}</TableHead>
+                  </TableRow>
+                </TableHeader>
+                <TableBody>
+                  <TableRow v-for="quantile in riskQuantileRows" :key="quantile.key" class="border-b border-border last:border-b-0">
+                    <TableCell class="px-3 py-3 font-semibold text-foreground">{{ quantile.label }}</TableCell>
+                    <TableCell class="px-2 py-3 text-right font-semibold text-primary">{{ formatGold(quantile.value) }}</TableCell>
+                    <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatGold(rowValue(quantile.record, "incrementalCost")) }}</TableCell>
+                    <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatNumber(rowValue(quantile.record, "actions")) }}</TableCell>
+                    <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatDuration(rowValue(quantile.record, "seconds")) }}</TableCell>
+                    <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatNumber(rowValue(quantile.record, "experience")) }}</TableCell>
+                    <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatGold(rowValue(quantile.record, "materialCost")) }}</TableCell>
+                    <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatGold(rowValue(quantile.record, "coinCost")) }}</TableCell>
+                    <TableCell class="px-3 py-3 text-right text-foreground/85">{{ formatNumber(rowValue(quantile.record, "protections")) }}</TableCell>
+                  </TableRow>
+                </TableBody>
+              </Table>
             </div>
-            <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-white/10 pt-4">
+            <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
               <div>
-                <p class="text-xs text-slate-500">{{ t("common:enhancement.budgetSuccessProbability", "Success within budget") }}</p>
-                <p class="mt-1 font-heading text-2xl font-semibold text-emerald-300">{{ formatPercent(riskBudgetProbability) }}</p>
+                <p class="text-xs text-muted-foreground">{{ t("common:enhancement.budgetSuccessProbability", "Success within budget") }}</p>
+                <p class="mt-1 font-heading text-2xl font-semibold text-success">{{ formatPercent(riskBudgetProbability) }}</p>
               </div>
-              <div class="text-right text-xs text-slate-500">
+              <div class="text-right text-xs text-muted-foreground">
                 <p>{{ riskSampleLabel }}</p>
                 <p class="mt-1">{{ riskSeedLabel }}</p>
                 <p v-if="riskLoadLabel" class="mt-1">{{ riskLoadLabel }}</p>
-                <p v-if="riskFallbackLabel" class="mt-1 text-amber-300">{{ riskFallbackLabel }}</p>
+                <p v-if="riskFallbackLabel" class="mt-1 text-primary">{{ riskFallbackLabel }}</p>
               </div>
             </div>
           </div>
-          <p v-else-if="!enhancement.riskRunning" class="mt-4 text-xs text-slate-500">{{ t("common:enhancement.noRiskResult", "Run risk analysis to calculate cost percentiles and budget probability.") }}</p>
+          <p v-else-if="!enhancement.riskRunning" class="mt-4 text-xs text-muted-foreground">{{ t("common:enhancement.noRiskResult", "Run risk analysis to calculate cost percentiles and budget probability.") }}</p>
         </div>
       </div>
     </div>
@@ -732,32 +753,32 @@
     >
       <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_220px_auto]">
         <label>
-          <span class="field-label">{{ t("common:enhancement.search", "Search") }}</span>
-          <input v-model.trim="enhancement.itemSearch" class="field-input" type="search" data-enhancement-item-search :placeholder="t('common:enhancement.searchPlaceholder', 'Search item name')" />
+          <span class="control-label">{{ t("common:enhancement.search", "Search") }}</span>
+          <input v-model.trim="enhancement.itemSearch" class="control-input" type="search" data-enhancement-item-search :placeholder="t('common:enhancement.searchPlaceholder', 'Search item name')" />
         </label>
         <label>
-          <span class="field-label">{{ t("common:enhancement.equipmentType", "Equipment type") }}</span>
-          <select v-model="enhancement.itemFilters.equipmentType" class="field-select">
+          <span class="control-label">{{ t("common:enhancement.equipmentType", "Equipment type") }}</span>
+          <NativeSelect v-model="enhancement.itemFilters.equipmentType" class="control-select">
             <option value="all">{{ t("common:enhancement.allEquipmentTypes", "All equipment types") }} · {{ itemOptions.length }}</option>
             <optgroup v-for="group in itemTypeGroups" :key="group.key" :label="group.label">
               <option v-for="type in group.types" :key="type.value" :value="type.value">{{ type.label }} · {{ type.count }}</option>
             </optgroup>
-          </select>
+          </NativeSelect>
         </label>
-        <label class="flex min-h-10 items-center gap-2 self-end rounded-lg border border-white/10 px-3 py-2 text-sm text-slate-300">
+        <label class="flex min-h-10 items-center gap-2 self-end rounded-lg border border-border px-3 py-2 text-sm text-foreground/85">
           <input v-model="enhancement.itemFilters.favoritesOnly" type="checkbox" />
           <span>{{ t("common:enhancement.favoritesOnly", "Favorites only") }}</span>
         </label>
       </div>
 
-      <div v-if="favoriteItemOptions.length" class="mt-3 flex items-center gap-3 border-y border-white/10 py-2" data-enhancement-favorite-items>
-        <span class="shrink-0 text-[11px] font-semibold uppercase tracking-[0.1em] text-slate-500">{{ t("common:enhancement.favorites", "Favorites") }}</span>
+      <div v-if="favoriteItemOptions.length" class="mt-3 flex items-center gap-3 border-y border-border py-2" data-enhancement-favorite-items>
+        <span class="shrink-0 text-[11px] font-semibold uppercase  text-muted-foreground">{{ t("common:enhancement.favorites", "Favorites") }}</span>
         <div class="flex min-w-0 flex-1 gap-2 overflow-x-auto py-0.5" role="group" :aria-label="t('common:enhancement.favorites', 'Favorites')">
           <button
             v-for="item in favoriteItemOptions"
             :key="item.hrid"
             type="button"
-            class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded border border-white/10 bg-slate-950/70 transition hover:border-amber-300/50 hover:bg-white/10"
+            class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded border border-border bg-muted/50 transition hover:border-primary/40 hover:bg-muted/40"
             :aria-label="itemName(item)"
             :title="itemName(item)"
             @click="chooseItem(item.hrid)"
@@ -765,58 +786,62 @@
             <svg v-if="itemIconVisible(item.hrid)" class="h-9 w-9 p-1" viewBox="0 0 50 50" aria-hidden="true">
               <use :href="itemIconHref(item.hrid)"></use>
             </svg>
-            <span v-else class="text-sm font-semibold text-slate-400" aria-hidden="true">{{ itemIconFallback(item) }}</span>
+            <span v-else class="text-sm font-semibold text-muted-foreground" aria-hidden="true">{{ itemIconFallback(item) }}</span>
           </button>
         </div>
       </div>
 
-      <div class="mt-3 max-h-[58vh] overflow-y-auto border-y border-white/10" role="list" :aria-label="t('common:enhancement.items', 'Enhanceable items')">
-        <div v-if="filteredItemOptions.length" class="grid grid-cols-3 gap-px bg-white/10 sm:grid-cols-5 lg:grid-cols-7">
+      <div class="mt-3 max-h-[58vh] overflow-y-auto border-y border-border" role="list" :aria-label="t('common:enhancement.items', 'Enhanceable items')">
+        <div v-if="filteredItemOptions.length" class="grid grid-cols-3 gap-px bg-muted/40 sm:grid-cols-5 lg:grid-cols-7">
           <div
             v-for="item in filteredItemOptions"
             :key="item.hrid"
-            class="enhancement-item-row relative min-w-0 bg-slate-950/70 transition hover:bg-white/[0.06]"
-            :class="{ 'bg-amber-300/[0.08] ring-1 ring-inset ring-amber-300/50': item.hrid === enhancement.config.itemHrid }"
+            class="enhancement-item-row relative min-w-0 bg-muted/50 transition hover:bg-muted/40"
+            :class="{ 'bg-primary/10 ring-1 ring-inset ring-ring': item.hrid === enhancement.config.itemHrid }"
             role="listitem"
           >
             <button
               type="button"
-              class="flex h-[88px] w-full min-w-0 flex-col items-center justify-center gap-1 px-2 py-2 focus-visible:bg-white/[0.06]"
+              class="flex h-[88px] w-full min-w-0 flex-col items-center justify-center gap-1 px-2 py-2 focus-visible:bg-muted/40"
               :aria-current="item.hrid === enhancement.config.itemHrid ? 'true' : undefined"
               :aria-label="itemName(item)"
               :title="itemName(item)"
               @click="chooseItem(item.hrid)"
             >
-              <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded bg-white/[0.03]" data-enhancement-item-icon>
+              <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded bg-muted/40" data-enhancement-item-icon>
                 <svg v-if="itemIconVisible(item.hrid)" class="h-full w-full p-1.5" viewBox="0 0 50 50" aria-hidden="true">
                   <use :href="itemIconHref(item.hrid)"></use>
                 </svg>
-                <span v-else class="text-base font-semibold text-slate-500" aria-hidden="true">{{ itemIconFallback(item) }}</span>
+                <span v-else class="text-base font-semibold text-muted-foreground" aria-hidden="true">{{ itemIconFallback(item) }}</span>
               </span>
-              <span class="w-full truncate text-center text-[11px] font-semibold text-slate-200">{{ itemName(item) }}</span>
+              <span class="w-full truncate text-center text-[11px] font-semibold text-foreground">{{ itemName(item) }}</span>
             </button>
-            <span v-if="item.itemLevel || item.level" class="pointer-events-none absolute left-1 top-1 rounded bg-slate-950/80 px-1 text-[9px] text-slate-500">Lv. {{ item.itemLevel || item.level }}</span>
+            <span v-if="item.itemLevel || item.level" class="pointer-events-none absolute left-1 top-1 rounded bg-muted/50 px-1 text-[9px] text-muted-foreground">Lv. {{ item.itemLevel || item.level }}</span>
             <button
               type="button"
-              class="absolute right-1 top-1 inline-flex h-6 w-6 items-center justify-center rounded text-sm text-amber-300 transition hover:bg-white/10"
+              class="absolute right-1 top-1 inline-flex h-6 w-6 items-center justify-center rounded text-sm text-primary transition hover:bg-muted/40"
               :aria-label="favoriteButtonLabel(item.hrid)"
               :title="favoriteButtonLabel(item.hrid)"
               @click="enhancement.toggleFavorite(item.hrid)"
             >
-              <span aria-hidden="true">{{ isFavorite(item.hrid) ? "★" : "☆" }}</span>
+              <Star class="size-3.5" :fill="isFavorite(item.hrid) ? 'currentColor' : 'none'" aria-hidden="true" />
             </button>
           </div>
         </div>
-        <p v-else class="px-3 py-10 text-center text-sm text-slate-500">{{ t("common:enhancement.noItems", "No matching items.") }}</p>
+        <p v-else class="px-3 py-10 text-center text-sm text-muted-foreground">{{ t("common:enhancement.noItems", "No matching items.") }}</p>
       </div>
-      <p class="mt-2 text-right text-xs text-slate-500">{{ t("common:enhancement.itemCount", `${filteredItemOptions.length} items`, { count: filteredItemOptions.length }) }}</p>
+      <p class="mt-2 text-right text-xs text-muted-foreground">{{ t("common:enhancement.itemCount", `${filteredItemOptions.length} items`, { count: filteredItemOptions.length }) }}</p>
     </BaseModal>
   </section>
 </template>
 
 <script setup>
 import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { Star } from "@lucide/vue";
 import BaseModal from "../components/BaseModal.vue";
+import { SearchCombobox } from "../components/ui/combobox/index.js";
+import { Progress } from "../components/ui/progress/index.js";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "../components/ui/select/index.js";
 import { useGameDataText } from "../composables/useGameDataText.js";
 import { useI18nText } from "../composables/useI18nText.js";
 import {
@@ -833,6 +858,7 @@ import { applyTampermonkeyEnhancementImportMessage } from "../../services/tamper
 import { useEnhancementStore } from "../../stores/enhancementStore.js";
 
 const TAMPERMONKEY_BRIDGE_CHANNEL = "mwi-tm-bridge";
+const EMPTY_SELECT_VALUE = "__none__";
 const enhancement = useEnhancementStore();
 const { language, t } = useI18nText();
 const {
@@ -1036,10 +1062,10 @@ const summaryMetrics = computed(() => {
   const secondsValue = rowValue(row, "expectedSeconds", "seconds", "timeSeconds");
   const xpValue = rowValue(row, "expectedXp", "expectedExperience", "xp");
   return [
-    { key: "total", label: t("common:enhancement.totalInvestment", "Total investment"), value: formatGold(totalValue), detail: t("common:enhancement.includesStartingItem", "Includes starting item & markup"), tone: "text-amber-200" },
-    { key: "incremental", label: t("common:enhancement.incrementalCost", "Incremental cost"), value: formatGold(incrementalValue), detail: t("common:enhancement.materialDetail", "Materials {{value}}", { value: formatGold(materialValue) }), tone: "text-teal-200" },
-    { key: "actions", label: t("common:enhancement.expectedActions", "Expected actions"), value: formatNumber(actionsValue), detail: formatDuration(secondsValue), tone: "text-slate-100" },
-    { key: "xp", label: t("common:enhancement.expectedXp", "Expected XP"), value: formatNumber(xpValue), detail: t("common:enhancement.xpRateDetail", "{{value}} XP/h", { value: formatNumber(rowValue(row, "xpPerHour", "experiencePerHour")) }), tone: "text-emerald-300" },
+    { key: "total", label: t("common:enhancement.totalInvestment", "Total investment"), value: formatGold(totalValue), detail: t("common:enhancement.includesStartingItem", "Includes starting item & markup"), tone: "text-primary" },
+    { key: "incremental", label: t("common:enhancement.incrementalCost", "Incremental cost"), value: formatGold(incrementalValue), detail: t("common:enhancement.materialDetail", "Materials {{value}}", { value: formatGold(materialValue) }), tone: "text-success" },
+    { key: "actions", label: t("common:enhancement.expectedActions", "Expected actions"), value: formatNumber(actionsValue), detail: formatDuration(secondsValue), tone: "text-foreground" },
+    { key: "xp", label: t("common:enhancement.expectedXp", "Expected XP"), value: formatNumber(xpValue), detail: t("common:enhancement.xpRateDetail", "{{value}} XP/h", { value: formatNumber(rowValue(row, "xpPerHour", "experiencePerHour")) }), tone: "text-success" },
   ];
 });
 
@@ -1051,8 +1077,8 @@ const priceStatusText = computed(() => {
   return t("common:enhancement.vendorPrices", "Vendor prices");
 });
 const priceStatusClass = computed(() => enhancement.priceStatus?.error
-  ? "border-amber-400/25 bg-amber-400/10 text-amber-200"
-  : "border-emerald-400/25 bg-emerald-400/10 text-emerald-200");
+  ? "border-primary/40 bg-primary/10 text-primary"
+  : "border-success/40 bg-success/10 text-success");
 
 const startingItemPriceValue = computed(() => numericValue(enhancement.startingItemPrice?.value, enhancement.startingItemPrice));
 const startingItemPriceMissing = computed(() => Boolean(enhancement.startingItemPrice?.missing || (Number(enhancement.config.startLevel || 0) > 0 && !Number.isFinite(Number(startingItemPriceValue.value)))));
@@ -1271,6 +1297,29 @@ function slotOptions(slotKey) {
   return Array.isArray(options?.[slotKey]) ? options[slotKey] : [];
 }
 
+function supportEquipmentComboboxOptions(slotKey) {
+  return [
+    { value: "", label: t("common:enhancement.none", "None") },
+    ...slotOptions(slotKey).map((item) => ({ value: item.hrid, label: itemName(item) })),
+  ];
+}
+
+function optionalEnhancementSelectValue(value) {
+  return String(value || EMPTY_SELECT_VALUE);
+}
+
+function decodeOptionalEnhancementSelectValue(value) {
+  return value === EMPTY_SELECT_VALUE ? "" : String(value || "");
+}
+
+function setEnhancementTea(value) {
+  enhancement.config.teaHrid = decodeOptionalEnhancementSelectValue(value);
+}
+
+function setProtectionItem(value) {
+  enhancement.config.protectionItemHrid = decodeOptionalEnhancementSelectValue(value);
+}
+
 function equipmentField(slotKey, field) {
   return enhancement.config.equipmentSlots?.[slotKey]?.[field] ?? (field === "enhancementLevel" ? 0 : "");
 }
@@ -1328,8 +1377,8 @@ function commitBudgetInput() {
   budgetInputValid.value = true;
 }
 
-function handleBudgetUnit(event) {
-  const nextUnit = String(event?.target?.value || "").toUpperCase();
+function handleBudgetUnit(value) {
+  const nextUnit = String(value || "").toUpperCase();
   if (!budgetUnits.includes(nextUnit)) return;
   budgetUnit.value = nextUnit;
   const parsed = parseBudgetInput(budgetInputAmount.value);

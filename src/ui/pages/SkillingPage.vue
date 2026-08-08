@@ -1,25 +1,25 @@
 <template>
   <section class="space-y-4" data-skilling-page>
-    <div class="panel overflow-hidden !px-4 !py-3" data-skilling-toolbar>
+    <div class="surface-panel overflow-hidden !px-4 !py-3" data-skilling-toolbar>
       <div class="flex flex-col gap-3">
         <div class="flex min-w-0 flex-wrap items-center gap-x-3 gap-y-1" data-skilling-toolbar-heading>
           <div class="flex min-w-0 flex-wrap items-baseline gap-x-2 gap-y-0.5">
-            <p class="text-[10px] font-semibold uppercase tracking-[0.16em] text-teal-300/80">{{ t("common:skilling.eyebrow", "Skilling Ledger") }}</p>
-            <h2 class="min-w-0 break-words font-heading text-lg font-semibold text-slate-100">{{ t("common:skilling.title", "Skilling Upgrade Planner") }}</h2>
+            <p class="text-[10px] font-semibold uppercase  text-success">{{ t("common:skilling.eyebrow", "Skilling Ledger") }}</p>
+            <h2 class="min-w-0 break-words font-heading text-lg font-semibold text-foreground">{{ t("common:skilling.title", "Skilling Upgrade Planner") }}</h2>
           </div>
-          <span class="hidden h-5 w-px bg-white/10 sm:block" aria-hidden="true"></span>
-          <div v-if="skilling.profile" class="flex min-w-0 items-center gap-2 text-xs text-slate-400">
-            <span class="shrink-0 font-semibold text-slate-200">{{ skilling.profile.characterName || t("common:skilling.profile", "Character") }}</span>
+          <span class="hidden h-5 w-px bg-muted/40 sm:block" aria-hidden="true"></span>
+          <div v-if="skilling.profile" class="flex min-w-0 items-center gap-2 text-xs text-muted-foreground">
+            <span class="shrink-0 font-semibold text-foreground">{{ skilling.profile.characterName || t("common:skilling.profile", "Character") }}</span>
             <span class="min-w-0 truncate">{{ snapshotLabel }}</span>
           </div>
-          <span v-else class="text-xs text-slate-500">{{ t("common:skilling.noProfile", "No current-character skilling snapshot") }}</span>
+          <span v-else class="text-xs text-muted-foreground">{{ t("common:skilling.noProfile", "No current-character skilling snapshot") }}</span>
         </div>
 
-        <div class="flex flex-col gap-2 border-t border-white/10 pt-3 2xl:flex-row 2xl:items-center" data-skilling-toolbar-controls>
+        <div class="flex flex-col gap-2 border-t border-border pt-3 2xl:flex-row 2xl:items-center" data-skilling-toolbar-controls>
           <div class="flex min-w-0 flex-col gap-2 sm:flex-row sm:flex-wrap sm:items-center 2xl:shrink-0" data-skilling-planner-controls>
           <div class="flex w-full min-w-0 items-center gap-1.5 sm:w-auto sm:shrink-0">
             <div
-              class="grid min-w-0 flex-1 grid-cols-3 overflow-hidden rounded border border-white/10 bg-slate-950/40 sm:flex-none"
+              class="grid min-w-0 flex-1 grid-cols-[1.25fr_0.8fr_0.95fr] overflow-hidden rounded border border-border bg-muted/50 sm:flex-none"
               role="radiogroup"
               :aria-label="t('common:skilling.optimizationMode', 'Optimization mode')"
               data-skilling-optimization-mode
@@ -29,7 +29,7 @@
                 :key="mode.value"
                 class="relative"
                 :class="[
-                  index > 0 ? 'border-l border-white/10' : '',
+                  index > 0 ? 'border-l border-border' : '',
                   skilling.running ? 'cursor-not-allowed' : 'cursor-pointer',
                 ]"
               >
@@ -44,10 +44,10 @@
                   @change="skilling.setOptimizationMode(mode.value)"
                 />
                 <span
-                  class="flex min-h-8 min-w-0 items-center justify-center px-1.5 py-1 text-center text-[11px] font-semibold leading-tight transition sm:min-w-[6.5rem] sm:px-2 peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-[-2px] peer-focus-visible:outline-teal-300 peer-disabled:opacity-50"
+                  class="flex min-h-8 min-w-0 items-center justify-center whitespace-nowrap px-1.5 py-1 text-center text-[10px] font-semibold leading-tight transition sm:min-w-[6.5rem] sm:px-2 sm:text-[11px] peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-[-2px] peer-focus-visible:outline-ring peer-disabled:opacity-50"
                   :class="skilling.optimizationMode === mode.value
-                    ? 'bg-teal-300/10 text-teal-200'
-                    : 'text-slate-400 hover:bg-white/5 hover:text-slate-200 peer-disabled:hover:bg-transparent peer-disabled:hover:text-slate-400'"
+                    ? 'bg-success/10 text-success'
+                    : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground peer-disabled:hover:bg-transparent peer-disabled:hover:text-muted-foreground'"
                 >
                   {{ mode.label }}
                 </span>
@@ -55,18 +55,18 @@
             </div>
             <button
               type="button"
-              class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-full border border-white/10 bg-slate-950/40 text-xs font-bold text-slate-400 transition hover:border-teal-300/40 hover:text-teal-200 focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-teal-300"
+              class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded-md border border-border bg-muted/50 text-xs font-bold text-muted-foreground transition hover:border-success/40 hover:text-success focus-visible:outline focus-visible:outline-2 focus-visible:outline-offset-2 focus-visible:outline-ring"
               :aria-label="t('common:skilling.optimizationModeHelp', 'Optimization mode guide')"
               :title="t('common:skilling.optimizationModeHelp', 'Optimization mode guide')"
               data-skilling-optimization-help
               @click="modeHelpModalOpen = true"
             >
-              <span aria-hidden="true">i</span>
+              <CircleHelp class="size-4" aria-hidden="true" />
             </button>
           </div>
           <div class="flex w-full min-w-0 items-center gap-1.5 sm:w-auto" data-skilling-run-scope-controls>
             <div
-              class="grid shrink-0 grid-cols-2 overflow-hidden rounded border border-white/10 bg-slate-950/40"
+              class="grid shrink-0 grid-cols-2 overflow-hidden rounded border border-border bg-muted/50"
               role="radiogroup"
               :aria-label="t('common:skilling.runScope', 'Simulation scope')"
               data-skilling-run-scope
@@ -76,7 +76,7 @@
                 :key="scope.value"
                 class="relative"
                 :class="[
-                  index > 0 ? 'border-l border-white/10' : '',
+                  index > 0 ? 'border-l border-border' : '',
                   skilling.running ? 'cursor-not-allowed' : 'cursor-pointer',
                 ]"
               >
@@ -91,40 +91,43 @@
                   @change="skilling.setRunScope(scope.value)"
                 />
                 <span
-                  class="flex min-h-8 min-w-[3.5rem] items-center justify-center px-2 py-1 text-center text-[11px] font-semibold transition peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-[-2px] peer-focus-visible:outline-teal-300 peer-disabled:opacity-50"
+                  class="flex min-h-8 min-w-[3.5rem] items-center justify-center px-2 py-1 text-center text-[11px] font-semibold transition peer-focus-visible:outline peer-focus-visible:outline-2 peer-focus-visible:outline-offset-[-2px] peer-focus-visible:outline-ring peer-disabled:opacity-50"
                   :class="skilling.runScope === scope.value
-                    ? 'bg-teal-300/10 text-teal-200'
-                    : 'text-slate-400 hover:bg-white/5 hover:text-slate-200 peer-disabled:hover:bg-transparent peer-disabled:hover:text-slate-400'"
+                    ? 'bg-success/10 text-success'
+                    : 'text-muted-foreground hover:bg-muted/40 hover:text-foreground peer-disabled:hover:bg-transparent peer-disabled:hover:text-muted-foreground'"
                 >
                   {{ scope.label }}
                 </span>
               </label>
             </div>
-            <select
-              class="field-select !h-8 !min-w-0 !w-auto !flex-1 !rounded !px-2 !py-1 text-xs sm:!w-36 sm:!flex-none"
+            <Select
               name="skilling-run-skill"
-              autocomplete="off"
-              :aria-label="t('common:skilling.simulationSkill', 'Simulation skill')"
               :disabled="skilling.running || skilling.runScope === 'all'"
-              :value="skilling.runScope === 'all' ? '__all__' : skilling.selectedRunSkillHrid"
-              data-skilling-run-skill
-              @change="setRunSkill"
+              :model-value="skilling.runScope === 'all' ? '__all__' : skilling.selectedRunSkillHrid"
+              @update:model-value="setRunSkill"
             >
-              <option v-if="skilling.runScope === 'all'" value="__all__">{{ t("common:skilling.allSkills", "All skills") }}</option>
-              <template v-else>
-                <option v-for="skillHrid in skillHrids" :key="skillHrid" :value="skillHrid">{{ skillName(skillHrid) }}</option>
-              </template>
-            </select>
+              <SelectTrigger
+                class="!h-8 !min-w-0 !w-auto !flex-1 !rounded !px-2 !py-1 text-xs sm:!w-36 sm:!flex-none"
+                :aria-label="t('common:skilling.simulationSkill', 'Simulation skill')"
+                data-skilling-run-skill
+              />
+              <SelectContent>
+                <SelectItem v-if="skilling.runScope === 'all'" value="__all__">{{ t("common:skilling.allSkills", "All skills") }}</SelectItem>
+                <template v-else>
+                  <SelectItem v-for="skillHrid in skillHrids" :key="skillHrid" :value="skillHrid">{{ skillName(skillHrid) }}</SelectItem>
+                </template>
+              </SelectContent>
+            </Select>
           </div>
           </div>
           <div class="flex w-full min-w-0 flex-wrap items-center gap-2 2xl:ml-auto 2xl:w-auto 2xl:flex-1 2xl:justify-end" data-skilling-toolbar-actions data-tm-import-anchor="skilling-actions">
           <span class="rounded border px-2 py-1 text-[11px]" :class="priceStatusClass">{{ priceStatusText }}</span>
-          <button type="button" class="action-button-muted !px-3 !py-1.5" :disabled="skilling.running" @click="openPricesModal">
+          <button type="button" class="button-secondary !px-3 !py-1.5" :disabled="skilling.running" @click="openPricesModal">
             {{ t("common:skilling.priceDetails", "Price details") }}
           </button>
           <button
             type="button"
-            class="action-button-muted !px-3 !py-1.5"
+            class="button-secondary !px-3 !py-1.5"
             data-tm-import-reference="skilling-refresh"
             :disabled="skilling.priceStatus.loading || skilling.running"
             @click="refreshPrices"
@@ -134,7 +137,7 @@
           <button
             type="button"
             class="min-w-[9.5rem] whitespace-nowrap"
-            :class="skilling.running ? 'action-button-danger !px-3 !py-1.5' : 'action-button-primary !px-3 !py-1.5'"
+            :class="skilling.running ? 'button-danger !px-3 !py-1.5' : 'button-primary !px-3 !py-1.5'"
             :disabled="!skilling.running && (!skilling.profile || skilling.priceStatus.loading)"
             @click="handlePlannerAction"
           >
@@ -148,57 +151,52 @@
         v-if="skilling.running"
         class="mt-3"
         data-skilling-progress
-        role="progressbar"
         aria-live="polite"
-        aria-valuemin="0"
-        aria-valuemax="100"
-        :aria-label="progressLabel"
-        :aria-valuenow="progressPercent"
       >
-        <div class="mb-1 flex items-center justify-between text-[11px] text-slate-400">
+        <div class="mb-1 flex items-center justify-between text-[11px] text-muted-foreground">
           <span>{{ progressLabel }}</span>
           <span>{{ progressPercent }}%</span>
         </div>
-        <div class="h-1.5 overflow-hidden rounded bg-slate-800">
-          <div class="h-full bg-teal-400 transition-[width] motion-reduce:transition-none" :style="{ width: `${progressPercent}%` }"></div>
-        </div>
+        <Progress :value="progressPercent" :aria-label="progressLabel" />
       </div>
     </div>
 
     <div v-if="skilling.resultStale || snapshotIsOld || expiredBuffWarningCount > 0 || foragingProcessingNoticeVisible || skilling.error" class="grid gap-2 sm:grid-cols-2" data-skilling-warnings aria-live="polite">
-      <p v-if="skilling.resultStale" class="rounded border border-amber-300/30 bg-amber-300/10 px-3 py-2 text-xs text-amber-200">
+      <p v-if="skilling.resultStale" class="rounded border border-primary/40 bg-primary/10 px-3 py-2 text-xs text-primary">
         {{ t("common:skilling.stale", "Results are stale because targets, prices, optimization settings, or the character snapshot changed.") }}
       </p>
-      <p v-if="snapshotIsOld" class="rounded border border-amber-300/30 bg-amber-300/10 px-3 py-2 text-xs text-amber-200">
+      <p v-if="snapshotIsOld" class="rounded border border-primary/40 bg-primary/10 px-3 py-2 text-xs text-primary">
         {{ t("common:skilling.oldSnapshotWarning", "This character snapshot is more than 30 minutes old.") }}
       </p>
-      <p v-if="expiredBuffWarningCount > 0" class="rounded border border-rose-300/30 bg-rose-300/10 px-3 py-2 text-xs text-rose-200">
+      <p v-if="expiredBuffWarningCount > 0" class="rounded border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive">
         {{ expiredBuffWarningText }}
       </p>
-      <p v-if="foragingProcessingNoticeVisible" class="rounded border border-amber-300/30 bg-amber-300/10 px-3 py-2 text-xs text-amber-200">
+      <p v-if="foragingProcessingNoticeVisible" class="rounded border border-primary/40 bg-primary/10 px-3 py-2 text-xs text-primary">
         {{ t("common:skilling.processingUnsupportedWarning", "Processing effects and Processing Tea are not yet included in foraging output values; foraging routes are optimized without them.") }}
       </p>
-      <p v-if="skilling.error" class="rounded border border-rose-300/30 bg-rose-300/10 px-3 py-2 text-xs text-rose-200" role="alert">{{ skilling.error }}</p>
+      <p v-if="skilling.error" class="rounded border border-destructive/40 bg-destructive/10 px-3 py-2 text-xs text-destructive" role="alert">{{ skilling.error }}</p>
     </div>
 
-    <div v-if="!skilling.profile" class="panel flex min-h-48 items-center justify-center" data-skilling-empty-profile>
-      <p class="font-heading text-sm font-semibold text-slate-500">{{ t("common:skilling.noProfile", "No current-character skilling snapshot") }}</p>
+    <div v-if="!skilling.profile" class="surface-panel flex min-h-48 items-center justify-center" data-skilling-empty-profile>
+      <p class="font-heading text-sm font-semibold text-muted-foreground">{{ t("common:skilling.noProfile", "No current-character skilling snapshot") }}</p>
     </div>
 
     <template v-else>
-      <div class="panel overflow-hidden !p-0" data-skilling-targets>
-        <div class="grid sm:grid-cols-2 xl:grid-cols-6">
+      <div class="grid items-start gap-4 xl:grid-cols-[300px_minmax(0,1fr)]">
+        <aside class="xl:sticky xl:top-16">
+          <div class="surface-panel overflow-hidden !p-0" data-skilling-targets>
+        <div class="grid sm:grid-cols-2 xl:grid-cols-1">
           <label
             v-for="skillHrid in skillHrids"
             :key="skillHrid"
-            class="grid grid-cols-[minmax(0,1fr)_76px] items-center gap-3 border-b border-white/10 px-4 py-3 sm:border-r xl:border-b-0 xl:last:border-r-0"
+            class="grid grid-cols-[minmax(0,1fr)_76px] items-center gap-3 border-b border-border px-4 py-3 sm:border-r xl:border-r-0"
           >
             <span class="min-w-0">
-              <span class="block truncate text-xs font-semibold text-slate-200">{{ skillName(skillHrid) }}</span>
-              <span class="mt-0.5 block text-[11px] text-slate-500">{{ t("common:skilling.current", "Current") }} {{ currentLevel(skillHrid) }}</span>
+              <span class="block truncate text-xs font-semibold text-foreground">{{ skillName(skillHrid) }}</span>
+              <span class="mt-0.5 block text-[11px] text-muted-foreground">{{ t("common:skilling.current", "Current") }} {{ currentLevel(skillHrid) }}</span>
             </span>
             <input
-              class="field-input !rounded !px-2 !py-1.5 text-right text-xs"
+              class="control-input !rounded !px-2 !py-1.5 text-right text-xs"
               type="number"
               :name="`skilling-target-${viewDomKey(skillHrid)}`"
               autocomplete="off"
@@ -213,10 +211,13 @@
             />
           </label>
         </div>
-      </div>
+          </div>
+        </aside>
+
+        <div class="min-w-0 space-y-4">
 
       <div
-        class="grid grid-cols-2 overflow-hidden rounded border border-white/10 bg-slate-950/30 sm:grid-cols-4 xl:grid-cols-7"
+        class="grid grid-cols-2 overflow-hidden rounded border border-border bg-muted/50 sm:grid-cols-4 xl:grid-cols-7"
         role="tablist"
         :aria-label="t('common:skilling.title', 'Skilling Upgrade Planner')"
         data-skilling-tabs
@@ -228,7 +229,7 @@
           :id="tabId(tab.id)"
           type="button"
           class="min-h-10 border-b-2 px-2 py-2 text-xs font-semibold transition"
-          :class="skilling.selectedView === tab.id ? 'border-teal-300 bg-teal-300/10 text-teal-200' : 'border-transparent text-slate-500 hover:bg-white/5 hover:text-slate-300'"
+          :class="skilling.selectedView === tab.id ? 'border-success/40 bg-success/10 text-success' : 'border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground/85'"
           role="tab"
           :aria-controls="panelId(tab.id)"
           :aria-selected="skilling.selectedView === tab.id"
@@ -242,51 +243,51 @@
       <div
         v-if="skilling.selectedView === 'overview'"
         :id="panelId('overview')"
-        class="panel !p-0"
+        class="surface-panel !p-0"
         data-skilling-overview
         role="tabpanel"
         :aria-labelledby="tabId('overview')"
         tabindex="0"
       >
-        <div class="flex items-center justify-between border-b border-white/10 px-4 py-3">
-          <h3 class="font-heading text-sm font-semibold text-amber-200">{{ t("common:skilling.overview", "Overview") }}</h3>
-          <span v-if="skilling.result" class="text-[11px] text-slate-500">{{ resultGeneratedLabel }}</span>
+        <div class="flex items-center justify-between border-b border-border px-4 py-3">
+          <h3 class="font-heading text-sm font-semibold text-primary">{{ t("common:skilling.overview", "Overview") }}</h3>
+          <span v-if="skilling.result" class="text-[11px] text-muted-foreground">{{ resultGeneratedLabel }}</span>
         </div>
         <div class="overflow-x-auto">
-          <table class="min-w-[1120px] w-full text-left text-xs">
-            <thead class="bg-slate-950/30 text-[10px] uppercase text-slate-500">
-              <tr>
-                <th class="px-4 py-2">{{ t("common:skilling.rank", "Rank") }}</th>
-                <th class="px-3 py-2">{{ t("common:skilling.skill", "Skill") }}</th>
-                <th class="px-3 py-2">{{ t("common:skilling.current", "Current") }} -> {{ t("common:skilling.target", "Target") }}</th>
-                <th class="px-3 py-2">{{ t("common:skilling.route", "First route") }}</th>
-                <th class="px-3 py-2 text-right" :class="resultHighlightsCost ? 'bg-teal-300/[0.06] text-teal-300' : ''">{{ t("common:skilling.costPerXp", "Net cost / XP") }}</th>
-                <th class="px-3 py-2 text-right">{{ t("common:skilling.materialPurchasePerXp", "Material purchases / XP") }}</th>
-                <th class="px-3 py-2 text-right">{{ t("common:skilling.totalCost", "Net cost") }}</th>
-                <th class="px-3 py-2 text-right">{{ t("common:skilling.purchaseCost", "Market purchases") }}</th>
-                <th class="px-3 py-2 text-right" :class="resultHighlightsDuration ? 'bg-teal-300/[0.06] text-teal-300' : ''">{{ t("common:skilling.duration", "Time") }}</th>
-                <th class="px-3 py-2 text-right">{{ t("common:skilling.xpPerHour", "XP/h") }}</th>
-                <th class="px-4 py-2 text-right">{{ t("common:skilling.status", "Status") }}</th>
-              </tr>
-            </thead>
-            <tbody class="divide-y divide-white/10">
-              <tr v-for="row in overviewRows" :key="row.skillHrid" class="hover:bg-white/[0.025]">
-                <td class="px-4 py-3 font-semibold text-amber-300">{{ row.rank || "-" }}</td>
-                <td class="px-3 py-3">
-                  <button type="button" class="font-semibold text-slate-100 hover:text-teal-200" @click="selectView(row.skillHrid, true)">{{ skillName(row.skillHrid) }}</button>
-                </td>
-                <td class="px-3 py-3 tabular-nums text-slate-300">{{ currentLevel(row.skillHrid) }} -> {{ skilling.targetLevels[row.skillHrid] }}</td>
-                <td class="max-w-[220px] truncate px-3 py-3 text-slate-300">{{ row.plan?.segments?.[0] ? actionName(row.plan.segments[0]) : "-" }}</td>
-                <td class="px-3 py-3 text-right tabular-nums" :class="[amountClass(row.plan?.costPerExperience), resultHighlightsCost ? 'bg-teal-300/[0.04] font-semibold' : '']">{{ formatAmount(row.plan?.costPerExperience) }}</td>
-                <td class="px-3 py-3 text-right tabular-nums text-slate-300">{{ formatAmount(row.plan?.materialPurchaseCostPerExperience) }}</td>
-                <td class="px-3 py-3 text-right tabular-nums" :class="amountClass(row.plan?.totalNetCost)">{{ formatAmount(row.plan?.totalNetCost) }}</td>
-                <td class="px-3 py-3 text-right tabular-nums text-slate-300">{{ formatAmount(row.plan?.totalPurchaseCost) }}</td>
-                <td class="px-3 py-3 text-right tabular-nums" :class="resultHighlightsDuration ? 'bg-teal-300/[0.04] font-semibold text-teal-200' : 'text-slate-300'">{{ formatDuration(row.plan?.totalDurationHours) }}</td>
-                <td class="px-3 py-3 text-right tabular-nums text-slate-300">{{ formatAmount(row.plan?.experiencePerHour) }}</td>
-                <td class="px-4 py-3 text-right"><span class="rounded border px-2 py-1 text-[10px]" :class="planStatusClass(row.plan)">{{ planStatusText(row.plan) }}</span></td>
-              </tr>
-            </tbody>
-          </table>
+          <Table class="min-w-[1120px] w-full text-left text-xs">
+            <TableHeader class="bg-muted/50 text-[10px] uppercase text-muted-foreground">
+              <TableRow>
+                <TableHead class="px-4 py-2">{{ t("common:skilling.rank", "Rank") }}</TableHead>
+                <TableHead class="px-3 py-2">{{ t("common:skilling.skill", "Skill") }}</TableHead>
+                <TableHead class="px-3 py-2">{{ t("common:skilling.current", "Current") }} -> {{ t("common:skilling.target", "Target") }}</TableHead>
+                <TableHead class="px-3 py-2">{{ t("common:skilling.route", "First route") }}</TableHead>
+                <TableHead class="px-3 py-2 text-right" :class="resultHighlightsCost ? 'bg-success/10 text-success' : ''">{{ t("common:skilling.costPerXp", "Net cost / XP") }}</TableHead>
+                <TableHead class="px-3 py-2 text-right">{{ t("common:skilling.materialPurchasePerXp", "Material purchases / XP") }}</TableHead>
+                <TableHead class="px-3 py-2 text-right">{{ t("common:skilling.totalCost", "Net cost") }}</TableHead>
+                <TableHead class="px-3 py-2 text-right">{{ t("common:skilling.purchaseCost", "Market purchases") }}</TableHead>
+                <TableHead class="px-3 py-2 text-right" :class="resultHighlightsDuration ? 'bg-success/10 text-success' : ''">{{ t("common:skilling.duration", "Time") }}</TableHead>
+                <TableHead class="px-3 py-2 text-right">{{ t("common:skilling.xpPerHour", "XP/h") }}</TableHead>
+                <TableHead class="px-4 py-2 text-right">{{ t("common:skilling.status", "Status") }}</TableHead>
+              </TableRow>
+            </TableHeader>
+            <TableBody class="divide-y divide-border">
+              <TableRow v-for="row in overviewRows" :key="row.skillHrid" class="hover:bg-muted/40">
+                <TableCell class="px-4 py-3 font-semibold text-primary">{{ row.rank || "-" }}</TableCell>
+                <TableCell class="px-3 py-3">
+                  <button type="button" class="font-semibold text-foreground hover:text-success" @click="selectView(row.skillHrid, true)">{{ skillName(row.skillHrid) }}</button>
+                </TableCell>
+                <TableCell class="px-3 py-3 tabular-nums text-foreground/85">{{ currentLevel(row.skillHrid) }} -> {{ skilling.targetLevels[row.skillHrid] }}</TableCell>
+                <TableCell class="max-w-[220px] truncate px-3 py-3 text-foreground/85">{{ row.plan?.segments?.[0] ? actionName(row.plan.segments[0]) : "-" }}</TableCell>
+                <TableCell class="px-3 py-3 text-right tabular-nums" :class="[amountClass(row.plan?.costPerExperience), resultHighlightsCost ? 'bg-success/10 font-semibold' : '']">{{ formatAmount(row.plan?.costPerExperience) }}</TableCell>
+                <TableCell class="px-3 py-3 text-right tabular-nums text-foreground/85">{{ formatAmount(row.plan?.materialPurchaseCostPerExperience) }}</TableCell>
+                <TableCell class="px-3 py-3 text-right tabular-nums" :class="amountClass(row.plan?.totalNetCost)">{{ formatAmount(row.plan?.totalNetCost) }}</TableCell>
+                <TableCell class="px-3 py-3 text-right tabular-nums text-foreground/85">{{ formatAmount(row.plan?.totalPurchaseCost) }}</TableCell>
+                <TableCell class="px-3 py-3 text-right tabular-nums" :class="resultHighlightsDuration ? 'bg-success/10 font-semibold text-success' : 'text-foreground/85'">{{ formatDuration(row.plan?.totalDurationHours) }}</TableCell>
+                <TableCell class="px-3 py-3 text-right tabular-nums text-foreground/85">{{ formatAmount(row.plan?.experiencePerHour) }}</TableCell>
+                <TableCell class="px-4 py-3 text-right"><span class="rounded border px-2 py-1 text-[10px]" :class="planStatusClass(row.plan)">{{ planStatusText(row.plan) }}</span></TableCell>
+              </TableRow>
+            </TableBody>
+          </Table>
         </div>
       </div>
 
@@ -299,128 +300,130 @@
         :aria-labelledby="tabId(selectedSkillHrid)"
         tabindex="0"
       >
-        <div class="panel !p-0">
-          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-white/10 px-4 py-3">
+        <div class="surface-panel !p-0">
+          <div class="flex flex-wrap items-center justify-between gap-3 border-b border-border px-4 py-3">
             <div>
-              <p class="text-[10px] uppercase text-slate-500">{{ currentLevel(selectedSkillHrid) }} -> {{ skilling.targetLevels[selectedSkillHrid] }}</p>
-              <h3 class="font-heading text-base font-semibold text-amber-200">{{ skillName(selectedSkillHrid) }}</h3>
+              <p class="text-[10px] uppercase text-muted-foreground">{{ currentLevel(selectedSkillHrid) }} -> {{ skilling.targetLevels[selectedSkillHrid] }}</p>
+              <h3 class="font-heading text-base font-semibold text-primary">{{ skillName(selectedSkillHrid) }}</h3>
             </div>
-            <span v-if="selectedPlan?.status === 'blocked'" class="text-xs text-rose-300">{{ missingPriceLabel(selectedPlan) }}</span>
+            <span v-if="selectedPlan?.status === 'blocked'" class="text-xs text-destructive">{{ missingPriceLabel(selectedPlan) }}</span>
           </div>
 
-          <div v-if="selectedPlan" class="grid grid-cols-2 border-b border-white/10 sm:grid-cols-3 xl:grid-cols-6">
-            <div v-for="metric in selectedMetrics" :key="metric.label" class="border-r border-white/10 px-4 py-3 last:border-r-0">
-              <p class="text-[10px] uppercase text-slate-500">{{ metric.label }}</p>
+          <div v-if="selectedPlan" class="grid grid-cols-2 border-b border-border sm:grid-cols-3 xl:grid-cols-6">
+            <div v-for="metric in selectedMetrics" :key="metric.label" class="border-r border-border px-4 py-3 last:border-r-0">
+              <p class="text-[10px] uppercase text-muted-foreground">{{ metric.label }}</p>
               <p class="mt-1 truncate text-sm font-semibold tabular-nums" :class="metric.className">{{ metric.value }}</p>
             </div>
           </div>
 
-          <div v-if="!selectedPlan" class="flex min-h-44 items-center justify-center text-sm text-slate-500">
+          <div v-if="!selectedPlan" class="flex min-h-44 items-center justify-center text-sm text-muted-foreground">
             {{ t("common:skilling.awaiting", "Awaiting calculation") }}
           </div>
           <div v-else-if="selectedRangeSummary" class="overflow-x-auto" data-skilling-routes>
-            <table class="min-w-[1280px] w-full text-left text-xs">
-              <thead class="bg-slate-950/30 text-[10px] uppercase text-slate-500">
-                <tr>
-                  <th class="px-4 py-2">{{ t("common:skilling.levelRange", "Levels") }}</th>
-                  <th class="px-3 py-2">{{ t("common:skilling.recipe", "Recipe") }}</th>
-                  <th class="px-3 py-2 text-right">{{ t("common:skilling.actions", "Actions") }}</th>
-                  <th class="px-3 py-2">{{ t("common:skilling.drinks", "Drinks") }}</th>
-                  <th class="px-3 py-2">{{ t("common:skilling.equipment", "Equipment") }}</th>
-                  <th class="px-3 py-2">{{ t("common:skilling.shortage", "Purchase shortage") }}</th>
-                  <th class="px-3 py-2">{{ t("common:skilling.outputs", "Expected output") }}</th>
-                  <th class="px-3 py-2 text-right">{{ t("common:skilling.netCost", "Net cost") }}</th>
-                  <th class="px-3 py-2 text-right">{{ t("common:skilling.xpPerHour", "XP/h") }}</th>
-                  <th class="px-4 py-2 text-right">{{ t("common:skilling.details", "Details") }}</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-white/10">
-                <tr class="align-top hover:bg-white/[0.025]" data-skilling-range-summary>
-                  <th scope="row" class="px-4 py-3 text-left font-semibold tabular-nums text-amber-200">
+            <Table class="min-w-[1280px] w-full text-left text-xs">
+              <TableHeader class="bg-muted/50 text-[10px] uppercase text-muted-foreground">
+                <TableRow>
+                  <TableHead class="px-4 py-2">{{ t("common:skilling.levelRange", "Levels") }}</TableHead>
+                  <TableHead class="px-3 py-2">{{ t("common:skilling.recipe", "Recipe") }}</TableHead>
+                  <TableHead class="px-3 py-2 text-right">{{ t("common:skilling.actions", "Actions") }}</TableHead>
+                  <TableHead class="px-3 py-2">{{ t("common:skilling.drinks", "Drinks") }}</TableHead>
+                  <TableHead class="px-3 py-2">{{ t("common:skilling.equipment", "Equipment") }}</TableHead>
+                  <TableHead class="px-3 py-2">{{ t("common:skilling.shortage", "Purchase shortage") }}</TableHead>
+                  <TableHead class="px-3 py-2">{{ t("common:skilling.outputs", "Expected output") }}</TableHead>
+                  <TableHead class="px-3 py-2 text-right">{{ t("common:skilling.netCost", "Net cost") }}</TableHead>
+                  <TableHead class="px-3 py-2 text-right">{{ t("common:skilling.xpPerHour", "XP/h") }}</TableHead>
+                  <TableHead class="px-4 py-2 text-right">{{ t("common:skilling.details", "Details") }}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody class="divide-y divide-border">
+                <TableRow class="align-top hover:bg-muted/40" data-skilling-range-summary>
+                  <TableHead scope="row" class="px-4 py-3 text-left font-semibold tabular-nums text-primary">
                     <span class="block whitespace-nowrap">{{ segmentLevelLabel(selectedRangeSummary) }}</span>
-                    <span class="mt-1 block text-[10px] font-normal text-slate-500">{{ stageCountLabel(selectedRangeSummary) }}</span>
-                  </th>
-                  <td class="max-w-[210px] break-words px-3 py-3 font-semibold text-slate-100">{{ routeRecipeSummary(selectedRangeSummary) }}</td>
-                  <td class="px-3 py-3 text-right tabular-nums text-slate-300">{{ formatCount(selectedRangeSummary.completionCount) }}</td>
-                  <td class="max-w-[220px] break-words px-3 py-3 leading-5 text-slate-400">{{ totalDrinkSummary(selectedRangeSummary) }}</td>
-                  <td class="max-w-[240px] break-words px-3 py-3 text-slate-400">{{ routeEquipmentSummary(selectedRangeSummary) }}</td>
-                  <td class="max-w-[220px] break-words px-3 py-3 text-slate-400">{{ shortageSummary(selectedRangeSummary) }}</td>
-                  <td class="max-w-[220px] break-words px-3 py-3 text-slate-400">{{ outputSummary(selectedRangeSummary) }}</td>
-                  <td class="px-3 py-3 text-right font-semibold tabular-nums" :class="amountClass(selectedRangeSummary.netCost)">{{ formatAmount(selectedRangeSummary.netCost) }}</td>
-                  <td class="px-3 py-3 text-right tabular-nums text-slate-300">{{ formatAmount(selectedRangeSummary.experiencePerHour) }}</td>
-                  <td class="px-4 py-3 text-right"><button type="button" class="action-button-muted !rounded !px-2 !py-1 text-[11px]" :aria-label="rangeDetailsAriaLabel(selectedRangeSummary)" @click="openSegment(selectedRangeSummary)">{{ t("common:skilling.details", "Details") }}</button></td>
-                </tr>
-              </tbody>
-            </table>
+                    <span class="mt-1 block text-[10px] font-normal text-muted-foreground">{{ stageCountLabel(selectedRangeSummary) }}</span>
+                  </TableHead>
+                  <TableCell class="max-w-[210px] break-words px-3 py-3 font-semibold text-foreground">{{ routeRecipeSummary(selectedRangeSummary) }}</TableCell>
+                  <TableCell class="px-3 py-3 text-right tabular-nums text-foreground/85">{{ formatCount(selectedRangeSummary.completionCount) }}</TableCell>
+                  <TableCell class="max-w-[220px] break-words px-3 py-3 leading-5 text-muted-foreground">{{ totalDrinkSummary(selectedRangeSummary) }}</TableCell>
+                  <TableCell class="max-w-[240px] break-words px-3 py-3 text-muted-foreground">{{ routeEquipmentSummary(selectedRangeSummary) }}</TableCell>
+                  <TableCell class="max-w-[220px] break-words px-3 py-3 text-muted-foreground">{{ shortageSummary(selectedRangeSummary) }}</TableCell>
+                  <TableCell class="max-w-[220px] break-words px-3 py-3 text-muted-foreground">{{ outputSummary(selectedRangeSummary) }}</TableCell>
+                  <TableCell class="px-3 py-3 text-right font-semibold tabular-nums" :class="amountClass(selectedRangeSummary.netCost)">{{ formatAmount(selectedRangeSummary.netCost) }}</TableCell>
+                  <TableCell class="px-3 py-3 text-right tabular-nums text-foreground/85">{{ formatAmount(selectedRangeSummary.experiencePerHour) }}</TableCell>
+                  <TableCell class="px-4 py-3 text-right"><button type="button" class="button-secondary !rounded !px-2 !py-1 text-[11px]" :aria-label="rangeDetailsAriaLabel(selectedRangeSummary)" @click="openSegment(selectedRangeSummary)">{{ t("common:skilling.details", "Details") }}</button></TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           </div>
-          <div v-else class="flex min-h-32 items-center justify-center px-4 text-sm text-slate-500">{{ planStatusText(selectedPlan) }}</div>
+          <div v-else class="flex min-h-32 items-center justify-center px-4 text-sm text-muted-foreground">{{ planStatusText(selectedPlan) }}</div>
         </div>
 
-        <div v-if="selectedPlan?.alternatives?.length" class="panel !p-0" data-skilling-alternatives>
-          <div class="border-b border-white/10 px-4 py-3"><h3 class="font-heading text-sm font-semibold text-teal-200">{{ t("common:skilling.currentLevelAlternatives", "Current-level candidate comparison") }}</h3></div>
+        <div v-if="selectedPlan?.alternatives?.length" class="surface-panel !p-0" data-skilling-alternatives>
+          <div class="border-b border-border px-4 py-3"><h3 class="font-heading text-sm font-semibold text-success">{{ t("common:skilling.currentLevelAlternatives", "Current-level candidate comparison") }}</h3></div>
           <div class="overflow-x-auto">
-            <table class="min-w-[1460px] w-full text-left text-xs">
-              <thead class="bg-slate-950/30 text-[10px] uppercase text-slate-500">
-                <tr>
-                  <th class="px-4 py-2">#</th>
-                  <th class="px-3 py-2">{{ t("common:skilling.recipe", "Recipe") }}</th>
-                  <th class="px-3 py-2 text-right">{{ t("common:skilling.nextLevelActions", "Estimated actions to next level") }}</th>
-                  <th class="px-3 py-2 text-right" :class="resultHighlightsDuration ? 'bg-teal-300/[0.06] text-teal-300' : ''">{{ t("common:skilling.nextLevelTime", "Time to next level") }}</th>
-                  <th class="px-3 py-2">{{ t("common:skilling.nextLevelDrinks", "Drinks to next level") }}</th>
-                  <th class="px-3 py-2">{{ t("common:skilling.equipment", "Equipment") }}</th>
-                  <th class="px-3 py-2 text-right" :class="resultHighlightsCost ? 'bg-teal-300/[0.06] text-teal-300' : ''">{{ t("common:skilling.nextLevelCostPerXp", "Net cost / XP to next level") }}</th>
-                  <th class="px-3 py-2 text-right">{{ t("common:skilling.nextLevelMaterialPurchasePerXp", "Material purchases / XP to next level") }}</th>
-                  <th class="px-3 py-2 text-right">{{ t("common:skilling.nextLevelPurchaseCost", "Purchases to next level") }}</th>
-                  <th class="px-3 py-2 text-right">{{ t("common:skilling.nextLevelXpPerHour", "XP/h to next level") }}</th>
-                  <th class="px-4 py-2 text-right">{{ t("common:skilling.details", "Details") }}</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-white/10">
-                <tr v-for="(candidate, index) in selectedPlan.alternatives.slice(0, 8)" :key="`${candidate.actionHrid}-${index}`" class="align-top hover:bg-white/[0.025]">
-                  <td class="px-4 py-2 text-amber-300">{{ index + 1 }}</td>
-                  <td class="max-w-[190px] px-3 py-2 font-medium text-slate-200">{{ actionName(candidate) }}</td>
-                  <td class="px-3 py-2 text-right tabular-nums text-slate-300">
-                    <span class="block whitespace-nowrap font-medium text-slate-200">{{ formatCount(candidate.completionCount) }}</span>
-                  </td>
-                  <td class="px-3 py-2 text-right tabular-nums" :class="resultHighlightsDuration ? 'bg-teal-300/[0.04] font-semibold text-teal-200' : 'text-slate-300'">{{ formatDuration(candidate.durationHours) }}</td>
-                  <td class="max-w-[220px] whitespace-pre-line px-3 py-2 leading-5 text-slate-400">{{ candidateDrinkSummary(candidate) }}</td>
-                  <td class="max-w-[260px] px-3 py-2 text-slate-400">{{ candidateEquipmentSummary(candidate) }}</td>
-                  <td class="px-3 py-2 text-right tabular-nums" :class="[amountClass(candidate.costPerExperience), resultHighlightsCost ? 'bg-teal-300/[0.04] font-semibold' : '']">{{ formatAmount(candidate.costPerExperience) }}</td>
-                  <td class="px-3 py-2 text-right tabular-nums text-slate-400">{{ formatAmount(candidate.materialPurchaseCostPerExperience) }}</td>
-                  <td class="px-3 py-2 text-right tabular-nums text-slate-400">{{ formatAmount(candidate.purchaseCost) }}</td>
-                  <td class="px-3 py-2 text-right tabular-nums text-slate-400">{{ formatAmount(candidate.experiencePerHour) }}</td>
-                  <td class="px-4 py-2 text-right"><button type="button" class="action-button-muted !rounded !px-2 !py-1 text-[11px]" :aria-label="candidateDetailsAriaLabel(candidate, index)" @click="openSegment(candidate, true)">{{ t("common:skilling.details", "Details") }}</button></td>
-                </tr>
-              </tbody>
-            </table>
+            <Table class="min-w-[1460px] w-full text-left text-xs">
+              <TableHeader class="bg-muted/50 text-[10px] uppercase text-muted-foreground">
+                <TableRow>
+                  <TableHead class="px-4 py-2">#</TableHead>
+                  <TableHead class="px-3 py-2">{{ t("common:skilling.recipe", "Recipe") }}</TableHead>
+                  <TableHead class="px-3 py-2 text-right">{{ t("common:skilling.nextLevelActions", "Estimated actions to next level") }}</TableHead>
+                  <TableHead class="px-3 py-2 text-right" :class="resultHighlightsDuration ? 'bg-success/10 text-success' : ''">{{ t("common:skilling.nextLevelTime", "Time to next level") }}</TableHead>
+                  <TableHead class="px-3 py-2">{{ t("common:skilling.nextLevelDrinks", "Drinks to next level") }}</TableHead>
+                  <TableHead class="px-3 py-2">{{ t("common:skilling.equipment", "Equipment") }}</TableHead>
+                  <TableHead class="px-3 py-2 text-right" :class="resultHighlightsCost ? 'bg-success/10 text-success' : ''">{{ t("common:skilling.nextLevelCostPerXp", "Net cost / XP to next level") }}</TableHead>
+                  <TableHead class="px-3 py-2 text-right">{{ t("common:skilling.nextLevelMaterialPurchasePerXp", "Material purchases / XP to next level") }}</TableHead>
+                  <TableHead class="px-3 py-2 text-right">{{ t("common:skilling.nextLevelPurchaseCost", "Purchases to next level") }}</TableHead>
+                  <TableHead class="px-3 py-2 text-right">{{ t("common:skilling.nextLevelXpPerHour", "XP/h to next level") }}</TableHead>
+                  <TableHead class="px-4 py-2 text-right">{{ t("common:skilling.details", "Details") }}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody class="divide-y divide-border">
+                <TableRow v-for="(candidate, index) in selectedPlan.alternatives.slice(0, 8)" :key="`${candidate.actionHrid}-${index}`" class="align-top hover:bg-muted/40">
+                  <TableCell class="px-4 py-2 text-primary">{{ index + 1 }}</TableCell>
+                  <TableCell class="max-w-[190px] px-3 py-2 font-medium text-foreground">{{ actionName(candidate) }}</TableCell>
+                  <TableCell class="px-3 py-2 text-right tabular-nums text-foreground/85">
+                    <span class="block whitespace-nowrap font-medium text-foreground">{{ formatCount(candidate.completionCount) }}</span>
+                  </TableCell>
+                  <TableCell class="px-3 py-2 text-right tabular-nums" :class="resultHighlightsDuration ? 'bg-success/10 font-semibold text-success' : 'text-foreground/85'">{{ formatDuration(candidate.durationHours) }}</TableCell>
+                  <TableCell class="max-w-[220px] whitespace-pre-line px-3 py-2 leading-5 text-muted-foreground">{{ candidateDrinkSummary(candidate) }}</TableCell>
+                  <TableCell class="max-w-[260px] px-3 py-2 text-muted-foreground">{{ candidateEquipmentSummary(candidate) }}</TableCell>
+                  <TableCell class="px-3 py-2 text-right tabular-nums" :class="[amountClass(candidate.costPerExperience), resultHighlightsCost ? 'bg-success/10 font-semibold' : '']">{{ formatAmount(candidate.costPerExperience) }}</TableCell>
+                  <TableCell class="px-3 py-2 text-right tabular-nums text-muted-foreground">{{ formatAmount(candidate.materialPurchaseCostPerExperience) }}</TableCell>
+                  <TableCell class="px-3 py-2 text-right tabular-nums text-muted-foreground">{{ formatAmount(candidate.purchaseCost) }}</TableCell>
+                  <TableCell class="px-3 py-2 text-right tabular-nums text-muted-foreground">{{ formatAmount(candidate.experiencePerHour) }}</TableCell>
+                  <TableCell class="px-4 py-2 text-right"><button type="button" class="button-secondary !rounded !px-2 !py-1 text-[11px]" :aria-label="candidateDetailsAriaLabel(candidate, index)" @click="openSegment(candidate, true)">{{ t("common:skilling.details", "Details") }}</button></TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           </div>
         </div>
+        </div>
+      </div>
       </div>
     </template>
 
     <BaseModal
       :open="modeHelpModalOpen"
       :title="t('common:skilling.optimizationModeHelp', 'Optimization mode guide')"
-      panel-class="enhancement-price-modal max-w-3xl max-h-[88vh] overflow-y-auto overscroll-contain"
+      panel-class="max-w-3xl max-h-[88vh] overflow-y-auto overscroll-contain"
       @close="modeHelpModalOpen = false"
     >
-      <div class="grid border-y border-white/10 sm:grid-cols-3 sm:divide-x sm:divide-white/10" data-skilling-optimization-help-dialog>
-        <section class="border-b border-white/10 px-4 py-4 sm:border-b-0">
-          <h3 class="font-heading text-sm font-semibold text-amber-200">{{ t("common:skilling.lowestCostPerXp", "Lowest net cost / XP") }}</h3>
-          <p class="mt-2 text-xs leading-5 text-slate-400">{{ t("common:skilling.costModeDescription", "Prioritizes the lowest net cost per experience.") }}</p>
+      <div class="grid border-y border-border sm:grid-cols-3 sm:divide-x sm:divide-border" data-skilling-optimization-help-dialog>
+        <section class="border-b border-border px-4 py-4 sm:border-b-0">
+          <h3 class="font-heading text-sm font-semibold text-primary">{{ t("common:skilling.lowestCostPerXp", "Lowest net cost / XP") }}</h3>
+          <p class="mt-2 text-xs leading-5 text-muted-foreground">{{ t("common:skilling.costModeDescription", "Prioritizes the lowest net cost per experience.") }}</p>
         </section>
-        <section class="border-b border-white/10 bg-teal-300/[0.025] px-4 py-4 sm:border-b-0">
-          <h3 class="font-heading text-sm font-semibold text-teal-200">{{ t("common:skilling.balanced", "Balanced") }}</h3>
-          <p class="mt-2 text-xs leading-5 text-slate-400">{{ t("common:skilling.balancedModeDescription", `Uses the current level's lowest-net-cost-per-XP full-level route as the baseline and prefers shorter candidates within baseline + ${balancedCostTolerancePercentText}% of |baseline|.`, { percent: balancedCostTolerancePercentText }) }}</p>
-          <div class="mt-3 border-t border-teal-300/15 pt-3" data-skilling-balanced-tolerance>
-            <label class="flex items-center justify-between gap-3 text-[11px] font-semibold text-slate-300" for="skilling-balanced-cost-tolerance">
+        <section class="border-b border-border bg-success/10 px-4 py-4 sm:border-b-0">
+          <h3 class="font-heading text-sm font-semibold text-success">{{ t("common:skilling.balanced", "Balanced") }}</h3>
+          <p class="mt-2 text-xs leading-5 text-muted-foreground">{{ t("common:skilling.balancedModeDescription", `Uses the current level's lowest-net-cost-per-XP full-level route as the baseline and prefers shorter candidates within baseline + ${balancedCostTolerancePercentText}% of |baseline|.`, { percent: balancedCostTolerancePercentText }) }}</p>
+          <div class="mt-3 border-t border-success/40 pt-3" data-skilling-balanced-tolerance>
+            <label class="flex items-center justify-between gap-3 text-[11px] font-semibold text-foreground/85" for="skilling-balanced-cost-tolerance">
               <span>{{ t("common:skilling.balancedCostTolerance", "Cost tolerance") }}</span>
-              <span class="font-normal text-slate-500">0–100%</span>
+              <span class="font-normal text-muted-foreground">0–100%</span>
             </label>
             <div class="mt-1.5 flex items-center gap-2">
               <input
                 id="skilling-balanced-cost-tolerance"
-                class="field-input !w-24 !rounded !px-2 !py-1.5 text-right text-xs tabular-nums"
+                class="control-input !w-24 !rounded !px-2 !py-1.5 text-right text-xs tabular-nums"
                 type="number"
                 name="skilling-balanced-cost-tolerance"
                 autocomplete="off"
@@ -437,13 +440,13 @@
                 @input="setBalancedCostTolerance"
                 @blur="normalizeBalancedCostToleranceInput"
               />
-              <span class="text-xs font-semibold text-teal-200" aria-hidden="true">%</span>
+              <span class="text-xs font-semibold text-success" aria-hidden="true">%</span>
             </div>
-            <p id="skilling-balanced-cost-tolerance-hint" class="mt-2 text-[11px] leading-4 text-slate-500">{{ t("common:skilling.balancedCostToleranceHint", "Controls how much higher the current level's net cost per XP may be than its lowest-cost baseline. A higher value allows faster but more expensive routes.") }}</p>
+            <p id="skilling-balanced-cost-tolerance-hint" class="mt-2 text-[11px] leading-4 text-muted-foreground">{{ t("common:skilling.balancedCostToleranceHint", "Controls how much higher the current level's net cost per XP may be than its lowest-cost baseline. A higher value allows faster but more expensive routes.") }}</p>
             <p
               v-if="balancedToleranceResultDiffers"
               id="skilling-balanced-cost-tolerance-status"
-              class="mt-2 rounded border border-amber-300/20 bg-amber-300/[0.06] px-2 py-1.5 text-[11px] leading-4 text-amber-200"
+              class="mt-2 rounded border border-primary/40 bg-primary/10 px-2 py-1.5 text-[11px] leading-4 text-primary"
               role="status"
               aria-live="polite"
             >
@@ -452,69 +455,69 @@
           </div>
         </section>
         <section class="px-4 py-4">
-          <h3 class="font-heading text-sm font-semibold text-sky-200">{{ t("common:skilling.speedFirst", "Speed first") }}</h3>
-          <p class="mt-2 text-xs leading-5 text-slate-400">{{ t("common:skilling.speedModeDescription", "Prioritizes the shortest estimated time for each level.") }}</p>
+          <h3 class="font-heading text-sm font-semibold text-info">{{ t("common:skilling.speedFirst", "Speed first") }}</h3>
+          <p class="mt-2 text-xs leading-5 text-muted-foreground">{{ t("common:skilling.speedModeDescription", "Prioritizes the shortest estimated time for each level.") }}</p>
         </section>
       </div>
-      <p class="border-b border-white/10 px-4 py-3 text-xs leading-5 text-slate-400">{{ t("common:skilling.optimizationModeCommonRules", "All modes calculate and show costs, require valid asks, and replan after every level.") }}</p>
+      <p class="border-b border-border px-4 py-3 text-xs leading-5 text-muted-foreground">{{ t("common:skilling.optimizationModeCommonRules", "All modes calculate and show costs, require valid asks, and replan after every level.") }}</p>
     </BaseModal>
 
     <BaseModal
       :open="segmentModalOpen"
       :title="activeSegmentTitle"
-      panel-class="enhancement-price-modal max-w-5xl max-h-[88vh] overflow-y-auto overscroll-contain"
+      panel-class="max-w-5xl max-h-[88vh] overflow-y-auto overscroll-contain"
       @close="segmentModalOpen = false"
     >
       <template v-if="activeSegment">
-        <div class="grid grid-cols-2 border-y border-white/10 sm:grid-cols-4">
-          <div class="px-3 py-2"><p class="text-[10px] uppercase text-slate-500">{{ t("common:skilling.recipe", "Recipe") }}</p><p class="mt-1 font-semibold text-slate-100">{{ routeRecipeSummary(activeSegment) }}</p></div>
-          <div class="px-3 py-2"><p class="text-[10px] uppercase text-slate-500">{{ t("common:skilling.actions", "Actions") }}</p><p class="mt-1 tabular-nums text-slate-200">{{ formatCount(activeSegment.completionCount) }}</p></div>
-          <div class="px-3 py-2"><p class="text-[10px] uppercase text-slate-500">{{ activeSegmentIsCandidate ? t("common:skilling.nextLevelTime", "Time to next level") : t("common:skilling.duration", "Time") }}</p><p class="mt-1 tabular-nums text-slate-200">{{ formatDuration(activeSegment.durationHours) }}</p></div>
-          <div class="px-3 py-2"><p class="text-[10px] uppercase text-slate-500">{{ t("common:skilling.netCost", "Net cost") }}</p><p class="mt-1 font-semibold tabular-nums" :class="amountClass(activeSegment.netCost)">{{ formatAmount(activeSegment.netCost) }}</p></div>
+        <div class="grid grid-cols-2 border-y border-border sm:grid-cols-4">
+          <div class="px-3 py-2"><p class="text-[10px] uppercase text-muted-foreground">{{ t("common:skilling.recipe", "Recipe") }}</p><p class="mt-1 font-semibold text-foreground">{{ routeRecipeSummary(activeSegment) }}</p></div>
+          <div class="px-3 py-2"><p class="text-[10px] uppercase text-muted-foreground">{{ t("common:skilling.actions", "Actions") }}</p><p class="mt-1 tabular-nums text-foreground">{{ formatCount(activeSegment.completionCount) }}</p></div>
+          <div class="px-3 py-2"><p class="text-[10px] uppercase text-muted-foreground">{{ activeSegmentIsCandidate ? t("common:skilling.nextLevelTime", "Time to next level") : t("common:skilling.duration", "Time") }}</p><p class="mt-1 tabular-nums text-foreground">{{ formatDuration(activeSegment.durationHours) }}</p></div>
+          <div class="px-3 py-2"><p class="text-[10px] uppercase text-muted-foreground">{{ t("common:skilling.netCost", "Net cost") }}</p><p class="mt-1 font-semibold tabular-nums" :class="amountClass(activeSegment.netCost)">{{ formatAmount(activeSegment.netCost) }}</p></div>
         </div>
 
         <section v-if="activeSegmentIsRangeSummary" class="pt-2">
-          <h3 class="mb-2 font-heading text-sm font-semibold text-sky-200">{{ t("common:skilling.totalDrinks", "Total drinks") }}</h3>
-          <div v-if="activeConsumedDrinks.length" class="grid border-y border-white/10 sm:grid-cols-2">
-            <div v-for="drink in activeConsumedDrinks" :key="drink.itemHrid" class="flex items-center gap-2 border-b border-white/10 px-3 py-2">
-              <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded bg-white/[0.04] ring-1 ring-white/10">
+          <h3 class="mb-2 font-heading text-sm font-semibold text-info">{{ t("common:skilling.totalDrinks", "Total drinks") }}</h3>
+          <div v-if="activeConsumedDrinks.length" class="grid border-y border-border sm:grid-cols-2">
+            <div v-for="drink in activeConsumedDrinks" :key="drink.itemHrid" class="flex items-center gap-2 border-b border-border px-3 py-2">
+              <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded bg-muted/40 ring-1 ring-ring">
                 <svg v-if="itemIconVisible(drink.itemHrid)" class="h-full w-full p-1" viewBox="0 0 50 50" aria-hidden="true"><use :href="itemIconHref(drink.itemHrid)"></use></svg>
-                <span v-else class="text-xs text-slate-500">{{ itemFallback(drink.itemHrid) }}</span>
+                <span v-else class="text-xs text-muted-foreground">{{ itemFallback(drink.itemHrid) }}</span>
               </span>
-              <span class="min-w-0 flex-1 truncate text-slate-200">{{ itemName(drink.itemHrid) }}</span>
-              <span class="text-xs tabular-nums text-sky-200">{{ countTimesLabel(drink.count) }}</span>
+              <span class="min-w-0 flex-1 truncate text-foreground">{{ itemName(drink.itemHrid) }}</span>
+              <span class="text-xs tabular-nums text-info">{{ countTimesLabel(drink.count) }}</span>
             </div>
           </div>
-          <p v-else class="px-3 text-xs text-slate-500">{{ t("common:skilling.noCandidateDrinks", "None") }}</p>
+          <p v-else class="px-3 text-xs text-muted-foreground">{{ t("common:skilling.noCandidateDrinks", "None") }}</p>
         </section>
 
         <section class="pt-2">
-          <h3 class="mb-2 font-heading text-sm font-semibold text-amber-200">{{ t("common:skilling.equipment", "Equipment") }}</h3>
+          <h3 class="mb-2 font-heading text-sm font-semibold text-primary">{{ t("common:skilling.equipment", "Equipment") }}</h3>
           <div v-if="activeEquipmentStrategies.length" class="space-y-3">
             <div v-for="(strategy, strategyIndex) in activeEquipmentStrategies" :key="`${strategy.equipmentSignature || 'equipment'}-${strategyIndex}`">
-              <p v-if="activeEquipmentStrategies.length > 1" class="mb-1 px-3 text-[11px] text-slate-500">
+              <p v-if="activeEquipmentStrategies.length > 1" class="mb-1 px-3 text-[11px] text-muted-foreground">
                 {{ equipmentStageLabel(strategy, strategyIndex) }}
               </p>
-              <div v-if="strategy.equipment?.length" class="grid border-y border-white/10 sm:grid-cols-2">
-                <div v-for="item in strategy.equipment" :key="`${item.equipmentType}-${item.id}`" class="flex items-center gap-2 border-b border-white/10 px-3 py-2">
-                  <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded bg-white/[0.04] ring-1 ring-white/10">
+              <div v-if="strategy.equipment?.length" class="grid border-y border-border sm:grid-cols-2">
+                <div v-for="item in strategy.equipment" :key="`${item.equipmentType}-${item.id}`" class="flex items-center gap-2 border-b border-border px-3 py-2">
+                  <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded bg-muted/40 ring-1 ring-ring">
                     <svg v-if="itemIconVisible(item.itemHrid)" class="h-full w-full p-1" viewBox="0 0 50 50" aria-hidden="true"><use :href="itemIconHref(item.itemHrid)"></use></svg>
-                    <span v-else class="text-xs text-slate-500">{{ itemFallback(item.itemHrid) }}</span>
+                    <span v-else class="text-xs text-muted-foreground">{{ itemFallback(item.itemHrid) }}</span>
                   </span>
-                  <span class="min-w-0 flex-1 truncate text-slate-200">{{ itemName(item.itemHrid) }}</span>
-                  <span class="text-xs text-amber-300">{{ enhancementLevelLabel(item.enhancementLevel) }}</span>
+                  <span class="min-w-0 flex-1 truncate text-foreground">{{ itemName(item.itemHrid) }}</span>
+                  <span class="text-xs text-primary">{{ enhancementLevelLabel(item.enhancementLevel) }}</span>
                 </div>
               </div>
-              <p v-else class="px-3 text-xs text-slate-500">{{ t("common:skilling.noEquipment", "None") }}</p>
+              <p v-else class="px-3 text-xs text-muted-foreground">{{ t("common:skilling.noEquipment", "None") }}</p>
             </div>
           </div>
-          <p v-else class="text-slate-500">{{ t("common:skilling.noEquipment", "None") }}</p>
+          <p v-else class="text-muted-foreground">{{ t("common:skilling.noEquipment", "None") }}</p>
         </section>
 
         <section v-if="activeRouteStages.length > 1" class="pt-2" data-skilling-route-stages>
           <div class="mb-2 flex items-baseline justify-between gap-3">
-            <h3 class="font-heading text-sm font-semibold text-amber-200">{{ t("common:skilling.stageDetails", "Stage details") }}</h3>
-            <span class="text-[11px] tabular-nums text-slate-500">{{ stageCountLabel(activeSegment) }}</span>
+            <h3 class="font-heading text-sm font-semibold text-primary">{{ t("common:skilling.stageDetails", "Stage details") }}</h3>
+            <span class="text-[11px] tabular-nums text-muted-foreground">{{ stageCountLabel(activeSegment) }}</span>
           </div>
           <div
             class="overflow-x-auto"
@@ -522,67 +525,70 @@
             tabindex="0"
             :aria-label="t('common:skilling.stageDetails', 'Stage details')"
           >
-            <table class="min-w-[1080px] w-full text-left text-xs">
+            <Table class="min-w-[1080px] w-full text-left text-xs">
               <caption class="sr-only">{{ t("common:skilling.stageDetails", "Stage details") }}</caption>
-              <thead class="border-y border-white/10 text-[10px] uppercase text-slate-500">
-                <tr>
-                  <th scope="col" class="px-3 py-2">{{ t("common:skilling.stageLevel", "Stage levels") }}</th>
-                  <th scope="col" class="px-3 py-2">{{ t("common:skilling.recipe", "Recipe") }}</th>
-                  <th scope="col" class="px-3 py-2 text-right">{{ t("common:skilling.actions", "Actions") }}</th>
-                  <th scope="col" class="px-3 py-2">{{ t("common:skilling.drinks", "Drinks") }}</th>
-                  <th scope="col" class="px-3 py-2">{{ t("common:skilling.equipment", "Equipment") }}</th>
-                  <th scope="col" class="px-3 py-2 text-right">{{ t("common:skilling.netCost", "Net cost") }}</th>
-                </tr>
-              </thead>
-              <tbody class="divide-y divide-white/10">
-                <tr v-for="(stage, stageIndex) in activeRouteStages" :key="routeStageKey(stage, stageIndex)" class="align-top">
-                  <th scope="row" class="px-3 py-2 text-left font-semibold tabular-nums text-amber-200">{{ segmentLevelLabel(stage) }}</th>
-                  <td class="max-w-[190px] break-words px-3 py-2 font-medium text-slate-200">{{ actionName(stage) }}</td>
-                  <td class="px-3 py-2 text-right tabular-nums text-slate-300">{{ formatCount(stage.completionCount) }}</td>
-                  <td class="max-w-[240px] whitespace-pre-line break-words px-3 py-2 leading-5 text-slate-400">{{ drinkSummary(stage) }}</td>
-                  <td class="max-w-[260px] break-words px-3 py-2 text-slate-400">{{ routeEquipmentSummary(stage) }}</td>
-                  <td class="px-3 py-2 text-right font-semibold tabular-nums" :class="amountClass(stage.netCost)">{{ formatAmount(stage.netCost) }}</td>
-                </tr>
-              </tbody>
-            </table>
+              <TableHeader class="border-y border-border text-[10px] uppercase text-muted-foreground">
+                <TableRow>
+                  <TableHead scope="col" class="px-3 py-2">{{ t("common:skilling.stageLevel", "Stage levels") }}</TableHead>
+                  <TableHead scope="col" class="px-3 py-2">{{ t("common:skilling.recipe", "Recipe") }}</TableHead>
+                  <TableHead scope="col" class="px-3 py-2 text-right">{{ t("common:skilling.actions", "Actions") }}</TableHead>
+                  <TableHead scope="col" class="px-3 py-2">{{ t("common:skilling.drinks", "Drinks") }}</TableHead>
+                  <TableHead scope="col" class="px-3 py-2">{{ t("common:skilling.equipment", "Equipment") }}</TableHead>
+                  <TableHead scope="col" class="px-3 py-2 text-right">{{ t("common:skilling.netCost", "Net cost") }}</TableHead>
+                </TableRow>
+              </TableHeader>
+              <TableBody class="divide-y divide-border">
+                <TableRow v-for="(stage, stageIndex) in activeRouteStages" :key="routeStageKey(stage, stageIndex)" class="align-top">
+                  <TableHead scope="row" class="px-3 py-2 text-left font-semibold tabular-nums text-primary">{{ segmentLevelLabel(stage) }}</TableHead>
+                  <TableCell class="max-w-[190px] break-words px-3 py-2 font-medium text-foreground">{{ actionName(stage) }}</TableCell>
+                  <TableCell class="px-3 py-2 text-right tabular-nums text-foreground/85">{{ formatCount(stage.completionCount) }}</TableCell>
+                  <TableCell class="max-w-[240px] whitespace-pre-line break-words px-3 py-2 leading-5 text-muted-foreground">{{ drinkSummary(stage) }}</TableCell>
+                  <TableCell class="max-w-[260px] break-words px-3 py-2 text-muted-foreground">{{ routeEquipmentSummary(stage) }}</TableCell>
+                  <TableCell class="px-3 py-2 text-right font-semibold tabular-nums" :class="amountClass(stage.netCost)">{{ formatAmount(stage.netCost) }}</TableCell>
+                </TableRow>
+              </TableBody>
+            </Table>
           </div>
         </section>
 
         <section class="pt-2">
-          <h3 class="mb-2 font-heading text-sm font-semibold text-teal-200">{{ t("common:skilling.inputMaterials", "Input ledger") }}</h3>
-          <div class="overflow-x-auto"><table class="min-w-[760px] w-full text-left text-xs"><thead class="border-y border-white/10 text-[10px] uppercase text-slate-500"><tr><th class="px-3 py-2">{{ t("common:skilling.item", "Item") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.quantity", "Quantity") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.owned", "From inventory") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.purchase", "Purchase") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.opportunityUnit", "Opportunity unit") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.ask", "Ask") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.value", "Value") }}</th></tr></thead><tbody class="divide-y divide-white/10"><tr v-for="row in activeSegment.inputItems" :key="`${row.itemHrid}-${row.enhancementLevel || 0}`"><td class="px-3 py-2"><span class="flex items-center gap-2"><svg v-if="itemIconVisible(row.itemHrid)" class="h-7 w-7" viewBox="0 0 50 50" aria-hidden="true"><use :href="itemIconHref(row.itemHrid)"></use></svg><span>{{ itemName(row.itemHrid) }}<template v-if="row.enhancementLevel > 0"> +{{ row.enhancementLevel }}</template></span></span></td><td class="px-3 py-2 text-right tabular-nums">{{ formatCount(row.count) }}</td><td class="px-3 py-2 text-right tabular-nums">{{ formatCount(row.ownedCount) }}</td><td class="px-3 py-2 text-right tabular-nums">{{ formatCount(row.purchaseCount) }}</td><td class="px-3 py-2 text-right tabular-nums">{{ formatAmount(row.opportunityUnitPrice) }}</td><td class="px-3 py-2 text-right tabular-nums">{{ formatAmount(row.purchaseUnitPrice) }}</td><td class="px-3 py-2 text-right tabular-nums text-amber-200">{{ formatAmount(Number(row.opportunityCost || 0) + Number(row.purchaseCost || 0)) }}</td></tr></tbody></table></div>
+          <h3 class="mb-2 font-heading text-sm font-semibold text-success">{{ t("common:skilling.inputMaterials", "Input ledger") }}</h3>
+          <div class="overflow-x-auto"><Table class="min-w-[760px] w-full text-left text-xs"><TableHeader class="border-y border-border text-[10px] uppercase text-muted-foreground"><TableRow><TableHead class="px-3 py-2">{{ t("common:skilling.item", "Item") }}</TableHead><TableHead class="px-3 py-2 text-right">{{ t("common:skilling.quantity", "Quantity") }}</TableHead><TableHead class="px-3 py-2 text-right">{{ t("common:skilling.owned", "From inventory") }}</TableHead><TableHead class="px-3 py-2 text-right">{{ t("common:skilling.purchase", "Purchase") }}</TableHead><TableHead class="px-3 py-2 text-right">{{ t("common:skilling.opportunityUnit", "Opportunity unit") }}</TableHead><TableHead class="px-3 py-2 text-right">{{ t("common:skilling.ask", "Ask") }}</TableHead><TableHead class="px-3 py-2 text-right">{{ t("common:skilling.value", "Value") }}</TableHead></TableRow></TableHeader><TableBody class="divide-y divide-border"><TableRow v-for="row in activeSegment.inputItems" :key="`${row.itemHrid}-${row.enhancementLevel || 0}`"><TableCell class="px-3 py-2"><span class="flex items-center gap-2"><svg v-if="itemIconVisible(row.itemHrid)" class="h-7 w-7" viewBox="0 0 50 50" aria-hidden="true"><use :href="itemIconHref(row.itemHrid)"></use></svg><span>{{ itemName(row.itemHrid) }}<template v-if="row.enhancementLevel > 0"> +{{ row.enhancementLevel }}</template></span></span></TableCell><TableCell class="px-3 py-2 text-right tabular-nums">{{ formatCount(row.count) }}</TableCell><TableCell class="px-3 py-2 text-right tabular-nums">{{ formatCount(row.ownedCount) }}</TableCell><TableCell class="px-3 py-2 text-right tabular-nums">{{ formatCount(row.purchaseCount) }}</TableCell><TableCell class="px-3 py-2 text-right tabular-nums">{{ formatAmount(row.opportunityUnitPrice) }}</TableCell><TableCell class="px-3 py-2 text-right tabular-nums">{{ formatAmount(row.purchaseUnitPrice) }}</TableCell><TableCell class="px-3 py-2 text-right tabular-nums text-primary">{{ formatAmount(Number(row.opportunityCost || 0) + Number(row.purchaseCost || 0)) }}</TableCell></TableRow></TableBody></Table></div>
         </section>
 
         <section class="pt-2">
-          <h3 class="mb-2 font-heading text-sm font-semibold text-teal-200">{{ t("common:skilling.outputMaterials", "Output ledger") }}</h3>
-          <div class="overflow-x-auto"><table class="min-w-[560px] w-full text-left text-xs"><thead class="border-y border-white/10 text-[10px] uppercase text-slate-500"><tr><th class="px-3 py-2">{{ t("common:skilling.item", "Item") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.quantity", "Quantity") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.recoveryUnit", "Recovery unit") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.value", "Value") }}</th></tr></thead><tbody class="divide-y divide-white/10"><tr v-for="row in activeSegment.outputItems" :key="`${row.itemHrid}-${row.enhancementLevel || 0}`"><td class="px-3 py-2"><span class="flex items-center gap-2"><svg v-if="itemIconVisible(row.itemHrid)" class="h-7 w-7" viewBox="0 0 50 50" aria-hidden="true"><use :href="itemIconHref(row.itemHrid)"></use></svg><span>{{ itemName(row.itemHrid) }}<template v-if="row.enhancementLevel > 0"> +{{ row.enhancementLevel }}</template></span></span></td><td class="px-3 py-2 text-right tabular-nums">{{ formatCount(row.count) }}</td><td class="px-3 py-2 text-right tabular-nums">{{ formatAmount(row.liquidationUnitPrice) }}</td><td class="px-3 py-2 text-right tabular-nums text-teal-200">{{ formatAmount(row.liquidationValue) }}</td></tr></tbody></table></div>
+          <h3 class="mb-2 font-heading text-sm font-semibold text-success">{{ t("common:skilling.outputMaterials", "Output ledger") }}</h3>
+          <div class="overflow-x-auto"><Table class="min-w-[560px] w-full text-left text-xs"><TableHeader class="border-y border-border text-[10px] uppercase text-muted-foreground"><TableRow><TableHead class="px-3 py-2">{{ t("common:skilling.item", "Item") }}</TableHead><TableHead class="px-3 py-2 text-right">{{ t("common:skilling.quantity", "Quantity") }}</TableHead><TableHead class="px-3 py-2 text-right">{{ t("common:skilling.recoveryUnit", "Recovery unit") }}</TableHead><TableHead class="px-3 py-2 text-right">{{ t("common:skilling.value", "Value") }}</TableHead></TableRow></TableHeader><TableBody class="divide-y divide-border"><TableRow v-for="row in activeSegment.outputItems" :key="`${row.itemHrid}-${row.enhancementLevel || 0}`"><TableCell class="px-3 py-2"><span class="flex items-center gap-2"><svg v-if="itemIconVisible(row.itemHrid)" class="h-7 w-7" viewBox="0 0 50 50" aria-hidden="true"><use :href="itemIconHref(row.itemHrid)"></use></svg><span>{{ itemName(row.itemHrid) }}<template v-if="row.enhancementLevel > 0"> +{{ row.enhancementLevel }}</template></span></span></TableCell><TableCell class="px-3 py-2 text-right tabular-nums">{{ formatCount(row.count) }}</TableCell><TableCell class="px-3 py-2 text-right tabular-nums">{{ formatAmount(row.liquidationUnitPrice) }}</TableCell><TableCell class="px-3 py-2 text-right tabular-nums text-success">{{ formatAmount(row.liquidationValue) }}</TableCell></TableRow></TableBody></Table></div>
         </section>
       </template>
     </BaseModal>
 
-    <BaseModal :open="pricesModalOpen" :title="t('common:skilling.marketPrices', 'Market prices and overrides')" panel-class="enhancement-price-modal max-w-6xl max-h-[88vh] overflow-y-auto overscroll-contain" initial-focus-selector="[data-skilling-price-input]" @close="pricesModalOpen = false">
+    <BaseModal :open="pricesModalOpen" :title="t('common:skilling.marketPrices', 'Market prices and overrides')" panel-class="max-w-6xl max-h-[88vh] overflow-y-auto overscroll-contain" initial-focus-selector="[data-skilling-price-input]" @close="pricesModalOpen = false">
       <div v-if="priceRows.length" class="overflow-x-auto" data-skilling-prices>
-        <table class="min-w-[980px] w-full text-left text-xs">
-          <thead class="border-y border-white/10 text-[10px] uppercase text-slate-500"><tr><th class="px-3 py-2">{{ t("common:skilling.item", "Item") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.marketAsk", "Market ask") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.marketBid", "Market bid") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.vendor", "Vendor") }}</th><th class="px-3 py-2">{{ t("common:skilling.overrideAsk", "Override ask") }}</th><th class="px-3 py-2">{{ t("common:skilling.overrideBid", "Override bid") }}</th><th class="px-3 py-2 text-right">{{ t("common:skilling.clear", "Clear") }}</th></tr></thead>
-          <tbody class="divide-y divide-white/10">
-            <tr v-for="row in priceRows" :key="row.priceKey">
-              <th scope="row" class="px-3 py-2 text-left"><span class="flex items-center gap-2"><svg v-if="itemIconVisible(row.itemHrid)" class="h-8 w-8" viewBox="0 0 50 50" aria-hidden="true"><use :href="itemIconHref(row.itemHrid)"></use></svg><span class="font-semibold text-slate-200">{{ itemName(row.itemHrid) }}<template v-if="row.enhancementLevel > 0"> +{{ row.enhancementLevel }}</template></span></span></th>
-              <td class="px-3 py-2 text-right tabular-nums">{{ formatPrice(row.marketAsk) }}</td><td class="px-3 py-2 text-right tabular-nums">{{ formatPrice(row.marketBid) }}</td><td class="px-3 py-2 text-right tabular-nums">{{ formatPrice(row.vendor) }}</td>
-              <td class="px-3 py-2"><input :data-skilling-price-input="row.overrideDisabled ? null : ''" class="field-input !rounded !px-2 !py-1.5 text-xs" type="number" :name="`skilling-price-${viewDomKey(row.priceKey)}-ask`" autocomplete="off" inputmode="decimal" min="0" step="any" :aria-label="priceOverrideAriaLabel(row, 'ask')" :disabled="row.overrideDisabled" :value="overrideValue(row, 'ask')" @change="setPriceOverride(row.itemHrid, 'ask', $event)" /></td>
-              <td class="px-3 py-2"><input class="field-input !rounded !px-2 !py-1.5 text-xs" type="number" :name="`skilling-price-${viewDomKey(row.priceKey)}-bid`" autocomplete="off" inputmode="decimal" min="0" step="any" :aria-label="priceOverrideAriaLabel(row, 'bid')" :disabled="row.overrideDisabled" :value="overrideValue(row, 'bid')" @change="setPriceOverride(row.itemHrid, 'bid', $event)" /></td>
-              <td class="px-3 py-2 text-right"><button type="button" class="action-button-muted !rounded !px-2 !py-1 text-[11px]" :aria-label="priceClearAriaLabel(row)" :disabled="row.overrideDisabled" @click="skilling.resetPriceOverride(row.itemHrid)">{{ t("common:skilling.clear", "Clear") }}</button></td>
-            </tr>
-          </tbody>
-        </table>
+        <Table class="min-w-[980px] w-full text-left text-xs">
+          <TableHeader class="border-y border-border text-[10px] uppercase text-muted-foreground"><TableRow><TableHead class="px-3 py-2">{{ t("common:skilling.item", "Item") }}</TableHead><TableHead class="px-3 py-2 text-right">{{ t("common:skilling.marketAsk", "Market ask") }}</TableHead><TableHead class="px-3 py-2 text-right">{{ t("common:skilling.marketBid", "Market bid") }}</TableHead><TableHead class="px-3 py-2 text-right">{{ t("common:skilling.vendor", "Vendor") }}</TableHead><TableHead class="px-3 py-2">{{ t("common:skilling.overrideAsk", "Override ask") }}</TableHead><TableHead class="px-3 py-2">{{ t("common:skilling.overrideBid", "Override bid") }}</TableHead><TableHead class="px-3 py-2 text-right">{{ t("common:skilling.clear", "Clear") }}</TableHead></TableRow></TableHeader>
+          <TableBody class="divide-y divide-border">
+            <TableRow v-for="row in priceRows" :key="row.priceKey">
+              <TableHead scope="row" class="px-3 py-2 text-left"><span class="flex items-center gap-2"><svg v-if="itemIconVisible(row.itemHrid)" class="h-8 w-8" viewBox="0 0 50 50" aria-hidden="true"><use :href="itemIconHref(row.itemHrid)"></use></svg><span class="font-semibold text-foreground">{{ itemName(row.itemHrid) }}<template v-if="row.enhancementLevel > 0"> +{{ row.enhancementLevel }}</template></span></span></TableHead>
+              <TableCell class="px-3 py-2 text-right tabular-nums">{{ formatPrice(row.marketAsk) }}</TableCell><TableCell class="px-3 py-2 text-right tabular-nums">{{ formatPrice(row.marketBid) }}</TableCell><TableCell class="px-3 py-2 text-right tabular-nums">{{ formatPrice(row.vendor) }}</TableCell>
+              <TableCell class="px-3 py-2"><input :data-skilling-price-input="row.overrideDisabled ? null : ''" class="control-input !rounded !px-2 !py-1.5 text-xs" type="number" :name="`skilling-price-${viewDomKey(row.priceKey)}-ask`" autocomplete="off" inputmode="decimal" min="0" step="any" :aria-label="priceOverrideAriaLabel(row, 'ask')" :disabled="row.overrideDisabled" :value="overrideValue(row, 'ask')" @change="setPriceOverride(row.itemHrid, 'ask', $event)" /></TableCell>
+              <TableCell class="px-3 py-2"><input class="control-input !rounded !px-2 !py-1.5 text-xs" type="number" :name="`skilling-price-${viewDomKey(row.priceKey)}-bid`" autocomplete="off" inputmode="decimal" min="0" step="any" :aria-label="priceOverrideAriaLabel(row, 'bid')" :disabled="row.overrideDisabled" :value="overrideValue(row, 'bid')" @change="setPriceOverride(row.itemHrid, 'bid', $event)" /></TableCell>
+              <TableCell class="px-3 py-2 text-right"><button type="button" class="button-secondary !rounded !px-2 !py-1 text-[11px]" :aria-label="priceClearAriaLabel(row)" :disabled="row.overrideDisabled" @click="skilling.resetPriceOverride(row.itemHrid)">{{ t("common:skilling.clear", "Clear") }}</button></TableCell>
+            </TableRow>
+          </TableBody>
+        </Table>
       </div>
-      <p v-else class="py-8 text-center text-sm text-slate-500">{{ t("common:skilling.noPriceRows", "No route price rows yet.") }}</p>
+      <p v-else class="py-8 text-center text-sm text-muted-foreground">{{ t("common:skilling.noPriceRows", "No route price rows yet.") }}</p>
     </BaseModal>
   </section>
 </template>
 
 <script setup>
 import { computed, nextTick, onBeforeUnmount, onMounted, ref, watch } from "vue";
+import { CircleHelp } from "@lucide/vue";
 import BaseModal from "../components/BaseModal.vue";
+import { Progress } from "../components/ui/progress/index.js";
+import { Select, SelectContent, SelectItem, SelectTrigger } from "../components/ui/select/index.js";
 import { useI18nText } from "../composables/useI18nText.js";
 import { useGameDataText } from "../composables/useGameDataText.js";
 import { itemDetailIndex } from "../../shared/gameDataIndex.js";
@@ -767,9 +773,9 @@ const priceStatusText = computed(() => {
     : t("common:skilling.pricesUnavailable", "Prices unavailable");
 });
 const priceStatusClass = computed(() => {
-  if (skilling.priceStatus.error) return "border-rose-300/30 bg-rose-300/10 text-rose-200";
-  if (skilling.priceStatus.ready) return "border-teal-300/30 bg-teal-300/10 text-teal-200";
-  return "border-amber-300/30 bg-amber-300/10 text-amber-200";
+  if (skilling.priceStatus.error) return "border-destructive/40 bg-destructive/10 text-destructive";
+  if (skilling.priceStatus.ready) return "border-success/40 bg-success/10 text-success";
+  return "border-primary/40 bg-primary/10 text-primary";
 });
 const overviewRows = computed(() => {
   const rankBySkill = new Map((skilling.overview || []).map((plan, index) => [plan.skillHrid, index + 1]));
@@ -794,11 +800,11 @@ const selectedMetrics = computed(() => {
   const plan = selectedPlan.value;
   return [
     { label: t("common:skilling.netCost", "Net cost"), value: formatAmount(plan?.totalNetCost), className: amountClass(plan?.totalNetCost) },
-    { label: t("common:skilling.purchaseCost", "Market purchases"), value: formatAmount(plan?.totalPurchaseCost), className: "text-slate-200" },
-    { label: t("common:skilling.opportunityCost", "Inventory opportunity cost"), value: formatAmount(plan?.totalOpportunityCost), className: "text-slate-200" },
-    { label: t("common:skilling.outputValue", "Expected recovery"), value: formatAmount(plan?.totalOutputValue), className: "text-teal-200" },
-    { label: t("common:skilling.duration", "Time"), value: formatDuration(plan?.totalDurationHours), className: "text-slate-200" },
-    { label: t("common:skilling.xpPerHour", "XP/h"), value: formatAmount(plan?.experiencePerHour), className: "text-slate-200" },
+    { label: t("common:skilling.purchaseCost", "Market purchases"), value: formatAmount(plan?.totalPurchaseCost), className: "text-foreground" },
+    { label: t("common:skilling.opportunityCost", "Inventory opportunity cost"), value: formatAmount(plan?.totalOpportunityCost), className: "text-foreground" },
+    { label: t("common:skilling.outputValue", "Expected recovery"), value: formatAmount(plan?.totalOutputValue), className: "text-success" },
+    { label: t("common:skilling.duration", "Time"), value: formatDuration(plan?.totalDurationHours), className: "text-foreground" },
+    { label: t("common:skilling.xpPerHour", "XP/h"), value: formatAmount(plan?.experiencePerHour), className: "text-foreground" },
   ];
 });
 const priceRows = computed(() => {
@@ -960,7 +966,7 @@ function formatDuration(hours) {
 }
 
 function amountClass(value) {
-  return Number(value) < 0 ? "text-teal-200" : "text-amber-200";
+  return Number(value) < 0 ? "text-success" : "text-primary";
 }
 
 function enhancementLevelLabel(level) {
@@ -993,10 +999,10 @@ function planStatusText(plan) {
 }
 
 function planStatusClass(plan) {
-  if (!plan) return "border-white/10 text-slate-500";
-  if (plan.status === "blocked") return "border-rose-300/30 bg-rose-300/10 text-rose-200";
-  if (plan.status === "complete") return "border-white/10 bg-white/5 text-slate-300";
-  return "border-teal-300/30 bg-teal-300/10 text-teal-200";
+  if (!plan) return "border-border text-muted-foreground";
+  if (plan.status === "blocked") return "border-destructive/40 bg-destructive/10 text-destructive";
+  if (plan.status === "complete") return "border-border bg-muted/40 text-foreground/85";
+  return "border-success/40 bg-success/10 text-success";
 }
 
 function joinItemRows(rows, countField, emptyKey, emptyFallback) {
@@ -1140,10 +1146,9 @@ function setTarget(skillHrid, event) {
   if (event?.target) event.target.value = String(skilling.targetLevels[skillHrid]);
 }
 
-function setRunSkill(event) {
-  const selected = String(event?.target?.value || "");
+function setRunSkill(value) {
+  const selected = String(value || "");
   skilling.setSelectedRunSkillHrid(selected);
-  if (event?.target) event.target.value = skilling.selectedRunSkillHrid;
 }
 
 async function runPlanner() {

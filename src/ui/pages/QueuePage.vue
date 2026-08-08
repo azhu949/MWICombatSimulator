@@ -1,58 +1,58 @@
 <template>
   <section class="space-y-4">
-    <div class="panel space-y-4">
+    <div class="surface-panel space-y-4">
       <div class="flex flex-wrap items-center justify-between gap-3">
         <div>
-          <h2 class="font-heading text-lg font-semibold text-amber-200">{{ t("common:vue.queue.title", "Queue Runner") }}</h2>
-          <p class="text-sm text-slate-300">{{ t("common:vue.queue.activePlayer", "Active player", { name: simulator.activePlayer.name }) }}</p>
-          <p v-if="queuePartySummaryText" class="mt-1 text-xs text-slate-400">
+          <h2 class="font-heading text-lg font-semibold text-primary">{{ t("common:vue.queue.title", "Queue Runner") }}</h2>
+          <p class="text-sm text-foreground/85">{{ t("common:vue.queue.activePlayer", "Active player", { name: simulator.activePlayer.name }) }}</p>
+          <p v-if="queuePartySummaryText" class="mt-1 text-xs text-muted-foreground">
             {{ t("common:queue.partyLockedMembers", "Locked party") }}:
-            <span class="ml-1 text-slate-200">{{ queuePartySummaryText }}</span>
+            <span class="ml-1 text-foreground">{{ queuePartySummaryText }}</span>
           </p>
         </div>
       </div>
 
       <div class="grid items-start gap-3 md:grid-cols-2 xl:grid-cols-6">
-        <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3 md:col-span-2 xl:col-span-3">
-          <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:queue.baselineSummary", "Baseline Summary") }}</p>
-          <div v-if="baselineSummaryRows.length > 0" class="mt-2 space-y-1 text-sm text-slate-100">
+        <div class="rounded-md border border-border bg-muted/50 p-3 md:col-span-2 xl:col-span-3">
+          <p class="text-xs uppercase  text-muted-foreground">{{ t("common:queue.baselineSummary", "Baseline Summary") }}</p>
+          <div v-if="baselineSummaryRows.length > 0" class="mt-2 space-y-1 text-sm text-foreground">
             <p v-for="row in baselineSummaryRows" :key="row.key">
-              <span class="text-slate-400">{{ row.label }}:</span>
+              <span class="text-muted-foreground">{{ row.label }}:</span>
               <span class="ml-1">{{ row.value }}</span>
             </p>
           </div>
-          <p v-if="baselineSummaryRows.length > 0" class="mt-2 text-xs text-slate-400">
+          <p v-if="baselineSummaryRows.length > 0" class="mt-2 text-xs text-muted-foreground">
             {{ t("common:queue.baselineSummaryAggregationHint", "Baseline values shown here come from multi-round robust aggregation: the simulator runs the configured baseline rounds and blends winsorized means with medians instead of showing a single sample.") }}
           </p>
-          <p v-else class="mt-1 text-sm text-slate-100">{{ t("common:queue.emptyBaseline", "No baseline yet. Click 'Set Baseline' to run and lock one.") }}</p>
-          <p v-if="baselineNeedsResetPrompt" class="mt-2 text-xs text-amber-300">
+          <p v-else class="mt-1 text-sm text-foreground">{{ t("common:queue.emptyBaseline", "No baseline yet. Click 'Set Baseline' to run and lock one.") }}</p>
+          <p v-if="baselineNeedsResetPrompt" class="mt-2 text-xs text-primary">
             {{ t("common:queue.baselineNeedsResetAfterImport", "Queue changes were imported. Please click 'Set Baseline' again to refresh baseline metrics.") }}
           </p>
         </div>
-        <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3 xl:col-span-1">
-          <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:queue.queueList", "Queue List") }}</p>
-          <p class="mt-2 text-2xl font-semibold text-slate-100">{{ queueState.items.length }}</p>
+        <div class="rounded-md border border-border bg-muted/50 p-3 xl:col-span-1">
+          <p class="text-xs uppercase  text-muted-foreground">{{ t("common:queue.queueList", "Queue List") }}</p>
+          <p class="mt-2 text-2xl font-semibold text-foreground">{{ queueState.items.length }}</p>
         </div>
-        <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3 xl:col-span-1">
-          <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:vue.queue.queueProgress", "Queue Progress") }}</p>
-          <p class="mt-2 text-2xl font-semibold text-slate-100">{{ Math.floor((queueState.progress || 0) * 100) }}%</p>
+        <div class="rounded-md border border-border bg-muted/50 p-3 xl:col-span-1">
+          <p class="text-xs uppercase  text-muted-foreground">{{ t("common:vue.queue.queueProgress", "Queue Progress") }}</p>
+          <p class="mt-2 text-2xl font-semibold text-foreground">{{ Math.floor((queueState.progress || 0) * 100) }}%</p>
         </div>
-        <div class="rounded-xl border border-white/10 bg-slate-900/50 p-3 xl:col-span-1">
-          <p class="text-xs uppercase tracking-[0.14em] text-slate-400">{{ t("common:vue.queue.lastRun", "Last Run") }}</p>
-          <p class="mt-2 text-sm text-slate-100">{{ lastRunText }}</p>
+        <div class="rounded-md border border-border bg-muted/50 p-3 xl:col-span-1">
+          <p class="text-xs uppercase  text-muted-foreground">{{ t("common:vue.queue.lastRun", "Last Run") }}</p>
+          <p class="mt-2 text-sm text-foreground">{{ lastRunText }}</p>
         </div>
       </div>
 
-      <p v-if="queueState.error" class="text-sm text-rose-300">{{ t(queueState.error, queueState.error) }}</p>
-      <p v-if="queuePartyWarningText" class="text-sm text-amber-300">{{ queuePartyWarningText }}</p>
+      <p v-if="queueState.error" class="text-sm text-destructive">{{ t(queueState.error, queueState.error) }}</p>
+      <p v-if="queuePartyWarningText" class="text-sm text-primary">{{ queuePartyWarningText }}</p>
     </div>
 
-    <div class="panel" v-if="queueState.baseline">
+    <div class="surface-panel" v-if="queueState.baseline">
       <div class="mb-3 flex flex-wrap items-center justify-between gap-2">
-        <h3 class="font-heading text-base font-semibold text-amber-200">{{ t("common:queue.queueList", "Queue List") }}</h3>
+        <h3 class="font-heading text-base font-semibold text-primary">{{ t("common:queue.queueList", "Queue List") }}</h3>
       </div>
 
-      <div v-if="queueDisplayItems.length === 0" class="rounded-xl border border-white/10 bg-slate-900/40 px-3 py-4 text-sm text-slate-400">
+      <div v-if="queueDisplayItems.length === 0" class="rounded-md border border-border bg-muted/50 px-3 py-4 text-sm text-muted-foreground">
         {{ t("common:queue.emptyQueue", "No queue items. Change build settings and add to queue.") }}
       </div>
 
@@ -60,12 +60,12 @@
         <article
           v-for="item in queueDisplayItems"
           :key="item.id"
-          class="rounded-xl border border-white/10 bg-slate-900/40 p-3"
+          class="rounded-md border border-border bg-muted/50 p-3"
         >
           <div class="flex flex-wrap items-start gap-2">
             <div>
-              <h4 class="font-heading text-base font-semibold text-slate-100">{{ item.displayName }}</h4>
-              <p class="mt-1 text-xs text-slate-400">{{ t("common:vue.queue.changeCount", "Changes", { count: item.detailLines.length }) }}</p>
+              <h4 class="font-heading text-base font-semibold text-foreground">{{ item.displayName }}</h4>
+              <p class="mt-1 text-xs text-muted-foreground">{{ t("common:vue.queue.changeCount", "Changes", { count: item.detailLines.length }) }}</p>
             </div>
           </div>
 
@@ -73,13 +73,13 @@
             <span
               v-for="badge in item.categoryBadges"
               :key="badge"
-              class="rounded-full border border-white/20 bg-white/5 px-3 py-1 text-xs text-slate-200"
+              class="rounded-md border border-border bg-muted/40 px-3 py-1 text-xs text-foreground"
             >
               {{ badge }}
             </span>
           </div>
 
-          <div class="mt-3 space-y-1 text-sm text-slate-300">
+          <div class="mt-3 space-y-1 text-sm text-foreground/85">
             <p v-for="(line, index) in item.detailLines" :key="`${item.id}-${index}`">{{ line }}</p>
           </div>
         </article>

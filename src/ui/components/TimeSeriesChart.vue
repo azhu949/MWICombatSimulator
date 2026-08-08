@@ -1,13 +1,13 @@
 <template>
   <div class="grid gap-4 lg:grid-cols-2">
-    <div class="panel">
-      <h3 class="mb-3 font-heading text-sm uppercase tracking-[0.14em] text-slate-300">{{ t("common:vue.results.hpOverTime", "HP Over Time") }}</h3>
+    <div class="surface-panel">
+      <h3 class="mb-3 font-heading text-sm uppercase  text-foreground/85">{{ t("common:vue.results.hpOverTime", "HP Over Time") }}</h3>
       <div class="relative h-64 w-full overflow-hidden">
         <canvas ref="hpCanvas" class="block h-full w-full"></canvas>
       </div>
     </div>
-    <div class="panel">
-      <h3 class="mb-3 font-heading text-sm uppercase tracking-[0.14em] text-slate-300">{{ t("common:vue.results.mpOverTime", "MP Over Time") }}</h3>
+    <div class="surface-panel">
+      <h3 class="mb-3 font-heading text-sm uppercase  text-foreground/85">{{ t("common:vue.results.mpOverTime", "MP Over Time") }}</h3>
       <div class="relative h-64 w-full overflow-hidden">
         <canvas ref="mpCanvas" class="block h-full w-full"></canvas>
       </div>
@@ -33,6 +33,7 @@ const hpCanvas = ref(null);
 const mpCanvas = ref(null);
 let hpChart = null;
 let mpChart = null;
+let themeObserver = null;
 const { t } = useI18nText();
 const MAX_TIME_SERIES_POINTS = 1200;
 
@@ -125,7 +126,26 @@ function normalizeTimeSeriesData(rawData) {
   };
 }
 
+function resolveCssColor(expression, fallback) {
+  const probe = document.createElement("span");
+  probe.style.color = expression;
+  probe.style.display = "none";
+  document.body.appendChild(probe);
+  const color = window.getComputedStyle(probe).color || fallback;
+  probe.remove();
+  return color;
+}
+
+function readChartTheme() {
+  return {
+    foreground: resolveCssColor("var(--foreground)", "CanvasText"),
+    muted: resolveCssColor("var(--muted-foreground)", "GrayText"),
+    grid: resolveCssColor("color-mix(in oklab, var(--border) 70%, transparent)", "transparent"),
+  };
+}
+
 function createBaseOptions(yLabel) {
+  const colors = readChartTheme();
   return {
     responsive: true,
     maintainAspectRatio: false,
@@ -134,7 +154,7 @@ function createBaseOptions(yLabel) {
     plugins: {
       legend: {
         labels: {
-          color: "#e2e8f0",
+          color: colors.foreground,
           boxWidth: 14,
         },
       },
@@ -144,13 +164,13 @@ function createBaseOptions(yLabel) {
     },
     scales: {
       x: {
-        ticks: { color: "#94a3b8", maxTicksLimit: 8 },
-        grid: { color: "rgba(148,163,184,0.12)" },
+        ticks: { color: colors.muted, maxTicksLimit: 8 },
+        grid: { color: colors.grid },
       },
       y: {
-        title: { display: true, text: yLabel, color: "#94a3b8" },
-        ticks: { color: "#94a3b8" },
-        grid: { color: "rgba(148,163,184,0.12)" },
+        title: { display: true, text: yLabel, color: colors.muted },
+        ticks: { color: colors.muted },
+        grid: { color: colors.grid },
       },
     },
     interaction: {
@@ -158,6 +178,22 @@ function createBaseOptions(yLabel) {
       mode: "index",
     },
   };
+}
+
+function refreshChartTheme() {
+  const colors = readChartTheme();
+  for (const chart of [hpChart, mpChart]) {
+    if (!chart) {
+      continue;
+    }
+    chart.options.plugins.legend.labels.color = colors.foreground;
+    chart.options.scales.x.ticks.color = colors.muted;
+    chart.options.scales.x.grid.color = colors.grid;
+    chart.options.scales.y.title.color = colors.muted;
+    chart.options.scales.y.ticks.color = colors.muted;
+    chart.options.scales.y.grid.color = colors.grid;
+    chart.update("none");
+  }
 }
 
 function destroyCharts() {
@@ -234,12 +270,19 @@ watch(
 );
 
 onMounted(() => {
+  themeObserver = new MutationObserver(refreshChartTheme);
+  themeObserver.observe(document.documentElement, {
+    attributes: true,
+    attributeFilter: ["class", "data-theme"],
+  });
   if (props.timeSeriesData?.timestamps?.length) {
     renderCharts(props.timeSeriesData);
   }
 });
 
 onBeforeUnmount(() => {
+  themeObserver?.disconnect();
+  themeObserver = null;
   destroyCharts();
 });
 </script>

@@ -3,7 +3,7 @@
 // @name:zh      MWI Combat Simulator 主站一键导入
 // @name:zh-CN   MWI Combat Simulator 主站一键导入
 // @namespace    https://azhu949.github.io/MWICombatSimulator
-// @version      0.1.29
+// @version      0.1.30
 // @license      ISC
 // @description  Import the current Milky Way Idle character or cached team into the combat simulator, enhancement simulator, or skilling planner.
 // @description:zh      将 Milky Way Idle 主站当前角色或缓存队伍导入战斗模拟器、强化模拟器或生活技能规划器。
@@ -2678,8 +2678,8 @@
                 ? getUiText(state.statusTextKey, state.uiLanguage)
                 : String(state.statusText || "");
             status.className = state.statusTone === "error"
-                ? "text-xs text-rose-300"
-                : (state.statusTone === "success" ? "text-xs text-teal-200" : "text-xs text-cyan-200");
+                ? "text-xs text-destructive"
+                : (state.statusTone === "success" ? "text-xs text-success" : "text-xs text-muted-foreground");
             button.disabled = state.isRequestPending;
         }
 
@@ -3000,12 +3000,12 @@
                 buttonTextKey,
                 state.uiLanguage
             );
-            button.className = "action-button-tool";
+            button.className = "button-tool";
             button.addEventListener("click", () => handleImportButtonClick(importMode));
 
             const status = document.createElement("span");
             status.id = STATUS_ID;
-            status.className = "text-xs text-cyan-200";
+            status.className = "text-xs text-muted-foreground";
             status.textContent = "";
 
             wrapper.appendChild(button);
