@@ -162,7 +162,7 @@
           </ol>
 
           <div class="mt-5 border-l-2 border-warning/60 px-4 py-2 text-sm leading-6 text-foreground/85">
-            Equipment upgrade costs come entirely from market pricing: a variant cannot be added when the target enhancement level has no exact sell listing, and the queue re-validates on each run. A baseline item without an exact quote is valued at 0 with a note. Ability book costs are unaffected.
+            Equipment upgrade costs use market pricing. If an exact enhancement level has no sell listing, the app can ask you to confirm the official hourly average for the same item and level when valid volume exists. The confirmed value is saved with the queue item and used only while no exact listing exists; a new exact listing takes priority. Hourly averages are period statistics, not individual trade records.
           </div>
 
           <div class="mt-6 grid gap-5 xl:grid-cols-2">

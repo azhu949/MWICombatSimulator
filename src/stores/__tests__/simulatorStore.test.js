@@ -3320,6 +3320,143 @@ describe("simulatorStore", () => {
         expect(simulator.setActivePlayerEquipmentUpgradeCost).toBeUndefined();
     });
 
+    it("prepares and atomically confirms an hourly average for a missing exact ask", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+        expect(equipmentItemHrid).toBeTruthy();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        setQueueBaselineMetrics(simulator, { dailyNoRngProfit: 2400 });
+        simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
+        global.fetch = vi.fn(async () => ({
+            ok: true,
+            json: async () => ({
+                timestamp: 1_786_238_142,
+                marketData: {
+                    [equipmentItemHrid]: {
+                        "2": { a: -1, b: 10, p: 500, v: 3 },
+                    },
+                },
+            }),
+        }));
+
+        const draftBefore = JSON.parse(JSON.stringify(simulator.activePlayer));
+        const preparation = await simulator.prepareActivePlayerQueueAddition();
+        expect(preparation).toMatchObject({
+            requiresConfirmation: true,
+            refreshFailed: false,
+            confirmations: [{
+                itemHrid: equipmentItemHrid,
+                enhancementLevel: 2,
+                price: 500,
+                volume: 3,
+                marketTimestamp: 1_786_238_142,
+            }],
+        });
+        expect(simulator.activeQueueState.items).toEqual([]);
+        expect(simulator.activePlayer).toEqual(draftBefore);
+
+        const added = simulator.addActivePlayerToQueue({
+            confirmedEquipmentPrices: preparation.confirmations,
+        });
+        expect(added).toHaveLength(1);
+        expect(added[0].confirmedEquipmentPrices).toEqual([expect.objectContaining({
+            itemHrid: equipmentItemHrid,
+            enhancementLevel: 2,
+            price: 500,
+            volume: 3,
+        })]);
+        expect(added[0].costWarnings).toEqual(expect.arrayContaining([
+            expect.objectContaining({ code: "confirmed_hourly_average", price: 500, volume: 3 }),
+        ]));
+    });
+
+    it("merges duplicate item-level confirmations across slots and variants", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.equipment.weapon = { itemHrid: equipmentItemHrid, enhancementLevel: 2 };
+        simulator.activePlayer.equipment.off_hand = { itemHrid: equipmentItemHrid, enhancementLevel: 2 };
+        global.fetch = vi.fn(async () => ({
+            ok: true,
+            json: async () => ({
+                timestamp: 1_786_238_142,
+                marketData: {
+                    [equipmentItemHrid]: {
+                        "2": { a: -1, b: 10, p: 500, v: 3 },
+                    },
+                },
+            }),
+        }));
+
+        const preparation = await simulator.prepareActivePlayerQueueAddition();
+
+        expect(preparation.confirmations).toHaveLength(1);
+        expect(preparation.confirmations[0]).toMatchObject({
+            itemHrid: equipmentItemHrid,
+            enhancementLevel: 2,
+            slotKeys: expect.arrayContaining(["weapon", "off_hand"]),
+        });
+        expect(simulator.activeQueueState.items).toEqual([]);
+    });
+
+    it("keeps the queue and editor unchanged when no valid hourly trade data exists", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.equipment.weapon = { itemHrid: equipmentItemHrid, enhancementLevel: 14 };
+        const draftBefore = JSON.parse(JSON.stringify(simulator.activePlayer));
+        global.fetch = vi.fn(async () => ({
+            ok: true,
+            json: async () => ({
+                timestamp: 1_786_238_142,
+                marketData: {
+                    [equipmentItemHrid]: {
+                        "14": { a: -1, b: 5_600_000 },
+                    },
+                },
+            }),
+        }));
+
+        await expect(simulator.prepareActivePlayerQueueAddition()).rejects.toMatchObject({
+            code: "missing_enhancement_ask",
+        });
+        expect(simulator.activeQueueState.items).toEqual([]);
+        expect(simulator.activePlayer).toEqual(draftBefore);
+    });
+
+    it("uses a confirmed hourly average for cost insights until an exact ask appears", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+        await simulator.setQueueBaselineForActivePlayer();
+        setQueueBaselineMetrics(simulator, { dailyNoRngProfit: 2400 });
+        simulator.activePlayer.equipment.weapon.itemHrid = equipmentItemHrid;
+        simulator.activePlayer.equipment.weapon.enhancementLevel = 2;
+        simulator.pricing.enhancementQuotesByItem[equipmentItemHrid] = {
+            "2": { ask: -1, bid: 10, averagePrice: 500, volume: 3 },
+        };
+        const item = simulator.addActivePlayerToQueue({
+            confirmedEquipmentPrices: [{
+                itemHrid: equipmentItemHrid,
+                enhancementLevel: 2,
+                price: 500,
+                volume: 3,
+                marketTimestamp: 1_786_238_142,
+            }],
+        })[0];
+        simulator.activeQueueState.rawRuns = [
+            createQueueRawRun(item, 1, { dailyNoRngProfit: 3000 }, simulator.activeQueueState.baseline.metrics),
+        ];
+
+        await simulator.refreshQueueResultsFromRawRuns({ allowReferenceLoad: false });
+        expect(simulator.activeQueueState.ranking[0].costInsights.totalUpgradeCost).toBe(500);
+
+        setExactEquipmentAsk(simulator, equipmentItemHrid, 2, 700);
+        await simulator.refreshQueueResultsFromRawRuns({ allowReferenceLoad: false });
+        expect(simulator.activeQueueState.ranking[0].costInsights.totalUpgradeCost).toBe(700);
+    });
+
     it("blocks historical queue items that no longer have an exact target ask", async () => {
         const simulator = useSimulatorStore();
         const equipmentItemHrid = findFirstEquipmentItem();

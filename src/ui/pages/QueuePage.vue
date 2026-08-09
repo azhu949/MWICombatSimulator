@@ -284,19 +284,43 @@ const queueDisplayItems = computed(() => {
       detailLines,
       costWarnings: (Array.isArray(item?.costWarnings) ? item.costWarnings : []).map((warning, warningIndex) => ({
         key: [warning?.code || "warning", warning?.slotKey || "slot", warningIndex].join("-"),
-        text: t(
-          "common:queue.baselineSaleZeroWarning",
-          "{{slot}}: {{item}} +{{level}} has no exact buy or sell quote. Its sale value is treated as 0.",
-          {
-            slot: localizeEquipmentSlotLabel(warning?.slotKey),
-            item: localizeHridDisplayName(warning?.itemHrid),
-            level: Number(warning?.enhancementLevel || 0),
-          },
-        ),
+        text: warning?.code === "confirmed_hourly_average"
+          ? t(
+            "common:queue.confirmedHourlyAverageWarning",
+            "{{slot}}: {{item}} +{{level}} uses confirmed hourly average {{price}} (volume {{volume}}, data {{time}}).",
+            {
+              slot: localizeEquipmentSlotLabel(warning?.slotKey),
+              item: localizeHridDisplayName(warning?.itemHrid),
+              level: Number(warning?.enhancementLevel || 0),
+              price: formatMarketNumber(warning?.price),
+              volume: formatMarketNumber(warning?.volume),
+              time: formatMarketDataTime(warning?.marketTimestamp),
+            },
+          )
+          : t(
+            "common:queue.baselineSaleZeroWarning",
+            "{{slot}}: {{item}} +{{level}} has no exact buy or sell quote. Its sale value is treated as 0.",
+            {
+              slot: localizeEquipmentSlotLabel(warning?.slotKey),
+              item: localizeHridDisplayName(warning?.itemHrid),
+              level: Number(warning?.enhancementLevel || 0),
+            },
+          ),
       })),
     };
   });
 });
+
+function formatMarketNumber(value) {
+  return new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(Number(value || 0));
+}
+
+function formatMarketDataTime(timestampSeconds) {
+  const timestamp = Number(timestampSeconds || 0);
+  return timestamp > 0
+    ? new Date(timestamp * 1000).toLocaleString()
+    : t("common:queue.confirmPriceTimeUnknown", "Unknown");
+}
 
 async function removeQueueItem(itemId) {
   const removed = await simulator.removeQueueItem(itemId);

@@ -1,4 +1,22 @@
 {
+    "2026年8月9日（v2.0.3）": {
+        "label": {
+            "zh": "2026年8月9日（v2.0.3）",
+            "en": "August 9, 2026 (v2.0.3)"
+        },
+        "notes": {
+            "zh": [
+                "缺少精确卖单时刷新官方行情，确认有效小时均价后可加入队列。",
+                "确认价格随队列项保存，运行时精确卖单优先。",
+                "队列页显示确认价格、成交量和数据时间。"
+            ],
+            "en": [
+                "Refresh official market data when an exact sell listing is missing, then confirm a valid hourly average before adding the variant.",
+                "Save confirmed prices with queue items; exact listings take priority at run time.",
+                "Queue shows the confirmed price, volume, and data time."
+            ]
+        }
+    },
     "2026年8月9日（v2.0.2）": {
         "label": {
             "zh": "2026年8月9日（v2.0.2）",

@@ -886,13 +886,17 @@ function normalizeEnhancementQuotesByItem(rawQuotes) {
 
             const ask = toFiniteNumber(rawQuote?.ask, -1);
             const bid = toFiniteNumber(rawQuote?.bid, -1);
-            if (ask < 0 && bid < 0) {
+            const averagePrice = toFiniteNumber(rawQuote?.averagePrice, -1);
+            const volume = toFiniteNumber(rawQuote?.volume, 0);
+            if (ask < 0 && bid < 0 && !(averagePrice > 0 && volume > 0)) {
                 continue;
             }
 
             quoteMap[String(level)] = {
                 ask,
                 bid,
+                averagePrice,
+                volume,
             };
         }
 
@@ -991,6 +995,7 @@ function normalizeMarketCachePayload(raw) {
         basePriceTable: cloneBasePriceTable(source.basePriceTable),
         enhancementQuotesByItem: normalizeEnhancementQuotesByItem(source.enhancementQuotesByItem),
         enhancementLevelsByItem: normalizeEnhancementLevelsByItem(source.enhancementLevelsByItem),
+        marketTimestamp: Math.max(0, toFiniteNumber(source.marketTimestamp, 0)),
         lastFetchedAt: Math.max(0, toFiniteNumber(source.lastFetchedAt, 0)),
         sourceUrl: String(source.sourceUrl || ""),
     };
@@ -1041,6 +1046,7 @@ function createPricingState() {
         priceTable: applyPriceOverridesToTable(basePriceTable, settings.overrides),
         enhancementQuotesByItem: normalizeEnhancementQuotesByItem(cachedMarket?.enhancementQuotesByItem),
         enhancementLevelsByItem: normalizeEnhancementLevelsByItem(cachedMarket?.enhancementLevelsByItem),
+        marketTimestamp: Number(cachedMarket?.marketTimestamp || 0),
         lastFetchedAt: Number(cachedMarket?.lastFetchedAt || 0),
         sourceUrl: String(cachedMarket?.sourceUrl || ""),
         isLoading: false,
@@ -3037,7 +3043,62 @@ function resolveEnhancementLevelPriceFromPricingState(itemHrid, level, pricingSt
     return price > 0 ? price : -1;
 }
 
-function resolveEquipmentTransitionPricing(beforeItemHrid, beforeLevel, afterItemHrid, afterLevel, pricingState) {
+function getConfirmedEquipmentPriceKey(itemHrid, enhancementLevel) {
+    return `${String(itemHrid || "")}|${Math.max(0, Math.floor(toFiniteNumber(enhancementLevel, 0)))}`;
+}
+
+function normalizeConfirmedEquipmentPrices(rawPrices) {
+    const source = Array.isArray(rawPrices) ? rawPrices : [];
+    const normalized = [];
+    const seen = new Set();
+    for (const rawEntry of source) {
+        const itemHrid = String(rawEntry?.itemHrid || "");
+        const enhancementLevel = Math.max(0, Math.floor(toFiniteNumber(rawEntry?.enhancementLevel, 0)));
+        const price = toFiniteNumber(rawEntry?.price, 0);
+        const volume = toFiniteNumber(rawEntry?.volume, 0);
+        if (!itemHrid || price <= 0 || volume <= 0) {
+            continue;
+        }
+        const key = getConfirmedEquipmentPriceKey(itemHrid, enhancementLevel);
+        if (seen.has(key)) {
+            continue;
+        }
+        seen.add(key);
+        normalized.push({
+            itemHrid,
+            enhancementLevel,
+            price,
+            volume,
+            marketTimestamp: Math.max(0, toFiniteNumber(rawEntry?.marketTimestamp, 0)),
+            confirmedAt: Math.max(0, toFiniteNumber(rawEntry?.confirmedAt, 0)),
+        });
+    }
+    return normalized;
+}
+
+function getConfirmedEquipmentPrice(rawPrices, itemHrid, enhancementLevel) {
+    const key = getConfirmedEquipmentPriceKey(itemHrid, enhancementLevel);
+    return normalizeConfirmedEquipmentPrices(rawPrices)
+        .find((entry) => getConfirmedEquipmentPriceKey(entry.itemHrid, entry.enhancementLevel) === key) || null;
+}
+
+function resolveRecentTradeAverage(pricingState, itemHrid, enhancementLevel) {
+    const quote = pricingState?.enhancementQuotesByItem?.[String(itemHrid || "")]?.[String(Math.max(0, Math.floor(toFiniteNumber(enhancementLevel, 0))))];
+    const price = toFiniteNumber(quote?.averagePrice, 0);
+    const volume = toFiniteNumber(quote?.volume, 0);
+    if (price <= 0 || volume <= 0) {
+        return null;
+    }
+    return {
+        itemHrid: String(itemHrid || ""),
+        enhancementLevel: Math.max(0, Math.floor(toFiniteNumber(enhancementLevel, 0))),
+        price,
+        volume,
+        marketTimestamp: Math.max(0, toFiniteNumber(pricingState?.marketTimestamp, 0)),
+    };
+}
+
+function resolveEquipmentTransitionPricing(beforeItemHrid, beforeLevel, afterItemHrid, afterLevel, pricingState, confirmedEquipmentPrices = []) {
     const targetItemHrid = String(afterItemHrid || "");
     if (!targetItemHrid) {
         return {
@@ -3052,7 +3113,11 @@ function resolveEquipmentTransitionPricing(beforeItemHrid, beforeLevel, afterIte
 
     const safeBeforeLevel = Math.max(0, Math.floor(toFiniteNumber(beforeLevel, 0)));
     const safeAfterLevel = Math.max(0, Math.floor(toFiniteNumber(afterLevel, 0)));
-    const buyCost = resolveEnhancementLevelPriceFromPricingState(targetItemHrid, safeAfterLevel, pricingState, "ask");
+    const exactAsk = resolveEnhancementLevelPriceFromPricingState(targetItemHrid, safeAfterLevel, pricingState, "ask");
+    const confirmedPrice = exactAsk > 0
+        ? null
+        : getConfirmedEquipmentPrice(confirmedEquipmentPrices, targetItemHrid, safeAfterLevel);
+    const buyCost = exactAsk > 0 ? exactAsk : toFiniteNumber(confirmedPrice?.price, -1);
 
     const sourceItemHrid = String(beforeItemHrid || "");
     let sellValue = 0;
@@ -3073,23 +3138,26 @@ function resolveEquipmentTransitionPricing(beforeItemHrid, beforeLevel, afterIte
         cost: targetAskAvailable ? Math.max(0, buyCost - baselineSaleValue) : null,
         targetAsk: targetAskAvailable ? buyCost : null,
         targetAskAvailable,
+        targetPriceSource: exactAsk > 0 ? "ask" : (confirmedPrice ? "confirmed_hourly_average" : "missing"),
+        confirmedPrice,
         baselineSaleValue,
         baselineSaleSource,
         baselineSaleZero: Boolean(sourceItemHrid) && baselineSaleValue === 0,
     };
 }
 
-function computeDefaultEquipmentTransitionCost(beforeItemHrid, beforeLevel, afterItemHrid, afterLevel, pricingState) {
+function computeDefaultEquipmentTransitionCost(beforeItemHrid, beforeLevel, afterItemHrid, afterLevel, pricingState, confirmedEquipmentPrices = []) {
     return resolveEquipmentTransitionPricing(
         beforeItemHrid,
         beforeLevel,
         afterItemHrid,
         afterLevel,
-        pricingState
+        pricingState,
+        confirmedEquipmentPrices
     ).cost;
 }
 
-function inspectEquipmentTransitionCost(slotKey, beforeEquipment, afterEquipment, pricingState) {
+function inspectEquipmentTransitionCost(slotKey, beforeEquipment, afterEquipment, pricingState, confirmedEquipmentPrices = []) {
     const beforeItemHrid = String(beforeEquipment?.itemHrid || "");
     const afterItemHrid = String(afterEquipment?.itemHrid || "");
     const beforeLevel = Math.max(0, Math.floor(toFiniteNumber(beforeEquipment?.enhancementLevel, 0)));
@@ -3099,7 +3167,8 @@ function inspectEquipmentTransitionCost(slotKey, beforeEquipment, afterEquipment
         beforeLevel,
         afterItemHrid,
         afterLevel,
-        pricingState
+        pricingState,
+        confirmedEquipmentPrices
     );
     return {
         slotKey,
@@ -3111,7 +3180,7 @@ function inspectEquipmentTransitionCost(slotKey, beforeEquipment, afterEquipment
     };
 }
 
-function inspectQueueEquipmentPricing(baselineSnapshot, targetSnapshot, pricingState) {
+function inspectQueueEquipmentPricing(baselineSnapshot, targetSnapshot, pricingState, confirmedEquipmentPrices = []) {
     const inspections = [];
     for (const slotKey of EQUIPMENT_SLOT_KEYS) {
         const beforeEquipment = baselineSnapshot?.equipment?.[slotKey] ?? { itemHrid: "", enhancementLevel: 0 };
@@ -3129,14 +3198,15 @@ function inspectQueueEquipmentPricing(baselineSnapshot, targetSnapshot, pricingS
             slotKey,
             beforeEquipment,
             afterEquipment,
-            pricingState
+            pricingState,
+            confirmedEquipmentPrices
         ));
     }
     return inspections;
 }
 
 function buildQueueCostWarnings(inspections = []) {
-    return inspections
+    const baselineWarnings = inspections
         .filter((inspection) => inspection.baselineSaleZero)
         .map((inspection) => ({
             code: "baseline_sale_zero",
@@ -3144,6 +3214,18 @@ function buildQueueCostWarnings(inspections = []) {
             itemHrid: inspection.beforeItemHrid,
             enhancementLevel: inspection.beforeLevel,
         }));
+    const confirmedWarnings = inspections
+        .filter((inspection) => inspection.targetPriceSource === "confirmed_hourly_average" && inspection.confirmedPrice)
+        .map((inspection) => ({
+            code: "confirmed_hourly_average",
+            slotKey: inspection.slotKey,
+            itemHrid: inspection.afterItemHrid,
+            enhancementLevel: inspection.afterLevel,
+            price: inspection.confirmedPrice.price,
+            volume: inspection.confirmedPrice.volume,
+            marketTimestamp: inspection.confirmedPrice.marketTimestamp,
+        }));
+    return [...baselineWarnings, ...confirmedWarnings];
 }
 
 function createMissingEquipmentAskError(inspection, { queued = false } = {}) {
@@ -3159,6 +3241,13 @@ function createMissingEquipmentAskError(inspection, { queued = false } = {}) {
         itemHrid: inspection.afterItemHrid,
         enhancementLevel: inspection.afterLevel,
     };
+    return error;
+}
+
+function createEquipmentPriceConfirmationError(confirmations = []) {
+    const error = new Error("common:queue.confirmHourlyAverageRequired");
+    error.code = "equipment_price_confirmation_required";
+    error.confirmations = normalizeConfirmedEquipmentPrices(confirmations);
     return error;
 }
 
@@ -3428,6 +3517,7 @@ function computeQueueItemUpgradeCost(baselineSnapshot, targetSnapshot, pricingSt
     }
 
     const abilityCostMap = isPlainObject(options?.abilityCostMap) ? options.abilityCostMap : {};
+    const confirmedEquipmentPrices = normalizeConfirmedEquipmentPrices(options?.confirmedEquipmentPrices);
     let totalCost = 0;
     let hasUnknownEquipmentUpgradeCost = false;
     let hasUnknownAbilityUpgradeCost = false;
@@ -3449,7 +3539,8 @@ function computeQueueItemUpgradeCost(baselineSnapshot, targetSnapshot, pricingSt
             beforeLevel,
             afterItemHrid,
             afterLevel,
-            pricingState
+            pricingState,
+            confirmedEquipmentPrices
         );
 
         if (estimatedCost == null || !Number.isFinite(Number(estimatedCost))) {
@@ -3899,7 +3990,7 @@ function computeWeightedQueueMetricAverage(metricValues = {}, metricWeights = {}
     return weightedSum / totalWeight;
 }
 
-function buildQueueItemCostInsights(queueState, queueItemSnapshot, metricSummary, pricingState, queueSettings) {
+function buildQueueItemCostInsights(queueState, queueItemSnapshot, metricSummary, pricingState, queueSettings, confirmedEquipmentPrices = []) {
     const baselineSnapshot = queueState?.baseline?.snapshot ?? null;
     const totalUpgradeCostRaw = computeQueueItemUpgradeCost(
         baselineSnapshot,
@@ -3907,6 +3998,7 @@ function buildQueueItemCostInsights(queueState, queueItemSnapshot, metricSummary
         pricingState,
         {
             abilityCostMap: queueState?.abilityUpgradeCosts,
+            confirmedEquipmentPrices,
         }
     );
     const totalUpgradeCost = totalUpgradeCostRaw != null && Number.isFinite(Number(totalUpgradeCostRaw))
@@ -4260,6 +4352,7 @@ function buildQueueEntriesFromState(queueState) {
             snapshot: deepClone(item?.snapshot),
             changes,
             changeDetails,
+            confirmedEquipmentPrices: normalizeConfirmedEquipmentPrices(item?.confirmedEquipmentPrices),
         };
     }).filter((entry) => Boolean(entry.id));
 }
@@ -4378,7 +4471,14 @@ function buildQueueRankedRowsFromSampleState({
             displayName: entry.label,
             order: entrySortIndexById.get(entry.id) ?? 0,
             metricSummary,
-            costInsights: buildQueueItemCostInsights(queueState, entry.snapshot, metricSummary, pricingState, safeQueueSettings),
+            costInsights: buildQueueItemCostInsights(
+                queueState,
+                entry.snapshot,
+                metricSummary,
+                pricingState,
+                safeQueueSettings,
+                entry.confirmedEquipmentPrices
+            ),
         };
     });
     const multiRoundRanking = buildMultiRoundRanking(metricSummaryByQueueItem, queueRuntimeSettings, safeQueueSettings);
@@ -5782,7 +5882,8 @@ export const useSimulatorStore = defineStore("simulator", {
                 stopQueueWorkerClients();
             }
         },
-        addActivePlayerToQueue() {
+        addActivePlayerToQueue(options = {}) {
+            const confirmedEquipmentPrices = normalizeConfirmedEquipmentPrices(options?.confirmedEquipmentPrices);
             const queueState = this.ensureQueueState(this.activePlayerId);
             if (this.activeQueuePartyStatus?.hasMismatch) {
                 queueState.error = this.activeQueuePartyStatus.messageKey || "common:queue.partyChangedSinceBaseline";
@@ -5807,15 +5908,32 @@ export const useSimulatorStore = defineStore("simulator", {
                 const inspections = inspectQueueEquipmentPricing(
                     queueState.baseline.snapshot,
                     variant.snapshot,
-                    this.pricing
+                    this.pricing,
+                    confirmedEquipmentPrices
                 );
                 const invalid = inspections.find((inspection) => !inspection.targetAskAvailable);
                 if (invalid) {
+                    const recentTrade = resolveRecentTradeAverage(
+                        this.pricing,
+                        invalid.afterItemHrid,
+                        invalid.afterLevel
+                    );
+                    if (recentTrade) {
+                        throw createEquipmentPriceConfirmationError([recentTrade]);
+                    }
                     throw createMissingEquipmentAskError(invalid);
                 }
                 return {
                     inspections,
                     warnings: buildQueueCostWarnings(inspections),
+                    confirmedEquipmentPrices: normalizeConfirmedEquipmentPrices(
+                        inspections
+                            .filter((inspection) => inspection.targetPriceSource === "confirmed_hourly_average")
+                            .map((inspection) => ({
+                                ...inspection.confirmedPrice,
+                                confirmedAt: Date.now(),
+                            }))
+                    ),
                 };
             });
 
@@ -5828,6 +5946,7 @@ export const useSimulatorStore = defineStore("simulator", {
                     changes: Array.isArray(variant.labels) ? variant.labels : [],
                     changeDetails: Array.isArray(variant.changeDetails) ? deepClone(variant.changeDetails) : [],
                     costWarnings: deepClone(variantPricing[variantIndex].warnings),
+                    confirmedEquipmentPrices: deepClone(variantPricing[variantIndex].confirmedEquipmentPrices),
                     createdAt: Date.now(),
                 };
                 queueState.items.push(nextItem);
@@ -5857,6 +5976,56 @@ export const useSimulatorStore = defineStore("simulator", {
             queueState.error = "";
             queueState.lastRunStatus = "idle";
             return appendedItems;
+        },
+        async prepareActivePlayerQueueAddition() {
+            const queueState = this.ensureQueueState(this.activePlayerId);
+            if (this.activeQueuePartyStatus?.hasMismatch || !queueState.baseline?.snapshot) {
+                return { requiresConfirmation: false, confirmations: [] };
+            }
+            const snapshot = deepClone(this.activePlayer);
+            const changeSummary = computeQueueChangeSummary(queueState.baseline.snapshot, snapshot);
+            const variants = buildQueueVariantSnapshotsFromChanges(queueState.baseline.snapshot, snapshot, changeSummary);
+            if (variants.length === 0) {
+                return { requiresConfirmation: false, confirmations: [] };
+            }
+            const findMissing = () => variants.flatMap((variant) => (
+                inspectQueueEquipmentPricing(queueState.baseline.snapshot, variant.snapshot, this.pricing)
+                    .filter((inspection) => !inspection.targetAskAvailable)
+            ));
+            let missing = findMissing();
+            let refreshFailed = false;
+            if (missing.length > 0) {
+                const refreshResult = await this.ensureMarketPricesLoaded(true);
+                refreshFailed = !refreshResult;
+                missing = findMissing();
+            }
+            if (missing.length === 0) {
+                return { requiresConfirmation: false, confirmations: [], refreshFailed };
+            }
+            const confirmations = [];
+            const confirmationByKey = new Map();
+            for (const inspection of missing) {
+                const recentTrade = resolveRecentTradeAverage(this.pricing, inspection.afterItemHrid, inspection.afterLevel);
+                if (!recentTrade) {
+                    throw createMissingEquipmentAskError(inspection);
+                }
+                const key = getConfirmedEquipmentPriceKey(recentTrade.itemHrid, recentTrade.enhancementLevel);
+                const existing = confirmationByKey.get(key);
+                if (existing) {
+                    if (!existing.slotKeys.includes(inspection.slotKey)) {
+                        existing.slotKeys.push(inspection.slotKey);
+                    }
+                    continue;
+                }
+                const confirmation = {
+                    ...recentTrade,
+                    slotKey: inspection.slotKey,
+                    slotKeys: [inspection.slotKey],
+                };
+                confirmationByKey.set(key, confirmation);
+                confirmations.push(confirmation);
+            }
+            return { requiresConfirmation: true, confirmations, refreshFailed };
         },
         updateActiveQueueSettings(partialSettings = {}) {
             return this.updateQueueSettingsForPlayer(this.activePlayerId, partialSettings, {
@@ -6089,7 +6258,8 @@ export const useSimulatorStore = defineStore("simulator", {
                 const inspections = inspectQueueEquipmentPricing(
                     queueState.baseline.snapshot,
                     item?.snapshot,
-                    this.pricing
+                    this.pricing,
+                    item?.confirmedEquipmentPrices
                 );
                 const invalid = inspections.find((inspection) => !inspection.targetAskAvailable);
                 if (invalid) {
@@ -6466,6 +6636,7 @@ export const useSimulatorStore = defineStore("simulator", {
                 this.pricing.basePriceTable = cloneBasePriceTable(result.priceTable);
                 this.pricing.enhancementQuotesByItem = normalizeEnhancementQuotesByItem(result.enhancementQuotesByItem);
                 this.pricing.enhancementLevelsByItem = normalizeEnhancementLevelsByItem(result.enhancementLevelsByItem);
+                this.pricing.marketTimestamp = Math.max(0, toFiniteNumber(result.marketTimestamp, 0));
                 rehydratePricingTable(this.pricing);
                 this.pricing.lastFetchedAt = Number(result.fetchedAt || Date.now());
                 this.pricing.sourceUrl = String(result.sourceUrl || "");
@@ -6473,6 +6644,7 @@ export const useSimulatorStore = defineStore("simulator", {
                     basePriceTable: this.pricing.basePriceTable,
                     enhancementQuotesByItem: this.pricing.enhancementQuotesByItem,
                     enhancementLevelsByItem: this.pricing.enhancementLevelsByItem,
+                    marketTimestamp: this.pricing.marketTimestamp,
                     lastFetchedAt: this.pricing.lastFetchedAt,
                     sourceUrl: this.pricing.sourceUrl,
                 });
@@ -6491,6 +6663,7 @@ export const useSimulatorStore = defineStore("simulator", {
             this.pricing.basePriceTable = createDefaultPriceTable();
             this.pricing.enhancementQuotesByItem = {};
             this.pricing.enhancementLevelsByItem = {};
+            this.pricing.marketTimestamp = 0;
             rehydratePricingTable(this.pricing);
             this.pricing.lastFetchedAt = 0;
             this.pricing.sourceUrl = "";

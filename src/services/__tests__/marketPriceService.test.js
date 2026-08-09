@@ -80,8 +80,36 @@ describe("market enhancement levels", () => {
             },
         });
 
-        expect(result.enhancementQuotesByItem["/items/test"]["3"]).toEqual({ ask: -1, bid: 25 });
-        expect(result.enhancementQuotesByItem["/items/test"]["5"]).toEqual({ ask: 0, bid: 40 });
+        expect(result.enhancementQuotesByItem["/items/test"]["3"]).toMatchObject({ ask: -1, bid: 25 });
+        expect(result.enhancementQuotesByItem["/items/test"]["5"]).toMatchObject({ ask: 0, bid: 40 });
         expect(result.enhancementLevelsByItem["/items/test"]).toEqual([4]);
+    });
+
+    it("keeps valid hourly averages and ignores invalid trade data", () => {
+        const result = extractEnhancementDataFromMarketData({
+            "/items/test": {
+                "6": { a: -1, b: -1, p: 123.5, v: 4 },
+                "7": { a: -1, b: -1, p: 200, v: 0 },
+                "8": { a: -1, b: -1, p: 0, v: 5 },
+            },
+        });
+
+        expect(result.enhancementQuotesByItem["/items/test"]["6"]).toEqual({
+            ask: -1,
+            bid: -1,
+            averagePrice: 123.5,
+            volume: 4,
+        });
+        expect(result.enhancementQuotesByItem["/items/test"]["7"]).toBeUndefined();
+        expect(result.enhancementQuotesByItem["/items/test"]["8"]).toBeUndefined();
+    });
+
+    it("returns the official market timestamp", async () => {
+        const result = await fetchMarketPriceTable(async () => ({
+            ok: true,
+            json: async () => ({ marketData: {}, timestamp: 1_786_238_142 }),
+        }));
+
+        expect(result.marketTimestamp).toBe(1_786_238_142);
     });
 });

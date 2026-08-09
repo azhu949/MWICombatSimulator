@@ -157,12 +157,16 @@ function normalizeEnhancementQuoteEntry(rawQuote) {
     }
     const ask = toFiniteNumber(rawQuote?.a, -1);
     const bid = toFiniteNumber(rawQuote?.b, -1);
-    if (ask < 0 && bid < 0) {
+    const averagePrice = toFiniteNumber(rawQuote?.p, -1);
+    const volume = toFiniteNumber(rawQuote?.v, 0);
+    if (ask < 0 && bid < 0 && !(averagePrice > 0 && volume > 0)) {
         return null;
     }
     return {
         ask,
         bid,
+        averagePrice,
+        volume,
     };
 }
 
@@ -265,6 +269,7 @@ export async function fetchMarketPriceTable(
             return {
                 sourceUrl: url,
                 fetchedAt: Date.now(),
+                marketTimestamp: Math.max(0, toFiniteNumber(payload?.timestamp, 0)),
                 priceTable,
                 enhancementQuotesByItem,
                 enhancementLevelsByItem,

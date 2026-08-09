@@ -230,6 +230,55 @@
         </button>
       </div>
     </BaseModal>
+
+    <BaseModal
+      :open="equipmentPriceConfirmationModalOpen"
+      :title="t('common:queue.confirmHourlyAverageTitle', 'Confirm hourly average prices')"
+      panel-class="max-w-[96vw] lg:max-w-4xl"
+      initial-focus-selector="[data-confirm-hourly-prices]"
+      @close="cancelEquipmentPriceConfirmation"
+    >
+      <div class="space-y-3">
+        <p class="text-sm text-foreground/85">
+          {{ t("common:queue.confirmHourlyAverageBody", "These exact enhancement levels have no sell listing. The values below are hourly market averages, not individual trade prices.") }}
+        </p>
+        <p v-if="equipmentPriceConfirmationRefreshFailed" class="text-xs text-warning">
+          {{ t("common:queue.confirmHourlyAverageCached", "The latest refresh failed. Cached market data is shown with its data time.") }}
+        </p>
+        <div class="overflow-x-auto rounded-md border border-border">
+          <table class="w-full min-w-[680px] text-left text-sm">
+            <thead class="bg-muted/60 text-xs text-muted-foreground">
+              <tr>
+                <th class="px-3 py-2">{{ t("common:queue.confirmPriceSlot", "Slot") }}</th>
+                <th class="px-3 py-2">{{ t("common:queue.confirmPriceEquipment", "Equipment") }}</th>
+                <th class="px-3 py-2">{{ t("common:queue.confirmPriceEnhancement", "Enhancement") }}</th>
+                <th class="px-3 py-2">{{ t("common:queue.confirmPriceAverage", "Hourly Average") }}</th>
+                <th class="px-3 py-2">{{ t("common:queue.confirmPriceVolume", "Volume") }}</th>
+                <th class="px-3 py-2">{{ t("common:queue.confirmPriceDataTime", "Data Time") }}</th>
+              </tr>
+            </thead>
+            <tbody>
+              <tr v-for="entry in pendingEquipmentPriceConfirmations" :key="`${entry.itemHrid}|${entry.enhancementLevel}`" class="border-t border-border">
+                <td class="px-3 py-2">{{ formatConfirmationSlots(entry) }}</td>
+                <td class="px-3 py-2">{{ localizeHridDisplayName(entry.itemHrid) }}</td>
+                <td class="px-3 py-2">+{{ entry.enhancementLevel }}</td>
+                <td class="px-3 py-2">{{ formatConfirmedMarketNumber(entry.price) }}</td>
+                <td class="px-3 py-2">{{ formatConfirmedMarketNumber(entry.volume) }}</td>
+                <td class="px-3 py-2">{{ formatMarketDataTime(entry.marketTimestamp) }}</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" class="button-primary" data-confirm-hourly-prices @click="confirmEquipmentPricesAndAdd">
+            {{ t("common:queue.confirmHourlyAverageAction", "Use these prices and add to queue") }}
+          </button>
+          <button type="button" class="button-secondary" @click="cancelEquipmentPriceConfirmation">
+            {{ t("common:vue.common.cancel", "Cancel") }}
+          </button>
+        </div>
+      </div>
+    </BaseModal>
   </SidebarProvider>
 </template>
 
@@ -277,6 +326,11 @@ const feedbackCopyStatus = ref("");
 const simulationCompleteModalOpen = ref(false);
 const queueCompleteModalOpen = ref(false);
 const baselineReminderModalOpen = ref(false);
+const equipmentPriceConfirmationModalOpen = ref(false);
+const pendingEquipmentPriceConfirmations = ref([]);
+const equipmentPriceConfirmationRefreshFailed = ref(false);
+const queueAdditionPending = ref(false);
+const pendingQueueDraftFingerprint = ref("");
 const baselineReminderDismissed = ref(isBaselineReminderDismissed());
 const patchNotesModalOpen = ref(false);
 const patchNotesUnreadEntries = ref([]);
@@ -347,6 +401,7 @@ const queueActionsDisabled = computed(() => Boolean(
   simulator.runtime?.isRunning
   || activeQueueState.value?.isRunning
   || simulator.advisor.runtime?.isRunning
+  || queueAdditionPending.value
 ));
 const activeQueueHasBaseline = computed(() => Boolean(activeQueueState.value?.baseline?.snapshot));
 const activeQueueItemCount = computed(() => (Array.isArray(activeQueueState.value?.items) ? activeQueueState.value.items.length : 0));
@@ -562,29 +617,91 @@ async function setQueueBaselineFromTopbar() {
   await runTopbarBaselineSimulation();
 }
 
-function addToQueueFromTopbar() {
-  try {
-    const items = simulator.addActivePlayerToQueue();
-    if (!Array.isArray(items) || items.length === 0) {
-      setTopQueueActionStatus("danger", t("common:vue.queue.msgNoChanges", "No changes detected (or baseline missing)."));
-      return;
-    }
-    if (items.length === 1) {
-      if (items.some((item) => Array.isArray(item?.costWarnings) && item.costWarnings.length > 0)) {
-        setTopQueueActionStatus("warning", t("common:vue.queue.msgVariantAddedWithCostWarning", "{{name}} added to queue. A baseline item has no exact quote and is valued at 0.", { name: formatTopQueueVariantName(items[0], 1) }));
-        return;
-      }
-      setTopQueueActionStatus("success", t("common:vue.queue.msgVariantAdded", "{{name}} added to queue.", { name: formatTopQueueVariantName(items[0], 1) }));
-      return;
-    }
+function reportAddedQueueItems(items) {
+  if (!Array.isArray(items) || items.length === 0) {
+    setTopQueueActionStatus("danger", t("common:vue.queue.msgNoChanges", "No changes detected (or baseline missing)."));
+    return;
+  }
+  if (items.length === 1) {
     if (items.some((item) => Array.isArray(item?.costWarnings) && item.costWarnings.length > 0)) {
-      setTopQueueActionStatus("warning", t("common:vue.queue.msgVariantsAddedWithCostWarning", "{{count}} variants added to queue. One or more baseline items have no exact quote and are valued at 0.", { count: items.length }));
+      setTopQueueActionStatus("warning", t("common:vue.queue.msgVariantAddedWithCostWarning", "{{name}} added to queue. A market-price warning applies.", { name: formatTopQueueVariantName(items[0], 1) }));
       return;
     }
-    setTopQueueActionStatus("success", t("common:vue.queue.msgVariantsAdded", "{{count}} variants added to queue.", { count: items.length }));
+    setTopQueueActionStatus("success", t("common:vue.queue.msgVariantAdded", "{{name}} added to queue.", { name: formatTopQueueVariantName(items[0], 1) }));
+    return;
+  }
+  if (items.some((item) => Array.isArray(item?.costWarnings) && item.costWarnings.length > 0)) {
+    setTopQueueActionStatus("warning", t("common:vue.queue.msgVariantsAddedWithCostWarning", "{{count}} variants added to queue. One or more market-price warnings apply.", { count: items.length }));
+    return;
+  }
+  setTopQueueActionStatus("success", t("common:vue.queue.msgVariantsAdded", "{{count}} variants added to queue.", { count: items.length }));
+}
+
+async function addToQueueFromTopbar() {
+  if (queueAdditionPending.value) {
+    return;
+  }
+  queueAdditionPending.value = true;
+  try {
+    setTopQueueActionStatus("secondary", t("common:queue.checkingMarketPrice", "Checking latest market prices..."));
+    const preparation = await simulator.prepareActivePlayerQueueAddition();
+    if (preparation?.requiresConfirmation) {
+      pendingEquipmentPriceConfirmations.value = preparation.confirmations || [];
+      equipmentPriceConfirmationRefreshFailed.value = Boolean(preparation.refreshFailed);
+      pendingQueueDraftFingerprint.value = JSON.stringify(simulator.activePlayer);
+      equipmentPriceConfirmationModalOpen.value = true;
+      return;
+    }
+    reportAddedQueueItems(simulator.addActivePlayerToQueue());
   } catch (error) {
     setTopQueueActionStatus("danger", resolveQueueActionErrorMessage(error));
+  } finally {
+    queueAdditionPending.value = false;
   }
+}
+
+function cancelEquipmentPriceConfirmation() {
+  equipmentPriceConfirmationModalOpen.value = false;
+  pendingEquipmentPriceConfirmations.value = [];
+  equipmentPriceConfirmationRefreshFailed.value = false;
+  pendingQueueDraftFingerprint.value = "";
+}
+
+function confirmEquipmentPricesAndAdd() {
+  try {
+    if (JSON.stringify(simulator.activePlayer) !== pendingQueueDraftFingerprint.value) {
+      throw new Error("common:queue.confirmHourlyAverageDraftChanged");
+    }
+    const confirmations = pendingEquipmentPriceConfirmations.value.map((entry) => ({
+      ...entry,
+      confirmedAt: Date.now(),
+    }));
+    const items = simulator.addActivePlayerToQueue({ confirmedEquipmentPrices: confirmations });
+    cancelEquipmentPriceConfirmation();
+    reportAddedQueueItems(items);
+  } catch (error) {
+    cancelEquipmentPriceConfirmation();
+    setTopQueueActionStatus("danger", resolveQueueActionErrorMessage(error));
+  }
+}
+
+function formatConfirmedMarketNumber(value) {
+  return new Intl.NumberFormat(language.value === "zh" ? "zh-CN" : "en-US", { maximumFractionDigits: 2 }).format(Number(value || 0));
+}
+
+function formatConfirmationSlots(entry) {
+  const slotKeys = Array.isArray(entry?.slotKeys) && entry.slotKeys.length > 0
+    ? entry.slotKeys
+    : [entry?.slotKey];
+  return slotKeys
+    .filter(Boolean)
+    .map((slotKey) => getEquipmentSlotName(slotKey, slotKey))
+    .join(", ");
+}
+
+function formatMarketDataTime(timestampSeconds) {
+  const timestamp = Number(timestampSeconds || 0);
+  return timestamp > 0 ? new Date(timestamp * 1000).toLocaleString() : t("common:queue.confirmPriceTimeUnknown", "Unknown");
 }
 
 async function runQueueFromTopbar() {

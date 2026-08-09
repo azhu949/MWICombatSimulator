@@ -28,5 +28,6 @@ describe("QueuePage progress presentation", () => {
         expect(queuePageSource).toContain('t("common:queue.removeItem", "Remove from Queue")');
         expect(queuePageSource).toContain("item.costWarnings");
         expect(queuePageSource).toContain("common:queue.baselineSaleZeroWarning");
+        expect(queuePageSource).toContain("common:queue.confirmedHourlyAverageWarning");
     });
 });

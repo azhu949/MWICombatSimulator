@@ -90,4 +90,14 @@ describe("App shell contracts", () => {
     expect(appSource).toContain("dismissBaselineReminder();");
     expect(appSource).toContain("await runTopbarBaselineSimulation();");
   });
+
+  it("confirms hourly average trade prices before adding missing-ask equipment", () => {
+    expect(appSource).toContain(':open="equipmentPriceConfirmationModalOpen"');
+    expect(appSource).toContain("common:queue.confirmHourlyAverageBody");
+    expect(appSource).toContain("pendingEquipmentPriceConfirmations");
+    expect(appSource).toContain('@click="confirmEquipmentPricesAndAdd"');
+    expect(appSource).toContain("await simulator.prepareActivePlayerQueueAddition()");
+    expect(appSource).toContain("common:queue.confirmPriceSlot");
+    expect(appSource).toContain("formatConfirmationSlots(entry)");
+  });
 });
