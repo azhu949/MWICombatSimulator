@@ -29,7 +29,7 @@ Imported Enhancement and Skilling character data is kept only for the current pa
 
 Set a baseline first. Then change equipment, abilities, consumables, or other settings and add the variant to the queue. After the queue finishes, use Multi-Round Results to review the overall score, profit and experience changes, stability, cost, and confidence. Results can also be exported to Excel.
 
-> Equipment upgrade costs use market pricing. When the exact enhancement level has no sell listing, the app refreshes official market data and asks for confirmation if that same item and level has a valid hourly average and volume. This is a period average, not the latest individual trade. The confirmed value is saved with the queue item and used only while no exact sell listing exists; a new exact listing takes priority. Without valid trade data, the variant is still blocked. A baseline item without an exact quote is valued at 0 with a warning.
+> Queue target purchases use the official exact Ask, then a valid official hourly average, then the latest valid archived Ask. The official market is refreshed only when its snapshot is stale; a fresh snapshot without an exact listing proceeds directly to fallback confirmation to avoid a duplicate request. Fallback prices show their source and data time, and a new official listing still wins. Historical prices never affect baseline sale credit, which remains 0 with a warning when no official bid/ask exists.
 
 ![Queue runner in the Chinese interface](../public/tutorial/queue.png)
 

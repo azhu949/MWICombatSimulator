@@ -91,13 +91,16 @@ describe("App shell contracts", () => {
     expect(appSource).toContain("await runTopbarBaselineSimulation();");
   });
 
-  it("confirms hourly average trade prices before adding missing-ask equipment", () => {
+  it("confirms official averages and historical Ask prices before adding missing-ask equipment", () => {
     expect(appSource).toContain(':open="equipmentPriceConfirmationModalOpen"');
-    expect(appSource).toContain("common:queue.confirmHourlyAverageBody");
+    expect(appSource).toContain("common:queue.confirmFallbackPriceBody");
+    expect(appSource).toContain("common:queue.confirmHistoricalAskWarning");
     expect(appSource).toContain("pendingEquipmentPriceConfirmations");
     expect(appSource).toContain('@click="confirmEquipmentPricesAndAdd"');
     expect(appSource).toContain("await simulator.prepareActivePlayerQueueAddition()");
     expect(appSource).toContain("common:queue.confirmPriceSlot");
+    expect(appSource).toContain("common:queue.confirmPriceSourceHistoricalAsk");
+    expect(appSource).toContain("formatConfirmationVolume(entry.volume)");
     expect(appSource).toContain("formatConfirmationSlots(entry)");
   });
 });

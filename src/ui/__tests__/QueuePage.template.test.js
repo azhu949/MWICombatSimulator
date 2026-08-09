@@ -29,5 +29,7 @@ describe("QueuePage progress presentation", () => {
         expect(queuePageSource).toContain("item.costWarnings");
         expect(queuePageSource).toContain("common:queue.baselineSaleZeroWarning");
         expect(queuePageSource).toContain("common:queue.confirmedHourlyAverageWarning");
+        expect(queuePageSource).toContain("common:queue.confirmedHistoricalAskWarning");
+        expect(queuePageSource).toContain("formatMarketVolume(warning?.volume)");
     });
 });

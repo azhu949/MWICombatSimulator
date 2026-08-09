@@ -162,7 +162,7 @@
           </ol>
 
           <div class="mt-5 border-l-2 border-warning/60 px-4 py-2 text-sm leading-6 text-foreground/85">
-            Equipment upgrade costs use market pricing. If an exact enhancement level has no sell listing, the app can ask you to confirm the official hourly average for the same item and level when valid volume exists. The confirmed value is saved with the queue item and used only while no exact listing exists; a new exact listing takes priority. Hourly averages are period statistics, not individual trade records.
+            Queue target purchases use the official exact Ask, then a valid official hourly average, then the latest valid archived Ask. Fallback prices show their source and data time for confirmation; new official listings still win, and historical prices never affect baseline sale credit.
           </div>
 
           <div class="mt-6 grid gap-5 xl:grid-cols-2">

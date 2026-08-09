@@ -284,7 +284,20 @@ const queueDisplayItems = computed(() => {
       detailLines,
       costWarnings: (Array.isArray(item?.costWarnings) ? item.costWarnings : []).map((warning, warningIndex) => ({
         key: [warning?.code || "warning", warning?.slotKey || "slot", warningIndex].join("-"),
-        text: warning?.code === "confirmed_hourly_average"
+        text: warning?.code === "historical_ask"
+          ? t(
+            "common:queue.confirmedHistoricalAskWarning",
+            "{{slot}}: {{item}} +{{level}} uses historical Ask {{price}} (volume {{volume}}, data {{time}}). Check the data time before relying on this price.",
+            {
+              slot: localizeEquipmentSlotLabel(warning?.slotKey),
+              item: localizeHridDisplayName(warning?.itemHrid),
+              level: Number(warning?.enhancementLevel || 0),
+              price: formatMarketNumber(warning?.price),
+              volume: formatMarketVolume(warning?.volume),
+              time: formatMarketDataTime(warning?.marketTimestamp),
+            },
+          )
+          : warning?.code === "confirmed_hourly_average"
           ? t(
             "common:queue.confirmedHourlyAverageWarning",
             "{{slot}}: {{item}} +{{level}} uses confirmed hourly average {{price}} (volume {{volume}}, data {{time}}).",
@@ -293,7 +306,7 @@ const queueDisplayItems = computed(() => {
               item: localizeHridDisplayName(warning?.itemHrid),
               level: Number(warning?.enhancementLevel || 0),
               price: formatMarketNumber(warning?.price),
-              volume: formatMarketNumber(warning?.volume),
+              volume: formatMarketVolume(warning?.volume),
               time: formatMarketDataTime(warning?.marketTimestamp),
             },
           )
@@ -313,6 +326,11 @@ const queueDisplayItems = computed(() => {
 
 function formatMarketNumber(value) {
   return new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(Number(value || 0));
+}
+
+function formatMarketVolume(value) {
+  const volume = Number(value || 0);
+  return volume > 0 ? formatMarketNumber(volume) : t("common:queue.confirmPriceVolumeUnknown", "Unknown");
 }
 
 function formatMarketDataTime(timestampSeconds) {

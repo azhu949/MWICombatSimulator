@@ -233,17 +233,20 @@
 
     <BaseModal
       :open="equipmentPriceConfirmationModalOpen"
-      :title="t('common:queue.confirmHourlyAverageTitle', 'Confirm hourly average prices')"
+      :title="t('common:queue.confirmFallbackPriceTitle', 'Confirm fallback market prices')"
       panel-class="max-w-[96vw] lg:max-w-4xl"
       initial-focus-selector="[data-confirm-hourly-prices]"
       @close="cancelEquipmentPriceConfirmation"
     >
       <div class="space-y-3">
         <p class="text-sm text-foreground/85">
-          {{ t("common:queue.confirmHourlyAverageBody", "These exact enhancement levels have no sell listing. The values below are hourly market averages, not individual trade prices.") }}
+          {{ t("common:queue.confirmFallbackPriceBody", "These target enhancement levels have no exact sell listing. Review each fallback source, value, volume, and data time before confirming.") }}
+        </p>
+        <p v-if="hasHistoricalEquipmentPriceConfirmation" class="text-xs text-warning">
+          {{ t("common:queue.confirmHistoricalAskWarning", "Historical Ask values have no hard age limit. Check the data time and confirm only if the price is still acceptable.") }}
         </p>
         <p v-if="equipmentPriceConfirmationRefreshFailed" class="text-xs text-warning">
-          {{ t("common:queue.confirmHourlyAverageCached", "The latest refresh failed. Cached market data is shown with its data time.") }}
+          {{ t("common:queue.confirmHourlyAverageCached", "The official market refresh failed. Review the fallback source and data time below.") }}
         </p>
         <div class="overflow-x-auto rounded-md border border-border">
           <table class="w-full min-w-[680px] text-left text-sm">
@@ -252,7 +255,8 @@
                 <th class="px-3 py-2">{{ t("common:queue.confirmPriceSlot", "Slot") }}</th>
                 <th class="px-3 py-2">{{ t("common:queue.confirmPriceEquipment", "Equipment") }}</th>
                 <th class="px-3 py-2">{{ t("common:queue.confirmPriceEnhancement", "Enhancement") }}</th>
-                <th class="px-3 py-2">{{ t("common:queue.confirmPriceAverage", "Hourly Average") }}</th>
+                <th class="px-3 py-2">{{ t("common:queue.confirmPriceSource", "Source") }}</th>
+                <th class="px-3 py-2">{{ t("common:queue.confirmPriceValue", "Price") }}</th>
                 <th class="px-3 py-2">{{ t("common:queue.confirmPriceVolume", "Volume") }}</th>
                 <th class="px-3 py-2">{{ t("common:queue.confirmPriceDataTime", "Data Time") }}</th>
               </tr>
@@ -262,8 +266,9 @@
                 <td class="px-3 py-2">{{ formatConfirmationSlots(entry) }}</td>
                 <td class="px-3 py-2">{{ localizeHridDisplayName(entry.itemHrid) }}</td>
                 <td class="px-3 py-2">+{{ entry.enhancementLevel }}</td>
+                <td class="px-3 py-2">{{ formatConfirmationSource(entry) }}</td>
                 <td class="px-3 py-2">{{ formatConfirmedMarketNumber(entry.price) }}</td>
-                <td class="px-3 py-2">{{ formatConfirmedMarketNumber(entry.volume) }}</td>
+                <td class="px-3 py-2">{{ formatConfirmationVolume(entry.volume) }}</td>
                 <td class="px-3 py-2">{{ formatMarketDataTime(entry.marketTimestamp) }}</td>
               </tr>
             </tbody>
@@ -271,7 +276,7 @@
         </div>
         <div class="flex flex-wrap items-center gap-2">
           <button type="button" class="button-primary" data-confirm-hourly-prices @click="confirmEquipmentPricesAndAdd">
-            {{ t("common:queue.confirmHourlyAverageAction", "Use these prices and add to queue") }}
+            {{ t("common:queue.confirmFallbackPriceAction", "Use these prices and add to queue") }}
           </button>
           <button type="button" class="button-secondary" @click="cancelEquipmentPriceConfirmation">
             {{ t("common:vue.common.cancel", "Cancel") }}
@@ -698,6 +703,23 @@ function formatConfirmationSlots(entry) {
     .map((slotKey) => getEquipmentSlotName(slotKey, slotKey))
     .join(", ");
 }
+
+function formatConfirmationSource(entry) {
+  return String(entry?.source || "") === "historical_ask"
+    ? t("common:queue.confirmPriceSourceHistoricalAsk", "Historical Ask")
+    : t("common:queue.confirmPriceSourceOfficialHourlyAverage", "Official hourly average");
+}
+
+function formatConfirmationVolume(value) {
+  const volume = Number(value || 0);
+  return volume > 0
+    ? formatConfirmedMarketNumber(volume)
+    : t("common:queue.confirmPriceVolumeUnknown", "Unknown");
+}
+
+const hasHistoricalEquipmentPriceConfirmation = computed(() => (
+  pendingEquipmentPriceConfirmations.value.some((entry) => String(entry?.source || "") === "historical_ask")
+));
 
 function formatMarketDataTime(timestampSeconds) {
   const timestamp = Number(timestampSeconds || 0);

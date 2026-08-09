@@ -12,6 +12,7 @@ import {
     createMainSiteShareProfileFixture,
 } from "../../services/__tests__/fixtures/mainSiteShareProfileFixture.js";
 import workerClient from "../../services/workerClient.js";
+import marketHistoryService from "../../services/marketHistoryService.js";
 import { useSimulatorStore } from "../simulatorStore.js";
 
 const ONE_HOUR = 60 * 60 * 1e9;
@@ -341,6 +342,7 @@ describe("simulatorStore", () => {
     beforeEach(() => {
         setActivePinia(createPinia());
         global.localStorage = createLocalStorageMock();
+        marketHistoryService.clearCache();
     });
 
     afterEach(() => {
@@ -3351,9 +3353,11 @@ describe("simulatorStore", () => {
                 enhancementLevel: 2,
                 price: 500,
                 volume: 3,
+                source: "official_hourly_average",
                 marketTimestamp: 1_786_238_142,
             }],
         });
+        expect(global.fetch).toHaveBeenCalledTimes(1);
         expect(simulator.activeQueueState.items).toEqual([]);
         expect(simulator.activePlayer).toEqual(draftBefore);
 
@@ -3401,7 +3405,275 @@ describe("simulatorStore", () => {
         expect(simulator.activeQueueState.items).toEqual([]);
     });
 
-    it("keeps the queue and editor unchanged when no valid hourly trade data exists", async () => {
+    it("skips historical lookup when an exact official Ask is available", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.equipment.weapon = { itemHrid: equipmentItemHrid, enhancementLevel: 2 };
+        setExactEquipmentAsk(simulator, equipmentItemHrid, 2, 750);
+        global.fetch = vi.fn();
+
+        await expect(simulator.prepareActivePlayerQueueAddition()).resolves.toMatchObject({
+            requiresConfirmation: false,
+            confirmations: [],
+        });
+        expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it("uses an hourly official snapshot without refreshing a missing exact ask", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+        const marketTimestamp = Math.floor((Date.now() - (45 * 60_000)) / 1000);
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.equipment.weapon = { itemHrid: equipmentItemHrid, enhancementLevel: 2 };
+        simulator.pricing.marketTimestamp = marketTimestamp;
+        simulator.pricing.enhancementQuotesByItem[equipmentItemHrid] = {
+            "2": { ask: -1, bid: 10, averagePrice: 540, volume: 2 },
+        };
+        global.fetch = vi.fn();
+
+        await expect(simulator.prepareActivePlayerQueueAddition()).resolves.toMatchObject({
+            requiresConfirmation: true,
+            refreshFailed: false,
+            confirmations: [{
+                itemHrid: equipmentItemHrid,
+                enhancementLevel: 2,
+                price: 540,
+                volume: 2,
+                source: "official_hourly_average",
+                marketTimestamp,
+            }],
+        });
+        expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it("refreshes a stale official snapshot before deciding the fallback price", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+        const currentMarketTimestamp = Math.floor(Date.now() / 1000);
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.equipment.weapon = { itemHrid: equipmentItemHrid, enhancementLevel: 2 };
+        simulator.pricing.marketTimestamp = Math.floor((Date.now() - (2 * 60 * 60_000)) / 1000);
+        simulator.pricing.lastFetchedAt = Date.now() - (2 * 60_000);
+        simulator.pricing.enhancementQuotesByItem[equipmentItemHrid] = {
+            "2": { ask: -1, bid: 10, averagePrice: 400, volume: 1 },
+        };
+        global.fetch = vi.fn(async () => ({
+            ok: true,
+            json: async () => ({
+                timestamp: currentMarketTimestamp,
+                marketData: {
+                    [equipmentItemHrid]: {
+                        "2": { a: 750, b: 700, p: 725, v: 2 },
+                    },
+                },
+            }),
+        }));
+
+        await expect(simulator.prepareActivePlayerQueueAddition()).resolves.toMatchObject({
+            requiresConfirmation: false,
+            refreshFailed: false,
+            confirmations: [],
+        });
+        expect(global.fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not immediately refetch a stale upstream snapshot after a recent successful request", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.equipment.weapon = { itemHrid: equipmentItemHrid, enhancementLevel: 2 };
+        simulator.pricing.marketTimestamp = Math.floor((Date.now() - (2 * 60 * 60_000)) / 1000);
+        simulator.pricing.lastFetchedAt = Date.now();
+        simulator.pricing.enhancementQuotesByItem[equipmentItemHrid] = {
+            "2": { ask: -1, bid: 10, averagePrice: 500, volume: 3 },
+        };
+        global.fetch = vi.fn();
+
+        await expect(simulator.prepareActivePlayerQueueAddition()).resolves.toMatchObject({
+            requiresConfirmation: true,
+            refreshFailed: false,
+            confirmations: [{
+                itemHrid: equipmentItemHrid,
+                enhancementLevel: 2,
+                price: 500,
+                volume: 3,
+                source: "official_hourly_average",
+            }],
+        });
+        expect(global.fetch).not.toHaveBeenCalled();
+    });
+
+    it("waits for an in-flight official refresh before falling back to history", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.equipment.weapon = { itemHrid: equipmentItemHrid, enhancementLevel: 2 };
+        let resolveOfficialResponse;
+        const officialResponse = new Promise((resolve) => {
+            resolveOfficialResponse = resolve;
+        });
+        global.fetch = vi.fn(async (rawUrl) => {
+            if (String(rawUrl).includes("mwi-market-history")) {
+                throw new Error("Historical lookup should not run when the official average is available.");
+            }
+            return officialResponse;
+        });
+
+        const initialRefresh = simulator.ensureMarketPricesLoaded(true);
+        expect(simulator.pricing.isLoading).toBe(true);
+        const preparationPromise = simulator.prepareActivePlayerQueueAddition();
+        resolveOfficialResponse({
+            ok: true,
+            json: async () => ({
+                timestamp: 1_786_400_000,
+                marketData: {
+                    [equipmentItemHrid]: {
+                        "2": { a: -1, b: 10, p: 625, v: 4 },
+                    },
+                },
+            }),
+        });
+
+        const [, preparation] = await Promise.all([initialRefresh, preparationPromise]);
+
+        expect(preparation).toMatchObject({
+            requiresConfirmation: true,
+            refreshFailed: false,
+            confirmations: [{
+                itemHrid: equipmentItemHrid,
+                enhancementLevel: 2,
+                price: 625,
+                volume: 4,
+                source: "official_hourly_average",
+            }],
+        });
+        expect(global.fetch).toHaveBeenCalledTimes(1);
+    });
+
+    it("uses history directly for a fresh snapshot without an exact Ask or hourly average", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+        const shardPath = "items/queue-history-test.json";
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.equipment.weapon = { itemHrid: equipmentItemHrid, enhancementLevel: 2 };
+        simulator.activePlayer.equipment.off_hand = { itemHrid: equipmentItemHrid, enhancementLevel: 2 };
+        simulator.pricing.marketTimestamp = Math.floor(Date.now() / 1000);
+        simulator.pricing.lastFetchedAt = Date.now();
+        simulator.pricing.enhancementQuotesByItem[equipmentItemHrid] = {
+            "2": { ask: -1, bid: 10 },
+        };
+        global.fetch = vi.fn(async (rawUrl) => {
+            const url = String(rawUrl);
+            if (url.endsWith("/data/manifest.json")) {
+                return {
+                    ok: true,
+                    json: async () => ({
+                        items: {
+                            [equipmentItemHrid]: {
+                                variants: { "2": { path: shardPath } },
+                            },
+                        },
+                    }),
+                };
+            }
+            if (url.endsWith(`/data/${shardPath}`)) {
+                return {
+                    ok: true,
+                    json: async () => ({
+                        itemHrid: equipmentItemHrid,
+                        variant: 2,
+                        rows: [
+                            { time: 1_786_200_000, a: 450, v: 2 },
+                            { time: 1_786_300_000, a: 500 },
+                        ],
+                    }),
+                };
+            }
+            throw new Error(`Unexpected official market request: ${url}`);
+        });
+
+        const preparation = await simulator.prepareActivePlayerQueueAddition();
+
+        expect(preparation.confirmations).toEqual([expect.objectContaining({
+            itemHrid: equipmentItemHrid,
+            enhancementLevel: 2,
+            price: 500,
+            volume: null,
+            source: "historical_ask",
+            marketTimestamp: 1_786_300_000,
+            slotKeys: expect.arrayContaining(["weapon", "off_hand"]),
+        })]);
+        expect(global.fetch.mock.calls.filter(([url]) => String(url).includes("mwi-market-history"))).toHaveLength(2);
+        expect(global.fetch.mock.calls.filter(([url]) => String(url).includes("/game_data/marketplace.json"))).toHaveLength(0);
+
+        const added = simulator.addActivePlayerToQueue({
+            confirmedEquipmentPrices: preparation.confirmations,
+        });
+        expect(added.length).toBeGreaterThan(0);
+        for (const item of added) {
+            expect(item.confirmedEquipmentPrices).toEqual([expect.objectContaining({
+                source: "historical_ask",
+                price: 500,
+                volume: null,
+            })]);
+            expect(item.costWarnings).toEqual(expect.arrayContaining([
+                expect.objectContaining({ code: "historical_ask", price: 500, volume: null }),
+            ]));
+        }
+    });
+
+    it("does not repeat a failed official refresh during the retry cooldown", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+        const shardPath = "items/queue-refresh-cooldown-test.json";
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.equipment.weapon = { itemHrid: equipmentItemHrid, enhancementLevel: 2 };
+        global.fetch = vi.fn(async (rawUrl) => {
+            const url = String(rawUrl);
+            if (url.endsWith("/data/manifest.json")) {
+                return {
+                    ok: true,
+                    json: async () => ({
+                        items: {
+                            [equipmentItemHrid]: {
+                                variants: { "2": { path: shardPath } },
+                            },
+                        },
+                    }),
+                };
+            }
+            if (url.endsWith(`/data/${shardPath}`)) {
+                return {
+                    ok: true,
+                    json: async () => ({
+                        itemHrid: equipmentItemHrid,
+                        variant: 2,
+                        rows: [{ time: 1_786_300_000, a: 500 }],
+                    }),
+                };
+            }
+            return { ok: false, status: 503 };
+        });
+
+        const firstPreparation = await simulator.prepareActivePlayerQueueAddition();
+        const secondPreparation = await simulator.prepareActivePlayerQueueAddition();
+
+        expect(firstPreparation).toMatchObject({
+            requiresConfirmation: true,
+            refreshFailed: true,
+            confirmations: [expect.objectContaining({ source: "historical_ask", price: 500 })],
+        });
+        expect(secondPreparation).toMatchObject({
+            requiresConfirmation: true,
+            refreshFailed: true,
+            confirmations: [expect.objectContaining({ source: "historical_ask", price: 500 })],
+        });
+        expect(global.fetch.mock.calls.filter(([url]) => String(url).includes("/game_data/marketplace.json"))).toHaveLength(2);
+        expect(global.fetch.mock.calls.filter(([url]) => String(url).includes("mwi-market-history"))).toHaveLength(2);
+    });
+
+    it("keeps the queue and editor unchanged when official and historical prices are unavailable", async () => {
         const simulator = useSimulatorStore();
         const equipmentItemHrid = findFirstEquipmentItem();
         await simulator.setQueueBaselineForActivePlayer();
@@ -3455,6 +3727,46 @@ describe("simulatorStore", () => {
         setExactEquipmentAsk(simulator, equipmentItemHrid, 2, 700);
         await simulator.refreshQueueResultsFromRawRuns({ allowReferenceLoad: false });
         expect(simulator.activeQueueState.ranking[0].costInsights.totalUpgradeCost).toBe(700);
+    });
+
+    it("uses historical Ask only for the target buy and lets a new official Ask override it", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+        simulator.activePlayer.equipment.weapon = { itemHrid: equipmentItemHrid, enhancementLevel: 1 };
+        await simulator.setQueueBaselineForActivePlayer();
+        setQueueBaselineMetrics(simulator, { dailyNoRngProfit: 2400 });
+        simulator.activePlayer.equipment.weapon = { itemHrid: equipmentItemHrid, enhancementLevel: 2 };
+        simulator.pricing.enhancementQuotesByItem[equipmentItemHrid] = {
+            "1": { ask: 120, bid: 100 },
+            "2": { ask: -1, bid: 10 },
+        };
+        const item = simulator.addActivePlayerToQueue({
+            confirmedEquipmentPrices: [{
+                itemHrid: equipmentItemHrid,
+                enhancementLevel: 2,
+                price: 500,
+                volume: null,
+                source: "historical_ask",
+                marketTimestamp: 1_786_300_000,
+            }],
+        })[0];
+        simulator.activeQueueState.rawRuns = [
+            createQueueRawRun(item, 1, { dailyNoRngProfit: 3000 }, simulator.activeQueueState.baseline.metrics),
+        ];
+
+        await simulator.refreshQueueResultsFromRawRuns({ allowReferenceLoad: false });
+        expect(simulator.activeQueueState.ranking[0].costInsights.totalUpgradeCost).toBe(400);
+        expect(simulator.activeQueueState.items[0].costWarnings).toEqual(expect.arrayContaining([
+            expect.objectContaining({ code: "historical_ask", price: 500 }),
+        ]));
+
+        setExactEquipmentAsk(simulator, equipmentItemHrid, 2, 700);
+        await simulator.refreshQueueResultsFromRawRuns({ allowReferenceLoad: false });
+        expect(simulator.activeQueueState.ranking[0].costInsights.totalUpgradeCost).toBe(600);
+        expect(simulator.activeQueueState.items[0].costWarnings).toEqual([]);
+        expect(simulator.activeQueueState.items[0].confirmedEquipmentPrices).toEqual([
+            expect.objectContaining({ source: "historical_ask", price: 500 }),
+        ]);
     });
 
     it("blocks historical queue items that no longer have an exact target ask", async () => {

@@ -42,6 +42,7 @@ describe("GuidePage tutorial surface", () => {
         expect(guidePageSource).toContain("回到模拟器点击“从主站导入”");
         expect(guidePageSource).toContain("只有组队数据需要先在游戏主站逐个打开队友资料");
         expect(guidePageSource).toContain("队列与多轮结果");
+        expect(guidePageSource).toContain("历史归档最新有效 Ask");
         expect(guidePageSource).toContain("遇到空状态或按钮不可用");
     });
 
@@ -63,6 +64,7 @@ describe("GuidePage tutorial surface", () => {
         expect(guidePageEnSource).toContain("click Import from Main Site");
         expect(guidePageEnSource).toContain("Open teammate profiles only for a team import");
         expect(guidePageEnSource).toContain("Queue and Multi-Round Results");
+        expect(guidePageEnSource).toContain("latest valid archived Ask");
         expect(guidePageEnSource).toContain("Empty States and Disabled Controls");
     });
 

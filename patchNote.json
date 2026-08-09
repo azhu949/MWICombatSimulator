@@ -1,4 +1,22 @@
 {
+    "2026年8月10日（v2.0.4）": {
+        "label": {
+            "zh": "2026年8月10日（v2.0.4）",
+            "en": "August 10, 2026 (v2.0.4)"
+        },
+        "notes": {
+            "zh": [
+                "官方精确 Ask 和小时均价均缺失时，可确认使用历史归档最新有效 Ask。",
+                "确认弹窗与队列警告显示价格来源和数据时间；新官方卖单仍优先。",
+                "队列仅在官方行情快照过期时刷新；新鲜快照缺少卖单时直接使用备用价格，避免重复请求。"
+            ],
+            "en": [
+                "Confirm the latest valid archived Ask when both the official exact Ask and hourly average are unavailable.",
+                "Confirmation and queue warnings show the source and data time; new official listings still take priority.",
+                "Refresh official market data only when its snapshot is stale; a fresh snapshot without a listing uses fallback pricing without a duplicate request."
+            ]
+        }
+    },
     "2026年8月9日（v2.0.3）": {
         "label": {
             "zh": "2026年8月9日（v2.0.3）",
