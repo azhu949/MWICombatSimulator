@@ -1,6 +1,6 @@
 import { afterAll, describe, expect, it, vi } from "vitest";
 
-const storage = new Map([["i18nextLng", "zh"]]);
+const storage = new Map();
 
 vi.stubGlobal("localStorage", {
     getItem(key) {
@@ -16,10 +16,12 @@ afterAll(() => {
 });
 
 describe("official i18n snapshot integration", () => {
-    it("initializes both namespaces and switches between exact official names", async () => {
-        const { initI18n } = await import("../i18n.js");
+    it("defaults to Chinese and switches between exact official names", async () => {
+        const { initI18n, resolveInitialLanguage } = await import("../i18n.js");
         const i18next = await initI18n();
 
+        expect(resolveInitialLanguage()).toBe("zh");
+        expect(resolveInitialLanguage("en")).toBe("en");
         expect(i18next.language).toBe("zh");
         expect(i18next.t("translation:itemNames./items/gatherer_cape")).toBe("采集者披风");
         expect(i18next.t("translation:itemNames./items/gatherer_cape_refined")).toBe("采集者披风 ★");

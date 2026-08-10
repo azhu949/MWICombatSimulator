@@ -142,6 +142,13 @@ describe("HomePage inline trigger editing", () => {
 });
 
 describe("HomePage enhancement pricing", () => {
+    it("places the enhancement input beside its equipment selector", () => {
+        expect(homePageSource).toContain('grid-cols-[minmax(0,1fr)_5rem]');
+        expect(homePageSource).toContain("data-equipment-input-row");
+        expect(homePageSource).toContain('aria-hidden="true">+</span>');
+        expect(homePageSource).toContain("`${equipmentLabelMap[slot]} ${t('common:vue.home.enhancement', 'Enhancement')}`");
+    });
+
     it("shows missing exact ask and zero baseline sale without manual equipment cost input", () => {
         expect(homePageSource).toContain("costDraft.targetAskAvailable");
         expect(homePageSource).toContain("common:vue.home.enhancementAskMissing");

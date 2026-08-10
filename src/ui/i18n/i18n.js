@@ -6,13 +6,18 @@ import zhTranslation from "../../../locales/zh/translation.official.generated.js
 
 let initialized = false;
 
+export function resolveInitialLanguage(storedLanguage = (
+    typeof localStorage === "undefined" ? null : localStorage.getItem("i18nextLng")
+)) {
+    return storedLanguage === "zh" || storedLanguage === "en" ? storedLanguage : "zh";
+}
+
 export async function initI18n() {
     if (initialized) {
         return i18next;
     }
 
-    const storedLanguage = localStorage.getItem("i18nextLng");
-    const initialLanguage = storedLanguage === "zh" || storedLanguage === "en" ? storedLanguage : "en";
+    const initialLanguage = resolveInitialLanguage();
 
     await i18next.init({
         lng: initialLanguage,

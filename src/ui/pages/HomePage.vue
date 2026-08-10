@@ -388,19 +388,29 @@
             ]"
           >
             <label class="control-label">{{ equipmentLabelMap[slot] }}</label>
-            <SearchCombobox
-              v-model="activePlayer.equipment[slot].itemHrid"
-              :options="equipmentComboboxOptionsBySlot[slot] || []"
-              :placeholder="t('common:vue.common.searchOptions', 'Search options')"
-              :aria-label="equipmentLabelMap[slot]"
-              :empty-label="t('common:vue.common.noResults', 'No results')"
-              :open-label="t('common:vue.common.openOptions', 'Open options')"
-              :more-results-label="t('common:vue.common.refineSearchMoreResults', 'Refine the search to see {count} more results')"
-              :max-results="60"
-            />
-            <div class="mt-2">
-              <label class="control-label">{{ t("common:vue.home.enhancement", "Enhancement") }}</label>
-              <input v-model.number="activePlayer.equipment[slot].enhancementLevel" class="control-input" type="number" min="0" max="30" />
+            <div class="grid grid-cols-[minmax(0,1fr)_5rem] items-center gap-2" data-equipment-input-row>
+              <SearchCombobox
+                v-model="activePlayer.equipment[slot].itemHrid"
+                :options="equipmentComboboxOptionsBySlot[slot] || []"
+                :placeholder="t('common:vue.common.searchOptions', 'Search options')"
+                :aria-label="equipmentLabelMap[slot]"
+                :empty-label="t('common:vue.common.noResults', 'No results')"
+                :open-label="t('common:vue.common.openOptions', 'Open options')"
+                :more-results-label="t('common:vue.common.refineSearchMoreResults', 'Refine the search to see {count} more results')"
+                :max-results="60"
+              />
+              <div class="relative min-w-0">
+                <span class="pointer-events-none absolute inset-y-0 left-3 flex items-center text-sm text-muted-foreground" aria-hidden="true">+</span>
+                <input
+                  v-model.number="activePlayer.equipment[slot].enhancementLevel"
+                  class="control-input pl-6 pr-2 text-right tabular-nums"
+                  type="number"
+                  min="0"
+                  max="30"
+                  :aria-label="`${equipmentLabelMap[slot]} ${t('common:vue.home.enhancement', 'Enhancement')}`"
+                  :title="t('common:vue.home.enhancement', 'Enhancement')"
+                />
+              </div>
             </div>
             <div class="mt-2">
               <p class="control-label">{{ t("common:vue.home.marketEnhancements", "Market Enhancements") }}</p>
