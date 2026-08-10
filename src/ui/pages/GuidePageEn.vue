@@ -90,8 +90,8 @@
             alt="Chinese Import and Export dialog with userscript installation, team import, and solo import controls"
             caption="Import and Export supports the main-site userscript, pasted JSON, and local files"
             open-label="View full image"
-            :width="1425"
-            :height="990"
+            :width="2850"
+            :height="1980"
           />
 
           <RouterLink class="guide-route-link" to="/home">Open Home</RouterLink>
@@ -129,8 +129,8 @@
             alt="Chinese Home combat workspace with players, target settings, simulation controls, and key results"
             caption="Home basic settings and simulation workspace"
             open-label="View full image"
-            :width="1425"
-            :height="990"
+            :width="2850"
+            :height="1980"
           />
 
           <div class="mt-6 grid gap-3 sm:grid-cols-2">
@@ -171,16 +171,16 @@
               alt="Chinese Queue runner showing baseline, add, run, and clear actions"
               caption="The Queue runner prompts you to establish a baseline first"
               open-label="View full image"
-              :width="1280"
-              :height="720"
+              :width="2560"
+              :height="1440"
             />
             <GuideFigure
               src="/tutorial/multi-results.png"
               alt="Chinese Multi-Round Results page with scoring model notes and baseline summary"
               caption="Multi-Round Results displays ranking and aggregated metrics after a queue run"
               open-label="View full image"
-              :width="1265"
-              :height="712"
+              :width="2530"
+              :height="1424"
             />
           </div>
 
@@ -226,8 +226,8 @@
             alt="Chinese Advisor settings with scoring preference, scan scope, verification rounds, and start button"
             caption="Choose the scoring goal and scan scope before starting Advisor"
             open-label="View full image"
-            :width="1440"
-            :height="1000"
+            :width="2880"
+            :height="2000"
           />
 
           <RouterLink class="guide-route-link" to="/advisor">Open Advisor</RouterLink>
@@ -253,8 +253,8 @@
             alt="Chinese Enhancement workspace with item settings and strategy, mirror, decomposition, and risk tabs"
             caption="Enhancement settings, protection strategies, and risk analysis share one workspace"
             open-label="View full image"
-            :width="1265"
-            :height="712"
+            :width="2880"
+            :height="2000"
           />
 
           <RouterLink class="guide-route-link" to="/enhancement">Open Enhancement</RouterLink>
@@ -292,8 +292,8 @@
             alt="Chinese Skilling planner with optimization mode, scope, price actions, and missing-data prompt"
             caption="Import a Skilling snapshot before all target-level controls and calculations become available"
             open-label="View full image"
-            :width="1280"
-            :height="720"
+            :width="2560"
+            :height="1440"
           />
 
           <RouterLink class="guide-route-link" to="/skilling">Open Skilling</RouterLink>
@@ -331,8 +331,8 @@
             alt="Chinese Settings page with scoring, execution, workers, sampling, and statistics controls"
             caption="Queue scoring, workers, and sampling settings affect both runtime and interpretation"
             open-label="View full image"
-            :width="1265"
-            :height="712"
+            :width="2880"
+            :height="2000"
           />
 
           <RouterLink class="guide-route-link" to="/settings">Open Settings</RouterLink>

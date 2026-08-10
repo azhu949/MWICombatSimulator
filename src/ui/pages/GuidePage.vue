@@ -86,8 +86,8 @@
             src="/tutorial/import-data.png"
             alt="主页导入导出窗口，包含主站脚本安装、组队导入和单人导入区域"
             caption="导入/导出窗口同时支持主站脚本、JSON 文本和本地文件"
-            :width="1425"
-            :height="990"
+            :width="2850"
+            :height="1980"
           />
 
           <RouterLink class="guide-route-link" to="/home">打开主页</RouterLink>
@@ -124,8 +124,8 @@
             src="/tutorial/home-workspace.png"
             alt="主页战斗模拟工作区，包含玩家栏、目标配置、模拟按钮和关键结果区域"
             caption="主页基础设置和模拟工作区"
-            :width="1425"
-            :height="990"
+            :width="2850"
+            :height="1980"
           />
 
           <div class="mt-6 grid gap-3 sm:grid-cols-2">
@@ -165,15 +165,15 @@
               src="/tutorial/queue.png"
               alt="队列运行器空状态，显示设为基准、加入队列、运行队列和清空队列操作"
               caption="队列运行器会先提示建立基准"
-              :width="1280"
-              :height="720"
+              :width="2560"
+              :height="1440"
             />
             <GuideFigure
               src="/tutorial/multi-results.png"
               alt="多轮结果页面，包含评分模型说明和基准摘要"
               caption="完成队列后，多轮结果页会展示排名和汇总数据"
-              :width="1265"
-              :height="712"
+              :width="2530"
+              :height="1424"
             />
           </div>
 
@@ -218,8 +218,8 @@
             src="/tutorial/advisor.png"
             alt="刷图推荐器设置页面，包含评分偏好、扫描范围、复核次数和开始推荐按钮"
             caption="先选择推荐目标和扫描范围，再开始推荐"
-            :width="1440"
-            :height="1000"
+            :width="2880"
+            :height="2000"
           />
 
           <RouterLink class="guide-route-link" to="/advisor">打开刷图推荐</RouterLink>
@@ -244,8 +244,8 @@
             src="/tutorial/enhancement.png"
             alt="强化模拟器页面，左侧为物品和强化条件，右侧为保护策略、贤者之镜和风险分析标签页"
             caption="强化配置、保护策略和风险分析集中在同一工作区"
-            :width="1265"
-            :height="712"
+            :width="2880"
+            :height="2000"
           />
 
           <RouterLink class="guide-route-link" to="/enhancement">打开强化模拟</RouterLink>
@@ -282,8 +282,8 @@
             src="/tutorial/skilling.png"
             alt="生活技能升级推荐器，包含优化模式、计算范围、价格操作和未导入数据提示"
             caption="导入生活技能快照后，计算按钮和目标等级设置才会完整可用"
-            :width="1280"
-            :height="720"
+            :width="2560"
+            :height="1440"
           />
 
           <RouterLink class="guide-route-link" to="/skilling">打开生活技能</RouterLink>
@@ -320,8 +320,8 @@
             src="/tutorial/settings.png"
             alt="设置页面，包含评分模型、执行与线程、采样与统计配置"
             caption="队列评分、线程和采样设置会直接影响运行耗时与结果口径"
-            :width="1265"
-            :height="712"
+            :width="2880"
+            :height="2000"
           />
 
           <RouterLink class="guide-route-link" to="/settings">打开设置</RouterLink>
