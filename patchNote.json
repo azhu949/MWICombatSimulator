@@ -1,4 +1,22 @@
 {
+    "2026年8月10日（v2.0.5）": {
+        "label": {
+            "zh": "2026年8月10日（v2.0.5）",
+            "en": "August 10, 2026 (v2.0.5)"
+        },
+        "notes": {
+            "zh": [
+                "更新日志从弹窗迁移为独立页面，进入页面后自动标记当前未读版本。",
+                "更新日志采用左侧版本、右侧内容的双栏排版，移动端自动切换为上下布局。",
+                "放大侧边栏导航文字和图标，未读更新圆点新增轻微呼吸提示并兼容减少动态效果设置。"
+            ],
+            "en": [
+                "Patch notes now open on a dedicated page instead of a dialog, and current unread versions are marked as read when the page opens.",
+                "Updated the patch notes layout with versions on the left and release details on the right, stacking vertically on mobile.",
+                "Increased sidebar navigation text and icon sizes, and added a subtle reduced-motion-aware breathing cue for unread updates."
+            ]
+        }
+    },
     "2026年8月10日（v2.0.4）": {
         "label": {
             "zh": "2026年8月10日（v2.0.4）",

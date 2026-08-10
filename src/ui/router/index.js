@@ -40,6 +40,12 @@ const routes = [
         meta: { navLabelKey: "common:menu.multiResults", navLabel: "Multi-round", navGroup: "support", navOrder: 6 },
     },
     {
+        path: "/patch-notes",
+        name: "patch-notes",
+        component: () => import("../pages/PatchNotesPage.vue"),
+        meta: { showCombatToolbar: false, navHidden: true, navLabelKey: "common:patchNotes", navLabel: "Patch Notes" },
+    },
+    {
         path: "/guide",
         name: "guide",
         component: () => import("../pages/GuidePage.vue"),

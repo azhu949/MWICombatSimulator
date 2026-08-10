@@ -3,6 +3,13 @@ import enCommon from "../../../locales/en/common.json";
 import zhCommon from "../../../locales/zh/common.json";
 
 describe("common locale resources", () => {
+    it("defines the dedicated patch notes page copy in both languages", () => {
+        expect(enCommon?.vue?.app?.patchNotesPageDescription).toContain("by version");
+        expect(zhCommon?.vue?.app?.patchNotesPageDescription).toContain("按版本");
+        expect(enCommon?.vue?.app?.patchNotesMarkReadHint).toContain("open this page");
+        expect(zhCommon?.vue?.app?.patchNotesMarkReadHint).toContain("进入此页面");
+    });
+
     it("defines the enhancement workspace labels in both supported languages", () => {
         expect(enCommon?.menu?.enhancement).toBe("Enhancement");
         expect(zhCommon?.menu?.enhancement).toBe("强化模拟");

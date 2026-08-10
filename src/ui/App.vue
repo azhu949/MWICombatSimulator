@@ -4,7 +4,6 @@
       :version="appVersion"
       :has-unread-patch-notes="hasUnreadPatchNotes"
       :patch-notes-label="patchNotesButtonAriaLabel"
-      @patch-notes="openPatchNotesModal"
       @feedback="openFeedbackModal"
     />
 
@@ -106,49 +105,6 @@
         </div>
 
         <p class="text-xs text-muted-foreground">{{ feedbackCopyStatus }}</p>
-      </div>
-    </BaseModal>
-
-    <BaseModal
-      :open="patchNotesModalOpen"
-      :title="t('common:patchNotes', 'Patch Notes')"
-      panel-class="max-w-[96vw] xl:max-w-[1100px]"
-      initial-focus-selector="[data-patch-notes-start]"
-      @close="closePatchNotesModal"
-    >
-      <div class="space-y-3">
-        <div class="flex flex-wrap items-center justify-between gap-2 text-xs text-muted-foreground">
-          <span>{{ t("common:vue.settings.versionsCount", "Versions", { count: patchNotesEntries.length }) }}</span>
-          <span v-if="hasUnreadPatchNotes">
-            {{ t("common:vue.app.patchNotesUnreadStatus", "Unread updates", { count: patchNotesUnreadCount }) }}
-          </span>
-        </div>
-
-        <p class="text-xs text-muted-foreground">
-          {{ t("common:vue.app.patchNotesMarkReadHint", "Unread patch notes will be marked as read when you close this dialog.") }}
-        </p>
-
-        <div
-          v-if="patchNotesEntries.length > 0"
-          class="max-h-[65vh] space-y-2 overflow-y-auto pr-1 outline-none"
-          data-patch-notes-start
-          tabindex="-1"
-        >
-          <DisclosurePanel
-            v-for="entry in patchNotesEntries"
-            :key="entry.entryId"
-            :title="entry.label"
-            :default-open="entry.entryId === patchNotesDefaultOpenEntryId"
-          >
-            <ul class="list-disc space-y-1 pl-5 text-sm text-foreground">
-              <li v-for="note in entry.notes" :key="note">{{ note }}</li>
-            </ul>
-          </DisclosurePanel>
-        </div>
-
-        <p v-else class="text-sm text-foreground/85" data-patch-notes-start tabindex="-1">
-          {{ t("common:vue.app.patchNotesEmpty", "No patch notes yet.") }}
-        </p>
       </div>
     </BaseModal>
 
@@ -298,7 +254,6 @@ import {
 import BaseModal from "./components/BaseModal.vue";
 import AppSidebar from "./components/AppSidebar.vue";
 import CombatCommandBar from "./components/CombatCommandBar.vue";
-import DisclosurePanel from "./components/DisclosurePanel.vue";
 import { Button } from "./components/ui/button/index.js";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "./components/ui/sidebar/index.js";
 import { useSimulatorStore } from "../stores/simulatorStore.js";
@@ -337,7 +292,6 @@ const equipmentPriceConfirmationRefreshFailed = ref(false);
 const queueAdditionPending = ref(false);
 const pendingQueueDraftFingerprint = ref("");
 const baselineReminderDismissed = ref(isBaselineReminderDismissed());
-const patchNotesModalOpen = ref(false);
 const patchNotesUnreadEntries = ref([]);
 const topQueueActionStatus = ref({
   tone: "secondary",
@@ -455,11 +409,6 @@ const topQueueActionStatusClass = computed(() => {
 const patchNotesEntries = computed(() => resolvePatchNoteEntries(undefined, language.value));
 const patchNotesUnreadCount = computed(() => patchNotesUnreadEntries.value.length);
 const hasUnreadPatchNotes = computed(() => patchNotesUnreadCount.value > 0);
-const patchNotesDefaultOpenEntryId = computed(() => (
-  patchNotesUnreadEntries.value[0]?.entryId
-  || patchNotesEntries.value[0]?.entryId
-  || ""
-));
 const patchNotesButtonAriaLabel = computed(() => (
   hasUnreadPatchNotes.value
     ? t("common:vue.app.patchNotesUnreadAriaLabel", "Patch Notes, {{count}} unread updates", { count: patchNotesUnreadCount.value })
@@ -862,20 +811,16 @@ function refreshPatchNoteUnreadEntries() {
   });
 }
 
-function openPatchNotesModal() {
-  patchNotesModalOpen.value = true;
-}
-
-function closePatchNotesModal() {
+function markPatchNotesReadOnPageEntry() {
   const unreadEntryIds = patchNotesUnreadEntries.value.map((entry) => entry.entryId);
-  patchNotesModalOpen.value = false;
-
-  if (unreadEntryIds.length > 0) {
-    markPatchNoteEntriesAsRead({
-      entryIds: unreadEntryIds,
-    });
-    refreshPatchNoteUnreadEntries();
+  if (unreadEntryIds.length === 0) {
+    return;
   }
+
+  markPatchNoteEntriesAsRead({
+    entryIds: unreadEntryIds,
+  });
+  refreshPatchNoteUnreadEntries();
 }
 
 async function goToHomeResults() {
@@ -932,6 +877,9 @@ watch(
     if (nextRouteName === "multi-results") {
       closeQueueCompleteModal();
     }
+    if (nextRouteName === "patch-notes") {
+      markPatchNotesReadOnPageEntry();
+    }
   },
 );
 
@@ -947,6 +895,9 @@ onMounted(() => {
     entries: patchNotesEntries.value,
   });
   refreshPatchNoteUnreadEntries();
+  if (route.name === "patch-notes") {
+    markPatchNotesReadOnPageEntry();
+  }
   scheduleDeferredInitialization();
   window.addEventListener("error", onWindowError);
   window.addEventListener("unhandledrejection", onUnhandledRejection);

@@ -13,18 +13,18 @@
 
     <nav class="min-h-0 flex-1 overflow-y-auto px-2 py-3" aria-label="Primary navigation">
       <div v-for="group in navigationGroups" :key="group.id" class="mb-4 last:mb-0">
-        <p v-if="!collapsed" class="mb-1 px-2 text-[10px] font-semibold uppercase text-muted-foreground">{{ group.label }}</p>
-        <div class="space-y-0.5">
+        <p v-if="!collapsed" class="mb-1.5 px-2 text-[11px] font-semibold uppercase text-muted-foreground">{{ group.label }}</p>
+        <div class="space-y-1">
           <RouterLink
             v-for="item in group.items"
             :key="item.name"
             :to="item.path"
-            class="group flex h-9 items-center rounded-md px-2.5 text-sm font-medium text-sidebar-foreground/72 outline-none transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring"
-            :class="[collapsed ? 'justify-center px-0' : 'gap-2.5', route.name === item.name ? 'bg-sidebar-accent text-sidebar-accent-foreground' : '']"
+            class="group flex h-10 items-center rounded-md px-3 text-[15px] font-medium text-sidebar-foreground/72 outline-none transition-colors hover:bg-sidebar-accent hover:text-sidebar-accent-foreground focus-visible:ring-2 focus-visible:ring-sidebar-ring"
+            :class="[collapsed ? 'justify-center px-0' : 'gap-3', route.name === item.name ? 'bg-sidebar-accent text-sidebar-accent-foreground' : '']"
             :title="collapsed ? item.label : undefined"
             @click="mobile && setMobileOpen(false)"
           >
-            <component :is="item.icon" class="size-4 shrink-0" />
+            <component :is="item.icon" class="size-[1.125rem] shrink-0" />
             <span v-if="!collapsed" class="truncate">{{ item.label }}</span>
           </RouterLink>
         </div>
@@ -32,17 +32,31 @@
     </nav>
 
     <div class="shrink-0 space-y-1 border-t border-sidebar-border p-2">
-      <button type="button" class="sidebar-action" :class="collapsed ? 'justify-center' : ''" :title="patchNotesLabel" @click="emit('patch-notes')">
-        <ScrollText class="size-4 shrink-0" />
+      <RouterLink
+        to="/patch-notes"
+        class="sidebar-action relative"
+        :class="[collapsed ? 'justify-center' : '', route.name === 'patch-notes' ? 'sidebar-action-active' : '']"
+        :aria-label="patchNotesLabel"
+        :title="patchNotesLabel"
+        @click="mobile && setMobileOpen(false)"
+      >
+        <ScrollText class="size-[1.125rem] shrink-0" />
         <span v-if="!collapsed" class="truncate">{{ t("common:patchNotes", "Patch Notes") }}</span>
-        <span v-if="hasUnreadPatchNotes" class="ml-auto size-1.5 rounded-md bg-primary" aria-hidden="true" />
-      </button>
+        <span
+          v-if="hasUnreadPatchNotes"
+          class="sidebar-unread-indicator"
+          :class="collapsed ? 'sidebar-unread-indicator-collapsed' : 'ml-auto'"
+          aria-hidden="true"
+        >
+          <span class="sidebar-unread-dot" />
+        </span>
+      </RouterLink>
       <a href="https://github.com/azhu949/MWICombatSimulator" class="sidebar-action" :class="collapsed ? 'justify-center' : ''" target="_blank" rel="noopener noreferrer" :title="githubLabel">
-        <GitFork class="size-4 shrink-0" />
+        <GitFork class="size-[1.125rem] shrink-0" />
         <span v-if="!collapsed" class="truncate">GitHub</span>
       </a>
       <button type="button" class="sidebar-action" :class="collapsed ? 'justify-center' : ''" :title="feedbackLabel" @click="emit('feedback')">
-        <MessageSquare class="size-4 shrink-0" />
+        <MessageSquare class="size-[1.125rem] shrink-0" />
         <span v-if="!collapsed" class="truncate">{{ feedbackLabel }}</span>
       </button>
     </div>
@@ -76,7 +90,7 @@ defineProps({
   patchNotesLabel: { type: String, default: "Patch Notes" },
 });
 
-const emit = defineEmits(["feedback", "patch-notes"]);
+const emit = defineEmits(["feedback"]);
 const router = useRouter();
 const route = useRoute();
 const { setMobileOpen } = useSidebar();
@@ -101,7 +115,7 @@ const groupLabels = computed(() => ({
 
 const navigationGroups = computed(() => {
   const items = router.getRoutes()
-    .filter((entry) => entry.meta?.navOrder)
+    .filter((entry) => entry.meta?.navOrder && !entry.meta?.navHidden)
     .sort((left, right) => left.meta.navOrder - right.meta.navOrder)
     .map((entry) => ({
       name: entry.name,
@@ -126,13 +140,13 @@ const githubLabel = computed(() => t("common:vue.app.feedbackGitHubAriaLabel", "
 .sidebar-action {
   display: flex;
   width: 100%;
-  min-height: 2rem;
+  min-height: 2.25rem;
   align-items: center;
-  gap: 0.625rem;
+  gap: 0.75rem;
   border-radius: 0.375rem;
-  padding: 0.375rem 0.625rem;
+  padding: 0.5rem 0.75rem;
   color: color-mix(in oklab, var(--sidebar-foreground) 68%, transparent);
-  font-size: 0.75rem;
+  font-size: 0.8125rem;
   font-weight: 500;
   text-decoration: none;
   transition: color 150ms ease, background-color 150ms ease;
@@ -141,5 +155,50 @@ const githubLabel = computed(() => t("common:vue.app.feedbackGitHubAriaLabel", "
 .sidebar-action:hover {
   background: var(--sidebar-accent);
   color: var(--sidebar-accent-foreground);
+}
+
+.sidebar-action-active {
+  background: var(--sidebar-accent);
+  color: var(--sidebar-accent-foreground);
+}
+
+.sidebar-unread-indicator {
+  display: grid;
+  width: 1rem;
+  height: 1rem;
+  flex-shrink: 0;
+  place-items: center;
+}
+
+.sidebar-unread-indicator-collapsed {
+  position: absolute;
+  top: 0.25rem;
+  right: 0.25rem;
+}
+
+.sidebar-unread-dot {
+  width: 0.375rem;
+  height: 0.375rem;
+  border-radius: 9999px;
+  background: var(--sidebar-primary);
+}
+
+@media (prefers-reduced-motion: no-preference) {
+  .sidebar-unread-dot {
+    animation: sidebar-unread-breathe 2.2s ease-in-out infinite;
+  }
+}
+
+@keyframes sidebar-unread-breathe {
+  0%,
+  100% {
+    opacity: 0.68;
+    transform: scale(0.86);
+  }
+
+  50% {
+    opacity: 1;
+    transform: scale(1.12);
+  }
 }
 </style>

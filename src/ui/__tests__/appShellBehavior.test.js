@@ -16,6 +16,7 @@ function createTestRouter() {
     routes: [
       { path: "/home", name: "home", component: EmptyPage, meta: { navLabelKey: "home", navLabel: "Home", navGroup: "simulation", navOrder: 1 } },
       { path: "/queue", name: "queue", component: EmptyPage, meta: { navLabelKey: "queue", navLabel: "Queue", navGroup: "support", navOrder: 2 } },
+      { path: "/patch-notes", name: "patch-notes", component: EmptyPage, meta: { navLabelKey: "patchNotes", navLabel: "Patch Notes", navHidden: true } },
     ],
   });
 }
@@ -36,6 +37,27 @@ describe("application shell behavior", () => {
 
     const queueLink = wrapper.findAll("a").find((link) => link.text().includes("Queue"));
     expect(queueLink.classes()).toContain("bg-sidebar-accent");
+  });
+
+  it("links to patch notes and exposes the semantic unread indicator", async () => {
+    const router = createTestRouter();
+    await router.push("/home");
+    await router.isReady();
+
+    const wrapper = mount(defineComponent({
+      components: { AppSidebar, SidebarProvider },
+      template: '<SidebarProvider><AppSidebar version="1.0.0" has-unread-patch-notes patch-notes-label="Patch Notes, 1 unread update" /></SidebarProvider>',
+    }), { global: { plugins: [router] }, attachTo: document.body });
+
+    const patchNotesLink = wrapper.findAll("a").find((link) => link.attributes("href") === "/patch-notes");
+    expect(patchNotesLink).toBeTruthy();
+    expect(patchNotesLink.attributes("aria-label")).toBe("Patch Notes, 1 unread update");
+    expect(patchNotesLink.find(".sidebar-unread-indicator").exists()).toBe(true);
+    expect(patchNotesLink.find(".sidebar-unread-dot").exists()).toBe(true);
+
+    await router.push("/patch-notes");
+    await flushPromises();
+    expect(patchNotesLink.classes()).toContain("sidebar-action-active");
   });
 
   it("persists desktop sidebar collapse state", async () => {

@@ -18,12 +18,13 @@ describe("App shell contracts", () => {
   });
 
   it("keeps routes lazy and supplies ordered navigation metadata", () => {
-    for (const route of ["home", "advisor", "enhancement", "skilling", "queue", "multi-results", "settings", "guide"]) {
+    for (const route of ["home", "advisor", "enhancement", "skilling", "queue", "multi-results", "patch-notes", "settings", "guide"]) {
       expect(routerSource).toContain(`name: "${route}"`);
     }
     expect(routerSource).toContain("navLabelKey");
     expect(routerSource).toContain("navGroup");
     expect(routerSource).toContain("navOrder");
+    expect(routerSource).toContain("navHidden: true");
     expect(sidebarSource).toContain("router.getRoutes()");
   });
 
@@ -32,6 +33,16 @@ describe("App shell contracts", () => {
     expect(sidebarSource).toContain("common:vue.app.feedback");
     expect(sidebarSource).toContain("common:patchNotes");
     expect(sidebarSource).toContain("v{{ version }}");
+  });
+
+  it("uses the dedicated patch-notes route and clears unread entries on page entry", () => {
+    expect(sidebarSource).toContain('to="/patch-notes"');
+    expect(sidebarSource).toContain("sidebar-unread-breathe");
+    expect(sidebarSource).toContain("prefers-reduced-motion: no-preference");
+    expect(appSource).not.toContain("patchNotesModalOpen");
+    expect(appSource).not.toContain("openPatchNotesModal");
+    expect(appSource).toContain('nextRouteName === "patch-notes"');
+    expect(appSource).toContain("markPatchNotesReadOnPageEntry();");
   });
 
   it("keeps theme and language as accessible global actions", () => {
