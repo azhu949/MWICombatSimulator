@@ -122,7 +122,7 @@
             {{ t("common:exportToExcel", "Export To Excel") }}
           </button>
         </div>
-        <Table class="min-w-[2060px] w-max text-sm">
+        <Table class="min-w-[2180px] w-max text-sm">
           <TableHeader>
             <TableRow class="border-b border-border text-left text-xs uppercase  text-muted-foreground">
               <TableHead class="px-2 py-2">{{ t("common:multiRound.rank", "Rank") }}</TableHead>
@@ -132,6 +132,7 @@
               <TableHead class="px-2 py-2">{{ t("common:multiRound.performanceScore", "Performance Score") }}</TableHead>
               <TableHead class="px-2 py-2">{{ t("common:multiRound.stabilityScore", "Stability Score") }}</TableHead>
               <TableHead class="px-2 py-2">{{ costScoreColumnHeader }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:queue.dailyNoRngProfit", "Daily No RNG Profit") }}</TableHead>
               <TableHead class="px-2 py-2">{{ t("common:vue.queue.deltaProfitPerHour", "Delta Profit/h") }}</TableHead>
               <TableHead class="px-2 py-2">{{ t("common:multiRound.deltaProfitPct", "Profit Delta%") }}</TableHead>
               <TableHead class="px-2 py-2">{{ t("common:multiRound.deltaDpsPct", "DPS Delta%") }}</TableHead>
@@ -169,6 +170,7 @@
               <TableCell class="px-2 py-2">{{ formatNumber(row.performanceScore) }}</TableCell>
               <TableCell class="px-2 py-2">{{ formatNumber(row.stabilityScore) }}</TableCell>
               <TableCell class="px-2 py-2">{{ formatNumber(row.costScore) }}</TableCell>
+              <TableCell class="px-2 py-2">{{ formatCompactCurrency(row.dailyNoRngProfitPerDay) }}</TableCell>
               <TableCell class="px-2 py-2" :class="profitDeltaClass(row.deltaProfitPerHour)">{{ formatCurrency(row.deltaProfitPerHour) }}</TableCell>
               <TableCell class="px-2 py-2" :class="profitDeltaClass(row.deltaProfitPct)">{{ formatSignedPercent(row.deltaProfitPct) }}</TableCell>
               <TableCell class="px-2 py-2" :class="profitDeltaClass(row.deltaDpsPct)">{{ formatSignedPercent(row.deltaDpsPct) }}</TableCell>
@@ -412,12 +414,12 @@ const baselineSummaryRows = computed(() => {
     {
       key: "dailyNoRngProfit",
       label: t("common:queue.dailyNoRngProfit", "Daily No RNG Profit"),
-      value: formatCurrency(metrics?.dailyNoRngProfit),
+      value: formatCompactCurrency(metrics?.dailyNoRngProfit),
     },
     {
       key: "xpPerHour",
       label: t("common:vue.queue.xpPerHour", "XP/h"),
-      value: formatNumber(metrics?.xpPerHour),
+      value: formatCompactCurrency(metrics?.xpPerHour),
     },
     {
       key: "killsPerHour",
@@ -972,6 +974,7 @@ async function exportRankingRowsExcel() {
       { header: t("common:multiRound.performanceScore", "Performance Score"), key: "performanceScore", width: 16 },
       { header: t("common:multiRound.stabilityScore", "Stability Score"), key: "stabilityScore", width: 14 },
       { header: costScoreColumnHeader.value, key: "costScore", width: 18 },
+      { header: t("common:queue.dailyNoRngProfit", "Daily No RNG Profit"), key: "dailyNoRngProfitPerDay", width: 18 },
       { header: t("common:vue.queue.deltaProfitPerHour", "Delta Profit/h"), key: "deltaProfitPerHour", width: 14 },
       { header: t("common:multiRound.deltaProfitPct", "Profit Delta%"), key: "deltaProfitPct", width: 12 },
       { header: t("common:multiRound.deltaDpsPct", "DPS Delta%"), key: "deltaDpsPct", width: 10 },
@@ -994,6 +997,7 @@ async function exportRankingRowsExcel() {
       performanceScore: toFiniteForExport(row?.performanceScore, 2),
       stabilityScore: toFiniteForExport(row?.stabilityScore, 2),
       costScore: toFiniteForExport(row?.costScore, 2),
+      dailyNoRngProfitPerDay: formatCompactCurrency(row?.dailyNoRngProfitPerDay),
       deltaProfitPerHour: formatCompactCurrency(row?.deltaProfitPerHour),
       deltaProfitPct: toFiniteForExport(row?.deltaProfitPct, 2),
       deltaDpsPct: toFiniteForExport(row?.deltaDpsPct, 2),
@@ -1054,6 +1058,7 @@ async function exportRankingRowsExcel() {
       "performanceScore",
       "stabilityScore",
       "costScore",
+      "dailyNoRngProfitPerDay",
       "deltaProfitPerHour",
       "deltaProfitPct",
       "deltaDpsPct",

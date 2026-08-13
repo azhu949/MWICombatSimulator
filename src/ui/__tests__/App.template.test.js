@@ -113,6 +113,8 @@ describe("App shell contracts", () => {
     expect(appSource).toContain("common:queue.confirmPriceSourceHistoricalAsk");
     expect(appSource).toContain("formatConfirmationVolume(entry.volume)");
     expect(appSource).toContain("formatConfirmationSlots(entry)");
+    expect(appSource).toContain("formatConfirmedMarketPrice(entry.price)");
+    expect(appSource).toContain('unitCase: "lower"');
   });
 
   it("accepts a manually entered buy price for equipment without any market price", () => {

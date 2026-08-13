@@ -269,7 +269,7 @@
                     </p>
                   </template>
                   <template v-else>
-                    {{ formatConfirmedMarketNumber(entry.price) }}
+                    {{ formatConfirmedMarketPrice(entry.price) }}
                   </template>
                 </td>
                 <td class="px-3 py-2">
@@ -319,6 +319,7 @@ import CombatCommandBar from "./components/CombatCommandBar.vue";
 import { Button } from "./components/ui/button/index.js";
 import { SidebarInset, SidebarProvider, SidebarTrigger } from "./components/ui/sidebar/index.js";
 import { useSimulatorStore } from "../stores/simulatorStore.js";
+import { formatCompactAmount } from "../services/amountFormatting.js";
 import { useGameDataText } from "./composables/useGameDataText.js";
 import { useI18nText } from "./composables/useI18nText.js";
 import { useTheme } from "./composables/useTheme.js";
@@ -740,6 +741,13 @@ function confirmEquipmentPricesAndAdd() {
 
 function formatConfirmedMarketNumber(value) {
   return new Intl.NumberFormat(language.value === "zh" ? "zh-CN" : "en-US", { maximumFractionDigits: 2 }).format(Number(value || 0));
+}
+
+function formatConfirmedMarketPrice(value) {
+  return formatCompactAmount(value, {
+    locale: language.value === "zh" ? "zh-CN" : "en-US",
+    unitCase: "lower",
+  });
 }
 
 function formatConfirmationSlots(entry) {

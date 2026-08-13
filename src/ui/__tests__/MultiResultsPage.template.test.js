@@ -8,6 +8,11 @@ describe("MultiResultsPage baseline summary copy", () => {
         expect(multiResultsPageSource).toContain('t("common:queue.baselineSummaryAggregationHint"');
     });
 
+    it("uses compact amounts for baseline profit and XP", () => {
+        expect(multiResultsPageSource).toContain("value: formatCompactCurrency(metrics?.dailyNoRngProfit)");
+        expect(multiResultsPageSource).toContain("value: formatCompactCurrency(metrics?.xpPerHour)");
+    });
+
     it("shows the selected cost score metric and uses a dynamic cost score header", () => {
         expect(multiResultsPageSource).toContain('t("common:multiRound.scoreModelParamCostGoldMetricSelected", "", { mode: currentCostScoreModeLabel })');
         expect(multiResultsPageSource).toContain('const costScoreColumnHeader = computed(() =>');
@@ -38,5 +43,15 @@ describe("MultiResultsPage baseline summary copy", () => {
         expect(multiResultsPageSource).toContain('row.costInsights?.equipmentNetCost');
         expect(multiResultsPageSource).not.toContain("upgradePriceBefore");
         expect(multiResultsPageSource).not.toContain("upgradePriceAfter");
+    });
+
+    it("shows daily expected profit before hourly profit delta and includes it in the export", () => {
+        const dailyProfitHeader = multiResultsPageSource.indexOf('t("common:queue.dailyNoRngProfit", "Daily No RNG Profit")');
+        const deltaProfitHeader = multiResultsPageSource.indexOf('t("common:vue.queue.deltaProfitPerHour", "Delta Profit/h")');
+        expect(dailyProfitHeader).toBeGreaterThan(-1);
+        expect(deltaProfitHeader).toBeGreaterThan(dailyProfitHeader);
+        expect(multiResultsPageSource).toContain("formatCompactCurrency(row.dailyNoRngProfitPerDay)");
+        expect(multiResultsPageSource).toContain('key: "dailyNoRngProfitPerDay"');
+        expect(multiResultsPageSource).toContain("dailyNoRngProfitPerDay: formatCompactCurrency(row?.dailyNoRngProfitPerDay)");
     });
 });
