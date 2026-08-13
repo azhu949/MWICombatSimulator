@@ -310,6 +310,17 @@ const queueDisplayItems = computed(() => {
               time: formatMarketDataTime(warning?.marketTimestamp),
             },
           )
+          : warning?.code === "manual_price"
+          ? t(
+            "common:queue.manualPriceWarning",
+            "{{slot}}: {{item}} +{{level}} uses a manually entered price {{price}}. This value was not verified against market data. Double-check the digits before relying on it.",
+            {
+              slot: localizeEquipmentSlotLabel(warning?.slotKey),
+              item: localizeHridDisplayName(warning?.itemHrid),
+              level: Number(warning?.enhancementLevel || 0),
+              price: formatMarketNumber(warning?.price),
+            },
+          )
           : t(
             "common:queue.baselineSaleZeroWarning",
             "{{slot}}: {{item}} +{{level}} has no exact buy or sell quote. Its sale value is treated as 0.",

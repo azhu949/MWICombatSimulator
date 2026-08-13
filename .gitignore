@@ -7,3 +7,5 @@ dist/
 .claude/settings.local.json
 tmp/
 docs/superpowers
+/.snow/*
+/.codefree/*

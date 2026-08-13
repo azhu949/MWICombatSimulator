@@ -20,4 +20,23 @@ describe("MultiResultsPage baseline summary copy", () => {
         expect(multiResultsPageSource).not.toContain("SLOT_LABEL_FALLBACK_MAP");
         expect(multiResultsPageSource).not.toContain("characterItemsUtil.mainHand");
     });
+
+    it("flags manually entered equipment prices in the ranking table and export", () => {
+        expect(multiResultsPageSource).toContain('v-if="hasManualUpgradePrice(row)"');
+        expect(multiResultsPageSource).toContain('t("common:multiRound.manualPriceBadge", "Manual")');
+        expect(multiResultsPageSource).toContain('"common:multiRound.manualPriceTooltip"');
+        expect(multiResultsPageSource).toContain("formatEquipmentBuyPriceForExport(row)");
+    });
+
+    it("shows equipment sale value, buy price and net cost columns with an upgrade cost composition tooltip", () => {
+        expect(multiResultsPageSource).toContain('t("common:vue.queue.equipmentSaleValue", "Replaced Equipment Sale Value")');
+        expect(multiResultsPageSource).toContain('t("common:vue.queue.equipmentBuyPrice", "Target Equipment Buy Price")');
+        expect(multiResultsPageSource).toContain('t("common:vue.queue.equipmentNetCost", "Equipment Net Cost")');
+        expect(multiResultsPageSource).toContain('t(\'common:vue.queue.upgradeCostComposition\'');
+        expect(multiResultsPageSource).toContain('row.costInsights?.equipmentSaleValue');
+        expect(multiResultsPageSource).toContain('row.costInsights?.equipmentBuyPrice');
+        expect(multiResultsPageSource).toContain('row.costInsights?.equipmentNetCost');
+        expect(multiResultsPageSource).not.toContain("upgradePriceBefore");
+        expect(multiResultsPageSource).not.toContain("upgradePriceAfter");
+    });
 });

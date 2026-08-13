@@ -2375,6 +2375,9 @@ describe("simulatorStore", () => {
         expect(variantRow).toBeTruthy();
         expect(Number(variantRow.costInsights?.totalUpgradeCost)).toBe(expectedPreview.totals.totalCost);
         expect(Number(variantRow.costInsights?.totalUpgradeCost)).toBeGreaterThan(0);
+        expect(variantRow.costInsights?.equipmentSaleValue).toBeNull();
+        expect(variantRow.costInsights?.equipmentBuyPrice).toBeNull();
+        expect(variantRow.costInsights?.equipmentNetCost).toBeNull();
     });
 
     it("computes non-zero default ability upgrade cost from baseline snapshot", async () => {
@@ -3673,7 +3676,7 @@ describe("simulatorStore", () => {
         expect(global.fetch.mock.calls.filter(([url]) => String(url).includes("mwi-market-history"))).toHaveLength(2);
     });
 
-    it("keeps the queue and editor unchanged when official and historical prices are unavailable", async () => {
+    it("returns a manual price confirmation when official and historical prices are unavailable", async () => {
         const simulator = useSimulatorStore();
         const equipmentItemHrid = findFirstEquipmentItem();
         await simulator.setQueueBaselineForActivePlayer();
@@ -3691,11 +3694,186 @@ describe("simulatorStore", () => {
             }),
         }));
 
-        await expect(simulator.prepareActivePlayerQueueAddition()).rejects.toMatchObject({
-            code: "missing_enhancement_ask",
+        const preparation = await simulator.prepareActivePlayerQueueAddition();
+        expect(preparation).toMatchObject({
+            requiresConfirmation: true,
+            confirmations: [expect.objectContaining({
+                itemHrid: equipmentItemHrid,
+                enhancementLevel: 14,
+                price: null,
+                volume: null,
+                source: "manual",
+                marketTimestamp: 0,
+            })],
         });
         expect(simulator.activeQueueState.items).toEqual([]);
         expect(simulator.activePlayer).toEqual(draftBefore);
+    });
+
+    it("adds to queue with a manually confirmed buy price and flags it as manual", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+        await simulator.setQueueBaselineForActivePlayer();
+        setQueueBaselineMetrics(simulator, { dailyNoRngProfit: 2400 });
+        simulator.activePlayer.equipment.weapon = { itemHrid: equipmentItemHrid, enhancementLevel: 14 };
+        simulator.pricing.enhancementQuotesByItem[equipmentItemHrid] = {
+            14: { ask: -1, bid: 5_600_000 },
+        };
+
+        const items = simulator.addActivePlayerToQueue({
+            confirmedEquipmentPrices: [{
+                itemHrid: equipmentItemHrid,
+                enhancementLevel: 14,
+                price: 123,
+                volume: null,
+                source: "manual",
+                marketTimestamp: 0,
+            }],
+        });
+        expect(items).toHaveLength(1);
+        expect(items[0].confirmedEquipmentPrices).toEqual([
+            expect.objectContaining({ source: "manual", price: 123, volume: null }),
+        ]);
+        expect(items[0].costWarnings).toEqual([
+            expect.objectContaining({ code: "manual_price", slotKey: "weapon", price: 123 }),
+        ]);
+
+        simulator.activeQueueState.rawRuns = [
+            createQueueRawRun(items[0], 1, { dailyNoRngProfit: 3000 }, simulator.activeQueueState.baseline.metrics),
+        ];
+        await simulator.refreshQueueResultsFromRawRuns({ allowReferenceLoad: false });
+        const rankedRow = simulator.activeQueueState.ranking[0];
+        expect(rankedRow.costInsights.equipmentBuyPrice).toBe(123);
+        expect(rankedRow.costInsights.equipmentNetCost).toBe(123);
+        expect(rankedRow.costInsights.upgradePriceSource).toBe("manual");
+        expect(rankedRow.costInsights.manualPriceSlots).toEqual([
+            expect.objectContaining({ slotKey: "weapon", itemHrid: equipmentItemHrid, enhancementLevel: 14, price: 123 }),
+        ]);
+    });
+
+    it("reconciles equipment net cost against sale value and buy price when abilities also raise the upgrade cost", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+        const abilityBookInfo = findFirstAbilityBookInfo();
+        expect(abilityBookInfo).toBeTruthy();
+
+        global.jigsLevelExperienceTable = [0, 100, 700];
+        global.jigsSpellBookXpByName = {};
+        global.fetch = vi.fn(async () => ({ ok: false }));
+
+        simulator.activePlayer.equipment.weapon = { itemHrid: equipmentItemHrid, enhancementLevel: 1 };
+        await simulator.setQueueBaselineForActivePlayer();
+        setQueueBaselineMetrics(simulator, { dailyNoRngProfit: 2400 });
+
+        simulator.activePlayer.equipment.weapon = { itemHrid: equipmentItemHrid, enhancementLevel: 2 };
+        simulator.pricing.enhancementQuotesByItem[equipmentItemHrid] = {
+            "1": { ask: 120, bid: 100 },
+            "2": { ask: -1, bid: 10 },
+        };
+
+        const items = simulator.addActivePlayerToQueue({
+            confirmedEquipmentPrices: [{
+                itemHrid: equipmentItemHrid,
+                enhancementLevel: 2,
+                price: 500,
+                volume: null,
+                source: "historical_ask",
+                marketTimestamp: 1_786_300_000,
+            }],
+        });
+        expect(items).toHaveLength(1);
+
+        // The real queue splits multi-change diffs into single-change variants; fold the
+        // ability upgrade into the queued snapshot so the cost insight sees both contributions.
+        items[0].snapshot.abilities[0].abilityHrid = abilityBookInfo.abilityHrid;
+        items[0].snapshot.abilities[0].level = 2;
+
+        simulator.activeQueueState.rawRuns = [
+            createQueueRawRun(items[0], 1, { dailyNoRngProfit: 3000 }, simulator.activeQueueState.baseline.metrics),
+        ];
+
+        await simulator.refreshQueueResultsFromRawRuns({ allowReferenceLoad: false });
+        const insights = simulator.activeQueueState.ranking[0].costInsights;
+
+        expect(insights.equipmentSaleValue).toBe(100);
+        expect(insights.equipmentBuyPrice).toBe(500);
+        expect(insights.equipmentNetCost).toBe(400);
+        expect(insights.totalUpgradeCost).toBeGreaterThan(insights.equipmentNetCost);
+    });
+
+    it("keeps every cost insight column null when a multi-slot change contains one missing target ask", async () => {
+        const simulator = useSimulatorStore();
+        const weaponItemHrid = findFirstEquipmentItemByType("/equipment_types/main_hand");
+        const bodyItemHrid = findFirstEquipmentItemByType("/equipment_types/body");
+        expect(weaponItemHrid).toBeTruthy();
+        expect(bodyItemHrid).toBeTruthy();
+        expect(bodyItemHrid).not.toBe(weaponItemHrid);
+
+        await simulator.setQueueBaselineForActivePlayer();
+        setQueueBaselineMetrics(simulator, { dailyNoRngProfit: 2400 });
+
+        // The weapon slot has a valid exact ask, so the queue accepts the variant.
+        simulator.activePlayer.equipment.weapon = { itemHrid: weaponItemHrid, enhancementLevel: 2 };
+        setExactEquipmentAsk(simulator, weaponItemHrid, 2, 123456);
+
+        const items = simulator.addActivePlayerToQueue();
+        expect(items).toHaveLength(1);
+
+        // The real queue splits multi-change diffs into single-change variants; fold a
+        // second slot change without any pricing data into the queued snapshot so the
+        // cost insight sees a partially missing target ask.
+        items[0].snapshot.equipment.body = { itemHrid: bodyItemHrid, enhancementLevel: 1 };
+
+        simulator.activeQueueState.rawRuns = [
+            createQueueRawRun(items[0], 1, { dailyNoRngProfit: 3000 }, simulator.activeQueueState.baseline.metrics),
+        ];
+
+        await simulator.refreshQueueResultsFromRawRuns({ allowReferenceLoad: false });
+        const insights = simulator.activeQueueState.ranking[0].costInsights;
+
+        // One missing target ask must null the WHOLE upgrade cost as well, not just the
+        // buy/sale price columns, so the result table stays consistent (all show "-").
+        expect(insights.totalUpgradeCost).toBeNull();
+        expect(insights.equipmentSaleValue).toBeNull();
+        expect(insights.equipmentBuyPrice).toBeNull();
+        expect(insights.equipmentNetCost).toBeNull();
+        expect(insights.purchaseDays).toBeNull();
+    });
+
+    it("rejects an invalid manual equipment price with a dedicated error", async () => {
+        const simulator = useSimulatorStore();
+        const equipmentItemHrid = findFirstEquipmentItem();
+        await simulator.setQueueBaselineForActivePlayer();
+        simulator.activePlayer.equipment.weapon = { itemHrid: equipmentItemHrid, enhancementLevel: 14 };
+        simulator.pricing.enhancementQuotesByItem[equipmentItemHrid] = {
+            14: { ask: -1, bid: 5_600_000 },
+        };
+
+        let enqueueFailure = null;
+        try {
+            simulator.addActivePlayerToQueue({
+                confirmedEquipmentPrices: [{
+                    itemHrid: equipmentItemHrid,
+                    enhancementLevel: 14,
+                    price: 0,
+                    volume: null,
+                    source: "manual",
+                    marketTimestamp: 0,
+                }],
+            });
+        } catch (error) {
+            enqueueFailure = error;
+        }
+        expect(enqueueFailure).not.toBeNull();
+        expect(enqueueFailure).toMatchObject({
+            code: "invalid_manual_price",
+            message: "common:queue.manualPriceInvalid",
+            details: {
+                itemHrid: equipmentItemHrid,
+                enhancementLevel: 14,
+            },
+        });
+        expect(simulator.activeQueueState.items).toEqual([]);
     });
 
     it("uses a confirmed hourly average for cost insights until an exact ask appears", async () => {

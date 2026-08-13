@@ -120,4 +120,62 @@ describe("common locale resources", () => {
         expect(zhCommon?.enhancement?.observatoryLevel).toBeUndefined();
         expect(zhCommon?.enhancement?.philosophersMirror).toBeUndefined();
     });
+
+    it("keeps manual price queue keys synchronized across locales", () => {
+        const manualKeys = [
+            "manualPriceBody",
+            "manualPriceSource",
+            "manualPricePlaceholder",
+            "manualPriceInvalid",
+            "manualPriceInvalidRow",
+            "manualPriceEmptyValue",
+            "manualPriceUnit",
+            "manualPriceDigitsOnly",
+        ];
+        for (const key of manualKeys) {
+            expect(enCommon?.queue?.[key]).toBeTruthy();
+            expect(zhCommon?.queue?.[key]).toBeTruthy();
+        }
+        expect(enCommon?.queue?.manualPriceSource).toBe("Manual input");
+        expect(zhCommon?.queue?.manualPriceSource).toBe("手动输入");
+        expect(enCommon?.queue?.manualPriceBody).toContain("buy price");
+        expect(zhCommon?.queue?.manualPriceBody).toContain("买入价");
+        expect(enCommon?.queue?.manualPriceInvalid).toContain("greater than 0");
+        expect(zhCommon?.queue?.manualPriceInvalid).toContain("大于 0");
+        expect(enCommon?.queue?.manualPriceInvalidRow).toContain("{{name}} +{{level}}");
+        expect(zhCommon?.queue?.manualPriceInvalidRow).toContain("{{name}} +{{level}}");
+        expect(enCommon?.queue?.manualPriceInvalidRow).toContain("greater than 0");
+        expect(zhCommon?.queue?.manualPriceInvalidRow).toContain("大于 0");
+        expect(enCommon?.queue?.manualPricePlaceholder).toContain("buy price");
+        expect(zhCommon?.queue?.manualPricePlaceholder).toContain("买入价");
+        expect(enCommon?.queue?.manualPriceDigitsOnly).toContain("Numbers only");
+        expect(zhCommon?.queue?.manualPriceDigitsOnly).toContain("数字");
+        expect(enCommon?.queue?.manualPriceUnit).toBe("Buy price unit");
+        expect(zhCommon?.queue?.manualPriceUnit).toBe("买入价单位");
+expect(enCommon?.queue?.manualPriceEmptyValue).toBe("—");
+        expect(zhCommon?.queue?.manualPriceEmptyValue).toBe("—");
+    });
+
+    it("keeps the multi-round result cost column keys synchronized across locales", () => {
+        const costColumnKeys = [
+            "equipmentSaleValue",
+            "equipmentBuyPrice",
+            "equipmentNetCost",
+            "upgradeCostComposition",
+        ];
+        for (const key of costColumnKeys) {
+            expect(enCommon?.vue?.queue?.[key]).toBeTypeOf("string");
+            expect(enCommon?.vue?.queue?.[key]).toBeTruthy();
+            expect(zhCommon?.vue?.queue?.[key]).toBeTypeOf("string");
+            expect(zhCommon?.vue?.queue?.[key]).toBeTruthy();
+        }
+        expect(enCommon?.vue?.queue?.equipmentSaleValue).toContain("Sale Value");
+        expect(zhCommon?.vue?.queue?.equipmentSaleValue).toContain("出售价值");
+        expect(enCommon?.vue?.queue?.equipmentBuyPrice).toContain("Buy Price");
+        expect(zhCommon?.vue?.queue?.equipmentBuyPrice).toContain("买入价");
+        expect(enCommon?.vue?.queue?.equipmentNetCost).toContain("Net Cost");
+        expect(zhCommon?.vue?.queue?.equipmentNetCost).toContain("净成本");
+        expect(enCommon?.vue?.queue?.upgradeCostComposition).toContain("Upgrade Cost");
+        expect(zhCommon?.vue?.queue?.upgradeCostComposition).toContain("升级成本");
+    });
 });

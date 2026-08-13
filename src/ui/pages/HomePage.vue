@@ -438,7 +438,10 @@
                 {{ formatUpgradeCost(equipmentHintViewModel[slot].costDraft.cost) }}
               </p>
               <p v-if="!equipmentHintViewModel[slot].costDraft.targetAskAvailable" class="mt-1 text-xs text-destructive">
-                {{ t("common:vue.home.enhancementAskMissing", "No exact sell listing exists for this enhancement level, so it cannot be added to the queue.") }}
+                {{ t("common:vue.home.enhancementAskMissing", "No exact sell listing exists. When adding to the queue, the app will look for an automatic market price and ask for confirmation if one is available.") }}
+              </p>
+              <p v-if="!equipmentHintViewModel[slot].costDraft.targetAskAvailable" class="mt-1 text-xs text-muted-foreground">
+                {{ t("common:vue.home.enhancementAskManualHint", "If no official or historical price is available, you can enter a buy price manually in the confirmation dialog to add it to the queue.") }}
               </p>
               <p v-if="equipmentHintViewModel[slot].costDraft.baselineSaleZero" class="mt-1 text-xs text-warning">
                 {{ t("common:vue.home.baselineSaleZero", "No exact quote exists for the baseline equipment. Its sale value is treated as 0.") }}

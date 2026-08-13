@@ -204,6 +204,9 @@
         <p v-if="equipmentPriceConfirmationRefreshFailed" class="text-xs text-warning">
           {{ t("common:queue.confirmHourlyAverageCached", "The official market refresh failed. Review the fallback source and data time below.") }}
         </p>
+        <p v-if="hasManualEquipmentPriceConfirmation" class="text-xs text-foreground/75">
+          {{ t("common:queue.manualPriceBody", "These target equipment have no official or historical price. Enter a buy price for each to add them to the queue.") }}
+        </p>
         <div class="overflow-x-auto rounded-md border border-border">
           <table class="w-full min-w-[680px] text-left text-sm">
             <thead class="bg-muted/60 text-xs text-muted-foreground">
@@ -223,9 +226,68 @@
                 <td class="px-3 py-2">{{ localizeHridDisplayName(entry.itemHrid) }}</td>
                 <td class="px-3 py-2">+{{ entry.enhancementLevel }}</td>
                 <td class="px-3 py-2">{{ formatConfirmationSource(entry) }}</td>
-                <td class="px-3 py-2">{{ formatConfirmedMarketNumber(entry.price) }}</td>
-                <td class="px-3 py-2">{{ formatConfirmationVolume(entry.volume) }}</td>
-                <td class="px-3 py-2">{{ formatMarketDataTime(entry.marketTimestamp) }}</td>
+                <td class="px-3 py-2">
+                  <template v-if="isManualPriceEntry(entry)">
+                    <div class="flex items-center gap-1">
+                      <input
+                        type="text"
+                        inputmode="numeric"
+                        autocomplete="off"
+                        autocapitalize="off"
+                        spellcheck="false"
+                        class="control-input !rounded !px-2 !py-1.5 text-xs w-24"
+                        :placeholder="t('common:queue.manualPricePlaceholder', 'Enter buy price (digits only)')"
+                        :value="manualPriceDrafts[getManualPriceKey(entry)]"
+                        @input="sanitizeManualPriceInput($event, entry)"
+                      />
+                      <div
+                        class="flex h-7 shrink-0 items-center gap-0.5 rounded border border-input bg-background p-0.5"
+                        role="group"
+                        :aria-label="t('common:queue.manualPriceUnit', 'Buy price unit')"
+                      >
+                        <button
+                          v-for="unit in MANUAL_PRICE_UNITS"
+                          :key="unit.value"
+                          type="button"
+                          class="h-6 w-7 rounded-sm text-xs font-semibold transition-colors"
+                          :class="(manualPriceUnits[getManualPriceKey(entry)] || 'k') === unit.value
+                            ? 'bg-primary text-primary-foreground'
+                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'"
+                          :aria-pressed="(manualPriceUnits[getManualPriceKey(entry)] || 'k') === unit.value"
+                          @click="handleManualPriceUnitChange(unit.value, entry)"
+                        >
+                          {{ unit.value }}
+                        </button>
+                      </div>
+                    </div>
+                    <p
+                      v-if="manualPriceErrors[getManualPriceKey(entry)]"
+                      class="mt-1 text-xs text-destructive"
+                      role="alert"
+                    >
+                      {{ manualPriceErrors[getManualPriceKey(entry)] }}
+                    </p>
+                  </template>
+                  <template v-else>
+                    {{ formatConfirmedMarketNumber(entry.price) }}
+                  </template>
+                </td>
+                <td class="px-3 py-2">
+                  <template v-if="isManualPriceEntry(entry)">
+                    {{ t("common:queue.manualPriceEmptyValue", "—") }}
+                  </template>
+                  <template v-else>
+                    {{ formatConfirmationVolume(entry.volume) }}
+                  </template>
+                </td>
+                <td class="px-3 py-2">
+                  <template v-if="isManualPriceEntry(entry)">
+                    {{ t("common:queue.manualPriceEmptyValue", "—") }}
+                  </template>
+                  <template v-else>
+                    {{ formatMarketDataTime(entry.marketTimestamp) }}
+                  </template>
+                </td>
               </tr>
             </tbody>
           </table>
@@ -271,6 +333,7 @@ import {
   isBaselineReminderDismissed,
 } from "./baselineReminder.js";
 import { deriveQueueItemStatusName } from "./queueItemStatusPresentation.js";
+import { evaluateManualPriceDraft, normalizeManualPriceDraft } from "./queueManualPriceValidation.js";
 
 const appVersion = __APP_VERSION__;
 const simulator = useSimulatorStore();
@@ -289,6 +352,9 @@ const baselineReminderModalOpen = ref(false);
 const equipmentPriceConfirmationModalOpen = ref(false);
 const pendingEquipmentPriceConfirmations = ref([]);
 const equipmentPriceConfirmationRefreshFailed = ref(false);
+const manualPriceDrafts = ref({});
+const manualPriceUnits = ref({});
+const manualPriceErrors = ref({});
 const queueAdditionPending = ref(false);
 const pendingQueueDraftFingerprint = ref("");
 const baselineReminderDismissed = ref(isBaselineReminderDismissed());
@@ -468,6 +534,12 @@ function resolveQueueActionErrorMessage(error) {
   const messageKey = typeof error === "string"
     ? error
     : (error?.message || String(error));
+  if (error?.code === "invalid_manual_price") {
+    return t(
+      messageKey,
+      "Enter a valid integer buy price greater than 0."
+    );
+  }
   if (error?.code === "missing_enhancement_ask") {
     if (error?.queued) {
       return t(
@@ -619,6 +691,9 @@ function cancelEquipmentPriceConfirmation() {
   pendingEquipmentPriceConfirmations.value = [];
   equipmentPriceConfirmationRefreshFailed.value = false;
   pendingQueueDraftFingerprint.value = "";
+  manualPriceDrafts.value = {};
+  manualPriceUnits.value = {};
+  manualPriceErrors.value = {};
 }
 
 function confirmEquipmentPricesAndAdd() {
@@ -626,10 +701,34 @@ function confirmEquipmentPricesAndAdd() {
     if (JSON.stringify(simulator.activePlayer) !== pendingQueueDraftFingerprint.value) {
       throw new Error("common:queue.confirmHourlyAverageDraftChanged");
     }
-    const confirmations = pendingEquipmentPriceConfirmations.value.map((entry) => ({
-      ...entry,
-      confirmedAt: Date.now(),
-    }));
+    const confirmations = [];
+    let hasInvalidManualPrice = false;
+    for (const entry of pendingEquipmentPriceConfirmations.value) {
+      if (isManualPriceEntry(entry)) {
+        const key = getManualPriceKey(entry);
+        const unitMultiplier = getManualPriceUnitMultiplier(manualPriceUnits.value[key]);
+        const evaluation = evaluateManualPriceDraft(manualPriceDrafts.value[key], unitMultiplier);
+        if (!evaluation.valid) {
+          hasInvalidManualPrice = true;
+          manualPriceErrors.value[key] = t(
+            "common:queue.manualPriceInvalidRow",
+            "{{name}} +{{level}}: enter a valid integer buy price greater than 0.",
+            {
+              name: localizeHridDisplayName(entry.itemHrid),
+              level: Number(entry.enhancementLevel || 0),
+            },
+          );
+          continue;
+        }
+        delete manualPriceErrors.value[key];
+        confirmations.push({ ...entry, price: evaluation.actualPrice, volume: null, confirmedAt: Date.now() });
+      } else {
+        confirmations.push({ ...entry, confirmedAt: Date.now() });
+      }
+    }
+    if (hasInvalidManualPrice) {
+      return;
+    }
     const items = simulator.addActivePlayerToQueue({ confirmedEquipmentPrices: confirmations });
     cancelEquipmentPriceConfirmation();
     reportAddedQueueItems(items);
@@ -653,7 +752,55 @@ function formatConfirmationSlots(entry) {
     .join(", ");
 }
 
+const MANUAL_PRICE_UNITS = [
+  { value: "k", multiplier: 1000 },
+  { value: "m", multiplier: 1_000_000 },
+  { value: "b", multiplier: 1_000_000_000 },
+];
+
+function getManualPriceUnitMultiplier(unit) {
+  const found = MANUAL_PRICE_UNITS.find((u) => u.value === String(unit || ""));
+  return found ? found.multiplier : 1000;
+}
+
+function sanitizeManualPriceInput(event, entry) {
+  const key = getManualPriceKey(entry);
+  const rawValue = String(event.target.value || "");
+  const { normalized, containsLetters } = normalizeManualPriceDraft(rawValue);
+  manualPriceDrafts.value[key] = normalized;
+  if (normalized !== rawValue) {
+    event.target.value = normalized;
+  }
+  if (containsLetters) {
+    manualPriceErrors.value[key] = t(
+      "common:queue.manualPriceDigitsOnly",
+      "Numbers only. Pick the k/m/b unit with the buttons."
+    );
+    return;
+  }
+  if (evaluateManualPriceDraft(normalized).valid) {
+    delete manualPriceErrors.value[key];
+  }
+}
+
+function handleManualPriceUnitChange(value, entry) {
+  const nextUnit = String(value || "").toLowerCase();
+  if (!MANUAL_PRICE_UNITS.some((u) => u.value === nextUnit)) return;
+  manualPriceUnits.value[getManualPriceKey(entry)] = nextUnit;
+}
+
+function isManualPriceEntry(entry) {
+  return String(entry?.source || "") === "manual";
+}
+
+function getManualPriceKey(entry) {
+  return `${String(entry?.itemHrid || "")}|${Math.max(0, Math.floor(Number(entry?.enhancementLevel || 0)))}`;
+}
+
 function formatConfirmationSource(entry) {
+  if (isManualPriceEntry(entry)) {
+    return t("common:queue.manualPriceSource", "Manual input");
+  }
   return String(entry?.source || "") === "historical_ask"
     ? t("common:queue.confirmPriceSourceHistoricalAsk", "Historical Ask")
     : t("common:queue.confirmPriceSourceOfficialHourlyAverage", "Official hourly average");
@@ -668,6 +815,10 @@ function formatConfirmationVolume(value) {
 
 const hasHistoricalEquipmentPriceConfirmation = computed(() => (
   pendingEquipmentPriceConfirmations.value.some((entry) => String(entry?.source || "") === "historical_ask")
+));
+
+const hasManualEquipmentPriceConfirmation = computed(() => (
+  pendingEquipmentPriceConfirmations.value.some((entry) => isManualPriceEntry(entry))
 ));
 
 function formatMarketDataTime(timestampSeconds) {

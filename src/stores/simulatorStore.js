@@ -125,6 +125,8 @@ const QUEUE_COST_SCORE_WEIGHT_UPGRADE = 0.25;
 const QUEUE_COST_SCORE_WEIGHT_PURCHASE_DAYS = 0.35;
 const QUEUE_COST_SCORE_WEIGHT_GOLD_PER_POINT = 0.4;
 const OFFICIAL_HOURLY_AVERAGE_PRICE_SOURCE = "official_hourly_average";
+const MANUAL_EQUIPMENT_PRICE_SOURCE = "manual";
+const MANUAL_PRICE_WARNING_CODE = "manual_price";
 // Official snapshots update hourly; allow time for publication and CDN propagation.
 const MARKET_PRICE_SNAPSHOT_MAX_AGE_MS = 90 * 60_000;
 const MARKET_PRICE_REFRESH_ATTEMPT_COOLDOWN_MS = 60_000;
@@ -3111,9 +3113,12 @@ function normalizeConfirmedEquipmentPrices(rawPrices) {
         const enhancementLevel = Math.max(0, Math.floor(toFiniteNumber(rawEntry?.enhancementLevel, 0)));
         const price = toFiniteNumber(rawEntry?.price, 0);
         const normalizedVolume = toFiniteNumber(rawEntry?.volume, 0);
-        const priceSource = String(rawEntry?.source || "") === MARKET_HISTORY_PRICE_SOURCE
+        const rawSource = String(rawEntry?.source || "");
+        const priceSource = rawSource === MARKET_HISTORY_PRICE_SOURCE
             ? MARKET_HISTORY_PRICE_SOURCE
-            : OFFICIAL_HOURLY_AVERAGE_PRICE_SOURCE;
+            : rawSource === MANUAL_EQUIPMENT_PRICE_SOURCE
+                ? MANUAL_EQUIPMENT_PRICE_SOURCE
+                : OFFICIAL_HOURLY_AVERAGE_PRICE_SOURCE;
         const volume = normalizedVolume > 0 ? normalizedVolume : null;
         if (
             !itemHrid
@@ -3285,12 +3290,15 @@ function buildQueueCostWarnings(inspections = []) {
             && (
                 inspection.targetPriceSource === OFFICIAL_HOURLY_AVERAGE_PRICE_SOURCE
                 || inspection.targetPriceSource === MARKET_HISTORY_PRICE_SOURCE
+                || inspection.targetPriceSource === MANUAL_EQUIPMENT_PRICE_SOURCE
             )
         ))
         .map((inspection) => ({
             code: inspection.targetPriceSource === MARKET_HISTORY_PRICE_SOURCE
                 ? MARKET_HISTORY_PRICE_SOURCE
-                : "confirmed_hourly_average",
+                : inspection.targetPriceSource === MANUAL_EQUIPMENT_PRICE_SOURCE
+                    ? MANUAL_PRICE_WARNING_CODE
+                    : "confirmed_hourly_average",
             source: inspection.targetPriceSource,
             slotKey: inspection.slotKey,
             itemHrid: inspection.afterItemHrid,
@@ -3300,6 +3308,32 @@ function buildQueueCostWarnings(inspections = []) {
             marketTimestamp: inspection.confirmedPrice.marketTimestamp,
         }));
     return [...baselineWarnings, ...confirmedWarnings];
+}
+
+function findInvalidManualEquipmentPriceEntry(rawPrices) {
+    if (!Array.isArray(rawPrices)) {
+        return null;
+    }
+    for (const rawEntry of rawPrices) {
+        if (String(rawEntry?.source || "") !== MANUAL_EQUIPMENT_PRICE_SOURCE) {
+            continue;
+        }
+        const price = toFiniteNumber(rawEntry?.price, 0);
+        if (!Number.isSafeInteger(price) || price <= 0) {
+            return rawEntry;
+        }
+    }
+    return null;
+}
+
+function createInvalidManualEquipmentPriceError(rawEntry) {
+    const error = new Error("common:queue.manualPriceInvalid");
+    error.code = "invalid_manual_price";
+    error.details = {
+        itemHrid: String(rawEntry?.itemHrid || ""),
+        enhancementLevel: Math.max(0, Math.floor(toFiniteNumber(rawEntry?.enhancementLevel, 0))),
+    };
+    return error;
 }
 
 function createMissingEquipmentAskError(inspection, { queued = false } = {}) {
@@ -4021,6 +4055,46 @@ function createEmptyQueueCostInsights() {
         goldPerPoint01PctAvg: null,
         compositeDeltaPct: null,
         compositeGoldPerPoint01Pct: null,
+        equipmentSaleValue: null,
+        equipmentBuyPrice: null,
+        equipmentNetCost: null,
+        upgradePriceSource: null,
+        manualPriceSlots: [],
+    };
+}
+
+function resolveUpgradePriceSourceFromInspections(inspections = []) {
+    const contributingInspections = inspections.filter((inspection) => inspection.targetAskAvailable);
+    if (contributingInspections.length === 0) {
+        return { upgradePriceSource: null, manualPriceSlots: [] };
+    }
+    const manualInspections = contributingInspections.filter(
+        (inspection) => inspection.targetPriceSource === MANUAL_EQUIPMENT_PRICE_SOURCE
+    );
+    const hasManual = manualInspections.length > 0;
+    const hasMarketConfirmed = contributingInspections.some((inspection) => (
+        inspection.targetPriceSource === OFFICIAL_HOURLY_AVERAGE_PRICE_SOURCE
+        || inspection.targetPriceSource === MARKET_HISTORY_PRICE_SOURCE
+    ));
+    const hasExactAsk = contributingInspections.some((inspection) => inspection.targetPriceSource === "ask");
+
+    let upgradePriceSource = null;
+    if (hasManual) {
+        upgradePriceSource = hasExactAsk || hasMarketConfirmed ? "mixed_manual" : "manual";
+    } else if (hasMarketConfirmed) {
+        upgradePriceSource = hasExactAsk ? "mixed_market" : "market";
+    } else if (hasExactAsk) {
+        upgradePriceSource = "ask";
+    }
+
+    return {
+        upgradePriceSource,
+        manualPriceSlots: manualInspections.map((inspection) => ({
+            slotKey: inspection.slotKey,
+            itemHrid: inspection.afterItemHrid,
+            enhancementLevel: inspection.afterLevel,
+            price: inspection.confirmedPrice?.price ?? null,
+        })),
     };
 }
 
@@ -4066,6 +4140,33 @@ function computeWeightedQueueMetricAverage(metricValues = {}, metricWeights = {}
 
 function buildQueueItemCostInsights(queueState, queueItemSnapshot, metricSummary, pricingState, queueSettings, confirmedEquipmentPrices = []) {
     const baselineSnapshot = queueState?.baseline?.snapshot ?? null;
+    const equipmentInspections = inspectQueueEquipmentPricing(
+        baselineSnapshot,
+        queueItemSnapshot,
+        pricingState,
+        confirmedEquipmentPrices
+    );
+    const { upgradePriceSource, manualPriceSlots } = resolveUpgradePriceSourceFromInspections(equipmentInspections);
+    let equipmentSaleValue = null;
+    let equipmentBuyPrice = null;
+    if (equipmentInspections.length > 0) {
+        const hasMissingTargetAsk = equipmentInspections.some(
+            (inspection) => inspection.targetAsk == null || !Number.isFinite(Number(inspection.targetAsk))
+        );
+        if (!hasMissingTargetAsk) {
+            equipmentSaleValue = equipmentInspections.reduce(
+                (sum, inspection) => sum + Math.max(0, toFiniteNumber(inspection.baselineSaleValue, 0)),
+                0
+            );
+            equipmentBuyPrice = equipmentInspections.reduce(
+                (sum, inspection) => sum + Math.max(0, toFiniteNumber(inspection.targetAsk, 0)),
+                0
+            );
+        }
+    }
+    const equipmentNetCost = equipmentSaleValue != null && equipmentBuyPrice != null
+        ? Math.max(0, toFiniteNumber(equipmentBuyPrice, 0) - toFiniteNumber(equipmentSaleValue, 0))
+        : null;
     const totalUpgradeCostRaw = computeQueueItemUpgradeCost(
         baselineSnapshot,
         queueItemSnapshot,
@@ -4107,6 +4208,11 @@ function buildQueueItemCostInsights(queueState, queueItemSnapshot, metricSummary
         goldPerPoint01PctAvg,
         compositeDeltaPct,
         compositeGoldPerPoint01Pct,
+        equipmentSaleValue,
+        equipmentBuyPrice,
+        equipmentNetCost,
+        upgradePriceSource,
+        manualPriceSlots,
     };
 }
 
@@ -4504,12 +4610,8 @@ function buildQueueRankedRowsFromSampleState({
             .slice()
             .sort((a, b) => Number(a?.round || 0) - Number(b?.round || 0));
         const profits = variantSamples.map((sample) => sample.profitPerHour);
-        const xps = variantSamples.map((sample) => sample.totalXpPerHour);
-        const deaths = variantSamples.map((sample) => sample.deathsPerHour);
         const meanProfit = getMean(profits);
         const medianProfit = getMedian(profits);
-        const meanXp = getMean(xps);
-        const meanDeaths = getMean(deaths);
         const stdProfit = getStdDev(profits, meanProfit);
         const coefficientOfVariation = Math.abs(meanProfit) > 1e-9 ? (stdProfit / Math.abs(meanProfit)) : stdProfit;
         const stability = 1 / (1 + coefficientOfVariation);
@@ -4522,12 +4624,7 @@ function buildQueueRankedRowsFromSampleState({
             changes: entry.changes,
             changeDetails: Array.isArray(entry.changeDetails) ? deepClone(entry.changeDetails) : [],
             rounds: variantSamples.length,
-            meanProfitPerHour: meanProfit,
-            medianProfitPerHour: medianProfit,
-            stdProfitPerHour: stdProfit,
             scoringProfitPerHour,
-            meanXpPerHour: meanXp,
-            meanDeathsPerHour: meanDeaths,
             stability,
             sampleResults: variantSamples,
         };
@@ -4581,12 +4678,7 @@ function buildQueueRankedRowsFromSampleState({
             changeCount: 0,
             changes: [],
             rounds: 0,
-            meanProfitPerHour: toFiniteNumber(entry.metricSummary?.dailyNoRngProfit?.mean, 0) / 24,
-            medianProfitPerHour: toFiniteNumber(entry.metricSummary?.dailyNoRngProfit?.p50, 0) / 24,
-            stdProfitPerHour: toFiniteNumber(entry.metricSummary?.dailyNoRngProfit?.std, 0) / 24,
             scoringProfitPerHour: toFiniteNumber(entry.metricSummary?.dailyNoRngProfit?.robustMean, 0) / 24,
-            meanXpPerHour: toFiniteNumber(entry.metricSummary?.xpPerHour?.mean, 0),
-            meanDeathsPerHour: 0,
             stability: 0,
         };
 
@@ -4626,12 +4718,7 @@ function buildQueueRankedRowsFromSampleState({
             changes: aggregate.changes,
             changeDetails: Array.isArray(aggregate.changeDetails) ? deepClone(aggregate.changeDetails) : [],
             rounds: aggregate.rounds || resolveQueueRowRoundCount(entry),
-            meanProfitPerHour: toFiniteNumber(aggregate.meanProfitPerHour, 0),
-            medianProfitPerHour: toFiniteNumber(aggregate.medianProfitPerHour, 0),
-            stdProfitPerHour: toFiniteNumber(aggregate.stdProfitPerHour, 0),
             scoringProfitPerHour,
-            meanXpPerHour: toFiniteNumber(aggregate.meanXpPerHour, xpPerHour),
-            meanDeathsPerHour: toFiniteNumber(aggregate.meanDeathsPerHour, 0),
             stability: toFiniteNumber(aggregate.stability, 0),
             deltaProfitPerHour: toFiniteNumber(deltaProfitPerHour, 0),
             deltaProfitPct: toFiniteNumber(deltaProfitPct, 0),
@@ -5957,6 +6044,10 @@ export const useSimulatorStore = defineStore("simulator", {
             }
         },
         addActivePlayerToQueue(options = {}) {
+            const invalidManualEntry = findInvalidManualEquipmentPriceEntry(options?.confirmedEquipmentPrices);
+            if (invalidManualEntry) {
+                throw createInvalidManualEquipmentPriceError(invalidManualEntry);
+            }
             const confirmedEquipmentPrices = normalizeConfirmedEquipmentPrices(options?.confirmedEquipmentPrices);
             const queueState = this.ensureQueueState(this.activePlayerId);
             if (this.activeQueuePartyStatus?.hasMismatch) {
@@ -6113,7 +6204,17 @@ export const useSimulatorStore = defineStore("simulator", {
 
             const confirmations = confirmationRequests.map((request) => {
                 if (!request.confirmation) {
-                    throw createMissingEquipmentAskError(request.inspection);
+                    return {
+                        itemHrid: request.inspection.afterItemHrid,
+                        enhancementLevel: request.inspection.afterLevel,
+                        price: null,
+                        volume: null,
+                        source: MANUAL_EQUIPMENT_PRICE_SOURCE,
+                        marketTimestamp: 0,
+                        slotKey: request.slotKey,
+                        slotKeys: request.slotKeys,
+                        manual: true,
+                    };
                 }
                 return {
                     ...request.confirmation,

@@ -31,84 +31,107 @@ afterEach(() => {
 });
 
 describe("patchNotes", () => {
-    it("publishes the concise bilingual 2.0.5 through 2.0.0 entries first", () => {
+    it("publishes the concise bilingual 2.0.6 through 2.0.0 entries first", () => {
         const zhEntries = resolvePatchNoteEntries(undefined, "zh");
         const enEntries = resolvePatchNoteEntries(undefined, "en");
 
         expect(zhEntries[0]).toMatchObject({
+            entryId: "2026年8月12日（v2.0.6）",
+            label: "2026年8月12日（v2.0.6）",
+        });
+        expect(zhEntries[0].notes).toHaveLength(3);
+        expect(zhEntries[0].notes).toContain(
+            "买入价支持整数输入与 k/m/b 单位按钮。"
+        );
+        expect(zhEntries[0].notes).toContain(
+            "目标装备无市场价格时，支持手动输入买入价后加入队列。"
+        );
+        expect(enEntries[0]).toMatchObject({
+            entryId: "2026年8月12日（v2.0.6）",
+            label: "August 12, 2026 (v2.0.6)",
+        });
+        expect(enEntries[0].notes).toHaveLength(3);
+        expect(enEntries[0].notes).toContain(
+            "Buy prices support integer input with k/m/b unit buttons."
+        );
+        expect(enEntries[0].notes).toContain(
+            "Enter a manual buy price when target equipment has no market price."
+        );
+
+        expect(zhEntries[1]).toMatchObject({
             entryId: "2026年8月10日（v2.0.5）",
             label: "2026年8月10日（v2.0.5）",
         });
-        expect(zhEntries[0].notes).toContain(
+        expect(zhEntries[1].notes).toContain(
             "更新日志从弹窗迁移为独立页面，进入页面后自动标记当前未读版本。"
         );
-        expect(enEntries[0]).toMatchObject({
+        expect(enEntries[1]).toMatchObject({
             entryId: "2026年8月10日（v2.0.5）",
             label: "August 10, 2026 (v2.0.5)",
         });
-        expect(enEntries[0].notes).toContain(
+        expect(enEntries[1].notes).toContain(
             "Patch notes now open on a dedicated page instead of a dialog, and current unread versions are marked as read when the page opens."
         );
-        expect(zhEntries[1]).toMatchObject({
+        expect(zhEntries[2]).toMatchObject({
             entryId: "2026年8月10日（v2.0.4）",
             label: "2026年8月10日（v2.0.4）",
         });
-        expect(zhEntries[1].notes).toContain(
+        expect(zhEntries[2].notes).toContain(
             "官方精确 Ask 和小时均价均缺失时，可确认使用历史归档最新有效 Ask。"
         );
-        expect(enEntries[1]).toMatchObject({
+        expect(enEntries[2]).toMatchObject({
             entryId: "2026年8月10日（v2.0.4）",
             label: "August 10, 2026 (v2.0.4)",
         });
-        expect(enEntries[1].notes).toContain(
+        expect(enEntries[2].notes).toContain(
             "Confirm the latest valid archived Ask when both the official exact Ask and hourly average are unavailable."
         );
-        expect(zhEntries[2]).toMatchObject({
+        expect(zhEntries[3]).toMatchObject({
             entryId: "2026年8月9日（v2.0.3）",
             label: "2026年8月9日（v2.0.3）",
         });
-        expect(enEntries[2]).toMatchObject({
+        expect(enEntries[3]).toMatchObject({
             entryId: "2026年8月9日（v2.0.3）",
             label: "August 9, 2026 (v2.0.3)",
         });
-        expect(zhEntries[3]).toMatchObject({
+        expect(zhEntries[4]).toMatchObject({
             entryId: "2026年8月9日（v2.0.2）",
             label: "2026年8月9日（v2.0.2）",
         });
-        expect(zhEntries[3].notes).toContain(
+        expect(zhEntries[4].notes).toContain(
             "队列装备成本改为完全采用市场定价：目标强化等级无精确卖单时禁止入队。"
         );
-        expect(enEntries[3]).toMatchObject({
+        expect(enEntries[4]).toMatchObject({
             entryId: "2026年8月9日（v2.0.2）",
             label: "August 9, 2026 (v2.0.2)",
         });
-        expect(enEntries[3].notes).toContain(
+        expect(enEntries[4].notes).toContain(
             "Queue equipment costs now use market pricing only; variants without an exact sell listing are rejected."
         );
-        expect(zhEntries[4]).toMatchObject({
+        expect(zhEntries[5]).toMatchObject({
             entryId: "2026年8月8日（v2.0.1）",
             label: "2026年8月8日（v2.0.1）",
         });
-        expect(zhEntries[4].notes).toContain(
+        expect(zhEntries[5].notes).toContain(
             "食物、饮品和技能新增内联触发条件编辑。"
         );
-        expect(enEntries[4]).toMatchObject({
+        expect(enEntries[5]).toMatchObject({
             entryId: "2026年8月8日（v2.0.1）",
             label: "August 8, 2026 (v2.0.1)",
         });
-        expect(enEntries[4].notes).toContain(
+        expect(enEntries[5].notes).toContain(
             "Added inline trigger-condition editing for food, drinks, and abilities."
         );
-        expect(zhEntries[5]).toMatchObject({
+        expect(zhEntries[6]).toMatchObject({
             entryId: "2026年8月8日（v2.0.0）",
             label: "2026年8月8日（v2.0.0）",
         });
-        expect(zhEntries[5].notes).toHaveLength(3);
-        expect(enEntries[5]).toMatchObject({
+        expect(zhEntries[6].notes).toHaveLength(3);
+        expect(enEntries[6]).toMatchObject({
             entryId: "2026年8月8日（v2.0.0）",
             label: "August 8, 2026 (v2.0.0)",
         });
-        expect(enEntries[5].notes).toHaveLength(3);
+        expect(enEntries[6].notes).toHaveLength(3);
     });
 
     it("resolves mixed legacy and bilingual patch note entries in source order", () => {

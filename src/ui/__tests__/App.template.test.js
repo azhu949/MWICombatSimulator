@@ -114,4 +114,35 @@ describe("App shell contracts", () => {
     expect(appSource).toContain("formatConfirmationVolume(entry.volume)");
     expect(appSource).toContain("formatConfirmationSlots(entry)");
   });
+
+  it("accepts a manually entered buy price for equipment without any market price", () => {
+    expect(appSource).toContain("const manualPriceDrafts = ref({})");
+    expect(appSource).toContain("const manualPriceErrors = ref({})");
+    expect(appSource).toContain("function isManualPriceEntry(entry)");
+    expect(appSource).toContain("function getManualPriceKey(entry)");
+    expect(appSource).toContain("const hasManualEquipmentPriceConfirmation = computed(() =>");
+    expect(appSource).toContain("common:queue.manualPriceBody");
+    expect(appSource).toContain("common:queue.manualPriceSource");
+    expect(appSource).toContain("common:queue.manualPricePlaceholder");
+    expect(appSource).toContain("common:queue.manualPriceInvalidRow");
+    expect(appSource).toContain("common:queue.manualPriceEmptyValue");
+    expect(appSource).toContain("const manualPriceUnits = ref({})");
+    expect(appSource).toContain("const MANUAL_PRICE_UNITS = [");
+    expect(appSource).toContain('{ value: "k", multiplier: 1000 }');
+    expect(appSource).toContain("function getManualPriceUnitMultiplier(unit)");
+    expect(appSource).toContain("function sanitizeManualPriceInput(event, entry)");
+    expect(appSource).toContain('inputmode="numeric"');
+    expect(appSource).toContain('@input="sanitizeManualPriceInput($event, entry)"');
+    expect(appSource).toContain("normalizeManualPriceDraft(");
+    expect(appSource).toContain("evaluateManualPriceDraft(");
+    expect(appSource).toContain("manualPriceUnits[getManualPriceKey(entry)]");
+    expect(appSource).toContain("manualPriceErrors[getManualPriceKey(entry)]");
+    expect(appSource).toContain("text-destructive");
+    expect(appSource).toContain("common:queue.manualPriceDigitsOnly");
+    expect(appSource).toContain("function handleManualPriceUnitChange(value, entry)");
+    expect(appSource).toContain('role="group"');
+    expect(appSource).toContain('v-for="unit in MANUAL_PRICE_UNITS"');
+    expect(appSource).toContain('@click="handleManualPriceUnitChange(unit.value, entry)"');
+    expect(appSource).toContain(":aria-pressed=");
+  });
 });

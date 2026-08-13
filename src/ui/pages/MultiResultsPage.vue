@@ -122,7 +122,7 @@
             {{ t("common:exportToExcel", "Export To Excel") }}
           </button>
         </div>
-        <Table class="min-w-[1880px] w-max text-sm">
+        <Table class="min-w-[2060px] w-max text-sm">
           <TableHeader>
             <TableRow class="border-b border-border text-left text-xs uppercase  text-muted-foreground">
               <TableHead class="px-2 py-2">{{ t("common:multiRound.rank", "Rank") }}</TableHead>
@@ -132,13 +132,15 @@
               <TableHead class="px-2 py-2">{{ t("common:multiRound.performanceScore", "Performance Score") }}</TableHead>
               <TableHead class="px-2 py-2">{{ t("common:multiRound.stabilityScore", "Stability Score") }}</TableHead>
               <TableHead class="px-2 py-2">{{ costScoreColumnHeader }}</TableHead>
-              <TableHead class="px-2 py-2">{{ t("common:vue.queue.meanProfitPerHour", "Mean Profit/h") }}</TableHead>
               <TableHead class="px-2 py-2">{{ t("common:vue.queue.deltaProfitPerHour", "Delta Profit/h") }}</TableHead>
               <TableHead class="px-2 py-2">{{ t("common:multiRound.deltaProfitPct", "Profit Delta%") }}</TableHead>
               <TableHead class="px-2 py-2">{{ t("common:multiRound.deltaDpsPct", "DPS Delta%") }}</TableHead>
               <TableHead class="px-2 py-2">{{ t("common:multiRound.deltaXpPct", "XP Delta%") }}</TableHead>
               <TableHead class="px-2 py-2">{{ t("common:multiRound.deltaKillsPct", "Kills Delta%") }}</TableHead>
-              <TableHead class="px-2 py-2">{{ t("common:equipment.upgradeCost", "Upgrade Cost") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:vue.queue.equipmentSaleValue", "Replaced Equipment Sale Value") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:vue.queue.equipmentBuyPrice", "Target Equipment Buy Price") }}</TableHead>
+              <TableHead class="px-2 py-2">{{ t("common:vue.queue.equipmentNetCost", "Equipment Net Cost") }}</TableHead>
+              <TableHead class="px-2 py-2" :title="t('common:vue.queue.upgradeCostComposition', 'Upgrade Cost = equipment net cost + ability upgrade costs + house room upgrade costs.')">{{ t("common:equipment.upgradeCost", "Upgrade Cost") }}</TableHead>
               <TableHead class="px-2 py-2">{{ t("common:queue.purchaseTime", "Purchase Time") }}</TableHead>
               <TableHead class="px-2 py-2">{{ t("common:multiRound.avgCostPerPoint01Pct", "Gold per 0.01% (all four > 0)") }}</TableHead>
               <TableHead class="px-2 py-2">{{ t("common:multiRound.compositeCostPerPoint01Pct", "Gold per 0.01% (composite)") }}</TableHead>
@@ -167,12 +169,23 @@
               <TableCell class="px-2 py-2">{{ formatNumber(row.performanceScore) }}</TableCell>
               <TableCell class="px-2 py-2">{{ formatNumber(row.stabilityScore) }}</TableCell>
               <TableCell class="px-2 py-2">{{ formatNumber(row.costScore) }}</TableCell>
-              <TableCell class="px-2 py-2">{{ formatCompactCurrency(row.meanProfitPerHour) }}</TableCell>
               <TableCell class="px-2 py-2" :class="profitDeltaClass(row.deltaProfitPerHour)">{{ formatCurrency(row.deltaProfitPerHour) }}</TableCell>
               <TableCell class="px-2 py-2" :class="profitDeltaClass(row.deltaProfitPct)">{{ formatSignedPercent(row.deltaProfitPct) }}</TableCell>
               <TableCell class="px-2 py-2" :class="profitDeltaClass(row.deltaDpsPct)">{{ formatSignedPercent(row.deltaDpsPct) }}</TableCell>
               <TableCell class="px-2 py-2" :class="profitDeltaClass(row.deltaXpPct)">{{ formatSignedPercent(row.deltaXpPct) }}</TableCell>
               <TableCell class="px-2 py-2" :class="profitDeltaClass(row.deltaKillsPct)">{{ formatSignedPercent(row.deltaKillsPct) }}</TableCell>
+              <TableCell class="px-2 py-2">{{ formatCompactCurrency(row.costInsights?.equipmentSaleValue) }}</TableCell>
+              <TableCell class="px-2 py-2">
+                <span>{{ formatCompactCurrency(row.costInsights?.equipmentBuyPrice) }}</span>
+                <span
+                  v-if="hasManualUpgradePrice(row)"
+                  class="ml-1 inline-flex items-center rounded border border-warning/40 bg-warning/10 px-1 py-px text-[10px] font-semibold text-warning"
+                  :title="manualUpgradePriceTooltip(row)"
+                >
+                  {{ t("common:multiRound.manualPriceBadge", "Manual") }}
+                </span>
+              </TableCell>
+              <TableCell class="px-2 py-2">{{ formatCompactCurrency(row.costInsights?.equipmentNetCost) }}</TableCell>
               <TableCell class="px-2 py-2">{{ formatCompactCurrency(row.costInsights?.totalUpgradeCost) }}</TableCell>
               <TableCell class="px-2 py-2">{{ formatPurchaseDuration(row.costInsights?.purchaseDays) }}</TableCell>
               <TableCell class="px-2 py-2">{{ formatCostPerPoint01Pct(row.costInsights?.goldPerPoint01PctAvg) }}</TableCell>
@@ -484,6 +497,34 @@ function formatCostPerPoint01Pct(value) {
     return "N/A";
   }
   return formatCompactCurrency(value);
+}
+
+function getManualUpgradePriceSlots(row) {
+  const slots = row?.costInsights?.manualPriceSlots;
+  return Array.isArray(slots) ? slots : [];
+}
+
+function hasManualUpgradePrice(row) {
+  return getManualUpgradePriceSlots(row).length > 0;
+}
+
+function manualUpgradePriceTooltip(row) {
+  const slots = getManualUpgradePriceSlots(row);
+  const count = slots.length;
+  const total = slots.reduce((sum, slot) => sum + Math.max(0, Number(slot?.price || 0)), 0);
+  return t(
+    "common:multiRound.manualPriceTooltip",
+    "{{count}} equipment price(s) ({{total}}) were entered manually by the user and were not verified against market data.",
+    { count, total: formatCompactCurrency(total) },
+  );
+}
+
+function formatEquipmentBuyPriceForExport(row) {
+  const formatted = formatCompactCurrency(row?.costInsights?.equipmentBuyPrice);
+  if (formatted === "-" || !hasManualUpgradePrice(row)) {
+    return formatted;
+  }
+  return `${formatted} [${t("common:multiRound.manualPriceBadge", "Manual")}]`;
 }
 
 function formatSignedPercent(value) {
@@ -931,12 +972,14 @@ async function exportRankingRowsExcel() {
       { header: t("common:multiRound.performanceScore", "Performance Score"), key: "performanceScore", width: 16 },
       { header: t("common:multiRound.stabilityScore", "Stability Score"), key: "stabilityScore", width: 14 },
       { header: costScoreColumnHeader.value, key: "costScore", width: 18 },
-      { header: t("common:vue.queue.meanProfitPerHour", "Mean Profit/h"), key: "meanProfitPerHour", width: 14 },
       { header: t("common:vue.queue.deltaProfitPerHour", "Delta Profit/h"), key: "deltaProfitPerHour", width: 14 },
       { header: t("common:multiRound.deltaProfitPct", "Profit Delta%"), key: "deltaProfitPct", width: 12 },
       { header: t("common:multiRound.deltaDpsPct", "DPS Delta%"), key: "deltaDpsPct", width: 10 },
       { header: t("common:multiRound.deltaXpPct", "XP Delta%"), key: "deltaXpPct", width: 10 },
       { header: t("common:multiRound.deltaKillsPct", "Kills Delta%"), key: "deltaKillsPct", width: 12 },
+      { header: t("common:vue.queue.equipmentSaleValue", "Replaced Equipment Sale Value"), key: "equipmentSaleValue", width: 18 },
+      { header: t("common:vue.queue.equipmentBuyPrice", "Target Equipment Buy Price"), key: "equipmentBuyPrice", width: 16 },
+      { header: t("common:vue.queue.equipmentNetCost", "Equipment Net Cost"), key: "equipmentNetCost", width: 14 },
       { header: t("common:equipment.upgradeCost", "Upgrade Cost"), key: "upgradeCost", width: 14 },
       { header: t("common:queue.purchaseTime", "Purchase Time"), key: "purchaseTime", width: 14 },
       { header: t("common:multiRound.avgCostPerPoint01Pct", "Gold per 0.01% (all four > 0)"), key: "goldPerPoint01PctAvg", width: 26 },
@@ -951,12 +994,14 @@ async function exportRankingRowsExcel() {
       performanceScore: toFiniteForExport(row?.performanceScore, 2),
       stabilityScore: toFiniteForExport(row?.stabilityScore, 2),
       costScore: toFiniteForExport(row?.costScore, 2),
-      meanProfitPerHour: formatCompactCurrency(row?.meanProfitPerHour),
       deltaProfitPerHour: formatCompactCurrency(row?.deltaProfitPerHour),
       deltaProfitPct: toFiniteForExport(row?.deltaProfitPct, 2),
       deltaDpsPct: toFiniteForExport(row?.deltaDpsPct, 2),
       deltaXpPct: toFiniteForExport(row?.deltaXpPct, 2),
       deltaKillsPct: toFiniteForExport(row?.deltaKillsPct, 2),
+      equipmentSaleValue: formatCompactCurrency(row?.costInsights?.equipmentSaleValue),
+      equipmentBuyPrice: formatEquipmentBuyPriceForExport(row),
+      equipmentNetCost: formatCompactCurrency(row?.costInsights?.equipmentNetCost),
       upgradeCost: formatCompactCurrency(row?.costInsights?.totalUpgradeCost),
       purchaseTime: formatPurchaseDuration(row?.costInsights?.purchaseDays),
       goldPerPoint01PctAvg: formatCostPerPoint01Pct(row?.costInsights?.goldPerPoint01PctAvg),
@@ -1009,12 +1054,14 @@ async function exportRankingRowsExcel() {
       "performanceScore",
       "stabilityScore",
       "costScore",
-      "meanProfitPerHour",
       "deltaProfitPerHour",
       "deltaProfitPct",
       "deltaDpsPct",
       "deltaXpPct",
       "deltaKillsPct",
+      "equipmentSaleValue",
+      "equipmentBuyPrice",
+      "equipmentNetCost",
       "upgradeCost",
       "goldPerPoint01PctAvg",
       "compositeGoldPerPoint01Pct",

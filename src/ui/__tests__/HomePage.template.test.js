@@ -152,6 +152,7 @@ describe("HomePage enhancement pricing", () => {
     it("shows missing exact ask and zero baseline sale without manual equipment cost input", () => {
         expect(homePageSource).toContain("costDraft.targetAskAvailable");
         expect(homePageSource).toContain("common:vue.home.enhancementAskMissing");
+        expect(homePageSource).toContain("common:vue.home.enhancementAskManualHint");
         expect(homePageSource).toContain("costDraft.baselineSaleZero");
         expect(homePageSource).toContain("common:vue.home.baselineSaleZero");
         expect(homePageSource).toContain('v-if="equipmentHintViewModel[slot].costDraft.baselineSaleZero"');

@@ -1,4 +1,22 @@
 {
+    "2026年8月12日（v2.0.6）": {
+        "label": {
+            "zh": "2026年8月12日（v2.0.6）",
+            "en": "August 12, 2026 (v2.0.6)"
+        },
+        "notes": {
+            "zh": [
+                "目标装备无市场价格时，支持手动输入买入价后加入队列。",
+                "手动价格仅用于对应队列项。",
+                "买入价支持整数输入与 k/m/b 单位按钮。"
+            ],
+            "en": [
+                "Enter a manual buy price when target equipment has no market price.",
+                "Manual prices apply only to the corresponding queue item.",
+                "Buy prices support integer input with k/m/b unit buttons."
+            ]
+        }
+    },
     "2026年8月10日（v2.0.5）": {
         "label": {
             "zh": "2026年8月10日（v2.0.5）",

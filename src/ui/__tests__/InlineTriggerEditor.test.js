@@ -47,6 +47,7 @@ beforeAll(async () => {
 describe("InlineTriggerEditor", () => {
   it("renders default, custom, and no-condition summaries", async () => {
     const wrapper = mountEditor({ expanded: false });
+    await flushPromises();
     expect(wrapper.text()).toContain("Default");
     expect(wrapper.text()).toContain("1 conditions");
 
