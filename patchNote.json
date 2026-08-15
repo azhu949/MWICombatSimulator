@@ -1,4 +1,22 @@
 {
+    "2026年8月15日（v2.0.7）": {
+        "label": {
+            "zh": "2026年8月15日（v2.0.7）",
+            "en": "August 15, 2026 (v2.0.7)"
+        },
+        "notes": {
+            "zh": [
+                "模拟、队列与顾问的错误提示统一国际化，随界面语言自动切换。",
+                "手动模拟前检测共享 Worker 运行状态，避免与队列或顾问扫描冲突。",
+                "队列、顾问与基准的并行执行统一为 Worker 池，取消检查行为保持一致。"
+            ],
+            "en": [
+                "Simulation, queue, and advisor errors are now localized and follow the interface language.",
+                "Manual simulation now checks the shared worker state to avoid conflicts with queue or advisor runs.",
+                "Parallel execution for queue, advisor, and baseline runs is unified behind a worker pool with consistent cancellation checks."
+            ]
+        }
+    },
     "2026年8月12日（v2.0.6）": {
         "label": {
             "zh": "2026年8月12日（v2.0.6）",

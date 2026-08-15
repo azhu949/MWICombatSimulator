@@ -5,6 +5,7 @@ import {
     cancelDedicatedWorkerRuns,
     cancelSharedWorkerRun,
     createWorkerRunCancellationError,
+    hasSharedWorkerRunInProgress,
     isWorkerRunCancelledError,
     runMultiSimulationPayloadWithDedicatedWorker,
     runSharedSingleSimulationPayload,
@@ -144,6 +145,49 @@ describe("simulatorWorkerRuns", () => {
             code: "cancelled",
         });
         expect(sharedClient.stopSimulation).toHaveBeenCalledTimes(1);
+    });
+
+    it("supersedes a pending shared run with a cancellation error when a new shared run starts", async () => {
+        const firstClient = new FakeWorkerClient();
+        const firstPromise = runSharedSingleSimulationPayload(
+            { type: "start_simulation", workerId: "first" },
+            vi.fn(),
+            { workerClient: firstClient }
+        );
+        expect(hasSharedWorkerRunInProgress()).toBe(true);
+
+        const secondClient = new FakeWorkerClient();
+        const secondPromise = runSharedSingleSimulationPayload(
+            { type: "start_simulation", workerId: "second" },
+            vi.fn(),
+            { workerClient: secondClient }
+        );
+
+        await expect(firstPromise).rejects.toMatchObject({
+            code: "cancelled",
+        });
+        expect(firstClient.stopSimulation).toHaveBeenCalledTimes(1);
+
+        // The superseded run must not clear the newest run's handle.
+        expect(hasSharedWorkerRunInProgress()).toBe(true);
+        secondClient.emit("onResult", { encounters: 7 });
+        await expect(secondPromise).resolves.toEqual({ encounters: 7 });
+        expect(secondClient.stopSimulation).not.toHaveBeenCalled();
+        expect(hasSharedWorkerRunInProgress()).toBe(false);
+
+        // cancelSharedWorkerRun still targets the newest handle only.
+        const thirdClient = new FakeWorkerClient();
+        const thirdPromise = runSharedSingleSimulationPayload(
+            { type: "start_simulation", workerId: "third" },
+            vi.fn(),
+            { workerClient: thirdClient }
+        );
+        cancelSharedWorkerRun();
+
+        await expect(thirdPromise).rejects.toMatchObject({
+            code: "cancelled",
+        });
+        expect(hasSharedWorkerRunInProgress()).toBe(false);
     });
 
     it("rejects and cleans up when a progress callback throws", async () => {

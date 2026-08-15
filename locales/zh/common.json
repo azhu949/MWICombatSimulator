@@ -98,6 +98,15 @@
         "baselineNeedsResetAfterImport": "已导入队列变更，基准收益尚未重算。请点击“设为基准”重新设置基准。",
         "partyLockedMembers": "冻结队伍",
         "partyChangedSinceBaseline": "队伍成员或队友配置已变化，请重新点击“设为基准”后再加入或运行队列。",
+        "errorBusy": "已有其他模拟正在运行。",
+        "errorRunScopeSingle": "队列运行要求运行范围为“单一目标”。",
+        "errorBaselineRunScopeSingle": "队列基准运行要求运行范围为“单一目标”。",
+        "errorBaselineNoLabyrinth": "队列基准暂不支持迷宫模式。",
+        "errorSetBaselineFirst": "请先设置基准。",
+        "errorQueueEmpty": "队列为空。",
+        "errorQueueRunFailed": "队列运行失败。",
+        "errorQueueBaselineFailed": "队列基准运行失败。",
+        "errorBuildPlayerData": "无法构建玩家模拟数据。",
         "queueNoBaseline": "请先设置基准。",
         "requireImportBeforeBaseline": "请先导入当前玩家用户信息，再设置基准。",
         "queueNoDiff": "与基准相比没有变化，无法加入队列。",
@@ -891,6 +900,15 @@
         "errorPartialQuick": "快速扫描阶段有 {{count}} 个目标失败，仅显示成功结果。",
         "errorPartialRefine": "复核阶段有 {{count}} 个目标失败，仅显示成功结果。",
         "dailyProfit": "每日收益"
+    },
+    "simulation": {
+        "errorQueueInProgress": "队列正在运行。请先停止队列运行，再开始手动模拟。",
+        "errorAdvisorInProgress": "顾问扫描正在进行。请先停止顾问扫描，再开始手动模拟。",
+        "errorAnotherRunInProgress": "已有另一项模拟正在进行。请等待其完成或先停止它，再开始手动模拟。",
+        "errorNoPlayer": "请至少选择一名玩家。",
+        "errorBuildPlayerData": "无法构建玩家模拟数据。",
+        "errorNoLabyrinthTargets": "没有可用的迷宫目标。",
+        "errorNoZoneTargets": "当前运行范围下没有可用的区域目标。"
     },
     "enhancement": {
         "eyebrow": "强化工坊",

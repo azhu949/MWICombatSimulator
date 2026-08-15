@@ -23,6 +23,7 @@ import {
     stopQueueWorkerClients,
 } from "./simulatorWorkerRuns.js";
 import { clamp, deepClone, isPlainObject } from "./utils.js";
+import { runParallelWorkerPool } from "./workerPool.js";
 
 const REALTIME_RANKING_THROTTLE_MS = 250;
 
@@ -242,19 +243,12 @@ async function runQueueRounds(context, executionMode, entries) {
     for (let roundIndex = 0; roundIndex < context.roundCount; roundIndex += 1) {
         context.ensureQueueRunNotCancelled();
         if (executionMode === "parallel" && entries.length > 1) {
-            let nextEntryIndex = 0;
-            const workerCount = Math.max(1, Math.min(context.queueParallelWorkerLimit, entries.length));
-            const workerLoop = async () => {
-                while (nextEntryIndex < entries.length) {
-                    context.ensureQueueRunNotCancelled();
-                    const currentEntryIndex = nextEntryIndex;
-                    nextEntryIndex += 1;
-                    const entry = entries[currentEntryIndex];
-                    // eslint-disable-next-line no-await-in-loop
-                    await context.runEntryRound(entry, roundIndex);
-                }
-            };
-            await Promise.all(Array.from({ length: workerCount }, () => workerLoop()));
+            await runParallelWorkerPool({
+                taskCount: entries.length,
+                workerLimit: context.queueParallelWorkerLimit,
+                ensureActive: () => context.ensureQueueRunNotCancelled(),
+                runTask: (entryIndex) => context.runEntryRound(entries[entryIndex], roundIndex),
+            });
             continue;
         }
 
@@ -280,15 +274,15 @@ export async function executeActiveQueueRun({
     queueState.error = "";
 
     if (store.runtime.isRunning || store.isAnyQueueRunning || store.advisor.runtime?.isRunning) {
-        queueState.error = "Another simulation is already running.";
+        queueState.error = "common:queue.errorBusy";
         return [];
     }
     if (store.simulationSettings.runScope !== RUN_SCOPE_SINGLE) {
-        queueState.error = "Queue run requires run scope to be Single target.";
+        queueState.error = "common:queue.errorRunScopeSingle";
         return [];
     }
     if (!queueState.baseline?.snapshot) {
-        queueState.error = "Set baseline first.";
+        queueState.error = "common:queue.errorSetBaselineFirst";
         return [];
     }
     if (store.activeQueuePartyStatus?.hasMismatch) {
@@ -296,7 +290,7 @@ export async function executeActiveQueueRun({
         return [];
     }
     if (queueState.items.length === 0) {
-        queueState.error = "Queue is empty.";
+        queueState.error = "common:queue.errorQueueEmpty";
         return [];
     }
 
@@ -382,7 +376,7 @@ export async function executeActiveQueueRun({
             queueState.results = [];
             queueState.ranking = [];
             queueState.lastRunStatus = "failed";
-            queueState.error = context.runFailures[0]?.message || "Queue run failed.";
+            queueState.error = context.runFailures[0]?.message || "common:queue.errorQueueRunFailed";
             return [];
         }
 

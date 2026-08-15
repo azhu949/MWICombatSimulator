@@ -67,6 +67,10 @@ export function cancelSharedWorkerRun(cancellationError = createWorkerRunCancell
     }
 }
 
+export function hasSharedWorkerRunInProgress() {
+    return Boolean(sharedWorkerRunHandle);
+}
+
 export function runSingleSimulationPayloadWithDedicatedWorker(payload, onProgress = () => {}, options = {}) {
     const ClientCtor = typeof options?.WorkerClientCtor === "function" ? options.WorkerClientCtor : WorkerClient;
     return new Promise((resolve, reject) => {
@@ -227,6 +231,11 @@ export function runSharedSingleSimulationPayload(payload, onProgress = () => {},
                 settle(reject, error, true);
             },
         };
+        if (sharedWorkerRunHandle) {
+            // Supersede the previous shared run: settle it with a cancellation error so
+            // its promise does not hang when the shared client is reused, then take over.
+            sharedWorkerRunHandle.cancel(createWorkerRunCancellationError("Superseded by a new shared worker run."));
+        }
         sharedWorkerRunHandle = workerRunHandle;
 
         try {

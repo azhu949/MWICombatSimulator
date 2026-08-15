@@ -26,6 +26,7 @@ import {
 } from "./simulatorWorkerRuns.js";
 import { createProfitPricingOptions } from "./simulatorStorage.js";
 import { clamp } from "./utils.js";
+import { runParallelWorkerPool } from "./workerPool.js";
 
 const ADVISOR_ERROR_ANOTHER_RUN = "Another simulation is already running.";
 const ADVISOR_ERROR_NO_PLAYERS = "Please select at least one player.";
@@ -379,16 +380,11 @@ async function runAdvisorRefinePhase(context, store) {
         roundIndex += 1
     ) {
         if (refineParallelWorkerLimit > 1 && quickRowsForRefine.length > 1) {
-            let nextRowIndex = 0;
-            const workerLoop = async () => {
-                while (nextRowIndex < quickRowsForRefine.length) {
-                    const currentRowIndex = nextRowIndex;
-                    nextRowIndex += 1;
-                    const row = quickRowsForRefine[currentRowIndex];
-                    await runRefineRoundForRow(row);
-                }
-            };
-            await Promise.all(Array.from({ length: refineParallelWorkerLimit }, () => workerLoop()));
+            await runParallelWorkerPool({
+                taskCount: quickRowsForRefine.length,
+                workerLimit: refineParallelWorkerLimit,
+                runTask: (rowIndex) => runRefineRoundForRow(quickRowsForRefine[rowIndex]),
+            });
             continue;
         }
 

@@ -20,6 +20,7 @@ import {
 } from "../services/simulatorStorage.js";
 import {
     cancelSharedWorkerRun,
+    hasSharedWorkerRunInProgress,
     runSharedSingleSimulationPayload,
     runSingleSimulationPayloadWithDedicatedWorker,
     stopQueueWorkerClients,
@@ -191,26 +192,31 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
             this.normalizeRunScope();
 
             if (this.isAnyQueueRunning) {
-                this.runtime.error = "Queue run is in progress. Stop queue run before starting a manual simulation.";
+                this.runtime.error = "common:simulation.errorQueueInProgress";
                 return;
             }
 
             if (this.advisor.runtime?.isRunning) {
-                this.runtime.error = "Advisor scan is in progress. Stop the advisor scan before starting a manual simulation.";
+                this.runtime.error = "common:simulation.errorAdvisorInProgress";
+                return;
+            }
+
+            if (hasSharedWorkerRunInProgress()) {
+                this.runtime.error = "common:simulation.errorAnotherRunInProgress";
                 return;
             }
 
             const selectedPlayersSnapshot = this.selectedPlayers.map((player) => ({ id: player.id, name: player.name }));
 
             if (selectedPlayersSnapshot.length === 0) {
-                this.runtime.error = "Please select at least one player.";
+                this.runtime.error = "common:simulation.errorNoPlayer";
                 return;
             }
 
             const { buildPlayersForSimulation } = await loadPlayerMapperModule();
             const playersToSim = buildPlayersForSimulation(this.players);
             if (playersToSim.length === 0) {
-                this.runtime.error = "Unable to build player simulation data.";
+                this.runtime.error = "common:simulation.errorBuildPlayerData";
                 return;
             }
 
@@ -226,6 +232,12 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
             );
             const pricingOptions = createProfitPricingOptions(this.pricing);
             const startedAt = Date.now();
+
+            // Re-check after the await above: a shared run may have started in the meantime.
+            if (hasSharedWorkerRunInProgress()) {
+                this.runtime.error = "common:simulation.errorAnotherRunInProgress";
+                return;
+            }
 
             this.runtime.isRunning = true;
             this.runtime.progress = 0;
@@ -273,7 +285,7 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
                 const labyrinths = buildAllLabyrinthTargets(this.getActiveLabyrinthCrates());
                 if (labyrinths.length === 0) {
                     this.runtime.isRunning = false;
-                    this.runtime.error = "No labyrinth targets available.";
+                    this.runtime.error = "common:simulation.errorNoLabyrinthTargets";
                     return;
                 }
 
@@ -310,7 +322,7 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
             const zones = buildZoneTargetsByScope(runScope, selectedZoneHrids);
             if (zones.length === 0) {
                 this.runtime.isRunning = false;
-                this.runtime.error = "No zone targets available for current run scope.";
+                this.runtime.error = "common:simulation.errorNoZoneTargets";
                 return;
             }
 

@@ -98,6 +98,15 @@
         "baselineNeedsResetAfterImport": "Queue changes were imported. Please click 'Set Baseline' again to refresh baseline metrics.",
         "partyLockedMembers": "Locked party",
         "partyChangedSinceBaseline": "Party members or teammate configs changed since baseline. Click 'Set Baseline' again before adding or running queue variants.",
+        "errorBusy": "Another simulation is already running.",
+        "errorRunScopeSingle": "Queue run requires run scope to be Single target.",
+        "errorBaselineRunScopeSingle": "Queue baseline requires run scope to be Single target.",
+        "errorBaselineNoLabyrinth": "Queue baseline does not support labyrinth mode yet.",
+        "errorSetBaselineFirst": "Set baseline first.",
+        "errorQueueEmpty": "Queue is empty.",
+        "errorQueueRunFailed": "Queue run failed.",
+        "errorQueueBaselineFailed": "Queue baseline failed.",
+        "errorBuildPlayerData": "Unable to build player simulation data.",
         "queueNoBaseline": "Please set baseline first.",
         "requireImportBeforeBaseline": "Please import user data for the current player before setting baseline.",
         "queueNoDiff": "No changes detected against baseline.",
@@ -892,6 +901,15 @@
         "errorPartialQuick": "{{count}} target(s) failed during quick scan. Showing successful results only.",
         "errorPartialRefine": "{{count}} target(s) failed during refine step. Showing successful results only.",
         "dailyProfit": "Daily Profit"
+    },
+    "simulation": {
+        "errorQueueInProgress": "Queue run is in progress. Stop queue run before starting a manual simulation.",
+        "errorAdvisorInProgress": "Advisor scan is in progress. Stop the advisor scan before starting a manual simulation.",
+        "errorAnotherRunInProgress": "Another simulation is in progress. Wait for it to finish or stop it before starting a manual simulation.",
+        "errorNoPlayer": "Please select at least one player.",
+        "errorBuildPlayerData": "Unable to build player simulation data.",
+        "errorNoLabyrinthTargets": "No labyrinth targets available.",
+        "errorNoZoneTargets": "No zone targets available for current run scope."
     },
     "enhancement": {
         "eyebrow": "Enhancement Lab",

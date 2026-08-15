@@ -886,7 +886,10 @@ function serializeErrorPayload(payload) {
 }
 
 function openGlobalError(source, payload) {
-  const details = serializeErrorPayload(payload);
+  const rawDetails = serializeErrorPayload(payload);
+  // Dual-mode rendering: i18n keys (e.g. "common:simulation.*") are translated,
+  // plain runtime error text is shown as-is.
+  const details = t(rawDetails, rawDetails);
   globalErrorText.value = `[${source}] ${details || "-"}`;
   globalErrorModalOpen.value = true;
   errorCopyStatus.value = "";

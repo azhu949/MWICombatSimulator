@@ -1096,7 +1096,7 @@ describe("simulatorStore", () => {
         const rows = await simulator.runActiveQueue();
 
         expect(rows).toEqual([]);
-        expect(simulator.activeQueueState.error).toContain("Single target");
+        expect(simulator.activeQueueState.error).toBe("common:queue.errorRunScopeSingle");
     });
 
     it("rejects queue run while advisor scan is active", async () => {
@@ -1110,7 +1110,7 @@ describe("simulatorStore", () => {
         const rows = await simulator.runActiveQueue();
 
         expect(rows).toEqual([]);
-        expect(simulator.activeQueueState.error).toBe("Another simulation is already running.");
+        expect(simulator.activeQueueState.error).toBe("common:queue.errorBusy");
     });
 
     it("runs queue with multiple rounds and builds ranking output", async () => {
@@ -2063,6 +2063,30 @@ describe("simulatorStore", () => {
         await expect(runPromise).rejects.toMatchObject({ code: "cancelled" });
         expect(startSpy).toHaveBeenCalledTimes(1);
         expect(stopSpy).toHaveBeenCalled();
+    });
+
+    it("blocks manual simulation while a shared worker run is in progress", async () => {
+        const simulator = useSimulatorStore();
+        const startSpy = vi.spyOn(workerClient, "startSimulation").mockImplementation(() => {});
+
+        const runPromise = simulator.runSingleSimulationPayload({
+            type: "start_simulation",
+            workerId: "guard-run",
+            players: [],
+            zone: null,
+            labyrinth: null,
+            simulationTimeLimit: 100,
+            extra: { mooPass: false, comExp: 0, comDrop: 0, enableHpMpVisualization: false },
+        });
+
+        await simulator.startSimulation();
+
+        expect(simulator.runtime.error).toBe("common:simulation.errorAnotherRunInProgress");
+        // Only the shared run itself started a simulation; the manual path was blocked.
+        expect(startSpy).toHaveBeenCalledTimes(1);
+
+        simulator.stopSimulation();
+        await expect(runPromise).rejects.toMatchObject({ code: "cancelled" });
     });
 
     it("does not treat cancelled parallel queue runs as errors", async () => {

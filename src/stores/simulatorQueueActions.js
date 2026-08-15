@@ -32,6 +32,7 @@ import {
     deriveQueueVariantNameFromLabels,
 } from "../services/queueVariants.js";
 import { executeActiveQueueRun } from "../services/queueRunExecution.js";
+import { runParallelWorkerPool } from "../services/workerPool.js";
 import {
     buildQueueCostWarnings,
     computeQueueItemUpgradeCost,
@@ -401,15 +402,15 @@ export function createQueueActions({
             }
 
             if (this.runtime.isRunning || this.isAnyQueueRunning || this.advisor.runtime?.isRunning) {
-                throw new Error("Another simulation is already running.");
+                throw new Error("common:queue.errorBusy");
             }
 
             if (this.simulationSettings.runScope !== RUN_SCOPE_SINGLE) {
-                throw new Error("Queue baseline requires run scope to be Single target.");
+                throw new Error("common:queue.errorBaselineRunScopeSingle");
             }
 
             if (this.simulationSettings.mode === "labyrinth") {
-                throw new Error("Queue baseline does not support labyrinth mode yet.");
+                throw new Error("common:queue.errorBaselineNoLabyrinth");
             }
 
             const queueSettings = normalizeQueueSettings(queueState.settings);
@@ -426,7 +427,7 @@ export function createQueueActions({
             const playersToSim = buildPlayersForSimulation(scenarioPlayers);
             const baselinePayloadOptions = buildQueueBaselinePayloadOptions(baselineSettings, this.simulationSettings);
             if (playersToSim.length === 0) {
-                throw new Error("Unable to build player simulation data.");
+                throw new Error("common:queue.errorBuildPlayerData");
             }
 
             const selectedPlayersSnapshot = [{ id: activePlayerId, name: activePlayer?.name || `Player ${activePlayerId}` }];
@@ -533,18 +534,12 @@ export function createQueueActions({
                 };
 
                 if (executionMode === "parallel" && baselineRoundCount > 1) {
-                    let nextRoundIndex = 0;
-                    const workerCount = Math.max(1, Math.min(queueParallelWorkerLimit, baselineRoundCount));
-                    const workerLoop = async () => {
-                        while (nextRoundIndex < baselineRoundCount) {
-                            ensureBaselineRunNotCancelled();
-                            const currentRoundIndex = nextRoundIndex;
-                            nextRoundIndex += 1;
-                            // eslint-disable-next-line no-await-in-loop
-                            await runBaselineRound(currentRoundIndex);
-                        }
-                    };
-                    await Promise.all(Array.from({ length: workerCount }, () => workerLoop()));
+                    await runParallelWorkerPool({
+                        taskCount: baselineRoundCount,
+                        workerLimit: queueParallelWorkerLimit,
+                        ensureActive: () => ensureBaselineRunNotCancelled(),
+                        runTask: (roundIndex) => runBaselineRound(roundIndex),
+                    });
                 } else {
                     for (let roundIndex = 0; roundIndex < baselineRoundCount; roundIndex += 1) {
                         ensureBaselineRunNotCancelled();
@@ -556,7 +551,7 @@ export function createQueueActions({
                 ensureBaselineRunNotCancelled();
                 const sortedRoundResults = roundResults.slice().sort((left, right) => left.round - right.round);
                 if (sortedRoundResults.length <= 0) {
-                    throw new Error(roundFailures[0]?.message || "Queue baseline failed.");
+                    throw new Error(roundFailures[0]?.message || "common:queue.errorQueueBaselineFailed");
                 }
                 const baselineAggregate = buildQueueBaselineAggregate(sortedRoundResults, queueSettings.medianBlend);
                 const sortedRoundFailures = roundFailures.slice().sort((left, right) => left.round - right.round);
