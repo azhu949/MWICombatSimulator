@@ -1,4 +1,5 @@
 import jStat from "jstat";
+import { applyMarketSaleFee, isMarketSaleSource } from "./marketPriceService.js";
 
 const DEFAULT_SUCCESS_RATES = [
     0.5, 0.45, 0.45, 0.4, 0.4, 0.4, 0.35, 0.35, 0.35, 0.35,
@@ -26,6 +27,22 @@ function toFiniteNumber(value, fallback = 0) {
 
 function toNonNegativeNumber(value, fallback = 0) {
     return Math.max(0, toFiniteNumber(value, fallback));
+}
+
+// Market-sourced bids represent actual market sales and are subject to the market tax.
+// Vendor values and user overrides stay at their entered values.
+// Note: the tax is applied and rounded per unit; callers multiply this unit
+// price by an (often fractional) expected count, which stacks a second
+// approximation on top of the unverified official rounding rule (see
+// MARKET_SALE_FEE_ROUNDING_MODE notes in marketPriceService).
+function netMarketLiquidationUnitPrice(liquidation) {
+    if (!liquidation || !liquidation.available) {
+        return 0;
+    }
+    const taxedSource = isMarketSaleSource(liquidation.source);
+    return taxedSource
+        ? applyMarketSaleFee(liquidation.price, liquidation.itemHrid)
+        : toNonNegativeNumber(liquidation.price, 0);
 }
 
 function toInteger(value, fallback = 0) {
@@ -857,7 +874,7 @@ export function estimateEnhancementAcquisitionValue(itemHrid, enhancementData = 
                 overrides,
                 sources: ["bid", "vendor"],
             });
-            const unitPrice = liquidation.available ? liquidation.price : 0;
+            const unitPrice = netMarketLiquidationUnitPrice(liquidation);
             const expectedValue = expectedCount * unitPrice;
             otherLootValuePerContainer += expectedValue;
             otherLootDetails.push({
@@ -1995,7 +2012,16 @@ export function calculateDecompositionValue(input = {}, enhancementData = {}, pr
     const essenceCount = Math.floor(Math.round(
         2 * (0.5 + 0.1 * (1.05 ** itemLevel)) * (2 ** targetLevel)
     ));
-    const grossValue = essenceCount * toNonNegativeNumber(resolvedPrice.price, 0);
+    const taxedSource = isMarketSaleSource(resolvedPrice.source);
+    const netUnitPrice = taxedSource
+        ? applyMarketSaleFee(resolvedPrice.price, essenceItemHrid)
+        : toNonNegativeNumber(resolvedPrice.price, 0);
+    // Net value before the return rate: the unit price already includes the
+    // market tax. Note: the tax is applied and rounded per unit, then
+    // multiplied by the count — if the game taxes the batch total instead,
+    // low-price multi-unit values can differ by a coin or two (see
+    // MARKET_SALE_FEE_ROUNDING_MODE notes in marketPriceService).
+    const netValue = essenceCount * netUnitPrice;
     const returnRate = clamp(toFiniteNumber(input.returnRate, 0.78), 0, 1);
     return {
         itemLevel,
@@ -2003,10 +2029,11 @@ export function calculateDecompositionValue(input = {}, enhancementData = {}, pr
         essenceItemHrid,
         essenceCount,
         essenceBid: resolvedPrice.price,
+        marketTax: taxedSource ? toNonNegativeNumber(resolvedPrice.price, 0) - netUnitPrice : 0,
         priceSource: resolvedPrice.source,
         priceAvailable: resolvedPrice.available,
-        grossValue,
+        netValue,
         returnRate,
-        value: grossValue * returnRate,
+        value: netValue * returnRate,
     };
 }

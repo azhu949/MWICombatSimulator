@@ -37,8 +37,8 @@ describe("App shell contracts", () => {
 
   it("uses the dedicated patch-notes route and clears unread entries on page entry", () => {
     expect(sidebarSource).toContain('to="/patch-notes"');
-    expect(sidebarSource).toContain("sidebar-unread-breathe");
-    expect(sidebarSource).toContain("prefers-reduced-motion: no-preference");
+    expect(sidebarSource).toContain("sidebar-unread-badge");
+    expect(sidebarSource).toContain("unreadPatchNotesCount");
     expect(appSource).not.toContain("patchNotesModalOpen");
     expect(appSource).not.toContain("openPatchNotesModal");
     expect(appSource).toContain('nextRouteName === "patch-notes"');
@@ -95,8 +95,11 @@ describe("App shell contracts", () => {
   });
 
   it("keeps feedback contact and baseline gating behavior", () => {
-    expect(appSource).toContain("993488247");
-    expect(appSource).toContain("mailto:596846069@qq.com");
+    expect(appSource).toContain('const QQ_GROUP_NUMBER = "1102475742";');
+    expect(appSource).toContain("copyFeedbackContact(QQ_GROUP_NUMBER)");
+    expect(appSource).toContain('const FEEDBACK_EMAIL = "596846069@qq.com";');
+    expect(appSource).toContain("mailto:${FEEDBACK_EMAIL}");
+    expect(appSource).toContain("copyFeedbackContact(FEEDBACK_EMAIL)");
     expect(appSource).toContain("if (!baselineReminderDismissed.value)");
     expect(appSource).toContain("dismissBaselineReminder();");
     expect(appSource).toContain("await runTopbarBaselineSimulation();");

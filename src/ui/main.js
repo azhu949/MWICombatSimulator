@@ -11,6 +11,7 @@ import App from "./App.vue";
 import router from "./router/index.js";
 import { initI18n } from "./i18n/i18n.js";
 import { initializeTheme } from "./composables/useTheme.js";
+import { validateSpecialMarketFeeRateHrids } from "../services/marketPriceService.js";
 import {
     Table,
     TableBody,
@@ -24,6 +25,7 @@ import "./styles.css";
 
 async function bootstrap() {
     initializeTheme();
+    validateSpecialMarketFeeRateHrids();
     await initI18n();
 
     const app = createApp(App);

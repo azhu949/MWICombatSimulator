@@ -2,7 +2,7 @@
   <SidebarProvider>
     <AppSidebar
       :version="appVersion"
-      :has-unread-patch-notes="hasUnreadPatchNotes"
+      :unread-patch-notes-count="patchNotesUnreadCount"
       :patch-notes-label="patchNotesButtonAriaLabel"
       @feedback="openFeedbackModal"
     />
@@ -86,9 +86,9 @@
           <div class="feedback-contact-row">
             <div class="min-w-0">
               <p class="feedback-contact-label">{{ t("common:vue.app.feedbackQqLabel", "QQ Group") }}</p>
-              <p class="feedback-contact-value">993488247</p>
+              <p class="feedback-contact-value">{{ QQ_GROUP_NUMBER }}</p>
             </div>
-            <button type="button" class="button-secondary text-xs" data-feedback-copy @click="copyFeedbackContact('993488247')">
+            <button type="button" class="button-secondary text-xs" data-feedback-copy @click="copyFeedbackContact(QQ_GROUP_NUMBER)">
               {{ t("common:vue.common.copy", "Copy") }}
             </button>
           </div>
@@ -96,9 +96,9 @@
           <div class="feedback-contact-row">
             <div class="min-w-0">
               <p class="feedback-contact-label">{{ t("common:vue.app.feedbackEmailLabel", "QQ Email") }}</p>
-              <a class="feedback-contact-link" href="mailto:596846069@qq.com">596846069@qq.com</a>
+              <a class="feedback-contact-link" :href="`mailto:${FEEDBACK_EMAIL}`">{{ FEEDBACK_EMAIL }}</a>
             </div>
-            <button type="button" class="button-secondary text-xs" @click="copyFeedbackContact('596846069@qq.com')">
+            <button type="button" class="button-secondary text-xs" @click="copyFeedbackContact(FEEDBACK_EMAIL)">
               {{ t("common:vue.common.copy", "Copy") }}
             </button>
           </div>
@@ -337,6 +337,10 @@ import { deriveQueueItemStatusName } from "./queueItemStatusPresentation.js";
 import { evaluateManualPriceDraft, normalizeManualPriceDraft } from "./queueManualPriceValidation.js";
 
 const appVersion = __APP_VERSION__;
+
+// Feedback contact details — single source of truth for the feedback modal.
+const QQ_GROUP_NUMBER = "1102475742";
+const FEEDBACK_EMAIL = "596846069@qq.com";
 const simulator = useSimulatorStore();
 const router = useRouter();
 const route = useRoute();

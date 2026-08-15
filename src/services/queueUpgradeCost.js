@@ -6,7 +6,7 @@ import {
     houseRoomDetailIndex,
     itemDetailIndex,
 } from "../shared/gameDataIndex.js";
-import { normalizePriceMode, PRICE_MODE_ASK, PRICE_MODE_BID, PRICE_MODE_VENDOR } from "./marketPriceService.js";
+import { applyMarketSaleFee, normalizePriceMode, PRICE_MODE_ASK, PRICE_MODE_BID, PRICE_MODE_VENDOR } from "./marketPriceService.js";
 import { MARKET_HISTORY_PRICE_SOURCE } from "./marketHistoryService.js";
 import {
     MANUAL_EQUIPMENT_PRICE_SOURCE,
@@ -196,7 +196,8 @@ export function resolveEquipmentTransitionPricing(beforeItemHrid, beforeLevel, a
     }
 
     const targetAskAvailable = buyCost > 0;
-    const baselineSaleValue = sellValue > 0 ? sellValue : 0;
+    // Market sales are subject to the market tax; keep the net proceeds as the sale credit.
+    const baselineSaleValue = sellValue > 0 ? applyMarketSaleFee(sellValue, sourceItemHrid) : 0;
     return {
         cost: targetAskAvailable ? Math.max(0, buyCost - baselineSaleValue) : null,
         targetAsk: targetAskAvailable ? buyCost : null,

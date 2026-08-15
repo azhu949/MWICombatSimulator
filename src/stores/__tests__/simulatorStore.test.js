@@ -3688,16 +3688,16 @@ describe("simulatorStore", () => {
 
         let draft = simulator.resolveActivePlayerEquipmentUpgradeCostDraft("weapon");
         expect(draft).toMatchObject({
-            cost: 600,
+            cost: 620,
             targetAsk: 1000,
-            baselineSaleValue: 400,
+            baselineSaleValue: 380,
             baselineSaleSource: "bid",
             baselineSaleZero: false,
         });
 
         simulator.pricing.enhancementQuotesByItem[equipmentItemHrid]["1"] = { ask: 500, bid: -1 };
         draft = simulator.resolveActivePlayerEquipmentUpgradeCostDraft("weapon");
-        expect(draft).toMatchObject({ cost: 500, baselineSaleValue: 500, baselineSaleSource: "ask" });
+        expect(draft).toMatchObject({ cost: 525, baselineSaleValue: 475, baselineSaleSource: "ask" });
 
         simulator.pricing.enhancementQuotesByItem[equipmentItemHrid]["1"] = { ask: -1, bid: -1 };
         draft = simulator.resolveActivePlayerEquipmentUpgradeCostDraft("weapon");
@@ -4213,9 +4213,9 @@ describe("simulatorStore", () => {
         await simulator.refreshQueueResultsFromRawRuns({ allowReferenceLoad: false });
         const insights = simulator.activeQueueState.ranking[0].costInsights;
 
-        expect(insights.equipmentSaleValue).toBe(100);
+        expect(insights.equipmentSaleValue).toBe(95);
         expect(insights.equipmentBuyPrice).toBe(500);
-        expect(insights.equipmentNetCost).toBe(400);
+        expect(insights.equipmentNetCost).toBe(405);
         expect(insights.totalUpgradeCost).toBeGreaterThan(insights.equipmentNetCost);
     });
 
@@ -4351,14 +4351,14 @@ describe("simulatorStore", () => {
         ];
 
         await simulator.refreshQueueResultsFromRawRuns({ allowReferenceLoad: false });
-        expect(simulator.activeQueueState.ranking[0].costInsights.totalUpgradeCost).toBe(400);
+        expect(simulator.activeQueueState.ranking[0].costInsights.totalUpgradeCost).toBe(405);
         expect(simulator.activeQueueState.items[0].costWarnings).toEqual(expect.arrayContaining([
             expect.objectContaining({ code: "historical_ask", price: 500 }),
         ]));
 
         setExactEquipmentAsk(simulator, equipmentItemHrid, 2, 700);
         await simulator.refreshQueueResultsFromRawRuns({ allowReferenceLoad: false });
-        expect(simulator.activeQueueState.ranking[0].costInsights.totalUpgradeCost).toBe(600);
+        expect(simulator.activeQueueState.ranking[0].costInsights.totalUpgradeCost).toBe(605);
         expect(simulator.activeQueueState.items[0].costWarnings).toEqual([]);
         expect(simulator.activeQueueState.items[0].confirmedEquipmentPrices).toEqual([
             expect.objectContaining({ source: "historical_ask", price: 500 }),

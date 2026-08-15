@@ -3,7 +3,7 @@ import crypto from "node:crypto";
 import path from "node:path";
 import { fileURLToPath } from "node:url";
 import { describe, expect, it } from "vitest";
-import { validateTranslationResources } from "../../../../scripts/official-translation-sync.mjs";
+import { normalizeZhPunctuation, validateTranslationResources } from "../../../../scripts/official-translation-sync.mjs";
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const rootDir = path.resolve(__dirname, "../../../..");
@@ -69,6 +69,32 @@ describe("official translation snapshots", () => {
         expect(sourceManifest.source.manifest.sha256).toMatch(/^[a-f0-9]{64}$/);
         expect(sourceManifest.resources.en.sha256).toBe(sha256(enContent));
         expect(sourceManifest.resources.zh.sha256).toBe(sha256(zhContent));
+    });
+
+    it("keeps Chinese label colons full-width", () => {
+        const zhTranslation = readJson(zhTranslationPath);
+        const violations = [];
+
+        function walk(value, location) {
+            if (typeof value === "string") {
+                if (normalizeZhPunctuation(value) !== value) {
+                    violations.push(`${location}: ${JSON.stringify(value.slice(0, 80))}`);
+                }
+                return;
+            }
+            if (Array.isArray(value)) {
+                value.forEach((entry, index) => walk(entry, `${location}[${index}]`));
+                return;
+            }
+            if (value && typeof value === "object") {
+                for (const [key, entry] of Object.entries(value)) {
+                    walk(entry, `${location}.${key}`);
+                }
+            }
+        }
+
+        walk(zhTranslation, "zh");
+        expect(violations).toEqual([]);
     });
 
     it("includes feedback modal keys in both locale common bundles", () => {

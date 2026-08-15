@@ -39,23 +39,35 @@ describe("patchNotes", () => {
             entryId: "2026年8月15日（v2.0.7）",
             label: "2026年8月15日（v2.0.7）",
         });
-        expect(zhEntries[0].notes).toHaveLength(3);
+        expect(zhEntries[0].notes).toHaveLength(4);
         expect(zhEntries[0].notes).toContain(
-            "模拟、队列与顾问的错误提示统一国际化，随界面语言自动切换。"
+            "同步游戏 8/14 市场与公会试炼更新，市场税率提高至 5%，所有市场卖出估值已扣除 5% 税。"
         );
         expect(zhEntries[0].notes).toContain(
-            "手动模拟前检测共享 Worker 运行状态，避免与队列或顾问扫描冲突。"
+            "牛铃袋 (10个) 市场卖出按官方特殊税率 18% 扣税，其余物品仍按 5%。"
+        );
+        expect(zhEntries[0].notes).toContain(
+            "税后价格四舍五入取整为整数金币（官方取整规则暂未核实，集中一处可切换）。"
+        );
+        expect(zhEntries[0].notes).toContain(
+            "同步神龛增益（稀有发现 1.5%/级、精华发现 3%/级）与公会试炼怪物数据。"
         );
         expect(enEntries[0]).toMatchObject({
             entryId: "2026年8月15日（v2.0.7）",
             label: "August 15, 2026 (v2.0.7)",
         });
-        expect(enEntries[0].notes).toHaveLength(3);
+        expect(enEntries[0].notes).toHaveLength(4);
         expect(enEntries[0].notes).toContain(
-            "Simulation, queue, and advisor errors are now localized and follow the interface language."
+            "Synced the Aug 14 game update: market tax raised to 5%, and all market-sale valuations now deduct the tax."
         );
         expect(enEntries[0].notes).toContain(
-            "Manual simulation now checks the shared worker state to avoid conflicts with queue or advisor runs."
+            "Bag of 10 Cowbells market sales now use the official special 18% tax rate; all other items remain at 5%."
+        );
+        expect(enEntries[0].notes).toContain(
+            "Taxed prices are rounded to whole coins (official rounding rule unverified; centralized and switchable)."
+        );
+        expect(enEntries[0].notes).toContain(
+            "Synced shrine buffs (Rare Find 1.5% and Essence Find 3% per level) and guild trial monster data."
         );
 
         expect(zhEntries[1]).toMatchObject({

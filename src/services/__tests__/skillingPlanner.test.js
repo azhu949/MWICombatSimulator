@@ -232,7 +232,24 @@ describe("skillingPlanner", () => {
         expect(resolveSkillingPrice(priceTable(), "/items/coin").liquidationPrice).toBe(1);
         expect(resolveSkillingPrice(priceTable({
             "/items/taxed": { ask: 120, bid: 100, vendor: 0 },
-        }), "/items/taxed").liquidationPrice).toBe(98);
+        }), "/items/taxed").liquidationPrice).toBe(95);
+    });
+
+    it("resolves the per-item market fee rate by default (18% for Bag of 10 Cowbells)", () => {
+        const prices = priceTable({
+            "/items/bag_of_10_cowbells": { ask: 120, bid: 100, vendor: 0 },
+            "/items/plain": { ask: 120, bid: 100, vendor: 0 },
+        });
+        expect(resolveSkillingPrice(prices, "/items/bag_of_10_cowbells")).toMatchObject({
+            liquidationPrice: 82,
+            liquidationSource: "market_bid",
+        });
+        expect(resolveSkillingPrice(prices, "/items/plain")).toMatchObject({
+            liquidationPrice: 95,
+            liquidationSource: "market_bid",
+        });
+        // An explicit feeRate overrides per-item resolution.
+        expect(resolveSkillingPrice(prices, "/items/bag_of_10_cowbells", 0.05).liquidationPrice).toBeCloseTo(95, 10);
     });
 
     it("uses the base market bid as the floor when an enhanced item has no exact bid", () => {
@@ -413,7 +430,7 @@ describe("skillingPlanner", () => {
         expect(result.status).toBe("ok");
         expect(result.segments[0].equipment).toEqual([]);
         expect(result.segments[0].completionCount).toBe(4);
-        expect(result.totalNetCost).toBeCloseTo(-38.4, 10);
+        expect(result.totalNetCost).toBeCloseTo(-36, 10);
     });
 
     it("selects the cheapest route by default and the shortest rounded route in speed mode", () => {
@@ -1014,7 +1031,7 @@ describe("skillingPlanner", () => {
             expect.objectContaining({ id: "plain", enhancementLevel: 0, count: 1 }),
         ]);
         expect(result.segments[0].inputItems).toEqual([
-            expect.objectContaining({ itemHrid: materialHrid, enhancementLevel: 0, opportunityCost: 98 }),
+            expect.objectContaining({ itemHrid: materialHrid, enhancementLevel: 0, opportunityCost: 95 }),
         ]);
     });
 
@@ -2948,14 +2965,14 @@ describe("skillingPlanner", () => {
         expect(result.segments).toHaveLength(1);
         expect(result.missingPriceHrids).toEqual(["/items/raw"]);
         expect(result).toMatchObject({
-            totalNetCost: 9.8,
+            totalNetCost: 10,
             totalPurchaseCost: 0,
-            totalOpportunityCost: 9.8,
+            totalOpportunityCost: 10,
             totalOutputValue: 0,
             totalDurationHours: 1 / 60,
             totalExperience: 33,
         });
-        expect(result.costPerExperience).toBeCloseTo(9.8 / 33, 10);
+        expect(result.costPerExperience).toBeCloseTo(10 / 33, 10);
         expect(result.experiencePerHour).toBeCloseTo(1980, 10);
     });
 
@@ -3475,14 +3492,14 @@ describe("skillingPlanner", () => {
             },
         });
 
-        expect(candidate.inputItems[0].opportunityCost).toBe(980);
+        expect(candidate.inputItems[0].opportunityCost).toBe(950);
         expect(candidate.inputItems[0].enhancementLevel).toBe(12);
         expect(candidate.outputItems[0]).toMatchObject({
             itemHrid: "/items/refined_cape",
             enhancementLevel: 12,
-            liquidationValue: 1960,
+            liquidationValue: 1900,
         });
-        expect(candidate.netCost).toBe(-980);
+        expect(candidate.netCost).toBe(-950);
         expect(candidate.consumedEquipment).toEqual([
             expect.objectContaining({ id: "cape", enhancementLevel: 12, count: 1 }),
         ]);

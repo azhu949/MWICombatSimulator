@@ -3,7 +3,7 @@ import { describe, expect, it } from "vitest";
 import GuildBuff from "../guildBuff.js";
 import Player from "../player.js";
 import { buildPlayersForSimulation, createEmptyPlayerConfig } from "../../services/playerMapper.js";
-import { combatGuildBuffHrids, normalizeGuildBuffLevels } from "../../shared/guildBuffs.js";
+import { combatGuildBuffHrids, getGuildBuffMaxLevel, guildBuffDetailIndex, normalizeGuildBuffLevels } from "../../shared/guildBuffs.js";
 
 const EXPECTED_LEVEL_VALUES = {
     "/guild_buffs/force_combat": [{ typeHrid: "/buff_types/damage", field: "ratioBoost", level1: 0.003, level20: 0.06 }],
@@ -15,7 +15,7 @@ const EXPECTED_LEVEL_VALUES = {
         { typeHrid: "/buff_types/max_hitpoints", field: "ratioBoost", level1: 0.01, level20: 0.2 },
         { typeHrid: "/buff_types/max_manapoints", field: "ratioBoost", level1: 0.01, level20: 0.2 },
     ],
-    "/guild_buffs/rarity_combat": [{ typeHrid: "/buff_types/rare_find", field: "flatBoost", level1: 0.01, level20: 0.2 }],
+    "/guild_buffs/rarity_combat": [{ typeHrid: "/buff_types/rare_find", field: "flatBoost", level1: 0.015, level20: 0.3 }],
     "/guild_buffs/scholar_combat": [{ typeHrid: "/buff_types/wisdom", field: "flatBoost", level1: 0.005, level20: 0.1 }],
 };
 
@@ -76,7 +76,7 @@ describe("guild shrine combat buffs", () => {
         expect(maxed.combatDetails.combatStats.castSpeed - baseline.combatDetails.combatStats.castSpeed).toBeCloseTo(0.08, 8);
         expect(maxed.combatDetails.maxHitpoints).toBe(Math.floor(baseline.combatDetails.maxHitpoints * 1.2));
         expect(maxed.combatDetails.maxManapoints).toBe(Math.floor(baseline.combatDetails.maxManapoints * 1.2));
-        expect(maxed.combatDetails.combatStats.combatRareFind - baseline.combatDetails.combatStats.combatRareFind).toBeCloseTo(0.2, 8);
+        expect(maxed.combatDetails.combatStats.combatRareFind - baseline.combatDetails.combatStats.combatRareFind).toBeCloseTo(0.3, 8);
         expect(maxed.combatDetails.combatStats.combatExperience - baseline.combatDetails.combatStats.combatExperience).toBeCloseTo(0.1, 8);
     });
 
@@ -90,5 +90,41 @@ describe("guild shrine combat buffs", () => {
         expect(roundtrip.combatDetails.maxHitpoints).toBe(direct.combatDetails.maxHitpoints);
         expect(roundtrip.combatDetails.combatStats.attackInterval).toBe(direct.combatDetails.combatStats.attackInterval);
         expect(roundtrip.combatDetails.combatStats.combatExperience).toBe(direct.combatDetails.combatStats.combatExperience);
+    });
+});
+
+describe("guild shrine skilling buffs", () => {
+    it("keeps the 1.5%/level Rare Find and 3%/level Essence Find skilling shrine data", () => {
+        const rarity = guildBuffDetailIndex["/guild_buffs/rarity_skilling"];
+        const spirit = guildBuffDetailIndex["/guild_buffs/spirit_skilling"];
+
+        expect(rarity).toMatchObject({
+            hrid: "/guild_buffs/rarity_skilling",
+            shrineHrid: "/guild_shrines/rarity",
+            isCombat: false,
+        });
+        expect(rarity.buffs).toEqual([expect.objectContaining({
+            typeHrid: "/buff_types/rare_find",
+            flatBoost: 0.015,
+            flatBoostLevelBonus: 0.015,
+        })]);
+
+        expect(spirit).toMatchObject({
+            hrid: "/guild_buffs/spirit_skilling",
+            shrineHrid: "/guild_shrines/spirit",
+            isCombat: false,
+        });
+        expect(spirit.buffs).toEqual([expect.objectContaining({
+            typeHrid: "/buff_types/essence_find",
+            flatBoost: 0.03,
+            flatBoostLevelBonus: 0.03,
+        })]);
+    });
+
+    it("rejects non-combat shrine buffs in the combat GuildBuff model", () => {
+        expect(() => new GuildBuff("/guild_buffs/rarity_skilling", 1)).toThrow();
+        expect(() => new GuildBuff("/guild_buffs/spirit_skilling", 1)).toThrow();
+        expect(getGuildBuffMaxLevel("/guild_buffs/rarity_skilling")).toBe(0);
+        expect(getGuildBuffMaxLevel("/guild_buffs/spirit_skilling")).toBe(0);
     });
 });

@@ -46,18 +46,32 @@ describe("application shell behavior", () => {
 
     const wrapper = mount(defineComponent({
       components: { AppSidebar, SidebarProvider },
-      template: '<SidebarProvider><AppSidebar version="1.0.0" has-unread-patch-notes patch-notes-label="Patch Notes, 1 unread update" /></SidebarProvider>',
+      template: '<SidebarProvider><AppSidebar version="1.0.0" :unread-patch-notes-count="3" patch-notes-label="Patch Notes, 3 unread updates" /></SidebarProvider>',
     }), { global: { plugins: [router] }, attachTo: document.body });
 
     const patchNotesLink = wrapper.findAll("a").find((link) => link.attributes("href") === "/patch-notes");
     expect(patchNotesLink).toBeTruthy();
-    expect(patchNotesLink.attributes("aria-label")).toBe("Patch Notes, 1 unread update");
+    expect(patchNotesLink.attributes("aria-label")).toBe("Patch Notes, 3 unread updates");
     expect(patchNotesLink.find(".sidebar-unread-indicator").exists()).toBe(true);
-    expect(patchNotesLink.find(".sidebar-unread-dot").exists()).toBe(true);
+    expect(patchNotesLink.find(".sidebar-unread-badge").text()).toBe("3");
 
     await router.push("/patch-notes");
     await flushPromises();
     expect(patchNotesLink.classes()).toContain("sidebar-action-active");
+  });
+
+  it("caps the unread badge at 99+", async () => {
+    const router = createTestRouter();
+    await router.push("/home");
+    await router.isReady();
+
+    const wrapper = mount(defineComponent({
+      components: { AppSidebar, SidebarProvider },
+      template: '<SidebarProvider><AppSidebar version="1.0.0" :unread-patch-notes-count="120" /></SidebarProvider>',
+    }), { global: { plugins: [router] }, attachTo: document.body });
+
+    const patchNotesLink = wrapper.findAll("a").find((link) => link.attributes("href") === "/patch-notes");
+    expect(patchNotesLink.find(".sidebar-unread-badge").text()).toBe("99+");
   });
 
   it("persists desktop sidebar collapse state", async () => {

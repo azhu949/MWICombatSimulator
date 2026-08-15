@@ -392,6 +392,13 @@
                 </button>
               </div>
             </div>
+            <p
+              v-if="hasLiquidationPriceOverride"
+              class="border-l-2 border-primary/40 bg-primary/10 px-3 py-2 text-[11px] leading-4 text-muted-foreground"
+              data-enhancement-override-note
+            >
+              {{ t("common:enhancement.priceOverrideTaxNote", "Price overrides are treated as net proceeds: liquidation estimates no longer deduct the market tax.") }}
+            </p>
             <p v-if="materialRows.length === 0" class="text-xs text-muted-foreground">{{ t("common:enhancement.selectItemForMaterials", "Select an item to load its material prices.") }}</p>
             <p
               v-if="hasAcquisitionEstimate"
@@ -599,11 +606,12 @@
                 <p class="mt-2 font-heading text-lg font-semibold text-foreground">{{ formatNumber(decompositionQuantity) }}</p>
               </div>
               <div class="bg-muted/50 p-3">
-                <p class="text-xs text-muted-foreground">{{ t("common:enhancement.bidValue", "Recovery value") }}</p>
+                <p class="text-xs text-muted-foreground">{{ t("common:enhancement.bidValueNet", "Recovery value (net of tax)") }}</p>
                 <p class="mt-2 font-heading text-lg font-semibold text-destructive">{{ formatGold(decompositionGold) }}</p>
               </div>
             </div>
             <p class="mt-4 text-xs text-muted-foreground">{{ decompositionItemLabel }}</p>
+            <p v-if="decompositionTaxNote" class="mt-1 text-xs text-muted-foreground">{{ decompositionTaxNote }}</p>
           </div>
         </div>
 
@@ -974,6 +982,10 @@ const filteredItemOptions = computed(() => {
   });
 });
 const materialRows = computed(() => Array.isArray(enhancement.materialRows) ? enhancement.materialRows : []);
+const hasLiquidationPriceOverride = computed(() => (
+  enhancement.config.startingItemPriceOverride != null
+  || materialRows.value.some((row) => row.priceMode === "bid" && row.overrideValue != null)
+));
 const protectionOptions = computed(() => Array.isArray(enhancement.protectionOptions) ? enhancement.protectionOptions : []);
 const hasAcquisitionEstimate = computed(() => (
   isAcquisitionEstimate(enhancement.startingItemPrice)
@@ -1104,7 +1116,7 @@ const mirrorMethodLabel = computed(() => {
 const decompositionQuantity = computed(() => rowValue(decompositionValue.value, "quantity", "essenceQuantity", "essenceCount", "expectedEssence"));
 const decompositionGold = computed(() => {
   if (!decompositionValue.value || decompositionValue.value.priceAvailable === false) return Number.NaN;
-  return numericValue(decompositionValue.value, rowValue(decompositionValue.value, "value", "goldValue", "grossValue", "bidValue"));
+  return numericValue(decompositionValue.value, rowValue(decompositionValue.value, "value", "goldValue", "netValue", "bidValue"));
 });
 const decompositionItemLabel = computed(() => {
   if (!decompositionValue.value) return t("common:enhancement.noItemSelected", "No item selected");
@@ -1112,6 +1124,18 @@ const decompositionItemLabel = computed(() => {
   return t("common:enhancement.decompositionPriceSource", "{{item}} price source: {{source}}", {
     item: itemName({ hrid, name: "Enhancing Essence" }),
     source: priceSourceLabel(decompositionValue.value?.priceSource),
+  });
+});
+const decompositionTaxNote = computed(() => {
+  const value = decompositionValue.value;
+  const unitTax = Number(value?.marketTax || 0);
+  const essenceCount = Math.max(0, Number(decompositionQuantity.value || 0));
+  if (!value || unitTax <= 0 || essenceCount <= 0) return "";
+  const taxTotal = unitTax * essenceCount;
+  const grossTotal = Math.max(0, Number(value?.essenceBid || 0)) * essenceCount;
+  return t("common:enhancement.decompositionTaxNote", "Market tax {{tax}} (gross market value {{gross}})", {
+    tax: formatGold(taxTotal),
+    gross: formatGold(grossTotal),
   });
 });
 

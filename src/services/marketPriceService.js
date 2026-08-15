@@ -6,6 +6,36 @@ export const PRICE_MODE_BID = "bid";
 export const PRICE_MODE_VENDOR = "vendor";
 export const MARKET_PRICE_SNAPSHOT_MAX_AGE_MS = 90 * 60_000;
 export const MARKET_PRICE_REFRESH_ATTEMPT_COOLDOWN_MS = 60_000;
+export const MARKET_SALE_FEE_RATE = 0.05;
+
+// Official game guide: "Successful trades are taxed 5% of the seller's proceeds
+// (18% for Bag of 10 Cowbells)." The marketplace API does not expose per-item fee
+// rates, so special rates are maintained here by hrid. If the API ever exposes a
+// per-item tax field, switch back to a data-driven lookup instead of this map.
+export const BAG_OF_10_COWBELLS_HRID = "/items/bag_of_10_cowbells";
+
+const SPECIAL_MARKET_FEE_RATE_BY_HRID = Object.freeze({
+    [BAG_OF_10_COWBELLS_HRID]: 0.18,
+});
+
+export function getMarketSaleFeeRate(itemHrid) {
+    return SPECIAL_MARKET_FEE_RATE_BY_HRID[String(itemHrid || "")] ?? MARKET_SALE_FEE_RATE;
+}
+
+// Startup guard: a renamed or removed official hrid would otherwise silently
+// fall back to the default 5% rate. Returns the list of unknown special hrids.
+export function validateSpecialMarketFeeRateHrids(index = itemDetailIndex) {
+    const missing = Object.keys(SPECIAL_MARKET_FEE_RATE_BY_HRID)
+        .filter((hrid) => !index?.[hrid]);
+    if (missing.length > 0) {
+        // eslint-disable-next-line no-console
+        console.warn(
+            "[marketPriceService] Special market fee rates reference unknown item hrids: "
+            + `${missing.join(", ")}. Those items fall back to the default fee rate.`,
+        );
+    }
+    return missing;
+}
 
 const MARKETPLACE_SOURCE_URLS = [
     "https://www.milkywayidle.com/game_data/marketplace.json",
@@ -36,33 +66,52 @@ export function normalizePriceMode(mode, fallback = PRICE_MODE_BID) {
     return fallback;
 }
 
-function resolveEntryByMode(entry, mode) {
+// Market quote executions (ask/bid) represent taxable market sales;
+// vendor, override, and estimated sources are not. The "enhancement_"
+// prefix is only a decoration resolveEnhancementPrice applies to the
+// underlying source, so it is stripped before matching.
+// NOTE: skillingPlanner's liquidationSource vocabulary ("market_bid" /
+// "base_bid_floor") is a separate, ALREADY-taxed convention — do not add
+// those values here; doing so would double-tax already-taxed prices.
+export function isMarketSaleSource(source) {
+    const normalized = String(source || "").toLowerCase().replace(/^enhancement_/, "");
+    return normalized === "ask" || normalized === "bid";
+}
+
+// Source-aware priority resolution shared by every consumer that needs to know
+// which source produced a price (bid mode: bid -> ask -> vendor; ask mode:
+// ask -> bid -> vendor; vendor mode: vendor).
+function resolveEntrySourceByMode(entry, mode) {
     const normalizedMode = normalizePriceMode(mode, PRICE_MODE_BID);
     const ask = toFiniteNumber(entry?.ask, -1);
     const bid = toFiniteNumber(entry?.bid, -1);
     const vendor = Math.max(0, toFiniteNumber(entry?.vendor, 0));
 
     if (normalizedMode === PRICE_MODE_VENDOR) {
-        return vendor;
+        return { price: vendor, source: "vendor" };
     }
 
     if (normalizedMode === PRICE_MODE_BID) {
         if (bid >= 0) {
-            return bid;
+            return { price: bid, source: "bid" };
         }
         if (ask >= 0) {
-            return ask;
+            return { price: ask, source: "ask" };
         }
-        return vendor;
+        return { price: vendor, source: "vendor" };
     }
 
     if (ask >= 0) {
-        return ask;
+        return { price: ask, source: "ask" };
     }
     if (bid >= 0) {
-        return bid;
+        return { price: bid, source: "bid" };
     }
-    return vendor;
+    return { price: vendor, source: "vendor" };
+}
+
+function resolveEntryByMode(entry, mode) {
+    return resolveEntrySourceByMode(entry, mode).price;
 }
 
 export function resolveMarketPrice(priceTable, itemHrid, mode = PRICE_MODE_BID) {
@@ -77,6 +126,39 @@ export function resolveMarketPrice(priceTable, itemHrid, mode = PRICE_MODE_BID) 
     }
 
     return Math.max(0, toFiniteNumber(resolveEntryByMode(entry, mode), 0));
+}
+
+// Taxed prices are rounded to whole coins like in-game settlements. The exact
+// official rounding rule could not be verified externally; "round" (half-up) is
+// used and can be switched to "floor" here if the game floors instead.
+export const MARKET_SALE_FEE_ROUNDING_MODE = "round";
+
+export function applyMarketSaleFeeByRate(price, feeRate) {
+    const numericPrice = Math.max(0, toFiniteNumber(price, 0));
+    const numericRate = Math.max(0, toFiniteNumber(feeRate, 0));
+    const raw = Math.max(0, numericPrice * (1 - numericRate));
+    return MARKET_SALE_FEE_ROUNDING_MODE === "floor" ? Math.floor(raw) : Math.round(raw);
+}
+
+export function applyMarketSaleFee(price, itemHrid) {
+    return applyMarketSaleFeeByRate(price, getMarketSaleFeeRate(itemHrid));
+}
+
+// Resolve the net proceeds of selling an item through the market.
+// Market executions (bid/ask) are subject to the market tax; vendor sales are not.
+export function resolveMarketSalePrice(priceTable, itemHrid, mode = PRICE_MODE_BID) {
+    const hrid = String(itemHrid || "");
+    const normalizedMode = normalizePriceMode(mode, PRICE_MODE_BID);
+    if (!hrid || normalizedMode === PRICE_MODE_VENDOR) {
+        return resolveMarketPrice(priceTable, hrid, normalizedMode);
+    }
+
+    const entry = priceTable?.[hrid];
+    const resolved = entry ? resolveEntrySourceByMode(entry, normalizedMode) : null;
+    if (!resolved || !isMarketSaleSource(resolved.source)) {
+        return resolveMarketPrice(priceTable, hrid, normalizedMode);
+    }
+    return applyMarketSaleFee(resolved.price, hrid);
 }
 
 function computeChestExpectedValue(table, chestHrid, mode) {

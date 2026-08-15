@@ -423,24 +423,64 @@ describe("enhancementSimulator", () => {
             expectedContainers: 25,
             expectedAttempts: 25,
             grossCostPerAttempt: 5_260_000,
-            otherLootValuePerContainer: 3_993_650,
-            netCostPerAttempt: 1_266_350,
+            otherLootValuePerContainer: 3_793_968,
+            netCostPerAttempt: 1_466_032,
             actionHrid: "/actions/combat/test_dungeon",
             containerHrid: "/items/test_chest",
         });
-        expect(estimate.price).toBeCloseTo(31_658_750, 6);
+        expect(estimate.price).toBeCloseTo(36_650_800, 6);
         expect(estimate.otherLootDetails).toEqual(expect.arrayContaining([
             expect.objectContaining({
                 itemHrid: "/items/other_loot",
-                unitPrice: 3_909_650,
+                unitPrice: 3_714_168,
                 priceSource: "bid",
             }),
             expect.objectContaining({
                 itemHrid: "/items/test_chest_key",
-                expectedValue: 84_000,
+                expectedValue: 79_800,
             }),
         ]));
         expect(estimate.otherLootDetails.some((drop) => drop.itemHrid === nonTradableCloakHrid)).toBe(false);
+    });
+
+    it("applies the special 18% market tax to Bag of 10 Cowbells other-loot bids", () => {
+        const specialLootData = {
+            ...acquisitionEnhancementData,
+            acquisition: {
+                ...acquisitionEnhancementData.acquisition,
+                openablesByHrid: {
+                    "/items/test_chest": {
+                        ...acquisitionEnhancementData.acquisition.openablesByHrid["/items/test_chest"],
+                        drops: [
+                            { itemHrid: nonTradableCloakHrid, dropRate: 0.04, minCount: 1, maxCount: 1 },
+                            { itemHrid: "/items/bag_of_10_cowbells", dropRate: 1, minCount: 1, maxCount: 1 },
+                            { itemHrid: "/items/test_chest_key", dropRate: 0.02, minCount: 1, maxCount: 1 },
+                        ],
+                    },
+                },
+            },
+        };
+        const specialLootPricing = {
+            ...acquisitionPricing,
+            priceTable: {
+                ...acquisitionPricing.priceTable,
+                "/items/bag_of_10_cowbells": { ask: 1_000_000, bid: 500_000, vendor: 0 },
+            },
+        };
+
+        const estimate = estimateEnhancementAcquisitionValue(
+            nonTradableCloakHrid,
+            specialLootData,
+            specialLootPricing,
+        );
+
+        const cowbellDrop = estimate.otherLootDetails.find((drop) => drop.itemHrid === "/items/bag_of_10_cowbells");
+        expect(cowbellDrop).toMatchObject({
+            itemHrid: "/items/bag_of_10_cowbells",
+            priceSource: "bid",
+        });
+        expect(cowbellDrop.unitPrice).toBe(410_000);
+        expect(cowbellDrop.expectedValue).toBe(410_000);
     });
 
     it("uses vendor liquidation only after a missing bid and requires asks for acquisition inputs", () => {
@@ -878,6 +918,7 @@ describe("enhancementSimulator", () => {
         const expectedCount = Math.floor(Math.round(2 * (0.5 + 0.1 * (1.05 ** 10)) * (2 ** 3)));
         expect(result.essenceCount).toBe(expectedCount);
         expect(result.essenceBid).toBe(5);
+        expect(result.netValue).toBeCloseTo(expectedCount * 5, 10);
         expect(result.value).toBeCloseTo(expectedCount * 5 * 0.78, 10);
     });
 
@@ -896,6 +937,26 @@ describe("enhancementSimulator", () => {
             priceSource: "vendor",
             priceAvailable: true,
         });
-        expect(result.grossValue).toBe(result.essenceCount * 2);
+        expect(result.netValue).toBe(result.essenceCount * 2);
+    });
+
+    it("applies the per-item market tax when resolving decomposition bids", () => {
+        const result = calculateDecompositionValue({
+            itemHrid: "/items/test_sword",
+            targetLevel: 2,
+            essenceItemHrid: "/items/bag_of_10_cowbells",
+        }, enhancementData, {
+            priceTable: {
+                "/items/bag_of_10_cowbells": { ask: 1200, bid: 1000, vendor: 100 },
+            },
+        });
+
+        expect(result).toMatchObject({
+            essenceBid: 1000,
+            priceSource: "bid",
+            priceAvailable: true,
+        });
+        expect(result.netValue).toBeCloseTo(result.essenceCount * 820, 10);
+        expect(result.marketTax).toBeCloseTo(180, 10);
     });
 });

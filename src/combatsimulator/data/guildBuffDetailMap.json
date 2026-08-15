@@ -993,8 +993,8 @@
                 "typeHrid": "/buff_types/rare_find",
                 "ratioBoost": 0,
                 "ratioBoostLevelBonus": 0,
-                "flatBoost": 0.01,
-                "flatBoostLevelBonus": 0.01,
+                "flatBoost": 0.015,
+                "flatBoostLevelBonus": 0.015,
                 "startTime": "0001-01-01T00:00:00Z",
                 "duration": 0
             }
@@ -1425,8 +1425,8 @@
                 "typeHrid": "/buff_types/rare_find",
                 "ratioBoost": 0,
                 "ratioBoostLevelBonus": 0,
-                "flatBoost": 0.01,
-                "flatBoostLevelBonus": 0.01,
+                "flatBoost": 0.015,
+                "flatBoostLevelBonus": 0.015,
                 "startTime": "0001-01-01T00:00:00Z",
                 "duration": 0
             }
@@ -3223,8 +3223,8 @@
                 "typeHrid": "/buff_types/essence_find",
                 "ratioBoost": 0,
                 "ratioBoostLevelBonus": 0,
-                "flatBoost": 0.02,
-                "flatBoostLevelBonus": 0.02,
+                "flatBoost": 0.03,
+                "flatBoostLevelBonus": 0.03,
                 "startTime": "0001-01-01T00:00:00Z",
                 "duration": 0
             }

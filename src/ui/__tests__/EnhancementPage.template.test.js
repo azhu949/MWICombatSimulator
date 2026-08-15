@@ -77,6 +77,9 @@ describe("EnhancementPage tool surface", () => {
         expect(pageSource).toContain("data-enhancement-config");
         expect(pageSource).toContain("data-enhancement-equipment");
         expect(pageSource).toContain("data-enhancement-prices");
+        expect(pageSource).toContain("data-enhancement-override-note");
+        expect(pageSource).toContain("common:enhancement.priceOverrideTaxNote");
+        expect(pageSource).toContain("hasLiquidationPriceOverride");
         expect(pageSource).toContain("data-enhancement-strategies");
         expect(pageSource).toContain("common:enhancement.protectionItemUsed");
         expect(pageSource).toContain("data-enhancement-mirror");

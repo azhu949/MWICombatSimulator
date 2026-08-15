@@ -4,6 +4,7 @@ import {
     PRICE_MODE_BID,
     normalizePriceMode,
     resolveMarketPrice,
+    resolveMarketSalePrice,
 } from "./marketPriceService.js";
 
 const PLAYER_IDS = new Set(["player1", "player2", "player3", "player4", "player5"]);
@@ -387,7 +388,7 @@ export function buildNoRngProfitBreakdown(simResult, playerHrid, pricingOptions 
     const consumableMode = normalizePriceMode(pricingOptions.consumableMode, PRICE_MODE_ASK);
     const priceTable = pricingOptions.priceTable ?? null;
 
-    const resolveDropPrice = (itemHrid) => resolveMarketPrice(priceTable, itemHrid, dropMode);
+    const resolveDropPrice = (itemHrid) => resolveMarketSalePrice(priceTable, itemHrid, dropMode);
     const resolveConsumablePrice = (itemHrid) => resolveMarketPrice(priceTable, itemHrid, consumableMode);
 
     const dropCountMap = new Map();
@@ -439,7 +440,7 @@ export function buildRandomProfitBreakdown(simResult, playerHrid, pricingOptions
     const randomSource = pricingOptions.randomSource;
     const useDropCache = pricingOptions.useDropCache !== false;
 
-    const resolveDropPrice = (itemHrid) => resolveMarketPrice(priceTable, itemHrid, dropMode);
+    const resolveDropPrice = (itemHrid) => resolveMarketSalePrice(priceTable, itemHrid, dropMode);
     const resolveConsumablePrice = (itemHrid) => resolveMarketPrice(priceTable, itemHrid, consumableMode);
 
     const { totalDropMap } = getProfitDropMaps(simResult, resolvedPlayer, {

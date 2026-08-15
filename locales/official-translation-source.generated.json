@@ -4,35 +4,35 @@
     "origin": "https://www.milkywayidle.com",
     "manifest": {
       "path": "/asset-manifest.json",
-      "sha256": "a1149e0b5400931c96eb5ea508525a064ad269f3fcd44551eee93c2df4966b57"
+      "sha256": "153246cde7d583dafe03eb7594ad998a9a6a275bfe7dafd18a5ea8361b12fe71"
     },
     "home": {
       "path": "/",
-      "sha256": "57f82378c2030b5cd2bbeaee8faae1794e8326f3bc2a7c36b4e53a3ee291c655"
+      "sha256": "5fc65918b770d9209f0e1b6d65e64cbe1b85fdc2bb8ba711c39aeed24b752a87"
     },
     "assets": {
       "main": {
-        "path": "/static/js/main.aa950a59.chunk.js",
-        "sha256": "d81a8bd42f815751fa14c40b082d3fbf164ff247f41717a1d3ad20f7b36d300b"
+        "path": "/static/js/main.bdda2571.chunk.js",
+        "sha256": "004a0f82241542b41e1833010794daf55ab58a7d9fd3d082e5317fc44c152893"
       },
       "zh": {
-        "path": "/static/js/10.e7d301a4.chunk.js",
-        "moduleId": 503,
+        "path": "/static/js/10.f7181992.chunk.js",
+        "moduleId": 504,
         "chunkId": 10,
-        "sha256": "5653134deef40a1497ccaa420f7b16c2858c94dd6dc7f3d52337cb455e474c13"
+        "sha256": "db529e82ca0ff9426f0c0e29fd72cb6dd5ffaceee9707cc0069fe700b85cf7f9"
       }
     }
   },
   "resources": {
     "en": {
       "file": "locales/en/translation.official.generated.json",
-      "sha256": "e77c0607f71f8cd727c86bc1ed229219370dc94cf17b35acf0cd0d418d6c048d",
-      "topLevelKeyCount": 145
+      "sha256": "c8ce59e745f5fc6ba816f450c028bde3fc97725f23447193f1c00b053b6fd93b",
+      "topLevelKeyCount": 147
     },
     "zh": {
       "file": "locales/zh/translation.official.generated.json",
-      "sha256": "a0f65d3810b09aa6cf6e3761c15d596abf0736bb48d55ade3241533c48ca11d7",
-      "topLevelKeyCount": 145
+      "sha256": "ae3529d6e6d3909928166274eeda2b729f6c5a270067df6dacad8773b2cfe16d",
+      "topLevelKeyCount": 147
     }
   }
 }

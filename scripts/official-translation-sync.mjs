@@ -371,6 +371,40 @@ export function extractLocaleTranslationResource(localeSource, moduleId) {
     return evaluateStaticExpression(expression, collectScopeBindings(moduleNode));
 }
 
+// The official zh bundle mixes half-width label colons ("市场价格: {{price}}")
+// with full-width ones ("当前最低价：{{boundary}}"). Chinese typography calls
+// for the full-width colon after CJK labels, so we normalize those while
+// leaving numeric tables (+1: 2.0%), clock times (00:00) and URLs untouched.
+// Accepted tradeoffs (kept deliberate, see the sync tests):
+// - Half-width closing brackets ) and } also trigger the conversion, so
+//   "(可选): 说明" becomes "(可选)：说明" (half-width brackets + full-width
+//   colon). Kept for bracketed labels like "冷却 (战斗中): ...".
+// - A colon glued to digits with no space ("等级:50") stays half-width to
+//   protect numeric labels; note "等级: 50" (with space) IS converted, so the
+//   file can contain both styles.
+// - Half-width ] is NOT in the class: the unescaped trailing ] closes the
+//   character class. "说明]: ..." stays untouched; add "\]" to the class
+//   deliberately if official text ever needs it.
+const ZH_HALF_WIDTH_LABEL_COLON_PATTERN = /([\u4e00-\u9fff）】})]):(?: |(?=[<"\n]))/g;
+
+export function normalizeZhPunctuation(text) {
+    return String(text).replace(ZH_HALF_WIDTH_LABEL_COLON_PATTERN, "$1：");
+}
+
+export function normalizeZhTranslationResource(resource) {
+    if (Array.isArray(resource)) {
+        return resource.map(normalizeZhTranslationResource);
+    }
+    if (resource && typeof resource === "object") {
+        const result = {};
+        for (const [key, value] of Object.entries(resource)) {
+            result[key] = normalizeZhTranslationResource(value);
+        }
+        return result;
+    }
+    return typeof resource === "string" ? normalizeZhPunctuation(resource) : resource;
+}
+
 function sha256(content) {
     return createHash("sha256").update(content, "utf8").digest("hex");
 }
@@ -498,7 +532,7 @@ export async function extractOfficialTranslationResources({
         timeoutMs,
         label: "Official Chinese translation bundle",
     });
-    const zh = extractLocaleTranslationResource(zhSource, moduleId);
+    const zh = normalizeZhTranslationResource(extractLocaleTranslationResource(zhSource, moduleId));
 
     return {
         resources: { en, zh },

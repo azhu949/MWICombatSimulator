@@ -1,6 +1,6 @@
 import { levelExperienceTable, skillingData as defaultSkillingData } from "../shared/gameDataIndex.js";
+import { applyMarketSaleFeeByRate, getMarketSaleFeeRate } from "./marketPriceService.js";
 
-export const SKILLING_MARKET_FEE_RATE = 0.02;
 export const SKILLING_MIN_ACTION_SECONDS = 3;
 export const SKILLING_MAX_LEVEL = levelExperienceTable.length - 1;
 export const SKILLING_OPTIMIZATION_MODE_COST = "cost";
@@ -186,7 +186,7 @@ export function collectSkillingProfileBonuses(profile, actionTypeHrid, skillHrid
 export function resolveSkillingPrice(
     priceTable,
     itemHrid,
-    feeRate = SKILLING_MARKET_FEE_RATE,
+    feeRate = null,
     enhancementQuotesByItem = {},
     enhancementLevel = 0,
 ) {
@@ -213,12 +213,18 @@ export function resolveSkillingPrice(
     const bid = finiteNumber(entry?.bid, -1);
     const baseBid = finiteNumber(baseEntry?.bid, -1);
     const vendor = Math.max(0, finiteNumber(baseEntry?.vendor, 0));
-    const feeMultiplier = Math.max(0, 1 - finiteNumber(feeRate, 0));
+    // feeRate == null resolves the per-item market fee rate (e.g. 18% for Bag of 10 Cowbells).
+    const effectiveFeeRate = feeRate == null ? getMarketSaleFeeRate(hrid) : feeRate;
+    const applyFee = (value) => applyMarketSaleFeeByRate(value, effectiveFeeRate);
+    // liquidationPrice below is already NET of tax. The liquidationSource vocabulary
+    // ("market_bid" / "base_bid_floor" / "vendor" / "fixed") is skillingPlanner-internal
+    // and intentionally NOT part of isMarketSaleSource: those sources describe pre-tax
+    // market prices, so feeding them in here (or vice versa) would double-tax.
     const hasExactEnhancementBid = normalizedEnhancementLevel === 0 || bid >= 0;
     const marketLiquidation = bid >= 0
-        ? bid * feeMultiplier
+        ? applyFee(bid)
         : normalizedEnhancementLevel > 0 && baseBid >= 0
-            ? baseBid * feeMultiplier
+            ? applyFee(baseBid)
             : 0;
     const liquidationPrice = Math.max(vendor, marketLiquidation);
     const liquidationSource = marketLiquidation >= vendor && marketLiquidation > 0
@@ -1055,7 +1061,7 @@ export function calculateSkillingActionCandidate({
     inventoryReuseCompletionInterval = null,
     priceTable,
     enhancementQuotesByItem = {},
-    feeRate = SKILLING_MARKET_FEE_RATE,
+    feeRate = null,
 }) {
     const equipmentConcentrationMultiplier = Math.max(
         1,
@@ -2248,7 +2254,7 @@ export function planSkillingSkill({
     priceTable,
     enhancementQuotesByItem = {},
     data = defaultSkillingData,
-    feeRate = SKILLING_MARKET_FEE_RATE,
+    feeRate = null,
     optimizationMode = SKILLING_OPTIMIZATION_MODE_COST,
     balancedCostTolerance = SKILLING_BALANCED_COST_TOLERANCE,
     now = Date.now(),
@@ -2596,7 +2602,7 @@ export function planSkillingUpgrades({
     priceTable,
     enhancementQuotesByItem = {},
     data = defaultSkillingData,
-    feeRate = SKILLING_MARKET_FEE_RATE,
+    feeRate = null,
     optimizationMode = SKILLING_OPTIMIZATION_MODE_COST,
     balancedCostTolerance = SKILLING_BALANCED_COST_TOLERANCE,
     now = Date.now(),

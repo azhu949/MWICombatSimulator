@@ -43,12 +43,12 @@
         <ScrollText class="size-[1.125rem] shrink-0" />
         <span v-if="!collapsed" class="truncate">{{ t("common:patchNotes", "Patch Notes") }}</span>
         <span
-          v-if="hasUnreadPatchNotes"
+          v-if="unreadPatchNotesCount > 0"
           class="sidebar-unread-indicator"
           :class="collapsed ? 'sidebar-unread-indicator-collapsed' : 'ml-auto'"
           aria-hidden="true"
         >
-          <span class="sidebar-unread-dot" />
+          <span class="sidebar-unread-badge">{{ unreadBadgeLabel }}</span>
         </span>
       </RouterLink>
       <a href="https://github.com/azhu949/MWICombatSimulator" class="sidebar-action" :class="collapsed ? 'justify-center' : ''" target="_blank" rel="noopener noreferrer" :title="githubLabel">
@@ -84,11 +84,15 @@ import { Button } from "@/ui/components/ui/button/index.js";
 import { Sidebar, useSidebar } from "@/ui/components/ui/sidebar/index.js";
 import { useI18nText } from "../composables/useI18nText.js";
 
-defineProps({
+const props = defineProps({
   version: { type: String, required: true },
-  hasUnreadPatchNotes: { type: Boolean, default: false },
+  unreadPatchNotesCount: { type: Number, default: 0 },
   patchNotesLabel: { type: String, default: "Patch Notes" },
 });
+
+const unreadBadgeLabel = computed(() =>
+  props.unreadPatchNotesCount > 99 ? "99+" : String(props.unreadPatchNotesCount),
+);
 
 const emit = defineEmits(["feedback"]);
 const router = useRouter();
@@ -164,8 +168,6 @@ const githubLabel = computed(() => t("common:vue.app.feedbackGitHubAriaLabel", "
 
 .sidebar-unread-indicator {
   display: grid;
-  width: 1rem;
-  height: 1rem;
   flex-shrink: 0;
   place-items: center;
 }
@@ -176,29 +178,17 @@ const githubLabel = computed(() => t("common:vue.app.feedbackGitHubAriaLabel", "
   right: 0.25rem;
 }
 
-.sidebar-unread-dot {
-  width: 0.375rem;
-  height: 0.375rem;
+.sidebar-unread-badge {
+  display: grid;
+  min-width: 1.125rem;
+  height: 1.125rem;
+  padding: 0 0.3rem;
+  place-items: center;
   border-radius: 9999px;
   background: var(--sidebar-primary);
-}
-
-@media (prefers-reduced-motion: no-preference) {
-  .sidebar-unread-dot {
-    animation: sidebar-unread-breathe 2.2s ease-in-out infinite;
-  }
-}
-
-@keyframes sidebar-unread-breathe {
-  0%,
-  100% {
-    opacity: 0.68;
-    transform: scale(0.86);
-  }
-
-  50% {
-    opacity: 1;
-    transform: scale(1.12);
-  }
+  color: var(--sidebar-primary-foreground);
+  font-size: 0.6875rem;
+  font-weight: 700;
+  line-height: 1;
 }
 </style>

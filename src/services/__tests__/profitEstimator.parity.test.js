@@ -1,7 +1,7 @@
 import { describe, expect, it } from "vitest";
 import combatMonsterDetailMap from "../../combatsimulator/data/combatMonsterDetailMap.json";
 import { buildRandomProfitBreakdown } from "../profitEstimator.js";
-import { resolveMarketPrice } from "../marketPriceService.js";
+import { resolveMarketSalePrice } from "../marketPriceService.js";
 
 const PLAYER_HRIDS = ["player1", "player2", "player3", "player4", "player5"];
 
@@ -236,7 +236,7 @@ describe("profitEstimator random parity", () => {
             const legacy = legacyTotalDropMap(simResult, "player1", legacyRandom);
             let legacyRevenue = 0;
             for (const [itemHrid, amount] of legacy.totalDropMap.entries()) {
-                legacyRevenue += resolveMarketPrice(priceTable, itemHrid, "bid") * toFiniteNumber(amount, 0);
+                legacyRevenue += resolveMarketSalePrice(priceTable, itemHrid, "bid") * toFiniteNumber(amount, 0);
             }
 
             const now = buildRandomProfitBreakdown(simResult, "player1", {
@@ -270,7 +270,7 @@ describe("profitEstimator random parity", () => {
         const legacy = legacyTotalDropMap(simResult, "player2", legacyRandom);
         let legacyRevenue = 0;
         for (const [itemHrid, amount] of legacy.totalDropMap.entries()) {
-            legacyRevenue += resolveMarketPrice(priceTable, itemHrid, "bid") * toFiniteNumber(amount, 0);
+            legacyRevenue += resolveMarketSalePrice(priceTable, itemHrid, "bid") * toFiniteNumber(amount, 0);
         }
 
         const now = buildRandomProfitBreakdown(simResult, "player2", {

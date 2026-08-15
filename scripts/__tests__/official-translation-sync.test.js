@@ -10,6 +10,8 @@ import {
     extractEnglishTranslationResource,
     extractLocaleTranslationResource,
     extractOfficialTranslationResources,
+    normalizeZhPunctuation,
+    normalizeZhTranslationResource,
     syncOfficialTranslations,
     validateTranslationResources,
     writeArtifactsTransactionally,
@@ -321,5 +323,58 @@ describe("official translation AST extraction", () => {
         const backupPath = `${enPath}.bak-rollback-test`;
         await expect(fs.readFile(backupPath, "utf8")).resolves.toBe("old-en\n");
         await expect(fs.readFile(enPath, "utf8")).resolves.toBe("new-en\n");
+    });
+});
+
+describe("zh punctuation normalization", () => {
+    it("converts half-width label colons to full-width after CJK labels", () => {
+        expect(normalizeZhPunctuation("市场价格: {{price}}")).toBe("市场价格：{{price}}");
+        expect(normalizeZhPunctuation("当前最低价：{{boundary}}；将降至 {{price}}。"))
+            .toBe("当前最低价：{{boundary}}；将降至 {{price}}。");
+        expect(normalizeZhPunctuation("来自 {{name}}: {{message}}")).toBe("来自 {{name}}：{{message}}");
+        expect(normalizeZhPunctuation("冷却 (战斗中): {{seconds}}s")).toBe("冷却 (战斗中)：{{seconds}}s");
+    });
+
+    it("converts half-width colons before HTML tags and line breaks", () => {
+        expect(normalizeZhPunctuation("<span>点金:</span> 将物品转换为金币"))
+            .toBe("<span>点金：</span> 将物品转换为金币");
+        expect(normalizeZhPunctuation("市场:\n\t<ol>")).toBe("市场：\n\t<ol>");
+        expect(normalizeZhPunctuation("以下是炼金的步骤:</text>")).toBe("以下是炼金的步骤：</text>");
+    });
+
+    it("leaves numeric tables, clock times, and URLs untouched", () => {
+        expect(normalizeZhPunctuation("+1: 2.0%\n+2: 4.2%")).toBe("+1: 2.0%\n+2: 4.2%");
+        expect(normalizeZhPunctuation("公会周于每周五00:00 UTC重置")).toBe("公会周于每周五00:00 UTC重置");
+        expect(normalizeZhPunctuation("https://www.milkywayidle.com")).toBe("https://www.milkywayidle.com");
+    });
+
+    it("keeps the accepted bracket and numeric-label tradeoffs stable", () => {
+        // Half-width closing brackets still trigger the conversion, so
+        // bracket and colon widths can mix; accepted for bracketed labels.
+        expect(normalizeZhPunctuation("(可选): 说明")).toBe("(可选)：说明");
+        // A colon glued to digits stays half-width to protect numeric labels.
+        expect(normalizeZhPunctuation("等级:50")).toBe("等级:50");
+        // Half-width ] is not in the class (it closes the character class),
+        // so it never triggers the conversion.
+        expect(normalizeZhPunctuation("说明]: 备注")).toBe("说明]: 备注");
+    });
+
+    it("applies normalization deeply across the whole resource tree", () => {
+        const resource = {
+            nested: {
+                label: "等级: {{count}}",
+                html: "<span>分解:</span> 将物品转换为材料",
+                table: "+3: 6.6%",
+            },
+            list: ["进度: {{percent}}%", "00:00"],
+        };
+        expect(normalizeZhTranslationResource(resource)).toEqual({
+            nested: {
+                label: "等级：{{count}}",
+                html: "<span>分解：</span> 将物品转换为材料",
+                table: "+3: 6.6%",
+            },
+            list: ["进度：{{percent}}%", "00:00"],
+        });
     });
 });
