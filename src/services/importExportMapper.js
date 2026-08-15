@@ -7,6 +7,10 @@ import {
 import itemLocationDetailMap from "../combatsimulator/data/itemLocationDetailMap.json";
 import { createEmptyPlayerConfig, createEmptySkillExperienceMap, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../shared/playerConfig.js";
 import {
+    LABYRINTH_ROOM_LEVEL_DEFAULT,
+    LABYRINTH_ROOM_LEVEL_MIN,
+} from "../shared/labyrinthConfig.js";
+import {
     combatGuildBuffDetails,
     getGuildBuffMaxLevel,
     normalizeGuildBuffLevels,
@@ -1250,7 +1254,10 @@ function normalizeImportedSimulationSettings(raw, existingSettings) {
         baseline.difficultyTier = Math.max(0, Math.floor(toFiniteNumber(source.difficulty, baseline.difficultyTier || 0)));
         baseline.simulationTimeHours = Math.max(1, Math.floor(toFiniteNumber(source.simulationTime, baseline.simulationTimeHours || 24)));
         baseline.labyrinthHrid = labyrinthHrid;
-        baseline.roomLevel = Math.max(20, Math.floor(toFiniteNumber(source.roomLevel, baseline.roomLevel || 100)));
+        baseline.roomLevel = Math.max(
+            LABYRINTH_ROOM_LEVEL_MIN,
+            Math.floor(toFiniteNumber(source.roomLevel, baseline.roomLevel || LABYRINTH_ROOM_LEVEL_DEFAULT)),
+        );
 
         if (dungeonHrid) {
             baseline.mode = "zone";

@@ -17,6 +17,10 @@ import {
     EQUIPMENT_SLOT_KEYS,
     LEVEL_KEYS,
 } from "../shared/playerConfig.js";
+import {
+    LABYRINTH_ROOM_LEVEL_DEFAULT,
+    LABYRINTH_ROOM_LEVEL_MIN,
+} from "../shared/labyrinthConfig.js";
 import { buildSimulationExtraBuffs, normalizeSimulationExtra } from "../shared/simulationExtraBuffs.js";
 import { getEffectiveTriggerState, sanitizeTriggerMap, toTriggerInstances } from "./triggerMapper.js";
 
@@ -795,11 +799,13 @@ function normalizeCombatPreviewContext(previewContext) {
             return null;
         }
 
-        const rawRoomLevel = Number(previewContext?.roomLevel || 100);
+        const rawRoomLevel = Number(previewContext?.roomLevel || LABYRINTH_ROOM_LEVEL_DEFAULT);
         return {
             mode: "labyrinth",
             labyrinthHrid,
-            roomLevel: Number.isFinite(rawRoomLevel) ? Math.max(20, rawRoomLevel) : 100,
+            roomLevel: Number.isFinite(rawRoomLevel)
+                ? Math.max(LABYRINTH_ROOM_LEVEL_MIN, rawRoomLevel)
+                : LABYRINTH_ROOM_LEVEL_DEFAULT,
             crates: Array.isArray(previewContext?.crates)
                 ? previewContext.crates.map((crate) => String(crate || "")).filter(Boolean)
                 : [],

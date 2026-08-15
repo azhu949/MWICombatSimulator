@@ -4,6 +4,8 @@ import { itemDetailIndex, itemVendorPriceByHrid } from "../shared/gameDataIndex.
 export const PRICE_MODE_ASK = "ask";
 export const PRICE_MODE_BID = "bid";
 export const PRICE_MODE_VENDOR = "vendor";
+export const MARKET_PRICE_SNAPSHOT_MAX_AGE_MS = 90 * 60_000;
+export const MARKET_PRICE_REFRESH_ATTEMPT_COOLDOWN_MS = 60_000;
 
 const MARKETPLACE_SOURCE_URLS = [
     "https://www.milkywayidle.com/game_data/marketplace.json",

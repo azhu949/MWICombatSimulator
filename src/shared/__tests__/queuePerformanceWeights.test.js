@@ -24,6 +24,7 @@ describe("queuePerformanceWeights", () => {
             weightXp: 0.85,
         });
 
+        // 0.25 + 0.85 exceeds one, so the ratio is allocated as 2 and 8 tenths.
         expect(resolved.weightProfit).toBeCloseTo(0.2, 6);
         expect(resolved.weightXp).toBeCloseTo(0.8, 6);
         expect(resolved.weightDeathSafety).toBeCloseTo(0, 6);

@@ -20,7 +20,8 @@ describe("HomePage labyrinth selectors", () => {
     it("passes labyrinth preview context into combat preview data", () => {
         expect(homePageSource).toContain('mode: "labyrinth"');
         expect(homePageSource).toContain("labyrinthHrid");
-        expect(homePageSource).toContain("roomLevel: Math.max(20, Number(simulator.simulationSettings.roomLevel || 100))");
+        expect(homePageSource).toContain("LABYRINTH_ROOM_LEVEL_MIN");
+        expect(homePageSource).toContain("LABYRINTH_ROOM_LEVEL_DEFAULT");
         expect(homePageSource).toContain("crates: simulator.getActiveLabyrinthCrates()");
     });
 

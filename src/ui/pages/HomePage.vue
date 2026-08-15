@@ -191,7 +191,13 @@
           </label>
           <label class="block">
             <span class="control-label">{{ t("common:roomLevel", "Room Level") }}</span>
-            <input v-model.number="simulator.simulationSettings.roomLevel" class="control-input" type="number" min="20" max="220" />
+            <input
+              v-model.number="simulator.simulationSettings.roomLevel"
+              class="control-input"
+              type="number"
+              :min="LABYRINTH_ROOM_LEVEL_MIN"
+              :max="LABYRINTH_ROOM_LEVEL_MAX"
+            />
           </label>
         </div>
 
@@ -1130,6 +1136,11 @@ import {
   itemDetailIndex as itemDetailMap,
 } from "../../shared/gameDataIndex.js";
 import {
+  LABYRINTH_ROOM_LEVEL_DEFAULT,
+  LABYRINTH_ROOM_LEVEL_MAX,
+  LABYRINTH_ROOM_LEVEL_MIN,
+} from "../../shared/labyrinthConfig.js";
+import {
   MAX_TRIGGER_COUNT,
   buildTriggerChangeDescriptor,
   getDefaultTriggerDtosForHrid,
@@ -1958,7 +1969,10 @@ const combatPreviewContext = computed(() => {
     return {
       mode: "labyrinth",
       labyrinthHrid,
-      roomLevel: Math.max(20, Number(simulator.simulationSettings.roomLevel || 100)),
+      roomLevel: Math.max(
+        LABYRINTH_ROOM_LEVEL_MIN,
+        Number(simulator.simulationSettings.roomLevel || LABYRINTH_ROOM_LEVEL_DEFAULT),
+      ),
       crates: simulator.getActiveLabyrinthCrates(),
     };
   }

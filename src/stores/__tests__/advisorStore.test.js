@@ -301,6 +301,7 @@ vi.mock("../../services/workerClient.js", () => {
 
 import { useSimulatorStore } from "../simulatorStore.js";
 import { mockWorkerState } from "../../services/workerClient.js";
+import { buildAdvisorCandidates } from "../../services/advisorDomain.js";
 
 describe("advisor store", () => {
     beforeEach(() => {
@@ -556,6 +557,41 @@ describe("advisor store", () => {
         expect(mockWorkerState.singleCalls).toHaveLength(8);
         expect(mockWorkerState.maxConcurrentSingleRuns).toBe(1);
         expect(simulator.advisor.refinedRows.filter((row) => row.isRefined)).toHaveLength(4);
+    });
+
+    it("uses the actual quick survivors as the refine progress total", async () => {
+        const { simulator, mockWorkerState } = createStoreWithMocks();
+        simulator.queueRuntime.parallelWorkerLimit = 1;
+        simulator.advisor.filters = {
+            ...simulator.advisor.filters,
+            includeGroupZones: true,
+            includeSoloZones: false,
+            quickRounds: 1,
+            refineTopEnabled: true,
+            refineTopCount: 4,
+            refineRounds: 2,
+        };
+        const candidates = buildAdvisorCandidates(simulator.advisor.filters);
+        expect(candidates.length).toBeGreaterThan(4);
+        const survivor = candidates[0];
+        const survivorKey = `${survivor.targetHrid}#${survivor.difficultyTier}`;
+
+        mockWorkerState.failMultiTypes.add("start_simulation_all_zones");
+        for (const candidate of candidates) {
+            const key = `${candidate.targetHrid}#${candidate.difficultyTier}`;
+            if (key !== survivorKey) {
+                mockWorkerState.failSingleKeys.add(key);
+            }
+        }
+
+        await simulator.runAdvisorScan();
+
+        expect(simulator.advisor.quickRows).toHaveLength(1);
+        expect(simulator.advisor.runtime.quickTotal).toBe(candidates.length);
+        expect(simulator.advisor.runtime.refineTotal).toBe(2);
+        expect(mockWorkerState.singleCalls).toHaveLength(candidates.length + 2);
+        expect(simulator.advisor.refinedRows.filter((row) => row.isRefined)).toHaveLength(1);
+        expect(simulator.advisor.error).toContain("quick scan");
     });
 
     it("keeps other refine targets running when one target fails every round", async () => {

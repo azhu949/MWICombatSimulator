@@ -593,7 +593,61 @@ describe("simulatorStore", () => {
         expect(simulator.activeQueueState.settings.executionMode).toBe("serial");
     });
 
-    it("rolls back runtime persistence when resetting queue defaults fails on queue settings storage", () => {
+    it("does not persist runtime defaults before queue settings reset succeeds", () => {
+        const simulator = useSimulatorStore();
+
+        expect(simulator.saveQueueRuntimeSettings({
+            performancePct: 30,
+            stabilityPct: 30,
+            costPct: 40,
+            costScoreGoldPerPointMode: "composite",
+            parallelWorkerLimit: 1,
+        }).ok).toBe(true);
+        simulator.updateActiveQueueSettings({
+            rounds: 99,
+            baselineRounds: 7,
+            medianBlend: 0.9,
+            weightProfit: 0.25,
+            weightXp: 0.35,
+            executionMode: "serial",
+        });
+
+        const previousRuntimePayload = JSON.parse(global.localStorage.getItem(QUEUE_SETTINGS_STORAGE_KEY) || "{}");
+        const previousQueueRunPayload = JSON.parse(global.localStorage.getItem(QUEUE_RUN_SETTINGS_STORAGE_KEY) || "{}");
+        const originalSetItem = global.localStorage.setItem.getMockImplementation();
+        let runtimeWriteCount = 0;
+        global.localStorage.setItem.mockImplementation((key, value) => {
+            if (key === QUEUE_SETTINGS_STORAGE_KEY) {
+                runtimeWriteCount += 1;
+                if (runtimeWriteCount > 1) {
+                    throw new Error("Rollback storage failed");
+                }
+                return originalSetItem(key, value);
+            }
+            if (key === QUEUE_RUN_SETTINGS_STORAGE_KEY) {
+                throw new Error("QuotaExceededError");
+            }
+            return originalSetItem(key, value);
+        });
+
+        const result = simulator.resetQueueSettingsToDefaults();
+
+        expect(result.ok).toBe(false);
+        expect(result.messageKey).toBe("common:settingsPage.queueSaveErrorStorage");
+        expect(runtimeWriteCount).toBe(0);
+        expect(JSON.parse(global.localStorage.getItem(QUEUE_SETTINGS_STORAGE_KEY) || "{}")).toEqual(previousRuntimePayload);
+        expect(JSON.parse(global.localStorage.getItem(QUEUE_RUN_SETTINGS_STORAGE_KEY) || "{}")).toEqual(previousQueueRunPayload);
+        expect(simulator.queueRuntime.finalWeights.performance).toBeCloseTo(0.3, 6);
+        expect(simulator.queueRuntime.finalWeights.stability).toBeCloseTo(0.3, 6);
+        expect(simulator.queueRuntime.finalWeights.cost).toBeCloseTo(0.4, 6);
+        expect(simulator.queueRuntime.costScoreGoldPerPointMode).toBe("composite");
+        expect(simulator.activeQueueState.settings.rounds).toBe(99);
+        expect(simulator.activeQueueState.settings.baselineRounds).toBe(7);
+        expect(simulator.activeQueueState.settings.medianBlend).toBeCloseTo(0.9, 6);
+        expect(simulator.activeQueueState.settings.executionMode).toBe("serial");
+    });
+
+    it("rolls back queue settings persistence when resetting runtime defaults fails", () => {
         const simulator = useSimulatorStore();
 
         expect(simulator.saveQueueRuntimeSettings({
@@ -1118,6 +1172,161 @@ describe("simulatorStore", () => {
         expect(simulator.runtime.isRunning).toBe(false);
         expect(simulator.activeQueueState.isRunning).toBe(false);
         expect(Number(variantRow.deltaProfitPerHour)).toBeLessThanOrEqual(0);
+    });
+
+    it("runs queued variants with the baseline target settings snapshot", async () => {
+        const simulator = useSimulatorStore();
+        const baselineZone = String(simulator.options?.zones?.[0]?.hrid || "");
+        const baselineDungeon = String(simulator.options?.dungeons?.[0]?.hrid || "");
+        const liveZone = String(
+            simulator.options?.zones?.find((zone) => String(zone?.hrid || "") !== baselineZone)?.hrid || ""
+        );
+
+        expect(baselineZone).toBeTruthy();
+        expect(baselineDungeon).toBeTruthy();
+        expect(liveZone).toBeTruthy();
+
+        simulator.simulationSettings.mode = "zone";
+        simulator.simulationSettings.runScope = "single";
+        simulator.simulationSettings.useDungeon = true;
+        simulator.simulationSettings.zoneHrid = baselineZone;
+        simulator.simulationSettings.dungeonHrid = baselineDungeon;
+        simulator.simulationSettings.difficultyTier = 2;
+        simulator.simulationSettings.simulationTimeHours = 12;
+        simulator.simulationSettings.mooPass = false;
+        simulator.simulationSettings.comExpEnabled = true;
+        simulator.simulationSettings.comExp = 33;
+
+        await simulator.setQueueBaselineForActivePlayer();
+        setQueueBaselineMetrics(simulator, {
+            dailyNoRngProfit: 2400,
+            dps: 100,
+            xpPerHour: 1200,
+            killsPerHour: 100,
+        });
+        simulator.activePlayer.levels.stamina = 10;
+        const addedItems = simulator.addActivePlayerToQueue();
+        expect(addedItems).toHaveLength(1);
+
+        simulator.simulationSettings.useDungeon = false;
+        simulator.simulationSettings.zoneHrid = liveZone;
+        simulator.simulationSettings.difficultyTier = 5;
+        simulator.simulationSettings.simulationTimeHours = 99;
+        simulator.simulationSettings.mooPass = true;
+        simulator.simulationSettings.comExp = 88;
+        simulator.updateActiveQueueSettings({
+            rounds: 1,
+            executionMode: "serial",
+            medianBlend: 0.5,
+            weightProfit: 1,
+            weightXp: 0,
+            weightDeathSafety: 0,
+        });
+
+        const payloads = [];
+        simulator.runSingleSimulationPayload = vi.fn(async (payload, onProgress) => {
+            payloads.push(payload);
+            onProgress?.({ progress: 1 });
+            return createQueueSimulationResult();
+        });
+
+        const rows = await simulator.runActiveQueue();
+
+        expect(rows).toHaveLength(1);
+        expect(payloads).toHaveLength(1);
+        expect(payloads[0].zone).toEqual({
+            zoneHrid: baselineDungeon,
+            difficultyTier: 2,
+        });
+        expect(payloads[0].simulationTimeLimit).toBe(12 * ONE_HOUR);
+        expect(payloads[0].extra).toMatchObject({
+            mooPass: false,
+            comExp: 33,
+        });
+    });
+
+    it("keeps partial queue ranking when one worker round fails", async () => {
+        const simulator = useSimulatorStore();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        setQueueBaselineMetrics(simulator, {
+            dailyNoRngProfit: 2400,
+            dps: 100,
+            xpPerHour: 1200,
+            killsPerHour: 100,
+        });
+        simulator.activePlayer.levels.stamina = 10;
+        simulator.activePlayer.levels.attack = 20;
+        const addedItems = simulator.addActivePlayerToQueue();
+        expect(addedItems.length).toBeGreaterThanOrEqual(2);
+
+        simulator.updateActiveQueueSettings({
+            rounds: 2,
+            executionMode: "serial",
+            medianBlend: 0.5,
+            weightProfit: 1,
+            weightXp: 0,
+            weightDeathSafety: 0,
+        });
+
+        let callCount = 0;
+        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+            callCount += 1;
+            onProgress?.({ progress: 1 });
+
+            if (callCount === 3) {
+                throw new Error("worker disconnected");
+            }
+
+            return createQueueSimulationResult({
+                encounters: 100 + callCount,
+                staminaXp: 1000 + callCount * 100,
+            });
+        });
+
+        const rows = await simulator.runActiveQueue();
+        const expectedRunCount = addedItems.length * 2;
+
+        expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(expectedRunCount);
+        expect(simulator.activeQueueState.rawRuns).toHaveLength(expectedRunCount - 1);
+        expect(rows.length).toBeGreaterThan(0);
+        expect(simulator.activeQueueState.ranking).toEqual(rows);
+        expect(simulator.activeQueueState.lastRunStatus).toBe("partial");
+        expect(simulator.activeQueueState.error).toContain("worker disconnected");
+        expect(simulator.activeQueueState.progress).toBe(1);
+    });
+
+    it("marks queue run failed only when every worker round fails", async () => {
+        const simulator = useSimulatorStore();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        setQueueBaselineMetrics(simulator);
+        simulator.activePlayer.levels.stamina = 10;
+        simulator.addActivePlayerToQueue();
+
+        simulator.updateActiveQueueSettings({
+            rounds: 1,
+            executionMode: "serial",
+            medianBlend: 0.5,
+            weightProfit: 1,
+            weightXp: 0,
+            weightDeathSafety: 0,
+        });
+
+        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+            onProgress?.({ progress: 1 });
+            throw new Error("worker offline");
+        });
+
+        const rows = await simulator.runActiveQueue();
+
+        expect(rows).toEqual([]);
+        expect(simulator.activeQueueState.rawRuns).toHaveLength(0);
+        expect(simulator.activeQueueState.ranking).toEqual([]);
+        expect(simulator.activeQueueState.lastRunStatus).toBe("failed");
+        expect(simulator.activeQueueState.error).toBe("worker offline");
+        expect(simulator.activeQueueState.lastRunAt).toBe(0);
+        expect(simulator.activeQueueState.progress).toBe(1);
     });
 
     it("re-ranks existing queue results after median blend changes without rerunning simulations", async () => {
@@ -1724,6 +1933,52 @@ describe("simulatorStore", () => {
         expect(simulator.activeQueueState.rawRuns).toHaveLength(2);
         expect(simulator.activeQueueState.progress).toBe(1);
         expect(simulator.activeQueueState.settings.executionMode).toBe("parallel");
+    });
+
+    it("continues parallel queue worker loops after one entry round fails", async () => {
+        const simulator = useSimulatorStore();
+
+        await simulator.setQueueBaselineForActivePlayer();
+        setQueueBaselineMetrics(simulator);
+        simulator.activePlayer.levels.stamina = 10;
+        simulator.activePlayer.levels.attack = 20;
+        simulator.activePlayer.levels.defense = 30;
+        const addedItems = simulator.addActivePlayerToQueue();
+        expect(addedItems.length).toBeGreaterThanOrEqual(3);
+
+        simulator.queueRuntime.parallelWorkerLimit = 2;
+        simulator.updateActiveQueueSettings({
+            rounds: 1,
+            executionMode: "parallel",
+            medianBlend: 0.5,
+            weightProfit: 1,
+            weightXp: 0,
+            weightDeathSafety: 0,
+        });
+
+        let callCount = 0;
+        simulator.runSingleSimulationPayloadWithDedicatedWorker = vi.fn(async (_payload, onProgress) => {
+            callCount += 1;
+            onProgress?.({ progress: 1 });
+
+            if (callCount === 1) {
+                throw new Error("parallel worker dropped");
+            }
+
+            return createQueueSimulationResult({
+                encounters: 100 + callCount,
+                staminaXp: 1000 + callCount * 100,
+            });
+        });
+
+        const rows = await simulator.runActiveQueue();
+
+        expect(simulator.runSingleSimulationPayloadWithDedicatedWorker).toHaveBeenCalledTimes(addedItems.length);
+        expect(simulator.activeQueueState.rawRuns).toHaveLength(addedItems.length - 1);
+        expect(rows).toHaveLength(addedItems.length - 1);
+        expect(simulator.activeQueueState.lastRunStatus).toBe("partial");
+        expect(simulator.activeQueueState.error).toContain("parallel worker dropped");
+        expect(simulator.activeQueueState.progress).toBe(1);
     });
 
     it("passes queue parallelWorkerLimit to zone batch simulations", async () => {
@@ -2663,6 +2918,145 @@ describe("simulatorStore", () => {
         expect(baseline?.metrics?.killsPerHour).toBe(180);
         expect(baseline?.metricSummary?.killsPerHour?.sampleCount).toBe(2);
         expect(simulator.activeQueueState.isRunning).toBe(false);
+        expect(simulator.runtime.progress).toBe(1);
+    });
+
+    it("keeps baseline simulation rounds on the captured target settings", async () => {
+        const simulator = useSimulatorStore();
+        const baselineZone = String(simulator.options?.zones?.[0]?.hrid || "");
+        const liveZone = String(
+            simulator.options?.zones?.find((zone) => String(zone?.hrid || "") !== baselineZone)?.hrid || ""
+        );
+
+        expect(baselineZone).toBeTruthy();
+        expect(liveZone).toBeTruthy();
+
+        simulator.setImportedProfileState("1", true);
+        simulator.simulationSettings.mode = "zone";
+        simulator.simulationSettings.runScope = "single";
+        simulator.simulationSettings.useDungeon = false;
+        simulator.simulationSettings.zoneHrid = baselineZone;
+        simulator.simulationSettings.difficultyTier = 1;
+        simulator.simulationSettings.simulationTimeHours = 12;
+        simulator.simulationSettings.mooPass = false;
+        simulator.updateActiveQueueSettings({
+            baselineRounds: 2,
+            executionMode: "serial",
+        });
+
+        const payloads = [];
+        simulator.runSingleSimulationPayload = vi.fn(async (payload, onProgress) => {
+            payloads.push(payload);
+            if (payloads.length === 1) {
+                simulator.simulationSettings.zoneHrid = liveZone;
+                simulator.simulationSettings.difficultyTier = 5;
+                simulator.simulationSettings.simulationTimeHours = 99;
+                simulator.simulationSettings.mooPass = true;
+            }
+            onProgress?.({ progress: 1 });
+            return createQueueSimulationResult();
+        });
+
+        const baseline = await simulator.setQueueBaselineForActivePlayer({ runSimulation: true });
+
+        expect(baseline?.settings?.zoneHrid).toBe(baselineZone);
+        expect(payloads).toHaveLength(2);
+        expect(payloads.map((payload) => payload.zone)).toEqual([
+            { zoneHrid: baselineZone, difficultyTier: 1 },
+            { zoneHrid: baselineZone, difficultyTier: 1 },
+        ]);
+        expect(payloads.map((payload) => payload.simulationTimeLimit)).toEqual([
+            12 * ONE_HOUR,
+            12 * ONE_HOUR,
+        ]);
+        expect(payloads.map((payload) => payload.extra.mooPass)).toEqual([false, false]);
+    });
+
+    it("runs multi-round baseline simulation with parallel dedicated workers", async () => {
+        const simulator = useSimulatorStore();
+        simulator.setImportedProfileState("1", true);
+        simulator.queueRuntime.parallelWorkerLimit = 2;
+        simulator.updateActiveQueueSettings({
+            baselineRounds: 3,
+            executionMode: "parallel",
+            medianBlend: 0.5,
+        });
+
+        let callCount = 0;
+        let activeRuns = 0;
+        let maxActiveRuns = 0;
+        simulator.runSingleSimulationPayloadWithDedicatedWorker = vi.fn(async (_payload, onProgress) => {
+            callCount += 1;
+            const currentCall = callCount;
+            activeRuns += 1;
+            maxActiveRuns = Math.max(maxActiveRuns, activeRuns);
+            onProgress?.({ progress: 0.5 });
+            try {
+                await new Promise((resolve) => {
+                    setTimeout(resolve, 0);
+                });
+                onProgress?.({ progress: 1 });
+                return createQueueSimulationResult({
+                    encounters: 100 + currentCall * 10,
+                    staminaXp: 1000 + currentCall * 100,
+                });
+            } finally {
+                activeRuns = Math.max(0, activeRuns - 1);
+            }
+        });
+
+        const baseline = await simulator.setQueueBaselineForActivePlayer({ runSimulation: true });
+
+        expect(simulator.runSingleSimulationPayloadWithDedicatedWorker).toHaveBeenCalledTimes(3);
+        expect(maxActiveRuns).toBeGreaterThan(1);
+        expect(baseline?.completedRounds).toBe(3);
+        expect(baseline?.metricSummary?.totalXpPerHour?.sampleCount).toBe(3);
+        expect(simulator.runtime.workerMode).toBe("multi");
+        expect(simulator.activeQueueState.progress).toBe(1);
+        expect(simulator.runtime.progress).toBe(1);
+    });
+
+    it("keeps partial baseline metrics when one baseline worker round fails", async () => {
+        const simulator = useSimulatorStore();
+        simulator.setImportedProfileState("1", true);
+        simulator.updateActiveQueueSettings({
+            baselineRounds: 3,
+            executionMode: "serial",
+            medianBlend: 0.5,
+        });
+
+        let callCount = 0;
+        simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+            callCount += 1;
+            onProgress?.({ progress: 1 });
+
+            if (callCount === 2) {
+                throw new Error("baseline worker reset");
+            }
+
+            return createQueueSimulationResult({
+                encounters: callCount === 1 ? 100 : 300,
+                staminaXp: callCount === 1 ? 1000 : 3000,
+            });
+        });
+
+        const baseline = await simulator.setQueueBaselineForActivePlayer({ runSimulation: true });
+
+        expect(simulator.runSingleSimulationPayload).toHaveBeenCalledTimes(3);
+        expect(baseline?.completedRounds).toBe(2);
+        expect(baseline?.status).toBe("partial");
+        expect(baseline?.failedRounds).toEqual([{
+            round: 2,
+            message: "baseline worker reset",
+        }]);
+        expect(baseline?.failureSummary).toMatchObject({
+            failedRounds: 1,
+            requestedRounds: 3,
+        });
+        expect(baseline?.metrics?.totalXpPerHour).toBe(2000);
+        expect(baseline?.metricSummary?.killsPerHour?.sampleCount).toBe(2);
+        expect(simulator.activeQueueState.error).toContain("baseline worker reset");
+        expect(simulator.activeQueueState.progress).toBe(1);
         expect(simulator.runtime.progress).toBe(1);
     });
 
@@ -4410,6 +4804,15 @@ describe("simulatorStore", () => {
 
         const persisted = JSON.parse(global.localStorage.getItem("mwi.equipmentSets.v2") || "{}");
         expect(persisted["Test Set"]?.snapshot).toBeUndefined();
+    });
+
+    it("keeps loadEquipmentSet as a deprecated compatibility stub", () => {
+        const simulator = useSimulatorStore();
+
+        simulator.saveEquipmentSet("Compat Set");
+
+        expect(simulator.loadEquipmentSet("Compat Set")).toBe(false);
+        expect(simulator.equipmentSets["Compat Set"]).toBeTruthy();
     });
 
     it("stores queue change templates in equipment sets without before fields", async () => {
