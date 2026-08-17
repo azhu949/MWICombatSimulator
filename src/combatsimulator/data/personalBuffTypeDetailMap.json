@@ -29,7 +29,9 @@
     "/personal_buff_types/attack_speed": {
         "hrid": "/personal_buff_types/attack_speed",
         "name": "Attack Speed",
-        "usableInActionTypeMap": { "/action_types/combat": true },
+        "usableInActionTypeMap": {
+            "/action_types/combat": true
+        },
         "buff": {
             "uniqueHrid": "/buff_uniques/personal_attack_speed",
             "typeHrid": "/buff_types/attack_speed",
@@ -45,7 +47,9 @@
     "/personal_buff_types/cast_speed": {
         "hrid": "/personal_buff_types/cast_speed",
         "name": "Cast Speed",
-        "usableInActionTypeMap": { "/action_types/combat": true },
+        "usableInActionTypeMap": {
+            "/action_types/combat": true
+        },
         "buff": {
             "uniqueHrid": "/buff_uniques/personal_cast_speed",
             "typeHrid": "/buff_types/cast_speed",
@@ -61,7 +65,9 @@
     "/personal_buff_types/combat_drop": {
         "hrid": "/personal_buff_types/combat_drop",
         "name": "Combat Drop",
-        "usableInActionTypeMap": { "/action_types/combat": true },
+        "usableInActionTypeMap": {
+            "/action_types/combat": true
+        },
         "buff": {
             "uniqueHrid": "/buff_uniques/personal_combat_drop",
             "typeHrid": "/buff_types/combat_drop_quantity",
@@ -77,7 +83,9 @@
     "/personal_buff_types/critical_rate": {
         "hrid": "/personal_buff_types/critical_rate",
         "name": "Critical Rate",
-        "usableInActionTypeMap": { "/action_types/combat": true },
+        "usableInActionTypeMap": {
+            "/action_types/combat": true
+        },
         "buff": {
             "uniqueHrid": "/buff_uniques/personal_critical_rate",
             "typeHrid": "/buff_types/critical_rate",
@@ -93,7 +101,9 @@
     "/personal_buff_types/damage": {
         "hrid": "/personal_buff_types/damage",
         "name": "Damage",
-        "usableInActionTypeMap": { "/action_types/combat": true },
+        "usableInActionTypeMap": {
+            "/action_types/combat": true
+        },
         "buff": {
             "uniqueHrid": "/buff_uniques/personal_damage",
             "typeHrid": "/buff_types/damage",
