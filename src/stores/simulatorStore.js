@@ -234,6 +234,7 @@ export const useSimulatorStore = defineStore("simulator", {
                 roomLevel: LABYRINTH_ROOM_LEVEL_DEFAULT,
                 simulationTimeHours: 24,
                 mooPass: simulationUiSettings.mooPass,
+                combatScrollsEnabled: simulationUiSettings.combatScrollsEnabled,
                 comExpEnabled: simulationUiSettings.comExpEnabled,
                 comExp: simulationUiSettings.comExp,
                 comDropEnabled: simulationUiSettings.comDropEnabled,

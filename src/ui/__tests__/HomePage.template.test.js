@@ -162,3 +162,12 @@ describe("HomePage enhancement pricing", () => {
         expect(homePageSource).not.toContain("onEquipmentUpgradeCostChanged");
     });
 });
+
+describe("HomePage combat scroll gate", () => {
+    it("explains that the outer gate pauses effects without hiding saved row state", () => {
+        expect(homePageSource).toContain('common:vue.home.combatScrollsDisabledHint');
+        expect(homePageSource).toContain('v-if="!combatScrollsEffectsEnabled"');
+        expect(homePageSource).toContain('@click="setCombatScrollsEnabled(true)"');
+        expect(homePageSource).toContain('common:vue.home.combatScrollsConfiguredCount');
+    });
+});

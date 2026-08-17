@@ -1,4 +1,5 @@
 import { EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../shared/playerConfig.js";
+import { normalizeCombatScrolls } from "../shared/combatScrolls.js";
 
 function clonePlainValue(value, fallback) {
     if (!value || typeof value !== "object") {
@@ -50,6 +51,11 @@ export function createCombatPreviewPlayerConfig(playerConfig = null) {
         houseRooms: { ...(playerConfig?.houseRooms ?? {}) },
         guildBuffs: { ...(playerConfig?.guildBuffs ?? {}) },
         achievements: { ...(playerConfig?.achievements ?? {}) },
+        // Keep timed combat-scroll selections in the lightweight preview DTO.
+        // The preview mapper may ignore the field for derived permanent stats,
+        // but retaining it here keeps the same player contract as simulation
+        // and prevents preview/queue transitions from losing the selection.
+        combatScrolls: normalizeCombatScrolls(playerConfig?.combatScrolls),
     };
 }
 

@@ -22,6 +22,7 @@ import {
     sanitizeTriggerMap,
 } from "./triggerMapper.js";
 import { clampPositiveInteger, deepClone, isPlainObject, toFiniteNumber } from "./utils.js";
+import { normalizeCombatScrolls } from "../shared/combatScrolls.js";
 
 export const EQUIPMENT_SET_QUEUE_CHANGES_VERSION = 1;
 
@@ -48,6 +49,11 @@ export function createEquipmentSetSnapshotFromPlayer(player) {
         houseRooms: deepClone(source.houseRooms ?? {}),
         guildBuffs: normalizeGuildBuffLevels(source.guildBuffs),
         achievements: deepClone(source.achievements ?? {}),
+        // Scroll configuration is part of the player build snapshot.  It is
+        // intentionally not represented as a queue *change* target yet, but
+        // every baseline/variant must carry it through unchanged so applying
+        // an equipment-set variant cannot silently disable timed scrolls.
+        combatScrolls: normalizeCombatScrolls(source.combatScrolls),
     };
 }
 
@@ -102,6 +108,8 @@ export function normalizeEquipmentSetSnapshot(rawSet, fallbackPlayerId = "1") {
     normalized.achievements = isPlainObject(source.achievements)
         ? deepClone(source.achievements)
         : {};
+
+    normalized.combatScrolls = normalizeCombatScrolls(source.combatScrolls);
 
     return normalized;
 }

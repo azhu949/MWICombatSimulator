@@ -11,6 +11,7 @@ const outputPath = path.join(projectRoot, "src", "shared", "gameDataIndex.genera
 const LEVEL_KEYS = ["stamina", "intelligence", "attack", "melee", "defense", "ranged", "magic"];
 const EQUIPMENT_SLOT_KEYS = ["head", "body", "legs", "feet", "hands", "weapon", "off_hand", "pouch", "neck", "earrings", "ring", "back", "charm"];
 const ABILITY_BOOK_CATEGORY_HRID = "/item_categories/ability_book";
+const COMBAT_SCROLL_CATEGORY_HRID = "/item_categories/scroll";
 const ITEM_LOCATION_HRID_PREFIX = "/item_locations/";
 const LABYRINTH_COFFEE_CRATE_HRIDS = ["/items/basic_coffee_crate", "/items/advanced_coffee_crate", "/items/expert_coffee_crate"];
 const LABYRINTH_FOOD_CRATE_HRIDS = ["/items/basic_food_crate", "/items/advanced_food_crate", "/items/expert_food_crate"];
@@ -236,6 +237,29 @@ function createItemIndex(itemDetailMap, equipmentTypeDetailMap) {
             })),
         },
     };
+}
+
+function createCombatScrollItemIndex(itemDetailMap) {
+    const combatScrollItemDetailIndex = {};
+
+    for (const item of Object.values(itemDetailMap || {})) {
+        const hrid = String(item?.hrid || "");
+        const personalBuffTypeHrid = String(item?.scrollDetail?.personalBuffTypeHrid || "");
+        if (!hrid || item?.categoryHrid !== COMBAT_SCROLL_CATEGORY_HRID || !personalBuffTypeHrid) {
+            continue;
+        }
+
+        combatScrollItemDetailIndex[hrid] = {
+            hrid,
+            name: String(item?.name || hrid),
+            description: String(item?.description || ""),
+            categoryHrid: COMBAT_SCROLL_CATEGORY_HRID,
+            sortIndex: Number(item?.sortIndex ?? 0),
+            scrollDetail: { personalBuffTypeHrid },
+        };
+    }
+
+    return combatScrollItemDetailIndex;
 }
 
 function createAbilityIndex(abilityDetailMap) {
@@ -948,6 +972,7 @@ async function main() {
         houseRoomDetailMap,
         itemDetailMap,
         openableLootDropMap,
+        personalBuffTypeDetailMap,
     ] = await Promise.all([
         readJsonFile("abilityDetailMap.json"),
         readJsonFile("achievementTierDetailMap.json"),
@@ -961,6 +986,7 @@ async function main() {
         readJsonFile("houseRoomDetailMap.json"),
         readJsonFile("itemDetailMap.json"),
         readJsonFile("openableLootDropMap.json"),
+        readJsonFile("personalBuffTypeDetailMap.json"),
     ]);
 
     const itemIndex = createItemIndex(itemDetailMap, equipmentTypeDetailMap);
@@ -991,6 +1017,10 @@ async function main() {
             equipmentSlotKeys: EQUIPMENT_SLOT_KEYS,
         },
         ...itemIndex,
+        combatScrollItemDetailIndex: createCombatScrollItemIndex(itemDetailMap),
+        // This is a derived runtime projection of the extracted data snapshot.
+        // Shared modules consume it here to avoid importing simulator-layer data.
+        personalBuffTypeDetailIndex: personalBuffTypeDetailMap || {},
         ...abilityIndex,
         ...actionIndex,
         ...monsterIndex,

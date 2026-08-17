@@ -28,6 +28,9 @@
           </div>
         </div>
         <p class="mt-3 text-xs text-muted-foreground">{{ t("common:vue.results.protocol", "Protocol") }}: {{ batchProtocolLabel }}</p>
+        <p class="mt-1 text-xs text-muted-foreground">
+          {{ t("common:vue.results.batchScrollInventoryHint", "Each target starts independently at t=0 with the full configured scroll inventory; stock is not shared between targets.") }}
+        </p>
       </div>
 
       <div class="surface-panel overflow-x-auto">
@@ -155,6 +158,48 @@
                   <p class="mt-1 text-foreground">{{ formatNumber(entry.value) }}</p>
                 </div>
               </div>
+            </DisclosurePanel>
+
+            <DisclosurePanel
+              v-if="showScrollUsagePanel"
+              :title="t('common:vue.results.combatScrollUsage', 'Combat Scroll Usage')"
+              :default-open="true"
+            >
+              <div
+                v-if="activeScrollUsageDisabled"
+                class="mb-2 rounded-md border border-warning/40 bg-warning/10 p-2 text-xs text-warning"
+                role="status"
+              >
+                {{ activeScrollUsageDisabledText }}
+              </div>
+              <div
+                v-else-if="activeScrollUsageIgnored"
+                class="mb-2 rounded-md border border-warning/40 bg-warning/10 p-2 text-xs text-warning"
+                role="status"
+              >
+                {{ activeScrollUsageIgnoredText }}
+              </div>
+              <div class="space-y-2">
+                <div
+                  v-for="row in activeScrollUsageRows"
+                  :key="row.itemHrid"
+                  class="grid gap-1 rounded-lg border border-border px-3 py-2 text-sm sm:grid-cols-[minmax(0,1fr)_auto_auto] sm:items-center sm:gap-3"
+                >
+                  <div class="min-w-0">
+                    <p class="truncate text-foreground/85">{{ row.name }}</p>
+                    <p class="text-[11px] text-muted-foreground">{{ row.stockText }}</p>
+                  </div>
+                  <p class="text-xs text-muted-foreground">
+                    {{ formatScrollOpenedLabel(row) }}
+                  </p>
+                  <p class="text-xs text-foreground">
+                    {{ formatScrollActiveDurationLabel(row) }}
+                  </p>
+                </div>
+              </div>
+              <p v-if="!activeScrollUsageDisabled" class="mt-2 text-xs text-muted-foreground">
+                {{ t("common:vue.results.scrollsNotPriced", "Scrolls are non-tradable and are not included in expenses or profit.") }}
+              </p>
             </DisclosurePanel>
 
             <DisclosurePanel :title="t('common:simulationResults.killPerHour', 'Kills Per Hour')">
@@ -638,6 +683,82 @@ const DETAIL_ROW_LIMIT = 200;
 
 const activeResultRow = computed(() => simulator.activeResultRow);
 const activePlayerHrid = computed(() => String(simulator.results.activeResultPlayerHrid || "player1"));
+
+const activeScrollUsage = computed(() => {
+  const simResult = simulator.results.simResult;
+  const usage = simResult?.scrollUsage;
+  if (!usage || typeof usage !== "object") {
+    return null;
+  }
+
+  const byPlayer = usage.byPlayer && typeof usage.byPlayer === "object" ? usage.byPlayer : {};
+  const playerUsage = byPlayer[activePlayerHrid.value];
+  return {
+    root: usage,
+    byPlayer: playerUsage && typeof playerUsage === "object" ? playerUsage : {},
+  };
+});
+
+const activeScrollUsageIgnored = computed(() => activeScrollUsage.value?.root?.allowed === false);
+const activeScrollUsageDisabled = computed(() => activeScrollUsage.value?.root?.disabled === true);
+const activeScrollUsageDisabledText = computed(() => t(
+  "common:vue.results.scrollsDisabled",
+  "Combat scroll effects were paused for this simulation. Saved configuration was not changed.",
+));
+const activeScrollUsageIgnoredText = computed(() => {
+  const reason = String(activeScrollUsage.value?.root?.ignoredReason || "").trim();
+  if (reason === "labyrinth") {
+    return t("common:vue.results.scrollsIgnoredLabyrinth", "Configured scrolls were ignored because Labyrinth does not accept combat scroll buffs.");
+  }
+  if (reason === "guild_trial" || reason === "guildTrial") {
+    return t("common:vue.results.scrollsIgnoredGuildTrial", "Configured scrolls were ignored because Guild Trials do not accept combat scroll buffs.");
+  }
+  return t("common:vue.results.scrollsIgnoredContext", "Configured scrolls were not effective in this combat context.");
+});
+
+const activeScrollUsageRows = computed(() => {
+  const usage = activeScrollUsage.value?.byPlayer || {};
+  return Object.entries(usage)
+    .map(([itemHrid, rawEntry]) => {
+      const entry = rawEntry && typeof rawEntry === "object" ? rawEntry : {};
+      const rawConfiguredQuantity = entry.configuredQuantity === null || entry.configuredQuantity === undefined
+        ? null
+        : Number(entry.configuredQuantity);
+      const configuredQuantity = rawConfiguredQuantity !== null
+        && Number.isSafeInteger(rawConfiguredQuantity)
+        && rawConfiguredQuantity > 0
+        ? rawConfiguredQuantity
+        : null;
+      const parsedOpenedCount = Number(entry.openedCount);
+      const openedCount = Number.isFinite(parsedOpenedCount)
+        ? Math.max(0, Math.floor(parsedOpenedCount))
+        : 0;
+      const parsedActiveDurationNs = Number(entry.activeDurationNs);
+      const activeDurationNs = Number.isFinite(parsedActiveDurationNs)
+        ? Math.max(0, parsedActiveDurationNs)
+        : 0;
+      const unlimited = entry.unlimited === true || configuredQuantity === null;
+      const exhausted = entry.exhausted === true || (!unlimited && openedCount >= configuredQuantity);
+      return {
+        itemHrid: String(itemHrid || ""),
+        name: formatItemName(itemHrid),
+        openedCount,
+        activeDurationText: formatScrollDuration(activeDurationNs),
+        stockText: unlimited
+          ? t("common:vue.results.scrollInventoryUnlimited", "Inventory: Unlimited")
+          : t("common:vue.results.scrollInventoryFinite", "Inventory: {{used}} / {{total}}{{suffix}}", {
+            used: openedCount,
+            total: configuredQuantity,
+            suffix: exhausted ? ` (${t("common:vue.results.scrollExhausted", "exhausted")})` : "",
+          }),
+      };
+    })
+    .filter((row) => row.itemHrid);
+});
+
+const showScrollUsagePanel = computed(() => (
+  activeScrollUsageDisabled.value || activeScrollUsageRows.value.length > 0
+));
 
 function selectSummaryRow(playerHrid) {
   simulator.results.activeResultPlayerHrid = String(playerHrid || "");
@@ -1449,6 +1570,33 @@ function formatSimSeconds(value) {
     return "0.00";
   }
   return seconds.toFixed(2);
+}
+
+function formatScrollDuration(valueNs) {
+  const totalMinutes = Math.max(0, Number(valueNs || 0) / 1e9 / 60);
+  if (!Number.isFinite(totalMinutes)) {
+    return "0m";
+  }
+  // Scroll windows are half-open; show only minutes that fully elapsed.
+  const totalWholeMinutes = Math.floor(totalMinutes);
+  if (totalMinutes >= 60) {
+    const hours = Math.floor(totalWholeMinutes / 60);
+    const minutes = totalWholeMinutes % 60;
+    return `${hours}h ${minutes}m`;
+  }
+  return `${totalWholeMinutes}m`;
+}
+
+function formatScrollOpenedLabel(row) {
+  return t("common:vue.results.scrollOpenedCount", "Opened: {{count}}", {
+    count: Number(row?.openedCount || 0),
+  });
+}
+
+function formatScrollActiveDurationLabel(row) {
+  return t("common:vue.results.scrollActiveDuration", "Active: {{duration}}", {
+    duration: String(row?.activeDurationText || "0m"),
+  });
 }
 
 function formatLogSource(log) {

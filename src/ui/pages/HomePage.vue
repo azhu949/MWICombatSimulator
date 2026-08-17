@@ -312,11 +312,24 @@
           </div>
         </div>
 
-        <div class="mb-3 grid gap-3 sm:grid-cols-1">
-          <label class="block max-w-sm">
+        <div class="mb-3 grid gap-3 sm:grid-cols-2">
+          <label class="block">
             <span class="control-label">{{ t("common:vue.home.simulationHours", "Simulation Hours") }}</span>
             <input v-model.number="simulator.simulationSettings.simulationTimeHours" class="control-input" type="number" min="1" max="72" />
           </label>
+          <div class="flex flex-wrap items-end gap-2">
+            <label class="status-chip min-h-9 flex items-center justify-center gap-2 text-sm">
+              <input
+                :checked="combatScrollsEffectsEnabled"
+                type="checkbox"
+                @change="setCombatScrollsEnabled($event.target.checked)"
+              />
+              {{ t("common:vue.home.combatScrollsButton", "Enable Combat Scroll Effects") }}
+            </label>
+            <button type="button" class="button-secondary" @click="openCombatScrollsModal = true">
+              {{ t("common:vue.home.combatScrollsConfigureButton", "Configure") }}
+            </button>
+          </div>
         </div>
 
         <div class="mb-3 grid gap-3 sm:grid-cols-3">
@@ -599,6 +612,7 @@
             </div>
           </div>
         </div>
+
     </div>
 
     <div v-if="activeWorkspaceTab === 'advanced'" class="surface-panel space-y-4">
@@ -873,6 +887,119 @@
           </label>
         </div>
       </div>
+    </BaseModal>
+
+    <BaseModal
+      :open="openCombatScrollsModal"
+      :title="t('common:vue.home.combatScrollsTitle', 'Combat Scrolls')"
+      panel-class="max-w-[94vw] lg:max-w-4xl"
+      @close="openCombatScrollsModal = false"
+    >
+      <div class="mb-3 flex flex-wrap items-start justify-between gap-3">
+        <div class="space-y-1">
+          <p class="text-xs text-muted-foreground">
+            {{ t("common:vue.home.combatScrollsHint", "Selected scrolls open at t=0 while effects are enabled and renew when their current effect expires while stock remains.") }}
+          </p>
+          <p class="text-xs font-medium text-foreground/85">
+            {{ configuredCombatScrollSummary }}
+          </p>
+        </div>
+        <div class="flex flex-wrap gap-2">
+          <button
+            type="button"
+            class="button-secondary"
+            :disabled="combatScrollOptions.length === 0 || configuredCombatScrollCount === combatScrollOptions.length"
+            @click="setAllCombatScrollsConfigured(true)"
+          >
+            {{ t("common:vue.home.selectAll", "Select All") }}
+          </button>
+          <button
+            type="button"
+            class="button-secondary"
+            :disabled="configuredCombatScrollCount === 0"
+            @click="setAllCombatScrollsConfigured(false)"
+          >
+            {{ t("common:vue.home.clearAll", "Clear All") }}
+          </button>
+        </div>
+      </div>
+
+      <div
+        v-if="!combatScrollsEffectsEnabled"
+        class="mb-3 flex flex-wrap items-center justify-between gap-2 rounded-md border border-warning/40 bg-warning/10 p-2 text-xs text-warning"
+        role="status"
+      >
+        <span>
+          {{ t("common:vue.home.combatScrollsDisabledHint", "Combat scroll effects are paused. The selections and quantities below are retained.") }}
+        </span>
+        <button type="button" class="button-secondary" @click="setCombatScrollsEnabled(true)">
+          {{ t("common:vue.home.combatScrollsEnableNow", "Enable Effects") }}
+        </button>
+      </div>
+
+      <div
+        v-if="simulator.simulationSettings.mode === 'labyrinth'"
+        class="mb-3 rounded-md border border-warning/40 bg-warning/10 p-2 text-xs text-warning"
+        role="status"
+      >
+        {{ t("common:vue.home.combatScrollsIgnoredLabyrinth", "Scrolls are configured but are not effective in Labyrinth. The configuration is kept for other targets.") }}
+      </div>
+
+      <div class="max-h-[70vh] space-y-2 overflow-y-auto pr-1">
+        <div
+          v-for="scroll in combatScrollOptions"
+          :key="scroll.itemHrid || scroll.hrid"
+          class="rounded-md border border-border bg-muted/30 p-2"
+        >
+          <div class="flex flex-wrap items-center gap-2">
+            <label class="flex min-w-0 flex-1 items-center gap-2 text-sm text-foreground">
+              <input
+                type="checkbox"
+                :checked="isCombatScrollEnabled(scroll.itemHrid || scroll.hrid)"
+                :aria-label="formatCombatScrollName(scroll)"
+                @change="setCombatScrollEnabled(scroll.itemHrid || scroll.hrid, $event.target.checked)"
+              />
+              <span class="truncate">{{ formatCombatScrollName(scroll) }}</span>
+              <span
+                v-if="isCombatScrollEnabled(scroll.itemHrid || scroll.hrid) && combatScrollQuantityInput(scroll.itemHrid || scroll.hrid) === ''"
+                class="shrink-0 text-[11px] text-primary"
+              >
+                {{ t("common:vue.home.combatScrollUnlimitedLabel", "Unlimited inventory") }}
+              </span>
+            </label>
+            <label class="flex items-center gap-2 text-xs text-muted-foreground">
+              <span>{{ t("common:vue.home.combatScrollQuantity", "Quantity") }}</span>
+              <input
+                class="control-input w-24 py-1 text-right tabular-nums"
+                type="number"
+                min="1"
+                step="1"
+                :disabled="!isCombatScrollEnabled(scroll.itemHrid || scroll.hrid)"
+                :value="combatScrollQuantityInput(scroll.itemHrid || scroll.hrid)"
+                :placeholder="t('common:vue.home.combatScrollUnlimitedPlaceholder', 'Unlimited')"
+                :aria-label="`${formatCombatScrollName(scroll)} ${t('common:vue.home.combatScrollQuantity', 'Quantity')}`"
+                :aria-invalid="Boolean(combatScrollQuantityError(scroll.itemHrid || scroll.hrid))"
+                @change="setCombatScrollQuantity(scroll.itemHrid || scroll.hrid, $event.target.value)"
+              />
+            </label>
+          </div>
+          <p
+            v-if="combatScrollQuantityError(scroll.itemHrid || scroll.hrid)"
+            class="mt-1 pl-6 text-xs text-destructive"
+            role="alert"
+          >
+            {{ combatScrollQuantityError(scroll.itemHrid || scroll.hrid) }}
+          </p>
+          <p class="mt-1 pl-6 text-xs text-muted-foreground">
+            {{ formatCombatScrollEffect(scroll) }} ·
+            {{ formatCombatScrollDurationLabel(scroll) }}
+          </p>
+        </div>
+      </div>
+
+      <p v-if="combatScrollOptions.length === 0" class="text-sm text-muted-foreground">
+        {{ t("common:vue.home.combatScrollsUnavailable", "No combat scroll data is available.") }}
+      </p>
     </BaseModal>
 
     <BaseModal
@@ -1157,6 +1284,10 @@ import { applyTampermonkeyImportMessage } from "../../services/tampermonkeyImpor
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
 import { buildCombatPreviewData } from "../../services/playerMapper.js";
 import { calcCombatLevel, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../../shared/playerConfig.js";
+import {
+  combatScrollOptions,
+  normalizeCombatScrolls,
+} from "../../shared/combatScrolls.js";
 import { buildNoRngProfitBreakdown, buildRandomProfitBreakdown } from "../../services/profitEstimator.js";
 import { calculateSkillUpgradeEta } from "../../services/levelExperience.js";
 import { createCombatPreviewPlayerConfig } from "../pageOptimizationHelpers.js";
@@ -1199,6 +1330,7 @@ const levelKeys = LEVEL_KEYS;
 const equipmentSlots = EQUIPMENT_SLOT_KEYS;
 const homeResultsSection = ref(null);
 const activeWorkspaceTab = ref("base");
+const combatScrollQuantityErrors = ref({});
 const homeHasResults = computed(() => (
   Boolean(simulator.results.simResult)
   || (Array.isArray(simulator.results.simResults) && simulator.results.simResults.length > 0)
@@ -1701,6 +1833,24 @@ const openHouseRoomsModal = ref(false);
 const houseRoomBaselineLevels = ref({});
 const openAchievementsModal = ref(false);
 const openGuildBuffsModal = ref(false);
+const openCombatScrollsModal = ref(false);
+
+const combatScrollsEffectsEnabled = computed(() => {
+  // The master switch is an independent simulation gate.  Individual rows
+  // are preserved while it is off and may be edited without changing it.
+  return simulator.simulationSettings.combatScrollsEnabled === true;
+});
+const configuredCombatScrollCount = computed(() => (
+  Object.keys(normalizeCombatScrolls(activePlayer.value?.combatScrolls)).length
+));
+const configuredCombatScrollSummary = computed(() => t(
+  "common:vue.home.combatScrollsConfiguredCount",
+  `${configuredCombatScrollCount.value} of ${combatScrollOptions.length} scrolls configured`,
+  {
+    configured: configuredCombatScrollCount.value,
+    total: combatScrollOptions.length,
+  },
+));
 const openPlayerImportModal = ref(false);
 const openPlayerSnapshotInfoModal = ref(false);
 const openExperimentalModal = ref(false);
@@ -1811,6 +1961,191 @@ const drinkComboboxOptions = computed(() => [
   emptyComboboxOption(),
   ...simulator.options.drinks.map(itemComboboxOption),
 ]);
+
+function combatScrollHrid(scrollOrHrid) {
+  if (scrollOrHrid && typeof scrollOrHrid === "object") {
+    return String(scrollOrHrid.itemHrid || scrollOrHrid.hrid || "");
+  }
+  return String(scrollOrHrid || "");
+}
+
+function normalizedActiveCombatScrolls() {
+  const player = activePlayer.value;
+  if (!player) {
+    return {};
+  }
+
+  const normalized = normalizeCombatScrolls(player.combatScrolls);
+  // Assigning the normalized map also upgrades players loaded from a legacy
+  // snapshot that did not have the optional field.  Vue observes this as a
+  // normal player-config edit and queue snapshots then retain the same map.
+  player.combatScrolls = normalized;
+  return normalized;
+}
+
+function isCombatScrollEnabled(scrollOrHrid) {
+  const hrid = combatScrollHrid(scrollOrHrid);
+  if (!hrid) {
+    return false;
+  }
+  const configured = activePlayer.value?.combatScrolls;
+  return Boolean(configured && typeof configured === "object" && Object.prototype.hasOwnProperty.call(configured, hrid));
+}
+
+function combatScrollQuantityInput(scrollOrHrid) {
+  const hrid = combatScrollHrid(scrollOrHrid);
+  const entry = activePlayer.value?.combatScrolls?.[hrid];
+  if (!entry || entry.quantity === null || entry.quantity === undefined || entry.quantity === "") {
+    return "";
+  }
+  return String(entry.quantity);
+}
+
+function combatScrollQuantityError(scrollOrHrid) {
+  const hrid = combatScrollHrid(scrollOrHrid);
+  return String(combatScrollQuantityErrors.value[hrid] || "");
+}
+
+function setCombatScrollQuantityError(hrid, message) {
+  combatScrollQuantityErrors.value = {
+    ...combatScrollQuantityErrors.value,
+    [hrid]: String(message || ""),
+  };
+}
+
+function clearCombatScrollQuantityError(hrid) {
+  if (!Object.prototype.hasOwnProperty.call(combatScrollQuantityErrors.value, hrid)) {
+    return;
+  }
+  const next = { ...combatScrollQuantityErrors.value };
+  delete next[hrid];
+  combatScrollQuantityErrors.value = next;
+}
+
+function commitActiveCombatScrolls(next) {
+  const player = activePlayer.value;
+  if (!player) {
+    return;
+  }
+
+  const normalized = normalizeCombatScrolls(next);
+  player.combatScrolls = normalized;
+}
+
+function setCombatScrollEnabled(scrollOrHrid, enabled) {
+  const hrid = combatScrollHrid(scrollOrHrid);
+  if (!hrid || !activePlayer.value) {
+    return;
+  }
+
+  clearCombatScrollQuantityError(hrid);
+
+  const next = normalizedActiveCombatScrolls();
+  if (enabled) {
+    if (!Object.prototype.hasOwnProperty.call(next, hrid)) {
+      next[hrid] = { quantity: null };
+    }
+  } else {
+    delete next[hrid];
+  }
+  commitActiveCombatScrolls(next);
+}
+
+function setCombatScrollsEnabled(enabled) {
+  // Pausing the feature must not destroy the user's per-scroll selections or
+  // quantities.  The worker applies this gate without mutating player data.
+  simulator.simulationSettings.combatScrollsEnabled = Boolean(enabled);
+}
+
+function setAllCombatScrollsConfigured(enabled) {
+  if (!activePlayer.value) {
+    return;
+  }
+
+  if (!enabled) {
+    commitActiveCombatScrolls({});
+    combatScrollQuantityErrors.value = {};
+    return;
+  }
+
+  const next = normalizedActiveCombatScrolls();
+  for (const scroll of combatScrollOptions) {
+    const hrid = combatScrollHrid(scroll);
+    if (hrid && !Object.prototype.hasOwnProperty.call(next, hrid)) {
+      next[hrid] = { quantity: null };
+    }
+  }
+  commitActiveCombatScrolls(next);
+  combatScrollQuantityErrors.value = {};
+}
+
+function setCombatScrollQuantity(scrollOrHrid, rawValue) {
+  const hrid = combatScrollHrid(scrollOrHrid);
+  if (!hrid || !isCombatScrollEnabled(hrid)) {
+    return;
+  }
+
+  const next = normalizedActiveCombatScrolls();
+  const text = String(rawValue ?? "").trim();
+  if (!text) {
+    next[hrid] = { quantity: null };
+    clearCombatScrollQuantityError(hrid);
+  } else {
+    const numeric = Number(text);
+    if (Number.isSafeInteger(numeric) && numeric > 0) {
+      next[hrid] = { quantity: numeric };
+      clearCombatScrollQuantityError(hrid);
+    } else {
+      // Preserve the last valid selection while making the invalid edit
+      // visible.  Import normalization remains strict; interactive editing
+      // should not make a checked row disappear without feedback.
+      if (!Object.prototype.hasOwnProperty.call(next, hrid)) {
+        next[hrid] = { quantity: null };
+      }
+      setCombatScrollQuantityError(
+        hrid,
+        t("common:vue.home.combatScrollInvalidQuantity", "Enter a positive whole number."),
+      );
+    }
+  }
+  commitActiveCombatScrolls(next);
+}
+
+function formatCombatScrollName(scroll) {
+  const hrid = combatScrollHrid(scroll);
+  const fallback = String(scroll?.name || itemDetailMap?.[hrid]?.name || hrid || "Combat Scroll");
+  return getItemName(hrid, fallback);
+}
+
+function formatCombatScrollEffect(scroll) {
+  if (scroll?.effectLabel) {
+    return String(scroll.effectLabel);
+  }
+
+  const buff = scroll?.buff && typeof scroll.buff === "object" ? scroll.buff : {};
+  const typeHrid = String(buff.typeHrid || scroll?.personalBuffTypeHrid || "");
+  const typeName = getBuffTypeName(typeHrid, String(scroll?.name || typeHrid || "Buff"));
+  const ratioBoost = Number(buff.ratioBoost || 0);
+  const flatBoost = Number(buff.flatBoost || 0);
+  const parts = [];
+  if (Number.isFinite(ratioBoost) && Math.abs(ratioBoost) > 1e-12) {
+    parts.push(`${ratioBoost >= 0 ? "+" : ""}${(ratioBoost * 100).toFixed(1).replace(/\.0$/, "")}%`);
+  }
+  if (Number.isFinite(flatBoost) && Math.abs(flatBoost) > 1e-12) {
+    parts.push(`${flatBoost >= 0 ? "+" : ""}${(flatBoost * 100).toFixed(1).replace(/\.0$/, "")}%`);
+  }
+  return parts.length > 0 ? `${typeName} ${parts.join(" / ")}` : typeName;
+}
+
+function formatCombatScrollDurationLabel(scroll) {
+  const durationNs = Number(scroll?.durationNs ?? scroll?.duration ?? 0);
+  // This is the configured duration of one opening, so preserve a possible
+  // fractional minute without forcing trailing zeros. The results view instead
+  // floors elapsed half-open windows because it reports time already active.
+  return t("common:vue.home.combatScrollDuration", "{{minutes}} min per opening", {
+    minutes: formatNumber(durationNs / (60 * 1e9), 2),
+  });
+}
 
 function abilityComboboxOptions(slotIndex) {
   return [
@@ -1958,6 +2293,7 @@ const combatPreviewExtra = computed(() => ({
   mooPass: Boolean(simulator.simulationSettings.mooPass),
   comExp: simulator.simulationSettings.comExpEnabled ? Number(simulator.simulationSettings.comExp || 20) : 0,
   comDrop: simulator.simulationSettings.comDropEnabled ? Number(simulator.simulationSettings.comDrop || 20) : 0,
+  combatScrollsEnabled: Boolean(simulator.simulationSettings.combatScrollsEnabled),
 }));
 const combatPreviewContext = computed(() => {
   if (simulator.simulationSettings.mode === "labyrinth") {
@@ -3145,6 +3481,7 @@ function cancelInlineTriggerEditor() {
 watch(
   () => activePlayer.value,
   (nextPlayer, previousPlayer) => {
+    combatScrollQuantityErrors.value = {};
     if (restoringTriggerEditorPlayer) {
       restoringTriggerEditorPlayer = false;
       return;
@@ -3205,6 +3542,7 @@ watch(
     simulator.simulationSettings.comExp,
     simulator.simulationSettings.comDropEnabled,
     simulator.simulationSettings.comDrop,
+    simulator.simulationSettings.combatScrollsEnabled,
   ]),
   () => {
     simulator.persistSimulationUiSettings();

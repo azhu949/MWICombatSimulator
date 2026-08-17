@@ -1,4 +1,22 @@
 {
+    "2026年8月16日（v2.0.8）": {
+        "label": {
+            "zh": "2026年8月16日（v2.0.8）",
+            "en": "August 16, 2026 (v2.0.8)"
+        },
+        "notes": {
+            "zh": [
+                "新增战斗卷轴：支持统一启停、逐项选择及有限或无限库存，普通战斗中每 30 分钟自动续期。",
+                "结果页显示卷轴用量；经验和掉落按怪物死亡时的有效卷轴结算，卷轴不计入成本，迷宫和公会试炼不生效。",
+                "修正模拟结束边界与长时间模拟中的结算偏差，并提升卷轴续期和掉落统计性能。"
+            ],
+            "en": [
+                "Added combat scrolls with a global toggle, per-scroll selection, finite or unlimited stock, and automatic 30-minute renewals in standard combat.",
+                "Results show scroll usage; experience and drops use the scrolls active when each monster dies, scrolls are excluded from costs, and they do not apply in Labyrinth or Guild Trials.",
+                "Fixed simulation-end boundaries and long-run settlement discrepancies, and improved scroll renewal and drop-stat performance."
+            ]
+        }
+    },
     "2026年8月15日（v2.0.7）": {
         "label": {
             "zh": "2026年8月15日（v2.0.7）",

@@ -53,6 +53,9 @@ function buildMultiSimulationConfig(eventData = {}) {
                 zone,
                 extra: eventData.extra,
                 simulationTimeLimit: eventData.simulationTimeLimit,
+                ...(eventData.simulationContext && typeof eventData.simulationContext === "object"
+                    ? { simulationContext: eventData.simulationContext }
+                    : {}),
             }),
             buildItemResult: (zone, index, simResult) => ({
                 type: "simulation_item_result",
@@ -76,6 +79,9 @@ function buildMultiSimulationConfig(eventData = {}) {
                 labyrinth,
                 extra: eventData.extra,
                 simulationTimeLimit: eventData.simulationTimeLimit,
+                ...(eventData.simulationContext && typeof eventData.simulationContext === "object"
+                    ? { simulationContext: eventData.simulationContext }
+                    : {}),
             }),
             buildItemResult: (labyrinth, index, simResult) => ({
                 type: "simulation_item_result",

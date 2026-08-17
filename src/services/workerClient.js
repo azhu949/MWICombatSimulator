@@ -7,6 +7,7 @@
  * @property {{ labyrinthHrid: string, roomLevel: number, crates: string[] } | null} labyrinth
  * @property {number} simulationTimeLimit
  * @property {{ mooPass: boolean, comExp: number, comDrop: number, enableHpMpVisualization: boolean }} extra
+ * @property {{ isGuildTrial?: boolean }} [simulationContext]
  */
 
 /**
@@ -17,6 +18,7 @@
  * @property {number} [parallelWorkerLimit]
  * @property {number} simulationTimeLimit
  * @property {{ mooPass: boolean, comExp: number, comDrop: number, enableHpMpVisualization: boolean }} extra
+ * @property {{ isGuildTrial?: boolean }} [simulationContext]
  */
 
 /**
@@ -27,6 +29,7 @@
  * @property {number} [parallelWorkerLimit]
  * @property {number} simulationTimeLimit
  * @property {{ mooPass: boolean, comExp: number, comDrop: number, enableHpMpVisualization: boolean }} extra
+ * @property {{ isGuildTrial?: boolean }} [simulationContext]
  */
 
 export class WorkerClient {

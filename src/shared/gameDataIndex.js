@@ -2,6 +2,14 @@ import gameDataIndex from "./gameDataIndex.generated.json";
 import buffTypeDetailMap from "../combatsimulator/data/buffTypeDetailMap.json";
 import itemCategoryDetailMap from "../combatsimulator/data/itemCategoryDetailMap.json";
 import skillDetailMap from "../combatsimulator/data/skillDetailMap.json";
+import {
+    combatScrollDefinitions,
+    combatScrollOptions,
+    getCombatScrollBuffTemplate,
+    getCombatScrollDefinition,
+    getCombatScrollOptions,
+    normalizeCombatScrolls,
+} from "./combatScrolls.js";
 
 export const LEVEL_KEYS = gameDataIndex?.metadata?.levelKeys || [];
 export const EQUIPMENT_SLOT_KEYS = gameDataIndex?.metadata?.equipmentSlotKeys || [];
@@ -15,6 +23,19 @@ export const houseRoomDetailIndex = gameDataIndex?.houseRoomDetailIndex || {};
 export const buffTypeDetailIndex = buffTypeDetailMap || {};
 export const skillDetailIndex = skillDetailMap || {};
 export const itemCategoryDetailIndex = itemCategoryDetailMap || {};
+export const combatScrollItemDetailIndex = gameDataIndex?.combatScrollItemDetailIndex || {};
+export const personalBuffTypeDetailIndex = gameDataIndex?.personalBuffTypeDetailIndex || {};
+
+// Re-export the data-driven combat scroll catalog alongside the other shared
+// game-data indexes for callers that already depend on this module.
+export {
+    combatScrollDefinitions,
+    combatScrollOptions,
+    getCombatScrollBuffTemplate,
+    getCombatScrollDefinition,
+    getCombatScrollOptions,
+    normalizeCombatScrolls,
+};
 
 export const levelExperienceTable = Array.isArray(gameDataIndex?.levelExperienceTable) ? gameDataIndex.levelExperienceTable : [];
 export const abilityBookInfoByAbilityHrid = gameDataIndex?.abilityBookInfoByAbilityHrid || {};

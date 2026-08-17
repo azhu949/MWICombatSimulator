@@ -49,6 +49,24 @@ const BASE_CLIENT_DATA = {
             loot: [],
         },
     },
+    personalBuffTypeDetailMap: {
+        "/personal_buff_types/test_combat": {
+            hrid: "/personal_buff_types/test_combat",
+            name: "Test Combat Scroll Buff",
+            usableInActionTypeMap: {
+                "/action_types/combat": true,
+            },
+            buff: {
+                uniqueHrid: "/buff_uniques/test_combat_scroll",
+                typeHrid: "/buff_types/damage",
+                ratioBoost: 0.08,
+                ratioBoostLevelBonus: 0,
+                flatBoost: 0,
+                flatBoostLevelBonus: 0,
+                duration: 1_800_000_000_000,
+            },
+        },
+    },
     abilitySlotsLevelRequirementList: [
         {
             level: 1,
@@ -202,6 +220,7 @@ const EXPECTED_OUTPUT_FILES = [
     "itemLocationDetailMap.json",
     "labyrinthCrateDetailMap.json",
     "openableLootDropMap.json",
+    "personalBuffTypeDetailMap.json",
     "skillDetailMap.json",
 ].sort();
 
@@ -319,6 +338,10 @@ describe("extract-game-data CLI", () => {
             path.join(outputDir, "enhancementLevelSuccessRateTable.json"),
             "utf8",
         ))).toEqual(BASE_CLIENT_DATA.enhancementLevelSuccessRateTable);
+        expect(JSON.parse(fs.readFileSync(
+            path.join(outputDir, "personalBuffTypeDetailMap.json"),
+            "utf8",
+        ))).toEqual(BASE_CLIENT_DATA.personalBuffTypeDetailMap);
         expect(fs.existsSync(allOutputPath)).toBe(true);
         expect(JSON.parse(fs.readFileSync(allOutputPath, "utf8"))).toEqual(BASE_CLIENT_DATA);
     });

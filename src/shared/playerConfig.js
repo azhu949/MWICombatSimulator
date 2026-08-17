@@ -31,6 +31,10 @@ export function createEmptyPlayerConfig(id) {
             { abilityHrid: "", level: 1 },
         ],
         triggerMap: {},
+        // Enabled combat scrolls are keyed by item HRID.  A value of
+        // `{ quantity: null }` means unlimited inventory; absent keys are
+        // disabled rows.  Keep the map empty by default for legacy configs.
+        combatScrolls: {},
         houseRooms,
         guildBuffs,
         achievements: {},

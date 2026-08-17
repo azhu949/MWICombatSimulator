@@ -39,6 +39,7 @@ const DEFAULT_TRACKED_GAME_DATA_FILES = Object.freeze([
     "itemLocationDetailMap.json",
     "labyrinthCrateDetailMap.json",
     "openableLootDropMap.json",
+    "personalBuffTypeDetailMap.json",
     "skillDetailMap.json",
 ]);
 
@@ -46,6 +47,10 @@ const OPTIONAL_TRACKED_GAME_DATA_FALLBACKS = Object.freeze({
     buffTypeDetailMap: Object.freeze({}),
     communityBuffTypeDetailMap: Object.freeze({}),
     itemCategoryDetailMap: Object.freeze({}),
+    // Personal buffs were not included in older init_client_data payloads.
+    // Keep extraction backwards-compatible while tracking the official map
+    // whenever it is present.
+    personalBuffTypeDetailMap: Object.freeze({}),
     skillDetailMap: Object.freeze({}),
 });
 

@@ -2,9 +2,12 @@ import { afterEach, describe, expect, it, vi } from "vitest";
 import {
     createPricingState,
     getStorageItem,
+    hasMeaningfulPlayerSnapshotData,
     loadPlayerDataSnapshotFromStorage,
+    loadSimulationUiSettingsFromStorage,
     loadEquipmentSetsFromStorage,
     loadQueueRunSettingsByPlayerFromStorage,
+    normalizeSimulationUiSettings,
     normalizeStoredPlayerDataMap,
     readJsonStorage,
     removeStorageItem,
@@ -15,6 +18,7 @@ const PLAYER_DATA_SNAPSHOT_STORAGE_KEY = "mwi.player.data.snapshot.v1";
 const QUEUE_RUN_SETTINGS_STORAGE_KEY = "mwi.queue.runSettings.v1";
 const PRICE_SETTINGS_STORAGE_KEY = "mwi.price.settings.v1";
 const PRICE_MARKET_CACHE_STORAGE_KEY = "mwi.price.marketCache.v1";
+const SIMULATION_UI_STORAGE_KEY = "mwi.simulation.ui.v1";
 
 function createMemoryStorage(initialValues = {}) {
     const data = new Map(Object.entries(initialValues));
@@ -102,6 +106,20 @@ describe("simulatorStorage", () => {
         expect(storage.setItem).toHaveBeenCalledWith("settings", JSON.stringify({ enabled: true }));
         expect(storage.data.get("settings")).toBe(JSON.stringify({ enabled: true }));
         expect(setJsonStorage("settings", { enabled: false }, { storage: null })).toBe(false);
+    });
+
+    it("defaults combat scroll effects off while preserving an explicit opt-in", () => {
+        expect(normalizeSimulationUiSettings({}).combatScrollsEnabled).toBe(false);
+        expect(normalizeSimulationUiSettings({ combatScrollsEnabled: true }).combatScrollsEnabled).toBe(true);
+
+        const storage = createMemoryStorage({
+            [SIMULATION_UI_STORAGE_KEY]: JSON.stringify({}),
+        });
+        vi.stubGlobal("localStorage", storage);
+        expect(loadSimulationUiSettingsFromStorage().combatScrollsEnabled).toBe(false);
+
+        storage.data.set(SIMULATION_UI_STORAGE_KEY, JSON.stringify({ combatScrollsEnabled: true }));
+        expect(loadSimulationUiSettingsFromStorage().combatScrollsEnabled).toBe(true);
     });
 
     it("throws the existing unavailable-storage error when requested for writes", () => {
@@ -252,6 +270,18 @@ describe("simulatorStorage", () => {
             "2": "{",
         }, true)).toEqual({ "1": validSnapshot });
         expect(normalizeStoredPlayerDataMap({ "1": "{" }, true)).toBeNull();
+    });
+
+    it("treats a manually configured combat scroll as meaningful snapshot data", () => {
+        expect(hasMeaningfulPlayerSnapshotData({
+            player: {
+                levels: { stamina: 1 },
+                equipment: {},
+                combatScrolls: {
+                    "/items/seal_of_damage": { quantity: null },
+                },
+            },
+        })).toBe(true);
     });
 
     it("loads player data snapshots with explicit ok, missing, and invalid statuses", () => {

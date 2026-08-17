@@ -147,6 +147,7 @@ describe("simulationDomain", () => {
                 comExp: 33,
                 comDrop: 0,
                 enableHpMpVisualization: true,
+                combatScrollsEnabled: false,
             },
         });
 
@@ -219,6 +220,24 @@ describe("simulationDomain", () => {
             },
             simulationTimeLimit: 24 * ONE_HOUR,
         });
+    });
+
+    it("preserves combat scroll DTOs and an optional simulation context", () => {
+        const players = [{
+            hrid: "player1",
+            combatScrolls: { "/items/seal_of_damage": { quantity: 2 } },
+        }];
+        const payload = buildSingleSimulationPayload(players, {
+            mode: "zone",
+            zoneHrid: "/actions/combat/test_zone",
+            simulationTimeHours: 1,
+        }, [], {
+            workerId: "context-worker",
+            simulationContext: { isGuildTrial: true },
+        });
+
+        expect(payload.players).toBe(players);
+        expect(payload.simulationContext).toEqual({ isGuildTrial: true });
     });
 
     it("summarizes simulation results for rows and queue metrics", () => {
@@ -314,7 +333,9 @@ describe("simulationDomain", () => {
             comExp: 0,
             comDrop: 12,
             enableHpMpVisualization: false,
+            combatScrollsEnabled: false,
         });
+        expect(buildSimulationExtra({ combatScrollsEnabled: true }).combatScrollsEnabled).toBe(true);
 
         expect(buildQueueBaselineSettings({
             runScope: RUN_SCOPE_SINGLE,

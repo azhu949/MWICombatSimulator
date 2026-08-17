@@ -22,6 +22,7 @@
 - `achievementDetailMap.json`
 - `achievementTierDetailMap.json`
 - `actionDetailMap.json`
+- `buffTypeDetailMap.json`
 - `combatMonsterDetailMap.json`
 - `combatStyleDetailMap.json`
 - `combatTriggerComparatorDetailMap.json`
@@ -35,16 +36,21 @@
 - `guildBuffDetailMap.json`
 - `guildShrineDetailMap.json`
 - `houseRoomDetailMap.json`
+- `itemCategoryDetailMap.json`
 - `itemDetailMap.json`
 - `itemLocationDetailMap.json`
 - `labyrinthCrateDetailMap.json`
 - `openableLootDropMap.json`
+- `personalBuffTypeDetailMap.json`
+- `skillDetailMap.json`
 
 如果某个已维护文件对应的 key 当前不在 `init_client_data` 载荷里，脚本会跳过该文件并输出提示，不会因为单个缺失字段而整体失败。
 
-### 强化模拟索引
+### 运行时索引
 
-`npm run build-game-data-index` 会把上述官方数据整理到 `src/shared/gameDataIndex.generated.json` 的 `enhancementData` 中。该只读索引包含强化成功率、总加成倍率、可强化物品、材料与保护物、强化辅助装备、饮品、住宅/社区/成就增益、不可交易强化物品的地下城宝箱获取路径，以及 12 秒基础动作时间。更新原始 JSON 后应重新运行该命令并提交生成结果。
+`src/combatsimulator/data/*.json` 是从官方载荷提取的管线输入快照；`src/shared/gameDataIndex.generated.json` 是由 `npm run build-game-data-index` 生成的运行时派生索引，不是第二份手工数据源，不应单独修改。更新输入快照后必须重新运行该命令，并同时提交输入和生成结果。
+
+其中 `personalBuffTypeDetailMap.json` 会原样生成到 `personalBuffTypeDetailIndex`。shared 层和运行时有意只读取生成索引，避免反向依赖 `combatsimulator` 层；一致性测试会在两者漂移时失败。`enhancementData` 还包含强化成功率、总加成倍率、可强化物品、材料与保护物、强化辅助装备、饮品、住宅/社区/成就增益、不可交易强化物品的地下城宝箱获取路径，以及 12 秒基础动作时间。
 
 默认写入目录为：`src/combatsimulator/data`（对应导出脚本的默认输出目录）。
 

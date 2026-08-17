@@ -7,8 +7,12 @@ import { buildSimulationExtraBuffs } from "./shared/simulationExtraBuffs.js";
 onmessage = async function (event) {
     switch (event.data.type) {
         case "start_simulation":
-            let extraBuffs = buildSimulationExtraBuffs(event.data.extra);
+            let extra = event.data.extra || {};
+            let extraBuffs = buildSimulationExtraBuffs(extra);
 
+            // Keep the configured rows in the DTO so the result can explain
+            // that scroll effects were paused; CombatSimulator applies the
+            // gate without mutating the user's saved configuration.
             let playersData = event.data.players;
             let players = [];
             let zone = null;
@@ -26,8 +30,12 @@ onmessage = async function (event) {
                 players.push(currentPlayer);
             }
             let simulationTimeLimit = event.data.simulationTimeLimit;
-            let enableHpMpVisualization = event.data.extra.enableHpMpVisualization || false;
-            let combatSimulator = new CombatSimulator(players, zone, labyrinth, { enableHpMpVisualization });
+            let enableHpMpVisualization = Boolean(extra.enableHpMpVisualization);
+            let combatSimulator = new CombatSimulator(players, zone, labyrinth, {
+                enableHpMpVisualization,
+                combatScrollsEnabled: Boolean(extra.combatScrollsEnabled),
+                isGuildTrial: Boolean(event.data.simulationContext?.isGuildTrial),
+            });
             combatSimulator.addEventListener("progress", (event) => {
                 this.postMessage({ 
                     type: "simulation_progress", 

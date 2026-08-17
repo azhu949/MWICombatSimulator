@@ -1,6 +1,9 @@
 import { describe, expect, it } from "vitest";
+import itemDetailSource from "../../combatsimulator/data/itemDetailMap.json";
+import personalBuffTypeSource from "../../combatsimulator/data/personalBuffTypeDetailMap.json";
 import {
     buffTypeDetailIndex,
+    combatScrollItemDetailIndex,
     EQUIPMENT_SLOT_KEYS,
     equipmentOptionsBySlot,
     enhancementData,
@@ -14,6 +17,7 @@ import {
     itemCategoryDetailIndex,
     labyrinthCrateOptions,
     levelExperienceTable,
+    personalBuffTypeDetailIndex,
     skillDetailIndex,
     skillingData,
 } from "../gameDataIndex.js";
@@ -42,6 +46,34 @@ describe("gameDataIndex", () => {
         expect(getSkillName("/skills/attack")).toBe("Attack");
         expect(getSkillName("attack")).toBe("Attack");
         expect(getItemCategoryName("/item_categories/equipment")).toBe("Equipment");
+    });
+
+    it("keeps the generated personal buff index in sync with its pipeline input", () => {
+        expect(personalBuffTypeDetailIndex).toEqual(personalBuffTypeSource);
+    });
+
+    it("keeps the generated combat scroll item index in sync with its pipeline input", () => {
+        const categoryHrid = "/item_categories/scroll";
+        const expected = Object.fromEntries(
+            Object.values(itemDetailSource)
+                .filter((item) => (
+                    item?.hrid
+                    && item?.categoryHrid === categoryHrid
+                    && item?.scrollDetail?.personalBuffTypeHrid
+                ))
+                .map((item) => [item.hrid, {
+                    hrid: item.hrid,
+                    name: String(item.name || item.hrid),
+                    description: String(item.description || ""),
+                    categoryHrid,
+                    sortIndex: Number(item.sortIndex ?? 0),
+                    scrollDetail: {
+                        personalBuffTypeHrid: String(item.scrollDetail.personalBuffTypeHrid),
+                    },
+                }]),
+        );
+
+        expect(combatScrollItemDetailIndex).toEqual(expected);
     });
 
     it("exposes sorted house room options and item summaries", () => {

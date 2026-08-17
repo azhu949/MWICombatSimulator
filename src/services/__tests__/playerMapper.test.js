@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import abilityDetailMap from "../../combatsimulator/data/abilityDetailMap.json";
 import itemDetailMap from "../../combatsimulator/data/itemDetailMap.json";
 import { buildCombatPreviewData, buildPlayersForCombatPreview, buildPlayersForSimulation, createEmptyPlayerConfig } from "../playerMapper.js";
+import { combatScrollOptions } from "../../shared/combatScrolls.js";
 
 function findFirstEquipmentByType(type) {
     return Object.values(itemDetailMap).find(
@@ -223,6 +224,110 @@ describe("playerMapper", () => {
             labyrinthPreview.player.combatDetails.combatStats.combatExperience
             - basePreview.player.combatDetails.combatStats.combatExperience
         ).toBeCloseTo(0.1, 6);
+    });
+
+    it("applies combat scrolls to ordinary previews and ignores them in Labyrinth", () => {
+        const player = createEmptyPlayerConfig(1);
+        player.combatScrolls = {
+            "/items/seal_of_damage": { quantity: 2 },
+            "/items/seal_of_wisdom": { quantity: null },
+        };
+
+        const zonePreview = buildCombatPreviewData(player, {
+            combatScrollsEnabled: true,
+        }, {
+            mode: "zone",
+            zoneHrid: "/actions/combat/alligator",
+            difficultyTier: 0,
+        });
+        const disabledPreview = buildCombatPreviewData(player, {
+            combatScrollsEnabled: false,
+        }, {
+            mode: "zone",
+            zoneHrid: "/actions/combat/alligator",
+            difficultyTier: 0,
+        });
+        const labyrinthPreview = buildCombatPreviewData(player, {
+            combatScrollsEnabled: true,
+        }, {
+            mode: "labyrinth",
+            labyrinthHrid: "/monsters/alligator",
+            roomLevel: 100,
+            crates: [],
+        });
+
+        expect(zonePreview.player.combatBuffs["/buff_uniques/personal_damage"]).toBeTruthy();
+        expect(zonePreview.player.combatDetails.combatStats.combatExperience).toBeCloseTo(0.2, 6);
+        expect(zonePreview.highlightSources.filter((source) => source.sourceType === "combat_scroll")
+            .map((source) => source.sourceHrid)).toEqual([
+            "/items/seal_of_damage",
+            "/items/seal_of_wisdom",
+        ]);
+        expect(disabledPreview.player.combatBuffs["/buff_uniques/personal_damage"]).toBeUndefined();
+        expect(disabledPreview.player.combatDetails.combatStats.combatExperience).toBe(0);
+        expect(disabledPreview.highlightSources.some((source) => source.sourceType === "combat_scroll")).toBe(false);
+        expect(labyrinthPreview.player.combatBuffs["/buff_uniques/personal_damage"]).toBeUndefined();
+        expect(labyrinthPreview.player.combatDetails.combatStats.combatExperience).toBe(0);
+        expect(labyrinthPreview.highlightSources.some((source) => source.sourceType === "combat_scroll")).toBe(false);
+    });
+
+    it("restores the complete preview state after deriving all scroll highlights", () => {
+        const player = createEmptyPlayerConfig(1);
+        const itemHrids = combatScrollOptions.map((option) => option.itemHrid);
+        player.combatScrolls = Object.fromEntries(
+            itemHrids.map((itemHrid) => [itemHrid, { quantity: null }])
+        );
+        player.abilities[0] = { abilityHrid: "/abilities/speed_aura", level: 1 };
+
+        const preview = buildCombatPreviewData(player, {
+            combatScrollsEnabled: true,
+        }, {
+            mode: "zone",
+            zoneHrid: "/actions/combat/alligator",
+            difficultyTier: 0,
+        });
+        const scrollSources = preview.highlightSources.filter((source) => source.sourceType === "combat_scroll");
+
+        expect(scrollSources.map((source) => source.sourceHrid)).toEqual(itemHrids);
+        expect(combatScrollOptions.every((option) => (
+            preview.player.combatBuffs[option.buff.uniqueHrid]
+        ))).toBe(true);
+
+        const expectedStatByItem = {
+            "/items/seal_of_attack_speed": "attackIntervalSeconds",
+            "/items/seal_of_cast_speed": "castSpeed",
+            "/items/seal_of_combat_drop": "combatDropQuantity",
+            "/items/seal_of_critical_rate": "criticalRate",
+            "/items/seal_of_damage": "smashMaxDamage",
+            "/items/seal_of_rare_find": "combatRareFind",
+            "/items/seal_of_wisdom": "combatExperience",
+        };
+        const expectedDeltaSignByItem = {
+            "/items/seal_of_attack_speed": -1,
+            "/items/seal_of_cast_speed": 1,
+            "/items/seal_of_combat_drop": 1,
+            "/items/seal_of_critical_rate": 1,
+            "/items/seal_of_damage": 1,
+            "/items/seal_of_rare_find": 1,
+            "/items/seal_of_wisdom": 1,
+        };
+        for (const source of scrollSources) {
+            const stat = source.changedStats.find((entry) => entry.key === expectedStatByItem[source.sourceHrid]);
+            expect(stat).toBeTruthy();
+            expect(Math.sign(stat.deltaValue)).toBe(expectedDeltaSignByItem[source.sourceHrid]);
+        }
+        const speedAuraSource = preview.highlightSources.find(
+            (source) => source.sourceHrid === "/abilities/speed_aura"
+        );
+        const speedAuraAttackInterval = speedAuraSource?.changedStats.find(
+            (stat) => stat.key === "attackIntervalSeconds"
+        );
+        const fullScrollAttackInterval = preview.player.combatDetails.combatStats.attackInterval / 1e9;
+        expect(speedAuraAttackInterval).toBeTruthy();
+        expect(
+            speedAuraAttackInterval.finalValue - speedAuraAttackInterval.deltaValue
+        ).toBeCloseTo(fullScrollAttackInterval, 6);
+        expect(preview.player.combatDetails.combatStats.combatExperience).toBeCloseTo(0.2, 6);
     });
 
     it("builds drink preview cards with the consumed drink state and effective cooldown", () => {

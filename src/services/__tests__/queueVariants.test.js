@@ -2,6 +2,7 @@ import { describe, expect, it } from "vitest";
 import { abilityDetailIndex, houseRoomDetailIndex, itemDetailIndex } from "../../shared/gameDataIndex.js";
 import { combatGuildBuffDetails } from "../../shared/guildBuffs.js";
 import { createEmptyPlayerConfig } from "../../shared/playerConfig.js";
+import { combatScrollOptions } from "../../shared/combatScrolls.js";
 import {
     EQUIPMENT_SET_QUEUE_CHANGES_VERSION,
     buildEquipmentSetQueueChangesFromQueueState,
@@ -60,7 +61,12 @@ function findHouseRoomWithLevel(level = 1) {
 }
 
 function createBaseSnapshot() {
-    return createEquipmentSetSnapshotFromPlayer(createEmptyPlayerConfig("1"));
+    const player = createEmptyPlayerConfig("1");
+    const scrollHrid = combatScrollOptions[0]?.itemHrid;
+    if (scrollHrid) {
+        player.combatScrolls[scrollHrid] = { quantity: 2 };
+    }
+    return createEquipmentSetSnapshotFromPlayer(player);
 }
 
 describe("queueVariants", () => {
@@ -93,6 +99,7 @@ describe("queueVariants", () => {
             expect(variantSummary.count).toBe(1);
             expect(variant.name).toBe(variant.labels[0]);
             expect(variant.changeDetails).toHaveLength(1);
+            expect(variant.snapshot.combatScrolls).toEqual(baseline.combatScrolls);
         });
 
         const equipmentVariant = variants.find((variant) => variant.changeDetails[0]?.kind === "equipment");

@@ -5,6 +5,7 @@ import {
     monsterDetailIndex,
 } from "../shared/gameDataIndex.js";
 import { EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../shared/playerConfig.js";
+import { normalizeCombatScrolls } from "../shared/combatScrolls.js";
 import {
     createDefaultPriceTable,
     normalizePriceMode,
@@ -150,6 +151,7 @@ export function normalizeSimulationUiSettings(rawSettings) {
         comExp: clamp(Math.floor(toFiniteNumber(source.comExp, 20)), 1, 99),
         comDropEnabled: Boolean(source.comDropEnabled),
         comDrop: clamp(Math.floor(toFiniteNumber(source.comDrop, 20)), 1, 99),
+        combatScrollsEnabled: Boolean(source.combatScrollsEnabled),
     };
 }
 
@@ -159,6 +161,7 @@ export function loadSimulationUiSettingsFromStorage() {
         mooPass: true,
         comExpEnabled: true,
         comDropEnabled: true,
+        combatScrollsEnabled: false,
         ...stored,
     });
 }
@@ -627,6 +630,9 @@ function hasMeaningfulModernPlayerData(player) {
         return true;
     }
     if (hasAnyTruthyValue(player.achievements)) {
+        return true;
+    }
+    if (Object.keys(normalizeCombatScrolls(player.combatScrolls)).length > 0) {
         return true;
     }
 

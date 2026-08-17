@@ -16,11 +16,17 @@ import CurseExpirationEvent from "./events/curseExpirationEvent";
 import WeakenExpirationEvent from "./events/weakenExpirationEvent";
 import FuryExpirationEvent from "./events/furyExpirationEvent";
 import EnrageTickEvent from "./events/enrageTickEvent";
+import ScrollRenewalEvent from "./events/scrollRenewalEvent";
 import SimResult from "./simResult";
 import AbilityCastEndEvent from "./events/abilityCastEndEvent";
 import AwaitCooldownEvent from "./events/awaitCooldownEvent";
 import Monster from "./monster";
 import Ability from "./ability";
+import { createCombatScrollBuff } from "./combatScrollBuff.js";
+import {
+    getCombatScrollDefinition,
+    normalizeCombatScrolls,
+} from "../shared/combatScrolls.js";
 
 const ONE_SECOND = 1e9;
 const HOT_TICK_INTERVAL = 5 * ONE_SECOND;
@@ -31,16 +37,37 @@ const PLAYER_RESPAWN_INTERVAL = 150 * ONE_SECOND;
 const RESTART_INTERVAL = 3 * ONE_SECOND;
 const ENRAGE_TICK_INTERVAL = 60 * ONE_SECOND;
 
+function isPositiveFiniteNumber(value) {
+    const normalized = Number(value);
+    return Number.isFinite(normalized) && normalized > 0;
+}
+
 class CombatSimulator extends EventTarget {
     constructor(players, zone, labyrinth, options = {}) {
         super();
         this.players = players;
         this.zone = zone;
         this.labyrinth = labyrinth;
+        this.isGuildTrial = Boolean(options.isGuildTrial || options.simulationContext?.isGuildTrial);
+        this.scrollsAllowed = !labyrinth && !this.isGuildTrial;
+        this.combatScrollsEnabled = Boolean(options.combatScrollsEnabled);
         this.eventQueue = new EventQueue();
         this.simResult = new SimResult(zone, labyrinth, players.length);
         this.allPlayersDead = false;
         this.enableHpMpVisualization = options.enableHpMpVisualization || false;
+        this.simulationTimeLimit = 0;
+        this.scrollRuntimeByPlayer = {};
+        this.nextScrollRenewalTime = Number.POSITIVE_INFINITY;
+        this.experienceAwardedEnemies = new WeakSet();
+        // Enemy objects are encounter-local runtime values. Keep kill-time
+        // experience state here instead of mutating their combat fields.
+        this.enemyDeathSnapshots = new WeakMap();
+        this.invalidExperienceRateWarningKeys = new Set();
+        // Experience is snapshotted at monster death, but committed only
+        // when the encounter is successfully cleared.  This preserves the
+        // encounter-level rollback behavior while keeping temporary buffs
+        // (for example Wisdom scrolls) tied to the kill timestamp.
+        this.pendingExperienceGains = new Map();
 
         this.wipeLogs = {
             buffer: new Array(200),
@@ -170,36 +197,475 @@ class CombatSimulator extends EventTarget {
         this.simResult.addWipeEvent(logs, this.simulationTime, wave);
     }
 
+    initializeScrollRuntime() {
+        this.scrollRuntimeByPlayer = {};
+        this.nextScrollRenewalTime = Number.POSITIVE_INFINITY;
+
+        for (const player of this.players || []) {
+            const playerHrid = String(player?.hrid || "");
+            if (!playerHrid) {
+                continue;
+            }
+
+            const configuredScrolls = normalizeCombatScrolls(player?.combatScrolls || {});
+            const stateByItem = {};
+            for (const [itemHrid, configuration] of Object.entries(configuredScrolls)) {
+                const definition = getCombatScrollDefinition(itemHrid);
+                if (!definition) {
+                    continue;
+                }
+
+                const configuredQuantity = configuration?.quantity == null
+                    ? null
+                    : Number(configuration.quantity);
+                const finiteQuantity = Number.isSafeInteger(configuredQuantity) && configuredQuantity > 0
+                    ? configuredQuantity
+                    : null;
+                stateByItem[itemHrid] = {
+                    player,
+                    playerHrid,
+                    itemHrid,
+                    configuredQuantity: finiteQuantity,
+                    remaining: finiteQuantity,
+                    started: false,
+                    active: false,
+                    activeStartTime: 0,
+                    activeUntil: 0,
+                    accumulatedDurationNs: 0,
+                    token: 0,
+                    buffUniqueHrid: String(definition.buff?.uniqueHrid || ""),
+                };
+
+                this.simResult.setScrollConfiguration(playerHrid, itemHrid, finiteQuantity);
+            }
+
+            this.scrollRuntimeByPlayer[playerHrid] = stateByItem;
+        }
+    }
+
+    clearScrollRuntimeBuffs() {
+        for (const stateByItem of Object.values(this.scrollRuntimeByPlayer || {})) {
+            for (const state of Object.values(stateByItem || {})) {
+                if (state?.buffUniqueHrid && state.player?.combatBuffs?.[state.buffUniqueHrid]) {
+                    state.player.removeBuff({ uniqueHrid: state.buffUniqueHrid });
+                }
+            }
+        }
+    }
+
+    canOpenScroll(state, startTime) {
+        if (!this.scrollsAllowed || !this.combatScrollsEnabled || !state || startTime >= this.simulationTimeLimit) {
+            return false;
+        }
+        return state.remaining === null || state.remaining > 0;
+    }
+
+    scheduleScrollRenewal(state) {
+        if (!state?.active || state.activeUntil >= this.simulationTimeLimit) {
+            return;
+        }
+
+        this.nextScrollRenewalTime = Math.min(
+            this.nextScrollRenewalTime,
+            state.activeUntil
+        );
+        this.eventQueue.addEvent(new ScrollRenewalEvent(
+            state.activeUntil,
+            state.playerHrid,
+            state.itemHrid,
+            state.token
+        ));
+    }
+
+    openScrollWindow(state, startTime, consumeInventory = true) {
+        if (!state || !this.canOpenScroll(state, startTime)) {
+            return false;
+        }
+
+        const definition = getCombatScrollDefinition(state.itemHrid);
+        const durationNs = Number(definition?.durationNs || definition?.duration || 0);
+        if (!definition || !Number.isFinite(durationNs) || durationNs <= 0) {
+            return false;
+        }
+
+        const buff = createCombatScrollBuff(state.itemHrid);
+        if (!buff) {
+            return false;
+        }
+
+        // Buff instances carry mutable startTime; always create a fresh one
+        // for each player and each opening.
+        state.player.addBuff(buff, startTime);
+        state.started = true;
+        state.active = true;
+        state.activeStartTime = startTime;
+        state.activeUntil = startTime + durationNs;
+        state.token += 1;
+
+        if (consumeInventory) {
+            if (state.remaining !== null) {
+                state.remaining -= 1;
+            }
+            this.simResult.recordScrollOpen(state.playerHrid, state.itemHrid, {
+                configuredQuantity: state.configuredQuantity,
+                openedCount: 1,
+                exhausted: state.configuredQuantity !== null && state.remaining <= 0,
+            });
+        }
+
+        this.scheduleScrollRenewal(state);
+        return true;
+    }
+
+    closeScrollWindow(state, endTime) {
+        if (!state?.active) {
+            return;
+        }
+
+        const boundedEnd = Math.min(
+            Math.max(Number(endTime) || 0, state.activeStartTime),
+            this.simulationTimeLimit
+        );
+        const duration = Math.max(0, boundedEnd - state.activeStartTime);
+        if (duration > 0) {
+            state.accumulatedDurationNs += duration;
+            this.simResult.recordScrollWindow(state.playerHrid, state.itemHrid, duration);
+        }
+
+        if (state.buffUniqueHrid) {
+            state.player.removeBuff({ uniqueHrid: state.buffUniqueHrid });
+        }
+        state.active = false;
+        state.activeUntil = 0;
+        state.activeStartTime = 0;
+    }
+
+    restoreActiveScrollBuff(state, currentTime) {
+        if (!state?.active || currentTime >= state.activeUntil || !state.buffUniqueHrid) {
+            return;
+        }
+
+        if (!state.player.combatBuffs?.[state.buffUniqueHrid]) {
+            const buff = createCombatScrollBuff(state.itemHrid);
+            if (buff) {
+                state.player.addBuff(buff, state.activeStartTime);
+            }
+        }
+    }
+
+    syncScrollsToTime(currentTime) {
+        const time = Math.max(0, Number(currentTime) || 0);
+        this.nextScrollRenewalTime = Number.POSITIVE_INFINITY;
+
+        for (const stateByItem of Object.values(this.scrollRuntimeByPlayer || {})) {
+            for (const state of Object.values(stateByItem || {})) {
+                if (!state?.started && time < this.simulationTimeLimit) {
+                    continue;
+                }
+
+                if (state.active && time < state.activeUntil) {
+                    this.restoreActiveScrollBuff(state, time);
+                    if (state.activeUntil < this.simulationTimeLimit) {
+                        this.nextScrollRenewalTime = Math.min(
+                            this.nextScrollRenewalTime,
+                            state.activeUntil
+                        );
+                    }
+                    continue;
+                }
+
+                while (state.active && time >= state.activeUntil) {
+                    const renewalTime = state.activeUntil;
+                    this.closeScrollWindow(state, renewalTime);
+                    if (!this.canOpenScroll(state, renewalTime)) {
+                        break;
+                    }
+                    this.openScrollWindow(state, renewalTime, true);
+                }
+            }
+        }
+    }
+
+    syncScrollsIfDue(currentTime) {
+        const time = Math.max(0, Number(currentTime) || 0);
+        if (!Number.isFinite(this.nextScrollRenewalTime) || time < this.nextScrollRenewalTime) {
+            return false;
+        }
+
+        this.syncScrollsToTime(time);
+        return true;
+    }
+
+    activateInitialScrolls() {
+        if (!this.scrollsAllowed || !this.combatScrollsEnabled || this.simulationTimeLimit <= 0) {
+            return;
+        }
+
+        for (const stateByItem of Object.values(this.scrollRuntimeByPlayer || {})) {
+            for (const state of Object.values(stateByItem || {})) {
+                if (!state.started) {
+                    this.openScrollWindow(state, 0, true);
+                }
+            }
+        }
+    }
+
+    processScrollRenewalEvent(event) {
+        const state = this.scrollRuntimeByPlayer?.[event?.playerHrid]?.[event?.itemHrid];
+        if (
+            !state
+            || !state.active
+            || event.token !== state.token
+            || event.time < state.activeUntil
+        ) {
+            return;
+        }
+        // processEvent's O(1) due-time guard normally handles this first.  The
+        // defensive fallback is still useful when this handler is invoked
+        // directly or when an external queue mutation leaves the cached next
+        // renewal time stale.  `state.active` prevents a second full sync
+        // after the guard has exhausted a finite scroll inventory.
+        this.syncScrollsToTime(event.time);
+    }
+
+    finalizeScrollUsage(simulationTimeLimit) {
+        const limit = Math.max(0, Number(simulationTimeLimit) || 0);
+        for (const stateByItem of Object.values(this.scrollRuntimeByPlayer || {})) {
+            for (const state of Object.values(stateByItem || {})) {
+                if (state.active) {
+                    this.closeScrollWindow(state, limit);
+                }
+                const entry = this.simResult.scrollUsage?.byPlayer?.[state.playerHrid]?.[state.itemHrid];
+                if (entry) {
+                    entry.exhausted = state.configuredQuantity !== null
+                        && entry.openedCount >= state.configuredQuantity;
+                }
+            }
+        }
+    }
+
+    recordUnitDeath(unit) {
+        this.simResult.addDeath(unit);
+        if (!unit?.isPlayer) {
+            // Only encounter members participate in experience snapshots.
+            // Keeping this guard also lets result/drop-only callers use the
+            // death recorder with lightweight DTOs that have no XP metadata.
+            if (this.enemies?.includes(unit)) {
+                this.captureEnemyDeathSnapshot(unit, this.simulationTime);
+            }
+            for (const player of this.players || []) {
+                this.simResult.recordMonsterDeathFromUnit(player, unit, 1);
+            }
+        }
+    }
+
+    appendPendingExperienceGains(gains) {
+        if (!gains) {
+            return;
+        }
+
+        for (const [playerHrid, playerGains] of Object.entries(gains)) {
+            let pending = this.pendingExperienceGains.get(playerHrid);
+            if (!pending) {
+                pending = {};
+                this.pendingExperienceGains.set(playerHrid, pending);
+            }
+
+            for (const [type, value] of Object.entries(playerGains || {})) {
+                pending[type] = (pending[type] || 0) + value;
+            }
+        }
+    }
+
+    captureExperienceGain(player, experience) {
+        const gains = this.simResult.calculateExperienceGain(player, experience);
+        if (!gains || !player?.hrid) {
+            return;
+        }
+
+        this.appendPendingExperienceGains({ [player.hrid]: gains });
+    }
+
+    commitPendingExperience() {
+        for (const [playerHrid, gains] of this.pendingExperienceGains.entries()) {
+            const player = this.players.find((candidate) => candidate?.hrid === playerHrid);
+            if (player) {
+                this.simResult.addExperienceGainValues(player, gains);
+            }
+        }
+        this.pendingExperienceGains.clear();
+    }
+
+    discardPendingExperience() {
+        this.pendingExperienceGains.clear();
+    }
+
+    warnInvalidEnemyExperienceRate(enemy, aliveDuration, enrageTime) {
+        const enemyHrid = String(enemy?.hrid || "unknown");
+        if (this.invalidExperienceRateWarningKeys.has(enemyHrid)) {
+            return;
+        }
+
+        this.invalidExperienceRateWarningKeys.add(enemyHrid);
+        console.warn(
+            `WARN: Invalid experience rate for ${enemyHrid}; using 1.0 `
+            + `(aliveDuration=${aliveDuration}, enrageTime=${enrageTime})`
+        );
+    }
+
+    calculateEnemyExperienceRate(enemy) {
+        return this.calculateEnemyExperienceRateAt(enemy, this.simulationTime);
+    }
+
+    calculateEnemyExperienceRateAt(enemy, deathTime) {
+        const enrageTime = Number(enemy?.enrageTime);
+        let aliveDuration = Number(deathTime) - Number(this.enrageBeginTime);
+        let experienceRate = Number.NaN;
+
+        if (Number.isFinite(aliveDuration) && isPositiveFiniteNumber(enrageTime)) {
+            aliveDuration = Math.min(aliveDuration, enrageTime);
+            experienceRate = 1.0 + aliveDuration / enrageTime;
+        }
+
+        if (!isPositiveFiniteNumber(experienceRate)) {
+            this.warnInvalidEnemyExperienceRate(enemy, aliveDuration, enrageTime);
+            return 1.0;
+        }
+
+        return experienceRate;
+    }
+
+    captureEnemyDeathSnapshot(enemy, deathTime) {
+        if (
+            !enemy
+            || typeof enemy !== "object"
+            || this.enemyDeathSnapshots.has(enemy)
+            || this.experienceAwardedEnemies.has(enemy)
+        ) {
+            return;
+        }
+
+        const experienceRate = this.calculateEnemyExperienceRateAt(enemy, deathTime);
+        const totalExperience = Number(enemy.experience || 0) * experienceRate;
+        const gainsByPlayer = {};
+
+        if (Number.isFinite(totalExperience) && totalExperience > 0) {
+            const experiencePerPlayer = totalExperience / Math.max(1, this.players.length);
+            for (const player of this.players || []) {
+                const gains = this.simResult.calculateExperienceGain(player, experiencePerPlayer);
+                if (gains && player?.hrid) {
+                    gainsByPlayer[player.hrid] = gains;
+                }
+            }
+        }
+
+        this.enemyDeathSnapshots.set(enemy, {
+            deathTime,
+            experienceRate,
+            gainsByPlayer,
+        });
+    }
+
+    finalizeEnemyExperience(enemy) {
+        if (
+            !enemy
+            || typeof enemy !== "object"
+            || this.experienceAwardedEnemies.has(enemy)
+        ) {
+            return;
+        }
+
+        if (!this.enemyDeathSnapshots.has(enemy)) {
+            this.captureEnemyDeathSnapshot(enemy, this.simulationTime);
+        }
+
+        const snapshot = this.enemyDeathSnapshots.get(enemy);
+        if (!snapshot) {
+            return;
+        }
+
+        this.appendPendingExperienceGains(snapshot.gainsByPlayer);
+        this.experienceAwardedEnemies.add(enemy);
+    }
+
+    awardEnemyExperience(enemy, explicitExperienceRate = undefined) {
+        if (!enemy || this.experienceAwardedEnemies.has(enemy)) {
+            return;
+        }
+
+        if (explicitExperienceRate === undefined && this.enemyDeathSnapshots.has(enemy)) {
+            this.finalizeEnemyExperience(enemy);
+            return;
+        }
+
+        // Keep this public helper compatible with callers that award a
+        // precomputed rate directly.  Encounter deaths use the snapshot path
+        // above, so no result state depends on `enemy.experienceRate`.
+        const experienceRate = explicitExperienceRate !== undefined
+            ? Number(explicitExperienceRate)
+            : Number(enemy.experienceRate);
+        const totalExperience = Number(enemy.experience || 0) * experienceRate;
+        if (!Number.isFinite(totalExperience) || totalExperience <= 0) {
+            return;
+        }
+        this.experienceAwardedEnemies.add(enemy);
+        this.players.forEach((player) => {
+            this.captureExperienceGain(player, totalExperience / Math.max(1, this.players.length));
+        });
+    }
+
+    dispatchProgress(progress) {
+        const normalizedProgress = Math.max(0, Math.min(Number(progress) || 0, 1));
+        this.dispatchEvent(new CustomEvent("progress", {
+            detail: {
+                zone: this.zone?.hrid,
+                difficultyTier: this.zone?.difficultyTier,
+                labyrinth: this.labyrinth?.hrid,
+                roomLevel: this.labyrinth?.roomLevel,
+                progress: normalizedProgress,
+                timeSeriesData: this.enableHpMpVisualization ? this.simResult.timeSeriesData : null
+            },
+        }));
+    }
+
     async simulate(simulationTimeLimit) {
+        const normalizedSimulationTimeLimit = Math.max(0, Number(simulationTimeLimit) || 0);
+        this.simulationTimeLimit = normalizedSimulationTimeLimit;
         this.reset();
+        // Publish the reset state before processing any events.  This keeps
+        // zero-length runs observable as [0, 1] instead of jumping straight
+        // to the terminal progress notification.
+        this.dispatchProgress(0);
 
         let ticks = 0;
 
         let combatStartEvent = new CombatStartEvent(0);
         this.eventQueue.addEvent(combatStartEvent);
 
-        while (this.simulationTime < simulationTimeLimit) {
+        while (this.simulationTime < normalizedSimulationTimeLimit) {
+            const nextEventPreview = this.eventQueue.peekNextEvent();
+            // The simulation horizon is half-open [0, limit): events at or
+            // after the limit are outside this run and are not processed.
+            // Peeking first also prevents the legacy one-event overrun when
+            // the next queued event is later than the requested duration.
+            if (!nextEventPreview || nextEventPreview.time >= normalizedSimulationTimeLimit) {
+                this.simulationTime = normalizedSimulationTimeLimit;
+                break;
+            }
+
             let nextEvent = this.eventQueue.getNextEvent();
             await this.processEvent(nextEvent);
 
             ticks++;
-            if (ticks == 1000) {
+            if (ticks === 1000) {
                 ticks = 0;
                 // 收集HP/MP时序数据
                 if (this.enableHpMpVisualization) {
                     this.simResult.addTimeSeriesSnapshot(this.simulationTime, this.players);
                 }
-                let progressEvent = new CustomEvent("progress", {
-                    detail: {
-                        zone: this.zone?.hrid,
-                        difficultyTier: this.zone?.difficultyTier,
-                        labyrinth: this.labyrinth?.hrid,
-                        roomLevel: this.labyrinth?.roomLevel,
-                        progress: Math.min(this.simulationTime / simulationTimeLimit, 1),
-                        timeSeriesData: this.enableHpMpVisualization ? this.simResult.timeSeriesData : null
-                    },
-                });
-                this.dispatchEvent(progressEvent);
+                this.dispatchProgress(normalizedSimulationTimeLimit > 0
+                    ? Math.min(this.simulationTime / normalizedSimulationTimeLimit, 1)
+                    : 1);
             }
         }
 
@@ -229,7 +695,14 @@ class CombatSimulator extends EventTarget {
                 this.simResult.maxWaveReached = this.zone.dungeonSpawnInfo.maxWaves;
             }
         }
-        this.simResult.simulatedTime = this.simulationTime;
+        // Renewal events below the half-open horizon have already been
+        // processed by the queue.  Close the current windows directly so the
+        // end path neither restores buffs nor schedules historical renewals.
+        this.finalizeScrollUsage(normalizedSimulationTimeLimit);
+        // A simulation may stop in the middle of an encounter.  Do not leave
+        // its death snapshots attached to a reusable simulator instance.
+        this.discardPendingExperience();
+        this.simResult.simulatedTime = normalizedSimulationTimeLimit;
         
         for (let i = 0; i < this.players.length; i++) {
             this.simResult.setDropRateMultipliers(this.players[i]);
@@ -252,6 +725,12 @@ class CombatSimulator extends EventTarget {
             }
         }
 
+        // A horizon break can happen before the periodic tick reaches its
+        // 1000-event boundary.  Emit the terminal notification after all
+        // finalization so it precedes the result message without getting ahead
+        // of the last state updates.
+        this.dispatchProgress(1);
+
         return this.simResult;
     }
 
@@ -259,11 +738,31 @@ class CombatSimulator extends EventTarget {
         this.tempDungeonCount = 0;
         this.simulationTime = 0;
         this.eventQueue.clear();
+        // A simulator instance may be reused.  Runtime inventory is rebuilt
+        // from immutable player configuration, and no timed buff from the
+        // previous run is allowed to leak into the next opening at t=0.
+        this.clearScrollRuntimeBuffs();
         this.simResult = new SimResult(this.zone, this.labyrinth, this.players.length);
+        this.simResult.setScrollUsageContext(
+            this.scrollsAllowed,
+            this.isGuildTrial ? "guild_trial" : (this.labyrinth ? "labyrinth" : "")
+        );
+        this.simResult.setScrollUsageDisabled(!this.combatScrollsEnabled);
+        this.simulationTimeLimit = Math.max(0, Number(this.simulationTimeLimit) || 0);
+        this.scrollRuntimeByPlayer = {};
+        this.experienceAwardedEnemies = new WeakSet();
+        this.enemyDeathSnapshots = new WeakMap();
+        this.invalidExperienceRateWarningKeys = new Set();
+        this.pendingExperienceGains = new Map();
+        this.initializeScrollRuntime();
     }
 
     async processEvent(event) {
+        if (!event) {
+            return;
+        }
         this.simulationTime = event.time;
+        this.syncScrollsIfDue(this.simulationTime);
 
         // console.log(this.simulationTime / 1e9, event.type, event);
 
@@ -288,6 +787,9 @@ class CombatSimulator extends EventTarget {
                 break;
             case CheckBuffExpirationEvent.type:
                 this.processCheckBuffExpirationEvent(event);
+                break;
+            case ScrollRenewalEvent.type:
+                this.processScrollRenewalEvent(event);
                 break;
             case RegenTickEvent.type:
                 this.processRegenTickEvent(event);
@@ -331,7 +833,7 @@ class CombatSimulator extends EventTarget {
     processCombatStartEvent(event) {
         // console.log("Combat Start " + (this.simulationTime / 1000000000));
         for (let i = 0; i < this.players.length; i++) {
-            if (event.time == 0) { // First combat start event
+            if (event.time === 0) { // First combat start event
                 this.players[i].generatePermanentBuffs();
             }
             if (this.labyrinth) {
@@ -340,6 +842,18 @@ class CombatSimulator extends EventTarget {
                 this.players[i].reset(this.simulationTime);
             }
         }
+
+        if (event.time === 0) {
+            // The first reset clears ordinary combat buffs.  Open scrolls
+            // only after that reset and before the first encounter/attack.
+            this.activateInitialScrolls();
+        } else {
+            // Dungeon restarts keep the scroll clock running.  Re-attach any
+            // still-active window after the player reset without consuming a
+            // second item.
+            this.syncScrollsToTime(this.simulationTime);
+        }
+
         let regenTickEvent = new RegenTickEvent(this.simulationTime + REGEN_TICK_INTERVAL);
         this.eventQueue.addEvent(regenTickEvent);
 
@@ -352,6 +866,7 @@ class CombatSimulator extends EventTarget {
         respawningPlayer.combatDetails.currentHitpoints = respawningPlayer.combatDetails.maxHitpoints;
         respawningPlayer.combatDetails.currentManapoints = respawningPlayer.combatDetails.maxManapoints;
         respawningPlayer.clearBuffs();
+        this.syncScrollsToTime(this.simulationTime);
         respawningPlayer.clearCCs();
         if (this.allPlayersDead) {
             this.allPlayersDead = false;
@@ -628,7 +1143,7 @@ class CombatSimulator extends EventTarget {
 
             if (target.combatDetails.currentHitpoints == 0) {
                 this.eventQueue.clearEventsForUnit(target);
-                this.simResult.addDeath(target);
+                this.recordUnitDeath(target);
                 if (!target.isPlayer) {
                     this.simResult.updateTimeSpentAlive(target.hrid, false, this.simulationTime);
                 }
@@ -640,7 +1155,7 @@ class CombatSimulator extends EventTarget {
                 (attackResult.thornDamageDone != 0 || attackResult.retaliationDamageDone != 0)
             ) {
                 this.eventQueue.clearEventsForUnit(source);
-                this.simResult.addDeath(source);
+                this.recordUnitDeath(source);
                 if (!source.isPlayer) {
                     this.simResult.updateTimeSpentAlive(source.hrid, false, this.simulationTime);
                 }
@@ -664,20 +1179,22 @@ class CombatSimulator extends EventTarget {
 
     checkEncounterEnd() {
         if (this.enemies) {
-            let deadEnemies = this.enemies.filter((enemy) => enemy.combatDetails.currentHitpoints <= 0 && enemy.experienceRate == 0);
+            let deadEnemies = this.enemies.filter((enemy) => (
+                enemy.combatDetails.currentHitpoints <= 0
+                && !this.experienceAwardedEnemies.has(enemy)
+            ));
             if (deadEnemies.length > 0) {
                 deadEnemies.forEach(enemy => {
-                    let aliveDuration = this.simulationTime - this.enrageBeginTime;
-                    if (aliveDuration > enemy.enrageTime) {
-                        aliveDuration = enemy.enrageTime;
-                    }
-                    enemy.experienceRate = 1.0 + aliveDuration / enemy.enrageTime;
-                    // console.log(enemy.hrid, "alive duration", aliveDuration, "exp rate", enemy.experienceRate);
+                    // A normal event records the exact timestamp before this
+                    // method runs.  The fallback keeps direct/manual calls
+                    // deterministic when only HP has been adjusted.
+                    this.finalizeEnemyExperience(enemy);
                 })
             }
         }
 
         let encounterEnded = false;
+        let encounterCleared = false;
 
         if (this.enemies && !this.enemies.some((enemy) => enemy.combatDetails.currentHitpoints > 0)) {
             this.eventQueue.clearEventsOfType(AutoAttackEvent.type);
@@ -685,16 +1202,17 @@ class CombatSimulator extends EventTarget {
             let enemyRespawnEvent = new EnemyRespawnEvent(this.calculateNextEncounterRespawnTime());
             this.eventQueue.addEvent(enemyRespawnEvent);
 
-            //calc exp before clear
-            if (this.enemies.some(enemy => enemy.experienceRate <= 0)) {
-                console.log("WARN: Some enemies have no experience rate");
+            if (this.enemies.some((enemy) => (
+                enemy.combatDetails.currentHitpoints <= 0
+                && !this.experienceAwardedEnemies.has(enemy)
+            ))) {
+                console.warn("WARN: Some enemies have no valid experience rate");
             }
 
-            let totalExp = this.enemies.map(enemy => enemy.experience * enemy.experienceRate).reduce((a, b) => a + b, 0);
-            this.players.forEach(player => {
-                this.simResult.addExperienceGain(player, totalExp / this.players.length);
-            });
-
+            // Commit the kill-time snapshots only after every monster in the
+            // encounter has died.  A later dungeon wipe must not retain them.
+            this.commitPendingExperience();
+            encounterCleared = true;
             this.enemies = null;
 
             if (this.zone?.isDungeon) {
@@ -746,6 +1264,7 @@ class CombatSimulator extends EventTarget {
                     this.eventQueue.clearEventsOfType(BlindExpirationEvent.type);
                     this.eventQueue.clearEventsOfType(SilenceExpirationEvent.type);
                     this.eventQueue.clearEventsOfType(AwaitCooldownEvent.type);
+                    this.discardPendingExperience();
                     this.enemies = null;
 
                     let combatStartEvent = new CombatStartEvent(this.simulationTime + RESTART_INTERVAL);
@@ -761,12 +1280,18 @@ class CombatSimulator extends EventTarget {
             this.allPlayersDead = true;
         }
 
-        if (this.labyrinth && (this.labyrinth.checkTimeout(this.simulationTime) || encounterEnded)) {
-            this.enemies = null;
-            encounterEnded = true;
-            this.eventQueue.clear();
-            let combatStartEvent = new CombatStartEvent(this.simulationTime);
-            this.eventQueue.addEvent(combatStartEvent);
+        if (this.labyrinth) {
+            const labyrinthTimedOut = this.labyrinth.checkTimeout(this.simulationTime);
+            if (labyrinthTimedOut || encounterEnded) {
+                if (!encounterCleared) {
+                    this.discardPendingExperience();
+                }
+                this.enemies = null;
+                encounterEnded = true;
+                this.eventQueue.clear();
+                let combatStartEvent = new CombatStartEvent(this.simulationTime);
+                this.eventQueue.addEvent(combatStartEvent);
+            }
         }
 
         return encounterEnded;
@@ -916,7 +1441,7 @@ class CombatSimulator extends EventTarget {
 
         if (event.target.combatDetails.currentHitpoints == 0) {
             this.eventQueue.clearEventsForUnit(event.target);
-            this.simResult.addDeath(event.target);
+            this.recordUnitDeath(event.target);
             if (!event.target.isPlayer) {
                 this.simResult.updateTimeSpentAlive(event.target.hrid, false, this.simulationTime);
             }
@@ -1268,7 +1793,7 @@ class CombatSimulator extends EventTarget {
         // Could die from reflect damage
         if (source.combatDetails.currentHitpoints == 0) {
             this.eventQueue.clearEventsForUnit(source);
-            this.simResult.addDeath(source);
+            this.recordUnitDeath(source);
             if (!source.isPlayer) {
                 this.simResult.updateTimeSpentAlive(source.hrid, false, this.simulationTime);
             }
@@ -1368,7 +1893,7 @@ class CombatSimulator extends EventTarget {
 
                 if (tempTarget.combatDetails.currentHitpoints == 0) {
                     this.eventQueue.clearEventsForUnit(tempTarget);
-                    this.simResult.addDeath(tempTarget);
+                    this.recordUnitDeath(tempTarget);
                     if (!tempTarget.isPlayer) {
                         this.simResult.updateTimeSpentAlive(tempTarget.hrid, false, this.simulationTime);
                     }
@@ -1380,7 +1905,7 @@ class CombatSimulator extends EventTarget {
                     (attackResult.thornDamageDone != 0 || attackResult.retaliationDamageDone != 0)
                 ) {
                     this.eventQueue.clearEventsForUnit(tempSource);
-                    this.simResult.addDeath(tempSource);
+                    this.recordUnitDeath(tempSource);
                     if (!tempSource.isPlayer) {
                         this.simResult.updateTimeSpentAlive(tempSource.hrid, false, this.simulationTime);
                     }
@@ -1593,7 +2118,7 @@ class CombatSimulator extends EventTarget {
 
                 if (target.combatDetails.currentHitpoints == 0) {
                     this.eventQueue.clearEventsForUnit(target);
-                    this.simResult.addDeath(target);
+                    this.recordUnitDeath(target);
                     if (!target.isPlayer) {
                         this.simResult.updateTimeSpentAlive(target.hrid, false, this.simulationTime);
                     }
@@ -1672,6 +2197,13 @@ class CombatSimulator extends EventTarget {
 
         if (reviveTarget) {
             this.eventQueue.clearMatching((event) => event.type == PlayerRespawnEvent.type && event.hrid == reviveTarget.hrid);
+
+            // A death snapshot is provisional until the encounter-end check
+            // confirms that the unit is still dead.  Reviving before then
+            // must not preserve an experience gain for a non-final death.
+            if (!reviveTarget.isPlayer && !this.experienceAwardedEnemies.has(reviveTarget)) {
+                this.enemyDeathSnapshots.delete(reviveTarget);
+            }
 
             reviveTarget.removeExpiredBuffs(this.simulationTime);
 

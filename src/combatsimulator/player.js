@@ -5,6 +5,7 @@ import Equipment from "./equipment";
 import HouseRoom from "./houseRoom";
 import Achievement from "./achievement";
 import GuildBuff from "./guildBuff";
+import { normalizeCombatScrolls } from "../shared/combatScrolls.js";
 
 class Player extends CombatUnit {
     equipment = {
@@ -19,6 +20,11 @@ class Player extends CombatUnit {
         "/equipment_types/pouch": null,
         "/equipment_types/back": null,
     };
+
+    // Persisted configuration for timed personal combat buffs.  The combat
+    // engine owns the runtime timers; this map is intentionally just the
+    // worker-safe DTO contract copied from player configuration.
+    combatScrolls = {};
 
     constructor() {
         super();
@@ -47,6 +53,7 @@ class Player extends CombatUnit {
         player.food = dto.food.map((food) => (food ? Consumable.createFromDTO(food) : null));
         player.drinks = dto.drinks.map((drink) => (drink ? Consumable.createFromDTO(drink) : null));
         player.abilities = dto.abilities.map((ability) => (ability ? Ability.createFromDTO(ability) : null));
+        player.combatScrolls = normalizeCombatScrolls(dto.combatScrolls);
 
         let houseRoomDtos = [];
         if (Array.isArray(dto.houseRooms)) {

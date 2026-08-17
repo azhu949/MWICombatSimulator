@@ -49,7 +49,9 @@ function hasPlayerScopedData(simResult, playerHrid) {
         || simResult.attacks?.[playerHrid] != null
         || simResult.consumablesUsed?.[playerHrid] != null
         || simResult.manaUsed?.[playerHrid] != null
-        || simResult.debuffOnLevelGap?.[playerHrid] != null;
+        || simResult.debuffOnLevelGap?.[playerHrid] != null
+        || simResult.dropContextBuckets?.[playerHrid] != null
+        || simResult.scrollUsage?.byPlayer?.[playerHrid] != null;
 }
 
 function resolvePlayerFromSimResult(simResult, preferredPlayerHrid) {
@@ -65,6 +67,8 @@ function resolvePlayerFromSimResult(simResult, preferredPlayerHrid) {
         simResult?.consumablesUsed,
         simResult?.manaUsed,
         simResult?.debuffOnLevelGap,
+        simResult?.dropContextBuckets,
+        simResult?.scrollUsage?.byPlayer,
     ];
 
     for (const playerMap of playerMaps) {
@@ -120,29 +124,141 @@ function appendExpectedDropsFromTable(dropTable = [], isRare, context, dropCount
     }
 }
 
-function expectedDropCountMapForMonster(monsterHrid, deathsCount, simResult, playerHrid) {
-    const monster = monsterDetailIndex[monsterHrid];
-    if (!monster || deathsCount <= 0) {
-        return new Map();
+function createLegacyDropContext(deathsCount, simResult, playerHrid) {
+    return {
+        deathsCount: Math.max(0, Math.floor(toFiniteNumber(deathsCount, 0))),
+        difficultyTier: Math.max(0, Math.floor(toFiniteNumber(simResult?.difficultyTier, 0))),
+        dropRateMultiplier: toFiniteNumber(simResult?.dropRateMultiplier?.[playerHrid], 1),
+        rareFindMultiplier: toFiniteNumber(simResult?.rareFindMultiplier?.[playerHrid], 1),
+        dropQuantity: toFiniteNumber(simResult?.combatDropQuantity?.[playerHrid], 0),
+        debuffOnLevelGap: toFiniteNumber(simResult?.debuffOnLevelGap?.[playerHrid], 0),
+        numberOfPlayers: Math.max(1, Math.floor(toFiniteNumber(simResult?.numberOfPlayers, 1))),
+    };
+}
+
+/**
+ * Normalize the compact per-kill context emitted by SimResult.  Returning
+ * null for malformed entries lets older/partial results use the legacy final
+ * stat snapshot instead of producing NaN or silently changing drop counts.
+ */
+function normalizeDropContextBucket(rawBucket, simResult) {
+    if (!rawBucket || typeof rawBucket !== "object") {
+        return null;
     }
 
-    const context = {
-        deathsCount: Math.floor(toFiniteNumber(deathsCount, 0)),
-        difficultyTier: Math.max(0, Math.floor(toFiniteNumber(simResult.difficultyTier, 0))),
-        dropRateMultiplier: toFiniteNumber(simResult.dropRateMultiplier?.[playerHrid], 1),
-        rareFindMultiplier: toFiniteNumber(simResult.rareFindMultiplier?.[playerHrid], 1),
-        dropQuantity: toFiniteNumber(simResult.combatDropQuantity?.[playerHrid], 0),
-        debuffOnLevelGap: toFiniteNumber(simResult.debuffOnLevelGap?.[playerHrid], 0),
-        numberOfPlayers: Math.max(1, Math.floor(toFiniteNumber(simResult.numberOfPlayers, 1))),
-    };
+    const killCount = Math.max(0, Math.floor(toFiniteNumber(rawBucket.killCount, 0)));
+    if (killCount <= 0) {
+        return null;
+    }
 
-    if (context.deathsCount <= 0) {
+    return {
+        deathsCount: killCount,
+        difficultyTier: Math.max(0, Math.floor(toFiniteNumber(
+            rawBucket.difficultyTier,
+            toFiniteNumber(simResult?.difficultyTier, 0)
+        ))),
+        dropRateMultiplier: toFiniteNumber(rawBucket.dropRateMultiplier, 1),
+        rareFindMultiplier: toFiniteNumber(rawBucket.rareFindMultiplier, 1),
+        dropQuantity: toFiniteNumber(
+            rawBucket.combatDropQuantity ?? rawBucket.dropQuantity,
+            0
+        ),
+        debuffOnLevelGap: toFiniteNumber(rawBucket.debuffOnLevelGap, 0),
+        numberOfPlayers: Math.max(1, Math.floor(toFiniteNumber(
+            rawBucket.numberOfPlayers,
+            toFiniteNumber(simResult?.numberOfPlayers, 1)
+        ))),
+    };
+}
+
+function getDropContextBuckets(simResult, playerHrid, monsterHrid, deathsCount) {
+    const rawBuckets = simResult?.dropContextBuckets?.[playerHrid]?.[monsterHrid];
+    if (!Array.isArray(rawBuckets)) {
+        return null;
+    }
+
+    let buckets = rawBuckets
+        .map((bucket) => normalizeDropContextBucket(bucket, simResult))
+        .filter(Boolean);
+    if (buckets.length <= 0) {
+        return null;
+    }
+
+    // A partially serialized/new result can contain fewer bucketed kills than
+    // the legacy deaths map.  Keep the recorded windows authoritative, then
+    // evaluate any residual kills with the final legacy snapshot instead of
+    // silently under-counting drops.  Conversely, clamp malformed buckets so
+    // a corrupted payload cannot create more kills than SimResult reports.
+    // `undefined`/`null` means this result has no authoritative deaths count
+    // for the monster.  In that case the recorded buckets are complete by
+    // contract and must not be residual-filled or clamped against zero.
+    const hasReportedDeaths = deathsCount !== undefined
+        && deathsCount !== null
+        && deathsCount !== ""
+        && Number.isFinite(Number(deathsCount));
+    if (hasReportedDeaths) {
+        const reportedDeaths = Math.max(0, Math.floor(toFiniteNumber(deathsCount, 0)));
+        const bucketedDeaths = buckets.reduce((sum, bucket) => sum + bucket.deathsCount, 0);
+        if (bucketedDeaths < reportedDeaths) {
+            const residual = createLegacyDropContext(reportedDeaths - bucketedDeaths, simResult, playerHrid);
+            if (residual.deathsCount > 0) {
+                buckets = [...buckets, residual];
+            }
+        } else if (bucketedDeaths > reportedDeaths) {
+            let remaining = reportedDeaths;
+            buckets = buckets
+                .map((bucket) => {
+                    const clampedCount = Math.min(bucket.deathsCount, remaining);
+                    remaining -= clampedCount;
+                    return clampedCount > 0 ? { ...bucket, deathsCount: clampedCount } : null;
+                })
+                .filter(Boolean);
+        }
+    }
+
+    return buckets.length > 0 ? buckets : null;
+}
+
+function listMonsterHrids(simResult, playerHrid) {
+    const monsterHrids = new Set(
+        Object.keys(simResult?.deaths ?? {})
+            .filter((monsterHrid) => !PLAYER_IDS.has(String(monsterHrid || "")))
+    );
+    for (const monsterHrid of Object.keys(simResult?.dropContextBuckets?.[playerHrid] ?? {})) {
+        if (!PLAYER_IDS.has(String(monsterHrid || ""))) {
+            monsterHrids.add(monsterHrid);
+        }
+    }
+    return Array.from(monsterHrids).sort();
+}
+
+function expectedDropCountMapForMonster(monsterHrid, deathsCount, simResult, playerHrid) {
+    const monster = monsterDetailIndex[monsterHrid];
+    if (!monster) {
         return new Map();
     }
 
     const dropCountMap = new Map();
-    appendExpectedDropsFromTable(monster.dropTable || [], false, context, dropCountMap);
-    appendExpectedDropsFromTable(monster.rareDropTable || [], true, context, dropCountMap);
+    const hasReportedDeaths = Object.prototype.hasOwnProperty.call(simResult?.deaths || {}, monsterHrid);
+    const buckets = getDropContextBuckets(
+        simResult,
+        playerHrid,
+        monsterHrid,
+        hasReportedDeaths ? deathsCount : undefined
+    );
+    if (buckets) {
+        buckets.forEach((context) => {
+            appendExpectedDropsFromTable(monster.dropTable || [], false, context, dropCountMap);
+            appendExpectedDropsFromTable(monster.rareDropTable || [], true, context, dropCountMap);
+        });
+        return dropCountMap;
+    }
+
+    const context = createLegacyDropContext(deathsCount, simResult, playerHrid);
+    if (context.deathsCount > 0) {
+        appendExpectedDropsFromTable(monster.dropTable || [], false, context, dropCountMap);
+        appendExpectedDropsFromTable(monster.rareDropTable || [], true, context, dropCountMap);
+    }
     return dropCountMap;
 }
 
@@ -196,6 +312,115 @@ function rollFractionalAmount(value, randomSource) {
     return normalizeRandomValue(randomSource) < fraction ? intPart + 1 : intPart;
 }
 
+function appendRandomDropsForContext(monster, context, randomSource, totalDropMap, noRngTotalDropMap) {
+    const deathsCount = Math.max(0, Math.floor(toFiniteNumber(context?.deathsCount, 0)));
+    if (!monster || deathsCount <= 0) {
+        return;
+    }
+
+    const difficultyTier = Math.max(0, Math.floor(toFiniteNumber(context.difficultyTier, 0)));
+    const dropRateMultiplier = toFiniteNumber(context.dropRateMultiplier, 1);
+    const rareFindMultiplier = toFiniteNumber(context.rareFindMultiplier, 1);
+    const dropQuantity = toFiniteNumber(context.dropQuantity, 0);
+    const debuffOnLevelGap = toFiniteNumber(context.debuffOnLevelGap, 0);
+    const numberOfPlayers = Math.max(1, toFiniteNumber(context.numberOfPlayers, 1));
+    const dropMap = new Map();
+    const rareDropMap = new Map();
+
+    for (const drop of (monster.dropTable ?? [])) {
+        if (toFiniteNumber(drop.minDifficultyTier, 0) > difficultyTier) {
+            continue;
+        }
+
+        const baseDropRate = toFiniteNumber(drop.dropRate, 0)
+            + toFiniteNumber(drop.dropRatePerDifficultyTier, 0) * difficultyTier;
+        const tierMultiplier = 1 + 0.1 * difficultyTier;
+        const scaledDropRate = Math.min(1, tierMultiplier * baseDropRate);
+        if (scaledDropRate <= 0) {
+            continue;
+        }
+
+        dropMap.set(String(drop.itemHrid || ""), {
+            dropRate: Math.min(1, scaledDropRate * dropRateMultiplier),
+            number: 0,
+            dropMin: toFiniteNumber(drop.minCount, 0),
+            dropMax: toFiniteNumber(drop.maxCount, 0),
+            noRngDropAmount: 0,
+        });
+    }
+
+    for (const drop of (monster.rareDropTable ?? [])) {
+        if (toFiniteNumber(drop.minDifficultyTier, 0) > difficultyTier) {
+            continue;
+        }
+
+        const dropRate = toFiniteNumber(drop.dropRate, 0) * rareFindMultiplier;
+        if (dropRate <= 0) {
+            continue;
+        }
+
+        rareDropMap.set(String(drop.itemHrid || ""), {
+            dropRate,
+            number: 0,
+            dropMin: toFiniteNumber(drop.minCount, 0),
+            dropMax: toFiniteNumber(drop.maxCount, 0),
+            noRngDropAmount: 0,
+        });
+    }
+
+    for (const dropObject of dropMap.values()) {
+        const dropMidAmount = (dropObject.dropMax + dropObject.dropMin) / 2;
+        dropObject.noRngDropAmount += deathsCount
+            * dropObject.dropRate
+            * dropMidAmount
+            * (1 + debuffOnLevelGap)
+            * (1 + dropQuantity)
+            / numberOfPlayers;
+    }
+
+    for (const dropObject of rareDropMap.values()) {
+        const dropMidAmount = (dropObject.dropMax + dropObject.dropMin) / 2;
+        dropObject.noRngDropAmount += deathsCount
+            * dropObject.dropRate
+            * dropMidAmount
+            * (1 + debuffOnLevelGap)
+            * (1 + dropQuantity)
+            / numberOfPlayers;
+    }
+
+    for (let index = 0; index < deathsCount; index += 1) {
+        for (const dropObject of dropMap.values()) {
+            if (normalizeRandomValue(randomSource) > (dropObject.dropRate / numberOfPlayers)) {
+                continue;
+            }
+            const rolled = Math.floor(
+                normalizeRandomValue(randomSource) * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin
+            );
+            const scaledAmount = rolled * (1 + debuffOnLevelGap) * (1 + dropQuantity);
+            dropObject.number += rollFractionalAmount(scaledAmount, randomSource);
+        }
+        for (const dropObject of rareDropMap.values()) {
+            if (normalizeRandomValue(randomSource) > (dropObject.dropRate / numberOfPlayers)) {
+                continue;
+            }
+            const rolled = Math.floor(
+                normalizeRandomValue(randomSource) * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin
+            );
+            const scaledAmount = rolled * (1 + debuffOnLevelGap) * (1 + dropQuantity);
+            dropObject.number += rollFractionalAmount(scaledAmount, randomSource);
+        }
+    }
+
+    for (const [itemHrid, dropObject] of dropMap.entries()) {
+        addToNumberMap(totalDropMap, itemHrid, dropObject.number);
+        addToNumberMap(noRngTotalDropMap, itemHrid, dropObject.noRngDropAmount);
+    }
+    for (const [itemHrid, dropObject] of rareDropMap.entries()) {
+        addToNumberMap(totalDropMap, itemHrid, dropObject.number);
+        addToNumberMap(noRngTotalDropMap, itemHrid, dropObject.noRngDropAmount);
+    }
+}
+
 function buildDropMapsForProfit(simResult, playerHrid, randomSource = Math.random) {
     if (!simResult || simResult.isDungeon) {
         return {
@@ -205,124 +430,42 @@ function buildDropMapsForProfit(simResult, playerHrid, randomSource = Math.rando
     }
 
     const resolvedPlayer = resolvePlayerHrid(playerHrid);
-    const difficultyTier = Math.max(0, toFiniteNumber(simResult.difficultyTier, 0));
-    const dropRateMultiplier = toFiniteNumber(simResult.dropRateMultiplier?.[resolvedPlayer], 1);
-    const rareFindMultiplier = toFiniteNumber(simResult.rareFindMultiplier?.[resolvedPlayer], 1);
-    const dropQuantity = toFiniteNumber(simResult.combatDropQuantity?.[resolvedPlayer], 0);
-    const debuffOnLevelGap = toFiniteNumber(simResult.debuffOnLevelGap?.[resolvedPlayer], 0);
-    const numberOfPlayers = Math.max(1, toFiniteNumber(simResult.numberOfPlayers, 1));
-
     const totalDropMap = new Map();
     const noRngTotalDropMap = new Map();
 
-    const monsterHrids = Object.keys(simResult.deaths ?? {})
-        .filter((monsterHrid) => !PLAYER_IDS.has(String(monsterHrid || "")))
-        .sort();
+    const monsterHrids = listMonsterHrids(simResult, resolvedPlayer);
 
     for (const monsterHrid of monsterHrids) {
+        const hasReportedDeaths = Object.prototype.hasOwnProperty.call(simResult?.deaths || {}, monsterHrid);
         const rawDeathsCount = simResult.deaths?.[monsterHrid];
 
         const monster = monsterDetailIndex[monsterHrid];
         const deathsCount = Math.max(0, Math.floor(toFiniteNumber(rawDeathsCount, 0)));
-        if (!monster || deathsCount <= 0) {
+        const contextBuckets = getDropContextBuckets(
+            simResult,
+            resolvedPlayer,
+            monsterHrid,
+            hasReportedDeaths ? deathsCount : undefined
+        );
+        if (!monster || (deathsCount <= 0 && !contextBuckets)) {
             continue;
         }
 
-        const dropMap = new Map();
-        const rareDropMap = new Map();
-
-        for (const drop of (monster.dropTable ?? [])) {
-            if (toFiniteNumber(drop.minDifficultyTier, 0) > difficultyTier) {
-                continue;
-            }
-
-            const baseDropRate = toFiniteNumber(drop.dropRate, 0)
-                + toFiniteNumber(drop.dropRatePerDifficultyTier, 0) * difficultyTier;
-            const tierMultiplier = 1 + 0.1 * difficultyTier;
-            const dropRate = Math.min(1, tierMultiplier * baseDropRate);
-            if (dropRate <= 0) {
-                continue;
-            }
-
-            dropMap.set(String(drop.itemHrid || ""), {
-                dropRate: Math.min(1, dropRate * dropRateMultiplier),
-                number: 0,
-                dropMin: toFiniteNumber(drop.minCount, 0),
-                dropMax: toFiniteNumber(drop.maxCount, 0),
-                noRngDropAmount: 0,
-            });
-        }
-
-        for (const drop of (monster.rareDropTable ?? [])) {
-            if (toFiniteNumber(drop.minDifficultyTier, 0) > difficultyTier) {
-                continue;
-            }
-
-            const dropRate = toFiniteNumber(drop.dropRate, 0) * rareFindMultiplier;
-            if (dropRate <= 0) {
-                continue;
-            }
-
-            rareDropMap.set(String(drop.itemHrid || ""), {
-                dropRate,
-                number: 0,
-                dropMin: toFiniteNumber(drop.minCount, 0),
-                dropMax: toFiniteNumber(drop.maxCount, 0),
-                noRngDropAmount: 0,
-            });
-        }
-
-        for (const dropObject of dropMap.values()) {
-            const dropMidAmount = (dropObject.dropMax + dropObject.dropMin) / 2;
-            dropObject.noRngDropAmount += deathsCount
-                * dropObject.dropRate
-                * dropMidAmount
-                * (1 + debuffOnLevelGap)
-                * (1 + dropQuantity)
-                / numberOfPlayers;
-        }
-
-        for (const dropObject of rareDropMap.values()) {
-            const dropMidAmount = (dropObject.dropMax + dropObject.dropMin) / 2;
-            dropObject.noRngDropAmount += deathsCount
-                * dropObject.dropRate
-                * dropMidAmount
-                * (1 + debuffOnLevelGap)
-                * (1 + dropQuantity)
-                / numberOfPlayers;
-        }
-
-        for (let index = 0; index < deathsCount; index += 1) {
-            for (const dropObject of dropMap.values()) {
-                if (normalizeRandomValue(randomSource) > (dropObject.dropRate / numberOfPlayers)) {
-                    continue;
-                }
-                const rolled = Math.floor(
-                    normalizeRandomValue(randomSource) * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin
-                );
-                const scaledAmount = rolled * (1 + debuffOnLevelGap) * (1 + dropQuantity);
-                dropObject.number += rollFractionalAmount(scaledAmount, randomSource);
-            }
-            for (const dropObject of rareDropMap.values()) {
-                if (normalizeRandomValue(randomSource) > (dropObject.dropRate / numberOfPlayers)) {
-                    continue;
-                }
-                const rolled = Math.floor(
-                    normalizeRandomValue(randomSource) * (dropObject.dropMax - dropObject.dropMin + 1) + dropObject.dropMin
-                );
-                const scaledAmount = rolled * (1 + debuffOnLevelGap) * (1 + dropQuantity);
-                dropObject.number += rollFractionalAmount(scaledAmount, randomSource);
-            }
-        }
-
-        for (const [itemHrid, dropObject] of dropMap.entries()) {
-            addToNumberMap(totalDropMap, itemHrid, dropObject.number);
-            addToNumberMap(noRngTotalDropMap, itemHrid, dropObject.noRngDropAmount);
-        }
-        for (const [itemHrid, dropObject] of rareDropMap.entries()) {
-            addToNumberMap(totalDropMap, itemHrid, dropObject.number);
-            addToNumberMap(noRngTotalDropMap, itemHrid, dropObject.noRngDropAmount);
-        }
+        // Bucket contexts stay in recorded order. Legacy results use one final
+        // snapshot context, so the shared roller consumes the historical RNG
+        // sequence without maintaining a second copy of the drop algorithm.
+        const contexts = contextBuckets ?? [
+            createLegacyDropContext(deathsCount, simResult, resolvedPlayer),
+        ];
+        contexts.forEach((context) => {
+            appendRandomDropsForContext(
+                monster,
+                context,
+                randomSource,
+                totalDropMap,
+                noRngTotalDropMap
+            );
+        });
     }
 
     return {
@@ -393,10 +536,9 @@ export function buildNoRngProfitBreakdown(simResult, playerHrid, pricingOptions 
 
     const dropCountMap = new Map();
     if (!simResult.isDungeon) {
-        for (const [unitHrid, deaths] of Object.entries(simResult.deaths ?? {})) {
-            if (PLAYER_IDS.has(unitHrid)) {
-                continue;
-            }
+        for (const unitHrid of listMonsterHrids(simResult, resolvedPlayer)) {
+            const hasReportedDeaths = Object.prototype.hasOwnProperty.call(simResult?.deaths || {}, unitHrid);
+            const deaths = hasReportedDeaths ? simResult.deaths?.[unitHrid] : undefined;
 
             const monsterDropCountMap = expectedDropCountMapForMonster(
                 unitHrid,

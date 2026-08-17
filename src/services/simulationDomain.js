@@ -235,6 +235,7 @@ export function buildSimulationExtra(simulationSettings) {
         comExp: simulationSettings.comExpEnabled ? Number(simulationSettings.comExp || 20) : 0,
         comDrop: simulationSettings.comDropEnabled ? Number(simulationSettings.comDrop || 20) : 0,
         enableHpMpVisualization: Boolean(simulationSettings.enableHpMpVisualization),
+        combatScrollsEnabled: Boolean(simulationSettings.combatScrollsEnabled),
     };
 }
 
@@ -266,7 +267,11 @@ export function buildSingleSimulationPayload(playersToSim, simulationSettings, a
         };
     }
 
-    return {
+    const simulationContext = options.simulationContext && typeof options.simulationContext === "object"
+        ? { ...options.simulationContext }
+        : (options.isGuildTrial === true ? { isGuildTrial: true } : null);
+
+    const payload = {
         type: "start_simulation",
         workerId: options.workerId ?? createDefaultWorkerId(options.random),
         players: playersToSim,
@@ -275,6 +280,12 @@ export function buildSingleSimulationPayload(playersToSim, simulationSettings, a
         simulationTimeLimit,
         extra,
     };
+
+    if (simulationContext) {
+        payload.simulationContext = simulationContext;
+    }
+
+    return payload;
 }
 
 export function buildQueueBaselineSettings(simulationSettings = {}, queueSettings = null) {

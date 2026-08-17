@@ -7,6 +7,7 @@ import Labyrinth from "../combatsimulator/labyrinth.js";
 import Monster from "../combatsimulator/monster.js";
 import Player from "../combatsimulator/player.js";
 import Zone from "../combatsimulator/zone.js";
+import { createCombatScrollBuff } from "../combatsimulator/combatScrollBuff.js";
 import abilitySlotsLevelRequirementList from "../combatsimulator/data/abilitySlotsLevelRequirementList.json";
 import combatMonsterDetailMap from "../combatsimulator/data/combatMonsterDetailMap.json";
 import { abilityDetailIndex, itemDetailIndex } from "../shared/gameDataIndex.js";
@@ -17,6 +18,7 @@ import {
     EQUIPMENT_SLOT_KEYS,
     LEVEL_KEYS,
 } from "../shared/playerConfig.js";
+import { normalizeCombatScrolls } from "../shared/combatScrolls.js";
 import {
     LABYRINTH_ROOM_LEVEL_DEFAULT,
     LABYRINTH_ROOM_LEVEL_MIN,
@@ -532,6 +534,13 @@ const COMBAT_PREVIEW_STAT_SPECS = [
     },
 ];
 
+function normalizeCombatPreviewExtra(previewExtra = null) {
+    return {
+        ...normalizeSimulationExtra(previewExtra),
+        combatScrollsEnabled: Boolean(previewExtra?.combatScrollsEnabled),
+    };
+}
+
 function mapWeaponType(itemHrid) {
     const equipmentType = String(itemDetailIndex?.[itemHrid]?.equipmentType || "");
     if (!equipmentType) {
@@ -597,6 +606,7 @@ function buildSimulationPlayerFromConfig(playerConfig) {
         food: [null, null, null],
         drinks: [null, null, null],
         abilities: [null, null, null, null, null],
+        combatScrolls: normalizeCombatScrolls(playerConfig.combatScrolls),
         houseRooms: playerConfig.houseRooms ?? {},
         guildBuffs: playerConfig.guildBuffs ?? {},
         achievements: playerConfig.achievements ?? {},
@@ -694,6 +704,20 @@ function normalizePreviewPlayer(player, previewExtra = null, previewEnvironment 
     player.generatePermanentBuffs();
     player.reset(0);
 
+    // Preview represents the state immediately after combat starts.  Apply a
+    // single opening of each configured combat scroll for ordinary zones, but
+    // deliberately skip it in Labyrinth where the official scroll rule is
+    // "not effective", and when the simulation setting disables scrolls
+    // entirely.  The real simulator owns renewal/inventory timers.
+    if (previewEnvironment?.scrollsAllowed !== false && previewExtra?.combatScrollsEnabled === true) {
+        for (const itemHrid of Object.keys(normalizeCombatScrolls(player.combatScrolls))) {
+            const buff = createCombatScrollBuff(itemHrid);
+            if (buff) {
+                player.addBuff(buff, 0);
+            }
+        }
+    }
+
     return player;
 }
 
@@ -720,25 +744,45 @@ function mapDrinkTriggerMode(rawTriggerMap, drinkHrid) {
     return triggerState.state;
 }
 
+function buildCombatPreviewChangedStat(spec, beforeValue, afterValue) {
+    const deltaValue = afterValue - beforeValue;
+    if (!Number.isFinite(deltaValue) || Math.abs(deltaValue) <= COMBAT_PREVIEW_EPSILON) {
+        return null;
+    }
+
+    return {
+        key: spec.key,
+        labelKey: getCombatPreviewOfficialLabelKey(spec.statNameKey),
+        fallbackLabel: spec.fallbackLabel,
+        format: spec.format,
+        deltaValue,
+        finalValue: afterValue,
+    };
+}
+
 function collectCombatPreviewChangedStats(beforePlayer, afterPlayer) {
     return COMBAT_PREVIEW_STAT_SPECS
-        .map((spec) => {
-            const beforeValue = spec.getValue(beforePlayer);
-            const afterValue = spec.getValue(afterPlayer);
-            const deltaValue = afterValue - beforeValue;
-            if (!Number.isFinite(deltaValue) || Math.abs(deltaValue) <= COMBAT_PREVIEW_EPSILON) {
-                return null;
-            }
+        .map((spec) => buildCombatPreviewChangedStat(
+            spec,
+            spec.getValue(beforePlayer),
+            spec.getValue(afterPlayer)
+        ))
+        .filter(Boolean);
+}
 
-            return {
-                key: spec.key,
-                labelKey: getCombatPreviewOfficialLabelKey(spec.statNameKey),
-                fallbackLabel: spec.fallbackLabel,
-                format: spec.format,
-                deltaValue,
-                finalValue: afterValue,
-            };
-        })
+function snapshotCombatPreviewStatValues(player) {
+    return new Map(
+        COMBAT_PREVIEW_STAT_SPECS.map((spec) => [spec.key, spec.getValue(player)])
+    );
+}
+
+function collectCombatPreviewChangedStatsFromSnapshot(beforeValues, afterPlayer) {
+    return COMBAT_PREVIEW_STAT_SPECS
+        .map((spec) => buildCombatPreviewChangedStat(
+            spec,
+            Number(beforeValues.get(spec.key)),
+            spec.getValue(afterPlayer)
+        ))
         .filter(Boolean);
 }
 
@@ -866,6 +910,7 @@ function buildCombatPreviewEnvironment(previewContext = null) {
         return {
             zoneBuffs: [],
             enemies: fallbackEnemies,
+            scrollsAllowed: true,
         };
     }
 
@@ -883,6 +928,7 @@ function buildCombatPreviewEnvironment(previewContext = null) {
             return {
                 zoneBuffs: cloneCombatPreviewBuffs(previewLabyrinth.buffs),
                 enemies: enemies.length > 0 ? enemies : fallbackEnemies,
+                scrollsAllowed: false,
             };
         }
 
@@ -897,11 +943,13 @@ function buildCombatPreviewEnvironment(previewContext = null) {
         return {
             zoneBuffs: cloneCombatPreviewBuffs(previewZone.buffs),
             enemies: enemies.length > 0 ? enemies : fallbackEnemies,
+            scrollsAllowed: true,
         };
     } catch (error) {
         return {
             zoneBuffs: [],
             enemies: fallbackEnemies,
+            scrollsAllowed: true,
         };
     }
 }
@@ -1628,9 +1676,92 @@ function buildTaskBadgePreviewSource(playerConfig, previewExtra = null, previewE
     );
 }
 
+function buildCombatScrollPreviewSources(
+    playerConfig,
+    previewPlayer,
+    previewExtra = null,
+    previewEnvironment = null
+) {
+    if (previewEnvironment?.scrollsAllowed === false) {
+        return [];
+    }
+    if (previewExtra?.combatScrollsEnabled !== true) {
+        return [];
+    }
+
+    const configuredScrolls = normalizeCombatScrolls(playerConfig?.combatScrolls);
+    const itemHrids = Object.keys(configuredScrolls);
+    if (itemHrids.length <= 0) {
+        return [];
+    }
+
+    if (!previewPlayer?.combatBuffs || typeof previewPlayer.combatBuffs !== "object") {
+        return [];
+    }
+
+    const activeScrollBuffs = itemHrids
+        .map((itemHrid) => {
+            const buff = createCombatScrollBuff(itemHrid);
+            const activeBuff = buff ? previewPlayer.combatBuffs[buff.uniqueHrid] : null;
+            return activeBuff ? { itemHrid, buff: activeBuff } : null;
+        })
+        .filter(Boolean);
+    if (activeScrollBuffs.length <= 0) {
+        return [];
+    }
+
+    // Reuse the already-built preview player.  First derive the no-scroll
+    // baseline, then add one mutable Buff at a time so each row keeps the
+    // original isolated-scroll semantics without rebuilding Player objects.
+    const highlightSources = [];
+
+    try {
+        for (const { buff } of activeScrollBuffs) {
+            delete previewPlayer.combatBuffs[buff.uniqueHrid];
+        }
+        previewPlayer.updateCombatDetails();
+        const basePreviewValues = snapshotCombatPreviewStatValues(previewPlayer);
+
+        for (const { itemHrid, buff } of activeScrollBuffs) {
+            previewPlayer.combatBuffs[buff.uniqueHrid] = buff;
+            previewPlayer.updateCombatDetails();
+
+            const changedStats = collectCombatPreviewChangedStatsFromSnapshot(
+                basePreviewValues,
+                previewPlayer
+            );
+            if (changedStats.length > 0) {
+                highlightSources.push(buildCombatPreviewHighlightSource(
+                    "combat_scroll",
+                    `combat-scroll-${itemHrid}`,
+                    itemHrid,
+                    itemDetailIndex[itemHrid]?.name || itemHrid,
+                    changedStats
+                ));
+            }
+
+            // Return to the no-scroll map before the next candidate is added.
+            // The final block restores all original scroll buffs for later rows.
+            delete previewPlayer.combatBuffs[buff.uniqueHrid];
+        }
+    } finally {
+        for (const { buff } of activeScrollBuffs) {
+            previewPlayer.combatBuffs[buff.uniqueHrid] = buff;
+        }
+        previewPlayer.updateCombatDetails();
+    }
+
+    return highlightSources;
+}
+
 function buildConditionalHighlightSources(playerConfig, previewExtra = null, drinkCards = [], previewEnvironment = null) {
     const previewState = createCombatPreviewSimulationState(playerConfig, previewExtra, previewEnvironment);
-    const highlightSources = [];
+    const highlightSources = buildCombatScrollPreviewSources(
+        playerConfig,
+        previewState?.player,
+        previewExtra,
+        previewEnvironment
+    );
 
     if (previewState) {
         const consumableSpecs = buildCombatPreviewConsumableSpecs(playerConfig, drinkCards);
@@ -1703,7 +1834,7 @@ export function buildPlayersForSimulation(playerConfigs) {
 }
 
 export function buildPlayersForCombatPreview(playerConfigs, previewExtra = null, previewContext = null) {
-    const normalizedExtra = normalizeSimulationExtra(previewExtra);
+    const normalizedExtra = normalizeCombatPreviewExtra(previewExtra);
     const previewEnvironment = buildCombatPreviewEnvironment(previewContext);
     const simulationPlayers = buildPlayersForSimulation(playerConfigs);
     simulationPlayers.forEach((player) => normalizePreviewPlayer(player, normalizedExtra, previewEnvironment));
@@ -1712,7 +1843,7 @@ export function buildPlayersForCombatPreview(playerConfigs, previewExtra = null,
 }
 
 export function buildCombatPreviewData(playerConfig, previewExtra = null, previewContext = null) {
-    const normalizedExtra = normalizeSimulationExtra(previewExtra);
+    const normalizedExtra = normalizeCombatPreviewExtra(previewExtra);
     const previewEnvironment = buildCombatPreviewEnvironment(previewContext);
     const player = buildSingleCombatPreviewPlayer(playerConfig, normalizedExtra, previewEnvironment);
     const drinkCards = (playerConfig?.drinks ?? [])

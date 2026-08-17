@@ -188,7 +188,7 @@ export function buildAdvisorCandidates(filters = {}) {
 }
 
 export function createAdvisorSimulationPayload(candidate, players, simulationTimeLimit, extra, options = {}) {
-    return {
+    const payload = {
         type: "start_simulation",
         workerId: options.workerId ?? createDefaultWorkerId(options.random),
         players,
@@ -200,6 +200,15 @@ export function createAdvisorSimulationPayload(candidate, players, simulationTim
         simulationTimeLimit,
         extra,
     };
+
+    const simulationContext = options.simulationContext && typeof options.simulationContext === "object"
+        ? { ...options.simulationContext }
+        : (options.isGuildTrial === true ? { isGuildTrial: true } : null);
+    if (simulationContext) {
+        payload.simulationContext = simulationContext;
+    }
+
+    return payload;
 }
 
 export function buildAdvisorRowFromRoundMetrics(candidate, roundMetrics = [], options = {}) {

@@ -23,6 +23,19 @@ function createSeededRandom(seed) {
     };
 }
 
+function createTrackedSeededRandom(seed) {
+    const random = createSeededRandom(seed);
+    const values = [];
+    return {
+        values,
+        next() {
+            const value = random();
+            values.push(value);
+            return value;
+        },
+    };
+}
+
 function legacyFidDropAmount(dropAmount, randomFn) {
     if (Number.isInteger(dropAmount)) {
         return dropAmount;
@@ -249,6 +262,26 @@ describe("profitEstimator random parity", () => {
 
             expect(now.revenue).toBe(legacyRevenue);
         }
+    });
+
+    it("consumes the same random sequence as the legacy drop roller", () => {
+        const seed = 73;
+        const simResult = createCase(seed);
+        const priceTable = buildPriceTableFromSimResult(simResult);
+        const legacyRandom = createTrackedSeededRandom(seed);
+        const currentRandom = createTrackedSeededRandom(seed);
+
+        legacyTotalDropMap(simResult, "player1", () => legacyRandom.next());
+        buildRandomProfitBreakdown(simResult, "player1", {
+            dropMode: "bid",
+            consumableMode: "ask",
+            priceTable,
+            randomSource: () => currentRandom.next(),
+            useDropCache: false,
+        });
+
+        expect(currentRandom.values.length).toBeGreaterThan(0);
+        expect(currentRandom.values).toEqual(legacyRandom.values);
     });
 
     it("matches legacy player fallback behavior", () => {

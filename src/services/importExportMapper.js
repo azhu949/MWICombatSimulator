@@ -16,6 +16,7 @@ import {
     normalizeGuildBuffLevels,
 } from "../shared/guildBuffs.js";
 import { sanitizeTriggerList, sanitizeTriggerMap } from "./triggerMapper.js";
+import { normalizeCombatScrolls } from "../shared/combatScrolls.js";
 
 const NON_WEAPON_SLOTS = EQUIPMENT_SLOT_KEYS.filter((slot) => slot !== "weapon");
 const COMBAT_ABILITY_SLOT_COUNT = 5;
@@ -150,7 +151,21 @@ function normalizeSkillExperience(value) {
     return parsed;
 }
 
-function sanitizePlayerConfig(raw, fallbackPlayer, { preserveMissingGuildBuffs = false } = {}) {
+function resolveImportedCombatScrolls(source, fallbackCombatScrolls, preserveWhenMissing) {
+    const hasCombatScrolls = Object.prototype.hasOwnProperty.call(source, "combatScrolls");
+    if (hasCombatScrolls) {
+        return normalizeCombatScrolls(source.combatScrolls);
+    }
+
+    return preserveWhenMissing
+        ? normalizeCombatScrolls(fallbackCombatScrolls)
+        : {};
+}
+
+function sanitizePlayerConfig(raw, fallbackPlayer, {
+    preserveMissingGuildBuffs = false,
+    preserveMissingCombatScrolls = false,
+} = {}) {
     const fallback = deepClone(fallbackPlayer || createEmptyPlayerConfig(1));
     const source = raw && typeof raw === "object" ? raw : {};
     const sourceSkillExperience = source.skillExperience && typeof source.skillExperience === "object"
@@ -190,6 +205,12 @@ function sanitizePlayerConfig(raw, fallbackPlayer, { preserveMissingGuildBuffs =
 
     normalized.triggerMap = sanitizeTriggerMap(source.triggerMap ?? fallback.triggerMap ?? {});
 
+    normalized.combatScrolls = resolveImportedCombatScrolls(
+        source,
+        fallback.combatScrolls,
+        preserveMissingCombatScrolls
+    );
+
     normalized.houseRooms = source.houseRooms && typeof source.houseRooms === "object"
         ? deepClone(source.houseRooms)
         : deepClone(fallback.houseRooms);
@@ -208,7 +229,9 @@ function sanitizePlayerConfig(raw, fallbackPlayer, { preserveMissingGuildBuffs =
     return normalized;
 }
 
-function applyLegacySoloToPlayer(legacySoloPayload, fallbackPlayer) {
+function applyLegacySoloToPlayer(legacySoloPayload, fallbackPlayer, {
+    preserveMissingCombatScrolls = false,
+} = {}) {
     const fallback = deepClone(fallbackPlayer || createEmptyPlayerConfig(1));
     const payload = legacySoloPayload && typeof legacySoloPayload === "object" ? legacySoloPayload : {};
 
@@ -272,6 +295,12 @@ function applyLegacySoloToPlayer(legacySoloPayload, fallbackPlayer) {
     }
 
     merged.triggerMap = sanitizeTriggerMap(payload.triggerMap ?? fallback.triggerMap ?? {});
+
+    merged.combatScrolls = resolveImportedCombatScrolls(
+        payload,
+        fallback.combatScrolls,
+        preserveMissingCombatScrolls
+    );
 
     merged.houseRooms = payload.houseRooms && typeof payload.houseRooms === "object"
         ? deepClone(payload.houseRooms)
@@ -1105,7 +1134,13 @@ function importShareableProfile(parsed, existingPlayer, existingSimulationSettin
     }
 
     return {
-        player: sanitizePlayerConfig(rawPlayer, fallbackPlayer, { preserveMissingGuildBuffs: true }),
+        // Main-site payloads intentionally do not carry active scroll state;
+        // preserve a user's manual scroll configuration when importing the
+        // rest of the character profile.
+        player: sanitizePlayerConfig(rawPlayer, fallbackPlayer, {
+            preserveMissingGuildBuffs: true,
+            preserveMissingCombatScrolls: true,
+        }),
         simulationSettings: extractShareableSimulationSettings(parsed, existingSimulationSettings),
         detectedFormat: "main-site-share-profile",
     };
@@ -1155,7 +1190,10 @@ function importMainSiteCurrentCharacter(parsed, existingPlayer, existingSimulati
     }
 
     return {
-        player: sanitizePlayerConfig(rawPlayer, fallbackPlayer, { preserveMissingGuildBuffs: true }),
+        player: sanitizePlayerConfig(rawPlayer, fallbackPlayer, {
+            preserveMissingGuildBuffs: true,
+            preserveMissingCombatScrolls: true,
+        }),
         simulationSettings: extractShareableSimulationSettings(parsed, existingSimulationSettings),
         detectedFormat: "main-site-current-character",
     };
@@ -1328,7 +1366,11 @@ export function importSoloConfig(text, existingPlayer, existingSimulationSetting
 
     if (parsed && parsed.player) {
         return {
-            player: applyLegacySoloToPlayer(parsed, existingPlayer),
+            // Legacy solo payloads predate combat scroll selection. A missing
+            // field therefore cannot be treated as an instruction to clear it.
+            player: applyLegacySoloToPlayer(parsed, existingPlayer, {
+                preserveMissingCombatScrolls: true,
+            }),
             simulationSettings: normalizeImportedSimulationSettings(parsed, existingSimulationSettings),
             detectedFormat: "legacy-solo",
         };

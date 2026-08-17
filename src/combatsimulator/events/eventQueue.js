@@ -13,6 +13,13 @@ class EventQueue {
         return this.minHeap.pop();
     }
 
+    peekNextEvent() {
+        // heap-js peek() is a non-mutating read of the heap root.  The
+        // simulator relies on that contract to enforce its time horizon
+        // without removing the first event outside the simulation window.
+        return this.minHeap.peek();
+    }
+
     containsEventOfType(type) {
         let heapEvents = this.minHeap.toArray();
 

@@ -1,5 +1,6 @@
 import { describe, expect, it } from "vitest";
 import { EQUIPMENT_SLOT_KEYS, createEmptyPlayerConfig } from "../../shared/playerConfig.js";
+import { combatScrollOptions } from "../../shared/combatScrolls.js";
 import { buildStaticPriceCatalog, createCombatPreviewPlayerConfig } from "../pageOptimizationHelpers.js";
 
 function cloneValue(value) {
@@ -26,6 +27,10 @@ describe("pageOptimizationHelpers", () => {
         };
         basePlayer.houseRooms["/house_rooms/kitchen"] = 3;
         basePlayer.achievements["/achievements/total_level_100"] = true;
+        const scrollHrid = combatScrollOptions[0]?.itemHrid;
+        if (scrollHrid) {
+            basePlayer.combatScrolls[scrollHrid] = { quantity: 3 };
+        }
         if (firstEquipmentSlot) {
             basePlayer.equipment[firstEquipmentSlot] = {
                 itemHrid: "/items/training_sword",
@@ -54,6 +59,7 @@ describe("pageOptimizationHelpers", () => {
         expect(createCombatPreviewPlayerConfig(left)).toEqual(expect.objectContaining({
             id: "1",
             selected: true,
+            combatScrolls: scrollHrid ? { [scrollHrid]: { quantity: 3 } } : {},
         }));
     });
 

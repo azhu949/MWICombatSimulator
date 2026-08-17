@@ -147,4 +147,31 @@ describe("multiWorker", () => {
             simResults: [{ encounters: 0 }, { encounters: 1 }, { encounters: 2 }],
         });
     });
+
+    it("forwards player scroll configuration and simulation context to each child", async () => {
+        FakeChildWorker.behaviors = [
+            (worker) => setTimeout(() => {
+                worker.emit({ type: "simulation_result", simResult: { encounters: 0 } });
+            }, 0),
+        ];
+        const players = [{
+            hrid: "player1",
+            combatScrolls: { "/items/seal_of_damage": { quantity: 2 } },
+        }];
+        const workerScope = { postMessage: vi.fn(), close: vi.fn() };
+
+        await handleMultiSimulationMessage({
+            type: "start_simulation_all_zones",
+            players,
+            zones: [{ zoneHrid: "/actions/combat/fly", difficultyTier: 0 }],
+            simulationTimeLimit: 100,
+            extra: { mooPass: false, comExp: 0, comDrop: 0, enableHpMpVisualization: false },
+            simulationContext: { isGuildTrial: true },
+        }, workerScope);
+
+        expect(FakeChildWorker.instances[0].postMessage).toHaveBeenCalledWith(expect.objectContaining({
+            players,
+            simulationContext: { isGuildTrial: true },
+        }));
+    });
 });
