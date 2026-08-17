@@ -8,7 +8,7 @@
 
 补充参考：
 
-- 如需查看 `initClientData` 当前顶层 key 中**尚未导出**的部分（未解析 key 清单、逐个评估用途），可查看 [`docs/init-client-data-key-reference.md`](./init-client-data-key-reference.md)。
+- 如需查看 `initClientData` 所有顶层 key 的评估状态与逐 key 分析（含已导出的 27 个 key 与未导出的 29 个 key），可查看 [`docs/init-client-data-key-reference.md`](./init-client-data-key-reference.md)。
 
 ## 游戏数据来源（重要）
 

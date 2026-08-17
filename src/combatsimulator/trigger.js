@@ -102,10 +102,6 @@ class Trigger {
             case "/combat_trigger_conditions/elusiveness":
             case "/combat_trigger_conditions/channeling_coffee":
             case "/combat_trigger_conditions/fierce_aura":
-            case "/combat_trigger_conditions/invincible_armor":
-            case "/combat_trigger_conditions/invincible_fire_resistance":
-            case "/combat_trigger_conditions/invincible_nature_resistance":
-            case "/combat_trigger_conditions/invincible_water_resistance":
             case "/combat_trigger_conditions/provoke":
             case "/combat_trigger_conditions/taunt":
             case "/combat_trigger_conditions/crippling_slash":

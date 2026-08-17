@@ -6,14 +6,14 @@ class Zone {
         this.hrid = hrid;
         this.difficultyTier = difficultyTier;
 
-        let gameZone = actionDetailMap[this.hrid];
-        this.monsterSpawnInfo = gameZone.combatZoneInfo.fightInfo;
+        const gameZone = actionDetailMap[this.hrid];
+        const fightInfo = gameZone.combatZoneInfo.fightInfo;
+        this.monsterSpawnInfo = fightInfo ? { ...fightInfo } : fightInfo;
         this.dungeonSpawnInfo = gameZone.combatZoneInfo.dungeonInfo;
         this.baseTimeCost = Number.isFinite(Number(gameZone?.baseTimeCost))
             ? Math.max(0, Number(gameZone.baseTimeCost))
             : 0;
         this.encountersKilled = 1;
-        this.monsterSpawnInfo.battlesPerBoss = 10;
         this.buffs = gameZone.buffs;
         this.isDungeon = gameZone.combatZoneInfo.isDungeon;
         this.dungeonsCompleted = 0;
@@ -53,7 +53,7 @@ class Zone {
 
     getRandomEncounter() {
 
-        if (this.monsterSpawnInfo.bossSpawns && this.encountersKilled == this.monsterSpawnInfo.battlesPerBoss) {
+        if (this.monsterSpawnInfo.bossSpawns && this.encountersKilled === this.monsterSpawnInfo.battlesPerBoss) {
             this.encountersKilled = 1;
             return this.monsterSpawnInfo.bossSpawns.map((monster) => new Monster(monster.combatMonsterHrid, monster.difficultyTier + this.difficultyTier));
         }
