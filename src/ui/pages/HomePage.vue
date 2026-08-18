@@ -615,26 +615,56 @@
 
     </div>
 
-    <div v-if="activeWorkspaceTab === 'advanced'" class="surface-panel space-y-4">
-      <div>
+    <div v-if="activeWorkspaceTab === 'advanced'" class="space-y-4">
+      <div class="border-b border-border pb-3">
         <h2 class="font-heading text-lg font-semibold text-primary">{{ t("common:vue.home.workspaceAdvancedTitle", "Battle Attributes") }}</h2>
         <p class="mt-1 text-sm text-muted-foreground">{{ t("common:vue.home.workspaceAdvancedDesc", "Review the full derived combat attributes for the current build.") }}</p>
       </div>
 
-      <div v-if="combatStatRows.length > 0" class="grid gap-2 sm:grid-cols-2 lg:grid-cols-3">
-        <div v-for="entry in combatStatRows" :key="entry.key" class="rounded-md border border-border bg-muted/50 px-3 py-2 text-sm">
-          <p class="text-xs uppercase  text-muted-foreground">{{ entry.label }}</p>
-          <div class="mt-1 flex flex-wrap items-center gap-2">
-            <p class="text-foreground">{{ entry.value }}</p>
-            <span
-              v-for="highlight in entry.highlights"
-              :key="highlight.key"
-              class="rounded-md border border-primary/40 bg-primary/10 px-2 py-0.5 text-[11px] font-medium text-primary"
-            >
-              {{ highlight.text }}
+      <div v-if="combatStatSections.length > 0" class="space-y-8">
+        <section
+          v-for="section in combatStatSections"
+          :key="section.key"
+          class="space-y-3"
+        >
+          <header class="flex items-center gap-3 px-1">
+            <span class="flex h-8 w-8 shrink-0 items-center justify-center rounded-sm border border-primary/20 bg-primary/10 text-primary">
+              <component :is="section.icon" class="h-4 w-4" aria-hidden="true" />
             </span>
+            <h3 class="font-heading text-[15px] font-semibold text-foreground">{{ section.title }}</h3>
+            <span class="h-px min-w-6 flex-1 bg-border" aria-hidden="true"></span>
+          </header>
+
+          <div class="grid gap-3 md:grid-cols-2 xl:grid-cols-3">
+            <article
+              v-for="entry in section.rows"
+              :key="entry.key"
+              :class="[
+                'min-h-[4.75rem] min-w-0 rounded-md border px-4 py-3.5 shadow-sm transition-colors',
+                entry.hasSources
+                  ? 'border-primary/30 bg-primary/5 hover:bg-primary/10'
+                  : 'border-border bg-card hover:bg-muted/50',
+              ]"
+            >
+              <div class="flex min-w-0 items-start justify-between gap-3">
+                <p class="min-w-0 break-words text-sm font-medium leading-5 text-foreground/80" :title="entry.label">{{ entry.label }}</p>
+                <p class="max-w-[55%] shrink-0 break-words text-right font-heading text-base font-semibold leading-5 tabular-nums text-foreground">{{ entry.value }}</p>
+              </div>
+              <p
+                v-if="entry.breakdownText"
+                class="mt-1.5 whitespace-normal break-words text-xs leading-5 tabular-nums text-muted-foreground"
+                :title="entry.breakdownText"
+              >
+                <span
+                  v-for="part in entry.breakdownParts"
+                  :key="part.key"
+                  :class="['mr-1.5 last:mr-0', part.kind === 'source' ? 'font-medium text-primary' : '']"
+                >{{ part.text }}</span>
+              </p>
+              <div v-else class="h-4" aria-hidden="true"></div>
+            </article>
           </div>
-        </div>
+        </section>
       </div>
       <p v-else class="text-sm text-muted-foreground">{{ t("common:multiRound.noData", "No data") }}</p>
     </div>
@@ -1282,7 +1312,7 @@ import {
 } from "../../shared/guildBuffs.js";
 import { applyTampermonkeyImportMessage } from "../../services/tampermonkeyImportBridge.js";
 import { useSimulatorStore } from "../../stores/simulatorStore.js";
-import { buildCombatPreviewData } from "../../services/playerMapper.js";
+import { buildCombatPreviewData, COMBAT_PREVIEW_STAT_SPEC_KEYS } from "../../services/playerMapper.js";
 import { calcCombatLevel, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../../shared/playerConfig.js";
 import {
   combatScrollOptions,
@@ -1300,6 +1330,146 @@ import HomeWorkspaceTabs from "../components/home/HomeWorkspaceTabs.vue";
 import InlineTriggerEditor from "../components/home/InlineTriggerEditor.vue";
 import { SearchCombobox } from "../components/ui/combobox/index.js";
 import { Select, SelectContent, SelectItem, SelectTrigger } from "../components/ui/select/index.js";
+import { Gauge, Shield, Sparkles, Swords, Trophy } from "@lucide/vue";
+import { buildCombatStatBreakdownParts } from "../lib/combatStatBreakdown.js";
+
+const COMBAT_PREVIEW_RECONCILIATION_EPSILON = 1e-9;
+const COMBAT_STAT_SECTION_DEFINITIONS = [
+  {
+    key: "overview",
+    titleKey: "common:vue.home.combatStatSectionOverview",
+    titleFallback: "Combat Overview",
+    icon: Gauge,
+    statKeys: [
+      "maxHitpoints",
+      "maxManapoints",
+      "combatStyle",
+      "damageType",
+      "primaryTraining",
+      "focusTraining",
+      "attackIntervalSeconds",
+    ],
+  },
+  {
+    key: "offense",
+    titleKey: "common:vue.home.combatStatSectionOffense",
+    titleFallback: "Offense",
+    icon: Swords,
+    statKeys: [
+      "stabAccuracyRating",
+      "stabMaxDamage",
+      "slashAccuracyRating",
+      "slashMaxDamage",
+      "smashAccuracyRating",
+      "smashMaxDamage",
+      "defensiveMaxDamage",
+      "rangedAccuracyRating",
+      "rangedMaxDamage",
+      "magicAccuracyRating",
+      "magicMaxDamage",
+      "criticalRate",
+      "criticalDamage",
+      "armorPenetration",
+      "physicalAmplify",
+      "waterAmplify",
+      "natureAmplify",
+      "fireAmplify",
+      "waterPenetration",
+      "naturePenetration",
+      "firePenetration",
+      "lifeSteal",
+      "taskDamage",
+      "attackSpeed",
+      "autoAttackDamage",
+      "abilityDamage",
+    ],
+  },
+  {
+    key: "defense",
+    titleKey: "common:vue.home.combatStatSectionDefense",
+    titleFallback: "Defense",
+    icon: Shield,
+    statKeys: [
+      "averageEvasion",
+      "totalArmor",
+      "stabEvasionRating",
+      "slashEvasionRating",
+      "smashEvasionRating",
+      "rangedEvasionRating",
+      "magicEvasionRating",
+      "totalWaterResistance",
+      "totalNatureResistance",
+      "totalFireResistance",
+      "physicalThorns",
+      "elementalThorns",
+      "retaliation",
+      "hpRegenPer10",
+      "mpRegenPer10",
+      "tenacity",
+      "totalThreat",
+      "parry",
+    ],
+  },
+  {
+    key: "effects",
+    titleKey: "common:vue.home.combatStatSectionEffects",
+    titleFallback: "Combat Effects",
+    icon: Sparkles,
+    statKeys: [
+      "healingAmplify",
+      "abilityHaste",
+      "manaLeech",
+      "castSpeed",
+      "mayhem",
+      "pierce",
+      "curse",
+      "fury",
+      "weaken",
+      "ripple",
+      "bloom",
+      "blaze",
+      "drinkConcentration",
+      "foodHaste",
+    ],
+  },
+  {
+    key: "rewards",
+    titleKey: "common:vue.home.combatStatSectionRewards",
+    titleFallback: "Rewards & Experience",
+    icon: Trophy,
+    statKeys: [
+      "combatDropRate",
+      "combatRareFind",
+      "combatDropQuantity",
+      "combatExperience",
+      "staminaExperience",
+      "intelligenceExperience",
+      "attackExperience",
+      "defenseExperience",
+      "meleeExperience",
+      "rangedExperience",
+      "magicExperience",
+    ],
+  },
+];
+
+const COMBAT_STAT_SECTION_KEY_BY_STAT = new Map(
+  COMBAT_STAT_SECTION_DEFINITIONS.flatMap((section) => section.statKeys.map((statKey) => [statKey, section.key])),
+);
+
+// Dev-time guard: if a new COMBAT_PREVIEW_STAT_SPECS entry is added but not
+// registered in COMBAT_STAT_SECTION_DEFINITIONS, it would silently fall into
+// the "effects" fallback section. Warn so the omission is caught early.
+if (import.meta.env?.DEV) {
+  const missingStatKeys = COMBAT_PREVIEW_STAT_SPEC_KEYS.filter(
+    (key) => !COMBAT_STAT_SECTION_KEY_BY_STAT.has(key),
+  );
+  if (missingStatKeys.length > 0) {
+    console.warn(
+      `[combatStatSections] Stats missing from section definitions (will fall back to "effects"): ${missingStatKeys.join(", ")}`,
+    );
+  }
+}
 
 const simulator = useSimulatorStore();
 const route = useRoute();
@@ -2329,8 +2499,10 @@ const combatPreviewData = computed(() => {
   if (!combatPreviewPlayerConfig.value) {
     return {
       player: null,
+      finalPlayer: null,
       drinkCards: [],
       highlightSources: [],
+      statBreakdowns: {},
     };
   }
 
@@ -2338,39 +2510,14 @@ const combatPreviewData = computed(() => {
 });
 
 const combatDetails = computed(() => {
-  return combatPreviewData.value.player?.combatDetails || null;
+  return (combatPreviewData.value.finalPlayer || combatPreviewData.value.player)?.combatDetails || null;
 });
 
 const combatStats = computed(() => {
   return combatDetails.value?.combatStats || null;
 });
 
-const conditionalHighlightSources = computed(() => combatPreviewData.value.highlightSources || []);
-const conditionalHighlightsByKey = computed(() => {
-  const highlights = new Map();
-
-  conditionalHighlightSources.value.forEach((source) => {
-    if (!source?.sourceKey || !Array.isArray(source.changedStats) || source.changedStats.length <= 0) {
-      return;
-    }
-
-    const sourceLabel = formatCombatPreviewHighlightLabel(source);
-    source.changedStats.forEach((stat) => {
-      const entry = {
-        key: `${source.sourceKey}-${stat.key}`,
-        text: `${formatCombatPreviewStatDelta(stat)}（${sourceLabel}）`,
-      };
-
-      if (highlights.has(stat.key)) {
-        highlights.get(stat.key).push(entry);
-      } else {
-        highlights.set(stat.key, [entry]);
-      }
-    });
-  });
-
-  return highlights;
-});
+const combatStatBreakdowns = computed(() => combatPreviewData.value.statBreakdowns || {});
 
 const combatStatRows = computed(() => {
   const details = combatDetails.value;
@@ -2478,10 +2625,49 @@ const combatStatRows = computed(() => {
 
   return rows
     .filter((entry) => entry.value !== "-")
-    .map((entry) => ({
-      ...entry,
-      highlights: conditionalHighlightsByKey.value.get(entry.key) || [],
-    }));
+    .map((entry) => {
+      const breakdown = combatStatBreakdowns.value[entry.key];
+      // String-typed attributes (combatStyle, damageType, primaryTraining,
+      // focusTraining) are NOT in COMBAT_PREVIEW_STAT_SPECS, so they have no
+      // numeric breakdown here. They intentionally fall through to the plain
+      // entry.value branch below and never receive highlight attribution.
+      if (!breakdown) {
+        return {
+          ...entry,
+          hasSources: false,
+          breakdownParts: [],
+          breakdownText: "",
+        };
+      }
+
+      return {
+        ...entry,
+        ...buildCombatStatBreakdownParts(breakdown, entry.key, {
+          formatDelta: formatCombatPreviewStatDelta,
+          formatValue: formatCombatPreviewStatValue,
+          formatHighlightLabel: formatCombatPreviewHighlightLabel,
+          t,
+        }),
+      };
+    });
+});
+
+const combatStatSections = computed(() => {
+  const rowsBySection = new Map(COMBAT_STAT_SECTION_DEFINITIONS.map((section) => [section.key, []]));
+
+  combatStatRows.value.forEach((row) => {
+    const sectionKey = COMBAT_STAT_SECTION_KEY_BY_STAT.get(row.key) || "effects";
+    rowsBySection.get(sectionKey).push(row);
+  });
+
+  return COMBAT_STAT_SECTION_DEFINITIONS
+    .map((section) => ({
+      key: section.key,
+      title: t(section.titleKey, section.titleFallback),
+      icon: section.icon,
+      rows: rowsBySection.get(section.key),
+    }))
+    .filter((section) => section.rows.length > 0);
 });
 
 function formatInt(value) {
@@ -2598,6 +2784,16 @@ function formatCombatPreviewStatDelta(stat) {
   return formatSignedFlexibleNumber(stat.deltaValue, 2);
 }
 
+function formatCombatPreviewStatValue(value, format) {
+  if (format === "percent") {
+    return formatPercent(value, 2);
+  }
+  if (format === "seconds") {
+    return formatDurationSeconds(value);
+  }
+  return formatFlexibleNumber(value, 2);
+}
+
 function formatCombatPreviewHighlightLabel(source) {
   if (!source?.sourceHrid) {
     return String(source?.sourceName || "");
@@ -2605,6 +2801,9 @@ function formatCombatPreviewHighlightLabel(source) {
 
   if (source.sourceType === "ability") {
     return formatAbilityName(source.sourceHrid, source.sourceName || "");
+  }
+  if (source.sourceType === "guild_buff") {
+    return getGuildShrineName(source.sourceHrid, source.sourceName || "");
   }
 
   return formatItemName(source.sourceHrid, source.sourceName || "");

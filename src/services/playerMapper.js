@@ -3,6 +3,7 @@ import CombatUtilities from "../combatsimulator/combatUtilities.js";
 import CombatSimulator from "../combatsimulator/combatSimulator.js";
 import Consumable from "../combatsimulator/consumable.js";
 import Equipment from "../combatsimulator/equipment.js";
+import GuildBuff from "../combatsimulator/guildBuff.js";
 import Labyrinth from "../combatsimulator/labyrinth.js";
 import Monster from "../combatsimulator/monster.js";
 import Player from "../combatsimulator/player.js";
@@ -19,6 +20,11 @@ import {
     LEVEL_KEYS,
 } from "../shared/playerConfig.js";
 import { normalizeCombatScrolls } from "../shared/combatScrolls.js";
+import {
+    combatGuildBuffDetails,
+    guildShrineDetailIndex,
+    normalizeGuildBuffLevels,
+} from "../shared/guildBuffs.js";
 import {
     LABYRINTH_ROOM_LEVEL_DEFAULT,
     LABYRINTH_ROOM_LEVEL_MIN,
@@ -456,6 +462,20 @@ const COMBAT_PREVIEW_STAT_SPECS = [
         getValue: (player) => Number(player?.combatDetails?.combatStats?.abilityDamage || 0),
     },
     {
+        key: "drinkConcentration",
+        statNameKey: "drinkConcentration",
+        fallbackLabel: "Drink Concentration",
+        format: "percent",
+        getValue: (player) => Number(player?.combatDetails?.combatStats?.drinkConcentration || 0),
+    },
+    {
+        key: "foodHaste",
+        statNameKey: "foodHaste",
+        fallbackLabel: "Food Haste",
+        format: "percent",
+        getValue: (player) => Number(player?.combatDetails?.combatStats?.foodHaste || 0),
+    },
+    {
         key: "combatDropRate",
         statNameKey: "combatDropRate",
         fallbackLabel: "Drop Rate",
@@ -813,6 +833,55 @@ function buildCombatPreviewHighlightSource(sourceType, sourceKey, sourceHrid, so
         sourceName,
         changedStats: Array.isArray(changedStats) ? changedStats : [],
     };
+}
+
+function buildCombatPreviewStatBreakdowns(baseValues, finalPlayer, highlightSources) {
+    const sourcesByStatKey = new Map();
+
+    for (const source of highlightSources) {
+        for (const stat of source?.changedStats ?? []) {
+            if (!sourcesByStatKey.has(stat.key)) {
+                sourcesByStatKey.set(stat.key, []);
+            }
+            sourcesByStatKey.get(stat.key).push({
+                sourceType: source.sourceType,
+                sourceKey: source.sourceKey,
+                sourceHrid: source.sourceHrid,
+                sourceName: source.sourceName,
+                deltaValue: stat.deltaValue,
+            });
+        }
+    }
+
+    return Object.fromEntries(COMBAT_PREVIEW_STAT_SPECS.map((spec) => {
+        const sources = sourcesByStatKey.get(spec.key) ?? [];
+        const finalValue = spec.getValue(finalPlayer);
+        const sourceTotal = sources.reduce((sum, source) => sum + Number(source.deltaValue || 0), 0);
+        const measuredBaseValue = Number(baseValues?.get(spec.key));
+        const canReconcile = Number.isFinite(measuredBaseValue)
+            && Number.isFinite(finalValue)
+            && Number.isFinite(sourceTotal);
+        const reconciliationDelta = canReconcile
+            ? finalValue - measuredBaseValue - sourceTotal
+            : 0;
+        // Keep Base as the independently measured no-highlight baseline. Any
+        // mismatch caused by mixed/non-linear attribution belongs in the
+        // explicit reconciliation field instead of being hidden in Base.
+        const baseValue = Number.isFinite(measuredBaseValue)
+            ? measuredBaseValue
+            : finalValue - sourceTotal;
+
+        return [spec.key, {
+            key: spec.key,
+            labelKey: getCombatPreviewOfficialLabelKey(spec.statNameKey),
+            fallbackLabel: spec.fallbackLabel,
+            format: spec.format,
+            baseValue,
+            finalValue,
+            reconciliationDelta,
+            sources,
+        }];
+    }));
 }
 
 function snapshotCombatPreviewPlayer(player) {
@@ -1633,7 +1702,7 @@ function buildCombatPreviewCycleStateKey(previewState) {
     ].join("@@@");
 }
 
-function buildTaskBadgePreviewSource(playerConfig, previewExtra = null, previewEnvironment = null) {
+function applyTaskBadgePreviewSource(playerConfig, previewPlayer) {
     const legacyTaskBadge = playerConfig?.equipment?.trinket ?? null;
     const itemHrid = String(legacyTaskBadge?.itemHrid || "");
     if (!itemHrid) {
@@ -1657,8 +1726,12 @@ function buildTaskBadgePreviewSource(playerConfig, previewExtra = null, previewE
         return null;
     }
 
-    const previewPlayer = buildSingleCombatPreviewPlayer(playerConfig, previewExtra, previewEnvironment);
+    if (!previewPlayer?.combatDetails?.combatStats) {
+        return null;
+    }
+
     const baseTaskDamage = Number(taskDamageSpec.getValue(previewPlayer));
+    previewPlayer.combatDetails.combatStats.taskDamage = baseTaskDamage + taskDamage;
 
     return buildCombatPreviewHighlightSource(
         "task_badge",
@@ -1674,6 +1747,51 @@ function buildTaskBadgePreviewSource(playerConfig, previewExtra = null, previewE
             finalValue: baseTaskDamage + taskDamage,
         }]
     );
+}
+
+// Mutates previewPlayer.permanentBuffs irreversibly: each guild buff is
+// accumulated onto the player via addPermanentBuff so that every snapshot
+// captures the marginal increment over the previously-applied state.
+// Callers MUST pass a single-use (disposable) player object whose
+// permanentBuffs do not need to stay pristine after this call.
+function buildGuildBuffPreviewSources(playerConfig, previewPlayer) {
+    if (!previewPlayer) {
+        return [];
+    }
+
+    const guildBuffLevels = normalizeGuildBuffLevels(playerConfig?.guildBuffs);
+    const highlightSources = [];
+
+    for (const detail of combatGuildBuffDetails) {
+        const guildBuffHrid = String(detail?.hrid || "");
+        const level = Number(guildBuffLevels[guildBuffHrid] || 0);
+        if (!guildBuffHrid || level <= 0) {
+            continue;
+        }
+
+        const beforeValues = snapshotCombatPreviewStatValues(previewPlayer);
+        const guildBuff = new GuildBuff(guildBuffHrid, level);
+        for (const buff of guildBuff.buffs) {
+            previewPlayer.addPermanentBuff(structuredClone(buff));
+        }
+        previewPlayer.clearBuffs();
+
+        const changedStats = collectCombatPreviewChangedStatsFromSnapshot(beforeValues, previewPlayer);
+        if (changedStats.length <= 0) {
+            continue;
+        }
+
+        const shrineHrid = String(detail.shrineHrid || "");
+        highlightSources.push(buildCombatPreviewHighlightSource(
+            "guild_buff",
+            `guild-buff-${guildBuffHrid}`,
+            shrineHrid,
+            guildShrineDetailIndex[shrineHrid]?.name || shrineHrid,
+            changedStats
+        ));
+    }
+
+    return highlightSources;
 }
 
 function buildCombatScrollPreviewSources(
@@ -1699,69 +1817,36 @@ function buildCombatScrollPreviewSources(
         return [];
     }
 
-    const activeScrollBuffs = itemHrids
-        .map((itemHrid) => {
-            const buff = createCombatScrollBuff(itemHrid);
-            const activeBuff = buff ? previewPlayer.combatBuffs[buff.uniqueHrid] : null;
-            return activeBuff ? { itemHrid, buff: activeBuff } : null;
-        })
-        .filter(Boolean);
-    if (activeScrollBuffs.length <= 0) {
-        return [];
-    }
-
-    // Reuse the already-built preview player.  First derive the no-scroll
-    // baseline, then add one mutable Buff at a time so each row keeps the
-    // original isolated-scroll semantics without rebuilding Player objects.
+    // Apply scrolls in configured order so every delta is the marginal change
+    // from the state that the next preview source actually receives.
     const highlightSources = [];
 
-    try {
-        for (const { buff } of activeScrollBuffs) {
-            delete previewPlayer.combatBuffs[buff.uniqueHrid];
+    for (const itemHrid of itemHrids) {
+        const buff = createCombatScrollBuff(itemHrid);
+        if (!buff) {
+            continue;
         }
-        previewPlayer.updateCombatDetails();
-        const basePreviewValues = snapshotCombatPreviewStatValues(previewPlayer);
 
-        for (const { itemHrid, buff } of activeScrollBuffs) {
-            previewPlayer.combatBuffs[buff.uniqueHrid] = buff;
-            previewPlayer.updateCombatDetails();
-
-            const changedStats = collectCombatPreviewChangedStatsFromSnapshot(
-                basePreviewValues,
-                previewPlayer
-            );
-            if (changedStats.length > 0) {
-                highlightSources.push(buildCombatPreviewHighlightSource(
-                    "combat_scroll",
-                    `combat-scroll-${itemHrid}`,
-                    itemHrid,
-                    itemDetailIndex[itemHrid]?.name || itemHrid,
-                    changedStats
-                ));
-            }
-
-            // Return to the no-scroll map before the next candidate is added.
-            // The final block restores all original scroll buffs for later rows.
-            delete previewPlayer.combatBuffs[buff.uniqueHrid];
+        const beforeValues = snapshotCombatPreviewStatValues(previewPlayer);
+        previewPlayer.addBuff(buff, 0);
+        const changedStats = collectCombatPreviewChangedStatsFromSnapshot(beforeValues, previewPlayer);
+        if (changedStats.length > 0) {
+            highlightSources.push(buildCombatPreviewHighlightSource(
+                "combat_scroll",
+                `combat-scroll-${itemHrid}`,
+                itemHrid,
+                itemDetailIndex[itemHrid]?.name || itemHrid,
+                changedStats
+            ));
         }
-    } finally {
-        for (const { buff } of activeScrollBuffs) {
-            previewPlayer.combatBuffs[buff.uniqueHrid] = buff;
-        }
-        previewPlayer.updateCombatDetails();
     }
 
     return highlightSources;
 }
 
-function buildConditionalHighlightSources(playerConfig, previewExtra = null, drinkCards = [], previewEnvironment = null) {
+function buildConditionalPreviewResult(playerConfig, previewExtra = null, drinkCards = [], previewEnvironment = null) {
     const previewState = createCombatPreviewSimulationState(playerConfig, previewExtra, previewEnvironment);
-    const highlightSources = buildCombatScrollPreviewSources(
-        playerConfig,
-        previewState?.player,
-        previewExtra,
-        previewEnvironment
-    );
+    const highlightSources = [];
 
     if (previewState) {
         const consumableSpecs = buildCombatPreviewConsumableSpecs(playerConfig, drinkCards);
@@ -1816,12 +1901,51 @@ function buildConditionalHighlightSources(playerConfig, previewExtra = null, dri
         }
     }
 
-    const taskBadgeSource = buildTaskBadgePreviewSource(playerConfig, previewExtra, previewEnvironment);
+    const taskBadgeSource = applyTaskBadgePreviewSource(playerConfig, previewState?.player);
     if (taskBadgeSource) {
         highlightSources.push(taskBadgeSource);
     }
 
-    return highlightSources;
+    return {
+        player: previewState?.player ?? null,
+        highlightSources,
+    };
+}
+
+function buildStaticCombatPreviewAttribution(playerConfig, previewExtra, previewEnvironment) {
+    const baselineConfig = {
+        ...playerConfig,
+        guildBuffs: normalizeGuildBuffLevels({}),
+    };
+    const baselineExtra = {
+        ...(previewExtra ?? {}),
+        combatScrollsEnabled: false,
+    };
+    const attributionPlayer = buildSingleCombatPreviewPlayer(
+        baselineConfig,
+        baselineExtra,
+        previewEnvironment
+    );
+    if (!attributionPlayer) {
+        return {
+            baseValues: new Map(),
+            highlightSources: [],
+        };
+    }
+
+    const baseValues = snapshotCombatPreviewStatValues(attributionPlayer);
+    const highlightSources = buildGuildBuffPreviewSources(playerConfig, attributionPlayer);
+    highlightSources.push(...buildCombatScrollPreviewSources(
+        playerConfig,
+        attributionPlayer,
+        previewExtra,
+        previewEnvironment
+    ));
+
+    return {
+        baseValues,
+        highlightSources,
+    };
 }
 
 export function buildPlayersForSimulation(playerConfigs) {
@@ -1842,6 +1966,26 @@ export function buildPlayersForCombatPreview(playerConfigs, previewExtra = null,
     return simulationPlayers;
 }
 
+// Performance note: buildCombatPreviewData constructs up to three independent
+// Player objects per invocation:
+//   1. `player` below — the full configured player (with guild buffs + scrolls).
+//   2. `attributionPlayer` inside buildStaticCombatPreviewAttribution — a
+//      baseline player built from a config with guildBuffs disabled and scrolls
+//      disabled, so each guild buff / scroll delta can be measured as a
+//      marginal increment. This baseline cannot reuse `player` because their
+//      permanentBuffs differ (player's include guild buffs).
+//   3. `previewState.player` inside buildConditionalPreviewResult — drives the
+//      sequential consumable/ability simulation and must be a fresh instance
+//      because the simulation mutates combat state (HP/MP, buff timers, ...).
+// In addition, buildGuildBuffPreviewSources / buildCombatScrollPreviewSources
+// each perform a full STAT_SPECS snapshot + addPermanentBuff/clearBuffs
+// (updateCombatDetails) + diff pass per active buff, so 5 shrines cost ~10
+// full-spec traversals.
+// This function is consumed by a Vue `computed` (see HomePage.vue
+// `combatPreviewData`), so it only re-runs when its reactive dependencies
+// change. For very frequent config editing the cost is acceptable but not free;
+// if profiling shows hotspots, prefer debouncing the upstream config edits over
+// micro-optimizing the player construction here.
 export function buildCombatPreviewData(playerConfig, previewExtra = null, previewContext = null) {
     const normalizedExtra = normalizeCombatPreviewExtra(previewExtra);
     const previewEnvironment = buildCombatPreviewEnvironment(previewContext);
@@ -1849,22 +1993,42 @@ export function buildCombatPreviewData(playerConfig, previewExtra = null, previe
     const drinkCards = (playerConfig?.drinks ?? [])
         .map((_, slotIndex) => buildDrinkPreviewCard(playerConfig, slotIndex, normalizedExtra, previewEnvironment))
         .filter(Boolean);
-    const highlightSources = buildConditionalHighlightSources(
+    const attribution = buildStaticCombatPreviewAttribution(
+        playerConfig,
+        normalizedExtra,
+        previewEnvironment
+    );
+    const conditionalPreview = buildConditionalPreviewResult(
         playerConfig,
         normalizedExtra,
         drinkCards,
         previewEnvironment
     );
+    const finalPlayer = conditionalPreview.player || player;
+    const highlightSources = [
+        ...attribution.highlightSources,
+        ...conditionalPreview.highlightSources,
+    ];
+    const statBreakdowns = buildCombatPreviewStatBreakdowns(
+        attribution.baseValues,
+        finalPlayer,
+        highlightSources
+    );
 
     return {
         player,
+        finalPlayer,
         drinkCards,
         highlightSources,
+        statBreakdowns,
     };
 }
 
+const COMBAT_PREVIEW_STAT_SPEC_KEYS = COMBAT_PREVIEW_STAT_SPECS.map((spec) => spec.key);
+
 export {
     calcCombatLevel,
+    COMBAT_PREVIEW_STAT_SPEC_KEYS,
     createEmptyPlayerConfig,
     createEmptySkillExperienceMap,
     EQUIPMENT_SLOT_KEYS,

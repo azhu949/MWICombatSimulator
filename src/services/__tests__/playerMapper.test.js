@@ -41,6 +41,36 @@ function findDrinkWithoutCombatPreviewChanges() {
     });
 }
 
+// Independent baseline stat readers used to assert guild buff deltas without
+// relying on the reconciliation identity (which is a tautology by
+// construction). Each reader mirrors the corresponding COMBAT_PREVIEW_STAT_SPECS
+// getValue so the baseline value passed into expectedDeltaFn is consistent.
+const COMBAT_PREVIEW_BASELINE_STAT_READER = {
+    maxHitpoints: (player) => Number(player?.combatDetails?.maxHitpoints || 0),
+    maxManapoints: (player) => Number(player?.combatDetails?.maxManapoints || 0),
+    stabMaxDamage: (player) => Number(player?.combatDetails?.stabMaxDamage || 0),
+    slashMaxDamage: (player) => Number(player?.combatDetails?.slashMaxDamage || 0),
+    smashMaxDamage: (player) => Number(player?.combatDetails?.smashMaxDamage || 0),
+    defensiveMaxDamage: (player) => Number(player?.combatDetails?.defensiveMaxDamage || 0),
+    rangedMaxDamage: (player) => Number(player?.combatDetails?.rangedMaxDamage || 0),
+    magicMaxDamage: (player) => Number(player?.combatDetails?.magicMaxDamage || 0),
+    castSpeed: (player) => Number(player?.combatDetails?.combatStats?.castSpeed || 0),
+    combatRareFind: (player) => Number(player?.combatDetails?.combatStats?.combatRareFind || 0),
+    combatExperience: (player) => Number(player?.combatDetails?.combatStats?.combatExperience || 0),
+};
+
+function expectCombatPreviewBreakdownsToReconcile(previewData) {
+    for (const breakdown of Object.values(previewData.statBreakdowns)) {
+        const sourceTotal = breakdown.sources.reduce(
+            (sum, source) => sum + source.deltaValue,
+            0
+        );
+        expect(
+            breakdown.baseValue + sourceTotal + breakdown.reconciliationDelta
+        ).toBeCloseTo(breakdown.finalValue, 10);
+    }
+}
+
 describe("playerMapper", () => {
     it("creates a valid empty player config", () => {
         const player = createEmptyPlayerConfig(1);
@@ -164,6 +194,145 @@ describe("playerMapper", () => {
         expect(simulationPlayer.combatDetails.combatStats.combatRareFind).toBeLessThan(previewPlayer.combatDetails.combatStats.combatRareFind);
         expect(previewPlayer.combatDetails.currentHitpoints).toBe(previewPlayer.combatDetails.maxHitpoints);
         expect(previewPlayer.combatDetails.currentManapoints).toBe(previewPlayer.combatDetails.maxManapoints);
+    });
+
+    it("attributes each active combat shrine to only the stats it changes", () => {
+        const shrineCases = [
+            {
+                buffHrid: "/guild_buffs/force_combat",
+                shrineHrid: "/guild_shrines/force",
+                sourceName: "Shrine of Force",
+                statKeys: [
+                    "stabMaxDamage",
+                    "slashMaxDamage",
+                    "smashMaxDamage",
+                    "defensiveMaxDamage",
+                    "rangedMaxDamage",
+                    "magicMaxDamage",
+                ],
+                // Level 20 -> ratioBoost = 0.003 + 19 * 0.003 = 0.06. Damage is a
+                // ratioBoost on each maxDamage stat, so the delta must equal the
+                // stat's baseline value scaled by 0.06 (independently of the
+                // reconciliation identity).
+                independentDeltas: {
+                    stabMaxDamage: (base) => base * 0.06,
+                    slashMaxDamage: (base) => base * 0.06,
+                    smashMaxDamage: (base) => base * 0.06,
+                    defensiveMaxDamage: (base) => base * 0.06,
+                    rangedMaxDamage: (base) => base * 0.06,
+                    magicMaxDamage: (base) => base * 0.06,
+                },
+            },
+            {
+                buffHrid: "/guild_buffs/tempo_combat",
+                shrineHrid: "/guild_shrines/tempo",
+                sourceName: "Shrine of Tempo",
+                statKeys: ["attackIntervalSeconds", "castSpeed"],
+                // Level 20 -> attack_speed ratioBoost = 0.08, cast_speed
+                // flatBoost = 0.08. attackIntervalSeconds shrinks (negative
+                // delta); castSpeed grows by exactly 0.08.
+                independentDeltas: {
+                    castSpeed: () => 0.08,
+                },
+                expectIntervalDeltaNegative: true,
+            },
+            {
+                buffHrid: "/guild_buffs/spirit_combat",
+                shrineHrid: "/guild_shrines/spirit",
+                sourceName: "Shrine of Spirit",
+                statKeys: ["maxHitpoints", "maxManapoints"],
+                // Level 20 -> ratioBoost = 0.2 on both max HP / max MP.
+                independentDeltas: {
+                    maxHitpoints: (base) => base * 0.2,
+                    maxManapoints: (base) => base * 0.2,
+                },
+            },
+            {
+                buffHrid: "/guild_buffs/rarity_combat",
+                shrineHrid: "/guild_shrines/rarity",
+                sourceName: "Shrine of Rarity",
+                statKeys: ["combatRareFind"],
+                // Level 20 -> flatBoost = 0.3. Baseline combatRareFind is 0 for
+                // an empty player, so the delta is exactly 0.3.
+                independentDeltas: {
+                    combatRareFind: () => 0.3,
+                },
+            },
+            {
+                buffHrid: "/guild_buffs/scholar_combat",
+                shrineHrid: "/guild_shrines/scholar",
+                sourceName: "Shrine of Scholar",
+                statKeys: ["combatExperience"],
+                // Level 20 -> wisdom flatBoost = 0.1. Baseline combatExperience
+                // is 0 for an empty player, so the delta is exactly 0.1.
+                independentDeltas: {
+                    combatExperience: () => 0.1,
+                },
+            },
+        ];
+
+        for (const shrineCase of shrineCases) {
+            const player = createEmptyPlayerConfig(1);
+            player.guildBuffs[shrineCase.buffHrid] = 20;
+
+            const previewData = buildCombatPreviewData(player);
+            const guildSources = previewData.highlightSources.filter(
+                (source) => source.sourceType === "guild_buff"
+            );
+
+            expect(guildSources).toHaveLength(1);
+            expect(guildSources[0].sourceHrid).toBe(shrineCase.shrineHrid);
+            expect(guildSources[0].sourceName).toBe(shrineCase.sourceName);
+            expect(guildSources[0].sourceName).not.toMatch(/Lv/i);
+            expect(guildSources[0].changedStats.map((stat) => stat.key)).toEqual(shrineCase.statKeys);
+            expectCombatPreviewBreakdownsToReconcile(previewData);
+
+            // Independent assertions that do NOT rely on the reconciliation
+            // identity (baseValue + sourceTotal + reconciliationDelta = final).
+            // They verify the actual deltaValue of each guild buff against the
+            // expected numeric effect derived from the buff formula, so a bug
+            // that produces wrong deltas but still satisfies the identity
+            // would be caught here.
+            const baselinePlayer = buildCombatPreviewData(createEmptyPlayerConfig(1)).player;
+            for (const [statKey, expectedDeltaFn] of Object.entries(shrineCase.independentDeltas ?? {})) {
+                const changedStat = guildSources[0].changedStats.find((stat) => stat.key === statKey);
+                expect(changedStat).toBeTruthy();
+                const baselineValue = COMBAT_PREVIEW_BASELINE_STAT_READER[statKey]?.(baselinePlayer) ?? 0;
+                expect(changedStat.deltaValue).toBeCloseTo(expectedDeltaFn(baselineValue), 6);
+            }
+            if (shrineCase.expectIntervalDeltaNegative) {
+                const intervalStat = guildSources[0].changedStats.find((stat) => stat.key === "attackIntervalSeconds");
+                expect(intervalStat?.deltaValue).toBeLessThan(0);
+            }
+        }
+
+        const inactivePreview = buildCombatPreviewData(createEmptyPlayerConfig(1));
+        expect(inactivePreview.highlightSources.some((source) => source.sourceType === "guild_buff")).toBe(false);
+    });
+
+    it("orders shrine sources and represents tempo as a negative interval contribution", () => {
+        const player = createEmptyPlayerConfig(1);
+        Object.keys(player.guildBuffs).forEach((guildBuffHrid) => {
+            player.guildBuffs[guildBuffHrid] = 10;
+        });
+
+        const previewData = buildCombatPreviewData(player);
+        const guildSources = previewData.highlightSources.filter(
+            (source) => source.sourceType === "guild_buff"
+        );
+        const tempoInterval = guildSources
+            .find((source) => source.sourceHrid === "/guild_shrines/tempo")
+            ?.changedStats.find((stat) => stat.key === "attackIntervalSeconds");
+
+        expect(guildSources.map((source) => source.sourceHrid)).toEqual([
+            "/guild_shrines/force",
+            "/guild_shrines/tempo",
+            "/guild_shrines/spirit",
+            "/guild_shrines/rarity",
+            "/guild_shrines/scholar",
+        ]);
+        expect(tempoInterval?.deltaValue).toBeLessThan(0);
+        expectCombatPreviewBreakdownsToReconcile(previewData);
     });
 
     it("applies simulation extras to combat preview data without changing simulation entry builds", () => {
@@ -330,6 +499,37 @@ describe("playerMapper", () => {
         expect(preview.player.combatDetails.combatStats.combatExperience).toBeCloseTo(0.2, 6);
     });
 
+    it("returns triggered final stats with reconciled shrine, scroll, drink, and ability sources", () => {
+        const player = createEmptyPlayerConfig(1);
+        player.levels.intelligence = 400;
+        player.guildBuffs["/guild_buffs/force_combat"] = 10;
+        player.guildBuffs["/guild_buffs/tempo_combat"] = 10;
+        player.combatScrolls = {
+            "/items/seal_of_attack_speed": { quantity: null },
+            "/items/seal_of_damage": { quantity: null },
+        };
+        player.drinks[0] = "/items/channeling_coffee";
+        player.triggerMap["/items/channeling_coffee"] = [];
+        player.abilities[0] = { abilityHrid: "/abilities/speed_aura", level: 1 };
+
+        const previewData = buildCombatPreviewData(player, {
+            combatScrollsEnabled: true,
+        }, {
+            mode: "zone",
+            zoneHrid: "/actions/combat/alligator",
+            difficultyTier: 0,
+        });
+        const sourceTypes = new Set(previewData.highlightSources.map((source) => source.sourceType));
+        const staticAttackInterval = previewData.player.combatDetails.combatStats.attackInterval;
+        const finalAttackInterval = previewData.finalPlayer.combatDetails.combatStats.attackInterval;
+
+        expect(sourceTypes).toEqual(new Set(["guild_buff", "combat_scroll", "drink", "ability"]));
+        expect(finalAttackInterval).toBeLessThan(staticAttackInterval);
+        expect(previewData.statBreakdowns.attackIntervalSeconds.finalValue)
+            .toBeCloseTo(finalAttackInterval / 1e9, 10);
+        expectCombatPreviewBreakdownsToReconcile(previewData);
+    });
+
     it("builds drink preview cards with the consumed drink state and effective cooldown", () => {
         const player = createEmptyPlayerConfig(1);
         const pouch = itemDetailMap["/items/guzzling_pouch"];
@@ -397,6 +597,9 @@ describe("playerMapper", () => {
 
         expect(previewSourceHrids).not.toContain("/items/super_magic_coffee");
         expect(mysticAuraDelta).toBeCloseTo(0.18, 6);
+        expect(previewData.finalPlayer.combatDetails.magicMaxDamage)
+            .toBeCloseTo(previewData.player.combatDetails.magicMaxDamage, 10);
+        expectCombatPreviewBreakdownsToReconcile(previewData);
     });
 
     it("re-runs drink trigger passes when a later drink unlocks an earlier slot", () => {
@@ -458,6 +661,7 @@ describe("playerMapper", () => {
         const taskDamageChange = taskBadgeSource?.changedStats.find((entry) => entry.key === "taskDamage");
 
         expect(previewData.player.combatDetails.combatStats.taskDamage).toBe(0);
+        expect(previewData.finalPlayer.combatDetails.combatStats.taskDamage).toBeCloseTo(0.15, 6);
         expect(taskBadgeSource).toBeTruthy();
         expect(taskBadgeSource.sourceHrid).toBe(taskBadge.hrid);
         expect(taskBadgeSource.sourceName).toBe(taskBadge.name);

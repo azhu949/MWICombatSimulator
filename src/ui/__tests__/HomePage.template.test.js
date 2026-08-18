@@ -32,6 +32,33 @@ describe("HomePage labyrinth selectors", () => {
         expect(homePageSource).toContain("formatGuildBuffEffects(option, guildBuffLevel(option.hrid))");
     });
 
+    it("renders triggered final combat stats before a localized source breakdown", () => {
+        expect(homePageSource).toContain("combatPreviewData.value.finalPlayer || combatPreviewData.value.player");
+        expect(homePageSource).toContain("buildCombatStatBreakdownParts(breakdown, entry.key");
+        expect(homePageSource).toContain("v-for=\"part in entry.breakdownParts\"");
+        expect(homePageSource).toContain('source.sourceType === \"guild_buff\"');
+        expect(homePageSource).toContain("getGuildShrineName(source.sourceHrid");
+    });
+
+    it("groups compact combat attributes into semantic tactical sections", () => {
+        expect(homePageSource).toContain("COMBAT_STAT_SECTION_DEFINITIONS");
+        expect(homePageSource).toContain('key: "overview"');
+        expect(homePageSource).toContain('key: "offense"');
+        expect(homePageSource).toContain('key: "defense"');
+        expect(homePageSource).toContain('key: "effects"');
+        expect(homePageSource).toContain('key: "rewards"');
+        expect(homePageSource).toContain('v-for="section in combatStatSections"');
+        expect(homePageSource).toContain("grid gap-3 md:grid-cols-2 xl:grid-cols-3");
+        expect(homePageSource).toContain("min-h-[4.75rem]");
+        expect(homePageSource).toContain("entry.hasSources");
+        expect(homePageSource).toContain("border-primary/30 bg-primary/5 hover:bg-primary/10");
+        expect(homePageSource).toContain("border-border bg-card hover:bg-muted/50");
+        expect(homePageSource).toContain("whitespace-normal break-words text-xs");
+        expect(homePageSource).toContain("part.kind === 'source' ? 'font-medium text-primary' : ''");
+        expect(homePageSource).toContain("text-base font-semibold leading-5 tabular-nums text-foreground\">{{ entry.value }}");
+        expect(homePageSource).toContain(':title="entry.breakdownText"');
+    });
+
     it("uses official skill, equipment, combat stat, labyrinth, and MooPass labels", () => {
         expect(homePageSource).toContain("getSkillName(`/skills/${skillKey}`");
         expect(homePageSource).toContain("getEquipmentSlotName(slot, slot)");

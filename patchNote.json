@@ -1,4 +1,22 @@
 {
+    "2026年8月18日（v2.0.9）": {
+        "label": {
+            "zh": "2026年8月18日（v2.0.9）",
+            "en": "August 18, 2026 (v2.0.9)"
+        },
+        "notes": {
+            "zh": [
+                "战斗属性面板改版：属性按概览、输出、防御、效果、收益分组展示，并可展开查看基础值、各来源增量与最终值。",
+                "新增公会神龛增益归因，每个神龛单独列出影响的属性及数值变化。",
+                "战斗属性现在显示模拟后的最终值（含卷轴、饮品、技能触发效果）。"
+            ],
+            "en": [
+                "Redesigned the Battle Attributes panel: stats are grouped into Overview, Offense, Defense, Effects, and Rewards, with expandable base value, per-source deltas, and final value.",
+                "Added guild shrine attribution, listing each shrine's affected stats and their deltas separately.",
+                "Battle attributes now show the post-simulation final value (including scrolls, drinks, and triggered ability effects)."
+            ]
+        }
+    },
     "2026年8月16日（v2.0.8）": {
         "label": {
             "zh": "2026年8月16日（v2.0.8）",
