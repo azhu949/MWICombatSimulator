@@ -1,4 +1,5 @@
 import { describe, expect, it } from "vitest";
+import { reactive } from "vue";
 import abilityDetailMap from "../../combatsimulator/data/abilityDetailMap.json";
 import itemDetailMap from "../../combatsimulator/data/itemDetailMap.json";
 import {
@@ -91,6 +92,27 @@ describe("triggerMapper", () => {
             beforeState: "default",
             afterState: "disabled",
         });
+    });
+
+    it("normalizes reactive trigger entries before comparing signatures", () => {
+        const abilityHrid = findFirstAbilityWithDefaultTriggers();
+        expect(abilityHrid).toBeTruthy();
+
+        const defaultTriggers = getDefaultTriggerDtosForHrid(abilityHrid);
+        const reactiveTriggers = reactive(defaultTriggers.map((trigger, index) => ({
+            ...trigger,
+            value: String(trigger.value),
+            ...(index === 0 ? {
+                toJSON: () => ({ dependencyHrid: "/trigger_dependencies/not_equivalent" }),
+            } : {}),
+        })));
+        const reactiveTriggerMap = reactive({
+            [abilityHrid]: reactiveTriggers,
+        });
+
+        expect(buildTriggerChangeDescriptor({
+            [abilityHrid]: defaultTriggers,
+        }, reactiveTriggerMap, abilityHrid)).toBeNull();
     });
 
     it("collects trigger targets that remain active after slot swaps", () => {

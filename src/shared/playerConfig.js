@@ -1,5 +1,5 @@
 import { EQUIPMENT_SLOT_KEYS, LEVEL_KEYS, houseRoomHrids } from "./gameDataIndex.js";
-import { combatGuildBuffHrids } from "./guildBuffs.js";
+import { combatGuildBuffHrids, normalizeGuildBuffLevels } from "./guildBuffs.js";
 
 export { EQUIPMENT_SLOT_KEYS, LEVEL_KEYS };
 
@@ -7,8 +7,40 @@ export function createEmptySkillExperienceMap() {
     return Object.fromEntries(LEVEL_KEYS.map((key) => [key, null]));
 }
 
+export function normalizeHouseRoomLevels(houseRooms) {
+    const source = houseRooms && typeof houseRooms === "object" && !Array.isArray(houseRooms)
+        ? houseRooms
+        : {};
+
+    return Object.fromEntries(houseRoomHrids.map((hrid) => {
+        const current = Number(source[hrid] ?? 0);
+        const level = Number.isFinite(current) && current >= 0 ? Math.floor(current) : 0;
+        return [hrid, level];
+    }));
+}
+
+/**
+ * Canonical PlayerConfig objects are dense in memory: every known house room and
+ * combat guild buff has a numeric level, while achievements always use a map.
+ * Serialization may compact zero-level house rooms, so every Store boundary that
+ * accepts an external or saved player must restore this contract.
+ */
+export function ensurePlayerAdvancedState(player) {
+    if (!player || typeof player !== "object") {
+        return null;
+    }
+
+    player.houseRooms = normalizeHouseRoomLevels(player.houseRooms);
+
+    if (!player.achievements || typeof player.achievements !== "object" || Array.isArray(player.achievements)) {
+        player.achievements = {};
+    }
+    player.guildBuffs = normalizeGuildBuffLevels(player.guildBuffs);
+    return player;
+}
+
 export function createEmptyPlayerConfig(id) {
-    const houseRooms = Object.fromEntries(houseRoomHrids.map((hrid) => [hrid, 0]));
+    const houseRooms = normalizeHouseRoomLevels();
     const guildBuffs = Object.fromEntries(combatGuildBuffHrids.map((hrid) => [hrid, 0]));
     const levels = Object.fromEntries(LEVEL_KEYS.map((key) => [key, 1]));
     const skillExperience = createEmptySkillExperienceMap();

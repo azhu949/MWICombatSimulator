@@ -97,10 +97,29 @@ describe("common locale resources", () => {
         expect(Object.keys(enTrigger).sort()).toEqual(Object.keys(zhTrigger).sort());
         expect(enCommon?.queue?.triggerState?.disabled).toBe("No conditions");
         expect(zhCommon?.queue?.triggerState?.disabled).toBe("无条件");
-        expect(enTrigger.saveOrCancelFirst).toContain("Save or cancel");
-        expect(zhTrigger.saveOrCancelFirst).toContain("保存或取消");
+        expect(enCommon?.vue?.home?.dirtyDraftBlocked).toContain("Save or cancel");
+        expect(zhCommon?.vue?.home?.dirtyDraftBlocked).toContain("保存或取消");
+        expect(enTrigger.saveOrCancelFirst).toBeUndefined();
+        expect(zhTrigger.saveOrCancelFirst).toBeUndefined();
         expect(enTrigger.editorTitle).toBeUndefined();
         expect(zhTrigger.editorTitle).toBeUndefined();
+    });
+
+    it("groups Home modal copy under synchronized feature namespaces", () => {
+        const namespaceNames = ["combatScrolls", "houseRooms", "guildBuffs"];
+
+        for (const namespaceName of namespaceNames) {
+            const enNamespace = enCommon?.vue?.home?.[namespaceName] || {};
+            const zhNamespace = zhCommon?.vue?.home?.[namespaceName] || {};
+            expect(Object.keys(enNamespace).sort()).toEqual(Object.keys(zhNamespace).sort());
+            expect(Object.keys(enNamespace).length).toBeGreaterThan(0);
+        }
+
+        const flatModalKeyPattern = /^(combatScrolls?|houseRooms|guildBuffs?)[A-Z]/;
+        expect(Object.keys(enCommon?.vue?.home || {}).filter((key) => flatModalKeyPattern.test(key))).toEqual([]);
+        expect(Object.keys(zhCommon?.vue?.home || {}).filter((key) => flatModalKeyPattern.test(key))).toEqual([]);
+        expect(enCommon?.vue?.home?.combatScrolls?.invalidQuantity).toContain("whole number");
+        expect(zhCommon?.vue?.home?.combatScrolls?.invalidQuantity).toContain("正整数");
     });
 
     it("does not duplicate game-defined labels in the common locale", () => {

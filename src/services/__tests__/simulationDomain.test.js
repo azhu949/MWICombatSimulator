@@ -12,6 +12,7 @@ import {
     RUN_SCOPE_ALL_GROUP_ZONES,
     RUN_SCOPE_ALL_SOLO_ZONES,
     RUN_SCOPE_SINGLE,
+    aggregateBatchPlayerRows,
     buildAllLabyrinthTargets,
     buildQueueBaselineSettings,
     buildSingleSimulationPayload,
@@ -320,8 +321,36 @@ describe("simulationDomain", () => {
         ], [{ id: "1", name: "One" }]);
 
         expect(rows).toHaveLength(3);
+        expect(rows.every((row) => row.simulatedTime === ONE_HOUR)).toBe(true);
         expect(rows[2].zoneName).toBe(labyrinthMonster.hrid);
         expect(rows[2].difficulty).toBe(80);
+
+        expect(aggregateBatchPlayerRows(rows, "player1")).toMatchObject({
+            playerHrid: "player1",
+            simulatedTime: ONE_HOUR,
+            encountersPerHour: 3,
+            totalXpPerHour: 3,
+        });
+
+        expect(
+            aggregateBatchPlayerRows(
+                [
+                    ...rows,
+                    {
+                        ...rows[0],
+                        rowId: "different-duration",
+                        simulatedTime: 2 * ONE_HOUR,
+                    },
+                ],
+                "player1",
+            ),
+        ).toBeNull();
+        expect(
+            aggregateBatchPlayerRows(
+                rows.map(({ simulatedTime: _simulatedTime, ...row }) => row),
+                "player1",
+            ),
+        ).toBeNull();
 
         expect(buildSimulationExtra({
             mooPass: false,

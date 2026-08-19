@@ -134,7 +134,7 @@ describe("HomePage combat scroll configuration", () => {
         await configureButton.trigger("click");
         await flushPromises();
 
-        const quantityInput = wrapper.findAll('input[type="number"]').find((input) => input.element.value === "3");
+        const quantityInput = wrapper.findAll('input[inputmode="numeric"]').find((input) => input.element.value === "3");
         expect(quantityInput).toBeTruthy();
         await quantityInput.setValue("5");
 
@@ -151,16 +151,56 @@ describe("HomePage combat scroll configuration", () => {
         await configureButton.trigger("click");
         await flushPromises();
 
-        const quantityInput = wrapper.findAll('input[type="number"]').find((input) => input.element.value === "3");
+        const quantityInput = wrapper.findAll('input[inputmode="numeric"]').find((input) => input.element.value === "3");
         expect(quantityInput).toBeTruthy();
-        await quantityInput.setValue("0");
+        quantityInput.element.value = "0";
+        await quantityInput.trigger("input");
 
         expect(simulator.activePlayer.combatScrolls["/items/seal_of_damage"]).toEqual({ quantity: 3 });
+        expect(quantityInput.element.value).toBe("0");
         expect(wrapper.text()).toMatch(/Enter a positive whole number|请输入正整数/);
         expect(quantityInput.attributes("aria-invalid")).toBe("true");
 
+        await quantityInput.setValue("-");
+        expect(simulator.activePlayer.combatScrolls["/items/seal_of_damage"]).toEqual({ quantity: 3 });
+        expect(quantityInput.element.value).toBe("-");
+        expect(wrapper.text()).toMatch(/Enter a positive whole number|请输入正整数/);
+
+        await quantityInput.setValue("e");
+        expect(simulator.activePlayer.combatScrolls["/items/seal_of_damage"]).toEqual({ quantity: 3 });
+        expect(quantityInput.element.value).toBe("e");
+
         await quantityInput.setValue("5");
         expect(simulator.activePlayer.combatScrolls["/items/seal_of_damage"]).toEqual({ quantity: 5 });
+        expect(quantityInput.element.value).toBe("5");
+        expect(wrapper.text()).not.toMatch(/Enter a positive whole number|请输入正整数/);
+
+        await quantityInput.setValue("");
+        expect(simulator.activePlayer.combatScrolls["/items/seal_of_damage"]).toEqual({ quantity: null });
+        expect(wrapper.text()).not.toMatch(/Enter a positive whole number|请输入正整数/);
+        wrapper.unmount();
+    });
+
+    it("removes one configured scroll and clears its quantity error", async () => {
+        const wrapper = mountHomePage(router);
+        await flushPromises();
+
+        const configureButton = wrapper.findAll("button").find((button) => /Configure|配置/.test(button.text()));
+        await configureButton.trigger("click");
+        await flushPromises();
+
+        const quantityInput = wrapper.findAll('input[inputmode="numeric"]').find((input) => input.element.value === "3");
+        await quantityInput.setValue("0");
+        expect(wrapper.text()).toMatch(/Enter a positive whole number|请输入正整数/);
+
+        const row = quantityInput.element.closest(".rounded-md");
+        const checkbox = row?.querySelector('input[type="checkbox"]');
+        expect(checkbox?.checked).toBe(true);
+        const checkboxWrapper = wrapper.findAll('input[type="checkbox"]').find((input) => input.element === checkbox);
+        expect(checkboxWrapper.attributes("aria-label")).toBeTruthy();
+        await checkboxWrapper.setValue(false);
+
+        expect(simulator.activePlayer.combatScrolls).not.toHaveProperty("/items/seal_of_damage");
         expect(wrapper.text()).not.toMatch(/Enter a positive whole number|请输入正整数/);
         wrapper.unmount();
     });

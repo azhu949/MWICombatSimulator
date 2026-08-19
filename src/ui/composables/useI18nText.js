@@ -19,12 +19,14 @@ export function useI18nText() {
 
     function t(key, fallback = "", options = {}) {
         const currentLanguage = language.value || i18next.language || "zh";
+        const defaultValue = fallback || key;
         const translated = i18next.t(key, {
             lng: currentLanguage,
             ...options,
+            defaultValue,
         });
         if (!translated || translated === key) {
-            return fallback || key;
+            return defaultValue;
         }
         return translated;
     }

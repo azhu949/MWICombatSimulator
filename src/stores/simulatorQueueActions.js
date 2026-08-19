@@ -699,11 +699,11 @@ export function createQueueActions({
                     if (String(player.id) !== activePlayerId) {
                         return player;
                     }
-                    return {
+                    return this.ensurePlayerConfig({
                         ...deepClone(baselineSnapshot),
                         id: activePlayerId,
                         selected: currentSelected,
-                    };
+                    });
                 });
             }
             queueState.results = [];
@@ -911,11 +911,11 @@ export function createQueueActions({
                 if (String(player.id) !== activePlayerId) {
                     return player;
                 }
-                return {
+                return this.ensurePlayerConfig({
                     ...deepClone(targetSnapshot),
                     id: activePlayerId,
                     selected: currentSelected,
-                };
+                });
             });
             this.persistPlayerAchievements();
 

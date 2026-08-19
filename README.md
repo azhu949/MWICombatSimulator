@@ -47,6 +47,8 @@ npm run dev
 npm run build
 ```
 
+主站导入脚本链接可通过构建变量 `VITE_MAIN_SITE_IMPORT_SCRIPT_URL` 覆盖；未定义时使用项目维护的 GreasyFork 默认地址，设置为空字符串会禁用安装按钮并显示待配置提示。无效或非 HTTP(S) 地址（例如 `false`）同样按禁用处理。
+
 本地预览构建产物：
 
 ```bash

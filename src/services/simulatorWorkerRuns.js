@@ -2,6 +2,7 @@ import sharedWorkerClient, { WorkerClient } from "./workerClient.js";
 
 export const DEDICATED_WORKER_SCOPE_QUEUE = "queue";
 export const DEDICATED_WORKER_SCOPE_ADVISOR = "advisor";
+export const DEDICATED_WORKER_SCOPE_EXPERIMENTAL = "experimental";
 
 const dedicatedWorkerRuns = new Set();
 let sharedWorkerRunHandle = null;
@@ -103,6 +104,19 @@ export function runSingleSimulationPayloadWithDedicatedWorker(payload, onProgres
             },
         };
         registerDedicatedWorkerRun(workerRunHandle);
+
+        if (typeof options?.onHandle === "function") {
+            try {
+                options.onHandle(workerRunHandle);
+            } catch (error) {
+                settle(reject, error);
+                return;
+            }
+        }
+
+        if (settled) {
+            return;
+        }
 
         try {
             dedicatedClient.startSimulation(payload, {
@@ -237,6 +251,21 @@ export function runSharedSingleSimulationPayload(payload, onProgress = () => {},
             sharedWorkerRunHandle.cancel(createWorkerRunCancellationError("Superseded by a new shared worker run."));
         }
         sharedWorkerRunHandle = workerRunHandle;
+
+        if (typeof options?.onHandle === "function") {
+            try {
+                options.onHandle(workerRunHandle);
+            } catch (error) {
+                // The callback runs before startSimulation, so there is no worker
+                // belonging to this run that needs to be stopped here.
+                settle(reject, error);
+                return;
+            }
+        }
+
+        if (settled) {
+            return;
+        }
 
         try {
             workerClient.startSimulation(payload, {

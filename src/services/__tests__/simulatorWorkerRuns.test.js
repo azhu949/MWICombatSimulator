@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from "vitest";
 import {
     DEDICATED_WORKER_SCOPE_ADVISOR,
+    DEDICATED_WORKER_SCOPE_EXPERIMENTAL,
     DEDICATED_WORKER_SCOPE_QUEUE,
     cancelDedicatedWorkerRuns,
     cancelSharedWorkerRun,
@@ -62,6 +63,59 @@ describe("simulatorWorkerRuns", () => {
 
         await expect(promise).resolves.toEqual({ encounters: 3 });
         expect(client.stopSimulation).toHaveBeenCalledTimes(1);
+    });
+
+    it("exposes a scoped handle for cancelling a dedicated run before startup", async () => {
+        let runHandle = null;
+        const promise = runSingleSimulationPayloadWithDedicatedWorker(
+            { type: "start_simulation" },
+            vi.fn(),
+            {
+                scope: DEDICATED_WORKER_SCOPE_EXPERIMENTAL,
+                WorkerClientCtor: FakeWorkerClient,
+                onHandle: (handle) => {
+                    runHandle = handle;
+                    handle.cancel();
+                },
+            }
+        );
+        const client = FakeWorkerClient.instances[0];
+
+        expect(runHandle?.scope).toBe(DEDICATED_WORKER_SCOPE_EXPERIMENTAL);
+        await expect(promise).rejects.toMatchObject({ code: "cancelled" });
+        expect(client.payload).toBeUndefined();
+        expect(client.stopSimulation).toHaveBeenCalledTimes(1);
+    });
+
+    it("keeps an experimental dedicated run isolated from an active shared run", async () => {
+        const sharedClient = new FakeWorkerClient();
+        const sharedPromise = runSharedSingleSimulationPayload(
+            { type: "shared" },
+            vi.fn(),
+            { workerClient: sharedClient }
+        );
+        let experimentalRunHandle = null;
+        const experimentalPromise = runSingleSimulationPayloadWithDedicatedWorker(
+            { type: "experimental" },
+            vi.fn(),
+            {
+                scope: DEDICATED_WORKER_SCOPE_EXPERIMENTAL,
+                WorkerClientCtor: FakeWorkerClient,
+                onHandle: (handle) => {
+                    experimentalRunHandle = handle;
+                },
+            }
+        );
+
+        experimentalRunHandle.cancel();
+
+        await expect(experimentalPromise).rejects.toMatchObject({ code: "cancelled" });
+        expect(sharedClient.stopSimulation).not.toHaveBeenCalled();
+        expect(hasSharedWorkerRunInProgress()).toBe(true);
+
+        sharedClient.emit("onResult", { encounters: 5 });
+        await expect(sharedPromise).resolves.toEqual({ encounters: 5 });
+        expect(hasSharedWorkerRunInProgress()).toBe(false);
     });
 
     it("returns normalized multi-run results while preserving item callbacks", async () => {
@@ -145,6 +199,64 @@ describe("simulatorWorkerRuns", () => {
             code: "cancelled",
         });
         expect(sharedClient.stopSimulation).toHaveBeenCalledTimes(1);
+    });
+
+    it("exposes a handle for cancelling the specific shared run", async () => {
+        const sharedClient = new FakeWorkerClient();
+        let runHandle = null;
+        const sharedPromise = runSharedSingleSimulationPayload(
+            { type: "shared" },
+            vi.fn(),
+            {
+                workerClient: sharedClient,
+                onHandle: (handle) => {
+                    runHandle = handle;
+                },
+            }
+        );
+
+        expect(runHandle).toBeTruthy();
+        runHandle.cancel();
+
+        await expect(sharedPromise).rejects.toMatchObject({ code: "cancelled" });
+        expect(sharedClient.stopSimulation).toHaveBeenCalledTimes(1);
+    });
+
+    it("does not start a shared worker when onHandle cancels synchronously", async () => {
+        const sharedClient = new FakeWorkerClient();
+        const startSimulation = vi.spyOn(sharedClient, "startSimulation");
+        const sharedPromise = runSharedSingleSimulationPayload(
+            { type: "shared" },
+            vi.fn(),
+            {
+                workerClient: sharedClient,
+                onHandle: (handle) => handle.cancel(),
+            }
+        );
+
+        await expect(sharedPromise).rejects.toMatchObject({ code: "cancelled" });
+        expect(startSimulation).not.toHaveBeenCalled();
+        expect(sharedClient.stopSimulation).toHaveBeenCalledTimes(1);
+        expect(hasSharedWorkerRunInProgress()).toBe(false);
+    });
+
+    it("does not stop a worker when onHandle throws before startup", async () => {
+        const sharedClient = new FakeWorkerClient();
+        const callbackError = new Error("handle registration failed");
+        const sharedPromise = runSharedSingleSimulationPayload(
+            { type: "shared" },
+            vi.fn(),
+            {
+                workerClient: sharedClient,
+                onHandle: () => {
+                    throw callbackError;
+                },
+            }
+        );
+
+        await expect(sharedPromise).rejects.toBe(callbackError);
+        expect(sharedClient.stopSimulation).not.toHaveBeenCalled();
+        expect(hasSharedWorkerRunInProgress()).toBe(false);
     });
 
     it("supersedes a pending shared run with a cancellation error when a new shared run starts", async () => {

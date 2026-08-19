@@ -13,7 +13,7 @@ import {
     soloZoneHrids,
     zoneOptions,
 } from "../shared/gameDataIndex.js";
-import { createEmptyPlayerConfig } from "../shared/playerConfig.js";
+import { createEmptyPlayerConfig, ensurePlayerAdvancedState } from "../shared/playerConfig.js";
 import workerClient from "../services/workerClient.js";
 import {
     applyPersistedAchievementsToPlayers,
@@ -199,6 +199,7 @@ export const useSimulatorStore = defineStore("simulator", {
             [1, 2, 3, 4, 5].map((id) => createEmptyPlayerConfig(id)),
             playerAchievementsById,
         );
+        playerList.forEach((player) => ensurePlayerAdvancedState(player));
         const persistedQueueRunSettingsByPlayer = loadQueueRunSettingsByPlayerFromStorage();
         const simulationUiSettings = loadSimulationUiSettingsFromStorage();
         const { zones, dungeons } = getZoneOptions();
@@ -239,7 +240,7 @@ export const useSimulatorStore = defineStore("simulator", {
                 comExp: simulationUiSettings.comExp,
                 comDropEnabled: simulationUiSettings.comDropEnabled,
                 comDrop: simulationUiSettings.comDrop,
-                enableHpMpVisualization: true,
+                enableHpMpVisualization: simulationUiSettings.enableHpMpVisualization,
                 selectedGroupZoneHrids: initialGroupZoneHrids,
                 selectedSoloZoneHrids: initialSoloZoneHrids,
                 labyrinthCrates: normalizeLabyrinthCrates({}),
@@ -423,6 +424,9 @@ export const useSimulatorStore = defineStore("simulator", {
         },
     },
     actions: {
+        ensurePlayerConfig(player = this.activePlayer) {
+            return ensurePlayerAdvancedState(player);
+        },
         syncActiveResultPlayerToActivePlayer(playerId = this.activePlayerId) {
             const targetPlayerHrid = toPlayerHrid(playerId);
             const summaryRow = Array.isArray(this.results.summaryRows)
@@ -564,6 +568,7 @@ export const useSimulatorStore = defineStore("simulator", {
                         || createEmptyPlayerConfig(playerId);
 
                     const parsed = parseSoloImportConfig(snapshotText, sourcePlayer, this.simulationSettings);
+                    this.ensurePlayerConfig(parsed.player);
                     nextPlayers = nextPlayers.map((player) => (
                         String(player.id) === String(playerId) ? parsed.player : player
                     ));
@@ -882,6 +887,7 @@ export const useSimulatorStore = defineStore("simulator", {
         },
         setActivePlayer(id) {
             this.activePlayerId = String(id);
+            this.ensurePlayerConfig(this.activePlayer);
             this.ensureQueueState(this.activePlayerId);
             if (!Object.prototype.hasOwnProperty.call(this.queue.importedProfileByPlayer, this.activePlayerId)) {
                 this.setImportedProfileState(this.activePlayerId, false);
@@ -905,6 +911,7 @@ export const useSimulatorStore = defineStore("simulator", {
         },
         importGroupConfig(text) {
             const result = parseGroupImportConfig(text, this.players, this.simulationSettings);
+            result.players.forEach((player) => this.ensurePlayerConfig(player));
             const byId = Object.fromEntries(result.players.map((player) => [String(player.id), player]));
             this.players = this.players.map((player) => byId[String(player.id)] || player);
             this.persistPlayerAchievements();
@@ -924,6 +931,7 @@ export const useSimulatorStore = defineStore("simulator", {
             const targetId = String(playerId || this.activePlayerId);
             const currentPlayer = this.players.find((player) => player.id === targetId) || this.activePlayer;
             const result = parseSoloImportConfig(text, currentPlayer, this.simulationSettings);
+            this.ensurePlayerConfig(result.player);
 
             this.players = this.players.map((player) => (player.id === targetId ? result.player : player));
             this.persistPlayerAchievements();

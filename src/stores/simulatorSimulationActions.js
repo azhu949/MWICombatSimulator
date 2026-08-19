@@ -44,8 +44,8 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
                 payloadOptions
             );
         },
-        runSingleSimulationPayload(payload, onProgress = () => {}) {
-            return runSharedSingleSimulationPayload(payload, onProgress);
+        runSingleSimulationPayload(payload, onProgress = () => {}, options = {}) {
+            return runSharedSingleSimulationPayload(payload, onProgress, options);
         },
         runSingleSimulationPayloadWithDedicatedWorker(payload, onProgress = () => {}, options = {}) {
             return runSingleSimulationPayloadWithDedicatedWorker(payload, onProgress, options);

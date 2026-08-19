@@ -361,6 +361,7 @@ describe("simulatorStore", () => {
         expect(simulator.simulationSettings.comDropEnabled).toBe(true);
         expect(simulator.simulationSettings.comExp).toBe(20);
         expect(simulator.simulationSettings.comDrop).toBe(20);
+        expect(simulator.simulationSettings.enableHpMpVisualization).toBe(true);
     });
 
     it("does not override stored simulation UI flags", () => {
@@ -370,6 +371,7 @@ describe("simulatorStore", () => {
             comExp: 17,
             comDropEnabled: false,
             comDrop: 18,
+            enableHpMpVisualization: false,
         }));
 
         const simulator = useSimulatorStore();
@@ -379,6 +381,7 @@ describe("simulatorStore", () => {
         expect(simulator.simulationSettings.comDropEnabled).toBe(false);
         expect(simulator.simulationSettings.comExp).toBe(17);
         expect(simulator.simulationSettings.comDrop).toBe(18);
+        expect(simulator.simulationSettings.enableHpMpVisualization).toBe(false);
     });
 
     it("sorts food options by restore type and duration", () => {
@@ -3225,6 +3228,31 @@ describe("simulatorStore", () => {
         expect(simulator.players[0].achievements[ACHIEVEMENT_HRID]).toBe(true);
         expect(JSON.parse(global.localStorage.getItem(PLAYER_ACHIEVEMENTS_STORAGE_KEY)).achievementsByPlayer["1"])
             .toEqual({ [ACHIEVEMENT_HRID]: true });
+    });
+
+    it("restores the dense in-memory advanced-state contract at the Store import boundary", () => {
+        const simulator = useSimulatorStore();
+        const roomHrids = Object.keys(simulator.activePlayer.houseRooms);
+        const importedRoomHrid = roomHrids[0];
+
+        const result = simulator.importSoloConfig(JSON.stringify({
+            version: 2,
+            player: {
+                id: "1",
+                houseRooms: { [importedRoomHrid]: 3 },
+                guildBuffs: null,
+                achievements: null,
+            },
+        }), "1");
+
+        expect(Object.keys(result.player.houseRooms)).toHaveLength(roomHrids.length);
+        expect(result.player.houseRooms[importedRoomHrid]).toBe(3);
+        expect(roomHrids.every((hrid) => Number.isInteger(result.player.houseRooms[hrid]))).toBe(true);
+        expect(result.player.achievements).toEqual({});
+        expect(Object.keys(result.player.guildBuffs)).toHaveLength(combatGuildBuffDetails.length);
+
+        const exportedPlayer = JSON.parse(simulator.exportSoloConfig("1")).player;
+        expect(exportedPlayer.houseRooms).toEqual({ [importedRoomHrid]: 3 });
     });
 
     it("imports main-site shareable profile into the active player without changing simulation settings", () => {

@@ -127,6 +127,8 @@ describe("importExportMapper", () => {
         expect(parsed.format).toBe("mwi-vue-group");
         expect(parsed.players).toHaveLength(2);
         expect(parsed.players[0].levels.attack).toBe(33);
+        expect(Object.values(parsed.players[0].houseRooms).every((level) => Number(level) > 0)).toBe(true);
+        expect(Object.keys(parsed.players[0].houseRooms)).toHaveLength(1);
         expect(parsed.simulationSettings.zoneHrid).toBe(settings.zoneHrid);
     });
 
@@ -142,6 +144,53 @@ describe("importExportMapper", () => {
         expect(parsed.player.levels.magic).toBe(44);
         expect(parsed.player.food[0]).toBe(player.food[0]);
         expect(parsed.player.guildBuffs[combatGuildBuffDetails[0].hrid]).toBe(4);
+        expect(Object.values(parsed.player.houseRooms).every((level) => Number(level) > 0)).toBe(true);
+        expect(Object.keys(parsed.player.houseRooms)).toHaveLength(1);
+    });
+
+    it("keeps an explicit empty house room map in exports", () => {
+        const player = createEmptyPlayerConfig(1);
+        const parsed = JSON.parse(exportSoloConfig(player, createSimulationSettings()));
+
+        expect(parsed.player).toHaveProperty("houseRooms");
+        expect(parsed.player.houseRooms).toEqual({});
+    });
+
+    it("omits unknown house room hrids from portable exports", () => {
+        const player = createConfiguredPlayer(1);
+        const knownRoomHrid = Object.keys(player.houseRooms).find((hrid) => player.houseRooms[hrid] > 0);
+        const unknownRoomHrid = "/house_rooms/removed_or_misspelled";
+        player.houseRooms[unknownRoomHrid] = 7;
+
+        const soloPlayer = JSON.parse(exportSoloConfig(player, createSimulationSettings())).player;
+        const groupPlayer = JSON.parse(exportGroupConfig([player], createSimulationSettings())).players[0];
+
+        expect(soloPlayer.houseRooms).toEqual({ [knownRoomHrid]: 2 });
+        expect(groupPlayer.houseRooms).toEqual({ [knownRoomHrid]: 2 });
+        expect(soloPlayer.houseRooms).not.toHaveProperty(unknownRoomHrid);
+        expect(groupPlayer.houseRooms).not.toHaveProperty(unknownRoomHrid);
+    });
+
+    it("removes unknown house room hrids during modern import", () => {
+        const fallbackPlayer = createEmptyPlayerConfig(1);
+        const knownRoomHrid = Object.keys(fallbackPlayer.houseRooms)[0];
+        const unknownRoomHrid = "/house_rooms/removed_or_misspelled";
+        const payload = {
+            version: 2,
+            format: "mwi-vue-solo",
+            player: {
+                id: "1",
+                houseRooms: {
+                    [knownRoomHrid]: 4,
+                    [unknownRoomHrid]: 7,
+                },
+            },
+        };
+
+        const result = importSoloConfig(JSON.stringify(payload), fallbackPlayer, createSimulationSettings());
+
+        expect(result.player.houseRooms[knownRoomHrid]).toBe(4);
+        expect(result.player.houseRooms).not.toHaveProperty(unknownRoomHrid);
     });
 
     it("imports modern group payload", () => {
@@ -251,6 +300,7 @@ describe("importExportMapper", () => {
             },
             houseRooms: {
                 "/house_rooms/archery_range": 1,
+                "/house_rooms/removed_or_misspelled": 7,
             },
             zone: "/actions/combat/jungle_planet",
             difficulty: "2",
@@ -266,6 +316,8 @@ describe("importExportMapper", () => {
         expect(result.player.abilities[4].abilityHrid).toBe("/abilities/fireball");
         expect(result.player.achievements).toEqual({ "/achievements/existing": true });
         expect(result.player.guildBuffs[guildBuffHrid]).toBe(0);
+        expect(result.player.houseRooms["/house_rooms/archery_range"]).toBe(1);
+        expect(result.player.houseRooms).not.toHaveProperty("/house_rooms/removed_or_misspelled");
         expect(result.simulationSettings.zoneHrid).toBe("/actions/combat/jungle_planet");
         expect(result.simulationSettings.difficultyTier).toBe(2);
         expect(result.simulationSettings.simulationTimeHours).toBe(12);

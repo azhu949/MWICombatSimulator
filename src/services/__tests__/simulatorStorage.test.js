@@ -9,6 +9,7 @@ import {
     loadQueueRunSettingsByPlayerFromStorage,
     normalizeSimulationUiSettings,
     normalizeStoredPlayerDataMap,
+    persistSimulationUiSettingsToStorage,
     readJsonStorage,
     removeStorageItem,
     setJsonStorage,
@@ -120,6 +121,19 @@ describe("simulatorStorage", () => {
 
         storage.data.set(SIMULATION_UI_STORAGE_KEY, JSON.stringify({ combatScrollsEnabled: true }));
         expect(loadSimulationUiSettingsFromStorage().combatScrollsEnabled).toBe(true);
+    });
+
+    it("defaults HP/MP visualization on and preserves the persisted choice", () => {
+        expect(normalizeSimulationUiSettings({}).enableHpMpVisualization).toBe(false);
+        expect(normalizeSimulationUiSettings({ enableHpMpVisualization: true }).enableHpMpVisualization).toBe(true);
+
+        const storage = createMemoryStorage();
+        vi.stubGlobal("localStorage", storage);
+        expect(loadSimulationUiSettingsFromStorage().enableHpMpVisualization).toBe(true);
+
+        persistSimulationUiSettingsToStorage({ enableHpMpVisualization: false });
+        expect(JSON.parse(storage.data.get(SIMULATION_UI_STORAGE_KEY)).enableHpMpVisualization).toBe(false);
+        expect(loadSimulationUiSettingsFromStorage().enableHpMpVisualization).toBe(false);
     });
 
     it("throws the existing unavailable-storage error when requested for writes", () => {

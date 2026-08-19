@@ -5,7 +5,13 @@ import {
     monsterDetailIndex,
 } from "../shared/gameDataIndex.js";
 import itemLocationDetailMap from "../combatsimulator/data/itemLocationDetailMap.json";
-import { createEmptyPlayerConfig, createEmptySkillExperienceMap, EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from "../shared/playerConfig.js";
+import {
+    createEmptyPlayerConfig,
+    createEmptySkillExperienceMap,
+    EQUIPMENT_SLOT_KEYS,
+    LEVEL_KEYS,
+    normalizeHouseRoomLevels,
+} from "../shared/playerConfig.js";
 import {
     LABYRINTH_ROOM_LEVEL_DEFAULT,
     LABYRINTH_ROOM_LEVEL_MIN,
@@ -49,6 +55,26 @@ function toFiniteNumber(value, fallback = 0) {
 
 function deepClone(value) {
     return JSON.parse(JSON.stringify(value));
+}
+
+function compactHouseRooms(houseRooms) {
+    // PlayerConfig is dense in memory; the portable format intentionally omits
+    // zero-level rooms and is expanded again at the Store boundary on import.
+    const compact = {};
+
+    for (const [hrid, level] of Object.entries(normalizeHouseRoomLevels(houseRooms))) {
+        if (level > 0) {
+            compact[hrid] = level;
+        }
+    }
+
+    return compact;
+}
+
+function buildExportPlayer(player) {
+    const normalized = sanitizePlayerConfig(player, player);
+    normalized.houseRooms = compactHouseRooms(normalized.houseRooms);
+    return normalized;
 }
 
 function normalizeAbilityHrid(abilityHrid) {
@@ -211,9 +237,11 @@ function sanitizePlayerConfig(raw, fallbackPlayer, {
         preserveMissingCombatScrolls
     );
 
-    normalized.houseRooms = source.houseRooms && typeof source.houseRooms === "object"
-        ? deepClone(source.houseRooms)
-        : deepClone(fallback.houseRooms);
+    normalized.houseRooms = normalizeHouseRoomLevels(
+        source.houseRooms && typeof source.houseRooms === "object"
+            ? source.houseRooms
+            : fallback.houseRooms
+    );
 
     normalized.guildBuffs = normalizeGuildBuffLevels(
         source.guildBuffs,
@@ -302,9 +330,11 @@ function applyLegacySoloToPlayer(legacySoloPayload, fallbackPlayer, {
         preserveMissingCombatScrolls
     );
 
-    merged.houseRooms = payload.houseRooms && typeof payload.houseRooms === "object"
-        ? deepClone(payload.houseRooms)
-        : deepClone(fallback.houseRooms);
+    merged.houseRooms = normalizeHouseRoomLevels(
+        payload.houseRooms && typeof payload.houseRooms === "object"
+            ? payload.houseRooms
+            : fallback.houseRooms
+    );
 
     merged.guildBuffs = normalizeGuildBuffLevels(payload.guildBuffs);
 
@@ -1207,7 +1237,7 @@ export function exportGroupConfig(players, simulationSettings) {
             version: 2,
             format: "mwi-vue-group",
             simulationSettings: deepClone(simulationSettings || {}),
-            players: playerList.map((player) => sanitizePlayerConfig(player, player)),
+            players: playerList.map((player) => buildExportPlayer(player)),
         },
         null,
         2
@@ -1219,7 +1249,7 @@ export function exportSoloConfig(player, simulationSettings) {
         version: 2,
         format: "mwi-vue-solo",
         simulationSettings: deepClone(simulationSettings || {}),
-        player: sanitizePlayerConfig(player, player),
+        player: buildExportPlayer(player),
     };
 
     return JSON.stringify(payload, null, 2);

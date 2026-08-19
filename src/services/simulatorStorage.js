@@ -152,6 +152,7 @@ export function normalizeSimulationUiSettings(rawSettings) {
         comDropEnabled: Boolean(source.comDropEnabled),
         comDrop: clamp(Math.floor(toFiniteNumber(source.comDrop, 20)), 1, 99),
         combatScrollsEnabled: Boolean(source.combatScrollsEnabled),
+        enableHpMpVisualization: Boolean(source.enableHpMpVisualization),
     };
 }
 
@@ -162,6 +163,7 @@ export function loadSimulationUiSettingsFromStorage() {
         comExpEnabled: true,
         comDropEnabled: true,
         combatScrollsEnabled: false,
+        enableHpMpVisualization: true,
         ...stored,
     });
 }

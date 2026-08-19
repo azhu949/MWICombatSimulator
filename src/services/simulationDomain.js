@@ -129,7 +129,8 @@ export function buildAllLabyrinthTargets(crates = []) {
 }
 
 export function summarizeResult(simResult, selectedPlayers, pricingOptions = {}) {
-    const hours = Math.max(1e-9, Number(simResult?.simulatedTime ?? 0) / ONE_HOUR);
+    const simulatedTime = Number(simResult?.simulatedTime ?? 0);
+    const hours = Math.max(1e-9, simulatedTime / ONE_HOUR);
     const skills = ["stamina", "intelligence", "attack", "magic", "ranged", "melee", "defense"];
 
     return selectedPlayers.map((player) => {
@@ -148,6 +149,7 @@ export function summarizeResult(simResult, selectedPlayers, pricingOptions = {})
         return {
             playerHrid,
             playerName: player.name,
+            simulatedTime,
             encountersPerHour,
             deathsPerHour,
             totalXpPerHour: totalExperience / hours,
@@ -227,6 +229,43 @@ export function summarizeBatchResults(simResults, selectedPlayers, pricingOption
     });
 
     return rows;
+}
+
+const BATCH_PLAYER_RATE_KEYS = [
+    "encountersPerHour",
+    "deathsPerHour",
+    "totalXpPerHour",
+    "revenuePerHour",
+    "expensesPerHour",
+    "profitPerHour",
+];
+
+export function aggregateBatchPlayerRows(batchRows, playerHrid) {
+    const normalizedPlayerHrid = String(playerHrid || "");
+    const rows = (Array.isArray(batchRows) ? batchRows : []).filter(
+        (entry) => String(entry?.playerHrid || "") === normalizedPlayerHrid,
+    );
+    if (rows.length === 0) {
+        return null;
+    }
+
+    const simulatedTime = Number(rows[0]?.simulatedTime);
+    const hasUniformDuration =
+        Number.isFinite(simulatedTime) &&
+        simulatedTime > 0 &&
+        rows.every((entry) => Number(entry?.simulatedTime) === simulatedTime);
+    if (!hasUniformDuration) {
+        return null;
+    }
+
+    const summary = { playerHrid: normalizedPlayerHrid, simulatedTime };
+    for (const key of BATCH_PLAYER_RATE_KEYS) {
+        summary[key] = rows.reduce((total, entry) => {
+            const value = Number(entry?.[key] ?? 0);
+            return total + (Number.isFinite(value) ? value : 0);
+        }, 0);
+    }
+    return summary;
 }
 
 export function buildSimulationExtra(simulationSettings) {
