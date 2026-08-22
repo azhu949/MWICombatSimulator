@@ -15,3 +15,12 @@ export function createCombatScrollBuff(itemHrid, options = undefined) {
 
     return new Buff(template, 1);
 }
+
+/**
+ * The buff source key that real party simulations use for combat scrolls.
+ * Preview paths must register scroll buffs under the same key so source-level
+ * removal and source-aware reconciliation stay consistent with the simulator.
+ */
+export function getCombatScrollSourceKey(itemHrid) {
+    return `scroll:${itemHrid}`;
+}

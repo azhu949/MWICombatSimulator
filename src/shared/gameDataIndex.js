@@ -13,6 +13,10 @@ import {
 
 export const LEVEL_KEYS = gameDataIndex?.metadata?.levelKeys || [];
 export const EQUIPMENT_SLOT_KEYS = gameDataIndex?.metadata?.equipmentSlotKeys || [];
+// The generated timestamp changes whenever the shared game-data index is
+// rebuilt. Consumers can use it to invalidate derived memoized results when
+// data is hot-reloaded during a long-lived application session.
+export const GAME_DATA_VERSION = String(gameDataIndex?.metadata?.generatedAt || "unknown");
 
 export const itemDetailIndex = gameDataIndex?.itemDetailIndex || {};
 export const itemVendorPriceByHrid = gameDataIndex?.itemVendorPriceByHrid || {};

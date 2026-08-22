@@ -113,6 +113,13 @@ describe("Home workspace tabs", () => {
         expect(sources.page).toContain("const { focus, ...query } = route.query");
         expect(sources.page).toContain("await openHomeResultsPanel(true)");
     });
+
+    it("surfaces a party aura preview truncation warning when the replay hits its event budget", () => {
+        expect(sources.page).toContain("combatPreview.partyAuraPreviewTruncated.value");
+        expect(sources.page).toContain("data-party-aura-preview-truncated");
+        expect(sources.page).toContain("common:vue.home.partyAuraPreviewTruncated");
+        expect(sources.combatPreview).toContain("partyAuraPreviewTruncated: computed(");
+    });
 });
 
 describe("Home inline trigger layout", () => {

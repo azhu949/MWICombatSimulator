@@ -61,6 +61,14 @@ npm run preview
 npm test
 ```
 
+## 提交流程
+
+为保持可读的提交历史，请遵循以下规范：
+
+1. **格式化与逻辑分开提交**：先执行 `npm run format:fix`（或 `npx prettier --write .`）确认格式化基线一致，再添加逻辑改动。`npm run format:check` 可在提交前检查未格式化的文件。
+2. **小步提交**：每个提交围绕一个功能/修复点，避免将不相关改动打包在同一提交中。
+3. **提交信息**：使用 `feat:` / `fix:` / `refactor:` / `chore:` 前缀（如 `feat: 添加战斗卷轴续费逻辑`）。
+
 ## 常用文档
 
 - [`docs/game-data.md`](docs/game-data.md)：游戏数据与官方中英文词条来源、同步/发布流程、使用免责声明，以及刷新当前维护数据的方法

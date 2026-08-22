@@ -4,10 +4,9 @@ import combatMonsterDetailMap from "./data/combatMonsterDetailMap.json";
 import Drops from "./drops";
 
 class Monster extends CombatUnit {
-
     difficultyTier = 0;
-    
-    LabyrinthMonsterBaseRoomLevel = 100; //Base stats are designed for room level 100, and scale proportionally    
+
+    LabyrinthMonsterBaseRoomLevel = 100; //Base stats are designed for room level 100, and scale proportionally
     roomLevel = 0;
 
     constructor(hrid, difficultyTier = 0, roomLevel = 0) {
@@ -16,7 +15,7 @@ class Monster extends CombatUnit {
         this.isPlayer = false;
         this.hrid = hrid;
         this.difficultyTier = difficultyTier;
-        this.roomLevel = roomLevel
+        this.roomLevel = roomLevel;
         if (this.roomLevel <= 0) {
             this.roomLevel = this.LabyrinthMonsterBaseRoomLevel;
         }
@@ -33,17 +32,32 @@ class Monster extends CombatUnit {
             if (gameMonster.abilities[i].minDifficultyTier > this.difficultyTier) {
                 continue;
             }
-            this.abilities[i] = new Ability(gameMonster.abilities[i].abilityHrid, Math.floor(gameMonster.abilities[i].level * labyrinthScaleFactor));
+            this.abilities[i] = new Ability(
+                gameMonster.abilities[i].abilityHrid,
+                Math.floor(gameMonster.abilities[i].level * labyrinthScaleFactor),
+            );
         }
-        if(gameMonster.dropTable)
-        for (let i = 0; i < gameMonster.dropTable.length; i++) {
-            this.dropTable[i] = new Drops(gameMonster.dropTable[i].itemHrid, gameMonster.dropTable[i].dropRate, gameMonster.dropTable[i].minCount, gameMonster.dropTable[i].maxCount, gameMonster.dropTable[i].difficultyTier);
-        }
+        if (gameMonster.dropTable)
+            for (let i = 0; i < gameMonster.dropTable.length; i++) {
+                this.dropTable[i] = new Drops(
+                    gameMonster.dropTable[i].itemHrid,
+                    gameMonster.dropTable[i].dropRate,
+                    gameMonster.dropTable[i].minCount,
+                    gameMonster.dropTable[i].maxCount,
+                    gameMonster.dropTable[i].difficultyTier,
+                );
+            }
         for (let i = 0; i < gameMonster.rareDropTable.length; i++) {
-            let dropTableItem = (gameMonster.dropTable && i < gameMonster.dropTable.length) ? gameMonster.dropTable[i] : null;
+            let dropTableItem =
+                gameMonster.dropTable && i < gameMonster.dropTable.length ? gameMonster.dropTable[i] : null;
             let difficultyTier = dropTableItem?.difficultyTier ?? gameMonster.rareDropTable[i].minDifficultyTier;
 
-            this.rareDropTable[i] = new Drops(gameMonster.rareDropTable[i].itemHrid, gameMonster.rareDropTable[i].dropRate, gameMonster.rareDropTable[i].minCount, difficultyTier);
+            this.rareDropTable[i] = new Drops(
+                gameMonster.rareDropTable[i].itemHrid,
+                gameMonster.rareDropTable[i].dropRate,
+                gameMonster.rareDropTable[i].minCount,
+                difficultyTier,
+            );
         }
     }
 
@@ -56,14 +70,19 @@ class Monster extends CombatUnit {
 
         let labyrinthScaleFactor = this.roomLevel / this.LabyrinthMonsterBaseRoomLevel;
 
-        this.staminaLevel = levelMultiplier * (gameMonster.combatDetails.staminaLevel + levelBonus) * labyrinthScaleFactor;
-        this.intelligenceLevel = levelMultiplier * (gameMonster.combatDetails.intelligenceLevel + levelBonus) * labyrinthScaleFactor;
-        this.attackLevel = levelMultiplier * (gameMonster.combatDetails.attackLevel + levelBonus) * labyrinthScaleFactor;
+        this.staminaLevel =
+            levelMultiplier * (gameMonster.combatDetails.staminaLevel + levelBonus) * labyrinthScaleFactor;
+        this.intelligenceLevel =
+            levelMultiplier * (gameMonster.combatDetails.intelligenceLevel + levelBonus) * labyrinthScaleFactor;
+        this.attackLevel =
+            levelMultiplier * (gameMonster.combatDetails.attackLevel + levelBonus) * labyrinthScaleFactor;
         this.meleeLevel = levelMultiplier * (gameMonster.combatDetails.meleeLevel + levelBonus) * labyrinthScaleFactor;
-        this.defenseLevel = defLevelMultiplier * (gameMonster.combatDetails.defenseLevel + levelBonus) * labyrinthScaleFactor;
-        this.rangedLevel = levelMultiplier * (gameMonster.combatDetails.rangedLevel + levelBonus) * labyrinthScaleFactor;
+        this.defenseLevel =
+            defLevelMultiplier * (gameMonster.combatDetails.defenseLevel + levelBonus) * labyrinthScaleFactor;
+        this.rangedLevel =
+            levelMultiplier * (gameMonster.combatDetails.rangedLevel + levelBonus) * labyrinthScaleFactor;
         this.magicLevel = levelMultiplier * (gameMonster.combatDetails.magicLevel + levelBonus) * labyrinthScaleFactor;
-        
+
         let expMultiplier = 1.0 + 0.5 * this.difficultyTier;
         let expBonus = 5.0 * this.difficultyTier;
 
@@ -143,7 +162,7 @@ class Monster extends CombatUnit {
             "drinkConcentration",
             "autoAttackDamage",
             "abilityDamage",
-            "retaliation"
+            "retaliation",
         ].forEach((stat) => {
             if (gameMonster.combatDetails.combatStats[stat] == null) {
                 this.combatDetails.combatStats[stat] = 0;
@@ -154,6 +173,7 @@ class Monster extends CombatUnit {
             this.combatDetails.combatStats.attackInterval = gameMonster.combatDetails.attackInterval;
         }
 
+        this.refreshBaseCombatStats();
         super.updateCombatDetails();
     }
 }

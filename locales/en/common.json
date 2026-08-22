@@ -502,6 +502,7 @@
             "homeResultsRunningTitle": "Simulation in progress",
             "homeResultsRunning": "Simulation is running. Results will appear here automatically.",
             "workspaceTabsAria": "Home workspace sections",
+            "partyAuraPreviewTruncated": "Party aura preview hit its event budget and may be incomplete. Some teammate auras may not be shown.",
             "workspaceEyebrow": "Workspace",
             "workspaceTitle": "Simulation Workspace",
             "workspaceDesc": "Keep key metrics visible while you configure and run simulations.",

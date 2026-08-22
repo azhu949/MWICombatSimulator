@@ -1,3 +1,137 @@
+import { BUFF_SOURCE_POLICY, getPartyAuraBuffStrength, isStrongerPartyAuraBuff } from "./buffSourcePolicy.js";
+
+// Explicit sentinel for callers that need to target the currently active
+// source. The default keeps omitted/undefined arguments backward-compatible.
+export const REMOVE_ACTIVE_SOURCE = Symbol("remove-active-source");
+
+// Strongest-source selection is used only by callers that explicitly opt in
+// (currently the official party auras). The default runtime-buff policy stays
+// compatible with the historical last-write-wins behavior.
+function readFiniteBuffNumber(buff, fieldName) {
+    const value = buff?.[fieldName];
+    if (typeof value !== "number" || !Number.isFinite(value)) {
+        throw new TypeError(
+            `CombatUnit buff ${fieldName} must be a finite number for ${buff?.uniqueHrid || "<unknown>"}`,
+        );
+    }
+    return value;
+}
+
+function readNonEmptyBuffHrid(buff, fieldName) {
+    const value = buff?.[fieldName];
+    if (typeof value !== "string" || value.trim().length === 0) {
+        throw new TypeError(`CombatUnit buff ${fieldName} must be a non-empty string`);
+    }
+    return value;
+}
+
+function cloneBuffForRegistration(buff, startTime) {
+    // Runtime buffs are a flat scalar record today, but registration must not
+    // share mutable nested state (arrays/objects) across sources. A deep clone
+    // keeps every source fully isolated while preserving the old contract that
+    // the caller-owned object is never mutated and every source gets its own
+    // startTime.
+    const cloned = structuredClone(buff);
+    cloned.startTime = startTime;
+    return cloned;
+}
+
+function pickStrongestBuffSource(sources) {
+    let bestSourceKey = null;
+    let bestEntry = null;
+    // STRONGEST is currently restricted to official party-aura buffs. A single
+    // aura has only the small, game-bounded number of party-member sources, so
+    // an O(n) scan per reconciliation is intentional. If this policy expands
+    // to large source sets, replace this with an indexed selection structure
+    // and preserve the first-registered tie rule below.
+    for (const [sourceKey, entry] of sources.entries()) {
+        // Exact ratio/flat ties are intentionally not stronger.  Map iteration
+        // therefore keeps the first registered source as a deterministic
+        // fallback; this is not a claim that the latest caster should win.
+        if (isStrongerPartyAuraBuff(entry.buff, bestEntry?.buff)) {
+            bestSourceKey = sourceKey;
+            bestEntry = entry;
+        }
+    }
+    return bestEntry ? { sourceKey: bestSourceKey, ...bestEntry } : null;
+}
+
+// The single source of truth for which Buff fields affect the derived combat
+// ratings. updateCombatDetails consumes runtime buffs only through
+// getBuffBoosts(type), and buffsAffectStatsEqually decides whether a source
+// handoff would change those ratings; both must agree on the exact field set.
+// Keeping the projection here (instead of hardcoding the fields in both
+// places) makes "comparison fields == consumption fields" structurally
+// enforced: adding a consumed field in one place automatically updates the
+// other. Buff construction must pre-apply ratioBoostLevelBonus/flatBoostLevelBonus
+// into the effective ratioBoost/flatBoost values; the raw level-bonus fields
+// are intentionally not part of the runtime comparison.
+function projectBuffStats(buff) {
+    return {
+        uniqueHrid: buff.uniqueHrid,
+        typeHrid: buff.typeHrid,
+        ratioBoost: buff.ratioBoost,
+        flatBoost: buff.flatBoost,
+    };
+}
+
+// Two buffs affect the derived combat ratings identically when their projected
+// stat fields match. A reference comparison alone would treat every addBuff
+// refresh (which always creates a fresh registration copy) as a change and
+// force a redundant full recompute even though the active values never moved.
+export function buffsAffectStatsEqually(a, b) {
+    if (a === b) {
+        return true;
+    }
+    if (!a || !b) {
+        return false;
+    }
+    const pa = projectBuffStats(a);
+    const pb = projectBuffStats(b);
+    return (
+        pa.uniqueHrid === pb.uniqueHrid &&
+        pa.typeHrid === pb.typeHrid &&
+        pa.ratioBoost === pb.ratioBoost &&
+        pa.flatBoost === pb.flatBoost
+    );
+}
+
+function pickLatestBuffSource(sources) {
+    let latestSourceKey = null;
+    let latestEntry = null;
+    for (const [sourceKey, entry] of sources.entries()) {
+        if (!latestEntry || entry.sequence > latestEntry.sequence) {
+            latestSourceKey = sourceKey;
+            latestEntry = entry;
+        }
+    }
+    return latestEntry ? { sourceKey: latestSourceKey, ...latestEntry } : null;
+}
+
+function pickActiveBuffSource(sources, policy, preferredSourceKey = null) {
+    if (policy === BUFF_SOURCE_POLICY.STRONGEST) {
+        return pickStrongestBuffSource(sources);
+    }
+
+    // Ordinary runtime buffs are last-write-wins. addBuff passes the source it
+    // just wrote, so the hot path can select it in O(1). The scan remains only
+    // as a defensive fallback for legacy/restored state with no hint.
+    if (preferredSourceKey !== null && sources.has(preferredSourceKey)) {
+        return { sourceKey: preferredSourceKey, ...sources.get(preferredSourceKey) };
+    }
+    return pickLatestBuffSource(sources);
+}
+
+function normalizeBuffSourcePolicy(policy) {
+    if (policy === undefined || policy === null) {
+        return BUFF_SOURCE_POLICY.REPLACE;
+    }
+    if (policy === BUFF_SOURCE_POLICY.REPLACE || policy === BUFF_SOURCE_POLICY.STRONGEST) {
+        return policy;
+    }
+    throw new TypeError(`Unsupported buff source policy: ${policy}`);
+}
+
 class CombatUnit {
     isPlayer;
     isStunned = false;
@@ -151,32 +285,73 @@ class CombatUnit {
             maxManapointsRatio: 0,
         },
     };
+    // CombatUnit.updateCombatDetails mutates several combatStats while
+    // applying derived values. Keep the last caller-provided base snapshot so
+    // repeated recalculations start from the same inputs.
+    //
+    // IMPLICIT CONTRACT — read-only baseline, never write it externally:
+    // 1. Direct external writes to combatDetails.combatStats.X are silently
+    //    discarded on the next updateCombatDetails() (resetCombatStatsToBase
+    //    restores this snapshot first). Route intended stat changes through
+    //    addBuff/removeBuff or equipment changes instead.
+    // 2. baseCombatStats itself is refreshed wholesale by refreshBaseCombatStats()
+    //    (Player/Monster call it before super.updateCombatDetails()) and must
+    //    never be mutated field-by-field from outside — a polluted baseline
+    //    poisons every subsequent recalculation with no visible failure.
+    // There is no external write conflict today; this contract exists so
+    // future callers (simulation extensions, preview paths, UI hooks) do not
+    // accidentally depend on direct stat mutation.
+    baseCombatStats = null;
     combatBuffs = {};
     permanentBuffs = {};
     zoneBuffs = {};
     extraBuffs = {};
+    // Maps buffUniqueHrid -> Map<sourceKey, { buff, expiresAt, sequence }>.
+    // Source tracking supports exact removal/expiration for all runtime buffs.
+    // Selection remains last-write-wins unless the caller explicitly opts the
+    // buff into strongest-source semantics (the official party auras).
+    buffSources = {};
+    // Maps buffUniqueHrid -> sourceKey for the source currently represented in
+    // combatBuffs.  Source identity is kept separately from the buff object so
+    // handoff and removal do not depend on object reference equality.
+    activeBuffSourceKeys = {};
+    buffSourcePolicies = {};
+    buffSourceSequence = 0;
 
-    constructor() { }
+    constructor() {}
+
+    refreshBaseCombatStats() {
+        // Capture the "clean" equipment-only stats as the recalculation
+        // baseline.  See the baseCombatStats contract above: this snapshot is
+        // read-only for external callers; mutate combatDetails.combatStats
+        // through buffs or re-equipping, never by writing this object.
+        this.baseCombatStats = { ...this.combatDetails.combatStats };
+    }
+
+    // refreshBaseCombatStats() MUST be called by every override (Player / Monster)
+    // BEFORE super.updateCombatDetails() to capture the "clean" equipment-only
+    // state. resetCombatStatsToBase() restores that clean snapshot so repeated
+    // recalculations remain idempotent.
+    resetCombatStatsToBase() {
+        if (!this.baseCombatStats) {
+            this.refreshBaseCombatStats();
+        }
+        Object.assign(this.combatDetails.combatStats, this.baseCombatStats);
+    }
 
     updateCombatDetails() {
+        this.resetCombatStatsToBase();
+
         if (this.isPlayer) {
-            if (this.combatDetails.combatStats.hpRegenPer10 === 0) {
-                this.combatDetails.combatStats.hpRegenPer10 = 0.01;
-            } else {
-                this.combatDetails.combatStats.hpRegenPer10 = 0.01 + this.combatDetails.combatStats.hpRegenPer10;
-            }
-            if (this.combatDetails.combatStats.mpRegenPer10 === 0) {
-                this.combatDetails.combatStats.mpRegenPer10 = 0.01;
-            } else {
-                this.combatDetails.combatStats.mpRegenPer10 = 0.01 + this.combatDetails.combatStats.mpRegenPer10;
-            }
+            this.combatDetails.combatStats.hpRegenPer10 += 0.01;
+            this.combatDetails.combatStats.mpRegenPer10 += 0.01;
         }
 
         ["stamina", "intelligence", "attack", "melee", "defense", "ranged", "magic"].forEach((stat) => {
             this.combatDetails[stat + "Level"] = this[stat + "Level"];
             let boosts = this.getBuffBoosts("/buff_types/" + stat + "_level");
             boosts.forEach((buff) => {
-                this.combatDetails[stat + "Level"] += (this[stat + "Level"] * buff.ratioBoost);
+                this.combatDetails[stat + "Level"] += this[stat + "Level"] * buff.ratioBoost;
                 this.combatDetails[stat + "Level"] += buff.flatBoost;
             });
         });
@@ -184,24 +359,20 @@ class CombatUnit {
         const maxHitpointsBoost = this.getBuffBoost("/buff_types/max_hitpoints");
         const maxManapointsBoost = this.getBuffBoost("/buff_types/max_manapoints");
         this.combatDetails.maxHitpoints = Math.floor(
-            (10 * (10 + this.combatDetails.staminaLevel)
-                + this.combatDetails.combatStats.maxHitpoints
-                + maxHitpointsBoost.flatBoost)
-            * (1 + this.combatDetails.combatStats.maxHitpointsRatio + maxHitpointsBoost.ratioBoost)
+            (10 * (10 + this.combatDetails.staminaLevel) +
+                this.combatDetails.combatStats.maxHitpoints +
+                maxHitpointsBoost.flatBoost) *
+                (1 + this.combatDetails.combatStats.maxHitpointsRatio + maxHitpointsBoost.ratioBoost),
         );
         this.combatDetails.maxManapoints = Math.floor(
-            (10 * (10 + this.combatDetails.intelligenceLevel)
-                + this.combatDetails.combatStats.maxManapoints
-                + maxManapointsBoost.flatBoost)
-            * (1 + this.combatDetails.combatStats.maxManapointsRatio + maxManapointsBoost.ratioBoost)
+            (10 * (10 + this.combatDetails.intelligenceLevel) +
+                this.combatDetails.combatStats.maxManapoints +
+                maxManapointsBoost.flatBoost) *
+                (1 + this.combatDetails.combatStats.maxManapointsRatio + maxManapointsBoost.ratioBoost),
         );
 
         let accuracyRatioBoostFromFury = this.getBuffBoost("/buff_types/fury_accuracy").ratioBoost;
         let damageRatioBoostFromFury = this.getBuffBoost("/buff_types/fury_damage").ratioBoost;
-        // if (accuracyRatioBoostFromFury > 0) {
-        //     console.log("Fury Boost: " + accuracyRatioBoostFromFury);
-        // }
-
         let accuracyRatioBoost = this.getBuffBoost("/buff_types/accuracy").ratioBoost;
         let damageRatioBoost = this.getBuffBoost("/buff_types/damage").ratioBoost;
 
@@ -216,7 +387,8 @@ class CombatUnit {
                 (1 + this.combatDetails.combatStats[style + "Damage"]) *
                 (1 + damageRatioBoost) *
                 (1 + damageRatioBoostFromFury);
-            let baseEvasion = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats[style + "Evasion"]);
+            let baseEvasion =
+                (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats[style + "Evasion"]);
             this.combatDetails[style + "EvasionRating"] = baseEvasion;
             let evasionBoosts = this.getBuffBoosts("/buff_types/evasion");
             for (const boost of evasionBoosts) {
@@ -225,14 +397,14 @@ class CombatUnit {
             }
         });
 
-        this.combatDetails.defensiveMaxDamage = 
-            (10 + this.combatDetails.defenseLevel) * 
+        this.combatDetails.defensiveMaxDamage =
+            (10 + this.combatDetails.defenseLevel) *
             (1 + this.combatDetails.combatStats.defensiveDamage) *
             (1 + damageRatioBoost) *
             (1 + damageRatioBoostFromFury);
 
         // when equiped bulwark
-        if (this.equipment?.['/equipment_types/two_hand']?.hrid.includes("bulwark")) {
+        if (this.equipment?.["/equipment_types/two_hand"]?.hrid.includes("bulwark")) {
             this.combatDetails.smashMaxDamage += this.combatDetails.defensiveMaxDamage;
         }
 
@@ -247,7 +419,8 @@ class CombatUnit {
             (1 + damageRatioBoost) *
             (1 + damageRatioBoostFromFury);
 
-        let baseRangedEvasion = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats.rangedEvasion);
+        let baseRangedEvasion =
+            (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats.rangedEvasion);
         this.combatDetails.rangedEvasionRating = baseRangedEvasion;
         let evasionBoosts = this.getBuffBoosts("/buff_types/evasion");
         for (const boost of evasionBoosts) {
@@ -271,7 +444,8 @@ class CombatUnit {
             (1 + damageRatioBoost) *
             (1 + damageRatioBoostFromFury);
 
-        let baseMagicEvasion = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats.magicEvasion);
+        let baseMagicEvasion =
+            (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats.magicEvasion);
         this.combatDetails.magicEvasionRating = baseMagicEvasion;
         for (const boost of evasionBoosts) {
             this.combatDetails.magicEvasionRating += boost.flatBoost;
@@ -284,15 +458,15 @@ class CombatUnit {
         this.combatDetails.combatStats.fireAmplify += this.getBuffBoost("/buff_types/fire_amplify").flatBoost;
         this.combatDetails.combatStats.healingAmplify += this.getBuffBoost("/buff_types/healing_amplify").flatBoost;
 
-        this.combatDetails.combatStats.attackInterval /= (1 + (this.combatDetails.attackLevel / 2000));
+        this.combatDetails.combatStats.attackInterval /= 1 + this.combatDetails.attackLevel / 2000;
 
         let baseAttackSpeed = this.combatDetails.combatStats.attackSpeed;
-        this.combatDetails.combatStats.attackInterval /= (1 + baseAttackSpeed);
+        this.combatDetails.combatStats.attackInterval /= 1 + baseAttackSpeed;
         let attackIntervalBoosts = this.getBuffBoosts("/buff_types/attack_speed");
         let attackIntervalRatioBoost = attackIntervalBoosts
             .map((boost) => boost.ratioBoost)
             .reduce((prev, cur) => prev + cur, 0);
-        this.combatDetails.combatStats.attackInterval /= (1 + attackIntervalRatioBoost);
+        this.combatDetails.combatStats.attackInterval /= 1 + attackIntervalRatioBoost;
 
         let baseArmor = 0.2 * this.combatDetails.defenseLevel + this.combatDetails.combatStats.armor;
         this.combatDetails.totalArmor = baseArmor;
@@ -303,8 +477,7 @@ class CombatUnit {
         }
 
         let baseWaterResistance =
-            0.2 * this.combatDetails.defenseLevel +
-            this.combatDetails.combatStats.waterResistance;
+            0.2 * this.combatDetails.defenseLevel + this.combatDetails.combatStats.waterResistance;
         this.combatDetails.totalWaterResistance = baseWaterResistance;
         let waterResistanceBoosts = this.getBuffBoosts("/buff_types/water_resistance");
         for (const boost of waterResistanceBoosts) {
@@ -313,8 +486,7 @@ class CombatUnit {
         }
 
         let baseNatureResistance =
-            0.2 * this.combatDetails.defenseLevel +
-            this.combatDetails.combatStats.natureResistance;
+            0.2 * this.combatDetails.defenseLevel + this.combatDetails.combatStats.natureResistance;
         this.combatDetails.totalNatureResistance = baseNatureResistance;
         let natureResistanceBoosts = this.getBuffBoosts("/buff_types/nature_resistance");
         for (const boost of natureResistanceBoosts) {
@@ -322,9 +494,7 @@ class CombatUnit {
             this.combatDetails.totalNatureResistance += baseNatureResistance * boost.ratioBoost;
         }
 
-        let baseFireResistance =
-            0.2 * this.combatDetails.defenseLevel +
-            this.combatDetails.combatStats.fireResistance;
+        let baseFireResistance = 0.2 * this.combatDetails.defenseLevel + this.combatDetails.combatStats.fireResistance;
         this.combatDetails.totalFireResistance = baseFireResistance;
         let fireResistanceBoosts = this.getBuffBoosts("/buff_types/fire_resistance");
         for (const boost of fireResistanceBoosts) {
@@ -333,20 +503,18 @@ class CombatUnit {
         }
 
         let hpRegenBoosts = this.getBuffBoost("/buff_types/hp_regen");
-        this.combatDetails.combatStats.hpRegenPer10 += this.combatDetails.combatStats.hpRegenPer10 * hpRegenBoosts.ratioBoost;
+        this.combatDetails.combatStats.hpRegenPer10 +=
+            this.combatDetails.combatStats.hpRegenPer10 * hpRegenBoosts.ratioBoost;
         this.combatDetails.combatStats.hpRegenPer10 += hpRegenBoosts.flatBoost;
 
         let mpRegenBoosts = this.getBuffBoost("/buff_types/mp_regen");
-        this.combatDetails.combatStats.mpRegenPer10 += this.combatDetails.combatStats.mpRegenPer10 * mpRegenBoosts.ratioBoost;
+        this.combatDetails.combatStats.mpRegenPer10 +=
+            this.combatDetails.combatStats.mpRegenPer10 * mpRegenBoosts.ratioBoost;
         this.combatDetails.combatStats.mpRegenPer10 += mpRegenBoosts.flatBoost;
 
         this.combatDetails.combatStats.lifeSteal += this.getBuffBoost("/buff_types/life_steal").flatBoost;
-        this.combatDetails.combatStats.physicalThorns += this.getBuffBoost(
-            "/buff_types/physical_thorns"
-        ).flatBoost;
-        this.combatDetails.combatStats.elementalThorns += this.getBuffBoost(
-            "/buff_types/elemental_thorns"
-        ).flatBoost;
+        this.combatDetails.combatStats.physicalThorns += this.getBuffBoost("/buff_types/physical_thorns").flatBoost;
+        this.combatDetails.combatStats.elementalThorns += this.getBuffBoost("/buff_types/elemental_thorns").flatBoost;
         this.combatDetails.combatStats.combatExperience += this.getBuffBoost("/buff_types/wisdom").flatBoost;
         this.combatDetails.combatStats.criticalRate += this.getBuffBoost("/buff_types/critical_rate").flatBoost;
         this.combatDetails.combatStats.criticalDamage += this.getBuffBoost("/buff_types/critical_damage").flatBoost;
@@ -355,13 +523,16 @@ class CombatUnit {
         this.combatDetails.combatStats.castSpeed += this.combatDetails["attackLevel"] / 2000;
 
         let combatDropRateBoosts = this.getBuffBoost("/buff_types/combat_drop_rate");
-        this.combatDetails.combatStats.combatDropRate += (1 + this.combatDetails.combatStats.combatDropRate) * combatDropRateBoosts.ratioBoost;
+        this.combatDetails.combatStats.combatDropRate +=
+            (1 + this.combatDetails.combatStats.combatDropRate) * combatDropRateBoosts.ratioBoost;
         this.combatDetails.combatStats.combatDropRate += combatDropRateBoosts.flatBoost;
         let combatRareFindBoosts = this.getBuffBoost("/buff_types/rare_find");
-        this.combatDetails.combatStats.combatRareFind += (1 + this.combatDetails.combatStats.combatRareFind) * combatRareFindBoosts.ratioBoost;
+        this.combatDetails.combatStats.combatRareFind +=
+            (1 + this.combatDetails.combatStats.combatRareFind) * combatRareFindBoosts.ratioBoost;
         this.combatDetails.combatStats.combatRareFind += combatRareFindBoosts.flatBoost;
         let combatDropQuantityBoosts = this.getBuffBoost("/buff_types/combat_drop_quantity");
-        this.combatDetails.combatStats.combatDropQuantity += (1 + this.combatDetails.combatStats.combatDropQuantity) * combatDropQuantityBoosts.ratioBoost;
+        this.combatDetails.combatStats.combatDropQuantity +=
+            (1 + this.combatDetails.combatStats.combatDropQuantity) * combatDropQuantityBoosts.ratioBoost;
         this.combatDetails.combatStats.combatDropQuantity += combatDropQuantityBoosts.flatBoost;
 
         let baseThreat = 100 + this.combatDetails.combatStats.threat;
@@ -378,20 +549,185 @@ class CombatUnit {
         this.combatDetails.combatStats.tenacity += this.getBuffBoost("/buff_types/tenacity").flatBoost;
     }
 
-    addBuff(buff, currentTime) {
-        buff.startTime = currentTime;
-        this.combatBuffs[buff.uniqueHrid] = buff;
+    addBuff(buff, currentTime, sourceHrid = null, options = {}) {
+        if (typeof currentTime !== "number" || !Number.isFinite(currentTime)) {
+            throw new TypeError("CombatUnit.addBuff requires a finite numeric currentTime");
+        }
+        if (options === null || typeof options !== "object" || Array.isArray(options)) {
+            throw new TypeError("CombatUnit.addBuff options must be a non-null object");
+        }
+        const { sourcePolicy } = options;
 
-        this.updateCombatDetails();
+        readNonEmptyBuffHrid(buff, "uniqueHrid");
+        readNonEmptyBuffHrid(buff, "typeHrid");
+        readFiniteBuffNumber(buff, "ratioBoost");
+        readFiniteBuffNumber(buff, "flatBoost");
+        const duration = readFiniteBuffNumber(buff, "duration");
+
+        // Keep the caller-owned buff immutable after registration.  Each source
+        // needs its own startTime because the same buff may be reused by several
+        // sources or combat units.
+        const registeredBuff = cloneBuffForRegistration(buff, currentTime);
+        const sourceKey = sourceHrid ?? "default";
+        const expiresAt = currentTime + duration;
+        const normalizedPolicy = normalizeBuffSourcePolicy(sourcePolicy);
+        if (normalizedPolicy === BUFF_SOURCE_POLICY.STRONGEST) {
+            // Validate before mutating the source registry. Unsupported or
+            // changed official data must fail loudly instead of selecting a
+            // source through an inferred negative/mixed-field ordering rule.
+            getPartyAuraBuffStrength(registeredBuff);
+        }
+
+        let sources = this.buffSources[registeredBuff.uniqueHrid];
+        if (!sources) {
+            sources = this.buffSources[registeredBuff.uniqueHrid] = new Map();
+        }
+        const existingPolicy = this.buffSourcePolicies[registeredBuff.uniqueHrid];
+        if (existingPolicy && existingPolicy !== normalizedPolicy) {
+            throw new Error(
+                `CombatUnit buff source policy mismatch for ${registeredBuff.uniqueHrid}: ` +
+                    `${existingPolicy} vs ${normalizedPolicy}`,
+            );
+        }
+        this.buffSourcePolicies[registeredBuff.uniqueHrid] = normalizedPolicy;
+        sources.set(sourceKey, {
+            buff: registeredBuff,
+            expiresAt,
+            sequence: ++this.buffSourceSequence,
+        });
+
+        // Re-select after every source update. Strongest-source buffs may hand
+        // off to another source; default buffs expose the most recent write.
+        this.reconcileBuffSource(registeredBuff.uniqueHrid, sources, {
+            preferredSourceKey: sourceKey,
+        });
     }
 
-    removeBuff(buff) {
-        if (!this.combatBuffs[buff.uniqueHrid]) {
+    reconcileBuffSource(uniqueHrid, sources, { updateDetails = true, preferredSourceKey = null } = {}) {
+        const previousActiveBuff = this.combatBuffs[uniqueHrid];
+        const policy = this.buffSourcePolicies[uniqueHrid] ?? BUFF_SOURCE_POLICY.REPLACE;
+        const nextActiveSource =
+            sources && sources.size > 0 ? pickActiveBuffSource(sources, policy, preferredSourceKey) : null;
+
+        if (nextActiveSource) {
+            this.activeBuffSourceKeys[uniqueHrid] = nextActiveSource.sourceKey;
+            this.combatBuffs[uniqueHrid] = nextActiveSource.buff;
+        } else {
+            delete this.activeBuffSourceKeys[uniqueHrid];
+            delete this.combatBuffs[uniqueHrid];
+        }
+
+        const activeBuffChanged = !buffsAffectStatsEqually(nextActiveSource?.buff, previousActiveBuff);
+        if (activeBuffChanged && updateDetails) {
+            this.updateCombatDetails();
+        }
+
+        return activeBuffChanged;
+    }
+
+    /**
+     * Remove a runtime Buff registration.
+     *
+     * `sourceHrid` is optional for compatibility with the pre-source API:
+     * `removeBuff({ uniqueHrid })` removes the currently active source, i.e.
+     * the Buff that callers historically saw in `combatBuffs`.  For a
+     * strongest-source Buff this may reveal the next source through the normal
+     * handoff rules.  Pass a source key when only one particular registration
+     * should be removed; `REMOVE_ACTIVE_SOURCE` expresses the active-source
+     * intent explicitly, while an explicit `null` keeps the legacy `default` key.
+     * Legacy last-write (`REPLACE`) Buffs retain their historical no-dormant-
+     * handoff behavior and clear the remaining registrations after the active
+     * registration is removed.
+     */
+    removeBuff(buff, sourceHrid = REMOVE_ACTIVE_SOURCE) {
+        const uniqueHrid = buff?.uniqueHrid;
+        if (!uniqueHrid) {
             return;
         }
-        delete this.combatBuffs[buff.uniqueHrid];
 
-        this.updateCombatDetails();
+        this.removeBuffByUniqueHrid(uniqueHrid, sourceHrid);
+    }
+
+    /**
+     * Remove a runtime Buff registration by uniqueHrid.
+     *
+     * Omitting `sourceHrid` intentionally targets the currently active source
+     * to preserve the old `removeBuff({ uniqueHrid })` contract.  This is also
+     * the safe default for source-aware Buffs: strongest-source entries can
+     * hand off instead of silently doing nothing.  Use `REMOVE_ACTIVE_SOURCE`
+     * when the active-source intent should be explicit, or an explicit source
+     * key for exact source removal; explicit `null` targets the `default` source.
+     * Legacy `REPLACE` entries keep their no-dormant-handoff cleanup semantics.
+     */
+    removeBuffByUniqueHrid(uniqueHrid, sourceHrid = REMOVE_ACTIVE_SOURCE) {
+        const sources = this.buffSources[uniqueHrid];
+        let sourceKey;
+        if (sourceHrid === REMOVE_ACTIVE_SOURCE) {
+            const activeSourceKey = this.activeBuffSourceKeys[uniqueHrid];
+            if (activeSourceKey !== undefined && (!sources || sources.has(activeSourceKey))) {
+                sourceKey = activeSourceKey;
+            } else if (sources?.size) {
+                // Recovered/legacy state may have source registrations without
+                // the active-key index. Derive the same active source used by
+                // reconciliation instead of returning a silent no-op.
+                const policy = this.buffSourcePolicies[uniqueHrid] ?? BUFF_SOURCE_POLICY.REPLACE;
+                sourceKey = pickActiveBuffSource(sources, policy)?.sourceKey;
+            }
+        } else {
+            sourceKey = sourceHrid;
+        }
+        sourceKey ??= "default";
+
+        if (sources) {
+            if (!sources.has(sourceKey)) {
+                return;
+            }
+
+            const policy = this.buffSourcePolicies[uniqueHrid] ?? BUFF_SOURCE_POLICY.REPLACE;
+            const sourceWasActive = sourceKey === this.activeBuffSourceKeys[uniqueHrid];
+            sources.delete(sourceKey);
+            if (policy === BUFF_SOURCE_POLICY.REPLACE && sourceWasActive) {
+                // Historical last-write-wins buffs do not reveal an overwritten
+                // value when the visible registration is removed.
+                //
+                // Cascading clear reachability note: every production REPLACE
+                // registration keeps exactly one source per uniqueHrid — scrolls
+                // use `scroll:${itemHrid}` (scroll uniqueHrids are mutually
+                // distinct and isolated from drink/ability buffs; renewal is a
+                // same-key overwrite), while fury/curse/weaken/enrage,
+                // consumables, and REPLACE ability buffs all register the
+                // "default" key. Removing the sole entry therefore falls
+                // through to the sources.size === 0 branch below, so this
+                // REPLACE+active branch is only exercised by unit tests that
+                // deliberately build multi-source REPLACE registrations.
+                // Keep it: if future data registers several REPLACE sources per
+                // uniqueHrid, it preserves the no-dormant-handoff contract.
+                delete this.buffSources[uniqueHrid];
+                delete this.buffSourcePolicies[uniqueHrid];
+                this.reconcileBuffSource(uniqueHrid, null);
+            } else if (sources.size === 0) {
+                delete this.buffSources[uniqueHrid];
+                delete this.buffSourcePolicies[uniqueHrid];
+                this.reconcileBuffSource(uniqueHrid, null);
+            } else if (
+                sourceWasActive ||
+                // Reconcile defensively if the source registry and active key drift apart.
+                this.activeBuffSourceKeys[uniqueHrid] === undefined
+            ) {
+                this.reconcileBuffSource(uniqueHrid, sources);
+            }
+            return;
+        }
+
+        // Compatibility fallback for old-style buffs that predate source
+        // registration.  A missing source registry must not be treated as a
+        // reason to delete unrelated registered sources.
+        if (this.combatBuffs[uniqueHrid]) {
+            delete this.combatBuffs[uniqueHrid];
+            delete this.activeBuffSourceKeys[uniqueHrid];
+            delete this.buffSourcePolicies[uniqueHrid];
+            this.updateCombatDetails();
+        }
     }
 
     addPermanentBuff(buff) {
@@ -406,7 +742,7 @@ class CombatUnit {
     generatePermanentBuffs() {
         for (let i = 0; i < this.houseRooms.length; i++) {
             const houseRoom = this.houseRooms[i];
-            houseRoom.buffs.forEach(buff => {
+            houseRoom.buffs.forEach((buff) => {
                 this.addPermanentBuff(buff);
             });
         }
@@ -418,35 +754,134 @@ class CombatUnit {
         }
 
         if (this.achievements) {
-            this.achievements.buffs.forEach(buff => {
+            this.achievements.buffs.forEach((buff) => {
                 this.addPermanentBuff(buff);
             });
         }
         if (this.zoneBuffs) {
-            this.zoneBuffs.forEach(buff => {
+            this.zoneBuffs.forEach((buff) => {
                 this.addPermanentBuff(buff);
             });
         }
         if (this.extraBuffs) {
-            this.extraBuffs.forEach(buff => {
+            this.extraBuffs.forEach((buff) => {
                 this.addPermanentBuff(buff);
             });
         }
     }
 
-    removeExpiredBuffs(currentTime) {
-        let expiredBuffs = Object.values(this.combatBuffs).filter(
-            (buff) => buff.startTime + buff.duration <= currentTime
-        );
-        expiredBuffs.forEach((buff) => {
-            delete this.combatBuffs[buff.uniqueHrid];
-        });
+    removeExpiredBuffByUniqueHrid(uniqueHrid, currentTime, { updateDetails = true } = {}) {
+        if (!uniqueHrid) {
+            return false;
+        }
 
-        this.updateCombatDetails();
+        let detailsDirty = false;
+        const sources = this.buffSources[uniqueHrid];
+        if (sources) {
+            const activeSourceKey = this.activeBuffSourceKeys[uniqueHrid];
+            const policy = this.buffSourcePolicies[uniqueHrid] ?? BUFF_SOURCE_POLICY.REPLACE;
+            let activeSourceExpired = false;
+            // Delete while scanning a snapshot so the mutation cannot alter
+            // iteration semantics. Source sets are currently bounded by the
+            // small party-aura roster; if this policy expands to large sets,
+            // collect only expired keys (or maintain an index) instead.
+            for (const [sourceKey, entry] of [...sources.entries()]) {
+                if (entry.expiresAt <= currentTime) {
+                    if (sourceKey === activeSourceKey) {
+                        activeSourceExpired = true;
+                    }
+                    sources.delete(sourceKey);
+                }
+            }
+
+            // Last-write buffs historically had no dormant-source handoff: once
+            // the visible buff expires, the old engine removed that uniqueHrid
+            // entirely. Preserve that behavior while allowing aura sources to
+            // hand off to the next strongest non-expired registration.
+            if (policy === BUFF_SOURCE_POLICY.REPLACE && activeSourceExpired) {
+                delete this.buffSources[uniqueHrid];
+                delete this.buffSourcePolicies[uniqueHrid];
+                detailsDirty = this.reconcileBuffSource(uniqueHrid, null, { updateDetails: false }) || detailsDirty;
+            } else if (sources.size === 0) {
+                delete this.buffSources[uniqueHrid];
+                delete this.buffSourcePolicies[uniqueHrid];
+                detailsDirty = this.reconcileBuffSource(uniqueHrid, null, { updateDetails: false }) || detailsDirty;
+            } else if (activeSourceExpired || activeSourceKey === undefined || !sources.has(activeSourceKey)) {
+                detailsDirty = this.reconcileBuffSource(uniqueHrid, sources, { updateDetails: false }) || detailsDirty;
+            }
+        } else {
+            // Keep compatibility with runtime buffs restored by older callers
+            // before source registration was introduced. Permanent buffs normally
+            // use null/string start times and therefore remain outside this
+            // numeric timed-buff fallback.
+            const buff = this.combatBuffs[uniqueHrid];
+            if (
+                typeof buff?.startTime === "number" &&
+                Number.isFinite(buff.startTime) &&
+                typeof buff?.duration === "number" &&
+                Number.isFinite(buff.duration) &&
+                buff.startTime + buff.duration <= currentTime
+            ) {
+                delete this.combatBuffs[uniqueHrid];
+                delete this.activeBuffSourceKeys[uniqueHrid];
+                delete this.buffSourcePolicies[uniqueHrid];
+                detailsDirty = true;
+            }
+        }
+
+        if (detailsDirty && updateDetails) {
+            this.updateCombatDetails();
+        }
+
+        return detailsDirty;
+    }
+
+    removeExpiredBuffs(currentTime, { updateDetails = true } = {}) {
+        // Only source-registered runtime buffs expire here. clearBuffs() copies
+        // permanent buffs directly into combatBuffs without sources, so those
+        // entries are intentionally outside the timed-expiration lifecycle.
+        // When the active source expires, strongest-source buffs may select a
+        // fallback. Ordinary last-write buffs are cleared with no handoff.
+        let detailsDirty = false;
+        for (const uniqueHrid of Object.keys(this.buffSources)) {
+            detailsDirty =
+                this.removeExpiredBuffByUniqueHrid(uniqueHrid, currentTime, { updateDetails: false }) || detailsDirty;
+        }
+
+        // Keep compatibility with runtime buffs restored by older callers that
+        // are not represented in buffSources. The targeted primitive above is
+        // also used by specialized expiration events to avoid this full scan.
+        for (const [uniqueHrid, buff] of Object.entries(this.combatBuffs)) {
+            if (this.buffSources[uniqueHrid]) {
+                continue;
+            }
+            if (
+                typeof buff?.startTime === "number" &&
+                Number.isFinite(buff.startTime) &&
+                typeof buff?.duration === "number" &&
+                Number.isFinite(buff.duration) &&
+                buff.startTime + buff.duration <= currentTime
+            ) {
+                delete this.combatBuffs[uniqueHrid];
+                delete this.activeBuffSourceKeys[uniqueHrid];
+                delete this.buffSourcePolicies[uniqueHrid];
+                detailsDirty = true;
+            }
+        }
+
+        if (detailsDirty && updateDetails) {
+            this.updateCombatDetails();
+        }
+
+        return detailsDirty;
     }
 
     clearBuffs() {
         this.combatBuffs = structuredClone(this.permanentBuffs);
+        this.buffSources = {};
+        this.activeBuffSourceKeys = {};
+        this.buffSourcePolicies = {};
+        this.buffSourceSequence = 0;
         this.updateCombatDetails();
     }
 
@@ -458,6 +893,7 @@ class CombatUnit {
         this.isBlinded = false;
         this.blindExpireTime = null;
         this.combatDetails.combatStats.damageTaken = 0;
+        this.refreshBaseCombatStats();
     }
 
     getBuffBoosts(type) {
@@ -465,7 +901,8 @@ class CombatUnit {
         Object.values(this.combatBuffs)
             .filter((buff) => buff.typeHrid == type)
             .forEach((buff) => {
-                boosts.push({ ratioBoost: buff.ratioBoost, flatBoost: buff.flatBoost });
+                const { ratioBoost, flatBoost } = projectBuffStats(buff);
+                boosts.push({ ratioBoost, flatBoost });
             });
 
         return boosts;
@@ -489,7 +926,7 @@ class CombatUnit {
 
     reset(currentTime = 0) {
         this.clearCCs();
-        
+
         // 只有玩家在地下城团灭重开时保留buff和CD，敌人始终完全重置
         if (currentTime == 0 || !this.isPlayer) {
             // 首次战斗开始 或 敌人重置：完全重置
@@ -498,7 +935,7 @@ class CombatUnit {
             this.resetCooldowns(currentTime);
         } else {
             // 地下城团灭重开（仅玩家）：只移除过期buff，保留CD
-            this.removeExpiredBuffs(currentTime);
+            this.removeExpiredBuffs(currentTime, { updateDetails: false });
             this.updateCombatDetails();
         }
 
@@ -520,9 +957,12 @@ class CombatUnit {
                 } else {
                     let cooldownDuration = ability.cooldownDuration;
                     if (haste > 0) {
-                        cooldownDuration = cooldownDuration * 100 / (100 + haste);
+                        cooldownDuration = (cooldownDuration * 100) / (100 + haste);
                     }
-                    ability.lastUsed = currentTime - Math.floor(cooldownDuration * 0.5) + Math.floor(Math.random() * cooldownDuration * 0.5);
+                    ability.lastUsed =
+                        currentTime -
+                        Math.floor(cooldownDuration * 0.5) +
+                        Math.floor(Math.random() * cooldownDuration * 0.5);
                 }
             });
     }
@@ -550,7 +990,7 @@ class CombatUnit {
 
         let newManapoints = Math.min(
             this.combatDetails.currentManapoints + manapoints,
-            this.combatDetails.maxManapoints
+            this.combatDetails.maxManapoints,
         );
         manapointsAdded = newManapoints - this.combatDetails.currentManapoints;
         this.combatDetails.currentManapoints = newManapoints;

@@ -75,8 +75,37 @@ describe("CombatSimulator combat scroll runtime", () => {
         expect(players[0].combatBuffs["/buff_uniques/personal_attack_speed"])
             .not.toBe(players[1].combatBuffs["/buff_uniques/personal_attack_speed"]);
         expect(players[0].combatBuffs["/buff_uniques/personal_attack_speed"].startTime).toBe(0);
+        expect(players[0].buffSources["/buff_uniques/personal_attack_speed"].has(`scroll:${itemHrid}`)).toBe(true);
         expect(usage(simulator, "player1", itemHrid).openedCount).toBe(1);
         expect(usage(simulator, "player2", itemHrid).openedCount).toBe(1);
+    });
+
+    it("removes a scroll source even when another stronger source is active", () => {
+        const itemHrid = "/items/seal_of_attack_speed";
+        const { simulator, players } = prepareSimulator([
+            { [itemHrid]: { quantity: 1 } },
+        ], MINUTE_30);
+        const player = players[0];
+        const state = simulator.scrollRuntimeByPlayer.player1[itemHrid];
+        const uniqueHrid = state.buffUniqueHrid;
+        const otherSourceBuff = {
+            uniqueHrid,
+            typeHrid: "/buff_types/attack_speed",
+            ratioBoost: 0.99,
+            flatBoost: 0,
+            duration: MINUTE_30,
+        };
+
+        player.addBuff(otherSourceBuff, 0, "other-source");
+        expect(player.combatBuffs[uniqueHrid].ratioBoost).toBe(otherSourceBuff.ratioBoost);
+        expect(player.combatBuffs[uniqueHrid]).not.toBe(otherSourceBuff);
+
+        simulator.closeScrollWindow(state, MINUTE_30);
+
+        expect(player.combatBuffs[uniqueHrid].ratioBoost).toBe(otherSourceBuff.ratioBoost);
+        expect(player.combatBuffs[uniqueHrid]).not.toBe(otherSourceBuff);
+        expect(player.buffSources[uniqueHrid].has(`scroll:${itemHrid}`)).toBe(false);
+        expect(player.buffSources[uniqueHrid].has("other-source")).toBe(true);
     });
 
     it.each([

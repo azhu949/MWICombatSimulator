@@ -204,8 +204,17 @@ export function useHomeCombatPreview() {
     });
     const data = computed(() =>
         playerConfig.value
-            ? buildCombatPreviewData(playerConfig.value, extra.value, context.value)
-            : { player: null, finalPlayer: null, drinkCards: [], highlightSources: [], statBreakdowns: {} },
+            ? buildCombatPreviewData(playerConfig.value, extra.value, context.value, {
+                  partyPlayerConfigs: simulator.selectedPlayers,
+              })
+            : {
+                  player: null,
+                  finalPlayer: null,
+                  drinkCards: [],
+                  highlightSources: [],
+                  statBreakdowns: {},
+                  partyAuraPreviewTruncated: false,
+              },
     );
     const combatDetails = computed(() => (data.value.finalPlayer || data.value.player)?.combatDetails || null);
     const combatStats = computed(() => combatDetails.value?.combatStats || null);
@@ -654,5 +663,14 @@ export function useHomeCombatPreview() {
             .filter((section) => section.rows.length > 0);
     });
 
-    return { data, combatDetails, combatStats, rows, sections, combatStyleName, damageTypeName };
+    return {
+        data,
+        combatDetails,
+        combatStats,
+        rows,
+        sections,
+        combatStyleName,
+        damageTypeName,
+        partyAuraPreviewTruncated: computed(() => Boolean(data.value?.partyAuraPreviewTruncated)),
+    };
 }

@@ -65,7 +65,7 @@ class Player extends CombatUnit {
         houseRoomDtos.forEach((houseRoomDto) => {
             const houseRoom = HouseRoom.createFromDTO(houseRoomDto);
             if (houseRoom) {
-                player.houseRooms.push(houseRoom)
+                player.houseRooms.push(houseRoom);
             }
         });
 
@@ -93,7 +93,7 @@ class Player extends CombatUnit {
             this.combatDetails.combatStats.damageType = this.equipment["/equipment_types/main_hand"].getDamageType();
             this.combatDetails.combatStats.attackInterval =
                 this.equipment["/equipment_types/main_hand"].getCombatStat("attackInterval");
-            this.combatDetails.combatStats.primaryTraining = 
+            this.combatDetails.combatStats.primaryTraining =
                 this.equipment["/equipment_types/main_hand"].getPrimaryTraining();
         } else if (this.equipment["/equipment_types/two_hand"]) {
             this.combatDetails.combatStats.combatStyleHrid =
@@ -101,7 +101,7 @@ class Player extends CombatUnit {
             this.combatDetails.combatStats.damageType = this.equipment["/equipment_types/two_hand"].getDamageType();
             this.combatDetails.combatStats.attackInterval =
                 this.equipment["/equipment_types/two_hand"].getCombatStat("attackInterval");
-            this.combatDetails.combatStats.primaryTraining = 
+            this.combatDetails.combatStats.primaryTraining =
                 this.equipment["/equipment_types/two_hand"].getPrimaryTraining();
         } else {
             this.combatDetails.combatStats.combatStyleHrid = "/combat_styles/smash";
@@ -186,7 +186,7 @@ class Player extends CombatUnit {
             "meleeExperience",
             "rangedExperience",
             "magicExperience",
-            "retaliation"
+            "retaliation",
         ].forEach((stat) => {
             this.combatDetails.combatStats[stat] = Object.values(this.equipment)
                 .filter((equipment) => equipment != null)
@@ -204,6 +204,7 @@ class Player extends CombatUnit {
             this.combatDetails.combatStats.drinkSlots = 1;
         }
 
+        this.refreshBaseCombatStats();
         super.updateCombatDetails();
     }
 }

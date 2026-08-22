@@ -1,6 +1,6 @@
 {
     "name": "mwicombatsimulator",
-"version": "2.0.9",
+    "version": "2.0.10",
     "description": "",
     "scripts": {
         "dev": "vite",
@@ -13,7 +13,9 @@
         "start": "vite",
         "test": "vitest run",
         "extract-game-data": "node scripts/extract-game-data.js",
-        "extract-game-data:official": "node scripts/extract-game-data-from-official.js"
+        "extract-game-data:official": "node scripts/extract-game-data-from-official.js",
+        "format:check": "prettier --check .",
+        "format:fix": "prettier --write ."
     },
     "repository": {
         "type": "git",

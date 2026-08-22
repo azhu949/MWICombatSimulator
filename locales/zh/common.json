@@ -501,6 +501,7 @@
             "homeResultsRunningTitle": "模拟进行中",
             "homeResultsRunning": "模拟正在运行，结果会在完成后自动显示在这里。",
             "workspaceTabsAria": "首页工作区分区",
+            "partyAuraPreviewTruncated": "队友光环预览已达事件预算上限，结果可能不完整，部分队友光环可能未显示。",
             "workspaceEyebrow": "工作台",
             "workspaceTitle": "模拟工作台",
             "workspaceDesc": "在配置和运行模拟时，始终保持关键指标可见。",

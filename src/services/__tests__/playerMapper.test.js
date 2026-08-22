@@ -440,6 +440,32 @@ describe("playerMapper", () => {
         expect(labyrinthPreview.highlightSources.some((source) => source.sourceType === "combat_scroll")).toBe(false);
     });
 
+    it("uses canonical scroll source keys on every normalized preview player", () => {
+        const itemHrid = "/items/seal_of_damage";
+        const uniqueHrid = "/buff_uniques/personal_damage";
+        const player1 = createEmptyPlayerConfig(1);
+        const player2 = { ...createEmptyPlayerConfig(2), selected: true };
+        player1.combatScrolls = { [itemHrid]: { quantity: null } };
+        player2.combatScrolls = { [itemHrid]: { quantity: null } };
+
+        const previewPlayers = buildPlayersForCombatPreview(
+            [player1, player2],
+            { combatScrollsEnabled: true },
+            {
+                mode: "zone",
+                zoneHrid: "/actions/combat/alligator",
+                difficultyTier: 0,
+            }
+        );
+
+        expect(previewPlayers).toHaveLength(2);
+        for (const previewPlayer of previewPlayers) {
+            const sources = previewPlayer.buffSources[uniqueHrid];
+            expect([...sources.keys()]).toEqual([`scroll:${itemHrid}`]);
+            expect(sources.has("default")).toBe(false);
+        }
+    });
+
     it("restores the complete preview state after deriving all scroll highlights", () => {
         const player = createEmptyPlayerConfig(1);
         const itemHrids = combatScrollOptions.map((option) => option.itemHrid);
