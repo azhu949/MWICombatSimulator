@@ -13,18 +13,18 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
-import { ProgressIndicator, ProgressRoot } from "reka-ui";
-import { cn } from "@/ui/lib/utils.js";
+import { computed } from 'vue';
+import { ProgressIndicator, ProgressRoot } from 'reka-ui';
+import { cn } from '@/ui/lib/utils.js';
 
 const props = defineProps({
   value: { type: Number, default: 0 },
   max: { type: Number, default: 100 },
-  class: { type: [String, Array, Object], default: "" },
+  class: { type: [String, Array, Object], default: '' },
 });
 
 const percentage = computed(() => {
   const safeMax = Number.isFinite(props.max) && props.max > 0 ? props.max : 100;
-  return Math.max(0, Math.min(100, (Number(props.value) || 0) / safeMax * 100));
+  return Math.max(0, Math.min(100, ((Number(props.value) || 0) / safeMax) * 100));
 });
 </script>

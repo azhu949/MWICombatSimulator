@@ -4,26 +4,50 @@
       <div class="flex flex-col gap-3 xl:flex-row xl:items-center xl:justify-between">
         <div class="flex min-w-0 flex-1 flex-wrap items-center gap-x-3 gap-y-1">
           <div class="flex shrink-0 items-baseline gap-2">
-            <p class="text-[10px] font-semibold uppercase  text-success">{{ t("common:enhancement.eyebrow", "Enhancement Lab") }}</p>
-            <h2 class="font-heading text-lg font-semibold text-foreground">{{ t("common:enhancement.title", "Enhancement Simulator") }}</h2>
+            <p class="text-[10px] font-semibold uppercase text-success">
+              {{ t('common:enhancement.eyebrow', 'Enhancement Lab') }}
+            </p>
+            <h2 class="font-heading text-lg font-semibold text-foreground">
+              {{ t('common:enhancement.title', 'Enhancement Simulator') }}
+            </h2>
           </div>
           <span class="hidden h-5 w-px bg-muted/40 sm:block" aria-hidden="true"></span>
           <p class="min-w-[180px] flex-1 truncate text-xs text-muted-foreground">{{ selectedRouteLabel }}</p>
           <span class="shrink-0 rounded border border-border bg-muted/40 px-2 py-1 text-[10px] text-muted-foreground">
-            {{ t("common:enhancement.actionTimeBadge", "12s base action") }}
+            {{ t('common:enhancement.actionTimeBadge', '12s base action') }}
           </span>
         </div>
 
         <div class="flex flex-wrap items-center gap-2" data-tm-import-anchor="enhancement-actions">
           <span class="rounded border px-2 py-1 text-[11px]" :class="priceStatusClass">{{ priceStatusText }}</span>
-          <button type="button" class="button-secondary !px-3 !py-1.5" data-tm-import-reference="enhancement-refresh" :disabled="priceRefreshPending" @click="refreshPrices">
-            {{ priceRefreshPending ? t("common:enhancement.refreshing", "Refreshing...") : t("common:enhancement.refreshPrices", "Refresh prices") }}
+          <button
+            type="button"
+            class="button-secondary !px-3 !py-1.5"
+            data-tm-import-reference="enhancement-refresh"
+            :disabled="priceRefreshPending"
+            @click="refreshPrices"
+          >
+            {{
+              priceRefreshPending
+                ? t('common:enhancement.refreshing', 'Refreshing...')
+                : t('common:enhancement.refreshPrices', 'Refresh prices')
+            }}
           </button>
-          <button type="button" class="button-secondary !px-3 !py-1.5" :disabled="enhancement.riskRunning" @click="resetConfig">
-            {{ t("common:enhancement.reset", "Reset") }}
+          <button
+            type="button"
+            class="button-secondary !px-3 !py-1.5"
+            :disabled="enhancement.riskRunning"
+            @click="resetConfig"
+          >
+            {{ t('common:enhancement.reset', 'Reset') }}
           </button>
-          <button type="button" class="button-primary !px-3 !py-1.5" :disabled="!enhancement.config.itemHrid || enhancement.riskRunning || !budgetInputValid" @click="runRisk">
-            {{ t("common:enhancement.calculateRisk", "Calculate risk") }}
+          <button
+            type="button"
+            class="button-primary !px-3 !py-1.5"
+            :disabled="!enhancement.config.itemHrid || enhancement.riskRunning || !budgetInputValid"
+            @click="runRisk"
+          >
+            {{ t('common:enhancement.calculateRisk', 'Calculate risk') }}
           </button>
         </div>
       </div>
@@ -34,8 +58,10 @@
         <div class="surface-panel space-y-3" data-enhancement-config>
           <div class="flex items-center justify-between gap-3">
             <div>
-              <p class="text-xs uppercase  text-muted-foreground">01</p>
-              <h3 class="font-heading text-base font-semibold text-primary">{{ t("common:enhancement.targetItem", "Target item") }}</h3>
+              <p class="text-xs uppercase text-muted-foreground">01</p>
+              <h3 class="font-heading text-base font-semibold text-primary">
+                {{ t('common:enhancement.targetItem', 'Target item') }}
+              </h3>
             </div>
             <button
               v-if="enhancement.config.itemHrid"
@@ -45,41 +71,82 @@
               :title="favoriteButtonLabel(enhancement.config.itemHrid)"
               @click="enhancement.toggleFavorite(enhancement.config.itemHrid)"
             >
-              <Star class="size-4" :fill="isFavorite(enhancement.config.itemHrid) ? 'currentColor' : 'none'" aria-hidden="true" />
+              <Star
+                class="size-4"
+                :fill="isFavorite(enhancement.config.itemHrid) ? 'currentColor' : 'none'"
+                aria-hidden="true"
+              />
             </button>
           </div>
 
-          <button type="button" class="w-full rounded-lg border border-border bg-muted/50 p-3 text-left transition hover:border-primary/40" @click="openItemPicker">
-            <span class="control-label">{{ t("common:enhancement.item", "Item") }}</span>
+          <button
+            type="button"
+            class="w-full rounded-lg border border-border bg-muted/50 p-3 text-left transition hover:border-primary/40"
+            @click="openItemPicker"
+          >
+            <span class="control-label">{{ t('common:enhancement.item', 'Item') }}</span>
             <span class="mt-1 flex items-center gap-2.5">
-              <span class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded bg-muted/40 ring-1 ring-inset ring-ring" data-enhancement-selected-item-icon>
-                <svg v-if="itemIconVisible(enhancement.config.itemHrid)" class="h-full w-full p-1" viewBox="0 0 50 50" aria-hidden="true">
+              <span
+                class="inline-flex h-10 w-10 shrink-0 items-center justify-center rounded bg-muted/40 ring-1 ring-inset ring-ring"
+                data-enhancement-selected-item-icon
+              >
+                <svg
+                  v-if="itemIconVisible(enhancement.config.itemHrid)"
+                  class="h-full w-full p-1"
+                  viewBox="0 0 50 50"
+                  aria-hidden="true"
+                >
                   <use :href="itemIconHref(enhancement.config.itemHrid)"></use>
                 </svg>
-                <span v-else class="text-sm font-semibold text-muted-foreground" aria-hidden="true">{{ itemIconFallback(enhancement.selectedItem || { name: "?" }) }}</span>
+                <span v-else class="text-sm font-semibold text-muted-foreground" aria-hidden="true">{{
+                  itemIconFallback(enhancement.selectedItem || { name: '?' })
+                }}</span>
               </span>
               <span class="min-w-0 flex-1">
                 <span class="flex items-center justify-between gap-3">
                   <span class="min-w-0 truncate text-sm font-semibold text-foreground">{{ selectedItemName }}</span>
-                  <span class="shrink-0 text-xs text-primary">{{ t("common:enhancement.choose", "Choose") }}</span>
+                  <span class="shrink-0 text-xs text-primary">{{ t('common:enhancement.choose', 'Choose') }}</span>
                 </span>
-                <span v-if="selectedItemType" class="mt-1 block text-xs text-muted-foreground">{{ selectedItemType }}</span>
+                <span v-if="selectedItemType" class="mt-1 block text-xs text-muted-foreground">{{
+                  selectedItemType
+                }}</span>
               </span>
             </span>
           </button>
 
           <div class="grid grid-cols-3 gap-3">
             <label>
-              <span class="control-label">{{ t("common:enhancement.startLevel", "Start level") }}</span>
-              <input v-model.number="enhancement.config.startLevel" class="control-input" type="number" min="0" :max="Math.max(0, Number(enhancement.config.targetLevel || 1) - 1)" step="1" />
+              <span class="control-label">{{ t('common:enhancement.startLevel', 'Start level') }}</span>
+              <input
+                v-model.number="enhancement.config.startLevel"
+                class="control-input"
+                type="number"
+                min="0"
+                :max="Math.max(0, Number(enhancement.config.targetLevel || 1) - 1)"
+                step="1"
+              />
             </label>
             <label>
-              <span class="control-label">{{ t("common:enhancement.targetLevel", "Target level") }}</span>
-              <input v-model.number="enhancement.config.targetLevel" class="control-input" type="number" min="1" max="20" step="1" />
+              <span class="control-label">{{ t('common:enhancement.targetLevel', 'Target level') }}</span>
+              <input
+                v-model.number="enhancement.config.targetLevel"
+                class="control-input"
+                type="number"
+                min="1"
+                max="20"
+                step="1"
+              />
             </label>
             <label>
-              <span class="control-label">{{ getBuffTypeName("/buff_types/enhancing_level", "Enhancing Level") }}</span>
-              <input v-model.number="enhancement.config.skillLevel" class="control-input" type="number" min="1" max="200" step="1" />
+              <span class="control-label">{{ getBuffTypeName('/buff_types/enhancing_level', 'Enhancing Level') }}</span>
+              <input
+                v-model.number="enhancement.config.skillLevel"
+                class="control-input"
+                type="number"
+                min="1"
+                max="200"
+                step="1"
+              />
             </label>
           </div>
 
@@ -92,18 +159,24 @@
               >
                 <SelectTrigger :aria-label="enhancingTeaLabel" />
                 <SelectContent>
-                  <SelectItem :value="EMPTY_SELECT_VALUE">{{ t("common:enhancement.none", "None") }}</SelectItem>
-                  <SelectItem v-for="tea in teaOptions" :key="tea.hrid" :value="tea.hrid">{{ itemName(tea) }}</SelectItem>
+                  <SelectItem :value="EMPTY_SELECT_VALUE">{{ t('common:enhancement.none', 'None') }}</SelectItem>
+                  <SelectItem v-for="tea in teaOptions" :key="tea.hrid" :value="tea.hrid">{{
+                    itemName(tea)
+                  }}</SelectItem>
                 </SelectContent>
               </Select>
             </label>
-            <label class="flex min-h-10 items-center gap-2 self-end rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-foreground/85">
+            <label
+              class="flex min-h-10 items-center gap-2 self-end rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-foreground/85"
+            >
               <input v-model="enhancement.config.blessedTea" type="checkbox" />
-              <span>{{ getGameItemName("/items/blessed_tea", "Blessed Tea") }}</span>
+              <span>{{ getGameItemName('/items/blessed_tea', 'Blessed Tea') }}</span>
             </label>
-            <label class="flex min-h-10 items-center gap-2 self-end rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-foreground/85">
+            <label
+              class="flex min-h-10 items-center gap-2 self-end rounded-lg border border-border bg-muted/40 px-3 py-2 text-xs text-foreground/85"
+            >
               <input v-model="enhancement.config.wisdomTea" type="checkbox" />
-              <span>{{ getGameItemName("/items/wisdom_tea", "Wisdom Tea") }}</span>
+              <span>{{ getGameItemName('/items/wisdom_tea', 'Wisdom Tea') }}</span>
             </label>
           </div>
 
@@ -115,8 +188,12 @@
               aria-controls="enhancement-advanced-tabs"
               @click="advancedOpen = !advancedOpen"
             >
-              <span class="min-w-0 whitespace-nowrap leading-4">{{ advancedOpen ? t("common:enhancement.collapseAdvancedSettings", "Collapse advanced settings") : t("common:enhancement.advancedSettings", "Advanced settings") }}</span>
-              <span class="text-base text-success" aria-hidden="true">{{ advancedOpen ? "-" : "+" }}</span>
+              <span class="min-w-0 whitespace-nowrap leading-4">{{
+                advancedOpen
+                  ? t('common:enhancement.collapseAdvancedSettings', 'Collapse advanced settings')
+                  : t('common:enhancement.advancedSettings', 'Advanced settings')
+              }}</span>
+              <span class="text-base text-success" aria-hidden="true">{{ advancedOpen ? '-' : '+' }}</span>
             </button>
             <button
               type="button"
@@ -133,7 +210,9 @@
               aria-haspopup="dialog"
               @click="openPricesModal"
             >
-              <span class="min-w-0 whitespace-nowrap leading-4">{{ t("common:enhancement.materialsAndPrices", "Materials & prices") }}</span>
+              <span class="min-w-0 whitespace-nowrap leading-4">{{
+                t('common:enhancement.materialsAndPrices', 'Materials & prices')
+              }}</span>
               <span class="shrink-0 text-[10px] font-normal text-muted-foreground">{{ materialRows.length }}</span>
             </button>
           </div>
@@ -150,26 +229,34 @@
             <button
               type="button"
               class="min-h-11 border-b-2 px-2 py-2 text-[11px] font-semibold leading-4 transition"
-              :class="activeAdvancedTab === 'bonuses' ? 'border-success/40 bg-success/10 text-success' : 'border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground/85'"
+              :class="
+                activeAdvancedTab === 'bonuses'
+                  ? 'border-success/40 bg-success/10 text-success'
+                  : 'border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground/85'
+              "
               role="tab"
               :aria-selected="activeAdvancedTab === 'bonuses'"
               :tabindex="activeAdvancedTab === 'bonuses' ? 0 : -1"
               aria-controls="enhancement-advanced-bonuses"
               @click="activeAdvancedTab = 'bonuses'"
             >
-              {{ t("common:enhancement.skillAndHousing", "Skill & housing") }}
+              {{ t('common:enhancement.skillAndHousing', 'Skill & housing') }}
             </button>
             <button
               type="button"
               class="min-h-11 border-b-2 px-2 py-2 text-[11px] font-semibold leading-4 transition"
-              :class="activeAdvancedTab === 'economics' ? 'border-success/40 bg-success/10 text-success' : 'border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground/85'"
+              :class="
+                activeAdvancedTab === 'economics'
+                  ? 'border-success/40 bg-success/10 text-success'
+                  : 'border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground/85'
+              "
               role="tab"
               :aria-selected="activeAdvancedTab === 'economics'"
               :tabindex="activeAdvancedTab === 'economics' ? 0 : -1"
               aria-controls="enhancement-advanced-economics"
               @click="activeAdvancedTab = 'economics'"
             >
-              {{ t("common:enhancement.economics", "Costs & risk") }}
+              {{ t('common:enhancement.economics', 'Costs & risk') }}
             </button>
           </div>
 
@@ -180,40 +267,82 @@
             role="tabpanel"
           >
             <div class="mb-3 flex items-center justify-between gap-2">
-              <h4 class="font-heading text-sm font-semibold text-success">{{ t("common:enhancement.housingAndCommunity", "Housing & community") }}</h4>
-              <span class="text-[11px] uppercase  text-muted-foreground">{{ t("common:enhancement.successBonus", "Success bonus") }}</span>
+              <h4 class="font-heading text-sm font-semibold text-success">
+                {{ t('common:enhancement.housingAndCommunity', 'Housing & community') }}
+              </h4>
+              <span class="text-[11px] uppercase text-muted-foreground">{{
+                t('common:enhancement.successBonus', 'Success bonus')
+              }}</span>
             </div>
             <div class="grid gap-3 sm:grid-cols-2">
               <label>
-                <span class="control-label">{{ getHouseRoomName("/house_rooms/observatory", "Observatory") }}</span>
-                <input v-model.number="enhancement.config.observatoryLevel" class="control-input" type="number" min="0" max="8" step="1" />
+                <span class="control-label">{{ getHouseRoomName('/house_rooms/observatory', 'Observatory') }}</span>
+                <input
+                  v-model.number="enhancement.config.observatoryLevel"
+                  class="control-input"
+                  type="number"
+                  min="0"
+                  max="8"
+                  step="1"
+                />
               </label>
               <label>
-                <span class="control-label">{{ t("common:enhancement.otherRoomLevels", "Other room levels") }}</span>
-                <input v-model.number="enhancement.config.otherRoomLevels" class="control-input" type="number" min="0" step="1" />
+                <span class="control-label">{{ t('common:enhancement.otherRoomLevels', 'Other room levels') }}</span>
+                <input
+                  v-model.number="enhancement.config.otherRoomLevels"
+                  class="control-input"
+                  type="number"
+                  min="0"
+                  step="1"
+                />
               </label>
               <label>
-                <span class="control-label">{{ getOfficialGameText("communityBuffTypeNames", "/community_buff_types/enhancing_speed", "Enhancing Speed") }}</span>
-                <input v-model.number="enhancement.config.communityEnhancingLevel" class="control-input" type="number" min="0" max="20" step="1" />
+                <span class="control-label">{{
+                  getOfficialGameText(
+                    'communityBuffTypeNames',
+                    '/community_buff_types/enhancing_speed',
+                    'Enhancing Speed',
+                  )
+                }}</span>
+                <input
+                  v-model.number="enhancement.config.communityEnhancingLevel"
+                  class="control-input"
+                  type="number"
+                  min="0"
+                  max="20"
+                  step="1"
+                />
               </label>
               <label>
-                <span class="control-label">{{ getOfficialGameText("communityBuffTypeNames", "/community_buff_types/experience", "Experience") }}</span>
-                <input v-model.number="enhancement.config.communityExperienceLevel" class="control-input" type="number" min="0" max="20" step="1" />
+                <span class="control-label">{{
+                  getOfficialGameText('communityBuffTypeNames', '/community_buff_types/experience', 'Experience')
+                }}</span>
+                <input
+                  v-model.number="enhancement.config.communityExperienceLevel"
+                  class="control-input"
+                  type="number"
+                  min="0"
+                  max="20"
+                  step="1"
+                />
               </label>
             </div>
 
             <div class="mt-3 grid gap-2 sm:grid-cols-2">
-              <label class="flex min-h-10 items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm text-foreground/85">
+              <label
+                class="flex min-h-10 items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm text-foreground/85"
+              >
                 <input v-model="enhancement.config.noviceAchievement" type="checkbox" />
-                <span>{{ achievementTierBonusLabel("/achievement_tiers/novice", "Novice") }}</span>
+                <span>{{ achievementTierBonusLabel('/achievement_tiers/novice', 'Novice') }}</span>
               </label>
-              <label class="flex min-h-10 items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm text-foreground/85">
+              <label
+                class="flex min-h-10 items-center gap-2 rounded-lg border border-border bg-muted/40 px-3 py-2 text-sm text-foreground/85"
+              >
                 <input v-model="enhancement.config.championAchievement" type="checkbox" />
-                <span>{{ achievementTierBonusLabel("/achievement_tiers/champion", "Champion") }}</span>
+                <span>{{ achievementTierBonusLabel('/achievement_tiers/champion', 'Champion') }}</span>
               </label>
             </div>
           </div>
-
         </div>
 
         <BaseModal
@@ -224,9 +353,15 @@
           @close="equipmentModalOpen = false"
         >
           <div class="space-y-3" data-enhancement-equipment>
-            <p class="text-right text-xs text-muted-foreground">{{ t("common:enhancement.gearLevel", "Item / +Level") }}</p>
+            <p class="text-right text-xs text-muted-foreground">
+              {{ t('common:enhancement.gearLevel', 'Item / +Level') }}
+            </p>
             <div class="grid border-y border-border md:grid-cols-2 md:gap-x-4">
-              <div v-for="slot in equipmentSlots" :key="slot.key" class="grid grid-cols-[76px_minmax(0,1fr)_62px] items-center gap-2 border-b border-border py-2 last:border-b-0 md:[&:nth-last-child(-n+2)]:border-b-0">
+              <div
+                v-for="slot in equipmentSlots"
+                :key="slot.key"
+                class="grid grid-cols-[76px_minmax(0,1fr)_62px] items-center gap-2 border-b border-border py-2 last:border-b-0 md:[&:nth-last-child(-n+2)]:border-b-0"
+              >
                 <span class="text-xs font-semibold text-muted-foreground">{{ slot.label }}</span>
                 <SearchCombobox
                   :model-value="equipmentField(slot.key, 'itemHrid')"
@@ -236,12 +371,16 @@
                   :aria-label="slot.label"
                   :empty-label="t('common:vue.common.noResults', 'No results')"
                   :open-label="t('common:vue.common.openOptions', 'Open options')"
-                  :more-results-label="t('common:vue.common.refineSearchMoreResults', 'Refine the search to see {count} more results')"
+                  :more-results-label="
+                    t('common:vue.common.refineSearchMoreResults', 'Refine the search to see {count} more results')
+                  "
                   :max-results="60"
                   @update:model-value="setEquipmentField(slot.key, 'itemHrid', $event)"
                 />
                 <input
-                  :aria-label="t('common:enhancement.gearEnhancementLevel', '{{slot}} enhancement level', { slot: slot.label })"
+                  :aria-label="
+                    t('common:enhancement.gearEnhancementLevel', '{{slot}} enhancement level', { slot: slot.label })
+                  "
                   class="control-input py-1.5 text-xs"
                   type="number"
                   min="0"
@@ -263,23 +402,25 @@
           data-enhancement-economics
         >
           <div>
-            <p class="text-xs uppercase  text-muted-foreground">03</p>
-            <h3 class="font-heading text-base font-semibold text-primary">{{ t("common:enhancement.economics", "Costs & risk") }}</h3>
+            <p class="text-xs uppercase text-muted-foreground">03</p>
+            <h3 class="font-heading text-base font-semibold text-primary">
+              {{ t('common:enhancement.economics', 'Costs & risk') }}
+            </h3>
           </div>
 
           <div class="grid gap-3 sm:grid-cols-2">
             <label>
-              <span class="control-label">{{ t("common:enhancement.protectionItemMode", "Protection item") }}</span>
+              <span class="control-label">{{ t('common:enhancement.protectionItemMode', 'Protection item') }}</span>
               <Select v-model="enhancement.config.protectionMode">
                 <SelectTrigger :aria-label="t('common:enhancement.protectionItemMode', 'Protection item')" />
                 <SelectContent>
-                  <SelectItem value="auto">{{ t("common:enhancement.autoCheapest", "Auto (cheapest)") }}</SelectItem>
-                  <SelectItem value="manual">{{ t("common:enhancement.manual", "Manual") }}</SelectItem>
+                  <SelectItem value="auto">{{ t('common:enhancement.autoCheapest', 'Auto (cheapest)') }}</SelectItem>
+                  <SelectItem value="manual">{{ t('common:enhancement.manual', 'Manual') }}</SelectItem>
                 </SelectContent>
               </Select>
             </label>
             <label>
-              <span class="control-label">{{ t("common:enhancement.protectionChoice", "Protection choice") }}</span>
+              <span class="control-label">{{ t('common:enhancement.protectionChoice', 'Protection choice') }}</span>
               <Select
                 :model-value="optionalEnhancementSelectValue(enhancement.config.protectionItemHrid)"
                 :disabled="enhancement.config.protectionMode !== 'manual'"
@@ -287,17 +428,27 @@
               >
                 <SelectTrigger :aria-label="t('common:enhancement.protectionChoice', 'Protection choice')" />
                 <SelectContent>
-                  <SelectItem :value="EMPTY_SELECT_VALUE">{{ t("common:enhancement.autoCheapest", "Auto (cheapest)") }}</SelectItem>
-                  <SelectItem v-for="item in protectionOptions" :key="item.hrid" :value="item.hrid">{{ protectionOptionLabel(item) }}</SelectItem>
+                  <SelectItem :value="EMPTY_SELECT_VALUE">{{
+                    t('common:enhancement.autoCheapest', 'Auto (cheapest)')
+                  }}</SelectItem>
+                  <SelectItem v-for="item in protectionOptions" :key="item.hrid" :value="item.hrid">{{
+                    protectionOptionLabel(item)
+                  }}</SelectItem>
                 </SelectContent>
               </Select>
             </label>
             <label>
-              <span class="control-label">{{ t("common:enhancement.laborRate", "Labor gold / hour") }}</span>
-              <input v-model.number="enhancement.config.laborRatePerHour" class="control-input" type="number" min="0" step="1000" />
+              <span class="control-label">{{ t('common:enhancement.laborRate', 'Labor gold / hour') }}</span>
+              <input
+                v-model.number="enhancement.config.laborRatePerHour"
+                class="control-input"
+                type="number"
+                min="0"
+                step="1000"
+              />
             </label>
             <label>
-              <span class="control-label">{{ t("common:enhancement.markupRate", "Markup (%)") }}</span>
+              <span class="control-label">{{ t('common:enhancement.markupRate', 'Markup (%)') }}</span>
               <input v-model.number="markupPercent" class="control-input" type="number" min="0" max="100" step="0.1" />
             </label>
           </div>
@@ -312,28 +463,58 @@
         >
           <div class="space-y-3" data-enhancement-prices>
             <div class="flex items-center justify-between gap-3">
-              <span class="text-xs text-muted-foreground">{{ t("common:enhancement.askFallback", "Market / fallback") }}</span>
-              <button type="button" class="button-secondary !px-3 !py-1.5" :disabled="priceRefreshPending" @click="refreshPrices">
-                {{ priceRefreshPending ? t("common:enhancement.refreshing", "Refreshing...") : t("common:enhancement.refreshPrices", "Refresh prices") }}
+              <span class="text-xs text-muted-foreground">{{
+                t('common:enhancement.askFallback', 'Market / fallback')
+              }}</span>
+              <button
+                type="button"
+                class="button-secondary !px-3 !py-1.5"
+                :disabled="priceRefreshPending"
+                @click="refreshPrices"
+              >
+                {{
+                  priceRefreshPending
+                    ? t('common:enhancement.refreshing', 'Refreshing...')
+                    : t('common:enhancement.refreshPrices', 'Refresh prices')
+                }}
               </button>
             </div>
 
             <div class="border-y border-primary/40 bg-primary/10" data-enhancement-starting-price>
               <div class="grid min-h-[58px] grid-cols-[minmax(0,1fr)_140px] items-center gap-3 px-3 py-2">
                 <div class="flex min-w-0 items-center gap-2.5">
-                  <span class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded bg-muted/50 ring-1 ring-inset ring-ring" data-enhancement-starting-item-icon>
-                    <svg v-if="itemIconVisible(enhancement.config.itemHrid)" class="h-full w-full p-1" viewBox="0 0 50 50" aria-hidden="true">
+                  <span
+                    class="inline-flex h-9 w-9 shrink-0 items-center justify-center rounded bg-muted/50 ring-1 ring-inset ring-ring"
+                    data-enhancement-starting-item-icon
+                  >
+                    <svg
+                      v-if="itemIconVisible(enhancement.config.itemHrid)"
+                      class="h-full w-full p-1"
+                      viewBox="0 0 50 50"
+                      aria-hidden="true"
+                    >
                       <use :href="itemIconHref(enhancement.config.itemHrid)"></use>
                     </svg>
-                    <span v-else class="text-xs font-semibold text-muted-foreground" aria-hidden="true">{{ itemIconFallback(enhancement.selectedItem || { hrid: enhancement.config.itemHrid }) }}</span>
+                    <span v-else class="text-xs font-semibold text-muted-foreground" aria-hidden="true">{{
+                      itemIconFallback(enhancement.selectedItem || { hrid: enhancement.config.itemHrid })
+                    }}</span>
                   </span>
                   <div class="min-w-0">
-                    <p class="truncate text-xs font-semibold text-foreground">{{ t("common:enhancement.startingItemValue", "Starting item value") }}</p>
-                    <p class="mt-0.5 text-[11px] text-muted-foreground">{{ priceDetailLabel(enhancement.startingItemPrice) }}</p>
-                    <p v-if="isAcquisitionPriceRecord(enhancement.startingItemPrice)" class="mt-0.5 text-[10px] text-muted-foreground">
+                    <p class="truncate text-xs font-semibold text-foreground">
+                      {{ t('common:enhancement.startingItemValue', 'Starting item value') }}
+                    </p>
+                    <p class="mt-0.5 text-[11px] text-muted-foreground">
+                      {{ priceDetailLabel(enhancement.startingItemPrice) }}
+                    </p>
+                    <p
+                      v-if="isAcquisitionPriceRecord(enhancement.startingItemPrice)"
+                      class="mt-0.5 text-[10px] text-muted-foreground"
+                    >
                       {{ acquisitionVendorFloorLabel(enhancement.startingItemPrice) }}
                     </p>
-                    <p v-if="startingItemPriceMissing" class="mt-1 text-[11px] leading-4 text-primary">{{ startingItemPriceMissingText }}</p>
+                    <p v-if="startingItemPriceMissing" class="mt-1 text-[11px] leading-4 text-primary">
+                      {{ startingItemPriceMissingText }}
+                    </p>
                   </div>
                 </div>
                 <input
@@ -348,26 +529,48 @@
               </div>
             </div>
 
-            <div v-if="materialRows.length" class="grid gap-x-4 border-t border-border sm:grid-cols-2" data-enhancement-price-grid>
+            <div
+              v-if="materialRows.length"
+              class="grid gap-x-4 border-t border-border sm:grid-cols-2"
+              data-enhancement-price-grid
+            >
               <div
                 v-for="row in materialRows"
                 :key="row.key || `${row.kind}-${row.priceMode}-${row.hrid}`"
                 class="grid min-h-[58px] grid-cols-[minmax(0,1fr)_96px_32px] items-center gap-2 border-b border-border py-2"
               >
                 <div class="flex min-w-0 items-center gap-2">
-                  <span class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded bg-muted/40 ring-1 ring-inset ring-ring" data-enhancement-material-icon>
-                    <svg v-if="itemIconVisible(row.hrid)" class="h-full w-full p-1" viewBox="0 0 50 50" aria-hidden="true">
+                  <span
+                    class="inline-flex h-8 w-8 shrink-0 items-center justify-center rounded bg-muted/40 ring-1 ring-inset ring-ring"
+                    data-enhancement-material-icon
+                  >
+                    <svg
+                      v-if="itemIconVisible(row.hrid)"
+                      class="h-full w-full p-1"
+                      viewBox="0 0 50 50"
+                      aria-hidden="true"
+                    >
                       <use :href="itemIconHref(row.hrid)"></use>
                     </svg>
-                    <span v-else class="text-[11px] font-semibold text-muted-foreground" aria-hidden="true">{{ itemIconFallback(row) }}</span>
+                    <span v-else class="text-[11px] font-semibold text-muted-foreground" aria-hidden="true">{{
+                      itemIconFallback(row)
+                    }}</span>
                   </span>
                   <div class="min-w-0">
                     <p class="truncate text-xs font-semibold text-foreground">{{ itemName(row) }}</p>
                     <p class="mt-0.5 text-[11px] text-muted-foreground">
-                      {{ priceDetailLabel(row) }}<template v-if="!isAcquisitionEstimate(row)"> · {{ t("common:enhancement.quantityShort", "Qty") }} {{ formatNumber(row.quantity ?? row.expectedQuantity ?? 0) }}</template>
+                      {{ priceDetailLabel(row)
+                      }}<template v-if="!isAcquisitionEstimate(row)">
+                        · {{ t('common:enhancement.quantityShort', 'Qty') }}
+                        {{ formatNumber(row.quantity ?? row.expectedQuantity ?? 0) }}</template
+                      >
                     </p>
                     <p v-if="isAcquisitionPriceRecord(row)" class="mt-0.5 text-[10px] text-muted-foreground">
-                      {{ acquisitionVendorFloorLabel(row) }}<template v-if="Number(row.quantity ?? row.expectedQuantity ?? 0) > 0"> · {{ t("common:enhancement.quantityShort", "Qty") }} {{ formatNumber(row.quantity ?? row.expectedQuantity) }}</template>
+                      {{ acquisitionVendorFloorLabel(row)
+                      }}<template v-if="Number(row.quantity ?? row.expectedQuantity ?? 0) > 0">
+                        · {{ t('common:enhancement.quantityShort', 'Qty') }}
+                        {{ formatNumber(row.quantity ?? row.expectedQuantity) }}</template
+                      >
                     </p>
                   </div>
                 </div>
@@ -376,7 +579,9 @@
                   type="number"
                   min="0"
                   step="1"
-                  :aria-label="t('common:enhancement.priceOverrideFor', 'Price override for {{item}}', { item: itemName(row) })"
+                  :aria-label="
+                    t('common:enhancement.priceOverrideFor', 'Price override for {{item}}', { item: itemName(row) })
+                  "
                   :placeholder="row.missing ? '—' : formatAmount(row.unitPrice ?? row.price ?? 0)"
                   :value="materialOverrideValue(row)"
                   @change="setMaterialOverride(row, $event)"
@@ -397,15 +602,27 @@
               class="border-l-2 border-primary/40 bg-primary/10 px-3 py-2 text-[11px] leading-4 text-muted-foreground"
               data-enhancement-override-note
             >
-              {{ t("common:enhancement.priceOverrideTaxNote", "Price overrides are treated as net proceeds: liquidation estimates no longer deduct the market tax.") }}
+              {{
+                t(
+                  'common:enhancement.priceOverrideTaxNote',
+                  'Price overrides are treated as net proceeds: liquidation estimates no longer deduct the market tax.',
+                )
+              }}
             </p>
-            <p v-if="materialRows.length === 0" class="text-xs text-muted-foreground">{{ t("common:enhancement.selectItemForMaterials", "Select an item to load its material prices.") }}</p>
+            <p v-if="materialRows.length === 0" class="text-xs text-muted-foreground">
+              {{ t('common:enhancement.selectItemForMaterials', 'Select an item to load its material prices.') }}
+            </p>
             <p
               v-if="hasAcquisitionEstimate"
               class="border-l-2 border-primary/40 bg-primary/10 px-3 py-2 text-[11px] leading-4 text-muted-foreground"
               data-enhancement-acquisition-note
             >
-              {{ t("common:enhancement.acquisitionEstimateNote", "The estimate uses key asks minus the expected liquidation value of other chest drops. Dungeon time, consumables, and drops earned during the run are excluded.") }}
+              {{
+                t(
+                  'common:enhancement.acquisitionEstimateNote',
+                  'The estimate uses key asks minus the expected liquidation value of other chest drops. Dungeon time, consumables, and drops earned during the run are excluded.',
+                )
+              }}
             </p>
           </div>
         </BaseModal>
@@ -415,23 +632,36 @@
         <div class="surface-panel overflow-hidden" data-enhancement-summary>
           <div class="flex flex-wrap items-start justify-between gap-3">
             <div>
-              <p class="text-xs uppercase  text-success">{{ t("common:enhancement.recommendation", "Recommendation") }}</p>
+              <p class="text-xs uppercase text-success">
+                {{ t('common:enhancement.recommendation', 'Recommendation') }}
+              </p>
               <h3 class="mt-1 font-heading text-xl font-semibold text-foreground">{{ recommendedStrategyLabel }}</h3>
             </div>
-            <span v-if="analysisReady" class="rounded-md border border-success/40 bg-success/10 px-3 py-1 text-xs text-success">
-              {{ t("common:enhancement.lowestExpectedCost", "Lowest expected cost") }}
+            <span
+              v-if="analysisReady"
+              class="rounded-md border border-success/40 bg-success/10 px-3 py-1 text-xs text-success"
+            >
+              {{ t('common:enhancement.lowestExpectedCost', 'Lowest expected cost') }}
             </span>
           </div>
 
-          <div v-if="analysisReady" class="mt-3 grid gap-px overflow-hidden rounded-lg border border-border bg-muted/40 sm:grid-cols-2 xl:grid-cols-4">
+          <div
+            v-if="analysisReady"
+            class="mt-3 grid gap-px overflow-hidden rounded-lg border border-border bg-muted/40 sm:grid-cols-2 xl:grid-cols-4"
+          >
             <div v-for="metric in summaryMetrics" :key="metric.key" class="min-h-[76px] bg-muted/50 p-3">
-              <p class="text-[11px] uppercase  text-muted-foreground">{{ metric.label }}</p>
+              <p class="text-[11px] uppercase text-muted-foreground">{{ metric.label }}</p>
               <p class="mt-2 font-heading text-lg font-semibold" :class="metric.tone">{{ metric.value }}</p>
               <p v-if="metric.detail" class="mt-1 text-[11px] text-muted-foreground">{{ metric.detail }}</p>
             </div>
           </div>
           <div v-else class="mt-4 border-l-2 border-primary/40 py-2 pl-4 text-sm text-muted-foreground">
-            {{ t("common:enhancement.emptyAnalysis", "Choose an item and valid levels to compare enhancement strategies.") }}
+            {{
+              t(
+                'common:enhancement.emptyAnalysis',
+                'Choose an item and valid levels to compare enhancement strategies.',
+              )
+            }}
           </div>
         </div>
 
@@ -445,20 +675,28 @@
           <button
             type="button"
             class="min-h-12 min-w-max shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-xs font-semibold transition xl:min-w-0"
-            :class="activeResultTab === 'strategies' ? 'border-primary/40 bg-primary/10 text-primary' : 'border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground/85'"
+            :class="
+              activeResultTab === 'strategies'
+                ? 'border-primary/40 bg-primary/10 text-primary'
+                : 'border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground/85'
+            "
             role="tab"
             :aria-selected="activeResultTab === 'strategies'"
             :tabindex="activeResultTab === 'strategies' ? 0 : -1"
             aria-controls="enhancement-results-strategies"
             @click="activeResultTab = 'strategies'"
           >
-            {{ t("common:enhancement.strategyComparison", "Protection strategy comparison") }}
+            {{ t('common:enhancement.strategyComparison', 'Protection strategy comparison') }}
             <span class="ml-1 text-[10px] opacity-70">{{ strategyRows.length }}</span>
           </button>
           <button
             type="button"
             class="min-h-12 min-w-max shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-xs font-semibold transition xl:min-w-0"
-            :class="activeResultTab === 'mirror' ? 'border-primary/40 bg-primary/10 text-primary' : 'border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground/85'"
+            :class="
+              activeResultTab === 'mirror'
+                ? 'border-primary/40 bg-primary/10 text-primary'
+                : 'border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground/85'
+            "
             role="tab"
             :aria-selected="activeResultTab === 'mirror'"
             :tabindex="activeResultTab === 'mirror' ? 0 : -1"
@@ -470,14 +708,18 @@
           <button
             type="button"
             class="min-h-12 min-w-max shrink-0 whitespace-nowrap border-b-2 px-3 py-2 text-xs font-semibold transition xl:min-w-0"
-            :class="activeResultTab === 'risk' ? 'border-primary/40 bg-primary/10 text-primary' : 'border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground/85'"
+            :class="
+              activeResultTab === 'risk'
+                ? 'border-primary/40 bg-primary/10 text-primary'
+                : 'border-transparent text-muted-foreground hover:bg-muted/40 hover:text-foreground/85'
+            "
             role="tab"
             :aria-selected="activeResultTab === 'risk'"
             :tabindex="activeResultTab === 'risk' ? 0 : -1"
             aria-controls="enhancement-results-risk"
             @click="activeResultTab = 'risk'"
           >
-            {{ t("common:enhancement.riskAnalysis", "Risk & budget analysis") }}
+            {{ t('common:enhancement.riskAnalysis', 'Risk & budget analysis') }}
           </button>
         </div>
 
@@ -490,32 +732,51 @@
         >
           <div class="flex flex-wrap items-end justify-between gap-3">
             <div>
-              <p class="text-xs uppercase  text-muted-foreground">{{ t("common:enhancement.expectedValues", "Expected values") }}</p>
-              <h3 class="font-heading text-base font-semibold text-primary">{{ t("common:enhancement.strategyComparison", "Protection strategy comparison") }}</h3>
+              <p class="text-xs uppercase text-muted-foreground">
+                {{ t('common:enhancement.expectedValues', 'Expected values') }}
+              </p>
+              <h3 class="font-heading text-base font-semibold text-primary">
+                {{ t('common:enhancement.strategyComparison', 'Protection strategy comparison') }}
+              </h3>
             </div>
-            <span class="text-xs text-muted-foreground">{{ t("common:enhancement.sortedByTotal", "Sorted by total investment") }}</span>
+            <span class="text-xs text-muted-foreground">{{
+              t('common:enhancement.sortedByTotal', 'Sorted by total investment')
+            }}</span>
           </div>
 
           <div class="mt-3 overflow-auto xl:max-h-[460px]">
             <Table class="w-full min-w-[1280px] text-xs">
               <TableHeader class="sticky top-0 z-10 bg-muted/50">
-                <TableRow class="border-b border-border text-left uppercase  text-muted-foreground">
-                  <TableHead class="px-2 py-3">{{ t("common:enhancement.strategy", "Strategy") }}</TableHead>
+                <TableRow class="border-b border-border text-left uppercase text-muted-foreground">
+                  <TableHead class="px-2 py-3">{{ t('common:enhancement.strategy', 'Strategy') }}</TableHead>
                   <TableHead
                     class="px-2 py-3 text-right"
-                    :title="t('common:enhancement.expectedResetsHelp', 'Expected failures from +1 or above that return to +0; failures at +0 are excluded.')"
+                    :title="
+                      t(
+                        'common:enhancement.expectedResetsHelp',
+                        'Expected failures from +1 or above that return to +0; failures at +0 are excluded.',
+                      )
+                    "
                   >
-                    {{ t("common:enhancement.expectedResets", "Expected resets") }}
+                    {{ t('common:enhancement.expectedResets', 'Expected resets') }}
                   </TableHead>
-                  <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.actions", "Actions") }}</TableHead>
-                  <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.time", "Time") }}</TableHead>
-                  <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.xp", "XP") }}</TableHead>
-                  <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.xpPerHour", "XP/h") }}</TableHead>
-                  <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.materialCost", "Materials") }}</TableHead>
-                  <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.goldCost", "Gold") }}</TableHead>
-                  <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.protectionCount", "Protection") }}</TableHead>
-                  <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.incrementalCost", "Incremental") }}</TableHead>
-                  <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.totalInvestment", "Total") }}</TableHead>
+                  <TableHead class="px-2 py-3 text-right">{{ t('common:enhancement.actions', 'Actions') }}</TableHead>
+                  <TableHead class="px-2 py-3 text-right">{{ t('common:enhancement.time', 'Time') }}</TableHead>
+                  <TableHead class="px-2 py-3 text-right">{{ t('common:enhancement.xp', 'XP') }}</TableHead>
+                  <TableHead class="px-2 py-3 text-right">{{ t('common:enhancement.xpPerHour', 'XP/h') }}</TableHead>
+                  <TableHead class="px-2 py-3 text-right">{{
+                    t('common:enhancement.materialCost', 'Materials')
+                  }}</TableHead>
+                  <TableHead class="px-2 py-3 text-right">{{ t('common:enhancement.goldCost', 'Gold') }}</TableHead>
+                  <TableHead class="px-2 py-3 text-right">{{
+                    t('common:enhancement.protectionCount', 'Protection')
+                  }}</TableHead>
+                  <TableHead class="px-2 py-3 text-right">{{
+                    t('common:enhancement.incrementalCost', 'Incremental')
+                  }}</TableHead>
+                  <TableHead class="px-2 py-3 text-right">{{
+                    t('common:enhancement.totalInvestment', 'Total')
+                  }}</TableHead>
                 </TableRow>
               </TableHeader>
               <TableBody>
@@ -529,19 +790,41 @@
                     <p class="font-semibold text-foreground">{{ strategyLabel(row) }}</p>
                     <p class="mt-1 text-[11px] text-muted-foreground">{{ protectionItemLabel(row) }}</p>
                   </TableCell>
-                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatNumber(rowValue(row, "expectedResetCount", "expectedResets", "resetCount")) }}</TableCell>
-                  <TableCell class="px-2 py-3 text-right text-foreground">{{ formatNumber(rowValue(row, "expectedActions", "actions")) }}</TableCell>
-                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatDuration(rowValue(row, "expectedSeconds", "seconds", "timeSeconds")) }}</TableCell>
-                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatNumber(rowValue(row, "expectedXp", "expectedExperience", "xp")) }}</TableCell>
-                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatNumber(rowValue(row, "xpPerHour", "experiencePerHour")) }}</TableCell>
-                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatGold(strategyMaterialCost(row)) }}</TableCell>
-                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatGold(strategyCoinCost(row)) }}</TableCell>
-                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatNumber(rowValue(row, "expectedProtectionCount", "expectedProtections", "protectionCount")) }}</TableCell>
-                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatGold(rowValue(row, "incrementalCost", "enhancementCost")) }}</TableCell>
-                  <TableCell class="px-2 py-3 text-right font-semibold text-primary">{{ formatGold(rowValue(row, "totalInvestment", "totalCost")) }}</TableCell>
+                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{
+                    formatNumber(rowValue(row, 'expectedResetCount', 'expectedResets', 'resetCount'))
+                  }}</TableCell>
+                  <TableCell class="px-2 py-3 text-right text-foreground">{{
+                    formatNumber(rowValue(row, 'expectedActions', 'actions'))
+                  }}</TableCell>
+                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{
+                    formatDuration(rowValue(row, 'expectedSeconds', 'seconds', 'timeSeconds'))
+                  }}</TableCell>
+                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{
+                    formatNumber(rowValue(row, 'expectedXp', 'expectedExperience', 'xp'))
+                  }}</TableCell>
+                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{
+                    formatNumber(rowValue(row, 'xpPerHour', 'experiencePerHour'))
+                  }}</TableCell>
+                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{
+                    formatGold(strategyMaterialCost(row))
+                  }}</TableCell>
+                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{
+                    formatGold(strategyCoinCost(row))
+                  }}</TableCell>
+                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{
+                    formatNumber(rowValue(row, 'expectedProtectionCount', 'expectedProtections', 'protectionCount'))
+                  }}</TableCell>
+                  <TableCell class="px-2 py-3 text-right text-foreground/85">{{
+                    formatGold(rowValue(row, 'incrementalCost', 'enhancementCost'))
+                  }}</TableCell>
+                  <TableCell class="px-2 py-3 text-right font-semibold text-primary">{{
+                    formatGold(rowValue(row, 'totalInvestment', 'totalCost'))
+                  }}</TableCell>
                 </TableRow>
                 <TableRow v-if="strategyRows.length === 0">
-                  <TableCell colspan="11" class="px-2 py-8 text-center text-muted-foreground">{{ t("common:enhancement.noStrategies", "No strategies available for the current configuration.") }}</TableCell>
+                  <TableCell colspan="11" class="px-2 py-8 text-center text-muted-foreground">{{
+                    t('common:enhancement.noStrategies', 'No strategies available for the current configuration.')
+                  }}</TableCell>
                 </TableRow>
               </TableBody>
             </Table>
@@ -557,19 +840,25 @@
           <div class="surface-panel min-w-0" data-enhancement-mirror>
             <div class="flex items-start justify-between gap-3">
               <div>
-                <p class="text-xs uppercase  text-muted-foreground">{{ t("common:enhancement.fromZeroPlan", "Independent plan · Built from +0") }}</p>
-                <h3 class="font-heading text-base font-semibold text-info">{{ t("common:enhancement.fromZeroPlanTitle", "Lowest-cost build plan") }}</h3>
+                <p class="text-xs uppercase text-muted-foreground">
+                  {{ t('common:enhancement.fromZeroPlan', 'Independent plan · Built from +0') }}
+                </p>
+                <h3 class="font-heading text-base font-semibold text-info">
+                  {{ t('common:enhancement.fromZeroPlanTitle', 'Lowest-cost build plan') }}
+                </h3>
               </div>
-              <span class="rounded-md border border-info/40 bg-info/10 px-2 py-1 text-xs text-info">{{ mirrorMethodLabel }}</span>
+              <span class="rounded-md border border-info/40 bg-info/10 px-2 py-1 text-xs text-info">{{
+                mirrorMethodLabel
+              }}</span>
             </div>
 
             <dl class="mt-4 grid grid-cols-2 gap-x-4 gap-y-3 text-sm">
               <div>
-                <dt class="text-xs text-muted-foreground">{{ t("common:enhancement.planCost", "Plan cost") }}</dt>
+                <dt class="text-xs text-muted-foreground">{{ t('common:enhancement.planCost', 'Plan cost') }}</dt>
                 <dd class="mt-1 font-semibold text-foreground">{{ formatGold(mirrorPlanCost) }}</dd>
               </div>
               <div>
-                <dt class="text-xs text-muted-foreground">{{ t("common:enhancement.savings", "Savings") }}</dt>
+                <dt class="text-xs text-muted-foreground">{{ t('common:enhancement.savings', 'Savings') }}</dt>
                 <dd class="mt-1 font-semibold text-success">{{ formatGold(mirrorSavings) }}</dd>
               </div>
             </dl>
@@ -577,7 +866,11 @@
             <div v-if="mirrorMaterials.length" class="mt-4 overflow-x-auto border-t border-border pt-3">
               <Table class="w-full min-w-[360px] text-xs">
                 <TableHeader class="text-left text-muted-foreground">
-                  <TableRow><TableHead class="pb-2">{{ t("common:enhancement.material", "Material") }}</TableHead><TableHead class="pb-2 text-right">{{ t("common:enhancement.quantity", "Quantity") }}</TableHead><TableHead class="pb-2 text-right">{{ t("common:enhancement.cost", "Cost") }}</TableHead></TableRow>
+                  <TableRow
+                    ><TableHead class="pb-2">{{ t('common:enhancement.material', 'Material') }}</TableHead
+                    ><TableHead class="pb-2 text-right">{{ t('common:enhancement.quantity', 'Quantity') }}</TableHead
+                    ><TableHead class="pb-2 text-right">{{ t('common:enhancement.cost', 'Cost') }}</TableHead></TableRow
+                  >
                 </TableHeader>
                 <TableBody>
                   <TableRow
@@ -586,28 +879,42 @@
                     class="border-t border-border"
                   >
                     <TableCell class="py-2 text-foreground/85">{{ mirrorMaterialLabel(material) }}</TableCell>
-                    <TableCell class="py-2 text-right text-foreground/85">{{ formatNumber(material.quantity ?? material.count) }}</TableCell>
-                    <TableCell class="py-2 text-right text-foreground">{{ formatGold(material.cost ?? material.totalCost) }}</TableCell>
+                    <TableCell class="py-2 text-right text-foreground/85">{{
+                      formatNumber(material.quantity ?? material.count)
+                    }}</TableCell>
+                    <TableCell class="py-2 text-right text-foreground">{{
+                      formatGold(material.cost ?? material.totalCost)
+                    }}</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
             </div>
-            <p v-else class="mt-4 text-xs text-muted-foreground">{{ t("common:enhancement.mirrorUnavailable", "Mirror plan is unavailable for this target.") }}</p>
+            <p v-else class="mt-4 text-xs text-muted-foreground">
+              {{ t('common:enhancement.mirrorUnavailable', 'Mirror plan is unavailable for this target.') }}
+            </p>
           </div>
 
           <div class="surface-panel" data-enhancement-decomposition>
             <div>
-              <p class="text-xs uppercase  text-muted-foreground">{{ t("common:enhancement.recovery", "Recovery") }}</p>
-              <h3 class="font-heading text-base font-semibold text-destructive">{{ t("common:enhancement.decomposition", "Decomposition value") }}</h3>
+              <p class="text-xs uppercase text-muted-foreground">{{ t('common:enhancement.recovery', 'Recovery') }}</p>
+              <h3 class="font-heading text-base font-semibold text-destructive">
+                {{ t('common:enhancement.decomposition', 'Decomposition value') }}
+              </h3>
             </div>
             <div class="mt-4 grid grid-cols-2 gap-px overflow-hidden rounded-lg border border-border bg-muted/40">
               <div class="bg-muted/50 p-3">
-                <p class="text-xs text-muted-foreground">{{ t("common:enhancement.essenceYield", "Essence yield") }}</p>
-                <p class="mt-2 font-heading text-lg font-semibold text-foreground">{{ formatNumber(decompositionQuantity) }}</p>
+                <p class="text-xs text-muted-foreground">{{ t('common:enhancement.essenceYield', 'Essence yield') }}</p>
+                <p class="mt-2 font-heading text-lg font-semibold text-foreground">
+                  {{ formatNumber(decompositionQuantity) }}
+                </p>
               </div>
               <div class="bg-muted/50 p-3">
-                <p class="text-xs text-muted-foreground">{{ t("common:enhancement.bidValueNet", "Recovery value (net of tax)") }}</p>
-                <p class="mt-2 font-heading text-lg font-semibold text-destructive">{{ formatGold(decompositionGold) }}</p>
+                <p class="text-xs text-muted-foreground">
+                  {{ t('common:enhancement.bidValueNet', 'Recovery value (net of tax)') }}
+                </p>
+                <p class="mt-2 font-heading text-lg font-semibold text-destructive">
+                  {{ formatGold(decompositionGold) }}
+                </p>
               </div>
             </div>
             <p class="mt-4 text-xs text-muted-foreground">{{ decompositionItemLabel }}</p>
@@ -624,27 +931,45 @@
         >
           <div>
             <div>
-              <p class="text-xs uppercase  text-muted-foreground">{{ t("common:enhancement.distribution", "Distribution") }}</p>
+              <p class="text-xs uppercase text-muted-foreground">
+                {{ t('common:enhancement.distribution', 'Distribution') }}
+              </p>
               <div class="mt-1 flex flex-wrap items-center gap-2">
-                <h3 class="font-heading text-base font-semibold text-primary">{{ t("common:enhancement.riskAnalysis", "Risk & budget analysis") }}</h3>
-                <span v-if="riskMethodLabel" class="rounded-md border border-border bg-muted/40 px-2 py-1 text-[11px] text-muted-foreground">{{ riskMethodLabel }}</span>
+                <h3 class="font-heading text-base font-semibold text-primary">
+                  {{ t('common:enhancement.riskAnalysis', 'Risk & budget analysis') }}
+                </h3>
+                <span
+                  v-if="riskMethodLabel"
+                  class="rounded-md border border-border bg-muted/40 px-2 py-1 text-[11px] text-muted-foreground"
+                  >{{ riskMethodLabel }}</span
+                >
               </div>
             </div>
           </div>
 
-          <div class="mt-4 grid gap-3 sm:grid-cols-2 2xl:grid-cols-[minmax(180px,1.3fr)_minmax(120px,0.8fr)_minmax(120px,0.8fr)_minmax(150px,1fr)_auto]" data-enhancement-risk-controls>
+          <div
+            class="mt-4 grid gap-3 sm:grid-cols-2 2xl:grid-cols-[minmax(180px,1.3fr)_minmax(120px,0.8fr)_minmax(120px,0.8fr)_minmax(150px,1fr)_auto]"
+            data-enhancement-risk-controls
+          >
             <label>
-              <span class="control-label">{{ t("common:enhancement.riskStrategy", "Risk strategy") }}</span>
+              <span class="control-label">{{ t('common:enhancement.riskStrategy', 'Risk strategy') }}</span>
               <Select v-model="enhancement.config.riskStrategy">
                 <SelectTrigger :aria-label="t('common:enhancement.riskStrategy', 'Risk strategy')" />
                 <SelectContent>
-                  <SelectItem value="recommended">{{ t("common:enhancement.useRecommended", "Use recommendation") }}</SelectItem>
-                  <SelectItem v-for="(row, index) in strategyRows" :key="strategyKey(row, index)" :value="strategySelectionValue(row, index)">{{ strategyLabel(row) }}</SelectItem>
+                  <SelectItem value="recommended">{{
+                    t('common:enhancement.useRecommended', 'Use recommendation')
+                  }}</SelectItem>
+                  <SelectItem
+                    v-for="(row, index) in strategyRows"
+                    :key="strategyKey(row, index)"
+                    :value="strategySelectionValue(row, index)"
+                    >{{ strategyLabel(row) }}</SelectItem
+                  >
                 </SelectContent>
               </Select>
             </label>
             <label>
-              <span class="control-label">{{ t("common:enhancement.budget", "Budget") }}</span>
+              <span class="control-label">{{ t('common:enhancement.budget', 'Budget') }}</span>
               <div class="grid grid-cols-[minmax(0,1fr)_64px]">
                 <input
                   :value="budgetInputAmount"
@@ -676,19 +1001,47 @@
               </div>
             </label>
             <label>
-              <span class="control-label">{{ t("common:enhancement.samples", "Samples") }}</span>
-              <input v-model.number="enhancement.config.sampleCount" class="control-input" type="number" min="1024" max="1000000" step="1024" @change="normalizeRiskSampleCount" />
+              <span class="control-label">{{ t('common:enhancement.samples', 'Samples') }}</span>
+              <input
+                v-model.number="enhancement.config.sampleCount"
+                class="control-input"
+                type="number"
+                min="1024"
+                max="1000000"
+                step="1024"
+                @change="normalizeRiskSampleCount"
+              />
             </label>
             <label>
-              <span class="control-label">{{ t("common:enhancement.seed", "Random seed") }}</span>
-              <input v-model="enhancement.config.seed" class="control-input" type="text" autocomplete="off" spellcheck="false" />
+              <span class="control-label">{{ t('common:enhancement.seed', 'Random seed') }}</span>
+              <input
+                v-model="enhancement.config.seed"
+                class="control-input"
+                type="text"
+                autocomplete="off"
+                spellcheck="false"
+              />
             </label>
             <div class="flex items-end gap-2 sm:col-span-2 2xl:col-span-1">
-              <button type="button" class="button-primary flex-1 whitespace-nowrap 2xl:flex-none" :disabled="!enhancement.config.itemHrid || enhancement.riskRunning || !budgetInputValid" @click="runRisk">
-                {{ enhancement.riskRunning ? t("common:enhancement.running", "Running...") : t("common:enhancement.runRisk", "Run risk") }}
+              <button
+                type="button"
+                class="button-primary flex-1 whitespace-nowrap 2xl:flex-none"
+                :disabled="!enhancement.config.itemHrid || enhancement.riskRunning || !budgetInputValid"
+                @click="runRisk"
+              >
+                {{
+                  enhancement.riskRunning
+                    ? t('common:enhancement.running', 'Running...')
+                    : t('common:enhancement.runRisk', 'Run risk')
+                }}
               </button>
-              <button type="button" class="button-danger flex-1 whitespace-nowrap 2xl:flex-none" :disabled="!enhancement.riskRunning" @click="enhancement.cancelRisk()">
-                {{ t("common:enhancement.cancel", "Cancel") }}
+              <button
+                type="button"
+                class="button-danger flex-1 whitespace-nowrap 2xl:flex-none"
+                :disabled="!enhancement.riskRunning"
+                @click="enhancement.cancelRisk()"
+              >
+                {{ t('common:enhancement.cancel', 'Cancel') }}
               </button>
             </div>
           </div>
@@ -701,43 +1054,81 @@
             <Progress class="mt-2" :value="riskProgressPercent" />
           </div>
 
-          <p v-if="riskErrorText" class="mt-4 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive" role="alert">{{ riskErrorText }}</p>
+          <p
+            v-if="riskErrorText"
+            class="mt-4 rounded-lg border border-destructive/40 bg-destructive/10 p-3 text-sm text-destructive"
+            role="alert"
+          >
+            {{ riskErrorText }}
+          </p>
 
           <div v-if="enhancement.risk" class="mt-4">
             <div class="overflow-x-auto rounded-lg border border-border" data-enhancement-risk-quantiles>
               <Table class="w-full min-w-[1080px] text-xs">
                 <TableHeader>
-                  <TableRow class="border-b border-border text-left uppercase  text-muted-foreground">
+                  <TableRow class="border-b border-border text-left uppercase text-muted-foreground">
                     <TableHead class="px-3 py-3">P</TableHead>
-                    <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.totalInvestment", "Total") }}</TableHead>
-                    <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.incrementalCost", "Incremental") }}</TableHead>
-                    <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.actions", "Actions") }}</TableHead>
-                    <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.time", "Time") }}</TableHead>
-                    <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.xp", "XP") }}</TableHead>
-                    <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.materialCost", "Materials") }}</TableHead>
-                    <TableHead class="px-2 py-3 text-right">{{ t("common:enhancement.goldCost", "Gold") }}</TableHead>
-                    <TableHead class="px-3 py-3 text-right">{{ t("common:enhancement.protectionCount", "Protection") }}</TableHead>
+                    <TableHead class="px-2 py-3 text-right">{{
+                      t('common:enhancement.totalInvestment', 'Total')
+                    }}</TableHead>
+                    <TableHead class="px-2 py-3 text-right">{{
+                      t('common:enhancement.incrementalCost', 'Incremental')
+                    }}</TableHead>
+                    <TableHead class="px-2 py-3 text-right">{{ t('common:enhancement.actions', 'Actions') }}</TableHead>
+                    <TableHead class="px-2 py-3 text-right">{{ t('common:enhancement.time', 'Time') }}</TableHead>
+                    <TableHead class="px-2 py-3 text-right">{{ t('common:enhancement.xp', 'XP') }}</TableHead>
+                    <TableHead class="px-2 py-3 text-right">{{
+                      t('common:enhancement.materialCost', 'Materials')
+                    }}</TableHead>
+                    <TableHead class="px-2 py-3 text-right">{{ t('common:enhancement.goldCost', 'Gold') }}</TableHead>
+                    <TableHead class="px-3 py-3 text-right">{{
+                      t('common:enhancement.protectionCount', 'Protection')
+                    }}</TableHead>
                   </TableRow>
                 </TableHeader>
                 <TableBody>
-                  <TableRow v-for="quantile in riskQuantileRows" :key="quantile.key" class="border-b border-border last:border-b-0">
+                  <TableRow
+                    v-for="quantile in riskQuantileRows"
+                    :key="quantile.key"
+                    class="border-b border-border last:border-b-0"
+                  >
                     <TableCell class="px-3 py-3 font-semibold text-foreground">{{ quantile.label }}</TableCell>
-                    <TableCell class="px-2 py-3 text-right font-semibold text-primary">{{ formatGold(quantile.value) }}</TableCell>
-                    <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatGold(rowValue(quantile.record, "incrementalCost")) }}</TableCell>
-                    <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatNumber(rowValue(quantile.record, "actions")) }}</TableCell>
-                    <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatDuration(rowValue(quantile.record, "seconds")) }}</TableCell>
-                    <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatNumber(rowValue(quantile.record, "experience")) }}</TableCell>
-                    <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatGold(rowValue(quantile.record, "materialCost")) }}</TableCell>
-                    <TableCell class="px-2 py-3 text-right text-foreground/85">{{ formatGold(rowValue(quantile.record, "coinCost")) }}</TableCell>
-                    <TableCell class="px-3 py-3 text-right text-foreground/85">{{ formatNumber(rowValue(quantile.record, "protections")) }}</TableCell>
+                    <TableCell class="px-2 py-3 text-right font-semibold text-primary">{{
+                      formatGold(quantile.value)
+                    }}</TableCell>
+                    <TableCell class="px-2 py-3 text-right text-foreground/85">{{
+                      formatGold(rowValue(quantile.record, 'incrementalCost'))
+                    }}</TableCell>
+                    <TableCell class="px-2 py-3 text-right text-foreground/85">{{
+                      formatNumber(rowValue(quantile.record, 'actions'))
+                    }}</TableCell>
+                    <TableCell class="px-2 py-3 text-right text-foreground/85">{{
+                      formatDuration(rowValue(quantile.record, 'seconds'))
+                    }}</TableCell>
+                    <TableCell class="px-2 py-3 text-right text-foreground/85">{{
+                      formatNumber(rowValue(quantile.record, 'experience'))
+                    }}</TableCell>
+                    <TableCell class="px-2 py-3 text-right text-foreground/85">{{
+                      formatGold(rowValue(quantile.record, 'materialCost'))
+                    }}</TableCell>
+                    <TableCell class="px-2 py-3 text-right text-foreground/85">{{
+                      formatGold(rowValue(quantile.record, 'coinCost'))
+                    }}</TableCell>
+                    <TableCell class="px-3 py-3 text-right text-foreground/85">{{
+                      formatNumber(rowValue(quantile.record, 'protections'))
+                    }}</TableCell>
                   </TableRow>
                 </TableBody>
               </Table>
             </div>
             <div class="mt-4 flex flex-wrap items-center justify-between gap-3 border-t border-border pt-4">
               <div>
-                <p class="text-xs text-muted-foreground">{{ t("common:enhancement.budgetSuccessProbability", "Success within budget") }}</p>
-                <p class="mt-1 font-heading text-2xl font-semibold text-success">{{ formatPercent(riskBudgetProbability) }}</p>
+                <p class="text-xs text-muted-foreground">
+                  {{ t('common:enhancement.budgetSuccessProbability', 'Success within budget') }}
+                </p>
+                <p class="mt-1 font-heading text-2xl font-semibold text-success">
+                  {{ formatPercent(riskBudgetProbability) }}
+                </p>
               </div>
               <div class="text-right text-xs text-muted-foreground">
                 <p>{{ riskSampleLabel }}</p>
@@ -747,7 +1138,14 @@
               </div>
             </div>
           </div>
-          <p v-else-if="!enhancement.riskRunning" class="mt-4 text-xs text-muted-foreground">{{ t("common:enhancement.noRiskResult", "Run risk analysis to calculate cost percentiles and budget probability.") }}</p>
+          <p v-else-if="!enhancement.riskRunning" class="mt-4 text-xs text-muted-foreground">
+            {{
+              t(
+                'common:enhancement.noRiskResult',
+                'Run risk analysis to calculate cost percentiles and budget probability.',
+              )
+            }}
+          </p>
         </div>
       </div>
     </div>
@@ -761,27 +1159,49 @@
     >
       <div class="grid gap-3 sm:grid-cols-[minmax(0,1fr)_220px_auto]">
         <label>
-          <span class="control-label">{{ t("common:enhancement.search", "Search") }}</span>
-          <input v-model.trim="enhancement.itemSearch" class="control-input" type="search" data-enhancement-item-search :placeholder="t('common:enhancement.searchPlaceholder', 'Search item name')" />
+          <span class="control-label">{{ t('common:enhancement.search', 'Search') }}</span>
+          <input
+            v-model.trim="enhancement.itemSearch"
+            class="control-input"
+            type="search"
+            data-enhancement-item-search
+            :placeholder="t('common:enhancement.searchPlaceholder', 'Search item name')"
+          />
         </label>
         <label>
-          <span class="control-label">{{ t("common:enhancement.equipmentType", "Equipment type") }}</span>
+          <span class="control-label">{{ t('common:enhancement.equipmentType', 'Equipment type') }}</span>
           <NativeSelect v-model="enhancement.itemFilters.equipmentType" class="control-select">
-            <option value="all">{{ t("common:enhancement.allEquipmentTypes", "All equipment types") }} · {{ itemOptions.length }}</option>
+            <option value="all">
+              {{ t('common:enhancement.allEquipmentTypes', 'All equipment types') }} · {{ itemOptions.length }}
+            </option>
             <optgroup v-for="group in itemTypeGroups" :key="group.key" :label="group.label">
-              <option v-for="type in group.types" :key="type.value" :value="type.value">{{ type.label }} · {{ type.count }}</option>
+              <option v-for="type in group.types" :key="type.value" :value="type.value">
+                {{ type.label }} · {{ type.count }}
+              </option>
             </optgroup>
           </NativeSelect>
         </label>
-        <label class="flex min-h-10 items-center gap-2 self-end rounded-lg border border-border px-3 py-2 text-sm text-foreground/85">
+        <label
+          class="flex min-h-10 items-center gap-2 self-end rounded-lg border border-border px-3 py-2 text-sm text-foreground/85"
+        >
           <input v-model="enhancement.itemFilters.favoritesOnly" type="checkbox" />
-          <span>{{ t("common:enhancement.favoritesOnly", "Favorites only") }}</span>
+          <span>{{ t('common:enhancement.favoritesOnly', 'Favorites only') }}</span>
         </label>
       </div>
 
-      <div v-if="favoriteItemOptions.length" class="mt-3 flex items-center gap-3 border-y border-border py-2" data-enhancement-favorite-items>
-        <span class="shrink-0 text-[11px] font-semibold uppercase  text-muted-foreground">{{ t("common:enhancement.favorites", "Favorites") }}</span>
-        <div class="flex min-w-0 flex-1 gap-2 overflow-x-auto py-0.5" role="group" :aria-label="t('common:enhancement.favorites', 'Favorites')">
+      <div
+        v-if="favoriteItemOptions.length"
+        class="mt-3 flex items-center gap-3 border-y border-border py-2"
+        data-enhancement-favorite-items
+      >
+        <span class="shrink-0 text-[11px] font-semibold uppercase text-muted-foreground">{{
+          t('common:enhancement.favorites', 'Favorites')
+        }}</span>
+        <div
+          class="flex min-w-0 flex-1 gap-2 overflow-x-auto py-0.5"
+          role="group"
+          :aria-label="t('common:enhancement.favorites', 'Favorites')"
+        >
           <button
             v-for="item in favoriteItemOptions"
             :key="item.hrid"
@@ -794,13 +1214,22 @@
             <svg v-if="itemIconVisible(item.hrid)" class="h-9 w-9 p-1" viewBox="0 0 50 50" aria-hidden="true">
               <use :href="itemIconHref(item.hrid)"></use>
             </svg>
-            <span v-else class="text-sm font-semibold text-muted-foreground" aria-hidden="true">{{ itemIconFallback(item) }}</span>
+            <span v-else class="text-sm font-semibold text-muted-foreground" aria-hidden="true">{{
+              itemIconFallback(item)
+            }}</span>
           </button>
         </div>
       </div>
 
-      <div class="mt-3 max-h-[58vh] overflow-y-auto border-y border-border" role="list" :aria-label="t('common:enhancement.items', 'Enhanceable items')">
-        <div v-if="filteredItemOptions.length" class="grid grid-cols-3 gap-px bg-muted/40 sm:grid-cols-5 lg:grid-cols-7">
+      <div
+        class="mt-3 max-h-[58vh] overflow-y-auto border-y border-border"
+        role="list"
+        :aria-label="t('common:enhancement.items', 'Enhanceable items')"
+      >
+        <div
+          v-if="filteredItemOptions.length"
+          class="grid grid-cols-3 gap-px bg-muted/40 sm:grid-cols-5 lg:grid-cols-7"
+        >
           <div
             v-for="item in filteredItemOptions"
             :key="item.hrid"
@@ -816,15 +1245,31 @@
               :title="itemName(item)"
               @click="chooseItem(item.hrid)"
             >
-              <span class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded bg-muted/40" data-enhancement-item-icon>
-                <svg v-if="itemIconVisible(item.hrid)" class="h-full w-full p-1.5" viewBox="0 0 50 50" aria-hidden="true">
+              <span
+                class="inline-flex h-11 w-11 shrink-0 items-center justify-center rounded bg-muted/40"
+                data-enhancement-item-icon
+              >
+                <svg
+                  v-if="itemIconVisible(item.hrid)"
+                  class="h-full w-full p-1.5"
+                  viewBox="0 0 50 50"
+                  aria-hidden="true"
+                >
                   <use :href="itemIconHref(item.hrid)"></use>
                 </svg>
-                <span v-else class="text-base font-semibold text-muted-foreground" aria-hidden="true">{{ itemIconFallback(item) }}</span>
+                <span v-else class="text-base font-semibold text-muted-foreground" aria-hidden="true">{{
+                  itemIconFallback(item)
+                }}</span>
               </span>
-              <span class="w-full truncate text-center text-[11px] font-semibold text-foreground">{{ itemName(item) }}</span>
+              <span class="w-full truncate text-center text-[11px] font-semibold text-foreground">{{
+                itemName(item)
+              }}</span>
             </button>
-            <span v-if="item.itemLevel || item.level" class="pointer-events-none absolute left-1 top-1 rounded bg-muted/50 px-1 text-[9px] text-muted-foreground">Lv. {{ item.itemLevel || item.level }}</span>
+            <span
+              v-if="item.itemLevel || item.level"
+              class="pointer-events-none absolute left-1 top-1 rounded bg-muted/50 px-1 text-[9px] text-muted-foreground"
+              >Lv. {{ item.itemLevel || item.level }}</span
+            >
             <button
               type="button"
               class="absolute right-1 top-1 inline-flex h-6 w-6 items-center justify-center rounded text-sm text-primary transition hover:bg-muted/40"
@@ -836,37 +1281,41 @@
             </button>
           </div>
         </div>
-        <p v-else class="px-3 py-10 text-center text-sm text-muted-foreground">{{ t("common:enhancement.noItems", "No matching items.") }}</p>
+        <p v-else class="px-3 py-10 text-center text-sm text-muted-foreground">
+          {{ t('common:enhancement.noItems', 'No matching items.') }}
+        </p>
       </div>
-      <p class="mt-2 text-right text-xs text-muted-foreground">{{ t("common:enhancement.itemCount", `${filteredItemOptions.length} items`, { count: filteredItemOptions.length }) }}</p>
+      <p class="mt-2 text-right text-xs text-muted-foreground">
+        {{
+          t('common:enhancement.itemCount', `${filteredItemOptions.length} items`, {
+            count: filteredItemOptions.length,
+          })
+        }}
+      </p>
     </BaseModal>
   </section>
 </template>
 
 <script setup>
-import { computed, onBeforeUnmount, onMounted, ref, watch } from "vue";
-import { Star } from "@lucide/vue";
-import BaseModal from "../components/BaseModal.vue";
-import { SearchCombobox } from "../components/ui/combobox/index.js";
-import { Progress } from "../components/ui/progress/index.js";
-import { Select, SelectContent, SelectItem, SelectTrigger } from "../components/ui/select/index.js";
-import { useGameDataText } from "../composables/useGameDataText.js";
-import { useI18nText } from "../composables/useI18nText.js";
+import { computed, onBeforeUnmount, onMounted, ref, watch } from 'vue';
+import { Star } from '@lucide/vue';
+import BaseModal from '../components/BaseModal.vue';
+import { SearchCombobox } from '../components/ui/combobox/index.js';
+import { Progress } from '../components/ui/progress/index.js';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '../components/ui/select/index.js';
+import { useGameDataText } from '../composables/useGameDataText.js';
+import { useI18nText } from '../composables/useI18nText.js';
 import {
   convertAmountFromBaseUnits,
   convertAmountToBaseUnits,
   formatCompactAmount,
-} from "../../services/amountFormatting.js";
-import {
-  ensureItemIconSymbols,
-  hasItemIconSymbol,
-  itemIconHref,
-} from "../../services/itemIconSprite.js";
-import { applyTampermonkeyEnhancementImportMessage } from "../../services/tampermonkeyImportBridge.js";
-import { useEnhancementStore } from "../../stores/enhancementStore.js";
+} from '../../services/amountFormatting.js';
+import { ensureItemIconSymbols, hasItemIconSymbol, itemIconHref } from '../../services/itemIconSprite.js';
+import { applyTampermonkeyEnhancementImportMessage } from '../../services/tampermonkeyImportBridge.js';
+import { useEnhancementStore } from '../../stores/enhancementStore.js';
 
-const TAMPERMONKEY_BRIDGE_CHANNEL = "mwi-tm-bridge";
-const EMPTY_SELECT_VALUE = "__none__";
+const TAMPERMONKEY_BRIDGE_CHANNEL = 'mwi-tm-bridge';
+const EMPTY_SELECT_VALUE = '__none__';
 const enhancement = useEnhancementStore();
 const { language, t } = useI18nText();
 const {
@@ -878,84 +1327,97 @@ const {
   getOfficialGameText,
   getSkillName,
 } = useGameDataText();
-const budgetUnits = Object.freeze(["K", "M", "B"]);
+const budgetUnits = Object.freeze(['K', 'M', 'B']);
 const itemModalOpen = ref(false);
 const itemIconRevision = ref(0);
 const equipmentModalOpen = ref(false);
 const pricesModalOpen = ref(false);
-const initializationError = ref("");
+const initializationError = ref('');
 const priceRefreshPending = ref(false);
 const advancedOpen = ref(true);
-const activeAdvancedTab = ref("bonuses");
-const activeResultTab = ref("strategies");
-const budgetUnit = ref("M");
-const budgetInputAmount = ref("");
+const activeAdvancedTab = ref('bonuses');
+const activeResultTab = ref('strategies');
+const budgetUnit = ref('M');
+const budgetInputAmount = ref('');
 const budgetInputValid = ref(true);
 const budgetInputEditing = ref(false);
 let itemIconLoadQueue = Promise.resolve(0);
 
-watch(() => enhancement.config.budget, (value) => {
-  if (!budgetInputEditing.value) {
-    budgetInputAmount.value = formatBudgetInput(value);
-  }
-}, { immediate: true });
+watch(
+  () => enhancement.config.budget,
+  (value) => {
+    if (!budgetInputEditing.value) {
+      budgetInputAmount.value = formatBudgetInput(value);
+    }
+  },
+  { immediate: true },
+);
 
-watch(() => enhancement.config.itemHrid, (itemHrid) => {
-  if (itemHrid) void loadItemIcons([itemHrid]);
-}, { immediate: true });
+watch(
+  () => enhancement.config.itemHrid,
+  (itemHrid) => {
+    if (itemHrid) void loadItemIcons([itemHrid]);
+  },
+  { immediate: true },
+);
 
-const equipmentSlots = computed(() => (enhancement.equipmentSlotKeys || []).map((key) => ({
-  key,
-  label: getEquipmentTypeName(
-    `/equipment_types/${key}`,
-    key.split("_").map((word) => word.charAt(0).toUpperCase() + word.slice(1)).join(" "),
-  ),
-})));
-const configuredEquipmentCount = computed(() => equipmentSlots.value.filter(
-  (slot) => Boolean(enhancement.config.equipmentSlots?.[slot.key]?.itemHrid),
-).length);
+const equipmentSlots = computed(() =>
+  (enhancement.equipmentSlotKeys || []).map((key) => ({
+    key,
+    label: getEquipmentTypeName(
+      `/equipment_types/${key}`,
+      key
+        .split('_')
+        .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+        .join(' '),
+    ),
+  })),
+);
+const configuredEquipmentCount = computed(
+  () => equipmentSlots.value.filter((slot) => Boolean(enhancement.config.equipmentSlots?.[slot.key]?.itemHrid)).length,
+);
 
 const fallbackTeaOptions = [
-  { hrid: "/items/enhancing_tea", name: "Enhancing Tea" },
-  { hrid: "/items/super_enhancing_tea", name: "Super Enhancing Tea" },
-  { hrid: "/items/ultra_enhancing_tea", name: "Ultra Enhancing Tea" },
+  { hrid: '/items/enhancing_tea', name: 'Enhancing Tea' },
+  { hrid: '/items/super_enhancing_tea', name: 'Super Enhancing Tea' },
+  { hrid: '/items/ultra_enhancing_tea', name: 'Ultra Enhancing Tea' },
 ];
 
 const itemTypeGroupDefinitions = [
   {
-    key: "weapons",
-    label: () => t("common:enhancement.itemTypeGroupWeapons", "Weapons"),
-    types: ["main_hand", "two_hand", "off_hand"],
+    key: 'weapons',
+    label: () => t('common:enhancement.itemTypeGroupWeapons', 'Weapons'),
+    types: ['main_hand', 'two_hand', 'off_hand'],
   },
   {
-    key: "armor",
-    label: () => t("common:enhancement.itemTypeGroupArmor", "Armor"),
-    types: ["head", "body", "legs", "hands", "feet"],
+    key: 'armor',
+    label: () => t('common:enhancement.itemTypeGroupArmor', 'Armor'),
+    types: ['head', 'body', 'legs', 'hands', 'feet'],
   },
   {
-    key: "accessories",
-    label: () => t("common:enhancement.itemTypeGroupAccessories", "Accessories"),
-    types: ["back", "neck", "earrings", "ring", "pouch", "trinket"],
+    key: 'accessories',
+    label: () => t('common:enhancement.itemTypeGroupAccessories', 'Accessories'),
+    types: ['back', 'neck', 'earrings', 'ring', 'pouch', 'trinket'],
   },
   {
-    key: "charms",
-    label: () => t("common:enhancement.itemTypeGroupCharms", "Charms"),
-    types: ["charm"],
+    key: 'charms',
+    label: () => t('common:enhancement.itemTypeGroupCharms', 'Charms'),
+    types: ['charm'],
   },
   {
-    key: "tools",
-    label: () => t("common:enhancement.itemTypeGroupTools", "Production tools"),
+    key: 'tools',
+    label: () => t('common:enhancement.itemTypeGroupTools', 'Production tools'),
     types: [
-      "milking_tool",
-      "foraging_tool",
-      "woodcutting_tool",
-      "cheesesmithing_tool",
-      "crafting_tool",
-      "tailoring_tool",
-      "cooking_tool",
-      "brewing_tool",
-      "alchemy_tool",
-      "enhancing_tool",
+      'milking_tool',
+      'foraging_tool',
+      'woodcutting_tool',
+      'cheesesmithing_tool',
+      'crafting_tool',
+      'tailoring_tool',
+      'cooking_tool',
+      'brewing_tool',
+      'alchemy_tool',
+      'enhancing_tool',
     ],
   },
 ];
@@ -964,34 +1426,43 @@ const teaOptions = computed(() => {
   const storeOptions = enhancement.teaOptions;
   return Array.isArray(storeOptions) && storeOptions.length > 0 ? storeOptions : fallbackTeaOptions;
 });
-const itemOptions = computed(() => Array.isArray(enhancement.itemOptions) ? enhancement.itemOptions : []);
+const itemOptions = computed(() => (Array.isArray(enhancement.itemOptions) ? enhancement.itemOptions : []));
 const favoriteItemOptions = computed(() => itemOptions.value.filter((item) => isFavorite(item.hrid)));
 function officialItemName(item, targetLanguage) {
-  const hrid = String(item?.hrid || item?.itemHrid || "");
-  return getOfficialGameText("itemNames", hrid, hrid, { language: targetLanguage });
+  const hrid = String(item?.hrid || item?.itemHrid || '');
+  return getOfficialGameText('itemNames', hrid, hrid, { language: targetLanguage });
 }
 const filteredItemOptions = computed(() => {
-  const query = String(enhancement.itemSearch || "").trim().toLowerCase();
+  const query = String(enhancement.itemSearch || '')
+    .trim()
+    .toLowerCase();
   return itemOptions.value.filter((item) => {
-    if (enhancement.itemFilters.equipmentType !== "all" && item.equipmentType !== enhancement.itemFilters.equipmentType) return false;
+    if (enhancement.itemFilters.equipmentType !== 'all' && item.equipmentType !== enhancement.itemFilters.equipmentType)
+      return false;
     if (enhancement.itemFilters.favoritesOnly && !isFavorite(item.hrid)) return false;
-    return !query
-      || officialItemName(item, "zh").toLowerCase().includes(query)
-      || officialItemName(item, "en").toLowerCase().includes(query)
-      || String(item.hrid || "").toLowerCase().includes(query);
+    return (
+      !query ||
+      officialItemName(item, 'zh').toLowerCase().includes(query) ||
+      officialItemName(item, 'en').toLowerCase().includes(query) ||
+      String(item.hrid || '')
+        .toLowerCase()
+        .includes(query)
+    );
   });
 });
-const materialRows = computed(() => Array.isArray(enhancement.materialRows) ? enhancement.materialRows : []);
-const hasLiquidationPriceOverride = computed(() => (
-  enhancement.config.startingItemPriceOverride != null
-  || materialRows.value.some((row) => row.priceMode === "bid" && row.overrideValue != null)
-));
-const protectionOptions = computed(() => Array.isArray(enhancement.protectionOptions) ? enhancement.protectionOptions : []);
-const hasAcquisitionEstimate = computed(() => (
-  isAcquisitionEstimate(enhancement.startingItemPrice)
-  || materialRows.value.some(isAcquisitionEstimate)
-));
-const strategyRows = computed(() => Array.isArray(enhancement.strategyRows) ? enhancement.strategyRows : []);
+const materialRows = computed(() => (Array.isArray(enhancement.materialRows) ? enhancement.materialRows : []));
+const hasLiquidationPriceOverride = computed(
+  () =>
+    enhancement.config.startingItemPriceOverride != null ||
+    materialRows.value.some((row) => row.priceMode === 'bid' && row.overrideValue != null),
+);
+const protectionOptions = computed(() =>
+  Array.isArray(enhancement.protectionOptions) ? enhancement.protectionOptions : [],
+);
+const hasAcquisitionEstimate = computed(
+  () => isAcquisitionEstimate(enhancement.startingItemPrice) || materialRows.value.some(isAcquisitionEstimate),
+);
+const strategyRows = computed(() => (Array.isArray(enhancement.strategyRows) ? enhancement.strategyRows : []));
 const mirrorPlan = computed(() => enhancement.mirrorPlan || null);
 const decompositionValue = computed(() => enhancement.decompositionValue || null);
 const markupPercent = computed({
@@ -1002,44 +1473,54 @@ const markupPercent = computed({
   },
 });
 
-const selectedItemName = computed(() => enhancement.config.itemHrid ? itemName(enhancement.selectedItem || { hrid: enhancement.config.itemHrid }) : t("common:enhancement.noItemSelected", "No item selected"));
-const philosopherMirrorName = computed(() => getGameItemName("/items/philosophers_mirror", "Philosopher's Mirror"));
-const enhancingSkillName = computed(() => getSkillName("/skills/enhancing", "Enhancing"));
-const enhancingTeaLabel = computed(() => t("common:enhancement.enhancingTea", "{{skill}} tea", { skill: enhancingSkillName.value }));
-const enhancingGearLabel = computed(() => t("common:enhancement.enhancingGear", "{{skill}} gear", { skill: enhancingSkillName.value }));
-const mirrorAndDecompositionLabel = computed(() => t(
-  "common:enhancement.mirrorAndDecomposition",
-  "{{item}} & decomposition",
-  { item: philosopherMirrorName.value },
-));
+const selectedItemName = computed(() =>
+  enhancement.config.itemHrid
+    ? itemName(enhancement.selectedItem || { hrid: enhancement.config.itemHrid })
+    : t('common:enhancement.noItemSelected', 'No item selected'),
+);
+const philosopherMirrorName = computed(() => getGameItemName('/items/philosophers_mirror', "Philosopher's Mirror"));
+const enhancingSkillName = computed(() => getSkillName('/skills/enhancing', 'Enhancing'));
+const enhancingTeaLabel = computed(() =>
+  t('common:enhancement.enhancingTea', '{{skill}} tea', { skill: enhancingSkillName.value }),
+);
+const enhancingGearLabel = computed(() =>
+  t('common:enhancement.enhancingGear', '{{skill}} gear', { skill: enhancingSkillName.value }),
+);
+const mirrorAndDecompositionLabel = computed(() =>
+  t('common:enhancement.mirrorAndDecomposition', '{{item}} & decomposition', { item: philosopherMirrorName.value }),
+);
 const selectedItemType = computed(() => equipmentTypeName(enhancement.selectedItem?.equipmentType));
-const selectedRouteLabel = computed(() => enhancement.config.itemHrid
-  ? t("common:enhancement.routeLabel", "{{item}} · +{{start}} → +{{target}}", {
-      item: selectedItemName.value,
-      start: Number(enhancement.config.startLevel || 0),
-      target: Number(enhancement.config.targetLevel || 1),
-    })
-  : t("common:enhancement.routeEmpty", "Select an enhanceable item to begin"));
+const selectedRouteLabel = computed(() =>
+  enhancement.config.itemHrid
+    ? t('common:enhancement.routeLabel', '{{item}} · +{{start}} → +{{target}}', {
+        item: selectedItemName.value,
+        start: Number(enhancement.config.startLevel || 0),
+        target: Number(enhancement.config.targetLevel || 1),
+      })
+    : t('common:enhancement.routeEmpty', 'Select an enhanceable item to begin'),
+);
 
 const itemTypeGroups = computed(() => {
   language.value;
   const counts = new Map();
   for (const item of itemOptions.value) {
-    const value = String(item?.equipmentType || "").trim();
+    const value = String(item?.equipmentType || '').trim();
     if (value) counts.set(value, (counts.get(value) || 0) + 1);
   }
 
   const included = new Set();
-  const groups = itemTypeGroupDefinitions.map((group) => {
-    const types = group.types
-      .map((type) => `/equipment_types/${type}`)
-      .filter((value) => counts.has(value))
-      .map((value) => {
-        included.add(value);
-        return { value, label: equipmentTypeName(value), count: counts.get(value) };
-      });
-    return { key: group.key, label: group.label(), types };
-  }).filter((group) => group.types.length > 0);
+  const groups = itemTypeGroupDefinitions
+    .map((group) => {
+      const types = group.types
+        .map((type) => `/equipment_types/${type}`)
+        .filter((value) => counts.has(value))
+        .map((value) => {
+          included.add(value);
+          return { value, label: equipmentTypeName(value), count: counts.get(value) };
+        });
+      return { key: group.key, label: group.label(), types };
+    })
+    .filter((group) => group.types.length > 0);
 
   const otherTypes = Array.from(counts.entries())
     .filter(([value]) => !included.has(value))
@@ -1047,8 +1528,8 @@ const itemTypeGroups = computed(() => {
     .sort((left, right) => left.label.localeCompare(right.label, language.value));
   if (otherTypes.length > 0) {
     groups.push({
-      key: "other",
-      label: t("common:enhancement.itemTypeGroupOther", "Other"),
+      key: 'other',
+      label: t('common:enhancement.itemTypeGroupOther', 'Other'),
       types: otherTypes,
     });
   }
@@ -1061,68 +1542,120 @@ const recommendedStrategy = computed(() => {
   return strategyRows.value.find((row) => row?.recommended || row?.isRecommended) || strategyRows.value[0] || null;
 });
 const analysisReady = computed(() => Boolean(recommendedStrategy.value || enhancement.analysis));
-const recommendedStrategyLabel = computed(() => analysisReady.value
-  ? strategyLabel(recommendedStrategy.value)
-  : t("common:enhancement.awaitingConfiguration", "Awaiting configuration"));
+const recommendedStrategyLabel = computed(() =>
+  analysisReady.value
+    ? strategyLabel(recommendedStrategy.value)
+    : t('common:enhancement.awaitingConfiguration', 'Awaiting configuration'),
+);
 
 const summaryMetrics = computed(() => {
   const row = recommendedStrategy.value || {};
-  const totalValue = numericValue(enhancement.recommendedTotal, rowValue(row, "totalInvestment", "totalCost"));
+  const totalValue = numericValue(enhancement.recommendedTotal, rowValue(row, 'totalInvestment', 'totalCost'));
   const materialValue = numericValue(enhancement.recommendedMaterial, strategyMaterialCost(row));
-  const incrementalValue = rowValue(row, "incrementalCost", "enhancementCost");
-  const actionsValue = rowValue(row, "expectedActions", "actions");
-  const secondsValue = rowValue(row, "expectedSeconds", "seconds", "timeSeconds");
-  const xpValue = rowValue(row, "expectedXp", "expectedExperience", "xp");
+  const incrementalValue = rowValue(row, 'incrementalCost', 'enhancementCost');
+  const actionsValue = rowValue(row, 'expectedActions', 'actions');
+  const secondsValue = rowValue(row, 'expectedSeconds', 'seconds', 'timeSeconds');
+  const xpValue = rowValue(row, 'expectedXp', 'expectedExperience', 'xp');
   return [
-    { key: "total", label: t("common:enhancement.totalInvestment", "Total investment"), value: formatGold(totalValue), detail: t("common:enhancement.includesStartingItem", "Includes starting item & markup"), tone: "text-primary" },
-    { key: "incremental", label: t("common:enhancement.incrementalCost", "Incremental cost"), value: formatGold(incrementalValue), detail: t("common:enhancement.materialDetail", "Materials {{value}}", { value: formatGold(materialValue) }), tone: "text-success" },
-    { key: "actions", label: t("common:enhancement.expectedActions", "Expected actions"), value: formatNumber(actionsValue), detail: formatDuration(secondsValue), tone: "text-foreground" },
-    { key: "xp", label: t("common:enhancement.expectedXp", "Expected XP"), value: formatNumber(xpValue), detail: t("common:enhancement.xpRateDetail", "{{value}} XP/h", { value: formatNumber(rowValue(row, "xpPerHour", "experiencePerHour")) }), tone: "text-success" },
+    {
+      key: 'total',
+      label: t('common:enhancement.totalInvestment', 'Total investment'),
+      value: formatGold(totalValue),
+      detail: t('common:enhancement.includesStartingItem', 'Includes starting item & markup'),
+      tone: 'text-primary',
+    },
+    {
+      key: 'incremental',
+      label: t('common:enhancement.incrementalCost', 'Incremental cost'),
+      value: formatGold(incrementalValue),
+      detail: t('common:enhancement.materialDetail', 'Materials {{value}}', { value: formatGold(materialValue) }),
+      tone: 'text-success',
+    },
+    {
+      key: 'actions',
+      label: t('common:enhancement.expectedActions', 'Expected actions'),
+      value: formatNumber(actionsValue),
+      detail: formatDuration(secondsValue),
+      tone: 'text-foreground',
+    },
+    {
+      key: 'xp',
+      label: t('common:enhancement.expectedXp', 'Expected XP'),
+      value: formatNumber(xpValue),
+      detail: t('common:enhancement.xpRateDetail', '{{value}} XP/h', {
+        value: formatNumber(rowValue(row, 'xpPerHour', 'experiencePerHour')),
+      }),
+      tone: 'text-success',
+    },
   ];
 });
 
 const priceStatusText = computed(() => {
   const status = enhancement.priceStatus;
-  if (priceRefreshPending.value || status?.loading) return t("common:enhancement.refreshing", "Refreshing...");
-  if (status?.error) return t("common:enhancement.priceFallbackActive", "Market fallback active");
-  if (status?.updatedAt || status?.ready || status === "ready") return t("common:enhancement.pricesReady", "Prices ready");
-  return t("common:enhancement.vendorPrices", "Vendor prices");
+  if (priceRefreshPending.value || status?.loading) return t('common:enhancement.refreshing', 'Refreshing...');
+  if (status?.error) return t('common:enhancement.priceFallbackActive', 'Market fallback active');
+  if (status?.updatedAt || status?.ready || status === 'ready')
+    return t('common:enhancement.pricesReady', 'Prices ready');
+  return t('common:enhancement.vendorPrices', 'Vendor prices');
 });
-const priceStatusClass = computed(() => enhancement.priceStatus?.error
-  ? "border-primary/40 bg-primary/10 text-primary"
-  : "border-success/40 bg-success/10 text-success");
+const priceStatusClass = computed(() =>
+  enhancement.priceStatus?.error
+    ? 'border-primary/40 bg-primary/10 text-primary'
+    : 'border-success/40 bg-success/10 text-success',
+);
 
-const startingItemPriceValue = computed(() => numericValue(enhancement.startingItemPrice?.value, enhancement.startingItemPrice));
-const startingItemPriceMissing = computed(() => Boolean(enhancement.startingItemPrice?.missing || (Number(enhancement.config.startLevel || 0) > 0 && !Number.isFinite(Number(startingItemPriceValue.value)))));
-const startingItemPriceMissingText = computed(() => (
-  String(enhancement.startingItemPrice?.source || "").toLowerCase() === "acquisition_missing"
-    ? t("common:enhancement.acquisitionEstimateMissing", "Required key asks are missing, so an acquisition estimate cannot be calculated.")
-    : t("common:enhancement.startingItemPriceMissing", "No direct market quote exists for this enhancement level.")
-));
+const startingItemPriceValue = computed(() =>
+  numericValue(enhancement.startingItemPrice?.value, enhancement.startingItemPrice),
+);
+const startingItemPriceMissing = computed(() =>
+  Boolean(
+    enhancement.startingItemPrice?.missing ||
+    (Number(enhancement.config.startLevel || 0) > 0 && !Number.isFinite(Number(startingItemPriceValue.value))),
+  ),
+);
+const startingItemPriceMissingText = computed(() =>
+  String(enhancement.startingItemPrice?.source || '').toLowerCase() === 'acquisition_missing'
+    ? t(
+        'common:enhancement.acquisitionEstimateMissing',
+        'Required key asks are missing, so an acquisition estimate cannot be calculated.',
+      )
+    : t('common:enhancement.startingItemPriceMissing', 'No direct market quote exists for this enhancement level.'),
+);
 
 const mirrorMaterials = computed(() => {
   const rows = mirrorPlan.value?.materials || mirrorPlan.value?.materialRows || mirrorPlan.value?.requirements || [];
-  return Array.isArray(rows) ? rows : Object.entries(rows || {}).map(([hrid, value]) => ({ hrid, ...(typeof value === "object" ? value : { quantity: value }) }));
+  return Array.isArray(rows)
+    ? rows
+    : Object.entries(rows || {}).map(([hrid, value]) => ({
+        hrid,
+        ...(typeof value === 'object' ? value : { quantity: value }),
+      }));
 });
-const mirrorPlanCost = computed(() => rowValue(mirrorPlan.value, "totalCost", "cost", "planCost"));
-const mirrorSavings = computed(() => rowValue(mirrorPlan.value, "savings", "savedCost"));
+const mirrorPlanCost = computed(() => rowValue(mirrorPlan.value, 'totalCost', 'cost', 'planCost'));
+const mirrorSavings = computed(() => rowValue(mirrorPlan.value, 'savings', 'savedCost'));
 const mirrorMethodLabel = computed(() => {
-  if (!mirrorPlan.value) return t("common:enhancement.unavailable", "Unavailable");
-  return mirrorPlan.value.usesMirror || mirrorPlan.value.method === "mirror"
-    ? t("common:enhancement.useMirror", "Uses {{item}}", { item: philosopherMirrorName.value })
-    : t("common:enhancement.directEnhancement", "No {{item}}", { item: philosopherMirrorName.value });
+  if (!mirrorPlan.value) return t('common:enhancement.unavailable', 'Unavailable');
+  return mirrorPlan.value.usesMirror || mirrorPlan.value.method === 'mirror'
+    ? t('common:enhancement.useMirror', 'Uses {{item}}', { item: philosopherMirrorName.value })
+    : t('common:enhancement.directEnhancement', 'No {{item}}', { item: philosopherMirrorName.value });
 });
 
-const decompositionQuantity = computed(() => rowValue(decompositionValue.value, "quantity", "essenceQuantity", "essenceCount", "expectedEssence"));
+const decompositionQuantity = computed(() =>
+  rowValue(decompositionValue.value, 'quantity', 'essenceQuantity', 'essenceCount', 'expectedEssence'),
+);
 const decompositionGold = computed(() => {
   if (!decompositionValue.value || decompositionValue.value.priceAvailable === false) return Number.NaN;
-  return numericValue(decompositionValue.value, rowValue(decompositionValue.value, "value", "goldValue", "netValue", "bidValue"));
+  return numericValue(
+    decompositionValue.value,
+    rowValue(decompositionValue.value, 'value', 'goldValue', 'netValue', 'bidValue'),
+  );
 });
 const decompositionItemLabel = computed(() => {
-  if (!decompositionValue.value) return t("common:enhancement.noItemSelected", "No item selected");
-  const hrid = decompositionValue.value?.itemHrid || decompositionValue.value?.essenceItemHrid || "/items/enhancing_essence";
-  return t("common:enhancement.decompositionPriceSource", "{{item}} price source: {{source}}", {
-    item: itemName({ hrid, name: "Enhancing Essence" }),
+  if (!decompositionValue.value) return t('common:enhancement.noItemSelected', 'No item selected');
+  const hrid =
+    decompositionValue.value?.itemHrid || decompositionValue.value?.essenceItemHrid || '/items/enhancing_essence';
+  return t('common:enhancement.decompositionPriceSource', '{{item}} price source: {{source}}', {
+    item: itemName({ hrid, name: 'Enhancing Essence' }),
     source: priceSourceLabel(decompositionValue.value?.priceSource),
   });
 });
@@ -1130,83 +1663,111 @@ const decompositionTaxNote = computed(() => {
   const value = decompositionValue.value;
   const unitTax = Number(value?.marketTax || 0);
   const essenceCount = Math.max(0, Number(decompositionQuantity.value || 0));
-  if (!value || unitTax <= 0 || essenceCount <= 0) return "";
+  if (!value || unitTax <= 0 || essenceCount <= 0) return '';
   const taxTotal = unitTax * essenceCount;
   const grossTotal = Math.max(0, Number(value?.essenceBid || 0)) * essenceCount;
-  return t("common:enhancement.decompositionTaxNote", "Market tax {{tax}} (gross market value {{gross}})", {
+  return t('common:enhancement.decompositionTaxNote', 'Market tax {{tax}} (gross market value {{gross}})', {
     tax: formatGold(taxTotal),
     gross: formatGold(grossTotal),
   });
 });
 
 const riskProgressPercent = computed(() => {
-  const progress = typeof enhancement.riskProgress === "object" ? enhancement.riskProgress?.progress ?? enhancement.riskProgress?.fraction : enhancement.riskProgress;
+  const progress =
+    typeof enhancement.riskProgress === 'object'
+      ? (enhancement.riskProgress?.progress ?? enhancement.riskProgress?.fraction)
+      : enhancement.riskProgress;
   const number = Number(progress || 0);
   const normalized = number > 1 ? number : number * 100;
   return Math.max(0, Math.min(100, Math.round(normalized)));
 });
-const riskProgressLabel = computed(() => enhancement.riskProgress?.label || enhancement.riskProgress?.phase || t("common:enhancement.simulating", "Simulating cost paths"));
-const riskErrorText = computed(() => localizeRiskError(initializationError.value || enhancement.riskError?.message || enhancement.riskError || ""));
+const riskProgressLabel = computed(
+  () =>
+    enhancement.riskProgress?.label ||
+    enhancement.riskProgress?.phase ||
+    t('common:enhancement.simulating', 'Simulating cost paths'),
+);
+const riskErrorText = computed(() =>
+  localizeRiskError(initializationError.value || enhancement.riskError?.message || enhancement.riskError || ''),
+);
 const riskMethodLabel = computed(() => {
   const method = enhancement.risk?.method;
-  if (method === "monte_carlo") return t("common:enhancement.monteCarlo", "Monte Carlo");
-  if (method === "moment_gamma") return t("common:enhancement.gammaApproximation", "Moment / Gamma approximation");
-  return "";
+  if (method === 'monte_carlo') return t('common:enhancement.monteCarlo', 'Monte Carlo');
+  if (method === 'moment_gamma') return t('common:enhancement.gammaApproximation', 'Moment / Gamma approximation');
+  return '';
 });
 const riskQuantileDefinitions = [
-  { key: "p25", label: "P25", probability: 0.25 },
-  { key: "p50", label: "P50", probability: 0.5 },
-  { key: "p75", label: "P75", probability: 0.75 },
-  { key: "p90", label: "P90", probability: 0.9 },
-  { key: "p95", label: "P95", probability: 0.95 },
-  { key: "p99", label: "P99", probability: 0.99 },
+  { key: 'p25', label: 'P25', probability: 0.25 },
+  { key: 'p50', label: 'P50', probability: 0.5 },
+  { key: 'p75', label: 'P75', probability: 0.75 },
+  { key: 'p90', label: 'P90', probability: 0.9 },
+  { key: 'p95', label: 'P95', probability: 0.95 },
+  { key: 'p99', label: 'P99', probability: 0.99 },
 ];
-const riskQuantileRows = computed(() => riskQuantileDefinitions.map((definition) => {
-  const record = riskQuantileRecord(definition);
-  return { ...definition, record, value: rowValue(record, "totalCost", "totalInvestment", "cost", "value") };
-}));
-const riskBudgetProbability = computed(() => rowValue(enhancement.risk, "budgetProbability", "successWithinBudget", "budgetSuccessProbability"));
-const riskSampleLabel = computed(() => t("common:enhancement.sampleCountLabel", "{{count}} samples", { count: formatNumber(enhancement.risk?.sampleCount ?? enhancement.risk?.samples ?? enhancement.config.sampleCount) }));
-const riskSeedLabel = computed(() => t("common:enhancement.seedLabel", "Seed: {{seed}}", { seed: enhancement.risk?.seed ?? enhancement.config.seed ?? "-" }));
+const riskQuantileRows = computed(() =>
+  riskQuantileDefinitions.map((definition) => {
+    const record = riskQuantileRecord(definition);
+    return { ...definition, record, value: rowValue(record, 'totalCost', 'totalInvestment', 'cost', 'value') };
+  }),
+);
+const riskBudgetProbability = computed(() =>
+  rowValue(enhancement.risk, 'budgetProbability', 'successWithinBudget', 'budgetSuccessProbability'),
+);
+const riskSampleLabel = computed(() =>
+  t('common:enhancement.sampleCountLabel', '{{count}} samples', {
+    count: formatNumber(enhancement.risk?.sampleCount ?? enhancement.risk?.samples ?? enhancement.config.sampleCount),
+  }),
+);
+const riskSeedLabel = computed(() =>
+  t('common:enhancement.seedLabel', 'Seed: {{seed}}', {
+    seed: enhancement.risk?.seed ?? enhancement.config.seed ?? '-',
+  }),
+);
 const riskLoadLabel = computed(() => {
   const estimated = Number(enhancement.risk?.estimatedTransitions);
-  if (!Number.isFinite(estimated)) return "";
-  return t("common:enhancement.estimatedTransitionsLabel", "{{count}} estimated transitions", { count: formatNumber(estimated) });
+  if (!Number.isFinite(estimated)) return '';
+  return t('common:enhancement.estimatedTransitionsLabel', '{{count}} estimated transitions', {
+    count: formatNumber(estimated),
+  });
 });
 const riskFallbackLabel = computed(() => {
-  if (enhancement.risk?.fallbackReason === "hard_transition_limit") {
-    return t("common:enhancement.fallbackHardLimit", "Monte Carlo stopped at the transition limit");
+  if (enhancement.risk?.fallbackReason === 'hard_transition_limit') {
+    return t('common:enhancement.fallbackHardLimit', 'Monte Carlo stopped at the transition limit');
   }
-  if (enhancement.risk?.fallbackReason === "estimated_load") {
-    return t("common:enhancement.fallbackEstimatedLoad", "Monte Carlo skipped for estimated load");
+  if (enhancement.risk?.fallbackReason === 'estimated_load') {
+    return t('common:enhancement.fallbackEstimatedLoad', 'Monte Carlo skipped for estimated load');
   }
-  return "";
+  return '';
 });
 
 function postTampermonkeyImportResult(payload) {
-  window.postMessage({
-    channel: TAMPERMONKEY_BRIDGE_CHANNEL,
-    ...payload,
-  }, window.location.origin);
+  window.postMessage(
+    {
+      channel: TAMPERMONKEY_BRIDGE_CHANNEL,
+      ...payload,
+    },
+    window.location.origin,
+  );
 }
 
 function handleTampermonkeyEnhancementImportWindowMessage(event) {
   if (event.source !== window || event.origin !== window.location.origin) return;
   const data = event.data;
-  if (!data || typeof data !== "object") return;
+  if (!data || typeof data !== 'object') return;
   if (
-    data.channel !== TAMPERMONKEY_BRIDGE_CHANNEL
-    || data.type !== "mwi-tm-import"
-    || data.importTarget !== "enhancement"
-  ) return;
+    data.channel !== TAMPERMONKEY_BRIDGE_CHANNEL ||
+    data.type !== 'mwi-tm-import' ||
+    data.importTarget !== 'enhancement'
+  )
+    return;
 
-  const requestId = String(data.requestId || "").trim();
+  const requestId = String(data.requestId || '').trim();
   if (!requestId) return;
 
   try {
     const result = applyTampermonkeyEnhancementImportMessage(enhancement, data);
     postTampermonkeyImportResult({
-      type: "mwi-tm-import-result",
+      type: 'mwi-tm-import-result',
       requestId,
       ok: true,
       detectedFormat: result.detectedFormat,
@@ -1214,7 +1775,7 @@ function handleTampermonkeyEnhancementImportWindowMessage(event) {
     });
   } catch (error) {
     postTampermonkeyImportResult({
-      type: "mwi-tm-import-result",
+      type: 'mwi-tm-import-result',
       requestId,
       ok: false,
       message: error?.message || String(error),
@@ -1223,7 +1784,7 @@ function handleTampermonkeyEnhancementImportWindowMessage(event) {
 }
 
 onMounted(async () => {
-  window.addEventListener("message", handleTampermonkeyEnhancementImportWindowMessage);
+  window.addEventListener('message', handleTampermonkeyEnhancementImportWindowMessage);
   try {
     await enhancement.initialize();
   } catch (error) {
@@ -1232,7 +1793,7 @@ onMounted(async () => {
 });
 
 onBeforeUnmount(() => {
-  window.removeEventListener("message", handleTampermonkeyEnhancementImportWindowMessage);
+  window.removeEventListener('message', handleTampermonkeyEnhancementImportWindowMessage);
 });
 
 function openItemPicker() {
@@ -1242,14 +1803,11 @@ function openItemPicker() {
 
 function openPricesModal() {
   pricesModalOpen.value = true;
-  void loadItemIcons([
-    enhancement.config.itemHrid,
-    ...materialRows.value.map((row) => row.hrid),
-  ]);
+  void loadItemIcons([enhancement.config.itemHrid, ...materialRows.value.map((row) => row.hrid)]);
 }
 
 function loadItemIcons(hrids = []) {
-  const requestedHrids = Array.from(new Set(hrids.map((hrid) => String(hrid || "")).filter(Boolean)));
+  const requestedHrids = Array.from(new Set(hrids.map((hrid) => String(hrid || '')).filter(Boolean)));
   if (requestedHrids.length === 0) return itemIconLoadQueue;
   itemIconLoadQueue = itemIconLoadQueue
     .catch(() => 0)
@@ -1271,14 +1829,14 @@ function chooseItem(hrid) {
 }
 
 function itemName(item) {
-  const hrid = String(item?.hrid || item?.itemHrid || "");
-  const fallback = item?.name || item?.displayName || hrid || t("common:enhancement.unknownItem", "Unknown item");
+  const hrid = String(item?.hrid || item?.itemHrid || '');
+  const fallback = item?.name || item?.displayName || hrid || t('common:enhancement.unknownItem', 'Unknown item');
   if (!hrid) return fallback;
   return getGameItemName(hrid, fallback);
 }
 
 function achievementTierBonusLabel(tierHrid, fallbackName) {
-  return t("common:enhancement.achievementTierBonus", "{{tier}} achievement bonus", {
+  return t('common:enhancement.achievementTierBonus', '{{tier}} achievement bonus', {
     tier: getAchievementTierName(tierHrid, fallbackName),
   });
 }
@@ -1289,16 +1847,20 @@ function itemIconVisible(hrid) {
 }
 
 function itemIconFallback(item) {
-  return Array.from(itemName(item).trim())[0]?.toUpperCase() || "?";
+  return Array.from(itemName(item).trim())[0]?.toUpperCase() || '?';
 }
 
 function equipmentTypeName(equipmentTypeHrid) {
-  const hrid = String(equipmentTypeHrid || "").trim();
-  if (!hrid) return "";
-  const fallback = hrid.split("/").filter(Boolean).at(-1)
-    ?.split("_")
-    .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
-    .join(" ") || hrid;
+  const hrid = String(equipmentTypeHrid || '').trim();
+  if (!hrid) return '';
+  const fallback =
+    hrid
+      .split('/')
+      .filter(Boolean)
+      .at(-1)
+      ?.split('_')
+      .map((word) => word.charAt(0).toUpperCase() + word.slice(1))
+      .join(' ') || hrid;
   return getEquipmentTypeName(hrid, fallback);
 }
 
@@ -1311,19 +1873,20 @@ function isFavorite(hrid) {
 
 function favoriteButtonLabel(hrid) {
   return isFavorite(hrid)
-    ? t("common:enhancement.removeFavorite", "Remove favorite")
-    : t("common:enhancement.addFavorite", "Add favorite");
+    ? t('common:enhancement.removeFavorite', 'Remove favorite')
+    : t('common:enhancement.addFavorite', 'Add favorite');
 }
 
 function slotOptions(slotKey) {
   const options = enhancement.supportSlotOptions;
-  if (Array.isArray(options)) return options.filter((item) => !item.slot || item.slot === slotKey || item.equipmentType === slotKey);
+  if (Array.isArray(options))
+    return options.filter((item) => !item.slot || item.slot === slotKey || item.equipmentType === slotKey);
   return Array.isArray(options?.[slotKey]) ? options[slotKey] : [];
 }
 
 function supportEquipmentComboboxOptions(slotKey) {
   return [
-    { value: "", label: t("common:enhancement.none", "None") },
+    { value: '', label: t('common:enhancement.none', 'None') },
     ...slotOptions(slotKey).map((item) => ({ value: item.hrid, label: itemName(item) })),
   ];
 }
@@ -1333,7 +1896,7 @@ function optionalEnhancementSelectValue(value) {
 }
 
 function decodeOptionalEnhancementSelectValue(value) {
-  return value === EMPTY_SELECT_VALUE ? "" : String(value || "");
+  return value === EMPTY_SELECT_VALUE ? '' : String(value || '');
 }
 
 function setEnhancementTea(value) {
@@ -1345,19 +1908,18 @@ function setProtectionItem(value) {
 }
 
 function equipmentField(slotKey, field) {
-  return enhancement.config.equipmentSlots?.[slotKey]?.[field] ?? (field === "enhancementLevel" ? 0 : "");
+  return enhancement.config.equipmentSlots?.[slotKey]?.[field] ?? (field === 'enhancementLevel' ? 0 : '');
 }
 
 function setEquipmentField(slotKey, field, value) {
-  const normalizedValue = field === "enhancementLevel"
-    ? Math.max(0, Math.min(20, Math.trunc(Number(value) || 0)))
-    : value;
-  if (typeof enhancement.setNestedConfig === "function") {
-    enhancement.setNestedConfig(["equipmentSlots", slotKey, field], normalizedValue);
+  const normalizedValue =
+    field === 'enhancementLevel' ? Math.max(0, Math.min(20, Math.trunc(Number(value) || 0))) : value;
+  if (typeof enhancement.setNestedConfig === 'function') {
+    enhancement.setNestedConfig(['equipmentSlots', slotKey, field], normalizedValue);
     return;
   }
   enhancement.config.equipmentSlots ||= {};
-  enhancement.config.equipmentSlots[slotKey] ||= { itemHrid: "", enhancementLevel: 0 };
+  enhancement.config.equipmentSlots[slotKey] ||= { itemHrid: '', enhancementLevel: 0 };
   enhancement.config.equipmentSlots[slotKey][field] = normalizedValue;
 }
 
@@ -1368,13 +1930,13 @@ function numberFromEvent(event, fallback = 0) {
 
 function formatBudgetInput(value) {
   const numeric = Number(value);
-  if (!Number.isFinite(numeric) || numeric <= 0) return "";
+  if (!Number.isFinite(numeric) || numeric <= 0) return '';
   const amount = convertAmountFromBaseUnits(numeric, budgetUnit.value);
-  return amount == null ? "" : String(amount);
+  return amount == null ? '' : String(amount);
 }
 
 function parseBudgetInput(value) {
-  if (!String(value ?? "").trim()) return 0;
+  if (!String(value ?? '').trim()) return 0;
   const numeric = Number(value);
   if (!Number.isFinite(numeric) || numeric < 0) return null;
   return convertAmountToBaseUnits(numeric, budgetUnit.value);
@@ -1382,7 +1944,7 @@ function parseBudgetInput(value) {
 
 function handleBudgetInput(event) {
   budgetInputEditing.value = true;
-  budgetInputAmount.value = String(event?.target?.value ?? "");
+  budgetInputAmount.value = String(event?.target?.value ?? '');
   const parsed = parseBudgetInput(budgetInputAmount.value);
   budgetInputValid.value = parsed != null;
   if (parsed != null) enhancement.config.budget = parsed;
@@ -1402,7 +1964,7 @@ function commitBudgetInput() {
 }
 
 function handleBudgetUnit(value) {
-  const nextUnit = String(value || "").toUpperCase();
+  const nextUnit = String(value || '').toUpperCase();
   if (!budgetUnits.includes(nextUnit)) return;
   budgetUnit.value = nextUnit;
   const parsed = parseBudgetInput(budgetInputAmount.value);
@@ -1417,10 +1979,10 @@ function normalizeRiskSampleCount(event) {
 }
 
 function setStartingItemPriceOverride(event) {
-  const raw = String(event?.target?.value ?? "").trim();
-  const value = raw === "" ? null : Math.max(0, Number(raw));
+  const raw = String(event?.target?.value ?? '').trim();
+  const value = raw === '' ? null : Math.max(0, Number(raw));
   const patch = { startingItemPriceOverride: Number.isFinite(value) ? value : null };
-  if (typeof enhancement.patchConfig === "function") enhancement.patchConfig(patch);
+  if (typeof enhancement.patchConfig === 'function') enhancement.patchConfig(patch);
   else Object.assign(enhancement.config, patch);
 }
 
@@ -1428,13 +1990,13 @@ function materialOverrideValue(row) {
   const direct = row.overrideValue ?? row.priceOverride;
   if (direct != null) return direct;
   const entry = enhancement.config.priceOverrides?.[row.hrid];
-  if (entry && typeof entry === "object") return entry[row.priceMode] ?? "";
-  return entry ?? "";
+  if (entry && typeof entry === 'object') return entry[row.priceMode] ?? '';
+  return entry ?? '';
 }
 
 function setMaterialOverride(row, event) {
-  const raw = String(event?.target?.value ?? "").trim();
-  enhancement.setMaterialOverride(row.hrid, raw === "" ? null : Math.max(0, Number(raw)), row.priceMode);
+  const raw = String(event?.target?.value ?? '').trim();
+  enhancement.setMaterialOverride(row.hrid, raw === '' ? null : Math.max(0, Number(raw)), row.priceMode);
 }
 
 async function refreshPrices() {
@@ -1447,8 +2009,8 @@ async function refreshPrices() {
 }
 
 async function runRisk() {
-  initializationError.value = "";
-  activeResultTab.value = "risk";
+  initializationError.value = '';
+  activeResultTab.value = 'risk';
   try {
     await enhancement.runRisk();
   } catch (error) {
@@ -1457,20 +2019,20 @@ async function runRisk() {
 }
 
 function resetConfig() {
-  budgetUnit.value = "M";
-  budgetInputAmount.value = "";
+  budgetUnit.value = 'M';
+  budgetInputAmount.value = '';
   budgetInputValid.value = true;
   budgetInputEditing.value = false;
   enhancement.resetConfig();
   equipmentModalOpen.value = false;
   pricesModalOpen.value = false;
   advancedOpen.value = true;
-  activeAdvancedTab.value = "bonuses";
-  activeResultTab.value = "strategies";
+  activeAdvancedTab.value = 'bonuses';
+  activeResultTab.value = 'strategies';
 }
 
 function handleTabKeydown(event) {
-  const supportedKeys = ["ArrowLeft", "ArrowRight", "Home", "End"];
+  const supportedKeys = ['ArrowLeft', 'ArrowRight', 'Home', 'End'];
   if (!supportedKeys.includes(event.key)) return;
 
   const tabList = event.currentTarget;
@@ -1480,9 +2042,9 @@ function handleTabKeydown(event) {
 
   event.preventDefault();
   let nextIndex = currentIndex;
-  if (event.key === "Home") nextIndex = 0;
-  else if (event.key === "End") nextIndex = tabs.length - 1;
-  else if (event.key === "ArrowLeft") nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
+  if (event.key === 'Home') nextIndex = 0;
+  else if (event.key === 'End') nextIndex = tabs.length - 1;
+  else if (event.key === 'ArrowLeft') nextIndex = (currentIndex - 1 + tabs.length) % tabs.length;
   else nextIndex = (currentIndex + 1) % tabs.length;
 
   tabs[nextIndex]?.focus();
@@ -1491,26 +2053,26 @@ function handleTabKeydown(event) {
 
 function rowValue(row, ...keys) {
   if (row == null) return Number.NaN;
-  if (typeof row === "number") return row;
+  if (typeof row === 'number') return row;
   for (const key of keys) {
     const value = row?.[key];
-    if (value != null && value !== "") return value;
+    if (value != null && value !== '') return value;
   }
   return Number.NaN;
 }
 
 function numericValue(value, fallback = Number.NaN) {
-  if (value && typeof value === "object") return rowValue(value, "value", "cost", "totalCost", "amount");
+  if (value && typeof value === 'object') return rowValue(value, 'value', 'cost', 'totalCost', 'amount');
   const number = Number(value);
   return Number.isFinite(number) ? number : fallback;
 }
 
 function formatNumber(value, maximumFractionDigits = 2) {
   const number = Number(value);
-  if (!Number.isFinite(number)) return "—";
-  return new Intl.NumberFormat(language.value === "zh" ? "zh-CN" : "en-US", {
+  if (!Number.isFinite(number)) return '—';
+  return new Intl.NumberFormat(language.value === 'zh' ? 'zh-CN' : 'en-US', {
     maximumFractionDigits,
-    notation: Math.abs(number) >= 1e9 ? "compact" : "standard",
+    notation: Math.abs(number) >= 1e9 ? 'compact' : 'standard',
   }).format(number);
 }
 
@@ -1519,98 +2081,117 @@ function formatGold(value) {
 }
 
 function formatAmount(value) {
-  return formatCompactAmount(value, { locale: language.value === "zh" ? "zh-CN" : "en-US" });
+  return formatCompactAmount(value, { locale: language.value === 'zh' ? 'zh-CN' : 'en-US' });
 }
 
 function formatPercent(value) {
   const number = Number(value);
-  if (!Number.isFinite(number)) return "—";
+  if (!Number.isFinite(number)) return '—';
   const normalized = Math.abs(number) <= 1 ? number * 100 : number;
   return `${formatNumber(normalized, 2)}%`;
 }
 
 function formatDuration(value) {
   const seconds = Number(value);
-  if (!Number.isFinite(seconds)) return "—";
-  if (seconds < 60) return t("common:enhancement.secondsShort", "{{value}}s", { value: formatNumber(seconds, 1) });
-  if (seconds < 3600) return t("common:enhancement.minutesShort", "{{value}}m", { value: formatNumber(seconds / 60, 1) });
-  return t("common:enhancement.hoursShort", "{{value}}h", { value: formatNumber(seconds / 3600, 1) });
+  if (!Number.isFinite(seconds)) return '—';
+  if (seconds < 60) return t('common:enhancement.secondsShort', '{{value}}s', { value: formatNumber(seconds, 1) });
+  if (seconds < 3600)
+    return t('common:enhancement.minutesShort', '{{value}}m', { value: formatNumber(seconds / 60, 1) });
+  return t('common:enhancement.hoursShort', '{{value}}h', { value: formatNumber(seconds / 3600, 1) });
 }
 
 function strategyKey(row, index) {
-  return row?.id || row?.strategyId || `${row?.protectionThreshold ?? "none"}-${index}`;
+  return row?.id || row?.strategyId || `${row?.protectionThreshold ?? 'none'}-${index}`;
 }
 
 function strategySelectionValue(row, index) {
-  return String(row?.id || row?.strategyId || (row?.protectionThreshold == null ? "none" : `protect-${row.protectionThreshold}`) || index);
+  return String(
+    row?.id ||
+      row?.strategyId ||
+      (row?.protectionThreshold == null ? 'none' : `protect-${row.protectionThreshold}`) ||
+      index,
+  );
 }
 
 function strategyLabel(row) {
-  if (!row) return t("common:enhancement.noProtection", "No protection");
+  if (!row) return t('common:enhancement.noProtection', 'No protection');
   const threshold = row.protectionThreshold ?? row.protectAt ?? row.threshold;
-  if (row.noProtection || threshold == null || threshold === false) return t("common:enhancement.noProtection", "No protection");
-  return t("common:enhancement.protectFrom", "Protect from +{{level}}", { level: Number(threshold) });
+  if (row.noProtection || threshold == null || threshold === false)
+    return t('common:enhancement.noProtection', 'No protection');
+  return t('common:enhancement.protectFrom', 'Protect from +{{level}}', { level: Number(threshold) });
 }
 
 function strategyCoinCost(row) {
-  const direct = rowValue(row, "goldCost", "coinCost", "expectedGold");
+  const direct = rowValue(row, 'goldCost', 'coinCost', 'expectedGold');
   if (Number.isFinite(Number(direct))) return direct;
   const perAction = Number(row?.coinPerAction);
   const expectedActions = Number(row?.expectedActions);
-  return Number.isFinite(perAction) && Number.isFinite(expectedActions)
-    ? perAction * expectedActions
-    : Number.NaN;
+  return Number.isFinite(perAction) && Number.isFinite(expectedActions) ? perAction * expectedActions : Number.NaN;
 }
 
 function strategyMaterialCost(row) {
   if (row?.materialPricesAvailable === false) return Number.NaN;
-  const direct = rowValue(row, "materialCost", "materialsCost");
+  const direct = rowValue(row, 'materialCost', 'materialsCost');
   if (Number.isFinite(Number(direct))) return direct;
   const perAction = Number(row?.materialCostPerAction);
   const expectedActions = Number(row?.expectedActions);
   return Number.isFinite(perAction) && Number.isFinite(expectedActions)
     ? perAction * expectedActions
-    : rowValue(row, "rawMaterialCost");
+    : rowValue(row, 'rawMaterialCost');
 }
 
 function localizeRiskError(value) {
-  const message = String(value || "");
+  const message = String(value || '');
   const knownErrors = {
-    "Select an enhanceable item before running risk analysis.": ["riskSelectItemError", "Select an enhanceable item before running risk analysis."],
-    "A direct market quote or price override is required for the starting enhancement level.": ["riskStartingPriceError", "A direct market quote or price override is required for the starting enhancement level."],
-    "A price is required for every enhancement material.": ["riskMaterialPriceError", "A price is required for every enhancement material."],
-    "A priced protection item is required for cost analysis.": ["riskProtectionPriceError", "A priced protection item is required for cost analysis."],
+    'Select an enhanceable item before running risk analysis.': [
+      'riskSelectItemError',
+      'Select an enhanceable item before running risk analysis.',
+    ],
+    'A direct market quote or price override is required for the starting enhancement level.': [
+      'riskStartingPriceError',
+      'A direct market quote or price override is required for the starting enhancement level.',
+    ],
+    'A price is required for every enhancement material.': [
+      'riskMaterialPriceError',
+      'A price is required for every enhancement material.',
+    ],
+    'A priced protection item is required for cost analysis.': [
+      'riskProtectionPriceError',
+      'A priced protection item is required for cost analysis.',
+    ],
   };
   const localized = knownErrors[message];
   return localized ? t(`common:enhancement.${localized[0]}`, localized[1]) : message;
 }
 
 function protectionItemLabel(row) {
-  const item = row?.protectionItem || (row?.protectionItemHrid ? { hrid: row.protectionItemHrid, name: row.protectionItemName } : null);
-  if (!item) return t("common:enhancement.noProtectionItem", "No protection item");
-  const label = t("common:enhancement.protectionItemUsed", "Protection item: {{item}}", { item: itemName(item) });
+  const item =
+    row?.protectionItem ||
+    (row?.protectionItemHrid ? { hrid: row.protectionItemHrid, name: row.protectionItemName } : null);
+  if (!item) return t('common:enhancement.noProtectionItem', 'No protection item');
+  const label = t('common:enhancement.protectionItemUsed', 'Protection item: {{item}}', { item: itemName(item) });
   return isAcquisitionEstimate(item)
-    ? `${label} · ${t("common:enhancement.sourceAcquisitionEstimate", "Acquisition estimate")}`
+    ? `${label} · ${t('common:enhancement.sourceAcquisitionEstimate', 'Acquisition estimate')}`
     : label;
 }
 
 function protectionOptionLabel(item) {
   const label = itemName(item);
   if (isAcquisitionEstimate(item)) {
-    return t("common:enhancement.acquisitionEstimateOption", "{{item}} · estimate {{value}}", {
+    return t('common:enhancement.acquisitionEstimateOption', '{{item}} · estimate {{value}}', {
       item: label,
       value: formatAmount(item.price),
     });
   }
-  if (String(item?.source || item?.priceSource || "").toLowerCase() === "acquisition_missing") {
-    return t("common:enhancement.acquisitionMissingOption", "{{item}} · unavailable", { item: label });
+  if (String(item?.source || item?.priceSource || '').toLowerCase() === 'acquisition_missing') {
+    return t('common:enhancement.acquisitionMissingOption', '{{item}} · unavailable', { item: label });
   }
   return label;
 }
 
 function mirrorMaterialLabel(material) {
-  if (material?.type === "direct" && Number.isFinite(Number(material.level))) {
-    return t("common:enhancement.directItemAtLevel", "{{item}} +{{level}}", {
+  if (material?.type === 'direct' && Number.isFinite(Number(material.level))) {
+    return t('common:enhancement.directItemAtLevel', '{{item}} +{{level}}', {
       item: itemName(material),
       level: Number(material.level),
     });
@@ -1619,55 +2200,68 @@ function mirrorMaterialLabel(material) {
 }
 
 function isRecommended(row, index) {
-  return Boolean(row?.recommended || row?.isRecommended || row === recommendedStrategy.value || (!recommendedStrategy.value && index === 0));
+  return Boolean(
+    row?.recommended ||
+    row?.isRecommended ||
+    row === recommendedStrategy.value ||
+    (!recommendedStrategy.value && index === 0),
+  );
 }
 
 function priceSourceLabel(source) {
-  const key = String(source || "").toLowerCase();
-  if (key === "acquisition_estimate") return t("common:enhancement.sourceAcquisitionEstimate", "Acquisition estimate");
-  if (key === "acquisition_missing") return t("common:enhancement.sourceAcquisitionMissing", "Non-tradable / unavailable");
-  if (key.includes("override")) return t("common:enhancement.sourceOverride", "Override");
-  if (key.includes("ask")) return t("common:enhancement.sourceAsk", "Ask");
-  if (key.includes("bid")) return t("common:enhancement.sourceBid", "Bid fallback");
-  if (key.includes("vendor")) return t("common:enhancement.sourceVendor", "Vendor fallback");
-  if (key.includes("missing")) return t("common:enhancement.sourceMissing", "Missing");
-  return t("common:enhancement.sourceMarket", "Market");
+  const key = String(source || '').toLowerCase();
+  if (key === 'acquisition_estimate') return t('common:enhancement.sourceAcquisitionEstimate', 'Acquisition estimate');
+  if (key === 'acquisition_missing')
+    return t('common:enhancement.sourceAcquisitionMissing', 'Non-tradable / unavailable');
+  if (key.includes('override')) return t('common:enhancement.sourceOverride', 'Override');
+  if (key.includes('ask')) return t('common:enhancement.sourceAsk', 'Ask');
+  if (key.includes('bid')) return t('common:enhancement.sourceBid', 'Bid fallback');
+  if (key.includes('vendor')) return t('common:enhancement.sourceVendor', 'Vendor fallback');
+  if (key.includes('missing')) return t('common:enhancement.sourceMissing', 'Missing');
+  return t('common:enhancement.sourceMarket', 'Market');
 }
 
 function isAcquisitionEstimate(value) {
-  return String(value?.source || value?.priceSource || "").toLowerCase() === "acquisition_estimate"
-    && value?.available !== false;
+  return (
+    String(value?.source || value?.priceSource || '').toLowerCase() === 'acquisition_estimate' &&
+    value?.available !== false
+  );
 }
 
 function isAcquisitionPriceRecord(value) {
-  const source = String(value?.source || value?.priceSource || "").toLowerCase();
-  return source === "acquisition_estimate" || source === "acquisition_missing";
+  const source = String(value?.source || value?.priceSource || '').toLowerCase();
+  return source === 'acquisition_estimate' || source === 'acquisition_missing';
 }
 
 function priceDetailLabel(value) {
   if (isAcquisitionEstimate(value)) {
-    return t("common:enhancement.acquisitionEstimateSummary", "Non-tradable · estimate {{value}} · avg. {{count}} chests", {
-      value: formatAmount(value?.price),
-      count: formatNumber(value?.expectedContainers),
-    });
+    return t(
+      'common:enhancement.acquisitionEstimateSummary',
+      'Non-tradable · estimate {{value}} · avg. {{count}} chests',
+      {
+        value: formatAmount(value?.price),
+        count: formatNumber(value?.expectedContainers),
+      },
+    );
   }
   return priceSourceLabel(value?.source || value?.priceSource);
 }
 
 function acquisitionVendorFloorLabel(value) {
-  return t("common:enhancement.vendorRecovery", "Vendor recovery {{value}}", {
+  return t('common:enhancement.vendorRecovery', 'Vendor recovery {{value}}', {
     value: formatAmount(value?.vendorFloor),
   });
 }
 
 function riskQuantileRecord(definition) {
   const quantiles = enhancement.risk?.quantiles || enhancement.risk?.percentiles || {};
-  const value = quantiles[definition.key]
-    ?? quantiles[definition.label]
-    ?? quantiles[String(definition.probability * 100)]
-    ?? quantiles[definition.probability]
-    ?? quantiles[String(definition.probability)]
-    ?? Number.NaN;
-  return value && typeof value === "object" ? value : { totalCost: value };
+  const value =
+    quantiles[definition.key] ??
+    quantiles[definition.label] ??
+    quantiles[String(definition.probability * 100)] ??
+    quantiles[definition.probability] ??
+    quantiles[String(definition.probability)] ??
+    Number.NaN;
+  return value && typeof value === 'object' ? value : { totalCost: value };
 }
 </script>

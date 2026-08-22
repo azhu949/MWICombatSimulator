@@ -1,13 +1,13 @@
-import CombatEvent from "./combatEvent";
+import CombatEvent from './combatEvent';
 
 class BlindExpirationEvent extends CombatEvent {
-    static type = "blindExpiration";
+  static type = 'blindExpiration';
 
-    constructor(time, source) {
-        super(BlindExpirationEvent.type, time);
+  constructor(time, source) {
+    super(BlindExpirationEvent.type, time);
 
-        this.source = source;
-    }
+    this.source = source;
+  }
 }
 
 export default BlindExpirationEvent;

@@ -1,13 +1,17 @@
 <template>
   <DialogRoot :open="open" @update:open="onOpenChange">
     <DialogPortal>
-      <DialogOverlay class="fixed inset-0 z-50 bg-modal-backdrop backdrop-blur-[2px] data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0" />
+      <DialogOverlay
+        class="fixed inset-0 z-50 bg-modal-backdrop backdrop-blur-[2px] data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0"
+      />
       <DialogContent
         ref="contentRef"
-        :class="cn(
-          'fixed left-1/2 top-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-lg border border-border bg-popover p-5 text-popover-foreground shadow-2xl outline-none data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:p-6',
-          panelClass || 'max-w-xl',
-        )"
+        :class="
+          cn(
+            'fixed left-1/2 top-1/2 z-50 grid max-h-[calc(100dvh-2rem)] w-[calc(100%-2rem)] -translate-x-1/2 -translate-y-1/2 gap-4 overflow-y-auto rounded-lg border border-border bg-popover p-5 text-popover-foreground shadow-2xl outline-none data-[state=closed]:animate-out data-[state=open]:animate-in data-[state=closed]:fade-out-0 data-[state=open]:fade-in-0 data-[state=closed]:zoom-out-95 data-[state=open]:zoom-in-95 sm:p-6',
+            panelClass || 'max-w-xl',
+          )
+        "
         @escape-key-down="onEscapeKeyDown"
         @pointer-down-outside="onPointerDownOutside"
         @open-auto-focus="onOpenAutoFocus"
@@ -38,8 +42,8 @@
 </template>
 
 <script setup>
-import { nextTick, ref } from "vue";
-import { X } from "@lucide/vue";
+import { nextTick, ref } from 'vue';
+import { X } from '@lucide/vue';
 import {
   DialogClose,
   DialogContent,
@@ -48,27 +52,27 @@ import {
   DialogPortal,
   DialogRoot,
   DialogTitle,
-} from "reka-ui";
-import { Button } from "@/ui/components/ui/button/index.js";
-import { cn } from "@/ui/lib/utils.js";
-import { useI18nText } from "../composables/useI18nText.js";
+} from 'reka-ui';
+import { Button } from '@/ui/components/ui/button/index.js';
+import { cn } from '@/ui/lib/utils.js';
+import { useI18nText } from '../composables/useI18nText.js';
 
 const props = defineProps({
   open: { type: Boolean, default: false },
-  title: { type: String, default: "Info" },
-  panelClass: { type: String, default: "" },
+  title: { type: String, default: 'Info' },
+  panelClass: { type: String, default: '' },
   closeOnEsc: { type: Boolean, default: true },
   closeOnBackdrop: { type: Boolean, default: true },
-  initialFocusSelector: { type: String, default: "" },
+  initialFocusSelector: { type: String, default: '' },
 });
 
-const emit = defineEmits(["close"]);
+const emit = defineEmits(['close']);
 const { t } = useI18nText();
 const contentRef = ref(null);
 
 function onOpenChange(nextOpen) {
   if (!nextOpen) {
-    emit("close");
+    emit('close');
   }
 }
 
@@ -85,15 +89,14 @@ function onPointerDownOutside(event) {
 }
 
 async function onOpenAutoFocus(event) {
-  const selector = String(props.initialFocusSelector || "").trim();
+  const selector = String(props.initialFocusSelector || '').trim();
   if (!selector) {
     return;
   }
 
   event.preventDefault();
   await nextTick();
-  const element = contentRef.value?.$el?.querySelector?.(selector)
-    || document.querySelector(selector);
+  const element = contentRef.value?.$el?.querySelector?.(selector) || document.querySelector(selector);
   if (element instanceof HTMLElement) {
     element.focus();
   }

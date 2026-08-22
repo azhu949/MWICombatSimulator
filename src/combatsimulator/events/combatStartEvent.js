@@ -1,11 +1,11 @@
-import CombatEvent from "./combatEvent";
+import CombatEvent from './combatEvent';
 
 class CombatStartEvent extends CombatEvent {
-    static type = "combatStart";
+  static type = 'combatStart';
 
-    constructor(time) {
-        super(CombatStartEvent.type, time);
-    }
+  constructor(time) {
+    super(CombatStartEvent.type, time);
+  }
 }
 
 export default CombatStartEvent;

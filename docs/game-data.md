@@ -113,16 +113,16 @@ npm run check-official-translations
 
 ```js
 (() => {
-  const raw = localStorage.getItem("initClientData");
+  const raw = localStorage.getItem('initClientData');
   if (!raw) {
-    throw new Error("localStorage.initClientData is empty");
+    throw new Error('localStorage.initClientData is empty');
   }
 
-  const blob = new Blob([raw], { type: "text/plain;charset=utf-8" });
+  const blob = new Blob([raw], { type: 'text/plain;charset=utf-8' });
   const url = URL.createObjectURL(blob);
-  const anchor = document.createElement("a");
+  const anchor = document.createElement('a');
   anchor.href = url;
-  anchor.download = "initClientData.txt";
+  anchor.download = 'initClientData.txt';
   document.body.appendChild(anchor);
   anchor.click();
   anchor.remove();

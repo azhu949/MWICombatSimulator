@@ -11,9 +11,16 @@
         decoding="async"
       />
     </a>
-    <figcaption class="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-xs leading-5 text-muted-foreground">
+    <figcaption
+      class="flex flex-wrap items-center justify-between gap-2 px-3 py-2 text-xs leading-5 text-muted-foreground"
+    >
       <span>{{ caption }}</span>
-      <a :href="resolvedSrc" target="_blank" rel="noopener noreferrer" class="font-semibold text-primary hover:text-primary">
+      <a
+        :href="resolvedSrc"
+        target="_blank"
+        rel="noopener noreferrer"
+        class="font-semibold text-primary hover:text-primary"
+      >
         {{ openLabel }}
       </a>
     </figcaption>
@@ -21,7 +28,7 @@
 </template>
 
 <script setup>
-import { computed } from "vue";
+import { computed } from 'vue';
 
 const props = defineProps({
   src: { type: String, required: true },
@@ -29,15 +36,15 @@ const props = defineProps({
   caption: { type: String, required: true },
   width: { type: Number, required: true },
   height: { type: Number, required: true },
-  openLabel: { type: String, default: "查看原图" },
+  openLabel: { type: String, default: '查看原图' },
 });
 
-const baseUrl = String(import.meta.env.BASE_URL || "/").replace(/\/?$/, "/");
+const baseUrl = String(import.meta.env.BASE_URL || '/').replace(/\/?$/, '/');
 const resolvedSrc = computed(() => {
-  const source = String(props.src || "");
-  if (!source.startsWith("/")) {
+  const source = String(props.src || '');
+  if (!source.startsWith('/')) {
     return source;
   }
-  return `${baseUrl}${source.replace(/^\/+/, "")}`;
+  return `${baseUrl}${source.replace(/^\/+/, '')}`;
 });
 </script>

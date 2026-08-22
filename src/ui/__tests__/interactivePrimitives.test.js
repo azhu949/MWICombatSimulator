@@ -1,37 +1,15 @@
 // @vitest-environment jsdom
 
-import { afterEach, beforeAll, describe, expect, it, vi } from "vitest";
-import { flushPromises, mount } from "@vue/test-utils";
-import { defineComponent, ref } from "vue";
-import {
-  Accordion,
-  AccordionContent,
-  AccordionItem,
-  AccordionTrigger,
-} from "../components/ui/accordion/index.js";
-import { SearchCombobox } from "../components/ui/combobox/index.js";
-import { NativeSelect } from "../components/ui/native-select/index.js";
-import { NumberField } from "../components/ui/number-field/index.js";
-import {
-  Select,
-  SelectContent,
-  SelectItem,
-  SelectTrigger,
-} from "../components/ui/select/index.js";
-import {
-  Tabs,
-  TabsContent,
-  TabsList,
-  TabsTrigger,
-} from "../components/ui/tabs/index.js";
-import {
-  Table,
-  TableBody,
-  TableCell,
-  TableHead,
-  TableHeader,
-  TableRow,
-} from "../components/ui/table/index.js";
+import { afterEach, beforeAll, describe, expect, it, vi } from 'vitest';
+import { flushPromises, mount } from '@vue/test-utils';
+import { defineComponent, ref } from 'vue';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../components/ui/accordion/index.js';
+import { SearchCombobox } from '../components/ui/combobox/index.js';
+import { NativeSelect } from '../components/ui/native-select/index.js';
+import { NumberField } from '../components/ui/number-field/index.js';
+import { Select, SelectContent, SelectItem, SelectTrigger } from '../components/ui/select/index.js';
+import { Tabs, TabsContent, TabsList, TabsTrigger } from '../components/ui/tabs/index.js';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table/index.js';
 
 beforeAll(() => {
   class ResizeObserverStub {
@@ -40,31 +18,31 @@ beforeAll(() => {
     disconnect() {}
   }
 
-  vi.stubGlobal("ResizeObserver", ResizeObserverStub);
-  Object.defineProperty(HTMLElement.prototype, "scrollIntoView", {
+  vi.stubGlobal('ResizeObserver', ResizeObserverStub);
+  Object.defineProperty(HTMLElement.prototype, 'scrollIntoView', {
     configurable: true,
     value: vi.fn(),
   });
-  Object.defineProperty(HTMLElement.prototype, "hasPointerCapture", {
+  Object.defineProperty(HTMLElement.prototype, 'hasPointerCapture', {
     configurable: true,
     value: () => false,
   });
-  Object.defineProperty(HTMLElement.prototype, "setPointerCapture", {
+  Object.defineProperty(HTMLElement.prototype, 'setPointerCapture', {
     configurable: true,
     value: vi.fn(),
   });
-  Object.defineProperty(HTMLElement.prototype, "releasePointerCapture", {
+  Object.defineProperty(HTMLElement.prototype, 'releasePointerCapture', {
     configurable: true,
     value: vi.fn(),
   });
 });
 
 afterEach(() => {
-  document.body.innerHTML = "";
+  document.body.innerHTML = '';
 });
 
-describe("interactive shadcn-vue primitives", () => {
-  it("renders Table primitives as semantic table elements", () => {
+describe('interactive shadcn-vue primitives', () => {
+  it('renders Table primitives as semantic table elements', () => {
     const Host = defineComponent({
       components: { Table, TableBody, TableCell, TableHead, TableHeader, TableRow },
       template: `
@@ -80,17 +58,17 @@ describe("interactive shadcn-vue primitives", () => {
     });
     const wrapper = mount(Host);
 
-    expect(wrapper.get("table").exists()).toBe(true);
-    expect(wrapper.get("thead th").text()).toBe("Metric");
-    expect(wrapper.get("tbody td").text()).toBe("Damage");
-    expect(wrapper.findAll("tr")).toHaveLength(2);
+    expect(wrapper.get('table').exists()).toBe(true);
+    expect(wrapper.get('thead th').text()).toBe('Metric');
+    expect(wrapper.get('tbody td').text()).toBe('Damage');
+    expect(wrapper.findAll('tr')).toHaveLength(2);
   });
 
-  it("forwards Tabs v-model and renders the selected panel", async () => {
+  it('forwards Tabs v-model and renders the selected panel', async () => {
     const Host = defineComponent({
       components: { Tabs, TabsContent, TabsList, TabsTrigger },
       setup() {
-        const selected = ref("summary");
+        const selected = ref('summary');
         return { selected };
       },
       template: `
@@ -106,18 +84,18 @@ describe("interactive shadcn-vue primitives", () => {
     });
     const wrapper = mount(Host, { attachTo: document.body });
 
-    expect(wrapper.text()).toContain("Summary panel");
-    await wrapper.findAll('[data-slot="tabs-trigger"]')[1].trigger("mousedown", {
+    expect(wrapper.text()).toContain('Summary panel');
+    await wrapper.findAll('[data-slot="tabs-trigger"]')[1].trigger('mousedown', {
       button: 0,
       ctrlKey: false,
     });
     await flushPromises();
 
-    expect(wrapper.vm.selected).toBe("details");
-    expect(wrapper.text()).toContain("Details panel");
+    expect(wrapper.vm.selected).toBe('details');
+    expect(wrapper.text()).toContain('Details panel');
   });
 
-  it("forwards Accordion attributes and toggles its content", async () => {
+  it('forwards Accordion attributes and toggles its content', async () => {
     const Host = defineComponent({
       components: { Accordion, AccordionContent, AccordionItem, AccordionTrigger },
       template: `
@@ -131,15 +109,15 @@ describe("interactive shadcn-vue primitives", () => {
     });
     const wrapper = mount(Host, { attachTo: document.body });
 
-    expect(wrapper.text()).not.toContain("Anchor links");
-    await wrapper.get('[data-slot="accordion-trigger"]').trigger("click");
+    expect(wrapper.text()).not.toContain('Anchor links');
+    await wrapper.get('[data-slot="accordion-trigger"]').trigger('click');
     await flushPromises();
 
-    expect(wrapper.text()).toContain("Anchor links");
-    expect(wrapper.get('[data-slot="accordion-trigger"]').attributes("data-state")).toBe("open");
+    expect(wrapper.text()).toContain('Anchor links');
+    expect(wrapper.get('[data-slot="accordion-trigger"]').attributes('data-state')).toBe('open');
   });
 
-  it("updates Number Field values without exceeding the configured bounds", async () => {
+  it('updates Number Field values without exceeding the configured bounds', async () => {
     const Host = defineComponent({
       components: { NumberField },
       setup() {
@@ -152,18 +130,20 @@ describe("interactive shadcn-vue primitives", () => {
     await flushPromises();
     const increment = wrapper.get('button[aria-label="Increase rounds"]');
 
-    increment.element.dispatchEvent(new MouseEvent("pointerdown", {
-      bubbles: true,
-      cancelable: true,
-      button: 0,
-    }));
-    window.dispatchEvent(new Event("pointerup"));
+    increment.element.dispatchEvent(
+      new MouseEvent('pointerdown', {
+        bubbles: true,
+        cancelable: true,
+        button: 0,
+      }),
+    );
+    window.dispatchEvent(new Event('pointerup'));
     await flushPromises();
     expect(wrapper.vm.amount).toBe(3);
-    expect(increment.attributes("disabled")).toBeDefined();
+    expect(increment.attributes('disabled')).toBeDefined();
   });
 
-  it("forwards Number Field labels to the input instead of a stepper button", () => {
+  it('forwards Number Field labels to the input instead of a stepper button', () => {
     const Host = defineComponent({
       components: { NumberField },
       template: `
@@ -175,15 +155,15 @@ describe("interactive shadcn-vue primitives", () => {
     });
     const wrapper = mount(Host);
 
-    const label = wrapper.get("label").element;
-    const input = wrapper.get("input").element;
-    expect(input.id).toBe("round-count");
+    const label = wrapper.get('label').element;
+    const input = wrapper.get('input').element;
+    expect(input.id).toBe('round-count');
     expect(label.control).toBe(input);
 
     wrapper.unmount();
   });
 
-  it("preserves Native Select number modifiers and change events", async () => {
+  it('preserves Native Select number modifiers and change events', async () => {
     const Host = defineComponent({
       components: { NativeSelect },
       setup() {
@@ -200,21 +180,21 @@ describe("interactive shadcn-vue primitives", () => {
     });
     const wrapper = mount(Host);
 
-    await wrapper.get("select").setValue("2");
+    await wrapper.get('select').setValue('2');
     expect(wrapper.vm.selected).toBe(2);
     expect(wrapper.vm.changes).toBe(1);
   });
 
-  it("filters and caps Combobox results before emitting a selection", async () => {
+  it('filters and caps Combobox results before emitting a selection', async () => {
     const Host = defineComponent({
       components: { SearchCombobox },
       setup() {
-        const selected = ref("");
+        const selected = ref('');
         const options = [
-          { value: "alpha", label: "Alpha" },
-          { value: "beta", label: "Beta" },
-          { value: "gamma", label: "Gamma" },
-          { value: "delta", label: "Delta" },
+          { value: 'alpha', label: 'Alpha' },
+          { value: 'beta', label: 'Beta' },
+          { value: 'gamma', label: 'Gamma' },
+          { value: 'delta', label: 'Delta' },
         ];
         return { options, selected };
       },
@@ -229,33 +209,33 @@ describe("interactive shadcn-vue primitives", () => {
       `,
     });
     const wrapper = mount(Host, { attachTo: document.body });
-    const input = wrapper.get("input");
-    expect(input.classes()).toContain("focus-visible:outline-none!");
-    expect(wrapper.find(".lucide-search").exists()).toBe(false);
+    const input = wrapper.get('input');
+    expect(input.classes()).toContain('focus-visible:outline-none!');
+    expect(wrapper.find('.lucide-search').exists()).toBe(false);
 
-    await input.trigger("focus");
+    await input.trigger('focus');
     await flushPromises();
-    expect(document.body.textContent).toContain("2 more");
+    expect(document.body.textContent).toContain('2 more');
 
-    await input.setValue("gam");
+    await input.setValue('gam');
     await flushPromises();
-    expect(document.body.textContent).toContain("Gamma");
-    expect(document.body.textContent).not.toContain("Alpha");
+    expect(document.body.textContent).toContain('Gamma');
+    expect(document.body.textContent).not.toContain('Alpha');
 
     document.body.querySelector('[role="option"]').click();
     await flushPromises();
-    expect(wrapper.vm.selected).toBe("gamma");
+    expect(wrapper.vm.selected).toBe('gamma');
   });
 
-  it("shows the full result set when opening with an existing selection", async () => {
+  it('shows the full result set when opening with an existing selection', async () => {
     const Host = defineComponent({
       components: { SearchCombobox },
       setup() {
-        const selected = ref("alpha");
+        const selected = ref('alpha');
         const options = ref([
-          { value: "alpha", label: "Alpha" },
-          { value: "beta", label: "Beta" },
-          { value: "gamma", label: "Gamma" },
+          { value: 'alpha', label: 'Alpha' },
+          { value: 'beta', label: 'Beta' },
+          { value: 'gamma', label: 'Gamma' },
         ]);
         return { options, selected };
       },
@@ -270,85 +250,87 @@ describe("interactive shadcn-vue primitives", () => {
       `,
     });
     const wrapper = mount(Host, { attachTo: document.body });
-    const input = wrapper.get("input");
+    const input = wrapper.get('input');
 
     await flushPromises();
-    expect(input.element.value).toBe("Alpha");
-    await input.trigger("focus");
+    expect(input.element.value).toBe('Alpha');
+    await input.trigger('focus');
     await flushPromises();
 
-    const content = document.getElementById(input.attributes("aria-controls"));
-    const optionLabels = Array.from(document.body.querySelectorAll('[role="option"]')).map((option) => option.textContent.trim());
+    const content = document.getElementById(input.attributes('aria-controls'));
+    const optionLabels = Array.from(document.body.querySelectorAll('[role="option"]')).map((option) =>
+      option.textContent.trim(),
+    );
     expect(content?.closest('[data-reka-popper-content-wrapper]')).not.toBeNull();
-    expect(optionLabels).toEqual(["Alpha", "Beta"]);
-    expect(document.body.textContent).toContain("1 more");
+    expect(optionLabels).toEqual(['Alpha', 'Beta']);
+    expect(document.body.textContent).toContain('1 more');
 
     document.body.querySelectorAll('[role="option"]')[1].click();
     await flushPromises();
     wrapper.unmount();
   });
 
-  it("refreshes the selected Combobox label when option labels change", async () => {
+  it('refreshes the selected Combobox label when option labels change', async () => {
     const Host = defineComponent({
       components: { SearchCombobox },
       setup() {
-        const selected = ref("alpha");
+        const selected = ref('alpha');
         const options = ref([
-          { value: "alpha", label: "Alpha" },
-          { value: "beta", label: "Beta" },
+          { value: 'alpha', label: 'Alpha' },
+          { value: 'beta', label: 'Beta' },
         ]);
         return { options, selected };
       },
       template: `<SearchCombobox v-model="selected" :options="options" aria-label="Region" />`,
     });
     const wrapper = mount(Host, { attachTo: document.body });
-    const input = wrapper.get("input");
+    const input = wrapper.get('input');
 
     await flushPromises();
-    expect(input.element.value).toBe("Alpha");
+    expect(input.element.value).toBe('Alpha');
     wrapper.vm.options = [
-      { value: "alpha", label: "阿尔法" },
-      { value: "beta", label: "贝塔" },
+      { value: 'alpha', label: '阿尔法' },
+      { value: 'beta', label: '贝塔' },
     ];
     await flushPromises();
-    expect(input.element.value).toBe("阿尔法");
+    expect(input.element.value).toBe('阿尔法');
     wrapper.unmount();
   });
 
-  it("maps an empty-string option through Reka Combobox without changing the public value", async () => {
+  it('maps an empty-string option through Reka Combobox without changing the public value', async () => {
     const Host = defineComponent({
       components: { SearchCombobox },
       setup() {
-        const selected = ref("alpha");
+        const selected = ref('alpha');
         const options = [
-          { value: "", label: "None" },
-          { value: "alpha", label: "Alpha" },
+          { value: '', label: 'None' },
+          { value: 'alpha', label: 'Alpha' },
         ];
         return { options, selected };
       },
       template: `<SearchCombobox v-model="selected" :options="options" aria-label="Equipment" />`,
     });
     const wrapper = mount(Host, { attachTo: document.body });
-    const input = wrapper.get("input");
+    const input = wrapper.get('input');
 
-    await input.trigger("focus");
+    await input.trigger('focus');
     await flushPromises();
     const options = document.body.querySelectorAll('[role="option"]');
     expect(options).toHaveLength(2);
-    expect(options[0].textContent).toContain("None");
+    expect(options[0].textContent).toContain('None');
 
     options[0].click();
     await flushPromises();
-    expect(wrapper.vm.selected).toBe("");
-    expect(input.element.value).toBe("None");
+    expect(wrapper.vm.selected).toBe('');
+    expect(input.element.value).toBe('None');
     wrapper.unmount();
   });
 
-  it("forwards Select v-model through a keyboard selection", async () => {
+  it('forwards Select v-model through a keyboard selection', async () => {
     const Host = defineComponent({
       components: { Select, SelectContent, SelectItem, SelectTrigger },
       setup() {
-        const selected = ref("strict");
+        const selected = ref('strict');
         return { selected };
       },
       template: `
@@ -364,18 +346,19 @@ describe("interactive shadcn-vue primitives", () => {
     const wrapper = mount(Host, { attachTo: document.body });
     const trigger = wrapper.get('[data-slot="select-trigger"]');
 
-    await trigger.trigger("keydown", { key: "ArrowDown" });
+    await trigger.trigger('keydown', { key: 'ArrowDown' });
     await flushPromises();
     const options = document.body.querySelectorAll('[role="option"]');
-    options[1].dispatchEvent(new KeyboardEvent("keydown", {
-      bubbles: true,
-      cancelable: true,
-      key: "Enter",
-    }));
+    options[1].dispatchEvent(
+      new KeyboardEvent('keydown', {
+        bubbles: true,
+        cancelable: true,
+        key: 'Enter',
+      }),
+    );
     await flushPromises();
 
-    expect(wrapper.vm.selected).toBe("composite");
-    expect(trigger.text()).toContain("Composite");
+    expect(wrapper.vm.selected).toBe('composite');
+    expect(trigger.text()).toContain('Composite');
   });
-
 });

@@ -1,13 +1,13 @@
-import CombatEvent from "./combatEvent";
+import CombatEvent from './combatEvent';
 
 class StunExpirationEvent extends CombatEvent {
-    static type = "stunExpiration";
+  static type = 'stunExpiration';
 
-    constructor(time, source) {
-        super(StunExpirationEvent.type, time);
+  constructor(time, source) {
+    super(StunExpirationEvent.type, time);
 
-        this.source = source;
-    }
+    this.source = source;
+  }
 }
 
 export default StunExpirationEvent;

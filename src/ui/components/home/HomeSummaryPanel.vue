@@ -3,11 +3,15 @@
     <div :class="['flex justify-between gap-3', compactHeader ? 'items-center' : 'items-start']">
       <div>
         <p v-if="eyebrow" class="text-xs font-semibold text-muted-foreground">{{ eyebrow }}</p>
-        <h2 :class="[
-          'font-heading font-semibold text-foreground',
-          compactHeader ? 'text-base' : 'text-lg',
-          eyebrow ? 'mt-1' : ''
-        ]">{{ title }}</h2>
+        <h2
+          :class="[
+            'font-heading font-semibold text-foreground',
+            compactHeader ? 'text-base' : 'text-lg',
+            eyebrow ? 'mt-1' : '',
+          ]"
+        >
+          {{ title }}
+        </h2>
         <p v-if="showDescription && description" class="mt-1 text-sm text-muted-foreground">{{ description }}</p>
       </div>
       <Badge class="shrink-0" :variant="statusVariant">{{ statusLabel }}</Badge>
@@ -20,11 +24,7 @@
     </div>
 
     <div v-if="showConfigRows && configRows.length > 0" class="grid gap-2 sm:grid-cols-2 xl:grid-cols-1">
-      <div
-        v-for="row in configRows"
-        :key="row.label"
-        class="rounded-md border border-border bg-muted/30 px-3 py-2"
-      >
+      <div v-for="row in configRows" :key="row.label" class="rounded-md border border-border bg-muted/30 px-3 py-2">
         <p class="text-[11px] font-semibold text-muted-foreground">{{ row.label }}</p>
         <p class="mt-1 text-sm" :class="rowClass(row.tone)">{{ row.value }}</p>
       </div>
@@ -33,13 +33,7 @@
     <div>
       <div class="mb-2 flex items-center justify-between gap-2">
         <h3 class="font-heading text-sm font-semibold text-foreground">{{ metricsTitle }}</h3>
-        <Button
-          type="button"
-          variant="outline"
-          size="sm"
-          :disabled="!canOpenResults"
-          @click="$emit('view-results')"
-        >
+        <Button type="button" variant="outline" size="sm" :disabled="!canOpenResults" @click="$emit('view-results')">
           {{ resultsButtonLabel }}
         </Button>
       </div>
@@ -73,9 +67,9 @@
 
 <script setup>
 import { computed } from 'vue';
-import { Badge } from "../ui/badge/index.js";
-import { Button } from "../ui/button/index.js";
-import { Progress } from "../ui/progress/index.js";
+import { Badge } from '../ui/badge/index.js';
+import { Button } from '../ui/button/index.js';
+import { Progress } from '../ui/progress/index.js';
 
 const props = defineProps({
   eyebrow: {
@@ -185,4 +179,3 @@ function rowClass(tone) {
   return 'text-foreground';
 }
 </script>
-

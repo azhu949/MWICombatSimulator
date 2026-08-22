@@ -8,12 +8,12 @@
 </template>
 
 <script setup>
-import { Separator as RekaSeparator } from "reka-ui";
-import { cn } from "@/ui/lib/utils.js";
+import { Separator as RekaSeparator } from 'reka-ui';
+import { cn } from '@/ui/lib/utils.js';
 
 const props = defineProps({
-  orientation: { type: String, default: "horizontal" },
+  orientation: { type: String, default: 'horizontal' },
   decorative: { type: Boolean, default: true },
-  class: { type: [String, Array, Object], default: "" },
+  class: { type: [String, Array, Object], default: '' },
 });
 </script>

@@ -1,16 +1,16 @@
-import CombatEvent from "./combatEvent";
+import CombatEvent from './combatEvent';
 
 class CurseExpirationEvent extends CombatEvent {
-    static type = "curseExpiration";
-    static maxCurseStacks = 5;
+  static type = 'curseExpiration';
+  static maxCurseStacks = 5;
 
-    constructor(time, curseAmount, source) {
-        super(CurseExpirationEvent.type, time);
+  constructor(time, curseAmount, source) {
+    super(CurseExpirationEvent.type, time);
 
-        this.curseAmount = Math.min(curseAmount + 1, CurseExpirationEvent.maxCurseStacks);
+    this.curseAmount = Math.min(curseAmount + 1, CurseExpirationEvent.maxCurseStacks);
 
-        this.source = source;
-    }
+    this.source = source;
+  }
 }
 
 export default CurseExpirationEvent;

@@ -162,16 +162,8 @@
         "enhancementLevel": 0
       }
     },
-    "food": [
-      "/items/star_fruit_gummy",
-      "/items/dragon_fruit_yogurt",
-      "/items/spaceberry_cake"
-    ],
-    "drinks": [
-      "/items/wisdom_coffee",
-      "/items/super_magic_coffee",
-      "/items/channeling_coffee"
-    ],
+    "food": ["/items/star_fruit_gummy", "/items/dragon_fruit_yogurt", "/items/spaceberry_cake"],
+    "drinks": ["/items/wisdom_coffee", "/items/super_magic_coffee", "/items/channeling_coffee"],
     "abilities": [
       {
         "abilityHrid": "/abilities/mystic_aura",

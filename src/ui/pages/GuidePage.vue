@@ -55,7 +55,9 @@
           <div class="guide-section-heading">
             <p class="guide-kicker">开始前准备</p>
             <h3 class="guide-title">首次使用与数据导入</h3>
-            <p class="guide-lead">先把游戏中的当前角色或队伍数据导入模拟器。这样装备、技能、消耗品和各类 Buff 才会与角色现状一致。</p>
+            <p class="guide-lead">
+              先把游戏中的当前角色或队伍数据导入模拟器。这样装备、技能、消耗品和各类 Buff 才会与角色现状一致。
+            </p>
           </div>
 
           <ol class="guide-steps">
@@ -73,7 +75,8 @@
             </li>
             <li>
               <strong>确认导入目标。</strong>
-              战斗数据进入主页玩家栏，强化数据进入强化模拟，生活技能数据进入生活技能页面。也可以粘贴 JSON 或载入本地文件。
+              战斗数据进入主页玩家栏，强化数据进入强化模拟，生活技能数据进入生活技能页面。也可以粘贴 JSON
+              或载入本地文件。
             </li>
           </ol>
 
@@ -97,7 +100,9 @@
           <div class="guide-section-heading">
             <p class="guide-kicker">核心流程</p>
             <h3 class="guide-title">完成一次战斗模拟</h3>
-            <p class="guide-lead">主页工作区分为基础设置、配装与技能、战斗属性。第一次使用时先完成基础设置，其余内容通常由导入数据自动填充。</p>
+            <p class="guide-lead">
+              主页工作区分为基础设置、配装与技能、战斗属性。第一次使用时先完成基础设置，其余内容通常由导入数据自动填充。
+            </p>
           </div>
 
           <div class="guide-topic-grid">
@@ -111,11 +116,15 @@
             </div>
             <div>
               <h4>调整配装与技能</h4>
-              <p>在“配装与技能”中修改装备、强化等级、食物、饮品、技能和触发器。房间、成就和公会神龛用于补充对应加成。</p>
+              <p>
+                在“配装与技能”中修改装备、强化等级、食物、饮品、技能和触发器。房间、成就和公会神龛用于补充对应加成。
+              </p>
             </div>
             <div>
               <h4>运行并查看结果</h4>
-              <p>点击“开始模拟”。右侧先显示 XP/H、死亡/H、收益/H 等关键指标，“查看完整结果”可展开掉落、经验和战斗明细。</p>
+              <p>
+                点击“开始模拟”。右侧先显示 XP/H、死亡/H、收益/H 等关键指标，“查看完整结果”可展开掉落、经验和战斗明细。
+              </p>
             </div>
           </div>
 
@@ -146,18 +155,30 @@
           <div class="guide-section-heading">
             <p class="guide-kicker">方案比较</p>
             <h3 class="guide-title">队列与多轮结果</h3>
-            <p class="guide-lead">队列用于比较同一目标下的配装或技能变体。系统先记录基线，再对每个变体进行多轮模拟和稳健聚合。</p>
+            <p class="guide-lead">
+              队列用于比较同一目标下的配装或技能变体。系统先记录基线，再对每个变体进行多轮模拟和稳健聚合。
+            </p>
           </div>
 
           <ol class="guide-steps">
             <li><strong>设为基准。</strong>在主页或队列顶部点击“设为基准”，保存当前角色、目标和配装作为比较起点。</li>
-            <li><strong>加入变体。</strong>修改装备、强化等级、技能、消耗品或其他配置，再点击“加入队列”。多个变更会按实际差异生成可识别的比较项。</li>
-            <li><strong>运行队列。</strong>检查队列数量后点击“运行队列”。队列页显示基准摘要、队列列表、进度和上次运行状态。</li>
-            <li><strong>阅读多轮结果。</strong>重点查看综合评分、收益和经验变化、稳定性、严格成本或综合成本，以及置信度。需要留档时导出 Excel。</li>
+            <li>
+              <strong>加入变体。</strong
+              >修改装备、强化等级、技能、消耗品或其他配置，再点击“加入队列”。多个变更会按实际差异生成可识别的比较项。
+            </li>
+            <li>
+              <strong>运行队列。</strong
+              >检查队列数量后点击“运行队列”。队列页显示基准摘要、队列列表、进度和上次运行状态。
+            </li>
+            <li>
+              <strong>阅读多轮结果。</strong
+              >重点查看综合评分、收益和经验变化、稳定性、严格成本或综合成本，以及置信度。需要留档时导出 Excel。
+            </li>
           </ol>
 
           <div class="mt-5 border-l-2 border-warning/60 px-4 py-2 text-sm leading-6 text-foreground/85">
-            队列目标装备买价依次使用官方精确 Ask、有效官方小时均价、历史归档最新有效 Ask。备用价格会显示来源和数据时间并在入队前确认；新官方卖单仍优先，历史价不参与基准装备出售抵扣。
+            队列目标装备买价依次使用官方精确 Ask、有效官方小时均价、历史归档最新有效
+            Ask。备用价格会显示来源和数据时间并在入队前确认；新官方卖单仍优先，历史价不参与基准装备出售抵扣。
           </div>
 
           <div class="mt-6 grid gap-5 xl:grid-cols-2">
@@ -191,7 +212,9 @@
           <div class="guide-section-heading">
             <p class="guide-kicker">目标筛选</p>
             <h3 class="guide-title">使用刷图推荐器</h3>
-            <p class="guide-lead">刷图推荐器会用当前队伍、Buff、成就、房屋和市场价格扫描多个战斗目标，再按你的偏好排序。</p>
+            <p class="guide-lead">
+              刷图推荐器会用当前队伍、Buff、成就、房屋和市场价格扫描多个战斗目标，再按你的偏好排序。
+            </p>
           </div>
 
           <div class="guide-topic-grid">
@@ -229,14 +252,27 @@
           <div class="guide-section-heading">
             <p class="guide-kicker">强化决策</p>
             <h3 class="guide-title">评估强化成本与风险</h3>
-            <p class="guide-lead">强化模拟器用于比较保护阈值、材料价格和风险预算。它独立于战斗模拟，需要导入强化数据或手动完成配置。</p>
+            <p class="guide-lead">
+              强化模拟器用于比较保护阈值、材料价格和风险预算。它独立于战斗模拟，需要导入强化数据或手动完成配置。
+            </p>
           </div>
 
           <ol class="guide-steps">
-            <li><strong>选择目标物品和等级。</strong>设置起始等级、目标等级、强化技能等级，并按实际情况选择强化茶、福气茶和经验茶。</li>
-            <li><strong>补充高级配置。</strong>技能与住宅用于填写成功率相关加成，成本与风险用于选择自动或手动保护品、材料价格和分解回收价值。</li>
-            <li><strong>比较保护策略。</strong>策略表会列出预计归零次数、动作数、耗时、材料和期望成本，可按投入排序。</li>
-            <li><strong>计算风险。</strong>输入预算后运行风险分析，查看不同成本分位和预算内成功率。贤者之镜与分解页用于判断特殊道具价值。</li>
+            <li>
+              <strong>选择目标物品和等级。</strong
+              >设置起始等级、目标等级、强化技能等级，并按实际情况选择强化茶、福气茶和经验茶。
+            </li>
+            <li>
+              <strong>补充高级配置。</strong
+              >技能与住宅用于填写成功率相关加成，成本与风险用于选择自动或手动保护品、材料价格和分解回收价值。
+            </li>
+            <li>
+              <strong>比较保护策略。</strong>策略表会列出预计归零次数、动作数、耗时、材料和期望成本，可按投入排序。
+            </li>
+            <li>
+              <strong>计算风险。</strong
+              >输入预算后运行风险分析，查看不同成本分位和预算内成功率。贤者之镜与分解页用于判断特殊道具价值。
+            </li>
           </ol>
 
           <GuideFigure
@@ -255,13 +291,17 @@
           <div class="guide-section-heading">
             <p class="guide-kicker">升级路线</p>
             <h3 class="guide-title">规划生活技能升级</h3>
-            <p class="guide-lead">生活技能规划会结合当前经验、背包、装备、Buff 和市场价格，为六种生活技能计算逐级路线。</p>
+            <p class="guide-lead">
+              生活技能规划会结合当前经验、背包、装备、Buff 和市场价格，为六种生活技能计算逐级路线。
+            </p>
           </div>
 
           <div class="guide-topic-grid">
             <div>
               <h4>先导入生活技能快照</h4>
-              <p>页面必须获得当前角色的等级、经验、背包和穿戴装备。空状态提示“尚无当前角色生活技能快照”时，需要回主站重新导入。</p>
+              <p>
+                页面必须获得当前角色的等级、经验、背包和穿戴装备。空状态提示“尚无当前角色生活技能快照”时，需要回主站重新导入。
+              </p>
             </div>
             <div>
               <h4>选择优化模式</h4>
@@ -337,7 +377,9 @@
           <div class="mt-5 border-y border-border">
             <details class="guide-faq" open>
               <summary>为什么“设为基准”或专项计算不可用？</summary>
-              <p>先确认当前玩家已经导入对应数据，并在顶部勾选参与模拟的玩家。强化和生活技能需要导入各自的数据目标，主页战斗数据不能代替。</p>
+              <p>
+                先确认当前玩家已经导入对应数据，并在顶部勾选参与模拟的玩家。强化和生活技能需要导入各自的数据目标，主页战斗数据不能代替。
+              </p>
             </details>
             <details class="guide-faq">
               <summary>为什么多轮结果没有排名？</summary>
@@ -349,7 +391,9 @@
             </details>
             <details class="guide-faq">
               <summary>教程截图与当前界面略有不同怎么办？</summary>
-              <p>以当前页面的字段说明和按钮状态为准。版本更新可能调整布局，但“导入、配置、运行、查看结果”的主流程保持一致。</p>
+              <p>
+                以当前页面的字段说明和按钮状态为准。版本更新可能调整布局，但“导入、配置、运行、查看结果”的主流程保持一致。
+              </p>
             </details>
           </div>
 
@@ -364,22 +408,22 @@
 </template>
 
 <script setup>
-import GuideFigure from "../components/guide/GuideFigure.vue";
-import GuidePageEn from "./GuidePageEn.vue";
-import { useI18nText } from "../composables/useI18nText.js";
-import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from "../components/ui/accordion/index.js";
-import "../guide.css";
+import GuideFigure from '../components/guide/GuideFigure.vue';
+import GuidePageEn from './GuidePageEn.vue';
+import { useI18nText } from '../composables/useI18nText.js';
+import { Accordion, AccordionContent, AccordionItem, AccordionTrigger } from '../components/ui/accordion/index.js';
+import '../guide.css';
 
 const { language } = useI18nText();
 
 const guideSections = [
-  { id: "quick-start", label: "首次使用" },
-  { id: "combat", label: "战斗模拟" },
-  { id: "queue", label: "队列与多轮" },
-  { id: "advisor", label: "刷图推荐" },
-  { id: "enhancement", label: "强化模拟" },
-  { id: "skilling", label: "生活技能" },
-  { id: "settings", label: "设置" },
-  { id: "troubleshooting", label: "常见问题" },
+  { id: 'quick-start', label: '首次使用' },
+  { id: 'combat', label: '战斗模拟' },
+  { id: 'queue', label: '队列与多轮' },
+  { id: 'advisor', label: '刷图推荐' },
+  { id: 'enhancement', label: '强化模拟' },
+  { id: 'skilling', label: '生活技能' },
+  { id: 'settings', label: '设置' },
+  { id: 'troubleshooting', label: '常见问题' },
 ];
 </script>

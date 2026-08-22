@@ -5,8 +5,8 @@
 </template>
 
 <script setup>
-import { AccordionItem as RekaAccordionItem } from "reka-ui";
-import { cn } from "@/ui/lib/utils.js";
+import { AccordionItem as RekaAccordionItem } from 'reka-ui';
+import { cn } from '@/ui/lib/utils.js';
 const AccordionItem = RekaAccordionItem;
-const props = defineProps({ class: { type: [String, Array, Object], default: "" } });
+const props = defineProps({ class: { type: [String, Array, Object], default: '' } });
 </script>

@@ -10,37 +10,37 @@
 
 ## 概览（未导出 key,编号 1-29）
 
-| # | Key | 类型 | 条目数 | 分析状态 | 描述 |
-|---|-----|------|--------|----------|------|
-| 1 | `type` | string | — | 无用（不接入）| 载荷类型标识 |
-| 2 | `gameVersion` | string | — | 无用（不接入）| 客户端游戏版本号 |
-| 3 | `versionTimestamp` | string | — | 无用（不接入）| 数据版本发布时间 |
-| 4 | `currentTimestamp` | string | — | 无用（不接入）| 载荷生成/下载时间 |
-| 5 | `gameModeDetailMap` | object | 3 | 无用（不接入）| 游戏模式定义(标准/Ironcow) |
-| 6 | `marketplaceLimits` | object | 8 字段 | 无用（不接入）| 市场引擎交易限制参数 |
-| 7 | `randomTaskTypeDetailMap` | object | 9 | 无用（不接入）| 随机任务类型定义 |
-| 8 | `taskShopItemDetailMap` | object | 4 | 无用（不接入）| 任务商店兑换物品 |
-| 9 | `shopCategoryDetailMap` | object | 2 | 无用（不接入）| 商店分类 |
-| 10 | `shopItemDetailMap` | object | 62 | 无用（不接入）| 商店物品及 token 兑换价 |
-| 11 | `actionTypeDetailMap` | object | 13 | 无用（不接入）| 动作类型定义 |
-| 12 | `actionCategoryDetailMap` | object | 65 | 无用（不接入）| 动作分类定义 |
-| 13 | `purchaseBundleDetailMap` | object | 14 | 无用（不接入）| 付费充值包(牛铃/MooPass) |
-| 14 | `supporterPointExchangeDetailMap` | object | 2 | 无用（不接入）| 支持者积分兑换 |
-| 15 | `buyableUpgradeDetailMap` | object | 25 | 无用（不接入）| 可购买升级(队列上限等) |
-| 16 | `chatIconDetailMap` | object | 502 | 无用（不接入）| 聊天图标外观 |
-| 17 | `nameColorDetailMap` | object | 184 | 无用（不接入）| 聊天昵称颜色 |
-| 18 | `avatarDetailMap` | object | 99 | 无用（不接入）| 头像外观 |
-| 19 | `avatarOutfitDetailMap` | object | 122 | 无用（不接入）| 头像服装外观 |
-| 20 | `avatarBackgroundDetailMap` | object | 7 | 无用（不接入）| 头像背景外观 |
-| 21 | `avatarBorderDetailMap` | object | 7 | 无用（不接入）| 头像边框外观 |
-| 22 | `chatChannelTypeDetailMap` | object | 20 | 无用（不接入）| 聊天频道类型 |
-| 23 | `guildCharacterRoleDetailMap` | object | 4 | 无用（不接入）| 公会角色权限 |
-| 24 | `guildTrialDetailMap` | object | 15 | 无用（不接入）| 公会试炼定义 |
-| 25 | `guildBuildingDetailMap` | object | 23 | 无用（不接入）| 公会建筑等级 buff |
-| 26 | `leaderboardTypeDetailMap` | object | 5 | 无用（不接入）| 排行榜类型 |
-| 27 | `leaderboardCategoryDetailMap` | object | 30 | 无用（不接入）| 排行榜分类 |
-| 28 | `labyrinthShopItemDetailMap` | object | 21 | 无用（不接入）| 迷宫商店兑换物品 |
-| 29 | `keys` | array | 101 | 无用（不接入）| JS 关键字/API 注入列表 |
+| #   | Key                               | 类型   | 条目数 | 分析状态       | 描述                       |
+| --- | --------------------------------- | ------ | ------ | -------------- | -------------------------- |
+| 1   | `type`                            | string | —      | 无用（不接入） | 载荷类型标识               |
+| 2   | `gameVersion`                     | string | —      | 无用（不接入） | 客户端游戏版本号           |
+| 3   | `versionTimestamp`                | string | —      | 无用（不接入） | 数据版本发布时间           |
+| 4   | `currentTimestamp`                | string | —      | 无用（不接入） | 载荷生成/下载时间          |
+| 5   | `gameModeDetailMap`               | object | 3      | 无用（不接入） | 游戏模式定义(标准/Ironcow) |
+| 6   | `marketplaceLimits`               | object | 8 字段 | 无用（不接入） | 市场引擎交易限制参数       |
+| 7   | `randomTaskTypeDetailMap`         | object | 9      | 无用（不接入） | 随机任务类型定义           |
+| 8   | `taskShopItemDetailMap`           | object | 4      | 无用（不接入） | 任务商店兑换物品           |
+| 9   | `shopCategoryDetailMap`           | object | 2      | 无用（不接入） | 商店分类                   |
+| 10  | `shopItemDetailMap`               | object | 62     | 无用（不接入） | 商店物品及 token 兑换价    |
+| 11  | `actionTypeDetailMap`             | object | 13     | 无用（不接入） | 动作类型定义               |
+| 12  | `actionCategoryDetailMap`         | object | 65     | 无用（不接入） | 动作分类定义               |
+| 13  | `purchaseBundleDetailMap`         | object | 14     | 无用（不接入） | 付费充值包(牛铃/MooPass)   |
+| 14  | `supporterPointExchangeDetailMap` | object | 2      | 无用（不接入） | 支持者积分兑换             |
+| 15  | `buyableUpgradeDetailMap`         | object | 25     | 无用（不接入） | 可购买升级(队列上限等)     |
+| 16  | `chatIconDetailMap`               | object | 502    | 无用（不接入） | 聊天图标外观               |
+| 17  | `nameColorDetailMap`              | object | 184    | 无用（不接入） | 聊天昵称颜色               |
+| 18  | `avatarDetailMap`                 | object | 99     | 无用（不接入） | 头像外观                   |
+| 19  | `avatarOutfitDetailMap`           | object | 122    | 无用（不接入） | 头像服装外观               |
+| 20  | `avatarBackgroundDetailMap`       | object | 7      | 无用（不接入） | 头像背景外观               |
+| 21  | `avatarBorderDetailMap`           | object | 7      | 无用（不接入） | 头像边框外观               |
+| 22  | `chatChannelTypeDetailMap`        | object | 20     | 无用（不接入） | 聊天频道类型               |
+| 23  | `guildCharacterRoleDetailMap`     | object | 4      | 无用（不接入） | 公会角色权限               |
+| 24  | `guildTrialDetailMap`             | object | 15     | 无用（不接入） | 公会试炼定义               |
+| 25  | `guildBuildingDetailMap`          | object | 23     | 无用（不接入） | 公会建筑等级 buff          |
+| 26  | `leaderboardTypeDetailMap`        | object | 5      | 无用（不接入） | 排行榜类型                 |
+| 27  | `leaderboardCategoryDetailMap`    | object | 30     | 无用（不接入） | 排行榜分类                 |
+| 28  | `labyrinthShopItemDetailMap`      | object | 21     | 无用（不接入） | 迷宫商店兑换物品           |
+| 29  | `keys`                            | array  | 101    | 无用（不接入） | JS 关键字/API 注入列表     |
 
 ## 已导出的 Key（27 个，状态:已导出/已分析）
 
@@ -48,40 +48,40 @@
 
 ### 已导出 Key 概览（对象型 Map）
 
-| # | Key | 类型 | 条目数 | 分析状态 | 代码状态 | 描述 |
-|---|-----|------|--------|----------|------------|------|
-| 30 | `abilityDetailMap` | object | 57 条 | 已导出/已分析 | 无需修改 | 战斗能力定义(伤害/治疗/增益效果) |
-| 31 | `achievementDetailMap` | object | 77 条 | 已导出/已分析 | 无需修改 | 成就定义(按 tier 分组,全解锁给 buff) |
-| 32 | `achievementTierDetailMap` | object | 6 条 | 已导出/已分析 | 无需修改 | 成就 tier(全解锁发 buff) |
-| 33 | `actionDetailMap` | object | 760 条 | 已导出/已分析 | **已修复** | 动作/战斗区定义(含怪物刷新/boss/地下城) |
-| 34 | `buffTypeDetailMap` | object | 65 条 | 已导出/已分析 | 无需修改 | buff 类型字典(名称显示用) |
-| 35 | `combatMonsterDetailMap` | object | 95 条 | 已导出/已分析 | 无需修改 | 怪物定义(属性/技能/掉落,战斗核心) |
-| 36 | `combatStyleDetailMap` | object | 6 条 | 已导出/已分析 | 无需修改 | 战斗风格(经验分配表核心) |
-| 37 | `combatTriggerComparatorDetailMap` | object | 4 条 | 已导出/已分析 | 无需修改 | 触发器比较器(校验/UI/值判定) |
-| 38 | `combatTriggerConditionDetailMap` | object | 54 条 | 已导出/已分析 | **已修复** | 触发器条件(目标匹配/比较器限制) |
-| 39 | `combatTriggerDependencyDetailMap` | object | 4 条 | 已导出/已分析 | 无需修改 | 触发器依赖(单/多目标分支) |
-| 40 | `communityBuffTypeDetailMap` | object | 5 条 | 已导出/已分析 | 无需修改 | 社区 buff(模板数值+兜底) |
-| 41 | `damageTypeDetailMap` | object | 4 条 | 已导出/已分析 | 无需修改 | 伤害类型字典(名称显示用) |
-| 42 | `equipmentTypeDetailMap` | object | 25 条 | 已导出/已分析 | 无需修改 | 装备类型(构建期槽位映射) |
-| 43 | `guildBuffDetailMap` | object | 10 条 | 已导出/已分析 | 无需修改 | 公会 buff(等级上限+每级加成) |
-| 44 | `guildShrineDetailMap` | object | 5 条 | 已导出/已分析 | 无需修改 | 公会圣坛(等级上限) |
-| 45 | `houseRoomDetailMap` | object | 17 条 | 已导出/已分析 | 无需修改 | 住宅房间(房间 buff+升级成本) |
-| 46 | `itemCategoryDetailMap` | object | 10 条 | 已导出/已分析 | 无需修改 | 物品分类字典(名称显示) |
-| 47 | `itemDetailMap` | object | 957 条 | 已导出/已分析 | 无需修改 | 物品全量定义(装备/消耗品/强化/卷轴) |
-| 48 | `itemLocationDetailMap` | object | 26 条 | 已导出/已分析 | 无需修改 | 物品位置(导入装备归类) |
-| 49 | `labyrinthCrateDetailMap` | object | 9 条 | 已导出/已分析 | 无需修改 | 迷宫补给箱 buff |
-| 50 | `openableLootDropMap` | object | 22 条 | 已导出/已分析 | 无需修改 | 宝箱掉落表(市场估值/强化获取) |
-| 51 | `personalBuffTypeDetailMap` | object | 12 条 | 已导出/已分析 | 无需修改 | 个人 buff(战斗卷轴模板) |
-| 52 | `skillDetailMap` | object | 18 条 | 已导出/已分析 | 无需修改 | 技能字典(名称显示) |
+| #   | Key                                | 类型   | 条目数 | 分析状态      | 代码状态   | 描述                                    |
+| --- | ---------------------------------- | ------ | ------ | ------------- | ---------- | --------------------------------------- |
+| 30  | `abilityDetailMap`                 | object | 57 条  | 已导出/已分析 | 无需修改   | 战斗能力定义(伤害/治疗/增益效果)        |
+| 31  | `achievementDetailMap`             | object | 77 条  | 已导出/已分析 | 无需修改   | 成就定义(按 tier 分组,全解锁给 buff)    |
+| 32  | `achievementTierDetailMap`         | object | 6 条   | 已导出/已分析 | 无需修改   | 成就 tier(全解锁发 buff)                |
+| 33  | `actionDetailMap`                  | object | 760 条 | 已导出/已分析 | **已修复** | 动作/战斗区定义(含怪物刷新/boss/地下城) |
+| 34  | `buffTypeDetailMap`                | object | 65 条  | 已导出/已分析 | 无需修改   | buff 类型字典(名称显示用)               |
+| 35  | `combatMonsterDetailMap`           | object | 95 条  | 已导出/已分析 | 无需修改   | 怪物定义(属性/技能/掉落,战斗核心)       |
+| 36  | `combatStyleDetailMap`             | object | 6 条   | 已导出/已分析 | 无需修改   | 战斗风格(经验分配表核心)                |
+| 37  | `combatTriggerComparatorDetailMap` | object | 4 条   | 已导出/已分析 | 无需修改   | 触发器比较器(校验/UI/值判定)            |
+| 38  | `combatTriggerConditionDetailMap`  | object | 54 条  | 已导出/已分析 | **已修复** | 触发器条件(目标匹配/比较器限制)         |
+| 39  | `combatTriggerDependencyDetailMap` | object | 4 条   | 已导出/已分析 | 无需修改   | 触发器依赖(单/多目标分支)               |
+| 40  | `communityBuffTypeDetailMap`       | object | 5 条   | 已导出/已分析 | 无需修改   | 社区 buff(模板数值+兜底)                |
+| 41  | `damageTypeDetailMap`              | object | 4 条   | 已导出/已分析 | 无需修改   | 伤害类型字典(名称显示用)                |
+| 42  | `equipmentTypeDetailMap`           | object | 25 条  | 已导出/已分析 | 无需修改   | 装备类型(构建期槽位映射)                |
+| 43  | `guildBuffDetailMap`               | object | 10 条  | 已导出/已分析 | 无需修改   | 公会 buff(等级上限+每级加成)            |
+| 44  | `guildShrineDetailMap`             | object | 5 条   | 已导出/已分析 | 无需修改   | 公会圣坛(等级上限)                      |
+| 45  | `houseRoomDetailMap`               | object | 17 条  | 已导出/已分析 | 无需修改   | 住宅房间(房间 buff+升级成本)            |
+| 46  | `itemCategoryDetailMap`            | object | 10 条  | 已导出/已分析 | 无需修改   | 物品分类字典(名称显示)                  |
+| 47  | `itemDetailMap`                    | object | 957 条 | 已导出/已分析 | 无需修改   | 物品全量定义(装备/消耗品/强化/卷轴)     |
+| 48  | `itemLocationDetailMap`            | object | 26 条  | 已导出/已分析 | 无需修改   | 物品位置(导入装备归类)                  |
+| 49  | `labyrinthCrateDetailMap`          | object | 9 条   | 已导出/已分析 | 无需修改   | 迷宫补给箱 buff                         |
+| 50  | `openableLootDropMap`              | object | 22 条  | 已导出/已分析 | 无需修改   | 宝箱掉落表(市场估值/强化获取)           |
+| 51  | `personalBuffTypeDetailMap`        | object | 12 条  | 已导出/已分析 | 无需修改   | 个人 buff(战斗卷轴模板)                 |
+| 52  | `skillDetailMap`                   | object | 18 条  | 已导出/已分析 | 无需修改   | 技能字典(名称显示)                      |
 
 ### 已导出 Key 概览（数组/表）
 
-| # | Key | 类型 | 条目数 | 分析状态 | 代码状态 | 描述 |
-|---|-----|------|--------|----------|------------|------|
-| 53 | `abilitySlotsLevelRequirementList` | array | 6 元素 | 已导出/已分析 | 无需修改 | 能力槽位智力需求表 |
-| 54 | `enhancementLevelSuccessRateTable` | array | 20 元素 | 已导出/已分析 | 无需修改 | 强化成功率表(0-19 级) |
-| 55 | `enhancementLevelTotalBonusMultiplierTable` | array | 21 元素 | 已导出/已分析 | 无需修改 | 强化总加成倍率表(0-20 级) |
-| 56 | `levelExperienceTable` | array | 201 元素 | 已导出/已分析 | 无需修改 | 等级经验阈值表(0-200 级) |
+| #   | Key                                         | 类型  | 条目数   | 分析状态      | 代码状态 | 描述                      |
+| --- | ------------------------------------------- | ----- | -------- | ------------- | -------- | ------------------------- |
+| 53  | `abilitySlotsLevelRequirementList`          | array | 6 元素   | 已导出/已分析 | 无需修改 | 能力槽位智力需求表        |
+| 54  | `enhancementLevelSuccessRateTable`          | array | 20 元素  | 已导出/已分析 | 无需修改 | 强化成功率表(0-19 级)     |
+| 55  | `enhancementLevelTotalBonusMultiplierTable` | array | 21 元素  | 已导出/已分析 | 无需修改 | 强化总加成倍率表(0-20 级) |
+| 56  | `levelExperienceTable`                      | array | 201 元素 | 已导出/已分析 | 无需修改 | 等级经验阈值表(0-200 级)  |
 
 > 代码状态说明:**待修(高/中/低)**表示已确认但尚未处理的问题;**已修复**表示本轮分析中发现并已处理;**无需修改**表示复核后没有代码改动需求。当前没有待修项。未导出的 29 个 key 已判定不接入,不存在修复问题。
 

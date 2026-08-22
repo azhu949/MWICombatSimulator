@@ -10,7 +10,14 @@
     @update:model-value="handleModelValueChange"
     @update:open="handleOpenChange"
   >
-    <ComboboxAnchor :class="cn('flex h-9 w-full items-center rounded-md border border-input bg-background shadow-xs focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/35', props.class)">
+    <ComboboxAnchor
+      :class="
+        cn(
+          'flex h-9 w-full items-center rounded-md border border-input bg-background shadow-xs focus-within:border-ring focus-within:ring-2 focus-within:ring-ring/35',
+          props.class,
+        )
+      "
+    >
       <ComboboxInput
         v-model="searchTerm"
         class="min-w-0 flex-1 bg-transparent px-3 py-1.5 text-sm text-foreground outline-none focus-visible:outline-none! placeholder:text-muted-foreground"
@@ -18,7 +25,10 @@
         :display-value="displayValue"
         :aria-label="ariaLabel || placeholder"
       />
-      <ComboboxTrigger class="grid size-8 shrink-0 place-items-center text-muted-foreground outline-none hover:text-foreground" :aria-label="openLabel">
+      <ComboboxTrigger
+        class="grid size-8 shrink-0 place-items-center text-muted-foreground outline-none hover:text-foreground"
+        :aria-label="openLabel"
+      >
         <ChevronsUpDown class="size-4" />
       </ComboboxTrigger>
     </ComboboxAnchor>
@@ -47,7 +57,7 @@
             <span class="min-w-0 flex-1 truncate">{{ option.label }}</span>
           </ComboboxItem>
           <p v-if="filteredOptions.length > visibleOptions.length" class="px-3 py-2 text-xs text-muted-foreground">
-            {{ moreResultsLabel.replace("{count}", String(filteredOptions.length - visibleOptions.length)) }}
+            {{ moreResultsLabel.replace('{count}', String(filteredOptions.length - visibleOptions.length)) }}
           </p>
         </ComboboxViewport>
       </ComboboxContent>
@@ -56,8 +66,8 @@
 </template>
 
 <script setup>
-import { computed, ref, watch } from "vue";
-import { Check, ChevronsUpDown } from "@lucide/vue";
+import { computed, ref, watch } from 'vue';
+import { Check, ChevronsUpDown } from '@lucide/vue';
 import {
   ComboboxAnchor,
   ComboboxContent,
@@ -69,30 +79,28 @@ import {
   ComboboxRoot,
   ComboboxTrigger,
   ComboboxViewport,
-} from "reka-ui";
-import { cn } from "@/ui/lib/utils.js";
+} from 'reka-ui';
+import { cn } from '@/ui/lib/utils.js';
 
 const props = defineProps({
-  modelValue: { type: [String, Number], default: "" },
+  modelValue: { type: [String, Number], default: '' },
   options: { type: Array, default: () => [] },
   maxResults: { type: Number, default: 80 },
-  placeholder: { type: String, default: "Search" },
-  emptyLabel: { type: String, default: "No results" },
-  moreResultsLabel: { type: String, default: "Refine the search to see {count} more results" },
-  openLabel: { type: String, default: "Open options" },
-  ariaLabel: { type: String, default: "" },
+  placeholder: { type: String, default: 'Search' },
+  emptyLabel: { type: String, default: 'No results' },
+  moreResultsLabel: { type: String, default: 'Refine the search to see {count} more results' },
+  openLabel: { type: String, default: 'Open options' },
+  ariaLabel: { type: String, default: '' },
   disabled: { type: Boolean, default: false },
-  class: { type: [String, Array, Object], default: "" },
+  class: { type: [String, Array, Object], default: '' },
 });
 
-const emit = defineEmits(["update:modelValue"]);
-const EMPTY_COMBOBOX_VALUE = "__mwi_combobox_empty__";
+const emit = defineEmits(['update:modelValue']);
+const EMPTY_COMBOBOX_VALUE = '__mwi_combobox_empty__';
 const isOpen = ref(false);
-const searchTerm = ref("");
+const searchTerm = ref('');
 const rekaModelValue = computed(() => toRekaValue(props.modelValue));
-const normalizedTerm = computed(() => (
-  isOpen.value ? searchTerm.value.trim().toLocaleLowerCase() : ""
-));
+const normalizedTerm = computed(() => (isOpen.value ? searchTerm.value.trim().toLocaleLowerCase() : ''));
 const filteredOptions = computed(() => {
   const list = props.options.map((option) => ({
     value: toRekaValue(option.value),
@@ -108,25 +116,25 @@ const visibleOptions = computed(() => filteredOptions.value.slice(0, Math.max(1,
 function displayValue(value) {
   const rawValue = fromRekaValue(value);
   const option = props.options.find((entry) => entry.value === rawValue);
-  return option ? String(option.label || option.value || "") : "";
+  return option ? String(option.label || option.value || '') : '';
 }
 
 function toRekaValue(value) {
-  return value === "" || value == null ? EMPTY_COMBOBOX_VALUE : value;
+  return value === '' || value == null ? EMPTY_COMBOBOX_VALUE : value;
 }
 
 function fromRekaValue(value) {
-  return value === EMPTY_COMBOBOX_VALUE ? "" : value;
+  return value === EMPTY_COMBOBOX_VALUE ? '' : value;
 }
 
 function handleModelValueChange(value) {
-  emit("update:modelValue", fromRekaValue(value));
+  emit('update:modelValue', fromRekaValue(value));
 }
 
 function handleOpenChange(value) {
   isOpen.value = value;
   if (value) {
-    searchTerm.value = "";
+    searchTerm.value = '';
   }
 }
 

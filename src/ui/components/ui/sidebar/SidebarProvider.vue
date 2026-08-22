@@ -5,11 +5,11 @@
 </template>
 
 <script setup>
-import { provide, ref, watch } from "vue";
-import { SIDEBAR_CONTEXT } from "./context.js";
+import { provide, ref, watch } from 'vue';
+import { SIDEBAR_CONTEXT } from './context.js';
 
-const STORAGE_KEY = "mwi.ui.sidebar.v1";
-const storedCollapsed = typeof localStorage !== "undefined" && localStorage.getItem(STORAGE_KEY) === "collapsed";
+const STORAGE_KEY = 'mwi.ui.sidebar.v1';
+const storedCollapsed = typeof localStorage !== 'undefined' && localStorage.getItem(STORAGE_KEY) === 'collapsed';
 const collapsed = ref(storedCollapsed);
 const mobileOpen = ref(false);
 
@@ -22,8 +22,8 @@ function setMobileOpen(value) {
 }
 
 watch(collapsed, (value) => {
-  if (typeof localStorage !== "undefined") {
-    localStorage.setItem(STORAGE_KEY, value ? "collapsed" : "expanded");
+  if (typeof localStorage !== 'undefined') {
+    localStorage.setItem(STORAGE_KEY, value ? 'collapsed' : 'expanded');
   }
 });
 

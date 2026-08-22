@@ -1,24 +1,24 @@
-import { createHash } from "node:crypto";
-import fs from "node:fs/promises";
-import os from "node:os";
-import path from "node:path";
-import { fileURLToPath } from "node:url";
-import { afterEach, describe, expect, it } from "vitest";
+import { createHash } from 'node:crypto';
+import fs from 'node:fs/promises';
+import os from 'node:os';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
+import { afterEach, describe, expect, it } from 'vitest';
 import {
-    GENERATED_TRANSLATION_PATHS,
-    discoverLocaleChunk,
-    extractEnglishTranslationResource,
-    extractLocaleTranslationResource,
-    extractOfficialTranslationResources,
-    normalizeZhPunctuation,
-    normalizeZhTranslationResource,
-    syncOfficialTranslations,
-    validateTranslationResources,
-    writeArtifactsTransactionally,
-} from "../official-translation-sync.mjs";
+  GENERATED_TRANSLATION_PATHS,
+  discoverLocaleChunk,
+  extractEnglishTranslationResource,
+  extractLocaleTranslationResource,
+  extractOfficialTranslationResources,
+  normalizeZhPunctuation,
+  normalizeZhTranslationResource,
+  syncOfficialTranslations,
+  validateTranslationResources,
+  writeArtifactsTransactionally,
+} from '../official-translation-sync.mjs';
 
 const tempDirs = [];
-const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), "../..");
+const rootDir = path.resolve(path.dirname(fileURLToPath(import.meta.url)), '../..');
 
 const MAIN_FIXTURE = `
     (() => {
@@ -61,113 +61,113 @@ const ZH_FIXTURE = `
 `;
 
 afterEach(async () => {
-    await Promise.all(tempDirs.splice(0).map((directory) => fs.rm(directory, { recursive: true, force: true })));
+  await Promise.all(tempDirs.splice(0).map((directory) => fs.rm(directory, { recursive: true, force: true })));
 });
 
-describe("official translation AST extraction", () => {
-    it("extracts English spreads in source order and discovers the Chinese lazy chunk", () => {
-        const english = extractEnglishTranslationResource(MAIN_FIXTURE);
+describe('official translation AST extraction', () => {
+  it('extracts English spreads in source order and discovers the Chinese lazy chunk', () => {
+    const english = extractEnglishTranslationResource(MAIN_FIXTURE);
 
-        expect(english.global.gameName).toBe("Milky Way Idle");
-        expect(english.itemNames["/items/coin"]).toBe("Coin");
-        expect(discoverLocaleChunk(MAIN_FIXTURE, "zh")).toEqual({ moduleId: 42, chunkId: 7 });
+    expect(english.global.gameName).toBe('Milky Way Idle');
+    expect(english.itemNames['/items/coin']).toBe('Coin');
+    expect(discoverLocaleChunk(MAIN_FIXTURE, 'zh')).toEqual({ moduleId: 42, chunkId: 7 });
+  });
+
+  it('extracts the Chinese default export without executing the bundle', () => {
+    const chinese = extractLocaleTranslationResource(ZH_FIXTURE, 42);
+
+    expect(chinese.global.gameName).toBe('银河奶牛放置');
+    expect(chinese.itemNames['/items/coin']).toBe('金币');
+    expect(chinese.nested.unicode).toBe('官方');
+  });
+
+  it('records every fetched official source path and content hash', async () => {
+    const manifestText = JSON.stringify({
+      files: {
+        'main.js': '/static/js/main.fixture.chunk.js',
+        '7.js': '/static/js/7.fixture.chunk.js',
+      },
     });
+    const contentByPath = new Map([
+      ['/asset-manifest.json', manifestText],
+      ['/static/js/main.fixture.chunk.js', MAIN_FIXTURE],
+      ['/static/js/7.fixture.chunk.js', ZH_FIXTURE],
+    ]);
+    const fetchImpl = async (url) => {
+      const parsedUrl = new URL(url);
+      const content = contentByPath.get(parsedUrl.pathname);
+      return {
+        ok: content != null,
+        status: content == null ? 404 : 200,
+        url: parsedUrl.href,
+        text: async () => content || '',
+      };
+    };
 
-    it("extracts the Chinese default export without executing the bundle", () => {
-        const chinese = extractLocaleTranslationResource(ZH_FIXTURE, 42);
+    const extracted = await extractOfficialTranslationResources({ fetchImpl });
+    const hash = (value) => createHash('sha256').update(value, 'utf8').digest('hex');
 
-        expect(chinese.global.gameName).toBe("银河奶牛放置");
-        expect(chinese.itemNames["/items/coin"]).toBe("金币");
-        expect(chinese.nested.unicode).toBe("官方");
+    expect(extracted.resources.en.itemNames['/items/coin']).toBe('Coin');
+    expect(extracted.resources.zh.itemNames['/items/coin']).toBe('金币');
+    expect(extracted.source.manifest).toEqual({
+      path: '/asset-manifest.json',
+      sha256: hash(manifestText),
     });
+    expect(extracted.source.assets.main.sha256).toBe(hash(MAIN_FIXTURE));
+    expect(extracted.source.assets.zh.sha256).toBe(hash(ZH_FIXTURE));
+  });
 
-    it("records every fetched official source path and content hash", async () => {
-        const manifestText = JSON.stringify({
-            files: {
-                "main.js": "/static/js/main.fixture.chunk.js",
-                "7.js": "/static/js/7.fixture.chunk.js",
-            },
-        });
-        const contentByPath = new Map([
-            ["/asset-manifest.json", manifestText],
-            ["/static/js/main.fixture.chunk.js", MAIN_FIXTURE],
-            ["/static/js/7.fixture.chunk.js", ZH_FIXTURE],
-        ]);
-        const fetchImpl = async (url) => {
-            const parsedUrl = new URL(url);
-            const content = contentByPath.get(parsedUrl.pathname);
-            return {
-                ok: content != null,
-                status: content == null ? 404 : 200,
-                url: parsedUrl.href,
-                text: async () => content || "",
-            };
-        };
-
-        const extracted = await extractOfficialTranslationResources({ fetchImpl });
-        const hash = (value) => createHash("sha256").update(value, "utf8").digest("hex");
-
-        expect(extracted.resources.en.itemNames["/items/coin"]).toBe("Coin");
-        expect(extracted.resources.zh.itemNames["/items/coin"]).toBe("金币");
-        expect(extracted.source.manifest).toEqual({
-            path: "/asset-manifest.json",
-            sha256: hash(manifestText),
-        });
-        expect(extracted.source.assets.main.sha256).toBe(hash(MAIN_FIXTURE));
-        expect(extracted.source.assets.zh.sha256).toBe(hash(ZH_FIXTURE));
+  it('prefers the homepage runtime when the asset manifest is stale', async () => {
+    const staleManifest = JSON.stringify({
+      files: {
+        'main.js': '/static/js/main.stale.chunk.js',
+        '7.js': '/static/js/7.stale.chunk.js',
+      },
     });
+    const homepage = `<script>const hashes={7:"current"};</script><script src="/static/js/main.current.chunk.js"></script>`;
+    const contentByPath = new Map([
+      ['/asset-manifest.json', staleManifest],
+      ['/', homepage],
+      ['/static/js/main.current.chunk.js', MAIN_FIXTURE],
+      ['/static/js/7.current.chunk.js', ZH_FIXTURE],
+    ]);
+    const fetchImpl = async (url) => {
+      const parsedUrl = new URL(url);
+      const content = contentByPath.get(parsedUrl.pathname);
+      return {
+        ok: content != null,
+        status: content == null ? 404 : 200,
+        url: parsedUrl.href,
+        text: async () => content || '',
+      };
+    };
 
-    it("prefers the homepage runtime when the asset manifest is stale", async () => {
-        const staleManifest = JSON.stringify({
-            files: {
-                "main.js": "/static/js/main.stale.chunk.js",
-                "7.js": "/static/js/7.stale.chunk.js",
-            },
-        });
-        const homepage = `<script>const hashes={7:"current"};</script><script src="/static/js/main.current.chunk.js"></script>`;
-        const contentByPath = new Map([
-            ["/asset-manifest.json", staleManifest],
-            ["/", homepage],
-            ["/static/js/main.current.chunk.js", MAIN_FIXTURE],
-            ["/static/js/7.current.chunk.js", ZH_FIXTURE],
-        ]);
-        const fetchImpl = async (url) => {
-            const parsedUrl = new URL(url);
-            const content = contentByPath.get(parsedUrl.pathname);
-            return {
-                ok: content != null,
-                status: content == null ? 404 : 200,
-                url: parsedUrl.href,
-                text: async () => content || "",
-            };
-        };
+    const extracted = await extractOfficialTranslationResources({ fetchImpl });
 
-        const extracted = await extractOfficialTranslationResources({ fetchImpl });
+    expect(extracted.source.assets.main.path).toBe('/static/js/main.current.chunk.js');
+    expect(extracted.source.assets.zh.path).toBe('/static/js/7.current.chunk.js');
+    expect(extracted.source.home.path).toBe('/');
+  });
 
-        expect(extracted.source.assets.main.path).toBe("/static/js/main.current.chunk.js");
-        expect(extracted.source.assets.zh.path).toBe("/static/js/7.current.chunk.js");
-        expect(extracted.source.home.path).toBe("/");
-    });
-
-    it.each([
-        ["call expression", "const bad = { itemNames: makeTranslations() };"],
-        ["getter", "const bad = { get itemNames() { return {}; } };"],
-        ["computed property", "const key = 'itemNames'; const bad = { [key]: {} };"],
-    ])("rejects unsafe %s resources", (_label, declaration) => {
-        const source = `
+  it.each([
+    ['call expression', 'const bad = { itemNames: makeTranslations() };'],
+    ['getter', 'const bad = { get itemNames() { return {}; } };'],
+    ['computed property', "const key = 'itemNames'; const bad = { [key]: {} };"],
+  ])('rejects unsafe %s resources', (_label, declaration) => {
+    const source = `
             (() => {
                 ${declaration}
                 client.init({ resources: { en: { translation: { ...bad } } }, fallbackLng: "en" });
             })();
         `;
 
-        expect(() => extractEnglishTranslationResource(source)).toThrow(/Unsafe|unsupported/i);
-    });
+    expect(() => extractEnglishTranslationResource(source)).toThrow(/Unsafe|unsupported/i);
+  });
 
-    it("does not create snapshots when extraction fails", async () => {
-        const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), "mwi-translation-sync-"));
-        tempDirs.push(rootDir);
-        const unsafeMain = `
+  it('does not create snapshots when extraction fails', async () => {
+    const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mwi-translation-sync-'));
+    tempDirs.push(rootDir);
+    const unsafeMain = `
             (() => {
                 client.init({
                     resources: { en: { translation: loadTranslations() } },
@@ -175,206 +175,218 @@ describe("official translation AST extraction", () => {
                 });
             })();
         `;
-        const fetchImpl = async (url) => ({
-            ok: true,
-            status: 200,
-            text: async () => String(url).endsWith("asset-manifest.json")
-                ? JSON.stringify({ files: { "main.js": "/static/js/main.fixture.chunk.js" } })
-                : unsafeMain,
-        });
-
-        await expect(syncOfficialTranslations({ fetchImpl, rootDir })).rejects.toThrow(/Unsafe|unsupported/i);
-        for (const relativePath of Object.values(GENERATED_TRANSLATION_PATHS)) {
-            await expect(fs.stat(path.join(rootDir, relativePath))).rejects.toMatchObject({ code: "ENOENT" });
-        }
+    const fetchImpl = async (url) => ({
+      ok: true,
+      status: 200,
+      text: async () =>
+        String(url).endsWith('asset-manifest.json')
+          ? JSON.stringify({ files: { 'main.js': '/static/js/main.fixture.chunk.js' } })
+          : unsafeMain,
     });
 
-    it("rejects translation responses redirected outside the official origin", async () => {
-        const fetchImpl = async () => ({
-            ok: true,
-            status: 200,
-            url: "https://translations.example.com/asset-manifest.json",
-            text: async () => JSON.stringify({ files: {} }),
-        });
+    await expect(syncOfficialTranslations({ fetchImpl, rootDir })).rejects.toThrow(/Unsafe|unsupported/i);
+    for (const relativePath of Object.values(GENERATED_TRANSLATION_PATHS)) {
+      await expect(fs.stat(path.join(rootDir, relativePath))).rejects.toMatchObject({ code: 'ENOENT' });
+    }
+  });
 
-        await expect(extractOfficialTranslationResources({ fetchImpl })).rejects.toThrow(/redirected outside the official origin/i);
+  it('rejects translation responses redirected outside the official origin', async () => {
+    const fetchImpl = async () => ({
+      ok: true,
+      status: 200,
+      url: 'https://translations.example.com/asset-manifest.json',
+      text: async () => JSON.stringify({ files: {} }),
     });
 
-    it("rejects non-string and blank tracked names", async () => {
-        const resources = {
-            en: JSON.parse(await fs.readFile(path.join(rootDir, GENERATED_TRANSLATION_PATHS.en), "utf8")),
-            zh: JSON.parse(await fs.readFile(path.join(rootDir, GENERATED_TRANSLATION_PATHS.zh), "utf8")),
-        };
-        const itemHrid = Object.keys(resources.zh.itemNames)[0];
-        const nonStringResources = structuredClone(resources);
-        nonStringResources.zh.itemNames[itemHrid] = null;
-        await expect(validateTranslationResources(nonStringResources, { rootDir }))
-            .rejects.toThrow(/must contain string values for tracked HRIDs/i);
+    await expect(extractOfficialTranslationResources({ fetchImpl })).rejects.toThrow(
+      /redirected outside the official origin/i,
+    );
+  });
 
-        const blankNameResources = structuredClone(resources);
-        blankNameResources.zh.itemNames[itemHrid] = "   ";
-        await expect(validateTranslationResources(blankNameResources, { rootDir }))
-            .rejects.toThrow(/contains blank tracked names/i);
-    });
+  it('rejects non-string and blank tracked names', async () => {
+    const resources = {
+      en: JSON.parse(await fs.readFile(path.join(rootDir, GENERATED_TRANSLATION_PATHS.en), 'utf8')),
+      zh: JSON.parse(await fs.readFile(path.join(rootDir, GENERATED_TRANSLATION_PATHS.zh), 'utf8')),
+    };
+    const itemHrid = Object.keys(resources.zh.itemNames)[0];
+    const nonStringResources = structuredClone(resources);
+    nonStringResources.zh.itemNames[itemHrid] = null;
+    await expect(validateTranslationResources(nonStringResources, { rootDir })).rejects.toThrow(
+      /must contain string values for tracked HRIDs/i,
+    );
 
-    it("installs every prepared snapshot and removes transaction files", async () => {
-        const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), "mwi-translation-install-"));
-        tempDirs.push(rootDir);
-        const artifacts = new Map([
-            [GENERATED_TRANSLATION_PATHS.en, "new-en\n"],
-            [GENERATED_TRANSLATION_PATHS.zh, "new-zh\n"],
-            [GENERATED_TRANSLATION_PATHS.source, "new-source\n"],
-        ]);
-        for (const relativePath of artifacts.keys()) {
-            const targetPath = path.join(rootDir, relativePath);
-            await fs.mkdir(path.dirname(targetPath), { recursive: true });
-            await fs.writeFile(targetPath, "previous\n", "utf8");
+    const blankNameResources = structuredClone(resources);
+    blankNameResources.zh.itemNames[itemHrid] = '   ';
+    await expect(validateTranslationResources(blankNameResources, { rootDir })).rejects.toThrow(
+      /contains blank tracked names/i,
+    );
+  });
+
+  it('installs every prepared snapshot and removes transaction files', async () => {
+    const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mwi-translation-install-'));
+    tempDirs.push(rootDir);
+    const artifacts = new Map([
+      [GENERATED_TRANSLATION_PATHS.en, 'new-en\n'],
+      [GENERATED_TRANSLATION_PATHS.zh, 'new-zh\n'],
+      [GENERATED_TRANSLATION_PATHS.source, 'new-source\n'],
+    ]);
+    for (const relativePath of artifacts.keys()) {
+      const targetPath = path.join(rootDir, relativePath);
+      await fs.mkdir(path.dirname(targetPath), { recursive: true });
+      await fs.writeFile(targetPath, 'previous\n', 'utf8');
+    }
+
+    await writeArtifactsTransactionally(artifacts, rootDir, { transactionId: 'install-test' });
+
+    for (const [relativePath, content] of artifacts) {
+      const targetPath = path.join(rootDir, relativePath);
+      await expect(fs.readFile(targetPath, 'utf8')).resolves.toBe(content);
+      const siblingFiles = await fs.readdir(path.dirname(targetPath));
+      expect(siblingFiles.some((fileName) => fileName.includes('install-test'))).toBe(false);
+    }
+  });
+
+  it('restores every previous snapshot when an install step fails', async () => {
+    const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mwi-translation-write-'));
+    tempDirs.push(rootDir);
+    const artifacts = new Map([
+      [GENERATED_TRANSLATION_PATHS.en, 'new-en\n'],
+      [GENERATED_TRANSLATION_PATHS.zh, 'new-zh\n'],
+      [GENERATED_TRANSLATION_PATHS.source, 'new-source\n'],
+    ]);
+    const previous = new Map([
+      [GENERATED_TRANSLATION_PATHS.en, 'old-en\n'],
+      [GENERATED_TRANSLATION_PATHS.zh, 'old-zh\n'],
+      [GENERATED_TRANSLATION_PATHS.source, 'old-source\n'],
+    ]);
+    for (const [relativePath, content] of previous) {
+      const targetPath = path.join(rootDir, relativePath);
+      await fs.mkdir(path.dirname(targetPath), { recursive: true });
+      await fs.writeFile(targetPath, content, 'utf8');
+    }
+
+    const fileSystem = {
+      ...fs,
+      async rename(fromPath, toPath) {
+        if (
+          fromPath.includes('.tmp-review-test') &&
+          toPath.endsWith(GENERATED_TRANSLATION_PATHS.zh.replaceAll('/', path.sep))
+        ) {
+          const error = new Error('injected install failure');
+          error.code = 'EIO';
+          throw error;
         }
+        return fs.rename(fromPath, toPath);
+      },
+    };
 
-        await writeArtifactsTransactionally(artifacts, rootDir, { transactionId: "install-test" });
+    await expect(
+      writeArtifactsTransactionally(artifacts, rootDir, {
+        fileSystem,
+        transactionId: 'review-test',
+      }),
+    ).rejects.toThrow('injected install failure');
 
-        for (const [relativePath, content] of artifacts) {
-            const targetPath = path.join(rootDir, relativePath);
-            await expect(fs.readFile(targetPath, "utf8")).resolves.toBe(content);
-            const siblingFiles = await fs.readdir(path.dirname(targetPath));
-            expect(siblingFiles.some((fileName) => fileName.includes("install-test"))).toBe(false);
+    for (const [relativePath, content] of previous) {
+      await expect(fs.readFile(path.join(rootDir, relativePath), 'utf8')).resolves.toBe(content);
+    }
+    for (const directory of ['locales/en', 'locales/zh', 'locales']) {
+      const remainingFiles = await fs.readdir(path.join(rootDir, directory));
+      expect(remainingFiles.some((fileName) => fileName.includes('.tmp-') || fileName.includes('.bak-'))).toBe(false);
+    }
+  });
+
+  it('preserves the original backup when rollback also fails', async () => {
+    const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), 'mwi-translation-rollback-'));
+    tempDirs.push(rootDir);
+    const enPath = path.join(rootDir, GENERATED_TRANSLATION_PATHS.en);
+    const zhPath = path.join(rootDir, GENERATED_TRANSLATION_PATHS.zh);
+    await fs.mkdir(path.dirname(enPath), { recursive: true });
+    await fs.mkdir(path.dirname(zhPath), { recursive: true });
+    await fs.writeFile(enPath, 'old-en\n', 'utf8');
+    await fs.writeFile(zhPath, 'old-zh\n', 'utf8');
+    const artifacts = new Map([
+      [GENERATED_TRANSLATION_PATHS.en, 'new-en\n'],
+      [GENERATED_TRANSLATION_PATHS.zh, 'new-zh\n'],
+    ]);
+    const fileSystem = {
+      ...fs,
+      async copyFile(fromPath, toPath) {
+        if (fromPath.includes('.bak-rollback-test') && toPath === enPath) {
+          throw new Error('injected rollback failure');
         }
-    });
-
-    it("restores every previous snapshot when an install step fails", async () => {
-        const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), "mwi-translation-write-"));
-        tempDirs.push(rootDir);
-        const artifacts = new Map([
-            [GENERATED_TRANSLATION_PATHS.en, "new-en\n"],
-            [GENERATED_TRANSLATION_PATHS.zh, "new-zh\n"],
-            [GENERATED_TRANSLATION_PATHS.source, "new-source\n"],
-        ]);
-        const previous = new Map([
-            [GENERATED_TRANSLATION_PATHS.en, "old-en\n"],
-            [GENERATED_TRANSLATION_PATHS.zh, "old-zh\n"],
-            [GENERATED_TRANSLATION_PATHS.source, "old-source\n"],
-        ]);
-        for (const [relativePath, content] of previous) {
-            const targetPath = path.join(rootDir, relativePath);
-            await fs.mkdir(path.dirname(targetPath), { recursive: true });
-            await fs.writeFile(targetPath, content, "utf8");
+        return fs.copyFile(fromPath, toPath);
+      },
+      async rename(fromPath, toPath) {
+        if (fromPath.includes('.tmp-rollback-test') && toPath === zhPath) {
+          throw new Error('injected install failure');
         }
+        return fs.rename(fromPath, toPath);
+      },
+    };
 
-        const fileSystem = {
-            ...fs,
-            async rename(fromPath, toPath) {
-                if (fromPath.includes(".tmp-review-test") && toPath.endsWith(GENERATED_TRANSLATION_PATHS.zh.replaceAll("/", path.sep))) {
-                    const error = new Error("injected install failure");
-                    error.code = "EIO";
-                    throw error;
-                }
-                return fs.rename(fromPath, toPath);
-            },
-        };
+    await expect(
+      writeArtifactsTransactionally(artifacts, rootDir, {
+        fileSystem,
+        transactionId: 'rollback-test',
+      }),
+    ).rejects.toThrow(/rollback failed.*original backups preserved/i);
 
-        await expect(writeArtifactsTransactionally(artifacts, rootDir, {
-            fileSystem,
-            transactionId: "review-test",
-        })).rejects.toThrow("injected install failure");
-
-        for (const [relativePath, content] of previous) {
-            await expect(fs.readFile(path.join(rootDir, relativePath), "utf8")).resolves.toBe(content);
-        }
-        for (const directory of ["locales/en", "locales/zh", "locales"]) {
-            const remainingFiles = await fs.readdir(path.join(rootDir, directory));
-            expect(remainingFiles.some((fileName) => fileName.includes(".tmp-") || fileName.includes(".bak-"))).toBe(false);
-        }
-    });
-
-    it("preserves the original backup when rollback also fails", async () => {
-        const rootDir = await fs.mkdtemp(path.join(os.tmpdir(), "mwi-translation-rollback-"));
-        tempDirs.push(rootDir);
-        const enPath = path.join(rootDir, GENERATED_TRANSLATION_PATHS.en);
-        const zhPath = path.join(rootDir, GENERATED_TRANSLATION_PATHS.zh);
-        await fs.mkdir(path.dirname(enPath), { recursive: true });
-        await fs.mkdir(path.dirname(zhPath), { recursive: true });
-        await fs.writeFile(enPath, "old-en\n", "utf8");
-        await fs.writeFile(zhPath, "old-zh\n", "utf8");
-        const artifacts = new Map([
-            [GENERATED_TRANSLATION_PATHS.en, "new-en\n"],
-            [GENERATED_TRANSLATION_PATHS.zh, "new-zh\n"],
-        ]);
-        const fileSystem = {
-            ...fs,
-            async copyFile(fromPath, toPath) {
-                if (fromPath.includes(".bak-rollback-test") && toPath === enPath) {
-                    throw new Error("injected rollback failure");
-                }
-                return fs.copyFile(fromPath, toPath);
-            },
-            async rename(fromPath, toPath) {
-                if (fromPath.includes(".tmp-rollback-test") && toPath === zhPath) {
-                    throw new Error("injected install failure");
-                }
-                return fs.rename(fromPath, toPath);
-            },
-        };
-
-        await expect(writeArtifactsTransactionally(artifacts, rootDir, {
-            fileSystem,
-            transactionId: "rollback-test",
-        })).rejects.toThrow(/rollback failed.*original backups preserved/i);
-
-        const backupPath = `${enPath}.bak-rollback-test`;
-        await expect(fs.readFile(backupPath, "utf8")).resolves.toBe("old-en\n");
-        await expect(fs.readFile(enPath, "utf8")).resolves.toBe("new-en\n");
-    });
+    const backupPath = `${enPath}.bak-rollback-test`;
+    await expect(fs.readFile(backupPath, 'utf8')).resolves.toBe('old-en\n');
+    await expect(fs.readFile(enPath, 'utf8')).resolves.toBe('new-en\n');
+  });
 });
 
-describe("zh punctuation normalization", () => {
-    it("converts half-width label colons to full-width after CJK labels", () => {
-        expect(normalizeZhPunctuation("市场价格: {{price}}")).toBe("市场价格：{{price}}");
-        expect(normalizeZhPunctuation("当前最低价：{{boundary}}；将降至 {{price}}。"))
-            .toBe("当前最低价：{{boundary}}；将降至 {{price}}。");
-        expect(normalizeZhPunctuation("来自 {{name}}: {{message}}")).toBe("来自 {{name}}：{{message}}");
-        expect(normalizeZhPunctuation("冷却 (战斗中): {{seconds}}s")).toBe("冷却 (战斗中)：{{seconds}}s");
-    });
+describe('zh punctuation normalization', () => {
+  it('converts half-width label colons to full-width after CJK labels', () => {
+    expect(normalizeZhPunctuation('市场价格: {{price}}')).toBe('市场价格：{{price}}');
+    expect(normalizeZhPunctuation('当前最低价：{{boundary}}；将降至 {{price}}。')).toBe(
+      '当前最低价：{{boundary}}；将降至 {{price}}。',
+    );
+    expect(normalizeZhPunctuation('来自 {{name}}: {{message}}')).toBe('来自 {{name}}：{{message}}');
+    expect(normalizeZhPunctuation('冷却 (战斗中): {{seconds}}s')).toBe('冷却 (战斗中)：{{seconds}}s');
+  });
 
-    it("converts half-width colons before HTML tags and line breaks", () => {
-        expect(normalizeZhPunctuation("<span>点金:</span> 将物品转换为金币"))
-            .toBe("<span>点金：</span> 将物品转换为金币");
-        expect(normalizeZhPunctuation("市场:\n\t<ol>")).toBe("市场：\n\t<ol>");
-        expect(normalizeZhPunctuation("以下是炼金的步骤:</text>")).toBe("以下是炼金的步骤：</text>");
-    });
+  it('converts half-width colons before HTML tags and line breaks', () => {
+    expect(normalizeZhPunctuation('<span>点金:</span> 将物品转换为金币')).toBe('<span>点金：</span> 将物品转换为金币');
+    expect(normalizeZhPunctuation('市场:\n\t<ol>')).toBe('市场：\n\t<ol>');
+    expect(normalizeZhPunctuation('以下是炼金的步骤:</text>')).toBe('以下是炼金的步骤：</text>');
+  });
 
-    it("leaves numeric tables, clock times, and URLs untouched", () => {
-        expect(normalizeZhPunctuation("+1: 2.0%\n+2: 4.2%")).toBe("+1: 2.0%\n+2: 4.2%");
-        expect(normalizeZhPunctuation("公会周于每周五00:00 UTC重置")).toBe("公会周于每周五00:00 UTC重置");
-        expect(normalizeZhPunctuation("https://www.milkywayidle.com")).toBe("https://www.milkywayidle.com");
-    });
+  it('leaves numeric tables, clock times, and URLs untouched', () => {
+    expect(normalizeZhPunctuation('+1: 2.0%\n+2: 4.2%')).toBe('+1: 2.0%\n+2: 4.2%');
+    expect(normalizeZhPunctuation('公会周于每周五00:00 UTC重置')).toBe('公会周于每周五00:00 UTC重置');
+    expect(normalizeZhPunctuation('https://www.milkywayidle.com')).toBe('https://www.milkywayidle.com');
+  });
 
-    it("keeps the accepted bracket and numeric-label tradeoffs stable", () => {
-        // Half-width closing brackets still trigger the conversion, so
-        // bracket and colon widths can mix; accepted for bracketed labels.
-        expect(normalizeZhPunctuation("(可选): 说明")).toBe("(可选)：说明");
-        // A colon glued to digits stays half-width to protect numeric labels.
-        expect(normalizeZhPunctuation("等级:50")).toBe("等级:50");
-        // Half-width ] is not in the class (it closes the character class),
-        // so it never triggers the conversion.
-        expect(normalizeZhPunctuation("说明]: 备注")).toBe("说明]: 备注");
-    });
+  it('keeps the accepted bracket and numeric-label tradeoffs stable', () => {
+    // Half-width closing brackets still trigger the conversion, so
+    // bracket and colon widths can mix; accepted for bracketed labels.
+    expect(normalizeZhPunctuation('(可选): 说明')).toBe('(可选)：说明');
+    // A colon glued to digits stays half-width to protect numeric labels.
+    expect(normalizeZhPunctuation('等级:50')).toBe('等级:50');
+    // Half-width ] is not in the class (it closes the character class),
+    // so it never triggers the conversion.
+    expect(normalizeZhPunctuation('说明]: 备注')).toBe('说明]: 备注');
+  });
 
-    it("applies normalization deeply across the whole resource tree", () => {
-        const resource = {
-            nested: {
-                label: "等级: {{count}}",
-                html: "<span>分解:</span> 将物品转换为材料",
-                table: "+3: 6.6%",
-            },
-            list: ["进度: {{percent}}%", "00:00"],
-        };
-        expect(normalizeZhTranslationResource(resource)).toEqual({
-            nested: {
-                label: "等级：{{count}}",
-                html: "<span>分解：</span> 将物品转换为材料",
-                table: "+3: 6.6%",
-            },
-            list: ["进度：{{percent}}%", "00:00"],
-        });
+  it('applies normalization deeply across the whole resource tree', () => {
+    const resource = {
+      nested: {
+        label: '等级: {{count}}',
+        html: '<span>分解:</span> 将物品转换为材料',
+        table: '+3: 6.6%',
+      },
+      list: ['进度: {{percent}}%', '00:00'],
+    };
+    expect(normalizeZhTranslationResource(resource)).toEqual({
+      nested: {
+        label: '等级：{{count}}',
+        html: '<span>分解：</span> 将物品转换为材料',
+        table: '+3: 6.6%',
+      },
+      list: ['进度：{{percent}}%', '00:00'],
     });
+  });
 });

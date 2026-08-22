@@ -1,5 +1,5 @@
-import { getCombatScrollBuffTemplate } from "../shared/combatScrolls.js";
-import Buff from "./buff.js";
+import { getCombatScrollBuffTemplate } from '../shared/combatScrolls.js';
+import Buff from './buff.js';
 
 /**
  * Create the simulator's mutable Buff domain object from a shared scroll DTO.
@@ -8,12 +8,12 @@ import Buff from "./buff.js";
  * the generic Buff constructor must always receive level 1.
  */
 export function createCombatScrollBuff(itemHrid, options = undefined) {
-    const template = getCombatScrollBuffTemplate(itemHrid, options);
-    if (!template) {
-        return null;
-    }
+  const template = getCombatScrollBuffTemplate(itemHrid, options);
+  if (!template) {
+    return null;
+  }
 
-    return new Buff(template, 1);
+  return new Buff(template, 1);
 }
 
 /**
@@ -22,5 +22,5 @@ export function createCombatScrollBuff(itemHrid, options = undefined) {
  * removal and source-aware reconciliation stay consistent with the simulator.
  */
 export function getCombatScrollSourceKey(itemHrid) {
-    return `scroll:${itemHrid}`;
+  return `scroll:${itemHrid}`;
 }

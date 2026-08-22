@@ -8,17 +8,35 @@
     />
 
     <SidebarInset :style="{ '--app-sticky-shell-height': stickyShellHeight }">
-      <header class="sticky top-0 z-40 border-b border-border bg-background/94 backdrop-blur supports-[backdrop-filter]:bg-background/84">
+      <header
+        class="sticky top-0 z-40 border-b border-border bg-background/94 backdrop-blur supports-[backdrop-filter]:bg-background/84"
+      >
         <div class="mx-auto flex h-12 max-w-[1500px] items-center gap-2 px-3 sm:px-5">
           <SidebarTrigger class="md:hidden" mobile />
           <SidebarTrigger class="hidden md:inline-flex" />
           <div class="mx-1 h-4 w-px bg-border" aria-hidden="true" />
-          <h1 class="min-w-0 flex-1 truncate font-heading text-sm font-semibold text-foreground">{{ currentPageTitle }}</h1>
-          <Button type="button" variant="ghost" size="icon-sm" :aria-label="themeToggleAriaLabel" :title="themeToggleAriaLabel" @click="toggleTheme">
+          <h1 class="min-w-0 flex-1 truncate font-heading text-sm font-semibold text-foreground">
+            {{ currentPageTitle }}
+          </h1>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            :aria-label="themeToggleAriaLabel"
+            :title="themeToggleAriaLabel"
+            @click="toggleTheme"
+          >
             <Sun v-if="theme === 'dark'" />
             <Moon v-else />
           </Button>
-          <Button type="button" variant="ghost" size="sm" :aria-label="languageToggleAriaLabel" :title="languageToggleAriaLabel" @click="switchLanguage(languageToggleTarget)">
+          <Button
+            type="button"
+            variant="ghost"
+            size="sm"
+            :aria-label="languageToggleAriaLabel"
+            :title="languageToggleAriaLabel"
+            @click="switchLanguage(languageToggleTarget)"
+          >
             <Languages />{{ languageToggleLabel }}
           </Button>
         </div>
@@ -60,12 +78,20 @@
       </main>
     </SidebarInset>
 
-    <BaseModal :open="globalErrorModalOpen" :title="t('common:vue.app.globalErrorTitle', 'Error')" @close="globalErrorModalOpen = false">
-      <p class="text-sm text-foreground/85">{{ t("common:vue.app.globalErrorDesc", "Please copy the following details if you report this issue.") }}</p>
-      <pre class="max-h-[320px] overflow-auto rounded-md border border-border bg-muted/50 p-3 text-xs text-destructive">{{ globalErrorText }}</pre>
+    <BaseModal
+      :open="globalErrorModalOpen"
+      :title="t('common:vue.app.globalErrorTitle', 'Error')"
+      @close="globalErrorModalOpen = false"
+    >
+      <p class="text-sm text-foreground/85">
+        {{ t('common:vue.app.globalErrorDesc', 'Please copy the following details if you report this issue.') }}
+      </p>
+      <pre
+        class="max-h-[320px] overflow-auto rounded-md border border-border bg-muted/50 p-3 text-xs text-destructive"
+        >{{ globalErrorText }}</pre>
       <div class="flex flex-wrap items-center gap-2">
         <button type="button" class="button-primary" @click="copyGlobalError">
-          {{ t("common:vue.common.copy", "Copy") }}
+          {{ t('common:vue.common.copy', 'Copy') }}
         </button>
         <span class="text-xs text-muted-foreground">{{ errorCopyStatus }}</span>
       </div>
@@ -79,27 +105,34 @@
     >
       <div class="space-y-3">
         <p class="text-sm text-foreground/85">
-          {{ t("common:vue.app.feedbackHint", "Use the following channels for feedback, bug reports, or suggestions.") }}
+          {{
+            t('common:vue.app.feedbackHint', 'Use the following channels for feedback, bug reports, or suggestions.')
+          }}
         </p>
 
         <div class="feedback-contact-list">
           <div class="feedback-contact-row">
             <div class="min-w-0">
-              <p class="feedback-contact-label">{{ t("common:vue.app.feedbackQqLabel", "QQ Group") }}</p>
+              <p class="feedback-contact-label">{{ t('common:vue.app.feedbackQqLabel', 'QQ Group') }}</p>
               <p class="feedback-contact-value">{{ QQ_GROUP_NUMBER }}</p>
             </div>
-            <button type="button" class="button-secondary text-xs" data-feedback-copy @click="copyFeedbackContact(QQ_GROUP_NUMBER)">
-              {{ t("common:vue.common.copy", "Copy") }}
+            <button
+              type="button"
+              class="button-secondary text-xs"
+              data-feedback-copy
+              @click="copyFeedbackContact(QQ_GROUP_NUMBER)"
+            >
+              {{ t('common:vue.common.copy', 'Copy') }}
             </button>
           </div>
 
           <div class="feedback-contact-row">
             <div class="min-w-0">
-              <p class="feedback-contact-label">{{ t("common:vue.app.feedbackEmailLabel", "QQ Email") }}</p>
+              <p class="feedback-contact-label">{{ t('common:vue.app.feedbackEmailLabel', 'QQ Email') }}</p>
               <a class="feedback-contact-link" :href="`mailto:${FEEDBACK_EMAIL}`">{{ FEEDBACK_EMAIL }}</a>
             </div>
             <button type="button" class="button-secondary text-xs" @click="copyFeedbackContact(FEEDBACK_EMAIL)">
-              {{ t("common:vue.common.copy", "Copy") }}
+              {{ t('common:vue.common.copy', 'Copy') }}
             </button>
           </div>
         </div>
@@ -114,18 +147,15 @@
       initial-focus-selector="[data-simulation-results-confirm]"
       @close="closeSimulationCompleteModal"
     >
-      <p class="text-sm text-foreground/85">{{ t("common:vue.app.simulationCompleteDesc", "Simulation completed. Go to Home results now?") }}</p>
+      <p class="text-sm text-foreground/85">
+        {{ t('common:vue.app.simulationCompleteDesc', 'Simulation completed. Go to Home results now?') }}
+      </p>
       <div class="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          class="button-primary"
-          data-simulation-results-confirm
-          @click="goToHomeResults"
-        >
-          {{ t("common:vue.app.goToHomeResults", "Go to Home Results") }}
+        <button type="button" class="button-primary" data-simulation-results-confirm @click="goToHomeResults">
+          {{ t('common:vue.app.goToHomeResults', 'Go to Home Results') }}
         </button>
         <button type="button" class="button-secondary" @click="closeSimulationCompleteModal">
-          {{ t("common:vue.app.stayHere", "Stay Here") }}
+          {{ t('common:vue.app.stayHere', 'Stay Here') }}
         </button>
       </div>
     </BaseModal>
@@ -138,16 +168,31 @@
     >
       <div class="space-y-3">
         <p class="text-sm text-foreground/85">
-          {{ t("common:queue.baselineReminderBody", "Fewer baseline rounds can make the result more volatile. Adjust the setting first if you want a more stable baseline.") }}
+          {{
+            t(
+              'common:queue.baselineReminderBody',
+              'Fewer baseline rounds can make the result more volatile. Adjust the setting first if you want a more stable baseline.',
+            )
+          }}
         </p>
         <p class="text-sm text-primary">
           {{ baselineReminderCurrentRoundsText }}
         </p>
         <p class="text-xs text-primary">
-          {{ t("common:queue.baselineRecommendationHint", "Recommended: at least 10 rounds, with 20-30 as the usual stable range; use 50+ when comparing very close options.") }}
+          {{
+            t(
+              'common:queue.baselineRecommendationHint',
+              'Recommended: at least 10 rounds, with 20-30 as the usual stable range; use 50+ when comparing very close options.',
+            )
+          }}
         </p>
         <p class="text-xs text-muted-foreground">
-          {{ t("common:queue.baselineReminderAggregationHint", "Set Baseline runs multiple rounds using the current baseline round count and uses the aggregated result as the queue comparison baseline.") }}
+          {{
+            t(
+              'common:queue.baselineReminderAggregationHint',
+              'Set Baseline runs multiple rounds using the current baseline round count and uses the aggregated result as the queue comparison baseline.',
+            )
+          }}
         </p>
         <div class="flex flex-wrap items-center gap-2">
           <button
@@ -156,10 +201,10 @@
             data-baseline-reminder-acknowledge
             @click="acknowledgeBaselineReminderAndRun"
           >
-            {{ t("common:queue.baselineReminderAcknowledge", "I understand, don't show again") }}
+            {{ t('common:queue.baselineReminderAcknowledge', "I understand, don't show again") }}
           </button>
           <button type="button" class="button-secondary" @click="openBaselineReminderSettings">
-            {{ t("common:queue.baselineReminderGoToSettings", "Go to Settings") }}
+            {{ t('common:queue.baselineReminderGoToSettings', 'Go to Settings') }}
           </button>
         </div>
       </div>
@@ -171,18 +216,15 @@
       initial-focus-selector="[data-multi-results-confirm]"
       @close="closeQueueCompleteModal"
     >
-      <p class="text-sm text-foreground/85">{{ t("common:vue.app.queueCompleteDesc", "Queue run started. Go to the Multi-round page now?") }}</p>
+      <p class="text-sm text-foreground/85">
+        {{ t('common:vue.app.queueCompleteDesc', 'Queue run started. Go to the Multi-round page now?') }}
+      </p>
       <div class="flex flex-wrap items-center gap-2">
-        <button
-          type="button"
-          class="button-primary"
-          data-multi-results-confirm
-          @click="goToMultiResults"
-        >
-          {{ t("common:vue.app.goToMultiResults", "Go to Multi-round") }}
+        <button type="button" class="button-primary" data-multi-results-confirm @click="goToMultiResults">
+          {{ t('common:vue.app.goToMultiResults', 'Go to Multi-round') }}
         </button>
         <button type="button" class="button-secondary" @click="closeQueueCompleteModal">
-          {{ t("common:vue.app.stayHere", "Stay Here") }}
+          {{ t('common:vue.app.stayHere', 'Stay Here') }}
         </button>
       </div>
     </BaseModal>
@@ -196,32 +238,56 @@
     >
       <div class="space-y-3">
         <p class="text-sm text-foreground/85">
-          {{ t("common:queue.confirmFallbackPriceBody", "These target enhancement levels have no exact sell listing. Review each fallback source, value, volume, and data time before confirming.") }}
+          {{
+            t(
+              'common:queue.confirmFallbackPriceBody',
+              'These target enhancement levels have no exact sell listing. Review each fallback source, value, volume, and data time before confirming.',
+            )
+          }}
         </p>
         <p v-if="hasHistoricalEquipmentPriceConfirmation" class="text-xs text-warning">
-          {{ t("common:queue.confirmHistoricalAskWarning", "Historical Ask values have no hard age limit. Check the data time and confirm only if the price is still acceptable.") }}
+          {{
+            t(
+              'common:queue.confirmHistoricalAskWarning',
+              'Historical Ask values have no hard age limit. Check the data time and confirm only if the price is still acceptable.',
+            )
+          }}
         </p>
         <p v-if="equipmentPriceConfirmationRefreshFailed" class="text-xs text-warning">
-          {{ t("common:queue.confirmHourlyAverageCached", "The official market refresh failed. Review the fallback source and data time below.") }}
+          {{
+            t(
+              'common:queue.confirmHourlyAverageCached',
+              'The official market refresh failed. Review the fallback source and data time below.',
+            )
+          }}
         </p>
         <p v-if="hasManualEquipmentPriceConfirmation" class="text-xs text-foreground/75">
-          {{ t("common:queue.manualPriceBody", "These target equipment have no official or historical price. Enter a buy price for each to add them to the queue.") }}
+          {{
+            t(
+              'common:queue.manualPriceBody',
+              'These target equipment have no official or historical price. Enter a buy price for each to add them to the queue.',
+            )
+          }}
         </p>
         <div class="overflow-x-auto rounded-md border border-border">
           <table class="w-full min-w-[680px] text-left text-sm">
             <thead class="bg-muted/60 text-xs text-muted-foreground">
               <tr>
-                <th class="px-3 py-2">{{ t("common:queue.confirmPriceSlot", "Slot") }}</th>
-                <th class="px-3 py-2">{{ t("common:queue.confirmPriceEquipment", "Equipment") }}</th>
-                <th class="px-3 py-2">{{ t("common:queue.confirmPriceEnhancement", "Enhancement") }}</th>
-                <th class="px-3 py-2">{{ t("common:queue.confirmPriceSource", "Source") }}</th>
-                <th class="px-3 py-2">{{ t("common:queue.confirmPriceValue", "Price") }}</th>
-                <th class="px-3 py-2">{{ t("common:queue.confirmPriceVolume", "Volume") }}</th>
-                <th class="px-3 py-2">{{ t("common:queue.confirmPriceDataTime", "Data Time") }}</th>
+                <th class="px-3 py-2">{{ t('common:queue.confirmPriceSlot', 'Slot') }}</th>
+                <th class="px-3 py-2">{{ t('common:queue.confirmPriceEquipment', 'Equipment') }}</th>
+                <th class="px-3 py-2">{{ t('common:queue.confirmPriceEnhancement', 'Enhancement') }}</th>
+                <th class="px-3 py-2">{{ t('common:queue.confirmPriceSource', 'Source') }}</th>
+                <th class="px-3 py-2">{{ t('common:queue.confirmPriceValue', 'Price') }}</th>
+                <th class="px-3 py-2">{{ t('common:queue.confirmPriceVolume', 'Volume') }}</th>
+                <th class="px-3 py-2">{{ t('common:queue.confirmPriceDataTime', 'Data Time') }}</th>
               </tr>
             </thead>
             <tbody>
-              <tr v-for="entry in pendingEquipmentPriceConfirmations" :key="`${entry.itemHrid}|${entry.enhancementLevel}`" class="border-t border-border">
+              <tr
+                v-for="entry in pendingEquipmentPriceConfirmations"
+                :key="`${entry.itemHrid}|${entry.enhancementLevel}`"
+                class="border-t border-border"
+              >
                 <td class="px-3 py-2">{{ formatConfirmationSlots(entry) }}</td>
                 <td class="px-3 py-2">{{ localizeHridDisplayName(entry.itemHrid) }}</td>
                 <td class="px-3 py-2">+{{ entry.enhancementLevel }}</td>
@@ -250,9 +316,11 @@
                           :key="unit.value"
                           type="button"
                           class="h-6 w-7 rounded-sm text-xs font-semibold transition-colors"
-                          :class="(manualPriceUnits[getManualPriceKey(entry)] || 'k') === unit.value
-                            ? 'bg-primary text-primary-foreground'
-                            : 'text-muted-foreground hover:bg-muted hover:text-foreground'"
+                          :class="
+                            (manualPriceUnits[getManualPriceKey(entry)] || 'k') === unit.value
+                              ? 'bg-primary text-primary-foreground'
+                              : 'text-muted-foreground hover:bg-muted hover:text-foreground'
+                          "
                           :aria-pressed="(manualPriceUnits[getManualPriceKey(entry)] || 'k') === unit.value"
                           @click="handleManualPriceUnitChange(unit.value, entry)"
                         >
@@ -274,7 +342,7 @@
                 </td>
                 <td class="px-3 py-2">
                   <template v-if="isManualPriceEntry(entry)">
-                    {{ t("common:queue.manualPriceEmptyValue", "—") }}
+                    {{ t('common:queue.manualPriceEmptyValue', '—') }}
                   </template>
                   <template v-else>
                     {{ formatConfirmationVolume(entry.volume) }}
@@ -282,7 +350,7 @@
                 </td>
                 <td class="px-3 py-2">
                   <template v-if="isManualPriceEntry(entry)">
-                    {{ t("common:queue.manualPriceEmptyValue", "—") }}
+                    {{ t('common:queue.manualPriceEmptyValue', '—') }}
                   </template>
                   <template v-else>
                     {{ formatMarketDataTime(entry.marketTimestamp) }}
@@ -294,10 +362,10 @@
         </div>
         <div class="flex flex-wrap items-center gap-2">
           <button type="button" class="button-primary" data-confirm-hourly-prices @click="confirmEquipmentPricesAndAdd">
-            {{ t("common:queue.confirmFallbackPriceAction", "Use these prices and add to queue") }}
+            {{ t('common:queue.confirmFallbackPriceAction', 'Use these prices and add to queue') }}
           </button>
           <button type="button" class="button-secondary" @click="cancelEquipmentPriceConfirmation">
-            {{ t("common:vue.common.cancel", "Cancel") }}
+            {{ t('common:vue.common.cancel', 'Cancel') }}
           </button>
         </div>
       </div>
@@ -306,51 +374,48 @@
 </template>
 
 <script setup>
-import { computed, onMounted, onUnmounted, ref, watch } from "vue";
-import { RouterView, useRoute, useRouter } from "vue-router";
-import { Languages, Moon, Sun } from "@lucide/vue";
+import { computed, onMounted, onUnmounted, ref, watch } from 'vue';
+import { RouterView, useRoute, useRouter } from 'vue-router';
+import { Languages, Moon, Sun } from '@lucide/vue';
 import {
   houseRoomDetailIndex as houseRoomDetailMap,
   itemDetailIndex as itemDetailMap,
-} from "../shared/gameDataIndex.js";
-import BaseModal from "./components/BaseModal.vue";
-import AppSidebar from "./components/AppSidebar.vue";
-import CombatCommandBar from "./components/CombatCommandBar.vue";
-import { Button } from "./components/ui/button/index.js";
-import { SidebarInset, SidebarProvider, SidebarTrigger } from "./components/ui/sidebar/index.js";
-import { useSimulatorStore } from "../stores/simulatorStore.js";
-import { formatCompactAmount } from "../services/amountFormatting.js";
-import { useGameDataText } from "./composables/useGameDataText.js";
-import { useI18nText } from "./composables/useI18nText.js";
-import { useTheme } from "./composables/useTheme.js";
+} from '../shared/gameDataIndex.js';
+import BaseModal from './components/BaseModal.vue';
+import AppSidebar from './components/AppSidebar.vue';
+import CombatCommandBar from './components/CombatCommandBar.vue';
+import { Button } from './components/ui/button/index.js';
+import { SidebarInset, SidebarProvider, SidebarTrigger } from './components/ui/sidebar/index.js';
+import { useSimulatorStore } from '../stores/simulatorStore.js';
+import { formatCompactAmount } from '../services/amountFormatting.js';
+import { useGameDataText } from './composables/useGameDataText.js';
+import { useI18nText } from './composables/useI18nText.js';
+import { useTheme } from './composables/useTheme.js';
 import {
   getUnreadPatchNoteEntries,
   initializePatchNotesState,
   markPatchNoteEntriesAsRead,
   resolvePatchNoteEntries,
-} from "./patchNotes.js";
-import {
-  dismissBaselineReminder,
-  isBaselineReminderDismissed,
-} from "./baselineReminder.js";
-import { deriveQueueItemStatusName } from "./queueItemStatusPresentation.js";
-import { evaluateManualPriceDraft, normalizeManualPriceDraft } from "./queueManualPriceValidation.js";
+} from './patchNotes.js';
+import { dismissBaselineReminder, isBaselineReminderDismissed } from './baselineReminder.js';
+import { deriveQueueItemStatusName } from './queueItemStatusPresentation.js';
+import { evaluateManualPriceDraft, normalizeManualPriceDraft } from './queueManualPriceValidation.js';
 
 const appVersion = __APP_VERSION__;
 
 // Feedback contact details — single source of truth for the feedback modal.
-const QQ_GROUP_NUMBER = "1102475742";
-const FEEDBACK_EMAIL = "596846069@qq.com";
+const QQ_GROUP_NUMBER = '1102475742';
+const FEEDBACK_EMAIL = '596846069@qq.com';
 const simulator = useSimulatorStore();
 const router = useRouter();
 const route = useRoute();
 const { theme, toggleTheme } = useTheme();
 let deferredInitHandle = null;
 const globalErrorModalOpen = ref(false);
-const globalErrorText = ref("");
-const errorCopyStatus = ref("");
+const globalErrorText = ref('');
+const errorCopyStatus = ref('');
 const feedbackModalOpen = ref(false);
-const feedbackCopyStatus = ref("");
+const feedbackCopyStatus = ref('');
 const simulationCompleteModalOpen = ref(false);
 const queueCompleteModalOpen = ref(false);
 const baselineReminderModalOpen = ref(false);
@@ -361,30 +426,23 @@ const manualPriceDrafts = ref({});
 const manualPriceUnits = ref({});
 const manualPriceErrors = ref({});
 const queueAdditionPending = ref(false);
-const pendingQueueDraftFingerprint = ref("");
+const pendingQueueDraftFingerprint = ref('');
 const baselineReminderDismissed = ref(isBaselineReminderDismissed());
 const patchNotesUnreadEntries = ref([]);
 const topQueueActionStatus = ref({
-  tone: "secondary",
-  text: "",
+  tone: 'secondary',
+  text: '',
 });
 const { language, setLanguage, t } = useI18nText();
-const {
-  getAbilityName,
-  getActionName,
-  getEquipmentSlotName,
-  getHouseRoomName,
-  getItemName,
-  getSkillName,
-} = useGameDataText();
+const { getAbilityName, getActionName, getEquipmentSlotName, getHouseRoomName, getItemName, getSkillName } =
+  useGameDataText();
 const showCombatToolbar = computed(() => route.meta?.showCombatToolbar !== false);
-const showHomeSimulationActions = computed(() => route.name === "home");
+const showHomeSimulationActions = computed(() => route.name === 'home');
 const combatCommandBarHeight = ref(0);
 const stickyShellHeight = computed(() => `${48 + (showCombatToolbar.value ? combatCommandBarHeight.value : 0)}px`);
-const currentPageTitle = computed(() => t(
-  route.meta?.navLabelKey || "common:title",
-  route.meta?.navLabel || "MWI Combat Simulator",
-));
+const currentPageTitle = computed(() =>
+  t(route.meta?.navLabelKey || 'common:title', route.meta?.navLabel || 'MWI Combat Simulator'),
+);
 
 function setCombatCommandBarHeight(height) {
   const numericHeight = Number(height);
@@ -397,44 +455,49 @@ const progressLabel = computed(() => {
   return `${progress}% | ${elapsed}s`;
 });
 
-const themeToggleAriaLabel = computed(() => (
-  theme.value === "dark"
-    ? t("common:vue.app.switchToLightTheme", "Switch to light mode")
-    : t("common:vue.app.switchToDarkTheme", "Switch to dark mode")
-));
-const languageToggleTarget = computed(() => (
-  language.value === "zh" ? "en" : "zh"
-));
-const languageToggleLabel = computed(() => (
-  language.value === "zh" ? "EN" : "中文"
-));
-const languageToggleAriaLabel = computed(() => (
-  language.value === "zh"
-    ? t("common:vue.app.switchToEnglish", "Switch to English")
-    : t("common:vue.app.switchToChinese", "Switch to Chinese")
-));
+const themeToggleAriaLabel = computed(() =>
+  theme.value === 'dark'
+    ? t('common:vue.app.switchToLightTheme', 'Switch to light mode')
+    : t('common:vue.app.switchToDarkTheme', 'Switch to dark mode'),
+);
+const languageToggleTarget = computed(() => (language.value === 'zh' ? 'en' : 'zh'));
+const languageToggleLabel = computed(() => (language.value === 'zh' ? 'EN' : '中文'));
+const languageToggleAriaLabel = computed(() =>
+  language.value === 'zh'
+    ? t('common:vue.app.switchToEnglish', 'Switch to English')
+    : t('common:vue.app.switchToChinese', 'Switch to Chinese'),
+);
 
 const activeQueueState = computed(() => simulator.activeQueueState || null);
-const activeQueuePartyStatus = computed(() => simulator.activeQueuePartyStatus || { hasMismatch: false, messageKey: "", memberNames: [] });
+const activeQueuePartyStatus = computed(
+  () => simulator.activeQueuePartyStatus || { hasMismatch: false, messageKey: '', memberNames: [] },
+);
 const activeQueuePartyMismatch = computed(() => Boolean(activeQueuePartyStatus.value?.hasMismatch));
-const activeQueuePartySummaryText = computed(() => (
+const activeQueuePartySummaryText = computed(() =>
   Array.isArray(activeQueuePartyStatus.value?.memberNames) && activeQueuePartyStatus.value.memberNames.length > 0
-    ? activeQueuePartyStatus.value.memberNames.join(" / ")
-    : ""
-));
-const activeQueuePartyWarningText = computed(() => (
+    ? activeQueuePartyStatus.value.memberNames.join(' / ')
+    : '',
+);
+const activeQueuePartyWarningText = computed(() =>
   activeQueuePartyMismatch.value
-    ? t(activeQueuePartyStatus.value?.messageKey || "common:queue.partyChangedSinceBaseline", activeQueuePartyStatus.value?.messageKey || "common:queue.partyChangedSinceBaseline")
-    : ""
-));
-const queueActionsDisabled = computed(() => Boolean(
-  simulator.runtime?.isRunning
-  || activeQueueState.value?.isRunning
-  || simulator.advisor.runtime?.isRunning
-  || queueAdditionPending.value
-));
+    ? t(
+        activeQueuePartyStatus.value?.messageKey || 'common:queue.partyChangedSinceBaseline',
+        activeQueuePartyStatus.value?.messageKey || 'common:queue.partyChangedSinceBaseline',
+      )
+    : '',
+);
+const queueActionsDisabled = computed(() =>
+  Boolean(
+    simulator.runtime?.isRunning ||
+    activeQueueState.value?.isRunning ||
+    simulator.advisor.runtime?.isRunning ||
+    queueAdditionPending.value,
+  ),
+);
 const activeQueueHasBaseline = computed(() => Boolean(activeQueueState.value?.baseline?.snapshot));
-const activeQueueItemCount = computed(() => (Array.isArray(activeQueueState.value?.items) ? activeQueueState.value.items.length : 0));
+const activeQueueItemCount = computed(() =>
+  Array.isArray(activeQueueState.value?.items) ? activeQueueState.value.items.length : 0,
+);
 const baselineReminderRoundCount = computed(() => {
   const parsed = Number(activeQueueState.value?.settings?.baselineRounds || 1);
   if (!Number.isFinite(parsed)) {
@@ -442,65 +505,62 @@ const baselineReminderRoundCount = computed(() => {
   }
   return Math.max(1, Math.min(200, Math.floor(parsed)));
 });
-const baselineReminderCurrentRoundsText = computed(() => (
-  t(
-    "common:queue.baselineReminderCurrentRounds",
-    `Current baseline rounds: ${baselineReminderRoundCount.value}`,
-    { count: baselineReminderRoundCount.value }
-  )
-));
+const baselineReminderCurrentRoundsText = computed(() =>
+  t('common:queue.baselineReminderCurrentRounds', `Current baseline rounds: ${baselineReminderRoundCount.value}`, {
+    count: baselineReminderRoundCount.value,
+  }),
+);
 const showRuntimeSummary = computed(() => Boolean(simulator.runtime.isRunning || simulator.runtime.error));
 const activeQueueProgressText = computed(() => {
   const progress = Number(activeQueueState.value?.progress || 0);
   if (!Number.isFinite(progress)) {
-    return "0%";
+    return '0%';
   }
   const clamped = Math.max(0, Math.min(1, progress));
   return `${Math.floor(clamped * 100)}%`;
 });
-const hasSimulationResults = computed(() => (
-  Boolean(simulator.results.simResult)
-  || (Array.isArray(simulator.results.simResults) && simulator.results.simResults.length > 0)
-  || (Array.isArray(simulator.results.summaryRows) && simulator.results.summaryRows.length > 0)
-  || (Array.isArray(simulator.results.batchRows) && simulator.results.batchRows.length > 0)
-));
-const topQueueActionStatusText = computed(() => topQueueActionStatus.value.text || "");
+const hasSimulationResults = computed(
+  () =>
+    Boolean(simulator.results.simResult) ||
+    (Array.isArray(simulator.results.simResults) && simulator.results.simResults.length > 0) ||
+    (Array.isArray(simulator.results.summaryRows) && simulator.results.summaryRows.length > 0) ||
+    (Array.isArray(simulator.results.batchRows) && simulator.results.batchRows.length > 0),
+);
+const topQueueActionStatusText = computed(() => topQueueActionStatus.value.text || '');
 const topQueueActionStatusClass = computed(() => {
-  if (topQueueActionStatus.value.tone === "success") {
-    return "text-success";
+  if (topQueueActionStatus.value.tone === 'success') {
+    return 'text-success';
   }
-  if (topQueueActionStatus.value.tone === "danger") {
-    return "text-destructive";
+  if (topQueueActionStatus.value.tone === 'danger') {
+    return 'text-destructive';
   }
-  if (topQueueActionStatus.value.tone === "warning") {
-    return "text-warning";
+  if (topQueueActionStatus.value.tone === 'warning') {
+    return 'text-warning';
   }
-  return "text-foreground/85";
+  return 'text-foreground/85';
 });
 const patchNotesEntries = computed(() => resolvePatchNoteEntries(undefined, language.value));
 const patchNotesUnreadCount = computed(() => patchNotesUnreadEntries.value.length);
 const hasUnreadPatchNotes = computed(() => patchNotesUnreadCount.value > 0);
-const patchNotesButtonAriaLabel = computed(() => (
+const patchNotesButtonAriaLabel = computed(() =>
   hasUnreadPatchNotes.value
-    ? t("common:vue.app.patchNotesUnreadAriaLabel", "Patch Notes, {{count}} unread updates", { count: patchNotesUnreadCount.value })
-    : t("common:patchNotes", "Patch Notes")
-));
+    ? t('common:vue.app.patchNotesUnreadAriaLabel', 'Patch Notes, {{count}} unread updates', {
+        count: patchNotesUnreadCount.value,
+      })
+    : t('common:patchNotes', 'Patch Notes'),
+);
 const actionNameFallbackMap = computed(() => {
   const map = {};
-  const actionOptions = [
-    ...(simulator.options?.zones || []),
-    ...(simulator.options?.dungeons || []),
-  ];
+  const actionOptions = [...(simulator.options?.zones || []), ...(simulator.options?.dungeons || [])];
   for (const option of actionOptions) {
-    const hrid = String(option?.hrid || "");
+    const hrid = String(option?.hrid || '');
     if (!hrid || Object.prototype.hasOwnProperty.call(map, hrid)) {
       continue;
     }
-    map[hrid] = String(option?.name || "");
+    map[hrid] = String(option?.name || '');
   }
   return map;
 });
-
 
 function runDeferredInitialization() {
   simulator.ensureMarketPricesLoaded(true);
@@ -508,7 +568,7 @@ function runDeferredInitialization() {
 }
 
 function scheduleDeferredInitialization() {
-  if (typeof window.requestIdleCallback === "function") {
+  if (typeof window.requestIdleCallback === 'function') {
     deferredInitHandle = window.requestIdleCallback(runDeferredInitialization, { timeout: 1200 });
     return;
   }
@@ -520,7 +580,7 @@ function cancelDeferredInitialization() {
     return;
   }
 
-  if (typeof window.cancelIdleCallback === "function") {
+  if (typeof window.cancelIdleCallback === 'function') {
     window.cancelIdleCallback(deferredInitHandle);
   } else {
     clearTimeout(deferredInitHandle);
@@ -530,62 +590,53 @@ function cancelDeferredInitialization() {
 
 function setTopQueueActionStatus(tone, text) {
   topQueueActionStatus.value = {
-    tone: tone || "secondary",
-    text: String(text || ""),
+    tone: tone || 'secondary',
+    text: String(text || ''),
   };
 }
 
 function resolveQueueActionErrorMessage(error) {
-  const messageKey = typeof error === "string"
-    ? error
-    : (error?.message || String(error));
-  if (error?.code === "invalid_manual_price") {
-    return t(
-      messageKey,
-      "Enter a valid integer buy price greater than 0."
-    );
+  const messageKey = typeof error === 'string' ? error : error?.message || String(error);
+  if (error?.code === 'invalid_manual_price') {
+    return t(messageKey, 'Enter a valid integer buy price greater than 0.');
   }
-  if (error?.code === "missing_enhancement_ask") {
+  if (error?.code === 'missing_enhancement_ask') {
     if (error?.queued) {
       return t(
         messageKey,
-        "A queued enhancement no longer has an exact sell listing. Remove that variant or wait for a valid listing before running the queue.",
+        'A queued enhancement no longer has an exact sell listing. Remove that variant or wait for a valid listing before running the queue.',
       );
     }
     const details = error?.details || {};
-    return t(
-      messageKey,
-      "{{slot}}: {{item}} +{{level}} has no exact sell listing and cannot be added to the queue.",
-      {
-        slot: getEquipmentSlotName(details.slotKey, details.slotKey || "Equipment"),
-        item: localizeHridDisplayName(details.itemHrid),
-        level: Number(details.enhancementLevel || 0),
-      },
-    );
+    return t(messageKey, '{{slot}}: {{item}} +{{level}} has no exact sell listing and cannot be added to the queue.', {
+      slot: getEquipmentSlotName(details.slotKey, details.slotKey || 'Equipment'),
+      item: localizeHridDisplayName(details.itemHrid),
+      level: Number(details.enhancementLevel || 0),
+    });
   }
   return t(messageKey, messageKey);
 }
 
 function isQueueActionCancelled(error) {
-  return Boolean(error?.code === "cancelled");
+  return Boolean(error?.code === 'cancelled');
 }
 
 function localizeHridDisplayName(hrid) {
-  const value = String(hrid || "");
+  const value = String(hrid || '');
   if (!value) {
-    return "-";
+    return '-';
   }
 
   if (Object.prototype.hasOwnProperty.call(itemDetailMap || {}, value)) {
     return getItemName(value, itemDetailMap[value]?.name || value);
   }
 
-  const abilityName = getAbilityName(value, "");
+  const abilityName = getAbilityName(value, '');
   if (abilityName && abilityName !== value) {
     return abilityName;
   }
 
-  if (Object.prototype.hasOwnProperty.call(actionNameFallbackMap.value || {}, value) || value.startsWith("/actions/")) {
+  if (Object.prototype.hasOwnProperty.call(actionNameFallbackMap.value || {}, value) || value.startsWith('/actions/')) {
     return getActionName(value, actionNameFallbackMap.value?.[value] || value);
   }
 
@@ -593,17 +644,17 @@ function localizeHridDisplayName(hrid) {
 }
 
 function localizeQueueSkillName(skillKey) {
-  const fallback = String(skillKey || "").trim();
+  const fallback = String(skillKey || '').trim();
   return getSkillName(skillKey, fallback);
 }
 
 function localizeHouseRoomName(roomHrid) {
-  const value = String(roomHrid || "");
-  return getHouseRoomName(value, houseRoomDetailMap?.[value]?.name || value || "House Room");
+  const value = String(roomHrid || '');
+  return getHouseRoomName(value, houseRoomDetailMap?.[value]?.name || value || 'House Room');
 }
 
 function formatTopQueueVariantName(item, fallbackIndex = 1) {
-  const fallbackName = String(item?.name || `${t("common:queue.queueItem", "Queue Item")} ${fallbackIndex}`);
+  const fallbackName = String(item?.name || `${t('common:queue.queueItem', 'Queue Item')} ${fallbackIndex}`);
   return deriveQueueItemStatusName(item?.changeDetails, {
     t,
     fallbackText: fallbackName,
@@ -617,26 +668,26 @@ function formatTopQueueVariantName(item, fallbackIndex = 1) {
 
 async function runTopbarBaselineSimulation() {
   try {
-    setTopQueueActionStatus("secondary", t("common:queue.baselineRunning", "Running baseline simulation..."));
+    setTopQueueActionStatus('secondary', t('common:queue.baselineRunning', 'Running baseline simulation...'));
     const baseline = await simulator.setQueueBaselineForActivePlayer({ runSimulation: true });
     const baselineRounds = Math.max(
       1,
-      Math.floor(Number(baseline?.settings?.baselineRounds || activeQueueState.value?.settings?.baselineRounds || 1))
+      Math.floor(Number(baseline?.settings?.baselineRounds || activeQueueState.value?.settings?.baselineRounds || 1)),
     );
     setTopQueueActionStatus(
-      "success",
+      'success',
       t(
-        "common:vue.queue.msgBaselineCaptured",
+        'common:vue.queue.msgBaselineCaptured',
         `Baseline captured for active player. Current baseline rounds: ${baselineRounds}. Recommended: at least 10 rounds, with 20-30 as the usual stable range; use 50+ when comparing very close options.`,
-        { count: baselineRounds }
-      )
+        { count: baselineRounds },
+      ),
     );
   } catch (error) {
     if (isQueueActionCancelled(error)) {
-      setTopQueueActionStatus("secondary", t("common:vue.queue.msgBaselineCancelled", "Baseline simulation stopped."));
+      setTopQueueActionStatus('secondary', t('common:vue.queue.msgBaselineCancelled', 'Baseline simulation stopped.'));
       return;
     }
-    setTopQueueActionStatus("danger", resolveQueueActionErrorMessage(error));
+    setTopQueueActionStatus('danger', resolveQueueActionErrorMessage(error));
   }
 }
 
@@ -650,22 +701,44 @@ async function setQueueBaselineFromTopbar() {
 
 function reportAddedQueueItems(items) {
   if (!Array.isArray(items) || items.length === 0) {
-    setTopQueueActionStatus("danger", t("common:vue.queue.msgNoChanges", "No changes detected (or baseline missing)."));
+    setTopQueueActionStatus('danger', t('common:vue.queue.msgNoChanges', 'No changes detected (or baseline missing).'));
     return;
   }
   if (items.length === 1) {
     if (items.some((item) => Array.isArray(item?.costWarnings) && item.costWarnings.length > 0)) {
-      setTopQueueActionStatus("warning", t("common:vue.queue.msgVariantAddedWithCostWarning", "{{name}} added to queue. A market-price warning applies.", { name: formatTopQueueVariantName(items[0], 1) }));
+      setTopQueueActionStatus(
+        'warning',
+        t(
+          'common:vue.queue.msgVariantAddedWithCostWarning',
+          '{{name}} added to queue. A market-price warning applies.',
+          { name: formatTopQueueVariantName(items[0], 1) },
+        ),
+      );
       return;
     }
-    setTopQueueActionStatus("success", t("common:vue.queue.msgVariantAdded", "{{name}} added to queue.", { name: formatTopQueueVariantName(items[0], 1) }));
+    setTopQueueActionStatus(
+      'success',
+      t('common:vue.queue.msgVariantAdded', '{{name}} added to queue.', {
+        name: formatTopQueueVariantName(items[0], 1),
+      }),
+    );
     return;
   }
   if (items.some((item) => Array.isArray(item?.costWarnings) && item.costWarnings.length > 0)) {
-    setTopQueueActionStatus("warning", t("common:vue.queue.msgVariantsAddedWithCostWarning", "{{count}} variants added to queue. One or more market-price warnings apply.", { count: items.length }));
+    setTopQueueActionStatus(
+      'warning',
+      t(
+        'common:vue.queue.msgVariantsAddedWithCostWarning',
+        '{{count}} variants added to queue. One or more market-price warnings apply.',
+        { count: items.length },
+      ),
+    );
     return;
   }
-  setTopQueueActionStatus("success", t("common:vue.queue.msgVariantsAdded", "{{count}} variants added to queue.", { count: items.length }));
+  setTopQueueActionStatus(
+    'success',
+    t('common:vue.queue.msgVariantsAdded', '{{count}} variants added to queue.', { count: items.length }),
+  );
 }
 
 async function addToQueueFromTopbar() {
@@ -674,7 +747,7 @@ async function addToQueueFromTopbar() {
   }
   queueAdditionPending.value = true;
   try {
-    setTopQueueActionStatus("secondary", t("common:queue.checkingMarketPrice", "Checking latest market prices..."));
+    setTopQueueActionStatus('secondary', t('common:queue.checkingMarketPrice', 'Checking latest market prices...'));
     const preparation = await simulator.prepareActivePlayerQueueAddition();
     if (preparation?.requiresConfirmation) {
       pendingEquipmentPriceConfirmations.value = preparation.confirmations || [];
@@ -685,7 +758,7 @@ async function addToQueueFromTopbar() {
     }
     reportAddedQueueItems(simulator.addActivePlayerToQueue());
   } catch (error) {
-    setTopQueueActionStatus("danger", resolveQueueActionErrorMessage(error));
+    setTopQueueActionStatus('danger', resolveQueueActionErrorMessage(error));
   } finally {
     queueAdditionPending.value = false;
   }
@@ -695,7 +768,7 @@ function cancelEquipmentPriceConfirmation() {
   equipmentPriceConfirmationModalOpen.value = false;
   pendingEquipmentPriceConfirmations.value = [];
   equipmentPriceConfirmationRefreshFailed.value = false;
-  pendingQueueDraftFingerprint.value = "";
+  pendingQueueDraftFingerprint.value = '';
   manualPriceDrafts.value = {};
   manualPriceUnits.value = {};
   manualPriceErrors.value = {};
@@ -704,7 +777,7 @@ function cancelEquipmentPriceConfirmation() {
 function confirmEquipmentPricesAndAdd() {
   try {
     if (JSON.stringify(simulator.activePlayer) !== pendingQueueDraftFingerprint.value) {
-      throw new Error("common:queue.confirmHourlyAverageDraftChanged");
+      throw new Error('common:queue.confirmHourlyAverageDraftChanged');
     }
     const confirmations = [];
     let hasInvalidManualPrice = false;
@@ -716,8 +789,8 @@ function confirmEquipmentPricesAndAdd() {
         if (!evaluation.valid) {
           hasInvalidManualPrice = true;
           manualPriceErrors.value[key] = t(
-            "common:queue.manualPriceInvalidRow",
-            "{{name}} +{{level}}: enter a valid integer buy price greater than 0.",
+            'common:queue.manualPriceInvalidRow',
+            '{{name}} +{{level}}: enter a valid integer buy price greater than 0.',
             {
               name: localizeHridDisplayName(entry.itemHrid),
               level: Number(entry.enhancementLevel || 0),
@@ -739,45 +812,45 @@ function confirmEquipmentPricesAndAdd() {
     reportAddedQueueItems(items);
   } catch (error) {
     cancelEquipmentPriceConfirmation();
-    setTopQueueActionStatus("danger", resolveQueueActionErrorMessage(error));
+    setTopQueueActionStatus('danger', resolveQueueActionErrorMessage(error));
   }
 }
 
 function formatConfirmedMarketNumber(value) {
-  return new Intl.NumberFormat(language.value === "zh" ? "zh-CN" : "en-US", { maximumFractionDigits: 2 }).format(Number(value || 0));
+  return new Intl.NumberFormat(language.value === 'zh' ? 'zh-CN' : 'en-US', { maximumFractionDigits: 2 }).format(
+    Number(value || 0),
+  );
 }
 
 function formatConfirmedMarketPrice(value) {
   return formatCompactAmount(value, {
-    locale: language.value === "zh" ? "zh-CN" : "en-US",
-    unitCase: "lower",
+    locale: language.value === 'zh' ? 'zh-CN' : 'en-US',
+    unitCase: 'lower',
   });
 }
 
 function formatConfirmationSlots(entry) {
-  const slotKeys = Array.isArray(entry?.slotKeys) && entry.slotKeys.length > 0
-    ? entry.slotKeys
-    : [entry?.slotKey];
+  const slotKeys = Array.isArray(entry?.slotKeys) && entry.slotKeys.length > 0 ? entry.slotKeys : [entry?.slotKey];
   return slotKeys
     .filter(Boolean)
     .map((slotKey) => getEquipmentSlotName(slotKey, slotKey))
-    .join(", ");
+    .join(', ');
 }
 
 const MANUAL_PRICE_UNITS = [
-  { value: "k", multiplier: 1000 },
-  { value: "m", multiplier: 1_000_000 },
-  { value: "b", multiplier: 1_000_000_000 },
+  { value: 'k', multiplier: 1000 },
+  { value: 'm', multiplier: 1_000_000 },
+  { value: 'b', multiplier: 1_000_000_000 },
 ];
 
 function getManualPriceUnitMultiplier(unit) {
-  const found = MANUAL_PRICE_UNITS.find((u) => u.value === String(unit || ""));
+  const found = MANUAL_PRICE_UNITS.find((u) => u.value === String(unit || ''));
   return found ? found.multiplier : 1000;
 }
 
 function sanitizeManualPriceInput(event, entry) {
   const key = getManualPriceKey(entry);
-  const rawValue = String(event.target.value || "");
+  const rawValue = String(event.target.value || '');
   const { normalized, containsLetters } = normalizeManualPriceDraft(rawValue);
   manualPriceDrafts.value[key] = normalized;
   if (normalized !== rawValue) {
@@ -785,8 +858,8 @@ function sanitizeManualPriceInput(event, entry) {
   }
   if (containsLetters) {
     manualPriceErrors.value[key] = t(
-      "common:queue.manualPriceDigitsOnly",
-      "Numbers only. Pick the k/m/b unit with the buttons."
+      'common:queue.manualPriceDigitsOnly',
+      'Numbers only. Pick the k/m/b unit with the buttons.',
     );
     return;
   }
@@ -796,90 +869,100 @@ function sanitizeManualPriceInput(event, entry) {
 }
 
 function handleManualPriceUnitChange(value, entry) {
-  const nextUnit = String(value || "").toLowerCase();
+  const nextUnit = String(value || '').toLowerCase();
   if (!MANUAL_PRICE_UNITS.some((u) => u.value === nextUnit)) return;
   manualPriceUnits.value[getManualPriceKey(entry)] = nextUnit;
 }
 
 function isManualPriceEntry(entry) {
-  return String(entry?.source || "") === "manual";
+  return String(entry?.source || '') === 'manual';
 }
 
 function getManualPriceKey(entry) {
-  return `${String(entry?.itemHrid || "")}|${Math.max(0, Math.floor(Number(entry?.enhancementLevel || 0)))}`;
+  return `${String(entry?.itemHrid || '')}|${Math.max(0, Math.floor(Number(entry?.enhancementLevel || 0)))}`;
 }
 
 function formatConfirmationSource(entry) {
   if (isManualPriceEntry(entry)) {
-    return t("common:queue.manualPriceSource", "Manual input");
+    return t('common:queue.manualPriceSource', 'Manual input');
   }
-  return String(entry?.source || "") === "historical_ask"
-    ? t("common:queue.confirmPriceSourceHistoricalAsk", "Historical Ask")
-    : t("common:queue.confirmPriceSourceOfficialHourlyAverage", "Official hourly average");
+  return String(entry?.source || '') === 'historical_ask'
+    ? t('common:queue.confirmPriceSourceHistoricalAsk', 'Historical Ask')
+    : t('common:queue.confirmPriceSourceOfficialHourlyAverage', 'Official hourly average');
 }
 
 function formatConfirmationVolume(value) {
   const volume = Number(value || 0);
-  return volume > 0
-    ? formatConfirmedMarketNumber(volume)
-    : t("common:queue.confirmPriceVolumeUnknown", "Unknown");
+  return volume > 0 ? formatConfirmedMarketNumber(volume) : t('common:queue.confirmPriceVolumeUnknown', 'Unknown');
 }
 
-const hasHistoricalEquipmentPriceConfirmation = computed(() => (
-  pendingEquipmentPriceConfirmations.value.some((entry) => String(entry?.source || "") === "historical_ask")
-));
+const hasHistoricalEquipmentPriceConfirmation = computed(() =>
+  pendingEquipmentPriceConfirmations.value.some((entry) => String(entry?.source || '') === 'historical_ask'),
+);
 
-const hasManualEquipmentPriceConfirmation = computed(() => (
-  pendingEquipmentPriceConfirmations.value.some((entry) => isManualPriceEntry(entry))
-));
+const hasManualEquipmentPriceConfirmation = computed(() =>
+  pendingEquipmentPriceConfirmations.value.some((entry) => isManualPriceEntry(entry)),
+);
 
 function formatMarketDataTime(timestampSeconds) {
   const timestamp = Number(timestampSeconds || 0);
-  return timestamp > 0 ? new Date(timestamp * 1000).toLocaleString() : t("common:queue.confirmPriceTimeUnknown", "Unknown");
+  return timestamp > 0
+    ? new Date(timestamp * 1000).toLocaleString()
+    : t('common:queue.confirmPriceTimeUnknown', 'Unknown');
 }
 
 async function runQueueFromTopbar() {
   try {
     closeQueueCompleteModal();
-    setTopQueueActionStatus("secondary", t("common:queue.queueRunning", "Running queue..."));
+    setTopQueueActionStatus('secondary', t('common:queue.queueRunning', 'Running queue...'));
     const queueRunPromise = simulator.runActiveQueue();
-    if (route.name !== "multi-results" && (simulator.runtime.isRunning || activeQueueState.value?.isRunning)) {
+    if (route.name !== 'multi-results' && (simulator.runtime.isRunning || activeQueueState.value?.isRunning)) {
       queueCompleteModalOpen.value = true;
     }
     const rows = await queueRunPromise;
-    if (activeQueueState.value?.lastRunStatus === "cancelled") {
+    if (activeQueueState.value?.lastRunStatus === 'cancelled') {
       const partialCount = Array.isArray(activeQueueState.value?.ranking) ? activeQueueState.value.ranking.length : 0;
       if (partialCount > 0) {
-        setTopQueueActionStatus("secondary", t("common:vue.queue.msgRunCancelledPartial", "Queue run stopped. Kept {{count}} ranked variants.", { count: partialCount }));
+        setTopQueueActionStatus(
+          'secondary',
+          t('common:vue.queue.msgRunCancelledPartial', 'Queue run stopped. Kept {{count}} ranked variants.', {
+            count: partialCount,
+          }),
+        );
         return;
       }
-      setTopQueueActionStatus("secondary", t("common:vue.queue.msgRunCancelled", "Queue run stopped."));
+      setTopQueueActionStatus('secondary', t('common:vue.queue.msgRunCancelled', 'Queue run stopped.'));
       return;
     }
     if (Array.isArray(rows) && rows.length > 0) {
-      setTopQueueActionStatus("success", t("common:vue.queue.msgRunCompleted", "Queue run completed: {{count}} variants ranked.", { count: rows.length }));
+      setTopQueueActionStatus(
+        'success',
+        t('common:vue.queue.msgRunCompleted', 'Queue run completed: {{count}} variants ranked.', {
+          count: rows.length,
+        }),
+      );
       return;
     }
     if (activeQueueState.value?.error) {
-      setTopQueueActionStatus("danger", t(activeQueueState.value.error, activeQueueState.value.error));
+      setTopQueueActionStatus('danger', t(activeQueueState.value.error, activeQueueState.value.error));
       return;
     }
-    setTopQueueActionStatus("secondary", t("common:queue.emptyResults", "No queue run results yet."));
+    setTopQueueActionStatus('secondary', t('common:queue.emptyResults', 'No queue run results yet.'));
   } catch (error) {
-    setTopQueueActionStatus("danger", resolveQueueActionErrorMessage(error));
+    setTopQueueActionStatus('danger', resolveQueueActionErrorMessage(error));
   }
 }
 
 function clearQueueFromTopbar() {
   simulator.clearActiveQueue();
-  setTopQueueActionStatus("success", t("common:vue.queue.msgQueueCleared", "Queue cleared."));
+  setTopQueueActionStatus('success', t('common:vue.queue.msgQueueCleared', 'Queue cleared.'));
 }
 
 function serializeErrorPayload(payload) {
   if (payload instanceof Error) {
     return payload.stack || payload.message || String(payload);
   }
-  if (typeof payload === "string") {
+  if (typeof payload === 'string') {
     return payload;
   }
   try {
@@ -894,54 +977,54 @@ function openGlobalError(source, payload) {
   // Dual-mode rendering: i18n keys (e.g. "common:simulation.*") are translated,
   // plain runtime error text is shown as-is.
   const details = t(rawDetails, rawDetails);
-  globalErrorText.value = `[${source}] ${details || "-"}`;
+  globalErrorText.value = `[${source}] ${details || '-'}`;
   globalErrorModalOpen.value = true;
-  errorCopyStatus.value = "";
+  errorCopyStatus.value = '';
 }
 
 async function copyGlobalError() {
-  const text = String(globalErrorText.value || "");
+  const text = String(globalErrorText.value || '');
   if (!text.trim()) {
     return;
   }
   try {
     await navigator.clipboard.writeText(text);
-    errorCopyStatus.value = t("common:vue.app.globalErrorCopied", "Copied.");
+    errorCopyStatus.value = t('common:vue.app.globalErrorCopied', 'Copied.');
   } catch (error) {
-    errorCopyStatus.value = t("common:vue.app.globalErrorCopyFailed", "Copy failed.");
+    errorCopyStatus.value = t('common:vue.app.globalErrorCopyFailed', 'Copy failed.');
   }
 }
 
 function openFeedbackModal() {
   feedbackModalOpen.value = true;
-  feedbackCopyStatus.value = "";
+  feedbackCopyStatus.value = '';
 }
 
 function closeFeedbackModal() {
   feedbackModalOpen.value = false;
-  feedbackCopyStatus.value = "";
+  feedbackCopyStatus.value = '';
 }
 
 async function copyFeedbackContact(value) {
-  const text = String(value || "").trim();
+  const text = String(value || '').trim();
   if (!text) {
     return;
   }
 
   try {
     await navigator.clipboard.writeText(text);
-    feedbackCopyStatus.value = t("common:vue.app.globalErrorCopied", "Copied.");
+    feedbackCopyStatus.value = t('common:vue.app.globalErrorCopied', 'Copied.');
   } catch (error) {
-    feedbackCopyStatus.value = t("common:vue.app.globalErrorCopyFailed", "Copy failed.");
+    feedbackCopyStatus.value = t('common:vue.app.globalErrorCopyFailed', 'Copy failed.');
   }
 }
 
 function onWindowError(event) {
-  openGlobalError("window.error", event?.error || event?.message || event);
+  openGlobalError('window.error', event?.error || event?.message || event);
 }
 
 function onUnhandledRejection(event) {
-  openGlobalError("unhandledrejection", event?.reason || event);
+  openGlobalError('unhandledrejection', event?.reason || event);
 }
 
 function closeSimulationCompleteModal() {
@@ -965,9 +1048,9 @@ async function acknowledgeBaselineReminderAndRun() {
 
 async function openBaselineReminderSettings() {
   closeBaselineReminderModal();
-  setTopQueueActionStatus("secondary", "");
-  if (route.name !== "settings") {
-    await router.push({ name: "settings" });
+  setTopQueueActionStatus('secondary', '');
+  if (route.name !== 'settings') {
+    await router.push({ name: 'settings' });
   }
 }
 
@@ -991,24 +1074,24 @@ function markPatchNotesReadOnPageEntry() {
 
 async function goToHomeResults() {
   closeSimulationCompleteModal();
-  if (route.name !== "home" || route.query.focus !== "results") {
-    await router.push({ name: "home", query: { focus: "results" } });
+  if (route.name !== 'home' || route.query.focus !== 'results') {
+    await router.push({ name: 'home', query: { focus: 'results' } });
   }
 }
 
 async function goToMultiResults() {
   closeQueueCompleteModal();
-  if (route.name !== "multi-results") {
-    await router.push({ name: "multi-results" });
+  if (route.name !== 'multi-results') {
+    await router.push({ name: 'multi-results' });
   }
 }
 
 watch(
   () => simulator.runtime.error,
   (nextError, prevError) => {
-    const nextText = String(nextError || "").trim();
-    if (nextText && nextText !== String(prevError || "").trim()) {
-      openGlobalError("runtime", nextText);
+    const nextText = String(nextError || '').trim();
+    if (nextText && nextText !== String(prevError || '').trim()) {
+      openGlobalError('runtime', nextText);
     }
   },
 );
@@ -1018,7 +1101,7 @@ watch(
   (nextNoticeId, prevNoticeId) => {
     const nextId = Number(nextNoticeId || 0);
     const prevId = Number(prevNoticeId || 0);
-    if (nextId <= prevId || !hasSimulationResults.value || route.name === "home") {
+    if (nextId <= prevId || !hasSimulationResults.value || route.name === 'home') {
       return;
     }
     simulationCompleteModalOpen.value = true;
@@ -1037,13 +1120,13 @@ watch(
 watch(
   () => route.name,
   (nextRouteName) => {
-    if (nextRouteName === "home") {
+    if (nextRouteName === 'home') {
       closeSimulationCompleteModal();
     }
-    if (nextRouteName === "multi-results") {
+    if (nextRouteName === 'multi-results') {
       closeQueueCompleteModal();
     }
-    if (nextRouteName === "patch-notes") {
+    if (nextRouteName === 'patch-notes') {
       markPatchNotesReadOnPageEntry();
     }
   },
@@ -1052,7 +1135,7 @@ watch(
 watch(
   () => simulator.activePlayerId,
   () => {
-    setTopQueueActionStatus("secondary", "");
+    setTopQueueActionStatus('secondary', '');
   },
 );
 
@@ -1061,18 +1144,18 @@ onMounted(() => {
     entries: patchNotesEntries.value,
   });
   refreshPatchNoteUnreadEntries();
-  if (route.name === "patch-notes") {
+  if (route.name === 'patch-notes') {
     markPatchNotesReadOnPageEntry();
   }
   scheduleDeferredInitialization();
-  window.addEventListener("error", onWindowError);
-  window.addEventListener("unhandledrejection", onUnhandledRejection);
+  window.addEventListener('error', onWindowError);
+  window.addEventListener('unhandledrejection', onUnhandledRejection);
 });
 
 onUnmounted(() => {
   cancelDeferredInitialization();
-  window.removeEventListener("error", onWindowError);
-  window.removeEventListener("unhandledrejection", onUnhandledRejection);
+  window.removeEventListener('error', onWindowError);
+  window.removeEventListener('unhandledrejection', onUnhandledRejection);
 });
 
 watch(

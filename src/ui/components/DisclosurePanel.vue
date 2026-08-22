@@ -11,8 +11,11 @@
     >
       <span class="min-w-0 font-heading text-sm font-semibold text-foreground">{{ title }}</span>
       <span class="flex shrink-0 items-center gap-1.5 text-xs text-muted-foreground">
-        {{ open ? t("common:vue.common.hide", "Hide") : t("common:vue.common.show", "Show") }}
-        <ChevronDown class="size-4 transition-transform duration-200 motion-reduce:transition-none" :class="open ? 'rotate-180' : ''" />
+        {{ open ? t('common:vue.common.hide', 'Hide') : t('common:vue.common.show', 'Show') }}
+        <ChevronDown
+          class="size-4 transition-transform duration-200 motion-reduce:transition-none"
+          :class="open ? 'rotate-180' : ''"
+        />
       </span>
     </CollapsibleTrigger>
     <CollapsibleContent
@@ -27,10 +30,10 @@
 </template>
 
 <script setup>
-import { ref } from "vue";
-import { ChevronDown } from "@lucide/vue";
-import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from "reka-ui";
-import { useI18nText } from "../composables/useI18nText.js";
+import { ref } from 'vue';
+import { ChevronDown } from '@lucide/vue';
+import { CollapsibleContent, CollapsibleRoot, CollapsibleTrigger } from 'reka-ui';
+import { useI18nText } from '../composables/useI18nText.js';
 
 const props = defineProps({
   title: { type: String, required: true },

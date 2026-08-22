@@ -1,13 +1,13 @@
-import CombatEvent from "./combatEvent";
+import CombatEvent from './combatEvent';
 
 class AwaitCooldownEvent extends CombatEvent {
-    static type = "awaitCooldownEvent";
+  static type = 'awaitCooldownEvent';
 
-    constructor(time, source) {
-        super(AwaitCooldownEvent.type, time);
+  constructor(time, source) {
+    super(AwaitCooldownEvent.type, time);
 
-        this.source = source;
-    }
+    this.source = source;
+  }
 }
 
 export default AwaitCooldownEvent;

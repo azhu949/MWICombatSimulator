@@ -1,22 +1,22 @@
-import gameDataIndex from "./gameDataIndex.generated.json";
-import buffTypeDetailMap from "../combatsimulator/data/buffTypeDetailMap.json";
-import itemCategoryDetailMap from "../combatsimulator/data/itemCategoryDetailMap.json";
-import skillDetailMap from "../combatsimulator/data/skillDetailMap.json";
+import gameDataIndex from './gameDataIndex.generated.json';
+import buffTypeDetailMap from '../combatsimulator/data/buffTypeDetailMap.json';
+import itemCategoryDetailMap from '../combatsimulator/data/itemCategoryDetailMap.json';
+import skillDetailMap from '../combatsimulator/data/skillDetailMap.json';
 import {
-    combatScrollDefinitions,
-    combatScrollOptions,
-    getCombatScrollBuffTemplate,
-    getCombatScrollDefinition,
-    getCombatScrollOptions,
-    normalizeCombatScrolls,
-} from "./combatScrolls.js";
+  combatScrollDefinitions,
+  combatScrollOptions,
+  getCombatScrollBuffTemplate,
+  getCombatScrollDefinition,
+  getCombatScrollOptions,
+  normalizeCombatScrolls,
+} from './combatScrolls.js';
 
 export const LEVEL_KEYS = gameDataIndex?.metadata?.levelKeys || [];
 export const EQUIPMENT_SLOT_KEYS = gameDataIndex?.metadata?.equipmentSlotKeys || [];
 // The generated timestamp changes whenever the shared game-data index is
 // rebuilt. Consumers can use it to invalidate derived memoized results when
 // data is hot-reloaded during a long-lived application session.
-export const GAME_DATA_VERSION = String(gameDataIndex?.metadata?.generatedAt || "unknown");
+export const GAME_DATA_VERSION = String(gameDataIndex?.metadata?.generatedAt || 'unknown');
 
 export const itemDetailIndex = gameDataIndex?.itemDetailIndex || {};
 export const itemVendorPriceByHrid = gameDataIndex?.itemVendorPriceByHrid || {};
@@ -33,22 +33,26 @@ export const personalBuffTypeDetailIndex = gameDataIndex?.personalBuffTypeDetail
 // Re-export the data-driven combat scroll catalog alongside the other shared
 // game-data indexes for callers that already depend on this module.
 export {
-    combatScrollDefinitions,
-    combatScrollOptions,
-    getCombatScrollBuffTemplate,
-    getCombatScrollDefinition,
-    getCombatScrollOptions,
-    normalizeCombatScrolls,
+  combatScrollDefinitions,
+  combatScrollOptions,
+  getCombatScrollBuffTemplate,
+  getCombatScrollDefinition,
+  getCombatScrollOptions,
+  normalizeCombatScrolls,
 };
 
-export const levelExperienceTable = Array.isArray(gameDataIndex?.levelExperienceTable) ? gameDataIndex.levelExperienceTable : [];
+export const levelExperienceTable = Array.isArray(gameDataIndex?.levelExperienceTable)
+  ? gameDataIndex.levelExperienceTable
+  : [];
 export const abilityBookInfoByAbilityHrid = gameDataIndex?.abilityBookInfoByAbilityHrid || {};
 
 export const equipmentOptionsBySlot = gameDataIndex?.equipmentBySlot || {};
 export const foodOptions = Array.isArray(gameDataIndex?.foodOptions) ? gameDataIndex.foodOptions : [];
 export const drinkOptions = Array.isArray(gameDataIndex?.drinkOptions) ? gameDataIndex.drinkOptions : [];
 export const abilityOptions = Array.isArray(gameDataIndex?.abilityOptions) ? gameDataIndex.abilityOptions : [];
-export const specialAbilityOptions = Array.isArray(gameDataIndex?.specialAbilityOptions) ? gameDataIndex.specialAbilityOptions : [];
+export const specialAbilityOptions = Array.isArray(gameDataIndex?.specialAbilityOptions)
+  ? gameDataIndex.specialAbilityOptions
+  : [];
 export const zoneOptions = Array.isArray(gameDataIndex?.zones) ? gameDataIndex.zones : [];
 export const dungeonOptions = Array.isArray(gameDataIndex?.dungeons) ? gameDataIndex.dungeons : [];
 export const groupZoneHrids = Array.isArray(gameDataIndex?.groupZoneHrids) ? gameDataIndex.groupZoneHrids : [];
@@ -58,98 +62,98 @@ export const houseRoomOptions = Array.isArray(gameDataIndex?.houseRoomOptions) ?
 export const houseRoomHrids = Array.isArray(gameDataIndex?.houseRoomHrids) ? gameDataIndex.houseRoomHrids : [];
 export const labyrinthCrateOptions = gameDataIndex?.labyrinthCrates || { coffee: [], food: [], tea: [] };
 function deepFreeze(value) {
-    if (!value || typeof value !== "object" || Object.isFrozen(value)) {
-        return value;
-    }
-    for (const child of Object.values(value)) {
-        deepFreeze(child);
-    }
-    return Object.freeze(value);
+  if (!value || typeof value !== 'object' || Object.isFrozen(value)) {
+    return value;
+  }
+  for (const child of Object.values(value)) {
+    deepFreeze(child);
+  }
+  return Object.freeze(value);
 }
 
 export const enhancementData = deepFreeze(gameDataIndex?.enhancementData || {});
 export const skillingData = deepFreeze(gameDataIndex?.skillingData || {});
 
 function normalizeSkillHrid(skillKey) {
-    const normalized = String(skillKey || "").trim();
-    if (!normalized) {
-        return "";
-    }
+  const normalized = String(skillKey || '').trim();
+  if (!normalized) {
+    return '';
+  }
 
-    if (normalized.startsWith("/skills/")) {
-        return `/skills/${normalized.slice("/skills/".length).toLowerCase()}`;
-    }
+  if (normalized.startsWith('/skills/')) {
+    return `/skills/${normalized.slice('/skills/'.length).toLowerCase()}`;
+  }
 
-    const shortKey = normalized.split("/").filter(Boolean).pop() || normalized;
-    return `/skills/${shortKey.toLowerCase()}`;
+  const shortKey = normalized.split('/').filter(Boolean).pop() || normalized;
+  return `/skills/${shortKey.toLowerCase()}`;
 }
 
-export function getItemName(hrid, fallback = "") {
-    const normalized = String(hrid || "");
-    if (!normalized) {
-        return String(fallback || "");
-    }
-    return String(itemDetailIndex?.[normalized]?.name || fallback || normalized);
+export function getItemName(hrid, fallback = '') {
+  const normalized = String(hrid || '');
+  if (!normalized) {
+    return String(fallback || '');
+  }
+  return String(itemDetailIndex?.[normalized]?.name || fallback || normalized);
 }
 
-export function getAbilityName(hrid, fallback = "") {
-    const normalized = String(hrid || "");
-    if (!normalized) {
-        return String(fallback || "");
-    }
-    return String(abilityDetailIndex?.[normalized]?.name || fallback || normalized);
+export function getAbilityName(hrid, fallback = '') {
+  const normalized = String(hrid || '');
+  if (!normalized) {
+    return String(fallback || '');
+  }
+  return String(abilityDetailIndex?.[normalized]?.name || fallback || normalized);
 }
 
-export function getActionName(hrid, fallback = "") {
-    const normalized = String(hrid || "");
-    if (!normalized) {
-        return String(fallback || "");
-    }
-    return String(actionDetailIndex?.[normalized]?.name || fallback || normalized);
+export function getActionName(hrid, fallback = '') {
+  const normalized = String(hrid || '');
+  if (!normalized) {
+    return String(fallback || '');
+  }
+  return String(actionDetailIndex?.[normalized]?.name || fallback || normalized);
 }
 
-export function getMonsterName(hrid, fallback = "") {
-    const normalized = String(hrid || "");
-    if (!normalized) {
-        return String(fallback || "");
-    }
-    return String(monsterDetailIndex?.[normalized]?.name || fallback || normalized);
+export function getMonsterName(hrid, fallback = '') {
+  const normalized = String(hrid || '');
+  if (!normalized) {
+    return String(fallback || '');
+  }
+  return String(monsterDetailIndex?.[normalized]?.name || fallback || normalized);
 }
 
-export function getHouseRoomName(hrid, fallback = "") {
-    const normalized = String(hrid || "");
-    if (!normalized) {
-        return String(fallback || "");
-    }
-    return String(houseRoomDetailIndex?.[normalized]?.name || fallback || normalized);
+export function getHouseRoomName(hrid, fallback = '') {
+  const normalized = String(hrid || '');
+  if (!normalized) {
+    return String(fallback || '');
+  }
+  return String(houseRoomDetailIndex?.[normalized]?.name || fallback || normalized);
 }
 
-export function getBuffTypeName(hrid, fallback = "") {
-    const normalized = String(hrid || "").trim();
-    if (!normalized) {
-        return String(fallback || "");
-    }
-    return String(buffTypeDetailIndex?.[normalized]?.name || fallback || normalized);
+export function getBuffTypeName(hrid, fallback = '') {
+  const normalized = String(hrid || '').trim();
+  if (!normalized) {
+    return String(fallback || '');
+  }
+  return String(buffTypeDetailIndex?.[normalized]?.name || fallback || normalized);
 }
 
-export function getSkillName(skillKey, fallback = "") {
-    const raw = String(skillKey || "").trim();
-    if (!raw) {
-        return String(fallback || "");
-    }
+export function getSkillName(skillKey, fallback = '') {
+  const raw = String(skillKey || '').trim();
+  if (!raw) {
+    return String(fallback || '');
+  }
 
-    const normalizedHrid = normalizeSkillHrid(raw);
-    return String(skillDetailIndex?.[normalizedHrid]?.name || fallback || raw);
+  const normalizedHrid = normalizeSkillHrid(raw);
+  return String(skillDetailIndex?.[normalizedHrid]?.name || fallback || raw);
 }
 
-export function getItemCategoryName(hrid, fallback = "") {
-    const normalized = String(hrid || "").trim();
-    if (!normalized) {
-        return String(fallback || "");
-    }
-    return String(itemCategoryDetailIndex?.[normalized]?.name || fallback || normalized);
+export function getItemCategoryName(hrid, fallback = '') {
+  const normalized = String(hrid || '').trim();
+  if (!normalized) {
+    return String(fallback || '');
+  }
+  return String(itemCategoryDetailIndex?.[normalized]?.name || fallback || normalized);
 }
 
 export function getSortedHouseRoomOptions() {
-    return houseRoomOptions;
+  return houseRoomOptions;
 }

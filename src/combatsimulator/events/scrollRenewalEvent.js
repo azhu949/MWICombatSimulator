@@ -1,4 +1,4 @@
-import CombatEvent from "./combatEvent";
+import CombatEvent from './combatEvent';
 
 /**
  * Wake-up event for a timed combat scroll.
@@ -8,14 +8,14 @@ import CombatEvent from "./combatEvent";
  * through death/respawn and dungeon restarts.
  */
 class ScrollRenewalEvent extends CombatEvent {
-    static type = "scrollRenewal";
+  static type = 'scrollRenewal';
 
-    constructor(time, playerHrid, itemHrid, token = 0) {
-        super(ScrollRenewalEvent.type, time);
-        this.playerHrid = String(playerHrid || "");
-        this.itemHrid = String(itemHrid || "");
-        this.token = Number.isFinite(Number(token)) ? Number(token) : 0;
-    }
+  constructor(time, playerHrid, itemHrid, token = 0) {
+    super(ScrollRenewalEvent.type, time);
+    this.playerHrid = String(playerHrid || '');
+    this.itemHrid = String(itemHrid || '');
+    this.token = Number.isFinite(Number(token)) ? Number(token) : 0;
+  }
 }
 
 export default ScrollRenewalEvent;

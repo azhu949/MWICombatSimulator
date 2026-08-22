@@ -18,25 +18,25 @@
  * @returns {Promise<void>}
  */
 export async function runParallelWorkerPool({
-    taskCount,
-    workerLimit,
-    runTask,
-    ensureActive,
-    clampWorkerCount = true,
+  taskCount,
+  workerLimit,
+  runTask,
+  ensureActive,
+  clampWorkerCount = true,
 }) {
-    const limit = Math.max(1, Number(workerLimit) || 1);
-    const workerCount = clampWorkerCount ? Math.min(limit, taskCount) : limit;
-    let nextIndex = 0;
+  const limit = Math.max(1, Number(workerLimit) || 1);
+  const workerCount = clampWorkerCount ? Math.min(limit, taskCount) : limit;
+  let nextIndex = 0;
 
-    const workerLoop = async () => {
-        while (nextIndex < taskCount) {
-            ensureActive?.();
-            const currentIndex = nextIndex;
-            nextIndex += 1;
-            // eslint-disable-next-line no-await-in-loop
-            await runTask(currentIndex);
-        }
-    };
+  const workerLoop = async () => {
+    while (nextIndex < taskCount) {
+      ensureActive?.();
+      const currentIndex = nextIndex;
+      nextIndex += 1;
+      // eslint-disable-next-line no-await-in-loop
+      await runTask(currentIndex);
+    }
+  };
 
-    await Promise.all(Array.from({ length: workerCount }, () => workerLoop()));
+  await Promise.all(Array.from({ length: workerCount }, () => workerLoop()));
 }

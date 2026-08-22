@@ -7,6 +7,6 @@
 </template>
 
 <script setup>
-import { cn } from "@/ui/lib/utils.js";
-const props = defineProps({ class: { type: [String, Array, Object], default: "" } });
+import { cn } from '@/ui/lib/utils.js';
+const props = defineProps({ class: { type: [String, Array, Object], default: '' } });
 </script>

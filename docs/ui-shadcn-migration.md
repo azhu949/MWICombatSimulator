@@ -25,64 +25,64 @@
 
 ## Page migration matrix
 
-| Page or area | Migrated primitives | Notes |
-| --- | --- | --- |
-| Application shell | Sidebar, Sheet, Dropdown Menu, Tooltip, Separator | Responsive groups and route metadata preserve existing navigation. |
-| Home | Field, Label, Select, Combobox, Number Field, Button, Badge, Table, Empty | Short simulation enums use Reka Select; the 55-item battle target list and other large game-data lists use bounded Combobox search. |
-| Simulation Results | Table, Badge, Progress, Separator, Empty | Sticky summary and horizontal table scrolling are preserved. |
-| Queue | Table, Badge, Progress, Tabs, Empty | Status and ranking presentation use semantic tokens. |
-| Multi Results | Table, Badge, Progress, Empty | Long result sets scroll horizontally without page overflow. |
-| Advisor | Combobox, Select, Table, Badge, Empty | Searchable game data lists retain result limits. |
-| Enhancement | Select, Combobox, Number Field, Dialog, Table, Badge, Progress | Desktop two-column workspace collapses to one column on mobile. |
-| Skilling | Select, Combobox, Number Field, Dialog, Table, Badge, Progress | Existing Chart.js and planner calculations remain unchanged. |
-| Settings | Tabs, Select, Native Select, Number Field, Input, Button | Queue, pricing, and loadout groups keep field order. |
-| Guide | Accordion, Tabs, Separator, Dialog, figures | Anchors, bilingual content, and tutorial images remain available. |
+| Page or area       | Migrated primitives                                                       | Notes                                                                                                                               |
+| ------------------ | ------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------- |
+| Application shell  | Sidebar, Sheet, Dropdown Menu, Tooltip, Separator                         | Responsive groups and route metadata preserve existing navigation.                                                                  |
+| Home               | Field, Label, Select, Combobox, Number Field, Button, Badge, Table, Empty | Short simulation enums use Reka Select; the 55-item battle target list and other large game-data lists use bounded Combobox search. |
+| Simulation Results | Table, Badge, Progress, Separator, Empty                                  | Sticky summary and horizontal table scrolling are preserved.                                                                        |
+| Queue              | Table, Badge, Progress, Tabs, Empty                                       | Status and ranking presentation use semantic tokens.                                                                                |
+| Multi Results      | Table, Badge, Progress, Empty                                             | Long result sets scroll horizontally without page overflow.                                                                         |
+| Advisor            | Combobox, Select, Table, Badge, Empty                                     | Searchable game data lists retain result limits.                                                                                    |
+| Enhancement        | Select, Combobox, Number Field, Dialog, Table, Badge, Progress            | Desktop two-column workspace collapses to one column on mobile.                                                                     |
+| Skilling           | Select, Combobox, Number Field, Dialog, Table, Badge, Progress            | Existing Chart.js and planner calculations remain unchanged.                                                                        |
+| Settings           | Tabs, Select, Native Select, Number Field, Input, Button                  | Queue, pricing, and loadout groups keep field order.                                                                                |
+| Guide              | Accordion, Tabs, Separator, Dialog, figures                               | Anchors, bilingual content, and tutorial images remain available.                                                                   |
 
 ## Baseline
 
-| Check | Result |
-| --- | --- |
-| Unit tests | 59 files, 559 tests passed |
-| Production build | Passed with Vite 5.4.21 |
-| Main CSS | 52.96 kB, 10.05 kB gzip |
-| Main JS | 1,132.80 kB, 373.85 kB gzip |
+| Check             | Result                                           |
+| ----------------- | ------------------------------------------------ |
+| Unit tests        | 59 files, 559 tests passed                       |
+| Production build  | Passed with Vite 5.4.21                          |
+| Main CSS          | 52.96 kB, 10.05 kB gzip                          |
+| Main JS           | 1,132.80 kB, 373.85 kB gzip                      |
 | Existing warnings | Large chunk warnings for app/data/worker bundles |
 
 ## Migration Matrix
 
-| Phase | Status | Scope | Completion gate | Evidence |
-| --- | --- | --- | --- | --- |
-| 1. Tailwind 4 and shadcn-vue infrastructure | `completed` | Vite plugin, aliases, component registry, local fonts | Build and all tests pass | Migration-stage build and test gate passed; final counts are recorded in Phase 8 |
-| 2. Theme tokens and shared components | `completed` | Semantic tokens, Button, Dialog, Collapsible, form and display primitives | Shared component tests pass | Theme, Dialog, Collapsible, Table, Select, and accessibility behavior covered by UI tests |
-| 3. App shell, sidebar, and combat command bar | `completed` | Responsive sidebar, header, global actions, contextual combat tools | Shell tests and responsive smoke checks pass | Shell behavior tests pass; sidebar, collapse/drawer, and command overflow verified at all three viewports |
-| 4. Home and Simulation Results | `completed` | Workspace, summary rail, results hierarchy and tables | Home/results tests and populated-state QA pass | Home and results tests pass; empty/populated tables, sticky summary, and overflow verified |
-| 5. Queue, Multi Results, and Advisor | `completed` | Status, ranking, progress, empty states and tables | Route tests and empty/populated QA pass | Queue, multi-results, and advisor tests pass; status, ranking, progress, search, and empty states verified |
-| 6. Enhancement and Skilling | `completed` | Two-column workspaces, dialogs, controls, ledgers and tables | Existing feature tests and responsive QA pass | Feature suites pass; desktop two-column and mobile single-column layouts verified |
-| 7. Settings and Guide | `completed` | Settings grouping, guide navigation, accordions and figures | Settings/guide tests and anchor checks pass | Settings tabs, Guide accordion/anchors, bilingual labels, and dialog interactions verified |
-| 8. Cleanup and final QA | `completed` | Remove legacy styling, full tests/build, desktop/mobile themes | All automated and browser checks pass | Full suite/build/page verification passed; static scan and browser matrix complete, including the final Select/Combobox audit |
+| Phase                                         | Status      | Scope                                                                     | Completion gate                                | Evidence                                                                                                                      |
+| --------------------------------------------- | ----------- | ------------------------------------------------------------------------- | ---------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------- |
+| 1. Tailwind 4 and shadcn-vue infrastructure   | `completed` | Vite plugin, aliases, component registry, local fonts                     | Build and all tests pass                       | Migration-stage build and test gate passed; final counts are recorded in Phase 8                                              |
+| 2. Theme tokens and shared components         | `completed` | Semantic tokens, Button, Dialog, Collapsible, form and display primitives | Shared component tests pass                    | Theme, Dialog, Collapsible, Table, Select, and accessibility behavior covered by UI tests                                     |
+| 3. App shell, sidebar, and combat command bar | `completed` | Responsive sidebar, header, global actions, contextual combat tools       | Shell tests and responsive smoke checks pass   | Shell behavior tests pass; sidebar, collapse/drawer, and command overflow verified at all three viewports                     |
+| 4. Home and Simulation Results                | `completed` | Workspace, summary rail, results hierarchy and tables                     | Home/results tests and populated-state QA pass | Home and results tests pass; empty/populated tables, sticky summary, and overflow verified                                    |
+| 5. Queue, Multi Results, and Advisor          | `completed` | Status, ranking, progress, empty states and tables                        | Route tests and empty/populated QA pass        | Queue, multi-results, and advisor tests pass; status, ranking, progress, search, and empty states verified                    |
+| 6. Enhancement and Skilling                   | `completed` | Two-column workspaces, dialogs, controls, ledgers and tables              | Existing feature tests and responsive QA pass  | Feature suites pass; desktop two-column and mobile single-column layouts verified                                             |
+| 7. Settings and Guide                         | `completed` | Settings grouping, guide navigation, accordions and figures               | Settings/guide tests and anchor checks pass    | Settings tabs, Guide accordion/anchors, bilingual labels, and dialog interactions verified                                    |
+| 8. Cleanup and final QA                       | `completed` | Remove legacy styling, full tests/build, desktop/mobile themes            | All automated and browser checks pass          | Full suite/build/page verification passed; static scan and browser matrix complete, including the final Select/Combobox audit |
 
 ## Component Inventory
 
-| Area | Target components |
-| --- | --- |
-| Shell | Sidebar, Sheet, Dropdown Menu, Tooltip, Scroll Area |
-| Feedback | Dialog, Alert Dialog, Alert, Sonner, Progress, Skeleton, Empty |
-| Forms | Field, Label, Input, Input Group, Number Field, Select, Native Select, Combobox, Checkbox, Switch, Radio Group, Slider, Textarea |
-| Data display | Button, Button Group, Badge, Tabs, Separator, Table, Collapsible, Accordion |
+| Area         | Target components                                                                                                                |
+| ------------ | -------------------------------------------------------------------------------------------------------------------------------- |
+| Shell        | Sidebar, Sheet, Dropdown Menu, Tooltip, Scroll Area                                                                              |
+| Feedback     | Dialog, Alert Dialog, Alert, Sonner, Progress, Skeleton, Empty                                                                   |
+| Forms        | Field, Label, Input, Input Group, Number Field, Select, Native Select, Combobox, Checkbox, Switch, Radio Group, Slider, Textarea |
+| Data display | Button, Button Group, Badge, Tabs, Separator, Table, Collapsible, Accordion                                                      |
 
 ## Verification Log
 
-| Phase | Commands | Browser coverage | Result |
-| --- | --- | --- | --- |
-| Baseline | `npm test -- --reporter=dot`; `npm run build` | Existing tutorial screenshots reviewed | Passed: 59 files / 559 tests; CSS 52.96 kB (10.05 kB gzip), main JS 1,132.80 kB (373.85 kB gzip) |
-| 1 | `npm test -- --reporter=dot`; `npm run build` | Deferred until the shell was available | Passed during migration; Tailwind 4 plugin, aliases, registry, and self-hosted fonts verified |
-| 2 | `npx vitest run src/ui/__tests__/themeAndSharedComponents.test.js src/ui/__tests__/interactivePrimitives.test.js --reporter=verbose`; `npm run build` | Dark/light tokens, focus rings, Dialog and Collapsible smoke checks | Passed; shared primitive behavior and theme persistence covered |
-| 3 | `npx vitest run src/ui/__tests__/App.template.test.js src/ui/__tests__/appShellBehavior.test.js --reporter=verbose` | `home`, `queue`, `multi-results`: 1440x900, 1024x768, 390x844; sidebar collapse/drawer and command overflow | Passed; route metadata, mobile Sheet, desktop icon rail, global actions, and disabled command states verified |
-| 4 | `npx vitest run src/ui/__tests__/HomePage.template.test.js src/ui/__tests__/SimulationResultsView.template.test.js --reporter=verbose` | Home and Simulation Results in dark desktop/mobile, light and English core states; empty and populated data | Passed; no page overflow or summary/action overlap |
-| 5 | `npx vitest run src/ui/__tests__/QueuePage.template.test.js src/ui/__tests__/MultiResultsPage.template.test.js src/ui/__tests__/multiResultsPresentation.test.js --reporter=verbose` | Queue, Multi Results, Advisor at all three viewports; empty, running, error, disabled, long-table states | Passed; badges, progress, ranking tables, search empty state, and horizontal scrolling verified |
-| 6 | `npx vitest run src/ui/__tests__/EnhancementPage.template.test.js src/ui/__tests__/SkillingPage.template.test.js src/ui/__tests__/skillingDrinkPresentation.test.js --reporter=verbose` | Enhancement and Skilling at 1440x900, 1024x768, 390x844; dialogs, controls, charts, and ledgers | Passed; two-column desktop workspace and single-column mobile layout verified without button/label wrapping |
-| 7 | `npx vitest run src/ui/__tests__/SettingsPage.template.test.js src/ui/__tests__/GuidePage.template.test.js --reporter=verbose` | Settings tabs and Guide anchors/Accordion in dark/light and English core checks | Passed; tab switching, anchor navigation, accordion states, figures, and focus behavior verified |
-| 8 | `npm test`; `npm run build`; `npm run verify-pages-build` | All routes and states below; final console/overflow/overlap scan plus Select/Combobox audit | Passed: 64 files / 588 tests; CSS 67.47 kB (12.26 kB gzip); entry JS 1,281.39 kB (419.13 kB gzip); page verification passed |
+| Phase    | Commands                                                                                                                                                                                | Browser coverage                                                                                            | Result                                                                                                                      |
+| -------- | --------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------- | --------------------------------------------------------------------------------------------------------------------------- |
+| Baseline | `npm test -- --reporter=dot`; `npm run build`                                                                                                                                           | Existing tutorial screenshots reviewed                                                                      | Passed: 59 files / 559 tests; CSS 52.96 kB (10.05 kB gzip), main JS 1,132.80 kB (373.85 kB gzip)                            |
+| 1        | `npm test -- --reporter=dot`; `npm run build`                                                                                                                                           | Deferred until the shell was available                                                                      | Passed during migration; Tailwind 4 plugin, aliases, registry, and self-hosted fonts verified                               |
+| 2        | `npx vitest run src/ui/__tests__/themeAndSharedComponents.test.js src/ui/__tests__/interactivePrimitives.test.js --reporter=verbose`; `npm run build`                                   | Dark/light tokens, focus rings, Dialog and Collapsible smoke checks                                         | Passed; shared primitive behavior and theme persistence covered                                                             |
+| 3        | `npx vitest run src/ui/__tests__/App.template.test.js src/ui/__tests__/appShellBehavior.test.js --reporter=verbose`                                                                     | `home`, `queue`, `multi-results`: 1440x900, 1024x768, 390x844; sidebar collapse/drawer and command overflow | Passed; route metadata, mobile Sheet, desktop icon rail, global actions, and disabled command states verified               |
+| 4        | `npx vitest run src/ui/__tests__/HomePage.template.test.js src/ui/__tests__/SimulationResultsView.template.test.js --reporter=verbose`                                                  | Home and Simulation Results in dark desktop/mobile, light and English core states; empty and populated data | Passed; no page overflow or summary/action overlap                                                                          |
+| 5        | `npx vitest run src/ui/__tests__/QueuePage.template.test.js src/ui/__tests__/MultiResultsPage.template.test.js src/ui/__tests__/multiResultsPresentation.test.js --reporter=verbose`    | Queue, Multi Results, Advisor at all three viewports; empty, running, error, disabled, long-table states    | Passed; badges, progress, ranking tables, search empty state, and horizontal scrolling verified                             |
+| 6        | `npx vitest run src/ui/__tests__/EnhancementPage.template.test.js src/ui/__tests__/SkillingPage.template.test.js src/ui/__tests__/skillingDrinkPresentation.test.js --reporter=verbose` | Enhancement and Skilling at 1440x900, 1024x768, 390x844; dialogs, controls, charts, and ledgers             | Passed; two-column desktop workspace and single-column mobile layout verified without button/label wrapping                 |
+| 7        | `npx vitest run src/ui/__tests__/SettingsPage.template.test.js src/ui/__tests__/GuidePage.template.test.js --reporter=verbose`                                                          | Settings tabs and Guide anchors/Accordion in dark/light and English core checks                             | Passed; tab switching, anchor navigation, accordion states, figures, and focus behavior verified                            |
+| 8        | `npm test`; `npm run build`; `npm run verify-pages-build`                                                                                                                               | All routes and states below; final console/overflow/overlap scan plus Select/Combobox audit                 | Passed: 64 files / 588 tests; CSS 67.47 kB (12.26 kB gzip); entry JS 1,281.39 kB (419.13 kB gzip); page verification passed |
 
 ### Final browser acceptance
 

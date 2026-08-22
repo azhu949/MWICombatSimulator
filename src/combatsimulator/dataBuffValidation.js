@@ -13,17 +13,17 @@
 // Combat scrolls are validated by getCombatScrollBuffTemplate (combatScrolls.js)
 // at construction; curse/fury/weaken/enrage buffs are constructed inline in
 // combatSimulator.js and do not change with game data updates.
-import abilityDetailMap from "./data/abilityDetailMap.json";
-import itemDetailMap from "./data/itemDetailMap.json";
+import abilityDetailMap from './data/abilityDetailMap.json';
+import itemDetailMap from './data/itemDetailMap.json';
 
-const BUFF_EFFECT_TYPE_HRID = "/ability_effect_types/buff";
+const BUFF_EFFECT_TYPE_HRID = '/ability_effect_types/buff';
 
 function isFiniteNumber(value) {
-    return typeof value === "number" && Number.isFinite(value);
+  return typeof value === 'number' && Number.isFinite(value);
 }
 
 function isNonEmptyString(value) {
-    return typeof value === "string" && value.trim().length > 0;
+  return typeof value === 'string' && value.trim().length > 0;
 }
 
 /**
@@ -31,62 +31,62 @@ function isNonEmptyString(value) {
  * TypeError listing the offending fields with a data-path context string.
  */
 export function validateBuffShape(buff, context) {
-    const problems = [];
-    if (!isNonEmptyString(buff?.uniqueHrid)) {
-        problems.push("uniqueHrid");
-    }
-    if (!isNonEmptyString(buff?.typeHrid)) {
-        problems.push("typeHrid");
-    }
-    if (!isFiniteNumber(buff?.ratioBoost)) {
-        problems.push("ratioBoost");
-    }
-    if (!isFiniteNumber(buff?.flatBoost)) {
-        problems.push("flatBoost");
-    }
-    if (!isFiniteNumber(buff?.duration)) {
-        problems.push("duration");
-    }
-    if (problems.length > 0) {
-        throw new TypeError(`Buff data shape invalid at ${context}: ${problems.join(", ")}`);
-    }
+  const problems = [];
+  if (!isNonEmptyString(buff?.uniqueHrid)) {
+    problems.push('uniqueHrid');
+  }
+  if (!isNonEmptyString(buff?.typeHrid)) {
+    problems.push('typeHrid');
+  }
+  if (!isFiniteNumber(buff?.ratioBoost)) {
+    problems.push('ratioBoost');
+  }
+  if (!isFiniteNumber(buff?.flatBoost)) {
+    problems.push('flatBoost');
+  }
+  if (!isFiniteNumber(buff?.duration)) {
+    problems.push('duration');
+  }
+  if (problems.length > 0) {
+    throw new TypeError(`Buff data shape invalid at ${context}: ${problems.join(', ')}`);
+  }
 }
 
 export function collectAbilityBuffShapes(abilityMap = abilityDetailMap) {
-    const failures = [];
-    for (const [hrid, ability] of Object.entries(abilityMap ?? {})) {
-        for (const [effectIndex, effect] of (ability?.abilityEffects ?? []).entries()) {
-            if (effect?.effectType !== BUFF_EFFECT_TYPE_HRID) {
-                continue;
-            }
-            for (const [buffIndex, buff] of (effect?.buffs ?? []).entries()) {
-                try {
-                    validateBuffShape(buff, `ability ${hrid} effect[${effectIndex}] buff[${buffIndex}]`);
-                } catch (error) {
-                    failures.push(error.message);
-                }
-            }
+  const failures = [];
+  for (const [hrid, ability] of Object.entries(abilityMap ?? {})) {
+    for (const [effectIndex, effect] of (ability?.abilityEffects ?? []).entries()) {
+      if (effect?.effectType !== BUFF_EFFECT_TYPE_HRID) {
+        continue;
+      }
+      for (const [buffIndex, buff] of (effect?.buffs ?? []).entries()) {
+        try {
+          validateBuffShape(buff, `ability ${hrid} effect[${effectIndex}] buff[${buffIndex}]`);
+        } catch (error) {
+          failures.push(error.message);
         }
+      }
     }
-    return failures;
+  }
+  return failures;
 }
 
 export function collectItemBuffShapes(itemMap = itemDetailMap) {
-    const failures = [];
-    for (const [hrid, item] of Object.entries(itemMap ?? {})) {
-        const buffs = item?.consumableDetail?.buffs ?? item?.buffs;
-        if (!Array.isArray(buffs)) {
-            continue;
-        }
-        for (const [buffIndex, buff] of buffs.entries()) {
-            try {
-                validateBuffShape(buff, `item ${hrid} buff[${buffIndex}]`);
-            } catch (error) {
-                failures.push(error.message);
-            }
-        }
+  const failures = [];
+  for (const [hrid, item] of Object.entries(itemMap ?? {})) {
+    const buffs = item?.consumableDetail?.buffs ?? item?.buffs;
+    if (!Array.isArray(buffs)) {
+      continue;
     }
-    return failures;
+    for (const [buffIndex, buff] of buffs.entries()) {
+      try {
+        validateBuffShape(buff, `item ${hrid} buff[${buffIndex}]`);
+      } catch (error) {
+        failures.push(error.message);
+      }
+    }
+  }
+  return failures;
 }
 
 /**
@@ -95,14 +95,14 @@ export function collectItemBuffShapes(itemMap = itemDetailMap) {
  * unit tests independent of the shipped data files.
  */
 export function assertBuffShapesValid({ abilityMap = abilityDetailMap, itemMap = itemDetailMap } = {}) {
-    const failures = [...collectAbilityBuffShapes(abilityMap), ...collectItemBuffShapes(itemMap)];
-    if (failures.length > 0) {
-        throw new Error(
-            `Checked-in buff data contains ${failures.length} malformed buff record(s). ` +
-                `Fix the data files (or update this validation) before shipping:\n` +
-                failures.map((failure) => `  - ${failure}`).join("\n"),
-        );
-    }
+  const failures = [...collectAbilityBuffShapes(abilityMap), ...collectItemBuffShapes(itemMap)];
+  if (failures.length > 0) {
+    throw new Error(
+      `Checked-in buff data contains ${failures.length} malformed buff record(s). ` +
+        `Fix the data files (or update this validation) before shipping:\n` +
+        failures.map((failure) => `  - ${failure}`).join('\n'),
+    );
+  }
 }
 
 // Run once at module load so every simulation/test entry point fails fast on

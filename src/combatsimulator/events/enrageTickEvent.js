@@ -1,14 +1,13 @@
-import CombatEvent from "./combatEvent";
+import CombatEvent from './combatEvent';
 
 class EnrageTickEvent extends CombatEvent {
-    static type = "enrageTick";
+  static type = 'enrageTick';
 
-    constructor(time, encounterTime) {
+  constructor(time, encounterTime) {
+    super(EnrageTickEvent.type, time);
 
-        super(EnrageTickEvent.type, time);
-
-        this.encounterTime = encounterTime;
-    }
+    this.encounterTime = encounterTime;
+  }
 }
 
 export default EnrageTickEvent;
