@@ -6,14 +6,14 @@ const routerSource = readFileSync(new URL('../router/index.js', import.meta.url)
 
 describe('EnhancementPage tool surface', () => {
   it('registers a dedicated route without the combat toolbar', () => {
-    expect(routerSource).toContain('path: "/enhancement"');
-    expect(routerSource).toContain('name: "enhancement"');
+    expect(routerSource).toContain("path: '/enhancement'");
+    expect(routerSource).toContain("name: 'enhancement'");
     expect(routerSource).toContain('meta: { showCombatToolbar: false,');
-    expect(routerSource).toContain('import("../pages/EnhancementPage.vue")');
+    expect(routerSource).toContain("import('../pages/EnhancementPage.vue')");
   });
 
   it('binds the independent enhancement store and initializes it', () => {
-    expect(pageSource).toContain('useEnhancementStore } from "../../stores/enhancementStore.js"');
+    expect(pageSource).toContain("useEnhancementStore } from '../../stores/enhancementStore.js'");
     expect(pageSource).toContain('const enhancement = useEnhancementStore();');
     expect(pageSource).toContain('await enhancement.initialize();');
     expect(pageSource).toContain('enhancement.config.startLevel');
@@ -21,16 +21,16 @@ describe('EnhancementPage tool surface', () => {
   });
 
   it('uses official item names for the fixed tea buff controls', () => {
-    expect(pageSource).toContain('getGameItemName("/items/blessed_tea"');
-    expect(pageSource).toContain('getGameItemName("/items/wisdom_tea"');
+    expect(pageSource).toContain("getGameItemName('/items/blessed_tea'");
+    expect(pageSource).toContain("getGameItemName('/items/wisdom_tea'");
   });
 
   it('uses official names for game-defined enhancement labels', () => {
-    expect(pageSource).toContain('getBuffTypeName("/buff_types/enhancing_level"');
-    expect(pageSource).toContain('getHouseRoomName("/house_rooms/observatory"');
+    expect(pageSource).toContain("getBuffTypeName('/buff_types/enhancing_level'");
+    expect(pageSource).toContain("getHouseRoomName('/house_rooms/observatory'");
     expect(pageSource).toContain('getEquipmentTypeName(');
     expect(pageSource).toContain('getAchievementTierName(tierHrid, fallbackName)');
-    expect(pageSource).toContain('getGameItemName("/items/philosophers_mirror"');
+    expect(pageSource).toContain("getGameItemName('/items/philosophers_mirror'");
     expect(pageSource).not.toContain('common:enhancement.observatoryLevel');
     expect(pageSource).not.toContain('common:enhancement.slotBody');
   });
@@ -39,12 +39,12 @@ describe('EnhancementPage tool surface', () => {
     expect(pageSource).toContain('data-tm-import-anchor="enhancement-actions"');
     expect(pageSource).toContain('data-tm-import-reference="enhancement-refresh"');
     expect(pageSource).toContain('applyTampermonkeyEnhancementImportMessage');
-    expect(pageSource).toContain('data.importTarget !== "enhancement"');
+    expect(pageSource).toContain("data.importTarget !== 'enhancement'");
     expect(pageSource).toContain(
-      'window.addEventListener("message", handleTampermonkeyEnhancementImportWindowMessage)',
+      "window.addEventListener('message', handleTampermonkeyEnhancementImportWindowMessage)",
     );
     expect(pageSource).toContain(
-      'window.removeEventListener("message", handleTampermonkeyEnhancementImportWindowMessage)',
+      "window.removeEventListener('message', handleTampermonkeyEnhancementImportWindowMessage)",
     );
   });
 
@@ -61,19 +61,19 @@ describe('EnhancementPage tool surface', () => {
     expect(pageSource).toContain('data-enhancement-item-icon');
     expect(pageSource).toContain('data-enhancement-selected-item-icon');
     expect(pageSource).toContain('itemIconHref(enhancement.config.itemHrid)');
-    expect(pageSource).toContain('watch(() => enhancement.config.itemHrid');
+    expect(pageSource).toMatch(/watch\(\s*\(\) => enhancement\.config\.itemHrid,/);
     expect(pageSource).toContain('data-enhancement-favorite-items');
     expect(pageSource).toContain('grid-cols-3');
     expect(pageSource).toContain('lg:grid-cols-7');
     expect(pageSource).toContain('role="list"');
-    expect(pageSource).toContain('officialItemName(item, "zh").toLowerCase()');
-    expect(pageSource).toContain('officialItemName(item, "en").toLowerCase()');
+    expect(pageSource).toContain("officialItemName(item, 'zh').toLowerCase()");
+    expect(pageSource).toContain("officialItemName(item, 'en').toLowerCase()");
     expect(pageSource).toContain('{ language: targetLanguage }');
     expect(pageSource).not.toContain('equipmentTypeName(item.equipmentType).toLowerCase().includes(query)');
-    expect(pageSource).not.toContain('String(item.name || "").toLowerCase().includes(query)');
+    expect(pageSource).not.toContain("String(item.name || '').toLowerCase().includes(query)");
     expect(pageSource).toContain('enhancement-item-row');
     expect(pageSource).toContain('common:enhancement.expectedResets');
-    expect(pageSource).toContain('rowValue(row, "expectedResetCount", "expectedResets", "resetCount")');
+    expect(pageSource).toContain("rowValue(row, 'expectedResetCount', 'expectedResets', 'resetCount')");
     expect(pageSource).not.toContain('strategySuccessRate(row)');
   });
 
@@ -99,7 +99,7 @@ describe('EnhancementPage tool surface', () => {
     expect(pageSource).toContain('data-enhancement-toolbar');
     expect(pageSource).toContain('!py-3');
     expect(pageSource).toContain('const advancedOpen = ref(true)');
-    expect(pageSource).toContain('const activeAdvancedTab = ref("bonuses")');
+    expect(pageSource).toContain("const activeAdvancedTab = ref('bonuses')");
     expect(pageSource).toContain('data-enhancement-advanced-tabs');
     expect(pageSource).toContain('data-enhancement-config-tools');
     expect(pageSource).toContain('const equipmentModalOpen = ref(false)');
@@ -120,7 +120,7 @@ describe('EnhancementPage tool surface', () => {
     expect(pageSource).toContain('acquisitionEstimateSummary');
     expect(pageSource).toContain('acquisitionVendorFloorLabel');
     expect(pageSource).toContain('protectionOptionLabel(item)');
-    expect(pageSource).toContain('const activeResultTab = ref("strategies")');
+    expect(pageSource).toContain("const activeResultTab = ref('strategies')");
     expect(pageSource).toContain('data-enhancement-result-tabs');
     expect(pageSource).toContain('v-show="activeResultTab === \'strategies\'"');
     expect(pageSource).toContain('v-show="activeResultTab === \'mirror\'"');
@@ -141,7 +141,7 @@ describe('EnhancementPage tool surface', () => {
     expect(pageSource).toContain('quantile.record');
     expect(pageSource).toContain('data-enhancement-budget-input');
     expect(pageSource).toContain('data-enhancement-budget-unit');
-    expect(pageSource).toContain('const budgetUnit = ref("M")');
+    expect(pageSource).toContain("const budgetUnit = ref('M')");
     expect(pageSource).toContain('convertAmountToBaseUnits');
     expect(pageSource).toContain('handleBudgetInput');
     expect(pageSource).toContain('commitBudgetInput');
@@ -151,7 +151,7 @@ describe('EnhancementPage tool surface', () => {
     expect(pageSource).not.toContain('v-model.number="enhancement.config.budget"');
     expect(pageSource).toContain('riskLoadLabel');
     expect(pageSource).toContain('riskFallbackLabel');
-    expect(pageSource).toContain('method === "moment_gamma"');
+    expect(pageSource).toContain("method === 'moment_gamma'");
     expect(pageSource).toContain(
       ':disabled="!enhancement.config.itemHrid || enhancement.riskRunning || !budgetInputValid"',
     );

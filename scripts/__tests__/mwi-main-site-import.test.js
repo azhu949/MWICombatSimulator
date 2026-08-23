@@ -30,7 +30,7 @@ function loadScriptTestApi() {
       },
     },
   };
-  const marker = '    installDebugInterface();';
+  const marker = '  installDebugInterface();';
   const exposedSource = scriptSource.replace(
     marker,
     `    globalThis.__mwiImportTestApi = {
@@ -108,44 +108,44 @@ function createPartyInfo(names = ['Current Player', 'Party Member']) {
 
 describe('mwi main-site import userscript', () => {
   it('captures enhancement-related current-character snapshot fields', () => {
-    expect(scriptSource).toContain('"communityBuffs"');
-    expect(scriptSource).toContain('"communityActionTypeBuffsMap"');
-    expect(scriptSource).toContain('"achievementActionTypeBuffsMap"');
-    expect(scriptSource).toContain('type === "skills_updated"');
-    expect(scriptSource).toContain('type === "items_updated"');
-    expect(scriptSource).toContain('type === "house_rooms_updated"');
-    expect(scriptSource).toContain('type === "achievements_updated"');
-    expect(scriptSource).toContain('type === "community_buffs_updated"');
-    expect(scriptSource).toContain('"characterGuildBuffMap"');
-    expect(scriptSource).toContain('"guildBuildingLevelMap"');
-    expect(scriptSource).toContain('type === "guild_buffs_updated"');
-    expect(scriptSource).toContain('type === "guild_updated"');
-    expect(scriptSource).toContain('if (reset || type === "guild_buffs_updated")');
-    expect(scriptSource).toContain('nextFields.characterGuildBuffMap = hasOwnKey(message, "characterGuildBuffMap")');
-    expect(scriptSource).toContain('if (reset || type === "guild_updated")');
-    expect(scriptSource).toContain('nextFields.guildBuildingLevelMap = hasOwnKey(message, "guildBuildingLevelMap")');
-    expect(scriptSource).toContain('"houseActionTypeBuffsMap"');
-    expect(scriptSource).toContain('"personalActionTypeBuffsMap"');
-    expect(scriptSource).toContain('"mooPassActionTypeBuffsMap"');
-    expect(scriptSource).toContain('type === "personal_buffs_updated"');
-    expect(scriptSource).toContain('type === "moo_pass_buffs_updated"');
+    expect(scriptSource).toContain("'communityBuffs'");
+    expect(scriptSource).toContain("'communityActionTypeBuffsMap'");
+    expect(scriptSource).toContain("'achievementActionTypeBuffsMap'");
+    expect(scriptSource).toContain("type === 'skills_updated'");
+    expect(scriptSource).toContain("type === 'items_updated'");
+    expect(scriptSource).toContain("type === 'house_rooms_updated'");
+    expect(scriptSource).toContain("type === 'achievements_updated'");
+    expect(scriptSource).toContain("type === 'community_buffs_updated'");
+    expect(scriptSource).toContain("'characterGuildBuffMap'");
+    expect(scriptSource).toContain("'guildBuildingLevelMap'");
+    expect(scriptSource).toContain("type === 'guild_buffs_updated'");
+    expect(scriptSource).toContain("type === 'guild_updated'");
+    expect(scriptSource).toContain("if (reset || type === 'guild_buffs_updated')");
+    expect(scriptSource).toContain("nextFields.characterGuildBuffMap = hasOwnKey(message, 'characterGuildBuffMap')");
+    expect(scriptSource).toContain("if (reset || type === 'guild_updated')");
+    expect(scriptSource).toContain("nextFields.guildBuildingLevelMap = hasOwnKey(message, 'guildBuildingLevelMap')");
+    expect(scriptSource).toContain("'houseActionTypeBuffsMap'");
+    expect(scriptSource).toContain("'personalActionTypeBuffsMap'");
+    expect(scriptSource).toContain("'mooPassActionTypeBuffsMap'");
+    expect(scriptSource).toContain("type === 'personal_buffs_updated'");
+    expect(scriptSource).toContain("type === 'moo_pass_buffs_updated'");
     expect(scriptSource).toContain('captureCurrentCharacterDataUpdate(parsed);');
   });
 
   it('uses a current-character-only request and enhancement bridge target on the enhancement page', () => {
     expect(scriptSource).toContain('data-tm-import-anchor="enhancement-actions"');
-    expect(scriptSource).toContain('normalizedImportMode === "player" ? "auto" : "active-player"');
-    expect(scriptSource).toContain('importTarget: "enhancement"');
-    expect(scriptSource).toContain('enhancementButton: "导入角色强化配置"');
+    expect(scriptSource).toContain("normalizedImportMode === 'player' ? 'auto' : 'active-player'");
+    expect(scriptSource).toContain("importTarget: 'enhancement'");
+    expect(scriptSource).toContain("enhancementButton: '导入角色强化配置'");
     expect(scriptSource).toContain('// @version      0.1.30');
   });
 
   it('uses the migrated toolbar button and semantic status classes', () => {
-    expect(scriptSource).toContain('button.className = "button-tool";');
+    expect(scriptSource).toContain("button.className = 'button-tool';");
     expect(scriptSource).not.toContain('action-button-tool');
-    expect(scriptSource).toContain('"text-xs text-destructive"');
-    expect(scriptSource).toContain('"text-xs text-success"');
-    expect(scriptSource).toContain('"text-xs text-muted-foreground"');
+    expect(scriptSource).toContain("'text-xs text-destructive'");
+    expect(scriptSource).toContain("'text-xs text-success'");
+    expect(scriptSource).toContain("'text-xs text-muted-foreground'");
     expect(scriptSource).not.toContain('text-rose-300');
     expect(scriptSource).not.toContain('text-teal-200');
     expect(scriptSource).not.toContain('text-cyan-200');
@@ -154,8 +154,8 @@ describe('mwi main-site import userscript', () => {
   it('uses the current character and skilling bridge target on the skilling page', () => {
     expect(scriptSource).toContain('data-tm-import-anchor="skilling-actions"');
     expect(scriptSource).toContain('data-tm-import-reference="skilling-refresh"');
-    expect(scriptSource).toContain('importTarget: "skilling"');
-    expect(scriptSource).toContain('skillingButton: "导入生活技能快照"');
+    expect(scriptSource).toContain("importTarget: 'skilling'");
+    expect(scriptSource).toContain("skillingButton: '导入生活技能快照'");
   });
 
   it('accepts bridge responses only from the sandbox or page window on the same origin', () => {
@@ -167,7 +167,7 @@ describe('mwi main-site import userscript', () => {
     expect(api.isTrustedBridgeMessageEvent({ source: pageWindow, origin: sandboxWindow.location.origin })).toBe(true);
     expect(api.isTrustedBridgeMessageEvent({ source: {}, origin: sandboxWindow.location.origin })).toBe(false);
     expect(api.isTrustedBridgeMessageEvent({ source: pageWindow, origin: 'https://attacker.example' })).toBe(false);
-    expect(scriptSource).toContain('pageWindow.postMessage({');
+    expect(scriptSource).toMatch(/pageWindow\.postMessage\(\s*\{[\s\S]*?channel:\s*APP_BRIDGE_CHANNEL,?/);
   });
 
   it('pre-filters websocket messages before structurally scanning nested party payloads', () => {

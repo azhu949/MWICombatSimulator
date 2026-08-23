@@ -5,7 +5,7 @@ const multiResultsPageSource = readFileSync(new URL('../pages/MultiResultsPage.v
 
 describe('MultiResultsPage baseline summary copy', () => {
   it('explains that baseline summary values come from robust multi-round aggregation', () => {
-    expect(multiResultsPageSource).toContain('t("common:queue.baselineSummaryAggregationHint"');
+    expect(multiResultsPageSource).toMatch(/t\(\s*'common:queue\.baselineSummaryAggregationHint',/);
   });
 
   it('uses compact amounts for baseline profit and XP', () => {
@@ -15,7 +15,7 @@ describe('MultiResultsPage baseline summary copy', () => {
 
   it('shows the selected cost score metric and uses a dynamic cost score header', () => {
     expect(multiResultsPageSource).toContain(
-      't("common:multiRound.scoreModelParamCostGoldMetricSelected", "", { mode: currentCostScoreModeLabel })',
+      "t('common:multiRound.scoreModelParamCostGoldMetricSelected', '', { mode: currentCostScoreModeLabel })",
     );
     expect(multiResultsPageSource).toContain('const costScoreColumnHeader = computed(() =>');
     expect(multiResultsPageSource).toContain('{{ costScoreColumnHeader }}');
@@ -30,18 +30,18 @@ describe('MultiResultsPage baseline summary copy', () => {
 
   it('flags manually entered equipment prices in the ranking table and export', () => {
     expect(multiResultsPageSource).toContain('v-if="hasManualUpgradePrice(row)"');
-    expect(multiResultsPageSource).toContain('t("common:multiRound.manualPriceBadge", "Manual")');
-    expect(multiResultsPageSource).toContain('"common:multiRound.manualPriceTooltip"');
+    expect(multiResultsPageSource).toContain("t('common:multiRound.manualPriceBadge', 'Manual')");
+    expect(multiResultsPageSource).toContain("'common:multiRound.manualPriceTooltip'");
     expect(multiResultsPageSource).toContain('formatEquipmentBuyPriceForExport(row)');
   });
 
   it('shows equipment sale value, buy price and net cost columns with an upgrade cost composition tooltip', () => {
     expect(multiResultsPageSource).toContain(
-      't("common:vue.queue.equipmentSaleValue", "Replaced Equipment Sale Value")',
+      "t('common:vue.queue.equipmentSaleValue', 'Replaced Equipment Sale Value')",
     );
-    expect(multiResultsPageSource).toContain('t("common:vue.queue.equipmentBuyPrice", "Target Equipment Buy Price")');
-    expect(multiResultsPageSource).toContain('t("common:vue.queue.equipmentNetCost", "Equipment Net Cost")');
-    expect(multiResultsPageSource).toContain("t('common:vue.queue.upgradeCostComposition'");
+    expect(multiResultsPageSource).toContain("t('common:vue.queue.equipmentBuyPrice', 'Target Equipment Buy Price')");
+    expect(multiResultsPageSource).toContain("t('common:vue.queue.equipmentNetCost', 'Equipment Net Cost')");
+    expect(multiResultsPageSource).toMatch(/t\(\s*'common:vue\.queue\.upgradeCostComposition',/);
     expect(multiResultsPageSource).toContain('row.costInsights?.equipmentSaleValue');
     expect(multiResultsPageSource).toContain('row.costInsights?.equipmentBuyPrice');
     expect(multiResultsPageSource).toContain('row.costInsights?.equipmentNetCost');
@@ -51,15 +51,15 @@ describe('MultiResultsPage baseline summary copy', () => {
 
   it('shows daily expected profit before hourly profit delta and includes it in the export', () => {
     const dailyProfitHeader = multiResultsPageSource.indexOf(
-      't("common:queue.dailyNoRngProfit", "Daily No RNG Profit")',
+      "t('common:queue.dailyNoRngProfit', 'Daily No RNG Profit')",
     );
     const deltaProfitHeader = multiResultsPageSource.indexOf(
-      't("common:vue.queue.deltaProfitPerHour", "Delta Profit/h")',
+      "t('common:vue.queue.deltaProfitPerHour', 'Delta Profit/h')",
     );
     expect(dailyProfitHeader).toBeGreaterThan(-1);
     expect(deltaProfitHeader).toBeGreaterThan(dailyProfitHeader);
     expect(multiResultsPageSource).toContain('formatCompactCurrency(row.dailyNoRngProfitPerDay)');
-    expect(multiResultsPageSource).toContain('key: "dailyNoRngProfitPerDay"');
+    expect(multiResultsPageSource).toContain("key: 'dailyNoRngProfitPerDay'");
     expect(multiResultsPageSource).toContain(
       'dailyNoRngProfitPerDay: formatCompactCurrency(row?.dailyNoRngProfitPerDay)',
     );

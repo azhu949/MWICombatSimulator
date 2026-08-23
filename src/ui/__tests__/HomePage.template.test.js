@@ -26,13 +26,13 @@ describe('Home simulation controls', () => {
   it('formats labyrinth and crate options through game-data helpers', () => {
     expect(sources.simulation).toContain('getMonsterName(');
     expect(sources.simulation).toContain('getItemName(');
-    expect(sources.simulation).toContain('{ key: "tea", labelKey: "teaCrate", fallback: "Tea Crate" }');
-    expect(sources.simulation).toContain('{ key: "coffee", labelKey: "coffeeCrate", fallback: "Coffee Crate" }');
-    expect(sources.simulation).toContain('{ key: "food", labelKey: "foodCrate", fallback: "Food Crate" }');
+    expect(sources.simulation).toContain("{ key: 'tea', labelKey: 'teaCrate', fallback: 'Tea Crate' }");
+    expect(sources.simulation).toContain("{ key: 'coffee', labelKey: 'coffeeCrate', fallback: 'Coffee Crate' }");
+    expect(sources.simulation).toContain("{ key: 'food', labelKey: 'foodCrate', fallback: 'Food Crate' }");
   });
 
   it('passes complete labyrinth context into combat preview data', () => {
-    expect(sources.combatPreview).toContain('mode: "labyrinth"');
+    expect(sources.combatPreview).toContain("mode: 'labyrinth'");
     expect(sources.combatPreview).toContain('labyrinthHrid');
     expect(sources.combatPreview).toContain('LABYRINTH_ROOM_LEVEL_MIN');
     expect(sources.combatPreview).toContain('LABYRINTH_ROOM_LEVEL_DEFAULT');
@@ -51,14 +51,14 @@ describe('Home localized panels', () => {
   it('uses triggered final stats and localized source breakdowns', () => {
     expect(sources.combatPreview).toContain('data.value.finalPlayer || data.value.player');
     expect(sources.combatPreview).toContain('buildCombatStatBreakdownParts(breakdown, entry.key');
-    expect(sources.combatPreview).toContain('source.sourceType === "guild_buff"');
+    expect(sources.combatPreview).toContain("source.sourceType === 'guild_buff'");
     expect(sources.combatPreview).toContain('getGuildShrineName(source.sourceHrid');
     expect(sources.combatAttributes).toContain('v-for="part in entry.breakdownParts"');
   });
 
   it('groups combat attributes into semantic tactical sections', () => {
     for (const key of ['overview', 'offense', 'defense', 'effects', 'rewards']) {
-      expect(sources.combatPreview).toContain(`key: "${key}"`);
+      expect(sources.combatPreview).toContain(`key: '${key}'`);
     }
     expect(sources.combatAttributes).toContain('v-for="section in sections"');
     expect(sources.combatAttributes).toContain('grid gap-3 md:grid-cols-2 xl:grid-cols-3');
@@ -70,32 +70,32 @@ describe('Home localized panels', () => {
   it('uses official labels in each responsible panel', () => {
     expect(sources.levels).toContain('getSkillName(`/skills/${skillKey}`');
     expect(sources.equipment).toContain('getEquipmentSlotName(slot, slot)');
-    expect(sources.combatPreview).toContain('statName("retaliation", "Retaliation")');
-    expect(sources.simulation).toContain('getOfficialGameText("labyrinthPanel", "labyrinth", "Labyrinth")');
+    expect(sources.combatPreview).toContain("statName('retaliation', 'Retaliation')");
+    expect(sources.simulation).toContain("getOfficialGameText('labyrinthPanel', 'labyrinth', 'Labyrinth')");
     expect(sources.simulation).toContain(
-      'getOfficialGameText("shopCategoryNames", "/shop_categories/dungeon", "Dungeon")',
+      "getOfficialGameText('shopCategoryNames', '/shop_categories/dungeon', 'Dungeon')",
     );
-    expect(sources.guildBuffs).toContain('getOfficialGameText("guildPanel", "combat", "Combat")');
-    expect(sources.simulation).toContain('getOfficialGameText("mooPass", "mooPass", "MooPass")');
-    expect(sources.playerSnapshot).toContain('getOfficialGameText("labyrinthPanel", "labyrinth", "Labyrinth")');
+    expect(sources.guildBuffs).toContain("getOfficialGameText('guildPanel', 'combat', 'Combat')");
+    expect(sources.simulation).toContain("getOfficialGameText('mooPass', 'mooPass', 'MooPass')");
+    expect(sources.playerSnapshot).toContain("getOfficialGameText('labyrinthPanel', 'labyrinth', 'Labyrinth')");
   });
 });
 
 describe('Home workspace tabs', () => {
   it('defines base, battle attributes, and complete results tabs', () => {
     for (const value of ['base', 'advanced', 'results']) {
-      expect(sources.workspaceSummary).toContain(`value: "${value}"`);
+      expect(sources.workspaceSummary).toContain(`value: '${value}'`);
     }
-    expect(sources.workspaceSummary).not.toContain('value: "build"');
+    expect(sources.workspaceSummary).not.toContain("value: 'build'");
   });
 
   it('groups build controls in base and isolates derived attributes', () => {
     expect(sources.page.match(/activeWorkspaceTab === 'base'/g)).toHaveLength(3);
     expect(sources.page).toContain("activeWorkspaceTab === 'advanced'");
     expect(sources.page).not.toContain("activeWorkspaceTab === 'build'");
-    expect(sources.equipment).toContain('getOfficialGameText("equipmentPanel", "title", "Equipment")');
-    expect(sources.loadout).toContain('t("common:vue.home.foodDrinksTitle", "Food & Drinks")');
-    expect(sources.loadout).toContain('getOfficialGameText("abilitiesPanel", "title", "Abilities")');
+    expect(sources.equipment).toContain("getOfficialGameText('equipmentPanel', 'title', 'Equipment')");
+    expect(sources.loadout).toContain("t('common:vue.home.foodDrinksTitle', 'Food & Drinks')");
+    expect(sources.loadout).toContain("getOfficialGameText('abilitiesPanel', 'title', 'Abilities')");
   });
 
   it('renders complete results in a full-width results tab', () => {
@@ -106,8 +106,8 @@ describe('Home workspace tabs', () => {
   });
 
   it('routes summary and focus links to the results tab', () => {
-    expect(sources.page).toContain('requestWorkspaceTabChange("results")');
-    expect(sources.page).toContain('homeResultsSection.value?.scrollIntoView({ behavior: "smooth", block: "start" })');
+    expect(sources.page).toContain("requestWorkspaceTabChange('results')");
+    expect(sources.page).toContain("homeResultsSection.value?.scrollIntoView({ behavior: 'smooth', block: 'start' })");
     expect(sources.page).toContain('const { focus, ...query } = route.query');
     expect(sources.page).toContain('await openHomeResultsPanel(true)');
   });

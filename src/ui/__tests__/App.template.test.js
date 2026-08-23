@@ -29,13 +29,13 @@ describe('App shell contracts', () => {
       'settings',
       'guide',
     ]) {
-      expect(routerSource).toContain(`name: "${route}"`);
+      expect(routerSource).toContain(`name: '${route}'`);
     }
     expect(routerSource).toContain('navLabelKey');
     expect(routerSource).toContain('navGroup');
     expect(routerSource).toContain('navOrder');
     expect(routerSource).toContain('navHidden: true');
-    expect(sidebarSource).toContain('router.getRoutes()');
+    expect(sidebarSource).toMatch(/router\s*\.getRoutes\(\)/);
   });
 
   it('moves repository, feedback, patch notes, and version details into the sidebar', () => {
@@ -51,7 +51,7 @@ describe('App shell contracts', () => {
     expect(sidebarSource).toContain('unreadPatchNotesCount');
     expect(appSource).not.toContain('patchNotesModalOpen');
     expect(appSource).not.toContain('openPatchNotesModal');
-    expect(appSource).toContain('nextRouteName === "patch-notes"');
+    expect(appSource).toContain("nextRouteName === 'patch-notes'");
     expect(appSource).toContain('markPatchNotesReadOnPageEntry();');
   });
 
@@ -74,7 +74,7 @@ describe('App shell contracts', () => {
   it('keeps the command bar and live runtime progress visible below the app header', () => {
     expect(commandBarSource).toContain('sticky top-12 z-30');
     expect(commandBarSource).toContain('ref="commandBarRoot"');
-    expect(commandBarSource).toContain('emit("height-change", height)');
+    expect(commandBarSource).toContain("emit('height-change', height)");
     expect(appSource).toContain("'--app-sticky-shell-height': stickyShellHeight");
     expect(appSource).toContain('@height-change="setCombatCommandBarHeight"');
     expect(commandBarSource).toContain('v-if="showRuntimeSummary"');
@@ -82,7 +82,7 @@ describe('App shell contracts', () => {
   });
 
   it('exposes start and stop simulation actions from the sticky bar on Home', () => {
-    expect(appSource).toContain('const showHomeSimulationActions = computed(() => route.name === "home")');
+    expect(appSource).toContain("const showHomeSimulationActions = computed(() => route.name === 'home')");
     expect(appSource).toContain(':show-simulation-actions="showHomeSimulationActions"');
     expect(appSource).toContain('@start-simulation="simulator.startSimulation()"');
     expect(appSource).toContain('@stop-simulation="simulator.stopSimulation()"');
@@ -105,9 +105,9 @@ describe('App shell contracts', () => {
   });
 
   it('keeps feedback contact and baseline gating behavior', () => {
-    expect(appSource).toContain('const QQ_GROUP_NUMBER = "1102475742";');
+    expect(appSource).toContain("const QQ_GROUP_NUMBER = '1102475742';");
     expect(appSource).toContain('copyFeedbackContact(QQ_GROUP_NUMBER)');
-    expect(appSource).toContain('const FEEDBACK_EMAIL = "596846069@qq.com";');
+    expect(appSource).toContain("const FEEDBACK_EMAIL = '596846069@qq.com';");
     expect(appSource).toContain('mailto:${FEEDBACK_EMAIL}');
     expect(appSource).toContain('copyFeedbackContact(FEEDBACK_EMAIL)');
     expect(appSource).toContain('if (!baselineReminderDismissed.value)');
@@ -127,7 +127,7 @@ describe('App shell contracts', () => {
     expect(appSource).toContain('formatConfirmationVolume(entry.volume)');
     expect(appSource).toContain('formatConfirmationSlots(entry)');
     expect(appSource).toContain('formatConfirmedMarketPrice(entry.price)');
-    expect(appSource).toContain('unitCase: "lower"');
+    expect(appSource).toContain("unitCase: 'lower'");
   });
 
   it('accepts a manually entered buy price for equipment without any market price', () => {
@@ -143,7 +143,7 @@ describe('App shell contracts', () => {
     expect(appSource).toContain('common:queue.manualPriceEmptyValue');
     expect(appSource).toContain('const manualPriceUnits = ref({})');
     expect(appSource).toContain('const MANUAL_PRICE_UNITS = [');
-    expect(appSource).toContain('{ value: "k", multiplier: 1000 }');
+    expect(appSource).toContain("{ value: 'k', multiplier: 1000 }");
     expect(appSource).toContain('function getManualPriceUnitMultiplier(unit)');
     expect(appSource).toContain('function sanitizeManualPriceInput(event, entry)');
     expect(appSource).toContain('inputmode="numeric"');

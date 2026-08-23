@@ -8,14 +8,14 @@ const routerSource = readFileSync(new URL('../router/index.js', import.meta.url)
 
 describe('GuidePage tutorial surface', () => {
   it('registers a guide route without combat controls', () => {
-    expect(routerSource).toContain('path: "/guide"');
-    expect(routerSource).toContain('name: "guide"');
-    expect(routerSource).toContain('import("../pages/GuidePage.vue")');
+    expect(routerSource).toContain("path: '/guide'");
+    expect(routerSource).toContain("name: 'guide'");
+    expect(routerSource).toContain("import('../pages/GuidePage.vue')");
     expect(routerSource).toContain('meta: { showCombatToolbar: false,');
   });
 
   it('renders the complete English guide from the global application language', () => {
-    expect(routerSource).not.toContain('path: "/guide/en"');
+    expect(routerSource).not.toContain("path: '/guide/en'");
     expect(guidePageSource).toContain('<GuidePageEn v-if="language !== \'zh\'" />');
     expect(guidePageSource).toContain('import { useI18nText }');
     expect(guidePageSource).toContain('const { language } = useI18nText();');
@@ -42,7 +42,7 @@ describe('GuidePage tutorial surface', () => {
     expect(guidePageSource).toContain('回到模拟器点击“从主站导入”');
     expect(guidePageSource).toContain('只有组队数据需要先在游戏主站逐个打开队友资料');
     expect(guidePageSource).toContain('队列与多轮结果');
-    expect(guidePageSource).toContain('历史归档最新有效 Ask');
+    expect(guidePageSource).toMatch(/历史归档最新有效\s*Ask/);
     expect(guidePageSource).toContain('遇到空状态或按钮不可用');
   });
 
@@ -64,7 +64,7 @@ describe('GuidePage tutorial surface', () => {
     expect(guidePageEnSource).toContain('click Import from Main Site');
     expect(guidePageEnSource).toContain('Open teammate profiles only for a team import');
     expect(guidePageEnSource).toContain('Queue and Multi-Round Results');
-    expect(guidePageEnSource).toContain('latest valid archived Ask');
+    expect(guidePageEnSource).toMatch(/the latest\s*valid archived Ask/);
     expect(guidePageEnSource).toContain('Empty States and Disabled Controls');
   });
 

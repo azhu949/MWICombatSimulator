@@ -11,21 +11,21 @@ describe('SettingsPage baseline round defaults', () => {
 
   it('uses 1 as the default baseline round preset and draft value', () => {
     expect(settingsPageSource).toContain('baselineRounds: 1,');
-    expect(settingsPageSource).toContain('const queueBaselineRoundPreset = ref("1");');
+    expect(settingsPageSource).toContain("const queueBaselineRoundPreset = ref('1');");
     expect(settingsPageSource).toContain('queueRunDraft.baselineRounds = Number(source.baselineRounds ?? 1);');
   });
 
   it('offers 1 as a selectable preset for baseline rounds', () => {
     expect(settingsPageSource).toContain('<SelectItem value="1">1</SelectItem>');
-    expect(settingsPageSource).toContain('["1", "5", "10", "20", "30", "50", "100", "200"]');
+    expect(settingsPageSource).toContain("['1', '5', '10', '20', '30', '50', '100', '200']");
   });
 
   it('includes a saved cost score metric control in queue runtime settings', () => {
     expect(settingsPageSource).toContain('v-model="queueRuntimeDraft.costScoreGoldPerPointMode"');
-    expect(settingsPageSource).toContain('const DEFAULT_COST_SCORE_GOLD_METRIC_MODE = "strict";');
+    expect(settingsPageSource).toContain("const DEFAULT_COST_SCORE_GOLD_METRIC_MODE = 'strict';");
     expect(settingsPageSource).toContain('costScoreGoldPerPointMode: DEFAULT_COST_SCORE_GOLD_METRIC_MODE,');
-    expect(settingsPageSource).toContain(
-      'queueRuntimeDraft.costScoreGoldPerPointMode = normalizeCostScoreGoldPerPointMode(nextSettings?.costScoreGoldPerPointMode);',
+    expect(settingsPageSource).toMatch(
+      /queueRuntimeDraft\.costScoreGoldPerPointMode = normalizeCostScoreGoldPerPointMode\(\s*nextSettings\?\.costScoreGoldPerPointMode,/,
     );
     expect(settingsPageSource).toContain('costScoreGoldPerPointMode: queueRuntimeDraft.costScoreGoldPerPointMode,');
   });
@@ -41,24 +41,25 @@ describe('SettingsPage baseline round defaults', () => {
   });
 
   it('splits queue configuration into scoring, execution, and sampling boards', () => {
-    expect(settingsPageSource).toContain('t("common:settingsPage.queueScoringSectionTitle", "Scoring Model")');
-    expect(settingsPageSource).toContain('t("common:settingsPage.queueExecutionSectionTitle", "Execution & Workers")');
+    expect(settingsPageSource).toContain("t('common:settingsPage.queueScoringSectionTitle', 'Scoring Model')");
+    expect(settingsPageSource).toContain("t('common:settingsPage.queueExecutionSectionTitle', 'Execution & Workers')");
     expect(settingsPageSource).toContain(
-      't("common:settingsPage.queueSamplingSectionTitle", "Sampling & Aggregation")',
+      "t('common:settingsPage.queueSamplingSectionTitle', 'Sampling & Aggregation')",
     );
-    expect(settingsPageSource).toContain('t("common:settingsPage.queueSectionSaveTag", "Save")');
-    expect(settingsPageSource).toContain('t("common:settingsPage.queueSectionAutoTag", "Auto")');
+    expect(settingsPageSource).toContain("t('common:settingsPage.queueSectionSaveTag', 'Save')");
+    expect(settingsPageSource).toContain("t('common:settingsPage.queueSectionAutoTag', 'Auto')");
   });
 
   it('explains median blend and keeps performance subweights inside the scoring board', () => {
     expect(settingsPageSource).toContain(
-      't("common:settingsPage.performanceSubweightsTitle", "Performance Priorities")',
+      "t('common:settingsPage.performanceSubweightsTitle', 'Performance Priorities')",
+    );
+    expect(settingsPageSource).toMatch(/t\(\s*'common:settingsPage\.medianBlendHint'\s*,/);
+    expect(settingsPageSource).toContain(
+      'Lower values lean toward the robust average across all rounds. Higher values lean toward the median, which better represents a typical round when outliers appear.',
     );
     expect(settingsPageSource).toContain(
-      't("common:settingsPage.medianBlendHint", "Lower values lean toward the robust average across all rounds. Higher values lean toward the median, which better represents a typical round when outliers appear.")',
-    );
-    expect(settingsPageSource).toContain(
-      't("common:settingsPage.medianBlendBreakdown", "", queueMedianBlendExplanationText)',
+      "t('common:settingsPage.medianBlendBreakdown', '', queueMedianBlendExplanationText)",
     );
     expect(settingsPageSource).toContain('const queueMedianBlendExplanationText = computed(() =>');
   });
@@ -71,8 +72,8 @@ describe('SettingsPage baseline round defaults', () => {
   });
 
   it('searches prices by official Chinese and English item names plus HRID', () => {
-    expect(settingsPageSource).toContain('formatOfficialItemName(row.hrid, "zh").toLowerCase().includes(keyword)');
-    expect(settingsPageSource).toContain('formatOfficialItemName(row.hrid, "en").toLowerCase().includes(keyword)');
+    expect(settingsPageSource).toContain("formatOfficialItemName(row.hrid, 'zh').toLowerCase().includes(keyword)");
+    expect(settingsPageSource).toContain("formatOfficialItemName(row.hrid, 'en').toLowerCase().includes(keyword)");
     expect(settingsPageSource).toContain('row.hrid.toLowerCase().includes(keyword)');
     expect(settingsPageSource).toContain('{ language: targetLanguage }');
     expect(settingsPageSource).not.toContain('row.name.toLowerCase().includes(keyword)');

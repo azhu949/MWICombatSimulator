@@ -6,9 +6,9 @@ const routerSource = readFileSync(new URL('../router/index.js', import.meta.url)
 
 describe('PatchNotesPage workspace', () => {
   it('registers a dedicated route without combat controls or automatic nav duplication', () => {
-    expect(routerSource).toContain('path: "/patch-notes"');
-    expect(routerSource).toContain('name: "patch-notes"');
-    expect(routerSource).toContain('import("../pages/PatchNotesPage.vue")');
+    expect(routerSource).toContain("path: '/patch-notes'");
+    expect(routerSource).toContain("name: 'patch-notes'");
+    expect(routerSource).toContain("import('../pages/PatchNotesPage.vue')");
     expect(routerSource).toContain('meta: { showCombatToolbar: false, navHidden: true,');
   });
 

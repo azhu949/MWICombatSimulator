@@ -6,14 +6,14 @@ const routerSource = readFileSync(new URL('../router/index.js', import.meta.url)
 
 describe('SkillingPage workspace', () => {
   it('registers an independent route without combat controls', () => {
-    expect(routerSource).toContain('path: "/skilling"');
-    expect(routerSource).toContain('name: "skilling"');
-    expect(routerSource).toContain('import("../pages/SkillingPage.vue")');
+    expect(routerSource).toContain("path: '/skilling'");
+    expect(routerSource).toContain("name: 'skilling'");
+    expect(routerSource).toContain("import('../pages/SkillingPage.vue')");
     expect(routerSource).toContain('meta: { showCombatToolbar: false,');
   });
 
   it('binds the dedicated store, worker actions, and six target controls', () => {
-    expect(pageSource).toContain('useSkillingStore } from "../../stores/skillingStore.js"');
+    expect(pageSource).toContain("useSkillingStore } from '../../stores/skillingStore.js'");
     expect(pageSource).toContain('const skilling = useSkillingStore();');
     expect(pageSource).toContain('await skilling.initialize();');
     expect(pageSource).toContain('skilling.targetLevels[skillHrid]');
@@ -35,9 +35,9 @@ describe('SkillingPage workspace', () => {
     expect(pageSource).toContain('type="radio"');
     expect(pageSource).toContain('skilling.optimizationMode === mode.value');
     expect(pageSource).toContain('skilling.setOptimizationMode(mode.value)');
-    expect(pageSource).toContain('{ value: "cost"');
-    expect(pageSource).toContain('{ value: "balanced"');
-    expect(pageSource).toContain('{ value: "speed"');
+    expect(pageSource).toContain("{ value: 'cost'");
+    expect(pageSource).toContain("{ value: 'balanced'");
+    expect(pageSource).toContain("{ value: 'speed'");
     expect(pageSource).toContain(':disabled="skilling.running"');
     expect(pageSource).toContain('common:skilling.lowestCostPerXp');
     expect(pageSource).toContain('common:skilling.balanced');
@@ -57,7 +57,7 @@ describe('SkillingPage workspace', () => {
     expect(pageSource).toContain(':value="balancedCostTolerancePercent"');
     expect(pageSource).toContain('@input="setBalancedCostTolerance"');
     expect(pageSource).toContain('@blur="normalizeBalancedCostToleranceInput"');
-    expect(pageSource).toContain(':aria-describedby="balancedToleranceResultDiffers');
+    expect(pageSource).toMatch(/:aria-describedby="\s*balancedToleranceResultDiffers/);
     expect(pageSource).toContain('id="skilling-balanced-cost-tolerance-hint"');
     expect(pageSource).toContain('id="skilling-balanced-cost-tolerance-status"');
     expect(pageSource).toContain('role="status"');
@@ -66,17 +66,17 @@ describe('SkillingPage workspace', () => {
     expect(pageSource).toContain('skilling.setBalancedCostTolerance(percent / 100)');
     expect(pageSource).toContain('skilling.result?.balancedCostTolerance ?? selectedPlan.value?.balancedCostTolerance');
     expect(pageSource).toContain('balancedToleranceResultDiffers');
-    expect(pageSource).toContain('resultRecordedOptimizationMode.value === "balanced"');
+    expect(pageSource).toContain("resultRecordedOptimizationMode.value === 'balanced'");
     expect(pageSource).toContain('common:skilling.balancedCostToleranceChanged');
     expect(pageSource).toContain('common:skilling.speedModeDescription');
     expect(pageSource).toContain('common:skilling.optimizationModeCommonRules');
     expect(pageSource).toContain('common:skilling.nextLevelTime');
     expect(pageSource).toContain('formatDuration(candidate.durationHours)');
-    expect(pageSource).toContain('if (skilling.resultStale) return "";');
+    expect(pageSource).toContain("if (skilling.resultStale) return '';");
     expect(pageSource).toContain('skilling.result?.optimizationMode || selectedPlan.value?.optimizationMode');
-    expect(pageSource).toContain('resultOptimizationMode.value === "cost"');
-    expect(pageSource).toContain('resultOptimizationMode.value === "balanced"');
-    expect(pageSource).toContain('resultOptimizationMode.value === "speed"');
+    expect(pageSource).toContain("resultOptimizationMode.value === 'cost'");
+    expect(pageSource).toContain("resultOptimizationMode.value === 'balanced'");
+    expect(pageSource).toContain("resultOptimizationMode.value === 'speed'");
     expect(pageSource).toContain('resultUsesCostMode.value || resultUsesBalancedMode.value');
     expect(pageSource).toContain('resultUsesSpeedMode.value || resultUsesBalancedMode.value');
     expect(pageSource).toContain('row.plan?.materialPurchaseCostPerExperience');
@@ -116,10 +116,10 @@ describe('SkillingPage workspace', () => {
     expect(pageSource).toContain('data-tm-import-anchor="skilling-actions"');
     expect(pageSource).toContain('data-tm-import-reference="skilling-refresh"');
     expect(pageSource).toContain('applyTampermonkeySkillingImportMessage');
-    expect(pageSource).toContain('data.importTarget !== "skilling"');
-    expect(pageSource).toContain('window.addEventListener("message", handleTampermonkeySkillingImportWindowMessage)');
+    expect(pageSource).toContain("data.importTarget !== 'skilling'");
+    expect(pageSource).toContain("window.addEventListener('message', handleTampermonkeySkillingImportWindowMessage)");
     expect(pageSource).toContain(
-      'window.removeEventListener("message", handleTampermonkeySkillingImportWindowMessage)',
+      "window.removeEventListener('message', handleTampermonkeySkillingImportWindowMessage)",
     );
   });
 
@@ -176,7 +176,7 @@ describe('SkillingPage workspace', () => {
     expect(pageSource).toContain('common:skilling.additionalEquipment');
     expect(pageSource).toContain('… {{count}} more');
     expect(pageSource).toContain('Math.abs(numeric) < 1_000');
-    expect(pageSource).toContain('formatCompactAmount(numeric, { locale: displayLocale(), unitCase: "lower" })');
+    expect(pageSource).toContain("formatCompactAmount(numeric, { locale: displayLocale(), unitCase: 'lower' })");
     expect(pageSource).toContain('openSegment(candidate, true)');
     expect(pageSource).toContain('activeSegmentIsCandidate.value = isCandidate');
     expect(pageSource).toContain('ensureItemIconSymbols');
@@ -199,11 +199,10 @@ describe('SkillingPage workspace', () => {
     expect(routeHeader).toContain('common:skilling.actions');
     expect(routeHeader).not.toContain('common:skilling.nextLevelActions');
     expect(candidateHeader).toContain('common:skilling.nextLevelActions');
-    expect(candidateHeader).not.toContain('t("common:skilling.actions", "Actions")');
+    expect(candidateHeader).not.toContain("t('common:skilling.actions', 'Actions')");
   });
 
   it('invalidates an existing result immediately when a temporary Buff expired off-page', () => {
-    expect(pageSource).toContain('watch(buffExpiredSinceResult');
-    expect(pageSource).toContain('}, { immediate: true });');
+    expect(pageSource).toMatch(/watch\(\s*buffExpiredSinceResult\s*,[\s\S]*?\{\s*immediate\s*:\s*true\s*\}\s*,?\s*\);/);
   });
 });
