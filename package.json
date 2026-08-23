@@ -11,7 +11,7 @@
     "verify-pages-build": "node scripts/verify-pages-build.js",
     "preview": "vite preview",
     "start": "vite",
-    "test": "vitest run",
+    "test": "vitest run && prettier --check .",
     "extract-game-data": "node scripts/extract-game-data.js",
     "extract-game-data:official": "node scripts/extract-game-data-from-official.js",
     "format:check": "prettier --check .",
