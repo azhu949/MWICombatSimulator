@@ -80,4 +80,24 @@ describe('shared shadcn-vue components', () => {
     await flushPromises();
     expect(wrapper.emitted('close')).toHaveLength(1);
   });
+
+  it('reports the close reason for escape and backdrop dismissal', async () => {
+    const wrapper = mount(BaseModal, {
+      props: { open: true, title: 'Queue details' },
+      slots: { default: 'Queued simulation' },
+      attachTo: document.body,
+    });
+    await flushPromises();
+
+    const dialog = document.body.querySelector('[role="dialog"]');
+    dialog.dispatchEvent(new KeyboardEvent('keydown', { key: 'Escape', bubbles: true }));
+    await flushPromises();
+    expect(wrapper.emitted('close')?.[0]?.[0]).toBe('escape');
+
+    wrapper.setProps({ open: true });
+    await flushPromises();
+    document.body.dispatchEvent(new MouseEvent('pointerdown', { bubbles: true }));
+    await flushPromises();
+    expect(wrapper.emitted('close')?.[1]?.[0]).toBe('backdrop');
+  });
 });

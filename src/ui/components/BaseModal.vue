@@ -21,17 +21,16 @@
             {{ title }}
           </DialogTitle>
           <DialogDescription class="sr-only">{{ title }}</DialogDescription>
-          <DialogClose as-child>
-            <Button
-              type="button"
-              variant="ghost"
-              size="icon-sm"
-              class="-mr-1 -mt-1 text-muted-foreground"
-              :aria-label="t('common:controls.close', 'Close')"
-            >
-              <X />
-            </Button>
-          </DialogClose>
+          <Button
+            type="button"
+            variant="ghost"
+            size="icon-sm"
+            class="-mr-1 -mt-1 text-muted-foreground"
+            :aria-label="t('common:controls.close', 'Close')"
+            @click="onCloseButtonClick"
+          >
+            <X />
+          </Button>
         </div>
         <div class="modal-body-text min-w-0 space-y-3 text-sm">
           <slot />
@@ -44,15 +43,7 @@
 <script setup>
 import { nextTick, ref } from 'vue';
 import { X } from '@lucide/vue';
-import {
-  DialogClose,
-  DialogContent,
-  DialogDescription,
-  DialogOverlay,
-  DialogPortal,
-  DialogRoot,
-  DialogTitle,
-} from 'reka-ui';
+import { DialogContent, DialogDescription, DialogOverlay, DialogPortal, DialogRoot, DialogTitle } from 'reka-ui';
 import { Button } from '@/ui/components/ui/button/index.js';
 import { cn } from '@/ui/lib/utils.js';
 import { useI18nText } from '../composables/useI18nText.js';
@@ -69,23 +60,55 @@ const props = defineProps({
 const emit = defineEmits(['close']);
 const { t } = useI18nText();
 const contentRef = ref(null);
+// 关闭原因语义（供父组件区分“已读/暂不阅读”等行为）：
+// - 'programmatic' / 'close-button'：显式关闭（视为“已读/确认”）。
+//   （父组件显式关闭 / 点击右上角 X 按钮）。
+// - 'escape' / 'backdrop'：用户“暂不阅读”的关闭方式（Esc 键 / 点击遮罩）。
+//
+// 时序说明（为何用普通 let 记录原因、在 onOpenChange 中消费是安全的）：
+// Reka UI 的 DismissableLayer 在同一次交互内「先派发 escape-key-down /
+// pointer-down-outside 事件，再在未被 preventDefault 时触发 dismiss →
+// update:open(false)」——二者在同一同步函数内顺序执行（escape 分支先
+// emits('escapeKeyDown') 再 emits('dismiss')；pointer-down 分支在 await nextTick()
+// 之后才 emits('dismiss')，见 reka-ui/src/DismissableLayer/DismissableLayer.vue）。
+// 因此 onEscapeKeyDown / onPointerDownOutside 写入的 lastCloseReason 一定先于
+// onOpenChange(false) 被读到。若未来升级 Reka 改变该顺序，需同步调整此处，
+// 否则 Esc / 遮罩会被误判为 programmatic 而错误标记已读。
+let lastCloseReason = 'programmatic';
 
 function onOpenChange(nextOpen) {
-  if (!nextOpen) {
-    emit('close');
+  // 受控用法下 Reka UI 仅在内部请求关闭时触发 update:open(false)；
+  // 打开态由父组件 :open 驱动，不会触发 update:open(true)。
+  if (nextOpen) {
+    return;
   }
+  emitClose();
+}
+
+function onCloseButtonClick() {
+  lastCloseReason = 'close-button';
+  emitClose();
+}
+
+function emitClose() {
+  emit('close', lastCloseReason);
+  lastCloseReason = 'programmatic';
 }
 
 function onEscapeKeyDown(event) {
   if (!props.closeOnEsc) {
     event.preventDefault();
+    return;
   }
+  lastCloseReason = 'escape';
 }
 
 function onPointerDownOutside(event) {
   if (!props.closeOnBackdrop) {
     event.preventDefault();
+    return;
   }
+  lastCloseReason = 'backdrop';
 }
 
 async function onOpenAutoFocus(event) {
@@ -96,7 +119,9 @@ async function onOpenAutoFocus(event) {
 
   event.preventDefault();
   await nextTick();
-  const element = contentRef.value?.$el?.querySelector?.(selector) || document.querySelector(selector);
+  // 有意只查询弹窗内部：避免全局 document.querySelector 误聚焦弹窗外元素。
+  // 所有调用方的 initialFocusSelector 均指向弹窗内元素，无需全局 fallback。
+  const element = contentRef.value?.$el?.querySelector?.(selector);
   if (element instanceof HTMLElement) {
     element.focus();
   }

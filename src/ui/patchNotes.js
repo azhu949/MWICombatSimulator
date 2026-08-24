@@ -3,6 +3,8 @@ import patchNote from '../../patchNote.json';
 export const PATCH_NOTES_STORAGE_KEY = 'mwi.ui.patchNotes.v1';
 export const PATCH_NOTES_STORAGE_VERSION = 1;
 
+export const PATCH_NOTE_SECTION_KEYS = ['newFeatures', 'improvements', 'bugFixes'];
+
 function normalizePatchNoteText(value) {
   return String(value || '').trim();
 }
@@ -59,18 +61,12 @@ function createDefaultPatchNotesState() {
   };
 }
 
-function normalizePatchNoteEntries(entries) {
-  if (!Array.isArray(entries)) {
+function normalizePatchNoteList(value) {
+  if (!Array.isArray(value)) {
     return [];
   }
 
-  return entries
-    .map((entry) => ({
-      entryId: normalizeEntryId(entry?.entryId),
-      label: normalizePatchNoteText(entry?.label),
-      notes: Array.isArray(entry?.notes) ? entry.notes.map((note) => normalizePatchNoteText(note)).filter(Boolean) : [],
-    }))
-    .filter((entry) => entry.entryId);
+  return value.map((note) => normalizePatchNoteText(note)).filter(Boolean);
 }
 
 function resolveLocalizedPatchNoteText(value, language, fallbackValue = '') {
@@ -88,6 +84,8 @@ function resolveLocalizedPatchNoteText(value, language, fallbackValue = '') {
     return localizedValue;
   }
 
+  // 历史条目（2026年2月27日及更早）仅提供中文内容，英文视图回退显示中文
+  // 是有意为之（迁移前行为一致，测试显式断言该回退）。
   const zhFallback = normalizePatchNoteText(value.zh);
   if (zhFallback) {
     return zhFallback;
@@ -101,14 +99,6 @@ function resolveLocalizedPatchNoteText(value, language, fallbackValue = '') {
   }
 
   return normalizePatchNoteText(fallbackValue);
-}
-
-function normalizePatchNoteList(value) {
-  if (!Array.isArray(value)) {
-    return [];
-  }
-
-  return value.map((note) => normalizePatchNoteText(note)).filter(Boolean);
 }
 
 function resolveLocalizedPatchNoteList(value, language) {
@@ -126,6 +116,8 @@ function resolveLocalizedPatchNoteList(value, language) {
     return localizedList;
   }
 
+  // 历史条目（2026年2月27日及更早）仅提供中文内容，英文视图回退显示中文
+  // 是有意为之（迁移前行为一致，测试显式断言该回退）。
   const zhFallback = normalizePatchNoteList(value.zh);
   if (zhFallback.length > 0) {
     return zhFallback;
@@ -141,9 +133,63 @@ function resolveLocalizedPatchNoteList(value, language) {
   return [];
 }
 
+// 归一化“已解析”条目的数组（resolveEntries 的数组入参路径）。
+// 条目中的 sections 可能是两种形态——
+//   - 已本地化形态：{ newFeatures: ['...'], ... }（单语言数组，来自 resolvePatchNoteEntries 输出）
+//   - 原始 catalog 形态：{ newFeatures: { zh: [...], en: [...] }, ... }（按语言分组）
+// 统一走 resolveEntrySections 的本地化解析，避免把原始形态误判为非数组而静默丢弃。
+function normalizePatchNoteEntries(entries, language = 'zh') {
+  if (!Array.isArray(entries)) {
+    return [];
+  }
+
+  return entries
+    .map((entry) => ({
+      entryId: normalizeEntryId(entry?.entryId),
+      label: normalizePatchNoteText(entry?.label),
+      sections: resolveEntrySections(entry?.sections, language),
+    }))
+    .filter((entry) => entry.entryId);
+}
+
+// 解析一个版本的分类字段（newFeatures / improvements / bugFixes）
+// - 新三段式对象：逐个分类做本地化解析，空分类省略
+// - 旧版纯数组或旧 notes 字段：整体归入 improvements 兜底，保证不丢内容。
+//   该兜底仅面向历史/外部数据（当前 catalog 已全部迁移为三分类结构，不再走此路径）。
+function resolveEntrySections(patchNoteValue, language) {
+  if (Array.isArray(patchNoteValue)) {
+    const notes = normalizePatchNoteList(patchNoteValue);
+    return notes.length > 0 ? { improvements: notes } : {};
+  }
+
+  if (!patchNoteValue || typeof patchNoteValue !== 'object') {
+    return {};
+  }
+
+  const sections = {};
+  let hasSectionKey = false;
+
+  for (const key of PATCH_NOTE_SECTION_KEYS) {
+    const list = resolveLocalizedPatchNoteList(patchNoteValue[key], language);
+    if (list.length > 0) {
+      sections[key] = list;
+      hasSectionKey = true;
+    }
+  }
+
+  // 三分类与旧 notes 并存时，将 notes 合并进 improvements，避免内容被静默丢弃。
+  const legacyNotes = resolveLocalizedPatchNoteList(patchNoteValue.notes, language);
+  if (legacyNotes.length > 0) {
+    sections.improvements = [...(sections.improvements || []), ...legacyNotes];
+    hasSectionKey = true;
+  }
+
+  return hasSectionKey ? sections : {};
+}
+
 function resolveEntries(entriesOrPatchNotes, language = 'zh') {
   if (Array.isArray(entriesOrPatchNotes)) {
-    return normalizePatchNoteEntries(entriesOrPatchNotes);
+    return normalizePatchNoteEntries(entriesOrPatchNotes, language);
   }
 
   return resolvePatchNoteEntries(entriesOrPatchNotes, language);
@@ -215,12 +261,11 @@ export function resolvePatchNoteEntries(patchNotes = patchNote, language = 'zh')
   return Object.entries(patchNotes).map(([entryId, patchNoteValue]) => {
     const isLegacyEntry = Array.isArray(patchNoteValue);
     const rawLabel = isLegacyEntry ? entryId : patchNoteValue?.label;
-    const rawNotes = isLegacyEntry ? patchNoteValue : patchNoteValue?.notes;
 
     return {
       entryId: normalizeEntryId(entryId),
       label: resolveLocalizedPatchNoteText(rawLabel, normalizedLanguage, entryId),
-      notes: resolveLocalizedPatchNoteList(rawNotes, normalizedLanguage),
+      sections: resolveEntrySections(patchNoteValue, normalizedLanguage),
     };
   });
 }

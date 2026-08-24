@@ -3,6 +3,7 @@ import patchNoteCatalog from '../../../patchNote.json';
 import {
   PATCH_NOTES_STORAGE_KEY,
   PATCH_NOTES_STORAGE_VERSION,
+  PATCH_NOTE_SECTION_KEYS,
   getUnreadPatchNoteEntries,
   initializePatchNotesState,
   markPatchNoteEntriesAsRead,
@@ -24,6 +25,31 @@ function createLocalStorageMock() {
       store.clear();
     }),
   };
+}
+
+function flattenSections(sections) {
+  return PATCH_NOTE_SECTION_KEYS.flatMap((key) => (sections?.[key] || []).map(String)).filter(Boolean);
+}
+
+function catalogSectionList(catalogValue, language) {
+  const list = [];
+  for (const key of PATCH_NOTE_SECTION_KEYS) {
+    for (const note of catalogValue?.[key]?.[language] || []) {
+      list.push(String(note));
+    }
+  }
+  return list;
+}
+
+function catalogSections(catalogValue, language) {
+  const sections = {};
+  for (const key of PATCH_NOTE_SECTION_KEYS) {
+    const list = (catalogValue?.[key]?.[language] || []).map(String);
+    if (list.length > 0) {
+      sections[key] = list;
+    }
+  }
+  return sections;
 }
 
 afterEach(() => {
@@ -48,12 +74,12 @@ describe('patchNotes', () => {
       entryId: latestId,
       label: latestRaw.label.zh,
     });
-    expect(zhEntries[0].notes).toEqual(latestRaw.notes.zh);
+    expect(zhEntries[0].sections).toEqual(catalogSections(latestRaw, 'zh'));
     expect(enEntries[0]).toMatchObject({
       entryId: latestId,
       label: latestRaw.label.en,
     });
-    expect(enEntries[0].notes).toEqual(latestRaw.notes.en);
+    expect(enEntries[0].sections).toEqual(catalogSections(latestRaw, 'en'));
 
     // Every catalog release appears exactly once, in source order.
     expect(zhEntries.slice(0, releaseEntryIds.length).map((entry) => entry.entryId)).toEqual(releaseEntryIds);
@@ -61,46 +87,31 @@ describe('patchNotes', () => {
 
     // Spot-check historical entries by catalog position so content
     // assertions keep working regardless of how many releases precede
-    // them.
+    // them. The flattened section lists must match the original flat
+    // note lists exactly (content and order are preserved by the data).
     const expectEntryAt = (entryId, zhLabel, enLabel, zhNotes, enNotes) => {
       const index = releaseEntryIds.indexOf(entryId);
       expect(index).toBeGreaterThanOrEqual(0);
       expect(zhEntries[index]).toMatchObject({ entryId, label: zhLabel });
-      expect(zhEntries[index].notes).toEqual(zhNotes);
+      expect(flattenSections(zhEntries[index].sections)).toEqual(zhNotes.map(String));
       expect(enEntries[index]).toMatchObject({ entryId, label: enLabel });
-      expect(enEntries[index].notes).toEqual(enNotes);
+      expect(flattenSections(enEntries[index].sections)).toEqual(enNotes.map(String));
     };
 
     expectEntryAt(
       '2026年8月18日（v2.0.9）',
       '2026年8月18日（v2.0.9）',
       'August 18, 2026 (v2.0.9)',
-      [
-        '战斗属性面板改版：属性按概览、输出、防御、效果、收益分组展示，并可展开查看基础值、各来源增量与最终值。',
-        '新增公会神龛增益归因，每个神龛单独列出影响的属性及数值变化。',
-        '战斗属性现在显示模拟后的最终值（含卷轴、饮品、技能触发效果）。',
-      ],
-      [
-        'Redesigned the Battle Attributes panel: stats are grouped into Overview, Offense, Defense, Effects, and Rewards, with expandable base value, per-source deltas, and final value.',
-        "Added guild shrine attribution, listing each shrine's affected stats and their deltas separately.",
-        'Battle attributes now show the post-simulation final value (including scrolls, drinks, and triggered ability effects).',
-      ],
+      catalogSectionList(patchNoteCatalog['2026年8月18日（v2.0.9）'], 'zh'),
+      catalogSectionList(patchNoteCatalog['2026年8月18日（v2.0.9）'], 'en'),
     );
 
     expectEntryAt(
       '2026年8月16日（v2.0.8）',
       '2026年8月16日（v2.0.8）',
       'August 16, 2026 (v2.0.8)',
-      [
-        '新增战斗卷轴：支持统一启停、逐项选择及有限或无限库存，普通战斗中每 30 分钟自动续期。',
-        '结果页显示卷轴用量；经验和掉落按怪物死亡时的有效卷轴结算，卷轴不计入成本，迷宫和公会试炼不生效。',
-        '修正模拟结束边界与长时间模拟中的结算偏差，并提升卷轴续期和掉落统计性能。',
-      ],
-      [
-        'Added combat scrolls with a global toggle, per-scroll selection, finite or unlimited stock, and automatic 30-minute renewals in standard combat.',
-        'Results show scroll usage; experience and drops use the scrolls active when each monster dies, scrolls are excluded from costs, and they do not apply in Labyrinth or Guild Trials.',
-        'Fixed simulation-end boundaries and long-run settlement discrepancies, and improved scroll renewal and drop-stat performance.',
-      ],
+      catalogSectionList(patchNoteCatalog['2026年8月16日（v2.0.8）'], 'zh'),
+      catalogSectionList(patchNoteCatalog['2026年8月16日（v2.0.8）'], 'en'),
     );
 
     const v207Index = releaseEntryIds.indexOf('2026年8月15日（v2.0.7）');
@@ -109,33 +120,26 @@ describe('patchNotes', () => {
       entryId: '2026年8月15日（v2.0.7）',
       label: '2026年8月15日（v2.0.7）',
     });
-    expect(zhEntries[v207Index].notes).toHaveLength(4);
-    expect(zhEntries[v207Index].notes).toContain(
+    expect(flattenSections(zhEntries[v207Index].sections)).toHaveLength(4);
+    expect(flattenSections(zhEntries[v207Index].sections)).toContain(
       '同步游戏 8/14 市场与公会试炼更新，市场税率提高至 5%，所有市场卖出估值已扣除 5% 税。',
     );
-    expect(zhEntries[v207Index].notes).toContain('牛铃袋 (10个) 市场卖出按官方特殊税率 18% 扣税，其余物品仍按 5%。');
-    expect(zhEntries[v207Index].notes).toContain(
+    expect(flattenSections(zhEntries[v207Index].sections)).toContain(
+      '牛铃袋 (10个) 市场卖出按官方特殊税率 18% 扣税，其余物品仍按 5%。',
+    );
+    expect(flattenSections(zhEntries[v207Index].sections)).toContain(
       '税后价格四舍五入取整为整数金币（官方取整规则暂未核实，集中一处可切换）。',
     );
-    expect(zhEntries[v207Index].notes).toContain(
+    expect(flattenSections(zhEntries[v207Index].sections)).toContain(
       '同步神龛增益（稀有发现 1.5%/级、精华发现 3%/级）与公会试炼怪物数据。',
     );
     expect(enEntries[v207Index]).toMatchObject({
       entryId: '2026年8月15日（v2.0.7）',
       label: 'August 15, 2026 (v2.0.7)',
     });
-    expect(enEntries[v207Index].notes).toHaveLength(4);
-    expect(enEntries[v207Index].notes).toContain(
+    expect(flattenSections(enEntries[v207Index].sections)).toHaveLength(4);
+    expect(flattenSections(enEntries[v207Index].sections)).toContain(
       'Synced the Aug 14 game update: market tax raised to 5%, and all market-sale valuations now deduct the tax.',
-    );
-    expect(enEntries[v207Index].notes).toContain(
-      'Bag of 10 Cowbells market sales now use the official special 18% tax rate; all other items remain at 5%.',
-    );
-    expect(enEntries[v207Index].notes).toContain(
-      'Taxed prices are rounded to whole coins (official rounding rule unverified; centralized and switchable).',
-    );
-    expect(enEntries[v207Index].notes).toContain(
-      'Synced shrine buffs (Rare Find 1.5% and Essence Find 3% per level) and guild trial monster data.',
     );
 
     const v206Index = releaseEntryIds.indexOf('2026年8月12日（v2.0.6）');
@@ -144,16 +148,8 @@ describe('patchNotes', () => {
       entryId: '2026年8月12日（v2.0.6）',
       label: '2026年8月12日（v2.0.6）',
     });
-    expect(zhEntries[v206Index].notes).toHaveLength(3);
-    expect(zhEntries[v206Index].notes).toContain('买入价支持整数输入与 k/m/b 单位按钮。');
-    expect(zhEntries[v206Index].notes).toContain('目标装备无市场价格时，支持手动输入买入价后加入队列。');
-    expect(enEntries[v206Index]).toMatchObject({
-      entryId: '2026年8月12日（v2.0.6）',
-      label: 'August 12, 2026 (v2.0.6)',
-    });
-    expect(enEntries[v206Index].notes).toHaveLength(3);
-    expect(enEntries[v206Index].notes).toContain('Buy prices support integer input with k/m/b unit buttons.');
-    expect(enEntries[v206Index].notes).toContain('Enter a manual buy price when target equipment has no market price.');
+    expect(flattenSections(zhEntries[v206Index].sections)).toContain('买入价支持整数输入与 k/m/b 单位按钮。');
+    expect(zhEntries[v206Index].sections.newFeatures).toContain('目标装备无市场价格时，支持手动输入买入价后加入队列。');
 
     const v205Index = releaseEntryIds.indexOf('2026年8月10日（v2.0.5）');
     expect(v205Index).toBeGreaterThanOrEqual(0);
@@ -161,126 +157,94 @@ describe('patchNotes', () => {
       entryId: '2026年8月10日（v2.0.5）',
       label: '2026年8月10日（v2.0.5）',
     });
-    expect(zhEntries[v205Index].notes).toContain('更新日志从弹窗迁移为独立页面，进入页面后自动标记当前未读版本。');
-    expect(enEntries[v205Index]).toMatchObject({
-      entryId: '2026年8月10日（v2.0.5）',
-      label: 'August 10, 2026 (v2.0.5)',
-    });
-    expect(enEntries[v205Index].notes).toContain(
-      'Patch notes now open on a dedicated page instead of a dialog, and current unread versions are marked as read when the page opens.',
+    expect(flattenSections(zhEntries[v205Index].sections)).toContain(
+      '更新日志从弹窗迁移为独立页面，进入页面后自动标记当前未读版本。',
     );
+
     const v204Index = releaseEntryIds.indexOf('2026年8月10日（v2.0.4）');
     expect(v204Index).toBeGreaterThanOrEqual(0);
     expect(zhEntries[v204Index]).toMatchObject({
       entryId: '2026年8月10日（v2.0.4）',
       label: '2026年8月10日（v2.0.4）',
     });
-    expect(zhEntries[v204Index].notes).toContain('官方精确 Ask 和小时均价均缺失时，可确认使用历史归档最新有效 Ask。');
-    expect(enEntries[v204Index]).toMatchObject({
-      entryId: '2026年8月10日（v2.0.4）',
-      label: 'August 10, 2026 (v2.0.4)',
-    });
-    expect(enEntries[v204Index].notes).toContain(
-      'Confirm the latest valid archived Ask when both the official exact Ask and hourly average are unavailable.',
+    expect(flattenSections(zhEntries[v204Index].sections)).toContain(
+      '官方精确 Ask 和小时均价均缺失时，可确认使用历史归档最新有效 Ask。',
     );
-    const v203Index = releaseEntryIds.indexOf('2026年8月9日（v2.0.3）');
-    expect(v203Index).toBeGreaterThanOrEqual(0);
-    expect(zhEntries[v203Index]).toMatchObject({
-      entryId: '2026年8月9日（v2.0.3）',
-      label: '2026年8月9日（v2.0.3）',
-    });
-    expect(enEntries[v203Index]).toMatchObject({
-      entryId: '2026年8月9日（v2.0.3）',
-      label: 'August 9, 2026 (v2.0.3)',
-    });
-    const v202Index = releaseEntryIds.indexOf('2026年8月9日（v2.0.2）');
-    expect(v202Index).toBeGreaterThanOrEqual(0);
-    expect(zhEntries[v202Index]).toMatchObject({
-      entryId: '2026年8月9日（v2.0.2）',
-      label: '2026年8月9日（v2.0.2）',
-    });
-    expect(zhEntries[v202Index].notes).toContain(
-      '队列装备成本改为完全采用市场定价：目标强化等级无精确卖单时禁止入队。',
-    );
-    expect(enEntries[v202Index]).toMatchObject({
-      entryId: '2026年8月9日（v2.0.2）',
-      label: 'August 9, 2026 (v2.0.2)',
-    });
-    expect(enEntries[v202Index].notes).toContain(
-      'Queue equipment costs now use market pricing only; variants without an exact sell listing are rejected.',
-    );
-    const v201Index = releaseEntryIds.indexOf('2026年8月8日（v2.0.1）');
-    expect(v201Index).toBeGreaterThanOrEqual(0);
-    expect(zhEntries[v201Index]).toMatchObject({
-      entryId: '2026年8月8日（v2.0.1）',
-      label: '2026年8月8日（v2.0.1）',
-    });
-    expect(zhEntries[v201Index].notes).toContain('食物、饮品和技能新增内联触发条件编辑。');
-    expect(enEntries[v201Index]).toMatchObject({
-      entryId: '2026年8月8日（v2.0.1）',
-      label: 'August 8, 2026 (v2.0.1)',
-    });
-    expect(enEntries[v201Index].notes).toContain(
-      'Added inline trigger-condition editing for food, drinks, and abilities.',
-    );
+
     const v200Index = releaseEntryIds.indexOf('2026年8月8日（v2.0.0）');
     expect(v200Index).toBeGreaterThanOrEqual(0);
     expect(zhEntries[v200Index]).toMatchObject({
       entryId: '2026年8月8日（v2.0.0）',
       label: '2026年8月8日（v2.0.0）',
     });
-    expect(zhEntries[v200Index].notes).toHaveLength(3);
+    expect(zhEntries[v200Index].sections.newFeatures).toHaveLength(2);
     expect(enEntries[v200Index]).toMatchObject({
       entryId: '2026年8月8日（v2.0.0）',
       label: 'August 8, 2026 (v2.0.0)',
     });
-    expect(enEntries[v200Index].notes).toHaveLength(3);
+    expect(enEntries[v200Index].sections.newFeatures).toHaveLength(2);
   });
 
-  it('resolves mixed legacy and bilingual patch note entries in source order', () => {
+  it('resolves new-format, legacy fallback, and empty entries in source order', () => {
     const patchNotes = {
       '2026年3月26日（v1.0.8）': {
         label: {
           zh: ' 2026年3月26日（v1.0.8） ',
           en: ' March 26, 2026 (v1.0.8) ',
         },
-        notes: {
-          zh: ['  第一条  ', '', '   ', '第二条'],
-          en: [' First note ', '', '   ', 'Second note'],
+        newFeatures: {
+          zh: ['  新增说明  ', '', '   '],
+          en: [' First feature '],
+        },
+        improvements: {
+          zh: ['体验优化说明'],
+          en: ['First improvement'],
+        },
+        bugFixes: {
+          zh: ['缺陷修复说明'],
+          en: ['First fix'],
         },
       },
-      '2026年3月25日（v1.0.7）': [' 第三条 '],
+      '2026年3月25日（v1.0.7）': [' 旧版纯数组说明 '],
       '2026年3月24日（v1.0.6）': {
         label: {
           zh: ' 2026年3月24日（v1.0.6） ',
         },
-        notes: {
+        improvements: {
           zh: [' 第四条 '],
         },
       },
-      '2026年3月23日': 'invalid',
+      '2026年3月23日': {},
     };
 
     expect(resolvePatchNoteEntries(patchNotes, 'zh')).toEqual([
       {
         entryId: '2026年3月26日（v1.0.8）',
         label: '2026年3月26日（v1.0.8）',
-        notes: ['第一条', '第二条'],
+        sections: {
+          newFeatures: ['新增说明'],
+          improvements: ['体验优化说明'],
+          bugFixes: ['缺陷修复说明'],
+        },
       },
       {
         entryId: '2026年3月25日（v1.0.7）',
         label: '2026年3月25日（v1.0.7）',
-        notes: ['第三条'],
+        sections: {
+          improvements: ['旧版纯数组说明'],
+        },
       },
       {
         entryId: '2026年3月24日（v1.0.6）',
         label: '2026年3月24日（v1.0.6）',
-        notes: ['第四条'],
+        sections: {
+          improvements: ['第四条'],
+        },
       },
       {
         entryId: '2026年3月23日',
         label: '2026年3月23日',
-        notes: [],
+        sections: {},
       },
     ]);
   });
@@ -292,16 +256,20 @@ describe('patchNotes', () => {
           zh: '2026年3月26日（v1.0.8）',
           en: 'March 26, 2026 (v1.0.8)',
         },
-        notes: {
-          zh: ['第一条', '第二条'],
-          en: ['First note', 'Second note'],
+        newFeatures: {
+          zh: ['新增说明'],
+          en: ['First feature'],
+        },
+        improvements: {
+          zh: ['体验优化说明'],
+          en: ['First improvement'],
         },
       },
       '2026年3月25日（v1.0.7）': {
         label: {
           zh: '2026年3月25日（v1.0.7）',
         },
-        notes: {
+        improvements: {
           zh: ['第三条'],
         },
       },
@@ -311,22 +279,197 @@ describe('patchNotes', () => {
       {
         entryId: '2026年3月26日（v1.0.8）',
         label: 'March 26, 2026 (v1.0.8)',
-        notes: ['First note', 'Second note'],
+        sections: {
+          newFeatures: ['First feature'],
+          improvements: ['First improvement'],
+        },
       },
       {
         entryId: '2026年3月25日（v1.0.7）',
         label: '2026年3月25日（v1.0.7）',
-        notes: ['第三条'],
+        sections: {
+          improvements: ['第三条'],
+        },
       },
     ]);
+  });
+
+  it('merges legacy notes into improvements when section keys and notes coexist', () => {
+    const patchNotes = {
+      '2026年3月26日（v1.0.8）': {
+        label: '2026年3月26日（v1.0.8）',
+        newFeatures: {
+          zh: ['新增说明'],
+        },
+        improvements: {
+          zh: ['体验优化说明'],
+        },
+        notes: {
+          zh: ['旧版补充说明'],
+        },
+      },
+      '2026年3月25日（v1.0.7）': {
+        label: '2026年3月25日（v1.0.7）',
+        notes: ['纯 notes 兜底说明'],
+      },
+    };
+
+    expect(resolvePatchNoteEntries(patchNotes, 'zh')).toEqual([
+      {
+        entryId: '2026年3月26日（v1.0.8）',
+        label: '2026年3月26日（v1.0.8）',
+        sections: {
+          newFeatures: ['新增说明'],
+          improvements: ['体验优化说明', '旧版补充说明'],
+        },
+      },
+      {
+        entryId: '2026年3月25日（v1.0.7）',
+        label: '2026年3月25日（v1.0.7）',
+        sections: {
+          improvements: ['纯 notes 兜底说明'],
+        },
+      },
+    ]);
+  });
+
+  it('resolves the real catalog for zh and en with non-empty sections and zh/en parity', () => {
+    const zhEntries = resolvePatchNoteEntries(undefined, 'zh');
+    const enEntries = resolvePatchNoteEntries(undefined, 'en');
+
+    expect(zhEntries).toHaveLength(Object.keys(patchNoteCatalog).length);
+    expect(enEntries).toHaveLength(Object.keys(patchNoteCatalog).length);
+
+    for (let i = 0; i < zhEntries.length; i += 1) {
+      const zhSections = zhEntries[i].sections;
+      const enSections = enEntries[i].sections;
+
+      // 每个版本至少有一个非空分类
+      expect(Object.keys(zhSections).length).toBeGreaterThan(0);
+
+      // 现代条目（英文存在）必须与中文分类结构一致且内容完整
+      const snapshotEn = catalogSectionList(patchNoteCatalog[zhEntries[i].entryId], 'en');
+      if (snapshotEn.length > 0) {
+        expect(new Set(Object.keys(enSections))).toEqual(new Set(Object.keys(zhSections)));
+        expect(flattenSections(enSections)).toEqual(snapshotEn);
+      } else {
+        // 旧版仅有中文：英文视图回退显示中文内容（与历史行为一致）
+        expect(flattenSections(enSections)).toEqual(catalogSectionList(patchNoteCatalog[zhEntries[i].entryId], 'zh'));
+      }
+    }
+  });
+
+  it('keeps previously stored read ids stable against the new sections shape', () => {
+    const storage = createLocalStorageMock();
+    storage.setItem(
+      PATCH_NOTES_STORAGE_KEY,
+      JSON.stringify({
+        version: PATCH_NOTES_STORAGE_VERSION,
+        readEntryIds: ['2026年3月25日（v1.0.7）', '2026年3月24日'],
+        initializedAt: 100,
+        updatedAt: 100,
+      }),
+    );
+
+    const entries = resolvePatchNoteEntries({
+      '2026年3月26日（v1.0.8）': {
+        newFeatures: { zh: ['最新'] },
+      },
+      '2026年3月25日（v1.0.7）': {
+        improvements: { zh: ['第一条'] },
+      },
+      '2026年3月24日': {
+        improvements: { zh: ['第二条'] },
+      },
+    });
+
+    expect(
+      getUnreadPatchNoteEntries({
+        entries,
+        storage,
+      }),
+    ).toEqual([
+      {
+        entryId: '2026年3月26日（v1.0.8）',
+        label: '2026年3月26日（v1.0.8）',
+        sections: {
+          newFeatures: ['最新'],
+        },
+      },
+    ]);
+  });
+
+  it('returns unread entries carrying their sections for preview rendering', () => {
+    const storage = createLocalStorageMock();
+    const entries = resolvePatchNoteEntries({
+      '2026年3月26日（v1.0.8）': {
+        label: { zh: '2026年3月26日（v1.0.8）' },
+        newFeatures: { zh: ['新功能一'] },
+        improvements: { zh: ['优化一'] },
+      },
+      '2026年3月25日（v1.0.7）': {
+        improvements: { zh: ['已读'] },
+      },
+    });
+
+    storage.setItem(
+      PATCH_NOTES_STORAGE_KEY,
+      JSON.stringify({
+        version: PATCH_NOTES_STORAGE_VERSION,
+        readEntryIds: ['2026年3月25日（v1.0.7）'],
+        initializedAt: 100,
+        updatedAt: 100,
+      }),
+    );
+
+    const unread = getUnreadPatchNoteEntries({ entries, storage });
+    expect(unread).toHaveLength(1);
+    expect(unread[0].entryId).toBe('2026年3月26日（v1.0.8）');
+    expect(unread[0].sections).toEqual({
+      newFeatures: ['新功能一'],
+      improvements: ['优化一'],
+    });
+  });
+
+  it('resolves raw bilingual sections instead of dropping them when entries arrive as an array', () => {
+    const storage = createLocalStorageMock();
+    storage.setItem(
+      PATCH_NOTES_STORAGE_KEY,
+      JSON.stringify({
+        version: PATCH_NOTES_STORAGE_VERSION,
+        readEntryIds: [],
+        initializedAt: 100,
+        updatedAt: 100,
+      }),
+    );
+
+    // 数组入参路径：sections 以「原始 catalog 形态」（按语言分组）传入，
+    // 应被本地化解析，而非被 normalizePatchNoteList 判为非数组静默丢弃。
+    const entries = [
+      {
+        entryId: '2026年3月26日（v1.0.8）',
+        label: '2026年3月26日（v1.0.8）',
+        sections: {
+          newFeatures: { zh: ['新增说明'], en: ['First feature'] },
+        },
+      },
+    ];
+
+    const unread = getUnreadPatchNoteEntries({ entries, storage });
+    expect(unread).toHaveLength(1);
+    expect(unread[0].sections).toEqual({ newFeatures: ['新增说明'] });
   });
 
   it('initializes storage with all current entries marked as read on first launch', () => {
     const storage = createLocalStorageMock();
     vi.spyOn(Date, 'now').mockReturnValue(111);
     const entries = resolvePatchNoteEntries({
-      '2026年3月25日（v1.0.7）': ['第一条'],
-      '2026年3月24日': ['第二条'],
+      '2026年3月25日（v1.0.7）': {
+        newFeatures: { zh: ['第一条'] },
+      },
+      '2026年3月24日': {
+        improvements: { zh: ['第二条'] },
+      },
     });
 
     const state = initializePatchNotesState({
@@ -349,38 +492,6 @@ describe('patchNotes', () => {
     ).toEqual([]);
   });
 
-  it('returns only newly added entries as unread when storage already exists', () => {
-    const storage = createLocalStorageMock();
-    const entries = resolvePatchNoteEntries({
-      '2026年3月26日（v1.0.8）': ['最新'],
-      '2026年3月25日（v1.0.7）': ['第一条'],
-      '2026年3月24日': ['第二条'],
-    });
-
-    storage.setItem(
-      PATCH_NOTES_STORAGE_KEY,
-      JSON.stringify({
-        version: PATCH_NOTES_STORAGE_VERSION,
-        readEntryIds: ['2026年3月25日（v1.0.7）', '2026年3月24日'],
-        initializedAt: 100,
-        updatedAt: 100,
-      }),
-    );
-
-    expect(
-      getUnreadPatchNoteEntries({
-        entries,
-        storage,
-      }),
-    ).toEqual([
-      {
-        entryId: '2026年3月26日（v1.0.8）',
-        label: '2026年3月26日（v1.0.8）',
-        notes: ['最新'],
-      },
-    ]);
-  });
-
   it('keeps read-state matching stable when the patch note language changes', () => {
     const storage = createLocalStorageMock();
     vi.spyOn(Date, 'now').mockReturnValue(333);
@@ -390,7 +501,7 @@ describe('patchNotes', () => {
           zh: '2026年3月26日（v1.0.8）',
           en: 'March 26, 2026 (v1.0.8)',
         },
-        notes: {
+        newFeatures: {
           zh: ['第一条'],
           en: ['First note'],
         },
@@ -400,7 +511,7 @@ describe('patchNotes', () => {
           zh: '2026年3月25日（v1.0.7）',
           en: 'March 25, 2026 (v1.0.7)',
         },
-        notes: {
+        improvements: {
           zh: ['第二条'],
           en: ['Second note'],
         },
@@ -457,7 +568,9 @@ describe('patchNotes', () => {
     const storage = createLocalStorageMock();
     vi.spyOn(Date, 'now').mockReturnValue(999);
     const entries = resolvePatchNoteEntries({
-      '2026年3月25日（v1.0.7）': ['第一条'],
+      '2026年3月25日（v1.0.7）': {
+        improvements: { zh: ['第一条'] },
+      },
     });
 
     storage.setItem(PATCH_NOTES_STORAGE_KEY, '{not-json');

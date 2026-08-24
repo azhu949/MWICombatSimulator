@@ -68,14 +68,14 @@ describe('application shell behavior', () => {
       defineComponent({
         components: { AppSidebar, SidebarProvider },
         template:
-          '<SidebarProvider><AppSidebar version="1.0.0" :unread-patch-notes-count="3" patch-notes-label="Patch Notes, 3 unread updates" /></SidebarProvider>',
+          '<SidebarProvider><AppSidebar version="1.0.0" :unread-patch-notes-count="3" patch-notes-label="Patch Notes, 3 unread versions" /></SidebarProvider>',
       }),
       { global: { plugins: [router] }, attachTo: document.body },
     );
 
-    const patchNotesLink = wrapper.findAll('a').find((link) => link.attributes('href') === '/patch-notes');
+    const patchNotesLink = wrapper.findAll('a').find((link) => link.find('.sidebar-unread-badge').exists());
     expect(patchNotesLink).toBeTruthy();
-    expect(patchNotesLink.attributes('aria-label')).toBe('Patch Notes, 3 unread updates');
+    expect(patchNotesLink.attributes('aria-label')).toBe('Patch Notes, 3 unread versions');
     expect(patchNotesLink.find('.sidebar-unread-indicator').exists()).toBe(true);
     expect(patchNotesLink.find('.sidebar-unread-badge').text()).toBe('3');
 
@@ -97,8 +97,49 @@ describe('application shell behavior', () => {
       { global: { plugins: [router] }, attachTo: document.body },
     );
 
-    const patchNotesLink = wrapper.findAll('a').find((link) => link.attributes('href') === '/patch-notes');
+    const patchNotesLink = wrapper.findAll('a').find((link) => link.find('.sidebar-unread-badge').exists());
     expect(patchNotesLink.find('.sidebar-unread-badge').text()).toBe('99+');
+  });
+
+  it('opens the unread preview without navigating when unread entries exist', async () => {
+    const router = createTestRouter();
+    await router.push('/home');
+    await router.isReady();
+
+    const wrapper = mount(
+      defineComponent({
+        components: { AppSidebar, SidebarProvider },
+        template: '<SidebarProvider><AppSidebar version="1.0.0" :unread-patch-notes-count="3" /></SidebarProvider>',
+      }),
+      { global: { plugins: [router] }, attachTo: document.body },
+    );
+
+    const patchNotesLink = wrapper.findAll('a').find((link) => link.find('.sidebar-unread-badge').exists());
+    await patchNotesLink.trigger('click');
+    await flushPromises();
+
+    expect(router.currentRoute.value.name).toBe('home');
+    expect(wrapper.findComponent(AppSidebar).emitted('open-patch-notes')).toHaveLength(1);
+  });
+
+  it('navigates to patch notes when there are no unread entries', async () => {
+    const router = createTestRouter();
+    await router.push('/home');
+    await router.isReady();
+
+    const wrapper = mount(
+      defineComponent({
+        components: { AppSidebar, SidebarProvider },
+        template: '<SidebarProvider><AppSidebar version="1.0.0" /></SidebarProvider>',
+      }),
+      { global: { plugins: [router] }, attachTo: document.body },
+    );
+
+    const patchNotesLink = wrapper.findAll('a').find((link) => link.attributes('aria-label') === 'Patch Notes');
+    await patchNotesLink.trigger('click');
+    await flushPromises();
+
+    expect(router.currentRoute.value.name).toBe('patch-notes');
   });
 
   it('persists desktop sidebar collapse state', async () => {

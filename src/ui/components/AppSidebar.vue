@@ -54,24 +54,27 @@
     </nav>
 
     <div class="shrink-0 space-y-1 border-t border-sidebar-border p-2">
-      <RouterLink
-        to="/patch-notes"
-        class="sidebar-action relative"
-        :class="[collapsed ? 'justify-center' : '', route.name === 'patch-notes' ? 'sidebar-action-active' : '']"
-        :aria-label="patchNotesLabel"
-        :title="patchNotesLabel"
-        @click="mobile && setMobileOpen(false)"
-      >
-        <ScrollText class="size-[1.125rem] shrink-0" />
-        <span v-if="!collapsed" class="truncate">{{ t('common:patchNotes', 'Patch Notes') }}</span>
-        <span
-          v-if="unreadPatchNotesCount > 0"
-          class="sidebar-unread-indicator"
-          :class="collapsed ? 'sidebar-unread-indicator-collapsed' : 'ml-auto'"
-          aria-hidden="true"
+      <RouterLink v-slot="{ href, navigate, isExactActive }" to="/patch-notes" custom>
+        <a
+          :href="href"
+          class="sidebar-action relative"
+          :class="[collapsed ? 'justify-center' : '', route.name === 'patch-notes' ? 'sidebar-action-active' : '']"
+          :aria-label="patchNotesLabel"
+          :aria-current="isExactActive ? 'page' : undefined"
+          :title="patchNotesLabel"
+          @click="handlePatchNotesClick(mobile, $event, navigate)"
         >
-          <span class="sidebar-unread-badge">{{ unreadBadgeLabel }}</span>
-        </span>
+          <ScrollText class="size-[1.125rem] shrink-0" />
+          <span v-if="!collapsed" class="truncate">{{ t('common:patchNotes', 'Patch Notes') }}</span>
+          <span
+            v-if="unreadPatchNotesCount > 0"
+            class="sidebar-unread-indicator"
+            :class="collapsed ? 'sidebar-unread-indicator-collapsed' : 'ml-auto'"
+            aria-hidden="true"
+          >
+            <span class="sidebar-unread-badge">{{ unreadBadgeLabel }}</span>
+          </span>
+        </a>
       </RouterLink>
       <a
         href="https://github.com/azhu949/MWICombatSimulator"
@@ -129,11 +132,23 @@ const unreadBadgeLabel = computed(() =>
   props.unreadPatchNotesCount > 99 ? '99+' : String(props.unreadPatchNotesCount),
 );
 
-const emit = defineEmits(['feedback']);
+const emit = defineEmits(['feedback', 'open-patch-notes']);
 const router = useRouter();
 const route = useRoute();
 const { setMobileOpen } = useSidebar();
 const { t } = useI18nText();
+
+function handlePatchNotesClick(mobile, event, navigate) {
+  if (mobile) {
+    setMobileOpen(false);
+  }
+  if (props.unreadPatchNotesCount > 0) {
+    event.preventDefault();
+    emit('open-patch-notes');
+    return;
+  }
+  navigate(event);
+}
 
 const iconByRoute = {
   home: House,

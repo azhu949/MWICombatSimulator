@@ -49,10 +49,46 @@ describe('App shell contracts', () => {
     expect(sidebarSource).toContain('to="/patch-notes"');
     expect(sidebarSource).toContain('sidebar-unread-badge');
     expect(sidebarSource).toContain('unreadPatchNotesCount');
-    expect(appSource).not.toContain('patchNotesModalOpen');
-    expect(appSource).not.toContain('openPatchNotesModal');
+    expect(appSource).toContain('currentPageTitle');
     expect(appSource).toContain("nextRouteName === 'patch-notes'");
     expect(appSource).toContain('markPatchNotesReadOnPageEntry();');
+  });
+
+  it('shows an unread patch-notes preview dialog that opens only from the sidebar entry', () => {
+    expect(sidebarSource).toContain('@click="handlePatchNotesClick(mobile, $event, navigate)"');
+    expect(sidebarSource).toContain('event.preventDefault()');
+    expect(sidebarSource).toContain('navigate(event)');
+    expect(sidebarSource).toContain("emit('open-patch-notes')");
+    expect(appSource).toContain('@open-patch-notes="openPatchNotesUnreadModal"');
+    expect(appSource).not.toContain('nextCount > 0 && prevCount === 0');
+    expect(appSource).toContain(':open="patchNotesUnreadModalOpen"');
+    expect(appSource).toContain('const patchNotesUnreadPreviewEntryIds = ref([])');
+    expect(appSource).toContain('const patchNotesUnreadPreviewItems = computed(() =>');
+    expect(appSource).toContain('patchNotesUnreadPreviewEntryIds.value = unread.map((entry) => entry.entryId)');
+    expect(appSource).toContain(
+      'const previewEntryIds = patchNotesUnreadPreviewItems.value.map((entry) => entry.entryId);',
+    );
+    expect(appSource).not.toMatch(
+      /function closePatchNotesUnreadModal\(closeReason\)[\s\S]*?const previewEntryIds = patchNotesUnreadPreviewEntryIds\.value;/,
+    );
+    expect(appSource).toContain('openPatchNotesUnreadModal');
+    expect(appSource).toContain('markPatchNoteEntriesAsRead({');
+    expect(appSource).toContain('refreshPatchNoteUnreadEntries();');
+    expect(appSource).toContain('patchNotesUnreadModalOpen.value = true;');
+    expect(appSource).toContain('async function viewAllPatchNotes()');
+    expect(appSource).toContain("await router.push({ name: 'patch-notes' });");
+    expect(appSource).toContain('data-patch-notes-view-all');
+    expect(appSource).toContain('data-patch-notes-dismiss');
+    expect(appSource).toContain('initial-focus-selector="[data-patch-notes-dismiss]"');
+    expect(appSource).toContain('common:vue.app.patchNotesUnreadDialogDesc');
+    expect(appSource).toContain(
+      "t('common:vue.app.patchNotesUnreadAriaLabel', 'Patch Notes, {{count}} unread versions'",
+    );
+    expect(appSource).toContain('common:vue.app.patchNotesViewAll');
+    expect(appSource).toContain('common:vue.app.patchNotesDismiss');
+    expect(appSource).toContain("closePatchNotesUnreadModal('programmatic')");
+    expect(appSource).toContain("closeReason === 'escape' || closeReason === 'backdrop'");
+    expect(appSource).toContain('<PatchNoteSections :sections="entry.sections" />');
   });
 
   it('keeps theme and language as accessible global actions', () => {

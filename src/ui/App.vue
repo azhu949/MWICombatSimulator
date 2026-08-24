@@ -5,6 +5,7 @@
       :unread-patch-notes-count="patchNotesUnreadCount"
       :patch-notes-label="patchNotesButtonAriaLabel"
       @feedback="openFeedbackModal"
+      @open-patch-notes="openPatchNotesUnreadModal"
     />
 
     <SidebarInset :style="{ '--app-sticky-shell-height': stickyShellHeight }">
@@ -370,6 +371,43 @@
         </div>
       </div>
     </BaseModal>
+
+    <BaseModal
+      :open="patchNotesUnreadModalOpen"
+      :title="t('common:patchNotes', 'Patch Notes')"
+      panel-class="max-w-[96vw] lg:max-w-2xl"
+      initial-focus-selector="[data-patch-notes-dismiss]"
+      @close="closePatchNotesUnreadModal"
+    >
+      <div class="space-y-4">
+        <p class="text-sm text-foreground/85">
+          {{ patchNotesUnreadDialogText }}
+        </p>
+        <div class="max-h-[60vh] space-y-4 overflow-y-auto pr-1">
+          <article
+            v-for="entry in patchNotesUnreadPreviewItems"
+            :key="entry.entryId"
+            class="rounded-lg border border-border bg-muted/30 p-4"
+          >
+            <h3 class="mb-3 font-heading text-sm font-semibold text-foreground">{{ entry.label }}</h3>
+            <PatchNoteSections :sections="entry.sections" />
+          </article>
+        </div>
+        <div class="flex flex-wrap items-center gap-2">
+          <button type="button" class="button-primary" data-patch-notes-view-all @click="viewAllPatchNotes">
+            {{ t('common:vue.app.patchNotesViewAll', 'View all patch notes') }}
+          </button>
+          <button
+            type="button"
+            class="button-secondary"
+            data-patch-notes-dismiss
+            @click="closePatchNotesUnreadModal('programmatic')"
+          >
+            {{ t('common:vue.app.patchNotesDismiss', 'Close') }}
+          </button>
+        </div>
+      </div>
+    </BaseModal>
   </SidebarProvider>
 </template>
 
@@ -384,6 +422,7 @@ import {
 import BaseModal from './components/BaseModal.vue';
 import AppSidebar from './components/AppSidebar.vue';
 import CombatCommandBar from './components/CombatCommandBar.vue';
+import PatchNoteSections from './components/PatchNoteSections.vue';
 import { Button } from './components/ui/button/index.js';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from './components/ui/sidebar/index.js';
 import { useSimulatorStore } from '../stores/simulatorStore.js';
@@ -429,6 +468,8 @@ const queueAdditionPending = ref(false);
 const pendingQueueDraftFingerprint = ref('');
 const baselineReminderDismissed = ref(isBaselineReminderDismissed());
 const patchNotesUnreadEntries = ref([]);
+const patchNotesUnreadModalOpen = ref(false);
+const patchNotesUnreadPreviewEntryIds = ref([]);
 const topQueueActionStatus = ref({
   tone: 'secondary',
   text: '',
@@ -540,14 +581,40 @@ const topQueueActionStatusClass = computed(() => {
   return 'text-foreground/85';
 });
 const patchNotesEntries = computed(() => resolvePatchNoteEntries(undefined, language.value));
+const patchNotesUnreadPreviewItems = computed(() => {
+  const previewEntryIds = patchNotesUnreadPreviewEntryIds.value;
+  if (previewEntryIds.length === 0) {
+    return [];
+  }
+  const entriesById = new Map(patchNotesEntries.value.map((entry) => [entry.entryId, entry]));
+  return previewEntryIds.map((entryId) => entriesById.get(entryId)).filter((entry) => Boolean(entry));
+});
+
+// 将“缺失条目”诊断从 computed 移到 watch：computed 应保持纯函数、避免副作用，
+// 且仅在预览 id 列表实际变化时检查一次（渲染层已用 filter(Boolean) 兜底缺失项）。
+watch(patchNotesUnreadPreviewEntryIds, (previewEntryIds) => {
+  if (!import.meta.env.DEV || previewEntryIds.length === 0) {
+    return;
+  }
+  const entriesById = new Map(patchNotesEntries.value.map((entry) => [entry.entryId, entry]));
+  const missingEntryIds = previewEntryIds.filter((entryId) => !entriesById.has(entryId));
+  if (missingEntryIds.length > 0) {
+    console.warn('[patchNotes] preview entry ids missing from catalog:', missingEntryIds);
+  }
+});
 const patchNotesUnreadCount = computed(() => patchNotesUnreadEntries.value.length);
 const hasUnreadPatchNotes = computed(() => patchNotesUnreadCount.value > 0);
 const patchNotesButtonAriaLabel = computed(() =>
   hasUnreadPatchNotes.value
-    ? t('common:vue.app.patchNotesUnreadAriaLabel', 'Patch Notes, {{count}} unread updates', {
+    ? t('common:vue.app.patchNotesUnreadAriaLabel', 'Patch Notes, {{count}} unread versions', {
         count: patchNotesUnreadCount.value,
       })
     : t('common:patchNotes', 'Patch Notes'),
+);
+const patchNotesUnreadDialogText = computed(() =>
+  t('common:vue.app.patchNotesUnreadDialogDesc', 'You have {{count}} unread versions:', {
+    count: patchNotesUnreadPreviewItems.value.length,
+  }),
 );
 const actionNameFallbackMap = computed(() => {
   const map = {};
@@ -1072,6 +1139,48 @@ function markPatchNotesReadOnPageEntry() {
   refreshPatchNoteUnreadEntries();
 }
 
+function openPatchNotesUnreadModal() {
+  const unread = patchNotesUnreadEntries.value;
+  if (unread.length === 0) {
+    return;
+  }
+  if (route.name === 'patch-notes') {
+    // 已在更新日志页：未读徽标残留说明状态不一致（如语言切换后重新计算），
+    // 直接清除未读，避免“点了没反应”。
+    markPatchNotesReadOnPageEntry();
+    return;
+  }
+
+  patchNotesUnreadPreviewEntryIds.value = unread.map((entry) => entry.entryId);
+  patchNotesUnreadModalOpen.value = true;
+}
+
+function closePatchNotesUnreadModal(closeReason = 'programmatic') {
+  // 关闭方式分类（与 BaseModal 的 reason 语义对应）：
+  // - 'programmatic'（默认值，含不传参调用）：显式确认（点击“Close”/“View all”），视为已读。
+  // - 'close-button'：点击右上角 X 按钮，同样视为已读（主动确认关闭）。
+  // - 'escape' / 'backdrop'：Esc / 遮罩，视为“暂不阅读”，保留未读徽标。
+  const isDismissiveClose = closeReason === 'escape' || closeReason === 'backdrop';
+  if (!isDismissiveClose) {
+    const previewEntryIds = patchNotesUnreadPreviewItems.value.map((entry) => entry.entryId);
+    if (previewEntryIds.length > 0) {
+      markPatchNoteEntriesAsRead({
+        entryIds: previewEntryIds,
+      });
+      refreshPatchNoteUnreadEntries();
+    }
+  }
+  patchNotesUnreadModalOpen.value = false;
+  patchNotesUnreadPreviewEntryIds.value = [];
+}
+
+async function viewAllPatchNotes() {
+  closePatchNotesUnreadModal();
+  if (route.name !== 'patch-notes') {
+    await router.push({ name: 'patch-notes' });
+  }
+}
+
 async function goToHomeResults() {
   closeSimulationCompleteModal();
   if (route.name !== 'home' || route.query.focus !== 'results') {
@@ -1162,6 +1271,9 @@ watch(
   () => language.value,
   () => {
     refreshPatchNoteUnreadEntries();
+    if (patchNotesUnreadModalOpen.value) {
+      patchNotesUnreadPreviewEntryIds.value = patchNotesUnreadEntries.value.map((entry) => entry.entryId);
+    }
   },
 );
 
