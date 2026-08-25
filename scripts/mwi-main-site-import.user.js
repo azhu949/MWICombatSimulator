@@ -3,7 +3,7 @@
 // @name:zh      MWI Combat Simulator 主站一键导入
 // @name:zh-CN   MWI Combat Simulator 主站一键导入
 // @namespace    https://azhu949.github.io/MWICombatSimulator
-// @version      0.1.30
+// @version      0.1.31
 // @license      ISC
 // @description  Import the current Milky Way Idle character or cached team into the combat simulator, enhancement simulator, or skilling planner.
 // @description:zh      将 Milky Way Idle 主站当前角色或缓存队伍导入战斗模拟器、强化模拟器或生活技能规划器。
@@ -40,6 +40,7 @@
   const DEBUG_STORAGE_KEY = 'mwi.tm.import.debug';
   const DEBUG_QUERY_PARAM = 'mwiImportDebug';
   const MAIN_SITE_SHORTCUT_ID = 'mwi-tm-main-site-simulator-link';
+  const PROFILE_COPY_BUTTON_ID = 'mwi-tm-profile-copy-button';
   const SIMULATOR_GITHUB_PAGES_URL = 'https://azhu949.github.io/MWICombatSimulator/';
   const SIMULATOR_CLOUDFLARE_URL = 'https://mwi-combatsi-mulator.pages.dev/';
   const SIMULATOR_FALLBACK_URL = SIMULATOR_GITHUB_PAGES_URL;
@@ -79,6 +80,10 @@
       mirrorModalCloudflare: 'Global (Cloudflare)',
       mirrorModalCancel: 'Cancel',
       mainSiteNews: 'News',
+      copyProfileButton: 'Copy Character Data',
+      copyProfileButtonTitle: 'Copy this character data as JSON for the combat simulator',
+      copyProfileSuccess: 'Character data copied.',
+      copyProfileFailed: 'Copy failed.',
     },
     zh: {
       button: '从主站导入',
@@ -103,6 +108,10 @@
       mirrorModalCloudflare: '全球地址（Cloudflare）',
       mirrorModalCancel: '取消',
       mainSiteNews: '新闻',
+      copyProfileButton: '复制角色数据',
+      copyProfileButtonTitle: '复制该角色数据（JSON）用于战斗模拟器',
+      copyProfileSuccess: '角色数据已复制。',
+      copyProfileFailed: '复制失败。',
     },
   };
   const pageWindow = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
@@ -112,6 +121,10 @@
     currentCharacterName: '',
     characterActions: [],
     recentPartyMessages: [],
+    latestSharedProfile: null,
+    profileCopyButton: null,
+    // findOpenProfileDialog 全量扫描的冷却截止时间戳（见 initMainSiteProfileCopyButton）。
+    profileDialogScanCooldownUntil: 0,
     currentCombatAction: null,
     actionTypeFoodSlotsMap: {},
     actionTypeDrinkSlotsMap: {},
@@ -237,8 +250,47 @@
     replaceTrackedCharacterActions(nextActions);
   }
 
+  // 仅用于克隆「纯 JSON 对象」（来自 socket 消息或 JSON 载荷）。JSON 往返会丢失
+  // undefined / 函数，并对 BigInt、循环引用抛错——不要复用于其它非 JSON 结构。
   function clonePlainObject(value) {
-    return value && typeof value === 'object' ? JSON.parse(JSON.stringify(value)) : {};
+    if (!value || typeof value !== 'object') {
+      return {};
+    }
+    try {
+      return JSON.parse(JSON.stringify(value));
+    } catch (_error) {
+      // 防御：若未来载荷含 BigInt / 循环引用导致 JSON 往返抛错，降级为深拷贝
+      // （structuredClone 优先，递归兜底），避免浅拷贝与原始载荷共享嵌套引用。
+      if (typeof structuredClone === 'function') {
+        try {
+          return structuredClone(value);
+        } catch (_error) {
+          // structuredClone 失败（如含函数）时继续走递归兜底。
+        }
+      }
+      return deepClonePlainObject(value);
+    }
+  }
+
+  function deepClonePlainObject(value, seen = new WeakSet()) {
+    if (!value || typeof value !== 'object') {
+      return value;
+    }
+    if (seen.has(value)) {
+      // 循环引用防御性妥协：返回原始引用，克隆结果与原始共享该嵌套对象。
+      // 主站载荷经 JSON 序列化，正常不会出现循环引用；此分支仅防止极端输入
+      // 导致无限递归。若未来需要完全独立的克隆，可改为抛错或返回占位值。
+      return value;
+    }
+    seen.add(value);
+    if (Array.isArray(value)) {
+      return value.map((item) => deepClonePlainObject(item, seen));
+    }
+    const result = {};
+    for (const key of Object.keys(value)) {
+      result[key] = deepClonePlainObject(value[key], seen);
+    }
+    return result;
   }
 
   function hasOwnKey(source, key) {
@@ -1302,13 +1354,7 @@
       return null;
     }
 
-    const characterId = String(
-      value?.characterId ||
-        profile?.sharableCharacter?.id ||
-        profile?.sharableCharacter?.characterID ||
-        profile?.sharableCharacter?.characterId ||
-        '',
-    ).trim();
+    const characterId = String(value?.characterId || extractSharedProfileCharacterId(profile) || '').trim();
     const characterName = normalizeCharacterName(
       value?.characterName || profile?.sharableCharacter?.name || profile?.name || '',
     );
@@ -1473,7 +1519,9 @@
       return documentLanguage;
     }
 
-    return normalizeUiLanguage(navigator.language) || 'en';
+    // 项目默认语言为中文：非中/英环境（如 ja、fr 等）统一回退到 zh 而非 en。
+    // 这是刻意行为（脚本 UI 以中文为主），与 index.html 的 lang="zh" 保持一致。
+    return normalizeUiLanguage(navigator.language) || 'zh';
   }
 
   function getUiText(key, preferredLanguage = '') {
@@ -1498,8 +1546,28 @@
       return false;
     }
 
+    // 现代浏览器走原生 checkVisibility：一次调用遍历祖先链，覆盖 display:none、
+    // visibility:hidden 以及自身或任一祖先 opacity 计算值为 0 的情况。
+    // opacity 不继承：动画作用在包装层（如 MUI Fade 的过渡 div）时，纸面/弹窗自身
+    // opacity 仍为 1，只看自身的 getComputedStyle 会漏检整条祖先链的 opacity: 0。
+    // 有意不做阈值判定（如 < 0.5 视为不可见）：淡入动画中间值（0 → 1）期间弹窗/菜单
+    // 会被误杀导致挂载漏检（G1 的冷却重试不覆盖此窗口）；淡出中间值（0.3）仍视为
+    // 可见，代价仅是按钮可能挂进正在消亡的弹窗（随后随弹窗拆除，自愈且影响轻微）。
+    if (typeof element.checkVisibility === 'function') {
+      return element.checkVisibility({ checkOpacity: true, checkVisibilityCSS: true });
+    }
+
+    // 旧浏览器回退：保持与快速路径一致的语义。
     const style = window.getComputedStyle(element);
-    return style.display !== 'none' && style.visibility !== 'hidden';
+    if (style.display === 'none' || style.visibility === 'hidden') {
+      return false;
+    }
+    for (let node = element; node; node = node.parentElement) {
+      if (parseFloat(window.getComputedStyle(node).opacity) === 0) {
+        return false;
+      }
+    }
+    return true;
   }
 
   function getMainSiteNewsLabels() {
@@ -2132,6 +2200,572 @@
     }
   }
 
+  // —— 纯决策函数（可注入 vm 沙箱单测，见 scripts/__tests__/mwi-main-site-import.test.js）——
+  //
+  // pickBestProfileDialogCandidate：从扫描候选（{ element, area, hasTablist }）中选出目标
+  // 弹窗。资料弹窗通常带 tablist（角色/技能/装备等页签），优先选择含 tablist 的候选；
+  // 同组内再按面积降序，避免被更大的非资料弹窗（设置弹窗、确认框）抢占。
+  function pickBestProfileDialogCandidate(candidates) {
+    if (!Array.isArray(candidates) || candidates.length === 0) {
+      return null;
+    }
+    return [...candidates].sort((left, right) => {
+      if (left.hasTablist !== right.hasTablist) {
+        return left.hasTablist ? -1 : 1;
+      }
+      return right.area - left.area;
+    })[0];
+  }
+
+  // resolveProfileCopyMountAction：把「按钮状态 + 分享快照 + 扫描到的弹窗」映射为动作。
+  //   keep          —— 按钮已挂载（调用方直接返回，不扫描）
+  //   skip          —— 无分享快照（调用方直接返回，不扫描——保持懒扫描语义）
+  //   arm-cooldown  —— 无弹窗、或弹窗名字校验失败（调用方武装冷却并返回）
+  //   mount         —— 校验通过（调用方继续挂载流程）
+  function resolveProfileCopyMountAction({ hasConnectedButton, profile, dialog }) {
+    if (hasConnectedButton) {
+      return { action: 'keep' };
+    }
+    if (!profile || typeof profile !== 'object') {
+      return { action: 'skip' };
+    }
+    if (!dialog) {
+      return { action: 'arm-cooldown' };
+    }
+    if (!isLikelyProfileDialog(dialog, profile)) {
+      return { action: 'arm-cooldown' };
+    }
+    return { action: 'mount' };
+  }
+
+  // resolveProfileDialogScanGate：冷却状态机。返回 'cooling'（冷却中，retryAfterMs 后应
+  // 排程一次兜底重试，对应「冷却窗口吞掉弹窗打开事件」的修复）或 'scan'（可执行扫描）。
+  function resolveProfileDialogScanGate(now, cooldownUntil) {
+    if (now < cooldownUntil) {
+      return { state: 'cooling', retryAfterMs: cooldownUntil - now };
+    }
+    return { state: 'scan' };
+  }
+
+  // 在主站「玩家资料弹窗」里注入「复制角色数据」按钮，把该玩家的分享资料
+  // 复制为 JSON，供模拟器「导入导出」弹窗粘贴导入（Solo Import To Player）。
+  function findOpenProfileDialog() {
+    // 5 组选择器合并为单条组合选择器：单次 querySelectorAll 即返回全部候选（去重文档序），
+    // 与逐组遍历 + seen 去重得到相同候选集合。分享激活 + 弹窗未开期间每 500ms 一次扫描
+    // （冷却节流），主站 DOM 高频变化时把每次扫描的 5 次全文档遍历收敛为 1 次。
+    // 注意：此处可安全合并（候选最终统一排序）；findProfileTablist / findCloseButtonWithin
+    // 的组顺序带优先级语义（返回第一个命中），保持逐组查询。
+    const selectors = [
+      "[role='dialog'], [role='alertdialog'], [class*='modal' i], [class*='dialog' i], [class*='overlay' i]",
+    ];
+    const debug = shouldInstallDebugInterface();
+    const candidates = [];
+    const seen = new Set();
+    const viewportWidth = window.innerWidth || 0;
+    const viewportHeight = window.innerHeight || 0;
+
+    for (const selector of selectors) {
+      for (const element of document.querySelectorAll(selector)) {
+        if (seen.has(element)) {
+          continue;
+        }
+        seen.add(element);
+        if (!isVisibleElement(element)) {
+          continue;
+        }
+
+        const rect = element.getBoundingClientRect();
+        // 尺寸判定用布局尺寸（offsetWidth/offsetHeight）而非视口裁剪后的 rect：
+        // 弹窗在滚动容器内部分滚出视口时，rect 宽高会被裁剪而误判为过小。
+        // isVisibleElement 已过滤 display:none 等不可见元素，offsetWidth 为 0 的
+        // 可见元素（空布局）本就应跳过。
+        const layoutWidth = element.offsetWidth || rect.width;
+        const layoutHeight = element.offsetHeight || rect.height;
+        if (layoutWidth < 240 || layoutHeight < 160) {
+          continue;
+        }
+
+        const role = String(element.getAttribute?.('role') || '').toLowerCase();
+        const isRoleDialog = role === 'dialog' || role === 'alertdialog';
+        // 近全屏判定同样用布局尺寸：弹窗在滚动容器内部分滚出视口时，rect 会被裁剪，
+        // 全屏遮罩可能因此漏判而未被跳过（与上方尺寸判定保持一致）。
+        const isNearFullscreen =
+          viewportWidth > 0 &&
+          layoutWidth > viewportWidth * 0.98 &&
+          viewportHeight > 0 &&
+          layoutHeight > viewportHeight * 0.98;
+
+        // 跳过全屏遮罩，让按钮落在内层的资料面板上；但近全屏的 role=dialog/alertdialog
+        // 是真正的资料弹窗（移动端/最大化），不应被当作遮罩排除。
+        if (isNearFullscreen && !isRoleDialog) {
+          if (debug) {
+            console.debug('[mwi-tm] findOpenProfileDialog: skip fullscreen overlay', element);
+          }
+          continue;
+        }
+
+        candidates.push({
+          element,
+          area: layoutWidth * layoutHeight,
+          hasTablist: Boolean(findProfileTablist(element)),
+        });
+      }
+    }
+
+    const bestCandidate = pickBestProfileDialogCandidate(candidates);
+    if (debug) {
+      console.debug(
+        '[mwi-tm] findOpenProfileDialog: candidates',
+        candidates.map((entry) => ({
+          tag: entry.element.tagName,
+          role: String(entry.element.getAttribute?.('role') || ''),
+          area: entry.area,
+        })),
+      );
+    }
+    return bestCandidate?.element || null;
+  }
+
+  function findCloseButtonWithin(dialog) {
+    if (!dialog) {
+      return null;
+    }
+    const selectors = [
+      "[class*='closeButton' i]",
+      "[class*='close-button' i]",
+      "[class*='close' i][role='button']",
+      "button[aria-label*='close' i]",
+      "button[aria-label*='关闭' i]",
+      "[aria-label*='关闭' i]",
+    ];
+    const seen = new Set();
+    for (const selector of selectors) {
+      for (const element of dialog.querySelectorAll(selector)) {
+        if (seen.has(element)) {
+          continue;
+        }
+        seen.add(element);
+        if (isVisibleElement(element)) {
+          return element;
+        }
+      }
+    }
+    return null;
+  }
+
+  function findProfileTablist(dialog) {
+    if (!dialog) {
+      return null;
+    }
+    const selectors = [
+      "[role='tablist']",
+      "[class*='tabsContainer' i]",
+      "[class*='tabs-container' i]",
+      "[class*='flexContainer' i]",
+      "[class*='tabList' i]",
+      "[class*='tab-list' i]",
+    ];
+    for (const selector of selectors) {
+      for (const element of dialog.querySelectorAll(selector)) {
+        if (!isVisibleElement(element)) {
+          continue;
+        }
+        // role=tablist 本身即 tab 语义；class 回退（含宽泛的 flexContainer）必须
+        // 含 tab 语义元素才认可，避免把操作栏/页脚等普通 flex 容器误当作 tablist。
+        // 用 :scope > 限定直接子元素：若内层嵌套了真正的 tablist（tablist 是其
+        // 子元素），外层容器不会被后代查询误判，按钮仍追加到内层 tablist 行内末尾。
+        const isSemanticTablist = element.getAttribute?.('role') === 'tablist';
+        const hasTabSemantics = Boolean(element.querySelector(":scope > [role='tab'], :scope > [aria-selected]"));
+        if (isSemanticTablist || hasTabSemantics) {
+          return element;
+        }
+      }
+    }
+    return null;
+  }
+
+  // 有选择地读取真实 tab 的计算样式作为按钮基线：只取「外观尺寸/字体/圆角/字距」等安全
+  // 属性，不迭代全部计算属性——站点 tab 哈希类里常有 flex:1 1 0%（等宽分栏）、
+  // overflow:hidden、text-overflow:ellipsis 等布局属性，整份复制会把按钮压成与 tab 等宽的
+  // 窄条，「复制角色数据」这类更长的文字会被裁掉。letter-spacing 需显式带上：tab 哈希类
+  // 若覆盖了字距，缺省会退化为 MUI 默认 0.02857em，与真实 tab 产生细微字距差异。
+  function readTabComputedStyles(tablist) {
+    const tab = tablist ? tablist.querySelector("button, [role='tab']") : null;
+    if (!tab) {
+      return null;
+    }
+    const cs = window.getComputedStyle(tab);
+    return {
+      'min-height': cs.minHeight,
+      'min-width': cs.minWidth,
+      padding: cs.padding,
+      margin: cs.margin,
+      'font-size': cs.fontSize,
+      'font-weight': cs.fontWeight,
+      'font-family': cs.fontFamily,
+      'line-height': cs.lineHeight,
+      'letter-spacing': cs.letterSpacing,
+      'border-radius': cs.borderRadius,
+    };
+  }
+
+  function setProfileCopyButtonFeedback(button, feedbackKey) {
+    if (button._mwiTmProfileCopyTimer) {
+      window.clearTimeout(button._mwiTmProfileCopyTimer);
+      button._mwiTmProfileCopyTimer = null;
+    }
+    button.textContent = getUiText(feedbackKey);
+    button._mwiTmProfileCopyTimer = window.setTimeout(() => {
+      button._mwiTmProfileCopyTimer = null;
+      if (button.isConnected) {
+        button.textContent = getUiText('copyProfileButton');
+      }
+    }, 1600);
+  }
+
+  function copyTextViaExecCommand(text) {
+    // 防御：脚本 @run-at document-start 时 body 可能尚不存在；按钮点击路径下
+    // body 必然存在，但独立调用（如未来快捷键）仍需防护。
+    if (!document.body) {
+      return false;
+    }
+
+    const textarea = document.createElement('textarea');
+    textarea.value = text;
+    textarea.setAttribute('readonly', '');
+    textarea.style.position = 'fixed';
+    textarea.style.top = '-9999px';
+    textarea.style.left = '-9999px';
+    document.body.appendChild(textarea);
+
+    const selection = document.getSelection();
+    const previousRange = selection && selection.rangeCount > 0 ? selection.getRangeAt(0) : null;
+    // 记录原焦点元素：focus() 可能触发主站页面的 blur 监听（自动保存、UI 状态切换），
+    // 复制完成后恢复焦点，避免把焦点留在已移除的 textarea 上。
+    const previouslyFocused = document.activeElement;
+    // iOS Safari 上 select()/setSelectionRange() 常需元素先获得焦点，否则可能静默失败。
+    textarea.focus();
+    textarea.select();
+    textarea.setSelectionRange(0, textarea.value.length);
+
+    let succeeded = false;
+    try {
+      succeeded = document.execCommand('copy');
+    } catch (_error) {
+      succeeded = false;
+    }
+
+    if (previousRange && selection) {
+      selection.removeAllRanges();
+      selection.addRange(previousRange);
+    }
+    // finally 保证异常路径也清理 textarea，避免残留。
+    try {
+      if (textarea.isConnected) {
+        document.body.removeChild(textarea);
+      }
+    } catch (_error) {
+      // 清理失败不影响复制结果。
+    }
+    // 恢复原焦点（textarea 已移除，activeElement 已回落为 body；仅当原焦点元素仍可聚焦时恢复）。
+    if (previouslyFocused && previouslyFocused !== document.body && typeof previouslyFocused.focus === 'function') {
+      try {
+        previouslyFocused.focus();
+      } catch (_error) {
+        // 焦点恢复失败不影响复制结果。
+      }
+    }
+    return succeeded;
+  }
+
+  async function copyLatestSharedProfileToClipboard(button) {
+    // 优先读取按钮绑定的本次分享快照，避免依赖单一全局槽而复制到「最后一次分享」。
+    const profile = button?._mwiTmProfileSnapshot || mainSiteState.latestSharedProfile;
+    if (!profile || typeof profile !== 'object') {
+      setProfileCopyButtonFeedback(button, 'copyProfileFailed');
+      return;
+    }
+
+    let text;
+    try {
+      text = JSON.stringify(profile);
+    } catch (_error) {
+      // clonePlainObject 的兜底路径（structuredClone/递归）可能保留 BigInt 或循环引用，
+      // 此时 JSON.stringify 会抛 TypeError。失败时走失败反馈，避免 async 函数变成
+      // unhandled rejection 且按钮无任何反馈。
+      setProfileCopyButtonFeedback(button, 'copyProfileFailed');
+      return;
+    }
+    if (navigator.clipboard && typeof navigator.clipboard.writeText === 'function') {
+      try {
+        await navigator.clipboard.writeText(text);
+        setProfileCopyButtonFeedback(button, 'copyProfileSuccess');
+        return;
+      } catch (_error) {
+        // 异步剪贴板 API 失败时，回落到 execCommand 兜底。
+      }
+    }
+
+    const fallbackSucceeded = copyTextViaExecCommand(text);
+    setProfileCopyButtonFeedback(button, fallbackSucceeded ? 'copyProfileSuccess' : 'copyProfileFailed');
+  }
+
+  function createProfileCopyButton(tablist, profile) {
+    const button = document.createElement('button');
+    button.type = 'button';
+    button.id = PROFILE_COPY_BUTTON_ID;
+    button.setAttribute('data-mwi-tm-profile-copy', '1');
+    button._mwiTmProfileSnapshot = profile;
+    button.textContent = getUiText('copyProfileButton');
+    button.title = getUiText('copyProfileButtonTitle');
+    // 固定可访问名称：反馈阶段 textContent 会临时变为「已复制」等状态文本，
+    // aria-label 保持稳定，避免读屏器把反馈文本当作按钮名称。
+    button.setAttribute('aria-label', getUiText('copyProfileButton'));
+
+    // 复用 MUI 的稳定全局类名（继承 hover/focus/ripple 等类级行为），并刻意不带
+    // css-xxxx / __hash 这类每次构建都可能变的哈希类名——tab 哈希类带来的外观差异
+    // 由下方 readTabComputedStyles 补齐（只取安全属性，见该函数注释）。
+    button.className = 'MuiButtonBase-root MuiTab-root MuiTab-textColorPrimary';
+
+    // 以真实 tab 的关键计算样式为基线（尺寸/字体/圆角/字距），再叠加「颜色覆盖」，
+    // 使按钮与其余 tab 视觉一致、仅背景渐变与白字不同（用户要求保留）。
+    const shapeStyles = readTabComputedStyles(tablist) || {
+      'min-height': '40px',
+      'min-width': '90px',
+      padding: '6px 16px',
+      margin: '0',
+      'font-size': '13px',
+      'font-weight': '600',
+      'font-family': 'inherit',
+      'line-height': '1.5',
+      'border-radius': '8px',
+      'letter-spacing': '0.02857em',
+    };
+
+    const styleMap = {
+      ...shapeStyles,
+      'box-sizing': 'border-box',
+      cursor: 'pointer',
+      'white-space': 'nowrap',
+      'text-transform': 'none',
+      // tablist 行内末尾的独立按钮：inline-flex 保持与 tabs 同排且垂直居中；flex 按内容
+      // 自适应（只禁收缩、不复制主站等宽分栏的 flex-basis），保证文字完整显示。
+      display: 'inline-flex',
+      'align-items': 'center',
+      'flex-shrink': '0',
+      'align-self': 'center',
+      'margin-left': '4px',
+      // 保留按钮颜色（青蓝渐变背景 + 白字），其余与 tab 一致。
+      border: 'none',
+      background: 'linear-gradient(135deg, rgba(14,165,233,0.92), rgba(13,148,136,0.92))',
+      color: '#fff',
+      'box-shadow': 'none',
+    };
+
+    button.style.cssText = Object.entries(styleMap)
+      .map(([key, value]) => `${key}:${value}`)
+      .join(';');
+
+    button.addEventListener('click', (event) => {
+      event.preventDefault();
+      event.stopPropagation();
+      copyLatestSharedProfileToClipboard(button);
+    });
+    return button;
+  }
+
+  function extractSharedProfileCharacterId(profile) {
+    const sharable = profile?.sharableCharacter;
+    return String(sharable?.id || sharable?.characterID || sharable?.characterId || profile?.characterId || '').trim();
+  }
+
+  function extractSharedProfileName(profile) {
+    return String(profile?.sharableCharacter?.name || profile?.name || '').trim();
+  }
+
+  function isLikelyProfileDialog(dialog, profile = mainSiteState.latestSharedProfile) {
+    // 弹窗 DOM 一般不暴露 characterId，因此 DOM 侧校验只能用名字子串；
+    // characterId 精确比对用于「新分享到达时作废旧按钮」的身份判定（见 handleProfileSharedMessage）。
+    // 若未来主站弹窗暴露 data-* 角色标识，优先改用 characterId 精确校验替代名称匹配。
+    const expectedName = normalizeComparableText(extractSharedProfileName(profile));
+    const normalizedName = expectedName.replace(/\s+/g, '');
+    if (!normalizedName || normalizedName.length < 2) {
+      // 未捕获到角色名或名字过短（单字符）时无法可靠校验：保守跳过注入，
+      // 避免「A」这类单字符名误匹配到 Attack 等任意含该字母的弹窗。
+      return false;
+    }
+    const dialogText = normalizeComparableText(dialog?.textContent || '');
+    if (normalizedName.length === 2) {
+      // 2 字符名启用词边界匹配（在保留空白的文本上执行，normalizeComparableText 已把空白
+      // 压为单空格）：名字前后不得紧邻字母/数字/下划线（含 CJK），「Mo」只有独立出现
+      // 才算命中，不再匹配 Monster 这类仅含子串的弹窗（S5 已知边界）。
+      const escapedName = normalizedName.replace(/[.*+?^${}()|[\]\\]/g, '\\$&');
+      const boundaryPattern = new RegExp(`(?<![\\p{L}\\p{N}_])${escapedName}(?![\\p{L}\\p{N}_])`, 'u');
+      return boundaryPattern.test(dialogText);
+    }
+    // ≥3 字符名维持子串匹配：长名误配概率低，且避免主站正文粘连渲染（如「莫凡的装备」）
+    // 导致漏挂——漏挂（功能不可用）比低频错位更不可接受。
+    return dialogText.replace(/\s+/g, '').includes(normalizedName);
+  }
+
+  // 回退路径曾把弹窗临时改为 relative（见 mountProfileCopyButton 的 fallback 分支）；
+  // 弹窗关闭或按钮因身份变化被移除时恢复其原始 inline position，避免陈旧样式残留。
+  function restoreProfileCopyDialogPosition(button) {
+    const dialog = button?._mwiTmProfileDialog;
+    const originalPosition = button?._mwiTmRestoreDialogPosition;
+    if (dialog && originalPosition !== undefined) {
+      dialog.style.position = originalPosition;
+    }
+  }
+
+  function mountProfileCopyButton() {
+    // 上一次挂载的按钮已随弹窗关闭而脱离 DOM：清理按钮引用并恢复弹窗样式。
+    // latestSharedProfile 不在关闭时清空——同角色重开弹窗应恢复按钮，
+    // 快照延续到下一次分享覆盖为止（详见下方 previousButton 分支注释）。
+    const previousButton = mainSiteState.profileCopyButton;
+    if (previousButton && !previousButton.isConnected) {
+      // 上一次挂载的按钮已随弹窗关闭而脱离 DOM：清理按钮引用并恢复弹窗样式。
+      // 刻意不清空 latestSharedProfile：同一角色重开弹窗（未重新分享）时按钮应能恢复，
+      // 快照一直延续到下一次分享覆盖为止；打开其它角色弹窗时由 isLikelyProfileDialog
+      // 的名字校验阻止挂载（若旧角色名恰好是新弹窗文本的子串，理论上可能误挂——
+      // 已知限制，名字校验已挡住绝大多数跨角色场景）。
+      restoreProfileCopyDialogPosition(previousButton);
+      mainSiteState.profileCopyButton = null;
+      // 注意：此处不 return。若弹窗 A（角色 X）关闭后已打开弹窗 B（角色 Y），
+      // latestSharedProfile 保留为 Y，继续走下方挂载逻辑可立即为弹窗 B 挂载按钮，
+      // 无需等待下一次 DOM 变化（弹窗内容静态时按钮可能一直不出现）。
+    }
+
+    const existingButton = document.getElementById(PROFILE_COPY_BUTTON_ID);
+    if (existingButton && existingButton.isConnected) {
+      return;
+    }
+
+    const profile = mainSiteState.latestSharedProfile;
+    if (!profile || typeof profile !== 'object') {
+      return;
+    }
+
+    const dialog = findOpenProfileDialog();
+    // 决策函数与 DOM 胶水分离：无弹窗 / 名字校验失败 → arm-cooldown；校验通过 → mount。
+    // keep / skip 不会在此出现（按钮已连接与无快照已在上面短路返回）。
+    const decision = resolveProfileCopyMountAction({ hasConnectedButton: false, profile, dialog });
+    if (decision.action === 'arm-cooldown') {
+      // 未找到弹窗 / 弹窗存在但名字校验失败（名字为空/过短/与弹窗内容不匹配）：
+      // 记录冷却，避免主站 React 应用频繁 DOM 变化时持续触发全量扫描
+      // （见 initMainSiteProfileCopyButton 的 scheduleMount 冷却判断）。
+      mainSiteState.profileDialogScanCooldownUntil = Date.now() + PROFILE_DIALOG_SCAN_COOLDOWN_MS;
+      return;
+    }
+    if (decision.action !== 'mount') {
+      return;
+    }
+
+    const tablist = findProfileTablist(dialog);
+    const button = createProfileCopyButton(tablist, profile);
+    button._mwiTmProfileDialog = dialog;
+
+    // 作为独立操作按钮追加到 tablist 行内末尾（即最后一个 tab 的右侧）。曾用
+    // insertAdjacentElement('afterend') 放在 tablist 之后——主站资料弹窗里 tablist 的父容器
+    // 不是 flex 行布局，按钮会被换到下一行；只有放入行内才能与 tabs 保持同一排。
+    // 代价是 tablist 混入非 tab 子元素（ARIA 语义不纯）：按钮不带 role=tab，读屏器仍按普通
+    // 按钮播报，视觉正确性优先。按钮 click 已 stopPropagation（不触发主站 tab 切换），无
+    // tabindex 不参与主站 tab 键序；React 重渲染移除按钮时由 existingButton 检查重新挂载。
+    if (tablist) {
+      tablist.appendChild(button);
+      mainSiteState.profileCopyButton = button;
+      return;
+    }
+
+    // 找不到 tablist 时回退：绝对定位在弹窗右上角（关闭按钮正下方、右对齐）。
+    // 记录原始 inline position，待弹窗关闭/按钮移除时恢复（见 restoreProfileCopyDialogPosition）。
+    // 注意：若弹窗或其祖先带 overflow:hidden，右上角按钮理论上可能被裁剪；目前主站资料弹窗
+    // 右上角位于其内容边界内，暂未做通用反裁剪处理。
+    const position = window.getComputedStyle(dialog).position;
+    if (position === 'static') {
+      button._mwiTmRestoreDialogPosition = dialog.style.position;
+      dialog.style.position = 'relative';
+    }
+
+    let topPx = '12px';
+    let rightPx = '12px';
+    const closeButton = findCloseButtonWithin(dialog);
+    if (closeButton) {
+      const dialogRect = dialog.getBoundingClientRect();
+      const closeRect = closeButton.getBoundingClientRect();
+      if (dialogRect.width > 0 && closeRect.width > 0 && closeRect.height > 0) {
+        topPx = `${Math.round(Math.max(12, closeRect.bottom - dialogRect.top + 8))}px`;
+        rightPx = `${Math.round(Math.max(12, dialogRect.right - closeRect.right))}px`;
+      }
+    }
+
+    button.style.position = 'absolute';
+    button.style.top = topPx;
+    button.style.right = rightPx;
+    button.style.zIndex = '2147483647';
+    dialog.appendChild(button);
+    mainSiteState.profileCopyButton = button;
+  }
+
+  // findOpenProfileDialog 全量扫描的冷却时长：弹窗关闭后 500ms 内不再重复扫描，
+  // 避免主站 React 应用频繁 DOM 变化时持续触发 querySelectorAll + 布局读取。
+  const PROFILE_DIALOG_SCAN_COOLDOWN_MS = 500;
+
+  function initMainSiteProfileCopyButton() {
+    let scheduled = false;
+    // 冷却窗口兜底重试定时器：冷却期内被跳过的扫描在此留下一次性重试（见 scheduleMount），
+    // 保证冷却结束后必有最后一次挂载尝试。mountProfileCopyButton 内部会自然短路
+    // （latestSharedProfile 为空 / 按钮已挂载 / 弹窗仍未打开），因此不会形成轮询。
+    let mountRetryTimer = null;
+
+    function scheduleMount() {
+      if (scheduled) {
+        return;
+      }
+      scheduled = true;
+      window.requestAnimationFrame(() => {
+        scheduled = false;
+        // 冷却期内跳过扫描：弹窗刚关闭（或从未打开）时，findOpenProfileDialog 的
+        // 全量扫描没有意义，直接跳过直到冷却结束，避免持续扫描开销。
+        const gate = resolveProfileDialogScanGate(Date.now(), mainSiteState.profileDialogScanCooldownUntil);
+        if (gate.state === 'cooling') {
+          // 关键兜底：弹窗打开产生的 DOM 变化若恰好落在冷却窗口内，会被上面的跳过
+          // 直接吞掉；资料弹窗内容静态、之后可能再无 DOM 变化，按钮将永不挂载。
+          // 因此排程冷却结束后的最后一次重试。重试是一次性的：若届时弹窗仍未打开，
+          // 扫描会重新武装冷却并返回，重试不循环，等待下一次 DOM 变化触发。
+          if (mountRetryTimer === null) {
+            mountRetryTimer = window.setTimeout(() => {
+              mountRetryTimer = null;
+              mountProfileCopyButton();
+            }, gate.retryAfterMs);
+          }
+          return;
+        }
+        mountProfileCopyButton();
+      });
+    }
+
+    // 观察者保持常驻（不做 disconnect）：它同时承担「弹窗关闭后清理临时状态」的检测
+    // （见 mountProfileCopyButton 里 previousButton.isConnected 分支）。回调本身 O(1)，
+    // 且 mountProfileCopyButton 在 latestSharedProfile 为空时会先短路返回，不会触发
+    // findOpenProfileDialog 的全量扫描；latestSharedProfile 非空但弹窗未打开时，
+    // 由 profileDialogScanCooldownUntil 冷却节流，避免每次 DOM 变化都全量扫描。
+    const observer = new MutationObserver(scheduleMount);
+
+    function attachObserver() {
+      mountProfileCopyButton();
+      if (document.body) {
+        observer.observe(document.body, { childList: true, subtree: true });
+      }
+    }
+
+    if (document.readyState === 'loading') {
+      window.addEventListener('DOMContentLoaded', attachObserver, { once: true });
+    } else {
+      attachObserver();
+    }
+  }
+
   function createRequestId() {
     return `mwi-tm-${Date.now()}-${Math.random().toString(36).slice(2, 10)}`;
   }
@@ -2321,7 +2955,32 @@
       return;
     }
 
-    persistProfileCacheEntry(message.profile);
+    const nextProfile = clonePlainObject(message.profile);
+
+    // 新分享到达：作废绑定到其它角色的旧按钮，避免陈旧快照残留；同一角色则刷新快照。
+    // 注意：ID 缺失（如旧版主站载荷无 characterId）时无法确认身份，保守移除旧按钮，
+    // 交由 mountProfileCopyButton 依据最新分享重新挂载，避免按钮误挂旧弹窗。
+    const previousButton = mainSiteState.profileCopyButton;
+    if (previousButton && previousButton._mwiTmProfileSnapshot) {
+      const previousId = extractSharedProfileCharacterId(previousButton._mwiTmProfileSnapshot);
+      const nextId = extractSharedProfileCharacterId(nextProfile);
+      const isSameCharacter = Boolean(previousId && nextId && previousId === nextId);
+      if (isSameCharacter) {
+        // 同一角色：刷新按钮快照（全局槽由下方统一赋值）。
+        previousButton._mwiTmProfileSnapshot = nextProfile;
+      } else {
+        // 另一角色，或 ID 缺失无法确认身份：移除旧按钮，交由挂载逻辑重新挂载。
+        if (previousButton.isConnected) {
+          previousButton.remove();
+        }
+        restoreProfileCopyDialogPosition(previousButton);
+        mainSiteState.profileCopyButton = null;
+      }
+    }
+
+    // 统一使用克隆后的 nextProfile 持久化，避免与原始 message.profile 混用。
+    persistProfileCacheEntry(nextProfile);
+    mainSiteState.latestSharedProfile = nextProfile;
   }
 
   function instrumentMainSiteSocket(socket) {
@@ -3163,6 +3822,7 @@
   if (isMainSitePage()) {
     initMainSiteBridge();
     initMainSiteSimulatorShortcut();
+    initMainSiteProfileCopyButton();
   }
 
   if (isSimulatorPage()) {

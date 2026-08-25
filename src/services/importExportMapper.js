@@ -221,6 +221,10 @@ function sanitizePlayerConfig(
     source.houseRooms && typeof source.houseRooms === 'object' ? source.houseRooms : fallback.houseRooms,
   );
 
+  // preserveMissingGuildBuffs 仅在 source.guildBuffs 整体缺失时生效（fallback 兜底）。
+  // share-profile 路径的 guildBuffLevelMap 经 extractEffectiveGuildBuffLevels 归一化后
+  // 恒为完整战斗键映射（缺失键一律 0），不存在缺失键，fallback 不会命中；旧式 solo
+  // 配置的局部 guildBuffs 映射（合并导入语义）缺失键才回退到 fallback.guildBuffs。
   normalized.guildBuffs = normalizeGuildBuffLevels(
     source.guildBuffs,
     preserveMissingGuildBuffs ? fallback.guildBuffs : {},
@@ -1000,6 +1004,26 @@ function extractShareableAchievements(profile) {
 }
 
 function extractEffectiveGuildBuffLevels(profile) {
+  // Shareable profiles (teammates) carry the effective combat shrine levels directly
+  // as a buff-hrid -> level map, e.g. { "/guild_buffs/force_combat": 3, "/guild_buffs/tempo_combat": 2 }.
+  // This is already server-computed and effective; only the per-buff max-level cap is still applied.
+  //
+  // map 语义（权威快照）：主站下发的是该角色完整的有效增益等级，且只含已拥有的键
+  // （空 map {} = 未拥有任何公会增益，见下方分支；稀疏形状由空 map 分支的存在自证，
+  // 同一载荷的 characterGuildBuffMap 旧分支同样是稀疏映射）。因此无论 map 是否为空，
+  // 缺失的战斗键一律归 0，不回退到 fallbackGuildBuffLevels——否则队友未拥有的增益
+  // 会被静默继承为导入者自己的手动配置，模拟出错误的队友属性。
+  //
+  // 字段整体缺失（undefined）才走下方旧分支：characterGuildBuffMap × 公会神龛等级计算
+  // （同样「缺失归 0」），或数据不足时返回 undefined 交由调用方保留 fallback 配置。
+  // 可逆出口（若未来实测主站为覆盖型载荷，应恢复回退语义：重新引入 fallbackGuildBuffLevels
+  // 参数与两个调用点的传参，并同步还原测试）：
+  //   return normalizeGuildBuffLevels(guildBuffLevelMap, fallbackGuildBuffLevels);
+  const guildBuffLevelMap = profile?.guildBuffLevelMap;
+  if (guildBuffLevelMap && typeof guildBuffLevelMap === 'object' && !Array.isArray(guildBuffLevelMap)) {
+    return normalizeGuildBuffLevels(guildBuffLevelMap, {});
+  }
+
   const hasCharacterGuildBuffs = Object.prototype.hasOwnProperty.call(profile || {}, 'characterGuildBuffMap');
   const hasGuildBuildingLevels = Object.prototype.hasOwnProperty.call(profile || {}, 'guildBuildingLevelMap');
   if (!hasCharacterGuildBuffs || !hasGuildBuildingLevels) {

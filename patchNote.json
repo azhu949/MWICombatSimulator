@@ -1,4 +1,40 @@
 {
+  "2026年8月25日（v2.2.0）": {
+    "label": {
+      "zh": "2026年8月25日（v2.2.0）",
+      "en": "August 25, 2026 (v2.2.0)"
+    },
+    "newFeatures": {
+      "zh": [
+        "主站导入脚本新增「复制角色数据」按钮：在玩家资料弹窗中一键复制该角色资料（JSON），粘贴到模拟器导入导出弹窗即可导入。",
+        "队友分享资料导入现在直接采用主站下发的实际生效公会神龛战斗增益，未拥有的增益按 0 处理。"
+      ],
+      "en": [
+        "Added a \"Copy Character Data\" button to the main-site import script: copy a character's profile (JSON) from their dialog and paste it into the simulator's Import/Export dialog.",
+        "Teammate imports now use the effective guild shrine combat buffs issued by the main site, treating missing buffs as level 0."
+      ]
+    },
+    "improvements": {
+      "zh": [
+        "优化主站弹窗检测性能，弹窗频繁开关时不再持续全量扫描。",
+        "非中英语言环境下，导入脚本界面统一回退为中文。"
+      ],
+      "en": [
+        "Optimized profile dialog detection on the main site, so frequent dialog toggling no longer triggers continuous full scans.",
+        "The import script UI now falls back to Chinese in non-Chinese/English locales."
+      ]
+    },
+    "bugFixes": {
+      "zh": [
+        "修复「复制角色数据」按钮的挂载问题：短角色名会被弹窗内其它文字误匹配、弹窗打开与扫描冷却重叠时按钮不出现。",
+        "修复队友分享资料公会增益为空时静默沿用导入者手动配置的问题，现在统一按未拥有处理。"
+      ],
+      "en": [
+        "Fixed the copy button's mount issues: short character names matching unrelated dialog text, and the button not appearing when the dialog opened during the scan cooldown.",
+        "Fixed combat buffs silently reusing the importer's manual configuration when a teammate's guild buff data is empty; they are now treated as unowned."
+      ]
+    }
+  },
   "2026年8月24日（v2.1.0）": {
     "label": {
       "zh": "2026年8月24日（v2.1.0）",

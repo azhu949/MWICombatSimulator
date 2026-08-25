@@ -11,6 +11,7 @@ export function createMainSiteShareProfileFixture(options = {}) {
     abilityCombatTriggersMap = {},
     characterHouseRoomMap = {},
     characterAchievements = [],
+    guildBuffLevelMap = null,
   } = options;
 
   const normalizedSkills = {
@@ -69,6 +70,7 @@ export function createMainSiteShareProfileFixture(options = {}) {
     abilityCombatTriggersMap: { ...abilityCombatTriggersMap },
     characterHouseRoomMap: { ...characterHouseRoomMap },
     characterAchievements: [...characterAchievements],
+    ...(guildBuffLevelMap ? { guildBuffLevelMap: { ...guildBuffLevelMap } } : {}),
   };
 }
 
@@ -88,6 +90,7 @@ export function createMainSiteCurrentCharacterFixture(options = {}) {
     characterAchievements = [],
     characterGuildBuffMap = {},
     guildBuildingLevelMap = {},
+    guildBuffLevelMap = null,
   } = options;
 
   const normalizedSkills = {
@@ -147,5 +150,6 @@ export function createMainSiteCurrentCharacterFixture(options = {}) {
       : { ...(characterAchievements || {}) },
     characterGuildBuffMap: { ...characterGuildBuffMap },
     guildBuildingLevelMap: { ...guildBuildingLevelMap },
+    ...(guildBuffLevelMap ? { guildBuffLevelMap: { ...guildBuffLevelMap } } : {}),
   };
 }

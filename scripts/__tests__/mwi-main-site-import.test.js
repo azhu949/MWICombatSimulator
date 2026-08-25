@@ -4,6 +4,12 @@ import { describe, expect, it } from 'vitest';
 
 const scriptSource = readFileSync(new URL('../mwi-main-site-import.user.js', import.meta.url), 'utf8');
 
+// 从 @version 元数据动态提取版本号，避免发版时硬编码断言失步。
+// ^ 锚定行首 + m 标志：只匹配元数据块中的 @version 行，避免误匹配脚本正文
+// 中可能出现的 // @version 注释。
+const scriptVersionMatch = scriptSource.match(/^\/\/\s*@version\s+(\S+)/m);
+const scriptVersion = scriptVersionMatch?.[1] || '';
+
 function loadScriptTestApi() {
   const gmStore = new Map();
   const sandboxWindow = {
@@ -45,6 +51,12 @@ function loadScriptTestApi() {
         instrumentMainSiteSocket,
         isTrustedBridgeMessageSource,
         isTrustedBridgeMessageEvent,
+        extractSharedProfileCharacterId,
+        extractSharedProfileName,
+        isLikelyProfileDialog,
+        pickBestProfileDialogCandidate,
+        resolveProfileCopyMountAction,
+        resolveProfileDialogScanGate,
         mainSiteState,
         RECENT_PARTY_MESSAGE_MAX_AGE_MS,
     };
@@ -137,7 +149,10 @@ describe('mwi main-site import userscript', () => {
     expect(scriptSource).toContain("normalizedImportMode === 'player' ? 'auto' : 'active-player'");
     expect(scriptSource).toContain("importTarget: 'enhancement'");
     expect(scriptSource).toContain("enhancementButton: '导入角色强化配置'");
-    expect(scriptSource).toContain('// @version      0.1.30');
+    // 版本号从 @version 元数据动态提取，发版无需同步更新测试。
+    // 先断言存在再匹配格式，避免 scriptVersion 为空时只报「不匹配」而看不出根因。
+    expect(scriptVersion).toBeTruthy();
+    expect(scriptVersion).toMatch(/^\d+\.\d+\.\d+$/);
   });
 
   it('uses the migrated toolbar button and semantic status classes', () => {
@@ -308,5 +323,154 @@ describe('mwi main-site import userscript', () => {
     const result = api.resolveTeamMemberNamesFromGameState();
     expect(result.partyInfoMemberCount).toBe(1);
     expect(Object.keys(result.partyInfo.partySlotMap)).toHaveLength(1);
+  });
+
+  it('extracts the sharable character id from profile variants', () => {
+    const { api } = loadScriptTestApi();
+
+    expect(api.extractSharedProfileCharacterId({ sharableCharacter: { id: 42 } })).toBe('42');
+    expect(api.extractSharedProfileCharacterId({ sharableCharacter: { characterID: 43 } })).toBe('43');
+    expect(api.extractSharedProfileCharacterId({ sharableCharacter: { characterId: 44 } })).toBe('44');
+    expect(api.extractSharedProfileCharacterId({ characterId: 45 })).toBe('45');
+    expect(api.extractSharedProfileCharacterId({ sharableCharacter: {} })).toBe('');
+    expect(api.extractSharedProfileCharacterId(null)).toBe('');
+  });
+
+  it('extracts the sharable character name from profile variants', () => {
+    const { api } = loadScriptTestApi();
+
+    expect(api.extractSharedProfileName({ sharableCharacter: { name: '  Hero  ' } })).toBe('Hero');
+    expect(api.extractSharedProfileName({ name: 'Plain Name' })).toBe('Plain Name');
+    expect(api.extractSharedProfileName({ sharableCharacter: {} })).toBe('');
+    expect(api.extractSharedProfileName(null)).toBe('');
+  });
+
+  it('rejects profile dialogs when the shared name is empty or too short', () => {
+    const { api } = loadScriptTestApi();
+
+    api.mainSiteState.latestSharedProfile = { sharableCharacter: { name: '' } };
+    expect(api.isLikelyProfileDialog({ textContent: 'Anything' })).toBe(false);
+
+    // 单字符名（如「A」）被长度下限拦截，避免匹配 Attack 等任意含该字母的弹窗。
+    api.mainSiteState.latestSharedProfile = { sharableCharacter: { name: 'A' } };
+    expect(api.isLikelyProfileDialog({ textContent: 'Attack Monster' })).toBe(false);
+
+    // 2 字符名通过长度下限，但弹窗文本不含该子串时仍拒绝。
+    // 注：'Mo' 匹配 'Monster' 是长度下限方案的已知边界（2 字符名无法靠长度区分）。
+    api.mainSiteState.latestSharedProfile = { sharableCharacter: { name: 'Mo' } };
+    expect(api.isLikelyProfileDialog({ textContent: 'Attack' })).toBe(false);
+  });
+
+  it('accepts a profile dialog whose text contains the normalized shared name', () => {
+    const { api } = loadScriptTestApi();
+
+    api.mainSiteState.latestSharedProfile = { sharableCharacter: { name: '  Hero  ' } };
+    expect(api.isLikelyProfileDialog({ textContent: 'Hero Profile' })).toBe(true);
+    expect(api.isLikelyProfileDialog({ textContent: 'hero profile' })).toBe(true);
+    expect(api.isLikelyProfileDialog({ textContent: 'Other Dialog' })).toBe(false);
+  });
+
+  it('requires 2-character names to match as a standalone word, not a substring', () => {
+    const { api } = loadScriptTestApi();
+
+    // S5 已知边界：'Mo' ⊂ 'Monster' 不再视为有效匹配——词边界判定拒绝非独立出现。
+    api.mainSiteState.latestSharedProfile = { sharableCharacter: { name: 'Mo' } };
+    expect(api.isLikelyProfileDialog({ textContent: 'Monster Profile' })).toBe(false);
+    expect(api.isLikelyProfileDialog({ textContent: 'Momo The Hero' })).toBe(false);
+
+    // 独立出现仍可命中：整词、前后空白、标点分隔。
+    expect(api.isLikelyProfileDialog({ textContent: 'Mo' })).toBe(true);
+    expect(api.isLikelyProfileDialog({ textContent: 'Mo The Hero' })).toBe(true);
+    expect(api.isLikelyProfileDialog({ textContent: 'Hero Mo' })).toBe(true);
+    expect(api.isLikelyProfileDialog({ textContent: '(Mo) Hero' })).toBe(true);
+
+    // ≥3 字符名维持子串语义（现有行为不回归；长名误配概率低，留待 data-* ID 校验根治）。
+    api.mainSiteState.latestSharedProfile = { sharableCharacter: { name: 'Leo' } };
+    expect(api.isLikelyProfileDialog({ textContent: 'Leonardo Profile' })).toBe(true);
+  });
+
+  describe('profile copy button mount decision (pure functions)', () => {
+    it('picks the tablist-bearing dialog candidate first, then the largest area', () => {
+      const { api } = loadScriptTestApi();
+      const candidates = [
+        { element: 'plain-big', area: 1000, hasTablist: false },
+        { element: 'tablist-small', area: 300, hasTablist: true },
+        { element: 'plain-small', area: 500, hasTablist: false },
+      ];
+
+      expect(api.pickBestProfileDialogCandidate(candidates).element).toBe('tablist-small');
+      // 同组（均无 tablist）按面积降序
+      expect(
+        api.pickBestProfileDialogCandidate([
+          { element: 'a', area: 100, hasTablist: false },
+          { element: 'b', area: 300, hasTablist: false },
+        ]).element,
+      ).toBe('b');
+      // 输入不污染：原数组保持插入序
+      expect(candidates.map((entry) => entry.element)).toEqual(['plain-big', 'tablist-small', 'plain-small']);
+      expect(api.pickBestProfileDialogCandidate([])).toBeNull();
+      expect(api.pickBestProfileDialogCandidate(null)).toBeNull();
+    });
+
+    it('keeps the mounted button and skips without a share snapshot', () => {
+      const { api } = loadScriptTestApi();
+      const profile = { sharableCharacter: { name: 'Hero' } };
+
+      // 按钮已挂载：即使弹窗/快照齐全也不重复挂载
+      expect(
+        api.resolveProfileCopyMountAction({ hasConnectedButton: true, profile, dialog: { textContent: 'Hero' } }),
+      ).toEqual({ action: 'keep' });
+
+      // 无快照 / 快照非对象 → skip（保持懒扫描：调用方在扫描前短路）
+      expect(api.resolveProfileCopyMountAction({ hasConnectedButton: false, profile: null, dialog: null })).toEqual({
+        action: 'skip',
+      });
+      expect(
+        api.resolveProfileCopyMountAction({ hasConnectedButton: false, profile: 'not-an-object', dialog: null }),
+      ).toEqual({ action: 'skip' });
+    });
+
+    it('arms the cooldown when no dialog exists or the name check fails', () => {
+      const { api } = loadScriptTestApi();
+      const profile = { sharableCharacter: { name: 'Hero' } };
+
+      // G1 关联场景：快照在、弹窗未打开（或已关闭）→ 武装冷却
+      expect(api.resolveProfileCopyMountAction({ hasConnectedButton: false, profile, dialog: null })).toEqual({
+        action: 'arm-cooldown',
+      });
+
+      // 弹窗存在但文本不含角色名 → 武装冷却
+      expect(
+        api.resolveProfileCopyMountAction({
+          hasConnectedButton: false,
+          profile,
+          dialog: { textContent: 'Other Dialog' },
+        }),
+      ).toEqual({ action: 'arm-cooldown' });
+    });
+
+    it('mounts only when the dialog text contains the shared profile name', () => {
+      const { api } = loadScriptTestApi();
+      const profile = { sharableCharacter: { name: 'Hero' } };
+
+      expect(
+        api.resolveProfileCopyMountAction({
+          hasConnectedButton: false,
+          profile,
+          dialog: { textContent: 'Hero Profile' },
+        }),
+      ).toEqual({ action: 'mount' });
+    });
+
+    it('lets the scan gate through after the cooldown and reports the remaining delay inside it', () => {
+      const { api } = loadScriptTestApi();
+
+      // 边界：now === until 时冷却已失效，允许扫描（G1 的 retry 恰好在此刻触发）
+      expect(api.resolveProfileDialogScanGate(1000, 1000)).toEqual({ state: 'scan' });
+      expect(api.resolveProfileDialogScanGate(1001, 1000)).toEqual({ state: 'scan' });
+
+      // 冷却中：返回剩余毫秒，供调用方排程一次性兜底重试
+      expect(api.resolveProfileDialogScanGate(500, 1000)).toEqual({ state: 'cooling', retryAfterMs: 500 });
+    });
   });
 });

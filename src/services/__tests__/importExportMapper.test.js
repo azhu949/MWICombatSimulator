@@ -2,7 +2,7 @@ import { describe, expect, it } from 'vitest';
 import actionDetailMap from '../../combatsimulator/data/actionDetailMap.json';
 import abilityDetailMap from '../../combatsimulator/data/abilityDetailMap.json';
 import itemDetailMap from '../../combatsimulator/data/itemDetailMap.json';
-import { combatGuildBuffDetails } from '../../shared/guildBuffs.js';
+import { combatGuildBuffDetails, combatGuildBuffHrids, getGuildBuffMaxLevel } from '../../shared/guildBuffs.js';
 import { createEmptyPlayerConfig } from '../playerMapper.js';
 import { exportGroupConfig, exportSoloConfig, importGroupConfig, importSoloConfig } from '../importExportMapper.js';
 import {
@@ -972,5 +972,142 @@ describe('importExportMapper', () => {
     );
 
     expect(result.player.guildBuffs[guildBuffHrid]).toBe(0);
+  });
+
+  it('imports effective guild shrine combat buffs from shareable profile guildBuffLevelMap', () => {
+    const fallbackPlayer = createEmptyPlayerConfig(12);
+    const guildBuffLevelMap = {
+      '/guild_buffs/force_combat': 3,
+      '/guild_buffs/tempo_combat': 2,
+    };
+    const fixture = createMainSiteShareProfileFixture({
+      characterName: 'Shareable Guild Buff Hero',
+      guildBuffLevelMap,
+    });
+
+    const result = importSoloConfig(JSON.stringify(fixture), fallbackPlayer, createSimulationSettings());
+
+    expect(result.detectedFormat).toBe('main-site-share-profile');
+
+    // 遍历全部战斗增益动态断言（与数据文件解耦）：map 中有的取分享值，缺失的一律归 0。
+    for (const guildBuffHrid of combatGuildBuffHrids) {
+      expect(result.player.guildBuffs[guildBuffHrid]).toBe(guildBuffLevelMap[guildBuffHrid] ?? 0);
+    }
+
+    // 非战斗增益被排除：player.guildBuffs 的键集合应与数据派生的战斗增益列表一致。
+    expect(Object.keys(result.player.guildBuffs).sort()).toEqual([...combatGuildBuffHrids].sort());
+  });
+
+  it('zeros guild buff levels missing from the shareable guildBuffLevelMap even with a non-zero fallback', () => {
+    const fallbackPlayer = createEmptyPlayerConfig(13);
+    const preservedHrid = combatGuildBuffHrids[0];
+    const overwrittenHrid = combatGuildBuffHrids[1];
+    fallbackPlayer.guildBuffs[preservedHrid] = 7;
+    fallbackPlayer.guildBuffs[overwrittenHrid] = 5;
+
+    const guildBuffLevelMap = {
+      [overwrittenHrid]: 3,
+    };
+    const fixture = createMainSiteShareProfileFixture({
+      characterName: 'Shareable Partial Guild Buff Hero',
+      guildBuffLevelMap,
+    });
+
+    const result = importSoloConfig(JSON.stringify(fixture), fallbackPlayer, createSimulationSettings());
+
+    expect(result.detectedFormat).toBe('main-site-share-profile');
+
+    // map 是权威快照：存在的键取分享值；缺失键一律归 0，即使 fallback 玩家在该键上有非零
+    // 手动配置——队友未拥有的增益不应被静默继承为导入者自己的等级（与空 map 清零语义一致）。
+    expect(result.player.guildBuffs[overwrittenHrid]).toBe(3);
+    expect(result.player.guildBuffs[preservedHrid]).toBe(0);
+  });
+
+  it('clears all guild buffs when the shareable guildBuffLevelMap is an empty object', () => {
+    const fallbackPlayer = createEmptyPlayerConfig(14);
+    const guildBuffHrid = combatGuildBuffHrids[0];
+    fallbackPlayer.guildBuffs[guildBuffHrid] = 9;
+
+    const fixture = createMainSiteShareProfileFixture({
+      characterName: 'Shareable No Guild Buff Hero',
+      guildBuffLevelMap: {},
+    });
+
+    const result = importSoloConfig(JSON.stringify(fixture), fallbackPlayer, createSimulationSettings());
+
+    expect(result.detectedFormat).toBe('main-site-share-profile');
+
+    // 空 map {} 表示主站明确下发「无任何增益」：全部归 0，而非保留 fallback 手动配置。
+    for (const combatGuildBuffHrid of combatGuildBuffHrids) {
+      expect(result.player.guildBuffs[combatGuildBuffHrid]).toBe(0);
+    }
+  });
+
+  it('zeros all combat guild buffs when the shareable map only carries non-combat keys', () => {
+    const fallbackPlayer = createEmptyPlayerConfig(17);
+    const guildBuffHrid = combatGuildBuffHrids[0];
+    fallbackPlayer.guildBuffs[guildBuffHrid] = 9;
+
+    const fixture = createMainSiteShareProfileFixture({
+      characterName: 'Shareable Non-Combat Guild Buff Hero',
+      guildBuffLevelMap: { '/guild_buffs/force_skilling': 5 },
+    });
+
+    const result = importSoloConfig(JSON.stringify(fixture), fallbackPlayer, createSimulationSettings());
+
+    expect(result.detectedFormat).toBe('main-site-share-profile');
+
+    // 与空 map {} 同一语义：map 不含任何战斗键 = 未拥有任何战斗增益，全部归 0。
+    // 非战斗键（force_skilling）不参与战斗增益导入，也不改变清零结局（历史实现曾在此
+    // 场景下把全部战斗增益静默回退到 fallback 手动配置，与空 map 清零结局不一致）。
+    for (const combatGuildBuffHrid of combatGuildBuffHrids) {
+      expect(result.player.guildBuffs[combatGuildBuffHrid]).toBe(0);
+    }
+  });
+
+  it('caps shareable guildBuffLevelMap values at the per-buff max level', () => {
+    const fallbackPlayer = createEmptyPlayerConfig(15);
+    const guildBuffHrid = combatGuildBuffHrids[0];
+    const guildBuffLevelMap = {
+      [guildBuffHrid]: 99,
+    };
+    const fixture = createMainSiteShareProfileFixture({
+      characterName: 'Shareable Over-Cap Guild Buff Hero',
+      guildBuffLevelMap,
+    });
+
+    const result = importSoloConfig(JSON.stringify(fixture), fallbackPlayer, createSimulationSettings());
+
+    expect(result.detectedFormat).toBe('main-site-share-profile');
+
+    // 分享值超过 maxLevel 时按数据文件中的 maxLevel 封顶（normalizeGuildBuffLevels 语义）。
+    const maxLevel = getGuildBuffMaxLevel(guildBuffHrid);
+    expect(maxLevel).toBeGreaterThan(0);
+    expect(result.player.guildBuffs[guildBuffHrid]).toBe(maxLevel);
+  });
+
+  it('imports effective guild buffs from guildBuffLevelMap on the current-character path', () => {
+    // 防御性覆盖：当前端到端路径（用户脚本 CURRENT_CHARACTER_SNAPSHOT_KEYS）不携带
+    // guildBuffLevelMap，当前角色走「已购等级 × 公会神龛等级」计算分支（见
+    // scripts/mwi-main-site-import.README.md）。若未来主站直接下发该字段，需同步
+    // 加入快照键列表后再启用此路径。
+    const fallbackPlayer = createEmptyPlayerConfig(16);
+    const guildBuffLevelMap = {
+      '/guild_buffs/force_combat': 3,
+      '/guild_buffs/tempo_combat': 2,
+    };
+    const fixture = createMainSiteCurrentCharacterFixture({
+      characterName: 'Current Character Guild Buff Hero',
+      guildBuffLevelMap,
+    });
+
+    const result = importSoloConfig(JSON.stringify(fixture), fallbackPlayer, createSimulationSettings());
+
+    expect(result.detectedFormat).toBe('main-site-current-character');
+
+    // 当前角色路径同样支持 guildBuffLevelMap 直接下发：map 中有的取分享值，缺失的一律归 0。
+    for (const guildBuffHrid of combatGuildBuffHrids) {
+      expect(result.player.guildBuffs[guildBuffHrid]).toBe(guildBuffLevelMap[guildBuffHrid] ?? 0);
+    }
   });
 });
