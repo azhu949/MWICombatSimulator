@@ -1,19 +1,18 @@
 import gameDataIndex from './gameDataIndex.generated.json';
 
 const itemDetailMap = gameDataIndex?.combatScrollItemDetailIndex || {};
-// Generated from `combatsimulator/data/personalBuffTypeDetailMap.json`; keep
-// shared code on the generated projection so dependencies remain one-way.
+// 由 `combatsimulator/data/personalBuffTypeDetailMap.json` 生成；
+// 让共享代码基于生成的投影，使依赖保持单向。
 const personalBuffTypeDetailMap = gameDataIndex?.personalBuffTypeDetailIndex || {};
 
 /**
- * A combat scroll is an openable, non-tradable item which grants a timed
- * personal buff.  Keep the duration in the simulator's native nanosecond
- * unit so callers do not have to convert the official data themselves.
+ * 战斗卷轴是一种可开启、不可交易的物品，可赋予限时个人增益。
+ * 持续时间保持模拟器原生的纳秒单位，调用方无需自行转换官方数据。
  */
 export const COMBAT_ACTION_TYPE_HRID = '/action_types/combat';
 export const COMBAT_SCROLL_CATEGORY_HRID = '/item_categories/scroll';
-// The current official catalog uses this duration.  It remains the default
-// reference for diagnostics; valid future data may provide another duration.
+// 当前官方目录使用此持续时间。它仍作为诊断时的默认参考值；
+// 未来有效的数据可能提供其他持续时间。
 export const COMBAT_SCROLL_DURATION_NS = 30 * 60 * 1_000_000_000;
 
 const warnedDurationMismatchKeys = new Set();
@@ -61,9 +60,8 @@ function normalizeBuffTemplate(rawBuff) {
 }
 
 /**
- * Resolve combat-valid scrolls from the two official maps.  The
- * join is deliberately data-driven: a new scroll appears automatically when
- * its item points to a personal buff whose action map includes combat.
+ * 从两张官方映射中解析战斗有效的卷轴。该连接刻意采用数据驱动：
+ * 当物品指向一个动作映射包含战斗的个人增益时，新卷轴会自动出现。
  */
 export function getCombatScrollOptions({
   itemMap = itemDetailMap,
@@ -90,9 +88,9 @@ export function getCombatScrollOptions({
     }
 
     const buff = normalizeBuffTemplate(personalBuff.buff);
-    // A malformed/partial template must not create a selectable row or a
-    // runtime buff.  The valid data duration is authoritative so a future
-    // catalog change is visible instead of silently hiding the scroll.
+    // 格式错误/不完整的模板不得创建可选行或运行时增益。
+    // 有效数据的持续时间具有权威性，以便未来的目录变更
+    // 可见，而不是静默隐藏卷轴。
     if (!buff) {
       continue;
     }
@@ -111,8 +109,8 @@ export function getCombatScrollOptions({
     const sortIndex = finiteNumber(personalBuff.sortIndex, finiteNumber(item.sortIndex, 0));
     options.push({
       itemHrid,
-      // `hrid` is kept as a small compatibility alias for consumers
-      // which use the same shape as other option lists.
+      // 为消费方保留 `hrid` 作为小的兼容别名，
+      // 其形状与其他选项列表一致。
       hrid: itemHrid,
       name: String(item.name || personalBuff.name || itemHrid),
       description: String(item.description || ''),
@@ -171,12 +169,11 @@ export function isCombatScrollHrid(itemHrid, options = undefined) {
 }
 
 /**
- * Normalize one persisted quantity value.
+ * 归一化一个持久化的数量值。
  *
- * `null` is the only normalized representation of unlimited inventory;
- * positive safe integers are finite inventory; `undefined` means invalid.
- * Booleans are deliberately invalid because row enablement is represented by
- * key presence (or an explicit `enabled` field), never by the quantity value.
+ * `null` 是无限库存唯一的归一化表示；正安全整数表示有限库存；
+ * `undefined` 表示无效。布尔值刻意视为无效，因为行的启用
+ * 由键是否存在（或显式的 `enabled` 字段）表示，而不取决于数量值。
  */
 export function normalizeCombatScrollQuantity(value) {
   if (value == null || (typeof value === 'string' && value.trim() === '')) {
@@ -206,8 +203,8 @@ function readRawQuantity(rawEntry) {
     if (Object.prototype.hasOwnProperty.call(rawEntry, 'count')) {
       return { enabled: true, quantity: rawEntry.count };
     }
-    // A present empty object represents a checked row with an empty
-    // quantity (unlimited), which is useful for hand-edited imports.
+    // 存在的空对象表示已勾选行且数量为空（无限），
+    // 对手工编辑的导入很有用。
     return { enabled: true, quantity: null };
   }
 
@@ -215,12 +212,12 @@ function readRawQuantity(rawEntry) {
 }
 
 /**
- * Normalize the persisted map shape:
+ * 归一化持久化的映射形状：
  *   { "/items/seal_of_damage": { quantity: 3 } }
- *   { "/items/seal_of_wisdom": { quantity: null } } // unlimited
+ *   { "/items/seal_of_wisdom": { quantity: null } } // 无限库存
  *
- * An existing key means the row is enabled. Unknown/non-combat entries and
- * invalid quantities are discarded, making imports safe across old versions.
+ * 键存在即表示该行已启用。未知/非战斗条目与无效数量
+ * 将被丢弃，使导入在旧版本之间保持安全。
  */
 export function normalizeCombatScrolls(raw, options = undefined) {
   if (!isPlainObject(raw)) {

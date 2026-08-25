@@ -1,18 +1,16 @@
-// Module-load-time shape validation for every buff that the combat engine
-// consumes from checked-in data files.  addBuff (combatUnit.js) performs the
-// same checks on the hot path as its final line of defense; this module moves
-// the failure point earlier so a bad data update (e.g. a buff missing
-// `duration`) is caught at startup/test time instead of mid-fight, where it
-// would abort an already-running simulation.
+// 在模块加载时对战斗引擎从已检入数据文件中消费的每个增益进行形状校验。
+// addBuff（combatUnit.js）在热路径上执行同样的检查，作为最后一道防线；
+// 本模块将失败点提前，因此损坏的数据更新（例如缺少 `duration` 的增益）
+// 会在启动/测试时被捕获，而不是在战斗中才中止正在运行的模拟。
 //
-// Coverage:
-//   - abilityDetailMap.json   — buff effects of all abilities (incl. party auras,
-//                               which additionally have the stronger snapshot
-//                               assertion in buffSourcePolicy.js)
-//   - itemDetailMap.json      — consumable (food/drink) buffs
-// Combat scrolls are validated by getCombatScrollBuffTemplate (combatScrolls.js)
-// at construction; curse/fury/weaken/enrage buffs are constructed inline in
-// combatSimulator.js and do not change with game data updates.
+// 覆盖范围：
+//   - abilityDetailMap.json   — 所有技能的增益效果（包括队伍光环，
+//                               它们还在 buffSourcePolicy.js 中额外有更强的
+//                               快照断言）
+//   - itemDetailMap.json      — 消耗品（食物/饮料）增益
+// 战斗卷轴在构造时由 getCombatScrollBuffTemplate（combatScrolls.js）校验；
+// 诅咒/狂暴/虚弱/激怒增益在 combatSimulator.js 中内联构造，
+// 不随游戏数据更新而变化。
 import abilityDetailMap from './data/abilityDetailMap.json';
 import itemDetailMap from './data/itemDetailMap.json';
 
@@ -27,8 +25,8 @@ function isNonEmptyString(value) {
 }
 
 /**
- * Validate one buff record against the shape addBuff relies on.  Throws a
- * TypeError listing the offending fields with a data-path context string.
+ * 校验一条增益记录是否符合 addBuff 依赖的形状。抛出
+ * TypeError，列出违规字段并附带数据路径上下文字符串。
  */
 export function validateBuffShape(buff, context) {
   const problems = [];
@@ -90,9 +88,9 @@ export function collectItemBuffShapes(itemMap = itemDetailMap) {
 }
 
 /**
- * Assert every checked-in ability/consumable buff record has the shape the
- * combat engine consumes.  Injectable maps keep the failure reporting and the
- * unit tests independent of the shipped data files.
+ * 断言每个已检入的技能/消耗品增益记录都具备战斗引擎
+ * 消费所需的形状。可注入的映射使失败报告和单元测试
+ * 与随附的数据文件相互独立。
  */
 export function assertBuffShapesValid({ abilityMap = abilityDetailMap, itemMap = itemDetailMap } = {}) {
   const failures = [...collectAbilityBuffShapes(abilityMap), ...collectItemBuffShapes(itemMap)];
@@ -105,6 +103,6 @@ export function assertBuffShapesValid({ abilityMap = abilityDetailMap, itemMap =
   }
 }
 
-// Run once at module load so every simulation/test entry point fails fast on
-// malformed buff data before any fight can start.
+// 在模块加载时运行一次，使每个模拟/测试入口在战斗开始前
+// 就能针对畸形增益数据快速失败。
 assertBuffShapesValid();

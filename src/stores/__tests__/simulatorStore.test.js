@@ -2185,7 +2185,7 @@ describe('simulatorStore', () => {
     await simulator.startSimulation();
 
     expect(simulator.runtime.error).toBe('common:simulation.errorAnotherRunInProgress');
-    // Only the shared run itself started a simulation; the manual path was blocked.
+    // 只有共享运行本身启动了模拟；手动路径被拦截了。
     expect(startSpy).toHaveBeenCalledTimes(1);
 
     simulator.stopSimulation();
@@ -4384,8 +4384,8 @@ describe('simulatorStore', () => {
     });
     expect(items).toHaveLength(1);
 
-    // The real queue splits multi-change diffs into single-change variants; fold the
-    // ability upgrade into the queued snapshot so the cost insight sees both contributions.
+    // 真实队列会把多变更差异拆分为单变更变体；将
+    // 技能升级合并进已入队快照，使成本洞察能看到两处贡献。
     items[0].snapshot.abilities[0].abilityHrid = abilityBookInfo.abilityHrid;
     items[0].snapshot.abilities[0].level = 2;
 
@@ -4413,16 +4413,16 @@ describe('simulatorStore', () => {
     await simulator.setQueueBaselineForActivePlayer();
     setQueueBaselineMetrics(simulator, { dailyNoRngProfit: 2400 });
 
-    // The weapon slot has a valid exact ask, so the queue accepts the variant.
+    // 武器槽位有有效的精确卖价，因此队列接受该变体。
     simulator.activePlayer.equipment.weapon = { itemHrid: weaponItemHrid, enhancementLevel: 2 };
     setExactEquipmentAsk(simulator, weaponItemHrid, 2, 123456);
 
     const items = simulator.addActivePlayerToQueue();
     expect(items).toHaveLength(1);
 
-    // The real queue splits multi-change diffs into single-change variants; fold a
-    // second slot change without any pricing data into the queued snapshot so the
-    // cost insight sees a partially missing target ask.
+    // 真实队列会把多变更差异拆分为单变更变体；将第二个
+    // 无任何定价数据的槽位变更折叠进已入队快照，使成本
+    // 洞察能看到部分缺失的目标卖价。
     items[0].snapshot.equipment.body = { itemHrid: bodyItemHrid, enhancementLevel: 1 };
 
     simulator.activeQueueState.rawRuns = [
@@ -4432,8 +4432,8 @@ describe('simulatorStore', () => {
     await simulator.refreshQueueResultsFromRawRuns({ allowReferenceLoad: false });
     const insights = simulator.activeQueueState.ranking[0].costInsights;
 
-    // One missing target ask must null the WHOLE upgrade cost as well, not just the
-    // buy/sale price columns, so the result table stays consistent (all show "-").
+    // 缺失一个目标卖价时，整个升级成本也必须为 null，而不只是
+    // 买卖价列，以保持结果表一致（全部显示 "-"）。
     expect(insights.totalUpgradeCost).toBeNull();
     expect(insights.equipmentSaleValue).toBeNull();
     expect(insights.equipmentBuyPrice).toBeNull();

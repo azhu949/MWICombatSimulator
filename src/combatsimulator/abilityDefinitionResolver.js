@@ -5,8 +5,8 @@ const SUPPLEMENTAL_ABILITY_ALIAS_MAP = Object.freeze({
   bloom: '/abilities/bloom',
 });
 
-// These simulator-only abilities are derived from combat stats and are not
-// part of the extracted official abilityDetailMap payload.
+// 这些仅模拟器使用的技能由战斗属性推导而来，不属于
+// 从官方 abilityDetailMap 中提取的数据载荷。
 const supplementalAbilityDefinitionMap = Object.freeze({
   '/abilities/blaze': {
     hrid: '/abilities/blaze',

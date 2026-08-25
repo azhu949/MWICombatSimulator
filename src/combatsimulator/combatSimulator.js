@@ -71,14 +71,13 @@ class CombatSimulator extends EventTarget {
     this.scrollRuntimeByPlayer = {};
     this.nextScrollRenewalTime = Number.POSITIVE_INFINITY;
     this.experienceAwardedEnemies = new WeakSet();
-    // Enemy objects are encounter-local runtime values. Keep kill-time
-    // experience state here instead of mutating their combat fields.
+    // 敌人对象是遭遇战局部的运行时值。将击杀时刻的经验状态
+    // 保存在这里，而不是修改它们的战斗字段。
     this.enemyDeathSnapshots = new WeakMap();
     this.invalidExperienceRateWarningKeys = new Set();
-    // Experience is snapshotted at monster death, but committed only
-    // when the encounter is successfully cleared.  This preserves the
-    // encounter-level rollback behavior while keeping temporary buffs
-    // (for example Wisdom scrolls) tied to the kill timestamp.
+    // 经验在怪物死亡时快照，但仅在遭遇战成功清场后才提交。
+    // 这保留了遭遇战级别的回滚行为，同时让临时增益
+    // （例如智慧卷轴）与击杀时间戳绑定。
     this.pendingExperienceGains = new Map();
 
     this.wipeLogs = {
@@ -100,27 +99,15 @@ class CombatSimulator extends EventTarget {
   logAndResetWipeLogs() {
     const logs = this.getOrderedWipeLogs();
 
-    // console.log("===== 团灭日志 =====");
-    // console.log(`最后 ${logs.length} 条战斗日志：`);
-
     logs.forEach((log) => {
       if (log.error) {
         console.log(log.error);
         return;
       }
-
-      const time = (log.time / 1e9).toFixed(2);
-      // console.log(
-      //     `[${time}s] [${log.source}] 用 [${log.ability}] ` +
-      //     `对 ${log.target} 造成 ${log.damage} 伤害，` +
-      //     `HP ${log.beforeHp} → ${log.afterHp}。` +
-      //     `队伍生命值：${log.playersHp.map(p => `${p.hrid}: ${p.current}/${p.max}`).join(" | ")}`
-      // );
     });
 
     this.wipeLogs.index = 0;
     this.wipeLogs.count = 0;
-    // console.log("===== 团灭日志结束 =====");
   }
 
   buildCombatLog(source, ability, target, damageDone) {
@@ -294,8 +281,8 @@ class CombatSimulator extends EventTarget {
       return false;
     }
 
-    // Buff instances carry mutable startTime; always create a fresh one
-    // for each player and each opening.
+    // Buff 实例携带可变的 startTime；始终为每个玩家和每次开启
+    // 创建一个新的实例。
     state.player.addBuff(buff, startTime, getCombatScrollSourceKey(state.itemHrid));
     state.started = true;
     state.active = true;
@@ -412,11 +399,10 @@ class CombatSimulator extends EventTarget {
     if (!state || !state.active || event.token !== state.token || event.time < state.activeUntil) {
       return;
     }
-    // processEvent's O(1) due-time guard normally handles this first.  The
-    // defensive fallback is still useful when this handler is invoked
-    // directly or when an external queue mutation leaves the cached next
-    // renewal time stale.  `state.active` prevents a second full sync
-    // after the guard has exhausted a finite scroll inventory.
+    // processEvent 的 O(1) 到期时间守卫通常先处理这种情况。当此处理器
+    // 被直接调用，或外部队列变更使缓存的下一续期时间过期时，
+    // 防御性回退仍然有用。当守卫耗尽有限的卷轴
+    // 库存后，`state.active` 可防止第二次全量同步。
     this.syncScrollsToTime(event.time);
   }
 
@@ -438,9 +424,9 @@ class CombatSimulator extends EventTarget {
   recordUnitDeath(unit) {
     this.simResult.addDeath(unit);
     if (!unit?.isPlayer) {
-      // Only encounter members participate in experience snapshots.
-      // Keeping this guard also lets result/drop-only callers use the
-      // death recorder with lightweight DTOs that have no XP metadata.
+      // 只有遭遇战成员参与经验快照。
+      // 保留此守卫还让仅需结果/掉落的调用方能够使用
+      // 轻量级、无经验元数据的 DTO 调用死亡记录器。
       if (this.enemies?.includes(unit)) {
         this.captureEnemyDeathSnapshot(unit, this.simulationTime);
       }
@@ -585,9 +571,9 @@ class CombatSimulator extends EventTarget {
       return;
     }
 
-    // Keep this public helper compatible with callers that award a
-    // precomputed rate directly.  Encounter deaths use the snapshot path
-    // above, so no result state depends on `enemy.experienceRate`.
+    // 保持此公共助手与直接授予预计算比率的调用方兼容。
+    // 遭遇战死亡使用上面的快照路径，
+    // 因此没有任何结果状态依赖 `enemy.experienceRate`。
     const experienceRate =
       explicitExperienceRate !== undefined ? Number(explicitExperienceRate) : Number(enemy.experienceRate);
     const totalExperience = Number(enemy.experience || 0) * experienceRate;
@@ -620,9 +606,9 @@ class CombatSimulator extends EventTarget {
     const normalizedSimulationTimeLimit = Math.max(0, Number(simulationTimeLimit) || 0);
     this.simulationTimeLimit = normalizedSimulationTimeLimit;
     this.reset();
-    // Publish the reset state before processing any events.  This keeps
-    // zero-length runs observable as [0, 1] instead of jumping straight
-    // to the terminal progress notification.
+    // 在处理任何事件之前发布重置状态。这使零长度模拟
+    // 可观察为 [0, 1]，而不是直接跳到
+    // 最终的进度通知。
     this.dispatchProgress(0);
 
     let ticks = 0;
@@ -632,10 +618,10 @@ class CombatSimulator extends EventTarget {
 
     while (this.simulationTime < normalizedSimulationTimeLimit) {
       const nextEventPreview = this.eventQueue.peekNextEvent();
-      // The simulation horizon is half-open [0, limit): events at or
-      // after the limit are outside this run and are not processed.
-      // Peeking first also prevents the legacy one-event overrun when
-      // the next queued event is later than the requested duration.
+      // 模拟时间范围是半开区间 [0, limit)：处于或晚于
+      // limit 的事件在本轮之外，不会被处理。
+      // 先窥视还可防止当下一排队事件晚于请求时长时
+      // 发生旧版"多处理一个事件"的越界。
       if (!nextEventPreview || nextEventPreview.time >= normalizedSimulationTimeLimit) {
         this.simulationTime = normalizedSimulationTimeLimit;
         break;
@@ -683,12 +669,12 @@ class CombatSimulator extends EventTarget {
         this.simResult.maxWaveReached = this.zone.dungeonSpawnInfo.maxWaves;
       }
     }
-    // Renewal events below the half-open horizon have already been
-    // processed by the queue.  Close the current windows directly so the
-    // end path neither restores buffs nor schedules historical renewals.
+    // 半开时间范围之内的续期事件已由队列处理。
+    // 直接关闭当前窗口，使结束路径既不恢复增益，
+    // 也不调度历史的续期。
     this.finalizeScrollUsage(normalizedSimulationTimeLimit);
-    // A simulation may stop in the middle of an encounter.  Do not leave
-    // its death snapshots attached to a reusable simulator instance.
+    // 模拟可能在遭遇战中途停止。不要将
+    // 该次遭遇战的死亡快照留在可复用的模拟器实例上。
     this.discardPendingExperience();
     this.simResult.simulatedTime = normalizedSimulationTimeLimit;
 
@@ -712,10 +698,9 @@ class CombatSimulator extends EventTarget {
       }
     }
 
-    // A horizon break can happen before the periodic tick reaches its
-    // 1000-event boundary.  Emit the terminal notification after all
-    // finalization so it precedes the result message without getting ahead
-    // of the last state updates.
+    // 时间范围中断可能发生在周期 tick 到达 1000 事件边界之前。
+    // 在所有收尾工作完成后发出最终的进度通知，
+    // 使其先于结果消息，又不会超前于最后的状态更新。
     this.dispatchProgress(1);
 
     return this.simResult;
@@ -725,9 +710,9 @@ class CombatSimulator extends EventTarget {
     this.tempDungeonCount = 0;
     this.simulationTime = 0;
     this.eventQueue.clear();
-    // A simulator instance may be reused.  Runtime inventory is rebuilt
-    // from immutable player configuration, and no timed buff from the
-    // previous run is allowed to leak into the next opening at t=0.
+    // 模拟器实例可能被复用。运行时库存从不可变的玩家配置
+    // 重建，上一轮运行中的定时增益不允许
+    // 泄漏到 t=0 的下一次开启。
     this.clearScrollRuntimeBuffs();
     this.simResult = new SimResult(this.zone, this.labyrinth, this.players.length);
     this.simResult.setScrollUsageContext(
@@ -750,8 +735,6 @@ class CombatSimulator extends EventTarget {
     }
     this.simulationTime = event.time;
     this.syncScrollsIfDue(this.simulationTime);
-
-    // console.log(this.simulationTime / 1e9, event.type, event);
 
     switch (event.type) {
       case CombatStartEvent.type:
@@ -806,11 +789,10 @@ class CombatSimulator extends EventTarget {
         this.tryUseAbility(event.source, event.ability);
         break;
       case AwaitCooldownEvent.type:
-        // console.log("Await CD " + (this.simulationTime / 1000000000));
         this.addNextAttackEvent(event.source);
         break;
       case CooldownReadyEvent.type:
-        // Only used to check triggers
+        // 仅用于检查触发器
         break;
     }
 
@@ -818,10 +800,9 @@ class CombatSimulator extends EventTarget {
   }
 
   processCombatStartEvent(event) {
-    // console.log("Combat Start " + (this.simulationTime / 1000000000));
     for (let i = 0; i < this.players.length; i++) {
       if (event.time === 0) {
-        // First combat start event
+        // 首次战斗开始事件
         this.players[i].generatePermanentBuffs();
       }
       if (this.labyrinth) {
@@ -832,13 +813,13 @@ class CombatSimulator extends EventTarget {
     }
 
     if (event.time === 0) {
-      // The first reset clears ordinary combat buffs.  Open scrolls
-      // only after that reset and before the first encounter/attack.
+      // 第一次重置清除普通战斗增益。卷轴只在这次重置之后、
+      // 首次遭遇战/攻击之前开启。
       this.activateInitialScrolls();
     } else {
-      // Dungeon restarts keep the scroll clock running.  Re-attach any
-      // still-active window after the player reset without consuming a
-      // second item.
+      // 副本重启会让卷轴计时继续运行。玩家重置后
+      // 重新挂接仍处于活动状态的窗口，而不消耗
+      // 第二个道具。
       this.syncScrollsToTime(this.simulationTime);
     }
 
@@ -849,7 +830,6 @@ class CombatSimulator extends EventTarget {
   }
 
   processPlayerRespawnEvent(event) {
-    // console.log("Player " + event.hrid + " respawn at " + + (this.simulationTime / 1000000000));
     let respawningPlayer = this.players.find((player) => player.hrid === event.hrid);
     respawningPlayer.combatDetails.currentHitpoints = respawningPlayer.combatDetails.maxHitpoints;
     respawningPlayer.combatDetails.currentManapoints = respawningPlayer.combatDetails.maxManapoints;
@@ -893,7 +873,6 @@ class CombatSimulator extends EventTarget {
           this.simulationTime,
         );
         let currentDungeonCount = this.zone.dungeonsCompleted;
-        // console.log('wave at #' + (this.zone.encountersKilled - 1) +' completed:' + this.zone.dungeonsCompleted + ' failed:'+ this.zone.dungeonsFailed + ' temp:'+ this.tempDungeonCount);
         if (currentDungeonCount > this.tempDungeonCount) {
           this.tempDungeonCount = currentDungeonCount;
           for (let i = 0; i < this.players.length; i++) {
@@ -913,7 +892,6 @@ class CombatSimulator extends EventTarget {
     this.enemies.forEach((enemy) => {
       enemy.reset(this.simulationTime);
       this.simResult.updateTimeSpentAlive(enemy.hrid, true, this.simulationTime);
-      //console.log(enemy.hrid, "spawned");
     });
 
     this.eventQueue.clearEventsOfType(EnrageTickEvent.type);
@@ -941,7 +919,6 @@ class CombatSimulator extends EventTarget {
       }
 
       /*-if (unit.isPlayer) {
-                // console.log("Start Attacks " + (this.simulationTime / 1000000000));
             }*/
       this.addNextAttackEvent(unit);
     }
@@ -962,9 +939,6 @@ class CombatSimulator extends EventTarget {
   }
 
   processAutoAttackEvent(event) {
-    // console.log("source:", event.source.hrid);
-    // console.log("aa " + (this.simulationTime / 1000000000));
-
     let targets = event.source.isPlayer ? this.enemies : this.players;
 
     if (!targets) {
@@ -1147,10 +1121,9 @@ class CombatSimulator extends EventTarget {
         if (!target.isPlayer) {
           this.simResult.updateTimeSpentAlive(target.hrid, false, this.simulationTime);
         }
-        // console.log(target.hrid, "died");
       }
 
-      // Could die from reflect damage
+      // 可能死于反伤伤害
       if (
         source.combatDetails.currentHitpoints == 0 &&
         (attackResult.thornDamageDone != 0 || attackResult.retaliationDamageDone != 0)
@@ -1173,7 +1146,6 @@ class CombatSimulator extends EventTarget {
     }
 
     if (!this.checkEncounterEnd()) {
-      // console.log("!EncounterEnd " + (this.simulationTime / 1000000000));
       this.addNextAttackEvent(event.source);
     }
   }
@@ -1185,9 +1157,9 @@ class CombatSimulator extends EventTarget {
       );
       if (deadEnemies.length > 0) {
         deadEnemies.forEach((enemy) => {
-          // A normal event records the exact timestamp before this
-          // method runs.  The fallback keeps direct/manual calls
-          // deterministic when only HP has been adjusted.
+          // 正常事件会在本方法运行前记录精确时间戳。
+          // 仅调整了生命值时，回退逻辑让直接/手动调用
+          // 保持确定性。
           this.finalizeEnemyExperience(enemy);
         });
       }
@@ -1210,8 +1182,8 @@ class CombatSimulator extends EventTarget {
         console.warn('WARN: Some enemies have no valid experience rate');
       }
 
-      // Commit the kill-time snapshots only after every monster in the
-      // encounter has died.  A later dungeon wipe must not retain them.
+      // 只有在遭遇战中所有怪物都已死亡后才提交击杀快照。
+      // 之后的副本团灭不得保留它们。
       this.commitPendingExperience();
       encounterCleared = true;
       this.enemies = null;
@@ -1229,10 +1201,8 @@ class CombatSimulator extends EventTarget {
       }
       this.simResult.addEncounterEnd();
       this.simResult.lastEncounterFinishTime = this.simulationTime;
-      // console.log("All enemies died");
 
       encounterEnded = true;
-      // console.log("encounter end " + (this.simulationTime / 1000000000))
     }
 
     this.players.forEach((player) => {
@@ -1245,7 +1215,6 @@ class CombatSimulator extends EventTarget {
           this.eventQueue.addEvent(playerRespawnEvent);
         }
         this.simResult.addRanOutOfManaCount(player, false, this.simulationTime);
-        // console.log(player.hrid + " died at " + (this.simulationTime / 1000000000) + 'in wave #' + (this.zone.encountersKilled - 1) + ' with ememies: ' + this.enemies?.map(enemy => (enemy.hrid+"("+(enemy.combatDetails.currentHitpoints*100/enemy.combatDetails.maxHitpoints).toFixed(2)+"%)")).join(", "));
       }
     });
 
@@ -1268,7 +1237,6 @@ class CombatSimulator extends EventTarget {
           );
 
           this.saveWipeLogsToSimResult(this.zone.encountersKilled - 1);
-          // console.log(this.simResult)
           this.wipeLogs.index = 0;
           this.wipeLogs.count = 0;
 
@@ -1294,7 +1262,6 @@ class CombatSimulator extends EventTarget {
         }
       }
 
-      // console.log("All Players died");
       encounterEnded = true;
       this.allPlayersDead = true;
     }
@@ -1365,7 +1332,6 @@ class CombatSimulator extends EventTarget {
                             if (haste > 0) {
                                 cooldownDuration = cooldownDuration * 100 / (100 + haste);
                             }
-                            // console.log((this.simulationTime / 1000000000) + " Casting " + ability.hrid + " Cast time " + (castDuration / 1e9) + " Off CD at " + ((this.simulationTime + cooldownDuration + castDuration) / 1e9) + " CD " + ((cooldownDuration) / 1e9));
                         }*/
             usedAbility = true;
           }
@@ -1387,7 +1353,6 @@ class CombatSimulator extends EventTarget {
         source,
       );
       /*-if (source.isPlayer) {
-                // console.log("next attack " + ((this.simulationTime + source.combatDetails.combatStats.attackInterval) / 1e9))
             }*/
       this.eventQueue.addEvent(autoAttackEvent);
     } else {
@@ -1404,7 +1369,6 @@ class CombatSimulator extends EventTarget {
       );
       let hitpointsAdded = event.source.addHitpoints(tickValue);
       this.simResult.addHitpointsGained(event.source, event.consumable.hrid, hitpointsAdded);
-      // console.log("Added hitpoints:", hitpointsAdded);
     }
 
     if (event.consumable.manapointRestore > 0) {
@@ -1415,9 +1379,8 @@ class CombatSimulator extends EventTarget {
       );
       let manapointsAdded = event.source.addManapoints(tickValue);
       this.simResult.addManapointsGained(event.source, event.consumable.hrid, manapointsAdded);
-      // console.log("Added manapoints:", manapointsAdded);
 
-      // when oom check ability trigger
+      // 空蓝（oom）时检查技能触发器
       if (event.source.isOutOfMana) {
         let awaitCooldownEvent = new AwaitCooldownEvent(this.simulationTime, event.source);
         this.eventQueue.addEvent(awaitCooldownEvent);
@@ -1448,8 +1411,6 @@ class CombatSimulator extends EventTarget {
       this.addToWipeLogs(log);
     }
 
-    // console.log(event.target.hrid, "bleed for", damage);
-
     if (event.currentTick < event.totalTicks) {
       let damageOverTimeTickEvent = new DamageOverTimeEvent(
         this.simulationTime + DOT_TICK_INTERVAL,
@@ -1477,7 +1438,7 @@ class CombatSimulator extends EventTarget {
   processRegenTickEvent(event) {
     let units = [...this.players];
 
-    // regen of emeny always set to 0, ingore the proc time
+    // 敌人的回复（regen）始终设为 0，忽略触发时间
     // if (this.enemies) {
     //     units.push(...this.enemies);
     // }
@@ -1490,14 +1451,12 @@ class CombatSimulator extends EventTarget {
       let hitpointRegen = Math.floor(unit.combatDetails.maxHitpoints * unit.combatDetails.combatStats.hpRegenPer10);
       let hitpointsAdded = unit.addHitpoints(hitpointRegen);
       this.simResult.addHitpointsGained(unit, 'regen', hitpointsAdded);
-      // console.log("Added hitpoints:", hitpointsAdded);
 
       let manapointRegen = Math.floor(unit.combatDetails.maxManapoints * unit.combatDetails.combatStats.mpRegenPer10);
       let manapointsAdded = unit.addManapoints(manapointRegen);
       this.simResult.addManapointsGained(unit, 'regen', manapointsAdded);
-      // console.log("Added manapoints:", manapointsAdded);
 
-      // when oom check ability trigger
+      // 空蓝（oom）时检查技能触发器
       if (unit.isOutOfMana) {
         let awaitCooldownEvent = new AwaitCooldownEvent(this.simulationTime, unit);
         this.eventQueue.addEvent(awaitCooldownEvent);
@@ -1509,15 +1468,15 @@ class CombatSimulator extends EventTarget {
   }
 
   processCheckBuffExpirationEvent(event) {
-    // Ability-buff events carry the buff's uniqueHrid, so expire only that
-    // registration instead of sweeping every buffSource on the unit (a
-    // 5-player full-aura party can register 56+ sources per unit). The
-    // sourceKey is deliberately not consulted here: the event owns the
-    // uniqueHrid lifecycle, and any sibling source of the same uniqueHrid
-    // that expired at the same timestamp has its own event (a later no-op).
-    // Consumable events are constructed without the fields, and enrage
-    // buffs have no expiration event at all; those still rely on the full
-    // sweep to clean up any expired registration.
+    // 技能增益事件携带增益的 uniqueHrid，因此只让该注册过期，
+    // 而不是扫掉单元上每个 buffSource（5 人全光环
+    // 队伍每个单元可注册 56+ 个源）。这里刻意不查询
+    // sourceKey：事件拥有 uniqueHrid 的生命周期，
+    // 同一 uniqueHrid 在同一时间戳过期的兄弟源
+    // 有自己的事件（稍后为空操作）。
+    // 消耗品事件构造时不带这些字段，而激怒增益
+    // 根本没有过期事件；它们仍依赖全量
+    // 扫描清理任何已过期的注册。
     if (event.buffUniqueHrid != null) {
       event.source.removeExpiredBuffByUniqueHrid(event.buffUniqueHrid, this.simulationTime);
     } else {
@@ -1526,9 +1485,9 @@ class CombatSimulator extends EventTarget {
   }
 
   scheduleBuffExpirationEvent(target, buff, sourceKey) {
-    // A recast refreshes this target/source registration. Replace the old
-    // event rather than skipping the new one; otherwise a shorter refresh
-    // would expire late, while retaining every historical event is redundant.
+    // 重新施放会刷新此目标/源注册。替换旧事件
+    // 而不是跳过新事件；否则较短的刷新会过期过晚，
+    // 而保留所有历史事件又是冗余的。
     this.eventQueue.clearMatching(
       (event) =>
         event.type === CheckBuffExpirationEvent.type &&
@@ -1543,7 +1502,6 @@ class CombatSimulator extends EventTarget {
 
   processStunExpirationEvent(event) {
     event.source.isStunned = false;
-    // console.log("Stun " + (this.simulationTime / 1000000000));
     this.addNextAttackEvent(event.source);
   }
 
@@ -1557,20 +1515,20 @@ class CombatSimulator extends EventTarget {
   }
 
   processCurseExpirationEvent(event) {
-    // The event owns the curse lifecycle. Do not sweep unrelated buffs
-    // from the target merely because curse reached its expiry time.
+    // 事件拥有诅咒的生命周期。不要仅仅因为诅咒到达过期时间
+    // 就从目标上扫掉无关的增益。
     event.source.removeExpiredBuffByUniqueHrid(CURSE_UNIQUE_HRID, this.simulationTime);
   }
 
   processWeakenExpirationEvent(event) {
-    // The event owns the weaken lifecycle. Do not sweep unrelated buffs
-    // from the attacker merely because weaken reached its expiry time.
+    // 事件拥有虚弱（weaken）的生命周期。不要仅仅因为虚弱到达过期时间
+    // 就从攻击者身上扫掉无关的增益。
     event.source.removeExpiredBuffByUniqueHrid(WEAKEN_UNIQUE_HRID, this.simulationTime);
   }
 
   processFuryExpirationEvent(event) {
-    // The event owns the fury lifecycle. Do not sweep unrelated buffs
-    // from the source merely because fury reached its expiry time.
+    // 事件拥有狂暴（fury）的生命周期。不要仅仅因为狂暴到达过期时间
+    // 就从来源身上扫掉无关的增益。
     event.source.removeExpiredBuffByUniqueHrid(FURY_ACCURACY_UNIQUE_HRID, this.simulationTime);
     event.source.removeExpiredBuffByUniqueHrid(FURY_DAMAGE_UNIQUE_HRID, this.simulationTime);
   }
@@ -1582,10 +1540,10 @@ class CombatSimulator extends EventTarget {
       .filter((enemy) => enemy.combatDetails.currentHitpoints > 0)
       .forEach((enemy) => {
         const enrageTime = Number(enemy.enrageTime);
-        // Enemies without a positive enrage time never enrage — the
-        // default combatUnit field is 0, and a missing/non-numeric
-        // value would turn the stack math into Infinity or NaN
-        // (immediate max stacks, or an addBuff validation crash).
+        // 激怒时间为非正数的敌人永远不会激怒——默认的
+        // combatUnit 字段为 0，缺失/非数值的值
+        // 会把层数计算变成 Infinity 或 NaN
+        // （立即满层，或 addBuff 校验崩溃）。
         if (!(enrageTime > 0)) {
           return;
         }
@@ -1614,9 +1572,9 @@ class CombatSimulator extends EventTarget {
           flatBoostLevelBonus: 0,
           duration: ENRAGE_TICK_INTERVAL,
         };
-        // Both enrage buffs use the default source key intentionally:
-        // buffSources is bucketed by uniqueHrid first, so damage and
-        // accuracy remain separate registrations and cannot overwrite.
+        // 两种激怒增益刻意使用默认源键：
+        // buffSources 先按 uniqueHrid 分桶，因此伤害与
+        // 命中率保持为独立注册，不会互相覆盖。
         enemy.addBuff(enrageDamageBuff, this.simulationTime);
         enemy.addBuff(enrageAccuracyBuff, this.simulationTime);
 
@@ -1686,8 +1644,6 @@ class CombatSimulator extends EventTarget {
   }
 
   tryUseConsumable(source, consumable) {
-    // console.log("Consuming:", consumable);
-
     if (source.combatDetails.currentHitpoints <= 0) {
       return false;
     }
@@ -1708,15 +1664,13 @@ class CombatSimulator extends EventTarget {
       if (consumable.hitpointRestore > 0) {
         let hitpointsAdded = source.addHitpoints(consumable.hitpointRestore);
         this.simResult.addHitpointsGained(source, consumable.hrid, hitpointsAdded);
-        // console.log("Added hitpoints:", hitpointsAdded);
       }
 
       if (consumable.manapointRestore > 0) {
         let manapointsAdded = source.addManapoints(consumable.manapointRestore);
         this.simResult.addManapointsGained(source, consumable.hrid, manapointsAdded);
-        // console.log("Added manapoints:", manapointsAdded);
 
-        // when oom check ability trigger
+        // 空蓝（oom）时检查技能触发器
         if (source.isOutOfMana) {
           let awaitCooldownEvent = new AwaitCooldownEvent(this.simulationTime, source);
           this.eventQueue.addEvent(awaitCooldownEvent);
@@ -1741,7 +1695,6 @@ class CombatSimulator extends EventTarget {
         currentBuff.duration = currentBuff.duration / (1 + source.combatDetails.combatStats.drinkConcentration);
       }
       source.addBuff(currentBuff, this.simulationTime);
-      // console.log("Added buff:", currentBuff);
       let checkBuffExpirationEvent = new CheckBuffExpirationEvent(this.simulationTime + currentBuff.duration, source);
       this.eventQueue.addEvent(checkBuffExpirationEvent);
     }
@@ -1757,7 +1710,6 @@ class CombatSimulator extends EventTarget {
     if (source.combatDetails.currentManapoints < ability.manaCost) {
       if (source.isPlayer && oomCheck) {
         // if (this.simResult.playerRanOutOfMana[source.hrid] == false) {
-        //     console.log(source.hrid + " ran out of mana" + ' at wave #' + (this.zone.encountersKilled - 1) + ' at time ' + this.simulationTime / 1000000000 + 's');
         // }
         this.simResult.addRanOutOfManaCount(source, true, this.simulationTime);
       }
@@ -1769,11 +1721,11 @@ class CombatSimulator extends EventTarget {
     return true;
   }
 
-  // Deducts an ability's mana cost from the caster and updates the
-  // player-facing mana accounting.  This is intentionally side-effect free
-  // (no event scheduling, no simResult recording) so both the live cast path
-  // and the static preview paths can share a single source of truth for the
-  // mana bookkeeping instead of drifting apart.
+  // 从施法者身上扣除技能的魔法值消耗，并更新
+  // 面向玩家的魔法值记账。这种做法刻意无副作用
+  // （不调度事件、不记录 simResult），因此实时施法路径
+  // 与静态预览路径可以共享魔法值记账的
+  // 单一事实来源，而不会逐渐偏离。
   spendAbilityMana(source, ability) {
     if (source.isPlayer) {
       if (source.abilityManaCosts.has(ability.hrid)) {
@@ -1789,11 +1741,8 @@ class CombatSimulator extends EventTarget {
 
   tryUseAbility(source, ability) {
     if (!this.canUseAbility(source, ability, true)) {
-      // console.log("Falseeeeeee");
       return false;
     }
-
-    // console.log("Casting:", ability);
 
     this.spendAbilityMana(source, ability);
 
@@ -1806,7 +1755,6 @@ class CombatSimulator extends EventTarget {
     /*-if (source.isPlayer) {
             let castDuration = ability.castDuration;
             castDuration /= (1 + source.combatDetails.combatStats.castSpeed)
-            // console.log((this.simulationTime / 1000000000) + " Used ability " + ability.hrid + " Cast time " + (castDuration / 1e9));
         }*/
 
     let todoAbilities = [ability];
@@ -1868,7 +1816,7 @@ class CombatSimulator extends EventTarget {
 
     this.addNextAttackEvent(source);
 
-    // Could die from reflect damage
+    // 可能死于反伤伤害
     if (source.combatDetails.currentHitpoints == 0) {
       this.eventQueue.clearEventsForUnit(source);
       this.recordUnitDeath(source);
@@ -1941,7 +1889,7 @@ class CombatSimulator extends EventTarget {
       let parryTarget = undefined;
       if (!isSkipParry) {
         parryTarget = this.checkParry(targets);
-        isSkipParry = true; //  parry check only once on first target
+        isSkipParry = true; //  格挡检查只在第一个目标上执行一次
       }
 
       if (parryTarget) {
@@ -1983,10 +1931,9 @@ class CombatSimulator extends EventTarget {
           if (!tempTarget.isPlayer) {
             this.simResult.updateTimeSpentAlive(tempTarget.hrid, false, this.simulationTime);
           }
-          // console.log(tempTarget.hrid, "died");
         }
 
-        // Could die from reflect damage
+        // 可能死于反伤伤害
         if (
           tempSource.combatDetails.currentHitpoints == 0 &&
           (attackResult.thornDamageDone != 0 || attackResult.retaliationDamageDone != 0)
@@ -2081,7 +2028,6 @@ class CombatSimulator extends EventTarget {
           target.blindExpireTime = this.simulationTime + abilityEffect.blindDuration;
           this.eventQueue.clearMatching((event) => event.type == BlindExpirationEvent.type && event.source == target);
           if (this.eventQueue.clearMatching((event) => event.type == AutoAttackEvent.type && event.source == target)) {
-            // console.log("Blind " + (this.simulationTime / 1000000000));
             this.addNextAttackEvent(target);
           }
           let blindExpirationEvent = new BlindExpirationEvent(target.blindExpireTime, target);
@@ -2099,7 +2045,6 @@ class CombatSimulator extends EventTarget {
           if (
             this.eventQueue.clearMatching((event) => event.type == AbilityCastEndEvent.type && event.source == target)
           ) {
-            // console.log("Silence " + (this.simulationTime / 1000000000));
             this.addNextAttackEvent(target);
           }
           let silenceExpirationEvent = new SilenceExpirationEvent(target.silenceExpireTime, target);
@@ -2238,7 +2183,6 @@ class CombatSimulator extends EventTarget {
           if (!target.isPlayer) {
             this.simResult.updateTimeSpentAlive(target.hrid, false, this.simulationTime);
           }
-          // console.log(target.hrid, "died");
         }
 
         if (attackResult.didHit && abilityEffect.pierceChance > Math.random()) {
@@ -2313,9 +2257,9 @@ class CombatSimulator extends EventTarget {
         (event) => event.type == PlayerRespawnEvent.type && event.hrid == reviveTarget.hrid,
       );
 
-      // A death snapshot is provisional until the encounter-end check
-      // confirms that the unit is still dead.  Reviving before then
-      // must not preserve an experience gain for a non-final death.
+      // 死亡快照是临时的，直到遭遇战结束检查确认该单元
+      // 仍然死亡。在此之前复活，
+      // 不得为非最终死亡保留经验收益。
       if (!reviveTarget.isPlayer && !this.experienceAwardedEnemies.has(reviveTarget)) {
         this.enemyDeathSnapshots.delete(reviveTarget);
       }
@@ -2331,8 +2275,6 @@ class CombatSimulator extends EventTarget {
       if (!source.isPlayer) {
         this.simResult.updateTimeSpentAlive(reviveTarget.hrid, true, this.simulationTime);
       }
-
-      // console.log(source.hrid + " revived " + reviveTarget.hrid + " with " + amountHealed + " HP." + ' at wave #' + (this.zone.encountersKilled - 1) + ' at time ' + this.simulationTime / 1000000000 + 's');
     }
     return;
   }

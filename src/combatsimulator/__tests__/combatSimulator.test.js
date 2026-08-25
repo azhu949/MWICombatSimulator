@@ -112,9 +112,9 @@ describe('CombatSimulator', () => {
     const simulator = new CombatSimulator([], null, null, {});
     const enemy = new Player();
     enemy.hrid = 'enrage-guard';
-    // 0 is the combatUnit default when data omits enrageTime. A missing or
-    // non-numeric value would otherwise produce Infinity/NaN stack math
-    // (immediate max enrage, or an addBuff validation crash).
+    // 当数据省略 enrageTime 时，0 是 combatUnit 的默认值。缺失或
+    // 非数值的值会把层数计算变成 Infinity/NaN
+    // （立即满激怒层数，或 addBuff 校验崩溃）。
     enemy.enrageTime = 0;
     enemy.combatDetails.currentHitpoints = 100;
     simulator.enemies = [enemy];
@@ -250,8 +250,8 @@ describe('CombatSimulator', () => {
 
     expect(fullSweepSpy).not.toHaveBeenCalled();
     expect(source.combatBuffs[weakenHrid]).toBeUndefined();
-    // The unrelated buff is expired by time, but must not be removed by
-    // the weaken event; its own expiration lifecycle owns that cleanup.
+    // 无关增益已按时间过期，但不得被虚弱事件移除；
+    // 其自身的过期生命周期负责该清理。
     expect(source.combatBuffs[unrelatedHrid]).toBeTruthy();
   });
 
@@ -293,8 +293,8 @@ describe('CombatSimulator', () => {
 
     expect(fullSweepSpy).not.toHaveBeenCalled();
     expect(source.combatBuffs[targetedHrid]).toBeUndefined();
-    // The unrelated buff is expired by time, but must not be removed by
-    // the targeted event; its own expiration lifecycle owns that cleanup.
+    // 无关增益已按时间过期，但不得被目标事件移除；
+    // 其自身的过期生命周期负责该清理。
     expect(source.combatBuffs[unrelatedHrid]).toBeTruthy();
   });
 
@@ -394,17 +394,17 @@ describe('CombatSimulator', () => {
     expect(expirationEvents).toHaveLength(6);
     expectSourceEvents(expirationEvents, firstCaster.hrid, 0);
 
-    // Recasting the same aura refreshes each registration. The old six
-    // events must be replaced, not left in the queue or allowed to win over
-    // the refreshed expiration time.
+    // 重新施放同一光环会刷新每条注册。旧的六条
+    // 事件必须被替换，既不能留在队列中，也不能
+    // 越过刷新后的过期时间。
     simulator.simulationTime = 1e9;
     simulator.processAbilityBuffEffect(firstCaster, firstAura, firstAuraEffect);
     expirationEvents = getExpirationEvents();
     expect(expirationEvents).toHaveLength(6);
     expectSourceEvents(expirationEvents, firstCaster.hrid, 1e9);
 
-    // A different caster owns an independent source registration, so its
-    // events must not be coalesced with the first caster's events.
+    // 不同的施法者拥有独立的源注册，因此其
+    // 事件不得与第一位施法者的事件合并。
     simulator.simulationTime = 2e9;
     simulator.processAbilityBuffEffect(secondCaster, secondAura, secondAuraEffect);
     expirationEvents = getExpirationEvents();
@@ -429,8 +429,8 @@ describe('CombatSimulator', () => {
     expect(caster.abilityManaCosts.get(ability.hrid)).toBe(cost);
     expect(ability.lastUsed).toBe(5e9);
 
-    // Recover to full MP, then deduct again. currentManapoints reflects the
-    // net result while abilityManaCosts keeps the running total spent.
+    // 恢复到满魔法值，然后再次扣除。currentManapoints 反映
+    // 净结果，而 abilityManaCosts 保留累计消耗总额。
     caster.addManapoints(cost);
     expect(caster.combatDetails.currentManapoints).toBe(maxMana);
 

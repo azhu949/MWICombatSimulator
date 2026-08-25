@@ -230,8 +230,8 @@ describe('mwi main-site import userscript', () => {
     api.mainSiteState.currentCharacterName = 'Current Player';
     gmStore.set('mwi.tm.import.teamRosterCache.v1', cachedRoster);
 
-    // Closing the last socket must only drop the in-memory roster: reconnects close
-    // every socket, so the persisted cache has to survive to keep team imports intact.
+    // 关闭最后一个套接字只能丢弃内存中的名单：重连会关闭所有套接字，
+    // 因此持久化缓存必须保留下来，才能保证队伍导入完好无损。
     listeners.get('close')();
     expect(api.mainSiteState.recentPartyMessages).toHaveLength(0);
     expect(gmStore.get('mwi.tm.import.teamRosterCache.v1')).toEqual(cachedRoster);

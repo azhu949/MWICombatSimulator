@@ -209,7 +209,7 @@ export function resolveEquipmentTransitionPricing(
   }
 
   const targetAskAvailable = buyCost > 0;
-  // Market sales are subject to the market tax; keep the net proceeds as the sale credit.
+  // 市场销售需缴纳市场交易税；以净收益作为出售抵扣。
   const baselineSaleValue = sellValue > 0 ? applyMarketSaleFee(sellValue, sourceItemHrid) : 0;
   return {
     cost: targetAskAvailable ? Math.max(0, buyCost - baselineSaleValue) : null,

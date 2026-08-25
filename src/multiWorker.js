@@ -12,7 +12,7 @@ function terminateChildWorker(worker) {
   try {
     worker?.terminate?.();
   } catch (error) {
-    // ignore worker termination errors while cleaning child workers
+    // 清理子 worker 时忽略其终止错误
   }
 }
 
@@ -111,7 +111,7 @@ export async function handleMultiSimulationMessage(eventData = {}, workerScope =
     try {
       workerScope?.close?.();
     } catch (error) {
-      // ignore worker close errors while finishing one-shot multi workers
+      // 结束一次性多 worker 时忽略 worker 关闭错误
     }
   };
 
@@ -120,7 +120,7 @@ export async function handleMultiSimulationMessage(eventData = {}, workerScope =
       try {
         taskControl.cancel(error);
       } catch (cancelError) {
-        // ignore task cancellation errors while cleaning active task controls
+        // 清理活动任务控制器时忽略任务取消错误
       }
     }
   };

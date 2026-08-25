@@ -228,14 +228,14 @@ describe('simulatorWorkerRuns', () => {
     });
     expect(firstClient.stopSimulation).toHaveBeenCalledTimes(1);
 
-    // The superseded run must not clear the newest run's handle.
+    // 被取代的运行不得清除最新运行的句柄。
     expect(hasSharedWorkerRunInProgress()).toBe(true);
     secondClient.emit('onResult', { encounters: 7 });
     await expect(secondPromise).resolves.toEqual({ encounters: 7 });
     expect(secondClient.stopSimulation).not.toHaveBeenCalled();
     expect(hasSharedWorkerRunInProgress()).toBe(false);
 
-    // cancelSharedWorkerRun still targets the newest handle only.
+    // cancelSharedWorkerRun 仍只针对最新的句柄。
     const thirdClient = new FakeWorkerClient();
     const thirdPromise = runSharedSingleSimulationPayload({ type: 'start_simulation', workerId: 'third' }, vi.fn(), {
       workerClient: thirdClient,

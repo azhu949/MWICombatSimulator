@@ -40,7 +40,7 @@ export function cancelDedicatedWorkerRuns(
     try {
       workerRunHandle.cancel(cancellationError);
     } catch (error) {
-      // ignore cancel errors while cleaning dedicated workers
+      // 清理专属 worker 时忽略取消错误
     }
   }
 }
@@ -67,7 +67,7 @@ export function cancelSharedWorkerRun(cancellationError = createWorkerRunCancell
   try {
     sharedWorkerRunHandle.cancel(cancellationError);
   } catch (error) {
-    // ignore cancel errors while cleaning shared workers
+    // 清理共享 worker 时忽略取消错误
   }
 }
 
@@ -93,7 +93,7 @@ export function runSingleSimulationPayloadWithDedicatedWorker(payload, onProgres
       try {
         dedicatedClient.stopSimulation();
       } catch (error) {
-        // ignore stop errors while settling dedicated workers
+        // 收尾专属 worker 时忽略停止错误
       }
 
       unregisterDedicatedWorkerRun(workerRunHandle);
@@ -165,7 +165,7 @@ export function runMultiSimulationPayloadWithDedicatedWorker(payload, onProgress
       try {
         dedicatedClient.stopSimulation();
       } catch (error) {
-        // ignore stop errors while settling dedicated workers
+        // 收尾专属 worker 时忽略停止错误
       }
 
       unregisterDedicatedWorkerRun(workerRunHandle);
@@ -235,7 +235,7 @@ export function runSharedSingleSimulationPayload(payload, onProgress = () => {},
         try {
           workerClient.stopSimulation();
         } catch (error) {
-          // ignore stop errors while settling shared workers
+          // 收尾共享 worker 时忽略停止错误
         }
       }
 
@@ -249,8 +249,8 @@ export function runSharedSingleSimulationPayload(payload, onProgress = () => {},
       },
     };
     if (sharedWorkerRunHandle) {
-      // Supersede the previous shared run: settle it with a cancellation error so
-      // its promise does not hang when the shared client is reused, then take over.
+      // 取代先前的共享运行：以取消错误收尾，使其在共享客户端复用时
+      // 不会挂起，然后接管。
       sharedWorkerRunHandle.cancel(createWorkerRunCancellationError('Superseded by a new shared worker run.'));
     }
     sharedWorkerRunHandle = workerRunHandle;
@@ -259,8 +259,8 @@ export function runSharedSingleSimulationPayload(payload, onProgress = () => {},
       try {
         options.onHandle(workerRunHandle);
       } catch (error) {
-        // The callback runs before startSimulation, so there is no worker
-        // belonging to this run that needs to be stopped here.
+        // 回调在 startSimulation 之前运行，因此本次运行没有
+        // 需要在此停止的 worker。
         settle(reject, error);
         return;
       }

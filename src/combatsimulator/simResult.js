@@ -10,10 +10,9 @@ class SimResult {
     this.hitpointsGained = {};
     this.manapointsGained = {};
     this.debuffOnLevelGap = {};
-    // Timed combat scrolls are intentionally kept separate from ordinary
-    // consumables.  A scroll is not a market expense and its effect may
-    // change during a simulation, so the result records usage windows
-    // independently from the final stat snapshot below.
+    // 定时战斗卷轴刻意与普通消耗品分开记录。卷轴不是
+    // 市场支出，其效果在模拟过程中可能变化，因此结果将使用窗口
+    // 与下方最终属性快照分开记录。
     this.scrollUsage = {
       allowed: !labyrinth,
       ignoredReason: labyrinth ? 'labyrinth' : '',
@@ -21,11 +20,10 @@ class SimResult {
       byPlayer: {},
     };
 
-    // A final drop multiplier is not sufficient for a long simulation
-    // containing expiring scrolls.  CombatSimulator can append one bucket
-    // per (player, monster, stat signature) and the profit estimator will
-    // use these buckets when present, while retaining the legacy fallback
-    // for older serialized results.
+    // 对于包含过期卷轴的长时间模拟，单一的最终掉落倍率并不足够。
+    // CombatSimulator 可按（玩家、怪物、属性签名）追加一个桶，
+    // 利润估算器在存在这些桶时使用它们，同时为旧的
+    // 序列化结果保留传统回退。
     this.dropContextBuckets = {};
     this.dropRateMultiplier = {};
     this.rareFindMultiplier = {};
@@ -84,9 +82,9 @@ class SimResult {
   }
 
   /**
-   * Set the context in which scrolls were evaluated.  Invalid contexts
-   * (currently labyrinth and guild trials) retain their configuration but
-   * report a reason instead of silently dropping it.
+   * 设置卷轴被评估时的上下文。无效上下文
+   * （当前为迷宫与公会试炼）会保留其配置，
+   * 但会报告原因而不是静默丢弃。
    */
   setScrollUsageContext(allowed = true, ignoredReason = '') {
     this.scrollUsage.allowed = Boolean(allowed);
@@ -94,8 +92,8 @@ class SimResult {
   }
 
   /**
-   * Record the user-facing feature gate separately from context rules.
-   * A disabled simulation can still retain configured rows in `byPlayer`.
+   * 单独记录面向用户的功能开关，与上下文规则分开。
+   * 已禁用的模拟仍可在 `byPlayer` 中保留已配置的行。
    */
   setScrollUsageDisabled(disabled = false) {
     this.scrollUsage.disabled = Boolean(disabled);
@@ -124,7 +122,7 @@ class SimResult {
 
     if (configuredQuantity !== undefined) {
       const numeric = Number(configuredQuantity);
-      // null (and an empty value supplied by a form) means unlimited.
+      // null（以及表单提供的空值）表示无限。
       if (configuredQuantity === null || configuredQuantity === '') {
         playerUsage[itemKey].configuredQuantity = null;
       } else if (Number.isFinite(numeric) && Number.isSafeInteger(numeric) && numeric > 0) {
@@ -136,9 +134,9 @@ class SimResult {
   }
 
   /**
-   * Register a configured scroll even when it was not opened (for example,
-   * because the selected context ignores scrolls).  `configuration` may be
-   * a quantity, or an object containing configuredQuantity/quantity.
+   * 注册已配置的卷轴，即使它未被打开（例如
+   * 因为所选上下文忽略卷轴）。`configuration` 可以是
+   * 数量，或包含 configuredQuantity/quantity 的对象。
    */
   setScrollConfiguration(playerHrid, itemHrid, configuration = null) {
     let configuredQuantity = configuration;
@@ -148,9 +146,9 @@ class SimResult {
         : configuration.quantity;
     }
 
-    // Keep malformed finite quantities out of the result.  Blank/null is
-    // the only representation of unlimited inventory; zero, negative,
-    // fractional, and non-numeric values are disabled by normalization.
+    // 防止畸形有限数量进入结果。空白/null 是
+    // 无限库存的唯一表示；零、负数、
+    // 小数和非数值会被规范化禁用。
     if (configuredQuantity !== null && configuredQuantity !== undefined && configuredQuantity !== '') {
       const numeric = Number(configuredQuantity);
       if (!Number.isFinite(numeric) || !Number.isSafeInteger(numeric) || numeric <= 0) {
@@ -162,13 +160,11 @@ class SimResult {
   }
 
   /**
-   * Record one or more actual scroll openings.  The optional metadata is
-   * deliberately permissive so worker/event code can pass either a compact
-   * object or positional values while the public result shape stays stable.
-   * Opening metadata does not infer a window duration.  The simulator's
-   * normal lifecycle records elapsed time through `recordScrollWindow` when
-   * the window closes; callers that already have a duration may still pass
-   * it explicitly for compatibility.
+   * 记录一次或多次实际卷轴开启。可选元数据刻意保持宽松，
+   * 以便 worker/事件代码既可以传紧凑对象也可以传位置参数，
+   * 而公开结果形状保持稳定。开启元数据不会推断窗口时长。
+   * 模拟器的正常生命周期在窗口关闭时通过 `recordScrollWindow` 记录
+   * 经过的时间；已经持有时长的调用方仍可出于兼容性显式传入。
    */
   recordScrollOpen(playerHrid, itemHrid, metadata = {}, activeDurationNs, exhausted) {
     let details = metadata;
@@ -221,9 +217,8 @@ class SimResult {
   }
 
   /**
-   * Compatibility wrapper for older callers which used the overloaded
-   * object/string signature. New code should use one of the two explicit
-   * entry points below.
+   * 为使用过载 object/string 签名的旧调用方提供的兼容包装。
+   * 新代码应使用下方两个显式入口点之一。
    */
   recordMonsterDeath(playerOrHrid, monsterOrHrid, contextOrCount = {}, killCount = 1) {
     if (playerOrHrid && typeof playerOrHrid === 'object') {
@@ -256,14 +251,14 @@ class SimResult {
     );
   }
 
-  /** Record a death using a CombatUnit as the drop-stat source. */
+  /** 使用 CombatUnit 作为掉落统计来源记录一次死亡。 */
   recordMonsterDeathFromUnit(player, monster, killCount = 1) {
     return this.recordMonsterDeathFromContext(player?.hrid, monster?.hrid ?? monster, player, killCount);
   }
 
   /**
-   * Record a monster death under an explicit drop-stat context. Buckets with
-   * an identical exact signature are merged to keep long simulations compact.
+   * 在显式掉落统计上下文下记录一次怪物死亡。具有完全相同
+   * 签名的桶会被合并，以保持长时间模拟结果紧凑。
    */
   recordMonsterDeathFromContext(playerHrid, monsterHrid, context = {}, killCount = 1) {
     const playerKey = String(playerHrid || '').trim();
@@ -334,9 +329,9 @@ class SimResult {
         bucket.combatDropQuantity === normalizedContext.combatDropQuantity &&
         bucket.debuffOnLevelGap === normalizedContext.debuffOnLevelGap,
       );
-    // Deaths are normally clustered inside one buff window.  Checking the
-    // most recently used signature first keeps that hot path O(1), while
-    // the fallback still merges an older bucket if a signature returns.
+    // 死亡通常集中在一个增益窗口内。先检查最近使用的
+    // 签名可使该热路径保持 O(1)，而回退逻辑仍会在
+    // 旧签名再次出现时合并更早的桶。
     const latestBucket = buckets[buckets.length - 1];
     const existing = matchesContext(latestBucket) ? latestBucket : buckets.find(matchesContext);
     if (existing) {
@@ -406,9 +401,9 @@ class SimResult {
   }
 
   /**
-   * Calculate the skill-level experience produced by an event without
-   * mutating the result.  CombatSimulator uses this to snapshot a monster
-   * kill while its temporary combat buffs are still active.
+   * 计算事件产生的技能等级经验，且不修改结果。
+   * CombatSimulator 用它来在怪物临时战斗增益仍然生效时
+   * 对击杀进行快照。
    */
   calculateExperienceGain(unit, experience) {
     if (!unit?.isPlayer) {

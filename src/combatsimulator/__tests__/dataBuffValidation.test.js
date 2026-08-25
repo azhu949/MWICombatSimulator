@@ -8,9 +8,9 @@ import {
 
 describe('dataBuffValidation', () => {
   it('passes for the checked-in ability and consumable buff data', () => {
-    // Runs at module load via the side-effect import in combatSimulator.js.
-    // This test re-runs the assertion explicitly so a failure is reported
-    // in the right test scope instead of appearing as a module import error.
+    // 在模块加载时通过 combatSimulator.js 中的副作用导入运行。
+    // 本测试显式地重新运行断言，使失败在正确的测试作用域中
+    // 报告，而不是表现为模块导入错误。
     expect(() => assertBuffShapesValid()).not.toThrow();
   });
 
@@ -72,7 +72,7 @@ describe('dataBuffValidation', () => {
     expect(() =>
       validateBuffShape({ uniqueHrid: '/u', typeHrid: '/t', ratioBoost: 'x', flatBoost: 0, duration: 1 }, 'test'),
     ).toThrow('ratioBoost');
-    // Missing duration (addBuff would reject with NaN).
+    // 缺少 duration（addBuff 会以 NaN 拒绝）。
     expect(() => validateBuffShape({ uniqueHrid: '/u', typeHrid: '/t', ratioBoost: 0, flatBoost: 0 }, 'test')).toThrow(
       'duration',
     );

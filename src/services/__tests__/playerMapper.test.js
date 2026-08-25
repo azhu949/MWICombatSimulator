@@ -49,10 +49,10 @@ function findDrinkWithoutCombatPreviewChanges() {
   });
 }
 
-// Independent baseline stat readers used to assert guild buff deltas without
-// relying on the reconciliation identity (which is a tautology by
-// construction). Each reader mirrors the corresponding COMBAT_PREVIEW_STAT_SPECS
-// getValue so the baseline value passed into expectedDeltaFn is consistent.
+// 独立的基准属性读取器，用于断言公会增益差值，
+// 而不依赖对账恒等式（该恒等式在构造上就是同义反复）。
+// 每个读取器镜像对应的 COMBAT_PREVIEW_STAT_SPECS getValue，
+// 使传入 expectedDeltaFn 的基准值保持一致。
 const COMBAT_PREVIEW_BASELINE_STAT_READER = {
   maxHitpoints: (player) => Number(player?.combatDetails?.maxHitpoints || 0),
   maxManapoints: (player) => Number(player?.combatDetails?.maxManapoints || 0),
@@ -118,7 +118,7 @@ describe('playerMapper', () => {
     player1.abilities[0].abilityHrid = ability.hrid;
     player1.abilities[0].level = 1;
 
-    // Explicit empty triggers should disable default trigger conditions for this target.
+    // 显式的空触发器应禁用该目标的默认触发条件。
     player1.triggerMap[food.hrid] = [];
     player1.triggerMap[ability.hrid] = [];
 
@@ -221,10 +221,9 @@ describe('playerMapper', () => {
           'rangedMaxDamage',
           'magicMaxDamage',
         ],
-        // Level 20 -> ratioBoost = 0.003 + 19 * 0.003 = 0.06. Damage is a
-        // ratioBoost on each maxDamage stat, so the delta must equal the
-        // stat's baseline value scaled by 0.06 (independently of the
-        // reconciliation identity).
+        // 等级 20 -> ratioBoost = 0.003 + 19 * 0.003 = 0.06。伤害是对每个
+        // maxDamage 属性的 ratioBoost，因此差值必须等于该属性基准值
+        // 乘以 0.06（独立于对账恒等式）。
         independentDeltas: {
           stabMaxDamage: (base) => base * 0.06,
           slashMaxDamage: (base) => base * 0.06,
@@ -239,9 +238,9 @@ describe('playerMapper', () => {
         shrineHrid: '/guild_shrines/tempo',
         sourceName: 'Shrine of Tempo',
         statKeys: ['attackIntervalSeconds', 'castSpeed'],
-        // Level 20 -> attack_speed ratioBoost = 0.08, cast_speed
-        // flatBoost = 0.08. attackIntervalSeconds shrinks (negative
-        // delta); castSpeed grows by exactly 0.08.
+        // 等级 20 -> attack_speed 的 ratioBoost = 0.08，cast_speed 的
+        // flatBoost = 0.08。attackIntervalSeconds 缩小（负差值）；
+        // castSpeed 恰好增长 0.08。
         independentDeltas: {
           castSpeed: () => 0.08,
         },
@@ -252,7 +251,7 @@ describe('playerMapper', () => {
         shrineHrid: '/guild_shrines/spirit',
         sourceName: 'Shrine of Spirit',
         statKeys: ['maxHitpoints', 'maxManapoints'],
-        // Level 20 -> ratioBoost = 0.2 on both max HP / max MP.
+        // 等级 20 -> 最大生命值 / 最大魔法值上均为 ratioBoost = 0.2。
         independentDeltas: {
           maxHitpoints: (base) => base * 0.2,
           maxManapoints: (base) => base * 0.2,
@@ -263,8 +262,8 @@ describe('playerMapper', () => {
         shrineHrid: '/guild_shrines/rarity',
         sourceName: 'Shrine of Rarity',
         statKeys: ['combatRareFind'],
-        // Level 20 -> flatBoost = 0.3. Baseline combatRareFind is 0 for
-        // an empty player, so the delta is exactly 0.3.
+        // 等级 20 -> flatBoost = 0.3。空玩家的基准 combatRareFind 为 0，
+        // 因此差值恰好为 0.3。
         independentDeltas: {
           combatRareFind: () => 0.3,
         },
@@ -274,8 +273,8 @@ describe('playerMapper', () => {
         shrineHrid: '/guild_shrines/scholar',
         sourceName: 'Shrine of Scholar',
         statKeys: ['combatExperience'],
-        // Level 20 -> wisdom flatBoost = 0.1. Baseline combatExperience
-        // is 0 for an empty player, so the delta is exactly 0.1.
+        // 等级 20 -> wisdom flatBoost = 0.1。空玩家的基准 combatExperience
+        // 为 0，因此差值恰好为 0.1。
         independentDeltas: {
           combatExperience: () => 0.1,
         },
@@ -296,12 +295,10 @@ describe('playerMapper', () => {
       expect(guildSources[0].changedStats.map((stat) => stat.key)).toEqual(shrineCase.statKeys);
       expectCombatPreviewBreakdownsToReconcile(previewData);
 
-      // Independent assertions that do NOT rely on the reconciliation
-      // identity (baseValue + sourceTotal + reconciliationDelta = final).
-      // They verify the actual deltaValue of each guild buff against the
-      // expected numeric effect derived from the buff formula, so a bug
-      // that produces wrong deltas but still satisfies the identity
-      // would be caught here.
+      // 不依赖对账恒等式（baseValue + sourceTotal + reconciliationDelta = final）
+      // 的独立断言。它们将每个公会增益的实际 deltaValue 与从增益公式
+      // 推导出的期望数值效果比对，因此即使产生错误差值但恰好
+      // 满足恒等式的缺陷也会在此被捕获。
       const baselinePlayer = buildCombatPreviewData(createEmptyPlayerConfig(1)).player;
       for (const [statKey, expectedDeltaFn] of Object.entries(shrineCase.independentDeltas ?? {})) {
         const changedStat = guildSources[0].changedStats.find((stat) => stat.key === statKey);

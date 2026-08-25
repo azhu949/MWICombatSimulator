@@ -258,7 +258,7 @@ describe('skillingPlanner', () => {
       liquidationPrice: 95,
       liquidationSource: 'market_bid',
     });
-    // An explicit feeRate overrides per-item resolution.
+    // 显式的 feeRate 覆盖按物品的解析。
     expect(resolveSkillingPrice(prices, '/items/bag_of_10_cowbells', 0.05).liquidationPrice).toBeCloseTo(95, 10);
   });
 

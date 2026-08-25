@@ -1,11 +1,10 @@
 import CombatEvent from './combatEvent';
 
 /**
- * Wake-up event for a timed combat scroll.
+ * 定时战斗卷轴的唤醒事件。
  *
- * Deliberately does not set `source` or `target`: player death cleanup removes
- * unit-scoped events by those two fields, while a scroll's clock must continue
- * through death/respawn and dungeon restarts.
+ * 刻意不设置 `source` 或 `target`：玩家死亡清理会按这两个字段移除
+ * 单元作用域的事件，而卷轴的计时必须跨越死亡/复活与副本重启继续运行。
  */
 class ScrollRenewalEvent extends CombatEvent {
   static type = 'scrollRenewal';

@@ -20,10 +20,10 @@ export function normalizeHouseRoomLevels(houseRooms) {
 }
 
 /**
- * Canonical PlayerConfig objects are dense in memory: every known house room and
- * combat guild buff has a numeric level, while achievements always use a map.
- * Serialization may compact zero-level house rooms, so every Store boundary that
- * accepts an external or saved player must restore this contract.
+ * 规范化的 PlayerConfig 对象在内存中数据密集：每个已知的房屋房间和
+ * 战斗公会增益都有数值等级，而成就始终使用映射。
+ * 序列化可能压缩零级房屋房间，因此每个接受外部或已保存玩家的
+ * Store 边界都必须恢复这一约定。
  */
 export function ensurePlayerAdvancedState(player) {
   if (!player || typeof player !== 'object') {
@@ -65,9 +65,9 @@ export function createEmptyPlayerConfig(id) {
       { abilityHrid: '', level: 1 },
     ],
     triggerMap: {},
-    // Enabled combat scrolls are keyed by item HRID.  A value of
-    // `{ quantity: null }` means unlimited inventory; absent keys are
-    // disabled rows.  Keep the map empty by default for legacy configs.
+    // 已启用的战斗卷轴以物品 HRID 为键。值为
+    // `{ quantity: null }` 表示无限库存；缺失的键为禁用行。
+    // 为兼容旧配置，默认保持映射为空。
     combatScrolls: {},
     houseRooms,
     guildBuffs,

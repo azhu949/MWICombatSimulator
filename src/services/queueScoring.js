@@ -199,7 +199,7 @@ export function normalizeQueueSettings(settings) {
   const rounds = clamp(Math.floor(toFiniteNumber(settings?.rounds, defaults.rounds)), 1, 200);
   const baselineRounds = clamp(Math.floor(toFiniteNumber(settings?.baselineRounds, defaults.baselineRounds)), 1, 200);
   const medianBlend = clamp(toFiniteNumber(settings?.medianBlend, defaults.medianBlend), 0, 1);
-  // Queue performance subweights are intentionally normalized onto 10 tenths.
+  // 队列性能子权重被刻意归一化到 10 个十分位上。
   const normalizedPerformanceWeights = resolveQueuePerformanceSubweights(settings, defaults);
   const executionModeRaw = settings?.executionMode;
   const executionMode =
@@ -313,7 +313,7 @@ export function summarizeMetric(values, deltaPctValues, medianBlend = QUEUE_MULT
     winsorizedMeanDeltaPct: toFiniteNumber(winsorizedMeanDeltaPct, 0),
     medianDeltaPct: toFiniteNumber(medianDeltaPct, 0),
     robustMeanDeltaPct: normalizedRobustMeanDeltaPct,
-    // Legacy alias for persisted queue summaries; new code should read robustMeanDeltaPct.
+    // 持久化队列摘要的旧版别名；新代码应读取 robustMeanDeltaPct。
     meanDeltaPct: normalizedRobustMeanDeltaPct,
     confidence: toFiniteNumber(confidence, 0),
     confidenceDeltaPct: toFiniteNumber(confidenceDeltaPct, 0),

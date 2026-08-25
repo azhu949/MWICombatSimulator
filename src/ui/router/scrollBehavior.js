@@ -23,7 +23,7 @@ export function appScrollBehavior(to, from, savedPosition) {
     return { el: to.hash, top: getStickyHeaderOffset() };
   }
 
-  // Preserve the current viewport when we only normalize query state on the same page.
+  // 在同一页面上仅规范化查询状态时，保留当前视口位置。
   if (String(to?.path || '') === String(from?.path || '') && String(to?.hash || '') === String(from?.hash || '')) {
     return false;
   }

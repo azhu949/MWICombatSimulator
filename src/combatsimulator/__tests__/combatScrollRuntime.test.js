@@ -136,8 +136,8 @@ describe('CombatSimulator combat scroll runtime', () => {
     expect(syncSpy).not.toHaveBeenCalled();
     expect(usage(simulator, 'player1', itemHrid).openedCount).toBe(1);
 
-    // Even if an ordinary event wins the heap tie at the exact boundary,
-    // the due-time guard renews the scroll before that event is handled.
+    // 即使普通事件在恰好到期的边界上赢得堆平局，
+    // 到期时间守卫也会在处理该事件之前续期卷轴。
     await simulator.processEvent({ type: 'ordinaryTestEvent', time: MINUTE_30 });
     expect(syncSpy).toHaveBeenCalledTimes(1);
     expect(usage(simulator, 'player1', itemHrid).openedCount).toBe(2);
@@ -376,8 +376,8 @@ describe('CombatSimulator combat scroll runtime', () => {
     const secondEnemy = createTestEnemy('/monsters/second_delayed', 100);
     prepareEncounter(simulator, [firstEnemy, secondEnemy], 5_000_000_000);
 
-    // Record the death while Wisdom is active, then deliberately move the
-    // clock past expiration before running the encounter-end check.
+    // 在智慧（Wisdom）卷轴生效期间记录死亡，然后刻意将时钟
+    // 拨过过期时间，再运行遭遇战结束检查。
     simulator.recordUnitDeath(firstEnemy);
     simulator.simulationTime = MINUTE_30;
     simulator.syncScrollsToTime(MINUTE_30);

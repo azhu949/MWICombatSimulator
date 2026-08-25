@@ -414,7 +414,7 @@ export async function executeActiveQueueRun({
             updateLastRunAt: false,
           });
         } catch (refreshError) {
-          // Keep the best partial ranking already stored when cancellation refresh fails.
+          // 当取消后的刷新失败时，保留已存储的最佳部分排名。
         }
       }
       return Array.isArray(queueState.ranking) ? queueState.ranking : [];

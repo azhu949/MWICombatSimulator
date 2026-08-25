@@ -147,8 +147,8 @@ class Trigger {
       case '/combat_trigger_conditions/missing_mp':
         return source.combatDetails.maxManapoints - source.combatDetails.currentManapoints;
       case '/combat_trigger_conditions/stun_status':
-        // Replicate the game's behaviour of "stun status active" triggers activating
-        // immediately after the stun has worn off
+        // 复刻游戏的行为："眩晕状态激活"触发器在眩晕结束后
+        // 立即触发
         return source.isStunned || source.stunExpireTime == currentTime;
       case '/combat_trigger_conditions/blind_status':
         return source.isBlinded || source.blindExpireTime == currentTime;

@@ -1,6 +1,6 @@
-// Buff source selection is intentionally opt-in.  The combat engine historically
-// used last-write-wins for runtime buffs; only the official party-aura buffs use
-// strongest-source selection and source handoff.
+// Buff 源选择刻意采用显式选择（opt-in）方式。战斗引擎历史上
+// 对运行时增益使用"后写覆盖"（last-write-wins）策略；只有官方队伍光环增益使用
+// 最强源选择与源交接（handoff）。
 import abilityDetailMap from './data/abilityDetailMap.json';
 
 export const BUFF_SOURCE_POLICY = Object.freeze({
@@ -16,10 +16,9 @@ export const PARTY_AURA_ABILITY_HRIDS = new Set([
   '/abilities/mystic_aura',
 ]);
 
-// The official client-data snapshot currently defines every party aura as a
-// non-negative boost in exactly one of these fields. Keep the strength field
-// explicit per uniqueHrid: this avoids inventing a universal ordering rule for
-// negative debuffs or for future buffs that mix ratio and flat values.
+// 官方客户端数据快照当前将每个队伍光环定义为恰好落在这几个字段之一中的
+// 非负加成。为每个 uniqueHrid 显式保留强度字段：这避免了为负面减益或
+// 未来混合 ratio 与 flat 数值的增益凭空发明一套通用排序规则。
 export const PARTY_AURA_STRENGTH_FIELDS = Object.freeze({
   '/buff_uniques/speed_aura_attack_speed': 'ratioBoost',
   '/buff_uniques/speed_aura_cast_speed': 'flatBoost',
@@ -39,10 +38,9 @@ export const PARTY_AURA_STRENGTH_FIELDS = Object.freeze({
 
 export const PARTY_AURA_BUFF_HRIDS = new Set(Object.keys(PARTY_AURA_STRENGTH_FIELDS));
 
-// Extract the official party-aura buffs from the checked-in client-data
-// snapshot. This mirrors the extraction used by the strong test in
-// combatUnitBuffSources.test.js: a party aura is a buff effect with
-// targetType "allAllies" on one of the official party-aura abilities.
+// 从已检入的客户端数据快照中提取官方队伍光环增益。这与
+// combatUnitBuffSources.test.js 中强测试所用的提取方式一致：队伍光环是
+// 在某个官方队伍光环技能上 targetType 为 "allAllies" 的增益效果。
 function extractPartyAuraBuffsFromOfficialData() {
   const officialBuffs = [];
   for (const abilityHrid of PARTY_AURA_ABILITY_HRIDS) {
@@ -61,15 +59,13 @@ function extractPartyAuraBuffsFromOfficialData() {
   return officialBuffs;
 }
 
-// Fail fast at module load when the official data snapshot drifts from the
-// hardcoded strength-field table. A silent mismatch would otherwise degrade
-// strongest-source arbitration to last-write-wins (new aura buffs) or crash
-// mid-cast with a RangeError (changed buff shapes). Both failure modes are
-// hard to diagnose at runtime; failing here with an explicit message turns a
-// data-version bump into an immediate, actionable error.
+// 当官方数据快照与硬编码的强度字段表产生漂移时，在模块加载阶段快速失败。
+// 否则静默的不一致会使最强源仲裁退化为"后写覆盖"（新增光环增益），或在施法
+// 中途因 RangeError 崩溃（增益形状改变）。这两种失败模式在运行时都难以
+// 诊断；在此处以明确的消息失败，可将数据版本升级转化为立即可处理的错误。
 //
-// `officialBuffs` is injectable for tests that simulate data drift; production
-// callers always use the checked-in snapshot via the default argument.
+// `officialBuffs` 可注入，供模拟数据漂移的测试使用；生产环境调用方
+// 始终通过默认参数使用已检入的快照。
 export function assertPartyAuraSnapshotMatchesOfficialData(officialBuffs = extractPartyAuraBuffsFromOfficialData()) {
   const officialHrids = officialBuffs.map((buff) => buff.uniqueHrid).sort();
   const snapshotHrids = Object.keys(PARTY_AURA_STRENGTH_FIELDS).sort();

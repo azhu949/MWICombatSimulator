@@ -185,7 +185,7 @@ button:disabled,
   background: color-mix(in oklab, var(--primary) 34%, transparent);
 }
 
-/* Shared dense-workspace patterns for route-level views. */
+/* 路由级视图共用的紧凑工作区样式模式。 */
 @layer components {
   .surface-panel {
     border: 1px solid var(--border);

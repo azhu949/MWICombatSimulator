@@ -1032,8 +1032,8 @@ async function main() {
     },
     ...itemIndex,
     combatScrollItemDetailIndex: createCombatScrollItemIndex(itemDetailMap),
-    // This is a derived runtime projection of the extracted data snapshot.
-    // Shared modules consume it here to avoid importing simulator-layer data.
+    // 这是对提取的数据快照所做的派生运行时投影。
+    // 共享模块在此处消费它，以避免导入模拟器层的数据。
     personalBuffTypeDetailIndex: personalBuffTypeDetailMap || {},
     ...abilityIndex,
     ...actionIndex,

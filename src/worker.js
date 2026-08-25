@@ -10,9 +10,9 @@ onmessage = async function (event) {
       let extra = event.data.extra || {};
       let extraBuffs = buildSimulationExtraBuffs(extra);
 
-      // Keep the configured rows in the DTO so the result can explain
-      // that scroll effects were paused; CombatSimulator applies the
-      // gate without mutating the user's saved configuration.
+      // 在 DTO 中保留已配置的行，以便结果可以说明
+      // 卷轴效果已被暂停；CombatSimulator 会应用该
+      // 开关，且不修改用户已保存的配置。
       let playersData = event.data.players;
       let players = [];
       let zone = null;

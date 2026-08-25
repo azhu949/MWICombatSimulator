@@ -21,8 +21,8 @@ export function useHomeWorkspaceSummary(combatPreview) {
   );
   const homeCanOpenResults = computed(() => Boolean(simulator.runtime.isRunning || homeHasResults.value));
   const activeHomeResultRow = computed(() => simulator.activeResultRow || null);
-  // Batch summary is a sum of per-target rates over one shared simulation horizon.
-  // If that duration contract is absent or broken, omit the aggregate instead of mixing incompatible rows.
+  // 批处理摘要是在同一共享模拟时长内各目标收益率的求和。
+  // 若该时长约定缺失或失效，则省略聚合行，避免混合不兼容的行。
   const activeBatchPlayerRow = computed(() =>
     aggregateBatchPlayerRows(simulator.results.batchRows, `player${simulator.activePlayerId}`),
   );

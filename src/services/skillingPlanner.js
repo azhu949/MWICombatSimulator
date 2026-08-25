@@ -199,13 +199,13 @@ export function resolveSkillingPrice(
   const bid = finiteNumber(entry?.bid, -1);
   const baseBid = finiteNumber(baseEntry?.bid, -1);
   const vendor = Math.max(0, finiteNumber(baseEntry?.vendor, 0));
-  // feeRate == null resolves the per-item market fee rate (e.g. 18% for Bag of 10 Cowbells).
+  // feeRate == null 时解析每件物品的市场费率（例如 10 牛铃袋为 18%）。
   const effectiveFeeRate = feeRate == null ? getMarketSaleFeeRate(hrid) : feeRate;
   const applyFee = (value) => applyMarketSaleFeeByRate(value, effectiveFeeRate);
-  // liquidationPrice below is already NET of tax. The liquidationSource vocabulary
-  // ("market_bid" / "base_bid_floor" / "vendor" / "fixed") is skillingPlanner-internal
-  // and intentionally NOT part of isMarketSaleSource: those sources describe pre-tax
-  // market prices, so feeding them in here (or vice versa) would double-tax.
+  // 下方的 liquidationPrice 已是税后净额。liquidationSource 词汇
+  // （"market_bid" / "base_bid_floor" / "vendor" / "fixed"）是 skillingPlanner 内部
+  // 约定，刻意不纳入 isMarketSaleSource：这些来源描述的是税前
+  // 市场价格，因此在此处传入（或反之）会导致双重征税。
   const hasExactEnhancementBid = normalizedEnhancementLevel === 0 || bid >= 0;
   const marketLiquidation =
     bid >= 0 ? applyFee(bid) : normalizedEnhancementLevel > 0 && baseBid >= 0 ? applyFee(baseBid) : 0;
@@ -2337,10 +2337,10 @@ export function planSkillingSkill({
         balancedLowestCostPerExperience + Math.abs(balancedLowestCostPerExperience) * normalizedBalancedCostTolerance;
       const budgetedSpeedPrefixesByAction = new Map();
 
-      // A locally constrained phase cannot spend unused budget from cheaper later phases. Explore a bounded
-      // family of speed-prefix/cost-suffix routes at the estimated whole-level budget boundary. This is not a
-      // general Pareto search across every possible phase ordering, but every retained route is validated
-      // against the whole-level cost band and stable drink renewals remain batched.
+      // 局部受限的阶段无法挪用更便宜后续阶段的未用预算。在估计的整级预算边界上
+      // 探索有界的 speed-prefix/cost-suffix 路径族。这不是对所有可能的阶段顺序
+      // 做通用 Pareto 搜索，但每条保留的路径都对照整级成本区间校验，
+      // 且稳定的饮品续期仍保持批量处理。
       for (const action of availableActions) {
         const costSimulation = costByAction.get(action?.hrid);
         const speedSimulation = speedByAction.get(action?.hrid);

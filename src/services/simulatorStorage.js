@@ -652,7 +652,7 @@ export function hasMeaningfulPlayerSnapshotData(parsedSnapshot) {
     return false;
   }
 
-  // modern player-only payload
+  // 仅含现代玩家的载荷
   if (isPlainObject(parsedSnapshot.levels) || isPlainObject(parsedSnapshot.equipment)) {
     return hasMeaningfulModernPlayerData(parsedSnapshot);
   }

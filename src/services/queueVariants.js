@@ -51,10 +51,9 @@ export function createEquipmentSetSnapshotFromPlayer(player) {
     houseRooms: deepClone(source.houseRooms ?? {}),
     guildBuffs: normalizeGuildBuffLevels(source.guildBuffs),
     achievements: deepClone(source.achievements ?? {}),
-    // Scroll configuration is part of the player build snapshot.  It is
-    // intentionally not represented as a queue *change* target yet, but
-    // every baseline/variant must carry it through unchanged so applying
-    // an equipment-set variant cannot silently disable timed scrolls.
+    // 卷轴配置是玩家构建快照的一部分。它目前刻意不作为队列 *变更* 目标，
+    // 但每个基准/变体都必须原样携带它，以免应用装备套装变体时
+    // 静默禁用限时卷轴。
     combatScrolls: normalizeCombatScrolls(source.combatScrolls),
   };
 }

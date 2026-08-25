@@ -6,7 +6,7 @@ import Drops from './drops';
 class Monster extends CombatUnit {
   difficultyTier = 0;
 
-  LabyrinthMonsterBaseRoomLevel = 100; //Base stats are designed for room level 100, and scale proportionally
+  LabyrinthMonsterBaseRoomLevel = 100; // 基础属性以房间等级 100 为基准设计，并按比例缩放
   roomLevel = 0;
 
   constructor(hrid, difficultyTier = 0, roomLevel = 0) {

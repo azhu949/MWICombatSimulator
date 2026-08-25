@@ -27,21 +27,21 @@ describe('Party aura combat preview highlight attribution', () => {
     });
 
     const uniqueHrid = '/buff_uniques/speed_aura_attack_speed';
-    // The stronger teammate cast is the active source in the final state.
+    // 更强的队友施放是最终状态中的生效源。
     expect(preview.finalPlayer.activeBuffSourceKeys[uniqueHrid]).toBe('player2');
-    // The hero's own overridden cast must not be attributed as a source...
+    // 主角自身被覆盖的施放不得被归因为源...
     expect(preview.highlightSources.some((source) => source.sourceKey === 'ability-1-/abilities/speed_aura')).toBe(
       false,
     );
-    // ...while the teammate's active cast stays visible.
+    // ...而队友的生效施放保持可见。
     const teammateSource = preview.highlightSources.find(
       (source) => source.sourceKey === 'teammate-aura-player2-/abilities/speed_aura',
     );
     expect(teammateSource).toBeTruthy();
     expect(teammateSource.sourceName).toContain('StrongMate');
 
-    // The breakdown attributes the interval delta to the teammate source
-    // only, leaving no reconciliation gap.
+    // 拆解只将间隔差值归因于队友源，
+    // 不留任何对账缺口。
     const intervalBreakdown = Object.values(preview.statBreakdowns).find((entry) =>
       entry?.sources?.some((source) => source.sourceKey === 'teammate-aura-player2-/abilities/speed_aura'),
     );
@@ -64,12 +64,12 @@ describe('Party aura combat preview highlight attribution', () => {
       partyPlayerConfigs: [strongHero, weakTeammate],
     });
 
-    // The hero's own stronger cast remains active and must still be shown.
+    // 主角自身更强的施放保持生效，且仍必须显示。
     expect(withParty.finalPlayer.activeBuffSourceKeys['/buff_uniques/speed_aura_attack_speed']).toBe('player1');
     expect(withParty.highlightSources.some((source) => source.sourceKey === 'ability-1-/abilities/speed_aura')).toBe(
       true,
     );
-    // The weaker teammate cast still contributes no source.
+    // 较弱的队友施放仍不贡献任何源。
     expect(withParty.highlightSources.some((source) => source.sourceKey?.startsWith('teammate-aura-'))).toBe(false);
   });
 });

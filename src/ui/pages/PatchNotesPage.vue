@@ -96,8 +96,8 @@ const activeEntryId = ref('');
 // 卡片元素按 entryId 索引（由 collectCardElements 一次性采集，避免内联函数
 // ref 在每次渲染时重建闭包并重复 observe）。
 const cardElements = new Map();
-// Tracks which entry cards currently intersect the scroll-spy band (keyed by
-// entryId) so the topmost visible card can be recomputed across callbacks.
+// 记录当前与滚动监听带相交的条目卡片（按 entryId 键控），
+// 以便在各回调之间重新计算最上方的可见卡片。
 const visibleEntryIds = new Set();
 let scrollSpyObserver = null;
 // 组件根元素引用：将卡片采集范围限定在本组件内，避免全局查询误采其他 [data-entry-id] 元素。
@@ -149,8 +149,8 @@ function setupScrollSpy() {
         }
       }
 
-      // Recompute the active entry as the topmost (first in document order)
-      // currently-visible card, instead of relying on the callback's batch order.
+      // 将当前可见卡片中位于最上方（文档顺序最靠前）的条目
+      // 重新计算为活动条目，而非依赖回调的批处理顺序。
       activeEntryId.value = '';
       for (const [entryId] of cardElements) {
         if (visibleEntryIds.has(entryId)) {

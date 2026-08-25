@@ -73,12 +73,12 @@ describe('Buff source policy', () => {
     };
   }
 
-  // Runs the callback with Math.random pinned to a constant. The golden
-  // simulation below runs three simulations concurrently via Promise.all,
-  // so a seeded sequence would interleave unpredictably across the three
-  // runs and make the snapshots unstable. A fixed value keeps every
-  // Math.random() call identical regardless of interleaving, which is what
-  // makes the golden values reproducible.
+  // 以固定常量运行回调中的 Math.random。下方的黄金
+  // 模拟通过 Promise.all 并发运行三次模拟，
+  // 因此种子序列会在三次运行之间不可预测地交错，
+  // 导致快照不稳定。固定值使每次
+  // Math.random() 调用无论交错顺序如何都完全相同，
+  // 这正是黄金值可复现的原因。
   async function withFixedRandom(callback) {
     const originalRandom = Math.random;
     Math.random = () => 0.5;
@@ -89,22 +89,22 @@ describe('Buff source policy', () => {
     }
   }
 
-  // These expectations were captured by running the unchanged HEAD engine
-  // and this implementation with the same deterministic inputs. Keep the
-  // old-engine values here so ordinary combat cannot drift as a side effect
-  // of adding source arbitration for party auras.
+  // 这些期望值是通过用相同的确定性输入运行未改动的 HEAD 引擎
+  // 与本实现捕获的。保留
+  // 旧引擎的值，使普通战斗不会因添加队伍光环
+  // 源仲裁而作为副作用发生漂移。
   //
-  // MAINTENANCE COST: this is a golden-values test by design. Any change to
-  // the ordinary combat path (damage formulas, attack timing, zone behavior,
-  // ability effects, etc.) will legitimately change these numbers and force
-  // a snapshot update. When that happens:
-  //   1. Verify the change is intentional and the new values are correct
-  //      (run the simulation with the same fixed random and inspect the
-  //      diff, or update via `vitest -u`).
-  //   2. Update the inline snapshot / toEqual expectations together.
-  //   3. Do NOT weaken the assertions (e.g. toBeCloseTo on everything) to
-  //      avoid future updates - the tight coupling is the point: it guards
-  //      the ordinary path against accidental drift from aura arbitration.
+  // 维护成本：这是一个刻意设计的黄金值测试。对普通
+  // 战斗路径（伤害公式、攻击时机、区域行为、
+  // 技能效果等）的任何改动都会合理地改变这些数字，并迫使
+  // 快照更新。发生这种情况时：
+  //   1. 确认改动是有意的，且新值正确
+  //      （用相同的固定随机数运行模拟并检查差异，
+  //      或通过 `vitest -u` 更新）。
+  //   2. 同时更新内联快照 / toEqual 期望。
+  //   3. 不要为了减少未来的更新而削弱断言（例如对一切使用 toBeCloseTo）——
+  //      紧密耦合正是重点：它保护
+  //      普通路径免受光环仲裁引起的意外漂移。
   it('matches the legacy-engine golden results for ordinary simulations', async () => {
     const [single, dual, dualWithSelfBuff] = await withFixedRandom(() =>
       Promise.all([
@@ -209,8 +209,8 @@ describe('Buff source policy', () => {
     unit.addBuff(makeBuff(uniqueHrid, 0.15), 0, 'first');
     unit.addBuff(makeBuff(uniqueHrid, 0.03), 1, 'second');
 
-    // The old API removed the visible (last-write) Buff without requiring
-    // callers to know anything about source registration.
+    // 旧版 API 移除可见的（后写覆盖）Buff 时，不要求
+    // 调用方了解任何源注册信息。
     unit.removeBuff({ uniqueHrid });
 
     expect(unit.combatBuffs[uniqueHrid]).toBeUndefined();
@@ -268,15 +268,15 @@ describe('Buff source policy', () => {
     expect(unit.buffSources[uniqueHrid].has('named')).toBe(true);
   });
 
-  // Official one-stack representative values from the checked-in official
-  // client-data snapshot (`data/itemDetailMap.json`):
-  //   /items/cursed_bow 0.02, /items/cursed_bow_refined 0.022 (curse)
-  //   /items/griffin_bulwark 0.03, /items/griffin_bulwark_refined 0.032 (weaken)
-  //   /items/furious_spear 0.03, /items/furious_spear_refined 0.032 (fury)
-  // The runtime formulas apply these equipment stats as `curse * stacks`,
-  // `-weaken * stacks`, and `fury * stacks` respectively.  These are
-  // official representative inputs for the arbitration test, not universal
-  // hardcoded Buff magnitudes.  See combatSimulator.js for the formulas.
+  // 取自已提交的官方客户端数据快照（`data/itemDetailMap.json`）的
+  // 官方单层代表性数值：
+  //   /items/cursed_bow 0.02, /items/cursed_bow_refined 0.022（诅咒）
+  //   /items/griffin_bulwark 0.03, /items/griffin_bulwark_refined 0.032（虚弱）
+  //   /items/furious_spear 0.03, /items/furious_spear_refined 0.032（狂暴）
+  // 运行时公式分别按 `curse * stacks`、
+  // `-weaken * stacks` 和 `fury * stacks` 应用这些装备属性。这些是
+  // 仲裁测试的官方代表性输入，而非通用的
+  // 硬编码 Buff 数值。公式请参阅 combatSimulator.js。
   it('keeps curse, weaken, and fury on the legacy last-write path', () => {
     const ordinaryBuffs = [
       {

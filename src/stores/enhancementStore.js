@@ -176,8 +176,8 @@ export function normalizeEnhancementPersistedState(rawState = {}) {
   const source = isPlainObject(rawState) ? rawState : {};
   const rawConfig = isPlainObject(source.config) ? source.config : source;
   const defaults = createDefaultEnhancementConfig();
-  // Current-character skill, equipment, drinks, housing, community, and achievement data are session-only.
-  // Legacy payloads may still contain them, but loading and future writes intentionally keep the defaults.
+  // 当前角色的技能、装备、饮料、住宅、社区增益与成就数据仅限会话内使用。
+  // 旧版负载中可能仍包含它们，但加载与后续写入都有意保留默认值。
   const targetLevel = clamp(integer(rawConfig.targetLevel, defaults.targetLevel), 1, 20);
   const itemHrid = normalizeHrid(rawConfig.itemHrid || rawConfig.selectedItemHrid);
   const knownItems = new Set((enhancementData?.enhanceableItems || []).map((item) => item.hrid));
@@ -243,7 +243,7 @@ export function loadEnhancementPersistedState(storage = globalThis?.localStorage
       }
       return normalizeEnhancementPersistedState(JSON.parse(raw));
     } catch (error) {
-      // Try older keys before falling back to defaults.
+      // 回退到默认值之前，先尝试更早版本的旧键。
     }
   }
   return normalizeEnhancementPersistedState({});

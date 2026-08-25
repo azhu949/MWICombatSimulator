@@ -21,9 +21,9 @@ class Player extends CombatUnit {
     '/equipment_types/back': null,
   };
 
-  // Persisted configuration for timed personal combat buffs.  The combat
-  // engine owns the runtime timers; this map is intentionally just the
-  // worker-safe DTO contract copied from player configuration.
+  // 定时个人战斗增益的持久化配置。战斗引擎拥有
+  // 运行时计时器；此映射刻意只是从玩家配置
+  // 复制而来的 worker 安全 DTO 契约。
   combatScrolls = {};
 
   constructor() {

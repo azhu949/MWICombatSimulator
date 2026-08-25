@@ -73,7 +73,7 @@ class Zone {
       this.dungeonsCompleted++;
       this.encountersKilled = 1;
     }
-    // console.log("Wave #" + this.encountersKilled);
+    // console.log("波次 #" + this.encountersKilled);
     if (this.dungeonSpawnInfo.fixedSpawnsMap.hasOwnProperty(this.encountersKilled.toString())) {
       let currentMonsters = this.dungeonSpawnInfo.fixedSpawnsMap[this.encountersKilled.toString()];
       this.encountersKilled++;

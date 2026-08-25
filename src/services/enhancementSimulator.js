@@ -27,12 +27,11 @@ function toNonNegativeNumber(value, fallback = 0) {
   return Math.max(0, toFiniteNumber(value, fallback));
 }
 
-// Market-sourced bids represent actual market sales and are subject to the market tax.
-// Vendor values and user overrides stay at their entered values.
-// Note: the tax is applied and rounded per unit; callers multiply this unit
-// price by an (often fractional) expected count, which stacks a second
-// approximation on top of the unverified official rounding rule (see
-// MARKET_SALE_FEE_ROUNDING_MODE notes in marketPriceService).
+// 市场来源的买价代表真实的市场成交，需缴纳市场交易税；
+// 商店价格与用户覆盖值保持其录入值不变。
+// 注意：交易税按单价计算并舍入，调用方将该单价乘以（通常为小数的）期望数量，
+// 会在未经证实的官方舍入规则之上再叠加一层近似误差
+// （参见 marketPriceService 中 MARKET_SALE_FEE_ROUNDING_MODE 的说明）。
 function netMarketLiquidationUnitPrice(liquidation) {
   if (!liquidation || !liquidation.available) {
     return 0;
@@ -1911,11 +1910,10 @@ export function calculateDecompositionValue(input = {}, enhancementData = {}, pr
   const netUnitPrice = taxedSource
     ? applyMarketSaleFee(resolvedPrice.price, essenceItemHrid)
     : toNonNegativeNumber(resolvedPrice.price, 0);
-  // Net value before the return rate: the unit price already includes the
-  // market tax. Note: the tax is applied and rounded per unit, then
-  // multiplied by the count — if the game taxes the batch total instead,
-  // low-price multi-unit values can differ by a coin or two (see
-  // MARKET_SALE_FEE_ROUNDING_MODE notes in marketPriceService).
+  // 回收率之前的净价值：单价已包含市场交易税。注意：交易税按单价计算并舍入，
+  // 再乘以数量——如果游戏改为对批量总额计税，低价多数量物品的
+  // 价值可能会差一两枚金币（参见 marketPriceService 中
+  // MARKET_SALE_FEE_ROUNDING_MODE 的说明）。
   const netValue = essenceCount * netUnitPrice;
   const returnRate = clamp(toFiniteNumber(input.returnRate, 0.78), 0, 1);
   return {

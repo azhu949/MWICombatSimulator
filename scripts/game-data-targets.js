@@ -47,9 +47,8 @@ const OPTIONAL_TRACKED_GAME_DATA_FALLBACKS = Object.freeze({
   buffTypeDetailMap: Object.freeze({}),
   communityBuffTypeDetailMap: Object.freeze({}),
   itemCategoryDetailMap: Object.freeze({}),
-  // Personal buffs were not included in older init_client_data payloads.
-  // Keep extraction backwards-compatible while tracking the official map
-  // whenever it is present.
+  // 较旧的 init_client_data 数据载荷中未包含个人增益。
+  // 保持提取的向后兼容性，同时跟踪官方数据映射（若存在）。
   personalBuffTypeDetailMap: Object.freeze({}),
   skillDetailMap: Object.freeze({}),
 });

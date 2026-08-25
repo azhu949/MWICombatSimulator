@@ -8,10 +8,9 @@ export const MARKET_PRICE_SNAPSHOT_MAX_AGE_MS = 90 * 60_000;
 export const MARKET_PRICE_REFRESH_ATTEMPT_COOLDOWN_MS = 60_000;
 export const MARKET_SALE_FEE_RATE = 0.05;
 
-// Official game guide: "Successful trades are taxed 5% of the seller's proceeds
-// (18% for Bag of 10 Cowbells)." The marketplace API does not expose per-item fee
-// rates, so special rates are maintained here by hrid. If the API ever exposes a
-// per-item tax field, switch back to a data-driven lookup instead of this map.
+// 官方游戏指南：成功交易按卖方净收益的 5% 征税（袋装 10 牛铃为 18%）。
+// 市场 API 不暴露单物品费率，因此特殊费率在此按 hrid 维护。
+// 若 API 将来暴露单物品税率字段，应改回数据驱动查询，而不使用此映射。
 export const BAG_OF_10_COWBELLS_HRID = '/items/bag_of_10_cowbells';
 
 const SPECIAL_MARKET_FEE_RATE_BY_HRID = Object.freeze({
@@ -22,8 +21,8 @@ export function getMarketSaleFeeRate(itemHrid) {
   return SPECIAL_MARKET_FEE_RATE_BY_HRID[String(itemHrid || '')] ?? MARKET_SALE_FEE_RATE;
 }
 
-// Startup guard: a renamed or removed official hrid would otherwise silently
-// fall back to the default 5% rate. Returns the list of unknown special hrids.
+// 启动守卫：官方 hrid 若被重命名或移除，将静默回退到默认 5% 费率。
+// 返回未知特殊 hrid 的列表。
 export function validateSpecialMarketFeeRateHrids(index = itemDetailIndex) {
   const missing = Object.keys(SPECIAL_MARKET_FEE_RATE_BY_HRID).filter((hrid) => !index?.[hrid]);
   if (missing.length > 0) {
@@ -65,13 +64,12 @@ export function normalizePriceMode(mode, fallback = PRICE_MODE_BID) {
   return fallback;
 }
 
-// Market quote executions (ask/bid) represent taxable market sales;
-// vendor, override, and estimated sources are not. The "enhancement_"
-// prefix is only a decoration resolveEnhancementPrice applies to the
-// underlying source, so it is stripped before matching.
-// NOTE: skillingPlanner's liquidationSource vocabulary ("market_bid" /
-// "base_bid_floor") is a separate, ALREADY-taxed convention — do not add
-// those values here; doing so would double-tax already-taxed prices.
+// 市场报价成交（ask/bid）属于应税的市场销售；vendor、override 与 estimated
+// 来源则不是。"enhancement_" 前缀只是 resolveEnhancementPrice 附加在
+// 底层来源上的装饰，匹配前需将其剥离。
+// 注意：skillingPlanner 的 liquidationSource 词汇（"market_bid" /
+// "base_bid_floor"）是另一套已含税约定——不要在此添加这些值，
+// 否则会导致已含税的价格被二次征税。
 export function isMarketSaleSource(source) {
   const normalized = String(source || '')
     .toLowerCase()
@@ -79,9 +77,8 @@ export function isMarketSaleSource(source) {
   return normalized === 'ask' || normalized === 'bid';
 }
 
-// Source-aware priority resolution shared by every consumer that needs to know
-// which source produced a price (bid mode: bid -> ask -> vendor; ask mode:
-// ask -> bid -> vendor; vendor mode: vendor).
+// 按来源感知的优先级解析，供所有需要知道价格来源的消费方共用
+// （bid 模式：bid -> ask -> vendor；ask 模式：ask -> bid -> vendor；vendor 模式：vendor）。
 function resolveEntrySourceByMode(entry, mode) {
   const normalizedMode = normalizePriceMode(mode, PRICE_MODE_BID);
   const ask = toFiniteNumber(entry?.ask, -1);
@@ -129,9 +126,9 @@ export function resolveMarketPrice(priceTable, itemHrid, mode = PRICE_MODE_BID) 
   return Math.max(0, toFiniteNumber(resolveEntryByMode(entry, mode), 0));
 }
 
-// Taxed prices are rounded to whole coins like in-game settlements. The exact
-// official rounding rule could not be verified externally; "round" (half-up) is
-// used and can be switched to "floor" here if the game floors instead.
+// 计税后的价格像游戏内结算一样舍入为整数金币。官方确切的舍入规则
+// 无法从外部验证；此处使用 "round"（四舍五入），若游戏实际为向下取整，
+// 可在此切换为 "floor"。
 export const MARKET_SALE_FEE_ROUNDING_MODE = 'round';
 
 export function applyMarketSaleFeeByRate(price, feeRate) {
@@ -145,8 +142,8 @@ export function applyMarketSaleFee(price, itemHrid) {
   return applyMarketSaleFeeByRate(price, getMarketSaleFeeRate(itemHrid));
 }
 
-// Resolve the net proceeds of selling an item through the market.
-// Market executions (bid/ask) are subject to the market tax; vendor sales are not.
+// 解析通过市场出售物品的净收益。
+// 市场成交（bid/ask）需缴纳市场交易税；商店出售则不需要。
 export function resolveMarketSalePrice(priceTable, itemHrid, mode = PRICE_MODE_BID) {
   const hrid = String(itemHrid || '');
   const normalizedMode = normalizePriceMode(mode, PRICE_MODE_BID);

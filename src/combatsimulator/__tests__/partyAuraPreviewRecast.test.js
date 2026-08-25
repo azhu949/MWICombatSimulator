@@ -19,11 +19,11 @@ describe('Party aura combat preview recast attribution', () => {
     const teammateConfig = withAbilities(emptyConfig('2'), ['/abilities/speed_aura', '/abilities/fireball']);
     teammateConfig.name = 'RecastMate';
     teammateConfig.levels = { ...teammateConfig.levels, attack: 100, intelligence: 200 };
-    // Remove the default is_inactive self-barrier so the aura can be
-    // recast once its 120s cooldown ends inside the replay window.
+    // 移除默认的 is_inactive 自屏蔽，使光环在其 120 秒
+    // 冷却于回放窗口内结束后可以被重新施放。
     teammateConfig.triggerMap = { '/abilities/speed_aura': [] };
-    // Attack Coffee strengthens the SECOND cast: it triggers mid-fight
-    // (MP <= 1500, after ~6 fireballs) instead of before the first cast.
+    // 攻击咖啡强化第二次施放：它在战斗中触发
+    // （魔法值 <= 1500，约 6 个火球术后），而不是在第一次施放之前。
     teammateConfig.drinks[0] = '/items/attack_coffee';
     teammateConfig.triggerMap['/items/attack_coffee'] = [
       {
@@ -39,24 +39,24 @@ describe('Party aura combat preview recast attribution', () => {
     });
 
     const uniqueHrid = '/buff_uniques/speed_aura_attack_speed';
-    // The second (drink-strengthened) cast owns the buff in the final state.
+    // 第二次（饮品强化后的）施放在最终状态中拥有该增益。
     expect(preview.finalPlayer.activeBuffSourceKeys[uniqueHrid]).toBe('player2');
-    // level 109 → ratioBoost = 0.03 * (1 + 109 * 0.005) = 0.04635.
+    // 等级 109 → ratioBoost = 0.03 * (1 + 109 * 0.005) = 0.04635。
     expect(preview.finalPlayer.combatBuffs[uniqueHrid].ratioBoost).toBeCloseTo(0.04635, 10);
 
-    // Only ONE source exists for the recast aura, not one row per cast.
+    // 重新施放的光环只存在一个源，而非每次施放一行。
     const auraSources = preview.highlightSources.filter((source) => source.sourceKey?.startsWith('teammate-aura-'));
     expect(auraSources).toHaveLength(1);
     expect(auraSources[0].sourceKey).toBe('teammate-aura-player2-/abilities/speed_aura');
     expect(auraSources[0].sourceName).toContain('RecastMate');
 
-    // The single source spans the full change: no aura → final (level 109)
-    // cast, not just the small delta of the second cast.
+    // 单个源涵盖完整变化：无光环 → 最终（等级 109）
+    // 施放，而不只是第二次施放的微小差值。
     const castSpeedSource = auraSources[0].changedStats.find((stat) => stat.key === 'castSpeed');
     expect(castSpeedSource).toBeTruthy();
     expect(castSpeedSource.deltaValue).toBeCloseTo(0.04635, 10);
 
-    // The breakdown lists the aura source once and reconciles cleanly.
+    // 拆解只列出光环源一次，并干净地对账。
     const intervalBreakdown = Object.values(preview.statBreakdowns).find((entry) =>
       entry?.sources?.some((source) => source.sourceKey === 'teammate-aura-player2-/abilities/speed_aura'),
     );

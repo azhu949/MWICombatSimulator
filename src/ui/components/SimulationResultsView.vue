@@ -1902,7 +1902,7 @@ function formatScrollDuration(valueNs) {
   if (!Number.isFinite(totalMinutes)) {
     return '0m';
   }
-  // Scroll windows are half-open; show only minutes that fully elapsed.
+  // 战斗卷轴窗口是半开区间；只显示已完整经过的分钟数。
   const totalWholeMinutes = Math.floor(totalMinutes);
   if (totalMinutes >= 60) {
     const hours = Math.floor(totalWholeMinutes / 60);

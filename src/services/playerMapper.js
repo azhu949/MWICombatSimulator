@@ -709,7 +709,7 @@ function normalizePreviewPlayer(player, previewExtra = null, previewEnvironment 
     return null;
   }
 
-  // Match the player's state at the start of combat without changing simulation entry semantics.
+  // 匹配战斗开始时的玩家状态，且不改变模拟入口的语义。
   player.zoneBuffs = previewEnvironment
     ? cloneCombatPreviewBuffs(previewEnvironment.zoneBuffs)
     : cloneCombatPreviewBuffs(player.zoneBuffs);
@@ -719,11 +719,10 @@ function normalizePreviewPlayer(player, previewExtra = null, previewEnvironment 
   player.generatePermanentBuffs();
   player.reset(0);
 
-  // Preview represents the state immediately after combat starts.  Apply a
-  // single opening of each configured combat scroll for ordinary zones, but
-  // deliberately skip it in Labyrinth where the official scroll rule is
-  // "not effective", and when the simulation setting disables scrolls
-  // entirely.  The real simulator owns renewal/inventory timers.
+  // 预览表示战斗刚开始后的状态。对普通区域应用每个已配置战斗卷轴的
+  // 单次开局使用；但在 Labyrinth 中刻意跳过（官方卷轴规则在那里
+  // "不生效"），且当模拟设置完全禁用卷轴时同样跳过。
+  // 续期/库存计时器归真实模拟器所有。
   if (previewEnvironment?.scrollsAllowed !== false && previewExtra?.combatScrollsEnabled === true) {
     for (const itemHrid of Object.keys(normalizeCombatScrolls(player.combatScrolls))) {
       const buff = createCombatScrollBuff(itemHrid);
@@ -845,9 +844,8 @@ function buildCombatPreviewStatBreakdowns(baseValues, finalPlayer, highlightSour
       const canReconcile =
         Number.isFinite(measuredBaseValue) && Number.isFinite(finalValue) && Number.isFinite(sourceTotal);
       const reconciliationDelta = canReconcile ? finalValue - measuredBaseValue - sourceTotal : 0;
-      // Keep Base as the independently measured no-highlight baseline. Any
-      // mismatch caused by mixed/non-linear attribution belongs in the
-      // explicit reconciliation field instead of being hidden in Base.
+      // 保持 Base 为独立测量的无高亮基准。混合/非线性归属造成的任何
+      // 差额都应归于显式的对账字段，而不是隐藏在 Base 中。
       const baseValue = Number.isFinite(measuredBaseValue) ? measuredBaseValue : finalValue - sourceTotal;
 
       return [
@@ -1018,10 +1016,9 @@ function createCombatPreviewSimulationState(
     return null;
   }
 
-  // Keep the hero's construction path identical to the solo preview, then
-  // add selected teammates solely to the simulator context.  This lets the
-  // hero's existing sequential trigger replay see all allies without
-  // changing the hero's level-gap/permanent-buff initialization.
+  // 保持主力的构建路径与单人预览一致，然后仅将选中的队友
+  // 加入模拟器上下文。这样主力的既有顺序触发器回放能看到所有
+  // 队友，同时不改变主力的等级差/永久增益初始化。
   const heroId = String(playerConfig?.id || '');
   const teammateConfigs = (partyPlayerConfigs ?? []).filter(
     (config) => config && config.selected && String(config.id || '') !== heroId,
@@ -1039,11 +1036,10 @@ function createCombatPreviewSimulationState(
     simulator.simResult.updateTimeSpentAlive(enemy.hrid, true, simulator.simulationTime);
   });
 
-  // The live encounter checks every unit's food/drink triggers before it
-  // schedules the first ability.  Replay selected teammates' consumables so
-  // hero triggers that inspect ally state see the same opening context. The
-  // hero's own consumables are still handled by buildConditionalPreviewResult
-  // (which also owns their highlight attribution).
+  // 实际遭遇战会在调度首个技能前检查每个单位的食物/饮品触发器。
+  // 回放所选队友的消耗品，以便检查队友状态的主力触发器看到相同的
+  // 开局上下文。主力自身的消耗品仍由 buildConditionalPreviewResult 处理
+  // （该方法也负责其高亮归属）。
   teammatePlayers.forEach((teammate, index) => {
     replayPartyPreviewConsumables({ player: teammate, simulator }, teammateConfigs[index]);
   });
@@ -1355,10 +1351,9 @@ function runCombatPreviewDeterministicAbilityUse(previewState, previewAbility, s
   caster.combatDetails.combatStats.blaze = 0;
   caster.combatDetails.combatStats.bloom = 0;
   caster.combatDetails.combatStats.ripple = 0;
-  // Fold the zeroed proc rates into the combat-stat baseline so a
-  // updateCombatDetails triggered inside tryUseAbility (e.g. via a buff
-  // effect) cannot silently restore the pre-zeroed values through
-  // resetCombatStatsToBase.
+  // 将归零的触发率折入战斗属性基准，使 tryUseAbility 内部触发的
+  // updateCombatDetails（例如通过增益效果）无法经 resetCombatStatsToBase
+  // 静默恢复归零前的数值。
   caster.refreshBaseCombatStats();
   previewAbility?.abilityEffects?.forEach((effect) => {
     const originalPierceChance = Number(effect?.pierceChance || 0);
@@ -1394,9 +1389,9 @@ function runCombatPreviewDeterministicAbilityUse(previewState, previewAbility, s
 }
 
 function applyPartyAuraBuffForPreview(previewState, previewAbility, sourcePlayer = null) {
-  // Party preview is a static aura snapshot, so this helper applies only the
-  // Buff effects. The caller reserves MP and cooldown state before calling
-  // it; keeping those concerns separate avoids scheduling preview events.
+  // 队伍预览是静态的队伍光环快照，因此此辅助函数只应用 Buff 效果。
+  // 调用方在调用前预留魔法值与冷却状态；将这些问题分开可避免
+  // 调度预览事件。
   const caster = sourcePlayer || previewState?.player;
   const simulator = previewState?.simulator;
   if (!caster || !simulator || !previewAbility) {
@@ -1632,10 +1627,9 @@ function buildSequentialAbilityPreviewResult(previewState, slotIndex) {
     abilityDetail?.name || abilityHrid,
     changedStats,
   );
-  // Track which buffs this cast registered so the party-aura merge can drop
-  // the source when a teammate's stronger cast now owns every one of them
-  // (see buildCombatPreviewData). Without this, a hero's overridden aura
-  // would still be attributed as if it were active.
+  // 记录此次施法注册了哪些增益，以便当队友更强的施法已拥有全部这些
+  // 增益时，队伍光环合并可以丢弃该来源（参见 buildCombatPreviewData）。
+  // 否则，主力被覆盖的光环仍会被归因，仿佛它仍然生效。
   source.sourceBuffUniqueHrids = collectAbilityBuffUniqueHrids(previewAbility);
   return {
     source,
@@ -1748,9 +1742,9 @@ function replayPartyPreviewConsumables(previewState, playerConfig, consumableSpe
     new Set(),
   );
 
-  // Consumable use queues cooldown events in the live simulator.  The party
-  // preview is a time-zero snapshot, so retain the state changes but not
-  // those future events (the next opening ability is evaluated immediately).
+  // 消耗品使用会在实际模拟器中排入冷却事件。队伍预览是零时刻快照，
+  // 因此保留状态变更，但不保留这些未来事件
+  // （下一个开局技能会立即求值）。
   previewState.simulator.eventQueue.clear();
   return highlightSources;
 }
@@ -1789,30 +1783,27 @@ function replayPartyPreviewConsumablesForAllUnits(previewEntries) {
       }
     }
 
-    // The static preview retains immediate state changes from consumables,
-    // but never advances their cooldown or expiration events.
+    // 静态预览保留消耗品的即时状态变更，
+    // 但从不推进其冷却或过期事件。
     previewEntries[0]?.simulator?.eventQueue.clear();
   } while (consumedSomething);
 }
 
 function reservePartyPreviewAbilityUse(simulator, source, ability) {
-  // Reserve a party-preview cast by checking MP affordability WITHOUT
-  // spending it.  The cost is committed by commitPartyPreviewAbilityUse only
-  // after the caller confirms the ability's effects were applied, so a cast
-  // that contributes no effect (applyPartyAuraBuffForPreview returning
-  // false) does not leak MP out of the preview's resource state.  This is
-  // defensive ordering: the module-load snapshot validation
-  // (assertPartyAuraSnapshotMatchesOfficialData) already guarantees the five
-  // party aura abilities carry well-formed buff effects today, but a future
-  // data change beyond that scope should fail without corrupting MP first.
+  // 通过检查魔法值是否足够来预留队伍预览施法，但不实际花费。
+  // 费用仅在调用方确认技能效果已应用后由 commitPartyPreviewAbilityUse
+  // 提交，因此未产生任何效果的施法（applyPartyAuraBuffForPreview 返回
+  // false）不会从预览的资源状态中泄漏魔法值。这是防御性顺序：模块加载时
+  // 的快照校验（assertPartyAuraSnapshotMatchesOfficialData）已保证五个
+  // 队伍光环技能当前携带结构良好的增益效果，但超出该范围的未来数据变更
+  // 应直接失败，而不是先破坏魔法值。
   return Boolean(simulator && source && ability && simulator.canUseAbility(source, ability, false));
 }
 
 function commitPartyPreviewAbilityUse(simulator, source, ability) {
-  // Commit the MP cost of a confirmed preview cast.  Mirrors the live
-  // engine's spendAbilityMana bookkeeping (MP, lastUsed, cumulative cost)
-  // and resets the out-of-mana flag like addNextAttackEvent's
-  // successful-cast path.
+  // 提交已确认预览施法的魔法值费用。镜像实际引擎的 spendAbilityMana
+  // 记账逻辑（魔法值、lastUsed、累计费用），并像 addNextAttackEvent 的
+  // 施法成功路径一样重置魔法值不足标志。
   simulator.spendAbilityMana(source, ability);
   source.isOutOfMana = false;
 }
@@ -1824,11 +1815,10 @@ function runPartyPreviewAbilityUse(previewState, ability, sourcePlayer) {
     return false;
   }
 
-  // Opening replay only needs effects that can change a later trigger or an
-  // ally's displayed stats.  Damage is intentionally omitted: applying it
-  // would make the shared preview encounter state depend on which teammate
-  // happened to be replayed first.  Buff/heal/spend-hp effects retain the
-  // relevant live state transitions.
+  // 开局回放只需要能改变后续触发器或队友显示属性的效果。
+  // 伤害被有意省略：应用伤害会使共享的预览遭遇战状态
+  // 取决于哪个队友先被回放。Buff/治疗/消耗生命值效果保留
+  // 相关的实际状态转换。
   for (const abilityEffect of ability.abilityEffects ?? []) {
     switch (abilityEffect?.effectType) {
       case '/ability_effect_types/buff':
@@ -1841,15 +1831,13 @@ function runPartyPreviewAbilityUse(previewState, ability, sourcePlayer) {
         simulator.processAbilitySpendHpEffect(source, ability, abilityEffect);
         break;
       default:
-        // Damage, revive, and promote effects resolve after the cast
-        // event in the real engine and do not affect this static
-        // opening resource/trigger replay.
+        // 伤害、复活与晋升效果在实际引擎中于施法事件之后结算，
+        // 不影响此静态的开局资源/触发器回放。
         break;
     }
   }
 
-  // The cast is confirmed (the effects loop ran without failure), so commit
-  // the MP cost reserved above.
+  // 施法已确认（效果循环运行无失败），因此提交上面预留的魔法值费用。
   commitPartyPreviewAbilityUse(simulator, source, ability);
   return true;
 }
@@ -1938,9 +1926,9 @@ function applyTaskBadgePreviewSource(playerConfig, previewPlayer) {
 
   const baseTaskDamage = Number(taskDamageSpec.getValue(previewPlayer));
   previewPlayer.combatDetails.combatStats.taskDamage = baseTaskDamage + taskDamage;
-  // Fold the badge delta into the baseline: this preview player is a
-  // snapshot consumer, but any later updateCombatDetails would otherwise
-  // discard the write via resetCombatStatsToBase.
+  // 将徽章差值折入基准：此预览玩家是快照消费者，
+  // 否则任何后续的 updateCombatDetails 都会经 resetCombatStatsToBase
+  // 丢弃该写入。
   previewPlayer.refreshBaseCombatStats();
 
   return buildCombatPreviewHighlightSource(
@@ -1961,11 +1949,10 @@ function applyTaskBadgePreviewSource(playerConfig, previewPlayer) {
   );
 }
 
-// Mutates previewPlayer.permanentBuffs irreversibly: each guild buff is
-// accumulated onto the player via addPermanentBuff so that every snapshot
-// captures the marginal increment over the previously-applied state.
-// Callers MUST pass a single-use (disposable) player object whose
-// permanentBuffs do not need to stay pristine after this call.
+// 不可逆地修改 previewPlayer.permanentBuffs：每个公会增益通过 addPermanentBuff
+// 累积到玩家身上，使每个快照都捕获相对先前已应用状态的边际增量。
+// 调用方必须传入一次性（可丢弃）的玩家对象，
+// 其 permanentBuffs 在本次调用后无需保持原样。
 function buildGuildBuffPreviewSources(playerConfig, previewPlayer) {
   if (!previewPlayer) {
     return [];
@@ -2026,8 +2013,8 @@ function buildCombatScrollPreviewSources(playerConfig, previewPlayer, previewExt
     return [];
   }
 
-  // Apply scrolls in configured order so every delta is the marginal change
-  // from the state that the next preview source actually receives.
+  // 按配置顺序应用卷轴，使每个差值都是下一个预览来源
+  // 实际接收到的状态的边际变化。
   const highlightSources = [];
 
   for (const itemHrid of itemHrids) {
@@ -2055,23 +2042,19 @@ function buildCombatScrollPreviewSources(playerConfig, previewPlayer, previewExt
   return highlightSources;
 }
 
-// Party members whose selected configs include aura abilities affect every
-// alive ally (including the hero), and the engine keeps only the strongest
-// source of each aura buff. The preview replays the time-zero consumable pass
-// and the live ability-slot selection/resource gate for teammates. It advances
-// only the required cast-end ordering; regeneration, damage, and expiration
-// events remain outside this static opening snapshot. The hero's own abilities
-// remain owned by the conditional preview.
+// 选中配置包含光环技能的队伍成员会影响每个存活的队友（包括主力），
+// 且引擎只保留每个光环增益的最强来源。预览回放队友的零时刻消耗品
+// 流程以及技能槽选择/资源门槛。它只推进必要的施法结束顺序；
+// 恢复、伤害与过期事件均在此静态开局快照之外。
+// 主力自身的技能仍归条件预览所有。
 
 const PARTY_AURA_PREVIEW_CACHE_LIMIT = 8;
 const partyAuraPreviewCache = new Map();
 
-// Deterministically reduce the advanced-state fields that can influence
-// party-aura strength to serializable scalars. Raw config objects may carry
-// transient or non-JSON-serializable fields (functions, Vue reactivity proxy
-// internals, ...); JSON.stringify would silently drop those, making an
-// otherwise-relevant edit invisible to the preview cache. Keeping only the
-// effect-determining scalars makes the key both stable and cache-correct.
+// 确定性地将可影响队伍光环强度的进阶状态字段归约为可序列化标量。
+// 原始配置对象可能携带瞬态或不可 JSON 序列化的字段（函数、Vue 响应式代理
+// 内部结构等）；JSON.stringify 会静默丢弃这些字段，使本应相关的编辑
+// 对预览缓存不可见。只保留决定效果的标量，使缓存键既稳定又正确。
 function sortObjectEntries(entries) {
   return [...entries].sort(([leftKey], [rightKey]) => String(leftKey).localeCompare(String(rightKey)));
 }
@@ -2079,8 +2062,8 @@ function sortObjectEntries(entries) {
 function normalizePartyAuraLevelMap(raw, normalizeKnownMap) {
   const source = raw && typeof raw === 'object' ? raw : {};
   if (Array.isArray(source)) {
-    // Legacy array forms ([hrid, level] or {hrid, level}) are accepted by
-    // Player.createFromDTO; convert them to the same map shape first.
+    // 旧式数组形式（[hrid, level] 或 {hrid, level}）被 Player.createFromDTO
+    // 接受；先将它们转换为相同的映射形状。
     return Object.fromEntries(
       source
         .map((entry) =>
@@ -2097,9 +2080,8 @@ function normalizePartyAuraLevelMap(raw, normalizeKnownMap) {
 function normalizePartyAuraAchievements(achievements) {
   const source = achievements && typeof achievements === 'object' ? achievements : {};
   if (Array.isArray(source.buffs)) {
-    // createFromDTO round-trip form: explicit buff records. Sort both the
-    // buff entries and the buff list; permanent-buff accumulation is
-    // commutative, so ordering cannot change the resulting stats.
+    // createFromDTO 往返形式：显式增益记录。对增益条目和增益列表
+    // 都排序；永久增益累积是可交换的，因此排序不会改变结果属性。
     return {
       buffs: source.buffs
         .map((buff) => sortObjectEntries(Object.entries(buff ?? {})))
@@ -2149,8 +2131,8 @@ function buildPartyAuraPreviewConfigSignature(config) {
 
 function buildPartyAuraPreviewCacheKey(playerConfig, teammates, previewExtra, previewContext, previewEnvironment) {
   return JSON.stringify({
-    // The cache is module-scoped, so include the generated data version to
-    // prevent stale results after a game-data rebuild or hot reload.
+    // 缓存是模块级作用域，因此包含生成的数据版本，
+    // 防止游戏数据重建或热重载后出现过期结果。
     dataVersion: GAME_DATA_VERSION,
     hero: buildPartyAuraPreviewConfigSignature(playerConfig),
     teammates: teammates.map(buildPartyAuraPreviewConfigSignature),
@@ -2205,8 +2187,8 @@ function selectPartyPreviewAbilityEvent(simulator, player, currentTime, sequence
 
     const usable = simulator.canUseAbility(player, ability, false);
 
-    // Match CombatSimulator.addNextAttackEvent: once the first
-    // triggerable slot cannot pay its MP cost, later slots are skipped.
+    // 与 CombatSimulator.addNextAttackEvent 一致：一旦第一个
+    // 可触发槽位无法支付其魔法值费用，后续槽位即被跳过。
     if (!usable) {
       skipNextAbility = true;
       continue;
@@ -2246,9 +2228,9 @@ function replayPartyPreviewAbilities(
   let sequence = 0;
   const auraBeforeValuesByKey = new Map();
 
-  // Schedule every teammate's first cast before resolving any cast. This is
-  // the distinction from a serial preview: an aura that is already queued
-  // remains valid even if an earlier cast changes its trigger state.
+  // 在解析任何施法前先调度每个队友的首次施法。这是与串行预览的
+  // 区别：已排队的队伍光环即使早先的施法改变了其触发状态，
+  // 仍然保持有效。
   teamPlayers.slice(1).forEach((player) => {
     insertPartyPreviewAbilityEvent(pendingEvents, selectPartyPreviewAbilityEvent(simulator, player, 0, sequence++));
   });
@@ -2269,8 +2251,8 @@ function replayPartyPreviewAbilities(
       if (reservePartyPreviewAbilityUse(simulator, sourcePlayer, event.ability)) {
         used = applyPartyAuraBuffForPreview(previewState, event.ability, sourcePlayer);
         if (used) {
-          // Only commit the MP cost once the aura's buff effects were
-          // actually applied; a no-op aura must not drain the caster.
+          // 只在光环的增益效果实际应用后才提交魔法值费用；
+          // 无效果的光环不得耗尽施法者。
           commitPartyPreviewAbilityUse(simulator, sourcePlayer, event.ability);
         }
       }
@@ -2280,20 +2262,17 @@ function replayPartyPreviewAbilities(
     simulator.eventQueue.clear();
 
     if (!used) {
-      // A cast-end event still reaches the simulator's post-event
-      // checkTriggers even when the ability can no longer pay its MP.
+      // 即使技能已无法支付其魔法值，施法结束事件仍会到达
+      // 模拟器的事件后 checkTriggers。
       replayPartyPreviewConsumablesForAllUnits(previewEntries);
       continue;
     }
 
     if (isPartyAura && beforeValues) {
-      // A teammate may cast the same aura multiple times (custom triggers
-      // + cooldown ≤ 120s + long-cast abilities).  Only the first cast's
-      // before-snapshot matters: the final source's delta is measured
-      // from that snapshot to the hero's end-of-replay state, which
-      // reflects the strongest active registration.  Retaining per-cast
-      // sources would duplicate the same identifier in the panel and
-      // double-count intermediate deltas.
+      // 队友可能多次施放同一光环（自定义触发器 + 冷却 ≤ 120s + 长施法技能）。
+      // 只有首次施法的前置快照有意义：最终来源的差值按该快照到主力
+      // 回放结束状态测量，反映最强的有效注册。若保留每次施法的来源，
+      // 会在面板中重复同一标识符，并重复计算中间差值。
       const key = `teammate-aura-${sourcePlayer.hrid}-${event.ability.hrid}`;
       if (!auraBeforeValuesByKey.has(key)) {
         auraBeforeValuesByKey.set(key, {
@@ -2304,27 +2283,26 @@ function replayPartyPreviewAbilities(
       }
     }
 
-    // tryUseAbility schedules the caster's next action before the engine's
-    // post-event checkTriggers call. Preserve that ordering here.
+    // tryUseAbility 会在引擎的事件后 checkTriggers 调用之前调度
+    // 施法者的下一个动作。此处保持该顺序。
     insertPartyPreviewAbilityEvent(
       pendingEvents,
       selectPartyPreviewAbilityEvent(simulator, sourcePlayer, simulator.simulationTime, sequence++),
     );
 
-    // Every resolved event re-runs food/drink triggers for the whole team;
-    // this is what lets a prior teammate aura activate a later teammate's
-    // consumable without invalidating the latter's already queued cast.
+    // 每个已解析的事件都会为整个队伍重新运行食物/饮品触发器；
+    // 这正是让先前的队友光环激活后续队友消耗品、同时不使后者
+    // 已排队的施法失效的机制。
     replayPartyPreviewConsumablesForAllUnits(previewEntries);
   }
 
-  // The event budget exists only to bound worst-case trigger feedback loops
-  // (e.g. a chain of consumables that repeatedly re-arms a teammate's aura).
-  // A real party always converges: ability cooldowns and MP costs strictly
-  // limit how many casts can fit in an opening window.  Hitting the cap is
-  // therefore not a correctness failure (simulationTime is still reset below
-  // and the cache stays valid), but it does mean the preview settled before
-  // every teammate aura could be applied — surface it so consumers can warn
-  // instead of silently showing a partial aura set.
+  // 事件预算只为约束最坏情况下的触发器反馈回路而存在
+  // （例如消耗品链反复重新武装队友光环）。真实队伍总会收敛：
+  // 技能冷却与魔法值费用严格限制开局窗口内能容纳的施法次数。
+  // 因此触及上限并非正确性失败（simulationTime 仍会在下方重置，
+  // 缓存依然有效），但它意味着预览在全部队友光环应用之前就已
+  // 停止——应将其暴露出来，让消费方发出警告，
+  // 而不是静默展示不完整的光环集合。
   if (pendingEvents.length > 0) {
     truncated = true;
     console.warn(
@@ -2333,11 +2311,10 @@ function replayPartyPreviewAbilities(
     );
   }
 
-  // Build the aura highlight sources after the replay settled.  Each source
-  // measures its delta from the FIRST cast's snapshot to the hero's final
-  // state, so a teammate who recast the same aura (drink-strengthened)
-  // contributes one source spanning the whole effective change instead of
-  // one duplicate row per cast.
+  // 在回放结束后构建光环高亮来源。每个来源测量其从首次施法快照
+  // 到主力最终状态的差值，因此重新施放同一光环的队友（饮品强化）
+  // 只会贡献一个覆盖整个有效变化过程的来源，
+  // 而不是每次施法一行重复。
   for (const { beforeValues, caster, ability } of auraBeforeValuesByKey.values()) {
     const source = buildPartyAuraPreviewHighlightSource(caster, ability, hero, beforeValues, teammateNameByHrid);
     if (source) {
@@ -2384,11 +2361,10 @@ function buildPartyAuraPreviewResult(
     previewEnvironment,
   );
   if (partyAuraPreviewCache.has(cacheKey)) {
-    // Never hand out the stored objects: replay-generated Buff instances
-    // (and the sourceBuffs/highlightSources containers) would otherwise be
-    // shared across builds, and any consumer-side mutation would leak into
-    // every later hit. Every exit point returns an isolated snapshot so the
-    // stored entry stays authoritative.
+    // 绝不对外分发存储的对象：回放生成的 Buff 实例
+    // （以及 sourceBuffs/highlightSources 容器）否则会在多次构建之间
+    // 共享，任何消费方侧的修改都会泄漏到后续每次命中。
+    // 每个出口都返回隔离的快照，使存储条目保持权威性。
     const cachedResult = partyAuraPreviewCache.get(cacheKey);
     return cachedResult === null ? null : structuredClone(cachedResult);
   }
@@ -2415,10 +2391,9 @@ function buildPartyAuraPreviewResult(
 
   const highlightSources = [];
 
-  // Mirror the encounter opener: food/drink triggers run for every unit
-  // before the first ability is selected.  The hero's conditional preview
-  // has its own consumable attribution; this temporary pass exists only so
-  // teammate trigger/resource state is evaluated against the full party.
+  // 镜像遭遇战开局：在选择首个技能之前，为每个单位运行食物/饮品触发器。
+  // 主力的条件预览有自己的消耗品归属；此临时流程仅用于
+  // 让队友的触发器/资源状态在完整队伍背景下求值。
   const openingConfigs = [heroConfig, ...teammates];
   const previewEntries = teamPlayers.map((player, index) => ({
     player,
@@ -2436,19 +2411,17 @@ function buildPartyAuraPreviewResult(
     highlightSources,
   );
 
-  // Preserve every teammate source, not only the currently strongest buff in
-  // hero.combatBuffs.  The weaker entries are required if this preview state
-  // is later reconciled after the strongest source expires.
+  // 保留每个队友来源，而不仅是 hero.combatBuffs 中当前最强的增益。
+  // 若此预览状态在最强来源过期后需要重新对账，较弱的条目是必需的。
   const sourceBuffs = [];
   for (const sources of Object.values(hero.buffSources)) {
     for (const [sourceKey, entry] of sources.entries()) {
       if (!isPartyAuraBuff(entry?.buff)) {
         continue;
       }
-      // Official party-aura processing always registers the caster's
-      // player hrid. Ignore malformed/default registrations rather than
-      // inventing a synthetic source that cannot participate in source
-      // attribution or strongest-source handoff.
+      // 官方队伍光环处理始终注册施法者的玩家 hrid。
+      // 忽略格式错误/默认的注册，而不是发明一个无法参与
+      // 来源归属或最强来源交接的合成来源。
       if (!teammateSourceKeys.has(sourceKey)) {
         continue;
       }
@@ -2462,8 +2435,8 @@ function buildPartyAuraPreviewResult(
 
   if (sourceBuffs.length === 0 && highlightSources.length === 0) {
     if (partyAuraPreviewTruncated) {
-      // Truncation can still hide auras that would have appeared after
-      // the event budget: report the partial state, not a silent null.
+      // 截断仍可能隐藏本会在事件预算之后出现的光环：
+      // 报告部分状态，而不是静默返回 null。
       const truncatedResult = {
         sourceBuffs,
         highlightSources,
@@ -2479,13 +2452,13 @@ function buildPartyAuraPreviewResult(
   const result = {
     sourceBuffs,
     highlightSources,
-    // Consumers (e.g. the home page preview) use this to surface a warning
-    // that the party aura replay hit its event budget and may be incomplete.
+    // 消费方（例如首页预览）用此字段提示警告：
+    // 队伍光环回放达到事件预算，结果可能不完整。
     truncated: partyAuraPreviewTruncated,
   };
   setPartyAuraPreviewCache(cacheKey, result);
-  // Same snapshot rule as the cache-hit branch: the stored entry stays
-  // authoritative, the returned object is caller-owned.
+  // 与缓存命中分支相同的快照规则：存储条目保持权威性，
+  // 返回的对象归调用方所有。
   return structuredClone(result);
 }
 
@@ -2619,31 +2592,29 @@ export function buildPlayersForCombatPreview(playerConfigs, previewExtra = null,
   return simulationPlayers;
 }
 
-// Performance note: buildCombatPreviewData constructs up to three independent
-// Player objects per invocation:
-//   1. `player` below — the full configured player (with guild buffs + scrolls).
-//   2. `attributionPlayer` inside buildStaticCombatPreviewAttribution — a
-//      baseline player built from a config with guildBuffs disabled and scrolls
-//      disabled, so each guild buff / scroll delta can be measured as a
-//      marginal increment. This baseline cannot reuse `player` because their
-//      permanentBuffs differ (player's include guild buffs).
-//   3. `previewState.player` inside buildConditionalPreviewResult — drives the
-//      sequential consumable/ability simulation and must be a fresh instance
-//      because the simulation mutates combat state (HP/MP, buff timers, ...).
-//   4. `buildPartyAuraPreviewResult` builds a temporary team and simulator on
-//      cache misses. Its derived source/highlight result is cached by relevant
-//      config fields, so in-place edits to unrelated player fields do not
-//      rebuild the party path. The cache is bounded and never retains runtime
-//      Player or CombatSimulator instances.
-// In addition, buildGuildBuffPreviewSources / buildCombatScrollPreviewSources
-// each perform a full STAT_SPECS snapshot + addPermanentBuff/clearBuffs
-// (updateCombatDetails) + diff pass per active buff, so 5 shrines cost ~10
-// full-spec traversals.
-// This function is consumed by a Vue `computed` (see HomePage.vue
-// `combatPreviewData`), so it only re-runs when its reactive dependencies
-// change. For very frequent config editing the cost is acceptable but not free;
-// if profiling shows hotspots, prefer debouncing the upstream config edits over
-// micro-optimizing the player construction here.
+// 性能说明：buildCombatPreviewData 每次调用最多构建三个独立的
+// Player 对象：
+//   1. 下方的 `player` —— 完整配置的玩家（含公会增益 + 卷轴）。
+//   2. `buildStaticCombatPreviewAttribution` 内部的 `attributionPlayer` ——
+//      由禁用 guildBuffs 和禁用卷轴的配置构建的基准玩家，
+//      以便每个公会增益/卷轴差值可作为边际增量测量。该基准不能复用
+//      `player`，因为二者的 permanentBuffs 不同（player 的包含公会增益）。
+//   3. `buildConditionalPreviewResult` 内部的 `previewState.player` —— 驱动
+//      顺序消耗品/技能模拟，必须是全新实例，因为模拟会修改战斗状态
+//      （生命值/魔法值、增益计时器等）。
+//   4. `buildPartyAuraPreviewResult` 在缓存未命中时构建临时队伍和模拟器。
+//      其派生的来源/高亮结果按相关配置字段缓存，因此对无关玩家字段的
+//      就地编辑不会重建队伍路径。缓存有界，且从不保留运行时的
+//      Player 或 CombatSimulator 实例。
+// 此外，buildGuildBuffPreviewSources / buildCombatScrollPreviewSources
+// 每个活动增益都要执行一次完整的 STAT_SPECS 快照 +
+// addPermanentBuff/clearBuffs（updateCombatDetails）+ 差值遍历，
+// 因此 5 个神龛大约需要 10 次全规格遍历。
+// 此函数供 Vue 的 `computed` 消费（参见 HomePage.vue 的
+// `combatPreviewData`），因此只在响应式依赖变化时重新执行。
+// 对于非常频繁的配置编辑，该开销可以接受但并非免费；
+// 若性能分析显示热点，优先对上游配置编辑做防抖，
+// 而不是在此处微优化玩家构建。
 export function buildCombatPreviewData(playerConfig, previewExtra = null, previewContext = null, options = null) {
   const normalizedExtra = normalizeCombatPreviewExtra(previewExtra);
   const previewEnvironment = buildCombatPreviewEnvironment(previewContext);
@@ -2658,10 +2629,9 @@ export function buildCombatPreviewData(playerConfig, previewExtra = null, previe
     previewContext,
   );
 
-  // Replay selected teammates against the untouched opening encounter. The
-  // hero's conditional preview below may execute ordinary abilities, so
-  // evaluating party triggers first prevents those deterministic preview
-  // effects from changing the teammate trigger context.
+  // 对未被触碰的开局遭遇战回放所选队友。下方主力的条件预览
+  // 可能执行普通技能，因此先求值队伍触发器，可防止那些确定性预览
+  // 效果改变队友的触发上下文。
   const partyAuraResult = buildPartyAuraPreviewResult(
     playerConfig,
     options?.partyPlayerConfigs ?? null,
@@ -2679,27 +2649,26 @@ export function buildCombatPreviewData(playerConfig, previewExtra = null, previe
   const finalPlayer = conditionalPreview.player || player;
   const highlightSources = [...attribution.highlightSources, ...conditionalPreview.highlightSources];
 
-  // Selected teammates' auras affect the hero in real fights (allAllies +
-  // strongest-source rule).  Replay those casts so the panel shows the same
-  // final stats the party simulation would produce.
+  // 真实战斗中，所选队友的光环会影响主力（allAllies +
+  // 最强来源规则）。回放这些施法，让面板显示与队伍模拟
+  // 相同的最终属性。
   if (partyAuraResult) {
     partyAuraResult.sourceBuffs.forEach(({ buff, sourceHrid }) => {
       if (finalPlayer) {
         finalPlayer.addBuff(buff, 0, sourceHrid, { sourcePolicy: BUFF_SOURCE_POLICY.STRONGEST });
       }
     });
-    // Collect the set of teammate source keys registered on finalPlayer.
+    // 收集 finalPlayer 上注册的队友来源键集合。
     const teammateSourceKeys = new Set(partyAuraResult.sourceBuffs.map(({ sourceHrid }) => sourceHrid));
-    // A uniqueHrid is "party-owned" when the active source key belongs to
-    // a teammate, meaning the hero's own registration was overridden.
+    // 当活动来源键属于队友时，uniqueHrid 即"归队伍所有"，
+    // 意味着主力自身的注册已被覆盖。
     const isPartyOwned = (uniqueHrid) => {
       const activeKey = finalPlayer.activeBuffSourceKeys?.[uniqueHrid];
       return Boolean(activeKey) && teammateSourceKeys.has(activeKey);
     };
-    // Drop conditional ability sources whose buffs are all owned by a
-    // teammate in the final state.  Their deltas were measured against a
-    // state where the hero's own weaker cast was still active, so they are
-    // phantom — only the teammate's stronger cast is now visible.
+    // 丢弃其增益在最终状态中全部归队友所有的条件技能来源。
+    // 它们的差值是在主力自身较弱的施法仍然生效的状态下测量的，
+    // 因此是幻影——现在只有队友更强的施法可见。
     if (finalPlayer) {
       for (let i = highlightSources.length - 1; i >= 0; i--) {
         const source = highlightSources[i];
@@ -2709,13 +2678,11 @@ export function buildCombatPreviewData(playerConfig, previewExtra = null, previe
         }
       }
     }
-    // Attribute teammate aura sources by which buff they actually own in
-    // the final state (strongest-source rule) instead of by changed-stat
-    // key.  A weaker cast that was later overridden by a stronger teammate
-    // or by the hero's own buff contributed no final change and must not
-    // be shown as a source, even though it stays registered in
-    // finalPlayer.buffSources so the strongest source can hand off when it
-    // expires.
+    // 按队友光环来源在最终状态中实际拥有的增益（最强来源规则）
+    // 进行归属，而不是按变化的属性键。后来被更强的队友或主力自身
+    // 增益覆盖的较弱施法没有产生任何最终变化，不得显示为来源，
+    // 即使它仍注册在 finalPlayer.buffSources 中，
+    // 以便最强来源过期时能够交接。
     highlightSources.push(
       ...partyAuraResult.highlightSources.filter((source) => {
         const contributorHrid = source.contributorHrid;
@@ -2734,9 +2701,8 @@ export function buildCombatPreviewData(playerConfig, previewExtra = null, previe
     drinkCards,
     highlightSources,
     statBreakdowns,
-    // True when the party aura replay consumed its full event budget before
-    // every teammate cast could settle. Consumers may show a warning; the
-    // rest of the preview remains valid. Undefined when no party was given.
+    // 当队伍光环回放在每个队友施法结算前耗尽全部事件预算时为 true。
+    // 消费方可以显示警告；预览其余部分仍然有效。未提供队伍时为 undefined。
     partyAuraPreviewTruncated: Boolean(partyAuraResult?.truncated),
   };
 }

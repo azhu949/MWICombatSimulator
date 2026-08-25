@@ -13,9 +13,8 @@ import {
 
 export const LEVEL_KEYS = gameDataIndex?.metadata?.levelKeys || [];
 export const EQUIPMENT_SLOT_KEYS = gameDataIndex?.metadata?.equipmentSlotKeys || [];
-// The generated timestamp changes whenever the shared game-data index is
-// rebuilt. Consumers can use it to invalidate derived memoized results when
-// data is hot-reloaded during a long-lived application session.
+// 生成时间戳会在共享游戏数据索引重建时变化。消费方可在
+// 长生命周期应用会话期间热重载数据时，用它使派生的记忆化结果失效。
 export const GAME_DATA_VERSION = String(gameDataIndex?.metadata?.generatedAt || 'unknown');
 
 export const itemDetailIndex = gameDataIndex?.itemDetailIndex || {};
@@ -30,8 +29,8 @@ export const itemCategoryDetailIndex = itemCategoryDetailMap || {};
 export const combatScrollItemDetailIndex = gameDataIndex?.combatScrollItemDetailIndex || {};
 export const personalBuffTypeDetailIndex = gameDataIndex?.personalBuffTypeDetailIndex || {};
 
-// Re-export the data-driven combat scroll catalog alongside the other shared
-// game-data indexes for callers that already depend on this module.
+// 与其他共享游戏数据索引一起重新导出数据驱动的战斗卷轴目录，
+// 供已依赖此模块的调用方使用。
 export {
   combatScrollDefinitions,
   combatScrollOptions,

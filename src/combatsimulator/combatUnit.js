@@ -1,12 +1,12 @@
 import { BUFF_SOURCE_POLICY, getPartyAuraBuffStrength, isStrongerPartyAuraBuff } from './buffSourcePolicy.js';
 
-// Explicit sentinel for callers that need to target the currently active
-// source. The default keeps omitted/undefined arguments backward-compatible.
+// 为需要定位当前活动源的调用方提供的显式哨兵值。
+// 默认值保持省略/未定义参数的向后兼容性。
 export const REMOVE_ACTIVE_SOURCE = Symbol('remove-active-source');
 
-// Strongest-source selection is used only by callers that explicitly opt in
-// (currently the official party auras). The default runtime-buff policy stays
-// compatible with the historical last-write-wins behavior.
+// 最强源选择仅用于显式选择加入的调用方
+// （当前为官方队伍光环）。默认的运行时增益策略保持
+// 与历史上"后写覆盖"行为兼容。
 function readFiniteBuffNumber(buff, fieldName) {
   const value = buff?.[fieldName];
   if (typeof value !== 'number' || !Number.isFinite(value)) {
@@ -24,11 +24,10 @@ function readNonEmptyBuffHrid(buff, fieldName) {
 }
 
 function cloneBuffForRegistration(buff, startTime) {
-  // Runtime buffs are a flat scalar record today, but registration must not
-  // share mutable nested state (arrays/objects) across sources. A deep clone
-  // keeps every source fully isolated while preserving the old contract that
-  // the caller-owned object is never mutated and every source gets its own
-  // startTime.
+  // 运行时增益目前是扁平的标量记录，但注册时不得跨源
+  // 共享可变嵌套状态（数组/对象）。深拷贝让每个源
+  // 完全隔离，同时保留旧契约：调用方持有的对象
+  // 永不被修改，且每个源都有独立的 startTime。
   const cloned = structuredClone(buff);
   cloned.startTime = startTime;
   return cloned;
@@ -37,15 +36,15 @@ function cloneBuffForRegistration(buff, startTime) {
 function pickStrongestBuffSource(sources) {
   let bestSourceKey = null;
   let bestEntry = null;
-  // STRONGEST is currently restricted to official party-aura buffs. A single
-  // aura has only the small, game-bounded number of party-member sources, so
-  // an O(n) scan per reconciliation is intentional. If this policy expands
-  // to large source sets, replace this with an indexed selection structure
-  // and preserve the first-registered tie rule below.
+  // STRONGEST 目前仅限于官方队伍光环增益。单个光环只有
+  // 游戏上限内少量的队员源，因此每次对账做 O(n) 扫描
+  // 是有意为之。若该策略扩展到大型源集合，
+  // 请用带索引的选择结构替换此处，
+  // 并保留下方"先注册者优先"的平局规则。
   for (const [sourceKey, entry] of sources.entries()) {
-    // Exact ratio/flat ties are intentionally not stronger.  Map iteration
-    // therefore keeps the first registered source as a deterministic
-    // fallback; this is not a claim that the latest caster should win.
+    // 完全相等的 ratio/flat 数值刻意不算"更强"。因此 Map 迭代
+    // 会保留最先注册的源作为确定性回退；
+    // 这并不是说最近的施法者应当胜出。
     if (isStrongerPartyAuraBuff(entry.buff, bestEntry?.buff)) {
       bestSourceKey = sourceKey;
       bestEntry = entry;
@@ -54,16 +53,14 @@ function pickStrongestBuffSource(sources) {
   return bestEntry ? { sourceKey: bestSourceKey, ...bestEntry } : null;
 }
 
-// The single source of truth for which Buff fields affect the derived combat
-// ratings. updateCombatDetails consumes runtime buffs only through
-// getBuffBoosts(type), and buffsAffectStatsEqually decides whether a source
-// handoff would change those ratings; both must agree on the exact field set.
-// Keeping the projection here (instead of hardcoding the fields in both
-// places) makes "comparison fields == consumption fields" structurally
-// enforced: adding a consumed field in one place automatically updates the
-// other. Buff construction must pre-apply ratioBoostLevelBonus/flatBoostLevelBonus
-// into the effective ratioBoost/flatBoost values; the raw level-bonus fields
-// are intentionally not part of the runtime comparison.
+// 哪些 Buff 字段影响派生战斗属性的唯一事实来源。updateCombatDetails
+// 仅通过 getBuffBoosts(type) 消费运行时增益，而 buffsAffectStatsEqually
+// 决定源交接是否会改变这些属性；两者必须对精确的字段集合保持一致。
+// 在此处保留投影（而不是在两个地方都硬编码字段）可结构性
+// 地强制执行"比较字段 == 消费字段"：在一处添加被消费的字段
+// 会自动更新另一处。Buff 构造必须将 ratioBoostLevelBonus/
+// flatBoostLevelBonus 预先并入有效的 ratioBoost/flatBoost 值；
+// 原始等级奖励字段刻意不参与运行时比较。
 function projectBuffStats(buff) {
   return {
     uniqueHrid: buff.uniqueHrid,
@@ -73,10 +70,10 @@ function projectBuffStats(buff) {
   };
 }
 
-// Two buffs affect the derived combat ratings identically when their projected
-// stat fields match. A reference comparison alone would treat every addBuff
-// refresh (which always creates a fresh registration copy) as a change and
-// force a redundant full recompute even though the active values never moved.
+// 两个增益在投影属性字段相同时，对派生战斗属性的影响完全相同。
+// 仅做引用比较会把每次 addBuff 刷新（总是创建新的注册副本）
+// 都视为变化，即使活动值从未变动，
+// 也会强制进行冗余的完整重算。
 export function buffsAffectStatsEqually(a, b) {
   if (a === b) {
     return true;
@@ -111,9 +108,9 @@ function pickActiveBuffSource(sources, policy, preferredSourceKey = null) {
     return pickStrongestBuffSource(sources);
   }
 
-  // Ordinary runtime buffs are last-write-wins. addBuff passes the source it
-  // just wrote, so the hot path can select it in O(1). The scan remains only
-  // as a defensive fallback for legacy/restored state with no hint.
+  // 普通运行时增益为"后写覆盖"。addBuff 传入它刚写入的源，
+  // 因此热路径可以 O(1) 选中它。该扫描仅作为
+  // 无提示的遗留/恢复状态的防御性回退保留。
   if (preferredSourceKey !== null && sources.has(preferredSourceKey)) {
     return { sourceKey: preferredSourceKey, ...sources.get(preferredSourceKey) };
   }
@@ -141,7 +138,7 @@ class CombatUnit {
 
   isOutOfMana = false;
 
-  // Base levels which don't change after initialization
+  // 初始化后不会改变的基础等级
   staminaLevel = 1;
   intelligenceLevel = 1;
   attackLevel = 1;
@@ -164,7 +161,7 @@ class CombatUnit {
   rareDropTable = [];
   abilityManaCosts = new Map();
 
-  // Calculated combat stats including temporary buffs
+  // 计算后的战斗属性，包含临时增益
   combatDetails = {
     staminaLevel: 1,
     intelligenceLevel: 1,
@@ -283,35 +280,32 @@ class CombatUnit {
       maxManapointsRatio: 0,
     },
   };
-  // CombatUnit.updateCombatDetails mutates several combatStats while
-  // applying derived values. Keep the last caller-provided base snapshot so
-  // repeated recalculations start from the same inputs.
+  // CombatUnit.updateCombatDetails 在应用派生值时修改多个 combatStats 字段。
+  // 保留最后一次调用方提供的基础快照，以便重复重算始终从相同的输入开始。
   //
-  // IMPLICIT CONTRACT — read-only baseline, never write it externally:
-  // 1. Direct external writes to combatDetails.combatStats.X are silently
-  //    discarded on the next updateCombatDetails() (resetCombatStatsToBase
-  //    restores this snapshot first). Route intended stat changes through
-  //    addBuff/removeBuff or equipment changes instead.
-  // 2. baseCombatStats itself is refreshed wholesale by refreshBaseCombatStats()
-  //    (Player/Monster call it before super.updateCombatDetails()) and must
-  //    never be mutated field-by-field from outside — a polluted baseline
-  //    poisons every subsequent recalculation with no visible failure.
-  // There is no external write conflict today; this contract exists so
-  // future callers (simulation extensions, preview paths, UI hooks) do not
-  // accidentally depend on direct stat mutation.
+  // 隐式契约——只读基准，切勿在外部写入它：
+  // 1. 对 combatDetails.combatStats.X 的直接外部写入会被静默丢弃于下一次
+  //    updateCombatDetails()（resetCombatStatsToBase 会先恢复此快照）。
+  //    有意的属性变更请改走 addBuff/removeBuff 或装备变更。
+  // 2. baseCombatStats 本身由 refreshBaseCombatStats() 整体刷新
+  //    （Player/Monster 在 super.updateCombatDetails() 之前调用它），
+  //    严禁从外部逐字段修改——被污染的基准会使之后每次重算
+  //    都出错且没有可见的失败迹象。
+  // 目前没有外部写入冲突；此契约的存在是为了让未来的调用方
+  // （模拟扩展、预览路径、UI 钩子）不会意外依赖直接属性修改。
   baseCombatStats = null;
   combatBuffs = {};
   permanentBuffs = {};
   zoneBuffs = {};
   extraBuffs = {};
-  // Maps buffUniqueHrid -> Map<sourceKey, { buff, expiresAt, sequence }>.
-  // Source tracking supports exact removal/expiration for all runtime buffs.
-  // Selection remains last-write-wins unless the caller explicitly opts the
-  // buff into strongest-source semantics (the official party auras).
+  // 映射 buffUniqueHrid -> Map<sourceKey, { buff, expiresAt, sequence }>。
+  // 源跟踪支持对所有运行时增益的精确移除/过期。
+  // 选择仍为"后写覆盖"，除非调用方显式将增益
+  // 纳入最强源语义（官方队伍光环）。
   buffSources = {};
-  // Maps buffUniqueHrid -> sourceKey for the source currently represented in
-  // combatBuffs.  Source identity is kept separately from the buff object so
-  // handoff and removal do not depend on object reference equality.
+  // 映射 buffUniqueHrid -> sourceKey，标识当前在 combatBuffs 中
+  // 表示的源。源身份与 buff 对象分开保存，因此
+  // 交接和移除不依赖对象引用相等性。
   activeBuffSourceKeys = {};
   buffSourcePolicies = {};
   buffSourceSequence = 0;
@@ -319,17 +313,16 @@ class CombatUnit {
   constructor() {}
 
   refreshBaseCombatStats() {
-    // Capture the "clean" equipment-only stats as the recalculation
-    // baseline.  See the baseCombatStats contract above: this snapshot is
-    // read-only for external callers; mutate combatDetails.combatStats
-    // through buffs or re-equipping, never by writing this object.
+    // 将"纯净的"仅装备属性捕获为重算基准。
+    // 参见上方 baseCombatStats 契约：此快照对外部调用方
+    // 只读；请通过增益或重新装备来修改 combatDetails.combatStats，
+    // 切勿通过写入此对象。
     this.baseCombatStats = { ...this.combatDetails.combatStats };
   }
 
-  // refreshBaseCombatStats() MUST be called by every override (Player / Monster)
-  // BEFORE super.updateCombatDetails() to capture the "clean" equipment-only
-  // state. resetCombatStatsToBase() restores that clean snapshot so repeated
-  // recalculations remain idempotent.
+  // 每个覆写类（Player / Monster）必须在调用 super.updateCombatDetails()
+  // 之前调用 refreshBaseCombatStats()，以捕获"纯净的"仅装备状态。
+  // resetCombatStatsToBase() 恢复该纯净快照，使重复重算保持幂等。
   resetCombatStatsToBase() {
     if (!this.baseCombatStats) {
       this.refreshBaseCombatStats();
@@ -401,7 +394,7 @@ class CombatUnit {
       (1 + damageRatioBoost) *
       (1 + damageRatioBoostFromFury);
 
-    // when equiped bulwark
+    // 当装备了 bulwark（壁垒盾）时
     if (this.equipment?.['/equipment_types/two_hand']?.hrid.includes('bulwark')) {
       this.combatDetails.smashMaxDamage += this.combatDetails.defensiveMaxDamage;
     }
@@ -427,7 +420,7 @@ class CombatUnit {
 
     this.combatDetails.combatStats.damageTaken = this.getBuffBoost('/buff_types/damage_taken').flatBoost;
     // if (this.combatDetails.combatStats.damageTaken > 0) {
-    //     console.log("Damage taken: " + this.combatDetails.combatStats.damageTaken);
+    //     console.log("受到的伤害: " + this.combatDetails.combatStats.damageTaken);
     // }
 
     this.combatDetails.magicAccuracyRating =
@@ -558,17 +551,17 @@ class CombatUnit {
     readFiniteBuffNumber(buff, 'flatBoost');
     const duration = readFiniteBuffNumber(buff, 'duration');
 
-    // Keep the caller-owned buff immutable after registration.  Each source
-    // needs its own startTime because the same buff may be reused by several
-    // sources or combat units.
+    // 注册后保持调用方拥有的 buff 不可变。每个源
+    // 需要自己的 startTime，因为同一个 buff 可能被多个
+    // 源或战斗单元复用。
     const registeredBuff = cloneBuffForRegistration(buff, currentTime);
     const sourceKey = sourceHrid ?? 'default';
     const expiresAt = currentTime + duration;
     const normalizedPolicy = normalizeBuffSourcePolicy(sourcePolicy);
     if (normalizedPolicy === BUFF_SOURCE_POLICY.STRONGEST) {
-      // Validate before mutating the source registry. Unsupported or
-      // changed official data must fail loudly instead of selecting a
-      // source through an inferred negative/mixed-field ordering rule.
+      // 在修改源注册表之前先校验。不支持或
+      // 变更过的官方数据必须大声失败，而不是通过
+      // 推断的负值/混合字段排序规则来选源。
       getPartyAuraBuffStrength(registeredBuff);
     }
 
@@ -590,8 +583,8 @@ class CombatUnit {
       sequence: ++this.buffSourceSequence,
     });
 
-    // Re-select after every source update. Strongest-source buffs may hand
-    // off to another source; default buffs expose the most recent write.
+    // 每次源更新后重新选择。最强源增益可能交接
+    // 给另一个源；默认增益暴露最近一次写入。
     this.reconcileBuffSource(registeredBuff.uniqueHrid, sources, {
       preferredSourceKey: sourceKey,
     });
@@ -620,18 +613,16 @@ class CombatUnit {
   }
 
   /**
-   * Remove a runtime Buff registration.
+   * 移除一个运行时 Buff 注册。
    *
-   * `sourceHrid` is optional for compatibility with the pre-source API:
-   * `removeBuff({ uniqueHrid })` removes the currently active source, i.e.
-   * the Buff that callers historically saw in `combatBuffs`.  For a
-   * strongest-source Buff this may reveal the next source through the normal
-   * handoff rules.  Pass a source key when only one particular registration
-   * should be removed; `REMOVE_ACTIVE_SOURCE` expresses the active-source
-   * intent explicitly, while an explicit `null` keeps the legacy `default` key.
-   * Legacy last-write (`REPLACE`) Buffs retain their historical no-dormant-
-   * handoff behavior and clear the remaining registrations after the active
-   * registration is removed.
+   * `sourceHrid` 可选，以兼容引入源之前的旧 API：
+   * `removeBuff({ uniqueHrid })` 移除当前活动源，即调用方
+   * 历史上在 `combatBuffs` 中看到的那个 Buff。对于
+   * 最强源 Buff，这可能通过正常的交接规则揭示下一个源。
+   * 当只需移除某一个特定注册时传入源键；`REMOVE_ACTIVE_SOURCE`
+   * 显式表达活动源意图，而显式 `null` 保留传统的 `default` 键。
+   * 传统后写（`REPLACE`）Buff 保留其历史"无休眠交接"
+   * 行为：活动注册被移除后清除其余注册。
    */
   removeBuff(buff, sourceHrid = REMOVE_ACTIVE_SOURCE) {
     const uniqueHrid = buff?.uniqueHrid;
@@ -643,15 +634,14 @@ class CombatUnit {
   }
 
   /**
-   * Remove a runtime Buff registration by uniqueHrid.
+   * 按 uniqueHrid 移除一个运行时 Buff 注册。
    *
-   * Omitting `sourceHrid` intentionally targets the currently active source
-   * to preserve the old `removeBuff({ uniqueHrid })` contract.  This is also
-   * the safe default for source-aware Buffs: strongest-source entries can
-   * hand off instead of silently doing nothing.  Use `REMOVE_ACTIVE_SOURCE`
-   * when the active-source intent should be explicit, or an explicit source
-   * key for exact source removal; explicit `null` targets the `default` source.
-   * Legacy `REPLACE` entries keep their no-dormant-handoff cleanup semantics.
+   * 省略 `sourceHrid` 时有意定位当前活动源，以保留旧的
+   * `removeBuff({ uniqueHrid })` 契约。这也是源感知 Buff 的安全默认：
+   * 最强源条目可以交接而不是静默无事。当活动源意图
+   * 需要显式表达时使用 `REMOVE_ACTIVE_SOURCE`，精确移除某个
+   * 源时使用显式源键；显式 `null` 指向 `default` 源。
+   * 传统 `REPLACE` 条目保持其无休眠交接的清理语义。
    */
   removeBuffByUniqueHrid(uniqueHrid, sourceHrid = REMOVE_ACTIVE_SOURCE) {
     const sources = this.buffSources[uniqueHrid];
@@ -661,9 +651,9 @@ class CombatUnit {
       if (activeSourceKey !== undefined && (!sources || sources.has(activeSourceKey))) {
         sourceKey = activeSourceKey;
       } else if (sources?.size) {
-        // Recovered/legacy state may have source registrations without
-        // the active-key index. Derive the same active source used by
-        // reconciliation instead of returning a silent no-op.
+        // 恢复/遗留状态可能带有源注册但缺少活动键索引。
+        // 推导对账时所用的同一个活动源，
+        // 而不是静默返回空操作。
         const policy = this.buffSourcePolicies[uniqueHrid] ?? BUFF_SOURCE_POLICY.REPLACE;
         sourceKey = pickActiveBuffSource(sources, policy)?.sourceKey;
       }
@@ -681,21 +671,20 @@ class CombatUnit {
       const sourceWasActive = sourceKey === this.activeBuffSourceKeys[uniqueHrid];
       sources.delete(sourceKey);
       if (policy === BUFF_SOURCE_POLICY.REPLACE && sourceWasActive) {
-        // Historical last-write-wins buffs do not reveal an overwritten
-        // value when the visible registration is removed.
+        // 历史上"后写覆盖"的增益在被覆盖的可见注册被移除时，
+        // 不会揭示旧值。
         //
-        // Cascading clear reachability note: every production REPLACE
-        // registration keeps exactly one source per uniqueHrid — scrolls
-        // use `scroll:${itemHrid}` (scroll uniqueHrids are mutually
-        // distinct and isolated from drink/ability buffs; renewal is a
-        // same-key overwrite), while fury/curse/weaken/enrage,
-        // consumables, and REPLACE ability buffs all register the
-        // "default" key. Removing the sole entry therefore falls
-        // through to the sources.size === 0 branch below, so this
-        // REPLACE+active branch is only exercised by unit tests that
-        // deliberately build multi-source REPLACE registrations.
-        // Keep it: if future data registers several REPLACE sources per
-        // uniqueHrid, it preserves the no-dormant-handoff contract.
+        // 级联清除的可达性说明：每条生产环境的 REPLACE
+        // 注册在每个 uniqueHrid 上恰好保留一个源——卷轴
+        // 使用 `scroll:${itemHrid}`（卷轴 uniqueHrid 之间互不相同，
+        // 与饮料/技能增益隔离；续期是同键覆盖），而狂暴/诅咒/虚弱/激怒、
+        // 消耗品和 REPLACE 技能增益都注册
+        // "default" 键。因此移除唯一条目会落入
+        // 下方 sources.size === 0 分支，所以这个
+        // REPLACE+活动分支只会被刻意构造多源 REPLACE
+        // 注册的单元测试触发。
+        // 保留它：如果未来的数据在每个 uniqueHrid 上注册多个
+        // REPLACE 源，它可以维持无休眠交接契约。
         delete this.buffSources[uniqueHrid];
         delete this.buffSourcePolicies[uniqueHrid];
         this.reconcileBuffSource(uniqueHrid, null);
@@ -705,7 +694,7 @@ class CombatUnit {
         this.reconcileBuffSource(uniqueHrid, null);
       } else if (
         sourceWasActive ||
-        // Reconcile defensively if the source registry and active key drift apart.
+        // 当源注册表与活动键出现漂移时，防御性地重新对账。
         this.activeBuffSourceKeys[uniqueHrid] === undefined
       ) {
         this.reconcileBuffSource(uniqueHrid, sources);
@@ -713,9 +702,8 @@ class CombatUnit {
       return;
     }
 
-    // Compatibility fallback for old-style buffs that predate source
-    // registration.  A missing source registry must not be treated as a
-    // reason to delete unrelated registered sources.
+    // 为早于源注册机制的旧式增益提供的兼容回退。
+    // 缺少源注册表不能成为删除无关已注册源的理由。
     if (this.combatBuffs[uniqueHrid]) {
       delete this.combatBuffs[uniqueHrid];
       delete this.activeBuffSourceKeys[uniqueHrid];
@@ -775,10 +763,9 @@ class CombatUnit {
       const activeSourceKey = this.activeBuffSourceKeys[uniqueHrid];
       const policy = this.buffSourcePolicies[uniqueHrid] ?? BUFF_SOURCE_POLICY.REPLACE;
       let activeSourceExpired = false;
-      // Delete while scanning a snapshot so the mutation cannot alter
-      // iteration semantics. Source sets are currently bounded by the
-      // small party-aura roster; if this policy expands to large sets,
-      // collect only expired keys (or maintain an index) instead.
+      // 在扫描快照时删除，以免修改影响迭代语义。源集合
+      // 目前受限于较小的队伍光环名单；如果该策略扩展
+      // 到大型集合，请改为只收集过期键（或维护索引）。
       for (const [sourceKey, entry] of [...sources.entries()]) {
         if (entry.expiresAt <= currentTime) {
           if (sourceKey === activeSourceKey) {
@@ -788,10 +775,9 @@ class CombatUnit {
         }
       }
 
-      // Last-write buffs historically had no dormant-source handoff: once
-      // the visible buff expires, the old engine removed that uniqueHrid
-      // entirely. Preserve that behavior while allowing aura sources to
-      // hand off to the next strongest non-expired registration.
+      // 后写增益历史上没有休眠源交接：一旦可见增益过期，
+      // 旧引擎会彻底移除该 uniqueHrid。保留此行为，
+      // 同时允许光环源交接给下一个最强且未过期的注册。
       if (policy === BUFF_SOURCE_POLICY.REPLACE && activeSourceExpired) {
         delete this.buffSources[uniqueHrid];
         delete this.buffSourcePolicies[uniqueHrid];
@@ -804,10 +790,9 @@ class CombatUnit {
         detailsDirty = this.reconcileBuffSource(uniqueHrid, sources, { updateDetails: false }) || detailsDirty;
       }
     } else {
-      // Keep compatibility with runtime buffs restored by older callers
-      // before source registration was introduced. Permanent buffs normally
-      // use null/string start times and therefore remain outside this
-      // numeric timed-buff fallback.
+      // 与源注册机制引入前由旧调用方恢复的运行时增益保持兼容。
+      // 永久增益通常使用 null/字符串开始时间，
+      // 因此不在这个数值定时增益回退范围内。
       const buff = this.combatBuffs[uniqueHrid];
       if (
         typeof buff?.startTime === 'number' &&
@@ -831,20 +816,20 @@ class CombatUnit {
   }
 
   removeExpiredBuffs(currentTime, { updateDetails = true } = {}) {
-    // Only source-registered runtime buffs expire here. clearBuffs() copies
-    // permanent buffs directly into combatBuffs without sources, so those
-    // entries are intentionally outside the timed-expiration lifecycle.
-    // When the active source expires, strongest-source buffs may select a
-    // fallback. Ordinary last-write buffs are cleared with no handoff.
+    // 这里只处理已注册源的运行时增益过期。clearBuffs() 将永久增益
+    // 直接复制进 combatBuffs 而不带源，因此这些条目
+    // 刻意不在定时过期生命周期内。
+    // 当活动源过期时，最强源增益可能选择回退。
+    // 普通后写增益则直接清除，不做交接。
     let detailsDirty = false;
     for (const uniqueHrid of Object.keys(this.buffSources)) {
       detailsDirty =
         this.removeExpiredBuffByUniqueHrid(uniqueHrid, currentTime, { updateDetails: false }) || detailsDirty;
     }
 
-    // Keep compatibility with runtime buffs restored by older callers that
-    // are not represented in buffSources. The targeted primitive above is
-    // also used by specialized expiration events to avoid this full scan.
+    // 与未在 buffSources 中表示、由旧调用方恢复的运行时增益保持兼容。
+    // 上方的定向原语也被专用过期事件使用，
+    // 以避免这种全量扫描。
     for (const [uniqueHrid, buff] of Object.entries(this.combatBuffs)) {
       if (this.buffSources[uniqueHrid]) {
         continue;

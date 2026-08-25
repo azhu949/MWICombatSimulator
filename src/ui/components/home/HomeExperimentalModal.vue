@@ -190,8 +190,8 @@ async function runBatch() {
         labyrinth: entry.labyrinth || null,
         simulationTimeLimit: Number(entry.simulationTimeLimit || 24 * 60 * 60 * 1e9),
         extra: {
-          // Batch cases use neutral worker defaults instead of inheriting local UI buffs,
-          // so the same JSON file produces the same result across installations.
+          // 批处理场景使用中立的 worker 默认值，而非继承本地 UI 增益，
+          // 这样同一份 JSON 文件在不同安装环境下会产生相同结果。
           mooPass: Boolean(entry?.extra?.mooPass),
           comExp: Number(entry?.extra?.comExp ?? 0),
           comDrop: Number(entry?.extra?.comDrop ?? 0),
@@ -204,7 +204,7 @@ async function runBatch() {
       activeWorkerRunId = runId;
       let simResult;
       try {
-        // Intentionally await each case so the experimental batch uses at most one dedicated worker.
+        // 有意逐个 await 每个用例，使实验批处理最多只使用一个专属 worker。
         simResult = await simulator.runSingleSimulationPayloadWithDedicatedWorker(payload, undefined, {
           scope: DEDICATED_WORKER_SCOPE_EXPERIMENTAL,
           onHandle: (workerRunHandle) => {

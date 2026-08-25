@@ -6,7 +6,7 @@ class DamageOverTimeEvent extends CombatEvent {
   constructor(time, sourceRef, target, damage, totalTicks, currentTick, combatStyleHrid) {
     super(DamageOverTimeEvent.type, time);
 
-    // Calling it 'source' would wrongly clear Damage Over Time when the source dies
+    // 将其命名为 'source' 会在来源死亡时错误地清除持续伤害（Damage Over Time）
     this.sourceRef = sourceRef;
     this.target = target;
     this.damage = damage;

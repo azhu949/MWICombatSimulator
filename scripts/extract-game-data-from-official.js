@@ -269,7 +269,7 @@ function waitForInitClientData(wsUrl, timeoutMs, wsOptions) {
           ws.close();
         }
       } catch {
-        // no-op
+        // 空操作
       }
 
       if (error) {

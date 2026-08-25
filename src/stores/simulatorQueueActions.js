@@ -674,7 +674,7 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
         return nextItem;
       });
 
-      // Keep parity with legacy flow: after queueing current diff, return editor state to baseline.
+      // 与旧流程保持等价：入队当前差异后，将编辑器状态恢复到基准。
       const baselineSnapshot = queueState.baseline?.snapshot ?? null;
       if (baselineSnapshot) {
         const currentActive = this.players.find((player) => String(player.id) === this.activePlayerId);

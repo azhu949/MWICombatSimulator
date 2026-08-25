@@ -50,8 +50,8 @@
   const STORAGE_POLL_INTERVAL_MS = 250;
   const TEAM_ROSTER_CACHE_BUCKET_LIMIT = 24;
   const RECENT_PARTY_MESSAGE_LIMIT = 20;
-  // WebSocket party rosters can otherwise keep authorizing themselves after a
-  // silent leave/disband that does not update the current combat action.
+  // 否则，WebSocket 队伍名单在发生不会更新当前战斗动作的静默离队/解散后，
+  // 仍可能继续自我授权。
   const RECENT_PARTY_MESSAGE_MAX_AGE_MS = 10 * 60 * 1000;
   const PROFILE_CACHE_LIMIT = 50;
   const TEAM_IMPORT_PLAYER_IDS = ['1', '2', '3', '4', '5'];
@@ -602,8 +602,8 @@
 
     visited.add(source);
 
-    // Party payloads are detected structurally instead of by key name, because the
-    // main site does not always nest them under a literal `partyInfo` key.
+    // 队伍数据载荷按结构而非键名识别，因为主站并不总是将它们嵌套在
+    // 字面量 `partyInfo` 键名下。
     const hasPartySlotMap =
       source?.partySlotMap && typeof source.partySlotMap === 'object' && !Array.isArray(source.partySlotMap);
     const hasSharableCharacterMap =
@@ -655,9 +655,8 @@
       return;
     }
 
-    // An empty/solo party snapshot is an explicit "left the party" signal, so the
-    // stale roster state is dropped. The snapshot itself is not retained: rosters
-    // with fewer than 2 members can never produce a candidate downstream.
+    // 空/单人队伍快照是明确的 \"left the party\" 信号，因此会丢弃过期的名单状态。
+    // 快照本身不会被保留：成员不足 2 人的名单在下游永远无法产生候选。
     const hasActiveRoster = snapshots.some((snapshot) => countPartyInfoMembers(snapshot.partyInfo) >= 2);
     if (!hasActiveRoster) {
       clearStaleTeamRosterState(mainSiteState.currentCharacterName);
@@ -2784,8 +2783,8 @@
       return false;
     }
 
-    // Userscript sandboxes expose a proxy `window`, while the page posts with the
-    // real (unsafe) window as `event.source`. Both must be accepted here.
+    // 用户脚本沙箱暴露的是代理 `window`，而页面使用真实的（不安全的）window
+    // 作为 `event.source` 发送消息。此处必须同时接受两者。
     return source === window || source === pageWindow;
   }
 
@@ -3010,11 +3009,10 @@
     socket.addEventListener('close', () => {
       mainSiteState.sockets.delete(socket);
       if (mainSiteState.sockets.size === 0) {
-        // Only the in-memory roster is dropped here. A closed socket is not proof
-        // that the party ended: reconnects briefly close every socket, and wiping
-        // the persisted cache would degrade team imports to the current character
-        // until a fresh party message arrives. Persisted cache invalidation is left
-        // to the real "left the party" signals (empty party snapshot / partyId -> 0).
+        // 这里只丢弃内存中的名单。套接字关闭并不能证明队伍已结束：重连会短暂
+        // 关闭所有套接字，若清空持久化缓存，则在新队伍消息到达前，导入团队成员
+        // 将降级为仅当前角色。持久化缓存的失效交由真正的 \"left the party\"
+        // 信号（空队伍快照 / partyId -> 0）处理。
         clearRecentPartyMessages();
       }
     });
@@ -3188,9 +3186,9 @@
     const cacheMatch = readTeamRosterCache(teamContext);
     const gameStateResult = resolveTeamMemberNamesFromGameState();
     const wsPartyResult = resolveTeamMemberNamesFromRecentPartyMessages();
-    // A resolved WebSocket party roster is itself valid evidence of an active party:
-    // the main site does not reliably expose `mwi.game.state.partyInfo`, and party
-    // combat actions do not always carry a non-zero partyId.
+    // 已解析的 WebSocket 队伍名单本身就是队伍处于活动状态的有效证据：
+    // 主站并不总是可靠地暴露 `mwi.game.state.partyInfo`，而且队伍战斗动作
+    // 也不总是携带非零的 partyId。
     const hasActivePartyEvidence =
       Number(gameStateResult?.partyInfoMemberCount || 0) >= 2 ||
       Number(teamContext?.partyId || 0) > 0 ||

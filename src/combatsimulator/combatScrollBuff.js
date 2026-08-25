@@ -2,10 +2,10 @@ import { getCombatScrollBuffTemplate } from '../shared/combatScrolls.js';
 import Buff from './buff.js';
 
 /**
- * Create the simulator's mutable Buff domain object from a shared scroll DTO.
- * Keeping this adapter in the simulator layer prevents shared catalog users
- * from depending on simulator classes. Combat scrolls are not levelled, so
- * the generic Buff constructor must always receive level 1.
+ * 从共享的战斗卷轴 DTO 创建模拟器的可变 Buff 领域对象。
+ * 将此适配器保留在模拟器层，可防止共享目录的使用方
+ * 依赖模拟器类。战斗卷轴没有等级，
+ * 因此通用 Buff 构造函数必须始终接收等级 1。
  */
 export function createCombatScrollBuff(itemHrid, options = undefined) {
   const template = getCombatScrollBuffTemplate(itemHrid, options);
@@ -17,9 +17,9 @@ export function createCombatScrollBuff(itemHrid, options = undefined) {
 }
 
 /**
- * The buff source key that real party simulations use for combat scrolls.
- * Preview paths must register scroll buffs under the same key so source-level
- * removal and source-aware reconciliation stay consistent with the simulator.
+ * 真实队伍模拟中战斗卷轴使用的增益源键。
+ * 预览路径必须用相同键注册卷轴增益，以便源级
+ * 移除与源感知的对账与模拟器保持一致。
  */
 export function getCombatScrollSourceKey(itemHrid) {
   return `scroll:${itemHrid}`;

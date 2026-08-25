@@ -380,20 +380,18 @@ export function extractLocaleTranslationResource(localeSource, moduleId) {
   return evaluateStaticExpression(expression, collectScopeBindings(moduleNode));
 }
 
-// The official zh bundle mixes half-width label colons ("市场价格: {{price}}")
-// with full-width ones ("当前最低价：{{boundary}}"). Chinese typography calls
-// for the full-width colon after CJK labels, so we normalize those while
-// leaving numeric tables (+1: 2.0%), clock times (00:00) and URLs untouched.
-// Accepted tradeoffs (kept deliberate, see the sync tests):
-// - Half-width closing brackets ) and } also trigger the conversion, so
-//   "(可选): 说明" becomes "(可选)：说明" (half-width brackets + full-width
-//   colon). Kept for bracketed labels like "冷却 (战斗中): ...".
-// - A colon glued to digits with no space ("等级:50") stays half-width to
-//   protect numeric labels; note "等级: 50" (with space) IS converted, so the
-//   file can contain both styles.
-// - Half-width ] is NOT in the class: the unescaped trailing ] closes the
-//   character class. "说明]: ..." stays untouched; add "\]" to the class
-//   deliberately if official text ever needs it.
+// 官方中文语言包混用了半角标签冒号（\"市场价格: {{price}}\"）与全角冒号
+// （\"当前最低价：{{boundary}}\"）。中文排版规范要求 CJK 标签后使用全角冒号，
+// 因此我们对这些冒号进行规范化，同时保留数字表格（+1: 2.0%）、
+// 时钟时间（00:00）和 URL 不变。
+// 已接受的取舍（有意保留，详见同步测试）：
+// - 半角右括号 ) 和 } 也会触发转换，因此 \"(可选): 说明\" 会变为
+//   \"(可选)：说明\"（半角括号 + 全角冒号）。为 \"冷却 (战斗中): ...\" 这类
+//   带括号的标签而保留。
+// - 与数字紧贴且无空格的冒号（\"等级:50\"）保持半角，以保护数字标签；
+//   注意 \"等级: 50\"（带空格）会被转换，因此文件中可以同时存在两种风格。
+// - 半角 ] 不在字符类中：未转义的尾部 ] 会闭合字符类。\"说明]: ...\" 保持
+//   不变；若官方文本需要，可特意在字符类中添加 \"\\]\"。
 const ZH_HALF_WIDTH_LABEL_COLON_PATTERN = /([\u4e00-\u9fff）】})]):(?: |(?=[<"\n]))/g;
 
 export function normalizeZhPunctuation(text) {
@@ -692,7 +690,7 @@ async function removeFileQuietly(fileSystem, filePath) {
   try {
     await fileSystem.rm(filePath, { force: true });
   } catch {
-    // Cleanup failures do not change which snapshot version is active.
+    // 清理失败不会改变当前生效的快照版本。
   }
 }
 

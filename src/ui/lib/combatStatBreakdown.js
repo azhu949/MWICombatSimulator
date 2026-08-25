@@ -1,19 +1,19 @@
-// Pure helpers for assembling combat stat breakdown text.
+// 用于组装战斗属性拆解文本的纯函数。
 //
-// Extracted from HomePage.vue so the delta/source/reconciliation joining
-// logic can be unit-tested directly instead of via fragile template source
-// string matching. The formatting functions (formatDelta, formatValue,
-// formatHighlightLabel) and the translation function (t) are injected so the
-// module stays free of Vue/i18n side-effects and import cycles.
+// 从 HomePage.vue 中抽出，使差异/来源/对账拼接逻辑可以
+// 直接进行单元测试，而不必依赖脆弱的模板源码字符串匹配。
+// 格式化函数（formatDelta、formatValue、formatHighlightLabel）
+// 与翻译函数（t）均以注入方式传入，使本模块
+// 不依赖 Vue/i18n 副作用，也避免引入循环依赖。
 
 export const COMBAT_PREVIEW_RECONCILIATION_EPSILON = 1e-9;
 
 /**
- * Build the breakdown parts array and joined text for a single combat stat row.
+ * 为单个战斗属性行构建拆解部分数组与拼接后的文本。
  *
- * @param {object} breakdown - The stat breakdown entry from combatPreviewData.
- * @param {string} entryKey - The stat key (used for part keys).
- * @param {object} deps - Injected formatting/translation dependencies.
+ * @param {object} breakdown - 来自 combatPreviewData 的属性拆解条目。
+ * @param {string} entryKey - 属性 key（用于生成各部分 key）。
+ * @param {object} deps - 注入的格式化/翻译依赖。
  * @param {(stat: object) => string} deps.formatDelta
  * @param {(value: number, format: string) => string} deps.formatValue
  * @param {(source: object) => string} deps.formatHighlightLabel

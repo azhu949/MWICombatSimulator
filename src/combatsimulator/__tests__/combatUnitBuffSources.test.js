@@ -180,9 +180,9 @@ describe('CombatUnit buff sources and party aura engine', () => {
     expect(teammate.combatBuffs['/buff_uniques/speed_aura_attack_speed']).toBeTruthy();
     expect(hero.combatBuffs['/buff_uniques/speed_aura_attack_speed']).toBeTruthy();
     expect(hero.combatBuffs['/buff_uniques/speed_aura_cast_speed']).toBeTruthy();
-    // The aura significantly shortens the attack interval (base: 3 seconds).
+    // 光环显著缩短攻击间隔（基准：3 秒）。
     expect(hero.combatDetails.combatStats.attackInterval).toBeLessThan(2_970_000_000);
-    // The teammate actually spent MP to cast the ability.
+    // 队友确实消耗了魔法值来施放该技能。
     expect(teammate.combatDetails.currentManapoints).toBeLessThan(teammate.combatDetails.maxManapoints);
   });
 
@@ -198,9 +198,9 @@ describe('CombatUnit buff sources and party aura engine', () => {
 
     await runSimulation(players);
 
-    const strongRatio = 0.03 * (1 + 800 * 0.005); // Attack level 800 -> 5.0x -> 0.15
-    const weakRatio = 0.03 * (1 + 1 * 0.005); // Attack level 1 -> 1.005x -> 0.03015
-    // Both players retain the stronger version.
+    const strongRatio = 0.03 * (1 + 800 * 0.005); // 攻击等级 800 → 5.0x → 0.15
+    const weakRatio = 0.03 * (1 + 1 * 0.005); // 攻击等级 1 → 1.005x → 0.03015
+    // 两名玩家都保留更强的版本。
     expect(strong.combatBuffs['/buff_uniques/speed_aura_attack_speed'].ratioBoost).toBeCloseTo(strongRatio, 10);
     expect(weak.combatBuffs['/buff_uniques/speed_aura_attack_speed'].ratioBoost).toBeCloseTo(strongRatio, 10);
     expect(strong.combatBuffs['/buff_uniques/speed_aura_attack_speed'].ratioBoost).not.toBeCloseTo(weakRatio, 10);
@@ -222,8 +222,8 @@ describe('CombatUnit buff sources and party aura engine', () => {
 
     expect(hero.activeBuffSourceKeys[uniqueHrid]).toBe('first');
 
-    // Refreshing an existing Map key does not change its insertion order,
-    // so a later equal registration still uses the same deterministic tie.
+    // 刷新已有的 Map 键不会改变其插入顺序，
+    // 因此之后相等的注册仍使用相同的确定性平局规则。
     addStrongestBuff(hero, { ...equalBuff }, 1, 'second');
     expect(hero.activeBuffSourceKeys[uniqueHrid]).toBe('first');
   });
@@ -242,7 +242,7 @@ describe('CombatUnit buff sources and party aura engine', () => {
       flatBoost: 0,
       flatBoostLevelBonus: 0,
       startTime: 0,
-      duration: 1_000e9, // Weak source lasts 1000 seconds.
+      duration: 1_000e9, // 弱源持续 1000 秒。
     };
     const strongBuff = {
       uniqueHrid,
@@ -252,21 +252,21 @@ describe('CombatUnit buff sources and party aura engine', () => {
       flatBoost: 0,
       flatBoostLevelBonus: 0,
       startTime: 0,
-      duration: 100e9, // Strong source lasts only 100 seconds.
+      duration: 100e9, // 强源仅持续 100 秒。
     };
 
     addStrongestBuff(hero, weakBuff, 0, 'hero');
     addStrongestBuff(hero, strongBuff, 0, 'mate');
 
-    // Strong source is active.
+    // 强源处于生效状态。
     expect(hero.combatBuffs[uniqueHrid].ratioBoost).toBeCloseTo(0.15, 10);
 
-    // Strong source expires (t=101s); the weak source takes over.
+    // 强源过期（t=101s）；弱源接管。
     hero.removeExpiredBuffs(101e9);
     expect(hero.combatBuffs[uniqueHrid]).toBeTruthy();
     expect(hero.combatBuffs[uniqueHrid].ratioBoost).toBeCloseTo(0.03, 10);
 
-    // The weak source also expires; the buff is fully removed.
+    // 弱源也过期；增益被完全移除。
     hero.removeExpiredBuffs(1001e9);
     expect(hero.combatBuffs[uniqueHrid]).toBeFalsy();
   });
@@ -390,21 +390,21 @@ describe('CombatUnit buff sources and party aura engine', () => {
     addStrongestBuff(hero, initialStrongBuff, 0, 'hero');
     addStrongestBuff(hero, fallbackBuff, 0, 'mate');
 
-    // Re-registering the same "hero" source key overwrites the strong
-    // registration. The overwritten buff must never resurface.
+    // 用相同的 "hero" 源键重新注册会覆盖强
+    // 注册。被覆盖的增益绝不能再次浮现。
     addStrongestBuff(hero, refreshedWeakBuff, 1, 'hero');
 
-    // The fallback is strongest among the surviving sources.
+    // 回退源是幸存源中最强的。
     expect(hero.activeBuffSourceKeys[uniqueHrid]).toBe('mate');
     expect(hero.combatBuffs[uniqueHrid].ratioBoost).toBe(0.08);
 
-    // The fallback "mate" source expires; handoff goes to the re-registered
-    // "hero" source (weak buff), not the overwritten strong registration.
+    // 回退的 "mate" 源过期；交接（handoff）转到重新注册的
+    // "hero" 源（弱增益），而非被覆盖的强注册。
     hero.removeExpiredBuffs(1_000e9);
     expect(hero.activeBuffSourceKeys[uniqueHrid]).toBe('hero');
     expect(hero.combatBuffs[uniqueHrid].ratioBoost).toBe(0.03);
 
-    // The re-registered source expires; the buff is fully removed.
+    // 重新注册的源过期；增益被完全移除。
     hero.removeExpiredBuffs(2_002e9);
     expect(hero.combatBuffs[uniqueHrid]).toBeUndefined();
     expect(hero.activeBuffSourceKeys[uniqueHrid]).toBeUndefined();
@@ -451,13 +451,13 @@ describe('CombatUnit buff sources and party aura engine', () => {
     addStrongestBuff(hero, { ...buff, ratioBoost: 0.2 }, 0, 'attacker-b');
     expect(hero.buffSources[uniqueHrid].size).toBe(2);
 
-    // Removes only the requested source; the strongest remaining one takes over.
+    // 只移除请求的源；剩余最强的源接管。
     hero.removeBuffByUniqueHrid(uniqueHrid, 'attacker-a');
     expect(hero.buffSources[uniqueHrid].size).toBe(1);
     expect(hero.activeBuffSourceKeys[uniqueHrid]).toBe('attacker-b');
     expect(hero.combatBuffs[uniqueHrid].ratioBoost).toBe(0.2);
 
-    // Removing the last source clears the buff entirely.
+    // 移除最后一个源会完全清除增益。
     hero.removeBuffByUniqueHrid(uniqueHrid, 'attacker-b');
     expect(hero.buffSources[uniqueHrid]).toBeUndefined();
     expect(hero.combatBuffs[uniqueHrid]).toBeUndefined();
@@ -706,9 +706,9 @@ describe('CombatUnit buff sources and party aura engine', () => {
       'source-a',
     );
 
-    // A second ordinary registration is already known to be the active
-    // last write. Make a full Map scan fail so this test locks the O(1)
-    // source-key lookup instead of an implementation-detail argument.
+    // 第二个普通注册已知为当前生效的
+    // 后写。让全 Map 扫描失败，使本测试锁定 O(1)
+    // 源键查找，而非实现细节争论。
     hero.buffSources[uniqueHrid].entries = () => {
       throw new Error('ordinary addBuff scanned every source');
     };
@@ -854,8 +854,8 @@ describe('CombatUnit buff sources and party aura engine', () => {
     hero.addBuff(buff, 0, 'source');
     const updateSpy = vi.spyOn(hero, 'updateCombatDetails');
 
-    // Same source, same stat-affecting values (fresh object): the combat
-    // ratings cannot change, so the full recompute must be skipped.
+    // 相同源、相同的属性影响值（新对象）：战斗
+    // 属性不会改变，因此必须跳过完整重算。
     hero.addBuff({ ...buff }, 1, 'source');
 
     expect(updateSpy).not.toHaveBeenCalled();
@@ -926,8 +926,8 @@ describe('CombatUnit buff sources and party aura engine', () => {
     addStrongestBuff(hero, weakBuff, 0, 'weak');
     const updateSpy = vi.spyOn(hero, 'updateCombatDetails');
 
-    // Only the non-active weak source expires (t=101s); the active strong
-    // source survives with the same values, so no recompute is needed.
+    // 只有非生效的弱源过期（t=101s）；生效的强
+    // 源以相同值存活，因此无需重算。
     hero.removeExpiredBuffs(101e9);
 
     expect(updateSpy).not.toHaveBeenCalled();
@@ -976,8 +976,8 @@ describe('CombatUnit buff sources and party aura engine', () => {
       duration: 1_000e9,
     };
 
-    // Curse is not a party aura, so the current PR must not change its
-    // historical last-write behavior.
+    // 诅咒不是队伍光环，因此当前 PR 不得改变其
+    // 历史的后写覆盖行为。
     hero.addBuff(mildCurse, 0, 'attacker-a');
     hero.addBuff(strongCurse, 0, 'attacker-b');
 

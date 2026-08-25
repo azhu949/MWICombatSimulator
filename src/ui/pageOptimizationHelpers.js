@@ -52,10 +52,10 @@ export function createCombatPreviewPlayerConfig(playerConfig = null) {
     houseRooms: { ...(playerConfig?.houseRooms ?? {}) },
     guildBuffs: { ...(playerConfig?.guildBuffs ?? {}) },
     achievements: { ...(playerConfig?.achievements ?? {}) },
-    // Keep timed combat-scroll selections in the lightweight preview DTO.
-    // The preview mapper may ignore the field for derived permanent stats,
-    // but retaining it here keeps the same player contract as simulation
-    // and prevents preview/queue transitions from losing the selection.
+    // 在轻量预览 DTO 中保留限时战斗卷轴选择。
+    // 预览映射器在派生永久属性时可能忽略该字段，
+    // 但在此保留可维持与模拟一致的角色契约，
+    // 避免预览/队列切换时丢失该选择。
     combatScrolls: normalizeCombatScrolls(playerConfig?.combatScrolls),
   };
 }

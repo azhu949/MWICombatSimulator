@@ -442,7 +442,7 @@ import { evaluateManualPriceDraft, normalizeManualPriceDraft } from './queueManu
 
 const appVersion = __APP_VERSION__;
 
-// Feedback contact details — single source of truth for the feedback modal.
+// 反馈联系方式——反馈弹窗的唯一数据来源。
 const QQ_GROUP_NUMBER = '1102475742';
 const FEEDBACK_EMAIL = '596846069@qq.com';
 const simulator = useSimulatorStore();
@@ -1041,8 +1041,8 @@ function serializeErrorPayload(payload) {
 
 function openGlobalError(source, payload) {
   const rawDetails = serializeErrorPayload(payload);
-  // Dual-mode rendering: i18n keys (e.g. "common:simulation.*") are translated,
-  // plain runtime error text is shown as-is.
+  // 双模式渲染：i18n key（如 "common:simulation.*"）会被翻译，
+  // 普通运行时错误文本则原样显示。
   const details = t(rawDetails, rawDetails);
   globalErrorText.value = `[${source}] ${details || '-'}`;
   globalErrorModalOpen.value = true;

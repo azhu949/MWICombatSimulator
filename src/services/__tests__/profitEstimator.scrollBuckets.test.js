@@ -137,8 +137,7 @@ describe('timed-scroll result contexts', () => {
       numberOfPlayers: 1,
       difficultyTier: 0,
       deaths: { [MONSTER_HRID]: 10 },
-      // Deliberately different final values: bucket values are
-      // authoritative when present.
+      // 刻意不同的最终值：分桶值存在时具有权威性。
       dropRateMultiplier: { player1: 99 },
       rareFindMultiplier: { player1: 99 },
       combatDropQuantity: { player1: 99 },
@@ -170,8 +169,8 @@ describe('timed-scroll result contexts', () => {
       priceTable: priceTable(),
     });
 
-    // Abyssal imp coin: rate .8, midpoint 1500.  The x2 bucket is capped
-    // at a 100% drop rate, producing 6,000 + 7,500 coins.
+    // 深渊小鬼硬币：掉落率 .8，中点 1500。x2 分桶在 100% 掉落率
+    // 处封顶，产出 6,000 + 7,500 枚硬币。
     expect(breakdown.revenueItems.find((row) => row.itemHrid === COIN_HRID)?.amount).toBe(13_500);
     expect(breakdown.revenue).toBe(13_500);
   });
@@ -211,8 +210,8 @@ describe('timed-scroll result contexts', () => {
       useDropCache: false,
     });
 
-    // random=0 always passes the .8 coin roll and chooses minCount=500:
-    // five unboosted kills plus five kills with +100% quantity.
+    // random=0 始终通过 .8 硬币判定并选择 minCount=500：
+    // 五次无加成击杀加五次 +100% 数量的击杀。
     expect(breakdown.revenue).toBe(7_500);
   });
 
@@ -254,8 +253,8 @@ describe('timed-scroll result contexts', () => {
       isDungeon: false,
       numberOfPlayers: 1,
       difficultyTier: 0,
-      // This shape occurs in partially serialized/new results: the
-      // bucket carries the kill count, while the legacy map is absent.
+      // 这种形状出现在部分序列化/较新的结果中：
+      // 分桶携带击杀数，而旧版映射缺失。
       dropContextBuckets: {
         player1: {
           [MONSTER_HRID]: [

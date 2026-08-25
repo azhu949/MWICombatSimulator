@@ -382,7 +382,7 @@ export function createPricingActions() {
         return null;
       }
 
-      // Keep draft reactive when ability XP/book reference data loads asynchronously.
+      // 在技能经验/技能书参考数据异步加载时，保持草稿的响应式。
       this.abilityUpgradeReferenceVersion;
 
       const queueState = this.ensureQueueState(this.activePlayerId);
@@ -614,7 +614,7 @@ export function createPricingActions() {
             ignorePersistError: false,
           });
         } catch (rollbackError) {
-          // Best effort rollback; keep store/storage aligned with the successful write when rollback fails.
+          // 尽力回滚；若回滚失败，保持 store/存储与成功写入的结果一致。
         }
         return {
           ok: false,

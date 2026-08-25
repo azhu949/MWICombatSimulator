@@ -10,7 +10,7 @@ function resolveActivateAfterImport(message) {
 }
 
 /**
- * Apply a Tampermonkey main-site import payload to the simulator store.
+ * 将 Tampermonkey 主站导入载荷应用到模拟器 store。
  *
  * @param {{
  *   players: Array<{ id: string, selected?: boolean }>,
@@ -86,8 +86,8 @@ export function applyTampermonkeyImportMessage(simulator, message) {
 }
 
 /**
- * Apply current main-site character bonuses to the enhancement simulator.
- * Target item, price overrides, and risk settings remain unchanged.
+ * 将当前主站角色加成应用到强化模拟器。
+ * 目标物品、价格覆盖与风险设置保持不变。
  */
 export function applyTampermonkeyEnhancementImportMessage(enhancement, message) {
   if (!enhancement || typeof enhancement.patchConfig !== 'function') {
@@ -111,7 +111,7 @@ export function applyTampermonkeyEnhancementImportMessage(enhancement, message) 
 }
 
 /**
- * Replace the skilling workspace snapshot with the current main-site character.
+ * 用当前主站角色替换技能工作区快照。
  */
 export function applyTampermonkeySkillingImportMessage(skilling, message) {
   if (!skilling || typeof skilling.importProfile !== 'function') {

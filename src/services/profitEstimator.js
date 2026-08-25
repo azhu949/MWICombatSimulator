@@ -104,7 +104,7 @@ function appendExpectedDropsFromTable(dropTable = [], isRare, context, dropCount
 
     let effectiveRate = 0;
     if (isRare) {
-      // Keep parity with legacy single-page logic for rare drop expectation.
+      // 与旧版单页逻辑保持一致，用于稀有掉落的期望值计算。
       effectiveRate = toFiniteNumber(drop.dropRate, 0) * context.rareFindMultiplier;
     } else {
       const baseDropRate =
@@ -139,9 +139,9 @@ function createLegacyDropContext(deathsCount, simResult, playerHrid) {
 }
 
 /**
- * Normalize the compact per-kill context emitted by SimResult.  Returning
- * null for malformed entries lets older/partial results use the legacy final
- * stat snapshot instead of producing NaN or silently changing drop counts.
+ * 归一化 SimResult 发出的紧凑型每次击杀上下文。对格式错误的条目返回
+ * null，让较旧/不完整的结果使用旧版最终属性快照，
+ * 而不是产生 NaN 或静默改变掉落数量。
  */
 function normalizeDropContextBucket(rawBucket, simResult) {
   if (!rawBucket || typeof rawBucket !== 'object') {
@@ -181,14 +181,12 @@ function getDropContextBuckets(simResult, playerHrid, monsterHrid, deathsCount) 
     return null;
   }
 
-  // A partially serialized/new result can contain fewer bucketed kills than
-  // the legacy deaths map.  Keep the recorded windows authoritative, then
-  // evaluate any residual kills with the final legacy snapshot instead of
-  // silently under-counting drops.  Conversely, clamp malformed buckets so
-  // a corrupted payload cannot create more kills than SimResult reports.
-  // `undefined`/`null` means this result has no authoritative deaths count
-  // for the monster.  In that case the recorded buckets are complete by
-  // contract and must not be residual-filled or clamped against zero.
+  // 部分序列化/较新的结果包含的分桶击杀数可能少于旧版 deaths 映射。
+  // 保持已记录窗口的权威性，然后用最终旧版快照评估剩余击杀，
+  // 而不是静默少算掉落。反之，对格式错误的分桶做钳制，
+  // 防止损坏的载荷创建超过 SimResult 报告的击杀数。
+  // `undefined`/`null` 表示该结果对此怪物没有权威的死亡数。
+  // 此时已记录的分桶按约定即完整集合，不得做剩余填充或对零钳制。
   const hasReportedDeaths =
     deathsCount !== undefined && deathsCount !== null && deathsCount !== '' && Number.isFinite(Number(deathsCount));
   if (hasReportedDeaths) {
@@ -439,9 +437,9 @@ function buildDropMapsForProfit(simResult, playerHrid, randomSource = Math.rando
       continue;
     }
 
-    // Bucket contexts stay in recorded order. Legacy results use one final
-    // snapshot context, so the shared roller consumes the historical RNG
-    // sequence without maintaining a second copy of the drop algorithm.
+    // 分桶上下文保持记录时的顺序。旧版结果使用一个最终快照上下文，
+    // 因此共享掷骰器按历史 RNG 序列消费，
+    // 而无需维护掉落算法的第二份副本。
     const contexts = contextBuckets ?? [createLegacyDropContext(deathsCount, simResult, resolvedPlayer)];
     contexts.forEach((context) => {
       appendRandomDropsForContext(monster, context, randomSource, totalDropMap, noRngTotalDropMap);

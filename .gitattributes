@@ -1,3 +1,6 @@
+# 所有文本文件统一 LF 换行（覆盖 core.autocrlf，保证检出后 prettier endOfLine: "lf" 检查通过）
+* text=auto eol=lf
+
 locales/en/translation.official.generated.json text eol=lf
 locales/zh/translation.official.generated.json text eol=lf
 locales/official-translation-source.generated.json text eol=lf

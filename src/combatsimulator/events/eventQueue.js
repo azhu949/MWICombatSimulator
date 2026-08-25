@@ -14,9 +14,9 @@ class EventQueue {
   }
 
   peekNextEvent() {
-    // heap-js peek() is a non-mutating read of the heap root.  The
-    // simulator relies on that contract to enforce its time horizon
-    // without removing the first event outside the simulation window.
+    // heap-js 的 peek() 是对堆根的非修改性读取。
+    // 模拟器依赖该契约来执行时间范围限制，
+    // 而不会移除模拟窗口之外的首个事件。
     return this.minHeap.peek();
   }
 

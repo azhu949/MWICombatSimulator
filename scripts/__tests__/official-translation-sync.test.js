@@ -361,13 +361,12 @@ describe('zh punctuation normalization', () => {
   });
 
   it('keeps the accepted bracket and numeric-label tradeoffs stable', () => {
-    // Half-width closing brackets still trigger the conversion, so
-    // bracket and colon widths can mix; accepted for bracketed labels.
+    // 半角右括号仍会触发转换，因此括号与冒号的宽度可以混用；
+    // 带括号的标签接受这种组合。
     expect(normalizeZhPunctuation('(可选): 说明')).toBe('(可选)：说明');
-    // A colon glued to digits stays half-width to protect numeric labels.
+    // 与数字紧贴的冒号保持半角，以保护数字标签。
     expect(normalizeZhPunctuation('等级:50')).toBe('等级:50');
-    // Half-width ] is not in the class (it closes the character class),
-    // so it never triggers the conversion.
+    // 半角 ] 不在字符类中（它会闭合字符类），因此永远不会触发转换。
     expect(normalizeZhPunctuation('说明]: 备注')).toBe('说明]: 备注');
   });
 

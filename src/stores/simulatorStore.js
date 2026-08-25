@@ -181,7 +181,6 @@ function getRecommendedParallelWorkerLimit() {
  * @property {{ isRunning: boolean, progress: number, error: string, startedAt: number, elapsedSeconds: number, workerMode: "single" | "multi" }} runtime
  * @property {{ simResult: any, simResults: Array<any>, summaryRows: Array<any>, batchRows: Array<any>, batchResultType: string, activeResultPlayerHrid: string, timeSeriesData: any }} results
  */
-
 export const useSimulatorStore = defineStore('simulator', {
   state: () => {
     const playerAchievementsById = loadPlayerAchievementsFromStorage();
@@ -595,7 +594,7 @@ export const useSimulatorStore = defineStore('simulator', {
             ...this.simulationSettings,
             ...nextSimulationSettings,
           };
-          // Restoring player data should default to regular zone view for immediate editing.
+          // 恢复角色数据时应默认回到常规区域视图，便于立即编辑。
           this.simulationSettings.mode = 'zone';
           this.simulationSettings.useDungeon = false;
           if (!this.simulationSettings.zoneHrid) {
@@ -789,8 +788,8 @@ export const useSimulatorStore = defineStore('simulator', {
       return this.equipmentSets[setName];
     },
     /**
-     * @deprecated Equipment sets now store queue-change templates. Use
-     * importEquipmentSetQueueChanges(name, playerId) to apply a saved set.
+     * @deprecated 装备套装现在存储队列变更模板。请改用
+     * importEquipmentSetQueueChanges(name, playerId) 来应用已保存的套装。
      */
     loadEquipmentSet() {
       return false;

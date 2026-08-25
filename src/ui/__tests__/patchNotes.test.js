@@ -61,13 +61,13 @@ describe('patchNotes', () => {
   it('publishes the newest bilingual entry first and preserves the release chain order', () => {
     const zhEntries = resolvePatchNoteEntries(undefined, 'zh');
     const enEntries = resolvePatchNoteEntries(undefined, 'en');
-    // Source order of patchNote.json is the release chain (newest first).
-    // Deriving the expectation from the catalog keeps this test green on
-    // every release without editing hardcoded versions.
+    // patchNote.json 的源码顺序即发布链（最新的在前）。
+    // 从目录中推导期望值，可让本测试在每次发布时
+    // 无需修改硬编码版本号即可保持通过。
     const releaseEntryIds = Object.keys(patchNoteCatalog);
     expect(releaseEntryIds.length).toBeGreaterThan(0);
 
-    // The newest entry matches the catalog's first entry exactly.
+    // 最新条目与目录中的第一条目完全一致。
     const latestId = releaseEntryIds[0];
     const latestRaw = patchNoteCatalog[latestId];
     expect(zhEntries[0]).toMatchObject({
@@ -81,14 +81,13 @@ describe('patchNotes', () => {
     });
     expect(enEntries[0].sections).toEqual(catalogSections(latestRaw, 'en'));
 
-    // Every catalog release appears exactly once, in source order.
+    // 目录中的每个发布条目都恰好出现一次，且顺序与源码一致。
     expect(zhEntries.slice(0, releaseEntryIds.length).map((entry) => entry.entryId)).toEqual(releaseEntryIds);
     expect(enEntries.slice(0, releaseEntryIds.length).map((entry) => entry.entryId)).toEqual(releaseEntryIds);
 
-    // Spot-check historical entries by catalog position so content
-    // assertions keep working regardless of how many releases precede
-    // them. The flattened section lists must match the original flat
-    // note lists exactly (content and order are preserved by the data).
+    // 按目录位置抽查历史条目，这样无论此前发布过多少版本，
+    // 内容断言都能继续生效。扁平化后的章节列表必须与
+    // 原始扁平注释列表完全一致（内容与顺序均由数据保证）。
     const expectEntryAt = (entryId, zhLabel, enLabel, zhNotes, enNotes) => {
       const index = releaseEntryIds.indexOf(entryId);
       expect(index).toBeGreaterThanOrEqual(0);

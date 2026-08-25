@@ -49,8 +49,8 @@ describe('Party aura combat preview', () => {
       partyPlayerConfigs: [heroConfig, teammateConfig],
     });
 
-    // Fireball has no cooldown and remains the first triggerable slot, so
-    // the live scheduler never reaches the later speed aura.
+    // 火球术没有冷却，仍是第一个可触发槽位，因此
+    // 实时调度器永远不会到达后面的速度光环。
     expect(preview.finalPlayer.combatBuffs['/buff_uniques/speed_aura_attack_speed']).toBeFalsy();
     expect(
       preview.highlightSources.some(
@@ -88,8 +88,8 @@ describe('Party aura combat preview', () => {
       partyPlayerConfigs: [heroConfig, teammateConfig],
     });
 
-    // Attack Coffee raises level 100 to 109 (8% + 1 flat) before the aura
-    // multiplier is evaluated by the live combat opener.
+    // 攻击咖啡在光环乘数被实时战斗开局评估之前，
+    // 将等级从 100 提升到 109（8% + 1 点固定值）。
     const expectedRatio = 0.03 * (1 + 109 * 0.005);
     expect(preview.finalPlayer.combatBuffs['/buff_uniques/speed_aura_attack_speed'].ratioBoost).toBeCloseTo(
       expectedRatio,
@@ -116,9 +116,9 @@ describe('Party aura combat preview', () => {
       partyPlayerConfigs: [heroConfig, firstTeammate, secondTeammate],
     });
 
-    // Both auras are scheduled before either cast resolves. The first
-    // cast activates the second teammate's drink; their already-scheduled
-    // aura then scales from attack level 109 and becomes the active source.
+    // 两个光环在任一次施放结算之前都已排定。第一次
+    // 施放激活第二位队友的饮品；其已排定的
+    // 光环随后按攻击等级 109 缩放，并成为生效源。
     const expectedRatio = 0.03 * (1 + 109 * 0.005);
     expect(preview.finalPlayer.combatBuffs['/buff_uniques/speed_aura_attack_speed'].ratioBoost).toBeCloseTo(
       expectedRatio,
@@ -182,8 +182,8 @@ describe('Party aura combat preview', () => {
 
     expect(preview.finalPlayer.combatBuffs['/buff_uniques/speed_aura_attack_speed']).toBeTruthy();
     expect(preview.finalPlayer.combatBuffs['/buff_uniques/speed_aura_cast_speed']).toBeTruthy();
-    // A level-1 teammate has 110 MP; each official party aura costs 100.
-    // The first slot can cast, but the second slot cannot.
+    // 一级队友有 110 魔法值；每个官方队伍光环消耗 100。
+    // 第一个槽位可以施放，但第二个槽位不行。
     expect(preview.finalPlayer.combatBuffs['/buff_uniques/critical_aura_rate']).toBeFalsy();
     expect(preview.finalPlayer.combatBuffs['/buff_uniques/critical_aura_damage']).toBeFalsy();
 
@@ -192,8 +192,8 @@ describe('Party aura combat preview', () => {
       .map((source) => source.sourceHrid);
     expect(auraSourceHrids).toEqual(['/abilities/speed_aura']);
 
-    // End-to-end parity: with the same configuration, one minute of the
-    // real engine also has enough MP for speed aura but not critical aura.
+    // 端到端一致性：使用相同配置，真实引擎的一分钟
+    // 也拥有足够施放速度光环的魔法值，但不够施放暴击光环。
     const simulationPlayers = buildPlayersForSimulation([heroConfig, teammateConfig]);
     await runSimulation(simulationPlayers);
     expect(simulationPlayers[0].combatBuffs['/buff_uniques/speed_aura_attack_speed']).toBeTruthy();
@@ -307,17 +307,16 @@ describe('Party aura combat preview', () => {
     const firstSource = findAuraSource(first);
     expect(firstSource).toBeTruthy();
 
-    // Skill XP is UI/progression metadata and does not participate in the
-    // party aura opening-state simulation.
+    // 技能经验是 UI/成长元数据，不参与
+    // 队伍光环开启状态模拟。
     teammateConfig.skillExperience.attack = 123_456;
     const afterUnrelatedEdit = buildPreview();
-    // Cache hits hand out an isolated snapshot (structuredClone), so the
-    // source entry is content-equal rather than reference-equal to the
-    // first build's result.
+    // 缓存命中交出隔离的快照（structuredClone），因此
+    // 源条目与第一次构建的结果是内容相等而非引用相等。
     expect(findAuraSource(afterUnrelatedEdit)).toStrictEqual(firstSource);
 
-    // Store edits mutate the existing config object. The value signature
-    // must still invalidate when an aura-relevant field changes.
+    // Store 的编辑会改动现有配置对象。值签名
+    // 仍必须在光环相关字段改变时失效。
     teammateConfig.levels.attack = 800;
     const afterRelevantEdit = buildPreview();
     expect(findAuraSource(afterRelevantEdit)).not.toBe(firstSource);
@@ -339,9 +338,9 @@ describe('Party aura combat preview', () => {
       partyPlayerConfigs: [heroConfig, teammateConfig],
     });
 
-    // Without a party: no teammate aura.
+    // 无队伍：无队友光环。
     expect(solo.finalPlayer.combatBuffs['/buff_uniques/speed_aura_attack_speed']).toBeFalsy();
-    // With a party: the hero gains a teammate aura and attacks faster.
+    // 有队伍：主角获得队友光环并攻击更快。
     expect(withParty.finalPlayer.combatBuffs['/buff_uniques/speed_aura_attack_speed']).toBeTruthy();
     expect(withParty.finalPlayer.buffSources['/buff_uniques/speed_aura_attack_speed'].has('player2')).toBe(true);
     expect(withParty.finalPlayer.buffSources['/buff_uniques/speed_aura_attack_speed'].has('party-aura')).toBe(false);
@@ -349,12 +348,12 @@ describe('Party aura combat preview', () => {
       solo.finalPlayer.combatDetails.combatStats.attackInterval,
     );
 
-    // Source details include a teammate aura entry (teammate name + aura name).
+    // 源详情包含一条队友光环条目（队友名 + 光环名）。
     const auraSource = withParty.highlightSources.find((source) => source.sourceKey?.startsWith('teammate-aura-'));
     expect(auraSource).toBeTruthy();
     expect(auraSource.sourceHrid).toBe('/abilities/speed_aura');
     expect(auraSource.sourceName).toContain('AuraBuddy');
-    // The attackInterval breakdown entry includes this source.
+    // attackInterval 拆解条目包含该源。
     const breakdowns = withParty.statBreakdowns || {};
     const intervalBreakdown = Object.values(breakdowns).find((entry) =>
       entry?.sources?.some((source) => source.sourceKey?.startsWith('teammate-aura-')),
@@ -383,8 +382,8 @@ describe('Party aura combat preview', () => {
     expect(preview.finalPlayer.activeBuffSourceKeys[uniqueHrid]).toBe('player2');
     expect(preview.finalPlayer.combatBuffs[uniqueHrid].ratioBoost).toBeCloseTo(0.03 * (1 + 800 * 0.005), 10);
 
-    // Give the two preview sources different lifetimes to exercise the
-    // same strongest-source handoff used by the combat engine.
+    // 给两个预览源不同的生命周期，以演练
+    // 战斗引擎使用的同一最强源交接（handoff）。
     sources.get('player2').expiresAt = 1;
     sources.get('player3').expiresAt = 100;
     preview.finalPlayer.removeExpiredBuffs(2);
@@ -418,17 +417,17 @@ describe('Party aura combat preview', () => {
       partyPlayerConfigs: [strongHero, weakTeammate],
     });
 
-    // The hero's own aura (strong) is active.
+    // 主角自身的光环（强）处于生效状态。
     expect(solo.finalPlayer.combatBuffs['/buff_uniques/speed_aura_attack_speed'].ratioBoost).toBeCloseTo(
       0.03 * (1 + 800 * 0.005),
       10,
     );
-    // The weaker teammate aura must not override it; the value stays unchanged.
+    // 较弱的队友光环不得覆盖它；数值保持不变。
     expect(withParty.finalPlayer.combatBuffs['/buff_uniques/speed_aura_attack_speed'].ratioBoost).toBeCloseTo(
       0.03 * (1 + 800 * 0.005),
       10,
     );
-    // Because the weaker aura causes no net change, no teammate aura source entry is generated.
+    // 由于较弱的光环不产生净变化，因此不会生成队友光环源条目。
     expect(withParty.highlightSources.some((source) => source.sourceKey?.startsWith('teammate-aura-'))).toBe(false);
   });
 
@@ -447,24 +446,24 @@ describe('Party aura combat preview', () => {
     const uniqueHrid = '/buff_uniques/speed_aura_attack_speed';
     const auraSources = preview.highlightSources.filter((source) => source.sourceKey?.startsWith('teammate-aura-'));
 
-    // Only the actual active contributor (the stronger mate, cast last) is
-    // shown as a source; the weaker mate's earlier cast was overridden and
-    // contributed no final stat change.
+    // 只有实际的生效贡献者（更强的队友，最后施放）才会
+    // 作为源显示；较弱队友较早的施放已被覆盖，
+    // 未贡献任何最终属性变化。
     expect(auraSources).toHaveLength(1);
     expect(auraSources[0].sourceKey).toBe('teammate-aura-player3-/abilities/speed_aura');
-    // The strongest source is active in the final state ...
+    // 最终状态中生效的是最强源 ...
     expect(preview.finalPlayer.activeBuffSourceKeys[uniqueHrid]).toBe('player3');
     expect(preview.finalPlayer.combatBuffs[uniqueHrid].ratioBoost).toBeCloseTo(0.03 * (1 + 800 * 0.005), 10);
-    // ... yet every source stays registered so the strongest can hand off
-    // when it expires (state preservation is separate from attribution).
+    // ... 但每个源仍保持注册，以便最强源在过期时交接
+    // （状态保留与归因是分离的）。
     expect(preview.finalPlayer.buffSources[uniqueHrid].has('player2')).toBe(true);
     expect(preview.finalPlayer.buffSources[uniqueHrid].has('player3')).toBe(true);
-    // Speed aura lowers the attack interval: a negative delta and its
-    // source are both kept, so beneficial reductions are never dropped.
+    // 速度光环降低攻击间隔：负数差值与其
+    // 源都被保留，因此有利的缩减永远不会被丢弃。
     const intervalSource = auraSources[0].changedStats.find((stat) => stat.key === 'attackIntervalSeconds');
     expect(intervalSource).toBeTruthy();
     expect(intervalSource.deltaValue).toBeLessThan(0);
-    // The attackInterval breakdown lists only the active contributor.
+    // attackInterval 拆解只列出生效的贡献者。
     const breakdowns = preview.statBreakdowns || {};
     const intervalBreakdown = Object.values(breakdowns).find((entry) =>
       entry?.sources?.some((source) => source.sourceKey?.startsWith('teammate-aura-')),
@@ -488,8 +487,8 @@ describe('Party aura combat preview', () => {
       partyPlayerConfigs: [strongHero, weakMateA, weakMateB],
     });
 
-    // The hero's own stronger aura stays active under accumulation order;
-    // neither weaker teammate produces a visible change or a source entry.
+    // 在累加顺序下，主角自身更强的光环保持生效；
+    // 两个较弱的队友都不会产生可见变化或源条目。
     expect(withParty.finalPlayer.combatBuffs['/buff_uniques/speed_aura_attack_speed'].ratioBoost).toBeCloseTo(
       0.03 * (1 + 800 * 0.005),
       10,
@@ -509,13 +508,13 @@ describe('Party aura combat preview', () => {
       partyPlayerConfigs: [heroConfig, teammateConfig],
     });
 
-    // Same cache key: the second build must hit the module cache.
+    // 相同缓存键：第二次构建必须命中模块缓存。
     const uniqueHrid = '/buff_uniques/speed_aura_attack_speed';
     const firstBuff = firstPreview.finalPlayer.combatBuffs[uniqueHrid];
 
-    // Corrupt *every* object the first build handed out: the buff cloned
-    // into finalPlayer, the buff captured in sourceBuffs, the
-    // highlightSources array, and a highlight entry.
+    // 破坏第一次构建交出的*每个*对象：克隆进 finalPlayer 的
+    // 增益、sourceBuffs 中捕获的增益、
+    // highlightSources 数组以及一条高亮条目。
     firstBuff.ratioBoost = 999;
     const auraAuraSource = firstPreview.highlightSources.find((source) =>
       source.sourceKey?.startsWith('teammate-aura-'),
@@ -527,9 +526,9 @@ describe('Party aura combat preview', () => {
       partyPlayerConfigs: [heroConfig, teammateConfig],
     });
 
-    // The fresh build must be unaffected by the first build's mutations:
-    // the final buff strength and the highlight attribution are rebuilt
-    // from the authoritative cached state.
+    // 新的构建必须不受第一次构建的改动影响：
+    // 最终增益强度与高亮归因都会从权威的
+    // 缓存状态重建。
     const secondBuff = secondPreview.finalPlayer.combatBuffs[uniqueHrid];
     expect(secondBuff.ratioBoost).toBeCloseTo(0.03 * (1 + 100 * 0.005), 10);
     expect(secondPreview.highlightSources.some((source) => source.sourceKey?.startsWith('teammate-aura-'))).toBe(true);
@@ -557,15 +556,15 @@ describe('Party aura combat preview', () => {
       const options = { partyPlayerConfigs: [heroConfig, teammateConfig] };
       const preview = buildCombatPreviewData(heroConfig, null, null, options);
 
-      // Fireball costs only 10 MP and has no cooldown.  Intelligence 600
-      // gives the teammate enough opening MP to queue more than 512 casts,
-      // so the replay must stop because of maxEvents rather than converge.
+      // 火球术只消耗 10 魔法值且没有冷却。智力 600
+      // 让队友拥有足够的开场魔法值来排队 512 次以上的施放，
+      // 因此回放必须因 maxEvents 而停止，而不是收敛。
       expect(preview.partyAuraPreviewTruncated).toBe(true);
       expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('stopped after 512 events'));
       expect(warnSpy).toHaveBeenCalledWith(expect.stringContaining('preview may be incomplete'));
 
-      // The truncated result is cached with its warning flag, instead of
-      // being collapsed into the normal null/no-aura cache entry.
+      // 截断的结果连同其警告标志一起缓存，而不是
+      // 合并进普通的 null/无光环缓存条目。
       const cachedHit = buildCombatPreviewData(heroConfig, null, null, options);
       expect(cachedHit.partyAuraPreviewTruncated).toBe(true);
       expect(warnSpy).toHaveBeenCalledTimes(1);
@@ -579,17 +578,17 @@ describe('Party aura combat preview', () => {
     const teammateConfig = withAura(emptyConfig('2'), '/abilities/speed_aura');
     teammateConfig.levels = { ...teammateConfig.levels, attack: 100 };
 
-    // Solo preview (no party configured) must not be marked truncated.
+    // 单人预览（未配置队伍）不得被标记为截断。
     const solo = buildCombatPreviewData(heroConfig);
     expect(solo.partyAuraPreviewTruncated).toBe(false);
 
-    // A normal party replay settles well within the event budget.
+    // 正常的队伍回放会在事件预算内顺利收敛。
     const withParty = buildCombatPreviewData(heroConfig, null, null, {
       partyPlayerConfigs: [heroConfig, teammateConfig],
     });
     expect(withParty.partyAuraPreviewTruncated).toBe(false);
 
-    // The same key served from cache must preserve the flag.
+    // 从缓存供应的相同键必须保留该标志。
     const cachedHit = buildCombatPreviewData(heroConfig, null, null, {
       partyPlayerConfigs: [heroConfig, teammateConfig],
     });

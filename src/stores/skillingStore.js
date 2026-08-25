@@ -118,8 +118,8 @@ export function normalizeSkillingStoredProfile(rawProfile) {
 
 export function normalizeSkillingPersistedState(rawState = {}) {
   const source = isPlainObject(rawState) ? rawState : {};
-  // Imported character data and its target levels are intentionally session-only.
-  // Legacy payloads may still contain them, but loading and future writes ignore those fields.
+  // 导入的角色数据及其目标等级有意仅限会话内使用。
+  // 旧版负载中可能仍包含它们，但加载与后续写入都会忽略这些字段。
   return {
     version: SKILLING_STORAGE_VERSION,
     optimizationMode: normalizeSkillingOptimizationMode(source.optimizationMode),

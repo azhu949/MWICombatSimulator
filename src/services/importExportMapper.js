@@ -38,8 +38,8 @@ function deepClone(value) {
 }
 
 function compactHouseRooms(houseRooms) {
-  // PlayerConfig is dense in memory; the portable format intentionally omits
-  // zero-level rooms and is expanded again at the Store boundary on import.
+  // PlayerConfig 在内存中数据密集；可移植格式特意省略零级房间，
+  // 在导入时于 Store 边界重新展开。
   const compact = {};
 
   for (const [hrid, level] of Object.entries(normalizeHouseRoomLevels(houseRooms))) {
@@ -1004,9 +1004,9 @@ function extractShareableAchievements(profile) {
 }
 
 function extractEffectiveGuildBuffLevels(profile) {
-  // Shareable profiles (teammates) carry the effective combat shrine levels directly
-  // as a buff-hrid -> level map, e.g. { "/guild_buffs/force_combat": 3, "/guild_buffs/tempo_combat": 2 }.
-  // This is already server-computed and effective; only the per-buff max-level cap is still applied.
+  // 可分享档案（队友）直接以 buff-hrid -> 等级映射携带有效的战斗神龛等级，
+  // 例如 { "/guild_buffs/force_combat": 3, "/guild_buffs/tempo_combat": 2 }。
+  // 该值已由服务端计算并生效；仅保留每项增益的等级上限约束。
   //
   // map 语义（权威快照）：主站下发的是该角色完整的有效增益等级，且只含已拥有的键
   // （空 map {} = 未拥有任何公会增益，见下方分支；稀疏形状由空 map 分支的存在自证，
@@ -1161,9 +1161,8 @@ function importShareableProfile(parsed, existingPlayer, existingSimulationSettin
   }
 
   return {
-    // Main-site payloads intentionally do not carry active scroll state;
-    // preserve a user's manual scroll configuration when importing the
-    // rest of the character profile.
+    // 主站载荷有意不携带当前的战斗卷轴状态；
+    // 导入角色档案其余部分时，保留用户的手动卷轴配置。
     player: sanitizePlayerConfig(rawPlayer, fallbackPlayer, {
       preserveMissingGuildBuffs: true,
       preserveMissingCombatScrolls: true,
@@ -1406,8 +1405,8 @@ export function importSoloConfig(text, existingPlayer, existingSimulationSetting
 
   if (parsed && parsed.player) {
     return {
-      // Legacy solo payloads predate combat scroll selection. A missing
-      // field therefore cannot be treated as an instruction to clear it.
+      // 旧版 solo 载荷早于战斗卷轴选择功能。因此缺失字段
+      // 不能视为清除它的指令。
       player: applyLegacySoloToPlayer(parsed, existingPlayer, {
         preserveMissingCombatScrolls: true,
       }),

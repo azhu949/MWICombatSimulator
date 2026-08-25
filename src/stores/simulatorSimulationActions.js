@@ -228,7 +228,7 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
       const pricingOptions = createProfitPricingOptions(this.pricing);
       const startedAt = Date.now();
 
-      // Re-check after the await above: a shared run may have started in the meantime.
+      // 在上面的 await 之后重新检查：共享运行可能在此期间已经开始。
       if (hasSharedWorkerRunInProgress()) {
         this.runtime.error = 'common:simulation.errorAnotherRunInProgress';
         return;

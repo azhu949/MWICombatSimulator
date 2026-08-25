@@ -174,7 +174,7 @@ describe('HomePage house room upgrade baseline', () => {
     await flushPromises();
     await openHouseRoomsModal(wrapper);
 
-    // A: 3 -> 5
+    // A：3 -> 5
     await findRoomInput(wrapper, room).setValue('5');
     expect(wrapper.text()).toMatch(/Lv 3 → Lv 5/);
 

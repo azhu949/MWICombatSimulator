@@ -211,8 +211,8 @@ export function useHomeTriggerEditor() {
           return;
         }
 
-        // A same-player object replacement (for example an unguarded import) invalidates
-        // the draft. A transition back from another player keeps the owner's draft.
+        // 同玩家的对象整体替换（例如未受保护的导入）会使草稿失效；
+        // 从其他玩家切回时则保留原玩家的草稿。
         if (nextPlayer !== previousPlayer && previousPlayerId !== '' && nextPlayerId === previousPlayerId) {
           reset();
         }

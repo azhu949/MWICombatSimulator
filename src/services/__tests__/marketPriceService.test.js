@@ -154,7 +154,7 @@ describe('market sale fee rates', () => {
     expect(resolveMarketSalePrice(priceTable, '/items/bag_of_10_cowbells', 'bid')).toBeCloseTo(82, 10);
     expect(resolveMarketSalePrice(priceTable, '/items/plain', 'bid')).toBeCloseTo(95, 10);
 
-    // Vendor sales stay untaxed, even for the special-rate item.
+    // 商店销售保持免税，即使是特殊费率的物品。
     const vendorTable = {
       '/items/bag_of_10_cowbells': { ask: 120, bid: 100, vendor: 50 },
     };
@@ -170,11 +170,11 @@ describe('market sale fee rates', () => {
   it('validates special-rate hrids against the item index', () => {
     const warnSpy = vi.spyOn(console, 'warn').mockImplementation(() => {});
 
-    // Real game data contains the hrid, so nothing is reported.
+    // 真实游戏数据包含该 hrid，因此不会报告任何内容。
     expect(validateSpecialMarketFeeRateHrids()).toEqual([]);
     expect(warnSpy).not.toHaveBeenCalled();
 
-    // A missing hrid is reported and warned about instead of silently falling back to 5%.
+    // 缺失的 hrid 会被报告并警告，而不是静默回退到 5%。
     expect(validateSpecialMarketFeeRateHrids({})).toEqual([BAG_OF_10_COWBELLS_HRID]);
     expect(warnSpy).toHaveBeenCalledTimes(1);
     expect(String(warnSpy.mock.calls[0][0])).toContain(BAG_OF_10_COWBELLS_HRID);
@@ -205,17 +205,17 @@ describe('market sale fee rates', () => {
       '/items/missing': null,
     };
 
-    // bid mode: bid missing -> ask fallback is still a market sale and gets taxed.
+    // bid 模式：bid 缺失 -> 回退到 ask 仍是市场销售，需征税。
     expect(resolveMarketSalePrice(table, '/items/ask_only', 'bid')).toBeCloseTo(200 * 0.95, 10);
 
-    // ask mode: ask is primary.
+    // ask 模式：ask 优先。
     expect(resolveMarketSalePrice(table, '/items/ask_only', 'ask')).toBeCloseTo(200 * 0.95, 10);
 
-    // No market quotes -> vendor fallback stays untaxed.
+    // 无市场报价 -> 回退到商店价格保持免税。
     expect(resolveMarketSalePrice(table, '/items/vendor_only', 'bid')).toBe(40);
     expect(resolveMarketSalePrice(table, '/items/vendor_only', 'ask')).toBe(40);
 
-    // Missing entry falls back to the vendor price index (0 for unknown items).
+    // 缺失条目回退到商店价格索引（未知物品为 0）。
     expect(resolveMarketSalePrice(table, '/items/missing', 'bid')).toBe(0);
   });
 
