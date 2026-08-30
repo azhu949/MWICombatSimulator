@@ -22,6 +22,7 @@ import {
   buildQueueRankedRowsFromSampleState,
   getDefaultQueueRunSettings,
   haveQueueRunRankingSettingsChanged,
+  normalizeBaselineSaleSide,
   normalizeParallelWorkerLimit,
   normalizeQueueSettings,
   resolveQueueBaselineMetricsForSettings,
@@ -31,19 +32,29 @@ import {
   computeQueueChangeSummary,
   deriveQueueVariantNameFromLabels,
 } from '../services/queueVariants.js';
+import { buildChangedEquipmentKeys, buildSelectionKey } from '../services/queuePriceSelection.js';
 import { executeActiveQueueRun } from '../services/queueRunExecution.js';
 import { runParallelWorkerPool } from '../services/workerPool.js';
 import {
   buildQueueCostWarnings,
+  computeMirrorPlan,
   computeQueueItemUpgradeCost,
   createEquipmentPriceConfirmationError,
   createInvalidManualEquipmentPriceError,
   createMissingEquipmentAskError,
   findInvalidManualEquipmentPriceEntry,
+  findInvalidPriceSelection,
   getConfirmedEquipmentPriceKey,
   hasAbilityUpgradeReferenceDataLoaded,
   inspectQueueEquipmentPricing,
+  mergeConfirmedPricesAndSelections,
   normalizeConfirmedEquipmentPrices,
+  normalizeQueuePriceSelections,
+  PHILOSOPHERS_MIRROR_ITEM_HRID,
+  QUEUE_PRICE_METHOD_MANUAL,
+  QUEUE_PRICE_METHOD_MIRROR,
+  resolveBaselineSaleQuote,
+  resolveReferenceEquipmentPrice,
   resolveRecentTradeAverage,
 } from '../services/queueUpgradeCost.js';
 import { clamp, deepClone, isPlainObject, toFiniteNumber } from '../services/utils.js';
@@ -245,6 +256,7 @@ function buildQueueEntriesFromState(queueState) {
         changes,
         changeDetails,
         confirmedEquipmentPrices: normalizeConfirmedEquipmentPrices(item?.confirmedEquipmentPrices),
+        priceSelections: normalizeQueuePriceSelections(item?.priceSelections),
       };
     })
     .filter((entry) => Boolean(entry.id));
@@ -606,9 +618,14 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
     addActivePlayerToQueue(options = {}) {
       const invalidManualEntry = findInvalidManualEquipmentPriceEntry(options?.confirmedEquipmentPrices);
       if (invalidManualEntry) {
-        throw createInvalidManualEquipmentPriceError(invalidManualEntry);
+        throw createInvalidManualEquipmentPriceError(invalidManualEntry, invalidManualEntry?.method || 'manual');
       }
-      const confirmedEquipmentPrices = normalizeConfirmedEquipmentPrices(options?.confirmedEquipmentPrices);
+      const invalidSelection = findInvalidPriceSelection(options?.priceSelections);
+      if (invalidSelection) {
+        throw createInvalidManualEquipmentPriceError(invalidSelection, invalidSelection?.method || '');
+      }
+      const priceSelections = normalizeQueuePriceSelections(options?.priceSelections);
+      const mergedConfirmedPrices = mergeConfirmedPricesAndSelections(options);
       const queueState = this.ensureQueueState(this.activePlayerId);
       if (this.activeQueuePartyStatus?.hasMismatch) {
         queueState.error = this.activeQueuePartyStatus.messageKey || 'common:queue.partyChangedSinceBaseline';
@@ -629,12 +646,15 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
         return [];
       }
 
+      const saleSide = normalizeBaselineSaleSide(queueState.settings?.baselineSaleSide);
+
       const variantPricing = variants.map((variant) => {
         const inspections = inspectQueueEquipmentPricing(
           queueState.baseline.snapshot,
           variant.snapshot,
           this.pricing,
-          confirmedEquipmentPrices,
+          mergedConfirmedPrices,
+          { saleSide },
         );
         const invalid = inspections.find((inspection) => !inspection.targetAskAvailable);
         if (invalid) {
@@ -660,6 +680,12 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
 
       const appendedItems = variants.map((variant, variantIndex) => {
         const fallbackName = `Variant ${queueState.items.length + 1}`;
+        // 入队时按 variant 裁剪 priceSelections：仅保留本 variant 实际变更装备的价格行，
+        // 避免各 variant 冗余存储全量选择，把过滤责任推给所有消费方。
+        const changedKeys = buildChangedEquipmentKeys({ snapshot: variant.snapshot }, queueState.baseline.snapshot);
+        const variantPriceSelections = priceSelections.filter((selection) =>
+          changedKeys.has(buildSelectionKey(selection.itemHrid, selection.enhancementLevel)),
+        );
         const nextItem = {
           id: `${Date.now()}-${Math.random().toString(36).slice(2, 8)}`,
           name: String(variant?.name || fallbackName),
@@ -668,6 +694,7 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
           changeDetails: Array.isArray(variant.changeDetails) ? deepClone(variant.changeDetails) : [],
           costWarnings: deepClone(variantPricing[variantIndex].warnings),
           confirmedEquipmentPrices: deepClone(variantPricing[variantIndex].confirmedEquipmentPrices),
+          priceSelections: deepClone(variantPriceSelections),
           createdAt: Date.now(),
         };
         queueState.items.push(nextItem);
@@ -701,84 +728,198 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
     async prepareActivePlayerQueueAddition() {
       const queueState = this.ensureQueueState(this.activePlayerId);
       if (this.activeQueuePartyStatus?.hasMismatch || !queueState.baseline?.snapshot) {
-        return { requiresConfirmation: false, confirmations: [] };
+        return { requiresConfirmation: false, rows: [], refreshFailed: false };
       }
       const snapshot = deepClone(this.activePlayer);
       const changeSummary = computeQueueChangeSummary(queueState.baseline.snapshot, snapshot);
       const variants = buildQueueVariantSnapshotsFromChanges(queueState.baseline.snapshot, snapshot, changeSummary);
       if (variants.length === 0) {
-        return { requiresConfirmation: false, confirmations: [] };
+        return { requiresConfirmation: false, rows: [], refreshFailed: false };
       }
-      const findMissing = () =>
-        variants.flatMap((variant) =>
-          inspectQueueEquipmentPricing(queueState.baseline.snapshot, variant.snapshot, this.pricing).filter(
-            (inspection) => !inspection.targetAskAvailable,
-          ),
+
+      const baselineSnapshot = queueState.baseline.snapshot;
+      const saleSide = normalizeBaselineSaleSide(queueState.settings?.baselineSaleSide);
+      // 先用当前 pricing 解析镜子价；若后续触发市场刷新，会在刷新后重新解析以对齐最新价格。
+      let mirrorPrice =
+        resolveReferenceEquipmentPrice(PHILOSOPHERS_MIRROR_ITEM_HRID, 0, this.pricing, [])?.price ?? null;
+
+      // 预计算所有 variant 的 inspection 结果，供 findMissing 与后续行收集复用，
+      // 避免对同一 variant 重复调用 inspectQueueEquipmentPricing（纯函数，输入不变则结果不变）。
+      const buildAllInspections = () =>
+        variants.map((variant) =>
+          inspectQueueEquipmentPricing(baselineSnapshot, variant.snapshot, this.pricing, [], { saleSide }),
         );
-      let missing = findMissing();
+      let allInspections = buildAllInspections();
+      let missing = allInspections.flat().filter((inspection) => !inspection.targetAskAvailable);
       let refreshFailed = false;
       if (missing.length > 0) {
         const refreshState = await ensureQueueMarketPriceSnapshot(this);
         refreshFailed = refreshState.refreshFailed;
-        missing = findMissing();
-      }
-      if (missing.length === 0) {
-        return { requiresConfirmation: false, confirmations: [], refreshFailed };
-      }
-      const confirmationRequests = [];
-      const confirmationByKey = new Map();
-      for (const inspection of missing) {
-        const key = getConfirmedEquipmentPriceKey(inspection.afterItemHrid, inspection.afterLevel);
-        const existing = confirmationByKey.get(key);
-        if (existing) {
-          if (!existing.slotKeys.includes(inspection.slotKey)) {
-            existing.slotKeys.push(inspection.slotKey);
-          }
-          continue;
-        }
-        const request = {
-          inspection,
-          confirmation: resolveRecentTradeAverage(this.pricing, inspection.afterItemHrid, inspection.afterLevel),
-          slotKey: inspection.slotKey,
-          slotKeys: [inspection.slotKey],
-        };
-        confirmationByKey.set(key, request);
-        confirmationRequests.push(request);
+        // 刷新后 this.pricing 可能已变化，需重新计算 inspection 与 missing。
+        allInspections = buildAllInspections();
+        missing = allInspections.flat().filter((inspection) => !inspection.targetAskAvailable);
+        // 镜子价同样需重新解析：刷新可能改变镜子本身的市场价，
+        // 若沿用旧值，弹窗中的 autoMirrorPrice 与每行 mirrorPlan.cost 会与更新后的
+        // pricingState 不一致（computeMirrorPlan 仅使用传入的 mirrorPrice，不自行解析）。
+        mirrorPrice = resolveReferenceEquipmentPrice(PHILOSOPHERS_MIRROR_ITEM_HRID, 0, this.pricing, [])?.price ?? null;
       }
 
-      await Promise.all(
-        confirmationRequests.map(async (request) => {
-          if (request.confirmation) {
-            return;
+      // 收集所有变化装备行（无论是否有精确价），并解析参考价/基准出售价/镜子方案。
+      const rows = [];
+      const rowByKey = new Map();
+      for (const inspections of allInspections) {
+        for (const inspection of inspections) {
+          const key = getConfirmedEquipmentPriceKey(inspection.afterItemHrid, inspection.afterLevel);
+          const existing = rowByKey.get(key);
+          if (existing) {
+            if (!existing.slotKeys.includes(inspection.slotKey)) {
+              existing.slotKeys.push(inspection.slotKey);
+            }
+            continue;
           }
-          request.confirmation = await marketHistoryService.getLatestAsk(
-            request.inspection.afterItemHrid,
-            request.inspection.afterLevel,
+          const reference = resolveReferenceEquipmentPrice(
+            inspection.afterItemHrid,
+            inspection.afterLevel,
+            this.pricing,
+            null,
+          );
+          const baselineSale = resolveBaselineSaleQuote(
+            inspection.beforeItemHrid,
+            inspection.beforeLevel,
+            this.pricing,
+            saleSide,
+          );
+          // 右一价：目标装备（要加入队列的装备）在市场上的最高收购价（bid 侧）。
+          const targetBid = resolveBaselineSaleQuote(
+            inspection.afterItemHrid,
+            inspection.afterLevel,
+            this.pricing,
+            'bid',
+          );
+          const baselineLevel =
+            String(inspection.beforeItemHrid || '') === String(inspection.afterItemHrid || '')
+              ? inspection.beforeLevel
+              : 0;
+          const mirrorPlan = computeMirrorPlan({
+            itemHrid: inspection.afterItemHrid,
+            targetLevel: inspection.afterLevel,
+            baselineLevel,
+            pricingState: this.pricing,
+            confirmedEquipmentPrices: [],
+            mirrorPrice,
+          });
+          const row = {
+            itemHrid: inspection.afterItemHrid,
+            enhancementLevel: inspection.afterLevel,
+            slotKey: inspection.slotKey,
+            slotKeys: [inspection.slotKey],
+            reference,
+            baselineSale: baselineSale,
+            targetBid,
+            baselineSaleValue: inspection.baselineSaleValue,
+            baselineSaleSource: inspection.baselineSaleSource,
+            baselineSaleZero: inspection.baselineSaleZero,
+            baselineLevel,
+            mirrorPlan,
+            usedBaselineLevels: Array.isArray(mirrorPlan?.usedBaselineLevels) ? mirrorPlan.usedBaselineLevels : [],
+            mirrorPrice,
+            hasExactAsk: inspection.targetAskAvailable,
+            targetAsk: inspection.targetAsk,
+            targetPriceSource: inspection.targetPriceSource,
+            confirmedPrice: inspection.confirmedPrice,
+          };
+          rowByKey.set(key, row);
+          rows.push(row);
+        }
+      }
+
+      // 为缺价行补充历史 Ask（异步）。历史 Ask 是异步数据源（GitHub），不在 pricingState 中，
+      // 需在此统一拉取后注入参考价列与镜子方案取价链，使口径一致（精确 Ask → 官方小时均价 → 历史 Ask → confirmed）。
+      // 行目标级仅对缺价行（无精确 Ask 且无参考价）发起历史查询：有精确 Ask / 官方小时均价的行
+      // 目标级已有同步价，无需查询（fetchAndCollectHistory 内部也按等级跳过同步可取值，请求零开销）。
+      const historicalQuotes = new Map();
+      const attemptedHistoryKeys = new Set();
+      const fetchAndCollectHistory = async (itemHrid, enhancementLevel) => {
+        const histKey = getConfirmedEquipmentPriceKey(itemHrid, enhancementLevel);
+        if (historicalQuotes.has(histKey) || attemptedHistoryKeys.has(histKey)) {
+          return;
+        }
+        // 同步链能取到价时无需历史 Ask，跳过网络请求（不缓存非历史数据到 historicalQuotes，
+        // 因 resolveHistoricalQuote 仅为历史数据服务，混入同步价会语义不纯）。
+        const syncQuote = resolveReferenceEquipmentPrice(itemHrid, enhancementLevel, this.pricing, null);
+        if (syncQuote) {
+          return;
+        }
+        // 发起请求前先登记"已尝试"：查询失败（null，如无历史数据/网络错误）不写入 historicalQuotes，
+        // 但同一准备过程内该等级不再重复请求——覆盖第一轮（缺价行目标级）与第二轮
+        // （mirrorPlan.missing 输入级，兜底分支会把目标级本身列入 missing）的同 key 交集，
+        // 并顺带补齐第二轮并发同 key 的本地去重（marketHistoryService 层已有请求级缓存兜底）。
+        attemptedHistoryKeys.add(histKey);
+        const history = await marketHistoryService.getLatestAsk(itemHrid, enhancementLevel);
+        if (history) {
+          historicalQuotes.set(histKey, history);
+        }
+      };
+
+      const missingRows = rows.filter((row) => !row.hasExactAsk && !row.reference);
+      await Promise.all(
+        missingRows.map(async (row) => {
+          await fetchAndCollectHistory(row.itemHrid, row.enhancementLevel);
+          // 同步取值：fetchAndCollectHistory 已将历史 Ask 写入 historicalQuotes，
+          // 若取到则覆盖 row.reference（与原逻辑一致）。
+          const histKey = getConfirmedEquipmentPriceKey(row.itemHrid, row.enhancementLevel);
+          const history = historicalQuotes.get(histKey);
+          if (history && history.source !== 'ask') {
+            row.reference = history;
+          }
+        }),
+      );
+
+      // 为所有行的镜子方案缺价输入件补充历史 Ask（输入件等级可能与目标装备等级不同）。
+      // mirrorPlan.missing 列出合成方案所需但取不到同步价的输入件等级；历史 Ask 可解锁这些等级。
+      // 新交互模型下所有变更行都会进弹窗、镜子方式对任何行可选：目标装备有精确 Ask / 小时均价的行，
+      // 其 mirrorPlan.missing 输入件同样需要历史 Ask 解锁，否则只能手动补价（G3：历史数据形同虚设）。
+      // 请求量受控：fetchAndCollectHistory 已抓取去重 + 同步链可取值跳过，仅对真正缺价的等级发起请求。
+      await Promise.all(
+        rows.map(async (row) => {
+          const missingItems = Array.isArray(row.mirrorPlan?.missing) ? row.mirrorPlan.missing : [];
+          await Promise.all(
+            missingItems.map(async (missingItem) => {
+              await fetchAndCollectHistory(row.itemHrid, Number(missingItem.level));
+            }),
           );
         }),
       );
 
-      const confirmations = confirmationRequests.map((request) => {
-        if (!request.confirmation) {
-          return {
-            itemHrid: request.inspection.afterItemHrid,
-            enhancementLevel: request.inspection.afterLevel,
-            price: null,
-            volume: null,
-            source: MANUAL_EQUIPMENT_PRICE_SOURCE,
-            marketTimestamp: 0,
-            slotKey: request.slotKey,
-            slotKeys: request.slotKeys,
-            manual: true,
-          };
+      // 历史 Ask 到位后重算所有行镜子方案，使 mirrorPlan.cost 与参考价列口径一致。
+      // 有精确 Ask / 官方小时均价的行目标级不会被拉取历史（同步链可取值），rowHistory 为空，
+      // 下方 reference 覆盖守卫不会触发，参考价列不受影响。
+      for (const row of rows) {
+        const rowHistKey = getConfirmedEquipmentPriceKey(row.itemHrid, row.enhancementLevel);
+        const rowHistory = historicalQuotes.get(rowHistKey);
+        if (rowHistory && rowHistory.source !== 'ask' && !row.reference) {
+          row.reference = rowHistory;
         }
-        return {
-          ...request.confirmation,
-          slotKey: request.slotKey,
-          slotKeys: request.slotKeys,
-        };
-      });
-      return { requiresConfirmation: true, confirmations, refreshFailed };
+        const mirrorPlan = computeMirrorPlan({
+          itemHrid: row.itemHrid,
+          targetLevel: row.enhancementLevel,
+          baselineLevel: row.baselineLevel || 0,
+          pricingState: this.pricing,
+          confirmedEquipmentPrices: [],
+          mirrorPrice,
+          historicalQuotes,
+        });
+        row.mirrorPlan = mirrorPlan;
+        row.usedBaselineLevels = Array.isArray(mirrorPlan?.usedBaselineLevels) ? mirrorPlan.usedBaselineLevels : [];
+      }
+
+      // 设计意图：只要存在装备变更（rows.length > 0）即弹出价格确认窗口，
+      // 即使所有装备都有精确 ask 价（hasExactAsk = true）也不例外。
+      // 旧逻辑仅在"缺价"（missing.length > 0）时弹窗，新逻辑改为"每次装备变更都弹窗"，
+      // 目的是让用户在所有装备变更场景下都能选择定价方式（左一价/右一价/镜子方案/手工价），
+      // 而不是在市场价可用时静默使用左一价入队。
+      const requiresConfirmation = rows.length > 0;
+      return { requiresConfirmation, rows, refreshFailed, mirrorPrice, historicalQuotes };
     },
     updateActiveQueueSettings(partialSettings = {}) {
       return this.updateQueueSettingsForPlayer(this.activePlayerId, partialSettings, {
@@ -817,6 +958,11 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
 
       queueState.settings = nextSettings;
       const rankingSettingsChanged = haveQueueRunRankingSettingsChanged(previousSettings, queueState.settings);
+      // 基准出售口径（baselineSaleSide）影响 equipmentSaleValue/equipmentNetCost/totalUpgradeCost →
+      // costScore/finalScore，但不影响 baseline metrics（后者仅依赖 medianBlend，见
+      // resolveQueueBaselineMetricsForSettings）。因此口径切换只单独触发结果重算，不并入
+      // rankingSettingsChanged，避免多余的 baseline metrics 重算。
+      const saleSideChanged = previousSettings.baselineSaleSide !== nextSettings.baselineSaleSide;
       if (rankingSettingsChanged && queueState?.baseline) {
         const refreshedBaselineMetrics = resolveQueueBaselineMetricsForSettings(
           queueState.baseline,
@@ -829,7 +975,11 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
           };
         }
       }
-      if (rankingSettingsChanged && Array.isArray(queueState?.rawRuns) && queueState.rawRuns.length > 0) {
+      if (
+        (rankingSettingsChanged || saleSideChanged) &&
+        Array.isArray(queueState?.rawRuns) &&
+        queueState.rawRuns.length > 0
+      ) {
         this.refreshQueueResultsFromRawRuns({
           playerId: normalizedPlayerId,
           includeEmptyEntries: queueState?.isRunning !== true && queueState?.lastRunStatus === 'completed',
@@ -914,12 +1064,15 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
       const playerId = String(options?.playerId || this.activePlayerId);
       const queueState = this.ensureQueueState(playerId);
       if (queueState.baseline?.snapshot) {
+        const saleSide = normalizeBaselineSaleSide(queueState.settings?.baselineSaleSide);
         for (const item of queueState.items) {
+          const confirmedEquipmentPrices = mergeConfirmedPricesAndSelections(item);
           const inspections = inspectQueueEquipmentPricing(
             queueState.baseline.snapshot,
             item?.snapshot,
             this.pricing,
-            item?.confirmedEquipmentPrices,
+            confirmedEquipmentPrices,
+            { saleSide },
           );
           item.costWarnings = buildQueueCostWarnings(inspections);
         }

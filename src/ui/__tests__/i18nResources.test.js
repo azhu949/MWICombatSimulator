@@ -142,12 +142,11 @@ describe('common locale resources', () => {
 
   it('keeps manual price queue keys synchronized across locales', () => {
     const manualKeys = [
-      'manualPriceBody',
       'manualPriceSource',
       'manualPricePlaceholder',
       'manualPriceInvalid',
       'manualPriceInvalidRow',
-      'manualPriceEmptyValue',
+      'priceSelectionInvalid',
       'manualPriceUnit',
       'manualPriceDigitsOnly',
     ];
@@ -157,8 +156,6 @@ describe('common locale resources', () => {
     }
     expect(enCommon?.queue?.manualPriceSource).toBe('Manual input');
     expect(zhCommon?.queue?.manualPriceSource).toBe('手动输入');
-    expect(enCommon?.queue?.manualPriceBody).toContain('buy price');
-    expect(zhCommon?.queue?.manualPriceBody).toContain('买入价');
     expect(enCommon?.queue?.manualPriceInvalid).toContain('greater than 0');
     expect(zhCommon?.queue?.manualPriceInvalid).toContain('大于 0');
     expect(enCommon?.queue?.manualPriceInvalidRow).toContain('{{name}} +{{level}}');
@@ -171,8 +168,8 @@ describe('common locale resources', () => {
     expect(zhCommon?.queue?.manualPriceDigitsOnly).toContain('数字');
     expect(enCommon?.queue?.manualPriceUnit).toBe('Buy price unit');
     expect(zhCommon?.queue?.manualPriceUnit).toBe('买入价单位');
-    expect(enCommon?.queue?.manualPriceEmptyValue).toBe('—');
-    expect(zhCommon?.queue?.manualPriceEmptyValue).toBe('—');
+    expect(enCommon?.queue?.priceSelectionInvalid).toContain('greater than 0');
+    expect(zhCommon?.queue?.priceSelectionInvalid).toContain('大于 0');
   });
 
   it('keeps the multi-round result cost column keys synchronized across locales', () => {

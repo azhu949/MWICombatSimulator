@@ -22,3 +22,10 @@ export function deepClone(value) {
 export function isPlainObject(value) {
   return value != null && typeof value === 'object' && !Array.isArray(value);
 }
+
+// 归一化"基准装备出售抵扣"的市场侧配置：仅接受 'ask'，其余（含缺省）一律视为 'bid'。
+// 放在无依赖的 utils 中，供 queueScoring（normalizeQueueSettings / buildQueueItemCostInsights）
+// 与 queueUpgradeCost（resolveEquipmentTransitionPricing）共享同一口径，避免独立实现漂移。
+export function normalizeBaselineSaleSide(value) {
+  return String(value || 'bid') === 'ask' ? 'ask' : 'bid';
+}

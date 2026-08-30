@@ -153,30 +153,35 @@ describe('App shell contracts', () => {
 
   it('confirms official averages and historical Ask prices before adding missing-ask equipment', () => {
     expect(appSource).toContain(':open="equipmentPriceConfirmationModalOpen"');
-    expect(appSource).toContain('common:queue.confirmFallbackPriceBody');
-    expect(appSource).toContain('common:queue.confirmHistoricalAskWarning');
+    expect(appSource).toContain('common:queue.confirmPriceChoiceBody');
+    expect(appSource).toContain('common:queue.confirmPriceChoiceTitle');
     expect(appSource).toContain('pendingEquipmentPriceConfirmations');
     expect(appSource).toContain('@click="confirmEquipmentPricesAndAdd"');
     expect(appSource).toContain('await simulator.prepareActivePlayerQueueAddition()');
-    expect(appSource).toContain('common:queue.confirmPriceSlot');
     expect(appSource).toContain('common:queue.confirmPriceSourceHistoricalAsk');
-    expect(appSource).toContain('formatConfirmationVolume(entry.volume)');
-    expect(appSource).toContain('formatConfirmationSlots(entry)');
-    expect(appSource).toContain('formatConfirmedMarketPrice(entry.price)');
-    expect(appSource).toContain("unitCase: 'lower'");
+    expect(appSource).toContain('if (!entry?.reference) {');
+    expect(appSource).toContain('formatConfirmedMarketPrice(entry.reference.price)');
+    expect(appSource).toContain('formatCompactAmountForLocale');
+    expect(appSource).toContain('common:queue.confirmPriceLeft1');
+    expect(appSource).toContain('common:queue.confirmPriceRight1');
+    expect(appSource).toContain('common:queue.right1Unavailable');
+    expect(appSource).toContain('function hasRealTargetBid(entry)');
+    expect(appSource).toContain('common:queue.left1Unavailable');
+    expect(appSource).toContain('function hasReferencePrice(entry)');
+    expect(appSource).toContain('common:queue.confirmPriceMirrorCost');
+    expect(appSource).toContain('QUEUE_PRICE_METHOD_LEFT1');
+    expect(appSource).toContain('QUEUE_PRICE_METHOD_RIGHT1');
+    expect(appSource).toContain('QUEUE_PRICE_METHOD_MANUAL');
+    expect(appSource).toContain('QUEUE_PRICE_METHOD_MIRROR');
   });
 
   it('accepts a manually entered buy price for equipment without any market price', () => {
     expect(appSource).toContain('const manualPriceDrafts = ref({})');
     expect(appSource).toContain('const manualPriceErrors = ref({})');
-    expect(appSource).toContain('function isManualPriceEntry(entry)');
     expect(appSource).toContain('function getManualPriceKey(entry)');
-    expect(appSource).toContain('const hasManualEquipmentPriceConfirmation = computed(() =>');
-    expect(appSource).toContain('common:queue.manualPriceBody');
     expect(appSource).toContain('common:queue.manualPriceSource');
     expect(appSource).toContain('common:queue.manualPricePlaceholder');
     expect(appSource).toContain('common:queue.manualPriceInvalidRow');
-    expect(appSource).toContain('common:queue.manualPriceEmptyValue');
     expect(appSource).toContain('const manualPriceUnits = ref({})');
     expect(appSource).toContain('const MANUAL_PRICE_UNITS = [');
     expect(appSource).toContain("{ value: 'k', multiplier: 1000 }");
@@ -195,5 +200,26 @@ describe('App shell contracts', () => {
     expect(appSource).toContain('v-for="unit in MANUAL_PRICE_UNITS"');
     expect(appSource).toContain('@click="handleManualPriceUnitChange(unit.value, entry)"');
     expect(appSource).toContain(':aria-pressed=');
+  });
+
+  it('accepts manual fill-in prices for missing mirror input pieces', () => {
+    expect(appSource).toContain('computeMirrorPlan');
+    expect(appSource).toContain('const mirrorInputDrafts = ref({})');
+    expect(appSource).toContain('function collectMirrorManualPrices(entry)');
+    expect(appSource).toContain('function getMirrorMissingLevels(entry)');
+    expect(appSource).toContain('function recomputeMirrorPlan(entry)');
+    expect(appSource).toContain('function sanitizeMirrorManualPriceInput(event, entry, level)');
+    expect(appSource).toContain('function handleMirrorManualPriceUnitChange(value, entry, level)');
+    expect(appSource).toContain('function setSharedMirrorPriceUnit(value)');
+    expect(appSource).toContain('data-mirror-manual-input');
+    expect(appSource).toContain('@input="sanitizeMirrorManualPriceInput($event, entry, missingItem.level)"');
+    expect(appSource).toContain('v-for="(missingItem, mIndex) in getMirrorMissingLevels(entry)"');
+    expect(appSource).toContain('common:queue.mirrorPlanMissingInputs');
+    expect(appSource).toContain('common:queue.mirrorInputHint');
+    expect(appSource).toContain('manualInputPrices: manualPrices');
+    expect(appSource).toContain('v-if="manualPriceErrors[getManualPriceKey(entry)]"');
+    expect(appSource).toContain('delete manualPriceErrors.value[getManualPriceKey(entry)]');
+    expect(appSource).toContain('function isSharedMirrorPriceMissing()');
+    expect(appSource).toContain('!isSharedMirrorPriceMissing()');
   });
 });

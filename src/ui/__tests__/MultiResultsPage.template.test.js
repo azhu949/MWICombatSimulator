@@ -28,10 +28,14 @@ describe('MultiResultsPage baseline summary copy', () => {
     expect(multiResultsPageSource).not.toContain('characterItemsUtil.mainHand');
   });
 
-  it('flags manually entered equipment prices in the ranking table and export', () => {
-    expect(multiResultsPageSource).toContain('v-if="hasManualUpgradePrice(row)"');
+  it('flags equipment prices by method in the ranking table and export', () => {
+    expect(multiResultsPageSource).toContain('v-for="badge in getBuyPriceBadges(row)"');
+    expect(multiResultsPageSource).toContain('function getBuyPriceBadges(row)');
     expect(multiResultsPageSource).toContain("t('common:multiRound.manualPriceBadge', 'Manual')");
-    expect(multiResultsPageSource).toContain("'common:multiRound.manualPriceTooltip'");
+    expect(multiResultsPageSource).toContain("t('common:queue.priceMethodLeft1', 'Left 1')");
+    expect(multiResultsPageSource).toContain("t('common:queue.priceMethodRight1', 'Right 1')");
+    expect(multiResultsPageSource).toContain("t('common:queue.priceMethodMirror', 'Mirror')");
+    expect(multiResultsPageSource).toMatch(/common:multiRound\.manualPriceTooltip/);
     expect(multiResultsPageSource).toContain('formatEquipmentBuyPriceForExport(row)');
   });
 

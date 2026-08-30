@@ -44,7 +44,7 @@ import {
   inspectEquipmentTransitionCost,
   resolveEnhancementLevelPriceFromPricingState,
 } from '../services/queueUpgradeCost.js';
-import { clamp, clampPositiveInteger, toFiniteNumber } from '../services/utils.js';
+import { clamp, clampPositiveInteger, normalizeBaselineSaleSide, toFiniteNumber } from '../services/utils.js';
 
 function getDetectedHardwareCoreCount() {
   const hardwareConcurrency = Number(typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : NaN);
@@ -355,11 +355,19 @@ export function createPricingActions() {
         return null;
       }
 
+      // 与队列页/多轮模拟口径一致：首页升级成本草稿同样遵循 baselineSaleSide 设置
+      // （bid=实际卖出价 / ask=买入参考重置成本口径），避免两处抵扣数值不一致。
+      const saleSide = normalizeBaselineSaleSide(queueState.settings?.baselineSaleSide);
+      // 第 5 参是 confirmedEquipmentPrices（首页草稿没有用户锁定价，传空数组），
+      // 第 6 参才是 options；切勿把 { saleSide } 误传到第 5 参——会被归一化静默丢弃，
+      // 导致基准出售口径（baselineSaleSide）永远按默认 bid 计算。
       const inspection = inspectEquipmentTransitionCost(
         normalizedSlotKey,
         baselineEquipment,
         currentEquipment,
         this.pricing,
+        [],
+        { saleSide },
       );
 
       return {

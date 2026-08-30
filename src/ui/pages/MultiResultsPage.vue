@@ -280,11 +280,13 @@
               <TableCell class="px-2 py-2">
                 <span>{{ formatCompactCurrency(row.costInsights?.equipmentBuyPrice) }}</span>
                 <span
-                  v-if="hasManualUpgradePrice(row)"
-                  class="ml-1 inline-flex items-center rounded border border-warning/40 bg-warning/10 px-1 py-px text-[10px] font-semibold text-warning"
-                  :title="manualUpgradePriceTooltip(row)"
+                  v-for="badge in getBuyPriceBadges(row)"
+                  :key="badge.key"
+                  class="ml-1 inline-flex items-center rounded border px-1 py-px text-[10px] font-semibold"
+                  :class="badge.class"
+                  :title="badge.tooltip"
                 >
-                  {{ t('common:multiRound.manualPriceBadge', 'Manual') }}
+                  {{ badge.label }}
                 </span>
               </TableCell>
               <TableCell class="px-2 py-2">{{ formatCompactCurrency(row.costInsights?.equipmentNetCost) }}</TableCell>
@@ -371,6 +373,7 @@ import { useI18nText } from '../composables/useI18nText.js';
 import { Progress } from '../components/ui/progress/index.js';
 import { isQueueRunInProgress } from '../multiResultsPresentation.js';
 import { formatQueueTriggerDetailLine } from '../queueTriggerPresentation.js';
+import { buildChangedEquipmentKeys, buildSelectionKey } from '../queuePriceSelection.js';
 
 const simulator = useSimulatorStore();
 const { t, language } = useI18nText();
@@ -539,6 +542,9 @@ const baselineSummaryRows = computed(() => {
   ];
 });
 const queueChangeInlineSeparator = computed(() => (language.value === 'zh' ? '、' : ', '));
+// 导出 priceMethod 列的本地化分隔符：中文用全角标点，英文用半角标点。
+const priceMethodColon = computed(() => (language.value === 'zh' ? '：' : ':'));
+const priceMethodJoinSeparator = computed(() => (language.value === 'zh' ? '；' : '; '));
 
 const abilityBookInfoByAbilityHrid = (() => {
   const result = {};
@@ -611,32 +617,93 @@ function formatCostPerPoint01Pct(value) {
   return formatCompactCurrency(value);
 }
 
-function getManualUpgradePriceSlots(row) {
-  const slots = row?.costInsights?.manualPriceSlots;
-  return Array.isArray(slots) ? slots : [];
-}
-
-function hasManualUpgradePrice(row) {
-  return getManualUpgradePriceSlots(row).length > 0;
-}
-
-function manualUpgradePriceTooltip(row) {
-  const slots = getManualUpgradePriceSlots(row);
-  const count = slots.length;
-  const total = slots.reduce((sum, slot) => sum + Math.max(0, Number(slot?.price || 0)), 0);
-  return t(
-    'common:multiRound.manualPriceTooltip',
-    '{{count}} equipment price(s) ({{total}}) were entered manually by the user and were not verified against market data.',
-    { count, total: formatCompactCurrency(total) },
-  );
+// 根据价格方式 slot 数据，构建买入价旁的标记列表。
+// 每种方式（left1/right1/manual/mirror）各显示一个 badge，便于用户一眼区分价格来源。
+function getBuyPriceBadges(row) {
+  const slots = Array.isArray(row?.costInsights?.priceMethodSlots) ? row.costInsights.priceMethodSlots : [];
+  if (slots.length === 0) {
+    return [];
+  }
+  // 预聚合 manual 插槽的 count 和 total，用于 manual badge tooltip。
+  const manualSlots = slots.filter((slot) => String(slot?.method || '') === 'manual');
+  const manualCount = manualSlots.length;
+  const manualTotal = manualSlots.reduce((sum, slot) => sum + Math.max(0, Number(slot?.price || 0)), 0);
+  // 预聚合每种 method 下所有 slot 的"装备名 +等级"列表，用于 mirror/left1/right1 badge tooltip。
+  // badge 按 method 去重只显示一个，但 tooltip 应反映该方式下所有受影响的装备，而非仅第一件。
+  const slotNamesByMethod = {};
+  for (const slot of slots) {
+    const method = String(slot?.method || '');
+    if (!method) {
+      continue;
+    }
+    const name = getItemName(slot?.itemHrid);
+    const level = Number(slot?.enhancementLevel || 0);
+    const entry = `${name} +${level}`;
+    if (!Array.isArray(slotNamesByMethod[method])) {
+      slotNamesByMethod[method] = [];
+    }
+    slotNamesByMethod[method].push(entry);
+  }
+  // 按 method 去重，同一种方式只显示一个 badge。
+  const seen = new Set();
+  const badges = [];
+  for (const slot of slots) {
+    const method = String(slot?.method || '');
+    if (!method || seen.has(method)) {
+      continue;
+    }
+    seen.add(method);
+    const names = (slotNamesByMethod[method] || []).join(', ');
+    let label;
+    let badgeClass;
+    let tooltip;
+    if (method === 'manual') {
+      label = t('common:multiRound.manualPriceBadge', 'Manual');
+      badgeClass = 'border-warning/40 bg-warning/10 text-warning';
+      tooltip = t(
+        'common:multiRound.manualPriceTooltip',
+        '{{count}} equipment price(s) ({{total}}) were entered manually by the user and were not verified against market data.',
+        { count: manualCount, total: formatCompactCurrency(manualTotal) },
+      );
+    } else if (method === 'mirror') {
+      label = t('common:queue.priceMethodMirror', 'Mirror');
+      badgeClass = 'border-primary/40 bg-primary/10 text-primary';
+      tooltip = t('common:multiRound.mirrorPriceTooltip', '{{names}}: mirror plan synthesis price', {
+        names,
+      });
+    } else if (method === 'right1') {
+      label = t('common:queue.priceMethodRight1', 'Right 1');
+      badgeClass = 'border-blue-500/40 bg-blue-500/10 text-blue-500';
+      tooltip = t('common:multiRound.right1PriceTooltip', '{{names}}: right 1 (bid price)', {
+        names,
+      });
+    } else if (method === 'left1') {
+      label = t('common:queue.priceMethodLeft1', 'Left 1');
+      badgeClass = 'border-emerald-500/40 bg-emerald-500/10 text-emerald-500';
+      tooltip = t('common:multiRound.left1PriceTooltip', '{{names}}: left 1 (reference ask price)', {
+        names,
+      });
+    } else {
+      // ask / official_hourly_average / market_history 等市场价来源不显示额外标记，
+      // 因为左一价已覆盖这些场景；跳过非用户选定的来源。
+      continue;
+    }
+    badges.push({ key: method, label, class: badgeClass, tooltip });
+  }
+  return badges;
 }
 
 function formatEquipmentBuyPriceForExport(row) {
   const formatted = formatCompactCurrency(row?.costInsights?.equipmentBuyPrice);
-  if (formatted === '-' || !hasManualUpgradePrice(row)) {
+  if (formatted === '-') {
     return formatted;
   }
-  return `${formatted} [${t('common:multiRound.manualPriceBadge', 'Manual')}]`;
+  const badges = getBuyPriceBadges(row);
+  if (badges.length === 0) {
+    return formatted;
+  }
+  const tags = badges.map((badge) => badge.label).join(', ');
+  return `${formatted} [${tags}]`;
 }
 
 function formatSignedPercent(value) {
@@ -1122,30 +1189,63 @@ async function exportRankingRowsExcel() {
         key: 'compositeGoldPerPoint01Pct',
         width: 24,
       },
+      { header: t('common:queue.priceMethodColumn', 'Price Method'), key: 'priceMethod', width: 20 },
     ];
 
-    const bodyRows = rows.map((row) => ({
-      rank: toFiniteForExport(row?.rank, 0),
-      variant: formatQueueItemSummaryForExport(row),
-      simCount: `${Math.max(0, Math.floor(Number(row?.rounds || 0)))}/${queueRoundCount.value}`,
-      finalScore: toFiniteForExport(row?.finalScore, 2),
-      performanceScore: toFiniteForExport(row?.performanceScore, 2),
-      stabilityScore: toFiniteForExport(row?.stabilityScore, 2),
-      costScore: toFiniteForExport(row?.costScore, 2),
-      dailyNoRngProfitPerDay: formatCompactCurrency(row?.dailyNoRngProfitPerDay),
-      deltaProfitPerHour: formatCompactCurrency(row?.deltaProfitPerHour),
-      deltaProfitPct: toFiniteForExport(row?.deltaProfitPct, 2),
-      deltaDpsPct: toFiniteForExport(row?.deltaDpsPct, 2),
-      deltaXpPct: toFiniteForExport(row?.deltaXpPct, 2),
-      deltaKillsPct: toFiniteForExport(row?.deltaKillsPct, 2),
-      equipmentSaleValue: formatCompactCurrency(row?.costInsights?.equipmentSaleValue),
-      equipmentBuyPrice: formatEquipmentBuyPriceForExport(row),
-      equipmentNetCost: formatCompactCurrency(row?.costInsights?.equipmentNetCost),
-      upgradeCost: formatCompactCurrency(row?.costInsights?.totalUpgradeCost),
-      purchaseTime: formatPurchaseDuration(row?.costInsights?.purchaseDays),
-      goldPerPoint01PctAvg: formatCostPerPoint01Pct(row?.costInsights?.goldPerPoint01PctAvg),
-      compositeGoldPerPoint01Pct: formatCostPerPoint01Pct(row?.costInsights?.compositeGoldPerPoint01Pct),
-    }));
+    const baselineSnapshot = queueState.value?.baseline?.snapshot ?? null;
+    const bodyRows = rows.map((row) => {
+      const queueItem = (Array.isArray(queueState.value?.items) ? queueState.value.items : []).find(
+        (item) => String(item?.id || '') === String(row?.id || ''),
+      );
+      const allPriceSelections = Array.isArray(queueItem?.priceSelections) ? queueItem.priceSelections : [];
+      // 按 variant 过滤 priceSelections：只保留该 variant 实际变更的装备，
+      // 与 QueuePage 的 buildPriceSelectionLines 保持一致，避免多 variant 队列
+      // 导出时列出不属于本变体的装备价格方式。
+      const changedKeys = buildChangedEquipmentKeys(queueItem, baselineSnapshot);
+      const priceSelections =
+        changedKeys.size > 0
+          ? allPriceSelections.filter((selection) =>
+              changedKeys.has(buildSelectionKey(selection.itemHrid, selection.enhancementLevel)),
+            )
+          : allPriceSelections;
+      const priceMethodText = priceSelections
+        .map((selection) => {
+          const method = String(selection.method || 'left1');
+          const label =
+            method === 'manual'
+              ? t('common:queue.priceMethodManual', 'Manual')
+              : method === 'mirror'
+                ? t('common:queue.priceMethodMirror', 'Mirror')
+                : method === 'right1'
+                  ? t('common:queue.priceMethodRight1', 'Right 1')
+                  : t('common:queue.priceMethodLeft1', 'Left 1');
+          return `${resolveItemName(selection.itemHrid)}+${Number(selection.enhancementLevel || 0)}${priceMethodColon.value}${label}`;
+        })
+        .join(priceMethodJoinSeparator.value);
+      return {
+        rank: toFiniteForExport(row?.rank, 0),
+        variant: formatQueueItemSummaryForExport(row),
+        simCount: `${Math.max(0, Math.floor(Number(row?.rounds || 0)))}/${queueRoundCount.value}`,
+        finalScore: toFiniteForExport(row?.finalScore, 2),
+        performanceScore: toFiniteForExport(row?.performanceScore, 2),
+        stabilityScore: toFiniteForExport(row?.stabilityScore, 2),
+        costScore: toFiniteForExport(row?.costScore, 2),
+        dailyNoRngProfitPerDay: formatCompactCurrency(row?.dailyNoRngProfitPerDay),
+        deltaProfitPerHour: formatCompactCurrency(row?.deltaProfitPerHour),
+        deltaProfitPct: toFiniteForExport(row?.deltaProfitPct, 2),
+        deltaDpsPct: toFiniteForExport(row?.deltaDpsPct, 2),
+        deltaXpPct: toFiniteForExport(row?.deltaXpPct, 2),
+        deltaKillsPct: toFiniteForExport(row?.deltaKillsPct, 2),
+        equipmentSaleValue: formatCompactCurrency(row?.costInsights?.equipmentSaleValue),
+        equipmentBuyPrice: formatEquipmentBuyPriceForExport(row),
+        equipmentNetCost: formatCompactCurrency(row?.costInsights?.equipmentNetCost),
+        upgradeCost: formatCompactCurrency(row?.costInsights?.totalUpgradeCost),
+        purchaseTime: formatPurchaseDuration(row?.costInsights?.purchaseDays),
+        goldPerPoint01PctAvg: formatCostPerPoint01Pct(row?.costInsights?.goldPerPoint01PctAvg),
+        compositeGoldPerPoint01Pct: formatCostPerPoint01Pct(row?.costInsights?.compositeGoldPerPoint01Pct),
+        priceMethod: priceMethodText,
+      };
+    });
     worksheet.addRows(bodyRows);
 
     const headerRow = worksheet.getRow(1);

@@ -2,6 +2,7 @@ import { RUN_SCOPE_SINGLE, computeQueueMetrics, summarizeResult } from './simula
 import {
   buildQueueRankedRowsFromSampleState,
   hasAggregatedQueueBaselineMetrics,
+  normalizeBaselineSaleSide,
   normalizeParallelWorkerLimit,
   normalizeQueueSettings,
   resolveQueueBaselineMetricsForSettings,
@@ -11,6 +12,7 @@ import {
   computeQueueItemUpgradeCost,
   createMissingEquipmentAskError,
   inspectQueueEquipmentPricing,
+  mergeConfirmedPricesAndSelections,
 } from './queueUpgradeCost.js';
 import { createProfitPricingOptions } from './simulatorStorage.js';
 import {
@@ -292,12 +294,18 @@ export async function executeActiveQueueRun({
     return [];
   }
 
+  const queueSettings = normalizeQueueSettings(queueState.settings);
+  queueState.settings = queueSettings;
+  const saleSide = normalizeBaselineSaleSide(queueSettings.baselineSaleSide);
+
   for (const item of queueState.items) {
+    const confirmedEquipmentPrices = mergeConfirmedPricesAndSelections(item);
     const inspections = inspectQueueEquipmentPricing(
       queueState.baseline.snapshot,
       item?.snapshot,
       store.pricing,
-      item?.confirmedEquipmentPrices,
+      confirmedEquipmentPrices,
+      { saleSide },
     );
     const invalid = inspections.find((inspection) => !inspection.targetAskAvailable);
     if (invalid) {
@@ -307,8 +315,6 @@ export async function executeActiveQueueRun({
     item.costWarnings = buildQueueCostWarnings(inspections);
   }
 
-  const queueSettings = normalizeQueueSettings(queueState.settings);
-  queueState.settings = queueSettings;
   const executionMode = queueSettings.executionMode === 'parallel' ? 'parallel' : 'serial';
   const queuePayloadOptions = buildQueueBaselinePayloadOptions(queueState.baseline?.settings, store.simulationSettings);
   const activePlayerId = String(store.activePlayerId);

@@ -125,6 +125,70 @@
             </span>
           </div>
 
+          <div v-if="item.priceSelectionLines.length > 0" class="mt-3 space-y-2">
+            <div
+              v-for="(row, index) in item.priceSelectionLines"
+              :key="`${item.id}-price-${index}`"
+              class="rounded-md border border-border/60 bg-background/40 px-3 py-2"
+            >
+              <div class="flex flex-wrap items-center gap-x-2 gap-y-1 text-sm">
+                <span class="font-semibold text-foreground">{{ row.itemName }}</span>
+                <span class="text-muted-foreground">+{{ row.level }}</span>
+                <span class="rounded bg-muted px-1.5 py-0.5 text-xs font-medium text-foreground/80">{{
+                  row.methodLabel
+                }}</span>
+              </div>
+              <template v-if="row.kind === 'mirror'">
+                <div class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 text-xs text-foreground/80">
+                  <span>
+                    {{ t('common:queue.mirrorCountLabel', 'Mirrors') }}
+                    <span class="text-muted-foreground">×{{ row.mirrorCount }}</span>
+                  </span>
+                  <span>
+                    {{ t('common:queue.mirrorPriceLabel', 'Mirror price') }}
+                    <span class="font-medium text-foreground">{{ row.mirrorPrice }}</span>
+                  </span>
+                </div>
+                <div class="mt-1.5 space-y-1 text-xs">
+                  <p class="text-muted-foreground">{{ t('common:queue.mirrorInputsLabel', 'Inputs') }}:</p>
+                  <ul class="space-y-0.5 pl-3">
+                    <li
+                      v-for="(input, iIdx) in row.inputs"
+                      :key="`input-${index}-${iIdx}`"
+                      class="flex items-center gap-1.5"
+                    >
+                      <span class="text-foreground/80">+{{ input.level }}</span>
+                      <span class="text-muted-foreground">×</span>
+                      <span class="text-foreground/80">{{ input.count }}</span>
+                      <span class="text-muted-foreground">·</span>
+                      <span class="font-medium text-foreground">{{ input.price }}</span>
+                      <span
+                        v-if="input.manual"
+                        class="rounded bg-warning/15 px-1 py-0.5 text-[10px] font-medium text-warning"
+                        >{{ t('common:queue.priceSelectionManualInputTag', 'manual') }}</span
+                      >
+                    </li>
+                  </ul>
+                </div>
+                <div
+                  class="mt-1.5 flex flex-wrap items-center gap-x-3 gap-y-1 border-t border-border/40 pt-1.5 text-xs"
+                >
+                  <span class="text-muted-foreground">
+                    {{ t('common:queue.mirrorTotalLabel', 'Total') }}
+                    <span class="ml-1 text-sm font-semibold text-foreground">{{ row.total }}</span>
+                  </span>
+                  <span v-if="row.baselineUsedText" class="text-primary">{{ row.baselineUsedText }}</span>
+                </div>
+              </template>
+              <template v-else>
+                <div class="mt-1 text-sm">
+                  <span class="text-muted-foreground">{{ t('common:queue.confirmPriceValue', 'Price') }}:</span>
+                  <span class="ml-1 font-semibold text-foreground">{{ row.price }}</span>
+                </div>
+              </template>
+            </div>
+          </div>
+
           <div class="mt-3 space-y-1 text-sm text-foreground/85">
             <p v-for="(line, index) in item.detailLines" :key="`${item.id}-${index}`">{{ line }}</p>
           </div>
@@ -144,6 +208,7 @@ import {
 import { EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from '../../shared/playerConfig.js';
 import { buildTriggerChangeDescriptor, getComparableTriggerTargetHrids } from '../../services/triggerMapper.js';
 import { useSimulatorStore } from '../../stores/simulatorStore.js';
+import { formatCompactAmountForLocale } from '../../services/amountFormatting.js';
 import { useGameDataText } from '../composables/useGameDataText.js';
 import { useI18nText } from '../composables/useI18nText.js';
 import {
@@ -152,9 +217,10 @@ import {
   formatQueueTriggerLabel,
   formatQueueTriggerStateText,
 } from '../queueTriggerPresentation.js';
+import { buildChangedEquipmentKeys, buildSelectionKey } from '../queuePriceSelection.js';
 
 const simulator = useSimulatorStore();
-const { t } = useI18nText();
+const { t, language } = useI18nText();
 const {
   getAbilityName,
   getActionName,
@@ -319,6 +385,7 @@ const queueDisplayItems = computed(() => {
       displayName,
       categoryBadges,
       detailLines,
+      priceSelectionLines: buildPriceSelectionLines(item, baselineSnapshot),
       costWarnings: (Array.isArray(item?.costWarnings) ? item.costWarnings : []).map((warning, warningIndex) => ({
         key: [warning?.code || 'warning', warning?.slotKey || 'slot', warningIndex].join('-'),
         text:
@@ -330,7 +397,7 @@ const queueDisplayItems = computed(() => {
                   slot: localizeEquipmentSlotLabel(warning?.slotKey),
                   item: localizeHridDisplayName(warning?.itemHrid),
                   level: Number(warning?.enhancementLevel || 0),
-                  price: formatMarketNumber(warning?.price),
+                  price: formatConfirmedMarketPrice(warning?.price),
                   volume: formatMarketVolume(warning?.volume),
                   time: formatMarketDataTime(warning?.marketTimestamp),
                 },
@@ -343,7 +410,7 @@ const queueDisplayItems = computed(() => {
                     slot: localizeEquipmentSlotLabel(warning?.slotKey),
                     item: localizeHridDisplayName(warning?.itemHrid),
                     level: Number(warning?.enhancementLevel || 0),
-                    price: formatMarketNumber(warning?.price),
+                    price: formatConfirmedMarketPrice(warning?.price),
                     volume: formatMarketVolume(warning?.volume),
                     time: formatMarketDataTime(warning?.marketTimestamp),
                   },
@@ -356,7 +423,7 @@ const queueDisplayItems = computed(() => {
                       slot: localizeEquipmentSlotLabel(warning?.slotKey),
                       item: localizeHridDisplayName(warning?.itemHrid),
                       level: Number(warning?.enhancementLevel || 0),
-                      price: formatMarketNumber(warning?.price),
+                      price: formatConfirmedMarketPrice(warning?.price),
                     },
                   )
                 : t(
@@ -375,6 +442,81 @@ const queueDisplayItems = computed(() => {
 
 function formatMarketNumber(value) {
   return new Intl.NumberFormat(undefined, { maximumFractionDigits: 2 }).format(Number(value || 0));
+}
+
+function formatConfirmedMarketPrice(value) {
+  return formatCompactAmountForLocale(value, language.value === 'zh' ? 'zh-CN' : 'en-US');
+}
+
+function buildPriceSelectionLines(item, baselineSnapshot) {
+  const selections = Array.isArray(item?.priceSelections) ? item.priceSelections : [];
+  if (selections.length === 0) {
+    return [];
+  }
+  const changedKeys = buildChangedEquipmentKeys(item, baselineSnapshot);
+  const rows = [];
+  for (const selection of selections) {
+    const selectionKey = buildSelectionKey(selection.itemHrid, selection.enhancementLevel);
+    if (changedKeys.size > 0 && !changedKeys.has(selectionKey)) {
+      continue;
+    }
+    const itemName = localizeHridDisplayName(selection.itemHrid);
+    const level = Number(selection.enhancementLevel || 0);
+    const method = String(selection.method || 'left1');
+
+    if (method === 'mirror') {
+      const mirrorCount = Number(selection.mirrorCount || 0);
+      const mirrorPrice = Number(selection.mirrorPrice || 0);
+      const inputs = (Array.isArray(selection.inputs) ? selection.inputs : []).map((input) => ({
+        level: Number(input.level || 0),
+        count: Math.max(1, Number(input.count || 1)),
+        price: formatConfirmedMarketPrice(input.price),
+        manual: String(input.source || '') === 'manual',
+      }));
+      const usedBaselineLevels = Array.isArray(selection.usedBaselineLevels) ? selection.usedBaselineLevels : [];
+      const baselineUsedText =
+        usedBaselineLevels.length > 0
+          ? t('common:queue.priceSelectionBaselineUsed', 'baseline +{{level}} used', {
+              level: usedBaselineLevels.join(', +'),
+            })
+          : '';
+      rows.push({
+        kind: 'mirror',
+        itemName,
+        level,
+        methodLabel: t('common:queue.priceMethodMirror', 'Mirror'),
+        mirrorCount,
+        mirrorPrice: formatConfirmedMarketPrice(mirrorPrice),
+        inputs,
+        total: formatConfirmedMarketPrice(selection.price),
+        baselineUsedText,
+      });
+      continue;
+    }
+
+    if (method === 'manual') {
+      rows.push({
+        kind: 'manual',
+        itemName,
+        level,
+        methodLabel: t('common:queue.priceMethodManual', 'Manual'),
+        price: formatConfirmedMarketPrice(selection.price),
+      });
+      continue;
+    }
+
+    rows.push({
+      kind: 'reference',
+      itemName,
+      level,
+      methodLabel:
+        method === 'right1'
+          ? t('common:queue.priceMethodRight1', 'Right 1')
+          : t('common:queue.priceMethodLeft1', 'Left 1'),
+      price: formatConfirmedMarketPrice(selection.price),
+    });
+  }
+  return rows;
 }
 
 function formatMarketVolume(value) {

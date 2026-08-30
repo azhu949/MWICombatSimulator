@@ -55,3 +55,14 @@ export function formatCompactAmount(value, options = {}) {
   const suffix = options.unitCase === 'lower' ? unit.suffix.toLowerCase() : unit.suffix;
   return `${formatter.format(scaled)}${suffix}`;
 }
+
+/**
+ * 便捷封装：以指定 locale 格式化紧凑金额（小写单位后缀）。
+ * 供 UI 组件统一调用，消除各页面重复定义 formatConfirmedMarketPrice / formatCompactAmount 包装。
+ * @param {*} value - 要格式化的数值
+ * @param {string} locale - Intl 区域标签，如 'zh-CN' / 'en-US'
+ * @returns {string} 紧凑格式化结果，如 '12.5k' / '1.25m'
+ */
+export function formatCompactAmountForLocale(value, locale) {
+  return formatCompactAmount(value, { locale, unitCase: 'lower' });
+}

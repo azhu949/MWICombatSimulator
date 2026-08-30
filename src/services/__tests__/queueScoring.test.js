@@ -65,6 +65,7 @@ describe('queueScoring', () => {
       weightXp: 0.8,
       weightDeathSafety: 0,
       executionMode: 'serial',
+      baselineSaleSide: 'bid',
     });
 
     const runtime = normalizeQueueRuntimeSettings({
@@ -320,17 +321,18 @@ describe('queueScoring', () => {
       targetSnapshot,
       pricingState,
       confirmedEquipmentPrices,
+      { saleSide: 'bid' },
     );
     expect(computeQueueItemUpgradeCost).toHaveBeenCalledWith(baselineSnapshot, targetSnapshot, pricingState, {
       abilityCostMap: { ability: 123 },
       confirmedEquipmentPrices,
+      saleSide: 'bid',
     });
     expect(insights.totalUpgradeCost).toBe(5000);
     expect(insights.purchaseDays).toBe(5);
     expect(insights.equipmentSaleValue).toBe(50);
     expect(insights.equipmentBuyPrice).toBe(350);
     expect(insights.equipmentNetCost).toBe(300);
-    expect(insights.upgradePriceSource).toBe('mixed_manual');
     expect(insights.manualPriceSlots).toEqual([
       {
         slotKey: 'body',

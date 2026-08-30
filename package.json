@@ -1,6 +1,6 @@
 {
   "name": "mwicombatsimulator",
-  "version": "2.2.0",
+  "version": "2.3.0",
   "description": "",
   "scripts": {
     "dev": "vite",
@@ -8,6 +8,7 @@
     "build-game-data-index": "node scripts/build-game-data-index.mjs",
     "sync-official-translations": "node scripts/sync-official-translations.mjs",
     "check-official-translations": "node scripts/sync-official-translations.mjs --check",
+    "check-dead-keys": "node scripts/check-dead-keys.mjs",
     "verify-pages-build": "node scripts/verify-pages-build.js",
     "preview": "vite preview",
     "start": "vite",

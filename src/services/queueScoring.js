@@ -1,4 +1,12 @@
-import { MARKET_HISTORY_PRICE_SOURCE } from './marketHistoryService.js';
+// 价格来源常量已下沉至 marketPriceService.js（无依赖模块），此处导入并 re-export 以兼容
+// 既有调用方（queueUpgradeCost、测试等）。queueUpgradeCost 因此不再 import queueScoring，
+// 本文件对 queueUpgradeCost 的 import 保持单向，不构成循环依赖。
+import {
+  MANUAL_EQUIPMENT_PRICE_SOURCE,
+  MANUAL_PRICE_WARNING_CODE,
+  OFFICIAL_HOURLY_AVERAGE_PRICE_SOURCE,
+} from './marketPriceService.js';
+import { isUserLockedPriceMethod, mergeConfirmedPricesAndSelections } from './queueUpgradeCost.js';
 import { resolveQueuePerformanceSubweights } from '../shared/queuePerformanceWeights.js';
 import {
   computeArithmeticMean,
@@ -6,7 +14,7 @@ import {
   computePercentileFromSorted,
   winsorizeValues,
 } from './robustStats.js';
-import { clamp, deepClone, isPlainObject, toFiniteNumber } from './utils.js';
+import { clamp, deepClone, isPlainObject, normalizeBaselineSaleSide, toFiniteNumber } from './utils.js';
 
 export const QUEUE_PARALLEL_WORKER_LIMIT_MIN = 1;
 export const QUEUE_PARALLEL_WORKER_LIMIT_MAX = 64;
@@ -22,9 +30,7 @@ export const QUEUE_BASELINE_METRIC_KEYS = [
 ];
 export const QUEUE_COST_SCORE_GOLD_METRIC_STRICT = 'strict';
 export const QUEUE_COST_SCORE_GOLD_METRIC_COMPOSITE = 'composite';
-export const OFFICIAL_HOURLY_AVERAGE_PRICE_SOURCE = 'official_hourly_average';
-export const MANUAL_EQUIPMENT_PRICE_SOURCE = 'manual';
-export const MANUAL_PRICE_WARNING_CODE = 'manual_price';
+export { MANUAL_EQUIPMENT_PRICE_SOURCE, MANUAL_PRICE_WARNING_CODE, OFFICIAL_HOURLY_AVERAGE_PRICE_SOURCE };
 
 const QUEUE_MULTI_ROUND_WINSORIZE_PCT = 0.05;
 const QUEUE_MULTI_ROUND_MEDIAN_BLEND_WEIGHT = 0.5;
@@ -178,6 +184,10 @@ export function normalizeQueueRuntimeSettings(settings) {
   };
 }
 
+// normalizeBaselineSaleSide 已下沉至 utils.js（无依赖），此处 re-export 以兼容既有调用方
+// （queueRunExecution / simulatorQueueActions / SettingsPage 等仍从本模块导入）。
+export { normalizeBaselineSaleSide };
+
 export function getDefaultQueueRunSettings() {
   return {
     rounds: 30,
@@ -187,6 +197,7 @@ export function getDefaultQueueRunSettings() {
     weightXp: 0.3,
     weightDeathSafety: 0.2,
     executionMode: 'parallel',
+    baselineSaleSide: 'bid',
   };
 }
 
@@ -204,6 +215,7 @@ export function normalizeQueueSettings(settings) {
   const executionModeRaw = settings?.executionMode;
   const executionMode =
     executionModeRaw == null ? defaults.executionMode : executionModeRaw === 'parallel' ? 'parallel' : 'serial';
+  const baselineSaleSide = normalizeBaselineSaleSide(settings?.baselineSaleSide ?? defaults.baselineSaleSide);
 
   return {
     rounds,
@@ -213,6 +225,7 @@ export function normalizeQueueSettings(settings) {
     weightXp: normalizedPerformanceWeights.weightXp,
     weightDeathSafety: normalizedPerformanceWeights.weightDeathSafety,
     executionMode,
+    baselineSaleSide,
   };
 }
 
@@ -515,44 +528,45 @@ export function createEmptyQueueCostInsights() {
     equipmentSaleValue: null,
     equipmentBuyPrice: null,
     equipmentNetCost: null,
-    upgradePriceSource: null,
     manualPriceSlots: [],
+    priceMethodSlots: [],
   };
 }
 
 export function resolveUpgradePriceSourceFromInspections(inspections = []) {
   const contributingInspections = inspections.filter((inspection) => inspection.targetAskAvailable);
   if (contributingInspections.length === 0) {
-    return { upgradePriceSource: null, manualPriceSlots: [] };
+    return { manualPriceSlots: [], priceMethodSlots: [] };
   }
   const manualInspections = contributingInspections.filter(
     (inspection) => inspection.targetPriceSource === MANUAL_EQUIPMENT_PRICE_SOURCE,
   );
-  const hasManual = manualInspections.length > 0;
-  const hasMarketConfirmed = contributingInspections.some(
-    (inspection) =>
-      inspection.targetPriceSource === OFFICIAL_HOURLY_AVERAGE_PRICE_SOURCE ||
-      inspection.targetPriceSource === MARKET_HISTORY_PRICE_SOURCE,
-  );
-  const hasExactAsk = contributingInspections.some((inspection) => inspection.targetPriceSource === 'ask');
 
-  let upgradePriceSource = null;
-  if (hasManual) {
-    upgradePriceSource = hasExactAsk || hasMarketConfirmed ? 'mixed_manual' : 'manual';
-  } else if (hasMarketConfirmed) {
-    upgradePriceSource = hasExactAsk ? 'mixed_market' : 'market';
-  } else if (hasExactAsk) {
-    upgradePriceSource = 'ask';
-  }
+  // 为每个 contributing inspection 收集用户选定的价格方式（left1/right1/manual/mirror），
+  // 无用户锁定时回退到 targetPriceSource（ask/official_hourly_average/market_history）。
+  // UI 据此在买入价旁显示对应标记。
+  const priceMethodSlots = contributingInspections.map((inspection) => {
+    const confirmedMethod = String(inspection.confirmedPrice?.method || '');
+    const method = isUserLockedPriceMethod(confirmedMethod)
+      ? confirmedMethod
+      : String(inspection.targetPriceSource || 'ask');
+    return {
+      slotKey: inspection.slotKey,
+      itemHrid: inspection.afterItemHrid,
+      enhancementLevel: inspection.afterLevel,
+      method,
+      price: inspection.confirmedPrice?.price ?? inspection.targetAsk ?? null,
+    };
+  });
 
   return {
-    upgradePriceSource,
     manualPriceSlots: manualInspections.map((inspection) => ({
       slotKey: inspection.slotKey,
       itemHrid: inspection.afterItemHrid,
       enhancementLevel: inspection.afterLevel,
       price: inspection.confirmedPrice?.price ?? null,
     })),
+    priceMethodSlots,
   };
 }
 
@@ -608,11 +622,14 @@ export function buildQueueItemCostInsights(
   const baselineSnapshot = queueState?.baseline?.snapshot ?? null;
   const inspectQueueEquipmentPricing = dependencies.inspectQueueEquipmentPricing;
   const computeQueueItemUpgradeCost = dependencies.computeQueueItemUpgradeCost;
+  const saleSide = normalizeBaselineSaleSide(queueSettings?.baselineSaleSide);
   const equipmentInspections =
     typeof inspectQueueEquipmentPricing === 'function'
-      ? inspectQueueEquipmentPricing(baselineSnapshot, queueItemSnapshot, pricingState, confirmedEquipmentPrices)
+      ? inspectQueueEquipmentPricing(baselineSnapshot, queueItemSnapshot, pricingState, confirmedEquipmentPrices, {
+          saleSide,
+        })
       : [];
-  const { upgradePriceSource, manualPriceSlots } = resolveUpgradePriceSourceFromInspections(equipmentInspections);
+  const { manualPriceSlots, priceMethodSlots } = resolveUpgradePriceSourceFromInspections(equipmentInspections);
   let equipmentSaleValue = null;
   let equipmentBuyPrice = null;
   if (equipmentInspections.length > 0) {
@@ -639,6 +656,7 @@ export function buildQueueItemCostInsights(
       ? computeQueueItemUpgradeCost(baselineSnapshot, queueItemSnapshot, pricingState, {
           abilityCostMap: queueState?.abilityUpgradeCosts,
           confirmedEquipmentPrices,
+          saleSide,
         })
       : null;
   const totalUpgradeCost =
@@ -684,8 +702,8 @@ export function buildQueueItemCostInsights(
     equipmentSaleValue,
     equipmentBuyPrice,
     equipmentNetCost,
-    upgradePriceSource,
     manualPriceSlots,
+    priceMethodSlots,
   };
 }
 
@@ -1028,7 +1046,7 @@ export function buildQueueRankedRowsFromSampleState({
         metricSummary,
         pricingState,
         safeQueueSettings,
-        entry.confirmedEquipmentPrices,
+        mergeConfirmedPricesAndSelections(entry),
         costDependencies,
       ),
     };

@@ -8,6 +8,12 @@ export const MARKET_PRICE_SNAPSHOT_MAX_AGE_MS = 90 * 60_000;
 export const MARKET_PRICE_REFRESH_ATTEMPT_COOLDOWN_MS = 60_000;
 export const MARKET_SALE_FEE_RATE = 0.05;
 
+// 装备价格来源归一化常量。原定义于 queueScoring.js，此处下沉以供 queueScoring 与
+// queueUpgradeCost 共享，避免两模块互相 import 形成循环依赖。
+export const OFFICIAL_HOURLY_AVERAGE_PRICE_SOURCE = 'official_hourly_average';
+export const MANUAL_EQUIPMENT_PRICE_SOURCE = 'manual';
+export const MANUAL_PRICE_WARNING_CODE = 'manual_price';
+
 // 官方游戏指南：成功交易按卖方净收益的 5% 征税（袋装 10 牛铃为 18%）。
 // 市场 API 不暴露单物品费率，因此特殊费率在此按 hrid 维护。
 // 若 API 将来暴露单物品税率字段，应改回数据驱动查询，而不使用此映射。

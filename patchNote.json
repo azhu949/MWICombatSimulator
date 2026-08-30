@@ -1,4 +1,44 @@
 {
+  "2026年8月30日（v2.3.0）": {
+    "label": {
+      "zh": "2026年8月30日（v2.3.0）",
+      "en": "August 30, 2026 (v2.3.0)"
+    },
+    "newFeatures": {
+      "zh": [
+        "队列价格确认弹窗重构：每件装备可选左一价、右一价、手动输入或贤者之镜合成，买卖两侧报价同列对比。",
+        "新增贤者之镜合成方案定价：自动计算最低成本合成路线，缺价件可手动补价，基准装备可顶替 1 件输入。",
+        "设置页新增「队列定价」选项：可选择基准装备出售抵扣时使用右1或左1报价。",
+        "队列列表与 Excel 导出新增价格方式明细。"
+      ],
+      "en": [
+        "Reworked the queue price dialog: each equipment can use Left 1, Right 1, Manual, or Mirror pricing, with both sides shown for comparison.",
+        "Added Mirror pricing: auto-computes the cheapest combination path, with manual input for missing pieces and baseline substitution.",
+        "Added a \"Queue Pricing\" setting: choose Right 1 or Left 1 as the sale-side quote for replaced baseline equipment.",
+        "Queue list and Excel export now show the pricing method for each item."
+      ]
+    },
+    "improvements": {
+      "zh": [
+        "价格显示统一使用紧凑格式（k/m/b）。",
+        "市场价格有更新时显示「新价格」徽标，可一键改用最新价。",
+        "确认弹窗中右一价没有实际买单（Bid）时，不再用 Ask 兜底展示：右一价列显示无价，右一价方案不可选。",
+        "确认弹窗中左一价没有任何参考价（精确 Ask、官方小时均价、历史 Ask 均缺失）时不可选，该行自动回退手动输入。"
+      ],
+      "en": [
+        "Prices now use a compact format (k/m/b).",
+        "A \"New price\" badge appears when the market price changes, with a one-click option to update.",
+        "When no real bid exists, the Right 1 quote no longer falls back to the Ask: the column shows no price and the Right 1 method is disabled.",
+        "When no reference price exists for the Left 1 quote (no exact Ask, official hourly average, or historical Ask), the Left 1 method is disabled and the row falls back to manual input."
+      ]
+    },
+    "bugFixes": {
+      "zh": ["修复弹窗中选定的定价方式被市场精确价静默覆盖，导致队列页与多轮模拟成本不一致的问题。"],
+      "en": [
+        "Fixed the chosen pricing method being silently overridden by the exact market price, causing queue and simulation costs to mismatch."
+      ]
+    }
+  },
   "2026年8月25日（v2.2.0）": {
     "label": {
       "zh": "2026年8月25日（v2.2.0）",

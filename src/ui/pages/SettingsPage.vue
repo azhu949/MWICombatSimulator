@@ -226,6 +226,45 @@
               <div class="flex items-start justify-between gap-3">
                 <div class="min-w-0 space-y-1">
                   <h4 class="font-heading text-sm uppercase text-info">
+                    {{ t('common:settingsPage.queuePricingSectionTitle', 'Queue Pricing') }}
+                  </h4>
+                  <p class="text-xs text-muted-foreground">
+                    {{
+                      t(
+                        'common:settingsPage.queuePricingSectionHint',
+                        'Choose which market-side quote is used to value the replaced baseline equipment as a cost offset.',
+                      )
+                    }}
+                  </p>
+                </div>
+              </div>
+
+              <div class="mt-4 space-y-3">
+                <label class="block">
+                  <span class="control-label">{{ t('common:queue.baselineSaleSide', 'Baseline Sale Quote') }}</span>
+                  <Select v-model="queueRunDraft.baselineSaleSide" @update:model-value="applyQueueRunSettings">
+                    <SelectTrigger :aria-label="t('common:queue.baselineSaleSide', 'Baseline Sale Quote')" />
+                    <SelectContent>
+                      <SelectItem value="bid">{{ t('common:queue.saleSideBid', 'Right 1 (Bid, sell)') }}</SelectItem>
+                      <SelectItem value="ask">{{ t('common:queue.saleSideAsk', 'Left 1 (Ask, buy)') }}</SelectItem>
+                    </SelectContent>
+                  </Select>
+                  <p class="mt-1 text-xs text-muted-foreground">
+                    {{
+                      t(
+                        'common:settingsPage.baselineSaleSideHint',
+                        'Right 1 (highest bid) is the actual sell price (conservative offset). Left 1 (lowest ask) is the buy reference and overstates the deduction. On a missing price, Bid falls back to Ask and Ask falls back to 0.',
+                      )
+                    }}
+                  </p>
+                </label>
+              </div>
+            </div>
+
+            <div class="rounded-md border border-border bg-muted/50 p-4">
+              <div class="flex items-start justify-between gap-3">
+                <div class="min-w-0 space-y-1">
+                  <h4 class="font-heading text-sm uppercase text-info">
                     {{ t('common:settingsPage.queueSamplingSectionTitle', 'Sampling & Aggregation') }}
                   </h4>
                   <p class="text-xs text-muted-foreground">
@@ -732,6 +771,7 @@ import {
   resolveQueuePerformanceSubweights,
 } from '../../shared/queuePerformanceWeights.js';
 import { useSimulatorStore } from '../../stores/simulatorStore.js';
+import { normalizeBaselineSaleSide } from '../../services/queueScoring.js';
 import { useGameDataText } from '../composables/useGameDataText.js';
 import { useI18nText } from '../composables/useI18nText.js';
 import { buildStaticPriceCatalog } from '../pageOptimizationHelpers.js';
@@ -781,6 +821,7 @@ const queueRunDraft = reactive({
   weightProfit: 0.5,
   weightXp: 0.3,
   executionMode: 'parallel',
+  baselineSaleSide: 'bid',
 });
 const queueRunRoundPreset = ref('30');
 const queueBaselineRoundPreset = ref('1');
@@ -1103,6 +1144,7 @@ function syncQueueRunDraft(nextSettings = simulator.activeQueueState?.settings) 
   queueRunDraft.weightProfit = Number(source.weightProfit ?? 0.5);
   queueRunDraft.weightXp = Number(source.weightXp ?? 0.3);
   queueRunDraft.executionMode = String(source.executionMode || 'parallel') === 'serial' ? 'serial' : 'parallel';
+  queueRunDraft.baselineSaleSide = normalizeBaselineSaleSide(source.baselineSaleSide);
   queueRunRoundPreset.value = ['5', '10', '20', '30', '50', '100', '200'].includes(String(queueRunDraft.rounds))
     ? String(queueRunDraft.rounds)
     : 'custom';
@@ -1121,6 +1163,7 @@ function applyQueueRunSettings() {
     weightProfit: queueRunDraft.weightProfit,
     weightXp: queueRunDraft.weightXp,
     executionMode: queueRunDraft.executionMode,
+    baselineSaleSide: queueRunDraft.baselineSaleSide,
   });
   syncQueueRunDraft(normalized);
 }
