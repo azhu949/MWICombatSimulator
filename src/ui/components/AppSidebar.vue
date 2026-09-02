@@ -4,12 +4,7 @@
       class="flex h-14 shrink-0 items-center border-b border-sidebar-border px-3"
       :class="collapsed ? 'justify-center' : 'gap-2.5'"
     >
-      <img
-        :src="logoUrl"
-        alt=""
-        aria-hidden="true"
-        class="size-9 shrink-0 select-none rounded-md object-contain"
-      />
+      <img :src="logoUrl" alt="" aria-hidden="true" class="size-9 shrink-0 select-none rounded-md object-contain" />
       <div v-if="!collapsed" class="min-w-0 leading-tight">
         <p class="truncate font-heading text-sm font-semibold text-sidebar-foreground">
           {{ t('common:title', 'MWI Combat Simulator') }}
