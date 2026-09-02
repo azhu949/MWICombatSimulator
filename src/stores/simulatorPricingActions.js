@@ -16,6 +16,7 @@ import {
   normalizePriceOverrideValue,
   normalizeEnhancementLevelsByItem,
   normalizeEnhancementQuotesByItem,
+  normalizeMarketItemValues,
   persistMarketCacheToStorage,
   persistPricingSettingsToStorage,
   persistQueueRuntimeSettingsToStorage,
@@ -140,6 +141,9 @@ async function fetchMarketPricesForStore(store) {
         basePriceTable: store.pricing.basePriceTable,
         enhancementQuotesByItem: store.pricing.enhancementQuotesByItem,
         enhancementLevelsByItem: store.pricing.enhancementLevelsByItem,
+        marketItemValues: store.pricing.marketItemValues,
+        marketItemValueSources: store.pricing.marketItemValueSources,
+        marketItemValueSourcesByLevel: store.pricing.marketItemValueSourcesByLevel,
         marketTimestamp: store.pricing.marketTimestamp,
         lastFetchedAt: store.pricing.lastFetchedAt,
         sourceUrl: store.pricing.sourceUrl,
@@ -170,6 +174,12 @@ function resetPricesToVendorDefaultsForStore(store) {
   store.pricing.basePriceTable = createDefaultPriceTable();
   store.pricing.enhancementQuotesByItem = {};
   store.pricing.enhancementLevelsByItem = {};
+  store.pricing.marketItemValues = {};
+  // 来源标注随行情快照一并清空（内存 + 持久化缓存双清）：残留会让重置后再次
+  // 导入/REST 恢复的官方估算被误标「合成中价」（assetScoreService.resolveOfficialEstimateSource）。
+  // 等级级来源覆盖（【一般-5】）同生命周期双清。
+  store.pricing.marketItemValueSources = {};
+  store.pricing.marketItemValueSourcesByLevel = {};
   store.pricing.marketTimestamp = 0;
   rehydratePricingTable(store.pricing);
   store.pricing.lastFetchedAt = 0;
@@ -287,6 +297,66 @@ async function ensureAbilityUpgradeReferenceDataLoadedForStore(store, forceRefre
   return loadTask;
 }
 
+// 判断「将 incoming 合并进 current」是否为内容空操作：incoming 的每个 itemHrid 在
+// current 中均已存在且逐强化等级值完全一致（current 独有的键按合并语义保留、不受
+// 影响，故不比较键集总数）。用于 applyImportedMarketItemValues 合并前值比较（#23
+// 性能优化）：团队桥接导入 N 个成员透传同一份 merged 快照时，第 2..N 次合并结果与
+// 现值完全一致 → 跳过引用替换（避免成本缓存整表失效）与市场缓存全量落盘；现值为
+// 载荷严格超集（脚本侧 merged 收缩、app 侧合并只增不减致旧键残留）同样命中空操作
+// 判定——若按键集全等判定，该场景团队 N 成员会退回 N 次冗余合并+落盘。两侧数据均
+// 经 normalizeMarketItemValues 规范化，形状一致。
+function isMarketItemValuesMergeNoOp(current, incoming) {
+  for (const itemHrid of Object.keys(incoming)) {
+    const currentLevels = current[itemHrid];
+    const incomingLevels = incoming[itemHrid];
+    if (currentLevels === incomingLevels) {
+      continue;
+    }
+    if (!currentLevels || typeof currentLevels !== 'object' || !incomingLevels || typeof incomingLevels !== 'object') {
+      return false;
+    }
+    const currentLevelKeys = Object.keys(currentLevels);
+    const incomingLevelKeys = Object.keys(incomingLevels);
+    if (currentLevelKeys.length !== incomingLevelKeys.length) {
+      return false;
+    }
+    for (const levelKey of currentLevelKeys) {
+      if (currentLevels[levelKey] !== incomingLevels[levelKey]) {
+        return false;
+      }
+    }
+  }
+  return true;
+}
+
+// 【一般-5】（2026-09-02）：applyImportedMarketItemValues 的 sourcesChanged 判定辅助——
+// 对本次载荷覆盖的 hrid 逐键深比等级来源覆盖（{ [level]: source }）：键集或任一值
+// 差异即视为标注变化（与物品级标注变化同语义——同值换标注需随市场缓存落盘，
+// 否则重启后恢复旧等级级来源标注，#30 A3 的跨会话真值断裂在等级级重演）。
+function levelSourcesDifferForHrids(prevLevelSources, nextLevelSources, hrids) {
+  for (const hrid of hrids) {
+    const prevByLevel = prevLevelSources?.[hrid] ?? null;
+    const nextByLevel = nextLevelSources?.[hrid] ?? null;
+    if (prevByLevel === nextByLevel) {
+      continue;
+    }
+    if (!prevByLevel || !nextByLevel) {
+      return true;
+    }
+    const prevKeys = Object.keys(prevByLevel);
+    const nextKeys = Object.keys(nextByLevel);
+    if (prevKeys.length !== nextKeys.length) {
+      return true;
+    }
+    for (const levelKey of prevKeys) {
+      if (prevByLevel[levelKey] !== nextByLevel[levelKey]) {
+        return true;
+      }
+    }
+  }
+  return false;
+}
+
 export function createPricingActions() {
   return {
     getMarketEnhancementLevelsForItem(itemHrid) {
@@ -322,7 +392,9 @@ export function createPricingActions() {
         return false;
       }
 
-      player.equipment[normalizedSlotKey].enhancementLevel = clampPositiveInteger(enhancementLevel, 0);
+      // 强化等级游戏上限 20（与行情净化/导入钳制同口径）：写入前兜底钳制，
+      // 防御绕过行情 normalize 的直写路径把超限等级带进玩家配置。
+      player.equipment[normalizedSlotKey].enhancementLevel = Math.min(clampPositiveInteger(enhancementLevel, 0), 20);
       return true;
     },
     resolveActivePlayerEquipmentUpgradeCostDraft(slotKey) {
@@ -712,6 +784,121 @@ export function createPricingActions() {
     },
     async fetchMarketPrices() {
       return fetchMarketPricesForStore(this);
+    },
+    // 应用主站导入透传的官方估算市场价值（market_item_values_updated 快照）。
+    // 按 itemHrid 整体合并；随 REST 行情缓存持久化（lastFetchedAt > 0 时），
+    // 否则仅会话内有效（主站下次打开会重新透传）。
+    // estimateSource：载荷级来源标记（importExportMapper 提取的 'official'/'synthetic'，
+    // null = 旧载荷/复制粘贴载荷无标记）；syntheticItemHrids：混合载荷的逐件真值清单
+    // （#18，2026-08-31——载荷级标记 'official' 但混有合成独有物品时脚本附带的
+    // 合成来源 hrid 数组，null = 无清单）。二者结合按导入批次记录到 hrid 粒度的
+    // 映射 pricing.marketItemValueSources，供资产分取价链区分「官方估算/合成
+    // 中价」标签（assetScoreService.resolveOfficialEstimateSource）。清单命中的 hrid
+    // 标合成中价、其余随载荷级标记；null 不更新已标注的 hrid（向后兼容：无标记载荷
+    // 按现状显示官方估算）。该映射随市场缓存一并持久化（A3 修复：重启后
+    // 来源真值不丢，快照恢复不再被改标官方估算）；只影响标签、数值口径零改动。
+    // syntheticLevelKeys（【一般-5】，2026-09-02）：混合载荷的等级级来源真值——混合
+    // 物品（官方估算仅覆盖部分等级）中由合成中价补齐的等级键清单（{ [hrid]:
+    // levelKey[] }，上游 collectSyntheticLevelKeys，null = 无清单）。逐等级记录到稀疏
+    // 覆盖 pricing.marketItemValueSourcesByLevel（{ [hrid]: { [level]: 'synthetic' } }），
+    // resolveOfficialEstimateSource 先查等级级再回落物品级——混合物品的合成补齐等级
+    // 如实标「合成中价」，其余等级仍标官方估算。与物品级同粒度维护：本次载荷覆盖的
+    // hrid 一律重写等级覆盖（清单命中 → 替换为清单等级；否则删除——物品转纯官方/
+    // 纯合成后陈旧覆盖不得残留），未覆盖 hrid 承接前值；同样随市场缓存持久化。
+    applyImportedMarketItemValues(values, estimateSource = null, syntheticItemHrids = null, syntheticLevelKeys = null) {
+      const normalized = normalizeMarketItemValues(values);
+      if (Object.keys(normalized).length === 0) {
+        return false;
+      }
+      const syntheticHridSet = Array.isArray(syntheticItemHrids) ? new Set(syntheticItemHrids) : null;
+      // 外层守卫不纳入 syntheticLevelKeys：无标记载荷（旧载荷/复制粘贴）不得因携带
+      // 陌生字段而进入标注块（向后兼容语义与物品级一致——null 不更新已标注 hrid）。
+      const syntheticLevelKeyMap =
+        syntheticLevelKeys && typeof syntheticLevelKeys === 'object' && !Array.isArray(syntheticLevelKeys)
+          ? syntheticLevelKeys
+          : null;
+      const current =
+        this.pricing?.marketItemValues && typeof this.pricing.marketItemValues === 'object'
+          ? this.pricing.marketItemValues
+          : {};
+      // 合并前值比较（#23 性能优化）：合并为内容空操作（载荷各键均与现值逐值一致，
+      // 含「同一 merged 快照重复透传」与「现值为载荷超集」两种形态）时，跳过引用替换
+      // （marketItemValues 引用不变 → 成本缓存不整表失效）与市场缓存全量落盘；
+      // sources 标注更新仍按载荷执行（来源标记变化与数值无关），且标注变化本身
+      // 会触发落盘（见下方门控——跳过落盘仅对「值与标注均未变」成立）。
+      const valuesUnchanged = isMarketItemValuesMergeNoOp(current, normalized);
+      if (!valuesUnchanged) {
+        this.pricing.marketItemValues = { ...current, ...normalized };
+      }
+      let sourcesChanged = false;
+      if (estimateSource === 'official' || estimateSource === 'synthetic' || syntheticHridSet) {
+        const prevSources = this.pricing?.marketItemValueSources;
+        // 与数值合并同粒度：本次载荷覆盖的 hrid 整体换标注，未覆盖的 hrid 保持原标注。
+        const nextSources = {
+          ...(prevSources && typeof prevSources === 'object' ? prevSources : {}),
+        };
+        // 等级级来源覆盖（【一般-5】，2026-09-02）：稀疏结构——仅混合物品的合成补齐
+        // 等级入表，物品级标注仍是「该物品的默认来源」。本次载荷覆盖的 hrid 一律重写
+        // 覆盖（清单命中 → 替换为清单等级；否则 delete——陈旧覆盖不得残留），未覆盖
+        // hrid 承接前值（与 nextSources 的合并语义一致）。整体替换新引用（App.vue
+        // 资产分触发向量浅跟踪该字段引用）。
+        const prevLevelSources =
+          this.pricing?.marketItemValueSourcesByLevel && typeof this.pricing.marketItemValueSourcesByLevel === 'object'
+            ? this.pricing.marketItemValueSourcesByLevel
+            : {};
+        const nextLevelSources = { ...prevLevelSources };
+        for (const hrid of Object.keys(normalized)) {
+          const isSyntheticItem = syntheticHridSet?.has(hrid) ?? false;
+          nextSources[hrid] = isSyntheticItem || estimateSource === 'synthetic' ? 'synthetic' : 'official';
+          delete nextLevelSources[hrid];
+          const syntheticLevelKeysForItem = syntheticLevelKeyMap?.[hrid];
+          if (
+            !isSyntheticItem &&
+            estimateSource !== 'synthetic' &&
+            Array.isArray(syntheticLevelKeysForItem) &&
+            syntheticLevelKeysForItem.length > 0
+          ) {
+            const byLevel = {};
+            for (const rawLevelKey of syntheticLevelKeysForItem) {
+              // 等级键与 normalizeMarketItemValues 同语义归一化（非负整数下取整字符串、
+              // 非法丢弃）：消费端 resolveOfficialEstimateSource 以
+              // String(clampEnhancementLevel(level)) 规范键查询，未归一化的非规范键
+              // （'1.0'/' 1 '）会永久 miss 并静默回落物品级标签——等级级真值失效。
+              const levelNumber = Number(rawLevelKey);
+              if (!Number.isFinite(levelNumber) || levelNumber < 0) {
+                continue;
+              }
+              byLevel[String(Math.floor(levelNumber))] = 'synthetic';
+            }
+            if (Object.keys(byLevel).length > 0) {
+              nextLevelSources[hrid] = byLevel;
+            }
+          }
+        }
+        this.pricing.marketItemValueSources = nextSources;
+        this.pricing.marketItemValueSourcesByLevel = nextLevelSources;
+        // 未覆盖的 hrid 原样承接自 prevSources/prevLevelSources，差异只可能出现在本次
+        // 载荷覆盖的键上（等级覆盖结构重建必换引用，需逐键深比——levelSourcesDifferForHrids）。
+        sourcesChanged =
+          Object.keys(normalized).some((hrid) => prevSources?.[hrid] !== nextSources[hrid]) ||
+          levelSourcesDifferForHrids(prevLevelSources, nextLevelSources, Object.keys(normalized));
+      }
+      // 落盘门控：值变化或来源标注变化均需持久化（#23 空操作优化仅指数值内容——
+      // 同值换源若不落盘，重启后会恢复旧来源标注，来源真值跨会话断裂）。
+      if ((!valuesUnchanged || sourcesChanged) && toFiniteNumber(this.pricing?.lastFetchedAt, 0) > 0) {
+        persistMarketCacheToStorage({
+          basePriceTable: this.pricing.basePriceTable,
+          enhancementQuotesByItem: this.pricing.enhancementQuotesByItem,
+          enhancementLevelsByItem: this.pricing.enhancementLevelsByItem,
+          marketItemValues: this.pricing.marketItemValues,
+          marketItemValueSources: this.pricing.marketItemValueSources,
+          marketItemValueSourcesByLevel: this.pricing.marketItemValueSourcesByLevel,
+          marketTimestamp: this.pricing.marketTimestamp,
+          lastFetchedAt: this.pricing.lastFetchedAt,
+          sourceUrl: this.pricing.sourceUrl,
+        });
+      }
+      return true;
     },
     resetPricesToVendorDefaults() {
       resetPricesToVendorDefaultsForStore(this);

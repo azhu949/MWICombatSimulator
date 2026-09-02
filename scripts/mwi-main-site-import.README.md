@@ -17,6 +17,7 @@ Tampermonkey 脚本，用于把 Milky Way Idle 主站数据导入 MWI Combat Sim
 
 - 当前角色，或已缓存的队伍成员（最多 5 人）
 - 等级、装备、食物、饮品、技能、触发器、房间和成就
+- 官方估算市场价值快照（`marketItemValues`），用于模拟器的资产分（Gear Score）取价链，随每次导入载荷透传，主站打开期间持续更新。快照按三源合并构建：WS `market_item_values_updated` 全量快照与 localStorage 键 `marketItemValues`（主站登录即写入的全量官方估算，主通道）按物品/等级粒度合并——**已捕获的 WS 值优先，localStorage 补缺**；`game_data/marketplace.json` 合成中价兜底（仅官方估算整体为空时拉取）。合并/拉取时机：脚本启动时一次，此后每次导入请求经 `ensureMarketEstimatesFresh` 惰性合并/按需补拉（非定时器周期）；合成行情 fetch 失败后下次导入请求自然重试（退避 = 导入频率），成功后 6 小时内节流。载荷来源为合成中价时，导入反馈会如实标注（`marketEstimateSource` 字段 + 「合成中价估值已透传」文案）；模拟器侧同链消费——tooltip / 可复制明细对 synthetic 命中件标「合成中价」（与官方估算标签区分）、导入弹窗反馈同步切换「合成中价估值」文案，无标记的旧载荷/复制粘贴载荷按官方估算显示（向后兼容）。【一般-5】（2026-09-02）混合物品（官方估算仅覆盖部分等级）的等级级来源由 `syntheticLevelKeys` 字段表达：`{ [itemHrid]: [levelKey, ...] }`，仅列出该物品中由合成行情补齐（官方缓存未覆盖）的等级键；仅载荷级标记为 official 时挂载、非空才附（旧版模拟器忽略未知字段，向后兼容）。模拟器侧据此在 `marketItemValueSourcesByLevel` 建立等级级来源覆盖，tooltip / 可复制明细对合成补齐等级如实标「合成中价」，其余等级仍标「官方估算」
 - 当前角色与已缓存队友均导入实际生效的公会神龛战斗增益（当前角色由已购等级结合公会神龛等级计算；队友由主站分享资料直接下发 `guildBuffLevelMap`）
 - 队友的 `guildBuffLevelMap` 即其实际拥有的增益等级：map 中缺失的战斗增益按 0 处理（空 map `{}` = 未拥有任何增益，导入时会覆盖当前角色上对应的手动配置）；仅当分享资料整体缺少该字段时才保留当前角色已有的手动配置
 - 当前战斗区域、地下城和难度

@@ -1,4 +1,30 @@
 {
+  "2026年9月2日（v2.4.0）": {
+    "label": {
+      "zh": "2026年9月2日（v2.4.0）",
+      "en": "September 2, 2026 (v2.4.0)"
+    },
+    "newFeatures": {
+      "zh": [
+        "新增资产分（Gear Score）：导入玩家后，玩家名称旁会显示资产分，综合衡量其装备、房屋、技能书和公会神龛的市场价值。",
+        "鼠标悬停可查看各项明细，点击可复制。"
+      ],
+      "en": [
+        "Added Gear Score: after importing a player, a score appears next to their name, summarizing the market value of their gear, house, ability books, and guild shrines.",
+        "Hover to see itemized details, or click to copy."
+      ]
+    },
+    "improvements": {
+      "zh": [
+        "资产分采用与 MWITools 相同的计算方式，优先使用官方估算和市场行情，数值贴近实际价值。",
+        "主站导入后立即显示资产分，分数随配置保存并随导出数据携带。"
+      ],
+      "en": [
+        "Gear Score uses the same calculation as MWITools, preferring official estimates and live market data, so values stay close to reality.",
+        "Scores appear right after import and are saved with configs and carried in exported data."
+      ]
+    }
+  },
   "2026年8月30日（v2.3.0）": {
     "label": {
       "zh": "2026年8月30日（v2.3.0）",

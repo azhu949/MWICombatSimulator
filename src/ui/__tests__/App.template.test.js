@@ -13,8 +13,20 @@ describe('App shell contracts', () => {
     expect(appSource).toContain('<AppSidebar');
     expect(appSource).toContain('<SidebarInset');
     expect(appSource).toContain('<CombatCommandBar');
+    expect(appSource).toContain('<PlayerCardsStrip');
     expect(appSource).toContain('v-if="showCombatToolbar"');
     expect(appSource).toContain('route.meta?.showCombatToolbar !== false');
+    expect(appSource).toContain('v-if="showCombatToolbar && simulator.players.length"');
+  });
+
+  it('moves the player cards (name + gear score) into the global header', () => {
+    expect(appSource).toContain(':players="simulator.players"');
+    expect(appSource).toContain(':active-player-id="simulator.activePlayerId"');
+    expect(appSource).toContain('@select-player="simulator.setActivePlayer"');
+    expect(appSource).toContain('class="min-w-0 max-w-[78%]"');
+    expect(commandBarSource).not.toContain('select-player');
+    expect(commandBarSource).not.toContain('v-model="player.name"');
+    expect(commandBarSource).not.toContain('player.assetScore');
   });
 
   it('keeps routes lazy and supplies ordered navigation metadata', () => {
@@ -221,5 +233,24 @@ describe('App shell contracts', () => {
     expect(appSource).toContain('delete manualPriceErrors.value[getManualPriceKey(entry)]');
     expect(appSource).toContain('function isSharedMirrorPriceMissing()');
     expect(appSource).toContain('!isSharedMirrorPriceMissing()');
+  });
+
+  it('drives asset score refresh from a signature computed instead of a deep watch', () => {
+    expect(appSource).toContain("import { computeAssetScoreConfigSignature } from '../services/assetScoreService.js';");
+    expect(appSource).toContain('const assetScoreRefreshTrigger = computed(() => [');
+    expect(appSource).toContain('simulator.players.map((player) => computeAssetScoreConfigSignature(player))');
+    expect(appSource).toContain('simulator.pricing?.marketItemValues ?? null');
+    expect(appSource).toContain('simulator.pricing?.marketItemValueSources ?? null');
+    // 【一般-5】等级级来源覆盖在触发向量内（整体替换引用、浅跟踪）。
+    expect(appSource).toContain('simulator.pricing?.marketItemValueSourcesByLevel ?? null');
+    expect(appSource).toContain('simulator.pricing?.basePriceTable ?? simulator.pricing?.priceTable ?? null');
+    expect(appSource).toContain('simulator.pricing?.enhancementQuotesByItem ?? null');
+    expect(appSource).toContain('simulator.pricing?.lastFetchedAt ?? 0');
+    expect(appSource).toContain('watch(assetScoreRefreshTrigger, () => {');
+    expect(appSource).toContain('simulator.refreshAssetScores();');
+    expect(appSource).toContain('}, 250);');
+    // App.vue 当前唯一 deep: true 即旧资产分触发器；拆除后不应再现（若未来新增
+    // 合理的 deep watch，应把本断言改为块级定位而非全局负断言）。
+    expect(appSource).not.toContain('deep: true');
   });
 });

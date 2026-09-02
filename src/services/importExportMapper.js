@@ -11,6 +11,7 @@ import { LABYRINTH_ROOM_LEVEL_DEFAULT, LABYRINTH_ROOM_LEVEL_MIN } from '../share
 import { combatGuildBuffDetails, getGuildBuffMaxLevel, normalizeGuildBuffLevels } from '../shared/guildBuffs.js';
 import { sanitizeTriggerList, sanitizeTriggerMap } from './triggerMapper.js';
 import { normalizeCombatScrolls } from '../shared/combatScrolls.js';
+import { sanitizeAssetScorePayload } from './assetScoreService.js';
 
 const NON_WEAPON_SLOTS = EQUIPMENT_SLOT_KEYS.filter((slot) => slot !== 'weapon');
 const COMBAT_ABILITY_SLOT_COUNT = 5;
@@ -62,9 +63,15 @@ function normalizeAbilityHrid(abilityHrid) {
   return LEGACY_ABILITY_ALIAS_MAP[raw] || raw;
 }
 
+// 游戏强化等级上限 20（与 enhancementSimulator normalizeEnhancementConfig 的
+// clamp(..., 1, 20)、enhancementImportMapper clampInteger(..., 0, 20, 0) 同口径）。
+// 手注 JSON 的超限值（如 enhancementLevel=999）必须钳到 20：否则行元数据显示 +999
+// 而计价按 +20，且战斗模拟 equipment.js 直接以等级索引 21 元素倍率表（999 → undefined）。
+const MAX_ENHANCEMENT_LEVEL = 20;
+
 function clampEnhancementLevel(level) {
   const parsed = Math.floor(toFiniteNumber(level, 0));
-  return parsed < 0 ? 0 : parsed;
+  return Math.min(Math.max(parsed, 0), MAX_ENHANCEMENT_LEVEL);
 }
 
 function resolveEquipmentSlotFromItemLocationHrid(itemLocationHrid) {
@@ -204,6 +211,7 @@ function sanitizePlayerConfig(
 
   normalized.food = [0, 1, 2].map((index) => String(source.food?.[index] || ''));
   normalized.drinks = [0, 1, 2].map((index) => String(source.drinks?.[index] || ''));
+  normalized.craftingTeaSlots = sanitizeCraftingTeaSlots(source.craftingTeaSlots ?? fallback.craftingTeaSlots ?? {});
 
   normalized.abilities = [0, 1, 2, 3, 4].map((index) => {
     const sourceAbility = source.abilities?.[index] ?? {};
@@ -235,6 +243,10 @@ function sanitizePlayerConfig(
       ? deepClone(source.achievements)
       : {}
     : deepClone(fallback.achievements ?? {});
+
+  // 资产分快照：形状合法则原样保留（含导出携带与共享 JSON 导入），
+  // 缺失或形状非法时置 null，由 store 的 refreshAssetScores 重新计算。
+  normalized.assetScore = sanitizeAssetScorePayload(source.assetScore);
 
   return normalized;
 }
@@ -322,6 +334,8 @@ function applyLegacySoloToPlayer(legacySoloPayload, fallbackPlayer, { preserveMi
 }
 
 const SHAREABLE_PROFILE_COMBAT_ACTION_TYPE_HRID = '/action_types/combat';
+// 制作茶槽键前缀：非战斗行动类型键形如 /action_types/<skill>（战斗键由白名单显式剔除）。
+const CRAFTING_TEA_ACTION_TYPE_KEY_PREFIX = '/action_types/';
 
 function resolveShareableProfileSource(parsed) {
   if (!parsed || typeof parsed !== 'object') {
@@ -650,6 +664,46 @@ function extractCurrentCharacterConsumableHrids(actionTypeMap) {
     : [];
 
   return [0, 1, 2].map((index) => normalizeCurrentCharacterSlotItemHrid(combatSlots[index]));
+}
+
+// 制作茶槽键白名单：仅接受 /action_types/ 前缀的非战斗行动类型键。前缀白名单对未来新增
+// 生活技能前向兼容（未知合法前缀键放行：消费端只扫槽值、未知键不参与茶效判定，无副作
+// 用），同时天然拦截手工伪造的非前缀伪键（__proto__/constructor/任意字符串）——此前伪
+// 键会被放行，其中 __proto__ 自有键（JSON.parse 产物）在 result[actionTypeHrid] = items
+// 赋值时触发 Object.prototype.__proto__ setter：槽值被静默吞掉、result 原型被换成槽值
+// 数组（自伤型，2026-09-01 审计修复）。
+function isCraftingTeaActionTypeKey(actionTypeHrid) {
+  return (
+    typeof actionTypeHrid === 'string' &&
+    actionTypeHrid.startsWith(CRAFTING_TEA_ACTION_TYPE_KEY_PREFIX) &&
+    actionTypeHrid !== SHAREABLE_PROFILE_COMBAT_ACTION_TYPE_HRID
+  );
+}
+
+// 非战斗行动类型（制作/生活技能）的茶槽：{ [actionTypeHrid]: [茶 hrid, ...] }。
+// 供资产分的精炼材料折扣使用（工匠茶 lessResource，对齐 MWITools 的茶效）。
+// 主站 current-character 的 actionTypeDrinkSlotsMap 提取与配置白名单保留共用此单一
+// 实现（两份逐行重复实现已收敛，2026-09-01 审计）。
+function sanitizeCraftingTeaSlots(raw) {
+  const source = raw && typeof raw === 'object' && !Array.isArray(raw) ? raw : {};
+  const result = {};
+  for (const [actionTypeHrid, slots] of Object.entries(source)) {
+    // 键白名单 + 显式剔除战斗键：战斗槽不是制作茶槽，正常流（主站导出/桥接）不可能产出
+    // 该键，仅手工构造的导入 JSON 可达；否则消费者 resolveCraftingTeaLessResource 对全部
+    // 槽值扫 artisan_tea（不看键类型），战斗键或伪键漏进来会无中生有精炼折扣、装备分
+    // 偏低（校验边界缺口，2026-08-31 修复；2026-09-01 收敛单一实现并补键前缀白名单）。
+    if (!isCraftingTeaActionTypeKey(actionTypeHrid)) {
+      continue;
+    }
+    if (!Array.isArray(slots)) {
+      continue;
+    }
+    const items = slots.map(normalizeCurrentCharacterSlotItemHrid).filter(Boolean);
+    if (items.length > 0) {
+      result[actionTypeHrid] = items;
+    }
+  }
+  return result;
 }
 
 function extractCurrentCharacterEquipment(parsed, fallbackPlayer) {
@@ -1075,7 +1129,9 @@ function extractShareableSimulationSettings(parsed, existingSimulationSettings) 
   }
 
   const maxDifficulty = Math.max(0, Math.floor(toFiniteNumber(action?.maxDifficulty, 0)));
-  const difficultyTier = clampEnhancementLevel(parsed?.mainSiteCombat?.difficultyTier);
+  // 难度层级只借「取整+非负」，不借强化等级的 20 上限（未来动作 maxDifficulty
+  // 可能 >20）；上界交给下方 Math.min(maxDifficulty, ...) 按动作数据收紧。
+  const difficultyTier = Math.max(0, Math.floor(toFiniteNumber(parsed?.mainSiteCombat?.difficultyTier, 0)));
 
   baseline.mode = 'zone';
   baseline.useDungeon = Boolean(action?.combatZoneInfo?.isDungeon);
@@ -1105,6 +1161,7 @@ function importShareableProfile(parsed, existingPlayer, existingSimulationSettin
     equipment: {},
     food: extractShareableFoodItemHrids(candidateLoadouts, parsed),
     drinks: extractShareableDrinkItemHrids(candidateLoadouts, parsed),
+    craftingTeaSlots: sanitizeCraftingTeaSlots(parsed?.actionTypeDrinkSlotsMap),
     abilities: Array.from({ length: 5 }, () => ({ abilityHrid: '', level: 1 })),
   };
 
@@ -1182,6 +1239,7 @@ function importMainSiteCurrentCharacter(parsed, existingPlayer, existingSimulati
     equipment: extractCurrentCharacterEquipment(parsed, fallbackPlayer),
     food: extractCurrentCharacterConsumableHrids(parsed?.actionTypeFoodSlotsMap),
     drinks: extractCurrentCharacterConsumableHrids(parsed?.actionTypeDrinkSlotsMap),
+    craftingTeaSlots: sanitizeCraftingTeaSlots(parsed?.actionTypeDrinkSlotsMap),
     abilities: extractCurrentCharacterAbilities(parsed),
   };
 
@@ -1258,6 +1316,69 @@ function parseJsonText(text) {
   }
 
   return JSON.parse(raw);
+}
+
+// 主站导入载荷顶层可携带官方估算市场价值快照（marketItemValues），
+// 供 store 应用到 pricing 状态（资产分取价链第 ① 级）。缺失时返回 null。
+function extractPayloadMarketItemValues(parsed) {
+  const raw = parsed && typeof parsed === 'object' ? parsed.marketItemValues : null;
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw) || Object.keys(raw).length === 0) {
+    return null;
+  }
+  return raw;
+}
+
+// 主站脚本在载荷顶层挂估值来源标记 marketEstimateSource（'official' / 'synthetic'，
+// 见 scripts/mwi-main-site-import.user.js N5）：官方估算整体为空、回落合成中价时标
+// 'synthetic'，tooltip / 明细 / 导入反馈据此区分「官方估算 / 合成中价」。白名单外
+// （旧载荷 / 复制粘贴载荷无该字段 / 非法值）返回 null，app 侧按现状显示官方估算
+// （向后兼容，不劣化）。
+function extractPayloadMarketEstimateSource(parsed) {
+  const raw = parsed && typeof parsed === 'object' ? parsed.marketEstimateSource : '';
+  const value = String(raw || '')
+    .trim()
+    .toLowerCase();
+  return value === 'official' || value === 'synthetic' ? value : null;
+}
+
+// #18（2026-08-31）：混合载荷的逐件来源真值——主站脚本在「载荷级标记为 official
+// 但 merged 混有合成独有物品」时附 syntheticItemHrids（仅含数值完全来自合成中价的
+// 物品 hrid，见 scripts/mwi-main-site-import.user.js）。缺失 / 非数组 / 元素非
+// 字符串返回 null，app 侧落全量 official 兼容分支（旧载荷 / 复制粘贴载荷向后兼容，
+// 不劣化）。
+function extractPayloadSyntheticItemHrids(parsed) {
+  const raw = parsed && typeof parsed === 'object' ? parsed.syntheticItemHrids : null;
+  if (!Array.isArray(raw)) {
+    return null;
+  }
+  const cleaned = raw.filter((itemHrid) => typeof itemHrid === 'string' && itemHrid.trim().length > 0);
+  return cleaned.length > 0 ? cleaned : null;
+}
+
+// 【一般-5】（2026-09-02）：混合载荷的等级级来源真值——主站脚本在「载荷级标记为
+// official 且存在混合物品（官方估算仅覆盖部分等级）」时附 syntheticLevelKeys
+//（{ [itemHrid]: [levelKey, ...] }，仅含该物品由合成中价补齐的等级键，见
+// scripts/mwi-main-site-import.user.js collectSyntheticLevelKeys）。缺失 / 非对象 /
+// 值非数组返回 null（视为无清单，app 侧维持物品级标注，向后兼容不劣化）；清单存在
+// 但合法条目为空返回 {}（明确「本载荷无等级级合成补齐」，配合 store 侧对覆盖 hrid
+// 的陈旧等级覆盖清理）。与 syntheticItemHrids 并列提取，六个导入分支同构透传。
+function extractPayloadSyntheticLevelKeys(parsed) {
+  const raw = parsed && typeof parsed === 'object' ? parsed.syntheticLevelKeys : null;
+  if (!raw || typeof raw !== 'object' || Array.isArray(raw)) {
+    return null;
+  }
+  const sanitized = {};
+  for (const [rawHrid, rawLevels] of Object.entries(raw)) {
+    const itemHrid = String(rawHrid || '').trim();
+    if (!itemHrid || !Array.isArray(rawLevels)) {
+      continue;
+    }
+    const levelKeys = rawLevels.map((level) => String(level ?? '').trim()).filter((level) => level.length > 0);
+    if (levelKeys.length > 0) {
+      sanitized[itemHrid] = levelKeys;
+    }
+  }
+  return sanitized;
 }
 
 function normalizeActionValueToHrid(value) {
@@ -1378,6 +1499,10 @@ export function importGroupConfig(text, existingPlayers, existingSimulationSetti
       players: Object.values(playersById),
       simulationSettings: normalizeImportedSimulationSettings(parsed, existingSimulationSettings),
       detectedFormat: 'modern-group',
+      marketItemValues: extractPayloadMarketItemValues(parsed),
+      marketEstimateSource: extractPayloadMarketEstimateSource(parsed),
+      syntheticItemHrids: extractPayloadSyntheticItemHrids(parsed),
+      syntheticLevelKeys: extractPayloadSyntheticLevelKeys(parsed),
     };
   }
 
@@ -1388,11 +1513,23 @@ export function importSoloConfig(text, existingPlayer, existingSimulationSetting
   const parsed = parseJsonText(text);
 
   if (isShareableProfilePayload(parsed)) {
-    return importShareableProfile(parsed, existingPlayer, existingSimulationSettings);
+    return {
+      ...importShareableProfile(parsed, existingPlayer, existingSimulationSettings),
+      marketItemValues: extractPayloadMarketItemValues(parsed),
+      marketEstimateSource: extractPayloadMarketEstimateSource(parsed),
+      syntheticItemHrids: extractPayloadSyntheticItemHrids(parsed),
+      syntheticLevelKeys: extractPayloadSyntheticLevelKeys(parsed),
+    };
   }
 
   if (isMainSiteCurrentCharacterPayload(parsed)) {
-    return importMainSiteCurrentCharacter(parsed, existingPlayer, existingSimulationSettings);
+    return {
+      ...importMainSiteCurrentCharacter(parsed, existingPlayer, existingSimulationSettings),
+      marketItemValues: extractPayloadMarketItemValues(parsed),
+      marketEstimateSource: extractPayloadMarketEstimateSource(parsed),
+      syntheticItemHrids: extractPayloadSyntheticItemHrids(parsed),
+      syntheticLevelKeys: extractPayloadSyntheticLevelKeys(parsed),
+    };
   }
 
   if (parsed && parsed.version === 2 && parsed.player) {
@@ -1400,6 +1537,10 @@ export function importSoloConfig(text, existingPlayer, existingSimulationSetting
       player: sanitizePlayerConfig(parsed.player, existingPlayer),
       simulationSettings: normalizeImportedSimulationSettings(parsed, existingSimulationSettings),
       detectedFormat: 'modern-solo',
+      marketItemValues: extractPayloadMarketItemValues(parsed),
+      marketEstimateSource: extractPayloadMarketEstimateSource(parsed),
+      syntheticItemHrids: extractPayloadSyntheticItemHrids(parsed),
+      syntheticLevelKeys: extractPayloadSyntheticLevelKeys(parsed),
     };
   }
 
@@ -1412,6 +1553,10 @@ export function importSoloConfig(text, existingPlayer, existingSimulationSetting
       }),
       simulationSettings: normalizeImportedSimulationSettings(parsed, existingSimulationSettings),
       detectedFormat: 'legacy-solo',
+      marketItemValues: extractPayloadMarketItemValues(parsed),
+      marketEstimateSource: extractPayloadMarketEstimateSource(parsed),
+      syntheticItemHrids: extractPayloadSyntheticItemHrids(parsed),
+      syntheticLevelKeys: extractPayloadSyntheticLevelKeys(parsed),
     };
   }
 
@@ -1420,6 +1565,10 @@ export function importSoloConfig(text, existingPlayer, existingSimulationSetting
       player: sanitizePlayerConfig(parsed, existingPlayer),
       simulationSettings: normalizeImportedSimulationSettings(parsed, existingSimulationSettings),
       detectedFormat: 'modern-player-only',
+      marketItemValues: extractPayloadMarketItemValues(parsed),
+      marketEstimateSource: extractPayloadMarketEstimateSource(parsed),
+      syntheticItemHrids: extractPayloadSyntheticItemHrids(parsed),
+      syntheticLevelKeys: extractPayloadSyntheticLevelKeys(parsed),
     };
   }
 

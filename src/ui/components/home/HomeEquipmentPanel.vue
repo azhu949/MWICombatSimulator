@@ -38,7 +38,8 @@
                 class="control-input pl-6 pr-2 text-right tabular-nums"
                 type="number"
                 min="0"
-                max="30"
+                max="20"
+                @change="clampSlotEnhancementLevel(slot)"
                 :aria-label="`${equipmentLabelMap[slot]} ${t('common:vue.home.enhancement', 'Enhancement')}`"
                 :title="t('common:vue.home.enhancement', 'Enhancement')"
               />
@@ -156,4 +157,17 @@ const equipmentHintViewModel = computed(() => {
   }
   return model;
 });
+
+// 强化等级游戏上限 20（倍率表 21 元素 0-20 级，与 enhancementSimulator /
+// importExportMapper / playerMapper 的 0..20 钳制同口径）。number input 的
+// max 只是 spinner 提示、不拦手动键入，change 时强制钳回 0..20，防止超限值
+// 进入玩家配置（配置是战斗模拟与资产分计价的唯一事实源）。
+function clampSlotEnhancementLevel(slot) {
+  const target = activePlayer.value?.equipment?.[slot];
+  if (!target) {
+    return;
+  }
+  const parsed = Math.floor(Number(target.enhancementLevel));
+  target.enhancementLevel = Number.isFinite(parsed) ? Math.min(Math.max(parsed, 0), 20) : 0;
+}
 </script>

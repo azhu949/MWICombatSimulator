@@ -41,6 +41,12 @@ import {
   importSoloConfig as parseSoloImportConfig,
 } from '../services/importExportMapper.js';
 import {
+  assetScoreEquals,
+  computeAssetScoreConfigSignature,
+  computePlayerAssetScore,
+  isPricingDataAvailableForAssetScore,
+} from '../services/assetScoreService.js';
+import {
   ensureTriggerMapEntry,
   getDefaultTriggerDtosForHrid,
   sanitizeTriggerList,
@@ -893,15 +899,26 @@ export const useSimulatorStore = defineStore('simulator', {
       this.ui.language = language === 'zh' ? 'zh' : 'en';
     },
     exportGroupConfig() {
+      // 导出前刷新资产分快照，保证导出 JSON 携带的分数与当前配置/行情一致。
+      this.refreshAssetScores();
       return exportGroupConfig(this.players, this.simulationSettings);
     },
     exportSoloConfig(playerId) {
       const targetId = String(playerId || this.activePlayerId);
       const targetPlayer = this.players.find((player) => player.id === targetId) || this.activePlayer;
+      this.refreshAssetScores([targetPlayer.id]);
       return exportSoloConfig(targetPlayer, this.simulationSettings);
     },
     importGroupConfig(text) {
       const result = parseGroupImportConfig(text, this.players, this.simulationSettings);
+      if (result.marketItemValues) {
+        this.applyImportedMarketItemValues(
+          result.marketItemValues,
+          result.marketEstimateSource,
+          result.syntheticItemHrids,
+          result.syntheticLevelKeys,
+        );
+      }
       result.players.forEach((player) => this.ensurePlayerConfig(player));
       const byId = Object.fromEntries(result.players.map((player) => [String(player.id), player]));
       this.players = this.players.map((player) => byId[String(player.id)] || player);
@@ -916,12 +933,37 @@ export const useSimulatorStore = defineStore('simulator', {
       };
       this.normalizeRunScope();
       this.normalizeDifficulty();
+      this.refreshAssetScores();
       return result;
     },
     importSoloConfig(text, playerId) {
       const targetId = String(playerId || this.activePlayerId);
       const currentPlayer = this.players.find((player) => player.id === targetId) || this.activePlayer;
       const result = parseSoloImportConfig(text, currentPlayer, this.simulationSettings);
+      // Solo 导入是「替换目标槽位配置」而非「身份迁移」：sanitizePlayerConfig 是
+      // 导出/group/快照恢复共用的清洗函数，通用 id 语义（source.id || fallback.id）
+      // 的 source.id 优先只在「载荷 id 与目标 id 分歧」时改变结果——solo 的目标由
+      // 入参 playerId 决定、载荷 id 无槽位路由职责（group 按载荷 id 路由槽位，匹配
+      // 后 source.id 与 fallback.id 恒同值），任由载荷 id 胜出会让携带 id 的 native
+      // solo 载荷（modern-solo / modern-player-only；原生导出经 buildExportPlayer
+      // 恒携带 id）在顶替目标槽位后带着来源 id——目标 id 从玩家列表消失，此后按
+      // 玩家 id 过滤的即时资产分刷新落空（只能等 App.vue 250ms 防抖兜底；导入配置
+      // 与槽位原配置签名一致时 watch 不触发，载荷携带的跨会话行情快照将无限期
+      // 滞留），imported 标记 / 基线快照 / 桥接 selectAfterImport 全部挂错 id，且
+      // 来源 id 撞上其他现有玩家时产生重复 id。与 share-profile /
+      // main-site-current-character 分支恒用 fallback.id（= 目标 id）的既有语义
+      // 对齐：写入前归一为目标槽位 id。不影响快照保留守卫：configSignature 不含
+      // id（equipment/houseRooms/abilities/guildBuffs/工匠茶）；group 导入与快照
+      // 恢复按 id 合并的路径不经此处，零影响。
+      result.player.id = targetId;
+      if (result.marketItemValues) {
+        this.applyImportedMarketItemValues(
+          result.marketItemValues,
+          result.marketEstimateSource,
+          result.syntheticItemHrids,
+          result.syntheticLevelKeys,
+        );
+      }
       this.ensurePlayerConfig(result.player);
 
       this.players = this.players.map((player) => (player.id === targetId ? result.player : player));
@@ -934,7 +976,48 @@ export const useSimulatorStore = defineStore('simulator', {
       };
       this.normalizeRunScope();
       this.normalizeDifficulty();
+      this.refreshAssetScores([targetId]);
       return result;
+    },
+    // 资产分（Gear Score）重算：市场数据不可用且玩家已有快照时的保留语义——
+    // 快照仅在「仍与当前配置对应」时保留（导入携带语义的兜底：快照带 configSignature，
+    // 与当前配置签名一致，或旧格式快照无签名时向后兼容维持旧行为）；
+    // 签名不一致（导入后改配置 / 旧行情快照遇行情重置后改配置）则视为过时，
+    // 按当前配置 + 取价链重算（无行情时降级为 vendor/成本法口径，tooltip 来源标记可见）。
+    // 值未变化时不写回（App.vue 的资产分 watch 源只跟踪配置签名与行情引用、
+    // 不跟踪快照本身；等值守卫同时避免
+    // 无谓的引用替换与 UI 重渲染）。
+    refreshAssetScores(playerIds = null) {
+      const targets = Array.isArray(playerIds) ? new Set(playerIds.map((id) => String(id))) : null;
+      const pricingReady = isPricingDataAvailableForAssetScore(this.pricing);
+      for (const player of this.players) {
+        if (targets && !targets.has(String(player.id))) {
+          continue;
+        }
+        // 保留分支前置短路：行情不可用且已有快照时，仅凭签名比对即可判定保留，
+        // 不必先全量 compute 再只为拿 computed.configSignature（该结果在保留时整体丢弃；
+        // 记忆化只覆盖装备成本，冷缓存与房屋/技能书/神龛估值每次现算）。
+        // 快照无签名（旧格式）时短路在前，不触发签名计算。
+        if (!pricingReady && player.assetScore) {
+          const snapshotSignature = String(player.assetScore?.configSignature || '');
+          // computePlayerAssetScore 写入的 configSignature 即 computeAssetScoreConfigSignature(player)
+          //（服务内同一函数、同一 player 归一化），此处直算签名与旧比对严格同值：
+          // 与快照签名一致（或快照无签名）才保留，否则视为过时走下方重算。
+          if (!snapshotSignature || snapshotSignature === computeAssetScoreConfigSignature(player)) {
+            continue;
+          }
+        }
+        const computed = computePlayerAssetScore(player, this.pricing);
+        if (computed === null) {
+          if (!assetScoreEquals(player.assetScore, null)) {
+            player.assetScore = null;
+          }
+          continue;
+        }
+        if (!assetScoreEquals(player.assetScore, computed)) {
+          player.assetScore = computed;
+        }
+      }
     },
     ...createPricingActions(),
     ...createAdvisorActions({

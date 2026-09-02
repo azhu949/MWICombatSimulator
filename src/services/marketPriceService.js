@@ -274,7 +274,11 @@ export function extractEnhancementDataFromMarketData(marketData) {
 
     for (const [rawLevel, rawQuote] of Object.entries(rawLevelQuotes)) {
       const level = Number(rawLevel);
-      if (!Number.isFinite(level) || level < 0) {
+      // 强化等级游戏上限 20（倍率表 21 元素 0-20 级；与 simulatorStorage 的
+      // normalizeEnhancementQuotesByItem/normalizeEnhancementLevelsByItem 同口径）。
+      // 此为行情抓取路径，与导入/缓存恢复不同源；超限键会让「市场强化」按钮
+      // 出现 +N 并携带脏行情数据，直接丢弃。
+      if (!Number.isFinite(level) || level < 0 || level > 20) {
         continue;
       }
 

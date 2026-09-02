@@ -405,6 +405,98 @@ describe('importExportMapper', () => {
     expect(result.simulationSettings.zoneHrid).toBe(createSimulationSettings().zoneHrid);
   });
 
+  it('clamps out-of-range enhancement levels to the game max of 20', () => {
+    const player = createConfiguredPlayer(2);
+    // 手注 JSON 超限值：999 远超游戏上限、20.7 小数、-5 负数。
+    player.equipment.head = {
+      itemHrid: findFirstEquipmentItemByType('/equipment_types/head'),
+      enhancementLevel: 999,
+    };
+    player.equipment.trinket = {
+      itemHrid: '/items/expert_task_badge',
+      enhancementLevel: 20.7,
+    };
+    player.equipment.off_hand = {
+      itemHrid: findFirstEquipmentItemByType('/equipment_types/head'),
+      enhancementLevel: -5,
+    };
+
+    const result = importSoloConfig(JSON.stringify(player), createEmptyPlayerConfig(2), createSimulationSettings());
+
+    expect(result.detectedFormat).toBe('modern-player-only');
+    // 超限值钳到游戏上限 20：行元数据与成本法计价（内部已钳 20）一致，
+    // 且战斗模拟倍率表（21 元素 0-20）索引不越界。
+    expect(result.player.equipment.head.enhancementLevel).toBe(20);
+    // 小数向下取整后仍受 20 上限约束；负数钳到 0。
+    expect(result.player.equipment.trinket.enhancementLevel).toBe(20);
+    expect(result.player.equipment.off_hand.enhancementLevel).toBe(0);
+  });
+
+  // B4（2026-09-01）：clampEnhancementLevel 的 4 处应用点中 sanitizePlayerConfig
+  // （modern-* 共用路径）由上一用例覆盖；legacy-solo / share-profile / current-character
+  // 三条独立提取路径此前无超限断言——任一处漏接会让 999/负数穿透玩家配置（行元数据
+  // 显示 +999、战斗模拟倍率表索引 undefined、计价按 +20 三者不一致）。
+  it('clamps out-of-range enhancement levels on the legacy-solo / share-profile / current-character paths', () => {
+    const headItemHrid = findFirstEquipmentItemByType('/equipment_types/head');
+    expect(headItemHrid).toBeTruthy();
+
+    const legacyResult = importSoloConfig(
+      JSON.stringify({
+        player: {
+          equipment: [
+            { itemLocationHrid: '/item_locations/head', itemHrid: headItemHrid, enhancementLevel: 999 },
+            { itemLocationHrid: '/item_locations/off_hand', itemHrid: headItemHrid, enhancementLevel: -5 },
+          ],
+        },
+      }),
+      createEmptyPlayerConfig(21),
+      createSimulationSettings(),
+    );
+    expect(legacyResult.detectedFormat).toBe('legacy-solo');
+    expect(legacyResult.player.equipment.head.enhancementLevel).toBe(20);
+    expect(legacyResult.player.equipment.off_hand.enhancementLevel).toBe(0);
+
+    const shareProfileResult = importSoloConfig(
+      JSON.stringify(
+        createMainSiteShareProfileFixture({
+          characterName: 'Clamp Share Hero',
+          wearableItemMap: {
+            head: {
+              currentItem: {
+                itemLocationHrid: '/item_locations/head',
+                itemHrid: headItemHrid,
+                enhancementLevel: 999,
+              },
+            },
+          },
+        }),
+      ),
+      createEmptyPlayerConfig(22),
+      createSimulationSettings(),
+    );
+    expect(shareProfileResult.detectedFormat).toBe('main-site-share-profile');
+    expect(shareProfileResult.player.equipment.head.enhancementLevel).toBe(20);
+
+    const currentCharacterResult = importSoloConfig(
+      JSON.stringify(
+        createMainSiteCurrentCharacterFixture({
+          characterName: 'Clamp Current Hero',
+          characterItems: [
+            {
+              itemLocationHrid: '/item_locations/trinket',
+              itemHrid: '/items/expert_task_badge',
+              enhancementLevel: 20.7,
+            },
+          ],
+        }),
+      ),
+      createEmptyPlayerConfig(23),
+      createSimulationSettings(),
+    );
+    expect(currentCharacterResult.detectedFormat).toBe('main-site-current-character');
+    expect(currentCharacterResult.player.equipment.trinket.enhancementLevel).toBe(20);
+  });
+
   it('clears fallback preview-only trinkets when a modern player-only import omits them', () => {
     const fallbackPlayer = createEmptyPlayerConfig(2);
     fallbackPlayer.equipment.trinket = {
@@ -1109,5 +1201,82 @@ describe('importExportMapper', () => {
     for (const guildBuffHrid of combatGuildBuffHrids) {
       expect(result.player.guildBuffs[guildBuffHrid]).toBe(guildBuffLevelMap[guildBuffHrid] ?? 0);
     }
+  });
+
+  it('extracts crafting tea slots（非战斗茶槽）separate from combat drinks on the current-character path', () => {
+    // 资产分精炼折扣依赖 tailoring 等制作槽的工匠茶；战斗槽必须保持 isolation 进 drinks。
+    const fallbackPlayer = createEmptyPlayerConfig(17);
+    const fixture = createMainSiteCurrentCharacterFixture({
+      characterName: 'Crafting Tea Slots Hero',
+      actionTypeDrinkSlotsMap: {
+        '/action_types/combat': ['/items/combat_drink_sample', '', ''],
+        '/action_types/tailoring': ['/items/artisan_tea', ''],
+        '/action_types/forging': ['', '/items/forging_tea_sample'],
+      },
+    });
+
+    const result = importSoloConfig(JSON.stringify(fixture), fallbackPlayer, createSimulationSettings());
+
+    expect(result.detectedFormat).toBe('main-site-current-character');
+    expect(result.player.drinks[0]).toBe('/items/combat_drink_sample');
+    expect(result.player.drinks).toEqual(['/items/combat_drink_sample', '', '']);
+    expect(result.player.craftingTeaSlots).toEqual({
+      '/action_types/tailoring': ['/items/artisan_tea'],
+      '/action_types/forging': ['/items/forging_tea_sample'],
+    });
+  });
+
+  it('strips the combat action-type key from crafted craftingTeaSlots at the import boundary（防伪造工匠茶折扣）', () => {
+    // sanitizeCraftingTeaSlots（导入提取与配置白名单收敛后的单一实现）剔除 /action_types/combat：战斗槽不是制作
+    // 茶槽，正常流（主站导出/桥接）不可能产出该键，仅手工构造的导入 JSON 可达。消费端
+    // resolveCraftingTeaLessResource 对全部槽值扫 artisan_tea 且不看键类型，战斗键漏进来
+    // 会无中生有精炼折扣、装备分偏低——校验边界缺口（2026-08-31 修复）的回归锁定。
+    const payload = {
+      version: 2,
+      player: {
+        craftingTeaSlots: {
+          '/action_types/combat': ['/items/artisan_tea'],
+          '/action_types/tailoring': ['/items/artisan_tea'],
+        },
+      },
+    };
+
+    const result = importSoloConfig(JSON.stringify(payload), createEmptyPlayerConfig(18), createSimulationSettings());
+
+    expect(result.detectedFormat).toBe('modern-solo');
+    // 差分对照：同一 artisan_tea 在战斗键下被剔除、在合法非战斗键下保留，
+    // 证明剔除是「按键类型」而非「按物品」。
+    expect(result.player.craftingTeaSlots).toEqual({
+      '/action_types/tailoring': ['/items/artisan_tea'],
+    });
+  });
+
+  it('rejects craftingTeaSlot keys without the /action_types/ prefix（键白名单：拦伪造键与 __proto__ setter）', () => {
+    // 键前缀白名单回归锁定（2026-09-01 收敛单一实现 + 补白名单）：伪键此前会被放行——
+    // __proto__ 自有键（JSON.parse 产物）在 result[actionTypeHrid] = items 赋值时触发
+    // Object.prototype.__proto__ setter（槽值被吞、result 原型被换成槽值数组）；无前缀
+    // 伪键携带 artisan_tea 进入消费端扫描（resolveCraftingTeaLessResource 只看槽值不看
+    // 键类型）→ 无中生有精炼折扣。白名单以 /action_types/ 前缀 + 非战斗键收敛，伪键一律剔除。
+    const craftingTeaSlots = JSON.parse(`{
+      "__proto__": ["/items/artisan_tea"],
+      "constructor": ["/items/artisan_tea"],
+      "artisan_tea": ["/items/artisan_tea"],
+      "/action_types/tailoring": ["/items/artisan_tea"]
+    }`);
+    const payload = {
+      version: 2,
+      player: {
+        craftingTeaSlots,
+      },
+    };
+
+    const result = importSoloConfig(JSON.stringify(payload), createEmptyPlayerConfig(19), createSimulationSettings());
+
+    expect(result.detectedFormat).toBe('modern-solo');
+    expect(result.player.craftingTeaSlots).toEqual({
+      '/action_types/tailoring': ['/items/artisan_tea'],
+    });
+    // __proto__ 自有键被剔除后不得触发原型 setter：结果对象必须保持普通对象原型。
+    expect(Object.getPrototypeOf(result.player.craftingTeaSlots)).toBe(Object.prototype);
   });
 });

@@ -3,7 +3,7 @@
 // @name:zh      MWI Combat Simulator 主站一键导入
 // @name:zh-CN   MWI Combat Simulator 主站一键导入
 // @namespace    https://azhu949.github.io/MWICombatSimulator
-// @version      0.1.31
+// @version      0.1.47
 // @license      ISC
 // @description  Import the current Milky Way Idle character or cached team into the combat simulator, enhancement simulator, or skilling planner.
 // @description:zh      将 Milky Way Idle 主站当前角色或缓存队伍导入战斗模拟器、强化模拟器或生活技能规划器。
@@ -50,6 +50,19 @@
   const STORAGE_POLL_INTERVAL_MS = 250;
   const TEAM_ROSTER_CACHE_BUCKET_LIMIT = 24;
   const RECENT_PARTY_MESSAGE_LIMIT = 20;
+  // 合成行情（零操作兜底）：主站公开端点 game_data/marketplace.json 提供全物品
+  // per-level 行情（{a: ask, b: bid}），MWITools 以相同周期（生产 6 小时）主动拉取。
+  // 官方估算（WS market_item_values_updated 为全量快照，另有 localStorage 键主通道）
+  // 只在主站侧可得，模拟器页自身无行情来源，
+  // 因此用该端点合成中价估值作兜底，与官方估算合并透传（真实值优先）。
+  const SYNTHETIC_MARKET_REFRESH_MS = 6 * 60 * 60 * 1000;
+  // 合成行情拉取超时（N5，2026-08-31）：无超时则挂起的 fetch 会永久占住 inFlight
+  // 守卫，使 N2 的「下次导入请求退避重试」入口形同虚设。
+  const SYNTHETIC_MARKET_FETCH_TIMEOUT_MS = 15000;
+  // 官方估算的另一来源：主站自己把全量官方估算写入 localStorage 键 "marketItemValues"
+  //（MWITools 的 loadMarketItemValuesFromStorage 即读此键，可能是 LZString 压缩串）。
+  // 该键由主站登录/连接时写入，读取它即可在 WS 推送到达前就获得全量官方估算。
+  const MARKET_ITEM_VALUES_STORAGE_KEY = 'marketItemValues';
   // 否则，WebSocket 队伍名单在发生不会更新当前战斗动作的静默离队/解散后，
   // 仍可能继续自我授权。
   const RECENT_PARTY_MESSAGE_MAX_AGE_MS = 10 * 60 * 1000;
@@ -84,6 +97,12 @@
       copyProfileButtonTitle: 'Copy this character data as JSON for the combat simulator',
       copyProfileSuccess: 'Character data copied.',
       copyProfileFailed: 'Copy failed.',
+      marketValuesStatusReady: 'Official estimates transferred: {count} items.',
+      marketValuesStatusSynthetic:
+        'Synthetic mid-price estimates forwarded: {count} items (not official; ~4-5% deviation vs MWITools).',
+      marketValuesStatusMixed:
+        'Official estimates forwarded: {officialCount} items + synthetic mid-price estimates: {syntheticCount} items (synthetic part not official; ~4-5% deviation vs MWITools).',
+      marketValuesStatusEmpty: 'Official estimates: 0 items (asset score falls back to order-book prices).',
     },
     zh: {
       button: '从主站导入',
@@ -112,6 +131,11 @@
       copyProfileButtonTitle: '复制该角色数据（JSON）用于战斗模拟器',
       copyProfileSuccess: '角色数据已复制。',
       copyProfileFailed: '复制失败。',
+      marketValuesStatusReady: '官方估值已透传：{count} 个物品。',
+      marketValuesStatusSynthetic: '合成中价估值已透传：{count} 个物品（非官方估算，与 MWITools 口径或有 4-5% 偏差）。',
+      marketValuesStatusMixed:
+        '官方估值已透传：{officialCount} 个物品 + 合成中价估值：{syntheticCount} 个物品（合成部分非官方估算，与 MWITools 口径或有 4-5% 偏差）。',
+      marketValuesStatusEmpty: '官方估值：0 个物品（资产分将使用挂单价）。',
     },
   };
   const pageWindow = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
@@ -131,6 +155,14 @@
     consumableCombatTriggersMap: {},
     abilityCombatTriggersMap: {},
     currentCharacterSnapshot: null,
+    // 官方估算市场价值快照（WS market_item_values_updated / 订单簿增量合并），
+    // 形如 { [itemHrid]: { [强化等级字符串]: 价值 } }，随导入载荷透传给模拟器。
+    marketItemValues: {},
+    // 合成行情缓存（来自公开端点 marketplace.json 的中价估值），与 WS 真实官方估算
+    // 分开保存：真实值在合并时优先覆盖，合成值只补缺。仅内存，刷新后重新拉取。
+    syntheticMarketItemValues: {},
+    syntheticMarketFetchedAt: 0,
+    syntheticMarketFetchInFlight: false,
     currentCharacterFoodSlotsReady: false,
     currentCharacterDrinkSlotsReady: false,
     currentCharacterConsumableTriggersReady: false,
@@ -343,10 +375,9 @@
       return false;
     }
 
-    if (/^\d+$/.test(normalized)) {
-      return false;
-    }
-
+    // 纯数字是合法角色名（如「123456」），不得当作数字 ID / 计数噪声过滤掉，
+    // 否则这类角色会在队伍名单解析（readCharacterNameCandidate）中被静默剔除，
+    // 导致一键导入（含团队导入）失败或降级。仅拒绝明显非名字的结构化文本。
     if (/^\d{4}-\d{2}-\d{2}t\d{2}:\d{2}:\d{2}(?:\.\d+)?z$/i.test(normalized)) {
       return false;
     }
@@ -1311,6 +1342,32 @@
     } else {
       delete snapshot.abilityCombatTriggersMap;
     }
+    const mergedMarketItemValues = getMergedMarketItemValues();
+    if (Object.keys(mergedMarketItemValues).length > 0) {
+      snapshot.marketItemValues = mergedMarketItemValues;
+      // N5 来源标记：描述的是「本载荷所携数值」的来源，仅在载荷实际携带市场数据时
+      // 挂载——空载荷无来源可言，无条件挂 'synthetic' 属冗余标记。
+      snapshot.marketEstimateSource =
+        Object.keys(mainSiteState.marketItemValues ?? {}).length > 0 ? 'official' : 'synthetic';
+      // #18（2026-08-31）：官方缓存非空 ≠ 载荷全部官方——merged 以合成行情为基底、
+      // 官方按物品覆盖，官方 1 件 + 合成 871 件的混合载荷会被整体标 'official'，
+      // 逐件真实来源丢失。载荷级标记为 official 且存在合成独有物品时附
+      // syntheticItemHrids 清单（app 侧按 hrid 精确标注）；纯 official / 纯 synthetic
+      // 载荷清单为空不挂（零体积增量，旧载荷向后兼容）。
+      // 【一般-5】（2026-09-02）：混合物品（官方仅覆盖部分等级）的等级级来源由
+      // syntheticLevelKeys 清单表达（仅列官方缓存未覆盖、由合成补齐的等级键），
+      // app 侧据此建立等级级来源覆盖；非空才挂（旧版模拟器忽略未知字段，向后兼容）。
+      if (snapshot.marketEstimateSource === 'official') {
+        const syntheticOnlyItemHrids = collectSyntheticOnlyItemHrids(mergedMarketItemValues);
+        if (syntheticOnlyItemHrids.length > 0) {
+          snapshot.syntheticItemHrids = syntheticOnlyItemHrids;
+        }
+        const syntheticLevelKeys = collectSyntheticLevelKeys(mergedMarketItemValues);
+        if (Object.keys(syntheticLevelKeys).length > 0) {
+          snapshot.syntheticLevelKeys = syntheticLevelKeys;
+        }
+      }
+    }
     snapshot.mainSiteCombat = mainSiteState.currentCombatAction
       ? {
           actionHrid: String(mainSiteState.currentCombatAction.actionHrid || ''),
@@ -1320,7 +1377,7 @@
     return snapshot;
   }
 
-  function buildCachedProfilePayload(profile, includeCurrentCombat = true) {
+  function buildCachedProfilePayload(profile, includeCurrentCombat = true, includeMarket = true) {
     if (!profile || typeof profile !== 'object') {
       return null;
     }
@@ -1328,6 +1385,33 @@
     const payload = {
       profile: clonePlainObject(profile),
     };
+
+    if (includeMarket) {
+      // N3（2026-08-31）：缓存条目传 includeMarket=false 剥离全量市场快照——
+      // GM 存储 50 条缓存各自挂一份 merged 快照造成 ×50 冗余序列化；缓存条目的
+      // marketItemValues 零消费方（读取点只取 .profile 并在响应时重建载荷）。
+      // 响应侧（buildTeamMemberResponse 等）保持默认 true，透传行为不变。
+      const mergedMarketItemValues = getMergedMarketItemValues();
+      if (Object.keys(mergedMarketItemValues).length > 0) {
+        payload.marketItemValues = mergedMarketItemValues;
+        // N5 来源标记：同 buildCurrentCharacterPayload——仅在载荷实际携带市场数据时
+        // 挂载，空载荷无来源可言。
+        payload.marketEstimateSource =
+          Object.keys(mainSiteState.marketItemValues ?? {}).length > 0 ? 'official' : 'synthetic';
+        // #18（2026-08-31）：同 buildCurrentCharacterPayload——混合载荷附合成独有物品清单。
+        // 【一般-5】（2026-09-02）：同上——混合物品的等级级来源清单（syntheticLevelKeys）。
+        if (payload.marketEstimateSource === 'official') {
+          const syntheticOnlyItemHrids = collectSyntheticOnlyItemHrids(mergedMarketItemValues);
+          if (syntheticOnlyItemHrids.length > 0) {
+            payload.syntheticItemHrids = syntheticOnlyItemHrids;
+          }
+          const syntheticLevelKeys = collectSyntheticLevelKeys(mergedMarketItemValues);
+          if (Object.keys(syntheticLevelKeys).length > 0) {
+            payload.syntheticLevelKeys = syntheticLevelKeys;
+          }
+        }
+      }
+    }
 
     if (includeCurrentCombat) {
       payload.mainSiteCombat = mainSiteState.currentCombatAction
@@ -1365,7 +1449,7 @@
       characterId,
       characterName,
       comparableCharacterName: normalizeComparableText(characterName),
-      payload: buildCachedProfilePayload(profile, false),
+      payload: buildCachedProfilePayload(profile, false, false),
       updatedAt: Number(value?.updatedAt || Date.now()),
     };
   }
@@ -2422,6 +2506,102 @@
     }, 1600);
   }
 
+  function formatUiText(template, replacements) {
+    let result = String(template || '');
+    for (const [key, value] of Object.entries(replacements || {})) {
+      result = result.split(`{${key}}`).join(String(value));
+    }
+    return result;
+  }
+
+  // 分享弹窗「复制角色数据」的导出载荷：只透传角色数据本身，不携带市场数据。
+  // 历史：早期版本直接 JSON.stringify(profile)（无市场字段）→ 第 11 轮起在此合并
+  // marketItemValues + mwiMarketDiag → 第 19 轮改回干净载荷（通道分离）、第 20 轮
+  // 拆除全部诊断设施：分享弹窗「复制角色数据」= 纯角色数据；模拟器页「从主站导入」
+  // 按钮携带全量市场数据（buildCurrentCharacterPayload / buildCachedProfilePayload），
+  // 故需要资产分与 MWITools 对齐时请用「从主站导入」按钮，而非复制粘贴。
+  // 模拟站粘贴导入对无市场字段的 payload 保持兼容（marketItemValues: null，UI 显示
+  // 「官方估值：0 个物品」，属预期现象而非异常）。
+  function buildProfileExportPayload(profile) {
+    return { ...profile };
+  }
+
+  // 桥接导入成功后的状态栏补充文案：数导入载荷顶层实际携带的官方估值物品数。
+  // 必须传载荷而不是数本页缓存——模拟器页脚本实例与主站不同源，本页 merged 缓存
+  // 恒为空（localStorage 不互通、主站 WS 也不经过本页），数本地必然误报 0；
+  // 真正的透传数据在主站页构建的 payload.marketItemValues 里。
+  // 历史：曾有「无参时数本页 merged 缓存」的分支（本想供主站页桥接状态使用），
+  // 但主站页从未调用过它，属于死代码，第 21 轮拆除。
+  function describeMarketItemValuesStatus(payload) {
+    const itemCount = Object.keys(payload?.marketItemValues ?? {}).length;
+    if (itemCount <= 0) {
+      return getUiText('marketValuesStatusEmpty');
+    }
+    // #18（2026-08-31）：混合载荷——载荷级标记 'official' 但附 syntheticItemHrids 清单
+    // （官方与合成中价并存）时如实分列计数；把合成部分混入「官方估值已透传」正是
+    // 混合载荷逐件真值丢失的用户面失真。标记本身为 'synthetic' 时全部物品均为合成、
+    // 清单冗余（矛盾载荷）不进入混合分支。
+    const syntheticItemHrids = Array.isArray(payload?.syntheticItemHrids) ? payload.syntheticItemHrids : [];
+    if (payload?.marketEstimateSource !== 'synthetic' && syntheticItemHrids.length > 0) {
+      return formatUiText(getUiText('marketValuesStatusMixed'), {
+        officialCount: Math.max(0, itemCount - syntheticItemHrids.length),
+        syntheticCount: syntheticItemHrids.length,
+      });
+    }
+    // 合成中价兜底场景：载荷非空但官方估算缺位（LS 空 + WS 未推），如实标注来源，
+    // 避免用户把合成中价（与官方估算差约 4-5%）误当官方估算对账（N5，2026-08-31）。
+    // 旧载荷/复制粘贴载荷无 marketEstimateSource 字段时落 official 分支（向后兼容）。
+    if (payload?.marketEstimateSource === 'synthetic') {
+      return formatUiText(getUiText('marketValuesStatusSynthetic'), { count: itemCount });
+    }
+    return formatUiText(getUiText('marketValuesStatusReady'), { count: itemCount });
+  }
+
+  // 团队导入成功反馈文案拼接（#22 从深层闭包 importTeamMainSiteResponse 提取为顶层
+  // 可注入纯函数，使该接线可用行为断言测试，替代锁源码字符串的 scriptSource.toContain）：
+  // summary 为空 = 全部成功（importSuccess + 估值文案）；非空 = 部分成功
+  //（导入完成/Import finished + summary + 估值文案）。firstSuccessPayload 取任一
+  // 成功 member 载荷即可（各 member 挂同一份 merged 快照）。
+  function buildTeamImportFeedbackText({ uiLanguage, summary, firstSuccessPayload }) {
+    const marketValuesStatusText = describeMarketItemValuesStatus(firstSuccessPayload);
+    if (summary) {
+      return uiLanguage === 'zh'
+        ? `导入完成：${summary} ${marketValuesStatusText}`
+        : `Import finished: ${summary} ${marketValuesStatusText}`;
+    }
+    return `${getUiText('importSuccess', uiLanguage)} ${marketValuesStatusText}`;
+  }
+
+  // 团队导入部分成功摘要拼装（#22 P3① 从深层闭包 importTeamMainSiteResponse 提取为
+  // 顶层可注入纯函数，配合 buildTeamImportFeedbackText 一并行为测试）：失败 >0 时返回
+  // 「成功 N 人，失败 N 人（预览…）」；无失败返回空串。uiLanguage 由调用方传入
+  //（原实现读深层闭包 state.uiLanguage）。
+  function formatTeamImportSummary(successCount, failureEntries = [], uiLanguage = 'zh') {
+    const failures = Array.isArray(failureEntries) ? failureEntries : [];
+    const failedCount = failures.length;
+    if (failedCount <= 0) {
+      return '';
+    }
+
+    const preview = failures
+      .slice(0, 2)
+      .map((entry) => {
+        const name = normalizeCharacterName(entry?.name || '') || '-';
+        const message = normalizeCharacterName(entry?.message || '') || getUiText('importFailed', uiLanguage);
+        return `${name}: ${message}`;
+      })
+      .join(uiLanguage === 'zh' ? '；' : '; ');
+
+    const suffix =
+      failedCount > 2 ? (uiLanguage === 'zh' ? `……另有 ${failedCount - 2} 个失败` : `… +${failedCount - 2} more`) : '';
+
+    if (uiLanguage === 'zh') {
+      return `成功 ${successCount} 人，失败 ${failedCount} 人（${preview}${suffix}）。`;
+    }
+
+    return `${successCount} succeeded, ${failedCount} failed (${preview}${suffix}).`;
+  }
+
   function copyTextViaExecCommand(text) {
     // 防御：脚本 @run-at document-start 时 body 可能尚不存在；按钮点击路径下
     // body 必然存在，但独立调用（如未来快捷键）仍需防护。
@@ -2487,7 +2667,7 @@
 
     let text;
     try {
-      text = JSON.stringify(profile);
+      text = JSON.stringify(buildProfileExportPayload(profile));
     } catch (_error) {
       // clonePlainObject 的兜底路径（structuredClone/递归）可能保留 BigInt 或循环引用，
       // 此时 JSON.stringify 会抛 TypeError。失败时走失败反馈，避免 async 函数变成
@@ -2506,7 +2686,11 @@
     }
 
     const fallbackSucceeded = copyTextViaExecCommand(text);
-    setProfileCopyButtonFeedback(button, fallbackSucceeded ? 'copyProfileSuccess' : 'copyProfileFailed');
+    if (fallbackSucceeded) {
+      setProfileCopyButtonFeedback(button, 'copyProfileSuccess');
+    } else {
+      setProfileCopyButtonFeedback(button, 'copyProfileFailed');
+    }
   }
 
   function createProfileCopyButton(tablist, profile) {
@@ -2949,6 +3133,64 @@
     }
   }
 
+  // —— 市场估值透传（F12 诊断已随第 20 轮拆除；捕获逻辑见 captureMarketItemValues）——
+  // 订单簿形状漂移告警去重标记：会话内只告警一次（见下方【一般-2】注释）。
+  let marketOrderBookShapeWarned = false;
+  function captureMarketItemValues(message) {
+    const type = String(message?.type || '');
+    if (type === 'market_item_values_updated') {
+      const values = message?.marketItemValues;
+      if (values && typeof values === 'object' && !Array.isArray(values)) {
+        mainSiteState.marketItemValues = clonePlainObject(values);
+      }
+      return;
+    }
+    if (type === 'market_item_order_books_updated') {
+      // 订单簿消息为单物品增量（对齐 MWITools applyMarketOrderBooks）：字段在
+      // message.marketItemOrderBooks 下（itemHrid + marketValues{等级:估值}），
+      // 需按物品合并进缓存；早期实现误读顶层 marketValues 且把单物品形状
+      // spread 到顶层，导致官方估值缓存始终为空、导入后资产分降级为挂单价。
+      // 合并成本约定（2026-08-31 审计【性能 #6】）：顶层浅拷贝（物品键引用复制）
+      // + 仅深克隆本物品的 marketValues（≤21 档）——不得回退为
+      // clonePlainObject(existingByItem) 全量深克隆（单物品增量每条消息
+      // JSON 往返整张 ~872 物品缓存，市场页活跃期逐条阻塞主线程）。非目标
+      // 物品的 levels 映射与上一代缓存共享引用是安全的：本状态全部写点均
+      // 构建新对象、不变更已发布对象，getMergedMarketItemValues 亦只读展开——与
+      // mergeStoredMarketItemValues（【一般-1】后同为浅拷贝构建新对象）同款
+      // 结构共享；顶层引用仍按事件整体替换，N3 记忆化失效信号约定不变。
+      const rawOrderBooks = message?.marketItemOrderBooks;
+      // 【一般-2】形状防御与全量分支（marketItemValues 的 !Array.isArray）对齐：
+      // typeof 不排数组，契约漂移为数组形状时 itemHrid 取值必为空、合并必然静默
+      // no-op——官方估值停止增量更新、资产分无声降级为挂单价链，且 F12 诊断已
+      // 随第 20 轮拆除，全程无任何可观测信号。故形状漂移（数组/非对象）时会话内
+      // 告警一次（订单簿增量为高频消息，逐条告警会刷屏），并维持既有顶层
+      // message 回退路径不变（与缺字段时同路径，不新增解析分支）。
+      if (rawOrderBooks != null && (typeof rawOrderBooks !== 'object' || Array.isArray(rawOrderBooks))) {
+        if (!marketOrderBookShapeWarned) {
+          marketOrderBookShapeWarned = true;
+          console.warn(
+            '[MWI TM] market_item_order_books_updated.marketItemOrderBooks 形状异常（预期 {itemHrid, marketValues} 单物品对象），官方估值增量合并已停止：',
+            rawOrderBooks,
+          );
+        }
+      }
+      const orderBook =
+        rawOrderBooks && typeof rawOrderBooks === 'object' && !Array.isArray(rawOrderBooks) ? rawOrderBooks : message;
+      const itemHrid = String(orderBook?.itemHrid || '');
+      const values = orderBook?.marketValues;
+      if (itemHrid && values && typeof values === 'object' && !Array.isArray(values)) {
+        const existingByItem = mainSiteState.marketItemValues ?? {};
+        mainSiteState.marketItemValues = {
+          ...existingByItem,
+          [itemHrid]: {
+            ...(existingByItem[itemHrid] ?? {}),
+            ...clonePlainObject(values),
+          },
+        };
+      }
+    }
+  }
+
   function handleProfileSharedMessage(message) {
     if (String(message?.type || '') !== 'profile_shared' || !message?.profile) {
       return;
@@ -3003,6 +3245,7 @@
       captureCurrentCharacterState(parsed);
       captureCurrentCharacterDataUpdate(parsed);
       captureCharacterActionsUpdate(parsed);
+      captureMarketItemValues(parsed);
       handleProfileSharedMessage(parsed);
     });
 
@@ -3051,6 +3294,504 @@
 
     mainSiteState.isInstalled = true;
     return true;
+  }
+
+  // —— 合成行情（零操作兜底）——
+  // 官方估算（WS market_item_values_updated 为全量快照；localStorage 键为主通道）
+  // 只在主站侧可得，模拟器页拿不到。主站公开端点 game_data/marketplace.json 提供
+  // 全物品 per-level 行情，MWITools 也主动拉取它（生产 6 小时一次）并在官方估算
+  // 缺失时用其 (a+b)/2 作为 fair 值。这里拉取后合成中价估值，与官方估算合并透传
+  //（真实值优先覆盖）。
+  function isMainSiteHostname(hostname = pageWindow?.location?.hostname ?? '') {
+    return /(^|\.)(milkywayidle\.com|milkywayidlecn\.com)$/.test(String(hostname || ''));
+  }
+
+  // —— 官方估算的 localStorage 来源（第 13 轮）——
+  // 主站自己将全量官方估算（含 marketValuesVersion）写入 localStorage 键
+  // "marketItemValues"，可能为明文 JSON 或 LZString 压缩串（UTF16 / Base64 形态）。
+  // MWITools 启动即读此键（loadMarketItemValuesFromStorage），这就是它不浏览市场
+  // 也有官方估算的原因。优先走主站自带的 localStorageUtil.getMarketItemValues()，
+  // 失败再按明文 → UTF16 → Base64 依次尝试解压。以下为内嵌的 LZString 解压器
+  //（lz-string 1.5.0 的 _decompress 忠实移植，仅风格现代化）。
+  //
+  // 第三方组件许可声明（依 MIT 许可证条款保留）：
+  //   lz-string v1.5.0 —— https://github.com/pieroxy/lz-string
+  //   Copyright (c) 2013 Pieroxy
+  //   本文件包含该软件的实质性部分副本；MIT 许可证全文见
+  //   https://raw.githubusercontent.com/pieroxy/lz-string/master/LICENSE.md
+  //   （历史注释中的「WTFPL」系笔误：2026-08-31 经 npm registry 元数据
+  //   https://registry.npmjs.org/lz-string/1.5.0 与上游 LICENSE.md 双源核证，
+  //   lz-string 1.5.0 的许可证均为 MIT，本声明块即保留条款的履行。）
+  function createLzStringDecompressor() {
+    const fromCharCode = String.fromCharCode;
+    const BASE64_ALPHABET = 'ABCDEFGHIJKLMNOPQRSTUVWXYZabcdefghijklmnopqrstuvwxyz0123456789+/=';
+    const baseReverseDic = {};
+
+    function getBaseValue(alphabet, character) {
+      if (!baseReverseDic[alphabet]) {
+        baseReverseDic[alphabet] = {};
+        for (let i = 0; i < alphabet.length; i += 1) {
+          baseReverseDic[alphabet][alphabet.charAt(i)] = i;
+        }
+      }
+      return baseReverseDic[alphabet][character];
+    }
+
+    function lzDecompress(length, resetValue, getNextValue) {
+      const dictionary = [];
+      let enlargeIn = 4;
+      let dictSize = 4;
+      let numBits = 3;
+      let entry = '';
+      const result = [];
+      let w;
+      let bits;
+      let resb;
+      let maxpower;
+      let power;
+      let c;
+      let next;
+      const data = { val: getNextValue(0), position: resetValue, index: 1 };
+
+      for (let i = 0; i < 3; i += 1) {
+        dictionary[i] = i;
+      }
+
+      bits = 0;
+      maxpower = Math.pow(2, 2);
+      power = 1;
+      while (power != maxpower) {
+        resb = data.val & data.position;
+        data.position >>= 1;
+        if (data.position == 0) {
+          data.position = resetValue;
+          data.val = getNextValue(data.index++);
+        }
+        bits |= (resb > 0 ? 1 : 0) * power;
+        power <<= 1;
+      }
+
+      switch ((next = bits)) {
+        case 0:
+          bits = 0;
+          maxpower = Math.pow(2, 8);
+          power = 1;
+          while (power != maxpower) {
+            resb = data.val & data.position;
+            data.position >>= 1;
+            if (data.position == 0) {
+              data.position = resetValue;
+              data.val = getNextValue(data.index++);
+            }
+            bits |= (resb > 0 ? 1 : 0) * power;
+            power <<= 1;
+          }
+          c = fromCharCode(bits);
+          break;
+        case 1:
+          bits = 0;
+          maxpower = Math.pow(2, 16);
+          power = 1;
+          while (power != maxpower) {
+            resb = data.val & data.position;
+            data.position >>= 1;
+            if (data.position == 0) {
+              data.position = resetValue;
+              data.val = getNextValue(data.index++);
+            }
+            bits |= (resb > 0 ? 1 : 0) * power;
+            power <<= 1;
+          }
+          c = fromCharCode(bits);
+          break;
+        case 2:
+          return '';
+      }
+      dictionary[3] = c;
+      w = c;
+      result.push(c);
+      while (true) {
+        if (data.index > length) {
+          return '';
+        }
+
+        bits = 0;
+        maxpower = Math.pow(2, numBits);
+        power = 1;
+        while (power != maxpower) {
+          resb = data.val & data.position;
+          data.position >>= 1;
+          if (data.position == 0) {
+            data.position = resetValue;
+            data.val = getNextValue(data.index++);
+          }
+          bits |= (resb > 0 ? 1 : 0) * power;
+          power <<= 1;
+        }
+
+        switch ((c = bits)) {
+          case 0:
+            bits = 0;
+            maxpower = Math.pow(2, 8);
+            power = 1;
+            while (power != maxpower) {
+              resb = data.val & data.position;
+              data.position >>= 1;
+              if (data.position == 0) {
+                data.position = resetValue;
+                data.val = getNextValue(data.index++);
+              }
+              bits |= (resb > 0 ? 1 : 0) * power;
+              power <<= 1;
+            }
+
+            dictionary[dictSize++] = fromCharCode(bits);
+            c = dictSize - 1;
+            enlargeIn--;
+            break;
+          case 1:
+            bits = 0;
+            maxpower = Math.pow(2, 16);
+            power = 1;
+            while (power != maxpower) {
+              resb = data.val & data.position;
+              data.position >>= 1;
+              if (data.position == 0) {
+                data.position = resetValue;
+                data.val = getNextValue(data.index++);
+              }
+              bits |= (resb > 0 ? 1 : 0) * power;
+              power <<= 1;
+            }
+            dictionary[dictSize++] = fromCharCode(bits);
+            c = dictSize - 1;
+            enlargeIn--;
+            break;
+          case 2:
+            return result.join('');
+        }
+
+        if (enlargeIn == 0) {
+          enlargeIn = Math.pow(2, numBits);
+          numBits++;
+        }
+
+        if (dictionary[c]) {
+          entry = dictionary[c];
+        } else {
+          if (c === dictSize) {
+            entry = w + w.charAt(0);
+          } else {
+            return null;
+          }
+        }
+        result.push(entry);
+
+        // Add w+entry[0] to the dictionary.
+        dictionary[dictSize++] = w + entry.charAt(0);
+        enlargeIn--;
+
+        w = entry;
+
+        if (enlargeIn == 0) {
+          enlargeIn = Math.pow(2, numBits);
+          numBits++;
+        }
+      }
+    }
+
+    function decompressFromUTF16(compressed) {
+      if (compressed == null) return '';
+      if (compressed == '') return null;
+      return lzDecompress(compressed.length, 16384, (index) => compressed.charCodeAt(index) - 32);
+    }
+
+    function decompress(compressed) {
+      if (compressed == null) return '';
+      if (compressed == '') return null;
+      return lzDecompress(compressed.length, 32768, (index) => compressed.charCodeAt(index));
+    }
+
+    function decompressFromBase64(input) {
+      if (input == null) return '';
+      if (input == '') return null;
+      return lzDecompress(input.length, 32, (index) => getBaseValue(BASE64_ALPHABET, input.charAt(index)));
+    }
+
+    return { decompressFromUTF16, decompress, decompressFromBase64 };
+  }
+
+  // 读取主站 localStorage 中的官方估算（对齐 MWITools loadMarketItemValuesFromStorage）：
+  // 优先主站自带 localStorageUtil.getMarketItemValues()（主站自己维护的解析封装），
+  // 失败再读裸键并按 明文 JSON → UTF16 → 原生 → Base64 依次解压。返回形如
+  // { marketValuesVersion, marketItemValues } 或 null。
+  function readStoredMarketItemValues() {
+    try {
+      const viaUtil = pageWindow?.localStorageUtil?.getMarketItemValues?.();
+      if (viaUtil && typeof viaUtil === 'object' && viaUtil.marketItemValues) {
+        return viaUtil;
+      }
+    } catch (_error) {
+      // localStorageUtil 不可用时回落到裸键。
+    }
+
+    let rawValue = null;
+    try {
+      rawValue = pageWindow?.localStorage?.getItem?.(MARKET_ITEM_VALUES_STORAGE_KEY) ?? null;
+    } catch (_error) {
+      return null;
+    }
+    if (!rawValue || typeof rawValue !== 'string') {
+      return null;
+    }
+
+    const decompressor = createLzStringDecompressor();
+    // 候选惰性求值、命中即停（2026-08-31 审计【性能 #7】）：数组字面量会立即
+    // 求值全部元素，首个候选命中时其余 LZString 全量解压被无谓执行（且解压器
+    // 对形态不匹配输入无 fail-fast，仍是全串逐位遍历）。候选顺序与语义不变：
+    // 明文 → UTF16 → 原生 → Base64（对齐 MWITools parseStoredMarketItemValues）。
+    const candidateProviders = [
+      () => rawValue,
+      () => decompressor.decompressFromUTF16(rawValue),
+      () => decompressor.decompress(rawValue),
+      () => decompressor.decompressFromBase64(rawValue),
+    ];
+    for (const provideCandidate of candidateProviders) {
+      const candidate = provideCandidate();
+      if (!candidate || typeof candidate !== 'string') {
+        continue;
+      }
+      try {
+        const parsed = JSON.parse(candidate);
+        if (parsed?.marketItemValues) {
+          return parsed;
+        }
+      } catch (_error) {
+        // 该形态不是合法 JSON，尝试下一种。
+      }
+    }
+    return null;
+  }
+
+  // 把 localStorage 中的官方估算合并进 WS 捕获缓存（物品/等级粒度，WS 已捕获值优先）。
+  // 幂等：值无变化时不产生新对象引用；变更时整体替换 mainSiteState.marketItemValues
+  // 引用（N3，2026-08-31：对已发布缓存对象原地写入，对 getMergedMarketItemValues
+  // 记忆化的引用失效信号不可见，故构建新对象 + 末次整体赋值，为记忆化提供可靠失效信号）。
+  // 【一般-1】（2026-09-02）：不再逐物品累积 spread——原写法下每次变更都整体复制累积
+  // 对象，872 物品空缓存首合并为 O(n²)（~38 万次属性复制，主线程阻塞 ~50ms）；改为
+  // 一次性顶层浅拷贝构建新对象，遍历中仅写该新对象，末次整体赋值，首合并降为 O(n)。
+  function mergeStoredMarketItemValues() {
+    const stored = readStoredMarketItemValues();
+    if (!stored?.marketItemValues || typeof stored.marketItemValues !== 'object') {
+      return false;
+    }
+    // 一次性顶层浅拷贝（【一般-1】）：next 为全新对象，原地写不会触碰已发布的缓存
+    // 对象；未变更物品的 levels 映射与旧缓存共享引用（与订单簿合并分支同款），变更
+    // 物品一律以新对象（mergedLevels / { ...levels }）整体替换该键。
+    const next = { ...(mainSiteState.marketItemValues ?? {}) };
+    let changed = false;
+    for (const [itemHrid, levels] of Object.entries(stored.marketItemValues)) {
+      // 跳过 '__proto__'（【一般-1】复核）：顶层写入由计算键改为普通赋值后，该键会
+      // 命中 __proto__ 访问器改写缓存对象原型而非创建自有键（旧累积写法的计算键为
+      // CreateDataProperty 语义）；物品 hrid 恒为 '/items/...' 形态，无合法数据损失。
+      if (!itemHrid || itemHrid === '__proto__' || typeof levels !== 'object' || levels === null) {
+        continue;
+      }
+      const existingLevels = next[itemHrid];
+      if (existingLevels) {
+        const mergedLevels = { ...existingLevels };
+        let levelChanged = false;
+        for (const [level, value] of Object.entries(levels)) {
+          if (existingLevels[level] === undefined) {
+            mergedLevels[level] = value;
+            levelChanged = true;
+          }
+        }
+        if (levelChanged) {
+          next[itemHrid] = mergedLevels;
+          changed = true;
+        }
+      } else {
+        next[itemHrid] = { ...levels };
+        changed = true;
+      }
+    }
+    // 变更时整体替换引用（N3 记忆化的失效信号依赖此约定）；幂等时保持原引用。
+    if (changed) {
+      mainSiteState.marketItemValues = next;
+    }
+    return changed;
+  }
+
+  function getMarketplaceApiUrl(hostname = pageWindow?.location?.hostname ?? '') {
+    const normalized = String(hostname || '');
+    if (normalized.startsWith('test.')) {
+      return 'https://test.milkywayidle.com/game_data/marketplace.json';
+    }
+    if (normalized.endsWith('milkywayidlecn.com')) {
+      return 'https://milkywayidlecn.com/game_data/marketplace.json';
+    }
+    return 'https://www.milkywayidle.com/game_data/marketplace.json';
+  }
+
+  // 与 MWITools getFairValue 的行情 fallback 同口径：双边取 (ask+bid)/2，单边取单边；
+  // 负值（无挂单哨兵 -1）与零视为缺失。等级键统一为非负整数字符串。
+  function convertMarketDataToItemValues(marketData) {
+    const converted = {};
+    for (const [itemHrid, levels] of Object.entries(marketData ?? {})) {
+      if (!itemHrid || typeof levels !== 'object' || levels === null) {
+        continue;
+      }
+      const byLevel = {};
+      for (const [level, record] of Object.entries(levels)) {
+        const ask = Number(record?.a);
+        const bid = Number(record?.b);
+        const validAsk = Number.isFinite(ask) && ask > 0 ? ask : 0;
+        const validBid = Number.isFinite(bid) && bid > 0 ? bid : 0;
+        const mid = validAsk > 0 && validBid > 0 ? (validAsk + validBid) / 2 : Math.max(validAsk, validBid);
+        if (mid > 0) {
+          const levelNumber = Math.max(0, Math.floor(Number(level) || 0));
+          byLevel[String(levelNumber)] = mid;
+        }
+      }
+      if (Object.keys(byLevel).length > 0) {
+        converted[itemHrid] = byLevel;
+      }
+    }
+    return converted;
+  }
+
+  // 合并透传用：WS 真实官方估算优先，合成行情只补缺失的物品/等级。
+  // 记忆化（N3，2026-08-31）：输入仅 mainSiteState.syntheticMarketItemValues 与
+  // mainSiteState.marketItemValues 两个状态，二者变更均为整体替换新引用
+  //（captureMarketItemValues 全量/订单簿两分支、fetchSyntheticMarketItemValues
+  // 整体赋值、mergeStoredMarketItemValues 变更分支——按分支名标注，不写死行号），
+  // 故以引用同一性作失效信号。返回共享缓存对象，调用方只读、不得修改。
+  let mergedMarketItemValuesCache = null;
+  let mergedCacheSyntheticRef = null;
+  let mergedCacheOfficialRef = null;
+  function getMergedMarketItemValues() {
+    const syntheticRef = mainSiteState.syntheticMarketItemValues ?? null;
+    const officialRef = mainSiteState.marketItemValues ?? null;
+    if (
+      mergedMarketItemValuesCache &&
+      mergedCacheSyntheticRef === syntheticRef &&
+      mergedCacheOfficialRef === officialRef
+    ) {
+      return mergedMarketItemValuesCache;
+    }
+    const merged = clonePlainObject(syntheticRef ?? {});
+    for (const [itemHrid, levels] of Object.entries(officialRef ?? {})) {
+      merged[itemHrid] = { ...(merged[itemHrid] ?? {}), ...(levels ?? {}) };
+    }
+    mergedMarketItemValuesCache = merged;
+    mergedCacheSyntheticRef = syntheticRef;
+    mergedCacheOfficialRef = officialRef;
+    return merged;
+  }
+
+  // #18（2026-08-31）：混合载荷的逐件来源真值——merged 的键中不在官方估算缓存里的
+  // 物品，其数值完全来自合成中价（合并优先级官方优先，官方覆盖的物品取官方值）。
+  // 返回合成独有物品的 hrid 数组（只读）；仅载荷级标记为 'official' 时调用——
+  // 标记 'synthetic' 时全部物品均为合成，清单冗余不挂。
+  function collectSyntheticOnlyItemHrids(mergedMarketItemValues) {
+    const officialKeys = new Set(Object.keys(mainSiteState.marketItemValues ?? {}));
+    const syntheticOnly = [];
+    for (const itemHrid of Object.keys(mergedMarketItemValues)) {
+      if (!officialKeys.has(itemHrid)) {
+        syntheticOnly.push(itemHrid);
+      }
+    }
+    return syntheticOnly;
+  }
+
+  // 【一般-5】（2026-09-02）：等级级来源真值——物品级清单 syntheticItemHrids 只覆盖
+  // 「整件合成」物品；混合物品（官方缓存命中该 hrid、但部分等级不在官方缓存内）的
+  // 逐等级来源只能由本清单表达：{ [itemHrid]: [levelKey, ...] }，仅列出该物品中由
+  // 合成行情补齐（官方缓存未覆盖）的等级键（合并语义官方优先，官方覆盖的等级取官方
+  // 值、不会出现在清单中）。app 侧据此在 marketItemValueSourcesByLevel 建立等级级
+  // 来源覆盖，tooltip / 可复制明细对合成补齐等级如实标「合成中价」。返回只读对象；
+  // 仅载荷级标记为 'official' 时调用——纯 synthetic 载荷全部等级均为合成，清单冗余不挂。
+  function collectSyntheticLevelKeys(mergedMarketItemValues) {
+    const officialValues = mainSiteState.marketItemValues ?? {};
+    const syntheticLevelKeys = {};
+    for (const [itemHrid, levels] of Object.entries(mergedMarketItemValues ?? {})) {
+      const officialLevels = officialValues[itemHrid];
+      if (!officialLevels || typeof officialLevels !== 'object') {
+        continue; // 整件合成物品已由 syntheticItemHrids 物品级清单覆盖
+      }
+      const levelKeys = [];
+      for (const levelKey of Object.keys(levels ?? {})) {
+        if (!Object.prototype.hasOwnProperty.call(officialLevels, levelKey)) {
+          levelKeys.push(levelKey);
+        }
+      }
+      if (levelKeys.length > 0) {
+        syntheticLevelKeys[itemHrid] = levelKeys;
+      }
+    }
+    return syntheticLevelKeys;
+  }
+
+  async function fetchSyntheticMarketItemValues(force = false) {
+    if (!isMainSiteHostname()) {
+      return false;
+    }
+    const now = Date.now();
+    if (mainSiteState.syntheticMarketFetchInFlight === true) {
+      // 挂起中：不可视为「已就绪」（N5 语义修正——旧实现返回 true 会谎报成功，
+      // 使基于返回值的重试判定失效）。重复请求由本守卫挡下，不会双发。
+      return false;
+    }
+    if (
+      !force &&
+      mainSiteState.syntheticMarketFetchedAt > 0 &&
+      now - mainSiteState.syntheticMarketFetchedAt < SYNTHETIC_MARKET_REFRESH_MS
+    ) {
+      return true;
+    }
+    if (typeof pageWindow.fetch !== 'function') {
+      return false;
+    }
+
+    mainSiteState.syntheticMarketFetchInFlight = true;
+    // 使用页面 realm 的 AbortController（pageWindow.AbortController）：其 signal 与
+    // pageWindow.fetch 同 realm，避免 TM 沙箱 AbortSignal 跨上下文传给页面 fetch
+    // 的兼容性隐患（#16）。typeof 门控保留：页面无 AbortController 时降级为无超时
+    //（超时失效但不崩溃，与 catch/finally 结构自愈一致）。
+    // 控制器/定时器创建放入 try 内：typeof 门控只确认是函数、不确认可构造，页面若
+    // 把 AbortController 覆盖成不可 new 的实现，构造抛错也会被 catch 兜住并复位
+    // inFlight（守卫不锁死，功能自愈；见下方降级契约测试）。
+    let controller = null;
+    let timeoutId = null;
+    try {
+      controller = typeof pageWindow.AbortController === 'function' ? new pageWindow.AbortController() : null;
+      timeoutId =
+        controller && typeof setTimeout === 'function'
+          ? setTimeout(() => controller.abort(), SYNTHETIC_MARKET_FETCH_TIMEOUT_MS)
+          : null;
+      const url = getMarketplaceApiUrl();
+      const response = await pageWindow.fetch(url, controller ? { signal: controller.signal } : undefined);
+      if (!response || !response.ok) {
+        throw new Error(`HTTP ${response?.status ?? 'unknown'}`);
+      }
+      const text = await response.text();
+      const converted = convertMarketDataToItemValues(JSON.parse(text)?.marketData);
+      const itemCount = Object.keys(converted).length;
+      if (itemCount === 0) {
+        throw new Error('marketData 为空');
+      }
+      mainSiteState.syntheticMarketItemValues = converted;
+      mainSiteState.syntheticMarketFetchedAt = now;
+      return true;
+    } catch (_error) {
+      return false;
+    } finally {
+      if (timeoutId !== null) {
+        clearTimeout(timeoutId);
+      }
+      mainSiteState.syntheticMarketFetchInFlight = false;
+    }
   }
 
   function buildCurrentMainSiteResponse(requestId, preferredLanguage = '') {
@@ -3271,7 +4012,34 @@
       return;
     }
 
+    // 官方估算优先走主站 localStorage（与 MWITools 同源，登录后即有全量）；
+    // 该来源无值时再拉公开 marketplace.json 合成中价估值兜底。
+    // 后续每次导入请求经 ensureMarketEstimatesFresh 惰性刷新（N2，2026-08-31）。
+    // merge 返回 false 有双义（LS 无键 / 数据已全部存在）——与 ensureMarketEstimatesFresh
+    // 同款双守卫（#19）：仅当官方估算缓存整体为空时才需要合成行情兜底，避免 WS 已捕获
+    // 且 LS 全覆盖（merge 幂等返 false）时白拉一次合成行情。
+    if (!mergeStoredMarketItemValues() && Object.keys(mainSiteState.marketItemValues ?? {}).length === 0) {
+      fetchSyntheticMarketItemValues();
+    }
+
     const handledRequestIds = new Set();
+
+    // 每次导入请求时惰性刷新官方估算（N2，2026-08-31）：
+    // 1) 主站 LS 键可能在 document-start 之后才写入（登录晚于脚本启动），每次请求补一次
+    //    merge（幂等：无新增时不产生新引用、不触发下游失效）。
+    // 2) merge 返回 false 有双义（LS 无键 / 数据已全部存在）——仅当官方估算缓存整体为空时
+    //    才需要合成行情兜底，避免误触发 fetch。
+    // 3) fetch 为 fire-and-forget：本次载荷可能仍缺合成行情，下一次导入请求（250ms 轮询窗
+    //    之后）携带；fetch 失败后 syntheticMarketFetchedAt 不写，下次请求自然重试（退避 =
+    //    导入频率），成功后 6 小时节流（SYNTHETIC_MARKET_REFRESH_MS）真实生效。
+    function ensureMarketEstimatesFresh() {
+      if (mergeStoredMarketItemValues()) {
+        return;
+      }
+      if (Object.keys(mainSiteState.marketItemValues ?? {}).length === 0) {
+        fetchSyntheticMarketItemValues();
+      }
+    }
 
     function processImportRequest(rawValue) {
       const request = rawValue && typeof rawValue === 'object' ? rawValue : null;
@@ -3281,6 +4049,9 @@
       }
 
       handledRequestIds.add(requestId);
+      // 请求驱动的惰性刷新（N2）：在响应构建前执行，单人分支同步构建的载荷
+      // 即可携带本次 merge 结果；旧 requestId 已被去重逻辑挡下，不会重复触发。
+      ensureMarketEstimatesFresh();
 
       const preferredLanguage = resolveUiLanguage(request?.language);
       const target = String(request?.target || 'active-player')
@@ -3423,36 +4194,6 @@
       return responsePromise;
     }
 
-    function formatTeamImportSummary(successCount, failureEntries = []) {
-      const failures = Array.isArray(failureEntries) ? failureEntries : [];
-      const failedCount = failures.length;
-      if (failedCount <= 0) {
-        return '';
-      }
-
-      const preview = failures
-        .slice(0, 2)
-        .map((entry) => {
-          const name = normalizeCharacterName(entry?.name || '') || '-';
-          const message = normalizeCharacterName(entry?.message || '') || getUiText('importFailed', state.uiLanguage);
-          return `${name}: ${message}`;
-        })
-        .join(state.uiLanguage === 'zh' ? '；' : '; ');
-
-      const suffix =
-        failedCount > 2
-          ? state.uiLanguage === 'zh'
-            ? `……另有 ${failedCount - 2} 个失败`
-            : `… +${failedCount - 2} more`
-          : '';
-
-      if (state.uiLanguage === 'zh') {
-        return `成功 ${successCount} 人，失败 ${failedCount} 人（${preview}${suffix}）。`;
-      }
-
-      return `${successCount} succeeded, ${failedCount} failed (${preview}${suffix}).`;
-    }
-
     function isTeamImportResponse(response) {
       return (
         String(response?.format || '') === 'shareable-profile-team' &&
@@ -3490,7 +4231,14 @@
         throw new Error(appResponse?.message || getUiText('simulatorImportFailed', state.uiLanguage));
       }
 
-      setStatusKey('importSuccess', 'success');
+      // 成功反馈附带官方估值计数：必须数导入载荷实际携带的数量，不能数本页缓存——
+      // 模拟器页脚本实例与主站不同源，本页 merged 缓存恒为空，会误报「0 个物品」。
+      // 0 个物品时用户能立刻发现透传为空（资产分将降级挂单价），
+      // 而不是等到 tooltip 全是挂单价才排查。
+      setStatus(
+        `${getUiText('importSuccess', state.uiLanguage)} ${describeMarketItemValuesStatus(mainSiteResponse.payload)}`,
+        'success',
+      );
     }
 
     async function importEnhancementMainSiteResponse(mainSiteResponse, requestId) {
@@ -3608,13 +4356,21 @@
 
       persistImportedTeamRoster(payload, members);
 
-      if (failureEntries.length === 0) {
-        setStatusKey('importSuccess', 'success');
-        return;
-      }
-
-      const summary = formatTeamImportSummary(importedCount, failureEntries);
-      setStatus(state.uiLanguage === 'zh' ? `导入完成：${summary}` : `Import finished: ${summary}`, 'success');
+      // 团队导入成功反馈同样附带官方估值计数，与单人路径（importSingleMainSiteResponse）
+      // 口径一致：数导入载荷实际携带的 marketItemValues——各成功 member 载荷挂的是
+      // 同一份 merged 快照（getMergedMarketItemValues 记忆化共享缓存），取任一成功
+      // member 计数即可；merged 为空时全部 member 都不带该字段，如实显示「0 个物品
+      // （资产分将使用挂单价）」，让透传故障（脚本未登录 / LS 无键 / fetch 失败）在
+      // 导入瞬间可见，而非等 tooltip 全是挂单价才排查（第 20 轮修复目标，团队路径
+      // 此前缺失该反馈）。文案拼接收敛到顶层可注入纯函数 buildTeamImportFeedbackText
+      //（#22），此处仅接线调用，行为断言在测试侧覆盖；summary 为空 = 全部成功。
+      const feedbackText = buildTeamImportFeedbackText({
+        uiLanguage: state.uiLanguage,
+        summary:
+          failureEntries.length === 0 ? '' : formatTeamImportSummary(importedCount, failureEntries, state.uiLanguage),
+        firstSuccessPayload: successfulMembers[0]?.payload,
+      });
+      setStatus(feedbackText, 'success');
     }
 
     async function handleImportButtonClick(importMode = 'player') {

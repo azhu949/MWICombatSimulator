@@ -1,0 +1,42 @@
+{
+  "/task_shop_items/large_artisans_crate": {
+    "hrid": "/task_shop_items/large_artisans_crate",
+    "name": "Large Artisan's Crate",
+    "itemHrid": "/items/large_artisans_crate",
+    "cost": {
+      "itemHrid": "/items/task_token",
+      "count": 30
+    },
+    "sortIndex": 3
+  },
+  "/task_shop_items/large_meteorite_cache": {
+    "hrid": "/task_shop_items/large_meteorite_cache",
+    "name": "Large Meteorite Cache",
+    "itemHrid": "/items/large_meteorite_cache",
+    "cost": {
+      "itemHrid": "/items/task_token",
+      "count": 30
+    },
+    "sortIndex": 2
+  },
+  "/task_shop_items/large_treasure_chest": {
+    "hrid": "/task_shop_items/large_treasure_chest",
+    "name": "Large Treasure Chest",
+    "itemHrid": "/items/large_treasure_chest",
+    "cost": {
+      "itemHrid": "/items/task_token",
+      "count": 30
+    },
+    "sortIndex": 4
+  },
+  "/task_shop_items/task_crystal": {
+    "hrid": "/task_shop_items/task_crystal",
+    "name": "Task Crystal",
+    "itemHrid": "/items/task_crystal",
+    "cost": {
+      "itemHrid": "/items/task_token",
+      "count": 50
+    },
+    "sortIndex": 1
+  }
+}

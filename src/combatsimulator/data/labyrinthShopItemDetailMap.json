@@ -1,0 +1,233 @@
+{
+  "/labyrinth_shop_items/artificer_cape": {
+    "hrid": "/labyrinth_shop_items/artificer_cape",
+    "name": "Artificer Cape",
+    "itemHrid": "/items/artificer_cape",
+    "cost": {
+      "itemHrid": "/items/labyrinth_token",
+      "count": 10000
+    },
+    "outputCount": 1,
+    "sortIndex": 18
+  },
+  "/labyrinth_shop_items/chance_cape": {
+    "hrid": "/labyrinth_shop_items/chance_cape",
+    "name": "Chance Cape",
+    "itemHrid": "/items/chance_cape",
+    "cost": {
+      "itemHrid": "/items/labyrinth_token",
+      "count": 10000
+    },
+    "outputCount": 1,
+    "sortIndex": 20
+  },
+  "/labyrinth_shop_items/culinary_cape": {
+    "hrid": "/labyrinth_shop_items/culinary_cape",
+    "name": "Culinary Cape",
+    "itemHrid": "/items/culinary_cape",
+    "cost": {
+      "itemHrid": "/items/labyrinth_token",
+      "count": 10000
+    },
+    "outputCount": 1,
+    "sortIndex": 19
+  },
+  "/labyrinth_shop_items/gatherer_cape": {
+    "hrid": "/labyrinth_shop_items/gatherer_cape",
+    "name": "Gatherer Cape",
+    "itemHrid": "/items/gatherer_cape",
+    "cost": {
+      "itemHrid": "/items/labyrinth_token",
+      "count": 10000
+    },
+    "outputCount": 1,
+    "sortIndex": 17
+  },
+  "/labyrinth_shop_items/labyrinth_essence": {
+    "hrid": "/labyrinth_shop_items/labyrinth_essence",
+    "name": "Labyrinth Essence",
+    "itemHrid": "/items/labyrinth_essence",
+    "cost": {
+      "itemHrid": "/items/labyrinth_token",
+      "count": 1
+    },
+    "outputCount": 10,
+    "sortIndex": 1
+  },
+  "/labyrinth_shop_items/labyrinth_refinement_shard": {
+    "hrid": "/labyrinth_shop_items/labyrinth_refinement_shard",
+    "name": "Labyrinth Refinement Shard",
+    "itemHrid": "/items/labyrinth_refinement_shard",
+    "cost": {
+      "itemHrid": "/items/labyrinth_token",
+      "count": 500
+    },
+    "outputCount": 1,
+    "sortIndex": 21
+  },
+  "/labyrinth_shop_items/pathbreaker_lodestone": {
+    "hrid": "/labyrinth_shop_items/pathbreaker_lodestone",
+    "name": "Pathbreaker Lodestone",
+    "itemHrid": "/items/pathbreaker_lodestone",
+    "cost": {
+      "itemHrid": "/items/labyrinth_token",
+      "count": 1000
+    },
+    "outputCount": 1,
+    "sortIndex": 14
+  },
+  "/labyrinth_shop_items/pathfinder_lodestone": {
+    "hrid": "/labyrinth_shop_items/pathfinder_lodestone",
+    "name": "Pathfinder Lodestone",
+    "itemHrid": "/items/pathfinder_lodestone",
+    "cost": {
+      "itemHrid": "/items/labyrinth_token",
+      "count": 1000
+    },
+    "outputCount": 1,
+    "sortIndex": 15
+  },
+  "/labyrinth_shop_items/pathseeker_lodestone": {
+    "hrid": "/labyrinth_shop_items/pathseeker_lodestone",
+    "name": "Pathseeker Lodestone",
+    "itemHrid": "/items/pathseeker_lodestone",
+    "cost": {
+      "itemHrid": "/items/labyrinth_token",
+      "count": 1000
+    },
+    "outputCount": 1,
+    "sortIndex": 16
+  },
+  "/labyrinth_shop_items/seal_of_action_speed": {
+    "hrid": "/labyrinth_shop_items/seal_of_action_speed",
+    "name": "Scroll of Action Speed",
+    "itemHrid": "/items/seal_of_action_speed",
+    "cost": {
+      "itemHrid": "/items/labyrinth_token",
+      "count": 30
+    },
+    "outputCount": 1,
+    "sortIndex": 6
+  },
+  "/labyrinth_shop_items/seal_of_attack_speed": {
+    "hrid": "/labyrinth_shop_items/seal_of_attack_speed",
+    "name": "Scroll of Attack Speed",
+    "itemHrid": "/items/seal_of_attack_speed",
+    "cost": {
+      "itemHrid": "/items/labyrinth_token",
+      "count": 30
+    },
+    "outputCount": 1,
+    "sortIndex": 8
+  },
+  "/labyrinth_shop_items/seal_of_cast_speed": {
+    "hrid": "/labyrinth_shop_items/seal_of_cast_speed",
+    "name": "Scroll of Cast Speed",
+    "itemHrid": "/items/seal_of_cast_speed",
+    "cost": {
+      "itemHrid": "/items/labyrinth_token",
+      "count": 30
+    },
+    "outputCount": 1,
+    "sortIndex": 9
+  },
+  "/labyrinth_shop_items/seal_of_combat_drop": {
+    "hrid": "/labyrinth_shop_items/seal_of_combat_drop",
+    "name": "Scroll of Combat Drop",
+    "itemHrid": "/items/seal_of_combat_drop",
+    "cost": {
+      "itemHrid": "/items/labyrinth_token",
+      "count": 30
+    },
+    "outputCount": 1,
+    "sortIndex": 7
+  },
+  "/labyrinth_shop_items/seal_of_critical_rate": {
+    "hrid": "/labyrinth_shop_items/seal_of_critical_rate",
+    "name": "Scroll of Critical Rate",
+    "itemHrid": "/items/seal_of_critical_rate",
+    "cost": {
+      "itemHrid": "/items/labyrinth_token",
+      "count": 30
+    },
+    "outputCount": 1,
+    "sortIndex": 11
+  },
+  "/labyrinth_shop_items/seal_of_damage": {
+    "hrid": "/labyrinth_shop_items/seal_of_damage",
+    "name": "Scroll of Damage",
+    "itemHrid": "/items/seal_of_damage",
+    "cost": {
+      "itemHrid": "/items/labyrinth_token",
+      "count": 30
+    },
+    "outputCount": 1,
+    "sortIndex": 10
+  },
+  "/labyrinth_shop_items/seal_of_efficiency": {
+    "hrid": "/labyrinth_shop_items/seal_of_efficiency",
+    "name": "Scroll of Efficiency",
+    "itemHrid": "/items/seal_of_efficiency",
+    "cost": {
+      "itemHrid": "/items/labyrinth_token",
+      "count": 30
+    },
+    "outputCount": 1,
+    "sortIndex": 5
+  },
+  "/labyrinth_shop_items/seal_of_gathering": {
+    "hrid": "/labyrinth_shop_items/seal_of_gathering",
+    "name": "Scroll of Gathering",
+    "itemHrid": "/items/seal_of_gathering",
+    "cost": {
+      "itemHrid": "/items/labyrinth_token",
+      "count": 30
+    },
+    "outputCount": 1,
+    "sortIndex": 2
+  },
+  "/labyrinth_shop_items/seal_of_gourmet": {
+    "hrid": "/labyrinth_shop_items/seal_of_gourmet",
+    "name": "Scroll of Gourmet",
+    "itemHrid": "/items/seal_of_gourmet",
+    "cost": {
+      "itemHrid": "/items/labyrinth_token",
+      "count": 30
+    },
+    "outputCount": 1,
+    "sortIndex": 3
+  },
+  "/labyrinth_shop_items/seal_of_processing": {
+    "hrid": "/labyrinth_shop_items/seal_of_processing",
+    "name": "Scroll of Processing",
+    "itemHrid": "/items/seal_of_processing",
+    "cost": {
+      "itemHrid": "/items/labyrinth_token",
+      "count": 30
+    },
+    "outputCount": 1,
+    "sortIndex": 4
+  },
+  "/labyrinth_shop_items/seal_of_rare_find": {
+    "hrid": "/labyrinth_shop_items/seal_of_rare_find",
+    "name": "Scroll of Rare Find",
+    "itemHrid": "/items/seal_of_rare_find",
+    "cost": {
+      "itemHrid": "/items/labyrinth_token",
+      "count": 30
+    },
+    "outputCount": 1,
+    "sortIndex": 13
+  },
+  "/labyrinth_shop_items/seal_of_wisdom": {
+    "hrid": "/labyrinth_shop_items/seal_of_wisdom",
+    "name": "Scroll of Wisdom",
+    "itemHrid": "/items/seal_of_wisdom",
+    "cost": {
+      "itemHrid": "/items/labyrinth_token",
+      "count": 30
+    },
+    "outputCount": 1,
+    "sortIndex": 12
+  }
+}

@@ -19,6 +19,15 @@
           <h1 class="min-w-0 flex-1 truncate font-heading text-sm font-semibold text-foreground">
             {{ currentPageTitle }}
           </h1>
+          <template v-if="showCombatToolbar && simulator.players.length">
+            <div class="mx-1 h-4 w-px bg-border" aria-hidden="true" />
+            <PlayerCardsStrip
+              class="min-w-0 max-w-[78%]"
+              :players="simulator.players"
+              :active-player-id="simulator.activePlayerId"
+              @select-player="simulator.setActivePlayer"
+            />
+          </template>
           <Button
             type="button"
             variant="ghost"
@@ -45,8 +54,6 @@
 
       <CombatCommandBar
         v-if="showCombatToolbar"
-        :players="simulator.players"
-        :active-player-id="simulator.activePlayerId"
         :queue-actions-disabled="queueActionsDisabled"
         :has-baseline="activeQueueHasBaseline"
         :party-mismatch="activeQueuePartyMismatch"
@@ -67,7 +74,6 @@
         @add-queue="addToQueueFromTopbar"
         @run-queue="runQueueFromTopbar"
         @clear-queue="clearQueueFromTopbar"
-        @select-player="simulator.setActivePlayer"
         @start-simulation="simulator.startSimulation()"
         @stop-simulation="simulator.stopSimulation()"
         @height-change="setCombatCommandBarHeight"
@@ -689,6 +695,7 @@ import {
 import BaseModal from './components/BaseModal.vue';
 import AppSidebar from './components/AppSidebar.vue';
 import CombatCommandBar from './components/CombatCommandBar.vue';
+import PlayerCardsStrip from './components/PlayerCardsStrip.vue';
 import PatchNoteSections from './components/PatchNoteSections.vue';
 import { Button } from './components/ui/button/index.js';
 import { SidebarInset, SidebarProvider, SidebarTrigger } from './components/ui/sidebar/index.js';
@@ -714,6 +721,7 @@ import {
   QUEUE_PRICE_METHOD_LEFT1,
   QUEUE_PRICE_METHOD_RIGHT1,
 } from '../services/queueUpgradeCost.js';
+import { computeAssetScoreConfigSignature } from '../services/assetScoreService.js';
 
 const appVersion = __APP_VERSION__;
 
@@ -2108,6 +2116,41 @@ watch(
   },
 );
 
+// 资产分（Gear Score）重算触发器：玩家配置（装备/房屋/公会增益/技能/工匠茶等）
+// 或市场行情变化时重算。watch 源为 computed 触发向量（2026-09-01 审计 A4：原 deep
+// watch 每次触发全量 traverse players + pricing（marketItemValues ~872 物品 ×21 档、
+// 全量价格表），名称击键等无关输入也付遍历成本；250ms 防抖只压重算频率、不压遍历）。
+// 玩家侧逐人配置签名 computeAssetScoreConfigSignature——覆盖面与
+// computePlayerAssetScore 的玩家输入严格一致（与 store 快照保留守卫同一承重）；
+// pricing 侧为资产分六个消费字段引用元组（数值 + 物品级/等级级来源标注 + 行情表 +
+// 挂单 + 快照时间）——全部写点均为整体替换引用/原始值赋值
+//（与 assetScoreService 成本缓存指纹同一「引用替换」约定），
+// 浅跟踪即可精确捕获；overrides/mode/marketTimestamp/sourceUrl/isLoading 等资产分
+// 不消费的字段（#5 双拦截）不再触发。250ms 防抖保留；refreshAssetScores 内部有
+// 值相等守卫（忽略 computedAt），且快照写回（player.assetScore）不在本向量依赖内，
+// 不会与写入形成循环。
+let assetScoreRefreshTimer = null;
+const assetScoreRefreshTrigger = computed(() => [
+  simulator.players.map((player) => computeAssetScoreConfigSignature(player)),
+  simulator.pricing?.marketItemValues ?? null,
+  simulator.pricing?.marketItemValueSources ?? null,
+  // 等级级来源覆盖（【一般-5】）：混合物品的合成补齐等级标签变化同样需要触发重算，
+  // 否则 tooltip/明细在标注更新后滞留旧标签至下一次无关触发。
+  simulator.pricing?.marketItemValueSourcesByLevel ?? null,
+  simulator.pricing?.basePriceTable ?? simulator.pricing?.priceTable ?? null,
+  simulator.pricing?.enhancementQuotesByItem ?? null,
+  simulator.pricing?.lastFetchedAt ?? 0,
+]);
+watch(assetScoreRefreshTrigger, () => {
+  if (assetScoreRefreshTimer != null) {
+    clearTimeout(assetScoreRefreshTimer);
+  }
+  assetScoreRefreshTimer = setTimeout(() => {
+    assetScoreRefreshTimer = null;
+    simulator.refreshAssetScores();
+  }, 250);
+});
+
 onMounted(() => {
   initializePatchNotesState({
     entries: patchNotesEntries.value,
@@ -2117,11 +2160,16 @@ onMounted(() => {
     markPatchNotesReadOnPageEntry();
   }
   scheduleDeferredInitialization();
+  simulator.refreshAssetScores();
   window.addEventListener('error', onWindowError);
   window.addEventListener('unhandledrejection', onUnhandledRejection);
 });
 
 onUnmounted(() => {
+  if (assetScoreRefreshTimer != null) {
+    clearTimeout(assetScoreRefreshTimer);
+    assetScoreRefreshTimer = null;
+  }
   cancelDeferredInitialization();
   window.removeEventListener('error', onWindowError);
   window.removeEventListener('unhandledrejection', onUnhandledRejection);

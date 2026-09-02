@@ -83,7 +83,7 @@
                   :aria-label="t('common:vue.settings.soloImportExportTitle', 'Solo Import/Export')"
                 /><SelectContent
                   ><SelectItem v-for="player in simulator.players" :key="player.id" :value="String(player.id)">{{
-                    player.name
+                    playerAssetScoreLabel(player)
                   }}</SelectItem></SelectContent
                 ></Select
               ><span class="status-chip">{{ t('common:vue.settings.modernSolo', 'Modern Solo') }}</span>
@@ -133,6 +133,7 @@ import { computed, ref, watch } from 'vue';
 import { useSimulatorStore } from '../../../stores/simulatorStore.js';
 import { useI18nText } from '../../composables/useI18nText.js';
 import { MAIN_SITE_IMPORT_SCRIPT_URL } from '../../config/externalLinks.js';
+import { formatAssetScoreLabel } from '../../../services/assetScoreService.js';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '../ui/select/index.js';
 import BaseModal from '../BaseModal.vue';
 
@@ -163,6 +164,13 @@ function setStatus(tone, text) {
     tone: tone || 'secondary',
     text: String(text || ''),
   };
+}
+
+// 单人导入目标下拉的玩家标签：名称 + 资产分后缀（仅有快照时显示）。
+// 空名玩家兜底 `Player ${id}`（对齐 HomeSimulationPanel 玩家选择下拉），防裸「 · 9,534」前导分隔符。
+function playerAssetScoreLabel(player) {
+  const name = String(player?.name || `Player ${player?.id || ''}`);
+  return player?.assetScore ? `${name} · ${formatAssetScoreLabel(player.assetScore)}` : name;
 }
 
 function close() {
@@ -202,11 +210,18 @@ function handleGroupImport() {
   }
   try {
     const result = simulator.importGroupConfig(groupText.value);
+    // #40（2026-09-01）：组队导入与单人同样提取并应用 marketItemValues（mapper
+    // importGroupConfig / store applyImportedMarketItemValues），反馈复用同一门控
+    // helper（见下方 OFFICIAL_ESTIMATE_FORMATS 注释），消除「组队侧静默应用零反馈」
+    // 的不对称；modern-group 载荷不携带估值（count=0）时文案与旧版一致。
     setStatus(
       'success',
-      t('common:vue.settings.msgGroupImportSuccess', 'Group import success ({{format}}).', {
-        format: result.detectedFormat,
-      }),
+      buildImportSuccessText(
+        result,
+        t('common:vue.settings.msgGroupImportSuccess', 'Group import success ({{format}}).', {
+          format: result.detectedFormat,
+        }),
+      ),
     );
   } catch (error) {
     setStatus(
@@ -218,6 +233,56 @@ function handleGroupImport() {
   }
 }
 
+// 官方估值计数行按格式门控（2026-08-31 审计【一般 4】）：仅存在市场透传通道的
+// 主站格式恒显示——main-site-current-character 的 0 表示主站脚本未透传（透传
+// 故障信号），main-site-share-profile 粘贴载荷的 0 是第 19 轮通道分离的预期反馈
+// （资产分将使用挂单价）。原生格式（modern-solo / legacy-solo / modern-player-only
+// / modern-group）的导出从不携带市场字段，恒 0 显示是误导性噪音，不再拼接；载荷
+// 实际携带估值（count > 0）时无论格式恒显示。
+// #40（2026-09-01）：组队导入与单人同样提取并应用 marketItemValues（mapper
+// importGroupConfig / store applyImportedMarketItemValues），反馈共用下方 helper，
+// 消除「组队侧静默应用零反馈」的不对称。
+const OFFICIAL_ESTIMATE_FORMATS = new Set(['main-site-current-character', 'main-site-share-profile']);
+
+// 组队/单人导入共用的成功反馈构建：基础成功文案 + 官方估值计数行（按格式门控），
+// 让用户导入后立刻确认资产分取价链第①级是否可用。载荷级来源标记
+// marketEstimateSource='synthetic'（主站脚本回落合成中价，脚本状态栏同批标注
+// 「合成中价估值已透传」）时整体切换合成中价文案，与脚本状态栏反馈一致；无标记
+// （旧载荷/复制粘贴载荷）保持官方估值文案（向后兼容，不劣化）。
+// #18（2026-08-31）：混合载荷（载荷级 official + syntheticItemHrids 清单）如实分列
+// 计数——官方与合成中价并存时，把合成部分整体报成官方估值正是逐件真值丢失的用户
+// 面失真。混合仅在载荷级标记非 synthetic 时成立：标记 synthetic 本身已声明全部
+// 物品为合成中价，此时清单冗余（矛盾载荷）不进入混合分支。
+function buildImportSuccessText(result, baseSuccessText) {
+  const officialEstimateCount = result.marketItemValues ? Object.keys(result.marketItemValues).length : 0;
+  const syntheticItemHrids = Array.isArray(result.syntheticItemHrids) ? result.syntheticItemHrids : [];
+  const syntheticItemCount = syntheticItemHrids.length;
+  const isMixedEstimates =
+    result.marketEstimateSource !== 'synthetic' && syntheticItemCount > 0 && syntheticItemCount < officialEstimateCount;
+  const isSyntheticEstimates = result.marketEstimateSource === 'synthetic';
+  const showOfficialEstimates = officialEstimateCount > 0 || OFFICIAL_ESTIMATE_FORMATS.has(result.detectedFormat);
+  if (!showOfficialEstimates) {
+    return baseSuccessText;
+  }
+  return `${baseSuccessText} ${t(
+    isMixedEstimates
+      ? 'common:vue.settings.msgImportMixedEstimates'
+      : isSyntheticEstimates
+        ? 'common:vue.settings.msgImportSyntheticEstimates'
+        : 'common:vue.settings.msgImportOfficialEstimates',
+    isMixedEstimates
+      ? 'Official estimates: {{officialCount}} items + synthetic mid-price estimates: {{syntheticCount}} items (synthetic part not official; may differ from MWITools by ~4-5%).'
+      : isSyntheticEstimates
+        ? 'Synthetic mid-price estimates: {{count}} items (not official; may differ from MWITools by ~4-5%).'
+        : 'Official estimates: {{count}} items.',
+    {
+      count: officialEstimateCount,
+      officialCount: Math.max(0, officialEstimateCount - syntheticItemCount),
+      syntheticCount: syntheticItemCount,
+    },
+  )}`;
+}
+
 function handleSoloImport() {
   if (props.blockPlayerConfigReplacement()) {
     setStatus('warning', t('common:vue.home.dirtyDraftBlocked', 'Save or cancel the current changes first.'));
@@ -225,11 +290,16 @@ function handleSoloImport() {
   }
   try {
     const result = simulator.importSoloConfig(soloText.value, soloTargetPlayerId.value);
+    // 官方估值计数让用户导入后立刻确认资产分取价链第①级是否可用；门控/合成中价/
+    // 混合分列语义见上方 buildImportSuccessText 注释（组队/单人共用同一实现，#40）。
     setStatus(
       'success',
-      t('common:vue.settings.msgSoloImportSuccess', 'Solo import success ({{format}}).', {
-        format: result.detectedFormat,
-      }),
+      buildImportSuccessText(
+        result,
+        t('common:vue.settings.msgSoloImportSuccess', 'Solo import success ({{format}}).', {
+          format: result.detectedFormat,
+        }),
+      ),
     );
   } catch (error) {
     setStatus(

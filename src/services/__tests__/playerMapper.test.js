@@ -155,6 +155,30 @@ describe('playerMapper', () => {
     expect(players[0].combatDetails.combatStats.taskDamage).toBe(0);
   });
 
+  it('clamps out-of-range equipment enhancement levels when building simulation players', () => {
+    const player = createEmptyPlayerConfig(1);
+    const head = findFirstEquipmentByType('/equipment_types/head');
+    const body = findFirstEquipmentByType('/equipment_types/body');
+
+    expect(head).toBeTruthy();
+    expect(body).toBeTruthy();
+
+    // 手注 JSON / UI 直输的超限值：999 远超游戏上限、-5 负数。
+    player.equipment.head.itemHrid = head.hrid;
+    player.equipment.head.enhancementLevel = 999;
+    player.equipment.body.itemHrid = body.hrid;
+    player.equipment.body.enhancementLevel = -5;
+
+    const [simulationPlayer] = buildPlayersForSimulation([player]);
+
+    // 钳到游戏上限 20（强化倍率表共 21 元素 0-20，取值不越界）；负数钳 0。
+    expect(simulationPlayer.equipment['/equipment_types/head'].enhancementLevel).toBe(20);
+    expect(simulationPlayer.equipment['/equipment_types/body'].enhancementLevel).toBe(0);
+    // 战斗数值必须有限（NaN 防御：undefined 倍率 × 强化加成会污染整链数值）。
+    expect(Number.isFinite(simulationPlayer.combatDetails.maxHitpoints)).toBe(true);
+    expect(Number.isFinite(simulationPlayer.combatDetails.stabMaxDamage)).toBe(true);
+  });
+
   it('build output is worker-cloneable', () => {
     const player = createEmptyPlayerConfig(1);
     player.achievements['/achievements/gather_milk'] = true;

@@ -180,6 +180,45 @@ const BASE_CLIENT_DATA = {
       name: 'Test Crate',
     },
   },
+  shopItemDetailMap: {
+    '/shop_items/test': {
+      hrid: '/shop_items/test',
+      category: '/shop_categories/dungeon',
+      itemHrid: '/items/test',
+      costs: [
+        {
+          itemHrid: '/items/test_token',
+          count: 100,
+        },
+      ],
+      sortIndex: 1,
+    },
+  },
+  taskShopItemDetailMap: {
+    '/task_shop_items/test': {
+      hrid: '/task_shop_items/test',
+      name: 'Test Task Shop Item',
+      itemHrid: '/items/test',
+      cost: {
+        itemHrid: '/items/test_task_token',
+        count: 30,
+      },
+      sortIndex: 2,
+    },
+  },
+  labyrinthShopItemDetailMap: {
+    '/labyrinth_shop_items/test': {
+      hrid: '/labyrinth_shop_items/test',
+      name: 'Test Labyrinth Shop Item',
+      itemHrid: '/items/test',
+      cost: {
+        itemHrid: '/items/test_labyrinth_token',
+        count: 10000,
+      },
+      outputCount: 1,
+      sortIndex: 3,
+    },
+  },
   skillDetailMap: {
     '/skills/attack': {
       hrid: '/skills/attack',
@@ -219,9 +258,12 @@ const EXPECTED_OUTPUT_FILES = [
   'itemDetailMap.json',
   'itemLocationDetailMap.json',
   'labyrinthCrateDetailMap.json',
+  'labyrinthShopItemDetailMap.json',
   'openableLootDropMap.json',
   'personalBuffTypeDetailMap.json',
+  'shopItemDetailMap.json',
   'skillDetailMap.json',
+  'taskShopItemDetailMap.json',
 ].sort();
 
 const EXPECTED_OUTPUT_FILES_WITHOUT_LEVEL_EXPERIENCE_TABLE = EXPECTED_OUTPUT_FILES.filter(

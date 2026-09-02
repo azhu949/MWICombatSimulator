@@ -16,7 +16,7 @@ MWICombatSimulator 用于在本地运行战斗模拟与收益评估，帮助你�
 - **Enhancement**：比较不同保护阈值的期望成本，评估贤者之镜、分解价值、成本分位与预算成功率
 - **Skilling**：结合当前角色经验、背包/穿戴装备、Buff 与市场价格，按最低净成本/经验、均衡（可配置成本容忍度，以有限增加净成本换取更短耗时）或速度优先模式规划采摘、酿造、奶酪锻造、烹饪、制作和裁缝的逐级路线
 - **Multi Results**：汇总多轮结果并支持导出 Excel
-- **Import/Export**：支持导入导出；可配合 Tampermonkey 脚本从主站一键导入战斗、强化或生活技能所需的当前角色数据，支持 `milkywayidle.com` 与 `milkywayidlecn.com`；强化与生活技能导入的当前角色数据仅保留在当前页面会话，刷新后需重新导入
+- **Import/Export**：支持导入导出；可配合 Tampermonkey 脚本从主站一键导入战斗、强化或生活技能所需的当前角色数据，支持 `milkywayidle.com` 与 `milkywayidlecn.com`；强化与生活技能导入的当前角色数据仅保留在当前页面会话，刷新后需重新导入；导入载荷附带官方估算市场价值快照（主站 WS 全量快照与 localStorage 官方估算优先、`marketplace.json` 合成中价兜底），驱动全局顶栏（Home/Queue/Advisor 等页面均可见）的资产分（Gear Score）徽章展示，Home 页角色与导入目标下拉另附分数后缀；载荷来源为合成中价时，资产分 tooltip / 明细与导入反馈均如实标注「合成中价」（与脚本状态栏一致），详见 [`scripts/mwi-main-site-import.README.md`](scripts/mwi-main-site-import.README.md)
 - **官方中英游戏词条 + Web Workers**：发布前同步官网词条快照，运行时离线加载；worker 并行计算提升批量模拟速度
 - **Parallel Worker Limit**：Settings 中保存的并行 worker 上限也会应用到 Home 页的批量 Zone / Labyrinth 模拟
 

@@ -1,4 +1,4 @@
-import { defineConfig } from 'vite';
+import { defineConfig, defaultExclude } from 'vitest/config';
 import vue from '@vitejs/plugin-vue';
 import tailwindcss from '@tailwindcss/vite';
 import { readFileSync } from 'fs';
@@ -8,6 +8,11 @@ const packageJson = JSON.parse(readFileSync(resolve(process.cwd(), 'package.json
 
 export default defineConfig({
   base: './',
+  test: {
+    // tmp/ 为 git 忽略的临时对账区，
+    // 其中的 *.test.js 论据脚本不参与 vitest 默认收集，避免未来转红污染「不回归」信号。
+    exclude: [...defaultExclude, 'tmp/**'],
+  },
   plugins: [vue(), tailwindcss()],
   resolve: {
     alias: {

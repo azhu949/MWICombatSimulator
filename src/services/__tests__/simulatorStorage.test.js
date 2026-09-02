@@ -7,6 +7,8 @@ import {
   loadSimulationUiSettingsFromStorage,
   loadEquipmentSetsFromStorage,
   loadQueueRunSettingsByPlayerFromStorage,
+  normalizeMarketItemValues,
+  normalizeMarketItemValueSources,
   normalizeSimulationUiSettings,
   normalizeStoredPlayerDataMap,
   persistSimulationUiSettingsToStorage,
@@ -493,6 +495,17 @@ describe('simulatorStorage', () => {
         enhancementLevelsByItem: {
           '/items/test_sword': [2, 'bad', 1, 2],
         },
+        marketItemValues: {
+          '/items/test_item': { 0: 12345 },
+        },
+        marketItemValueSources: {
+          '/items/test_item': 'synthetic',
+          '/items/bad': 'nope',
+        },
+        marketItemValueSourcesByLevel: {
+          '/items/test_item': { 0: 'synthetic', 1.7: 'synthetic', bad: 'synthetic', '-1': 'official' },
+          '/items/bad': { 0: 'nope' },
+        },
         marketTimestamp: 90,
         lastFetchedAt: 100,
         sourceUrl: 'https://example.test/prices.json',
@@ -519,10 +532,101 @@ describe('simulatorStorage', () => {
       bid: 80,
     });
     expect(pricingState.enhancementLevelsByItem['/items/test_sword']).toEqual([1, 2]);
+    expect(pricingState.marketItemValues).toEqual({ '/items/test_item': { 0: 12345 } });
+    // A3：来源标注随市场缓存恢复（白名单外条目丢弃）。
+    expect(pricingState.marketItemValueSources).toEqual({ '/items/test_item': 'synthetic' });
+    // 【一般-5】等级级来源覆盖随市场缓存恢复（白名单外条目丢弃；等级键与
+    // normalizeMarketItemValues 同语义归一化——'1.7'→'1'、非数值/负数丢弃）。
+    expect(pricingState.marketItemValueSourcesByLevel).toEqual({
+      '/items/test_item': { 0: 'synthetic', 1: 'synthetic' },
+    });
     expect(pricingState.marketTimestamp).toBe(90);
     expect(pricingState.lastFetchedAt).toBe(100);
     expect(pricingState.sourceUrl).toBe('https://example.test/prices.json');
     expect(pricingState.isLoading).toBe(false);
     expect(pricingState.error).toBe('');
+  });
+
+  describe('normalizeMarketItemValues（#33 形状校验直测）', () => {
+    it('保留合法条目并把等级键归一化为非负整数字符串（小数向下取整）', () => {
+      expect(normalizeMarketItemValues({ '/items/foo': { 0: 100, 1.7: 250 } })).toEqual({
+        '/items/foo': { 0: 100, 1: 250 },
+      });
+    });
+
+    it('非对象输入返回空对象', () => {
+      expect(normalizeMarketItemValues(null)).toEqual({});
+      expect(normalizeMarketItemValues([['/items/foo', { 0: 100 }]])).toEqual({});
+      expect(normalizeMarketItemValues('nope')).toEqual({});
+      expect(normalizeMarketItemValues(undefined)).toEqual({});
+    });
+
+    it('丢弃非 /items/ 前缀与原型污染危险键（__proto__ 键经 JSON 形态注入）', () => {
+      const protoPayload = JSON.parse('{"__proto__": {"0": 100}, "/items/foo": {"0": 100}}');
+      expect(normalizeMarketItemValues(protoPayload)).toEqual({ '/items/foo': { 0: 100 } });
+      expect(normalizeMarketItemValues({ foo: { 0: 100 }, constructor: { 0: 100 } })).toEqual({});
+    });
+
+    it('丢弃非法等级（负数/非数值）与非法值（零/负/非有限）', () => {
+      expect(
+        normalizeMarketItemValues({
+          '/items/foo': {
+            '-1': 100,
+            bad: 100,
+            2: -50,
+            3: 0,
+            4: Infinity,
+            5: 700,
+          },
+        }),
+      ).toEqual({ '/items/foo': { 5: 700 } });
+    });
+
+    it('等级档为空、值为全非法或档位形态非对象时该物品整体丢弃', () => {
+      expect(
+        normalizeMarketItemValues({
+          '/items/empty': {},
+          '/items/invalid': { 0: 0 },
+          '/items/notmap': null,
+          '/items/notmap2': [100],
+          '/items/ok': { 0: 100 },
+        }),
+      ).toEqual({ '/items/ok': { 0: 100 } });
+    });
+  });
+
+  describe('normalizeMarketItemValueSources（#30 A3 形状校验直测）', () => {
+    it('保留合法 hrid 与白名单值（official/synthetic）', () => {
+      expect(
+        normalizeMarketItemValueSources({
+          '/items/foo': 'synthetic',
+          '/items/bar': 'official',
+        }),
+      ).toEqual({
+        '/items/foo': 'synthetic',
+        '/items/bar': 'official',
+      });
+    });
+
+    it('非对象输入返回空对象（旧缓存无该键 → 向后兼容）', () => {
+      expect(normalizeMarketItemValueSources(null)).toEqual({});
+      expect(normalizeMarketItemValueSources(undefined)).toEqual({});
+      expect(normalizeMarketItemValueSources(['official'])).toEqual({});
+      expect(normalizeMarketItemValueSources('synthetic')).toEqual({});
+    });
+
+    it('丢弃非法 hrid、危险键与非白名单值', () => {
+      expect(
+        normalizeMarketItemValueSources({
+          foo: 'synthetic',
+          constructor: 'official',
+          '/items/bad': 'nope',
+          '/items/empty': '',
+          '/items/num': 1,
+        }),
+      ).toEqual({});
+      const protoPayload = JSON.parse('{"__proto__": "synthetic", "/items/foo": "synthetic"}');
+      expect(normalizeMarketItemValueSources(protoPayload)).toEqual({ '/items/foo': 'synthetic' });
+    });
   });
 });

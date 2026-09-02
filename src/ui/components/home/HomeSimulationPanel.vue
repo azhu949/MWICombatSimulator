@@ -377,6 +377,7 @@ import { LABYRINTH_ROOM_LEVEL_MAX, LABYRINTH_ROOM_LEVEL_MIN } from '../../../sha
 import { useSimulatorStore } from '../../../stores/simulatorStore.js';
 import { useGameDataText } from '../../composables/useGameDataText.js';
 import { useI18nText } from '../../composables/useI18nText.js';
+import { formatAssetScoreLabel } from '../../../services/assetScoreService.js';
 import { SearchCombobox } from '../ui/combobox/index.js';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '../ui/select/index.js';
 
@@ -463,7 +464,9 @@ const profilePlayerOptions = computed(() =>
     const importedText = imported
       ? t('common:vue.home.profileStatusImported', 'Imported')
       : t('common:vue.home.profileStatusNotImported', 'Not imported');
-    return { id: player.id, label: `${player.name || `Player ${player.id}`} (${importedText})` };
+    // 资产分后缀（9,534）：仅有快照时显示，与「已导入」标记并存。
+    const assetScoreText = player.assetScore ? ` · ${formatAssetScoreLabel(player.assetScore)}` : '';
+    return { id: player.id, label: `${player.name || `Player ${player.id}`}${assetScoreText} (${importedText})` };
   }),
 );
 const profileSelectorPlayerId = computed({

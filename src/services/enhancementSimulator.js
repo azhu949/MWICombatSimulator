@@ -1157,6 +1157,18 @@ export function analyzeEnhancementStrategy(rawConfig, enhancementData = {}, pric
 
 export function analyzeEnhancementStrategies(rawConfig, enhancementData = {}, pricing = {}) {
   const config = normalizeEnhancementConfig(rawConfig, enhancementData);
+  // 枚举边界 [null, 2..target-1] 与 MWITools flow 枚举 1..target（含两端）的口径差
+  //（2026-09-01 审计【可维护性 #28】修订）：
+  // - 上边界：MWITools 的 protectLevel=target 档并非真实策略档——其动作状态域为
+  //   [0, target-1]（target 为吸收态），level >= protectLevel 恒假，失败恒归 0、
+  //   protectionCount 恒 0，与无保护（本函数的 null 档）逐位等价，系其 <= target
+  //   循环写法自然带出的退化别名。刻意不复刻：补该档只会多算一次与 null 档
+  //   完全相同的完整马尔可夫解。normalizeProtectionThreshold 的
+  //   `parsed >= 2 && parsed < targetLevel` 归一与此边界自洽（1 与 target 均归 null）。
+  // - 下边界：protectAt=1 档为真实差异（MWITools 有、本地缺，level>=1 失败降至
+  //   level-1 而非归 0），当前价格下非最优不影响结果，已在文档登记待补档；
+  //   补档时须同步放宽 normalizeProtectionThreshold 的 `parsed >= 2` 归一，
+  //   并更新既有枚举断言测试。
   const thresholds = [null];
   for (let protectAt = 2; protectAt < config.targetLevel; protectAt += 1) {
     thresholds.push(protectAt);

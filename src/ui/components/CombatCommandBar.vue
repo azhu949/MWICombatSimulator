@@ -112,36 +112,7 @@
           </DropdownMenuPortal>
         </DropdownMenuRoot>
 
-        <div class="flex min-w-0 flex-1 items-center gap-1.5 overflow-x-auto pl-1 [scrollbar-width:thin]">
-          <div
-            v-for="player in players"
-            :key="player.id"
-            class="flex h-8 shrink-0 items-center gap-1.5 rounded-md border px-2 transition-colors"
-            :class="activePlayerId === player.id ? 'border-primary/55 bg-primary/10' : 'border-border bg-background'"
-            role="button"
-            tabindex="0"
-            @click="emit('select-player', player.id)"
-            @keydown.enter.self.prevent="emit('select-player', player.id)"
-            @keydown.space.self.prevent="emit('select-player', player.id)"
-          >
-            <input
-              v-model="player.name"
-              class="w-[72px] bg-transparent text-xs font-semibold outline-none"
-              :aria-label="t('common:player', 'Player')"
-              @click.stop
-              @focus="emit('select-player', player.id)"
-            />
-            <input
-              v-model="player.selected"
-              type="checkbox"
-              class="size-3.5 accent-primary"
-              :aria-label="t('common:vue.app.simToggle', 'Sim')"
-              @click.stop
-            />
-          </div>
-        </div>
-
-        <div class="hidden shrink-0 items-center gap-3 text-xs text-muted-foreground xl:flex">
+        <div class="ml-auto hidden shrink-0 items-center gap-3 text-xs text-muted-foreground xl:flex">
           <span
             >{{ t('common:queue.queueList', 'Queue List') }}
             <strong class="text-foreground">{{ itemCount }}</strong></span
@@ -195,8 +166,6 @@ import { Progress } from '@/ui/components/ui/progress/index.js';
 import { useI18nText } from '../composables/useI18nText.js';
 
 defineProps({
-  players: { type: Array, default: () => [] },
-  activePlayerId: { type: [String, Number], default: '' },
   queueActionsDisabled: { type: Boolean, default: false },
   hasBaseline: { type: Boolean, default: false },
   partyMismatch: { type: Boolean, default: false },
@@ -220,7 +189,6 @@ const emit = defineEmits([
   'add-queue',
   'run-queue',
   'clear-queue',
-  'select-player',
   'start-simulation',
   'stop-simulation',
   'height-change',

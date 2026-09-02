@@ -569,13 +569,20 @@ function mapWeaponType(itemHrid) {
   return '';
 }
 
+// 游戏强化等级上限 20（enhancementLevelTotalBonusMultiplierTable 共 21 元素 0-20 级；
+// 与 enhancementSimulator normalizeEnhancementConfig、importExportMapper
+// clampEnhancementLevel 的 0..20 钳制同口径）。超限值（UI 直输/手改存档绕过导入
+// 净化时）会让 Equipment.getCombatStat 取到 undefined 倍率 → undefined × bonus
+// = NaN 污染战斗模拟数值，必须在构建模拟玩家前钳掉。
+const MAX_ENHANCEMENT_LEVEL = 20;
+
 function normalizeEnhancementLevel(value) {
   const parsed = Number(value);
   if (!Number.isFinite(parsed) || parsed < 0) {
     return 0;
   }
 
-  return Math.floor(parsed);
+  return Math.min(Math.floor(parsed), MAX_ENHANCEMENT_LEVEL);
 }
 
 function applyDebuffOnLevelGap(playersToSim) {

@@ -266,13 +266,24 @@ export function normalizePriceOverrideValue(value) {
   return parsed;
 }
 
+// 动态键赋值校验：仅接受形如 '/items/...' 的合法物品 hrid，并显式阻断
+// '__proto__' / 'constructor' / 'prototype' 等内建危险键，防止经
+// applyPriceOverridesToTable 等路径触碰全局内建对象（原型污染加固）。
+function isSafeItemHridKey(rawKey) {
+  const hrid = String(rawKey || '');
+  if (!hrid.startsWith('/items/')) {
+    return false;
+  }
+  return hrid !== '__proto__' && hrid !== 'constructor' && hrid !== 'prototype';
+}
+
 export function normalizePriceOverrideMap(rawOverrides) {
   const source = isPlainObject(rawOverrides) ? rawOverrides : {};
   const normalized = {};
 
   for (const [rawHrid, rawEntry] of Object.entries(source)) {
     const hrid = String(rawHrid || '');
-    if (!hrid || !isPlainObject(rawEntry)) {
+    if (!hrid || !isSafeItemHridKey(hrid) || !isPlainObject(rawEntry)) {
       continue;
     }
 
@@ -301,14 +312,17 @@ export function normalizeEnhancementQuotesByItem(rawQuotes) {
 
   for (const [rawHrid, rawLevelMap] of Object.entries(source)) {
     const hrid = String(rawHrid || '');
-    if (!hrid || !isPlainObject(rawLevelMap)) {
+    if (!hrid || !isSafeItemHridKey(hrid) || !isPlainObject(rawLevelMap)) {
       continue;
     }
 
     const quoteMap = {};
     for (const [rawLevel, rawQuote] of Object.entries(rawLevelMap)) {
       const level = Math.floor(toFiniteNumber(rawLevel, -1));
-      if (!Number.isFinite(level) || level < 0 || !isPlainObject(rawQuote)) {
+      // 强化等级游戏上限 20（倍率表 21 元素 0-20 级）：超限键（手注行情 JSON）
+      // 无任何合法消费点（资产分 lookup 已钳 20），只会让 +999 市场按钮出现并
+      // 把超限等级写进玩家配置，此处直接丢弃。
+      if (!Number.isFinite(level) || level < 0 || level > 20 || !isPlainObject(rawQuote)) {
         continue;
       }
 
@@ -342,7 +356,7 @@ export function normalizeEnhancementLevelsByItem(rawLevels) {
 
   for (const [rawHrid, rawLevelList] of Object.entries(source)) {
     const hrid = String(rawHrid || '');
-    if (!hrid || !Array.isArray(rawLevelList)) {
+    if (!hrid || !isSafeItemHridKey(hrid) || !Array.isArray(rawLevelList)) {
       continue;
     }
 
@@ -350,7 +364,9 @@ export function normalizeEnhancementLevelsByItem(rawLevels) {
       new Set(
         rawLevelList
           .map((value) => Math.floor(toFiniteNumber(value, -1)))
-          .filter((value) => Number.isFinite(value) && value > 0),
+          // 强化等级游戏上限 20（与 normalizeEnhancementQuotesByItem 同口径）：
+          // 超限值会让「市场强化」按钮出现 +N 并把超限等级写入玩家配置。
+          .filter((value) => Number.isFinite(value) && value > 0 && value <= 20),
       ),
     ).sort((a, b) => a - b);
 
@@ -368,7 +384,7 @@ export function cloneBasePriceTable(basePriceTable) {
 
   for (const [rawHrid, rawEntry] of Object.entries(source)) {
     const hrid = String(rawHrid || '');
-    if (!hrid) {
+    if (!isSafeItemHridKey(hrid)) {
       continue;
     }
 
@@ -387,11 +403,16 @@ export function applyPriceOverridesToTable(basePriceTable, overrides) {
   const normalizedOverrides = normalizePriceOverrideMap(overrides);
 
   for (const [hrid, overrideEntry] of Object.entries(normalizedOverrides)) {
-    const targetEntry = table[hrid] || {
-      ask: -1,
-      bid: -1,
-      vendor: getVendorPriceByItemHrid(hrid),
-    };
+    if (!isSafeItemHridKey(hrid)) {
+      continue;
+    }
+    const targetEntry = Object.prototype.hasOwnProperty.call(table, hrid)
+      ? table[hrid]
+      : {
+          ask: -1,
+          bid: -1,
+          vendor: getVendorPriceByItemHrid(hrid),
+        };
 
     if (Object.prototype.hasOwnProperty.call(overrideEntry, 'ask')) {
       targetEntry.ask = overrideEntry.ask;
@@ -420,12 +441,100 @@ export function normalizePricingSettings(raw) {
   };
 }
 
+// 官方估算市场价值透传载荷：{ [itemHrid]: { [强化等级字符串]: 正数价值 } }。
+// 数据来自主站 WS market_item_values_updated 消息（油猴脚本透传），
+// 仅保留键可解析为非负整数、值为正数的条目。
+export function normalizeMarketItemValues(raw) {
+  const source = isPlainObject(raw) ? raw : {};
+  const normalized = {};
+  for (const [rawHrid, rawByLevel] of Object.entries(source)) {
+    const itemHrid = String(rawHrid || '');
+    if (!itemHrid || !isSafeItemHridKey(itemHrid) || !isPlainObject(rawByLevel)) {
+      continue;
+    }
+    const levelMap = {};
+    for (const [rawLevel, rawValue] of Object.entries(rawByLevel)) {
+      const levelNumber = Number(rawLevel);
+      if (!Number.isFinite(levelNumber) || levelNumber < 0) {
+        continue;
+      }
+      const value = Math.max(0, toFiniteNumber(rawValue, 0));
+      if (value <= 0) {
+        continue;
+      }
+      levelMap[String(Math.floor(levelNumber))] = value;
+    }
+    if (Object.keys(levelMap).length > 0) {
+      normalized[itemHrid] = levelMap;
+    }
+  }
+  return normalized;
+}
+
+// 来源标注：{ [itemHrid]: 'official' | 'synthetic' }。与数值
+// marketItemValues 同生命周期随市场缓存持久化——重启后来源真值不丢，修复 A3
+// 「重启后合成中价被改标官方估算」的跨会话标签失真。白名单外条目（非法 hrid /
+// 非 official|synthetic 值）丢弃；
+// 旧缓存无该键时归一为 {}（向后兼容，行为与修复前一致）。
+export function normalizeMarketItemValueSources(raw) {
+  const source = isPlainObject(raw) ? raw : {};
+  const normalized = {};
+  for (const [rawHrid, rawSource] of Object.entries(source)) {
+    const itemHrid = String(rawHrid || '');
+    const value = String(rawSource || '');
+    if (!itemHrid || !isSafeItemHridKey(itemHrid) || (value !== 'official' && value !== 'synthetic')) {
+      continue;
+    }
+    normalized[itemHrid] = value;
+  }
+  return normalized;
+}
+
+// 等级级来源覆盖（【一般-5】，2026-09-02）：{ [itemHrid]: { [levelKey]: 'official' | 'synthetic' } }
+// 稀疏覆盖——仅混合物品（官方估算仅覆盖部分等级）的合成补齐等级入表（当前上游只产出
+// 'synthetic'，值域白名单保持与物品级一致以便未来扩展）。等级键与 normalizeMarketItemValues
+// 同语义归一化（可解析为非负整数的下取整字符串，非法键丢弃）。与 marketItemValueSources 同
+// 生命周期随市场缓存持久化/恢复/双清（A3 语义延伸到等级级）；白名单外条目（非法 hrid /
+// 非对象等级表 / 非法等级键 / 非法来源值 / 空等级表）丢弃，旧缓存无该键归一为 {}（向后兼容）。
+export function normalizeMarketItemValueSourcesByLevel(raw) {
+  const source = isPlainObject(raw) ? raw : {};
+  const normalized = {};
+  for (const [rawHrid, rawByLevel] of Object.entries(source)) {
+    const itemHrid = String(rawHrid || '');
+    if (!itemHrid || !isSafeItemHridKey(itemHrid) || !isPlainObject(rawByLevel)) {
+      continue;
+    }
+    const byLevel = {};
+    for (const [rawLevel, rawSource] of Object.entries(rawByLevel)) {
+      // 等级键与 normalizeMarketItemValues 同语义归一化（非负整数下取整字符串、
+      // 非法丢弃）：与 resolveOfficialEstimateSource 的 String(clampEnhancementLevel)
+      // 规范查询键对齐，非规范键（'1.0'/' 1 '）不得原样入库。
+      const levelNumber = Number(rawLevel);
+      if (!Number.isFinite(levelNumber) || levelNumber < 0) {
+        continue;
+      }
+      const value = String(rawSource || '');
+      if (value !== 'official' && value !== 'synthetic') {
+        continue;
+      }
+      byLevel[String(Math.floor(levelNumber))] = value;
+    }
+    if (Object.keys(byLevel).length > 0) {
+      normalized[itemHrid] = byLevel;
+    }
+  }
+  return normalized;
+}
+
 export function normalizeMarketCachePayload(raw) {
   const source = isPlainObject(raw) ? raw : {};
   return {
     basePriceTable: cloneBasePriceTable(source.basePriceTable),
     enhancementQuotesByItem: normalizeEnhancementQuotesByItem(source.enhancementQuotesByItem),
     enhancementLevelsByItem: normalizeEnhancementLevelsByItem(source.enhancementLevelsByItem),
+    marketItemValues: normalizeMarketItemValues(source.marketItemValues),
+    marketItemValueSources: normalizeMarketItemValueSources(source.marketItemValueSources),
+    marketItemValueSourcesByLevel: normalizeMarketItemValueSourcesByLevel(source.marketItemValueSourcesByLevel),
     marketTimestamp: Math.max(0, toFiniteNumber(source.marketTimestamp, 0)),
     lastFetchedAt: Math.max(0, toFiniteNumber(source.lastFetchedAt, 0)),
     sourceUrl: String(source.sourceUrl || ''),
@@ -471,6 +580,14 @@ export function createPricingState() {
     priceTable: applyPriceOverridesToTable(basePriceTable, settings.overrides),
     enhancementQuotesByItem: normalizeEnhancementQuotesByItem(cachedMarket?.enhancementQuotesByItem),
     enhancementLevelsByItem: normalizeEnhancementLevelsByItem(cachedMarket?.enhancementLevelsByItem),
+    marketItemValues: normalizeMarketItemValues(cachedMarket?.marketItemValues),
+    // 来源标注：与数值同生命周期随市场缓存恢复——重启后合成中价
+    // 标签不失真（A3 修复）。行情重置（resetPricesToVendorDefaultsForStore）双清
+    // 内存与缓存，不会复活旧标注；旧缓存无该键归一为 {}（历史行为，向后兼容）。
+    marketItemValueSources: normalizeMarketItemValueSources(cachedMarket?.marketItemValueSources),
+    // 等级级来源覆盖（【一般-5】）：与物品级标注同生命周期随市场缓存恢复——
+    // 重启后混合物品的合成补齐等级标签不失真；旧缓存无该键归一为 {}（向后兼容）。
+    marketItemValueSourcesByLevel: normalizeMarketItemValueSourcesByLevel(cachedMarket?.marketItemValueSourcesByLevel),
     marketTimestamp: Number(cachedMarket?.marketTimestamp || 0),
     lastFetchedAt: Number(cachedMarket?.lastFetchedAt || 0),
     sourceUrl: String(cachedMarket?.sourceUrl || ''),

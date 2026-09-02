@@ -1,12 +1,14 @@
 # initClientData 顶层 Key 参考
 
+> **变更注记(2026-09-02,资产分/Gear Score 变更复审)**:#8 `taskShopItemDetailMap`、#10 `shopItemDetailMap`、#28 `labyrinthShopItemDetailMap` 三个商店类 key 已随本次变更由 `scripts/extract-game-data.js` 导出至 `src/combatsimulator/data/*.json`(导出清单为目录扫描式,见 `scripts/game-data-targets.js`),并由 `src/services/assetScoreService.js`(L33-35 静态引入)经「商店兑换获取成本」渠道合并消费(三表并入 `STATIC_SHOP_ENTRY_LIST`,L217-221)。下文三键的概览状态与分析结论已同步修订,并新增状态「已导出/已接入」。此外,本变更的资产分成本法(`assetScoreService.js`)还读取多张已导出数据——直读原始表(#33 `actionDetailMap`、#45 `houseRoomDetailMap`、#47 `itemDetailMap`)或经构建索引(#43 经 `shared/guildBuffs.js` 的 `guildBuffDetailIndex`、#56 经 `shared/gameDataIndex.js`)——推翻了下文三处「未消费」断言(#43 `levelCosts.guildTokenCost`/`creditCosts`、#45 `usableInActionTypeMap`、#47 `guildCreditConversions`)并新增了若干消费方,均已逐条加注「修订(2026-09-02)」。其余结论仍以原文为准。
+
 本文档记录 `init_client_data` 载荷中的**全部顶层 key**,并逐个评估它们对模拟器是否有用。分为两部分:
 
-- **未导出 key(29 个,编号 1-29)**:尚未被 `scripts/extract-game-data.js` 解析,已完成分析,全部判定无用。
-- **已导出 key(27 个,编号 30-56)**:已被解析并导出到 `src/combatsimulator/data/*.json`,已完成逐个分析(字段消费/冗余),状态均为「已导出/已分析」。
+- **未导出 key(29 个,编号 1-29)**:指本基准分析(2026-08-17)时尚未被 `scripts/extract-game-data.js` 解析的 key,已完成分析;除 #8/#10/#28 三个商店类 key 已于 2026-09-02 转为「已导出/已接入」(见文首注记)外,其余 26 个均判定无用。
+- **已导出 key(27 个,编号 30-56)**:已被解析并导出到 `src/combatsimulator/data/*.json`,已完成逐个分析(字段消费/冗余),状态均为「已导出/已分析」;2026-09-02 起 #8/#10/#28 亦已导出并接入,实际已导出 key 合计 30 个(见文首注记)。
 
 - 源文件:`tmp/initClientData.txt`(游戏版本 `v1.20260814.0`,2026-08-14 发布)
-- 分析状态列用于标记每个 key 的评估结论:待分析 / 有用(已接入)/ 无用(暂不接入)/ 已导出(已分析)。
+- 分析状态列用于标记每个 key 的评估结论:待分析 / 有用(已接入)/ 无用(暂不接入)/ 已导出(已分析)/ 已导出/已接入(2026-09-02 起新增,专指 #8/#10/#28:原判无用,现已导出并被模拟器消费)。
 
 ## 概览（未导出 key,编号 1-29）
 
@@ -19,9 +21,9 @@
 | 5   | `gameModeDetailMap`               | object | 3      | 无用（不接入） | 游戏模式定义(标准/Ironcow) |
 | 6   | `marketplaceLimits`               | object | 8 字段 | 无用（不接入） | 市场引擎交易限制参数       |
 | 7   | `randomTaskTypeDetailMap`         | object | 9      | 无用（不接入） | 随机任务类型定义           |
-| 8   | `taskShopItemDetailMap`           | object | 4      | 无用（不接入） | 任务商店兑换物品           |
+| 8   | `taskShopItemDetailMap`           | object | 4      | 已导出/已接入  | 任务商店兑换物品           |
 | 9   | `shopCategoryDetailMap`           | object | 2      | 无用（不接入） | 商店分类                   |
-| 10  | `shopItemDetailMap`               | object | 62     | 无用（不接入） | 商店物品及 token 兑换价    |
+| 10  | `shopItemDetailMap`               | object | 62     | 已导出/已接入  | 商店物品及 token 兑换价    |
 | 11  | `actionTypeDetailMap`             | object | 13     | 无用（不接入） | 动作类型定义               |
 | 12  | `actionCategoryDetailMap`         | object | 65     | 无用（不接入） | 动作分类定义               |
 | 13  | `purchaseBundleDetailMap`         | object | 14     | 无用（不接入） | 付费充值包(牛铃/MooPass)   |
@@ -39,7 +41,7 @@
 | 25  | `guildBuildingDetailMap`          | object | 23     | 无用（不接入） | 公会建筑等级 buff          |
 | 26  | `leaderboardTypeDetailMap`        | object | 5      | 无用（不接入） | 排行榜类型                 |
 | 27  | `leaderboardCategoryDetailMap`    | object | 30     | 无用（不接入） | 排行榜分类                 |
-| 28  | `labyrinthShopItemDetailMap`      | object | 21     | 无用（不接入） | 迷宫商店兑换物品           |
+| 28  | `labyrinthShopItemDetailMap`      | object | 21     | 已导出/已接入  | 迷宫商店兑换物品           |
 | 29  | `keys`                            | array  | 101    | 无用（不接入） | JS 关键字/API 注入列表     |
 
 ## 已导出的 Key（27 个，状态:已导出/已分析）
@@ -145,6 +147,7 @@
 - 字段:`hrid`、`name`、`itemHrid`、`cost`(task_token 30/50 个)、`sortIndex`
 - 说明:任务商店物品(用 Task Token 兑换宝箱/水晶)。
 - **分析结论(2026-08-17):无用,不接入。** 涉及的物品(宝箱、task_token、task_crystal)均已存在于已导出的 `itemDetailMap.json`,宝箱掉落内容已由 `openableLootDropMap.json` 覆盖(其中 large/medium/small 三种 crate 与 cache 都在),宝箱期望值计算使用 `marketPriceService` 硬编码的 `TREASURE_CHEST_HRIDS`。本 key 独有的信息仅是任务商店兑换价(成本关系),模拟器不消费任务商店。
+- **修订(2026-09-02):已导出/已接入。** 上一行结论「模拟器不消费任务商店」已失效:本 key 已由 `scripts/extract-game-data.js` 导出至 `src/combatsimulator/data/taskShopItemDetailMap.json`,被 `src/services/assetScoreService.js` 静态引入并入三表合并的 `STATIC_SHOP_ENTRY_LIST`,任务商店兑换价经 `computeShopCurrencyValue` 折算,作为资产分「商店兑换获取成本」渠道参与计价。
 
 ### 9. `shopCategoryDetailMap`
 
@@ -161,6 +164,7 @@
 - 字段:`hrid`、`category`、`itemHrid`、`costs`(token 兑换数组)、`sortIndex`
 - 说明:商店物品明细(地下城/通用商店用特殊 token 兑换)。
 - **分析结论(2026-08-17):无用,不接入。** 涉及的物品与 token 均已存在于已导出的 `itemDetailMap.json`,token 作为掉落物也在 `openableLootDropMap.json` 中;模拟器物品估值使用商店售价价(`sellPrice`/`itemVendorPriceByHrid` 作为 vendor floor),不依赖"用多少 token 兑换"的采购成本。核心代码对 `shop_item`/`/shop_categories/` 零引用(UI 分类名走翻译资源)。
+- **修订(2026-09-02):已导出/已接入。** 上一行结论「核心代码对 `shop_item` 零引用」已失效:本 key 已导出至 `src/combatsimulator/data/shopItemDetailMap.json`,被 `assetScoreService.js` 静态引入并入 `STATIC_SHOP_ENTRY_LIST`,`costs` 兑换成本经 `normalizeShopCosts`/`computeShopCurrencyValue` 参与获取成本。`/shop_categories/` 断言部分仍成立:分类名显示仍走翻译资源,`category` 字段仅随条目落地、未被代码单独消费。
 
 ### 11. `actionTypeDetailMap`
 
@@ -305,6 +309,7 @@
 - 字段:`hrid`、`name`、`itemHrid`、`cost`(labyrinth_token)、`outputCount`、`sortIndex`(共 6 个)
 - 说明:迷宫商店物品(用迷宫代币换披风等)。
 - **分析结论(2026-08-17):无用,不接入。** 类似 shop/taskShop:涉及的物品(artificer_cape 等)与 `labyrinth_token`/`labyrinth_essence` 均已由已导出的 `itemDetailMap.json` 覆盖,`labyrinth_essence` 作为掉落物也在 `openableLootDropMap.json` 中;模拟器消费物品(含迷宫相关)走 `labyrinthCrateDetailMap`/`itemDetailMap`,`src/` 对 `labyrinth_shop` 零引用。本 key 独有的商店兑换价不被消费。
+- **修订(2026-09-02):已导出/已接入。** 上一行结论「`src/` 对 `labyrinth_shop` 零引用」「本 key 独有的商店兑换价不被消费」均已失效:本 key 已导出至 `src/combatsimulator/data/labyrinthShopItemDetailMap.json`,被 `assetScoreService.js` 静态引入并入 `STATIC_SHOP_ENTRY_LIST`,迷宫代币兑换价(含 `outputCount` 一换多)经 `normalizeShopRewards`/`computeShopCurrencyValue` 参与资产分获取成本。
 
 ### 29. `keys`
 
@@ -379,6 +384,7 @@
   - `maxDifficulty` 经 `actionDetailIndex`/zone options 被 `simulationDomain.js`、`simulatorStore.js`、`importExportMapper.js` 消费,用于批量目标生成、难度上限和导入值钳制
   - `services/importExportMapper.js:1046`:`type === "/action_types/combat"`(档案区校验)
   - `shared/gameDataIndex.js` + UI:`name`(名称显示)、`actionNameByHrid`
+  - 本变更(2026-09-02)`assetScoreService.js` 成本法在 build 投影之外直接读原始表:`getActionOutputIndex()` 取 `outputItems`(L201-202)、`computeAcquisitionInputPrice` 取 `upgradeItemHrid`/`inputItems`(L393/L402),并扫描配方按 `upgradeItemHrid` 匹配基件(L660-669),重建强化装备「制作获取成本」;
 - **未消费字段**:`maxPartySize`。战斗掉落仍由怪物定义提供,但 action 级配方、经验与掉落字段已由生活技能规划器消费。
 - **复核记录(2026-08-17):隐患已修复。** 官方 59 个战斗区均有 `battlesPerBoss`:10 个 boss 区为 10,49 个非 boss 区为 0 且 `bossSpawns=null`。原 `zone.js` 把该字段强制写为 10:对 boss 区无功能影响(官方值本就是 10);对非 boss 区虽因 `bossSpawns=null` 不会改变遭遇逻辑,却会把模块级共享 JSON 缓存中的官方值从 0 改成 10。现已删除覆盖语句,并对 `fightInfo` 做顶层浅拷贝以隔离 Zone 实例与模块缓存;回归测试保护非 boss 区值 0、boss 区值 10 以及多实例互不污染。
 - 其余硬编码(`/action_types/combat`、`/action_categories/combat/dungeons`)为领域常量,合理。
@@ -514,6 +520,7 @@
 - **分析结论(2026-08-17):核心消费。** `shared/guildBuffs.js`(第 1 行直接 import)消费 hrid、isCombat(过滤 combatGuildBuffHrids,判定是核心绑定:`normalizeGuildBuffLevels` 只归一 10 个中的 5 个 combat)、sortIndex(对 5 个战斗公会 Buff 排序)、shrineHrid(经 guildShrineDetailMap.maxLevel 定级)、levelCosts(取 max level 作为该 buff 等级上限);
 - buffs 数组(每条含 typeHrid/ratioBoost/ratioBoostLevelBonus/flatBoost/flatBoostLevelBonus,圣坛每级加成模板)经 `simulationExtraBuffs`/guildBuff 应用,是数值核心;地牢/迷宫缩放相关见 monster.js。
 - 未消费:`levelCosts` 各等级中的 guildTokenCost/creditCosts 成本值(当前只读取等级键来确定等级上限,不计算公会升级成本)。
+- **修订(2026-09-02)**:上一行「不计算公会升级成本」结论已失效:本变更 `assetScoreService.js` 的「战斗神龛」分项计算圣坛已投入,`sumGuildBuffInvestment` 经 `shared/guildBuffs.js` 构建的 `guildBuffDetailIndex` 逐级读取 `levelCosts` 的 `creditCosts`(L1203-1217)与 `guildTokenCost`(L1222-1229,令牌按兑换信用点最大路线价值计入),经获取成本链折算金币。
 - 修复优先级:低
 
 ### 44. `guildShrineDetailMap`
@@ -538,6 +545,7 @@
   - `simulationDomain.js` buildHouseRoomUpgradeCostPreview:消费 `upgradeCostsMap`(每级材料成本)做市场价值预估。
 - **复核记录(2026-08-17):文件归属修正。** `buildHouseRoomUpgradeCostPreview` 实际定义在 `services/queueUpgradeCost.js:514`(非 `simulationDomain.js`);`simulationDomain.js` 对 houseRoom 零引用(grep `houseRoom`/`upgradeCostsMap` 在该文件 0 匹配)。`queueUpgradeCost.js:693` 调用它做升级成本预估。功能描述无误,仅文件路径需修正。消费链路(17 条 `houseRoomDetailMap` + `upgradeCostsMap`)与数据驱动性质确认无误。
 - 未消费:`skillHrid`(房间关联技能)、`usableInActionTypeMap`(actionBuffs 的用途白名单,模拟器对 combat 无差别应用)、name 兜底(UI 优先走翻译 `houseRoomNames`)。
+- **修订(2026-09-02)**:上一行「`usableInActionTypeMap` 未消费」已失效:本变更 `assetScoreService.js` 的「战斗房屋」分项以 `isCombatHouseRoomDetail`(L1300)读取 `usableInActionTypeMap['/action_types/combat']` 作为战斗房间唯一过滤源——计算侧过滤(L1340)后逐房间计投入(L1347),签名侧以同谓词覆盖(L1275);生成索引已精简该字段,故直读原始表(L21-23 注释)。`skillHrid` 与 name 兜底结论不变。
 - 修复优先级:低
 
 ### 46. `itemCategoryDetailMap`
@@ -564,6 +572,7 @@
   - 强化链路:enhancementSimulator.js 消费 isTradable(市场货源判定)、protectionItemHrids(保护物品白名单,经 build 收集)、baseItemHrids(合成基材)、openable.openKeyItemHrid(开箱钥匙成本);enhancementStore 消费 protectionItemHrids/baseItemHrids(UI);
   - 战斗卷轴:combatScrolls.js 消费 scrollDetail.personalBuffTypeHrid(12 个 scroll 物品)。
 - 未消费/说明:`description`、`alchemyDetail`(炼金分解/转化,918 条中仅 build 提取 decomposeItems 供强化,transmuteDropTable/成功率未建模)、`guildCreditConversions`(公会信用点兑换)、`isUncollectable`(仅 1 条 bag_of_10_cowbells)、`openKeyItemHrid` 仅强化链路用(build 593 与 enhancementSimulator)。
+- **修订(2026-09-02)**:上一行「`guildCreditConversions` 未消费」已失效:本变更 `assetScoreService.js` 为神龛等不可交易资产的「获取成本」兜底直读原始表的 `guildCreditConversions`(全表遍历 L1087-1089、guild_token 专项 L1139-1140;生成索引已精简该字段);另 `isTradable` 新增其交易门控读取(L564)、`abilityBookInfoByAbilityHrid` 消费方新增 `assetScoreService`(技能书分项,L1365/L1429)。其余字段结论不变。
 - 修复优先级:低
 - **复核记录(2026-08-17):无需修复,补充说明。** 消费链路确认无误(itemDetailMap 957 条 + build 投影全链路)。补充原文未提及的市场硬编码:`marketPriceService.js` 的 `getMarketSaleFeeRate`(bag_of_10_cowbells 18%、其他 5%,第 15-21 行)与 `TREASURE_CHEST_HRIDS`(宝箱 hrid 列表,第 46 行,用于 `computeChestExpectedValue` 市场估值)。这些是**费率/估值链路**硬编码,不在 `itemDetailMap` 数据中(官方数据无费率字段),属合理自建;`BAG_OF_10_COWBELLS_HRID` 常量与官方 `itemDetailMap` 中 `/items/bag_of_10_cowbells`(isUncollectable=true,唯一 1 条)对应。不构成数据漂移风险。
 
@@ -655,6 +664,7 @@
 - 说明:等级经验阈值表(0-200 级,索引=等级,末值 1000 亿)。
 - 分析状态:已导出/已分析
 - **分析结论(2026-08-17):核心消费。** 两处:build 脚本投影为 `levelExperienceTable` → gameDataIndex(40 行)→ `skillingPlanner.js`(SKILLING_MAX_LEVEL = length-1 = 200、skillLevelForExperience 经验→等级转换、升级阈值计算)与 `levelExperience.js`(第 1 行直接 import,战斗经验等级换算)、`simulatorPricingActions`(bundled 表注入 window.jigsLevelExperienceTable 供价格参考,MulitResultsPage/QueuePage 读取展示)。
+- **修订(2026-09-02)**:消费方新增 `assetScoreService.js`(L19 直接 import):「技能书」分项按 MWITools `calculateAbilityScore` 口径,以等级累计经验折算所需技能书数量并计价(L1424-1432)。
 - 修复优先级:低
 
 ## 使用说明

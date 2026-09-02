@@ -6,13 +6,20 @@ import combatMonsterDetailMap from '../../combatsimulator/data/combatMonsterDeta
 import levelExperienceTable from '../../combatsimulator/data/levelExperienceTable.json';
 import houseRoomDetailMap from '../../combatsimulator/data/houseRoomDetailMap.json';
 import itemDetailMap from '../../combatsimulator/data/itemDetailMap.json';
-import { combatGuildBuffDetails } from '../../shared/guildBuffs.js';
+import { combatGuildBuffDetails, combatGuildBuffHrids } from '../../shared/guildBuffs.js';
 import {
   createMainSiteCurrentCharacterFixture,
   createMainSiteShareProfileFixture,
 } from '../../services/__tests__/fixtures/mainSiteShareProfileFixture.js';
 import workerClient from '../../services/workerClient.js';
 import marketHistoryService from '../../services/marketHistoryService.js';
+import {
+  ASSET_SCORE_SOURCES,
+  computeAssetScoreConfigSignature,
+  computePlayerAssetScore,
+} from '../../services/assetScoreService.js';
+import { exportSoloConfig } from '../../services/importExportMapper.js';
+import { createEmptyPlayerConfig } from '../../shared/playerConfig.js';
 import { useSimulatorStore } from '../simulatorStore.js';
 import { PHILOSOPHERS_MIRROR_ITEM_HRID } from '../../services/queueUpgradeCost.js';
 
@@ -395,6 +402,265 @@ describe('simulatorStore', () => {
     expect(simulator.simulationSettings.comExp).toBe(17);
     expect(simulator.simulationSettings.comDrop).toBe(18);
     expect(simulator.simulationSettings.enableHpMpVisualization).toBe(false);
+  });
+
+  it('refreshAssetScores：行情不可用时保留与配置一致的快照，配置变化后重算', () => {
+    const simulator = useSimulatorStore();
+    // 行情完全不可用（从未抓取且无透传值）。
+    simulator.pricing.lastFetchedAt = 0;
+    simulator.pricing.enhancementQuotesByItem = {};
+    simulator.pricing.marketItemValues = {};
+
+    const vendorPricedEntry = Object.entries(itemDetailMap).find(([, item]) => Number(item?.sellPrice || 0) > 0);
+    expect(vendorPricedEntry).toBeTruthy();
+    const vendorPricedHrid = String(vendorPricedEntry[0]);
+
+    const player = simulator.players.find((entry) => String(entry.id) === String(simulator.activePlayerId));
+    player.equipment.weapon = { itemHrid: vendorPricedHrid, enhancementLevel: 0 };
+    simulator.refreshAssetScores();
+    const initial = player.assetScore;
+    expect(initial).not.toBeNull();
+    expect(initial.configSignature).toBe(computeAssetScoreConfigSignature(player));
+
+    // 配置未变 + 行情仍不可用 → 保留快照（不写回，引用不变）。
+    simulator.refreshAssetScores();
+    expect(player.assetScore).toBe(initial);
+
+    // 配置变化（强化等级）→ 快照与配置脱节 → 重算并写回携带新签名的快照。
+    player.equipment.weapon.enhancementLevel = 1;
+    simulator.refreshAssetScores();
+    expect(player.assetScore).not.toBe(initial);
+    expect(player.assetScore.configSignature).toBe(computeAssetScoreConfigSignature(player));
+    expect(player.assetScore.items.equipment[0].enhancementLevel).toBe(1);
+
+    // 旧格式快照（无签名，如旧版本导出的 JSON）→ 向后兼容：维持旧兜底行为保留。
+    player.assetScore = { ...initial, configSignature: undefined };
+    const legacyHeld = player.assetScore;
+    expect(legacyHeld.configSignature).toBeUndefined();
+    player.equipment.weapon.enhancementLevel = 2;
+    simulator.refreshAssetScores();
+    expect(player.assetScore).toBe(legacyHeld);
+  });
+
+  it('refreshAssetScores：导入携带快照（无行情）端到端保留，改配置后重算', () => {
+    const simulator = useSimulatorStore();
+
+    // —— 导出方：内存配置（含 0 级房间/全 0 神龛/空技能槽的真实形状）算出快照后导出。
+    const vendorPricedEntry = Object.entries(itemDetailMap).find(([, item]) => Number(item?.sellPrice || 0) > 0);
+    expect(vendorPricedEntry).toBeTruthy();
+    const combatRoomEntry = Object.values(houseRoomDetailMap).find(
+      (room) => room?.usableInActionTypeMap?.['/action_types/combat'] === true && String(room?.hrid || ''),
+    );
+    expect(combatRoomEntry).toBeTruthy();
+
+    const exportPlayer = createEmptyPlayerConfig(1);
+    exportPlayer.equipment.weapon = { itemHrid: String(vendorPricedEntry[0]), enhancementLevel: 0 };
+    exportPlayer.houseRooms[combatRoomEntry.hrid] = 5;
+    exportPlayer.guildBuffs[combatGuildBuffHrids[0]] = 2;
+    exportPlayer.abilities[0] = { abilityHrid: '/abilities/test_ability', level: 40 };
+    const snapshot = computePlayerAssetScore(exportPlayer, {
+      priceTable: {},
+      enhancementQuotesByItem: {},
+      marketItemValues: {},
+      lastFetchedAt: Date.now(),
+    });
+    expect(snapshot).not.toBeNull();
+    exportPlayer.assetScore = snapshot;
+    const soloText = exportSoloConfig(exportPlayer, {});
+
+    // —— 接收方：行情完全不可用导入 → refresh → 快照保留（签名跨 sanitize 无漂移）。
+    simulator.pricing.lastFetchedAt = 0;
+    simulator.pricing.enhancementQuotesByItem = {};
+    simulator.pricing.marketItemValues = {};
+    simulator.importSoloConfig(soloText, '1');
+    const importedPlayer = simulator.players.find((entry) => String(entry.id) === '1');
+    simulator.refreshAssetScores(['1']);
+    expect(importedPlayer.assetScore).not.toBeNull();
+    // 命门断言：导入后配置的签名与快照签名一致（跨 sanitize 无漂移）→ 守卫保留。
+    expect(importedPlayer.assetScore.configSignature).toBe(computeAssetScoreConfigSignature(importedPlayer));
+    expect(importedPlayer.assetScore.totalGold).toBe(snapshot.totalGold);
+
+    // —— 接收方改配置 → 快照与配置脱节 → 必然写回带新签名的重算快照
+    //（assetScoreEquals 比较含 configSignature 的完整载荷，签名不同即写回，即使数值巧合相同）。
+    const heldSnapshot = importedPlayer.assetScore;
+    importedPlayer.equipment.weapon.enhancementLevel = 2;
+    simulator.refreshAssetScores(['1']);
+    expect(importedPlayer.assetScore).not.toBe(heldSnapshot);
+    expect(importedPlayer.assetScore.configSignature).toBe(computeAssetScoreConfigSignature(importedPlayer));
+    expect(importedPlayer.assetScore.items.equipment[0].enhancementLevel).toBe(2);
+  });
+
+  // B4（2026-09-01）：targets 过滤的「未列入者被跳过」此前零覆盖——若回归（如漏
+  // String 归一、Set 成员判定反转），导出前定点刷新（exportSoloConfig 只传单 id）
+  // 会悄悄放大为全量重算，或反过来对未列入者漏算。
+  it('refreshAssetScores(playerIds)：只刷新列入 id 的玩家，未列入者快照不被触碰', () => {
+    const simulator = useSimulatorStore();
+
+    // 无行情：列入者 '1' 走重算分支（快照从无到有）；未列入者 '2' 携带签名脱节的
+    // 快照——若 targets 过滤失效，重算 + 等值守卫（完整载荷含 configSignature 比较）
+    // 必然写回新引用，差分断言即可捕捉。
+    simulator.pricing.lastFetchedAt = 0;
+    simulator.pricing.marketItemValues = {};
+    simulator.pricing.enhancementQuotesByItem = {};
+
+    const skippedPlayer = simulator.players.find((entry) => String(entry.id) === '2');
+    expect(skippedPlayer).toBeTruthy();
+    // 两玩家各装一件有 vendor 卖店价的武器：空配置玩家重算会返回 null 快照
+    //（无可计价资产），武器保证重算产物非空、签名断言有效。
+    const vendorPricedEntry = Object.entries(itemDetailMap).find(([, item]) => Number(item?.sellPrice || 0) > 0);
+    expect(vendorPricedEntry).toBeTruthy();
+    skippedPlayer.equipment.weapon = { itemHrid: String(vendorPricedEntry[0]), enhancementLevel: 0 };
+    const staleSnapshot = {
+      version: 1,
+      total: 1,
+      totalGold: 1,
+      sections: { equipment: 1, house: 0, abilities: 0, shrine: 0 },
+      items: { equipment: [], houseRooms: [], abilities: [], shrine: [] },
+      computedAt: 0,
+      configSignature: 'stale-signature',
+    };
+    skippedPlayer.assetScore = staleSnapshot;
+    // store 为 reactive：写入后取回代理引用做同一性比较（Vue 对同一 raw 对象恒返回
+    // 同一代理，引用语义不受影响）。
+    const staleRef = skippedPlayer.assetScore;
+
+    const refreshedPlayer = simulator.players.find((entry) => String(entry.id) === '1');
+    expect(refreshedPlayer).toBeTruthy();
+    refreshedPlayer.equipment.weapon = { itemHrid: String(vendorPricedEntry[0]), enhancementLevel: 0 };
+
+    simulator.refreshAssetScores(['1']);
+
+    expect(refreshedPlayer.assetScore).not.toBeNull();
+    expect(refreshedPlayer.assetScore.configSignature).toBe(computeAssetScoreConfigSignature(refreshedPlayer));
+    expect(skippedPlayer.assetScore).toBe(staleRef);
+
+    // 数字 id 传入：Set 构造的 String 归一保证与字符串玩家 id 匹配。
+    simulator.refreshAssetScores([2]);
+    expect(skippedPlayer.assetScore).not.toBe(staleRef);
+    expect(skippedPlayer.assetScore.configSignature).toBe(computeAssetScoreConfigSignature(skippedPlayer));
+  });
+
+  it('importSoloConfig：native 载荷携带不同 id 时目标槽位身份保持、资产分即时刷新生效', () => {
+    const simulator = useSimulatorStore();
+
+    // 接收方行情可用：官方估算 ≠ vendor 价，与导出方快照（vendor 口径）可区分，
+    // 用于锚定「导入后即时按接收方行情重算」而非沿用载荷携带的跨会话快照。
+    // 夹具与既有 refreshAssetScores 用例同款：排除公会信用点兑换目标。
+    const guildCreditTargets = new Set(
+      Object.values(itemDetailMap).flatMap((item) =>
+        (Array.isArray(item?.guildCreditConversions) ? item.guildCreditConversions : [])
+          .map((conversion) => String(conversion?.creditItemHrid || ''))
+          .filter(Boolean),
+      ),
+    );
+    const vendorPricedEntry = Object.entries(itemDetailMap).find(
+      ([hrid, item]) => Number(item?.sellPrice || 0) > 0 && !guildCreditTargets.has(String(hrid)),
+    );
+    expect(vendorPricedEntry).toBeTruthy();
+    const weaponHrid = String(vendorPricedEntry[0]);
+    const vendorPrice = Math.round(Number(vendorPricedEntry[1].sellPrice));
+    const marketValue = vendorPrice * 10 + 7;
+    simulator.pricing.lastFetchedAt = Date.now();
+    simulator.pricing.marketItemValues = { [weaponHrid]: { 0: marketValue } };
+
+    // 导出方：id '9'（接收方不存在），同一武器按空行情（vendor 兜底）算出快照后导出。
+    const exportPlayer = createEmptyPlayerConfig(9);
+    exportPlayer.equipment.weapon = { itemHrid: weaponHrid, enhancementLevel: 0 };
+    exportPlayer.assetScore = computePlayerAssetScore(exportPlayer, {
+      priceTable: {},
+      enhancementQuotesByItem: {},
+      marketItemValues: {},
+      lastFetchedAt: Date.now(),
+    });
+    expect(exportPlayer.assetScore).not.toBeNull();
+    expect(exportPlayer.assetScore.items.equipment[0]).toMatchObject({
+      itemHrid: weaponHrid,
+      value: vendorPrice,
+      source: ASSET_SCORE_SOURCES.VENDOR,
+    });
+    const soloText = exportSoloConfig(exportPlayer, {});
+
+    const result = simulator.importSoloConfig(soloText, '1');
+
+    // 身份归一：返回玩家与列表内玩家 id 均为目标 id；无来源 id 残留、无重复 id。
+    expect(result.player.id).toBe('1');
+    const importedPlayer = simulator.players.find((entry) => String(entry.id) === '1');
+    expect(importedPlayer).toBeTruthy();
+    expect(simulator.players.some((entry) => String(entry.id) === '9')).toBe(false);
+    expect(new Set(simulator.players.map((entry) => String(entry.id))).size).toBe(simulator.players.length);
+
+    // 即时刷新生效：导入返回后未手动 refresh、无 watch 兜底，快照已按接收方行情重算
+    //（官方估算口径 + 行情值）——若 id 漂移回归，此处仍是载荷携带的 vendor 快照。
+    expect(importedPlayer.assetScore).not.toBeNull();
+    expect(importedPlayer.assetScore.items.equipment[0]).toMatchObject({
+      itemHrid: weaponHrid,
+      value: marketValue,
+      source: ASSET_SCORE_SOURCES.OFFICIAL_ESTIMATE,
+    });
+
+    // 重复 id 防护：载荷 id 撞上现有玩家（'2'）时，'2' 不被顶替污染，导入者仍落在目标槽位。
+    const player2Before = simulator.players.find((entry) => String(entry.id) === '2');
+    expect(player2Before).toBeTruthy();
+    const collisionPlayer = createEmptyPlayerConfig(2);
+    collisionPlayer.equipment.weapon = { itemHrid: weaponHrid, enhancementLevel: 0 };
+    simulator.importSoloConfig(exportSoloConfig(collisionPlayer, {}), '1');
+    expect(new Set(simulator.players.map((entry) => String(entry.id))).size).toBe(simulator.players.length);
+    const player2After = simulator.players.find((entry) => String(entry.id) === '2');
+    expect(player2After).toBe(player2Before);
+    expect(player2After.equipment.weapon.itemHrid).toBe('');
+  });
+
+  it('refreshAssetScores：行情到达后重算覆盖 vendor 初算快照，等值守卫只挡同值', () => {
+    const simulator = useSimulatorStore();
+    // 行情不可用（从未抓取且无透传值）→ 初算走降级链 vendor 兜底。
+    simulator.pricing.lastFetchedAt = 0;
+    simulator.pricing.enhancementQuotesByItem = {};
+    simulator.pricing.marketItemValues = {};
+
+    // 排除公会信用点兑换目标（其取价链可能走 acquisition 而非 vendor），保证初算来源可精确断言。
+    const guildCreditTargets = new Set(
+      Object.values(itemDetailMap).flatMap((item) =>
+        (Array.isArray(item?.guildCreditConversions) ? item.guildCreditConversions : [])
+          .map((conversion) => String(conversion?.creditItemHrid || ''))
+          .filter(Boolean),
+      ),
+    );
+    const vendorPricedEntry = Object.entries(itemDetailMap).find(
+      ([hrid, item]) => Number(item?.sellPrice || 0) > 0 && !guildCreditTargets.has(String(hrid)),
+    );
+    expect(vendorPricedEntry).toBeTruthy();
+    const weaponHrid = String(vendorPricedEntry[0]);
+    const vendorPrice = Math.round(Number(vendorPricedEntry[1].sellPrice));
+
+    const player = simulator.players.find((entry) => String(entry.id) === String(simulator.activePlayerId));
+    player.equipment.weapon = { itemHrid: weaponHrid, enhancementLevel: 0 };
+    simulator.refreshAssetScores();
+    const vendorSnapshot = player.assetScore;
+    expect(vendorSnapshot).not.toBeNull();
+    expect(vendorSnapshot.items.equipment[0]).toMatchObject({
+      itemHrid: weaponHrid,
+      value: vendorPrice,
+      source: ASSET_SCORE_SOURCES.VENDOR,
+    });
+
+    // 行情到达（官方估算 ≠ vendor 价）→ pricingReady 恒重算，等值守卫不挡「应更新的不同值」→ 覆盖写回。
+    const marketValue = vendorPrice * 10 + 7;
+    simulator.pricing.lastFetchedAt = Date.now();
+    simulator.pricing.marketItemValues = { [weaponHrid]: { 0: marketValue } };
+    simulator.refreshAssetScores();
+    const marketSnapshot = player.assetScore;
+    expect(marketSnapshot).not.toBe(vendorSnapshot);
+    expect(marketSnapshot.items.equipment[0]).toMatchObject({
+      itemHrid: weaponHrid,
+      value: marketValue,
+      source: ASSET_SCORE_SOURCES.OFFICIAL_ESTIMATE,
+    });
+    expect(marketSnapshot.totalGold).not.toBe(vendorSnapshot.totalGold);
+
+    // 同值重算（行情未再变化）→ 等值守卫挡住同值 → 引用不变（不写回——App.vue 资产分
+    // watch 源只跟踪签名与行情引用，快照写回不构成触发）。
+    simulator.refreshAssetScores();
+    expect(player.assetScore).toBe(marketSnapshot);
   });
 
   it('sorts food options by restore type and duration', () => {
@@ -3564,6 +3830,286 @@ describe('simulatorStore', () => {
     expect(simulator.simulationSettings.zoneHrid).toBe(zoneActionHrid);
     expect(simulator.simulationSettings.difficultyTier).toBe(1);
     expect(simulator.simulationSettings.simulationTimeHours).toBe(48);
+  });
+
+  it('#18：混合载荷逐件来源标注——syntheticItemHrids 命中的 hrid 标合成中价，其余标官方', () => {
+    const simulator = useSimulatorStore();
+    const payload = {
+      ...createMainSiteCurrentCharacterFixture({ characterName: 'Mixed Source Hero' }),
+      marketItemValues: { '/items/foo': { 0: 100 }, '/items/bar': { 0: 200 }, '/items/baz': { 1: 300 } },
+      marketEstimateSource: 'official',
+      syntheticItemHrids: ['/items/bar'],
+    };
+    const result = simulator.importSoloConfig(JSON.stringify(payload), '1');
+    expect(result.marketItemValues).toEqual(payload.marketItemValues);
+    expect(simulator.pricing.marketItemValues['/items/foo']['0']).toBe(100);
+    expect(simulator.pricing.marketItemValueSources).toEqual({
+      '/items/foo': 'official',
+      '/items/bar': 'synthetic',
+      '/items/baz': 'official',
+    });
+  });
+
+  it('【一般-5】混合物品等级级来源标注——syntheticLevelKeys 命中等级建覆盖，二次导入清理陈旧覆盖', () => {
+    const simulator = useSimulatorStore();
+    simulator.pricing.lastFetchedAt = Date.now();
+    const buildPayload = (extra = {}) => ({
+      ...createMainSiteCurrentCharacterFixture({ characterName: 'Level Source Hero' }),
+      marketItemValues: { '/items/foo': { 0: 100, 1: 200 } },
+      marketEstimateSource: 'official',
+      ...extra,
+    });
+
+    // 混合物品：等级 0 官方、等级 1 由合成中价补齐（syntheticLevelKeys 清单，含非规范
+    // 键 '1.0'——归一化为 '1' 后才与消费端规范查询键对齐）。
+    // 物品级标注保持 official（默认来源），等级级覆盖只记合成补齐的等级。
+    simulator.importSoloConfig(JSON.stringify(buildPayload({ syntheticLevelKeys: { '/items/foo': ['1.0'] } })), '1');
+    expect(simulator.pricing.marketItemValueSources).toEqual({ '/items/foo': 'official' });
+    expect(simulator.pricing.marketItemValueSourcesByLevel).toEqual({
+      '/items/foo': { 1: 'synthetic' },
+    });
+
+    // 下次载荷不再携带清单（物品转纯官方）：本次载荷覆盖的 hrid 陈旧等级覆盖被清理
+    //（不残留——否则转纯官方后的等级 1 仍被误标合成中价）。
+    simulator.importSoloConfig(JSON.stringify(buildPayload()), '2');
+    expect(simulator.pricing.marketItemValueSources).toEqual({ '/items/foo': 'official' });
+    expect(simulator.pricing.marketItemValueSourcesByLevel).toEqual({});
+  });
+
+  it('【一般-5】等级级来源标注随市场缓存持久化——重启后合成补齐等级标签不翻转', () => {
+    const simulator = useSimulatorStore();
+    simulator.pricing.lastFetchedAt = Date.now();
+    const payload = {
+      ...createMainSiteCurrentCharacterFixture({ characterName: 'Level Persist Hero' }),
+      marketItemValues: { '/items/foo': { 0: 100 } },
+      marketEstimateSource: 'official',
+      syntheticLevelKeys: { '/items/foo': ['0'] },
+    };
+    simulator.importSoloConfig(JSON.stringify(payload), '1');
+    expect(simulator.pricing.marketItemValueSources).toEqual({ '/items/foo': 'official' });
+    expect(simulator.pricing.marketItemValueSourcesByLevel).toEqual({ '/items/foo': { 0: 'synthetic' } });
+
+    // 玩家装备 foo（0 级）→ 行级标签 = synthetic_mid（等级级覆盖优先于物品级 official）。
+    const playerA = simulator.players.find((entry) => String(entry.id) === '1');
+    playerA.equipment.weapon = { itemHrid: '/items/foo', enhancementLevel: 0 };
+    simulator.refreshAssetScores();
+    expect(playerA.assetScore).not.toBeNull();
+    const fooRowA = playerA.assetScore.items.equipment.find((row) => row.itemHrid === '/items/foo');
+    expect(fooRowA).toMatchObject({
+      enhancementLevel: 0,
+      source: ASSET_SCORE_SOURCES.SYNTHETIC_MID,
+    });
+
+    // 重启：新 pinia（新 store 实例），createPricingState 从持久化缓存恢复等级级覆盖。
+    setActivePinia(createPinia());
+    const restarted = useSimulatorStore();
+    expect(restarted.pricing.marketItemValueSources).toEqual({ '/items/foo': 'official' });
+    expect(restarted.pricing.marketItemValueSourcesByLevel).toEqual({ '/items/foo': { 0: 'synthetic' } });
+  });
+
+  it('#30 A3：来源标注随市场缓存持久化——重启+快照恢复后合成中价标签不翻转', () => {
+    // 会话 A：REST 行情缓存存在（lastFetchedAt > 0），主站透传合成来源估值。
+    const simulator = useSimulatorStore();
+    simulator.pricing.lastFetchedAt = Date.now();
+    const payload = {
+      ...createMainSiteCurrentCharacterFixture({ characterName: 'Restart Hero' }),
+      marketItemValues: { '/items/foo': { 0: 100 } },
+      marketEstimateSource: 'synthetic',
+    };
+    simulator.importSoloConfig(JSON.stringify(payload), '1');
+    expect(simulator.pricing.marketItemValueSources).toEqual({ '/items/foo': 'synthetic' });
+
+    // 玩家装备 foo（0 级：官方估算分支直达，无成本择优干扰）→ 行级标签 = synthetic_mid。
+    const playerA = simulator.players.find((entry) => String(entry.id) === '1');
+    playerA.equipment.weapon = { itemHrid: '/items/foo', enhancementLevel: 0 };
+    simulator.refreshAssetScores();
+    expect(playerA.assetScore).not.toBeNull();
+    const fooRowA = playerA.assetScore.items.equipment.find((row) => row.itemHrid === '/items/foo');
+    expect(fooRowA).toMatchObject({
+      enhancementLevel: 0,
+      source: ASSET_SCORE_SOURCES.SYNTHETIC_MID,
+    });
+
+    // 保存玩家快照：app 导出格式携带诚实标签，但不携带 marketItemValues/来源标记
+    //（该缺口正是 A3 失真链的前提：重启后唯一能恢复来源真值的通道是市场缓存）。
+    const snapshotText = exportSoloConfig(playerA, simulator.simulationSettings);
+    const snapshotPayload = JSON.parse(snapshotText);
+    expect(snapshotPayload.marketItemValues).toBeUndefined();
+    expect(snapshotPayload.marketEstimateSource).toBeUndefined();
+    expect(snapshotPayload.player.assetScore.items.equipment.find((row) => row.itemHrid === '/items/foo').source).toBe(
+      ASSET_SCORE_SOURCES.SYNTHETIC_MID,
+    );
+
+    // 重启：新 pinia（新 store 实例），createPricingState 从持久化缓存恢复数值与来源标注。
+    setActivePinia(createPinia());
+    const restarted = useSimulatorStore();
+    expect(restarted.pricing.marketItemValues).toEqual({ '/items/foo': { 0: 100 } });
+    expect(restarted.pricing.marketItemValueSources).toEqual({ '/items/foo': 'synthetic' });
+    expect(restarted.pricing.lastFetchedAt).toBeGreaterThan(0);
+
+    // 恢复快照：app 载荷无市场字段（不触发 apply），快照携带 synthetic_mid 标签；
+    // 恢复后重算（pricingReady=true 恒重算）与快照逐字段一致 → 等值守卫挡住写回，
+    // 诚实标签不被改标官方估算（修复前：sources 丢失 → 重算全标 official_estimate →
+    // assetScoreEquals 不等 → 快照被覆写）。
+    restarted.importSoloConfig(snapshotText, '1');
+    const restoredPlayer = restarted.players.find((entry) => String(entry.id) === '1');
+    expect(restoredPlayer.assetScore).not.toBeNull();
+    const restoredSnapshot = restoredPlayer.assetScore;
+    expect(restoredSnapshot.items.equipment.find((row) => row.itemHrid === '/items/foo')).toMatchObject({
+      enhancementLevel: 0,
+      source: ASSET_SCORE_SOURCES.SYNTHETIC_MID,
+    });
+    // 模拟 App.vue 资产分 watch（签名+行情引用触发向量）再次触发的重算：同值同源 → 引用不变（无覆写）。
+    restarted.refreshAssetScores();
+    expect(restoredPlayer.assetScore).toBe(restoredSnapshot);
+  });
+
+  it('#23：团队桥接逐成员导入同一份 merged 快照——值相同时引用不变且不再落盘', () => {
+    const simulator = useSimulatorStore();
+    // 已有 REST 行情缓存（lastFetchedAt > 0）时，透传值合并会随市场缓存落盘。
+    simulator.pricing.lastFetchedAt = Date.now();
+
+    const buildTeamMemberPayload = () => ({
+      ...createMainSiteCurrentCharacterFixture({ characterName: 'Team Member' }),
+      marketItemValues: { '/items/foo': { 0: 100 }, '/items/bar': { 1: 250 } },
+      marketEstimateSource: 'official',
+    });
+
+    const countMarketCacheWrites = () =>
+      global.localStorage.setItem.mock.calls.filter(([key]) => key === 'mwi.price.marketCache.v1').length;
+
+    // 第一个成员导入：合并（引用替换）+ 市场缓存落盘各一次。
+    simulator.importSoloConfig(JSON.stringify(buildTeamMemberPayload()), '1');
+    const afterFirstMember = simulator.pricing.marketItemValues;
+    expect(afterFirstMember['/items/foo']['0']).toBe(100);
+    const writesAfterFirstMember = countMarketCacheWrites();
+    expect(writesAfterFirstMember).toBe(1);
+
+    // 第二个成员透传同一份 merged 快照（脚本侧 getMergedMarketItemValues 共享缓存）：
+    // 内容一致 → 引用不变（成本缓存指纹不失效、Vue 依赖不触发）且不再全量落盘。
+    simulator.importSoloConfig(JSON.stringify(buildTeamMemberPayload()), '2');
+    expect(simulator.pricing.marketItemValues).toBe(afterFirstMember);
+    expect(countMarketCacheWrites()).toBe(writesAfterFirstMember);
+
+    // 值变化（模拟行情更新后的下一次导入）：恢复引用替换 + 落盘。
+    const changedPayload = buildTeamMemberPayload();
+    changedPayload.marketItemValues = { '/items/foo': { 0: 120 } };
+    simulator.importSoloConfig(JSON.stringify(changedPayload), '3');
+    expect(simulator.pricing.marketItemValues).not.toBe(afterFirstMember);
+    expect(simulator.pricing.marketItemValues['/items/foo']['0']).toBe(120);
+    expect(countMarketCacheWrites()).toBe(writesAfterFirstMember + 1);
+  });
+
+  it('#23：值相同但来源标记变化——数值引用不变、sources 换标并落盘（#30 A3）', () => {
+    const simulator = useSimulatorStore();
+    simulator.pricing.lastFetchedAt = Date.now();
+
+    const buildPayload = (estimateSource) => ({
+      ...createMainSiteCurrentCharacterFixture({ characterName: 'Source Flip Hero' }),
+      marketItemValues: { '/items/foo': { 0: 100 } },
+      marketEstimateSource: estimateSource,
+    });
+
+    simulator.importSoloConfig(JSON.stringify(buildPayload('official')), '1');
+    const afterFirstImport = simulator.pricing.marketItemValues;
+    expect(simulator.pricing.marketItemValueSources).toEqual({ '/items/foo': 'official' });
+    const countMarketCacheWrites = () =>
+      global.localStorage.setItem.mock.calls.filter(([key]) => key === 'mwi.price.marketCache.v1').length;
+    const writesAfterFirstImport = countMarketCacheWrites();
+
+    // 同值、来源标记从 official 翻转为 synthetic：数值引用不变（无缓存失效），
+    // 来源标注按载荷整体换标（标签语义与数值口径解耦）；sources 变化需随缓存落盘
+    //（#30 A3：同值换源不落盘会使重启后恢复旧来源标注、来源真值跨会话断裂）。
+    simulator.importSoloConfig(JSON.stringify(buildPayload('synthetic')), '2');
+    expect(simulator.pricing.marketItemValues).toBe(afterFirstImport);
+    expect(simulator.pricing.marketItemValueSources).toEqual({ '/items/foo': 'synthetic' });
+    expect(countMarketCacheWrites()).toBe(writesAfterFirstImport + 1);
+  });
+
+  it('#23：现值为载荷严格超集且重叠值相同——合并为空操作，引用不变不落盘', () => {
+    const simulator = useSimulatorStore();
+    simulator.pricing.lastFetchedAt = Date.now();
+
+    const countMarketCacheWrites = () =>
+      global.localStorage.setItem.mock.calls.filter(([key]) => key === 'mwi.price.marketCache.v1').length;
+
+    // 先导入完整快照（foo + bar），current = { foo, bar }。
+    const fullPayload = {
+      ...createMainSiteCurrentCharacterFixture({ characterName: 'Superset Hero' }),
+      marketItemValues: { '/items/foo': { 0: 100 }, '/items/bar': { 0: 200 } },
+      marketEstimateSource: 'official',
+    };
+    simulator.importSoloConfig(JSON.stringify(fullPayload), '1');
+    const afterFullImport = simulator.pricing.marketItemValues;
+    expect(afterFullImport['/items/bar']['0']).toBe(200);
+    expect(countMarketCacheWrites()).toBe(1);
+
+    // 子集载荷（仅 foo，值相同）：app 侧合并只增不减、bar 由合并语义保留 → 合并结果
+    // 与现值内容一致（空操作）→ 引用不变、不再落盘。真实场景：脚本侧 merged 快照较
+    // 上次导入收缩（官方估算条目被剔除），团队 N 成员各带子集载荷——若按键集全等
+    // 判定，N 成员会 N 次冗余合并+落盘；空操作判定闭合该缺口。
+    const subsetPayload = {
+      ...createMainSiteCurrentCharacterFixture({ characterName: 'Subset Hero' }),
+      marketItemValues: { '/items/foo': { 0: 100 } },
+      marketEstimateSource: 'official',
+    };
+    simulator.importSoloConfig(JSON.stringify(subsetPayload), '2');
+    expect(simulator.pricing.marketItemValues).toBe(afterFullImport);
+    expect(countMarketCacheWrites()).toBe(1);
+
+    // 子集载荷但值变化：foo 由 100 → 120，空操作判定不命中 → 恢复合并+落盘，
+    // bar 仍由合并语义保留。
+    const changedSubsetPayload = {
+      ...createMainSiteCurrentCharacterFixture({ characterName: 'Changed Subset Hero' }),
+      marketItemValues: { '/items/foo': { 0: 120 } },
+      marketEstimateSource: 'official',
+    };
+    simulator.importSoloConfig(JSON.stringify(changedSubsetPayload), '3');
+    expect(simulator.pricing.marketItemValues).not.toBe(afterFullImport);
+    expect(simulator.pricing.marketItemValues['/items/foo']['0']).toBe(120);
+    expect(simulator.pricing.marketItemValues['/items/bar']['0']).toBe(200);
+    expect(countMarketCacheWrites()).toBe(2);
+  });
+
+  it('#33：lastFetchedAt=0（无 REST 行情缓存）——透传值仅会话内生效、不落盘', () => {
+    const simulator = useSimulatorStore();
+    // 初始 pricing 无缓存行情（lastFetchedAt=0）：透传值合并进会话内状态。
+    expect(simulator.pricing.lastFetchedAt).toBe(0);
+
+    const countMarketCacheWrites = () =>
+      global.localStorage.setItem.mock.calls.filter(([key]) => key === 'mwi.price.marketCache.v1').length;
+
+    const applied = simulator.applyImportedMarketItemValues({ '/items/foo': { 0: 100 } });
+    expect(applied).toBe(true);
+    expect(simulator.pricing.marketItemValues['/items/foo']['0']).toBe(100);
+    // 门控负分支：无 REST 行情缓存时不落盘（主站下次打开会重新透传）。
+    expect(countMarketCacheWrites()).toBe(0);
+  });
+
+  it('#33：同 hrid 重声明按整体替换合并——旧载荷的等级档不残留', () => {
+    const simulator = useSimulatorStore();
+
+    simulator.applyImportedMarketItemValues({ '/items/foo': { 0: 100, 1: 200 } });
+    const baseline = simulator.pricing.marketItemValues;
+    expect(baseline['/items/foo']).toEqual({ 0: 100, 1: 200 });
+
+    // 重声明仅 0 档：foo 整体替换为 {0:150}，旧 1 档必须丢弃（非逐档深合并）；
+    // 未重声明的 hrid（bar）由合并语义保留。
+    simulator.applyImportedMarketItemValues({ '/items/foo': { 0: 150 }, '/items/bar': { 0: 300 } });
+    expect(simulator.pricing.marketItemValues).not.toBe(baseline);
+    expect(simulator.pricing.marketItemValues['/items/foo']).toEqual({ 0: 150 });
+    expect(simulator.pricing.marketItemValues['/items/bar']).toEqual({ 0: 300 });
+  });
+
+  it('#33：全非法载荷返回 false 且不触碰现值', () => {
+    const simulator = useSimulatorStore();
+    simulator.pricing.lastFetchedAt = Date.now();
+    simulator.applyImportedMarketItemValues({ '/items/foo': { 0: 100 } });
+    const baseline = simulator.pricing.marketItemValues;
+
+    expect(simulator.applyImportedMarketItemValues({ foo: { 0: 100 } })).toBe(false);
+    expect(simulator.applyImportedMarketItemValues(null)).toBe(false);
+    expect(simulator.pricing.marketItemValues).toBe(baseline);
   });
 
   it('imports main-site current character payload into the active player without changing simulation settings', () => {

@@ -57,6 +57,9 @@ export function createEmptyPlayerConfig(id) {
     equipment,
     food: ['', '', ''],
     drinks: ['', '', ''],
+    // 非战斗行动类型（制作/生活技能）的茶槽，形如 { [actionTypeHrid]: [茶 hrid, ...] }。
+    // 供资产分的精炼折扣（工匠茶 lessResource，对齐 MWITools projectAction 的茶效）使用。
+    craftingTeaSlots: {},
     abilities: [
       { abilityHrid: '', level: 1 },
       { abilityHrid: '', level: 1 },
@@ -72,6 +75,9 @@ export function createEmptyPlayerConfig(id) {
     houseRooms,
     guildBuffs,
     achievements: {},
+    // 资产分（Gear Score）快照，由 assetScoreService 计算后写入；
+    // null 表示尚未计算/无资产数据（UI 隐藏）。结构见 assetScoreService.sanitizeAssetScorePayload。
+    assetScore: null,
   };
 }
 
