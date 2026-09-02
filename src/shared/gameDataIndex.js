@@ -48,6 +48,25 @@ export const abilityBookInfoByAbilityHrid = gameDataIndex?.abilityBookInfoByAbil
 export const equipmentOptionsBySlot = gameDataIndex?.equipmentBySlot || {};
 export const foodOptions = Array.isArray(gameDataIndex?.foodOptions) ? gameDataIndex.foodOptions : [];
 export const drinkOptions = Array.isArray(gameDataIndex?.drinkOptions) ? gameDataIndex.drinkOptions : [];
+// 已知战斗不可用饮品的 hrid 集合，来源于构建期
+// usableInActionTypeMap['/action_types/combat'] 的 combatUsable 投影
+// （与 simulatorStore 饮品下拉过滤使用同一数据驱动语义）。
+// 此类饮品（如各类 *_tea）cooldownDuration=0 且无默认战斗触发器，一旦从
+// 历史持久化/导入配置残留进引擎，会以"恒触发 + 零冷却"造成
+// checkTriggers 死循环（模拟永久挂起），因此导入归一化与引擎映射
+// 两处都必须清除/跳过它们。
+const knownNonCombatDrinkHridSet = new Set(
+  drinkOptions
+    .filter((option) => option?.combatUsable === false)
+    .map((option) => String(option?.hrid || ''))
+    .filter(Boolean),
+);
+
+// 仅对"已知战斗不可用"的饮品返回 true；未知 hrid 一律返回 false，
+// 以保持既有"未知 hrid 原样保留"的导入行为。
+export function isKnownNonCombatDrink(hrid) {
+  return knownNonCombatDrinkHridSet.has(String(hrid || ''));
+}
 export const abilityOptions = Array.isArray(gameDataIndex?.abilityOptions) ? gameDataIndex.abilityOptions : [];
 export const specialAbilityOptions = Array.isArray(gameDataIndex?.specialAbilityOptions)
   ? gameDataIndex.specialAbilityOptions

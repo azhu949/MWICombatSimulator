@@ -1,4 +1,10 @@
-import { actionDetailIndex, abilityDetailIndex, itemDetailIndex, monsterDetailIndex } from '../shared/gameDataIndex.js';
+import {
+  actionDetailIndex,
+  abilityDetailIndex,
+  isKnownNonCombatDrink,
+  itemDetailIndex,
+  monsterDetailIndex,
+} from '../shared/gameDataIndex.js';
 import itemLocationDetailMap from '../combatsimulator/data/itemLocationDetailMap.json';
 import {
   createEmptyPlayerConfig,
@@ -179,6 +185,14 @@ function resolveImportedCombatScrolls(source, fallbackCombatScrolls, preserveWhe
   return preserveWhenMissing ? normalizeCombatScrolls(fallbackCombatScrolls) : {};
 }
 
+// 清洗饮品槽：已知战斗不可用饮品（如各类 *_tea）置空，其余（含未知 hrid）
+// 原样保留。战斗不可用饮品进入引擎会以"恒触发 + 零冷却"造成
+// checkTriggers 死循环（模拟永久挂起），且不在下拉选项中（显示空白）。
+function normalizeDrinkSlotValue(rawValue) {
+  const drinkHrid = String(rawValue || '');
+  return isKnownNonCombatDrink(drinkHrid) ? '' : drinkHrid;
+}
+
 function sanitizePlayerConfig(
   raw,
   fallbackPlayer,
@@ -210,7 +224,7 @@ function sanitizePlayerConfig(
   }
 
   normalized.food = [0, 1, 2].map((index) => String(source.food?.[index] || ''));
-  normalized.drinks = [0, 1, 2].map((index) => String(source.drinks?.[index] || ''));
+  normalized.drinks = [0, 1, 2].map((index) => normalizeDrinkSlotValue(source.drinks?.[index]));
   normalized.craftingTeaSlots = sanitizeCraftingTeaSlots(source.craftingTeaSlots ?? fallback.craftingTeaSlots ?? {});
 
   normalized.abilities = [0, 1, 2, 3, 4].map((index) => {
@@ -298,7 +312,7 @@ function applyLegacySoloToPlayer(legacySoloPayload, fallbackPlayer, { preserveMi
 
   for (let i = 0; i < 3; i++) {
     merged.food[i] = String(foodEntries?.[i]?.itemHrid || '');
-    merged.drinks[i] = String(drinkEntries?.[i]?.itemHrid || '').replace('power', 'melee');
+    merged.drinks[i] = normalizeDrinkSlotValue(String(drinkEntries?.[i]?.itemHrid || '').replace('power', 'melee'));
   }
 
   const legacyAbilities = payload.abilities;

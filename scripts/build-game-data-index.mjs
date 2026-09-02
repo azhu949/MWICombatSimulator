@@ -39,6 +39,7 @@ const LABYRINTH_FOOD_CRATE_HRIDS = [
 ];
 const LABYRINTH_TEA_CRATE_HRIDS = ['/items/basic_tea_crate', '/items/advanced_tea_crate', '/items/expert_tea_crate'];
 const WEAPON_EQUIPMENT_TYPE_HRIDS = new Set(['/equipment_types/main_hand', '/equipment_types/two_hand']);
+const COMBAT_ACTION_TYPE_HRID = '/action_types/combat';
 const ENHANCING_ACTION_TYPE_HRID = '/action_types/enhancing';
 const ENHANCEMENT_ACTION_BASE_SECONDS = 12;
 const NANOSECONDS_PER_SECOND = 1_000_000_000;
@@ -197,6 +198,7 @@ function createItemIndex(itemDetailMap, equipmentTypeDetailMap) {
       }
     }
 
+    const combatUsable = item?.consumableDetail?.usableInActionTypeMap?.[COMBAT_ACTION_TYPE_HRID] === true;
     const option = {
       hrid,
       name: String(item?.name || hrid),
@@ -204,6 +206,7 @@ function createItemIndex(itemDetailMap, equipmentTypeDetailMap) {
       hitpointRestore,
       manapointRestore,
       recoveryDuration,
+      combatUsable,
     };
 
     if (categoryHrid === '/item_categories/equipment' && equipmentType) {
@@ -241,7 +244,12 @@ function createItemIndex(itemDetailMap, equipmentTypeDetailMap) {
     abilityBookInfoByAbilityHrid,
     equipmentBySlot,
     foodOptions: foodOptions.map(({ hrid, name, itemLevel }) => ({ hrid, name, itemLevel })),
-    drinkOptions: drinkOptions.map(({ hrid, name, itemLevel }) => ({ hrid, name, itemLevel })),
+    drinkOptions: drinkOptions.map(({ hrid, name, itemLevel, combatUsable }) => ({
+      hrid,
+      name,
+      itemLevel,
+      combatUsable,
+    })),
     labyrinthCrates: {
       coffee: LABYRINTH_COFFEE_CRATE_HRIDS.map((hrid) => ({
         hrid,

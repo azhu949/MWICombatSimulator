@@ -1,4 +1,24 @@
 {
+  "2026年9月2日（v2.4.1）": {
+    "label": {
+      "zh": "2026年9月2日（v2.4.1）",
+      "en": "September 2, 2026 (v2.4.1)"
+    },
+    "newFeatures": {
+      "zh": ["饮品选择列表不再显示无法在战斗中使用的茶类饮品。"],
+      "en": ["The drink list no longer shows teas that cannot be used in combat."]
+    },
+    "improvements": {
+      "zh": ["导入配置时会自动清空已失效的茶类饮品选择，避免下拉框出现空白选项。"],
+      "en": [
+        "Importing configs now clears outdated tea selections, so the drink dropdown no longer shows blank entries."
+      ]
+    },
+    "bugFixes": {
+      "zh": ["修复旧配置残留茶类饮品时，战斗模拟可能一直卡住不出结果的问题。"],
+      "en": ["Fixed simulations hanging forever when older configs had leftover tea selections."]
+    }
+  },
   "2026年9月2日（v2.4.0）": {
     "label": {
       "zh": "2026年9月2日（v2.4.0）",

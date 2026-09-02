@@ -36,19 +36,6 @@ function findFirstNonSpecialAbility() {
   );
 }
 
-function findDrinkWithoutCombatPreviewChanges() {
-  return Object.values(itemDetailMap).find((item) => {
-    if (item.categoryHrid !== '/item_categories/drink') {
-      return false;
-    }
-
-    const player = createEmptyPlayerConfig(1);
-    player.drinks[0] = item.hrid;
-
-    return buildCombatPreviewData(player).drinkCards[0]?.changedStats.length === 0;
-  });
-}
-
 // 独立的基准属性读取器，用于断言公会增益差值，
 // 而不依赖对账恒等式（该恒等式在构造上就是同义反复）。
 // 每个读取器镜像对应的 COMBAT_PREVIEW_STAT_SPECS getValue，
@@ -188,7 +175,7 @@ describe('playerMapper', () => {
     expect(() => structuredClone({ players })).not.toThrow();
   });
 
-  it('treats consumables without default combat triggers as triggerless', () => {
+  it('excludes drinks without default combat triggers (all are non-combat teas) from mapping', () => {
     const player = createEmptyPlayerConfig(1);
     const drink = findFirstItemWithoutDefaultTriggers('/item_categories/drink');
 
@@ -198,8 +185,10 @@ describe('playerMapper', () => {
 
     const players = buildPlayersForSimulation([player]);
 
-    expect(players[0].drinks[0]?.hrid).toBe(drink.hrid);
-    expect(players[0].drinks[0]?.triggers).toEqual([]);
+    // 现实数据中，所有无默认战斗触发器的饮品都是战斗不可用的 *_tea
+    // （usableInActionTypeMap 不含 combat）。它们不得进入引擎：
+    // 零冷却恒触发会造成 checkTriggers 死循环（模拟永久挂起）。
+    expect(players[0].drinks[0]).toBeNull();
   });
 
   it('applies housing permanent buffs only in combat preview builds', () => {
@@ -701,20 +690,19 @@ describe('playerMapper', () => {
     expect(previewDrinkHrids).toContain('/items/super_magic_coffee');
   });
 
-  it('keeps non-combat drinks visible with timing info even when they do not change battle stats', () => {
+  it('marks known non-combat drinks (e.g. residual teas) as unavailable in preview cards', () => {
     const player = createEmptyPlayerConfig(1);
-    const drink = findDrinkWithoutCombatPreviewChanges();
 
-    expect(drink).toBeTruthy();
-
-    player.drinks[0] = drink.hrid;
+    player.drinks[0] = '/items/brewing_tea';
 
     const previewData = buildCombatPreviewData(player);
 
+    // 战斗不可用饮品不进入引擎：卡片仍展示（便于识别残留配置），
+    // 但标记槽位不可用且无任何战斗属性变化。
     expect(previewData.drinkCards).toHaveLength(1);
     expect(previewData.drinkCards[0].changedStats).toEqual([]);
     expect(previewData.drinkCards[0].cooldownSeconds).toBeGreaterThanOrEqual(0);
-    expect(previewData.drinkCards[0].slotAvailable).toBe(true);
+    expect(previewData.drinkCards[0].slotAvailable).toBe(false);
     expect(previewData.drinkCards[0].triggerMode).toBe('default');
   });
 

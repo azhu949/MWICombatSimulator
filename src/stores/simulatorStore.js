@@ -137,7 +137,10 @@ function getConsumableOptions(categoryHrid) {
   }
 
   if (categoryHrid === '/item_categories/drink') {
-    return drinkOptions;
+    // 依据构建期从物品数据 usableInActionTypeMap['/action_types/combat'] 投影出的
+    // combatUsable 语义标记过滤（替代旧的 *_tea 后缀命名启发式），确保未来新增的
+    // 战斗可用饮品（即使以 *_tea 命名）不会被静默误伤。字段缺失时回退为不过滤。
+    return drinkOptions.filter((option) => option?.combatUsable !== false);
   }
 
   return [];

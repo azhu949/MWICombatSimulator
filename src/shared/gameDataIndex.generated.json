@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-08-16T13:37:38.131Z",
+    "generatedAt": "2026-09-02T05:12:48.698Z",
     "levelKeys": [
       "stamina",
       "intelligence",
@@ -37477,322 +37477,386 @@
     {
       "hrid": "/items/foraging_tea",
       "name": "Foraging Tea",
-      "itemLevel": 1
+      "itemLevel": 1,
+      "combatUsable": false
     },
     {
       "hrid": "/items/intelligence_coffee",
       "name": "Intelligence Coffee",
-      "itemLevel": 1
+      "itemLevel": 1,
+      "combatUsable": true
     },
     {
       "hrid": "/items/milking_tea",
       "name": "Milking Tea",
-      "itemLevel": 1
+      "itemLevel": 1,
+      "combatUsable": false
     },
     {
       "hrid": "/items/stamina_coffee",
       "name": "Stamina Coffee",
-      "itemLevel": 1
+      "itemLevel": 1,
+      "combatUsable": true
     },
     {
       "hrid": "/items/woodcutting_tea",
       "name": "Woodcutting Tea",
-      "itemLevel": 1
+      "itemLevel": 1,
+      "combatUsable": false
     },
     {
       "hrid": "/items/alchemy_tea",
       "name": "Alchemy Tea",
-      "itemLevel": 10
+      "itemLevel": 10,
+      "combatUsable": false
     },
     {
       "hrid": "/items/attack_coffee",
       "name": "Attack Coffee",
-      "itemLevel": 10
+      "itemLevel": 10,
+      "combatUsable": true
     },
     {
       "hrid": "/items/brewing_tea",
       "name": "Brewing Tea",
-      "itemLevel": 10
+      "itemLevel": 10,
+      "combatUsable": false
     },
     {
       "hrid": "/items/cooking_tea",
       "name": "Cooking Tea",
-      "itemLevel": 10
+      "itemLevel": 10,
+      "combatUsable": false
     },
     {
       "hrid": "/items/defense_coffee",
       "name": "Defense Coffee",
-      "itemLevel": 10
+      "itemLevel": 10,
+      "combatUsable": true
     },
     {
       "hrid": "/items/enhancing_tea",
       "name": "Enhancing Tea",
-      "itemLevel": 10
+      "itemLevel": 10,
+      "combatUsable": false
     },
     {
       "hrid": "/items/gathering_tea",
       "name": "Gathering Tea",
-      "itemLevel": 10
+      "itemLevel": 10,
+      "combatUsable": false
     },
     {
       "hrid": "/items/cheesesmithing_tea",
       "name": "Cheesesmithing Tea",
-      "itemLevel": 20
+      "itemLevel": 20,
+      "combatUsable": false
     },
     {
       "hrid": "/items/crafting_tea",
       "name": "Crafting Tea",
-      "itemLevel": 20
+      "itemLevel": 20,
+      "combatUsable": false
     },
     {
       "hrid": "/items/gourmet_tea",
       "name": "Gourmet Tea",
-      "itemLevel": 20
+      "itemLevel": 20,
+      "combatUsable": false
     },
     {
       "hrid": "/items/magic_coffee",
       "name": "Magic Coffee",
-      "itemLevel": 20
+      "itemLevel": 20,
+      "combatUsable": true
     },
     {
       "hrid": "/items/melee_coffee",
       "name": "Melee Coffee",
-      "itemLevel": 20
+      "itemLevel": 20,
+      "combatUsable": true
     },
     {
       "hrid": "/items/ranged_coffee",
       "name": "Ranged Coffee",
-      "itemLevel": 20
+      "itemLevel": 20,
+      "combatUsable": true
     },
     {
       "hrid": "/items/tailoring_tea",
       "name": "Tailoring Tea",
-      "itemLevel": 20
+      "itemLevel": 20,
+      "combatUsable": false
     },
     {
       "hrid": "/items/wisdom_coffee",
       "name": "Wisdom Coffee",
-      "itemLevel": 30
+      "itemLevel": 30,
+      "combatUsable": true
     },
     {
       "hrid": "/items/wisdom_tea",
       "name": "Wisdom Tea",
-      "itemLevel": 30
+      "itemLevel": 30,
+      "combatUsable": false
     },
     {
       "hrid": "/items/super_foraging_tea",
       "name": "Super Foraging Tea",
-      "itemLevel": 35
+      "itemLevel": 35,
+      "combatUsable": false
     },
     {
       "hrid": "/items/super_intelligence_coffee",
       "name": "Super Intelligence Coffee",
-      "itemLevel": 35
+      "itemLevel": 35,
+      "combatUsable": true
     },
     {
       "hrid": "/items/super_milking_tea",
       "name": "Super Milking Tea",
-      "itemLevel": 35
+      "itemLevel": 35,
+      "combatUsable": false
     },
     {
       "hrid": "/items/super_stamina_coffee",
       "name": "Super Stamina Coffee",
-      "itemLevel": 35
+      "itemLevel": 35,
+      "combatUsable": true
     },
     {
       "hrid": "/items/super_woodcutting_tea",
       "name": "Super Woodcutting Tea",
-      "itemLevel": 35
+      "itemLevel": 35,
+      "combatUsable": false
     },
     {
       "hrid": "/items/lucky_coffee",
       "name": "Lucky Coffee",
-      "itemLevel": 45
+      "itemLevel": 45,
+      "combatUsable": true
     },
     {
       "hrid": "/items/processing_tea",
       "name": "Processing Tea",
-      "itemLevel": 45
+      "itemLevel": 45,
+      "combatUsable": false
     },
     {
       "hrid": "/items/super_alchemy_tea",
       "name": "Super Alchemy Tea",
-      "itemLevel": 50
+      "itemLevel": 50,
+      "combatUsable": false
     },
     {
       "hrid": "/items/super_attack_coffee",
       "name": "Super Attack Coffee",
-      "itemLevel": 50
+      "itemLevel": 50,
+      "combatUsable": true
     },
     {
       "hrid": "/items/super_brewing_tea",
       "name": "Super Brewing Tea",
-      "itemLevel": 50
+      "itemLevel": 50,
+      "combatUsable": false
     },
     {
       "hrid": "/items/super_cooking_tea",
       "name": "Super Cooking Tea",
-      "itemLevel": 50
+      "itemLevel": 50,
+      "combatUsable": false
     },
     {
       "hrid": "/items/super_defense_coffee",
       "name": "Super Defense Coffee",
-      "itemLevel": 50
+      "itemLevel": 50,
+      "combatUsable": true
     },
     {
       "hrid": "/items/super_enhancing_tea",
       "name": "Super Enhancing Tea",
-      "itemLevel": 50
+      "itemLevel": 50,
+      "combatUsable": false
     },
     {
       "hrid": "/items/ultra_foraging_tea",
       "name": "Ultra Foraging Tea",
-      "itemLevel": 55
+      "itemLevel": 55,
+      "combatUsable": false
     },
     {
       "hrid": "/items/ultra_intelligence_coffee",
       "name": "Ultra Intelligence Coffee",
-      "itemLevel": 55
+      "itemLevel": 55,
+      "combatUsable": true
     },
     {
       "hrid": "/items/ultra_milking_tea",
       "name": "Ultra Milking Tea",
-      "itemLevel": 55
+      "itemLevel": 55,
+      "combatUsable": false
     },
     {
       "hrid": "/items/ultra_stamina_coffee",
       "name": "Ultra Stamina Coffee",
-      "itemLevel": 55
+      "itemLevel": 55,
+      "combatUsable": true
     },
     {
       "hrid": "/items/ultra_woodcutting_tea",
       "name": "Ultra Woodcutting Tea",
-      "itemLevel": 55
+      "itemLevel": 55,
+      "combatUsable": false
     },
     {
       "hrid": "/items/channeling_coffee",
       "name": "Channeling Coffee",
-      "itemLevel": 60
+      "itemLevel": 60,
+      "combatUsable": true
     },
     {
       "hrid": "/items/efficiency_tea",
       "name": "Efficiency Tea",
-      "itemLevel": 60
+      "itemLevel": 60,
+      "combatUsable": false
     },
     {
       "hrid": "/items/swiftness_coffee",
       "name": "Swiftness Coffee",
-      "itemLevel": 60
+      "itemLevel": 60,
+      "combatUsable": true
     },
     {
       "hrid": "/items/super_cheesesmithing_tea",
       "name": "Super Cheesesmithing Tea",
-      "itemLevel": 65
+      "itemLevel": 65,
+      "combatUsable": false
     },
     {
       "hrid": "/items/super_crafting_tea",
       "name": "Super Crafting Tea",
-      "itemLevel": 65
+      "itemLevel": 65,
+      "combatUsable": false
     },
     {
       "hrid": "/items/super_magic_coffee",
       "name": "Super Magic Coffee",
-      "itemLevel": 65
+      "itemLevel": 65,
+      "combatUsable": true
     },
     {
       "hrid": "/items/super_melee_coffee",
       "name": "Super Melee Coffee",
-      "itemLevel": 65
+      "itemLevel": 65,
+      "combatUsable": true
     },
     {
       "hrid": "/items/super_ranged_coffee",
       "name": "Super Ranged Coffee",
-      "itemLevel": 65
+      "itemLevel": 65,
+      "combatUsable": true
     },
     {
       "hrid": "/items/super_tailoring_tea",
       "name": "Super Tailoring Tea",
-      "itemLevel": 65
+      "itemLevel": 65,
+      "combatUsable": false
     },
     {
       "hrid": "/items/ultra_alchemy_tea",
       "name": "Ultra Alchemy Tea",
-      "itemLevel": 70
+      "itemLevel": 70,
+      "combatUsable": false
     },
     {
       "hrid": "/items/ultra_attack_coffee",
       "name": "Ultra Attack Coffee",
-      "itemLevel": 70
+      "itemLevel": 70,
+      "combatUsable": true
     },
     {
       "hrid": "/items/ultra_brewing_tea",
       "name": "Ultra Brewing Tea",
-      "itemLevel": 70
+      "itemLevel": 70,
+      "combatUsable": false
     },
     {
       "hrid": "/items/ultra_cooking_tea",
       "name": "Ultra Cooking Tea",
-      "itemLevel": 70
+      "itemLevel": 70,
+      "combatUsable": false
     },
     {
       "hrid": "/items/ultra_defense_coffee",
       "name": "Ultra Defense Coffee",
-      "itemLevel": 70
+      "itemLevel": 70,
+      "combatUsable": true
     },
     {
       "hrid": "/items/ultra_enhancing_tea",
       "name": "Ultra Enhancing Tea",
-      "itemLevel": 70
+      "itemLevel": 70,
+      "combatUsable": false
     },
     {
       "hrid": "/items/artisan_tea",
       "name": "Artisan Tea",
-      "itemLevel": 75
+      "itemLevel": 75,
+      "combatUsable": false
     },
     {
       "hrid": "/items/blessed_tea",
       "name": "Blessed Tea",
-      "itemLevel": 75
+      "itemLevel": 75,
+      "combatUsable": false
     },
     {
       "hrid": "/items/catalytic_tea",
       "name": "Catalytic Tea",
-      "itemLevel": 75
+      "itemLevel": 75,
+      "combatUsable": false
     },
     {
       "hrid": "/items/critical_coffee",
       "name": "Critical Coffee",
-      "itemLevel": 75
+      "itemLevel": 75,
+      "combatUsable": true
     },
     {
       "hrid": "/items/ultra_cheesesmithing_tea",
       "name": "Ultra Cheesesmithing Tea",
-      "itemLevel": 85
+      "itemLevel": 85,
+      "combatUsable": false
     },
     {
       "hrid": "/items/ultra_crafting_tea",
       "name": "Ultra Crafting Tea",
-      "itemLevel": 85
+      "itemLevel": 85,
+      "combatUsable": false
     },
     {
       "hrid": "/items/ultra_magic_coffee",
       "name": "Ultra Magic Coffee",
-      "itemLevel": 85
+      "itemLevel": 85,
+      "combatUsable": true
     },
     {
       "hrid": "/items/ultra_melee_coffee",
       "name": "Ultra Melee Coffee",
-      "itemLevel": 85
+      "itemLevel": 85,
+      "combatUsable": true
     },
     {
       "hrid": "/items/ultra_ranged_coffee",
       "name": "Ultra Ranged Coffee",
-      "itemLevel": 85
+      "itemLevel": 85,
+      "combatUsable": true
     },
     {
       "hrid": "/items/ultra_tailoring_tea",
       "name": "Ultra Tailoring Tea",
-      "itemLevel": 85
+      "itemLevel": 85,
+      "combatUsable": false
     }
   ],
   "labyrinthCrates": {

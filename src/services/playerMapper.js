@@ -12,7 +12,12 @@ import { createCombatScrollBuff, getCombatScrollSourceKey } from '../combatsimul
 import { BUFF_SOURCE_POLICY, PARTY_AURA_ABILITY_HRIDS, isPartyAuraBuff } from '../combatsimulator/buffSourcePolicy.js';
 import abilitySlotsLevelRequirementList from '../combatsimulator/data/abilitySlotsLevelRequirementList.json';
 import combatMonsterDetailMap from '../combatsimulator/data/combatMonsterDetailMap.json';
-import { abilityDetailIndex, GAME_DATA_VERSION, itemDetailIndex } from '../shared/gameDataIndex.js';
+import {
+  abilityDetailIndex,
+  GAME_DATA_VERSION,
+  isKnownNonCombatDrink,
+  itemDetailIndex,
+} from '../shared/gameDataIndex.js';
 import {
   calcCombatLevel,
   createEmptyPlayerConfig,
@@ -674,7 +679,11 @@ function buildSimulationPlayerFromConfig(playerConfig) {
     }
 
     const drinkHrid = playerConfig.drinks?.[i] || '';
-    if (drinkHrid && i < simulationPlayer.combatDetails.combatStats.drinkSlots) {
+    // 战斗不可用饮品（如历史配置残留的 *_tea）不进入引擎：它们
+    // cooldownDuration=0 且无默认战斗触发器，会以"恒触发 + 零冷却"
+    // 造成 checkTriggers 死循环（模拟永久挂起）。未知 hrid 保持原样，
+    // 维持既有"未知 hrid 触发引擎报错"的行为。
+    if (drinkHrid && !isKnownNonCombatDrink(drinkHrid) && i < simulationPlayer.combatDetails.combatStats.drinkSlots) {
       const customDrinkTriggers = Object.prototype.hasOwnProperty.call(triggerMap, drinkHrid)
         ? toTriggerInstances(triggerMap[drinkHrid])
         : null;
