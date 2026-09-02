@@ -5355,6 +5355,49 @@ describe('simulatorStore', () => {
     expect(simulator.activeQueueState.items).toEqual([]);
   });
 
+  it('enqueues a baseline-substituted +2 mirror selection with no priced inputs', async () => {
+    const simulator = useSimulatorStore();
+    const equipmentItemHrid = findFirstEquipmentItem();
+    await simulator.setQueueBaselineForActivePlayer();
+    simulator.activePlayer.equipment.weapon = { itemHrid: equipmentItemHrid, enhancementLevel: 2 };
+
+    // +2 目标顶替基准 +1 的镜子方案形态：inputs 为空但 mirrorCount > 0 且有顶替记录
+    //（price = 现金合成成本 50 + 基准件出售价值快照 38）。修复前 findInvalidPriceSelection
+    // 判其无效并抛 priceSelectionInvalid，入队必然失败且弹窗整体被清空（MAJ-02）。
+    const items = simulator.addActivePlayerToQueue({
+      priceSelections: [
+        {
+          itemHrid: equipmentItemHrid,
+          enhancementLevel: 2,
+          method: 'mirror',
+          price: 88,
+          mirrorPrice: 50,
+          mirrorCount: 1,
+          inputs: [],
+          baselinePieceSaleValue: 38,
+          usedBaselineLevels: [1],
+        },
+      ],
+    });
+
+    expect(items).toHaveLength(1);
+    const storedSelection = items[0].priceSelections.find((selection) => selection.method === 'mirror');
+    expect(storedSelection).toMatchObject({
+      itemHrid: equipmentItemHrid,
+      enhancementLevel: 2,
+      price: 88,
+      mirrorCount: 1,
+      inputs: [],
+      usedBaselineLevels: [1],
+    });
+    // 派生的确认价格快照同样保留镜子锁定价（供队列页合计与多轮成本计算使用）。
+    expect(
+      items[0].confirmedEquipmentPrices.some(
+        (entry) => String(entry.source) === 'mirror' && Number(entry.price) === 88,
+      ),
+    ).toBe(true);
+  });
+
   it('rejects an invalid left1 price selection with a dedicated error', async () => {
     const simulator = useSimulatorStore();
     const equipmentItemHrid = findFirstEquipmentItem();

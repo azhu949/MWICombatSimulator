@@ -136,8 +136,10 @@ function normalizePriceSource(rawSource, { allowMirror = false } = {}) {
   return OFFICIAL_HOURLY_AVERAGE_PRICE_SOURCE;
 }
 
-// 统一镜子方案 inputs 映射：把原始 inputs 数组归一为 { level, count, price, source } 列表，
+// 统一镜子方案 inputs 映射：把原始 inputs 数组归一为 { itemHrid, level, count, price, source } 列表，
 // 过滤掉 level<=0 或 price<=0 的无效条目。两个归一化函数共用此逻辑以避免同步漂移。
+// itemHrid（价格域感知）：精炼目标的低档输入件(+N-2)来自基础物品域，条目需携带自身 itemHrid；
+// 旧持久化数据无此字段，归一为空串，展示层回退到条目所属选择行的 itemHrid（目标物品）。
 function normalizeMirrorInputs(rawInputs) {
   const inputs = Array.isArray(rawInputs) ? rawInputs : [];
   return inputs
@@ -148,6 +150,7 @@ function normalizeMirrorInputs(rawInputs) {
         return null;
       }
       return {
+        itemHrid: String(input?.itemHrid || ''),
         level: inputLevel,
         count: Math.max(1, Math.floor(toFiniteNumber(input?.count, 1))),
         price: inputPrice,
@@ -162,6 +165,19 @@ function normalizeMirrorInputs(rawInputs) {
 // 共用此谓词，保持同一过滤口径，避免独立枚举导致同步漂移。
 function isValidManualPrice(price) {
   return Number.isSafeInteger(price) && price > 0;
+}
+
+// 基准顶替型"无输入件"镜子方案判定：+2 目标顶替基准 +1 时，合成树的两个输入件——
+// +0 基础件按既有口径免费（collectMirrorInputs 跳过 l <= 0）、+1 基准件被顶替（countMap 扣减）——
+// 展开后 inputs 为空但方案可算（cost = 镜子价 > 0）。这是该场景的合法形态而非损坏快照，
+// findInvalidPriceSelection、normalizeQueuePriceSelections、normalizeConfirmedEquipmentPrices
+// 三处共用此判定放行，保持同一口径，避免同步漂移。
+// 判定依据 mirrorCount > 0 且 usedBaselineLevels 非空：顶替记录是"输入件被基准消耗"的直接证据，
+// 缺任一条件仍按无效/损坏处理（报错或丢弃后由其他价格链回退）。
+function isBaselineSubstitutedMirrorSelection(rawEntry) {
+  const mirrorCount = Math.max(0, Math.floor(toFiniteNumber(rawEntry?.mirrorCount, 0)));
+  const usedBaselineLevels = Array.isArray(rawEntry?.usedBaselineLevels) ? rawEntry.usedBaselineLevels : [];
+  return mirrorCount > 0 && usedBaselineLevels.length > 0;
 }
 
 // 把弹窗确认结果（每行选择方式 + 锁定价格）归一化为可持久化的确认价格列表。
@@ -223,7 +239,9 @@ export function normalizeQueuePriceSelections(rawSelections = []) {
       const mirrorPrice = toFiniteNumber(rawEntry?.mirrorPrice, 0);
       const mirrorCount = Math.max(0, Math.floor(toFiniteNumber(rawEntry?.mirrorCount, 0)));
       const inputPrices = normalizeMirrorInputs(rawEntry?.inputs);
-      if (inputPrices.length === 0) {
+      // 基准顶替型无输入件形态（+2 顶替 +1）合法：见 isBaselineSubstitutedMirrorSelection 注释。
+      // 其余空 inputs（含损坏快照）仍按无效丢弃。
+      if (inputPrices.length === 0 && !isBaselineSubstitutedMirrorSelection(rawEntry)) {
         dropped.push({ itemHrid, enhancementLevel, method, price });
         continue;
       }
@@ -236,6 +254,10 @@ export function normalizeQueuePriceSelections(rawSelections = []) {
         mirrorPrice,
         mirrorCount,
         inputs: inputPrices,
+        // 基准件出售价值快照（fee 后，无顶替/无价为 0）：price 为总成本口径（现金合成成本 +
+        // 基准件出售价值），下游 resolveEquipmentTransitionPricing 用该快照作顶替行的出售抵扣，
+        // 两侧同源保证净成本=现金合成成本。两处归一化须同步透传此字段。
+        baselinePieceSaleValue: Math.max(0, toFiniteNumber(rawEntry?.baselinePieceSaleValue, 0)),
         usedBaselineLevels: Array.isArray(rawEntry?.usedBaselineLevels)
           ? rawEntry.usedBaselineLevels.map((l) => Math.max(0, Math.floor(toFiniteNumber(l, 0))))
           : [],
@@ -289,8 +311,9 @@ export function normalizeConfirmedEquipmentPrices(rawPrices) {
     }
     // mirror 条目需至少一个有效输入件（与 normalizeQueuePriceSelections、findInvalidPriceSelection
     // 保持同一过滤口径，避免同步漂移）；无有效输入件视为损坏快照，丢弃后由其他价格链回退。
+    // 例外：基准顶替型无输入件形态（+2 顶替 +1）是方案合法形态，按共用判定放行。
     const mirrorInputs = priceSource === 'mirror' ? normalizeMirrorInputs(rawEntry?.inputs) : null;
-    if (mirrorInputs != null && mirrorInputs.length === 0) {
+    if (mirrorInputs != null && mirrorInputs.length === 0 && !isBaselineSubstitutedMirrorSelection(rawEntry)) {
       continue;
     }
     const key = getConfirmedEquipmentPriceKey(itemHrid, enhancementLevel);
@@ -312,6 +335,8 @@ export function normalizeConfirmedEquipmentPrices(rawPrices) {
             mirrorPrice: Math.max(0, toFiniteNumber(rawEntry?.mirrorPrice, 0)),
             mirrorCount: Math.max(0, Math.floor(toFiniteNumber(rawEntry?.mirrorCount, 0))),
             inputs: mirrorInputs,
+            // 与 normalizeQueuePriceSelections 的 mirror 分支同步透传（两处口径须一致，避免同步漂移）。
+            baselinePieceSaleValue: Math.max(0, toFiniteNumber(rawEntry?.baselinePieceSaleValue, 0)),
             usedBaselineLevels: Array.isArray(rawEntry?.usedBaselineLevels)
               ? rawEntry.usedBaselineLevels.map((l) => Math.max(0, Math.floor(toFiniteNumber(l, 0))))
               : [],
@@ -429,35 +454,29 @@ export function resolveEquipmentTransitionPricing(
   // - 选 bid：bid 缺价时回退 ask（用卖方报价近似成交价），仍无价则抵扣按 0 处理；
   // - 选 ask：ask 缺价时【不回退 bid】——ask 是"买入参考/重置成本"口径，混入 bid 会让结果
   //   既非保守口径也非重置口径；改为抵扣按 0 处理，并由 baselineSaleZero 警告提示用户补价。
-  // 该口径同时实现在 resolveBaselineSaleQuote（弹窗预览）中，修改须两处同步。
+  // 链路统一实现在 resolveBaselineSaleValue（内部复用 resolveBaselineSaleQuote 弹窗预览链路），
+  // 修改须与弹窗预览两处同步。
   const saleSide = normalizeBaselineSaleSide(options?.saleSide);
-  let sellValue = 0;
-  let baselineSaleSource = 'none';
-  if (sourceItemHrid) {
-    sellValue = resolveEnhancementLevelPriceFromPricingState(sourceItemHrid, safeBeforeLevel, pricingState, saleSide);
-    if (sellValue < 0 && saleSide !== 'ask') {
-      const fallback = resolveEnhancementLevelPriceFromPricingState(
-        sourceItemHrid,
-        safeBeforeLevel,
-        pricingState,
-        'ask',
-      );
-      if (fallback > 0) {
-        sellValue = fallback;
-        baselineSaleSource = 'ask';
-      } else {
-        baselineSaleSource = 'zero';
+  // 镜子方案顶替基准件：用户锁定价（buyCost）已按确认时快照把基准件出售价值计入总成本
+  //（买入价 = 现金合成成本 + 基准件出售价值），出售抵扣同用该快照——两侧同源，保证
+  // 净成本 = 现金合成成本 精确，且不受入队后行情漂移影响。快照值在确认时已扣市场手续费，
+  // 此处直接使用，不再二次扣费；旧数据无快照字段时按 0 处理（抵扣置 0，同时修复历史
+  // 双重抵扣：顶替件被合成消耗而非卖出，本就不应再按出售抵扣）。
+  const mirrorBaselineSubstituted =
+    userLockedMethod &&
+    confirmedMethod === QUEUE_PRICE_METHOD_MIRROR &&
+    Array.isArray(confirmedPrice?.usedBaselineLevels) &&
+    confirmedPrice.usedBaselineLevels.includes(safeBeforeLevel);
+  const saleQuote = mirrorBaselineSubstituted
+    ? {
+        value: Math.max(0, toFiniteNumber(confirmedPrice?.baselinePieceSaleValue, 0)),
+        source: 'mirror_baseline_piece',
       }
-    } else if (sellValue > 0) {
-      baselineSaleSource = saleSide;
-    } else {
-      baselineSaleSource = 'zero';
-    }
-  }
+    : resolveBaselineSaleValue(sourceItemHrid, safeBeforeLevel, pricingState, saleSide);
 
   const targetAskAvailable = buyCost > 0;
-  // 市场销售需缴纳市场交易税；以净收益作为出售抵扣。
-  const baselineSaleValue = sellValue > 0 ? applyMarketSaleFee(sellValue, sourceItemHrid) : 0;
+  const baselineSaleValue = saleQuote.value;
+  const baselineSaleSource = saleQuote.source;
   return {
     cost: targetAskAvailable ? Math.max(0, buyCost - baselineSaleValue) : null,
     targetAsk: targetAskAvailable ? buyCost : null,
@@ -590,16 +609,46 @@ export function resolveBaselineSaleQuote(itemHrid, enhancementLevel, pricingStat
   return { price: 0, source: 'zero' };
 }
 
+// 基准装备出售抵扣值（已扣市场手续费）：resolveEquipmentTransitionPricing 的转行出售抵扣与
+// computeMirrorPlan 的"基准件计入总成本"共用此口径，避免两处链式取价逻辑漂移。
+// 链路即 resolveBaselineSaleQuote（saleSide 缺价回退 ask、选 ask 侧不回退），
+// 其上应用市场交易手续费；无价时 value 为 0。返回 { value, source }。
+export function resolveBaselineSaleValue(itemHrid, enhancementLevel, pricingState, saleSide = 'bid') {
+  const safeSaleSide = normalizeBaselineSaleSide(saleSide);
+  const quote = resolveBaselineSaleQuote(itemHrid, enhancementLevel, pricingState, safeSaleSide);
+  if (!(quote.price > 0)) {
+    return { value: 0, source: quote.source === 'none' ? 'none' : 'zero' };
+  }
+  return { value: applyMarketSaleFee(quote.price, String(itemHrid || '')), source: quote.source };
+}
+
 // 缺价件手动补价解析为 Map：过滤 level≤0 或 price≤0 的无效条目。
-// 返回 Map<level, price>，供 resolvePlanLevelPrice 优先于参考价链取值。
-function parseManualInputPrices(manualInputPrices) {
+// 键支持两种形式（价格域感知）："itemHrid|level"（与 getConfirmedEquipmentPriceKey 同构，指明
+// 补价物品的精确价格域，精炼目标的 +N-2 基础物品输入必须用此形式）；纯 level 数字键为旧格式，
+// 归一到目标域 targetHrid|level（非精炼目标下两者等价，保持向后兼容）。
+// 返回 Map<itemHrid|level, price>，供 resolvePlanLevelPrice 优先于参考价链取值。
+function parseManualInputPrices(manualInputPrices, targetHrid) {
+  const targetHridText = String(targetHrid || '');
   const manualInputs = new Map();
   if (isPlainObject(manualInputPrices)) {
-    for (const [rawLevel, rawPrice] of Object.entries(manualInputPrices)) {
-      const safeLevel = Math.max(0, Math.floor(toFiniteNumber(rawLevel, 0)));
+    for (const [rawKey, rawPrice] of Object.entries(manualInputPrices)) {
       const safePrice = toFiniteNumber(rawPrice, 0);
-      if (safeLevel > 0 && safePrice > 0) {
-        manualInputs.set(safeLevel, safePrice);
+      if (!(safePrice > 0)) {
+        continue;
+      }
+      const rawKeyText = String(rawKey);
+      const pipeIndex = rawKeyText.lastIndexOf('|');
+      if (pipeIndex >= 0) {
+        const keyHrid = rawKeyText.slice(0, pipeIndex);
+        const keyLevel = Math.max(0, Math.floor(toFiniteNumber(rawKeyText.slice(pipeIndex + 1), 0)));
+        if (keyHrid && keyLevel > 0) {
+          manualInputs.set(getConfirmedEquipmentPriceKey(keyHrid, keyLevel), safePrice);
+        }
+        continue;
+      }
+      const safeLevel = Math.max(0, Math.floor(toFiniteNumber(rawKey, 0)));
+      if (safeLevel > 0 && targetHridText) {
+        manualInputs.set(getConfirmedEquipmentPriceKey(targetHridText, safeLevel), safePrice);
       }
     }
   }
@@ -607,55 +656,69 @@ function parseManualInputPrices(manualInputPrices) {
 }
 
 // 从 memo 表展开合成方案的输入件需求清单（countMap）。
-// collectInputs 递归遍历 memo 中各级的 inputs 数组，将叶节点（method='direct'）按等级汇总计数。
-// 随后执行基准顶替：同款同等级需求件直接用基准装备顶替（最多 1 件），在 countMap 中扣减并记录 usedBaselineLevels。
+// collectInputs 递归遍历 memo 中各级的 inputs 数组（每项携带 { itemHrid, level } 价格域），
+// 将叶节点（method='direct'）按 "itemHrid|level" 复合键汇总计数——精炼目标的输入树同时包含
+// 基础物品域与精炼物品域，同等级可能同时需要两种物品各若干件，仅按等级聚合会混淆价格域。
+// 随后执行基准顶替：基准装备与目标同款（同 hrid），仅顶替目标域中同等级的需求件（最多 1 件）；
+// 低档基础物品输入不能被精炼基准顶替（不同款）。在 countMap 中扣减并记录 usedBaselineLevels。
 // 返回 { countMap, usedBaselineLevels }。
-function collectMirrorInputs(level, memo, baseline) {
-  const collectInputs = (l, countMap) => {
+function collectMirrorInputs(targetHrid, level, memo, baseline) {
+  const collectInputs = (collectHrid, l, countMap) => {
     if (l <= 0) {
       return;
     }
-    const plan = memo.get(l);
+    const plan = memo.get(getConfirmedEquipmentPriceKey(collectHrid, l));
     if (!plan) {
       return;
     }
     if (plan.method === 'direct') {
-      countMap[l] = (countMap[l] || 0) + 1;
+      const key = getConfirmedEquipmentPriceKey(collectHrid, l);
+      countMap[key] = (countMap[key] || 0) + 1;
       return;
     }
     for (const input of plan.inputs) {
-      collectInputs(input, countMap);
+      collectInputs(input.itemHrid, input.level, countMap);
     }
   };
   const countMap = {};
-  collectInputs(level, countMap);
+  collectInputs(targetHrid, level, countMap);
 
   const usedBaselineLevels = new Set();
-  if (baseline > 0 && countMap[baseline] > 0) {
-    countMap[baseline] -= 1;
-    usedBaselineLevels.add(baseline);
+  if (baseline > 0) {
+    const baselineKey = getConfirmedEquipmentPriceKey(targetHrid, baseline);
+    if (countMap[baselineKey] > 0) {
+      countMap[baselineKey] -= 1;
+      usedBaselineLevels.add(baseline);
+    }
   }
   return { countMap, usedBaselineLevels };
 }
 
 // 将 countMap 展开为输入件数组，同时检测硬缺价件。
 // 硬缺价：方案需求件（countMap 收集后要购买的输入件）取不到价，会导致方案整体不可算。
-// resolvePlanLevelPrice 为价格解析函数（manual 优先 → 参考价链）。
+// countMap 键为 "itemHrid|level"（getConfirmedEquipmentPriceKey），拆出各条目自身的价格域后
+// 逐件取价——精炼目标的 +N-2 基础物品输入必须按基础物品行情计价，不能误用精炼物品行情。
+// resolvePlanLevelPrice 为价格解析函数（manual 优先 → 参考价链），入参 (itemHrid, level)。
 // 返回 { inputs, missingRequired }。
 function expandMirrorInputs(countMap, resolvePlanLevelPrice) {
   const missingRequired = [];
   const inputs = [];
-  for (const [l, count] of Object.entries(countMap)) {
-    const numericLevel = Number(l);
+  for (const [key, count] of Object.entries(countMap)) {
     if (count <= 0) {
       continue;
     }
-    const quote = resolvePlanLevelPrice(numericLevel);
+    // 键格式由 collectMirrorInputs 内部构建（getConfirmedEquipmentPriceKey），此处仅做防御性拆分：
+    // hrid 本身不含 '|'，取 lastIndexOf 保证 '/items/xxx|13' 形态下 hrid 段完整。
+    const pipeIndex = key.lastIndexOf('|');
+    const entryHrid = pipeIndex > 0 ? key.slice(0, pipeIndex) : '';
+    const numericLevel = Math.max(0, Math.floor(toFiniteNumber(pipeIndex >= 0 ? key.slice(pipeIndex + 1) : key, 0)));
+    const quote = resolvePlanLevelPrice(entryHrid, numericLevel);
     if (!quote) {
-      missingRequired.push({ level: numericLevel, count });
+      missingRequired.push({ itemHrid: entryHrid, level: numericLevel, count });
       continue;
     }
     inputs.push({
+      itemHrid: entryHrid,
       level: numericLevel,
       count,
       price: quote.price,
@@ -673,32 +736,40 @@ function expandMirrorInputs(countMap, resolvePlanLevelPrice) {
 // 子级输入件根本不会被计算进 memo；若据此把子级列为缺价，会误导用户去补实际有价的
 // 子级价格（G2 误报）。只有"已计算且不可算"（plan 存在且 cost 为 null）才说明该子级
 // 价格确实断档；镜子价缺失时真正的阻塞项是镜子价本身，由弹窗的共享镜子价输入引导补齐。
-// 返回完整的 missing 数组（含硬缺价 + 软缺价 + 兜底缺价）。
+// 返回完整的 missing 数组（含硬缺价 + 软缺价 + 兜底缺价），每条携带 itemHrid（价格域感知：
+// 精炼目标时低档输入来自基础物品域，提示必须指向正确物品，否则用户会去补错误物品的价格）。
 // count 语义：硬缺价（missingRequired）与兜底目标级携带确定份数；软缺价条目 count 为 null——
 // 补价前该等级在补价后展开树中的真实需求份数取决于用户所填价格（如补价后低一档输入级
 // 改走镜子合成会使本档需求翻倍：测试场景 +1 提示 ×1、补价后 inputs 实际 ×2），当前状态
 // 不可确定，展示固定份数会误导用户；补价重算后由 expandMirrorInputs 给出精确 count。
-function detectSoftMissingInputs(level, result, memo, missingRequired) {
+function detectSoftMissingInputs(targetHrid, level, result, memo, missingRequired, resolveLowerInputHrid) {
   const missing = missingRequired.slice();
-  const pushMissing = (missingLevel) => {
-    if (!missing.some((item) => Number(item.level) === missingLevel)) {
-      missing.push({ level: missingLevel, count: null });
+  const pushMissing = (missingHrid, missingLevel) => {
+    if (
+      !missing.some(
+        (item) => String(item.itemHrid || targetHrid) === String(missingHrid) && Number(item.level) === missingLevel,
+      )
+    ) {
+      missing.push({ itemHrid: String(missingHrid), level: missingLevel, count: null });
     }
   };
   if (level >= 2 && result.method !== 'mirror') {
-    const lowerPlan = memo.get(level - 2);
-    const upperPlan = memo.get(level - 1);
+    const lowerHrid = resolveLowerInputHrid(targetHrid);
+    const lowerPlan = memo.get(getConfirmedEquipmentPriceKey(lowerHrid, level - 2));
+    const upperPlan = memo.get(getConfirmedEquipmentPriceKey(targetHrid, level - 1));
     const lowerMissing = lowerPlan != null && lowerPlan.cost == null;
     const upperMissing = upperPlan != null && upperPlan.cost == null;
     if (lowerMissing || upperMissing) {
       if (lowerMissing) {
-        pushMissing(level - 2);
+        pushMissing(lowerHrid, level - 2);
       }
       if (upperMissing) {
-        pushMissing(level - 1);
+        pushMissing(targetHrid, level - 1);
       }
       // 目标级自身在直购兜底时会被列为缺价；走合成并不需要目标级价格，去掉它。
-      const targetRequiredIndex = missing.findIndex((item) => Number(item.level) === level);
+      const targetRequiredIndex = missing.findIndex(
+        (item) => String(item.itemHrid || targetHrid) === String(targetHrid) && Number(item.level) === level,
+      );
       if (targetRequiredIndex >= 0) {
         missing.splice(targetRequiredIndex, 1);
       }
@@ -706,19 +777,29 @@ function detectSoftMissingInputs(level, result, memo, missingRequired) {
   }
   // 兜底：方案无法计算且没有任何缺价提示时，把目标级本身列为缺价（直购兜底路径）。
   if (missing.length === 0 && result.cost == null) {
-    missing.push({ level, count: 1 });
+    missing.push({ itemHrid: String(targetHrid), level, count: 1 });
   }
   return missing;
 }
 
-// 递归计算"贤者之镜"合成方案：+N = +（N-2）+ +（N-1）+ 镜子。
+// 递归计算"贤者之镜"合成方案：+N = +（N-2）+ +（N-1）+ 镜子（游戏正确公式，价格域感知）：
+// 低档输入件 +（N-2）永远使用基础物品（hrid 剥离 _refined 后缀），高档输入件 +（N-1）与目标同款——
+// 如 +13物品(基础) + +14物品精 + 镜子 -> +15物品精；+13物品 + +14物品 + 镜子 -> +15物品。
+// 修复前实现对所有输入等级统一用目标 hrid 取价，精炼目标的 +N-2 基础物品输入被按精炼物品计价（偏高）。
 // 输入件获取成本 = min(直购成品价, 更低价合成)，目标级则镜像优先（用户已选定镜子方案，
-// 成本列显示合成路线，不与直购价取 min）；基准装备（同款同等级）直接顶替输入（不卖出、成本计 0），最多顶替 1 件。
-// manualInputPrices：缺价件手动补价（{ level: 价格 }），取值时优先于参考价链；其余自动取。
+// 成本列显示合成路线，不与直购价取 min）；基准装备（与目标同款）直接顶替目标域输入（不卖出、成本计 0），
+// 最多顶替 1 件；低档基础物品输入不能被精炼基准顶替（不同款）。
+// manualInputPrices：缺价件手动补价，键支持 "itemHrid|level"（价格域感知，指明补价物品）与
+// 纯 level（旧格式，归一到目标域），取值时优先于参考价链；其余自动取。
 // historicalQuotes（可选）：历史 Ask 异步查询结果，透传至 resolveReferencePriceQuote，
 // 使镜子方案取价链与参考价列口径统一（同步链全部 miss 后查历史 Ask）。
-// mirrorPrice：贤者之镜单价，调用方必须保证为正有限数；null/0/负值/非有限数视为不可用（与镜子缺价同语义，方案不可算）。
-// 返回 { level, cost, method, mirrorCount, mirrorPrice, inputs, details, usedBaselineLevels, missing }；缺价时 cost 为 null。
+// mirrorPrice：贤者之镜单价，调用方必须保证为正有限数；null/0/负值/非有限数视为不可用（与镜子缺价同语义）。
+// saleSide：基准件出售价值取价口径（'bid'/'ask'，默认 bid），与转行出售抵扣共用
+// resolveBaselineSaleValue 链路，保证"买入价 − 出售抵扣 = 现金合成成本"成立。
+// 返回 { level, cost, method, mirrorCount, mirrorPrice, inputs, details, usedBaselineLevels,
+// baselinePieceSaleValue, missing }；缺价时 cost 为 null。baselinePieceSaleValue 为被顶替
+// 基准件的出售价值（已扣手续费；无顶替或无市场价时为 0），供"总成本（含基准件）"与
+// 多轮"目标装备买入价"把基准件按出售价值计入。
 export function computeMirrorPlan({
   itemHrid,
   targetLevel,
@@ -728,10 +809,12 @@ export function computeMirrorPlan({
   mirrorPrice = null,
   manualInputPrices = null,
   historicalQuotes = null,
+  saleSide = null,
 }) {
   const hrid = String(itemHrid || '');
   const level = Math.max(0, Math.floor(toFiniteNumber(targetLevel, 0)));
   const baseline = Math.max(0, Math.floor(toFiniteNumber(baselineLevel, 0)));
+  const safeSaleSide = normalizeBaselineSaleSide(saleSide);
   if (!hrid || level <= 0) {
     return {
       level,
@@ -741,6 +824,7 @@ export function computeMirrorPlan({
       inputs: [],
       details: [],
       missing: [],
+      baselinePieceSaleValue: 0,
       unavailable: false,
     };
   }
@@ -756,6 +840,7 @@ export function computeMirrorPlan({
       inputs: [],
       details: [],
       missing: [],
+      baselinePieceSaleValue: 0,
       unavailable: true,
     };
   }
@@ -773,19 +858,27 @@ export function computeMirrorPlan({
       inputs: [],
       details: [],
       missing: [],
+      baselinePieceSaleValue: 0,
       unavailable: true,
     };
   }
 
-  const manualInputs = parseManualInputPrices(manualInputPrices);
+  // 低档输入件价格域：游戏公式中合成 +N 的 +(N-2) 输入永远使用基础物品（剥离 _refined 后缀，
+  // 与 enhancementSimulator.planPhilosophersMirror 的 baseItemHrid、assetScoreService 的推导惯例一致）；
+  // 高档 +(N-1) 输入与目标同款。非精炼目标下两者为同一 hrid，行为与旧实现完全一致。
+  const resolveLowerInputHrid = (itemHridText) =>
+    itemHridText.endsWith('_refined') ? itemHridText.slice(0, -'_refined'.length) : itemHridText;
+
+  const manualInputs = parseManualInputPrices(manualInputPrices, hrid);
 
   // 缺价件手动补价优先，其余走参考价链（精确 Ask → 官方小时均价 → 历史 Ask → confirmed）。
   // historicalQuotes 透传至 resolveReferencePriceQuote，使镜子方案取价链与参考价列口径一致。
-  const resolvePlanLevelPrice = (planLevel) => {
-    const manualPrice = manualInputs.get(planLevel);
+  // 每次取价按输入件自身的价格域（planHrid）进行：精炼目标时基础物品输入查基础物品行情。
+  const resolvePlanLevelPrice = (planHrid, planLevel) => {
+    const manualPrice = manualInputs.get(getConfirmedEquipmentPriceKey(planHrid, planLevel));
     if (manualPrice != null && manualPrice > 0) {
       return {
-        itemHrid: hrid,
+        itemHrid: planHrid,
         enhancementLevel: planLevel,
         price: manualPrice,
         volume: null,
@@ -793,77 +886,97 @@ export function computeMirrorPlan({
         marketTimestamp: 0,
       };
     }
-    return resolveReferencePriceQuote(hrid, planLevel, pricingState, confirmedEquipmentPrices, historicalQuotes);
+    return resolveReferencePriceQuote(planHrid, planLevel, pricingState, confirmedEquipmentPrices, historicalQuotes);
   };
 
   // 直购价 = 一件该等级成品的价格（与弹窗中“直购”对比的口径一致），
   // 而不是“从 0 逐级强化”的累加价：目标级只要有成品价就不需要低级价格。
-  const resolvePlanDirectQuote = (planLevel) => {
-    const quote = resolvePlanLevelPrice(planLevel);
+  const resolvePlanDirectQuote = (planHrid, planLevel) => {
+    const quote = resolvePlanLevelPrice(planHrid, planLevel);
     return quote ? quote.price : null;
   };
 
+  // memo 键为 "itemHrid|level"（getConfirmedEquipmentPriceKey）：精炼目标的输入树同时包含
+  // 基础物品域与精炼物品域，同等级的两种物品是不同的价格域，必须分开记忆/查表。
   const memo = new Map();
 
-  // 单级合成价：+N = +（N-2）+ +（N-1）+ 镜子；任一输入价缺失或镜子价缺失 → null。
+  // 单级合成价：+N = 基础物品+(N-2) + 同款+(N-1) + 镜子；任一输入价缺失或镜子价缺失 → null。
   // evalMirror 与 resolveLevelCost 互为递归调用，使用 function 声明以利用 hoisting 消除 TDZ 风险。
   // 镜子价必须为正有限数：0/负值与 null、非有限数同视为不可用，防止"0 镜子成本"合成价
   // 低于所有直购价而被误选为最低成本。UI 层手工输入已校验收敛到正数，此处为 API 层防御。
-  function evalMirror(l) {
+  function evalMirror(evalHrid, l) {
     if (l < 2 || mirrorPrice == null || !Number.isFinite(Number(mirrorPrice)) || Number(mirrorPrice) <= 0) {
       return null;
     }
-    const lower = resolveLevelCost(l - 2);
-    const upper = resolveLevelCost(l - 1);
+    const lowerHrid = resolveLowerInputHrid(evalHrid);
+    const lower = resolveLevelCost(lowerHrid, l - 2);
+    const upper = resolveLevelCost(evalHrid, l - 1);
     if (lower.cost == null || upper.cost == null) {
       return null;
     }
     return {
       cost: lower.cost + upper.cost + Number(mirrorPrice),
       method: 'mirror',
-      inputs: [l - 2, l - 1],
+      inputs: [
+        { itemHrid: lowerHrid, level: l - 2 },
+        { itemHrid: evalHrid, level: l - 1 },
+      ],
       mirrorCount: lower.mirrorCount + upper.mirrorCount + 1,
     };
   }
 
-  function resolveLevelCost(l) {
+  function resolveLevelCost(resolveHrid, l) {
     if (l <= 0) {
       return { cost: 0, method: 'direct', inputs: null, mirrorCount: 0 };
     }
-    if (memo.has(l)) {
-      return memo.get(l);
+    const memoKey = getConfirmedEquipmentPriceKey(resolveHrid, l);
+    if (memo.has(memoKey)) {
+      return memo.get(memoKey);
     }
-    // 基准装备顶替该等级输入：成本 0，collectInputs 仍按 direct 计入 countMap 以便顶替逻辑标记。
-    if (baseline > 0 && l === baseline) {
+    // 基准装备顶替该等级输入：仅限目标域（基准与目标同款，目标精炼则基准同为精炼）；
+    // 低档基础物品输入与精炼基准不同款，不能被顶替。成本 0，collectInputs 仍按 direct
+    // 计入 countMap 以便顶替逻辑标记。
+    if (baseline > 0 && l === baseline && resolveHrid === hrid) {
       const baselinePlan = { cost: 0, method: 'direct', inputs: null, mirrorCount: 0 };
-      memo.set(l, baselinePlan);
+      memo.set(memoKey, baselinePlan);
       return baselinePlan;
     }
-    const direct = resolvePlanDirectQuote(l);
+    const direct = resolvePlanDirectQuote(resolveHrid, l);
     let best = { cost: direct, method: 'direct', inputs: null, mirrorCount: 0 };
-    // 输入件获取成本 = min(直购成品价, 镜子合成价)：取更低者。
+    // 输入件获取成本 = min(直购成品价, 镜子合成价)：取更低者。基础物品等级同样可走镜子合成。
     if (l >= 2) {
-      const mirrorPlan = evalMirror(l);
+      const mirrorPlan = evalMirror(resolveHrid, l);
       if (mirrorPlan && mirrorPlan.cost < (best.cost ?? Infinity)) {
         best = mirrorPlan;
       }
     }
-    memo.set(l, best);
+    memo.set(memoKey, best);
     return best;
   }
 
   // 顶层镜像优先：用户已选定“镜子方案”，成本 = 合成路线（如 13 = 11 + 12 + 镜子），
   // 不与目标级直购价取 min（直购价在参考价/左1列可见）；合成不可算时由缺价提示引导补价。
   // 顶层结果同样写入 memo，供 collectInputs 展开输入件清单。
-  const result = evalMirror(level) || resolveLevelCost(level);
-  if (!memo.has(level)) {
-    memo.set(level, result);
+  const result = evalMirror(hrid, level) || resolveLevelCost(hrid, level);
+  if (!memo.has(getConfirmedEquipmentPriceKey(hrid, level))) {
+    memo.set(getConfirmedEquipmentPriceKey(hrid, level), result);
   }
   const usedBaselineLevels = new Set();
-  const { countMap, usedBaselineLevels: baselineSet } = collectMirrorInputs(level, memo, baseline);
+  const { countMap, usedBaselineLevels: baselineSet } = collectMirrorInputs(hrid, level, memo, baseline);
   for (const bl of baselineSet) {
     usedBaselineLevels.add(bl);
   }
+
+  // 基准件出售价值（已扣手续费）：镜子方案顶替基准件时，"总成本（含基准件）"与多轮
+  // "目标装备买入价"按该值把基准件计入（基准件与目标同款，即 (hrid, 顶替等级)）。
+  // 与转行出售抵扣共用 resolveBaselineSaleValue 链路口径，从而
+  // 买入价（含基准件） − 出售抵扣 = 现金合成成本 恒成立；无顶替或无市场价时为 0，
+  // UI 据此在总成本列显示"—"并让买入价回落现金口径。
+  const substitutedBaselineLevels = Array.from(usedBaselineLevels);
+  const baselinePieceSaleValue =
+    substitutedBaselineLevels.length > 0
+      ? resolveBaselineSaleValue(hrid, Math.max(...substitutedBaselineLevels), pricingState, safeSaleSide).value
+      : 0;
 
   // 硬缺价：方案需求件（countMap 收集后要购买的输入件）取不到价，会导致方案整体不可算。
   const { inputs, missingRequired } = expandMirrorInputs(countMap, resolvePlanLevelPrice);
@@ -871,7 +984,7 @@ export function computeMirrorPlan({
   const mirrorCount = result.mirrorCount;
   const mirrorTotalCost = mirrorCount > 0 ? mirrorCount * Number(mirrorPrice || 0) : 0;
   const inputTotal = inputs.reduce((sum, input) => sum + input.totalCost, 0);
-  const missing = detectSoftMissingInputs(level, result, memo, missingRequired);
+  const missing = detectSoftMissingInputs(hrid, level, result, memo, missingRequired, resolveLowerInputHrid);
   // 目标级必须走镜子路线才有成本（用户已选定镜子方案）；直购兜底不再作为镜子成本显示。
   // cost 取自递归合成路径 result.cost（合成成本的源头值），而非展开后的 inputTotal + mirrorTotalCost。
   // 两者在当前逻辑下数值等价（inputTotal 来自 collectInputs 递归展开后扣除基准顶替件的叶节点输入×单价之和，
@@ -901,6 +1014,7 @@ export function computeMirrorPlan({
     mirrorPrice: mirrorCount > 0 ? Number(mirrorPrice || 0) : 0,
     inputs,
     details: inputs.map((input) => ({
+      itemHrid: input.itemHrid,
       level: input.level,
       count: input.count,
       price: input.price,
@@ -908,6 +1022,7 @@ export function computeMirrorPlan({
       source: input.source,
     })),
     usedBaselineLevels: Array.from(usedBaselineLevels),
+    baselinePieceSaleValue,
     missing,
     unavailable: false,
   };
@@ -1000,9 +1115,22 @@ export function inspectQueueEquipmentPricing(
   return inspections;
 }
 
+// 判断 inspection 是否为"镜子方案顶替基准件"的行：顶替件被合成消耗而非卖出，
+// 出售抵扣按确认时快照计（无价时为 0 属预期回落），baseline_sale_zero 的
+// "抵扣按 0 计并警告补价"语义对其属于误报，构造警告时应跳过。
+function isMirrorBaselineSubstitutedInspection(inspection) {
+  return (
+    String(inspection?.confirmedPrice?.method || '') === QUEUE_PRICE_METHOD_MIRROR &&
+    Array.isArray(inspection?.confirmedPrice?.usedBaselineLevels) &&
+    inspection.confirmedPrice.usedBaselineLevels.includes(
+      Math.max(0, Math.floor(toFiniteNumber(inspection?.beforeLevel, 0))),
+    )
+  );
+}
+
 export function buildQueueCostWarnings(inspections = []) {
   const baselineWarnings = inspections
-    .filter((inspection) => inspection.baselineSaleZero)
+    .filter((inspection) => inspection.baselineSaleZero && !isMirrorBaselineSubstitutedInspection(inspection))
     .map((inspection) => ({
       code: 'baseline_sale_zero',
       slotKey: inspection.slotKey,
@@ -1057,8 +1185,9 @@ export function findInvalidManualEquipmentPriceEntry(rawPrices) {
 
 // 校验 priceSelections 中各方式的价格是否有效。
 // manual 要求正整数；mirror 要求正数（cost 可为浮点），且 inputs 中至少有一个有效输入件
-// （inputLevel > 0 且 inputPrice > 0）。mirror 校验复用 normalizeMirrorInputs 以与
-// normalizeQueuePriceSelections 保持同一过滤口径，避免同步漂移。
+// （inputLevel > 0 且 inputPrice > 0）——例外：基准顶替型无输入件形态（+2 顶替 +1，
+// mirrorCount > 0 且 usedBaselineLevels 非空）合法，按共用判定放行。mirror 校验复用
+// normalizeMirrorInputs 以与 normalizeQueuePriceSelections 保持同一过滤口径，避免同步漂移。
 // left1/right1 要求正数（price 来自市场参考价/收购价，可为浮点），与 mirror 的 price 校验口径一致。
 // 无效时返回该条目，否则返回 null。
 export function findInvalidPriceSelection(rawSelections) {
@@ -1078,7 +1207,8 @@ export function findInvalidPriceSelection(rawSelections) {
         return rawEntry;
       }
       const normalizedInputs = normalizeMirrorInputs(rawEntry?.inputs);
-      if (normalizedInputs.length === 0) {
+      // 基准顶替型无输入件形态（+2 顶替 +1）合法，按共用判定放行；其余空 inputs 仍判无效。
+      if (normalizedInputs.length === 0 && !isBaselineSubstitutedMirrorSelection(rawEntry)) {
         return rawEntry;
       }
     } else if (method === QUEUE_PRICE_METHOD_LEFT1 || method === QUEUE_PRICE_METHOD_RIGHT1) {

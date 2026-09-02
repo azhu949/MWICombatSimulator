@@ -15,6 +15,7 @@ import {
   computeDefaultAbilityUpgradeCost,
   computeMirrorPlan,
   computeQueueItemUpgradeCost,
+  findInvalidPriceSelection,
   getAbilityUpgradeCostKey,
   getConfirmedEquipmentPrice,
   getConfirmedEquipmentPriceKey,
@@ -189,7 +190,9 @@ describe('queueUpgradeCost', () => {
         confirmedAt: 0,
         mirrorPrice: 60,
         mirrorCount: 2,
-        inputs: [{ level: 1, count: 2, price: 200, source: 'ask' }],
+        // 未携带 itemHrid 的旧输入件归一为空串（价格域感知字段），由展示层回退到条目自身物品。
+        inputs: [{ itemHrid: '', level: 1, count: 2, price: 200, source: 'ask' }],
+        baselinePieceSaleValue: 0,
         usedBaselineLevels: [],
       },
     ]);
@@ -341,7 +344,8 @@ describe('queueUpgradeCost', () => {
         confirmedAt: 100,
         mirrorPrice: 40,
         mirrorCount: 2,
-        inputs: [{ level: 1, count: 2, price: 200, source: 'ask' }],
+        inputs: [{ itemHrid: '', level: 1, count: 2, price: 200, source: 'ask' }],
+        baselinePieceSaleValue: 0,
         usedBaselineLevels: [],
       },
     ]);
@@ -353,6 +357,84 @@ describe('queueUpgradeCost', () => {
     ]);
     expect(bothValid).toHaveLength(1);
     expect(bothValid[0].price).toBe(111);
+  });
+
+  it('accepts baseline-substituted mirror selections with no priced inputs across the validation chain', () => {
+    const itemHrid = findEquipmentForSlot('head');
+    expect(itemHrid).toBeTruthy();
+
+    // +2 目标顶替基准 +1 的合法形态：inputs 为空、mirrorCount > 0、usedBaselineLevels 非空。
+    // price = 现金合成成本（镜子价 50）+ 基准件出售价值快照 38（总成本口径）。
+    const inputlessSelection = {
+      itemHrid,
+      enhancementLevel: 2,
+      method: QUEUE_PRICE_METHOD_MIRROR,
+      price: 88,
+      mirrorPrice: 50,
+      mirrorCount: 1,
+      inputs: [],
+      baselinePieceSaleValue: 38,
+      usedBaselineLevels: [1],
+      confirmedAt: 100,
+    };
+
+    // 校验谓词放行该形态；损坏形态（无顶替记录 / 无镜子数量）仍判无效。
+    expect(findInvalidPriceSelection([inputlessSelection])).toBeNull();
+    expect(findInvalidPriceSelection([{ ...inputlessSelection, usedBaselineLevels: [] }])).toMatchObject({
+      itemHrid,
+      enhancementLevel: 2,
+    });
+    expect(findInvalidPriceSelection([{ ...inputlessSelection, mirrorCount: 0 }])).toMatchObject({
+      itemHrid,
+      enhancementLevel: 2,
+    });
+
+    // 选择归一化保留该形态并透传快照字段（入队与持久化路径共用）。
+    const normalized = normalizeQueuePriceSelections([inputlessSelection]);
+    expect(normalized).toEqual([
+      {
+        itemHrid,
+        enhancementLevel: 2,
+        method: QUEUE_PRICE_METHOD_MIRROR,
+        price: 88,
+        volume: null,
+        source: 'mirror',
+        marketTimestamp: 0,
+        confirmedAt: 100,
+        mirrorPrice: 50,
+        mirrorCount: 1,
+        inputs: [],
+        baselinePieceSaleValue: 38,
+        usedBaselineLevels: [1],
+      },
+    ]);
+
+    // confirmed 侧同口径保留（merge 幂等的前提）。
+    const confirmed = normalizeConfirmedEquipmentPrices([{ ...inputlessSelection, source: 'mirror' }]);
+    expect(confirmed).toEqual([
+      {
+        itemHrid,
+        enhancementLevel: 2,
+        method: QUEUE_PRICE_METHOD_MIRROR,
+        price: 88,
+        volume: null,
+        source: 'mirror',
+        marketTimestamp: 0,
+        confirmedAt: 100,
+        mirrorPrice: 50,
+        mirrorCount: 1,
+        inputs: [],
+        baselinePieceSaleValue: 38,
+        usedBaselineLevels: [1],
+      },
+    ]);
+
+    // merge 输出对下游二次归一化保持闭包（入队/运行/评分共用 mergeConfirmedPricesAndSelections）。
+    const merged = mergeConfirmedPricesAndSelections({
+      priceSelections: [inputlessSelection],
+      confirmedEquipmentPrices: [],
+    });
+    expect(normalizeConfirmedEquipmentPrices(merged)).toEqual(merged);
   });
 
   it('merge recovers a valid selection preceded by an invalid duplicate row of the same key', () => {
@@ -740,8 +822,9 @@ describe('queueUpgradeCost', () => {
     expect(collapsed.mirrorCount).toBe(0);
     // 软缺价条目 count 为 null：补价前 +1 在展开树中的真实需求份数取决于所补价格，
     // 提示固定份数会低估（补价后 +2 改走镜子合成，实际需要 2 份 +1，见下方 recovered.inputs）。
-    expect(collapsed.missing).toEqual([{ level: 1, count: null }]);
-    expect(collapsed.inputs).toEqual([{ level: 3, count: 1, price: 5000, source: 'ask', totalCost: 5000 }]);
+    // missing/inputs 每条携带 itemHrid（价格域感知）：非精炼目标下与目标 hrid 相同。
+    expect(collapsed.missing).toEqual([{ itemHrid, level: 1, count: null }]);
+    expect(collapsed.inputs).toEqual([{ itemHrid, level: 3, count: 1, price: 5000, source: 'ask', totalCost: 5000 }]);
 
     // 手动补上 +1 的价格后，方案可算且输入件标记为手动来源。
     const recovered = computeMirrorPlan({
@@ -755,7 +838,7 @@ describe('queueUpgradeCost', () => {
     expect(recovered.method).toBe('mirror');
     expect(recovered.mirrorCount).toBe(2);
     expect(recovered.inputs).toEqual([
-      { level: 1, count: 2, price: 200, source: MANUAL_EQUIPMENT_PRICE_SOURCE, totalCost: 400 },
+      { itemHrid, level: 1, count: 2, price: 200, source: MANUAL_EQUIPMENT_PRICE_SOURCE, totalCost: 400 },
     ]);
     expect(recovered.missing).toEqual([]);
   });
@@ -796,7 +879,7 @@ describe('queueUpgradeCost', () => {
       mirrorPrice: null,
     });
     expect(fullyMissing.cost).toBeNull();
-    expect(fullyMissing.missing).toEqual([{ level: 3, count: 1 }]);
+    expect(fullyMissing.missing).toEqual([{ itemHrid, level: 3, count: 1 }]);
   });
 
   it('treats a non-positive mirror price as unavailable instead of free mirrors', () => {
@@ -849,7 +932,7 @@ describe('queueUpgradeCost', () => {
       }),
       mirrorPrice: 50,
     });
-    expect(soft.missing).toEqual([{ level: 1, count: null }]);
+    expect(soft.missing).toEqual([{ itemHrid, level: 1, count: null }]);
 
     // 补价后份数由展开路径精确给出：+2 改走镜子合成，实际需要 2 份 +1。
     const recovered = computeMirrorPlan({
@@ -869,7 +952,7 @@ describe('queueUpgradeCost', () => {
     });
     expect(recovered.missing).toEqual([]);
     expect(recovered.inputs).toEqual([
-      { level: 1, count: 2, price: 200, source: MANUAL_EQUIPMENT_PRICE_SOURCE, totalCost: 400 },
+      { itemHrid, level: 1, count: 2, price: 200, source: MANUAL_EQUIPMENT_PRICE_SOURCE, totalCost: 400 },
     ]);
 
     // 兜底：方案完全不可算且无任何缺价提示时，目标级本身作为直购件列为缺价，份数确定为 1。
@@ -879,7 +962,7 @@ describe('queueUpgradeCost', () => {
       pricingState: buildPricingState({ enhancementQuotesByItem: {} }),
       mirrorPrice: null,
     });
-    expect(fallback.missing).toEqual([{ level: 3, count: 1 }]);
+    expect(fallback.missing).toEqual([{ itemHrid, level: 3, count: 1 }]);
   });
 
   it('keeps the missing list to the direct mirror input levels for a high-level target', () => {
@@ -1011,7 +1094,7 @@ describe('queueUpgradeCost', () => {
     expect(collapsed.cost).toBeNull();
     expect(collapsed.unavailable).toBe(false);
     // 软缺价条目不携带确定份数（count 为 null）。
-    expect(collapsed.missing).toEqual([{ level: 11, count: null }]);
+    expect(collapsed.missing).toEqual([{ itemHrid, level: 11, count: null }]);
 
     // 手动补 +11 后方案可算：13 = 11 + 12(基准) + 镜子。
     const recovered = computeMirrorPlan({
@@ -1029,7 +1112,7 @@ describe('queueUpgradeCost', () => {
     expect(recovered.missing).toEqual([]);
     expect(recovered.usedBaselineLevels).toEqual([12]);
     expect(recovered.inputs).toEqual([
-      { level: 11, count: 1, price: 5000, source: MANUAL_EQUIPMENT_PRICE_SOURCE, totalCost: 5000 },
+      { itemHrid, level: 11, count: 1, price: 5000, source: MANUAL_EQUIPMENT_PRICE_SOURCE, totalCost: 5000 },
     ]);
   });
 
@@ -1059,7 +1142,29 @@ describe('queueUpgradeCost', () => {
     expect(plan.mirrorCount).toBe(1);
     expect(plan.missing).toEqual([]);
     expect(plan.usedBaselineLevels).toEqual([10]);
-    expect(plan.inputs).toEqual([{ level: 9, count: 1, price: 3000, source: 'ask', totalCost: 3000 }]);
+    expect(plan.inputs).toEqual([{ itemHrid, level: 9, count: 1, price: 3000, source: 'ask', totalCost: 3000 }]);
+    // 顶替的 +10 无市场价：基准件出售价值为 0（总成本列显示"—"，买入价回落现金口径）。
+    expect(plan.baselinePieceSaleValue).toBe(0);
+
+    // +10 有 bid 时：基准件出售价值 = bid 扣 5% 手续费（1000 → 950），仍不计入现金成本。
+    const pricedPlan = computeMirrorPlan({
+      itemHrid,
+      targetLevel: 11,
+      baselineLevel: 10,
+      pricingState: buildPricingState({
+        enhancementQuotesByItem: {
+          [itemHrid]: {
+            9: { ask: 3000, bid: 100 },
+            10: { ask: 2000, bid: 1000 },
+          },
+        },
+      }),
+      mirrorPrice: 50,
+    });
+    expect(pricedPlan.method).toBe('mirror');
+    expect(pricedPlan.cost).toBe(3050);
+    expect(pricedPlan.usedBaselineLevels).toEqual([10]);
+    expect(pricedPlan.baselinePieceSaleValue).toBe(950);
 
     // 缺 +9 价格时列为唯一缺价输入，补上即可解锁。
     const waiting = computeMirrorPlan({
@@ -1071,7 +1176,40 @@ describe('queueUpgradeCost', () => {
     });
     expect(waiting.cost).toBeNull();
     // 软缺价条目不携带确定份数（count 为 null）。
-    expect(waiting.missing).toEqual([{ level: 9, count: null }]);
+    expect(waiting.missing).toEqual([{ itemHrid, level: 9, count: null }]);
+  });
+
+  it('produces a computable inputless plan for the +2 baseline-substituted target', () => {
+    const itemHrid = findEquipmentForSlot('head');
+    expect(itemHrid).toBeTruthy();
+
+    // 基准 +1 → 目标 +2：+2 = +0 基础件（既有口径免费）+ +1（基准顶替）+ 镜子。
+    // countMap 收集后无可购输入件 → inputs 为空，但 cost = 镜子价 > 0，方案可算。
+    // 校验链必须放行该形态，否则弹窗确认必然失败（MAJ-02）。
+    const pricingState = buildPricingState({
+      enhancementQuotesByItem: {
+        [itemHrid]: {
+          1: { ask: 100, bid: 40 },
+        },
+      },
+    });
+
+    const plan = computeMirrorPlan({
+      itemHrid,
+      targetLevel: 2,
+      baselineLevel: 1,
+      pricingState,
+      mirrorPrice: 50,
+    });
+    expect(plan.method).toBe('mirror');
+    expect(plan.cost).toBe(50);
+    expect(plan.mirrorCount).toBe(1);
+    expect(plan.mirrorPrice).toBe(50);
+    expect(plan.inputs).toEqual([]);
+    expect(plan.missing).toEqual([]);
+    expect(plan.usedBaselineLevels).toEqual([1]);
+    // 基准件出售价值 = +1 bid 40 扣 5% 手续费 = 38，供总成本口径与转行出售抵扣（两侧同源）。
+    expect(plan.baselinePieceSaleValue).toBe(38);
   });
 
   it('uses mirror synthesis to work around a missing mid-level instead of blocking', () => {
@@ -1100,6 +1238,175 @@ describe('queueUpgradeCost', () => {
     expect(plan.mirrorCount).toBe(4);
     expect(plan.missing).toEqual([]);
     expect(plan.inputs.every((input) => String(input.source) !== MANUAL_EQUIPMENT_PRICE_SOURCE)).toBe(true);
+  });
+
+  // —— 精炼目标（hrid 以 _refined 结尾）价格域感知 ——
+  // 游戏正确公式：合成精炼物品 +N 需要 基础物品+(N-2) 与 精炼物品+(N-1)，
+  // 如 +13物品(基础) + +14物品精 + 镜子 -> +15物品精；修复前 +N-2 被误按精炼物品计价。
+
+  it('prices the refined target lower input (+N-2) with the base item and substitutes only the target-domain baseline', () => {
+    const baseHrid = findEquipmentForSlot('head');
+    expect(baseHrid).toBeTruthy();
+    const refinedHrid = `${baseHrid}_refined`;
+
+    // 用户场景：基准 +14物品精 → 目标 +15物品精。+15 = 基础+13 + 精炼+14 + 镜子。
+    // 基础+13 行情 5000；精炼+13 行情故意给到 90000——若错误按精炼域取价，成本会是 90050。
+    // 精炼+14 由基准顶替（成本 0），给市场价 6000 也不应参与成本。
+    const pricingState = buildPricingState({
+      enhancementQuotesByItem: {
+        [baseHrid]: {
+          13: { ask: 5000, bid: 100 },
+        },
+        [refinedHrid]: {
+          13: { ask: 90000, bid: 100 },
+          14: { ask: 6000, bid: 100 },
+        },
+      },
+    });
+
+    const plan = computeMirrorPlan({
+      itemHrid: refinedHrid,
+      targetLevel: 15,
+      baselineLevel: 14,
+      pricingState,
+      mirrorPrice: 50,
+    });
+    expect(plan.method).toBe('mirror');
+    expect(plan.cost).toBe(5050);
+    expect(plan.mirrorCount).toBe(1);
+    expect(plan.missing).toEqual([]);
+    expect(plan.usedBaselineLevels).toEqual([14]);
+    // 输入件只有基础+13（低档输入按基础物品计价）；精炼+14 已被基准顶替，不再出现在清单。
+    expect(plan.inputs).toEqual([
+      { itemHrid: baseHrid, level: 13, count: 1, price: 5000, source: 'ask', totalCost: 5000 },
+    ]);
+  });
+
+  it('points the refined target soft missing hint at the base item and unlocks via itemHrid|level manual price', () => {
+    const baseHrid = findEquipmentForSlot('head');
+    expect(baseHrid).toBeTruthy();
+    const refinedHrid = `${baseHrid}_refined`;
+
+    // 基础+13 缺价：合成精炼+15 的低档输入取不到价。缺价提示必须指向基础物品
+    // （用户报告的误导点：修复前提示指向精炼物品，用户补了精炼+13 的价格仍然不可算）。
+    const pricingState = buildPricingState({
+      enhancementQuotesByItem: {
+        [refinedHrid]: {
+          14: { ask: 6000, bid: 100 },
+        },
+      },
+    });
+
+    const collapsed = computeMirrorPlan({
+      itemHrid: refinedHrid,
+      targetLevel: 15,
+      baselineLevel: 14,
+      pricingState,
+      mirrorPrice: 50,
+    });
+    expect(collapsed.cost).toBeNull();
+    expect(collapsed.missing).toEqual([{ itemHrid: baseHrid, level: 13, count: null }]);
+
+    // 旧格式纯 level 键归一到目标域（精炼物品）：补 "13" 无法解锁基础物品输入。
+    const legacyKey = computeMirrorPlan({
+      itemHrid: refinedHrid,
+      targetLevel: 15,
+      baselineLevel: 14,
+      pricingState,
+      mirrorPrice: 50,
+      manualInputPrices: { 13: 200 },
+    });
+    expect(legacyKey.cost).toBeNull();
+    expect(legacyKey.missing).toEqual([{ itemHrid: baseHrid, level: 13, count: null }]);
+
+    // itemHrid|level 键精确指明基础物品价格后方案可算，输入件标记手动来源。
+    const recovered = computeMirrorPlan({
+      itemHrid: refinedHrid,
+      targetLevel: 15,
+      baselineLevel: 14,
+      pricingState,
+      mirrorPrice: 50,
+      manualInputPrices: { [`${baseHrid}|13`]: 5000 },
+    });
+    expect(recovered.cost).toBe(5050);
+    expect(recovered.method).toBe('mirror');
+    expect(recovered.missing).toEqual([]);
+    expect(recovered.usedBaselineLevels).toEqual([14]);
+    expect(recovered.inputs).toEqual([
+      {
+        itemHrid: baseHrid,
+        level: 13,
+        count: 1,
+        price: 5000,
+        source: MANUAL_EQUIPMENT_PRICE_SOURCE,
+        totalCost: 5000,
+      },
+    ]);
+  });
+
+  it('synthesizes a refined target through both domains keeping cost and expanded inputs equivalent', () => {
+    const baseHrid = findEquipmentForSlot('head');
+    expect(baseHrid).toBeTruthy();
+    const refinedHrid = `${baseHrid}_refined`;
+
+    // 无基准、多级递归：精炼+4 = 基础+2 + 精炼+3 + 镜子；其中基础+2 走镜子（基础+0 + 基础+1 + 镜子），
+    // 精炼+3 = 基础+1 + 精炼+2 + 镜子，精炼+2 = 基础+0 + 精炼+1 + 镜子。
+    // 基础+1=60、精炼+1=100：整树共 4 面镜子，输入为基础+1×2 与 精炼+1×1。
+    const pricingState = buildPricingState({
+      enhancementQuotesByItem: {
+        [baseHrid]: {
+          1: { ask: 60, bid: 10 },
+          2: { ask: 1000, bid: 10 },
+        },
+        [refinedHrid]: {
+          1: { ask: 100, bid: 10 },
+          2: { ask: 300, bid: 10 },
+        },
+      },
+    });
+
+    const plan = computeMirrorPlan({
+      itemHrid: refinedHrid,
+      targetLevel: 4,
+      pricingState,
+      mirrorPrice: 50,
+    });
+    expect(plan.method).toBe('mirror');
+    // 基础+2 镜子价 110 + 精炼+3 镜子价 260 + 顶层镜子 50 = 420。
+    expect(plan.cost).toBe(420);
+    expect(plan.mirrorCount).toBe(4);
+    expect(plan.missing).toEqual([]);
+    // countMap 按价格域聚合：基础+1 ×2（60）与精炼+1 ×1（100），合计 220 + 镜子 200 = 420。
+    expect(plan.inputs).toEqual([
+      { itemHrid: baseHrid, level: 1, count: 2, price: 60, source: 'ask', totalCost: 120 },
+      { itemHrid: refinedHrid, level: 1, count: 1, price: 100, source: 'ask', totalCost: 100 },
+    ]);
+  });
+
+  it('keeps soft missing for a refined target pointed at the base item tier when the base quote is absent', () => {
+    const baseHrid = findEquipmentForSlot('head');
+    expect(baseHrid).toBeTruthy();
+    const refinedHrid = `${baseHrid}_refined`;
+
+    // 精炼+3 = 基础+1 + 精炼+2 + 镜子：基础+1 缺价，精炼+2 有价。
+    // 提示应列出基础+1（软缺价，count 为 null），而不是精炼+1。
+    const pricingState = buildPricingState({
+      enhancementQuotesByItem: {
+        [refinedHrid]: {
+          2: { ask: 300, bid: 10 },
+        },
+      },
+    });
+
+    const plan = computeMirrorPlan({
+      itemHrid: refinedHrid,
+      targetLevel: 3,
+      pricingState,
+      mirrorPrice: 50,
+    });
+    expect(plan.method).toBe('direct');
+    expect(plan.cost).toBeNull();
+    expect(plan.missing).toEqual([{ itemHrid: baseHrid, level: 1, count: null }]);
   });
 
   it('uses mirror synthesis cost as buyCost when the user-locked method is mirror', () => {
@@ -1164,6 +1471,138 @@ describe('queueUpgradeCost', () => {
       targetAsk: 5000,
       targetPriceSource: 'ask',
     });
+  });
+
+  // —— 镜子方案顶替基准件：总成本（含基准件）口径与出售抵扣快照 ——
+  // 买入价 = 现金合成成本 + 基准件出售价值（fee 后快照）；出售抵扣同用该快照，
+  // 两侧同源保证 净成本 = 现金合成成本，且不受入队后行情漂移影响。
+
+  it('deducts the substituted baseline piece with the confirmed snapshot so net cost equals the cash plan cost', () => {
+    const itemHrid = findEquipmentForSlot('head');
+    expect(itemHrid).toBeTruthy();
+
+    // 基准 +10 → 目标 +11：现金成本 = +9(3000) + 镜子(50) = 3050；+10 由基准顶替。
+    // 确认时 +10 bid=1000 → 基准件出售价值快照 = 950（扣 5% 手续费）。
+    // 入队后行情漂移：+10 实时 bid 变为 500（实时抵扣应为 475）——抵扣必须仍用快照 950。
+    const pricingState = buildPricingState({
+      enhancementQuotesByItem: {
+        [itemHrid]: {
+          9: { ask: 3000, bid: 100 },
+          10: { ask: 2000, bid: 500 },
+          11: { ask: -1, bid: -1 },
+        },
+      },
+    });
+
+    const confirmedMap = buildConfirmedEquipmentPriceMap([
+      {
+        itemHrid,
+        enhancementLevel: 11,
+        method: QUEUE_PRICE_METHOD_MIRROR,
+        // 总成本口径：现金 3050 + 基准件出售价值 950。
+        price: 4000,
+        source: 'mirror',
+        mirrorPrice: 50,
+        mirrorCount: 1,
+        inputs: [{ itemHrid, level: 9, count: 1, price: 3000, source: 'ask' }],
+        baselinePieceSaleValue: 950,
+        usedBaselineLevels: [10],
+      },
+    ]);
+
+    const pricing = resolveEquipmentTransitionPricing(itemHrid, 10, itemHrid, 11, pricingState, confirmedMap);
+    expect(pricing).toMatchObject({
+      cost: 3050, // 总成本 4000 − 快照抵扣 950 = 现金合成成本（精确，无双重抵扣）
+      targetAsk: 4000, // 多轮"目标装备买入价" = 总成本（含基准件）
+      targetAskAvailable: true,
+      targetPriceSource: 'mirror',
+      baselineSaleValue: 950, // 确认时快照，而非实时 bid 500 → 475
+      baselineSaleSource: 'mirror_baseline_piece',
+    });
+
+    // 旧持久化数据（本次修复前入队）：price 为现金口径且无 baselinePieceSaleValue 字段。
+    // 抵扣按 0 处理——顶替件被合成消耗，本就不应再按出售抵扣（修复历史双重抵扣）。
+    const legacyMap = buildConfirmedEquipmentPriceMap([
+      {
+        itemHrid,
+        enhancementLevel: 11,
+        method: QUEUE_PRICE_METHOD_MIRROR,
+        price: 3050,
+        source: 'mirror',
+        mirrorPrice: 50,
+        mirrorCount: 1,
+        inputs: [{ itemHrid, level: 9, count: 1, price: 3000, source: 'ask' }],
+        usedBaselineLevels: [10],
+      },
+    ]);
+    const legacyPricing = resolveEquipmentTransitionPricing(itemHrid, 10, itemHrid, 11, pricingState, legacyMap);
+    expect(legacyPricing).toMatchObject({
+      cost: 3050,
+      targetAsk: 3050,
+      baselineSaleValue: 0,
+    });
+
+    // 顶替基准件无市场价：快照 0 → 抵扣 0，净成本 = 买入价 = 现金成本，同样精确。
+    const unpricedMap = buildConfirmedEquipmentPriceMap([
+      {
+        itemHrid,
+        enhancementLevel: 11,
+        method: QUEUE_PRICE_METHOD_MIRROR,
+        price: 3050,
+        source: 'mirror',
+        mirrorPrice: 50,
+        mirrorCount: 1,
+        inputs: [{ itemHrid, level: 9, count: 1, price: 3000, source: 'ask' }],
+        baselinePieceSaleValue: 0,
+        usedBaselineLevels: [10],
+      },
+    ]);
+    const unpricedPricing = resolveEquipmentTransitionPricing(itemHrid, 10, itemHrid, 11, pricingState, unpricedMap);
+    expect(unpricedPricing).toMatchObject({
+      cost: 3050,
+      targetAsk: 3050,
+      baselineSaleValue: 0,
+    });
+  });
+
+  it('skips the baseline_sale_zero warning for mirror-substituted rows while keeping it for others', () => {
+    const itemHrid = findEquipmentForSlot('head');
+    expect(itemHrid).toBeTruthy();
+
+    // 顶替行：基准件被合成消耗，抵扣按快照 0（无价）属预期回落，不应警告。
+    const mirrorSubstituted = {
+      slotKey: 'head',
+      beforeItemHrid: itemHrid,
+      beforeLevel: 10,
+      afterItemHrid: itemHrid,
+      afterLevel: 11,
+      baselineSaleZero: true,
+      confirmedPrice: {
+        method: QUEUE_PRICE_METHOD_MIRROR,
+        usedBaselineLevels: [10],
+        baselinePieceSaleValue: 0,
+      },
+    };
+    // 非顶替行：基准无价抵扣按 0，仍应警告提示补价。
+    const directZeroSale = {
+      slotKey: 'body',
+      beforeItemHrid: itemHrid,
+      beforeLevel: 10,
+      afterItemHrid: itemHrid,
+      afterLevel: 12,
+      baselineSaleZero: true,
+      confirmedPrice: null,
+    };
+
+    const warnings = buildQueueCostWarnings([mirrorSubstituted, directZeroSale]);
+    expect(warnings).toEqual([
+      {
+        code: 'baseline_sale_zero',
+        slotKey: 'body',
+        itemHrid,
+        enhancementLevel: 10,
+      },
+    ]);
   });
 
   it('does not emit cost warnings for mirror-sourced inspections while keeping non-mirror warnings', () => {

@@ -181,6 +181,16 @@ describe('App shell contracts', () => {
     expect(appSource).toContain('common:queue.left1Unavailable');
     expect(appSource).toContain('function hasReferencePrice(entry)');
     expect(appSource).toContain('common:queue.confirmPriceMirrorCost');
+    expect(appSource).toContain('function getMirrorTotalCost(entry)');
+    expect(appSource).toContain('function getMirrorPrimaryCost(entry)');
+    expect(appSource).toContain('function getMirrorBreakdownText(entry)');
+    expect(appSource).toContain('common:queue.mirrorTotalBreakdown');
+    expect(appSource).toContain('function getMirrorTotalCostTooltip(entry)');
+    // 无顶替（跨物品换装）时 tooltip 必须返回 null 而非渲染残缺的基准件文案。
+    expect(appSource).toMatch(
+      /function getMirrorTotalCostTooltip\(entry\) \{\s*if \(!isMirrorBaselineSubstituted\(entry\)\) \{\s*return null;/,
+    );
+    expect(appSource).toContain('price: mirrorCost + baselinePieceSaleValue');
     expect(appSource).toContain('QUEUE_PRICE_METHOD_LEFT1');
     expect(appSource).toContain('QUEUE_PRICE_METHOD_RIGHT1');
     expect(appSource).toContain('QUEUE_PRICE_METHOD_MANUAL');
@@ -220,11 +230,11 @@ describe('App shell contracts', () => {
     expect(appSource).toContain('function collectMirrorManualPrices(entry)');
     expect(appSource).toContain('function getMirrorMissingLevels(entry)');
     expect(appSource).toContain('function recomputeMirrorPlan(entry)');
-    expect(appSource).toContain('function sanitizeMirrorManualPriceInput(event, entry, level)');
-    expect(appSource).toContain('function handleMirrorManualPriceUnitChange(value, entry, level)');
+    expect(appSource).toContain('function sanitizeMirrorManualPriceInput(event, entry, missingItem)');
+    expect(appSource).toContain('function handleMirrorManualPriceUnitChange(value, entry, missingItem)');
     expect(appSource).toContain('function setSharedMirrorPriceUnit(value)');
     expect(appSource).toContain('data-mirror-manual-input');
-    expect(appSource).toContain('@input="sanitizeMirrorManualPriceInput($event, entry, missingItem.level)"');
+    expect(appSource).toContain('@input="sanitizeMirrorManualPriceInput($event, entry, missingItem)"');
     expect(appSource).toContain('v-for="(missingItem, mIndex) in getMirrorMissingLevels(entry)"');
     expect(appSource).toContain('common:queue.mirrorPlanMissingInputs');
     expect(appSource).toContain('common:queue.mirrorInputHint');
@@ -233,6 +243,26 @@ describe('App shell contracts', () => {
     expect(appSource).toContain('delete manualPriceErrors.value[getManualPriceKey(entry)]');
     expect(appSource).toContain('function isSharedMirrorPriceMissing()');
     expect(appSource).toContain('!isSharedMirrorPriceMissing()');
+    // 价格域感知（精炼目标修复）：补价草稿与标签按 "itemHrid|level" 区分基础/精炼物品，
+    // 跨域缺价件显示物品名，防止用户把精炼物品价格误填到基础物品输入上。
+    expect(appSource).toContain('function getMirrorInputDraftKey(missingItem)');
+    expect(appSource).toContain('function formatMirrorMissingLevelToken(entry, missingItem)');
+    expect(appSource).toContain('function formatMirrorInputMissingLevel(entry, missingItem)');
+    expect(appSource).toContain('common:queue.mirrorInputMissingItem');
+    expect(appSource).toContain('common:queue.mirrorInputMissingItemNoCount');
+    expect(appSource).toContain(':data-mirror-item="missingItem.itemHrid"');
+    expect(appSource).toContain('missingItem.itemHrid || entry.itemHrid');
+  });
+
+  it('keeps the price confirmation modal open with an in-modal error banner on confirm failure', () => {
+    expect(appSource).toContain("const equipmentPriceConfirmationError = ref('')");
+    expect(appSource).toContain('v-if="equipmentPriceConfirmationError"');
+    expect(appSource).toContain('equipmentPriceConfirmationError.value = resolveQueueActionErrorMessage(error)');
+    // 仅草稿指纹失效（行数据已过期）才关闭弹窗；其余失败保留弹窗与全部行的选择/补价草稿。
+    expect(appSource).toContain('QUEUE_DRAFT_CHANGED_MESSAGE_KEY');
+    expect(appSource).not.toMatch(
+      /} catch \(error\) \{\s*cancelEquipmentPriceConfirmation\(\);\s*setTopQueueActionStatus/,
+    );
   });
 
   it('drives asset score refresh from a signature computed instead of a deep watch', () => {

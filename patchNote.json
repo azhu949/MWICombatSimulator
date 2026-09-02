@@ -5,8 +5,14 @@
       "en": "September 2, 2026 (v2.4.1)"
     },
     "newFeatures": {
-      "zh": ["饮品选择列表不再显示无法在战斗中使用的茶类饮品。"],
-      "en": ["The drink list no longer shows teas that cannot be used in combat."]
+      "zh": [
+        "饮品选择列表不再显示无法在战斗中使用的茶类饮品。",
+        "价格弹窗的镜子成本改为总成本口径（现金成本 + 基准件出售价值），多轮结果与队列合计同步采用。"
+      ],
+      "en": [
+        "The drink list no longer shows teas that cannot be used in combat.",
+        "The mirror cost in the price dialog now uses a total-cost basis (cash + baseline piece sale value), applied consistently to multi-round results and queue totals."
+      ]
     },
     "improvements": {
       "zh": ["导入配置时会自动清空已失效的茶类饮品选择，避免下拉框出现空白选项。"],
@@ -15,8 +21,22 @@
       ]
     },
     "bugFixes": {
-      "zh": ["修复旧配置残留茶类饮品时，战斗模拟可能一直卡住不出结果的问题。"],
-      "en": ["Fixed simulations hanging forever when older configs had leftover tea selections."]
+      "zh": [
+        "修复旧配置残留茶类饮品时，战斗模拟可能一直卡住不出结果的问题。",
+        "修复镜子方案精炼装备低档输入件计价错误，现按基础物品计价。",
+        "修复镜子方案重复抵扣基准件出售值、净成本显示偏低的问题。",
+        "修复同物品 +1 升 +2 时镜子方案无法入队的问题。",
+        "价格确认失败不再关闭弹窗并清空已填写内容，修正后可直接重试。",
+        "修复基准件无市场价时悬停说明与实际提示相互矛盾的问题。"
+      ],
+      "en": [
+        "Fixed simulations hanging forever when older configs had leftover tea selections.",
+        "Fixed mirror plans pricing the lower input of refined gear as the refined item; it is now priced as the base item.",
+        "Fixed mirror plans deducting the baseline sale value twice, understating the net cost.",
+        "Fixed mirror plans for same-item +1→+2 upgrades failing to enqueue.",
+        "Price confirmation failures no longer close the dialog or wipe your entries; just fix and retry.",
+        "Fixed the baseline piece hover hint contradicting the visible text when it had no market price."
+      ]
     }
   },
   "2026年9月2日（v2.4.0）": {

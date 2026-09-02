@@ -668,7 +668,7 @@ function getBuyPriceBadges(row) {
     } else if (method === 'mirror') {
       label = t('common:queue.priceMethodMirror', 'Mirror');
       badgeClass = 'border-primary/40 bg-primary/10 text-primary';
-      tooltip = t('common:multiRound.mirrorPriceTooltip', '{{names}}: mirror plan synthesis price', {
+      tooltip = t('common:multiRound.mirrorPriceTooltip', '{{names}}: mirror plan total cost (incl. baseline piece)', {
         names,
       });
     } else if (method === 'right1') {

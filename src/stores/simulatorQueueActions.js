@@ -807,6 +807,8 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
             pricingState: this.pricing,
             confirmedEquipmentPrices: [],
             mirrorPrice,
+            // 基准件出售价值口径与转行出售抵扣一致（baselineSaleSide 设置），缺失时内部回退 bid。
+            saleSide,
           });
           const row = {
             itemHrid: inspection.afterItemHrid,
@@ -876,16 +878,18 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
       );
 
       // 为所有行的镜子方案缺价输入件补充历史 Ask（输入件等级可能与目标装备等级不同）。
-      // mirrorPlan.missing 列出合成方案所需但取不到同步价的输入件等级；历史 Ask 可解锁这些等级。
-      // 新交互模型下所有变更行都会进弹窗、镜子方式对任何行可选：目标装备有精确 Ask / 小时均价的行，
-      // 其 mirrorPlan.missing 输入件同样需要历史 Ask 解锁，否则只能手动补价（G3：历史数据形同虚设）。
+      // mirrorPlan.missing 列出合成方案所需但取不到同步价的输入件（每条携带 itemHrid：精炼目标的
+      // 低档输入件来自基础物品域，历史查询必须按该物品发起，否则查回的精炼物品价格无法解锁方案）；
+      // 历史 Ask 可解锁这些等级。新交互模型下所有变更行都会进弹窗、镜子方式对任何行可选：
+      // 目标装备有精确 Ask / 小时均价的行，其 mirrorPlan.missing 输入件同样需要历史 Ask 解锁，
+      // 否则只能手动补价（G3：历史数据形同虚设）。
       // 请求量受控：fetchAndCollectHistory 已抓取去重 + 同步链可取值跳过，仅对真正缺价的等级发起请求。
       await Promise.all(
         rows.map(async (row) => {
           const missingItems = Array.isArray(row.mirrorPlan?.missing) ? row.mirrorPlan.missing : [];
           await Promise.all(
             missingItems.map(async (missingItem) => {
-              await fetchAndCollectHistory(row.itemHrid, Number(missingItem.level));
+              await fetchAndCollectHistory(String(missingItem.itemHrid || row.itemHrid), Number(missingItem.level));
             }),
           );
         }),
@@ -908,6 +912,8 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
           confirmedEquipmentPrices: [],
           mirrorPrice,
           historicalQuotes,
+          // 与首次 computeMirrorPlan 调用同口径：基准件出售价值按 baselineSaleSide 设置取价。
+          saleSide,
         });
         row.mirrorPlan = mirrorPlan;
         row.usedBaselineLevels = Array.isArray(mirrorPlan?.usedBaselineLevels) ? mirrorPlan.usedBaselineLevels : [];

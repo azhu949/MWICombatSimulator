@@ -239,7 +239,7 @@
     <BaseModal
       :open="equipmentPriceConfirmationModalOpen"
       :title="t('common:queue.confirmPriceChoiceTitle', 'Choose target equipment price')"
-      panel-class="max-w-[96vw] lg:max-w-7xl"
+      panel-class="max-w-[96vw] lg:max-w-[min(1280px,96vw)]"
       initial-focus-selector="[data-confirm-price-rows]"
       @close="cancelEquipmentPriceConfirmation"
     >
@@ -259,6 +259,9 @@
               'The official market refresh failed. Review the fallback source and data time below.',
             )
           }}
+        </p>
+        <p v-if="equipmentPriceConfirmationError" class="text-xs text-destructive" role="alert">
+          {{ equipmentPriceConfirmationError }}
         </p>
 
         <div class="rounded-md border border-border bg-muted/40 p-3">
@@ -313,15 +316,15 @@
                 <th class="w-[13%] whitespace-nowrap px-3 py-2">
                   {{ t('common:queue.confirmPriceEquipment', 'Equipment') }}
                 </th>
-                <th class="w-[24%] whitespace-nowrap px-3 py-2">
+                <th class="w-[22%] whitespace-nowrap px-3 py-2">
                   {{ t('common:queue.confirmPriceMethod', 'Method') }}
                 </th>
-                <th class="w-[24%] whitespace-nowrap px-3 py-2">
+                <th class="w-[26%] whitespace-nowrap px-3 py-2">
                   {{ t('common:queue.confirmPriceReference', 'Reference Price') }}
                 </th>
-                <th class="w-[25%] whitespace-nowrap px-3 py-2">{{ t('common:queue.confirmPriceValue', 'Price') }}</th>
-                <th class="w-[14%] whitespace-nowrap px-3 py-2">
-                  {{ t('common:queue.confirmPriceMirrorCost', 'Mirror Cost') }}
+                <th class="w-[19%] whitespace-nowrap px-3 py-2">{{ t('common:queue.confirmPriceValue', 'Price') }}</th>
+                <th class="w-[20%] whitespace-nowrap px-3 py-2">
+                  {{ t('common:queue.confirmPriceMirrorCost', 'Mirror Cost (incl. baseline)') }}
                 </th>
               </tr>
             </thead>
@@ -335,7 +338,7 @@
                   {{ localizeHridDisplayName(entry.itemHrid) }}
                   <span class="text-muted-foreground">+{{ entry.enhancementLevel }}</span>
                 </td>
-                <td class="w-[24%] px-3 py-2">
+                <td class="w-[22%] px-3 py-2">
                   <div class="flex flex-nowrap items-center gap-x-3">
                     <label
                       class="flex items-center gap-1.5 whitespace-nowrap text-xs"
@@ -406,7 +409,7 @@
                     </label>
                   </div>
                 </td>
-                <td class="w-[24%] px-3 py-2">
+                <td class="w-[26%] px-3 py-2">
                   <div class="flex flex-col gap-1">
                     <div class="flex flex-wrap items-center gap-x-2 gap-y-1 whitespace-nowrap text-xs">
                       <span>
@@ -505,7 +508,7 @@
                     <div class="flex flex-col gap-1">
                       <div
                         v-for="(missingItem, mIndex) in getMirrorMissingLevels(entry)"
-                        :key="`${getManualPriceKey(entry)}-mirror-input-${missingItem.level}`"
+                        :key="`${getManualPriceKey(entry)}-mirror-input-${missingItem.itemHrid}-${missingItem.level}`"
                         class="flex items-center gap-1"
                       >
                         <span
@@ -530,7 +533,7 @@
                             )
                           "
                         >
-                          {{ formatMirrorInputMissingLevel(missingItem) }}
+                          {{ formatMirrorInputMissingLevel(entry, missingItem) }}
                         </span>
                         <input
                           type="text"
@@ -541,10 +544,11 @@
                           data-mirror-manual-input
                           :data-price-key="getManualPriceKey(entry)"
                           :data-mirror-level="missingItem.level"
+                          :data-mirror-item="missingItem.itemHrid"
                           class="control-input !rounded !px-1.5 !py-1 text-xs w-16"
                           :placeholder="t('common:queue.manualPricePlaceholder', 'Enter buy price (digits only)')"
-                          :value="getMirrorInputDraft(entry, missingItem.level).raw"
-                          @input="sanitizeMirrorManualPriceInput($event, entry, missingItem.level)"
+                          :value="getMirrorInputDraft(entry, missingItem).raw"
+                          @input="sanitizeMirrorManualPriceInput($event, entry, missingItem)"
                         />
                         <div
                           class="flex h-6 shrink-0 items-center gap-0.5 rounded border border-input bg-background p-0.5"
@@ -557,22 +561,22 @@
                             type="button"
                             class="h-5 w-6 rounded-sm text-[11px] font-semibold transition-colors"
                             :class="
-                              getMirrorInputDraft(entry, missingItem.level).unit === unit.value
+                              getMirrorInputDraft(entry, missingItem).unit === unit.value
                                 ? 'bg-primary text-primary-foreground'
                                 : 'text-muted-foreground hover:bg-muted hover:text-foreground'
                             "
-                            :aria-pressed="getMirrorInputDraft(entry, missingItem.level).unit === unit.value"
-                            @click="handleMirrorManualPriceUnitChange(unit.value, entry, missingItem.level)"
+                            :aria-pressed="getMirrorInputDraft(entry, missingItem).unit === unit.value"
+                            @click="handleMirrorManualPriceUnitChange(unit.value, entry, missingItem)"
                           >
                             {{ unit.value }}
                           </button>
                         </div>
                         <!-- 即时反馈：该输入按当前单位（k/m/b）解析出的实际价格，避免位数误判。 -->
                         <span
-                          v-if="getMirrorInputResolvedPrice(entry, missingItem.level) != null"
+                          v-if="getMirrorInputResolvedPrice(entry, missingItem) != null"
                           class="whitespace-nowrap text-[11px] text-muted-foreground"
                         >
-                          = {{ formatConfirmedMarketPrice(getMirrorInputResolvedPrice(entry, missingItem.level)) }}
+                          = {{ formatConfirmedMarketPrice(getMirrorInputResolvedPrice(entry, missingItem)) }}
                         </span>
                       </div>
                     </div>
@@ -609,22 +613,38 @@
                       entry.mirrorPlan.cost != null
                     "
                   >
-                    <span
-                      :class="
-                        entry.reference && entry.mirrorPlan.cost > entry.reference.price
-                          ? 'text-xs font-semibold text-destructive'
-                          : 'text-xs font-semibold text-emerald-500'
-                      "
-                    >
-                      {{ formatConfirmedMarketPrice(entry.mirrorPlan.cost) }}
-                    </span>
-                    <span v-if="entry.reference" class="ml-1 text-xs text-muted-foreground">
-                      ({{
-                        t('common:queue.mirrorVsDirect', FALLBACK_MIRROR_VS_DIRECT, {
-                          price: formatConfirmedMarketPrice(entry.reference.price),
-                        })
-                      }})
-                    </span>
+                    <!-- 合并列：主数字为总成本（含基准件，与队列页合计、多轮买入价同口径），
+                         绿/红着色 vs 直购；副行为构成明细（现金 + 基准件）。 -->
+                    <div class="flex flex-col gap-0.5" :title="getMirrorTotalCostTooltip(entry)">
+                      <div class="flex flex-wrap items-baseline gap-x-1">
+                        <span
+                          :class="
+                            entry.reference && getMirrorPrimaryCost(entry) > entry.reference.price
+                              ? 'text-xs font-semibold text-destructive'
+                              : 'text-xs font-semibold text-emerald-500'
+                          "
+                        >
+                          {{ formatConfirmedMarketPrice(getMirrorPrimaryCost(entry)) }}
+                        </span>
+                        <span v-if="entry.reference" class="text-xs text-muted-foreground">
+                          ({{
+                            t('common:queue.mirrorVsDirect', FALLBACK_MIRROR_VS_DIRECT, {
+                              price: formatConfirmedMarketPrice(entry.reference.price),
+                            })
+                          }})
+                        </span>
+                      </div>
+                      <span
+                        v-if="getMirrorBreakdownText(entry) != null"
+                        :class="
+                          getMirrorBaselinePieceSaleValue(entry) > 0
+                            ? 'text-[11px] text-muted-foreground'
+                            : 'text-[11px] text-warning'
+                        "
+                      >
+                        {{ getMirrorBreakdownText(entry) }}
+                      </span>
+                    </div>
                   </template>
                   <template v-else>
                     <span class="text-muted-foreground">{{ t('common:queue.confirmPriceMissing', '—') }}</span>
@@ -752,6 +772,9 @@ const baselineReminderModalOpen = ref(false);
 const equipmentPriceConfirmationModalOpen = ref(false);
 const pendingEquipmentPriceConfirmations = ref([]);
 const equipmentPriceConfirmationRefreshFailed = ref(false);
+// 确认失败（非草稿过期）时在弹窗内展示的错误横幅：顶部状态会被模态遮罩遮挡，
+// 仅靠它用户得不到任何反馈。保留弹窗与全部行数据，用户修正后可重试。
+const equipmentPriceConfirmationError = ref('');
 const manualPriceDrafts = ref({});
 const manualPriceUnits = ref({});
 const manualPriceErrors = ref({});
@@ -762,7 +785,9 @@ const autoMirrorPrice = ref(null);
 // prepareActivePlayerQueueAddition 异步拉取的历史 Ask 快照，供镜子方案取价链复用（与参考价列口径统一）。
 const historicalQuotesMap = ref(null);
 const marketUpdateByKey = ref({});
-// 镜子方案缺价件手动补价草稿：{ [rowKey]: { [level]: { raw, unit, count } } }
+// 镜子方案缺价件手动补价草稿：{ [rowKey]: { [itemHrid|level]: { raw, unit, count } } }。
+// 草稿键为 "itemHrid|level"（价格域感知）：精炼目标的低档输入件(+N-2)来自基础物品域，
+// 同一等级可能同时需要基础与精炼两种物品，仅按等级索引会混淆补价对象。
 const mirrorInputDrafts = ref({});
 const queueAdditionPending = ref(false);
 const pendingQueueDraftFingerprint = ref('');
@@ -1135,6 +1160,7 @@ async function addToQueueFromTopbar() {
       manualPriceDrafts.value = {};
       manualPriceUnits.value = {};
       manualPriceErrors.value = {};
+      equipmentPriceConfirmationError.value = '';
       // 一次性快照：在弹窗打开时构建市场更新映射，不随后续刷新更新（见 buildMarketUpdateMap 注释）。
       marketUpdateByKey.value = buildMarketUpdateMap();
       mirrorInputDrafts.value = {};
@@ -1154,6 +1180,7 @@ function cancelEquipmentPriceConfirmation() {
   equipmentPriceConfirmationModalOpen.value = false;
   pendingEquipmentPriceConfirmations.value = [];
   equipmentPriceConfirmationRefreshFailed.value = false;
+  equipmentPriceConfirmationError.value = '';
   pendingQueueDraftFingerprint.value = '';
   manualPriceDrafts.value = {};
   manualPriceUnits.value = {};
@@ -1265,9 +1292,9 @@ function buildMarketUpdateMap() {
       }
       // 仅对 left1（或无 method 的旧版 confirmed 条目）执行价格变化检测：
       // mirror/right1/manual 的 selection.price 语义不同于参考价（Ask）——
-      // mirror 存合成成本、right1 存 Bid 价、manual 存用户手输价，与参考 Ask 价直接比
-      // 几乎必然不等，会产生误报"新价格"徽标；点击"Use new price"还会强制切回 left1，
-      // 覆盖用户有意选择的定价方式。无 method 的旧版条目其 price 语义即参考价，仍参与比较。
+      // mirror 存总成本（现金合成成本 + 基准件出售价值）、right1 存 Bid 价、manual 存用户手输价，
+      // 与参考 Ask 价直接比几乎必然不等，会产生误报"新价格"徽标；点击"Use new price"还会强制
+      // 切回 left1，覆盖用户有意选择的定价方式。无 method 的旧版条目其 price 语义即参考价，仍参与比较。
       if (selection.method && selection.method !== QUEUE_PRICE_METHOD_LEFT1) {
         continue;
       }
@@ -1342,6 +1369,14 @@ function resolveSharedMirrorPrice() {
   return autoMirrorPrice.value;
 }
 
+// 镜子补价草稿键："itemHrid|level"，与 computeMirrorPlan 的 manualInputPrices 域键同构，
+// 非精炼目标下 itemHrid 即行物品（与旧纯 level 键语义等价）。
+function getMirrorInputDraftKey(missingItem) {
+  const itemHrid = String(missingItem?.itemHrid || '');
+  const level = Math.max(0, Math.floor(Number(missingItem?.level || 0)));
+  return `${itemHrid}|${level}`;
+}
+
 function ensureMirrorInputDrafts(entry) {
   const rowKey = getManualPriceKey(entry);
   if (!mirrorInputDrafts.value[rowKey] || typeof mirrorInputDrafts.value[rowKey] !== 'object') {
@@ -1350,64 +1385,104 @@ function ensureMirrorInputDrafts(entry) {
   return mirrorInputDrafts.value[rowKey];
 }
 
-// 收集该行镜子方案已填的有效手动补价：{ level: 价格 }。
+// 收集该行镜子方案已填的有效手动补价：{ "itemHrid|level": 价格 }（价格域感知键，
+// computeMirrorPlan 据此把补价精确应用到对应物品的输入件上）。
 function collectMirrorManualPrices(entry) {
   const drafts = mirrorInputDrafts.value[getManualPriceKey(entry)];
   if (!drafts || typeof drafts !== 'object') {
     return {};
   }
   const prices = {};
-  for (const [levelKey, draft] of Object.entries(drafts)) {
+  for (const [draftKey, draft] of Object.entries(drafts)) {
     const unitMultiplier = getManualPriceUnitMultiplier(draft?.unit);
     const evaluation = evaluateManualPriceDraft(draft?.raw, unitMultiplier);
     if (evaluation.valid) {
-      prices[Number(levelKey)] = evaluation.actualPrice;
+      prices[draftKey] = evaluation.actualPrice;
     }
   }
   return prices;
 }
 
-// 需要手动补价的等级 = 当前缺价 ∪ 已配置草稿（sticky，填完后仍可修改/清空）。
+// 需要手动补价的输入件 = 当前缺价 ∪ 已配置草稿（sticky，填完后仍可修改/清空）。
+// 每项携带 { itemHrid, level, count }：itemHrid 指明补价物品（精炼目标时低档输入为基础物品）。
 function getMirrorMissingLevels(entry) {
   const drafts = mirrorInputDrafts.value[getManualPriceKey(entry)];
   const sticky = drafts && typeof drafts === 'object' ? drafts : {};
   const missingItems = (entry?.mirrorPlan?.missing || []).map((item) => ({
+    itemHrid: String(item.itemHrid || entry.itemHrid || ''),
     level: Number(item.level),
     // 软缺价条目 count 为 null（份数需补价后才能确定），保持 null 以便标签不渲染 ×N；
     // 硬缺价/兜底条目 count 为确定正整数。
     count: item.count == null ? null : Math.max(1, Math.floor(Number(item.count) || 1)),
   }));
-  const byLevel = new Map();
+  const byKey = new Map();
   for (const missingItem of missingItems) {
-    byLevel.set(missingItem.level, { level: missingItem.level, count: missingItem.count });
+    byKey.set(getMirrorInputDraftKey(missingItem), missingItem);
   }
-  for (const levelKey of Object.keys(sticky)) {
-    const numericLevel = Number(levelKey);
-    if (!Number.isFinite(numericLevel) || numericLevel <= 0) {
+  for (const draftKey of Object.keys(sticky)) {
+    // 草稿键为 "itemHrid|level"，拆出补价物品与等级；无 '|' 的旧形状键忽略（每次弹窗打开时重建）。
+    const pipeIndex = draftKey.lastIndexOf('|');
+    if (pipeIndex <= 0) {
       continue;
     }
-    if (!byLevel.has(numericLevel)) {
-      byLevel.set(numericLevel, {
-        level: numericLevel,
-        count: sticky[levelKey]?.count == null ? null : Math.max(1, Math.floor(Number(sticky[levelKey]?.count) || 1)),
+    const itemHrid = draftKey.slice(0, pipeIndex);
+    const level = Number(draftKey.slice(pipeIndex + 1));
+    if (!itemHrid || !Number.isFinite(level) || level <= 0) {
+      continue;
+    }
+    if (!byKey.has(draftKey)) {
+      byKey.set(draftKey, {
+        itemHrid,
+        level,
+        count: sticky[draftKey]?.count == null ? null : Math.max(1, Math.floor(Number(sticky[draftKey]?.count) || 1)),
       });
     }
   }
-  return Array.from(byLevel.values()).sort((left, right) => left.level - right.level);
+  return Array.from(byKey.values()).sort(
+    (left, right) => left.level - right.level || left.itemHrid.localeCompare(right.itemHrid),
+  );
 }
 
 // 缺价输入框标签：count 确定（硬缺价/兜底）时显示"缺 +N ×count"；
 // 软缺价 count 为 null 时不显示份数——补价前无法确定展开后的真实需求份数。
-function formatMirrorInputMissingLevel(missingItem) {
+// 跨价格域的输入件（精炼目标的低档基础物品，itemHrid 与行物品不同）额外显示物品名，
+// 避免"缺 +13"被误读为行物品（精炼）+13 而补错价格。
+function formatMirrorInputMissingLevel(entry, missingItem) {
   const level = Number(missingItem?.level || 0);
   const count = missingItem?.count;
+  const itemHrid = String(missingItem?.itemHrid || entry?.itemHrid || '');
+  const crossDomain = Boolean(entry) && itemHrid !== String(entry.itemHrid || '');
   if (count == null || !(count > 0)) {
+    if (crossDomain) {
+      return t('common:queue.mirrorInputMissingItemNoCount', 'Missing {{name}} +{{level}}', {
+        name: localizeHridDisplayName(itemHrid),
+        level,
+      });
+    }
     return t('common:queue.mirrorInputMissingLevelNoCount', 'Missing +{{level}}', { level });
+  }
+  if (crossDomain) {
+    return t('common:queue.mirrorInputMissingItem', 'Missing {{name}} +{{level}} ×{{count}}', {
+      name: localizeHridDisplayName(itemHrid),
+      level,
+      count: Number(count),
+    });
   }
   return t('common:queue.mirrorInputMissingLevel', 'Missing +{{level}} ×{{count}}', {
     level,
     count: Number(count),
   });
+}
+
+// 缺价等级的提示文案片段：同域（与行物品同款）仅显示等级（如 "+11"）；
+// 跨价格域（精炼目标的低档基础物品）附物品名（如 "轻灵兜帽 +13"），确保用户补对物品。
+function formatMirrorMissingLevelToken(entry, missingItem) {
+  const level = Number(missingItem?.level || 0);
+  const itemHrid = String(missingItem?.itemHrid || '');
+  if (entry && itemHrid && itemHrid !== String(entry.itemHrid || '')) {
+    return `${localizeHridDisplayName(itemHrid)} +${level}`;
+  }
+  return `+${level}`;
 }
 
 // 共享镜子价是否缺失：无自动价且顶部输入无效。行内错误与 hover 提示共用同一判定，避免口径漂移。
@@ -1419,15 +1494,15 @@ function isSharedMirrorPriceMissing() {
   return autoMirrorPrice.value == null && !sharedMirrorPriceValid;
 }
 
-// 生成镜子方案缺价的明确提示：列出未填的输入件等级与缺失的镜子价。
+// 生成镜子方案缺价的明确提示：列出未填的输入件（跨价格域时附物品名）与缺失的镜子价。
 function getMirrorPlanMissingText(entry) {
   const missingLevels = getMirrorMissingLevels(entry)
     .filter((item) => {
-      const draft = getMirrorInputDraft(entry, item.level);
+      const draft = getMirrorInputDraft(entry, item);
       const unitMultiplier = getManualPriceUnitMultiplier(draft.unit);
       return !evaluateManualPriceDraft(draft.raw, unitMultiplier).valid;
     })
-    .map((item) => String(Number(item.level)));
+    .map((item) => formatMirrorMissingLevelToken(entry, item));
   const mirrorPriceMissing = isSharedMirrorPriceMissing();
   const levelsText = missingLevels.join(', ');
 
@@ -1457,25 +1532,26 @@ function getMirrorPlanMissingText(entry) {
   );
 }
 
-// 写入/刷新该行镜子方案的确认失败文案：仍缺输入价时列出具体等级（镜子价同时缺失时用组合文案），
-// 否则给出缺镜子价/方案不可用提示。供确认失败与补价过程中的错误刷新共用，保证行内文案始终与当前草稿一致。
+// 写入/刷新该行镜子方案的确认失败文案：仍缺输入价时列出具体输入件（跨价格域时附物品名，
+// 镜子价同时缺失时用组合文案），否则给出缺镜子价/方案不可用提示。供确认失败与补价过程中的
+// 错误刷新共用，保证行内文案始终与当前草稿一致。
 function setMirrorRowError(entry) {
   const stillMissingLevels = getMirrorMissingLevels(entry)
     .filter((item) => {
-      const draft = getMirrorInputDraft(entry, item.level);
+      const draft = getMirrorInputDraft(entry, item);
       const unitMultiplier = getManualPriceUnitMultiplier(draft.unit);
       return !evaluateManualPriceDraft(draft.raw, unitMultiplier).valid;
     })
-    .map((item) => item.level);
+    .map((item) => formatMirrorMissingLevelToken(entry, item));
   manualPriceErrors.value[getManualPriceKey(entry)] =
     stillMissingLevels.length > 0 && !isSharedMirrorPriceMissing()
       ? t(
           'common:queue.mirrorPlanMissingInputs',
-          '{{name}} +{{level}}: enter the missing input prices (+{{levels}}) for the mirror plan.',
+          '{{name}} +{{level}}: enter the missing input prices ({{levels}}) for the mirror plan.',
           {
             name: localizeHridDisplayName(entry.itemHrid),
             level: Number(entry.enhancementLevel || 0),
-            levels: stillMissingLevels.join(', +'),
+            levels: stillMissingLevels.join(', '),
           },
         )
       : getMirrorPlanMissingText(entry);
@@ -1488,15 +1564,15 @@ function refreshMirrorRowErrorIfPresent(entry) {
   }
 }
 
-function getMirrorInputDraft(entry, level) {
+function getMirrorInputDraft(entry, missingItem) {
   const drafts = mirrorInputDrafts.value[getManualPriceKey(entry)];
-  const draft = drafts && typeof drafts === 'object' ? drafts[String(level)] : null;
+  const draft = drafts && typeof drafts === 'object' ? drafts[getMirrorInputDraftKey(missingItem)] : null;
   return draft && typeof draft === 'object' ? draft : { raw: '', unit: 'k', count: 1 };
 }
 
 // 缺价输入框当前草稿按所选单位（k/m/b）解析出的实际价格；无效时返回 null。用于即时反馈。
-function getMirrorInputResolvedPrice(entry, level) {
-  const draft = getMirrorInputDraft(entry, level);
+function getMirrorInputResolvedPrice(entry, missingItem) {
+  const draft = getMirrorInputDraft(entry, missingItem);
   const unitMultiplier = getManualPriceUnitMultiplier(draft.unit);
   const evaluation = evaluateManualPriceDraft(draft.raw, unitMultiplier);
   return evaluation.valid ? evaluation.actualPrice : null;
@@ -1509,13 +1585,13 @@ function recomputeMirrorPlan(entry) {
   }
   const drafts = ensureMirrorInputDrafts(entry);
   for (const missingItem of entry?.mirrorPlan?.missing || []) {
-    const levelKey = String(Number(missingItem.level));
+    const draftKey = getMirrorInputDraftKey({ ...missingItem, itemHrid: missingItem.itemHrid || entry.itemHrid });
     // 软缺价条目（count 为 null）的草稿同样保持 null：份数未知，标签不渲染 ×N。
     const count = missingItem.count == null ? null : Math.max(1, Math.floor(Number(missingItem.count) || 1));
-    if (!drafts[levelKey]) {
-      drafts[levelKey] = { raw: '', unit: 'k', count };
+    if (!drafts[draftKey]) {
+      drafts[draftKey] = { raw: '', unit: 'k', count };
     } else {
-      drafts[levelKey].count = count;
+      drafts[draftKey].count = count;
     }
   }
   const manualPrices = collectMirrorManualPrices(entry);
@@ -1529,6 +1605,8 @@ function recomputeMirrorPlan(entry) {
     mirrorPrice,
     manualInputPrices: manualPrices,
     historicalQuotes: historicalQuotesMap.value,
+    // 基准件出售价值口径与转行出售抵扣一致（baselineSaleSide 设置）；computeMirrorPlan 内部归一化。
+    saleSide: simulator.activeQueueState?.settings?.baselineSaleSide,
   });
   // 整体替换 .value 触发更新，不依赖 ref 的深度响应式代理——即使改为 shallowRef 也安全。
   const updatedUsedBaselineLevels = Array.isArray(recomputed?.usedBaselineLevels) ? recomputed.usedBaselineLevels : [];
@@ -1548,6 +1626,86 @@ function recomputeMirrorPlan(entry) {
   return recomputed;
 }
 
+// 镜子方案是否顶替了基准件（顶替件 = 与目标同款的基准装备；等级差恰为 1 时必然顶替）。
+function isMirrorBaselineSubstituted(entry) {
+  const levels = Array.isArray(entry?.mirrorPlan?.usedBaselineLevels) ? entry.mirrorPlan.usedBaselineLevels : [];
+  return levels.length > 0;
+}
+
+// 顶替基准件的出售价值（fee 后快照）；无顶替或无市场价时为 0。
+function getMirrorBaselinePieceSaleValue(entry) {
+  return Math.max(0, Number(entry?.mirrorPlan?.baselinePieceSaleValue) || 0);
+}
+
+// 总成本（含基准件）= 现金合成成本 + 基准件出售价值（按出售价值口径计入，与转行出售抵扣
+// 同源，保证 多轮 买入价 − 出售抵扣 = 现金合成成本）。方案缺价、或顶替基准件无市场价时
+// 返回 null（总成本列显示"—"，多轮买入价回落现金口径）。无顶替时与镜子成本同值。
+function getMirrorTotalCost(entry) {
+  const cost = Number(entry?.mirrorPlan?.cost);
+  if (entry?.mirrorPlan?.cost == null || !Number.isFinite(cost) || cost <= 0) {
+    return null;
+  }
+  if (!isMirrorBaselineSubstituted(entry)) {
+    return cost;
+  }
+  const pieceValue = getMirrorBaselinePieceSaleValue(entry);
+  return pieceValue > 0 ? cost + pieceValue : null;
+}
+
+// 合并列 tooltip：有价时展示计入的基准件等级与出售价值；基准件无市场价时给出完整解释
+//（行内只显示短警告，见 getMirrorBreakdownText）。无顶替（如跨物品换装，基准件与目标不同款）
+// 时返回 null——无基准件计入可讲，:title 为 null 不渲染提示，与 getMirrorBreakdownText 的
+// 无顶替守卫对称；此时主数字即现金合成成本。
+function getMirrorTotalCostTooltip(entry) {
+  if (!isMirrorBaselineSubstituted(entry)) {
+    return null;
+  }
+  if (getMirrorBaselinePieceSaleValue(entry) <= 0) {
+    return t(
+      'common:queue.mirrorBaselinePieceNoPriceHint',
+      'The baseline piece has no market price; the total falls back to cash cost (excluded).',
+    );
+  }
+  const levels = Array.isArray(entry?.mirrorPlan?.usedBaselineLevels) ? entry.mirrorPlan.usedBaselineLevels : [];
+  return t(
+    'common:queue.mirrorBaselinePieceTooltip',
+    'Includes baseline piece +{{level}} ×1, counted at its sale value {{price}}',
+    {
+      level: levels.join(', +'),
+      price: formatConfirmedMarketPrice(getMirrorBaselinePieceSaleValue(entry)),
+    },
+  );
+}
+
+// 合并列主数字：有顶替且基准件有价时为总成本（与队列页合计、多轮买入价同口径），
+// 无顶替或基准件无市场价时回落现金合成成本。方案缺价时返回 null。
+function getMirrorPrimaryCost(entry) {
+  const total = getMirrorTotalCost(entry);
+  if (total != null) {
+    return total;
+  }
+  const cost = Number(entry?.mirrorPlan?.cost);
+  return entry?.mirrorPlan?.cost != null && Number.isFinite(cost) && cost > 0 ? cost : null;
+}
+
+// 合并列副行：构成明细（现金 + 基准件出售价值）。无顶替返回 null（无构成可拆，仅主数字）；
+// 顶替但基准件无市场价时返回短警告（行内空间有限，完整解释见 getMirrorTotalCostTooltip）。
+function getMirrorBreakdownText(entry) {
+  if (!isMirrorBaselineSubstituted(entry)) {
+    return null;
+  }
+  const pieceValue = getMirrorBaselinePieceSaleValue(entry);
+  if (pieceValue > 0) {
+    const levels = Array.isArray(entry?.mirrorPlan?.usedBaselineLevels) ? entry.mirrorPlan.usedBaselineLevels : [];
+    return t('common:queue.mirrorTotalBreakdown', 'Cash {{cash}} + baseline +{{level}} valued at {{piece}}', {
+      cash: formatConfirmedMarketPrice(Number(entry?.mirrorPlan?.cost)),
+      level: levels.join(', +'),
+      piece: formatConfirmedMarketPrice(pieceValue),
+    });
+  }
+  return t('common:queue.priceSelectionBaselinePieceNoPrice', 'No market price; excluded from total');
+}
+
 function refreshMirrorPlans() {
   for (const entry of pendingEquipmentPriceConfirmations.value) {
     if (getPriceMethod(entry) === QUEUE_PRICE_METHOD_MIRROR) {
@@ -1558,14 +1716,14 @@ function refreshMirrorPlans() {
   }
 }
 
-function sanitizeMirrorManualPriceInput(event, entry, level) {
+function sanitizeMirrorManualPriceInput(event, entry, missingItem) {
   const drafts = ensureMirrorInputDrafts(entry);
-  const levelKey = String(level);
-  const current = drafts[levelKey] || { raw: '', unit: 'k', count: 1 };
+  const draftKey = getMirrorInputDraftKey(missingItem);
+  const current = drafts[draftKey] || { raw: '', unit: 'k', count: 1 };
   const rawValue = String(event?.target?.value ?? '');
   const { normalized } = normalizeManualPriceDraft(rawValue);
   current.raw = normalized;
-  drafts[levelKey] = current;
+  drafts[draftKey] = current;
   if (normalized !== rawValue) {
     event.target.value = normalized;
   }
@@ -1575,16 +1733,16 @@ function sanitizeMirrorManualPriceInput(event, entry, level) {
   refreshMirrorRowErrorIfPresent(entry);
 }
 
-function handleMirrorManualPriceUnitChange(value, entry, level) {
+function handleMirrorManualPriceUnitChange(value, entry, missingItem) {
   const nextUnit = String(value || '').toLowerCase();
   if (!MANUAL_PRICE_UNITS.some((item) => item.value === nextUnit)) {
     return;
   }
   const drafts = ensureMirrorInputDrafts(entry);
-  const levelKey = String(level);
-  const current = drafts[levelKey] || { raw: '', unit: 'k', count: 1 };
+  const draftKey = getMirrorInputDraftKey(missingItem);
+  const current = drafts[draftKey] || { raw: '', unit: 'k', count: 1 };
   current.unit = nextUnit;
-  drafts[levelKey] = current;
+  drafts[draftKey] = current;
   recomputeMirrorPlan(entry);
   refreshMirrorRowErrorIfPresent(entry);
 }
@@ -1598,14 +1756,18 @@ function setSharedMirrorPriceUnit(value) {
   refreshMirrorPlans();
 }
 
+// 草稿指纹失效错误的消息键：throw 与 confirmEquipmentPricesAndAdd 的 catch 判定共用，防两处字面量漂移。
+const QUEUE_DRAFT_CHANGED_MESSAGE_KEY = 'common:queue.confirmHourlyAverageDraftChanged';
+
 function confirmEquipmentPricesAndAdd() {
   try {
     if (JSON.stringify(simulator.activePlayer) !== pendingQueueDraftFingerprint.value) {
-      throw new Error('common:queue.confirmHourlyAverageDraftChanged');
+      throw new Error(QUEUE_DRAFT_CHANGED_MESSAGE_KEY);
     }
     // 每次确认尝试开始时重置错误快照：行内错误只反映最近一次确认的结果，
     // 避免左一/右一行在市场刷新出价格后仍显示过期的"价格不可用"提示（本次循环会为仍失败的行重写）。
     manualPriceErrors.value = {};
+    equipmentPriceConfirmationError.value = '';
     const priceSelections = [];
     let hasInvalidManualPrice = false;
     const sharedMirrorPrice = resolveSharedMirrorPrice();
@@ -1648,21 +1810,30 @@ function confirmEquipmentPricesAndAdd() {
         }
         const inputs = Array.isArray(mirrorPlan.inputs)
           ? mirrorPlan.inputs.map((input) => ({
+              itemHrid: String(input.itemHrid || ''),
               level: input.level,
               count: input.count,
               price: input.price,
               source: input.source,
             }))
           : [];
+        const usedBaselineLevels = Array.isArray(mirrorPlan?.usedBaselineLevels) ? mirrorPlan.usedBaselineLevels : [];
+        // 基准件出售价值快照（fee 后）：买入价按总成本口径落库——现金合成成本 + 基准件出售价值。
+        // 顶替基准件无市场价时为 0，买入价回落现金成本（总成本列显示"—"）。
+        // 下游 resolveEquipmentTransitionPricing 以该快照作顶替行的出售抵扣（两侧同源，
+        // 净成本 = 现金合成成本），队列页合计与多轮"目标装备买入价"均使用此 price。
+        const baselinePieceSaleValue =
+          usedBaselineLevels.length > 0 ? Math.max(0, Number(mirrorPlan.baselinePieceSaleValue) || 0) : 0;
         priceSelections.push({
           itemHrid: entry.itemHrid,
           enhancementLevel: entry.enhancementLevel,
           method: QUEUE_PRICE_METHOD_MIRROR,
-          price: mirrorCost,
+          price: mirrorCost + baselinePieceSaleValue,
           mirrorPrice,
           mirrorCount: mirrorPlan.mirrorCount || 0,
           inputs,
-          usedBaselineLevels: Array.isArray(mirrorPlan?.usedBaselineLevels) ? mirrorPlan.usedBaselineLevels : [],
+          baselinePieceSaleValue,
+          usedBaselineLevels,
           confirmedAt: Date.now(),
         });
         continue;
@@ -1725,8 +1896,17 @@ function confirmEquipmentPricesAndAdd() {
     cancelEquipmentPriceConfirmation();
     reportAddedQueueItems(items);
   } catch (error) {
-    cancelEquipmentPriceConfirmation();
-    setTopQueueActionStatus('danger', resolveQueueActionErrorMessage(error));
+    // 草稿指纹失效（弹窗打开期间玩家数据被变更）：行数据已过期，关闭弹窗由用户重新发起。
+    if (error?.message === QUEUE_DRAFT_CHANGED_MESSAGE_KEY) {
+      cancelEquipmentPriceConfirmation();
+      setTopQueueActionStatus('danger', resolveQueueActionErrorMessage(error));
+      return;
+    }
+    // 其余确认失败不关闭弹窗、不清空任何行：错误以弹窗内横幅展示（顶部状态被模态遮罩遮挡），
+    // 保留全部行的定价选择与补价草稿，修正后可重试——单行失败不再"毒化"整次确认。
+    // 顶部状态同步写入，用户手动取消弹窗后仍能看到失败原因；下次成功入队会被覆盖。
+    equipmentPriceConfirmationError.value = resolveQueueActionErrorMessage(error);
+    setTopQueueActionStatus('danger', equipmentPriceConfirmationError.value);
   }
 }
 

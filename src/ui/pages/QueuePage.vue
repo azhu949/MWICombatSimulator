@@ -157,11 +157,41 @@
                       :key="`input-${index}-${iIdx}`"
                       class="flex items-center gap-1.5"
                     >
+                      <span v-if="input.itemName" class="text-muted-foreground">{{ input.itemName }}</span>
+                      <span
+                        v-if="input.baselinePiece"
+                        class="rounded bg-primary/15 px-1 py-0.5 text-[10px] font-medium text-primary"
+                        :title="
+                          input.baselinePieceMissingPrice
+                            ? t(
+                                'common:queue.mirrorBaselinePieceNoPriceHint',
+                                'The baseline piece has no market price; the total falls back to cash cost (excluded).',
+                              )
+                            : t(
+                                'common:queue.priceSelectionBaselinePieceHint',
+                                'The baseline piece consumed by the mirror synthesis; valued at its sale value and included in the total.',
+                              )
+                        "
+                        >{{ t('common:queue.priceSelectionBaselinePieceTag', 'Baseline piece') }}</span
+                      >
                       <span class="text-foreground/80">+{{ input.level }}</span>
                       <span class="text-muted-foreground">×</span>
                       <span class="text-foreground/80">{{ input.count }}</span>
                       <span class="text-muted-foreground">·</span>
-                      <span class="font-medium text-foreground">{{ input.price }}</span>
+                      <span
+                        v-if="input.baselinePieceMissingPrice"
+                        class="font-medium text-warning"
+                        :title="
+                          t(
+                            'common:queue.mirrorBaselinePieceNoPriceHint',
+                            'The baseline piece has no market price; the total falls back to cash cost (excluded).',
+                          )
+                        "
+                        >{{
+                          t('common:queue.priceSelectionBaselinePieceNoPrice', 'No market price; excluded from total')
+                        }}</span
+                      >
+                      <span v-else class="font-medium text-foreground">{{ input.price }}</span>
                       <span
                         v-if="input.manual"
                         class="rounded bg-warning/15 px-1 py-0.5 text-[10px] font-medium text-warning"
@@ -467,13 +497,42 @@ function buildPriceSelectionLines(item, baselineSnapshot) {
     if (method === 'mirror') {
       const mirrorCount = Number(selection.mirrorCount || 0);
       const mirrorPrice = Number(selection.mirrorPrice || 0);
-      const inputs = (Array.isArray(selection.inputs) ? selection.inputs : []).map((input) => ({
-        level: Number(input.level || 0),
-        count: Math.max(1, Number(input.count || 1)),
-        price: formatConfirmedMarketPrice(input.price),
-        manual: String(input.source || '') === 'manual',
-      }));
+      const inputs = (Array.isArray(selection.inputs) ? selection.inputs : []).map((input) => {
+        // 价格域感知：精炼目标的低档输入件(+N-2)来自基础物品域，与行物品不同款时显示物品名，
+        // 避免把基础物品 +13 误读为行（精炼）物品 +13。旧持久化数据无 itemHrid，回退为行物品。
+        const inputItemHrid = String(input.itemHrid || selection.itemHrid || '');
+        return {
+          itemName:
+            inputItemHrid && inputItemHrid !== String(selection.itemHrid || '')
+              ? localizeHridDisplayName(inputItemHrid)
+              : '',
+          level: Number(input.level || 0),
+          count: Math.max(1, Number(input.count || 1)),
+          price: formatConfirmedMarketPrice(input.price),
+          manual: String(input.source || '') === 'manual',
+        };
+      });
       const usedBaselineLevels = Array.isArray(selection.usedBaselineLevels) ? selection.usedBaselineLevels : [];
+      // 基准件行（仅有快照字段的新数据）：合计（selection.price）为总成本口径
+      //（现金合成成本 + 基准件出售价值），把基准件列为首行使明细与合计对账一致；
+      // 无市场价时标"未计入"（合计回落现金口径）。旧持久化数据无该字段——price 仍是
+      // 现金口径，不显示基准件行，此时明细=合计=现金口径，自洽不误导。
+      const rawBaselinePieceSaleValue = Number(selection.baselinePieceSaleValue);
+      if (
+        usedBaselineLevels.length > 0 &&
+        selection.baselinePieceSaleValue != null &&
+        Number.isFinite(rawBaselinePieceSaleValue)
+      ) {
+        inputs.unshift({
+          baselinePiece: true,
+          itemName: '',
+          level: Math.max(0, Math.floor(Number(usedBaselineLevels[0] || 0))),
+          count: 1,
+          price: rawBaselinePieceSaleValue > 0 ? formatConfirmedMarketPrice(rawBaselinePieceSaleValue) : '',
+          manual: false,
+          baselinePieceMissingPrice: !(rawBaselinePieceSaleValue > 0),
+        });
+      }
       const baselineUsedText =
         usedBaselineLevels.length > 0
           ? t('common:queue.priceSelectionBaselineUsed', 'baseline +{{level}} used', {
