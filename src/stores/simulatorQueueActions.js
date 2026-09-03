@@ -426,8 +426,23 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
         ...deepClone(player),
         selected: true,
       }));
-      const { buildPlayersForSimulation } = await loadPlayerMapperModule();
-      const playersToSim = buildPlayersForSimulation(scenarioPlayers);
+      // 入口段兜底：动态导入/玩家构建失败转为本动作的 throw 契约（i18n key），
+      // 由调用方（App.vue 顶栏基线流程 / SettingsPage 导入流程）catch 后本地化
+      // 显示，而非把浏览器原生错误文本（如 "Failed to fetch dynamically
+      // imported module: ..."）透传给用户。此 throw 位于状态置位之前，无残留。
+      let buildPlayersForSimulation;
+      try {
+        ({ buildPlayersForSimulation } = await loadPlayerMapperModule());
+      } catch (loadError) {
+        throw new Error('common:queue.errorLoadModule');
+      }
+
+      let playersToSim;
+      try {
+        playersToSim = buildPlayersForSimulation(scenarioPlayers);
+      } catch (buildError) {
+        throw new Error('common:queue.errorBuildPlayerData');
+      }
       const baselinePayloadOptions = buildQueueBaselinePayloadOptions(baselineSettings, this.simulationSettings);
       if (playersToSim.length === 0) {
         throw new Error('common:queue.errorBuildPlayerData');

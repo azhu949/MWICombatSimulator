@@ -70,12 +70,20 @@
         :runtime-progress="simulator.runtime.progress"
         :runtime-error="simulator.runtime.error"
         :progress-label="progressLabel"
+        :show-advisor-actions="showAdvisorActions"
+        :advisor-running="advisorRunning"
+        :advisor-progress="advisorProgress"
+        :advisor-progress-text="advisorProgressText"
+        :advisor-phase-text="advisorPhaseText"
+        :show-advisor-summary="showAdvisorSummary"
         @set-baseline="setQueueBaselineFromTopbar"
         @add-queue="addToQueueFromTopbar"
         @run-queue="runQueueFromTopbar"
         @clear-queue="clearQueueFromTopbar"
         @start-simulation="simulator.startSimulation()"
         @stop-simulation="simulator.stopSimulation()"
+        @run-advisor="runAdvisorFromTopbar"
+        @stop-advisor="stopAdvisorFromTopbar"
         @height-change="setCombatCommandBarHeight"
         @view-error="openGlobalError('runtime', $event)"
       />
@@ -731,6 +739,7 @@ import {
   resolvePatchNoteEntries,
 } from './patchNotes.js';
 import { dismissBaselineReminder, isBaselineReminderDismissed } from './baselineReminder.js';
+import { buildAdvisorProgressPercent, buildAdvisorRuntimePhaseText } from './advisorRuntimePresentation.js';
 import { deriveQueueItemStatusName } from './queueItemStatusPresentation.js';
 import { evaluateManualPriceDraft, normalizeManualPriceDraft } from './queueManualPriceValidation.js';
 import {
@@ -804,6 +813,13 @@ const { getAbilityName, getActionName, getEquipmentSlotName, getHouseRoomName, g
   useGameDataText();
 const showCombatToolbar = computed(() => route.meta?.showCombatToolbar !== false);
 const showHomeSimulationActions = computed(() => route.name === 'home');
+const showAdvisorActions = computed(() => route.name === 'advisor');
+const advisorRunning = computed(() => Boolean(simulator.advisor.runtime?.isRunning));
+const advisorProgress = computed(() => Number(simulator.advisor.runtime?.progress || 0));
+const advisorProgressText = computed(() => `${buildAdvisorProgressPercent(simulator.advisor.runtime)}%`);
+const advisorPhaseText = computed(() => buildAdvisorRuntimePhaseText(simulator.advisor.runtime || {}, t));
+// advisor 页进度摘要行常驻显示（替代被移走的页面内进度面板；空闲时 0% + 空闲）。
+const showAdvisorSummary = computed(() => showAdvisorActions.value);
 const combatCommandBarHeight = ref(0);
 const stickyShellHeight = computed(() => `${48 + (showCombatToolbar.value ? combatCommandBarHeight.value : 0)}px`);
 const currentPageTitle = computed(() =>
@@ -2071,6 +2087,14 @@ async function runQueueFromTopbar() {
 function clearQueueFromTopbar() {
   simulator.clearActiveQueue();
   setTopQueueActionStatus('success', t('common:vue.queue.msgQueueCleared', 'Queue cleared.'));
+}
+
+function runAdvisorFromTopbar() {
+  simulator.requestAdvisorRun();
+}
+
+function stopAdvisorFromTopbar() {
+  simulator.stopAdvisorScan();
 }
 
 function serializeErrorPayload(payload) {

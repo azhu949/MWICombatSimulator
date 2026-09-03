@@ -22,6 +22,7 @@ import {
   createPlayerDataSnapshotState,
   createPricingState,
   getStorageItem,
+  loadAdvisorSettingsFromStorage,
   loadEquipmentSetsFromStorage,
   loadPlayerAchievementsFromStorage,
   loadPlayerDataSnapshotFromStorage,
@@ -90,17 +91,14 @@ import {
 import { createPricingActions, ensureQueueMarketPriceSnapshot } from './simulatorPricingActions.js';
 import { createAdvisorActions } from './simulatorAdvisorActions.js';
 import { createSimulationActions } from './simulatorSimulationActions.js';
+import { createCachedModuleLoader } from '../services/cachedModuleLoader.js';
 
 const ABILITY_BOOK_CATEGORY_HRID = '/item_categories/ability_book';
 
-let playerMapperModulePromise = null;
-
-function loadPlayerMapperModule() {
-  if (!playerMapperModulePromise) {
-    playerMapperModulePromise = import('../services/playerMapper.js');
-  }
-  return playerMapperModulePromise;
-}
+// 动态导入缓存去重 + 失败可重试（见 cachedModuleLoader 注释）：并发调用共享
+// 同一次导入；一次瞬态失败（弱网抖动）不再让 Home 模拟 / advisor 扫描 /
+// queue 基线三个功能整会话持续失败，下次调用自动重试。
+const loadPlayerMapperModule = createCachedModuleLoader(() => import('../services/playerMapper.js'));
 
 function sortByNameThenLevel(a, b) {
   if (a.itemLevel !== b.itemLevel) {
@@ -261,7 +259,13 @@ export const useSimulatorStore = defineStore('simulator', {
         activeResultPlayerHrid: 'player1',
         timeSeriesData: null,
       },
-      advisor: createAdvisorState(),
+      // advisor 仅恢复持久化配置（goalPreset/customWeights/ironcowWeights/filters），
+      // 不恢复结果行（quickRows/refinedRows/topCards）与扫描运行时状态（scanned*/
+      // dropDataStale 等会话内字段随 createAdvisorState 重置）。
+      advisor: {
+        ...createAdvisorState(),
+        ...loadAdvisorSettingsFromStorage(),
+      },
       queue: {
         byPlayer: createQueueStateByPlayer(playerList, persistedQueueRunSettingsByPlayer),
         importedProfileByPlayer: createImportedProfileByPlayer(),

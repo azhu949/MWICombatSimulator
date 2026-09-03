@@ -208,8 +208,26 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
         return;
       }
 
-      const { buildPlayersForSimulation } = await loadPlayerMapperModule();
-      const playersToSim = buildPlayersForSimulation(this.players);
+      // 入口段兜底：动态导入/玩家构建失败统一转入 runtime.error（本函数其余
+      // 校验失败的同一错误通道：App.vue 的 runtime.error watch → 全局错误弹窗
+      // 对 i18n key 翻译 + CombatCommandBar「Details」红字按钮）。此前异常直接
+      // 逃逸——调用方为模板事件直连，Vue 仅 console.error，用户端完全静默
+      //（且函数开头已清空旧错误，连先前的提示都不剩）。
+      let buildPlayersForSimulation;
+      try {
+        ({ buildPlayersForSimulation } = await loadPlayerMapperModule());
+      } catch (loadError) {
+        this.runtime.error = 'common:simulation.errorLoadModule';
+        return;
+      }
+
+      let playersToSim;
+      try {
+        playersToSim = buildPlayersForSimulation(this.players);
+      } catch (buildError) {
+        this.runtime.error = 'common:simulation.errorBuildPlayerData';
+        return;
+      }
       if (playersToSim.length === 0) {
         this.runtime.error = 'common:simulation.errorBuildPlayerData';
         return;

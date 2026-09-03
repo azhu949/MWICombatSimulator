@@ -8,6 +8,13 @@ import { EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from '../shared/playerConfig.js';
 import { normalizeCombatScrolls } from '../shared/combatScrolls.js';
 import { createDefaultPriceTable, normalizePriceMode, PRICE_MODE_ASK, PRICE_MODE_BID } from './marketPriceService.js';
 import {
+  ADVISOR_GOAL_PRESET_BALANCED,
+  normalizeAdvisorGoalPreset,
+  normalizeAdvisorWeights,
+  normalizeIroncowWeights,
+} from './advisorScoring.js';
+import { normalizeAdvisorFilters } from './advisorDomain.js';
+import {
   getDefaultQueueRuntimeSettings,
   normalizeQueueRuntimeSettings,
   normalizeQueueSettings,
@@ -24,6 +31,8 @@ const QUEUE_SETTINGS_STORAGE_KEY = 'mwi.queue.settings.v1';
 const QUEUE_SETTINGS_STORAGE_VERSION = 1;
 const QUEUE_RUN_SETTINGS_STORAGE_KEY = 'mwi.queue.runSettings.v1';
 const QUEUE_RUN_SETTINGS_STORAGE_VERSION = 1;
+const ADVISOR_SETTINGS_STORAGE_KEY = 'mwi.advisor.settings.v1';
+const ADVISOR_SETTINGS_STORAGE_VERSION = 1;
 const PLAYER_DATA_SNAPSHOT_STORAGE_KEY = 'mwi.player.data.snapshot.v1';
 const PLAYER_DATA_SNAPSHOT_STORAGE_VERSION = 1;
 const PLAYER_ACHIEVEMENTS_STORAGE_KEY = 'mwi.player.achievements.v1';
@@ -688,6 +697,39 @@ export function persistQueueRunSettingsByPlayerToStorage(queueStateByPlayer = {}
   };
   setJsonStorage(QUEUE_RUN_SETTINGS_STORAGE_KEY, payload, { throwIfUnavailable: true });
   return byPlayer;
+}
+
+// Advisor 配置持久化：仅配置字段（goalPreset 含 ironcow / customWeights /
+// ironcowWeights / filters 含 dropItemHrids），不恢复结果行与扫描运行时状态
+//（scanned* / dropDataStale / quickRows 等均属会话内状态，不落盘）。
+// 规范化直接复用 advisorScoring / advisorDomain 的清洗函数，脏数据静默回退默认。
+export function normalizeAdvisorSettings(rawSettings) {
+  const source = isPlainObject(rawSettings) ? rawSettings : {};
+  return {
+    goalPreset: normalizeAdvisorGoalPreset(source.goalPreset),
+    customWeights: normalizeAdvisorWeights(source.customWeights, ADVISOR_GOAL_PRESET_BALANCED),
+    ironcowWeights: normalizeIroncowWeights(source.ironcowWeights),
+    filters: normalizeAdvisorFilters(source.filters),
+  };
+}
+
+export function loadAdvisorSettingsFromStorage() {
+  const parsed = readJsonStorage(ADVISOR_SETTINGS_STORAGE_KEY);
+  if (!isPlainObject(parsed) || parsed.version !== ADVISOR_SETTINGS_STORAGE_VERSION) {
+    return normalizeAdvisorSettings();
+  }
+  return normalizeAdvisorSettings(parsed);
+}
+
+export function persistAdvisorSettingsToStorage(settings) {
+  const normalized = normalizeAdvisorSettings(settings);
+  const payload = {
+    version: ADVISOR_SETTINGS_STORAGE_VERSION,
+    savedAt: Date.now(),
+    ...normalized,
+  };
+  setJsonStorage(ADVISOR_SETTINGS_STORAGE_KEY, payload);
+  return normalized;
 }
 
 export function snapshotPlayerDataMap(rawPlayerDataMap) {

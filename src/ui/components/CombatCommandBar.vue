@@ -61,6 +61,27 @@
           >
             <Trash2 />{{ t('common:queue.clearQueue', 'Clear Queue') }}
           </Button>
+          <Button
+            v-if="showAdvisorActions"
+            type="button"
+            size="sm"
+            :disabled="advisorRunning"
+            @click="emit('run-advisor')"
+          >
+            <Play />{{
+              advisorRunning ? t('common:advisor.running', 'Scanning...') : t('common:advisor.run', 'Run Advisor')
+            }}
+          </Button>
+          <Button
+            v-if="showAdvisorActions"
+            type="button"
+            variant="destructive"
+            size="sm"
+            :disabled="!advisorRunning"
+            @click="emit('stop-advisor')"
+          >
+            <Square />{{ t('common:advisor.stop', 'Stop Advisor') }}
+          </Button>
         </div>
 
         <Button
@@ -71,6 +92,25 @@
           @click="emit('run-queue')"
         >
           <Play />{{ t('common:queue.runQueue', 'Run Queue') }}
+        </Button>
+        <Button
+          v-if="showAdvisorActions && !advisorRunning"
+          class="2xl:hidden"
+          type="button"
+          size="sm"
+          @click="emit('run-advisor')"
+        >
+          <Play />{{ t('common:advisor.run', 'Run Advisor') }}
+        </Button>
+        <Button
+          v-else-if="showAdvisorActions"
+          class="2xl:hidden"
+          type="button"
+          variant="destructive"
+          size="sm"
+          @click="emit('stop-advisor')"
+        >
+          <Square />{{ t('common:advisor.stop', 'Stop Advisor') }}
         </Button>
         <DropdownMenuRoot>
           <DropdownMenuTrigger as-child>
@@ -107,6 +147,20 @@
                 :disabled="queueActionsDisabled || itemCount === 0"
                 @select="emit('clear-queue')"
                 ><Trash2 />{{ t('common:queue.clearQueue', 'Clear Queue') }}</DropdownMenuItem
+              >
+              <DropdownMenuItem
+                v-if="showAdvisorActions"
+                class="command-menu-item"
+                :disabled="advisorRunning"
+                @select="emit('run-advisor')"
+                ><Play />{{ t('common:advisor.run', 'Run Advisor') }}</DropdownMenuItem
+              >
+              <DropdownMenuItem
+                v-if="showAdvisorActions"
+                class="command-menu-item text-destructive"
+                :disabled="!advisorRunning"
+                @select="emit('stop-advisor')"
+                ><Square />{{ t('common:advisor.stop', 'Stop Advisor') }}</DropdownMenuItem
               >
             </DropdownMenuContent>
           </DropdownMenuPortal>
@@ -147,6 +201,14 @@
           <CircleAlert />{{ t('common:vue.app.viewErrorDetails', 'Details') }}
         </Button>
       </div>
+      <div v-if="showAdvisorSummary" class="flex items-center gap-3 border-t border-border pt-2">
+        <span class="shrink-0 text-[10px] font-semibold uppercase text-muted-foreground">{{
+          t('common:advisor.progress', 'Progress')
+        }}</span>
+        <Progress class="min-w-20 flex-1" :value="advisorProgress * 100" />
+        <span class="shrink-0 text-xs tabular-nums text-muted-foreground">{{ advisorProgressText }}</span>
+        <span class="shrink-0 text-xs text-muted-foreground">{{ advisorPhaseText }}</span>
+      </div>
     </div>
   </section>
 </template>
@@ -182,6 +244,12 @@ defineProps({
   runtimeProgress: { type: Number, default: 0 },
   runtimeError: { type: String, default: '' },
   progressLabel: { type: String, default: '' },
+  showAdvisorActions: { type: Boolean, default: false },
+  advisorRunning: { type: Boolean, default: false },
+  advisorProgress: { type: Number, default: 0 },
+  advisorProgressText: { type: String, default: '' },
+  advisorPhaseText: { type: String, default: '' },
+  showAdvisorSummary: { type: Boolean, default: false },
 });
 
 const emit = defineEmits([
@@ -193,6 +261,8 @@ const emit = defineEmits([
   'stop-simulation',
   'height-change',
   'view-error',
+  'run-advisor',
+  'stop-advisor',
 ]);
 const { t } = useI18nText();
 const commandBarRoot = ref(null);

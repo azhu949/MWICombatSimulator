@@ -1,4 +1,44 @@
 {
+  "2026年9月4日（v2.4.2）": {
+    "label": {
+      "zh": "2026年9月4日（v2.4.2）",
+      "en": "September 4, 2026 (v2.4.2)"
+    },
+    "newFeatures": {
+      "zh": [
+        "刷图推荐新增「铁牛」掉落模式：按所选物品的掉落、经验、安全评分，不比收益；新增「掉落/h」列（悬停看明细）。",
+        "铁牛模式可搜索勾选目标掉落物品，扫描自动只搜能掉它们的地图。",
+        "推荐结果表点击列表头即可排序，无需重新扫描。"
+      ],
+      "en": [
+        "Added an Iron Cow drop mode to the Advisor: scored on your selected items' drops, XP, and safety, with a new Drops/h column (hover for details).",
+        "Iron Cow mode lets you search and pick target drop items; scans only cover zones that can drop them.",
+        "Click any column header in the results table to sort, no re-scan needed."
+      ]
+    },
+    "improvements": {
+      "zh": [
+        "刷图推荐的模式、权重与筛选设置自动保存，刷新不丢。",
+        "「开始 / 停止推荐」移入顶部固定工具栏，进度常驻显示。",
+        "掉落预估按怪物实际难度档计算，升档怪的掉落更准。"
+      ],
+      "en": [
+        "Advisor mode, weight, and filter settings now persist across page reloads.",
+        "Run/Stop Advisor moved to the sticky top toolbar, with progress always visible.",
+        "Drop estimates now use each monster's actual difficulty tier, so upgraded spawns are more accurate."
+      ]
+    },
+    "bugFixes": {
+      "zh": [
+        "修复英文界面下「已有扫描结果」弹窗取消按钮显示中文的问题。",
+        "修复网络不佳导致模拟模块加载失败时无提示或显示英文原始报错的问题，现在会提示检查网络后重试。"
+      ],
+      "en": [
+        "Fixed the cancel button on the advisor's \"scan results exist\" dialog showing Chinese in the English UI.",
+        "Fixed silent failures when the simulation module fails to load; you'll now be prompted to check your connection and retry."
+      ]
+    }
+  },
   "2026年9月2日（v2.4.1）": {
     "label": {
       "zh": "2026年9月2日（v2.4.1）",

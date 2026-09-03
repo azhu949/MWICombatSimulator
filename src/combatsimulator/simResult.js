@@ -23,7 +23,11 @@ class SimResult {
     // 对于包含过期卷轴的长时间模拟，单一的最终掉落倍率并不足够。
     // CombatSimulator 可按（玩家、怪物、属性签名）追加一个桶，
     // 利润估算器在存在这些桶时使用它们，同时为旧的
-    // 序列化结果保留传统回退。
+    // 序列化结果保留传统回退。桶还记录击杀时怪物的有效难度档
+    // difficultyTier（Monster.difficultyTier = spawn 偏移 + 区域档，与
+    // zone.js 构怪口径一致），掉落难度门与开率据此按怪物实际难度计算；
+    // 旧结果/DTO 未记录该字段时，估算端回退 SimResult.difficultyTier
+    // （纯区域档快照）。
     this.dropContextBuckets = {};
     this.dropRateMultiplier = {};
     this.rareFindMultiplier = {};
@@ -253,14 +257,30 @@ class SimResult {
 
   /** 使用 CombatUnit 作为掉落统计来源记录一次死亡。 */
   recordMonsterDeathFromUnit(player, monster, killCount = 1) {
-    return this.recordMonsterDeathFromContext(player?.hrid, monster?.hrid ?? monster, player, killCount);
+    const monsterUnit = monster && typeof monster === 'object' ? monster : null;
+    return this.recordMonsterDeathFromContext(
+      player?.hrid,
+      monsterUnit?.hrid ?? monster,
+      player,
+      killCount,
+      monsterUnit?.difficultyTier,
+    );
   }
 
   /**
    * 在显式掉落统计上下文下记录一次怪物死亡。具有完全相同
    * 签名的桶会被合并，以保持长时间模拟结果紧凑。
+   * monsterDifficultyTier 为击杀怪物的有效难度档（Monster.difficultyTier
+   * = spawn 偏移 + 区域档）；未提供（DTO/旧调用方）时桶不记录该字段，
+   * 利润估算器回退 SimResult.difficultyTier（纯区域档快照）。
    */
-  recordMonsterDeathFromContext(playerHrid, monsterHrid, context = {}, killCount = 1) {
+  recordMonsterDeathFromContext(
+    playerHrid,
+    monsterHrid,
+    context = {},
+    killCount = 1,
+    monsterDifficultyTier = undefined,
+  ) {
     const playerKey = String(playerHrid || '').trim();
     const monsterKey = String(monsterHrid || '').trim();
     if (!playerKey || !monsterKey) {
@@ -284,6 +304,12 @@ class SimResult {
       return Number.isFinite(statValue) ? defaultValue + statValue : defaultValue;
     };
 
+    // 怪物有效难度档（spawn 偏移 + 区域档）：仅在调用方明确提供时记录，
+    // 未提供（DTO/旧调用方）保持 undefined，让桶维持旧形状，由估算端回退。
+    const normalizedDifficultyTier = Number.isFinite(Number(monsterDifficultyTier))
+      ? Math.max(0, Math.floor(Number(monsterDifficultyTier)))
+      : undefined;
+
     const normalizedContext = {
       dropRateMultiplier: readMultiplier('dropRateMultiplier', 'combatDropRate', 1),
       rareFindMultiplier: readMultiplier('rareFindMultiplier', 'combatRareFind', 1),
@@ -293,6 +319,7 @@ class SimResult {
       debuffOnLevelGap: Object.prototype.hasOwnProperty.call(source, 'debuffOnLevelGap')
         ? Number(source.debuffOnLevelGap)
         : Number(stats?.debuffOnLevelGap ?? source?.debuffOnLevelGap ?? 0),
+      difficultyTier: normalizedDifficultyTier,
     };
 
     if (!Number.isFinite(normalizedContext.combatDropQuantity)) {
@@ -327,7 +354,10 @@ class SimResult {
         bucket.dropRateMultiplier === normalizedContext.dropRateMultiplier &&
         bucket.rareFindMultiplier === normalizedContext.rareFindMultiplier &&
         bucket.combatDropQuantity === normalizedContext.combatDropQuantity &&
-        bucket.debuffOnLevelGap === normalizedContext.debuffOnLevelGap,
+        bucket.debuffOnLevelGap === normalizedContext.debuffOnLevelGap &&
+        // 同一怪物在同一模拟内的有效难度档恒定；把难度纳入签名可防止
+        // 假想数据（同 hrid 多 spawn 档、升档怪）下不同难度的击杀被静默合并。
+        bucket.difficultyTier === normalizedContext.difficultyTier,
       );
     // 死亡通常集中在一个增益窗口内。先检查最近使用的
     // 签名可使该热路径保持 O(1)，而回退逻辑仍会在
@@ -341,6 +371,9 @@ class SimResult {
 
     const bucket = {
       killCount: count,
+      // 仅在已知怪物有效难度时新增该键；旧形状结果/DTO 保持原样，
+      // 读取端（profitEstimator.normalizeDropContextBucket）回退纯区域档快照。
+      ...(normalizedDifficultyTier !== undefined ? { difficultyTier: normalizedDifficultyTier } : {}),
       dropRateMultiplier: normalizedContext.dropRateMultiplier,
       rareFindMultiplier: normalizedContext.rareFindMultiplier,
       combatDropQuantity: normalizedContext.combatDropQuantity,

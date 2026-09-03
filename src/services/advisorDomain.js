@@ -1,5 +1,13 @@
 import { getActionName as getIndexedActionName } from '../shared/gameDataIndex.js';
-import { ADVISOR_GOAL_PRESET_BALANCED, buildAdvisorMetricSummary, getAdvisorPresetWeights } from './advisorScoring.js';
+import {
+  ADVISOR_GOAL_PRESET_BALANCED,
+  ADVISOR_GOAL_PRESET_IRONCOW,
+  buildAdvisorMetricSummary,
+  getAdvisorPresetWeights,
+  normalizeAdvisorGoalPreset,
+} from './advisorScoring.js';
+import { filterAdvisorCandidatesByDropItems, normalizeDropItemHridList } from './advisorDropItems.js';
+import { buildNoRngDropCountMap } from './profitEstimator.js';
 import {
   ONE_HOUR,
   RUN_SCOPE_ALL_GROUP_ZONES,
@@ -47,6 +55,7 @@ export function normalizeAdvisorFilters(rawFilters = {}) {
       ADVISOR_QUICK_ROUNDS_MIN,
       ADVISOR_QUICK_ROUNDS_MAX,
     ),
+    dropItemHrids: normalizeDropItemHridList(source.dropItemHrids),
   };
 }
 
@@ -55,11 +64,18 @@ export function createAdvisorState() {
     filters: normalizeAdvisorFilters(),
     goalPreset: ADVISOR_GOAL_PRESET_BALANCED,
     customWeights: getAdvisorPresetWeights(ADVISOR_GOAL_PRESET_BALANCED),
+    ironcowWeights: { dropsPerHour: 0.45, xpPerHour: 0.45, safety: 0.1 },
+    scannedGoalPreset: '',
+    scannedDropItemHrids: [],
+    dropDataStale: false,
     quickRows: [],
     refinedRows: [],
     topCards: [],
     metricPlayerId: '',
     metricPlayerName: '',
+    // 顶栏「开始推荐」的请求令牌（会话内计数器，不落盘）：requestAdvisorRun 递增，
+    // AdvisorPage watch 后执行本地 runAdvisor() 以提交 filterDraft 并重置排序。
+    runRequestToken: 0,
     runtime: {
       isRunning: false,
       phase: 'idle',
@@ -73,6 +89,11 @@ export function createAdvisorState() {
       lastRunAt: 0,
       runId: 0,
       cancelRequested: false,
+      // runAdvisorScan 的「已进入未返回」标志（会话内，不落盘）：isRunning 要到
+      // executeAdvisorScan 越过 loadPlayerMapperModule 动态导入并进入 quick 阶段
+      // 才置位（首扫窗口可达数百 ms），scanInFlight 在首个 await 之前同步置位，
+      // 用于吸收该窗口内的重复触发（顶栏「开始推荐」双击）。
+      scanInFlight: false,
     },
     error: '',
   };
@@ -112,13 +133,48 @@ export function resolveAdvisorMetricPlayer(selectedPlayers = [], preferredPlayer
   };
 }
 
-export function summarizeAdvisorTargetResult(simResult, selectedPlayers, preferredPlayerId, pricingOptions = {}) {
+// 铁牛模式：对 metric player 计算所选目标物品的期望掉落速率。
+// dropItemHrids 为空时返回零值；非空时用 buildNoRngDropCountMap 取整场
+// 期望数量并按模拟小时折算，dropRatesByItem 固定包含全部所选物品
+//（无掉落记 0），dropsPerHour 为所选物品速率之和。
+function buildAdvisorDropRateMetrics(simResult, metricPlayerHrid, hours, dropItemHrids = []) {
+  const selectedItemHrids = normalizeDropItemHridList(dropItemHrids);
+  const dropRatesByItem = {};
+  if (selectedItemHrids.length === 0 || !simResult) {
+    return { dropsPerHour: 0, dropRatesByItem };
+  }
+
+  const dropCountMap = buildNoRngDropCountMap(simResult, metricPlayerHrid);
+  for (const itemHrid of selectedItemHrids) {
+    dropRatesByItem[itemHrid] = toFiniteNumber(dropCountMap.get(itemHrid), 0) / hours;
+  }
+  const dropsPerHour = selectedItemHrids.reduce(
+    (sum, itemHrid) => sum + toFiniteNumber(dropRatesByItem[itemHrid], 0),
+    0,
+  );
+  return { dropsPerHour, dropRatesByItem };
+}
+
+export function summarizeAdvisorTargetResult(
+  simResult,
+  selectedPlayers,
+  preferredPlayerId,
+  pricingOptions = {},
+  dropItemHrids = [],
+) {
   const playerRows = summarizeResult(simResult, selectedPlayers, pricingOptions);
   const hours = Math.max(1e-9, Number(simResult?.simulatedTime ?? 0) / ONE_HOUR);
   const metricPlayer = resolveAdvisorMetricPlayer(selectedPlayers, preferredPlayerId);
   const metricPlayerHrid = toPlayerHrid(metricPlayer.id);
   const metricRow = playerRows.find((row) => row?.playerHrid === metricPlayerHrid) || playerRows[0] || null;
   const fallbackKillsPerHour = toFiniteNumber(simResult?.encounters, 0) / hours;
+  const { dropsPerHour, dropRatesByItem } = buildAdvisorDropRateMetrics(
+    simResult,
+    metricPlayerHrid,
+    hours,
+    dropItemHrids,
+  );
+
   return {
     playerRows,
     metricPlayerId: metricPlayer.id,
@@ -127,7 +183,27 @@ export function summarizeAdvisorTargetResult(simResult, selectedPlayers, preferr
     xpPerHour: toFiniteNumber(metricRow?.totalXpPerHour, 0),
     killsPerHour: toFiniteNumber(metricRow?.encountersPerHour, fallbackKillsPerHour),
     deathsPerHour: toFiniteNumber(metricRow?.deathsPerHour, 0),
+    dropsPerHour,
+    dropRatesByItem,
   };
+}
+
+// 把 sample 的 dropRatesByItem 规整为「键非空、值为有限数」的普通对象，
+// 缺失/非对象输入一律回退为 {}（与 dropsPerHour: 0 的默认行形状对齐）。
+function normalizeDropRatesByItem(source) {
+  if (!source || typeof source !== 'object' || Array.isArray(source)) {
+    return {};
+  }
+
+  const result = {};
+  for (const [itemHrid, rawRate] of Object.entries(source)) {
+    const normalizedHrid = String(itemHrid || '').trim();
+    if (!normalizedHrid) {
+      continue;
+    }
+    result[normalizedHrid] = toFiniteNumber(rawRate, 0);
+  }
+  return result;
 }
 
 export function buildAdvisorBaseRow(candidate, sample) {
@@ -137,6 +213,8 @@ export function buildAdvisorBaseRow(candidate, sample) {
     xpPerHour: toFiniteNumber(sample?.xpPerHour, 0),
     killsPerHour: toFiniteNumber(sample?.killsPerHour, 0),
     deathsPerHour: toFiniteNumber(sample?.deathsPerHour, 0),
+    dropsPerHour: toFiniteNumber(sample?.dropsPerHour, 0),
+    dropRatesByItem: normalizeDropRatesByItem(sample?.dropRatesByItem),
     reasons: [],
     normalizedMetrics: {
       profitPerHour: 0,
@@ -159,7 +237,37 @@ function resolveAdvisorRoundMetricValue(summary = {}, fallbackValue = 0) {
     : toFiniteNumber(fallbackValue, 0);
 }
 
-export function buildAdvisorCandidates(filters = {}) {
+// dropRatesByItem 仅用于展示层 tooltip：每物品取「出现该物品键的轮次」的
+// 简单平均。它与 dropsPerHour 的 robustMean 总量口径存在轻微差异，属预期
+//（样本量小或离群轮次时两者不必互推）。
+function aggregateAdvisorDropRatesByItem(roundMetrics = []) {
+  const sumByItem = new Map();
+  const countByItem = new Map();
+
+  for (const round of roundMetrics) {
+    const dropRatesByItem = round?.dropRatesByItem;
+    if (!dropRatesByItem || typeof dropRatesByItem !== 'object' || Array.isArray(dropRatesByItem)) {
+      continue;
+    }
+    for (const [itemHrid, rawRate] of Object.entries(dropRatesByItem)) {
+      const normalizedHrid = String(itemHrid || '').trim();
+      if (!normalizedHrid) {
+        continue;
+      }
+      sumByItem.set(normalizedHrid, toFiniteNumber(sumByItem.get(normalizedHrid), 0) + toFiniteNumber(rawRate, 0));
+      countByItem.set(normalizedHrid, toFiniteNumber(countByItem.get(normalizedHrid), 0) + 1);
+    }
+  }
+
+  const result = {};
+  for (const [itemHrid, sum] of sumByItem.entries()) {
+    const count = Math.max(1, toFiniteNumber(countByItem.get(itemHrid), 1));
+    result[itemHrid] = sum / count;
+  }
+  return result;
+}
+
+export function buildAdvisorCandidates(filters = {}, goalPreset = '') {
   const normalizedFilters = normalizeAdvisorFilters(filters);
   const candidates = [];
   let order = 0;
@@ -178,6 +286,16 @@ export function buildAdvisorCandidates(filters = {}) {
       candidates.push(createAdvisorZoneCandidate(zoneTarget, 'group_zone', order));
       order += 1;
     }
+  }
+
+  // 铁牛模式：在 solo/group 范围过滤之后，再按所选目标物品做难度感知过滤。
+  // 非铁牛模式不按物品过滤（物品选择面板仅铁牛可见，遗留选择不应静默缩小
+  // 老模式的扫描范围；与执行层空物品校验同样以 goalPreset==='ironcow' 门控）。
+  if (
+    normalizeAdvisorGoalPreset(goalPreset) === ADVISOR_GOAL_PRESET_IRONCOW &&
+    normalizedFilters.dropItemHrids.length > 0
+  ) {
+    return filterAdvisorCandidatesByDropItems(candidates, normalizedFilters.dropItemHrids);
   }
 
   return candidates;
@@ -218,11 +336,14 @@ export function buildAdvisorRowFromRoundMetrics(candidate, roundMetrics = [], op
   const xpSummary = metricSummary?.xpPerHour || {};
   const killsSummary = metricSummary?.killsPerHour || {};
   const deathsSummary = metricSummary?.deathsPerHour || {};
+  const dropsSummary = metricSummary?.dropsPerHour || {};
   const sample = {
     profitPerHour: resolveAdvisorRoundMetricValue(profitSummary, fallbackSample?.profitPerHour),
     xpPerHour: resolveAdvisorRoundMetricValue(xpSummary, fallbackSample?.xpPerHour),
     killsPerHour: resolveAdvisorRoundMetricValue(killsSummary, fallbackSample?.killsPerHour),
     deathsPerHour: resolveAdvisorRoundMetricValue(deathsSummary, fallbackSample?.deathsPerHour),
+    dropsPerHour: resolveAdvisorRoundMetricValue(dropsSummary, fallbackSample?.dropsPerHour),
+    dropRatesByItem: aggregateAdvisorDropRatesByItem(safeRounds),
   };
 
   return {

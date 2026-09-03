@@ -1,6 +1,23 @@
+import { readFileSync, readdirSync } from 'node:fs';
+import path from 'node:path';
+import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import enCommon from '../../../locales/en/common.json';
 import zhCommon from '../../../locales/zh/common.json';
+
+const SRC_ROOT = fileURLToPath(new URL('../../../src', import.meta.url));
+
+function collectUiSourceFiles() {
+  const files = [];
+  (function walk(directory) {
+    for (const entry of readdirSync(directory, { withFileTypes: true })) {
+      const entryPath = path.join(directory, entry.name);
+      if (entry.isDirectory()) walk(entryPath);
+      else if (/\.(js|vue|mjs)$/.test(entry.name)) files.push(entryPath);
+    }
+  })(SRC_ROOT);
+  return files;
+}
 
 describe('common locale resources', () => {
   it('defines the dedicated patch notes page copy in both languages', () => {
@@ -28,6 +45,24 @@ describe('common locale resources', () => {
 
   it('keeps every enhancement resource key synchronized across locales', () => {
     expect(Object.keys(enCommon?.enhancement || {}).sort()).toEqual(Object.keys(zhCommon?.enhancement || {}).sort());
+  });
+
+  it('keeps every advisor resource key synchronized across locales', () => {
+    expect(Object.keys(enCommon?.advisor || {}).sort()).toEqual(Object.keys(zhCommon?.advisor || {}).sort());
+    expect(zhCommon?.advisor?.presetIroncow).toBe('铁牛');
+    expect(enCommon?.advisor?.presetIroncow).toBe('Iron Cow');
+    expect(zhCommon?.advisor?.dropsPerHour).toBe('掉落/h');
+    expect(enCommon?.advisor?.dropsPerHour).toBe('Drops/h');
+    expect(zhCommon?.advisor?.dropItemsColumn).toBe('掉落物品');
+    expect(enCommon?.advisor?.dropItemsColumn).toBe('Drop Items');
+    expect(zhCommon?.advisor?.bestDrops).toBe('掉落最佳');
+    expect(enCommon?.advisor?.bestDrops).toBe('Best Drops');
+    expect(zhCommon?.advisor?.weightSumError).toContain('必须等于 1');
+    expect(zhCommon?.advisor?.dropDataStale).toContain('重新扫描');
+    expect(zhCommon?.advisor?.errorNoDropItems).toContain('目标掉落物品');
+    expect(enCommon?.advisor?.errorNoDropItems).toContain('target drop item');
+    expect(zhCommon?.advisor?.scoreExplainIroncow1).toContain('收益不参与评分');
+    expect(enCommon?.advisor?.scoreExplainIroncow1).toContain('profit does not affect the score');
   });
 
   it('defines synchronized skilling workspace labels', () => {
@@ -188,5 +223,48 @@ describe('common locale resources', () => {
     expect(zhCommon?.vue?.queue?.equipmentNetCost).toContain('净成本');
     expect(enCommon?.vue?.queue?.upgradeCostComposition).toContain('Upgrade Cost');
     expect(zhCommon?.vue?.queue?.upgradeCostComposition).toContain('升级成本');
+  });
+
+  it('keeps every t() fallback string in English across the UI source', () => {
+    // t(key, fallback) 的 fallback 是键完全缺失时的最终兜底文案：与 fallbackLng: 'en'
+    // 同口径统一为英文，避免中文兜底漏进英文界面（controls.cancel 双语言包缺键时，
+    // 英文模式的按钮曾直接显示中文「取消」）。
+    const cjk = /[\u3000-\u303F\u4E00-\u9FFF\uFF00-\uFFEF]/;
+    const callRe = /\bt\(\s*'(common:[^']+)'\s*,\s*('((?:\\.|[^'\\])*)'|"((?:\\.|[^"\\])*)"|`((?:\\.|[^`\\])*)`)/gs;
+    const offenders = [];
+    for (const file of collectUiSourceFiles()) {
+      const source = readFileSync(file, 'utf8');
+      let match;
+      while ((match = callRe.exec(source))) {
+        const fallback = match[3] ?? match[4] ?? match[5] ?? '';
+        if (cjk.test(fallback)) offenders.push(`${path.relative(SRC_ROOT, file)}: ${match[1]}`);
+      }
+    }
+    expect(offenders).toEqual([]);
+  });
+
+  it('resolves every literal common: t() key from both locale files', () => {
+    // UI 引用的字面 common: 键必须在 en/zh 的 common.json 中均可解析：漏键时
+    // fallback 文案会直接上屏（zh 模式侥幸正确、en 模式语言错乱），且模板
+    // 测试只锚定已知键，无法发现这类缺键。
+    const keyRe = /\bt\(\s*'(common:[^']+)'/g;
+    const resolve = (resources, key) =>
+      key.split('.').reduce((node, part) => (node && typeof node === 'object' ? node[part] : undefined), resources);
+    const missing = [];
+    const seen = new Set();
+    for (const file of collectUiSourceFiles()) {
+      const source = readFileSync(file, 'utf8');
+      let match;
+      while ((match = keyRe.exec(source))) {
+        const key = match[1];
+        if (seen.has(key)) continue;
+        seen.add(key);
+        const dotted = key.slice('common:'.length);
+        if (resolve(enCommon, dotted) === undefined || resolve(zhCommon, dotted) === undefined) {
+          missing.push(`${path.relative(SRC_ROOT, file)}: ${key}`);
+        }
+      }
+    }
+    expect(missing).toEqual([]);
   });
 });

@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-09-02T05:12:48.698Z",
+    "generatedAt": "2026-09-02T15:38:56.949Z",
     "levelKeys": [
       "stamina",
       "intelligence",
@@ -54390,6 +54390,510 @@
     "/actions/combat/werewolf",
     "/actions/combat/zombie"
   ],
+  "zoneMonsterSpawnIndex": {
+    "/actions/combat/abyssal_imp": [
+      {
+        "monsterHrid": "/monsters/abyssal_imp",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/alligator": [
+      {
+        "monsterHrid": "/monsters/alligator",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/aqua_planet": [
+      {
+        "monsterHrid": "/monsters/sea_snail",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/crab",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/aquahorse",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/nom_nom",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/turtle",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/marine_huntress",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/aquahorse": [
+      {
+        "monsterHrid": "/monsters/aquahorse",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/bear_with_it": [
+      {
+        "monsterHrid": "/monsters/gummy_bear",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/panda",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/black_bear",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/grizzly_bear",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/polar_bear",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/red_panda",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/black_bear": [
+      {
+        "monsterHrid": "/monsters/black_bear",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/centaur_archer": [
+      {
+        "monsterHrid": "/monsters/centaur_archer",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/crab": [
+      {
+        "monsterHrid": "/monsters/crab",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/elementalist": [
+      {
+        "monsterHrid": "/monsters/elementalist",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/eye": [
+      {
+        "monsterHrid": "/monsters/eye",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/eyes": [
+      {
+        "monsterHrid": "/monsters/eyes",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/flame_sorcerer": [
+      {
+        "monsterHrid": "/monsters/flame_sorcerer",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/fly": [
+      {
+        "monsterHrid": "/monsters/fly",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/frog": [
+      {
+        "monsterHrid": "/monsters/frog",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/gobo_boomy": [
+      {
+        "monsterHrid": "/monsters/gobo_boomy",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/gobo_planet": [
+      {
+        "monsterHrid": "/monsters/gobo_stabby",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/gobo_slashy",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/gobo_smashy",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/gobo_shooty",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/gobo_boomy",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/gobo_chieftain",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/gobo_shooty": [
+      {
+        "monsterHrid": "/monsters/gobo_shooty",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/gobo_slashy": [
+      {
+        "monsterHrid": "/monsters/gobo_slashy",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/gobo_smashy": [
+      {
+        "monsterHrid": "/monsters/gobo_smashy",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/gobo_stabby": [
+      {
+        "monsterHrid": "/monsters/gobo_stabby",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/golem_cave": [
+      {
+        "monsterHrid": "/monsters/magnetic_golem",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/stalactite_golem",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/granite_golem",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/crystal_colossus",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/granite_golem": [
+      {
+        "monsterHrid": "/monsters/granite_golem",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/grizzly_bear": [
+      {
+        "monsterHrid": "/monsters/grizzly_bear",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/gummy_bear": [
+      {
+        "monsterHrid": "/monsters/gummy_bear",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/ice_sorcerer": [
+      {
+        "monsterHrid": "/monsters/ice_sorcerer",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/infernal_abyss": [
+      {
+        "monsterHrid": "/monsters/abyssal_imp",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/soul_hunter",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/infernal_warlock",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/demonic_overlord",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/infernal_warlock": [
+      {
+        "monsterHrid": "/monsters/infernal_warlock",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/jungle_planet": [
+      {
+        "monsterHrid": "/monsters/jungle_sprite",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/myconid",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/treant",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/centaur_archer",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/luna_empress",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/jungle_sprite": [
+      {
+        "monsterHrid": "/monsters/jungle_sprite",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/magnetic_golem": [
+      {
+        "monsterHrid": "/monsters/magnetic_golem",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/myconid": [
+      {
+        "monsterHrid": "/monsters/myconid",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/nom_nom": [
+      {
+        "monsterHrid": "/monsters/nom_nom",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/novice_sorcerer": [
+      {
+        "monsterHrid": "/monsters/novice_sorcerer",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/panda": [
+      {
+        "monsterHrid": "/monsters/panda",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/planet_of_the_eyes": [
+      {
+        "monsterHrid": "/monsters/eye",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/eyes",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/veyes",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/the_watcher",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/polar_bear": [
+      {
+        "monsterHrid": "/monsters/polar_bear",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/porcupine": [
+      {
+        "monsterHrid": "/monsters/porcupine",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/rat": [
+      {
+        "monsterHrid": "/monsters/rat",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/sea_snail": [
+      {
+        "monsterHrid": "/monsters/sea_snail",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/skunk": [
+      {
+        "monsterHrid": "/monsters/skunk",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/slimy": [
+      {
+        "monsterHrid": "/monsters/slimy",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/smelly_planet": [
+      {
+        "monsterHrid": "/monsters/fly",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/rat",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/skunk",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/porcupine",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/slimy",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/snake": [
+      {
+        "monsterHrid": "/monsters/snake",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/sorcerers_tower": [
+      {
+        "monsterHrid": "/monsters/novice_sorcerer",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/ice_sorcerer",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/flame_sorcerer",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/elementalist",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/chronofrost_sorcerer",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/soul_hunter": [
+      {
+        "monsterHrid": "/monsters/soul_hunter",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/stalactite_golem": [
+      {
+        "monsterHrid": "/monsters/stalactite_golem",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/swamp_planet": [
+      {
+        "monsterHrid": "/monsters/frog",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/snake",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/swampy",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/alligator",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/giant_shoebill",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/swampy": [
+      {
+        "monsterHrid": "/monsters/swampy",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/treant": [
+      {
+        "monsterHrid": "/monsters/treant",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/turtle": [
+      {
+        "monsterHrid": "/monsters/turtle",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/twilight_zone": [
+      {
+        "monsterHrid": "/monsters/zombie",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/vampire",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/werewolf",
+        "difficultyTier": 0
+      },
+      {
+        "monsterHrid": "/monsters/dusk_revenant",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/vampire": [
+      {
+        "monsterHrid": "/monsters/vampire",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/veyes": [
+      {
+        "monsterHrid": "/monsters/veyes",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/werewolf": [
+      {
+        "monsterHrid": "/monsters/werewolf",
+        "difficultyTier": 0
+      }
+    ],
+    "/actions/combat/zombie": [
+      {
+        "monsterHrid": "/monsters/zombie",
+        "difficultyTier": 0
+      }
+    ]
+  },
   "monsterDetailIndex": {
     "/monsters/abyssal_imp": {
       "hrid": "/monsters/abyssal_imp",

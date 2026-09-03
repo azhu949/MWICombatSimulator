@@ -250,7 +250,8 @@
             <h3 class="guide-title">Use Advisor</h3>
             <p class="guide-lead">
               Advisor scans combat targets with the current team, buffs, achievements, house, and market prices, then
-              ranks them using your preferences.
+              ranks them using your preferences. The Iron Cow mode ranks targets by the expected drops of your selected
+              items, XP, and safety.
             </p>
           </div>
 

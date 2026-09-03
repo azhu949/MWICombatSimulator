@@ -75,6 +75,11 @@ export const zoneOptions = Array.isArray(gameDataIndex?.zones) ? gameDataIndex.z
 export const dungeonOptions = Array.isArray(gameDataIndex?.dungeons) ? gameDataIndex.dungeons : [];
 export const groupZoneHrids = Array.isArray(gameDataIndex?.groupZoneHrids) ? gameDataIndex.groupZoneHrids : [];
 export const soloZoneHrids = Array.isArray(gameDataIndex?.soloZoneHrids) ? gameDataIndex.soloZoneHrids : [];
+// 非地牢战斗区域的怪物刷新投影（构建期生成，来源 actionDetailMap 的
+// fightInfo.randomSpawnInfo.spawns + bossSpawns 合并去重）：键为区域 hrid，
+// 值为 [{ monsterHrid, difficultyTier }, ...]；difficultyTier 是难度档偏移，
+// 有效怪物难度 = difficultyTier + 区域难度档。
+export const zoneMonsterSpawnIndex = gameDataIndex?.zoneMonsterSpawnIndex || {};
 export const labyrinthOptions = Array.isArray(gameDataIndex?.labyrinthOptions) ? gameDataIndex.labyrinthOptions : [];
 export const houseRoomOptions = Array.isArray(gameDataIndex?.houseRoomOptions) ? gameDataIndex.houseRoomOptions : [];
 export const houseRoomHrids = Array.isArray(gameDataIndex?.houseRoomHrids) ? gameDataIndex.houseRoomHrids : [];

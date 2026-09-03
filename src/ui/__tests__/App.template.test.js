@@ -138,6 +138,40 @@ describe('App shell contracts', () => {
     expect(commandBarSource).toContain('v-else-if="showSimulationActions"');
   });
 
+  it('exposes start and stop advisor actions and progress from the sticky bar on Advisor', () => {
+    // advisor 路由顶栏契约：App.vue 绑定 showAdvisorActions 一族 computed 与
+    // run/stop handler；CombatCommandBar 发射 run-advisor/stop-advisor 事件
+    // 并常驻显示进度摘要行（进度条 + 百分比 + 阶段文案）。
+    expect(appSource).toContain("const showAdvisorActions = computed(() => route.name === 'advisor')");
+    expect(appSource).toContain(':show-advisor-actions="showAdvisorActions"');
+    expect(appSource).toContain(':advisor-running="advisorRunning"');
+    expect(appSource).toContain(':show-advisor-summary="showAdvisorSummary"');
+    expect(appSource).toContain('@run-advisor="runAdvisorFromTopbar"');
+    expect(appSource).toContain('@stop-advisor="stopAdvisorFromTopbar"');
+    expect(appSource).toContain('simulator.requestAdvisorRun();');
+    expect(appSource).toContain('simulator.stopAdvisorScan();');
+    expect(commandBarSource).toContain("emit('run-advisor')");
+    expect(commandBarSource).toContain("emit('stop-advisor')");
+    expect(commandBarSource).toContain('v-if="showAdvisorSummary"');
+    expect(commandBarSource).toContain(':value="advisorProgress * 100"');
+    expect(commandBarSource).toContain("t('common:advisor.run'");
+    expect(commandBarSource).toContain("t('common:advisor.stop'");
+    expect(commandBarSource).toContain("t('common:advisor.progress'");
+    // 窄屏在「运行队列」旁直出开始/停止推荐按钮，与 Home 仿真按钮同构。
+    expect(commandBarSource).toContain('v-if="showAdvisorActions && !advisorRunning"');
+    expect(commandBarSource).toContain('v-else-if="showAdvisorActions"');
+    // 阶段文案与百分比均走共享 helper，页头状态 chips 与顶栏摘要行口径一致。
+    expect(appSource).toContain(
+      "import { buildAdvisorProgressPercent, buildAdvisorRuntimePhaseText } from './advisorRuntimePresentation.js';",
+    );
+    expect(appSource).toContain(
+      'const advisorPhaseText = computed(() => buildAdvisorRuntimePhaseText(simulator.advisor.runtime || {}, t));',
+    );
+    expect(appSource).toContain(
+      'const advisorProgressText = computed(() => `${buildAdvisorProgressPercent(simulator.advisor.runtime)}%`);',
+    );
+  });
+
   it('keeps shared patterns in the components layer and defers offscreen enhancement rows', () => {
     expect(stylesSource).toMatch(/@layer components\s*{\s*\.surface-panel/);
     expect(stylesSource).toMatch(/\.enhancement-item-row\s*{[^}]*content-visibility:\s*auto;/s);

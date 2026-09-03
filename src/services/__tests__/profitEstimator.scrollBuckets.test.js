@@ -1,6 +1,6 @@
 import { describe, expect, it } from 'vitest';
 import SimResult from '../../combatsimulator/simResult.js';
-import { buildNoRngProfitBreakdown, buildRandomProfitBreakdown } from '../profitEstimator.js';
+import { buildNoRngDropCountMap, buildNoRngProfitBreakdown, buildRandomProfitBreakdown } from '../profitEstimator.js';
 
 const MONSTER_HRID = '/monsters/abyssal_imp';
 const COIN_HRID = '/items/coin';
@@ -286,5 +286,55 @@ describe('timed-scroll result contexts', () => {
     });
     expect(randomBreakdown.revenueItems.find((row) => row.itemHrid === COIN_HRID)?.amount).toBe(2_500);
     expect(randomBreakdown.revenue).toBe(2_500);
+  });
+
+  it('uses the recorded per-monster difficultyTier for tier-gated drops instead of the zone snapshot', () => {
+    const result = new SimResult({ hrid: '/zones/test', difficultyTier: 0 }, null, 1);
+    const player = { hrid: 'player1' };
+    // 苍蝇（/monsters/fly）蓝钥匙碎片：-0.00003 + 0.00006×档 > 0 自有效档 1 起。
+    // 区域档快照为 0 时按旧口径判定永不可掉；怪物有效难度 2（引擎口径
+    // spawn 偏移 + 区域档）时开门，掉落/h 估算必须采用桶内记录的难度。
+    const monster = { hrid: '/monsters/fly', difficultyTier: 2 };
+
+    result.recordMonsterDeathFromUnit(player, monster, 1);
+
+    expect(result.dropContextBuckets.player1['/monsters/fly']).toEqual([
+      {
+        killCount: 1,
+        difficultyTier: 2,
+        dropRateMultiplier: 1,
+        rareFindMultiplier: 1,
+        combatDropQuantity: 0,
+        debuffOnLevelGap: 0,
+      },
+    ]);
+    const dropCountMap = buildNoRngDropCountMap(result, 'player1');
+    expect(dropCountMap.get('/items/blue_key_fragment')).toBeGreaterThan(0);
+  });
+
+  it('falls back to the zone snapshot tier when buckets omit difficultyTier', () => {
+    const simResult = {
+      isDungeon: false,
+      numberOfPlayers: 1,
+      difficultyTier: 0,
+      // 旧版/部分序列化形状：桶没有 difficultyTier 字段。
+      dropContextBuckets: {
+        player1: {
+          '/monsters/fly': [
+            {
+              killCount: 1,
+              dropRateMultiplier: 1,
+              rareFindMultiplier: 1,
+              combatDropQuantity: 0,
+              debuffOnLevelGap: 0,
+            },
+          ],
+        },
+      },
+    };
+
+    const dropCountMap = buildNoRngDropCountMap(simResult, 'player1');
+    // 回退区域档 0：-0.00003 + 0.00006×0 ≤ 0，按快照口径判定不可掉。
+    expect(dropCountMap.has('/items/blue_key_fragment')).toBe(false);
   });
 });

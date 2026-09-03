@@ -142,6 +142,9 @@ function createLegacyDropContext(deathsCount, simResult, playerHrid) {
  * 归一化 SimResult 发出的紧凑型每次击杀上下文。对格式错误的条目返回
  * null，让较旧/不完整的结果使用旧版最终属性快照，
  * 而不是产生 NaN 或静默改变掉落数量。
+ * difficultyTier 优先取桶内记录的怪物有效难度（Monster.difficultyTier =
+ * spawn 偏移 + 区域档，由 simResult.recordMonsterDeathFromContext 写入）；
+ * 旧结果/DTO 桶缺省时回退 simResult.difficultyTier（纯区域档快照）。
  */
 function normalizeDropContextBucket(rawBucket, simResult) {
   if (!rawBucket || typeof rawBucket !== 'object') {
@@ -499,6 +502,54 @@ function getProfitDropMaps(simResult, playerHrid, options = {}) {
   };
 }
 
+/**
+ * 整场模拟的逐物品期望掉落数量（无 RNG 口径，Map<itemHrid, number>）。
+ * 与 buildNoRngProfitBreakdown 的 revenueItems 完全同源：逐怪物复用
+ * dropContextBuckets 分桶上下文（缺失/不完整时回退旧版最终快照兜底），
+ * 地牢（isDungeon）、null 与非对象输入一律返回空 Map。
+ * 刷图推荐器铁牛模式用它把所选目标物品折算成掉落/h。
+ */
+export function buildNoRngDropCountMap(simResult, playerHrid) {
+  const dropCountMap = new Map();
+  // 非对象输入（null/原始值）与地牢一律返回空 Map：原始值在严格模式下
+  // 不可写属性，提前排除以免下方缓存写入抛 TypeError。
+  if (!simResult || typeof simResult !== 'object' || simResult.isDungeon) {
+    return dropCountMap;
+  }
+
+  const resolvedPlayer = resolvePlayerFromSimResult(simResult, playerHrid);
+  // 同一 simResult 的同一玩家会被重复调用：advisor 铁牛模式的
+  // summarizeAdvisorTargetResult 里，利润路径（summarizeResult→
+  // estimateNoRngProfit）与掉落路径（buildAdvisorDropRateMetrics）对 metric
+  // player 各调一次，每次全掉落表遍历在主线程同步执行。与 getProfitDropMaps
+  // 的 __profitDropMapsCache 同约定：汇总阶段 simResult 视为不可变，且
+  // dropCountMap 仅依赖 simResult 数据（与 pricingOptions 无关），按解析后
+  // 的玩家键缓存是安全的；缓存随 simResult 生命周期（汇总后即弃）。
+  if (!simResult.__noRngDropCountMapCache || typeof simResult.__noRngDropCountMapCache !== 'object') {
+    simResult.__noRngDropCountMapCache = {};
+  }
+  const cachedMap = simResult.__noRngDropCountMapCache[resolvedPlayer];
+  if (cachedMap instanceof Map) {
+    // 返回副本：调用方拿到的是独立 Map，改写不会污染缓存（现有调用方均只读）。
+    return new Map(cachedMap);
+  }
+
+  for (const unitHrid of listMonsterHrids(simResult, resolvedPlayer)) {
+    const hasReportedDeaths = Object.prototype.hasOwnProperty.call(simResult?.deaths || {}, unitHrid);
+    const deaths = hasReportedDeaths ? simResult.deaths?.[unitHrid] : undefined;
+
+    const monsterDropCountMap = expectedDropCountMapForMonster(unitHrid, deaths, simResult, resolvedPlayer);
+
+    for (const [itemHrid, amount] of monsterDropCountMap.entries()) {
+      addToNumberMap(dropCountMap, itemHrid, amount);
+    }
+  }
+
+  simResult.__noRngDropCountMapCache[resolvedPlayer] = dropCountMap;
+
+  return dropCountMap;
+}
+
 export function buildNoRngProfitBreakdown(simResult, playerHrid, pricingOptions = {}) {
   if (!simResult) {
     return createEmptyBreakdown();
@@ -512,19 +563,7 @@ export function buildNoRngProfitBreakdown(simResult, playerHrid, pricingOptions 
   const resolveDropPrice = (itemHrid) => resolveMarketSalePrice(priceTable, itemHrid, dropMode);
   const resolveConsumablePrice = (itemHrid) => resolveMarketPrice(priceTable, itemHrid, consumableMode);
 
-  const dropCountMap = new Map();
-  if (!simResult.isDungeon) {
-    for (const unitHrid of listMonsterHrids(simResult, resolvedPlayer)) {
-      const hasReportedDeaths = Object.prototype.hasOwnProperty.call(simResult?.deaths || {}, unitHrid);
-      const deaths = hasReportedDeaths ? simResult.deaths?.[unitHrid] : undefined;
-
-      const monsterDropCountMap = expectedDropCountMapForMonster(unitHrid, deaths, simResult, resolvedPlayer);
-
-      for (const [itemHrid, amount] of monsterDropCountMap.entries()) {
-        addToNumberMap(dropCountMap, itemHrid, amount);
-      }
-    }
-  }
+  const dropCountMap = buildNoRngDropCountMap(simResult, playerHrid);
 
   const { rows: revenueItems, total: revenue } = toSortedLineItemsFromMap(dropCountMap, resolveDropPrice);
 

@@ -35,7 +35,7 @@ Set a baseline first. Then change equipment, abilities, consumables, or other se
 
 ## Specialized Tools
 
-- **Advisor:** Scans combat targets using Balanced, Profit, Experience, Stability, or custom scoring weights.
+- **Advisor:** Scans combat targets using Balanced, Profit, Experience, Stability, custom scoring weights, or the Iron Cow drop-farming mode.
 - **Enhancement:** Compares protection strategies, Philosopher's Mirror value, decomposition value, cost percentiles, and the probability of success within a budget.
 - **Skilling:** Plans level-by-level routes for six skills using Lowest net cost/XP, Balanced, or Speed-first optimization.
 - **Settings:** Configures queue scoring, workers, sampling rounds, market price rules, and saved equipment sets.

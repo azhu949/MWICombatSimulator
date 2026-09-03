@@ -419,6 +419,46 @@ function createActionIndex(actionDetailMap) {
   };
 }
 
+// 区域→怪物刷新投影：键为非地牢战斗区域的 hrid，值为该区域随机刷怪表
+// 与 boss 刷怪表合并后按 monsterHrid+difficultyTier 去重的列表。
+// 有效怪物难度 = difficultyTier（此处为难度档偏移）+ 区域难度档。
+function createZoneMonsterSpawnIndex(actionDetailMap) {
+  const zoneMonsterSpawnIndex = {};
+
+  for (const action of Object.values(actionDetailMap || {})) {
+    const hrid = String(action?.hrid || '');
+    if (!hrid || String(action?.type || '') !== COMBAT_ACTION_TYPE_HRID || action?.combatZoneInfo?.isDungeon === true) {
+      continue;
+    }
+
+    const fightInfo = action?.combatZoneInfo?.fightInfo;
+    const spawns = Array.isArray(fightInfo?.randomSpawnInfo?.spawns) ? fightInfo.randomSpawnInfo.spawns : [];
+    const bossSpawns = Array.isArray(fightInfo?.bossSpawns) ? fightInfo.bossSpawns : [];
+    const seenEntries = new Set();
+    const monsters = [];
+
+    for (const spawn of [...spawns, ...bossSpawns]) {
+      const monsterHrid = String(spawn?.combatMonsterHrid || '');
+      if (!monsterHrid) {
+        continue;
+      }
+
+      const difficultyTier = Number(spawn?.difficultyTier ?? 0);
+      const dedupeKey = `${monsterHrid}::${difficultyTier}`;
+      if (seenEntries.has(dedupeKey)) {
+        continue;
+      }
+
+      seenEntries.add(dedupeKey);
+      monsters.push({ monsterHrid, difficultyTier });
+    }
+
+    zoneMonsterSpawnIndex[hrid] = monsters;
+  }
+
+  return { zoneMonsterSpawnIndex };
+}
+
 function createMonsterIndex(combatMonsterDetailMap) {
   const monsterDetailIndex = {};
   const monsterNameByHrid = {};
@@ -1014,6 +1054,7 @@ async function main() {
   const itemIndex = createItemIndex(itemDetailMap, equipmentTypeDetailMap);
   const abilityIndex = createAbilityIndex(abilityDetailMap);
   const actionIndex = createActionIndex(actionDetailMap);
+  const zoneMonsterSpawnIndex = createZoneMonsterSpawnIndex(actionDetailMap);
   const monsterIndex = createMonsterIndex(combatMonsterDetailMap);
   const houseRoomIndex = createHouseRoomIndex(houseRoomDetailMap);
   const enhancementData = createEnhancementIndex({
@@ -1045,6 +1086,7 @@ async function main() {
     personalBuffTypeDetailIndex: personalBuffTypeDetailMap || {},
     ...abilityIndex,
     ...actionIndex,
+    ...zoneMonsterSpawnIndex,
     ...monsterIndex,
     ...houseRoomIndex,
     levelExperienceTable: Array.isArray(levelExperienceTable) ? levelExperienceTable : [],

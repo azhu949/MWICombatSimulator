@@ -3,14 +3,17 @@ import {
   createPricingState,
   getStorageItem,
   hasMeaningfulPlayerSnapshotData,
+  loadAdvisorSettingsFromStorage,
   loadPlayerDataSnapshotFromStorage,
   loadSimulationUiSettingsFromStorage,
   loadEquipmentSetsFromStorage,
   loadQueueRunSettingsByPlayerFromStorage,
+  normalizeAdvisorSettings,
   normalizeMarketItemValues,
   normalizeMarketItemValueSources,
   normalizeSimulationUiSettings,
   normalizeStoredPlayerDataMap,
+  persistAdvisorSettingsToStorage,
   persistSimulationUiSettingsToStorage,
   readJsonStorage,
   removeStorageItem,
@@ -22,6 +25,7 @@ const QUEUE_RUN_SETTINGS_STORAGE_KEY = 'mwi.queue.runSettings.v1';
 const PRICE_SETTINGS_STORAGE_KEY = 'mwi.price.settings.v1';
 const PRICE_MARKET_CACHE_STORAGE_KEY = 'mwi.price.marketCache.v1';
 const SIMULATION_UI_STORAGE_KEY = 'mwi.simulation.ui.v1';
+const ADVISOR_SETTINGS_STORAGE_KEY = 'mwi.advisor.settings.v1';
 
 function createMemoryStorage(initialValues = {}) {
   const data = new Map(Object.entries(initialValues));
@@ -627,6 +631,71 @@ describe('simulatorStorage', () => {
       ).toEqual({});
       const protoPayload = JSON.parse('{"__proto__": "synthetic", "/items/foo": "synthetic"}');
       expect(normalizeMarketItemValueSources(protoPayload)).toEqual({ '/items/foo': 'synthetic' });
+    });
+  });
+
+  describe('advisorSettings 持久化', () => {
+    it('清洗脏数据并完成 round-trip（load 与 persist 输出一致）', () => {
+      const storage = createMemoryStorage();
+      vi.stubGlobal('localStorage', storage);
+
+      const normalized = persistAdvisorSettingsToStorage({
+        goalPreset: 'IRONCOW',
+        customWeights: { profitPerHour: -3, xpPerHour: 1 },
+        ironcowWeights: { dropsPerHour: 0.5, xpPerHour: 0.2, safety: 0.1 },
+        filters: {
+          includeGroupZones: false,
+          includeSoloZones: true,
+          quickRounds: 999,
+          refineTopCount: 0,
+          refineTopEnabled: false,
+          dropItemHrids: ['  /items/marine_scale  ', '', '/items/marine_scale', '/items/pearl'],
+        },
+      });
+
+      expect(normalized).toEqual({
+        goalPreset: 'ironcow',
+        customWeights: { profitPerHour: 0, xpPerHour: 0.9, safety: 0.1 },
+        // 三权和 ≠ 1 → 回退默认 0.45/0.45/0.1
+        ironcowWeights: { dropsPerHour: 0.45, xpPerHour: 0.45, safety: 0.1 },
+        filters: {
+          includeGroupZones: false,
+          includeSoloZones: true,
+          refineTopEnabled: false,
+          refineTopCount: 1,
+          refineRounds: 20,
+          quickRounds: 10,
+          dropItemHrids: ['/items/marine_scale', '/items/pearl'],
+        },
+      });
+
+      const stored = JSON.parse(storage.data.get(ADVISOR_SETTINGS_STORAGE_KEY));
+      expect(stored.version).toBe(1);
+      expect(stored.savedAt).toBeGreaterThan(0);
+      expect(loadAdvisorSettingsFromStorage()).toEqual(normalized);
+    });
+
+    it('对缺失、损坏与版本不匹配的载荷回退默认配置', () => {
+      const storage = createMemoryStorage({
+        [ADVISOR_SETTINGS_STORAGE_KEY]: '{broken',
+      });
+      vi.stubGlobal('localStorage', storage);
+
+      const defaults = normalizeAdvisorSettings();
+      expect(defaults.goalPreset).toBe('balanced');
+      expect(defaults.filters.dropItemHrids).toEqual([]);
+      expect(defaults.ironcowWeights).toEqual({ dropsPerHour: 0.45, xpPerHour: 0.45, safety: 0.1 });
+
+      expect(loadAdvisorSettingsFromStorage()).toEqual(defaults);
+
+      storage.data.set(ADVISOR_SETTINGS_STORAGE_KEY, JSON.stringify({ version: 999, goalPreset: 'ironcow' }));
+      expect(loadAdvisorSettingsFromStorage()).toEqual(defaults);
+
+      storage.data.set(ADVISOR_SETTINGS_STORAGE_KEY, JSON.stringify(['not', 'an', 'object']));
+      expect(loadAdvisorSettingsFromStorage()).toEqual(defaults);
+
+      storage.data.delete(ADVISOR_SETTINGS_STORAGE_KEY);
+      expect(loadAdvisorSettingsFromStorage()).toEqual(defaults);
     });
   });
 });

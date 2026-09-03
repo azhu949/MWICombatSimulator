@@ -26,6 +26,7 @@ vi.mock('../../services/profitEstimator.js', () => ({
     expenses: 0,
     profit: Number(simResult?.mockProfitByPlayer?.[playerHrid] ?? simResult?.mockProfit ?? 0),
   }),
+  buildNoRngDropCountMap: (simResult) => new Map(Object.entries(simResult?.mockDropCountsByItem ?? {})),
 }));
 
 vi.mock('../../services/workerClient.js', () => {
@@ -161,6 +162,7 @@ vi.mock('../../services/workerClient.js', () => {
       debuffOnLevelGap,
       mockProfit: Number(metric?.profitPerHour || 0),
       mockProfitByPlayer,
+      mockDropCountsByItem: metric?.mockDropCountsByItem ?? {},
     };
   }
 
@@ -742,6 +744,36 @@ describe('advisor store', () => {
     expect(topProfitAfterRerun).toBeGreaterThan(4000);
   });
 
+  it('ignores duplicate runAdvisorScan calls while the first scan is still starting', async () => {
+    const { simulator, mockWorkerState } = createStoreWithMocks();
+    simulator.advisor.filters = {
+      ...simulator.advisor.filters,
+      refineTopEnabled: false,
+      quickRounds: 1,
+    };
+
+    // 模拟双击：第二次调用发生在第一次扫描仍停留在 loadPlayerMapperModule 的
+    // await 上（isRunning 尚未置位）的窗口内。
+    const firstRunPromise = simulator.runAdvisorScan();
+    const duplicateRows = await simulator.runAdvisorScan();
+
+    // 重复请求静默返回 []，不报 ANOTHER_RUN 错误。
+    expect(duplicateRows).toEqual([]);
+    const rows = await firstRunPromise;
+    expect(rows.length).toBeGreaterThan(0);
+
+    // 窗口期重复请求被去重：quick 批量扫描只派发一次（旧实现会并发派发两次并
+    // spawn 双 worker 池），runId 只递增一次，首次扫描完整跑完。
+    expect(mockWorkerState.multiCalls.filter((payload) => payload.type === 'start_simulation_all_zones')).toHaveLength(
+      1,
+    );
+    expect(simulator.advisor.runtime.runId).toBe(1);
+    expect(simulator.advisor.runtime.scanInFlight).toBe(false);
+    expect(simulator.advisor.runtime.isRunning).toBe(false);
+    expect(simulator.advisor.runtime.phase).toBe('done');
+    expect(simulator.advisor.error).toBe('');
+  });
+
   it('applyAdvisorTarget backfills Home target without touching unrelated settings', async () => {
     const { simulator } = createStoreWithMocks();
     simulator.simulationSettings.mooPass = true;
@@ -779,5 +811,413 @@ describe('advisor store', () => {
     expect(simulator.simulationSettings.labyrinthHrid).toBe(previousLabyrinthHrid);
     expect(simulator.simulationSettings.mooPass).toBe(true);
     expect(simulator.pricing.dropMode).toBe('ask');
+  });
+
+  it('blocks ironcow scans when no target drop item is selected', async () => {
+    const { simulator, mockWorkerState } = createStoreWithMocks();
+    simulator.advisor.goalPreset = 'ironcow';
+    simulator.advisor.filters = {
+      ...simulator.advisor.filters,
+      dropItemHrids: [],
+      refineTopEnabled: false,
+      quickRounds: 1,
+    };
+    // 已有上一轮（如 balanced 预设）扫描结果：一次被拒绝的扫描尝试不得清空它们。
+    simulator.advisor.quickRows = [{ id: 'prev-quick' }];
+    simulator.advisor.refinedRows = [];
+    simulator.advisor.topCards = [{ key: 'overall' }];
+
+    const scanPromise = simulator.runAdvisorScan();
+    // 铁牛空物品校验只依赖同步 store 状态（goalPreset 与 filters），必须在首个
+    // await（loadPlayerMapperModule 动态导入）之前同步报错——首扫不等导入窗口。
+    expect(simulator.advisor.error).toBe('Please select at least one target drop item.');
+
+    const rows = await scanPromise;
+
+    expect(rows).toEqual([]);
+    // 失败尝试保留旧结果（旧顺序在报错前已清空，旧结果被静默丢弃）。
+    expect(simulator.advisor.quickRows).toEqual([{ id: 'prev-quick' }]);
+    expect(simulator.advisor.refinedRows).toEqual([]);
+    expect(simulator.advisor.topCards).toEqual([{ key: 'overall' }]);
+    expect(simulator.advisor.scannedGoalPreset).toBe('');
+    expect(simulator.advisor.scannedDropItemHrids).toEqual([]);
+    expect(mockWorkerState.multiCalls).toHaveLength(0);
+  });
+
+  it('keeps previous results when the advisor has no targets for the current filters', async () => {
+    const { simulator, mockWorkerState } = createStoreWithMocks();
+    simulator.advisor.filters = {
+      ...simulator.advisor.filters,
+      includeSoloZones: false,
+      includeGroupZones: false,
+      refineTopEnabled: false,
+    };
+    // 无候选报错（NO_TARGETS）与铁牛空物品报错同族：也必须先于「清空结果」。
+    simulator.advisor.quickRows = [{ id: 'prev-quick' }];
+    simulator.advisor.topCards = [{ key: 'overall' }];
+
+    const rows = await simulator.runAdvisorScan();
+
+    expect(rows).toEqual([]);
+    expect(simulator.advisor.error).toBe('No advisor targets available for the current filters.');
+    expect(simulator.advisor.quickRows).toEqual([{ id: 'prev-quick' }]);
+    expect(simulator.advisor.topCards).toEqual([{ key: 'overall' }]);
+    expect(mockWorkerState.multiCalls).toHaveLength(0);
+  });
+
+  it('records scan metadata and per-item drop rates for ironcow scans', async () => {
+    const { simulator, mockWorkerState } = createStoreWithMocks();
+    simulator.advisor.goalPreset = 'ironcow';
+    simulator.updateAdvisorFilters({
+      dropItemHrids: [' /items/marine_scale ', ''],
+      refineTopEnabled: false,
+      quickRounds: 1,
+    });
+    mockWorkerState.zoneMetricResolver = (_zone, index) => ({
+      profitPerHour: 100 + index,
+      xpPerHour: 50 + index,
+      killsPerHour: 10,
+      deathsPerHour: 0.1,
+      mockDropCountsByItem: { '/items/marine_scale': 12 },
+    });
+
+    const rows = await simulator.runAdvisorScan();
+    const expectedCandidates = buildAdvisorCandidates(simulator.advisor.filters, simulator.advisor.goalPreset);
+
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows).toHaveLength(expectedCandidates.length);
+    expect(simulator.advisor.error).toBe('');
+    expect(simulator.advisor.scannedGoalPreset).toBe('ironcow');
+    expect(simulator.advisor.scannedDropItemHrids).toEqual(['/items/marine_scale']);
+    expect(simulator.advisor.dropDataStale).toBe(false);
+    for (const row of rows) {
+      expect(row.dropsPerHour).toBe(12);
+      expect(row.dropRatesByItem).toEqual({ '/items/marine_scale': 12 });
+    }
+    expect(simulator.advisor.topCards.map((card) => card.key)).toEqual(['overall', 'profit', 'xp', 'drops']);
+    expect(rows.some((row) => row.reasons.includes('top_drops'))).toBe(true);
+    expect(rows.some((row) => row.reasons.includes('top_profit'))).toBe(false);
+
+    const persisted = JSON.parse(global.localStorage.getItem('mwi.advisor.settings.v1'));
+    expect(persisted.version).toBe(1);
+    expect(persisted.goalPreset).toBe('ironcow');
+    expect(persisted.filters.dropItemHrids).toEqual(['/items/marine_scale']);
+  });
+
+  it('ignores residual drop item selection for non-ironcow scans', async () => {
+    const { simulator, mockWorkerState } = createStoreWithMocks();
+    // 铁牛模式选过物品后切回 balanced：物品列表随设置残留非空，
+    // 但非铁牛模式不消费掉落数据，quick/refine 两条采样路径的扫描行都
+    // 不应带 drops 值（也意味着残留物品不会触发每候选每轮的
+    // buildNoRngDropCountMap 全掉落表遍历）。
+    simulator.updateAdvisorFilters({
+      dropItemHrids: ['/items/marine_scale'],
+      refineTopEnabled: true,
+      refineTopCount: 2,
+      refineRounds: 1,
+      quickRounds: 1,
+    });
+    mockWorkerState.zoneMetricResolver = (_zone, index) => ({
+      profitPerHour: 100 + index,
+      xpPerHour: 50 + index,
+      killsPerHour: 10,
+      deathsPerHour: 0.1,
+      mockDropCountsByItem: { '/items/marine_scale': 12 },
+    });
+
+    const rows = await simulator.runAdvisorScan();
+
+    expect(simulator.advisor.goalPreset).toBe('balanced');
+    expect(simulator.advisor.dropDataStale).toBe(false);
+    // 返回行 = 全候选合并集（top2 为精修行，覆盖 refine 路径门控），
+    // quickRows 覆盖 quick 路径门控。
+    expect(rows.length).toBeGreaterThan(0);
+    expect(rows.filter((row) => row.isRefined === true)).toHaveLength(2);
+    for (const row of [...rows, ...simulator.advisor.quickRows]) {
+      expect(row.dropsPerHour).toBe(0);
+      expect(row.dropRatesByItem).toEqual({});
+    }
+    // 残留选择本身保留（持久化与切回铁牛后的可用性不受影响）。
+    expect(simulator.advisor.filters.dropItemHrids).toEqual(['/items/marine_scale']);
+    const persisted = JSON.parse(global.localStorage.getItem('mwi.advisor.settings.v1'));
+    expect(persisted.filters.dropItemHrids).toEqual(['/items/marine_scale']);
+  });
+
+  it('persists settings on rerank by default and skips the storage write with persist:false', () => {
+    const { simulator } = createStoreWithMocks();
+    global.localStorage.setItem.mockClear();
+
+    // 默认契约（用户交互路径）：rerank 即持久化。
+    simulator.rerankAdvisorResults({ goalPreset: 'profit' });
+    expect(simulator.advisor.goalPreset).toBe('profit');
+    const defaultWrites = global.localStorage.setItem.mock.calls.filter(([key]) => key === 'mwi.advisor.settings.v1');
+    expect(defaultWrites).toHaveLength(1);
+
+    // persist:false（流式高频路径）：状态照常更新，但不落盘。
+    global.localStorage.setItem.mockClear();
+    simulator.rerankAdvisorResults({ goalPreset: 'ironcow', persist: false });
+    expect(simulator.advisor.goalPreset).toBe('ironcow');
+    const skippedWrites = global.localStorage.setItem.mock.calls.filter(([key]) => key === 'mwi.advisor.settings.v1');
+    expect(skippedWrites).toHaveLength(0);
+    // 磁盘快照不被跳过路径覆盖：仍停留在上次默认 rerank 的值。
+    expect(JSON.parse(global.localStorage.getItem('mwi.advisor.settings.v1')).goalPreset).toBe('profit');
+
+    // 用户路径再次 rerank 恢复逐次落盘。
+    simulator.rerankAdvisorResults({ goalPreset: 'balanced' });
+    expect(JSON.parse(global.localStorage.getItem('mwi.advisor.settings.v1')).goalPreset).toBe('balanced');
+  });
+
+  it('does not amplify advisor settings writes during a streaming scan', async () => {
+    const { simulator, mockWorkerState } = createStoreWithMocks();
+    // 直接赋值 filters（不经 updateAdvisorFilters），排除额外落盘干扰。
+    simulator.advisor.filters = {
+      ...simulator.advisor.filters,
+      refineTopEnabled: false,
+    };
+    mockWorkerState.zoneMetricResolver = (_zone, index) => ({
+      profitPerHour: 100 + index,
+      xpPerHour: 50 + index,
+      killsPerHour: 10,
+      deathsPerHour: 0.1,
+    });
+    global.localStorage.setItem.mockClear();
+
+    const rows = await simulator.runAdvisorScan();
+    const quickRounds = simulator.advisor.filters.quickRounds;
+
+    // 扫描确有足量流式 rerank（每个候选每轮 quick 结果触发一次），
+    // 修复前 advisor 键写入次数 ≈ 候选数 × quick 轮数 + 收尾 + 扫描开始。
+    expect(rows.length).toBeGreaterThan(0);
+    expect(mockWorkerState.multiCalls).toHaveLength(quickRounds);
+    expect(rows.length * quickRounds).toBeGreaterThan(1);
+
+    // 修复后：advisor 设置键仅扫描开始 + 扫描完成收尾各落盘 1 次（共 2 次）。
+    const advisorKeyWrites = global.localStorage.setItem.mock.calls.filter(
+      ([key]) => key === 'mwi.advisor.settings.v1',
+    );
+    expect(advisorKeyWrites).toHaveLength(2);
+    // 落盘内容与当前设置一致（收尾写覆盖的设置快照）。
+    const persisted = JSON.parse(global.localStorage.getItem('mwi.advisor.settings.v1'));
+    expect(persisted.goalPreset).toBe(simulator.advisor.goalPreset);
+    expect(persisted.filters.quickRounds).toBe(quickRounds);
+  });
+
+  it('marks ironcow drop data stale when items change after a scan', async () => {
+    const { simulator, mockWorkerState } = createStoreWithMocks();
+    simulator.advisor.goalPreset = 'ironcow';
+    simulator.updateAdvisorFilters({
+      dropItemHrids: ['/items/marine_scale'],
+      refineTopEnabled: false,
+      quickRounds: 1,
+    });
+    mockWorkerState.zoneMetricResolver = () => ({
+      profitPerHour: 100,
+      xpPerHour: 50,
+      killsPerHour: 10,
+      deathsPerHour: 0.1,
+      mockDropCountsByItem: { '/items/marine_scale': 12 },
+    });
+    await simulator.runAdvisorScan();
+    expect(simulator.advisor.dropDataStale).toBe(false);
+
+    // 改物品 → 陈旧（updateAdvisorFilters 即时置位，rerank 保持）
+    simulator.updateAdvisorFilters({ dropItemHrids: ['/items/marine_scale', '/items/pearl'] });
+    expect(simulator.advisor.dropDataStale).toBe(true);
+    simulator.rerankAdvisorResults();
+    expect(simulator.advisor.dropDataStale).toBe(true);
+
+    // 改回原物品集合 → 复位
+    simulator.updateAdvisorFilters({ dropItemHrids: ['/items/marine_scale'] });
+    expect(simulator.advisor.dropDataStale).toBe(false);
+
+    // 切到非铁牛预设：掉落数据不参与评分 → 不标记陈旧
+    simulator.rerankAdvisorResults({ goalPreset: 'balanced' });
+    expect(simulator.advisor.dropDataStale).toBe(false);
+
+    // 切回铁牛且物品未变 → 仍不陈旧
+    simulator.rerankAdvisorResults({ goalPreset: 'ironcow' });
+    expect(simulator.advisor.dropDataStale).toBe(false);
+  });
+
+  it('clears scan results via clearAdvisorResults without touching persisted settings', async () => {
+    const { simulator, mockWorkerState } = createStoreWithMocks();
+    simulator.advisor.goalPreset = 'ironcow';
+    simulator.updateAdvisorFilters({
+      dropItemHrids: ['/items/marine_scale'],
+      refineTopEnabled: false,
+      quickRounds: 1,
+    });
+    mockWorkerState.zoneMetricResolver = () => ({
+      profitPerHour: 100,
+      xpPerHour: 50,
+      killsPerHour: 10,
+      deathsPerHour: 0.1,
+      mockDropCountsByItem: { '/items/marine_scale': 12 },
+    });
+    await simulator.runAdvisorScan();
+    expect(simulator.advisor.quickRows.length).toBeGreaterThan(0);
+
+    expect(simulator.clearAdvisorResults()).toBe(true);
+    // 会话内结果状态全部清空。
+    expect(simulator.advisor.quickRows).toEqual([]);
+    expect(simulator.advisor.refinedRows).toEqual([]);
+    expect(simulator.advisor.topCards).toEqual([]);
+    expect(simulator.advisor.scannedGoalPreset).toBe('');
+    expect(simulator.advisor.scannedDropItemHrids).toEqual([]);
+    expect(simulator.advisor.dropDataStale).toBe(false);
+    // 已持久化的设置不受影响。
+    expect(simulator.advisor.goalPreset).toBe('ironcow');
+    expect(simulator.advisor.filters.dropItemHrids).toEqual(['/items/marine_scale']);
+  });
+
+  it('marks ironcow results stale until a scan runs in ironcow mode', async () => {
+    const { simulator, mockWorkerState } = createStoreWithMocks();
+    simulator.updateAdvisorFilters({
+      dropItemHrids: ['/items/marine_scale'],
+      refineTopEnabled: false,
+      quickRounds: 1,
+    });
+    mockWorkerState.zoneMetricResolver = () => ({
+      profitPerHour: 100,
+      xpPerHour: 50,
+      killsPerHour: 10,
+      deathsPerHour: 0.1,
+      mockDropCountsByItem: { '/items/marine_scale': 3 },
+    });
+
+    // 默认 balanced 扫描：scannedGoalPreset 记为 balanced
+    await simulator.runAdvisorScan();
+    expect(simulator.advisor.scannedGoalPreset).toBe('balanced');
+
+    // 切到铁牛（未重新扫描）→ 掉落数据陈旧
+    simulator.rerankAdvisorResults({ goalPreset: 'ironcow' });
+    expect(simulator.advisor.dropDataStale).toBe(true);
+
+    // 铁牛下重新扫描 → 复位
+    simulator.advisor.goalPreset = 'ironcow';
+    await simulator.runAdvisorScan();
+    expect(simulator.advisor.scannedGoalPreset).toBe('ironcow');
+    expect(simulator.advisor.scannedDropItemHrids).toEqual(['/items/marine_scale']);
+    expect(simulator.advisor.dropDataStale).toBe(false);
+  });
+
+  it('normalizes and persists advisor filter patches without resetting siblings', () => {
+    const { simulator } = createStoreWithMocks();
+    simulator.updateAdvisorFilters({ quickRounds: 2, includeSoloZones: true });
+    simulator.updateAdvisorFilters({
+      dropItemHrids: ['  /items/marine_scale  ', '', '/items/marine_scale', '   '],
+    });
+
+    expect(simulator.advisor.filters.dropItemHrids).toEqual(['/items/marine_scale']);
+    expect(simulator.advisor.filters.quickRounds).toBe(2);
+    expect(simulator.advisor.filters.includeSoloZones).toBe(true);
+    expect(simulator.advisor.filters.includeGroupZones).toBe(true);
+
+    const persisted = JSON.parse(global.localStorage.getItem('mwi.advisor.settings.v1'));
+    expect(persisted.version).toBe(1);
+    expect(persisted.goalPreset).toBe('balanced');
+    expect(persisted.filters.dropItemHrids).toEqual(['/items/marine_scale']);
+    expect(persisted.filters.quickRounds).toBe(2);
+    expect(persisted.ironcowWeights).toEqual({ dropsPerHour: 0.45, xpPerHour: 0.45, safety: 0.1 });
+  });
+
+  it('rejects advisor filter updates while a scan is running or starting', () => {
+    const { simulator } = createStoreWithMocks();
+    simulator.updateAdvisorFilters({ quickRounds: 2 });
+    const lockedFilters = simulator.advisor.filters;
+    global.localStorage.setItem.mockClear();
+
+    // isRunning 期间（程序化调用绕过页面层 UI 禁用的 store 兜底）：拒绝写入、
+    // 不落盘，原样返回当前 filters（返回值契约与正常路径一致）。
+    simulator.advisor.runtime.isRunning = true;
+    const rejectedWhileRunning = simulator.updateAdvisorFilters({
+      quickRounds: 9,
+      dropItemHrids: ['/items/pearl'],
+    });
+    expect(rejectedWhileRunning).toBe(lockedFilters);
+    expect(simulator.advisor.filters).toBe(lockedFilters);
+    expect(simulator.advisor.filters.quickRounds).toBe(2);
+    expect(simulator.advisor.filters.dropItemHrids).toEqual([]);
+    const writesWhileRunning = global.localStorage.setItem.mock.calls.filter(
+      ([key]) => key === 'mwi.advisor.settings.v1',
+    );
+    expect(writesWhileRunning).toHaveLength(0);
+
+    // scanInFlight 窗口期（loadPlayerMapperModule 导入中，isRunning 尚未置位，
+    // 即双击「开始推荐」时 runAdvisor #2 的 filterDraft 提交路径）：同样拒绝，
+    // 避免 filterDraft 覆盖 store filters 与扫描中途的冗余落盘。
+    simulator.advisor.runtime.isRunning = false;
+    simulator.advisor.runtime.scanInFlight = true;
+    const rejectedWhileStarting = simulator.updateAdvisorFilters({ quickRounds: 9 });
+    expect(rejectedWhileStarting).toBe(lockedFilters);
+    expect(simulator.advisor.filters.quickRounds).toBe(2);
+    const writesWhileStarting = global.localStorage.setItem.mock.calls.filter(
+      ([key]) => key === 'mwi.advisor.settings.v1',
+    );
+    expect(writesWhileStarting).toHaveLength(0);
+
+    // 扫描结束（两标志复位）后恢复正常写入与持久化。
+    simulator.advisor.runtime.scanInFlight = false;
+    simulator.updateAdvisorFilters({ quickRounds: 5 });
+    expect(simulator.advisor.filters.quickRounds).toBe(5);
+    expect(JSON.parse(global.localStorage.getItem('mwi.advisor.settings.v1')).filters.quickRounds).toBe(5);
+  });
+
+  it('restores persisted advisor settings on store init without reviving result rows', () => {
+    global.localStorage.setItem(
+      'mwi.advisor.settings.v1',
+      JSON.stringify({
+        version: 1,
+        savedAt: 123,
+        goalPreset: 'ironcow',
+        customWeights: { profitPerHour: 0.7, xpPerHour: 0.2, safety: 0.1 },
+        ironcowWeights: { dropsPerHour: 0.2, xpPerHour: 0.7, safety: 0.1 },
+        filters: {
+          includeSoloZones: true,
+          quickRounds: 2,
+          dropItemHrids: ['  /items/marine_scale  ', '/items/marine_scale', ''],
+        },
+      }),
+    );
+
+    const { simulator } = createStoreWithMocks();
+
+    expect(simulator.advisor.goalPreset).toBe('ironcow');
+    expect(simulator.advisor.ironcowWeights).toEqual({ dropsPerHour: 0.2, xpPerHour: 0.7, safety: 0.1 });
+    expect(simulator.advisor.customWeights.profitPerHour).toBeCloseTo(0.7, 10);
+    expect(simulator.advisor.customWeights.xpPerHour).toBeCloseTo(0.2, 10);
+    expect(simulator.advisor.customWeights.safety).toBeCloseTo(0.1, 10);
+    expect(simulator.advisor.filters.includeSoloZones).toBe(true);
+    expect(simulator.advisor.filters.quickRounds).toBe(2);
+    expect(simulator.advisor.filters.dropItemHrids).toEqual(['/items/marine_scale']);
+    expect(simulator.advisor.quickRows).toEqual([]);
+    expect(simulator.advisor.refinedRows).toEqual([]);
+    expect(simulator.advisor.topCards).toEqual([]);
+    expect(simulator.advisor.scannedGoalPreset).toBe('');
+    expect(simulator.advisor.dropDataStale).toBe(false);
+  });
+
+  it('increments the advisor run request token without persisting it', () => {
+    const { simulator } = createStoreWithMocks();
+    expect(simulator.advisor.runRequestToken).toBe(0);
+
+    // 顶栏每次「开始推荐」递增 token，AdvisorPage watch 据此触发本地 runAdvisor()。
+    expect(simulator.requestAdvisorRun()).toBe(1);
+    expect(simulator.advisor.runRequestToken).toBe(1);
+    expect(typeof simulator.advisor.runRequestToken).toBe('number');
+    expect(simulator.requestAdvisorRun()).toBe(2);
+    expect(simulator.advisor.runRequestToken).toBe(2);
+
+    // token 是会话内计数器：持久化负载只含 goalPreset/权重/filters，不含 token。
+    simulator.updateAdvisorFilters({ quickRounds: 3 });
+    const persisted = JSON.parse(global.localStorage.getItem('mwi.advisor.settings.v1'));
+    expect(persisted.version).toBe(1);
+    expect(persisted).not.toHaveProperty('runRequestToken');
+    expect(JSON.stringify(persisted)).not.toContain('runRequestToken');
+
+    // resetAdvisorState 重建会话内状态后 token 归零。
+    simulator.resetAdvisorState();
+    expect(simulator.advisor.runRequestToken).toBe(0);
+    expect(typeof simulator.advisor.runRequestToken).toBe('number');
   });
 });
