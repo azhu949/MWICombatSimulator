@@ -496,7 +496,18 @@
       "goToMultiResults": "前往多轮结果页",
       "stayHere": "留在当前页",
       "active": "已激活",
-      "setActive": "设为激活"
+      "setActive": "设为激活",
+      "marketPriceLabel": "市场数据",
+      "marketPriceMissing": "未获取市场数据",
+      "marketPriceRefreshing": "市场数据刷新中…",
+      "marketPriceRefreshAriaLabel": "刷新市场价格数据",
+      "marketPriceDataTime": "市场数据时间",
+      "marketPriceStale": "快照已过期，建议刷新",
+      "marketPriceRefreshFailed": "刷新失败",
+      "marketPriceJustNow": "刚刚",
+      "marketPriceMinutesAgo": "{{count}} 分钟前",
+      "marketPriceHoursAgo": "{{count}} 小时前",
+      "marketPriceDaysAgo": "{{count}} 天前"
     },
     "home": {
       "levelsTitle": "等级",

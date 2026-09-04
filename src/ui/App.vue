@@ -28,6 +28,8 @@
               @select-player="simulator.setActivePlayer"
             />
           </template>
+          <div class="mx-1 h-4 w-px bg-border" aria-hidden="true" />
+          <MarketPriceIndicator />
           <Button
             type="button"
             variant="ghost"
@@ -723,6 +725,7 @@ import {
 import BaseModal from './components/BaseModal.vue';
 import AppSidebar from './components/AppSidebar.vue';
 import CombatCommandBar from './components/CombatCommandBar.vue';
+import MarketPriceIndicator from './components/MarketPriceIndicator.vue';
 import PlayerCardsStrip from './components/PlayerCardsStrip.vue';
 import PatchNoteSections from './components/PatchNoteSections.vue';
 import { Button } from './components/ui/button/index.js';

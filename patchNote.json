@@ -1,4 +1,20 @@
 {
+  "2026年9月4日（v2.4.3）": {
+    "label": {
+      "zh": "2026年9月4日（v2.4.3）",
+      "en": "September 4, 2026 (v2.4.3)"
+    },
+    "newFeatures": {
+      "zh": [
+        "顶部工具栏新增「市场数据」指示器：实时显示行情数据新旧，点击一键刷新。",
+        "行情未获取、已过期或刷新失败时，指示器会变色提醒。"
+      ],
+      "en": [
+        "Added a Market Data indicator to the top toolbar: see how fresh your price data is and refresh with one click.",
+        "The indicator changes color when data is missing, outdated, or a refresh fails."
+      ]
+    }
+  },
   "2026年9月4日（v2.4.2）": {
     "label": {
       "zh": "2026年9月4日（v2.4.2）",
