@@ -6,6 +6,7 @@ import {
   buildRandomProfitBreakdown,
   estimateNoRngProfit,
 } from '../profitEstimator.js';
+import { hydratePriceTableWithMarketData, resolveMarketSalePrice } from '../marketPriceService.js';
 
 describe('profitEstimator', () => {
   it('uses consumable ask price when consumableMode is ask', () => {
@@ -364,5 +365,142 @@ describe('profitEstimator', () => {
     expect(player1Second.get('/items/coin')).toBe(12000);
     expect(player2Second.get('/items/coin')).toBe(6000);
     expect(player1Second).not.toBe(player1First);
+  });
+
+  // ===== 计税模式与牛铃估值端到端（设计 §6 测试矩阵 T14/T15）=====
+
+  it('计税模式两档仅作用于收入侧，成本侧两档逐位不变（T14）', () => {
+    const monsterHrid = '/monsters/abyssal_imp';
+    const simResult = {
+      isDungeon: false,
+      numberOfPlayers: 1,
+      difficultyTier: 0,
+      deaths: { [monsterHrid]: 1 },
+      dropRateMultiplier: { player1: 1 },
+      rareFindMultiplier: { player1: 1 },
+      combatDropQuantity: { player1: 0 },
+      debuffOnLevelGap: { player1: 0 },
+      consumablesUsed: { player1: { '/items/coin': 3 } },
+    };
+    const priceTable = {
+      '/items/coin': { ask: 100, bid: 100, vendor: 1 },
+      '/items/red_tea_leaf': { ask: -1, bid: -1, vendor: 30 },
+      '/items/emp_tea_leaf': { ask: -1, bid: -1, vendor: 30 },
+      // vendor 兜底来源掉落：market 免税 / none 税前的两档锚点。
+      '/items/abyssal_essence': { ask: -1, bid: -1, vendor: 200 },
+      '/items/quick_aid': { ask: -1, bid: -1, vendor: 500 },
+      '/items/firestorm': { ask: -1, bid: -1, vendor: 900 },
+      // 市场来源掉落（bid=100）；宝箱行按面值 1000 参与收入（卖出免税：费率表 0，
+      // 牛铃 18% 修订 §1.2b——旧模型此处会被计 5% 税）。
+      '/items/fireball': { ask: 120, bid: 100, vendor: 1 },
+      '/items/large_treasure_chest': { ask: -1, bid: 1000, vendor: 1 },
+    };
+    const breakdownByTaxMode = (taxMode) =>
+      buildNoRngProfitBreakdown(simResult, 'player1', {
+        dropMode: 'bid',
+        consumableMode: 'ask',
+        taxMode,
+        priceTable,
+      });
+    const unitPriceByTaxMode = (taxMode, itemHrid) =>
+      breakdownByTaxMode(taxMode).revenueItems.find((row) => row.itemHrid === itemHrid)?.unitPrice;
+
+    // vendor 来源掉落：market 免税 200 / none 税前 200（原 'all' 计税 190 已随档位移除）。
+    expect(unitPriceByTaxMode('market', '/items/abyssal_essence')).toBe(200);
+    expect(unitPriceByTaxMode('none', '/items/abyssal_essence')).toBe(200);
+
+    // 市场来源掉落（fireball bid=100）：market 计税 95 / none 税前 100。
+    expect(unitPriceByTaxMode('market', '/items/fireball')).toBe(95);
+    expect(unitPriceByTaxMode('none', '/items/fireball')).toBe(100);
+
+    // coin（bid=100）：两档统一免税（决策③：费率表 0）——牛铃 18% 修订 §4。
+    // 'market' 档从旧模型的 95 变为 100。
+    expect(unitPriceByTaxMode('market', '/items/coin')).toBe(100);
+    expect(unitPriceByTaxMode('none', '/items/coin')).toBe(100);
+
+    // RNG 口径同样吃到 taxMode（vendor 来源免税锚点）。
+    const rngUnitPrice = (taxMode, itemHrid) =>
+      buildRandomProfitBreakdown(simResult, 'player1', {
+        dropMode: 'bid',
+        consumableMode: 'ask',
+        taxMode,
+        priceTable,
+        useDropCache: false,
+        randomSource: () => 0,
+      }).revenueItems.find((row) => row.itemHrid === itemHrid)?.unitPrice;
+    expect(rngUnitPrice('market', '/items/abyssal_essence')).toBe(200);
+    expect(rngUnitPrice('none', '/items/abyssal_essence')).toBe(200);
+
+    // 成本侧（D2 定案锚点）：两档下 expenses 逐位不变——消耗品 coin 按 ask 全价
+    // 100 入账（若成本侧被错误计税会变成 95）。
+    for (const taxMode of ['market', 'none']) {
+      const breakdown = breakdownByTaxMode(taxMode);
+      expect(breakdown.expenses).toBe(300);
+      expect(breakdown.expenseItems[0].unitPrice).toBe(100);
+    }
+  });
+
+  it('牛铃估值端到端抬升宝箱掉落收入（no-RNG 与 RNG 双口径），地牢两态恒 0（T15）', () => {
+    const monsterHrid = '/monsters/abyssal_imp';
+    const marketData = { '/items/bag_of_10_cowbells': { 0: { a: 1090000, b: 1060000 } } };
+    const priceTableOn = hydratePriceTableWithMarketData(marketData, undefined, { nonTradableValuation: true });
+    const priceTableOff = hydratePriceTableWithMarketData(marketData);
+    const chestHrid = '/items/large_treasure_chest';
+
+    const simResult = {
+      isDungeon: false,
+      numberOfPlayers: 1,
+      difficultyTier: 0,
+      deaths: { [monsterHrid]: 4 },
+      dropRateMultiplier: { player1: 1 },
+      rareFindMultiplier: { player1: 1 },
+      combatDropQuantity: { player1: 0 },
+      debuffOnLevelGap: { player1: 0 },
+    };
+
+    // 税后单价：宝箱税已逐内容内嵌合成（牛铃净额 86,920 × 1.35 = 117,342）、卖出
+    // 按费率表 0 免税不再二次征税（牛铃 18% 修订 §1.2/§8.2）——开档 217,902、
+    // 关档 100,560，增量精确 117,342（fixture 整数报价下无取整漂移）。
+    const unitOn = resolveMarketSalePrice(priceTableOn, chestHrid, 'bid');
+    const unitOff = resolveMarketSalePrice(priceTableOff, chestHrid, 'bid');
+    expect(unitOn).toBe(217902);
+    expect(unitOff).toBe(100560);
+    expect(unitOn).toBeGreaterThan(unitOff);
+    expect(unitOn - unitOff).toBeCloseTo(86920 * 1.35, 4);
+
+    // no-RNG 口径：收入差 = 宝箱单价差（117,342）× 期望掉落数（稀有表 0.0010872…×4 击杀）。
+    const dropCountMap = buildNoRngDropCountMap(simResult, 'player1');
+    const chestCount = dropCountMap.get(chestHrid);
+    expect(chestCount).toBeGreaterThan(0);
+    const noRngOn = buildNoRngProfitBreakdown(simResult, 'player1', { dropMode: 'bid', priceTable: priceTableOn });
+    const noRngOff = buildNoRngProfitBreakdown(simResult, 'player1', { dropMode: 'bid', priceTable: priceTableOff });
+    expect(noRngOn.revenue - noRngOff.revenue).toBeCloseTo((unitOn - unitOff) * chestCount, 6);
+
+    // RNG 口径（randomSource 恒 0 → 每击杀必掉 1 只宝箱，确定性）：收入差 = 单价差 × 4
+    //（117,342 × 4 = 469,368）。
+    const rngOptions = { dropMode: 'bid', useDropCache: false, randomSource: () => 0 };
+    const rngOn = buildRandomProfitBreakdown(simResult, 'player1', { ...rngOptions, priceTable: priceTableOn });
+    const rngOff = buildRandomProfitBreakdown(simResult, 'player1', { ...rngOptions, priceTable: priceTableOff });
+    const rngChestRowOn = rngOn.revenueItems.find((row) => row.itemHrid === chestHrid);
+    expect(rngChestRowOn.amount).toBe(4);
+    expect(rngOn.revenue - rngOff.revenue).toBeCloseTo((unitOn - unitOff) * 4, 6);
+
+    // 地牢收入恒 0（勿改清单①锁定不破）：开关两态一致。
+    const dungeonResult = {
+      isDungeon: true,
+      deaths: { [monsterHrid]: 999 },
+      consumablesUsed: { player1: { '/items/coin': 3 } },
+    };
+    for (const priceTable of [priceTableOn, priceTableOff]) {
+      expect(buildNoRngProfitBreakdown(dungeonResult, 'player1', { dropMode: 'bid', priceTable }).revenue).toBe(0);
+      expect(
+        buildRandomProfitBreakdown(dungeonResult, 'player1', {
+          dropMode: 'bid',
+          priceTable,
+          useDropCache: false,
+          randomSource: () => 0,
+        }).revenue,
+      ).toBe(0);
+    }
   });
 });

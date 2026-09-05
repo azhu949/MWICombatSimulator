@@ -320,6 +320,37 @@
       /></label>
     </div>
 
+    <div class="mb-3 grid gap-3 sm:grid-cols-2">
+      <label class="block">
+        <span class="control-label">{{
+          t('common:vue.home.nonTradableValuationLabel', 'Non-tradable Valuation (Cowbells/Capes)')
+        }}</span>
+        <Select v-model="nonTradableValuationProxy" :disabled="pricingControlsDisabled">
+          <SelectTrigger
+            :aria-label="t('common:vue.home.nonTradableValuationLabel', 'Non-tradable Valuation (Cowbells/Capes)')"
+          />
+          <SelectContent>
+            <SelectItem value="true">{{
+              t('common:vue.home.nonTradableValuationOn', 'Enabled (cowbell = bag/10, capes = mirror)')
+            }}</SelectItem>
+            <SelectItem value="false">{{
+              t('common:vue.home.nonTradableValuationOff', 'Disabled (vendor fallback, legacy behavior)')
+            }}</SelectItem>
+          </SelectContent>
+        </Select>
+      </label>
+      <label class="block">
+        <span class="control-label">{{ t('common:vue.home.taxModeLabel', 'Revenue Tax') }}</span>
+        <Select v-model="taxModeProxy" :disabled="pricingControlsDisabled">
+          <SelectTrigger :aria-label="t('common:vue.home.taxModeLabel', 'Revenue Tax')" />
+          <SelectContent>
+            <SelectItem value="market">{{ t('common:vue.home.taxModeMarket', 'Tax') }}</SelectItem>
+            <SelectItem value="none">{{ t('common:vue.home.taxModeNone', 'No tax') }}</SelectItem>
+          </SelectContent>
+        </Select>
+      </label>
+    </div>
+
     <div class="flex flex-wrap gap-2" data-tm-import-anchor="simulator-home-actions">
       <button
         type="button"
@@ -378,6 +409,7 @@ import { useSimulatorStore } from '../../../stores/simulatorStore.js';
 import { useGameDataText } from '../../composables/useGameDataText.js';
 import { useI18nText } from '../../composables/useI18nText.js';
 import { formatAssetScoreLabel } from '../../../services/assetScoreService.js';
+import { normalizeTaxMode } from '../../../services/marketPriceService.js';
 import { SearchCombobox } from '../ui/combobox/index.js';
 import { Select, SelectContent, SelectItem, SelectTrigger } from '../ui/select/index.js';
 
@@ -476,6 +508,44 @@ const profileSelectorPlayerId = computed({
 const activeProfileImported = computed(
   () => simulator.queue?.importedProfileByPlayer?.[simulator.activePlayerId] === true,
 );
+
+// 定价新控件运行中禁用（G1 修复确立的联合判定，2026-09-04 自设置页迁入）：
+// 行情加载 / 手动模拟 / 任一队列运行 / advisor 扫描任一占用中即封死不可交易
+// 估值与计税两个 Select（store 层 setNonTradableValuation/setTaxMode 另有同式
+// 兜底守卫，双层禁用）。advisor 口径 isRunning || scanInFlight：后者覆盖首扫
+// 动态导入窗口与停止后 worker 收尾期——与 AdvisorPage/updateAdvisorFilters/
+// store 守卫同口径，防止「页面放行、store 拒绝」的分裂。
+const pricingControlsDisabled = computed(
+  () =>
+    simulator.pricing.isLoading ||
+    simulator.runtime.isRunning ||
+    simulator.isAnyQueueRunning ||
+    simulator.advisor.runtime?.isRunning === true ||
+    simulator.advisor.runtime?.scanInFlight === true,
+);
+
+// 不可交易物估值开关：Select 的 value 域是字符串，proxy 层做
+// 'true'/'false' ⇄ 布尔转换。
+const nonTradableValuationProxy = computed({
+  get() {
+    return simulator.pricing.nonTradableValuation === true ? 'true' : 'false';
+  },
+  set(value) {
+    simulator.setNonTradableValuation(value === 'true');
+  },
+});
+
+// 计税模式（两档：'market' 计税 / 'none' 不计税）：get 经 normalizeTaxMode 兜底
+//（存量 'all' 等异常持久化值直接显示回退档 'market'），set 走 store action
+//（内部再归一并落盘）。
+const taxModeProxy = computed({
+  get() {
+    return normalizeTaxMode(simulator.pricing.taxMode);
+  },
+  set(mode) {
+    simulator.setTaxMode(mode);
+  },
+});
 
 function labyrinthCrateSelectValue(crateType) {
   return String(simulator.simulationSettings.labyrinthCrates?.[crateType] || EMPTY_SELECT_VALUE);

@@ -1,6 +1,7 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
   createPricingState,
+  createProfitPricingOptions,
   getStorageItem,
   hasMeaningfulPlayerSnapshotData,
   loadAdvisorSettingsFromStorage,
@@ -11,6 +12,7 @@ import {
   normalizeAdvisorSettings,
   normalizeMarketItemValues,
   normalizeMarketItemValueSources,
+  normalizePricingSettings,
   normalizeSimulationUiSettings,
   normalizeStoredPlayerDataMap,
   persistAdvisorSettingsToStorage,
@@ -549,6 +551,142 @@ describe('simulatorStorage', () => {
     expect(pricingState.sourceUrl).toBe('https://example.test/prices.json');
     expect(pricingState.isLoading).toBe(false);
     expect(pricingState.error).toBe('');
+  });
+
+  it('normalizePricingSettings 对旧载荷向后兼容并归一两个新键（T10）', () => {
+    // 旧设置无新键 → nonTradableValuation=true / taxMode='market'（§4.1/§4.2 默认）。
+    expect(normalizePricingSettings({})).toMatchObject({
+      consumableMode: 'ask',
+      dropMode: 'bid',
+      nonTradableValuation: true,
+      taxMode: 'market',
+      overrides: {},
+    });
+    expect(normalizePricingSettings({ consumableMode: 'ask' })).toMatchObject({
+      consumableMode: 'ask',
+      nonTradableValuation: true,
+      taxMode: 'market',
+    });
+    // 非对象输入同走空对象兜底。
+    expect(normalizePricingSettings(null)).toMatchObject({ nonTradableValuation: true, taxMode: 'market' });
+    expect(normalizePricingSettings('junk')).toMatchObject({ nonTradableValuation: true, taxMode: 'market' });
+
+    // 显式合法值保留。
+    expect(normalizePricingSettings({ nonTradableValuation: false, taxMode: 'none' })).toMatchObject({
+      nonTradableValuation: false,
+      taxMode: 'none',
+    });
+    // 存量 'all' 落盘值归一为 'market'（2026-09-04 两档决策的向后兼容锚点）。
+    expect(normalizePricingSettings({ nonTradableValuation: false, taxMode: 'all' }).taxMode).toBe('market');
+
+    // 非法 taxMode → 'market'；nonTradableValuation 仅严格 false 才关闭（§4.1）。
+    expect(normalizePricingSettings({ taxMode: 'bogus' }).taxMode).toBe('market');
+    expect(normalizePricingSettings({ nonTradableValuation: 'off' }).nonTradableValuation).toBe(true);
+  });
+
+  it('createPricingState 从旧缓存剥离重导出合成条目并携带两个新键（T11）', () => {
+    // 旧缓存形态：开关关时代写入（宝箱合成值不含牛铃 + 牛铃 vendor=0），
+    // 但表内已含铃袋行情（快照原貌）。
+    const legacyChestValue = 102300;
+    const createStaleCacheStorage = () =>
+      createMemoryStorage({
+        [PRICE_SETTINGS_STORAGE_KEY]: JSON.stringify({ consumableMode: 'bid', dropMode: 'ask' }),
+        [PRICE_MARKET_CACHE_STORAGE_KEY]: JSON.stringify({
+          basePriceTable: {
+            '/items/bag_of_10_cowbells': { ask: 1090000, bid: 1060000, vendor: 0 },
+            '/items/large_treasure_chest': {
+              ask: legacyChestValue,
+              bid: legacyChestValue,
+              vendor: legacyChestValue,
+            },
+            '/items/cowbell': { ask: -1, bid: -1, vendor: 0 },
+            '/items/coin': { ask: 1, bid: 1, vendor: 1 },
+          },
+          marketTimestamp: 90,
+          lastFetchedAt: 100,
+          sourceUrl: 'https://example.test/prices.json',
+        }),
+      });
+
+    // 旧设置无新键 → 开关默认 true → 缓存旧宝箱值被剥离重导出、合成吃到牛铃
+    //（袋 bid 已在缓存表，不触发任何 fetch；createPricingState 本身即同步纯函数）。
+    const storageOn = createStaleCacheStorage();
+    vi.stubGlobal('localStorage', storageOn);
+    const stateOn = createPricingState();
+    expect(stateOn.nonTradableValuation).toBe(true);
+    expect(stateOn.taxMode).toBe('market');
+    expect(stateOn.basePriceTable['/items/cowbell']).toEqual({ ask: -1, bid: -1, vendor: 106000 });
+    expect(stateOn.basePriceTable['/items/large_treasure_chest'].bid).toBeGreaterThan(legacyChestValue);
+    expect(stateOn.priceTable['/items/large_treasure_chest'].bid).toBe(
+      stateOn.basePriceTable['/items/large_treasure_chest'].bid,
+    );
+
+    // 缓存不回写：持久化载荷保持快照原貌（牛铃仍为 0、宝箱仍为旧值）。
+    const persistedCache = JSON.parse(storageOn.data.get(PRICE_MARKET_CACHE_STORAGE_KEY));
+    expect(persistedCache.basePriceTable['/items/cowbell']).toEqual({ ask: -1, bid: -1, vendor: 0 });
+    expect(persistedCache.basePriceTable['/items/large_treasure_chest'].bid).toBe(legacyChestValue);
+
+    // 显式关（nonTradableValuation=false）→ 宝箱按新模型净额重算（'market' 默认档
+    // 关档合成值 100,560，牛铃 18% 修订 §8.3），不再等于缓存里的旧烘焙值 102,300。
+    const storageOff = createStaleCacheStorage();
+    storageOff.data.set(
+      PRICE_SETTINGS_STORAGE_KEY,
+      JSON.stringify({ consumableMode: 'bid', dropMode: 'ask', nonTradableValuation: false }),
+    );
+    vi.stubGlobal('localStorage', storageOff);
+    const stateOff = createPricingState();
+    expect(stateOff.nonTradableValuation).toBe(false);
+    expect(stateOff.taxMode).toBe('market');
+    expect(stateOff.basePriceTable['/items/cowbell']).toEqual({ ask: -1, bid: -1, vendor: 0 });
+    expect(stateOff.basePriceTable['/items/large_treasure_chest']).toEqual({
+      ask: 100560,
+      bid: 100560,
+      vendor: 100560,
+    });
+
+    // taxMode 线程化（牛铃 18% 修订 §3.5-7）：显式 'none' → 宝箱合成回到税前锚点
+    // 102,300（= pre-feature 基线，'none' 档全免税语义自洽）。
+    const storageNone = createStaleCacheStorage();
+    storageNone.data.set(
+      PRICE_SETTINGS_STORAGE_KEY,
+      JSON.stringify({
+        consumableMode: 'bid',
+        dropMode: 'ask',
+        nonTradableValuation: false,
+        taxMode: 'none',
+      }),
+    );
+    vi.stubGlobal('localStorage', storageNone);
+    const stateNone = createPricingState();
+    expect(stateNone.taxMode).toBe('none');
+    expect(stateNone.basePriceTable['/items/cowbell']).toEqual({ ask: -1, bid: -1, vendor: 0 });
+    expect(stateNone.basePriceTable['/items/large_treasure_chest']).toEqual({
+      ask: 102300,
+      bid: 102300,
+      vendor: 102300,
+    });
+  });
+
+  it('createProfitPricingOptions 线程化 taxMode 并保留缺键默认（T12）', () => {
+    const priceTable = { '/items/test_item': { ask: 5, bid: 2, vendor: 1 } };
+    expect(
+      createProfitPricingOptions({
+        consumableMode: 'bid',
+        dropMode: 'ask',
+        taxMode: 'none',
+        priceTable,
+      }),
+    ).toEqual({
+      consumableMode: 'bid',
+      dropMode: 'ask',
+      taxMode: 'none',
+      priceTable,
+    });
+
+    // 缺键 / null / 非法值 → 'market'（现状锚点）。
+    expect(createProfitPricingOptions({ consumableMode: 'bid', dropMode: 'ask' }).taxMode).toBe('market');
+    expect(createProfitPricingOptions(null).taxMode).toBe('market');
+    expect(createProfitPricingOptions({ taxMode: 'bogus' }).taxMode).toBe('market');
   });
 
   describe('normalizeMarketItemValues（#33 形状校验直测）', () => {

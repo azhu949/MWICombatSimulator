@@ -1115,6 +1115,7 @@ const activeProfitBreakdown = computed(() => {
   return buildRandomProfitBreakdown(simResult, simulator.results.activeResultPlayerHrid, {
     consumableMode: simulator.pricing.consumableMode,
     dropMode: simulator.pricing.dropMode,
+    taxMode: simulator.pricing.taxMode,
     priceTable: simulator.pricing.priceTable,
   });
 });
@@ -1134,6 +1135,7 @@ const activeNoRngProfitBreakdown = computed(() => {
   return buildNoRngProfitBreakdown(simResult, simulator.results.activeResultPlayerHrid, {
     consumableMode: simulator.pricing.consumableMode,
     dropMode: simulator.pricing.dropMode,
+    taxMode: simulator.pricing.taxMode,
     priceTable: simulator.pricing.priceTable,
   });
 });

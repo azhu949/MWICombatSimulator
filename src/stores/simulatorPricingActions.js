@@ -6,8 +6,10 @@ import {
   MARKET_PRICE_REFRESH_ATTEMPT_COOLDOWN_MS,
   MARKET_PRICE_SNAPSHOT_MAX_AGE_MS,
   normalizePriceMode,
+  normalizeTaxMode,
   PRICE_MODE_ASK,
   PRICE_MODE_BID,
+  rebuildSyntheticEntriesInTable,
 } from '../services/marketPriceService.js';
 import {
   clearMarketCacheFromStorage,
@@ -75,6 +77,33 @@ function isMarketPriceSnapshotFresh(pricingState, nowMs = Date.now()) {
   return Math.abs(nowMs - marketTimestampMs) <= MARKET_PRICE_SNAPSHOT_MAX_AGE_MS;
 }
 
+// G1 运行中守卫的统一判定（S-1 对齐 2026-09-04，双层禁用的 store 层兜底）：
+// 行情加载 / 手动模拟 / 任一队列运行 / advisor 扫描（isRunning || scanInFlight，
+// 后者覆盖首扫动态导入窗口与停止后 worker 收尾期）任一占用中，禁止修改定价
+// 设置。8 个定价写点 action（mode 四：consumableMode/dropMode/nonTradableValuation/
+// taxMode + override 三：setPriceOverride/resetPriceOverride/resetAllPriceOverrides
+// + vendor 行情重置 resetPricesToVendorDefaults；G-1 收口 2026-09-05）共用本谓词，
+// 防「运行快照 pricingOptions（运行开始时值快照）vs 结果页实时 computed
+// （SimulationResultsView 直读 store.pricing）」的口径分裂——共同机制是
+// rehydrate/重建整体换 priceTable/basePriceTable 引用。页面层禁用：
+// SettingsPage.pricingSettingsDisabled（含 Edit Prices 与 Reset Vendor Prices 按钮）、
+// HomeSimulationPanel.pricingControlsDisabled 与 SkillingPage.pricingMutationLocked
+// （价格 override 输入合并禁用；同口径五条件）。边界（G-1 复审定性）：行情刷新
+//（fetchMarketPrices / ensureMarketPricesLoaded / 队列准备
+// prepareActivePlayerQueueAddition 内的 ensureQueueMarketPriceSnapshot）不在本
+// 家族——isLoading 是拦截条件而非被拦动作；行情刷新属数据真值更新、非设置
+// 变更（Get Prices 运行中可点属既有设计：实时 computed 随最新行情重算、快照行
+// 保持运行时口径），队列运行前准备亦依赖刷新行情真值。
+function isPricingMutationBlocked(store) {
+  return (
+    store.pricing.isLoading ||
+    store.runtime.isRunning ||
+    store.isAnyQueueRunning ||
+    store.advisor.runtime?.isRunning === true ||
+    store.advisor.runtime?.scanInFlight === true
+  );
+}
+
 function wasMarketPriceRefreshAttemptedRecently(store, nowMs = Date.now()) {
   const lastAttemptAt = Math.max(
     Math.max(0, toFiniteNumber(store?.pricing?.lastFetchedAt, 0)),
@@ -129,7 +158,14 @@ async function fetchMarketPricesForStore(store) {
 
   const loadPromise = (async () => {
     try {
-      const result = await fetchMarketPriceTable();
+      // 按用户开关注入不可交易估值（设计 §1.5）+ 线程化税档（牛铃 18% 修订
+      // §3.5-8）：水合产物含牛铃/披风代理估值与按税档逐内容净额合成的宝箱值，
+      // 随 basePriceTable 烘焙进缓存；重启后 createPricingState 的剥离重导出按
+      // 当前设置幂等对齐，两路径口径一致。
+      const result = await fetchMarketPriceTable(undefined, {
+        nonTradableValuation: store.pricing.nonTradableValuation === true,
+        taxMode: normalizeTaxMode(store.pricing.taxMode),
+      });
       store.pricing.basePriceTable = cloneBasePriceTable(result.priceTable);
       store.pricing.enhancementQuotesByItem = normalizeEnhancementQuotesByItem(result.enhancementQuotesByItem);
       store.pricing.enhancementLevelsByItem = normalizeEnhancementLevelsByItem(result.enhancementLevelsByItem);
@@ -171,7 +207,13 @@ async function fetchMarketPricesForStore(store) {
 }
 
 function resetPricesToVendorDefaultsForStore(store) {
-  store.pricing.basePriceTable = createDefaultPriceTable();
+  // 传递开关/税档保持口径一致（设计 §1.5 + 牛铃 18% 修订 §3.5-9）：商店默认表中
+  // 袋/镜 bid=-1，注入会被跳过，牛铃/披风保持基础形态——传值仅让「未来 vendor 表
+  // 也含报价」时不产生口径分裂（宝箱合成随税档走同一逻辑）。
+  store.pricing.basePriceTable = createDefaultPriceTable({
+    nonTradableValuation: store.pricing.nonTradableValuation === true,
+    taxMode: normalizeTaxMode(store.pricing.taxMode),
+  });
   store.pricing.enhancementQuotesByItem = {};
   store.pricing.enhancementLevelsByItem = {};
   store.pricing.marketItemValues = {};
@@ -702,15 +744,94 @@ export function createPricingActions() {
         };
       }
     },
+    // 消耗品/掉落定价口径（S-1 对齐 2026-09-04）：与下方 setNonTradableValuation/
+    // setTaxMode 共用 isPricingMutationBlocked 联合守卫（双层禁用的 store 层
+    // 兜底），消除新旧定价 action 的运行中守卫不对称——运行中改 mode 会让
+    // SimulationResultsView 直读 store.pricing 的实时 computed 与运行快照
+    // pricingOptions（手动模拟/队列/advisor 开始时值快照）口径分裂。
+    // G-1 收口（2026-09-05）：override 三写点（下方 setPriceOverride/
+    // resetPriceOverride/resetAllPriceOverrides）纳入同款守卫——三写点都经
+    // rehydratePricingTable 整体换 priceTable 引用，运行中改价 = 结果页实时
+    // computed（SimulationResultsView breakdown 卡/useHomeWorkspaceSummary）
+    // 立即用新表重算、运行快照仍持旧表，与 mode 分裂同型；资产分不读手动价格
+    //（assetScoreService 失效面已排除 override 写点），不存在「刻意豁免」理由。
+    // vendor 行情重置（resetPricesToVendorDefaults，换 basePriceTable+priceTable
+    // 双引用并双清行情缓存）经 G-1 复审一并纳入（第 8 写点）。
+    // 返回 false 表示被拦截（state 不变、不落盘），成功返回 true。
     setConsumablePriceMode(mode) {
+      if (isPricingMutationBlocked(this)) {
+        return false;
+      }
       this.pricing.consumableMode = normalizePriceMode(mode, PRICE_MODE_ASK);
       persistPricingSettingsToStorage(this.pricing);
+      return true;
     },
     setDropPriceMode(mode) {
+      if (isPricingMutationBlocked(this)) {
+        return false;
+      }
       this.pricing.dropMode = normalizePriceMode(mode, PRICE_MODE_BID);
       persistPricingSettingsToStorage(this.pricing);
+      return true;
+    },
+    // 不可交易物估值开关（设计 §4.1/§4.4）：切换即时生效——剥离合成键
+    //（coin/3 宝箱/牛铃/7 披风）重导出 basePriceTable 后重烘焙 priceTable，
+    // 无需重新拉取行情（注入只消费表内袋/镜 bid）。返回 false 表示被
+    // G1 运行中守卫拦截（设计 §5.2 定案双层禁用：页面 :disabled + 此处兜底，
+    // 行情加载/模拟/队列/扫描任一占用中禁止修改——防 fetch 竞态覆盖与
+    //「运行中改设置→结果不变」的口径闪烁）。advisor 扫描占用口径与
+    // updateAdvisorFilters/AdvisorPage 一致：isRunning || scanInFlight——
+    // scanInFlight 覆盖首扫动态导入窗口（isRunning 尚未置位）与停止后
+    // worker 收尾期（isRunning 已复位、runAdvisorScan finally 未执行）。
+    // 资产分触发器按「引用替换」约定浅跟踪 basePriceTable（App.vue 触发向量），
+    // 因此克隆后重建再整体替换引用——开关切换 → 指纹变化 → 资产分重算（§4.3C）。
+    setNonTradableValuation(enabled) {
+      if (isPricingMutationBlocked(this)) {
+        return false;
+      }
+
+      this.pricing.nonTradableValuation = enabled === true;
+      persistPricingSettingsToStorage(this.pricing);
+
+      const nextBasePriceTable = cloneBasePriceTable(this.pricing.basePriceTable);
+      // rebuild 必须同时携带当前 taxMode（牛铃 18% 修订 §3.4 防丢档）：合成跟随
+      // 税档后，漏传会把宝箱合成重置回默认 'market' 档（口径闪烁）。
+      rebuildSyntheticEntriesInTable(nextBasePriceTable, {
+        nonTradableValuation: this.pricing.nonTradableValuation,
+        taxMode: this.pricing.taxMode,
+      });
+      this.pricing.basePriceTable = nextBasePriceTable;
+      rehydratePricingTable(this.pricing);
+      return true;
+    },
+    // 计税模式（两档，2026-09-04 用户决策移除 'all' 档 + 牛铃 18% 修订 §3.4
+    // 重建化）：合成跟随 taxMode（'none' 税前 / 'market' 逐内容净额，修订 §3.1
+    // 矩阵）后，taxMode 从
+    // resolve 运行时参数升级为表构建参数——切换须克隆 basePriceTable 重建合成键
+    // 再引用替换（与 setNonTradableValuation 同构，注入只消费表内袋/镜 bid，无需
+    // 重拉行情）。宝箱/牛铃不在资产分取值输入（装备面），引用替换仅触发资产分
+    // 重算、分值不变。同受 G1 运行中守卫约束（双层禁用的 store 层兜底）。
+    setTaxMode(mode) {
+      if (isPricingMutationBlocked(this)) {
+        return false;
+      }
+
+      this.pricing.taxMode = normalizeTaxMode(mode);
+      persistPricingSettingsToStorage(this.pricing);
+
+      const nextBasePriceTable = cloneBasePriceTable(this.pricing.basePriceTable);
+      rebuildSyntheticEntriesInTable(nextBasePriceTable, {
+        nonTradableValuation: this.pricing.nonTradableValuation === true,
+        taxMode: this.pricing.taxMode,
+      });
+      this.pricing.basePriceTable = nextBasePriceTable;
+      rehydratePricingTable(this.pricing);
+      return true;
     },
     setPriceOverride(itemHrid, patch) {
+      if (isPricingMutationBlocked(this)) {
+        return false;
+      }
       const hrid = String(itemHrid || '');
       const sourcePatch = patch != null && typeof patch === 'object' && !Array.isArray(patch) ? patch : {};
       const hasAskPatch = Object.prototype.hasOwnProperty.call(sourcePatch, 'ask');
@@ -756,6 +877,9 @@ export function createPricingActions() {
       return true;
     },
     resetPriceOverride(itemHrid) {
+      if (isPricingMutationBlocked(this)) {
+        return false;
+      }
       const hrid = String(itemHrid || '');
       const currentOverrides = this.pricing.overrides || {};
       if (!hrid || !Object.prototype.hasOwnProperty.call(currentOverrides, hrid)) {
@@ -773,6 +897,9 @@ export function createPricingActions() {
       return true;
     },
     resetAllPriceOverrides() {
+      if (isPricingMutationBlocked(this)) {
+        return false;
+      }
       if (Object.keys(this.pricing.overrides || {}).length === 0) {
         return false;
       }
@@ -901,7 +1028,11 @@ export function createPricingActions() {
       return true;
     },
     resetPricesToVendorDefaults() {
+      if (isPricingMutationBlocked(this)) {
+        return false;
+      }
       resetPricesToVendorDefaultsForStore(this);
+      return true;
     },
     async ensureMarketPricesLoaded(forceRefresh = false) {
       return ensureMarketPricesLoadedForStore(this, forceRefresh);

@@ -3,6 +3,7 @@ import {
   PRICE_MODE_ASK,
   PRICE_MODE_BID,
   normalizePriceMode,
+  normalizeTaxMode,
   resolveMarketPrice,
   resolveMarketSalePrice,
 } from './marketPriceService.js';
@@ -558,9 +559,12 @@ export function buildNoRngProfitBreakdown(simResult, playerHrid, pricingOptions 
   const resolvedPlayer = resolvePlayerFromSimResult(simResult, playerHrid);
   const dropMode = normalizePriceMode(pricingOptions.dropMode, PRICE_MODE_BID);
   const consumableMode = normalizePriceMode(pricingOptions.consumableMode, PRICE_MODE_ASK);
+  // 计税模式（设计 §4.2，默认 'market' = 现状）：仅线程化到收入侧 resolveDropPrice；
+  // 成本侧 resolveConsumablePrice 恒税前 resolveMarketPrice（D2 定案勿改）。
+  const taxMode = normalizeTaxMode(pricingOptions.taxMode);
   const priceTable = pricingOptions.priceTable ?? null;
 
-  const resolveDropPrice = (itemHrid) => resolveMarketSalePrice(priceTable, itemHrid, dropMode);
+  const resolveDropPrice = (itemHrid) => resolveMarketSalePrice(priceTable, itemHrid, dropMode, taxMode);
   const resolveConsumablePrice = (itemHrid) => resolveMarketPrice(priceTable, itemHrid, consumableMode);
 
   const dropCountMap = buildNoRngDropCountMap(simResult, playerHrid);
@@ -590,11 +594,13 @@ export function buildRandomProfitBreakdown(simResult, playerHrid, pricingOptions
   const resolvedPlayer = resolvePlayerFromSimResult(simResult, playerHrid);
   const dropMode = normalizePriceMode(pricingOptions.dropMode, PRICE_MODE_BID);
   const consumableMode = normalizePriceMode(pricingOptions.consumableMode, PRICE_MODE_ASK);
+  // 计税模式（设计 §4.2）：与 no-RNG 口径一致——仅收入侧生效，成本侧免税（D2）。
+  const taxMode = normalizeTaxMode(pricingOptions.taxMode);
   const priceTable = pricingOptions.priceTable ?? null;
   const randomSource = pricingOptions.randomSource;
   const useDropCache = pricingOptions.useDropCache !== false;
 
-  const resolveDropPrice = (itemHrid) => resolveMarketSalePrice(priceTable, itemHrid, dropMode);
+  const resolveDropPrice = (itemHrid) => resolveMarketSalePrice(priceTable, itemHrid, dropMode, taxMode);
   const resolveConsumablePrice = (itemHrid) => resolveMarketPrice(priceTable, itemHrid, consumableMode);
 
   const { totalDropMap } = getProfitDropMaps(simResult, resolvedPlayer, {

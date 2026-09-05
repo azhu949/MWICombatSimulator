@@ -9,9 +9,10 @@ const packageJson = JSON.parse(readFileSync(resolve(process.cwd(), 'package.json
 export default defineConfig({
   base: './',
   test: {
-    // tmp/ 为 git 忽略的临时对账区，
-    // 其中的 *.test.js 论据脚本不参与 vitest 默认收集，避免未来转红污染「不回归」信号。
-    exclude: [...defaultExclude, 'tmp/**'],
+    // tmp/ 为 git 忽略的临时对账区；.snow/ 为研究快照区（含第三方取证仓库的测试，
+    // 其 @@/ 别名在本仓库无法解析、加载即红，且 .snow/ 已被 .gitignore 忽略）。
+    // 两目录的 *.test.* 文件均不参与 vitest 默认收集，避免转红污染「不回归」信号。
+    exclude: [...defaultExclude, 'tmp/**', '.snow/**'],
   },
   plugins: [vue(), tailwindcss()],
   resolve: {

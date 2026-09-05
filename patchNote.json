@@ -1,4 +1,26 @@
 {
+  "2026年9月4日（v2.4.4）": {
+    "label": {
+      "zh": "2026年9月4日（v2.4.4）",
+      "en": "September 4, 2026 (v2.4.4)"
+    },
+    "newFeatures": {
+      "zh": [
+        "新增「不可交易物估值」设置：牛铃、披风等不可交易物品按市场等价物计价，宝箱利润不再漏算。",
+        "新增「收入计税」设置：利润按市场税率计税，也可切换为不计税。"
+      ],
+      "en": [
+        "New \"Non-tradable Valuation\" setting: cowbells and capes are valued at market equivalents, so chest profits no longer miss their value.",
+        "New \"Revenue Tax\" setting: profits are taxed at market rates by default, with an optional untaxed view."
+      ]
+    },
+    "bugFixes": {
+      "zh": ["修复宝箱估值漏算牛铃价值的问题，掉落战利品宝箱的怪物利润更准确。"],
+      "en": [
+        "Fixed chest valuation omitting cowbell value; expected profits for chest-dropping monsters are now more accurate."
+      ]
+    }
+  },
   "2026年9月4日（v2.4.3）": {
     "label": {
       "zh": "2026年9月4日（v2.4.3）",

@@ -6316,6 +6316,137 @@ describe('simulatorStore', () => {
     expect(resetAll).toBe(false);
   });
 
+  it('setNonTradableValuation 与 setTaxMode 均重建两表并落盘（T13，G1 守卫）', () => {
+    const simulator = useSimulatorStore();
+    const PRICE_SETTINGS_KEY = 'mwi.price.settings.v1';
+
+    // 旧设置无新键 → 默认 true / 'market'（§4.1/§4.2 向后兼容）。
+    expect(simulator.pricing.nonTradableValuation).toBe(true);
+    expect(simulator.pricing.taxMode).toBe('market');
+
+    // 注入「行情形态」的铃袋报价，让开关翻转产生可见变化。
+    simulator.pricing.basePriceTable['/items/bag_of_10_cowbells'] = { ask: 1090000, bid: 1060000, vendor: 0 };
+    const priceTableBeforeToggle = simulator.pricing.priceTable;
+
+    // 关 → 牛铃/宝箱回落基础形态 + priceTable 引用更换 + 设置落盘。
+    expect(simulator.setNonTradableValuation(false)).toBe(true);
+    expect(simulator.pricing.nonTradableValuation).toBe(false);
+    expect(simulator.pricing.basePriceTable['/items/cowbell']).toEqual({ ask: -1, bid: -1, vendor: 0 });
+    expect(simulator.pricing.priceTable).not.toBe(priceTableBeforeToggle);
+
+    // 开 → 牛铃 = 袋 bid/10 注入 vendor 列，宝箱合成吃到牛铃（priceTable 同步重烘焙）。
+    expect(simulator.setNonTradableValuation(true)).toBe(true);
+    expect(simulator.pricing.basePriceTable['/items/cowbell']).toEqual({ ask: -1, bid: -1, vendor: 106000 });
+    expect(simulator.pricing.priceTable['/items/cowbell']).toEqual({ ask: -1, bid: -1, vendor: 106000 });
+    expect(simulator.pricing.priceTable['/items/large_treasure_chest'].bid).toBeGreaterThan(102300);
+
+    // 设置落盘读回校验。
+    const persistedAfterToggle = JSON.parse(global.localStorage.getItem(PRICE_SETTINGS_KEY) || '{}');
+    expect(persistedAfterToggle.nonTradableValuation).toBe(true);
+    expect(persistedAfterToggle.taxMode).toBe('market');
+
+    // setTaxMode（牛铃 18% 修订 §3.4 重建化）：合成跟随税档 → 切换须重建两表
+    //（引用更换）+ 落盘；'none' 档宝箱合成回到税前口径（开档大宝箱 245,400）。
+    const priceTableBeforeTaxMode = simulator.pricing.priceTable;
+    const basePriceTableBeforeTaxMode = simulator.pricing.basePriceTable;
+    expect(simulator.setTaxMode('none')).toBe(true);
+    expect(simulator.pricing.taxMode).toBe('none');
+    expect(simulator.pricing.priceTable).not.toBe(priceTableBeforeTaxMode);
+    expect(simulator.pricing.basePriceTable).not.toBe(basePriceTableBeforeTaxMode);
+    expect(simulator.pricing.priceTable['/items/large_treasure_chest'].bid).toBe(245400);
+    expect(JSON.parse(global.localStorage.getItem(PRICE_SETTINGS_KEY) || '{}').taxMode).toBe('none');
+
+    // 白名单外值归一回 'market'（同样触发重建）：宝箱合成回到净额口径 217,902。
+    expect(simulator.setTaxMode('BOGUS')).toBe(true);
+    expect(simulator.pricing.taxMode).toBe('market');
+    expect(simulator.pricing.priceTable['/items/large_treasure_chest'].bid).toBe(217902);
+
+    // G1 store 层守卫扩展（S-1 对齐 2026-09-04；G-1 收口 2026-09-05 扩至 override
+    // 三写点 + vendor 行情重置）：手动模拟运行中拦截全部 8 个定价写点 action
+    //（mode 四 + override 三 + resetPricesToVendorDefaults，T13 此前仅锚定
+    // advisor 档，此处补齐该档位）。
+    const consumableModeBeforeGuard = simulator.pricing.consumableMode;
+    const dropModeBeforeGuard = simulator.pricing.dropMode;
+    const settingsBeforeSimGuard = global.localStorage.getItem(PRICE_SETTINGS_KEY);
+    const overridesBeforeSimGuard = simulator.pricing.overrides;
+    const priceTableBeforeSimGuard = simulator.pricing.priceTable;
+    const basePriceTableBeforeSimGuard = simulator.pricing.basePriceTable;
+    simulator.runtime.isRunning = true;
+    expect(simulator.setConsumablePriceMode('bid')).toBe(false);
+    expect(simulator.setDropPriceMode('ask')).toBe(false);
+    expect(simulator.setNonTradableValuation(false)).toBe(false);
+    expect(simulator.setTaxMode('none')).toBe(false);
+    // G-1 收口（2026-09-05）：override 三写点同档拦截（state 不变、不落盘）。
+    // resetPriceOverride 探针依赖前一条 setPriceOverride 被拦截——守卫失效时
+    // set 写入探针 hrid、reset 随之真删并 rehydrate+落盘，红灯双触发。
+    expect(simulator.setPriceOverride('/items/g1_override_probe', { ask: 123 })).toBe(false);
+    expect(simulator.resetPriceOverride('/items/g1_override_probe')).toBe(false);
+    expect(simulator.resetAllPriceOverrides()).toBe(false);
+    // G-1 复审补充：vendor 行情重置同档拦截（其破坏面更大：换 basePriceTable
+    // + priceTable 双引用并双清行情缓存与来源标注）。
+    expect(simulator.resetPricesToVendorDefaults()).toBe(false);
+    simulator.runtime.isRunning = false;
+
+    // 任一队列运行中（isAnyQueueRunning getter：queue.byPlayer[*].isRunning）同档拦截。
+    // 经 activeQueueState（= byPlayer[activePlayerId]，createQueueStateByPlayer 预创建
+    // 的完整 queueState）置位，保留 settings 等既有字段，不整体覆盖。
+    simulator.activeQueueState.isRunning = true;
+    expect(simulator.setConsumablePriceMode('bid')).toBe(false);
+    expect(simulator.setDropPriceMode('ask')).toBe(false);
+    simulator.activeQueueState.isRunning = false;
+
+    // 两档全程 state 不变、不落盘（mode 值此前未被本用例改动，相对断言不依赖默认值）。
+    expect(simulator.pricing.consumableMode).toBe(consumableModeBeforeGuard);
+    expect(simulator.pricing.dropMode).toBe(dropModeBeforeGuard);
+    expect(simulator.pricing.nonTradableValuation).toBe(true);
+    expect(simulator.pricing.taxMode).toBe('market');
+    expect(global.localStorage.getItem(PRICE_SETTINGS_KEY)).toBe(settingsBeforeSimGuard);
+
+    // G1 store 层守卫（双层禁用兜底）：扫描运行中被拦截——state 不变、不落盘。
+    simulator.advisor.runtime.isRunning = true;
+    const settingsBeforeBlock = global.localStorage.getItem(PRICE_SETTINGS_KEY);
+    expect(simulator.setNonTradableValuation(false)).toBe(false);
+    expect(simulator.setTaxMode('none')).toBe(false);
+    expect(simulator.pricing.nonTradableValuation).toBe(true);
+    expect(simulator.pricing.taxMode).toBe('market');
+    expect(global.localStorage.getItem(PRICE_SETTINGS_KEY)).toBe(settingsBeforeBlock);
+
+    // scanInFlight 窗口期（首扫动态导入/停止后 worker 收尾，isRunning 已复位但
+    // runAdvisorScan 尚未走完 finally）同样拦截——与 updateAdvisorFilters/
+    // AdvisorPage/HomeSimulationPanel 同口径，防止「改在 pricingOptions 快照
+    // 前后」导致本次扫描消费口径不可预期。state 不变、不落盘。
+    simulator.advisor.runtime.isRunning = false;
+    simulator.advisor.runtime.scanInFlight = true;
+    expect(simulator.setNonTradableValuation(false)).toBe(false);
+    expect(simulator.setTaxMode('none')).toBe(false);
+    expect(simulator.pricing.nonTradableValuation).toBe(true);
+    expect(simulator.pricing.taxMode).toBe('market');
+    expect(global.localStorage.getItem(PRICE_SETTINGS_KEY)).toBe(settingsBeforeBlock);
+    // G-1 收口断言：全档位拦截期间 overrides/priceTable/basePriceTable 引用未变
+    //（引用不变 = 未 rehydrate、未重建、未落盘）。
+    expect(simulator.pricing.overrides).toBe(overridesBeforeSimGuard);
+    expect(simulator.pricing.priceTable).toBe(priceTableBeforeSimGuard);
+    expect(simulator.pricing.basePriceTable).toBe(basePriceTableBeforeSimGuard);
+    simulator.advisor.runtime.scanInFlight = false;
+
+    simulator.advisor.runtime.isRunning = false;
+    // 存量 'all' 落盘值经 normalizeTaxMode 白名单归一为 'market'（2026-09-04
+    // 两档决策：'all' 不再是可显式保存的档位）。
+    expect(simulator.setTaxMode('all')).toBe(true);
+    expect(simulator.pricing.taxMode).toBe('market');
+
+    // 防丢档（牛铃 18% 修订 §3.4/T21）：'none' 档下切估值开关 → rebuild 携带
+    // 当前税档，宝箱仍按 'none' 税前口径重算（关档 102,300、开档 245,400），
+    // 不被重置回默认 'market' 档（口径闪烁）。
+    expect(simulator.setTaxMode('none')).toBe(true);
+    expect(simulator.setNonTradableValuation(false)).toBe(true);
+    expect(simulator.pricing.taxMode).toBe('none');
+    expect(simulator.pricing.priceTable['/items/large_treasure_chest'].bid).toBe(102300);
+    expect(simulator.setNonTradableValuation(true)).toBe(true);
+    expect(simulator.pricing.taxMode).toBe('none');
+    expect(simulator.pricing.priceTable['/items/large_treasure_chest'].bid).toBe(245400);
+  });
+
   it('refetches market prices when cached table misses enhancement data', async () => {
     const simulator = useSimulatorStore();
     simulator.pricing.lastFetchedAt = Date.now();

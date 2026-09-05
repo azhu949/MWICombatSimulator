@@ -6,7 +6,15 @@ import {
 } from '../shared/gameDataIndex.js';
 import { EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from '../shared/playerConfig.js';
 import { normalizeCombatScrolls } from '../shared/combatScrolls.js';
-import { createDefaultPriceTable, normalizePriceMode, PRICE_MODE_ASK, PRICE_MODE_BID } from './marketPriceService.js';
+import {
+  createDefaultPriceTable,
+  normalizePriceMode,
+  normalizeTaxMode,
+  PRICE_MODE_ASK,
+  PRICE_MODE_BID,
+  rebuildSyntheticEntriesInTable,
+  TAX_MODE_MARKET,
+} from './marketPriceService.js';
 import {
   ADVISOR_GOAL_PRESET_BALANCED,
   normalizeAdvisorGoalPreset,
@@ -407,6 +415,11 @@ export function cloneBasePriceTable(basePriceTable) {
   return clone;
 }
 
+// 手动改价的产品语义（语义 A，2026-09-04 定案）：改价 = 「纠正行情价」——
+// override 直接烘焙进 ask/bid 字段后即成为市场价，利润链按市场销售口径
+// 对其收 5% 税（resolveMarketSalePrice）是正确行为而非 bug。另两条链
+// 口径不同且同为既定设计：资产链不读 override（assetScoreService 双拦截）、
+// 强化成本链按面值免税（enhancementSimulator 的独立 override 通道）。
 export function applyPriceOverridesToTable(basePriceTable, overrides) {
   const table = cloneBasePriceTable(basePriceTable);
   const normalizedOverrides = normalizePriceOverrideMap(overrides);
@@ -446,6 +459,12 @@ export function normalizePricingSettings(raw) {
   return {
     consumableMode: normalizePriceMode(source.consumableMode, PRICE_MODE_ASK),
     dropMode: normalizePriceMode(source.dropMode, PRICE_MODE_BID),
+    // 不可交易物估值开关（设计 §4.1）：旧设置无键 → 默认 true（漏算定性为 bug 修复，
+    // 报告 §5.1/§6-5；掉落期望收入场景与康康脚本先例一致）。显式 false 才关闭。
+    nonTradableValuation: source.nonTradableValuation !== false,
+    // 计税模式（两档，2026-09-04 用户决策移除 'all'）：旧设置无键 / 非法值 /
+    // 存量 'all' → 'market'（现状零行为变化锚点）。
+    taxMode: normalizeTaxMode(source.taxMode, TAX_MODE_MARKET),
     overrides: normalizePriceOverrideMap(source.overrides),
   };
 }
@@ -581,9 +600,20 @@ export function createPricingState() {
   const settings = loadPricingSettingsFromStorage();
   const cachedMarket = loadMarketCacheFromStorage();
   const basePriceTable = cachedMarket?.basePriceTable || createDefaultPriceTable();
+  // 旧缓存合成键剥离 + 按当前开关/税档重导出（设计 §1.3/§4.4 + 牛铃 18% 修订
+  // §3.5-7）：旧缓存烘焙的宝箱合成值是「不含牛铃」或「旧口径」的旧值，统一重置
+  // 基础形态后按当前表内行情重算——对默认表路径幂等、对缓存路径必要（宝箱按
+  // 开关/税档吃到牛铃，无需重新拉取行情，袋/镜 bid 已在缓存表中）。缓存本身
+  // 不回写：行情快照保留原貌，重导出恒在内存侧幂等执行。
+  rebuildSyntheticEntriesInTable(basePriceTable, {
+    nonTradableValuation: settings.nonTradableValuation,
+    taxMode: settings.taxMode,
+  });
   return {
     consumableMode: settings.consumableMode,
     dropMode: settings.dropMode,
+    nonTradableValuation: settings.nonTradableValuation,
+    taxMode: settings.taxMode,
     overrides: settings.overrides,
     basePriceTable,
     priceTable: applyPriceOverridesToTable(basePriceTable, settings.overrides),
@@ -609,6 +639,10 @@ export function createProfitPricingOptions(pricingState) {
   return {
     consumableMode: normalizePriceMode(pricingState?.consumableMode, PRICE_MODE_ASK),
     dropMode: normalizePriceMode(pricingState?.dropMode, PRICE_MODE_BID),
+    // 计税模式（设计 §4.2）：随运行开始快照线程化到利润链收入侧
+    //（buildNoRng/RandomProfitBreakdown → resolveMarketSalePrice）；缺键 → 'market'。
+    // priceTable 已含合成注入（nonTradableValuation 在建表期生效，不经此函数）。
+    taxMode: normalizeTaxMode(pricingState?.taxMode, TAX_MODE_MARKET),
     priceTable: pricingState?.priceTable ?? null,
   };
 }

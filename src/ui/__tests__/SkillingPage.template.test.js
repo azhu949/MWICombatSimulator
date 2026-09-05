@@ -202,6 +202,18 @@ describe('SkillingPage workspace', () => {
     expect(candidateHeader).not.toContain("t('common:skilling.actions', 'Actions')");
   });
 
+  it('locks price override inputs while combat, queue, or advisor runs (G-1)', () => {
+    // 宽容正则锚定（prettier 可能折行加长属性行）：三个 override 控件运行中合并禁用，
+    // pricingMutationLocked 与 store isPricingMutationBlocked 同口径五条件。
+    expect(pageSource).toContain('const pricingMutationLocked = computed(');
+    expect(pageSource).toContain('simulator.pricing.isLoading ||');
+    expect(pageSource).toContain('simulator.runtime.isRunning ||');
+    expect(pageSource).toContain('simulator.isAnyQueueRunning ||');
+    expect(pageSource).toContain('simulator.advisor.runtime?.isRunning === true ||');
+    expect(pageSource).toContain('simulator.advisor.runtime?.scanInFlight === true,');
+    expect(pageSource.match(/:disabled="row\.overrideDisabled\s*\|\|\s*pricingMutationLocked"/g)).toHaveLength(3);
+  });
+
   it('invalidates an existing result immediately when a temporary Buff expired off-page', () => {
     expect(pageSource).toMatch(/watch\(\s*buffExpiredSinceResult\s*,[\s\S]*?\{\s*immediate\s*:\s*true\s*\}\s*,?\s*\);/);
   });

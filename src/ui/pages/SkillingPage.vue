@@ -1056,7 +1056,7 @@
                   min="0"
                   step="any"
                   :aria-label="priceOverrideAriaLabel(row, 'ask')"
-                  :disabled="row.overrideDisabled"
+                  :disabled="row.overrideDisabled || pricingMutationLocked"
                   :value="overrideValue(row, 'ask')"
                   @change="setPriceOverride(row.itemHrid, 'ask', $event)"
               /></TableCell>
@@ -1070,7 +1070,7 @@
                   min="0"
                   step="any"
                   :aria-label="priceOverrideAriaLabel(row, 'bid')"
-                  :disabled="row.overrideDisabled"
+                  :disabled="row.overrideDisabled || pricingMutationLocked"
                   :value="overrideValue(row, 'bid')"
                   @change="setPriceOverride(row.itemHrid, 'bid', $event)"
               /></TableCell>
@@ -1079,7 +1079,7 @@
                   type="button"
                   class="button-secondary !rounded !px-2 !py-1 text-[11px]"
                   :aria-label="priceClearAriaLabel(row)"
-                  :disabled="row.overrideDisabled"
+                  :disabled="row.overrideDisabled || pricingMutationLocked"
                   @click="skilling.resetPriceOverride(row.itemHrid)"
                 >
                   {{ t('common:skilling.clear', 'Clear') }}
@@ -1117,6 +1117,19 @@ const TAMPERMONKEY_BRIDGE_CHANNEL = 'mwi-tm-bridge';
 const SNAPSHOT_WARNING_MS = 30 * 60 * 1000;
 const skilling = useSkillingStore();
 const simulator = useSimulatorStore();
+// G-1 收口（2026-09-05）：combat 手动模拟/任一队列/advisor 任一占用中封死价格
+// override 输入——与 store 层 isPricingMutationBlocked 同口径五条件（SettingsPage.
+// pricingSettingsDisabled / HomeSimulationPanel.pricingControlsDisabled 同款页面层
+// 兜底）。运行中改 override 会经 rehydratePricingTable 整体换 priceTable 引用，
+// 结果页实时 computed 立即用新表重算而运行快照仍持旧表（口径分裂）。
+const pricingMutationLocked = computed(
+  () =>
+    simulator.pricing.isLoading ||
+    simulator.runtime.isRunning ||
+    simulator.isAnyQueueRunning ||
+    simulator.advisor.runtime?.isRunning === true ||
+    simulator.advisor.runtime?.scanInFlight === true,
+);
 const { language, t } = useI18nText();
 const { getActionName, getItemName, getSkillName } = useGameDataText();
 const pricesModalOpen = ref(false);

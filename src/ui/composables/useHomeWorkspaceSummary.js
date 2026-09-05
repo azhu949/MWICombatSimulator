@@ -3,14 +3,19 @@ import { buildNoRngProfitBreakdown, buildRandomProfitBreakdown } from '../../ser
 import { aggregateBatchPlayerRows } from '../../services/simulationDomain.js';
 import { calcCombatLevel } from '../../shared/playerConfig.js';
 import { useSimulatorStore } from '../../stores/simulatorStore.js';
-import { formatCurrency, formatInt, formatNumber } from '../components/home/homeFormatters.js';
+import { formatInt, formatNumber } from '../components/home/homeFormatters.js';
+import { formatCompactAmountForLocale } from '../../services/amountFormatting.js';
 import { useGameDataText } from './useGameDataText.js';
 import { useI18nText } from './useI18nText.js';
 
 export function useHomeWorkspaceSummary(combatPreview) {
   const simulator = useSimulatorStore();
-  const { t } = useI18nText();
+  const { t, language } = useI18nText();
   const { getActionName, getCombatStatName, getMonsterName, getOfficialGameText } = useGameDataText();
+
+  function formatCompactCurrency(value) {
+    return formatCompactAmountForLocale(value, language.value === 'zh' ? 'zh-CN' : 'en-US');
+  }
   const activePlayer = computed(() => simulator.activePlayer);
   const homeHasResults = computed(
     () =>
@@ -144,6 +149,7 @@ export function useHomeWorkspaceSummary(combatPreview) {
       ? buildRandomProfitBreakdown(simulator.results.simResult, activeHomeResultPlayerHrid.value, {
           consumableMode: simulator.pricing.consumableMode,
           dropMode: simulator.pricing.dropMode,
+          taxMode: simulator.pricing.taxMode,
           priceTable: simulator.pricing.priceTable,
         })
       : { revenue: 0, expenses: 0, profit: 0 };
@@ -151,6 +157,7 @@ export function useHomeWorkspaceSummary(combatPreview) {
       ? buildNoRngProfitBreakdown(simulator.results.simResult, activeHomeResultPlayerHrid.value, {
           consumableMode: simulator.pricing.consumableMode,
           dropMode: simulator.pricing.dropMode,
+          taxMode: simulator.pricing.taxMode,
           priceTable: simulator.pricing.priceTable,
         })
       : { profit: 0 };
@@ -190,22 +197,22 @@ export function useHomeWorkspaceSummary(combatPreview) {
       ),
       metric(
         detailed ? t('common:revenue', 'Revenue') : t('common:vue.results.revenuePerHour', 'Revenue/h'),
-        detailed ? formatCurrency(random.revenue) : row ? formatCurrency(row.revenuePerHour) : '-',
+        detailed ? formatCompactCurrency(random.revenue) : row ? formatCompactCurrency(row.revenuePerHour) : '-',
         'success',
       ),
       metric(
         detailed ? t('common:expense', 'Expense') : t('common:vue.results.expensesPerHour', 'Expenses/h'),
-        detailed ? formatCurrency(random.expenses) : row ? formatCurrency(row.expensesPerHour) : '-',
+        detailed ? formatCompactCurrency(random.expenses) : row ? formatCompactCurrency(row.expensesPerHour) : '-',
         'danger',
       ),
       metric(
         detailed ? t('common:profit', 'Profit') : t('common:vue.results.profitPerHour', 'Profit/h'),
-        detailed ? formatCurrency(random.profit) : row ? formatCurrency(row.profitPerHour) : '-',
+        detailed ? formatCompactCurrency(random.profit) : row ? formatCompactCurrency(row.profitPerHour) : '-',
         (detailed ? random.profit : row?.profitPerHour || 0) >= 0 ? 'success' : 'danger',
       ),
       metric(
         t('common:noRNGProfit', 'No RNG Profit'),
-        detailed ? formatCurrency(noRng.profit) : row ? formatCurrency(row.profitPerHour) : '-',
+        detailed ? formatCompactCurrency(noRng.profit) : row ? formatCompactCurrency(row.profitPerHour) : '-',
         (detailed ? noRng.profit : row?.profitPerHour || 0) >= 0 ? 'success' : 'danger',
       ),
     ];

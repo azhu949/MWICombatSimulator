@@ -416,7 +416,7 @@
               <span class="control-label">{{
                 t('common:vue.settings.consumablePricesLabel', 'Consumable Prices')
               }}</span>
-              <Select v-model="consumablePriceModeProxy">
+              <Select v-model="consumablePriceModeProxy" :disabled="pricingSettingsDisabled">
                 <SelectTrigger :aria-label="t('common:vue.settings.consumablePricesLabel', 'Consumable Prices')" />
                 <SelectContent>
                   <SelectItem value="ask">{{ t('common:vue.settings.modeAsk', 'Ask (SO)') }}</SelectItem>
@@ -427,7 +427,7 @@
 
             <label class="block">
               <span class="control-label">{{ t('common:vue.settings.dropPricesLabel', 'Drop Prices') }}</span>
-              <Select v-model="dropPriceModeProxy">
+              <Select v-model="dropPriceModeProxy" :disabled="pricingSettingsDisabled">
                 <SelectTrigger :aria-label="t('common:vue.settings.dropPricesLabel', 'Drop Prices')" />
                 <SelectContent>
                   <SelectItem value="bid">{{ t('common:vue.settings.modeBid', 'Bid (BO)') }}</SelectItem>
@@ -453,12 +453,17 @@
             <button
               type="button"
               class="button-secondary"
-              :disabled="simulator.pricing.isLoading"
+              :disabled="pricingSettingsDisabled"
               @click="resetPricesToVendor"
             >
               {{ t('common:vue.settings.resetVendorPrices', 'Reset Vendor Prices') }}
             </button>
-            <button type="button" class="button-secondary" @click="openEditPricesModal = true">
+            <button
+              type="button"
+              class="button-secondary"
+              :disabled="pricingSettingsDisabled"
+              @click="openEditPricesModal = true"
+            >
               {{ t('common:editPrices', 'Edit Prices') }}
             </button>
           </div>
@@ -845,6 +850,21 @@ const queuePartyWarningText = computed(() =>
         queuePartyStatus.value?.messageKey || 'common:queue.partyChangedSinceBaseline',
       )
     : '',
+);
+
+// 定价 mode 两 Select 运行中禁用（S-1 对齐 G1 双层禁用页面层，2026-09-04）：
+// 判定式与 HomeSimulationPanel.pricingControlsDisabled / store 层
+// isPricingMutationBlocked 同口径五条件——行情加载/手动模拟/任一队列运行/
+// advisor isRunning||scanInFlight 任一占用中封死。防运行中改 mode 导致
+// SimulationResultsView 直读 store.pricing 的实时 computed 与运行快照
+// pricingOptions 口径分裂（结果页 breakdown 卡片数字变化、summaryRows 不变）。
+const pricingSettingsDisabled = computed(
+  () =>
+    simulator.pricing.isLoading ||
+    simulator.runtime.isRunning ||
+    simulator.isAnyQueueRunning ||
+    simulator.advisor.runtime?.isRunning === true ||
+    simulator.advisor.runtime?.scanInFlight === true,
 );
 
 const consumablePriceModeProxy = computed({
@@ -1257,7 +1277,12 @@ async function fetchMarketPrices() {
 }
 
 function resetPricesToVendor() {
-  simulator.resetPricesToVendorDefaults();
+  // 检查返回值（与 resetItemPriceOverride/resetAllPriceOverrides 同款）：store 层
+  // G1 守卫拦截（返回 false）时不报成功，防「提示已重置但未重置」假消息。
+  const ok = simulator.resetPricesToVendorDefaults();
+  if (!ok) {
+    return;
+  }
   setMessage('ok', t('common:vue.settings.msgPricesReset', 'Reset to vendor fallback prices.'));
 }
 
