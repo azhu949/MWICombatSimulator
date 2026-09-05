@@ -967,6 +967,31 @@ describe('advisor store', () => {
     expect(JSON.parse(global.localStorage.getItem('mwi.advisor.settings.v1')).goalPreset).toBe('balanced');
   });
 
+  it('captures custom weight raw inputs on apply and keeps them through live reranks', () => {
+    const { simulator } = createStoreWithMocks();
+
+    // 页面应用路径：rerank 显式携带草稿快照 → 原始输入（用户口径）随归一化
+    // 权重（引擎口径）一并入 store 并落盘（G3 2026-09-05：刷新后输入框回显源）。
+    simulator.rerankAdvisorResults({
+      goalPreset: 'custom',
+      customWeights: { profitPerHour: 0.6, xpPerHour: 0.42, safety: 0.1 },
+      customWeightInputs: { profitPerHour: 0.6, xpPerHour: 0.42, safety: 0.1 },
+    });
+    expect(simulator.advisor.customWeights.profitPerHour).toBeCloseTo(0.5294, 3);
+    expect(simulator.advisor.customWeightInputs).toEqual({ profitPerHour: 0.6, xpPerHour: 0.42 });
+    const persisted = JSON.parse(global.localStorage.getItem('mwi.advisor.settings.v1'));
+    expect(persisted.customWeightInputs).toEqual({ profitPerHour: 0.6, xpPerHour: 0.42 });
+
+    // 流式 live rerank（扫描期间，persist:false）：只传归一化权重、不传原始输入
+    // → 原始输入不被归一化中间值覆盖（advisorRunExecution 的 rerankLive* 契约）。
+    simulator.rerankAdvisorResults({
+      goalPreset: 'custom',
+      customWeights: { ...simulator.advisor.customWeights },
+      persist: false,
+    });
+    expect(simulator.advisor.customWeightInputs).toEqual({ profitPerHour: 0.6, xpPerHour: 0.42 });
+  });
+
   it('does not amplify advisor settings writes during a streaming scan', async () => {
     const { simulator, mockWorkerState } = createStoreWithMocks();
     // 直接赋值 filters（不经 updateAdvisorFilters），排除额外落盘干扰。

@@ -817,8 +817,15 @@ function onCustomWeightInput(key, event) {
   if (!isCustomGoal.value) {
     return;
   }
-  const value = Number(event.target?.value);
-  customWeightDraft[key] = Number.isFinite(value) ? value : 0;
+  const rawValue = event.target?.value;
+  const value = Number(rawValue);
+  // 清空/非法输入视为放弃本次编辑：保留草稿旧值，不写 0。注意 number 输入
+  // 清空后 .value 为 ''，Number('') === 0 而非 NaN，必须单独排除，否则清空
+  // 收益框后 change 会以 0 权重触发破坏性归一化（经验权重被放大到 0.9）。
+  if (rawValue == null || String(rawValue).trim() === '' || !Number.isFinite(value)) {
+    return;
+  }
+  customWeightDraft[key] = value;
 }
 
 function onCustomWeightChange() {
@@ -873,19 +880,43 @@ function roundTo(value, digits = 2) {
   return Number(numeric.toFixed(digits));
 }
 
-function syncCustomWeightDraft(source) {
+// 草稿同步：verbatim（源为持久化的原始输入 customWeightInputs，用户口径）直写
+// 原值——刷新后输入框回显用户键入的 0.6/0.1234，不引入取整改写；非 verbatim
+// 源（归一化 customWeights，旧载荷/从未应用过自定义权重时的回退）沿用 roundTo
+// 2 位显示清理，维持历史显示口径。任一字段非法时保留草稿旧值（服务层已清洗，
+// 此处仅防御；旧实现 roundTo(非有限数) 会写 0）。
+function syncCustomWeightDraft(source, verbatim = false) {
   const safeSource = source || {};
-  customWeightDraft.profitPerHour = roundTo(safeSource.profitPerHour ?? customWeightDraft.profitPerHour, 2);
-  customWeightDraft.xpPerHour = roundTo(safeSource.xpPerHour ?? customWeightDraft.xpPerHour, 2);
+  const readWeight = (key) => {
+    const incoming = Number(safeSource[key] ?? customWeightDraft[key]);
+    if (!Number.isFinite(incoming)) {
+      return customWeightDraft[key];
+    }
+    return verbatim ? incoming : roundTo(incoming, 2);
+  };
+  customWeightDraft.profitPerHour = readWeight('profitPerHour');
+  customWeightDraft.xpPerHour = readWeight('xpPerHour');
   const safetyValue = Number(safeSource.safety ?? customWeightDraft.safety ?? 0.1);
   customWeightDraft.safety = Number.isFinite(safetyValue) ? safetyValue : 0.1;
 }
 
+// 直接回显 store 值（不取整）：3 位小数输入（0.333/0.334/0.333）应用后回显与
+// 输入一致，否则 0.333 会被取整成 0.33，显示与 store 口径自相矛盾。
+// store 值恒为有限数（服务层已清洗），非法/缺失字段保留草稿旧值。
 function syncIroncowWeightDraft(source) {
   const safeSource = source || {};
-  ironcowWeightDraft.dropsPerHour = roundTo(safeSource.dropsPerHour ?? ironcowWeightDraft.dropsPerHour, 2);
-  ironcowWeightDraft.xpPerHour = roundTo(safeSource.xpPerHour ?? ironcowWeightDraft.xpPerHour, 2);
-  ironcowWeightDraft.safety = roundTo(safeSource.safety ?? ironcowWeightDraft.safety, 2);
+  const dropsValue = Number(safeSource.dropsPerHour ?? ironcowWeightDraft.dropsPerHour);
+  const xpValue = Number(safeSource.xpPerHour ?? ironcowWeightDraft.xpPerHour);
+  const safetyValue = Number(safeSource.safety ?? ironcowWeightDraft.safety);
+  if (Number.isFinite(dropsValue)) {
+    ironcowWeightDraft.dropsPerHour = dropsValue;
+  }
+  if (Number.isFinite(xpValue)) {
+    ironcowWeightDraft.xpPerHour = xpValue;
+  }
+  if (Number.isFinite(safetyValue)) {
+    ironcowWeightDraft.safety = safetyValue;
+  }
 }
 
 function syncFilterDraft(source) {
@@ -907,10 +938,40 @@ watch(
   { deep: true, immediate: true },
 );
 
+// 草稿回源优先级（G3 2026-09-05 修复）：持久化的原始输入 customWeightInputs
+// （用户口径，apply 时随设置落盘）> 归一化 customWeights（引擎口径，旧载荷
+// 回退并沿用 roundTo 显示清理）——刷新后输入框回显用户键入的 0.6/0.42 而非
+// roundTo(归一化值) 的 0.53，消除跨会话口径跳变；预设往返（custom → 其他 →
+// custom）同理保留用户键入值。
+function resolveCustomDraftSource(normalizedWeights) {
+  const rawInputs = simulator.advisor.customWeightInputs;
+  const rawProfit = Number(rawInputs?.profitPerHour);
+  const rawXp = Number(rawInputs?.xpPerHour);
+  if (Number.isFinite(rawProfit) && Number.isFinite(rawXp)) {
+    return { source: rawInputs, verbatim: true };
+  }
+  return { source: normalizedWeights, verbatim: false };
+}
+
+// 自定义权重草稿同步守卫：仅在「首次（immediate，覆盖持久化恢复场景）」与
+// 「非自定义预设」时回写。自定义模式下每个字段 blur 都会触发
+// applyCustomWeights → store.customWeights 被归一化中间值整体替换，deep watch
+// 若继续回写草稿，会把输入框改写成中间值（输入 0.6 blur 后立即变 0.53，多字段
+// 连续输入的比例被破坏），故 isCustomGoal 时跳过，保留用户正在编辑的草稿。
+let customWeightDraftSyncedOnce = false;
 watch(
   () => simulator.advisor.customWeights,
   (value) => {
-    syncCustomWeightDraft(value);
+    const { source, verbatim } = resolveCustomDraftSource(value);
+    if (!customWeightDraftSyncedOnce) {
+      customWeightDraftSyncedOnce = true;
+      syncCustomWeightDraft(source, verbatim);
+      return;
+    }
+    if (isCustomGoal.value) {
+      return;
+    }
+    syncCustomWeightDraft(source, verbatim);
   },
   { deep: true, immediate: true },
 );
@@ -1479,33 +1540,53 @@ function setPreset(preset) {
   simulator.rerankAdvisorResults({
     goalPreset: preset,
     customWeights: preset === ADVISOR_GOAL_PRESET_CUSTOM ? customWeightDraft : simulator.advisor.customWeights,
+    // 切入自定义时把草稿快照（用户口径原始输入）随 rerank 一并落盘（G3 修复）：
+    // 刷新后 watch 回源优先读它，输入框回显用户键入值而非归一化中间值。
+    customWeightInputs: preset === ADVISOR_GOAL_PRESET_CUSTOM ? { ...customWeightDraft } : undefined,
   });
 }
 
+// 自定义权重应用：草稿原值透传，apply 时不对草稿做任何原地改写（2026-09-05
+// 修复：旧 Math.max(0, roundTo(·,2)) 会把 0.1234 blur 后改写成 0.12，与铁牛
+// 「有限非负保留原值」及 onCustomWeightInput 不取整写入的口径相悖）。用户编辑
+// 仅经 onCustomWeightInput 的有限值守卫进入草稿（初始化/切预设另经
+// syncCustomWeightDraft 回写）；负值等边界由服务层 normalizeAdvisorWeights
+// 统一钳制（Math.max(0, ·)），与 setPreset 切入 custom 时原值透传草稿的既有路径一致。
 function applyCustomWeights() {
   // 扫描运行中禁止应用权重（输入已禁用，此处兜底拦截，理由同 setPreset）。
   if (isRunning.value) {
     return;
   }
-  customWeightDraft.profitPerHour = Math.max(0, roundTo(customWeightDraft.profitPerHour, 2));
-  customWeightDraft.xpPerHour = Math.max(0, roundTo(customWeightDraft.xpPerHour, 2));
   simulator.rerankAdvisorResults({
     goalPreset: ADVISOR_GOAL_PRESET_CUSTOM,
     customWeights: customWeightDraft,
+    // 草稿快照（用户口径原始输入）随应用落盘（G3 2026-09-05 修复）：刷新后
+    // 输入框回显用户键入的 0.6/0.42，而非归一化值取整出的 0.53。
+    customWeightInputs: { ...customWeightDraft },
   });
-  syncCustomWeightDraft(simulator.advisor.customWeights);
+  // 不再把归一化后的 store 权重回写草稿（rerank + 持久化保留）：多字段连续输入
+  // 时中间归一化值会破坏草稿比例——草稿归用户编辑所有，store 归排名消费，
+  // 草稿初始化场景已由 watch 首次同步与切预设路径覆盖。
 }
 
-// 铁牛权重草稿的统一清洗口径：roundTo(·,2) 后非负截断。实时校验
-// （ironcowWeightSum / ironcowWeightSumValid / 权重和文本）与应用
-// （applyIroncowWeights）共用该函数，保证「红字报错 ⇔ apply 拒绝」一一
-// 对应（2026-09-03 修复：旧实现实时校验用原始和、apply 用取整和，
-// 0.334/0.333/0.333 显示合法却静默不生效；0.351/0.35/0.301 红字却实际生效）。
+// 铁牛权重草稿的统一清洗口径：有限且非负则保留原值（不取整），否则按 0 计。
+// 输入（onIroncowWeightInput）、实时校验（ironcowWeightSum /
+// ironcowWeightSumValid / 权重和文本）与应用（applyIroncowWeights）共用该函数
+// + 同一容差（服务层 ADVISOR_IRONCOW_WEIGHT_SUM_TOLERANCE = 0.001），保证
+// 「红字报错 ⇔ apply 拒绝」一一对应，且与输入框的小数显示口径一致
+// （2026-09-05 修复：旧 roundTo(·,2) 口径先取整再校验，0.333/0.334/0.333
+// 原始和 1.000 合法却被取整和 0.99 误报红字并静默拒绝；0.351/0.35/0.301
+// 红字却实际生效的历史问题由共用口径继续覆盖）。
 function normalizeIroncowDraftWeight(value) {
-  return Math.max(0, roundTo(value, 2));
+  const numeric = Number(value);
+  if (!Number.isFinite(numeric) || numeric < 0) {
+    return 0;
+  }
+  return numeric;
 }
 
-// 铁牛权重：三者之和（同一取整口径）必须恰为 1（容差复用服务层导出常量），
+// 铁牛权重：三者之和（同一清洗口径的原始和，不再先取整）必须恰为 1（容差
+// 复用服务层导出常量，UI 与服务层 normalizeIroncowWeights 天然同判），
 // 否则不应用（不 rerank、不持久化），沿用上次合法权重；合法时 change 即
 // 应用并随 rerank 持久化。拒绝时 ironcowWeightSumValid 必为 false，红字
 // （role="alert"）即拒绝的可见反馈，apply 无需额外提示。
@@ -1518,14 +1599,27 @@ const ironcowWeightSum = computed(
 const ironcowWeightSumValid = computed(
   () => Math.abs(ironcowWeightSum.value - 1) <= ADVISOR_IRONCOW_WEIGHT_SUM_TOLERANCE,
 );
-const ironcowWeightSumText = computed(() => ironcowWeightSum.value.toFixed(2));
+// 三位小数与 0.001 容差同量级，避免非法和（如 1.002）显示为 1.00。
+const ironcowWeightSumText = computed(() => ironcowWeightSum.value.toFixed(3));
 
+// 输入阶段即按统一口径清洗（负数按 0 计，空串 Number('')=0 与旧行为同构）：
+// 草稿恒为有限非负，回显/权重和/apply 三口径同源。负数输入还需同步钳制 DOM
+// 回显——草稿已为 0 时再写 0 不触发响应式更新，Vue 不会回写 :value，输入框
+// 会残留 -0.5 而和值按 0 计（2026-09-05 G2 修复：旧实现负数原样入草稿，回显
+// 与和显示分裂——0.45/-0.5/0.45 回显自算 0.40 而和值 0.90；0.5/-0.5/0.5
+// 规范化和恰为 1 时无红字、apply 后被静默改写为 0）。空串/其他非法值不强写
+// DOM：清空场景由草稿变化触发的重渲染翻 0，强写会打断清空后逐键输入小数。
 function onIroncowWeightInput(key, event) {
   if (!isIroncowGoal.value) {
     return;
   }
-  const value = Number(event.target?.value);
-  ironcowWeightDraft[key] = Number.isFinite(value) ? value : 0;
+  const rawValue = event.target?.value;
+  const numeric = Number(rawValue);
+  const cleaned = normalizeIroncowDraftWeight(rawValue);
+  ironcowWeightDraft[key] = cleaned;
+  if (event.target && Number.isFinite(numeric) && numeric < 0) {
+    event.target.value = String(cleaned);
+  }
 }
 
 function applyIroncowWeights() {
@@ -1560,7 +1654,8 @@ async function runAdvisor() {
   simulator.updateAdvisorFilters({ ...filterDraft });
   await simulator.runAdvisorScan();
   syncFilterDraft(simulator.advisor.filters);
-  syncCustomWeightDraft(simulator.advisor.customWeights);
+  // 自定义权重草稿不在扫描后回写（watch 首次与切预设路径已覆盖，避免扫描
+  // 结束时把用户正在编辑的草稿取整改写）；铁牛草稿保持扫描后同步。
   syncIroncowWeightDraft(simulator.advisor.ironcowWeights);
 }
 

@@ -734,14 +734,33 @@ export function persistQueueRunSettingsByPlayerToStorage(queueStateByPlayer = {}
 }
 
 // Advisor 配置持久化：仅配置字段（goalPreset 含 ironcow / customWeights /
-// ironcowWeights / filters 含 dropItemHrids），不恢复结果行与扫描运行时状态
-//（scanned* / dropDataStale / quickRows 等均属会话内状态，不落盘）。
-// 规范化直接复用 advisorScoring / advisorDomain 的清洗函数，脏数据静默回退默认。
+// customWeightInputs 原始输入 / ironcowWeights / filters 含 dropItemHrids），
+// 不恢复结果行与扫描运行时状态（scanned* / dropDataStale / quickRows 等均属
+// 会话内状态，不落盘）。规范化直接复用 advisorScoring / advisorDomain 的清洗
+// 函数，脏数据静默回退默认。
+// 自定义权重原始输入（用户口径草稿源，G3 2026-09-05）：与归一化 customWeights
+// 并存——前者是用户键入值（刷新后输入框回显源），后者是引擎归一化值（排名
+// 消费）。两字段均有限才保留（符号不设限，与页面草稿域一致，负值在应用时由
+// normalizeAdvisorWeights 钳制）；任一非法或载荷缺失（旧版本）整体置 null，
+// 页面回退「由归一化 customWeights 回显」的旧行为，向后兼容。
+function normalizeAdvisorCustomWeightInputs(rawInputs) {
+  if (!isPlainObject(rawInputs)) {
+    return null;
+  }
+  const profitPerHour = Number(rawInputs.profitPerHour);
+  const xpPerHour = Number(rawInputs.xpPerHour);
+  if (!Number.isFinite(profitPerHour) || !Number.isFinite(xpPerHour)) {
+    return null;
+  }
+  return { profitPerHour, xpPerHour };
+}
+
 export function normalizeAdvisorSettings(rawSettings) {
   const source = isPlainObject(rawSettings) ? rawSettings : {};
   return {
     goalPreset: normalizeAdvisorGoalPreset(source.goalPreset),
     customWeights: normalizeAdvisorWeights(source.customWeights, ADVISOR_GOAL_PRESET_BALANCED),
+    customWeightInputs: normalizeAdvisorCustomWeightInputs(source.customWeightInputs),
     ironcowWeights: normalizeIroncowWeights(source.ironcowWeights),
     filters: normalizeAdvisorFilters(source.filters),
   };

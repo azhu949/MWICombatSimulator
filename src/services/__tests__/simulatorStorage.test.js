@@ -794,6 +794,8 @@ describe('simulatorStorage', () => {
       expect(normalized).toEqual({
         goalPreset: 'ironcow',
         customWeights: { profitPerHour: 0, xpPerHour: 0.9, safety: 0.1 },
+        // 输入未携带 customWeightInputs（旧载荷形态）→ null，页面回退归一化回显。
+        customWeightInputs: null,
         // 三权和 ≠ 1 → 回退默认 0.45/0.45/0.1
         ironcowWeights: { dropsPerHour: 0.45, xpPerHour: 0.45, safety: 0.1 },
         filters: {
@@ -811,6 +813,30 @@ describe('simulatorStorage', () => {
       expect(stored.version).toBe(1);
       expect(stored.savedAt).toBeGreaterThan(0);
       expect(loadAdvisorSettingsFromStorage()).toEqual(normalized);
+    });
+
+    it('customWeightInputs：合法原样保留、非法回退 null（旧载荷兼容）', () => {
+      const storage = createMemoryStorage();
+      vi.stubGlobal('localStorage', storage);
+
+      // 合法原始输入 verbatim 保留（不归一化、不取整——0.6 原样），与归一化
+      // customWeights 并存落盘且 load 往返一致（G3 2026-09-05：刷新后回显源）。
+      const normalized = persistAdvisorSettingsToStorage({
+        goalPreset: 'custom',
+        customWeights: { profitPerHour: 0.5294, xpPerHour: 0.3706, safety: 0.1 },
+        customWeightInputs: { profitPerHour: 0.6, xpPerHour: 0.42 },
+      });
+      expect(normalized.customWeightInputs).toEqual({ profitPerHour: 0.6, xpPerHour: 0.42 });
+      expect(loadAdvisorSettingsFromStorage().customWeightInputs).toEqual({ profitPerHour: 0.6, xpPerHour: 0.42 });
+
+      // 任一字段非有限数 / 缺失 / 非对象 → null（页面回退「由归一化 customWeights
+      // 回显」的旧行为）。
+      expect(
+        normalizeAdvisorSettings({ customWeightInputs: { profitPerHour: 'bad', xpPerHour: 0.42 } }).customWeightInputs,
+      ).toBeNull();
+      expect(normalizeAdvisorSettings({ customWeightInputs: { xpPerHour: 0.42 } }).customWeightInputs).toBeNull();
+      expect(normalizeAdvisorSettings({ customWeightInputs: [0.6, 0.42] }).customWeightInputs).toBeNull();
+      expect(normalizeAdvisorSettings({}).customWeightInputs).toBeNull();
     });
 
     it('对缺失、损坏与版本不匹配的载荷回退默认配置', () => {

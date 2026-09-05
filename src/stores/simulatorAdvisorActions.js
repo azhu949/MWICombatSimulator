@@ -49,6 +49,7 @@ export function createAdvisorActions({ loadPlayerMapperModule }) {
       return persistAdvisorSettingsToStorage({
         goalPreset: this.advisor.goalPreset,
         customWeights: this.advisor.customWeights,
+        customWeightInputs: this.advisor.customWeightInputs,
         ironcowWeights: this.advisor.ironcowWeights,
         filters: this.advisor.filters,
       });
@@ -60,6 +61,20 @@ export function createAdvisorActions({ loadPlayerMapperModule }) {
         ADVISOR_GOAL_PRESET_BALANCED,
       );
       const normalizedIroncowWeights = normalizeIroncowWeights(options.ironcowWeights ?? this.advisor.ironcowWeights);
+      // 自定义权重原始输入（用户口径草稿源，G3 2026-09-05）：仅在调用方显式传入
+      // 时更新快照——页面 setPreset('custom')/applyCustomWeights 传草稿快照；
+      // 扫描期间的流式 rerankLive* 只传归一化权重、不传本字段，原始输入不会被
+      // 归一化中间值污染。两字段均有限才接受（页面草稿已守卫，此处防御），
+      // 非法输入保留旧值。与 customWeights 并存：前者是用户键入口径（刷新后
+      // 输入框回显源），后者是引擎归一化口径（排名消费）。
+      let customWeightInputs = this.advisor.customWeightInputs;
+      if (isPlainObject(options.customWeightInputs)) {
+        const rawProfit = Number(options.customWeightInputs.profitPerHour);
+        const rawXp = Number(options.customWeightInputs.xpPerHour);
+        if (Number.isFinite(rawProfit) && Number.isFinite(rawXp)) {
+          customWeightInputs = { profitPerHour: rawProfit, xpPerHour: rawXp };
+        }
+      }
       const quickRowsSource = Array.isArray(options.quickRows) ? options.quickRows : this.advisor.quickRows;
       const refinedRowsSource = Array.isArray(options.refinedRows) ? options.refinedRows : this.advisor.refinedRows;
       const rankOptions = {
@@ -74,6 +89,7 @@ export function createAdvisorActions({ loadPlayerMapperModule }) {
 
       this.advisor.goalPreset = normalizedGoalPreset;
       this.advisor.customWeights = normalizedCustomWeights;
+      this.advisor.customWeightInputs = customWeightInputs;
       this.advisor.ironcowWeights = normalizedIroncowWeights;
       this.advisor.dropDataStale = computeAdvisorDropDataStale({
         goalPreset: normalizedGoalPreset,

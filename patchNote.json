@@ -1,4 +1,30 @@
 {
+  "2026年9月5日（v2.4.5）": {
+    "label": {
+      "zh": "2026年9月5日（v2.4.5）",
+      "en": "September 5, 2026 (v2.4.5)"
+    },
+    "improvements": {
+      "zh": [
+        "自定义权重会保留输入的小数值，切换推荐模式或刷新页面后仍按原设置显示。",
+        "铁牛模式支持更精确的权重输入，权重总和显示、校验和实际应用保持一致。"
+      ],
+      "en": [
+        "Custom Advisor weights now keep the decimal values you enter when switching modes or reloading the page.",
+        "Iron Cow weights now support more precise input, with the displayed total, validation, and applied values kept in sync."
+      ]
+    },
+    "bugFixes": {
+      "zh": [
+        "修复自定义权重在失焦或清空输入后被意外改写，导致推荐比例变化的问题。",
+        "修复铁牛模式负数权重显示与总和不一致，以及合法的小数权重可能无法应用的问题。"
+      ],
+      "en": [
+        "Fixed custom weights being rewritten after blur or clearing an input, which could change the recommendation balance.",
+        "Fixed negative Iron Cow weights showing a different value from the total, and valid decimal weights being rejected or applied incorrectly."
+      ]
+    }
+  },
   "2026年9月4日（v2.4.4）": {
     "label": {
       "zh": "2026年9月4日（v2.4.4）",

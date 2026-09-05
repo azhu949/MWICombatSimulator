@@ -1,7 +1,35 @@
-import { readFileSync } from 'node:fs';
-import { describe, expect, it } from 'vitest';
+// @vitest-environment jsdom
 
-const pageSource = readFileSync(new URL('../pages/AdvisorPage.vue', import.meta.url), 'utf8');
+import { readFileSync } from 'node:fs';
+import { resolve } from 'node:path';
+import { afterEach, beforeAll, beforeEach, describe, expect, it, vi } from 'vitest';
+import { flushPromises, mount } from '@vue/test-utils';
+import { createRouter, createMemoryHistory } from 'vue-router';
+import { createPinia, setActivePinia } from 'pinia';
+import AdvisorPage from '../pages/AdvisorPage.vue';
+import { useSimulatorStore } from '../../stores/simulatorStore.js';
+import i18next, { initI18n } from '../i18n/i18n.js';
+import { Table, TableBody, TableCell, TableHead, TableHeader, TableRow } from '../components/ui/table/index.js';
+
+// 物品图标 sprite 依赖官方资源网络拉取，单测环境打桩防真实请求混入。
+vi.mock('../../services/itemIconSprite.js', () => ({
+  ensureItemIconSymbols: vi.fn(async () => undefined),
+  hasItemIconSymbol: vi.fn(() => false),
+  itemIconHref: vi.fn(() => '#'),
+}));
+
+// Vite 会静态转换字面量 new URL('...', import.meta.url)，在 jsdom 下以 window.location 为基址得到 http: 资源 URL，导致 readFileSync 失败。
+// import.meta.url 本身仍为 file: URL；改用项目根相对路径绕过该转换（vitest 以项目根为 cwd）。
+const pageSource = readFileSync(resolve(process.cwd(), 'src/ui/pages/AdvisorPage.vue'), 'utf8');
+
+function sliceBetween(startAnchor, endAnchor) {
+  const start = pageSource.indexOf(startAnchor);
+  const end = pageSource.indexOf(endAnchor);
+  expect(start, `Missing start anchor: ${startAnchor}`).toBeGreaterThan(-1);
+  expect(end, `Missing end anchor: ${endAnchor}`).toBeGreaterThan(-1);
+  expect(end, `End anchor must follow start anchor: ${startAnchor}`).toBeGreaterThan(start);
+  return pageSource.slice(start, end);
+}
 
 describe('AdvisorPage iron-cow surface', () => {
   it('registers the iron-cow preset and shows its dedicated weight inputs', () => {
@@ -33,19 +61,85 @@ describe('AdvisorPage iron-cow surface', () => {
     expect(pageSource).toContain(
       'goalPreset: ADVISOR_GOAL_PRESET_IRONCOW,\n    ironcowWeights: { dropsPerHour, xpPerHour, safety },',
     );
-    // 实时校验与应用共用 normalizeIroncowDraftWeight（roundTo(·,2)+非负截断）
-    // 口径：红字报错 ⇔ apply 拒绝，消除「校验通过却静默不生效」的窗口
-    //（2026-09-03 修复：0.334/0.333/0.333 原始和 1.000 通过校验、取整和 0.99
-    // 被 apply 静默拒绝；反向 0.351/0.35/0.301 红字报错却实际生效）。
+    // 实时校验与应用共用 normalizeIroncowDraftWeight + 同一容差（原始和口径，
+    // 清洗不取整）：红字报错 ⇔ apply 拒绝，消除「校验通过却静默不生效」的窗口
+    //（2026-09-03 修复共用口径；2026-09-05 修复取整口径：0.333/0.334/0.333
+    // 原始和 1.000 合法，旧 roundTo(·,2) 口径取整和 0.99 误报红字并静默拒绝）。
     expect(pageSource).toMatch(
       /const ironcowWeightSum = computed\(\s*\(\) =>\s*normalizeIroncowDraftWeight\(ironcowWeightDraft\.dropsPerHour\) \+/,
     );
     expect(
       (pageSource.match(/normalizeIroncowDraftWeight\(ironcowWeightDraft\./g) ?? []).length,
     ).toBeGreaterThanOrEqual(6);
+    // 清洗不取整（有限且非负保留原值，否则 0），校验/应用使用原始和与 0.001 容差。
+    const normalizeIroncowFnSource = sliceBetween('function normalizeIroncowDraftWeight(', 'const ironcowWeightSum =');
+    expect(normalizeIroncowFnSource).toContain('const numeric = Number(value);');
+    expect(normalizeIroncowFnSource).not.toContain('roundTo(');
     // 状态行在非法时以 text-destructive 红色报错。
     expect(pageSource).toContain('v-if="!ironcowWeightSumValid"');
     expect(pageSource).toContain('font-medium text-destructive');
+    // G2（2026-09-05）：负数输入在输入阶段清洗——onIroncowWeightInput 复用
+    // normalizeIroncowDraftWeight（负数按 0 计），草稿恒为有限非负，回显与
+    // 和值/apply 同口径；负数且草稿未变化（已为 0，写入不触发重渲染、Vue
+    // 不回写 :value）时同步钳制 DOM 回显，杜绝输入框残留 -0.5 而和值按 0 计。
+    const onIroncowInputSource = sliceBetween('function onIroncowWeightInput(', 'function applyIroncowWeights(');
+    expect(onIroncowInputSource).toContain('normalizeIroncowDraftWeight(');
+    expect(onIroncowInputSource).not.toContain('Number.isFinite(value) ? value : 0');
+    expect(onIroncowInputSource).toMatch(/event\.target\.value = String\(cleaned\)/);
+  });
+
+  it('keeps the custom weight draft free from blur normalization rewrites', () => {
+    // Bug 1：自定义模式下每个字段 blur 都会 apply → store.customWeights 被
+    // 归一化中间值整体替换；deep watch 若回写草稿，输入 0.6 会被立即改写成
+    // 0.53，多字段连续输入的比例被破坏（最终 0.57/0.33 而非 0.6/0.3）。
+    // 修复：watch 仅首次（immediate，覆盖持久化恢复）同步，此后 isCustomGoal
+    // 时跳过回写。
+    expect(pageSource).toMatch(
+      /let customWeightDraftSyncedOnce = false;\s*watch\(\s*\(\) => simulator\.advisor\.customWeights,/,
+    );
+    const customWatchSource = sliceBetween(
+      'let customWeightDraftSyncedOnce =',
+      'watch(\n  () => simulator.advisor.ironcowWeights,',
+    );
+    expect(customWatchSource).toContain('customWeightDraftSyncedOnce = true;');
+    expect(customWatchSource).toMatch(/if \(isCustomGoal\.value\) \{\s*return;\s*\}/);
+    // applyCustomWeights 保留 rerank + 持久化，但不再把归一化结果回写草稿。
+    // 切片终点收紧到铁牛清洗注释起点：两函数之间的铁牛历史注释含「roundTo(·,2)」
+    // 字样，不得误伤下方 not.toContain('roundTo(') 断言；锚点缺失由 sliceBetween 显式报错。
+    const applyCustomSource = sliceBetween('function applyCustomWeights(', '// 铁牛权重草稿的统一清洗口径');
+    expect(applyCustomSource).toContain('simulator.rerankAdvisorResults(');
+    expect(applyCustomSource).not.toContain('syncCustomWeightDraft(');
+    // apply 时不得对草稿原地取整/清洗（2026-09-05 修复：旧 Math.max(0,
+    // roundTo(·,2)) 把 0.1234 blur 后改写成 0.12，与铁牛 verbatim 口径相悖）；
+    // 负值等边界由服务层 normalizeAdvisorWeights 统一钳制。守卫面：成员/括号
+    // 两种访问 × 直接与复合赋值/自增自减（(?!=) 排除 ===/==/>= 等读比较误报；
+    // 括号形式是本文件 onCustomWeightInput 的既有模式，循环重构型回归须能拦住）。
+    // 本正则是评审期信号而非完整变更检测器（前置自增/Object.assign 等漏网形状
+    // 由挂载测试的 0.1234 verbatim 断言做值级兜底）。
+    expect(applyCustomSource).not.toContain('roundTo(');
+    expect(applyCustomSource).not.toMatch(/customWeightDraft(?:\.\w+|\[[^\]]*\])\s*(?:[+\-*/%]?=(?!=)|\+\+|--)/);
+    // runAdvisor 扫描后不再改写自定义权重草稿；铁牛草稿同步保留。
+    const runAdvisorSource = sliceBetween(
+      'async function runAdvisor(',
+      'watch(\n  () => simulator.advisor.runRequestToken,',
+    );
+    expect(runAdvisorSource).not.toContain('syncCustomWeightDraft(');
+    expect(runAdvisorSource).toContain('syncIroncowWeightDraft(simulator.advisor.ironcowWeights);');
+    // G3（2026-09-05）：apply 与切入 custom 均把草稿快照（customWeightInputs，用户
+    // 口径原始输入）随 rerank 落盘；刷新后 watch 经 resolveCustomDraftSource 优先
+    // 回源原始输入（verbatim 直写），回显用户键入值而非 roundTo(归一化值) 的 0.53。
+    expect(applyCustomSource).toContain('customWeightInputs: { ...customWeightDraft }');
+    const setPresetSource = sliceBetween('function setPreset(', 'function applyCustomWeights(');
+    expect(setPresetSource).toContain('customWeightInputs');
+    expect(setPresetSource).toContain('{ ...customWeightDraft }');
+    expect(pageSource).toContain('function resolveCustomDraftSource');
+    expect(pageSource).toContain('verbatim: true');
+    // 输入清空/非法视为放弃本次编辑：保留草稿旧值、不写 0（number 输入清空后
+    // .value 为 ''，Number('') === 0 而非 NaN，必须单独排除），防止 0 权重触发
+    // 破坏性归一化（收益清空后 change 会把经验权重放大到 0.9）。
+    const onCustomInputSource = sliceBetween('function onCustomWeightInput(', 'function onCustomWeightChange(');
+    expect(onCustomInputSource).toContain("String(rawValue).trim() === ''");
+    expect(onCustomInputSource).toContain('customWeightDraft[key] = value;');
   });
 
   it('renders a searchable multi-select panel for target drop items', () => {
@@ -273,5 +367,311 @@ describe('AdvisorPage iron-cow surface', () => {
     // + 预设按钮 1 + 铁牛权重输入 1 + 筛选复选框 3 + 轮数 NumberField 3；
     // 自定义权重为合并条件 isRunning || !isCustomGoal，不计入精确计数。
     expect(pageSource.match(/:disabled="isRunning"/g)?.length ?? 0).toBe(11);
+  });
+});
+
+describe('AdvisorPage 权重输入行为（挂载级）', () => {
+  // 源码断言（上方 describe）锁定接线形态，本块锁定运行时行为：
+  // 自定义模式 blur 归一化不得回写输入框/草稿；铁牛 3 位小数原始和口径
+  // 与 UI/服务层同判（0.333×3 合法应用、和 1.002 红字拒绝）。
+  beforeAll(async () => {
+    await initI18n();
+  });
+
+  beforeEach(() => {
+    localStorage.clear();
+  });
+
+  afterEach(() => {
+    document.body.innerHTML = '';
+  });
+
+  const EmptyPage = { template: '<div />' };
+
+  function createTestRouter() {
+    return createRouter({
+      history: createMemoryHistory(),
+      routes: [{ path: '/:pathMatch(.*)*', name: 'advisor', component: EmptyPage }],
+    });
+  }
+
+  async function mountAdvisorPage() {
+    const pinia = createPinia();
+    setActivePinia(pinia);
+    const simulator = useSimulatorStore();
+    const router = createTestRouter();
+    await router.push('/advisor');
+    await router.isReady();
+    const wrapper = mount(AdvisorPage, {
+      global: {
+        plugins: [pinia, router],
+        // Table 系列在 main.js 全局注册，挂载单页时需手动补齐。
+        components: { Table, TableBody, TableCell, TableHead, TableHeader, TableRow },
+      },
+    });
+    await flushPromises();
+    return { wrapper, simulator };
+  }
+
+  // 权重输入框按 type="number" 过滤：铁牛模式的物品搜索框同为 control-input
+  // 但 type="text"，避免误选。
+  function findWeightInputs(wrapper) {
+    return wrapper.findAll('input.control-input').filter((input) => input.attributes('type') === 'number');
+  }
+
+  function findSumAlert(wrapper) {
+    return wrapper.find('[role="alert"]');
+  }
+
+  function findSumText(wrapper) {
+    const label = i18next.t('common:advisor.weightSumLabel');
+    return wrapper
+      .findAll('p')
+      .find((paragraph) => paragraph.text().startsWith(`${label}:`))
+      .text();
+  }
+
+  it('custom mode: blur after typing 0.6 keeps the input and the summary shows normalized weights', async () => {
+    const { wrapper, simulator } = await mountAdvisorPage();
+    // 切到自定义预设（与点击预设按钮等价的 store 动作路径）。
+    simulator.rerankAdvisorResults({ goalPreset: 'custom' });
+    await flushPromises();
+
+    const inputs = findWeightInputs(wrapper);
+    expect(inputs).toHaveLength(2);
+    inputs[0].setValue('0.6');
+    await inputs[0].trigger('change');
+    await flushPromises();
+
+    // 核心回归：blur 归一化不得把输入框改写成中间值（旧实现立即变 0.53）。
+    expect(inputs[0].element.value).toBe('0.6');
+    // 归一化摘要显示有效权重（label 与数值交错：「每日收益 0.53 · 每小时经验
+    // 0.37 · 安全性 0.1」）：0.6/(0.6+0.42)×0.9 ≈ 0.53，经验 0.42 → 0.37。
+    expect(wrapper.text()).toContain('0.53 · ');
+    expect(wrapper.text()).toContain('0.37 · ');
+    expect(simulator.advisor.customWeights.profitPerHour).toBeCloseTo(0.5294, 3);
+    expect(simulator.advisor.customWeights.xpPerHour).toBeCloseTo(0.3706, 3);
+
+    wrapper.unmount();
+  });
+
+  it('custom mode: typing 0.6 then 0.3 across blurs keeps the ratio in the store', async () => {
+    const { wrapper, simulator } = await mountAdvisorPage();
+    simulator.rerankAdvisorResults({ goalPreset: 'custom' });
+    await flushPromises();
+
+    const inputs = findWeightInputs(wrapper);
+    inputs[0].setValue('0.6');
+    await inputs[0].trigger('change');
+    await flushPromises();
+    inputs[1].setValue('0.3');
+    await inputs[1].trigger('change');
+    await flushPromises();
+
+    // 第一个字段的中间 blur 不得破坏比例（旧实现最终得到 0.57/0.33）。
+    expect(simulator.advisor.customWeights.profitPerHour).toBeCloseTo(0.6, 12);
+    expect(simulator.advisor.customWeights.xpPerHour).toBeCloseTo(0.3, 12);
+    expect(simulator.advisor.customWeights.safety).toBeCloseTo(0.1, 12);
+    expect(inputs[0].element.value).toBe('0.6');
+    expect(inputs[1].element.value).toBe('0.3');
+
+    wrapper.unmount();
+  });
+
+  it('custom mode: clearing an input keeps the old draft instead of a destructive 0 weight', async () => {
+    const { wrapper, simulator } = await mountAdvisorPage();
+    simulator.rerankAdvisorResults({ goalPreset: 'custom' });
+    await flushPromises();
+
+    const inputs = findWeightInputs(wrapper);
+    inputs[0].setValue('0.6');
+    await inputs[0].trigger('change');
+    await flushPromises();
+    const weightsBeforeClear = { ...simulator.advisor.customWeights };
+
+    // 清空（value='' + input 事件）：草稿保留旧值（清空 = 放弃本次编辑）；
+    // 随后 blur 的 apply 不得以 0 权重触发破坏性归一化——旧实现会把经验
+    // 权重放大到 0.9（0/0.42×0.9 = 0）。
+    inputs[0].setValue('');
+    await inputs[0].trigger('change');
+    await flushPromises();
+
+    expect(simulator.advisor.customWeights.profitPerHour).toBeCloseTo(weightsBeforeClear.profitPerHour, 12);
+    expect(simulator.advisor.customWeights.xpPerHour).toBeCloseTo(weightsBeforeClear.xpPerHour, 12);
+    expect(simulator.advisor.customWeights.safety).toBeCloseTo(weightsBeforeClear.safety, 12);
+    expect(inputs[1].element.value).toBe('0.42');
+
+    wrapper.unmount();
+  });
+
+  it('custom mode: blur after typing 0.1234 keeps the verbatim input and the raw-ratio store weights', async () => {
+    const { wrapper, simulator } = await mountAdvisorPage();
+    simulator.rerankAdvisorResults({ goalPreset: 'custom' });
+    await flushPromises();
+
+    const inputs = findWeightInputs(wrapper);
+    expect(inputs).toHaveLength(2);
+    inputs[0].setValue('0.1234');
+    await inputs[0].trigger('change');
+    await flushPromises();
+
+    // 核心回归：apply 不得对草稿原地取整改写（旧实现 blur 后回显 0.12，
+    // 与铁牛 0.333 verbatim 口径相悖；现有 0.6 级测试因 roundTo 恒等测不出）。
+    expect(inputs[0].element.value).toBe('0.1234');
+    expect(inputs[1].element.value).toBe('0.42');
+    // store 按原始比例归一化：0.1234/(0.1234+0.42)×0.9 ≈ 0.2044（旧实现先
+    // 取整 0.12 → 0.12/0.54×0.9 = 0.2，用户输入的比例被悄悄改变）。
+    expect(simulator.advisor.customWeights.profitPerHour).toBeCloseTo(0.2044, 3);
+    expect(simulator.advisor.customWeights.xpPerHour).toBeCloseTo(0.6956, 3);
+
+    wrapper.unmount();
+  });
+
+  it('custom mode: remount (simulated refresh) restores the typed inputs verbatim instead of 0.53', async () => {
+    const first = await mountAdvisorPage();
+    first.simulator.rerankAdvisorResults({ goalPreset: 'custom' });
+    await flushPromises();
+
+    const inputs = findWeightInputs(first.wrapper);
+    inputs[0].setValue('0.6');
+    await inputs[0].trigger('change');
+    await flushPromises();
+    // store 为归一化口径（0.5294/0.3706），原始输入 0.6/0.42 已随设置落盘。
+    expect(first.simulator.advisor.customWeights.profitPerHour).toBeCloseTo(0.5294, 3);
+    expect(first.simulator.advisor.customWeightInputs).toEqual({ profitPerHour: 0.6, xpPerHour: 0.42 });
+    first.wrapper.unmount();
+
+    // 模拟刷新：全新 pinia/store 从 localStorage 恢复、页面重挂载——输入框回显
+    // 用户键入的 0.6/0.42（旧实现 watch 首次同步 roundTo(归一化值) → 0.53，
+    // 跨会话口径跳变；且再 blur 会把 store 静默改写成 0.53）。
+    const second = await mountAdvisorPage();
+    const restored = findWeightInputs(second.wrapper);
+    expect(restored[0].element.value).toBe('0.6');
+    expect(restored[1].element.value).toBe('0.42');
+    second.wrapper.unmount();
+  });
+
+  it('custom mode: preset round-trip (custom → balanced → custom) keeps the typed draft', async () => {
+    const { wrapper, simulator } = await mountAdvisorPage();
+    simulator.rerankAdvisorResults({ goalPreset: 'custom' });
+    await flushPromises();
+
+    const inputs = findWeightInputs(wrapper);
+    inputs[0].setValue('0.6');
+    await inputs[0].trigger('change');
+    await flushPromises();
+
+    // 切离再切回自定义：草稿回源持久化的原始输入（旧实现在非自定义模式下以
+    // roundTo(归一化值) 回写草稿，切回后输入框变 0.53，会话内即丢失 0.6）。
+    simulator.rerankAdvisorResults({ goalPreset: 'balanced' });
+    await flushPromises();
+    simulator.rerankAdvisorResults({ goalPreset: 'custom' });
+    await flushPromises();
+
+    expect(inputs[0].element.value).toBe('0.6');
+    expect(inputs[1].element.value).toBe('0.42');
+    wrapper.unmount();
+  });
+
+  it('ironcow mode: 0.333/0.334/0.333 sums to 1.000 without the alert and applies verbatim', async () => {
+    const { wrapper, simulator } = await mountAdvisorPage();
+    simulator.rerankAdvisorResults({ goalPreset: 'ironcow' });
+    await flushPromises();
+
+    const inputs = findWeightInputs(wrapper);
+    expect(inputs).toHaveLength(3);
+    const typed = ['0.333', '0.334', '0.333'];
+    for (let index = 0; index < inputs.length; index += 1) {
+      inputs[index].setValue(typed[index]);
+      await inputs[index].trigger('change');
+      await flushPromises();
+    }
+
+    // 原始和 1.000：无红字，store 原样保留 3 位小数输入值。
+    expect(findSumAlert(wrapper).exists()).toBe(false);
+    expect(findSumText(wrapper)).toBe(`${i18next.t('common:advisor.weightSumLabel')}: 1.000`);
+    expect(simulator.advisor.ironcowWeights).toEqual({
+      dropsPerHour: 0.334,
+      xpPerHour: 0.333,
+      safety: 0.333,
+    });
+    // 应用后回显不取整，输入框仍是 3 位小数（旧 roundTo(·,2) 口径会回显 0.33）。
+    expect(inputs.map((input) => input.element.value)).toEqual(['0.333', '0.334', '0.333']);
+
+    wrapper.unmount();
+  });
+
+  it('ironcow mode: 0.351/0.35/0.301 shows the sum alert and keeps the last legal weights', async () => {
+    const { wrapper, simulator } = await mountAdvisorPage();
+    simulator.rerankAdvisorResults({ goalPreset: 'ironcow' });
+    await flushPromises();
+
+    const inputs = findWeightInputs(wrapper);
+    // 输入框 DOM 顺序为 [安全性, 掉落/h, 经验/h]（ironcowInputFields）。
+    // 先应用一次合法值，确立「上次合法权重」基线 {0.45, 0.45, 0.1}。
+    const legal = ['0.1', '0.45', '0.45'];
+    for (let index = 0; index < inputs.length; index += 1) {
+      inputs[index].setValue(legal[index]);
+      await inputs[index].trigger('change');
+      await flushPromises();
+    }
+    expect(simulator.advisor.ironcowWeights).toEqual({ dropsPerHour: 0.45, xpPerHour: 0.45, safety: 0.1 });
+
+    // 输入 0.351/0.35/0.301（原始和 1.002）：红字出现（role="alert"），blur 的
+    // apply 被拒绝，store 保持上次合法值。
+    const illegal = ['0.351', '0.35', '0.301'];
+    for (let index = 0; index < inputs.length; index += 1) {
+      inputs[index].setValue(illegal[index]);
+      await inputs[index].trigger('change');
+      await flushPromises();
+    }
+    expect(findSumAlert(wrapper).exists()).toBe(true);
+    expect(findSumAlert(wrapper).classes()).toContain('text-destructive');
+    expect(findSumText(wrapper)).toBe(`${i18next.t('common:advisor.weightSumLabel')}: 1.002`);
+    expect(simulator.advisor.ironcowWeights).toEqual({ dropsPerHour: 0.45, xpPerHour: 0.45, safety: 0.1 });
+
+    // 小于 1 的非法和也必须显示差值，避免 0.998 被取整为 1.00。
+    await inputs[2].setValue('0.297');
+    await inputs[2].trigger('change');
+    await flushPromises();
+    expect(findSumText(wrapper)).toBe(`${i18next.t('common:advisor.weightSumLabel')}: 0.998`);
+    expect(findSumAlert(wrapper).exists()).toBe(true);
+    expect(simulator.advisor.ironcowWeights).toEqual({ dropsPerHour: 0.45, xpPerHour: 0.45, safety: 0.1 });
+
+    wrapper.unmount();
+  });
+
+  it('ironcow mode: negative input is clamped to 0 so the echo and the weight sum stay consistent', async () => {
+    const { wrapper, simulator } = await mountAdvisorPage();
+    simulator.rerankAdvisorResults({ goalPreset: 'ironcow' });
+    await flushPromises();
+
+    // 基线默认 {0.45, 0.45, 0.1}（DOM 顺序 [安全性, 掉落/h, 经验/h]）。
+    const inputs = findWeightInputs(wrapper);
+    expect(inputs).toHaveLength(3);
+
+    // G2 回归（首次负数输入，等价粘贴 -0.5）：旧实现草稿原样存 -0.5，回显
+    // -0.5 而权重和按该字段 0 计（0.45+0.45+0=0.90），用户按回显自算 0.40，
+    // 回显与和显示分裂。修复后输入阶段清洗为 0：回显 '0'，和值 0.90 与可见
+    // 字段求和一致，红字报错（apply 拒绝的可见反馈）。
+    inputs[0].setValue('-0.5');
+    await flushPromises();
+    expect(inputs[0].element.value).toBe('0');
+    expect(findSumText(wrapper)).toBe(`${i18next.t('common:advisor.weightSumLabel')}: 0.900`);
+    expect(findSumAlert(wrapper).exists()).toBe(true);
+
+    // 二次负数输入（草稿已为 0，再写 0 不触发响应式更新、Vue 不回写 :value）：
+    // DOM 钳制兜底必须把残留的 -0.5 强写回 '0'，否则分裂在同字段复发。
+    inputs[0].setValue('-0.5');
+    await flushPromises();
+    expect(inputs[0].element.value).toBe('0');
+    expect(findSumText(wrapper)).toBe(`${i18next.t('common:advisor.weightSumLabel')}: 0.900`);
+
+    // blur 的 apply 被拒（和 0.90 ≠ 1），store 保持上次合法权重。
+    await inputs[0].trigger('change');
+    await flushPromises();
+    expect(simulator.advisor.ironcowWeights).toEqual({ dropsPerHour: 0.45, xpPerHour: 0.45, safety: 0.1 });
+
+    wrapper.unmount();
   });
 });

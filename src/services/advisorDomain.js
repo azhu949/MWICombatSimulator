@@ -64,6 +64,9 @@ export function createAdvisorState() {
     filters: normalizeAdvisorFilters(),
     goalPreset: ADVISOR_GOAL_PRESET_BALANCED,
     customWeights: getAdvisorPresetWeights(ADVISOR_GOAL_PRESET_BALANCED),
+    // 自定义权重原始输入（用户口径草稿源，G3 2026-09-05）：null = 从未应用过
+    // 自定义权重（或旧载荷无此字段），页面草稿回退由归一化 customWeights 回显。
+    customWeightInputs: null,
     ironcowWeights: { dropsPerHour: 0.45, xpPerHour: 0.45, safety: 0.1 },
     scannedGoalPreset: '',
     scannedDropItemHrids: [],
