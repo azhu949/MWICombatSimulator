@@ -273,7 +273,12 @@ export async function executeActiveQueueRun({
   const queueState = store.ensureQueueState(store.activePlayerId);
   queueState.error = '';
 
-  if (store.runtime.isRunning || store.isAnyQueueRunning || store.advisor.runtime?.isRunning) {
+  if (
+    store.runtime.isRunning ||
+    store.isAnyQueueRunning ||
+    store.advisor.runtime?.isRunning ||
+    store.foodOptimizer?.runtime.isRunning
+  ) {
     queueState.error = 'common:queue.errorBusy';
     return [];
   }

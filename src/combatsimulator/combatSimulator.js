@@ -18,6 +18,7 @@ import FuryExpirationEvent from './events/furyExpirationEvent';
 import EnrageTickEvent from './events/enrageTickEvent';
 import ScrollRenewalEvent from './events/scrollRenewalEvent';
 import SimResult from './simResult';
+import FoodOptimizerSimResult from './foodOptimizerSimResult';
 import AbilityCastEndEvent from './events/abilityCastEndEvent';
 import AwaitCooldownEvent from './events/awaitCooldownEvent';
 import Monster from './monster';
@@ -39,6 +40,7 @@ const CURSE_UNIQUE_HRID = '/buff_uniques/curse';
 const WEAKEN_UNIQUE_HRID = '/buff_uniques/weaken';
 const FURY_ACCURACY_UNIQUE_HRID = '/buff_uniques/fury_accuracy';
 const FURY_DAMAGE_UNIQUE_HRID = '/buff_uniques/fury_damage';
+const ATTACK_EVENT_TYPES = [AbilityCastEndEvent.type, AutoAttackEvent.type];
 
 function addAbilityBuff(target, buff, currentTime, source, ability) {
   const sourcePolicy = getAbilityBuffSourcePolicy(ability, buff);
@@ -63,8 +65,11 @@ class CombatSimulator extends EventTarget {
     this.isGuildTrial = Boolean(options.isGuildTrial || options.simulationContext?.isGuildTrial);
     this.scrollsAllowed = !labyrinth && !this.isGuildTrial;
     this.combatScrollsEnabled = Boolean(options.combatScrollsEnabled);
+    // Controls both console output and the dungeon snapshots retained for wipe logs.
+    this.logCombatEvents = options.logCombatEvents !== false;
+    this.minimalResult = Boolean(options.minimalResult);
     this.eventQueue = new EventQueue();
-    this.simResult = new SimResult(zone, labyrinth, players.length);
+    this.simResult = this.createSimResult();
     this.allPlayersDead = false;
     this.enableHpMpVisualization = options.enableHpMpVisualization || false;
     this.simulationTimeLimit = 0;
@@ -81,14 +86,20 @@ class CombatSimulator extends EventTarget {
     this.pendingExperienceGains = new Map();
 
     this.wipeLogs = {
-      buffer: new Array(200),
+      buffer: this.logCombatEvents ? new Array(200) : [],
       index: 0,
       count: 0,
       maxSize: 200,
     };
   }
 
+  createSimResult() {
+    const Result = this.minimalResult ? FoodOptimizerSimResult : SimResult;
+    return new Result(this.zone, this.labyrinth, this.players.length);
+  }
+
   addToWipeLogs(logEntry) {
+    if (!this.logCombatEvents) return;
     const { buffer, maxSize } = this.wipeLogs;
 
     buffer[this.wipeLogs.index] = logEntry;
@@ -97,6 +108,7 @@ class CombatSimulator extends EventTarget {
   }
 
   logAndResetWipeLogs() {
+    if (!this.logCombatEvents) return;
     const logs = this.getOrderedWipeLogs();
 
     logs.forEach((log) => {
@@ -111,6 +123,7 @@ class CombatSimulator extends EventTarget {
   }
 
   buildCombatLog(source, ability, target, damageDone) {
+    if (!this.logCombatEvents) return null;
     try {
       const sourceHrid = source?.hrid || 'UNKNOWN_SOURCE';
       const targetHrid = target?.hrid || 'UNKNOWN_TARGET';
@@ -145,6 +158,7 @@ class CombatSimulator extends EventTarget {
   }
 
   generateCombatLog(source, ability, target, attackResult) {
+    if (!this.logCombatEvents) return null;
     try {
       const sourceHrid = source?.hrid || 'UNKNOWN_SOURCE';
       const targetHrid = target?.hrid || 'UNKNOWN_TARGET';
@@ -180,6 +194,7 @@ class CombatSimulator extends EventTarget {
   }
 
   getOrderedWipeLogs() {
+    if (!this.logCombatEvents) return [];
     const { buffer, maxSize, count } = this.wipeLogs;
     const logs = [];
 
@@ -192,6 +207,7 @@ class CombatSimulator extends EventTarget {
   }
 
   saveWipeLogsToSimResult(wave) {
+    if (!this.logCombatEvents) return;
     const logs = this.getOrderedWipeLogs();
     this.simResult.addWipeEvent(logs, this.simulationTime, wave);
   }
@@ -423,6 +439,7 @@ class CombatSimulator extends EventTarget {
 
   recordUnitDeath(unit) {
     this.simResult.addDeath(unit);
+    if (this.minimalResult) return;
     if (!unit?.isPlayer) {
       // 只有遭遇战成员参与经验快照。
       // 保留此守卫还让仅需结果/掉落的调用方能够使用
@@ -455,6 +472,7 @@ class CombatSimulator extends EventTarget {
   }
 
   captureExperienceGain(player, experience) {
+    if (this.minimalResult) return;
     const gains = this.simResult.calculateExperienceGain(player, experience);
     if (!gains || !player?.hrid) {
       return;
@@ -464,6 +482,10 @@ class CombatSimulator extends EventTarget {
   }
 
   commitPendingExperience() {
+    if (this.minimalResult) {
+      this.pendingExperienceGains.clear();
+      return;
+    }
     for (const [playerHrid, gains] of this.pendingExperienceGains.entries()) {
       const player = this.players.find((candidate) => candidate?.hrid === playerHrid);
       if (player) {
@@ -513,6 +535,7 @@ class CombatSimulator extends EventTarget {
   }
 
   captureEnemyDeathSnapshot(enemy, deathTime) {
+    if (this.minimalResult) return;
     if (
       !enemy ||
       typeof enemy !== 'object' ||
@@ -544,6 +567,7 @@ class CombatSimulator extends EventTarget {
   }
 
   finalizeEnemyExperience(enemy) {
+    if (this.minimalResult) return;
     if (!enemy || typeof enemy !== 'object' || this.experienceAwardedEnemies.has(enemy)) {
       return;
     }
@@ -602,7 +626,7 @@ class CombatSimulator extends EventTarget {
     );
   }
 
-  async simulate(simulationTimeLimit) {
+  async simulate(simulationTimeLimit, { shouldStop } = {}) {
     const normalizedSimulationTimeLimit = Math.max(0, Number(simulationTimeLimit) || 0);
     this.simulationTimeLimit = normalizedSimulationTimeLimit;
     this.reset();
@@ -612,6 +636,7 @@ class CombatSimulator extends EventTarget {
     this.dispatchProgress(0);
 
     let ticks = 0;
+    let stoppedEarly = false;
 
     let combatStartEvent = new CombatStartEvent(0);
     this.eventQueue.addEvent(combatStartEvent);
@@ -628,7 +653,14 @@ class CombatSimulator extends EventTarget {
       }
 
       let nextEvent = this.eventQueue.getNextEvent();
-      await this.processEvent(nextEvent);
+      // 原生事件处理同步完成；仅等待异步覆写，避免逐事件的 Promise 和微任务开销。
+      const eventResult = this.processEvent(nextEvent);
+      if (eventResult && typeof eventResult.then === 'function') await eventResult;
+
+      if (typeof shouldStop === 'function' && shouldStop(this)) {
+        stoppedEarly = true;
+        break;
+      }
 
       ticks++;
       if (ticks === 1000) {
@@ -651,7 +683,7 @@ class CombatSimulator extends EventTarget {
 
     this.simResult.isDungeon = this.zone?.isDungeon ?? false;
     if (this.zone && this.simResult.isDungeon) {
-      console.log('Timeout now at wave #' + (this.zone.encountersKilled - 1));
+      if (this.logCombatEvents) console.log('Timeout now at wave #' + (this.zone.encountersKilled - 1));
 
       this.simResult.dungeonsCompleted = this.zone.dungeonsCompleted;
       this.simResult.dungeonsFailed = this.zone.dungeonsFailed;
@@ -672,11 +704,13 @@ class CombatSimulator extends EventTarget {
     // 半开时间范围之内的续期事件已由队列处理。
     // 直接关闭当前窗口，使结束路径既不恢复增益，
     // 也不调度历史的续期。
-    this.finalizeScrollUsage(normalizedSimulationTimeLimit);
+    const effectiveSimulationTime = stoppedEarly ? this.simulationTime : normalizedSimulationTimeLimit;
+    this.finalizeScrollUsage(effectiveSimulationTime);
     // 模拟可能在遭遇战中途停止。不要将
     // 该次遭遇战的死亡快照留在可复用的模拟器实例上。
     this.discardPendingExperience();
-    this.simResult.simulatedTime = normalizedSimulationTimeLimit;
+    this.simResult.simulatedTime = effectiveSimulationTime;
+    this.simResult.stoppedEarly = stoppedEarly;
 
     for (let i = 0; i < this.players.length; i++) {
       this.simResult.setDropRateMultipliers(this.players[i]);
@@ -701,7 +735,9 @@ class CombatSimulator extends EventTarget {
     // 时间范围中断可能发生在周期 tick 到达 1000 事件边界之前。
     // 在所有收尾工作完成后发出最终的进度通知，
     // 使其先于结果消息，又不会超前于最后的状态更新。
-    this.dispatchProgress(1);
+    this.dispatchProgress(
+      stoppedEarly && normalizedSimulationTimeLimit > 0 ? effectiveSimulationTime / normalizedSimulationTimeLimit : 1,
+    );
 
     return this.simResult;
   }
@@ -714,7 +750,7 @@ class CombatSimulator extends EventTarget {
     // 重建，上一轮运行中的定时增益不允许
     // 泄漏到 t=0 的下一次开启。
     this.clearScrollRuntimeBuffs();
-    this.simResult = new SimResult(this.zone, this.labyrinth, this.players.length);
+    this.simResult = this.createSimResult();
     this.simResult.setScrollUsageContext(
       this.scrollsAllowed,
       this.isGuildTrial ? 'guild_trial' : this.labyrinth ? 'labyrinth' : '',
@@ -729,7 +765,7 @@ class CombatSimulator extends EventTarget {
     this.initializeScrollRuntime();
   }
 
-  async processEvent(event) {
+  processEvent(event) {
     if (!event) {
       return;
     }
@@ -799,9 +835,9 @@ class CombatSimulator extends EventTarget {
     this.checkTriggers();
   }
 
-  processCombatStartEvent(event) {
+  initializeCombatPlayers(time) {
     for (let i = 0; i < this.players.length; i++) {
-      if (event.time === 0) {
+      if (time === 0) {
         // 首次战斗开始事件
         this.players[i].generatePermanentBuffs();
       }
@@ -812,7 +848,7 @@ class CombatSimulator extends EventTarget {
       }
     }
 
-    if (event.time === 0) {
+    if (time === 0) {
       // 第一次重置清除普通战斗增益。卷轴只在这次重置之后、
       // 首次遭遇战/攻击之前开启。
       this.activateInitialScrolls();
@@ -822,6 +858,10 @@ class CombatSimulator extends EventTarget {
       // 第二个道具。
       this.syncScrollsToTime(this.simulationTime);
     }
+  }
+
+  processCombatStartEvent(event) {
+    this.initializeCombatPlayers(event.time);
 
     let regenTickEvent = new RegenTickEvent(this.simulationTime + REGEN_TICK_INTERVAL);
     this.eventQueue.addEvent(regenTickEvent);
@@ -975,7 +1015,13 @@ class CombatSimulator extends EventTarget {
       }
 
       let attackResult = CombatUtilities.processAttack(source, target);
-      if (this.zone?.isDungeon && target.isPlayer && attackResult.didHit && attackResult.damageDone > 0) {
+      if (
+        this.logCombatEvents &&
+        this.zone?.isDungeon &&
+        target.isPlayer &&
+        attackResult.didHit &&
+        attackResult.damageDone > 0
+      ) {
         const log = this.generateCombatLog(source, 'autoAttack', target, attackResult);
         this.addToWipeLogs(log);
       }
@@ -1097,7 +1143,7 @@ class CombatSimulator extends EventTarget {
       if (attackResult.thornDamageDone > 0) {
         this.simResult.addAttack(target, source, attackResult.thornType, attackResult.thornDamageDone);
       }
-      if (this.zone?.isDungeon && attackResult.thornDamageDone > 0 && source.isPlayer) {
+      if (this.logCombatEvents && this.zone?.isDungeon && attackResult.thornDamageDone > 0 && source.isPlayer) {
         const log = this.buildCombatLog(target, attackResult.thornType, source, attackResult.thornDamageDone);
         this.addToWipeLogs(log);
       }
@@ -1110,7 +1156,7 @@ class CombatSimulator extends EventTarget {
           attackResult.retaliationDamageDone > 0 ? attackResult.retaliationDamageDone : 'miss',
         );
       }
-      if (this.zone?.isDungeon && attackResult.retaliationDamageDone > 0 && source.isPlayer) {
+      if (this.logCombatEvents && this.zone?.isDungeon && attackResult.retaliationDamageDone > 0 && source.isPlayer) {
         const log = this.buildCombatLog(target, 'retaliation', source, attackResult.retaliationDamageDone);
         this.addToWipeLogs(log);
       }
@@ -1151,7 +1197,7 @@ class CombatSimulator extends EventTarget {
   }
 
   checkEncounterEnd() {
-    if (this.enemies) {
+    if (!this.minimalResult && this.enemies) {
       let deadEnemies = this.enemies.filter(
         (enemy) => enemy.combatDetails.currentHitpoints <= 0 && !this.experienceAwardedEnemies.has(enemy),
       );
@@ -1175,6 +1221,7 @@ class CombatSimulator extends EventTarget {
       this.eventQueue.addEvent(enemyRespawnEvent);
 
       if (
+        !this.minimalResult &&
         this.enemies.some(
           (enemy) => enemy.combatDetails.currentHitpoints <= 0 && !this.experienceAwardedEnemies.has(enemy),
         )
@@ -1221,24 +1268,26 @@ class CombatSimulator extends EventTarget {
     if (!this.players.some((player) => player.combatDetails.currentHitpoints > 0)) {
       if (this.zone) {
         if (this.zone.isDungeon) {
-          console.log(
-            'All Players died at wave #' +
-              (this.zone.encountersKilled - 1) +
-              ' with ememies: ' +
-              this.enemies
-                .map(
-                  (enemy) =>
-                    enemy.hrid +
-                    '(' +
-                    ((enemy.combatDetails.currentHitpoints * 100) / enemy.combatDetails.maxHitpoints).toFixed(2) +
-                    '%)',
-                )
-                .join(', '),
-          );
+          if (this.logCombatEvents) {
+            console.log(
+              'All Players died at wave #' +
+                (this.zone.encountersKilled - 1) +
+                ' with ememies: ' +
+                this.enemies
+                  .map(
+                    (enemy) =>
+                      enemy.hrid +
+                      '(' +
+                      ((enemy.combatDetails.currentHitpoints * 100) / enemy.combatDetails.maxHitpoints).toFixed(2) +
+                      '%)',
+                  )
+                  .join(', '),
+            );
 
-          this.saveWipeLogsToSimResult(this.zone.encountersKilled - 1);
-          this.wipeLogs.index = 0;
-          this.wipeLogs.count = 0;
+            this.saveWipeLogsToSimResult(this.zone.encountersKilled - 1);
+            this.wipeLogs.index = 0;
+            this.wipeLogs.count = 0;
+          }
 
           // 地下城团灭：只清除战斗相关事件，保留buff过期检查和CD事件
           this.eventQueue.clearEventsOfType(AutoAttackEvent.type);
@@ -1284,12 +1333,7 @@ class CombatSimulator extends EventTarget {
   }
 
   addNextAttackEvent(source) {
-    if (
-      this.eventQueue.getMatching(
-        (event) =>
-          (event.type == AbilityCastEndEvent.type || event.type == AutoAttackEvent.type) && event.source == source,
-      )
-    ) {
+    if (this.eventQueue.containsEventOfTypesAndSource(ATTACK_EVENT_TYPES, source)) {
       return;
     }
 
@@ -1406,7 +1450,7 @@ class CombatSimulator extends EventTarget {
     event.target.combatDetails.currentHitpoints -= damage;
     this.simResult.addAttack(event.sourceRef, event.target, 'damageOverTime', damage);
 
-    if (this.zone?.isDungeon) {
+    if (this.logCombatEvents && this.zone?.isDungeon) {
       const log = this.buildCombatLog('', 'damageOverTime', event.target, damage);
       this.addToWipeLogs(log);
     }
@@ -1594,22 +1638,26 @@ class CombatSimulator extends EventTarget {
     do {
       triggeredSomething = false;
 
-      this.players
-        .filter((player) => player.combatDetails.currentHitpoints > 0)
-        .forEach((player) => {
-          if (this.checkTriggersForUnit(player, this.players, this.enemies)) {
-            triggeredSomething = true;
-          }
-        });
+      for (let index = 0; index < this.players.length; index += 1) {
+        const player = this.players[index];
+        if (
+          player.combatDetails.currentHitpoints > 0 &&
+          this.checkTriggersForUnit(player, this.players, this.enemies)
+        ) {
+          triggeredSomething = true;
+        }
+      }
 
       if (this.enemies) {
-        this.enemies
-          .filter((enemy) => enemy.combatDetails.currentHitpoints > 0)
-          .forEach((enemy) => {
-            if (this.checkTriggersForUnit(enemy, this.enemies, this.players)) {
-              triggeredSomething = true;
-            }
-          });
+        for (let index = 0; index < this.enemies.length; index += 1) {
+          const enemy = this.enemies[index];
+          if (
+            enemy.combatDetails.currentHitpoints > 0 &&
+            this.checkTriggersForUnit(enemy, this.enemies, this.players)
+          ) {
+            triggeredSomething = true;
+          }
+        }
       }
     } while (triggeredSomething);
   }
@@ -1972,7 +2020,13 @@ class CombatSimulator extends EventTarget {
 
         let attackResult = CombatUtilities.processAttack(source, target, abilityEffect);
 
-        if (this.zone?.isDungeon && target.isPlayer && attackResult.didHit && attackResult.damageDone > 0) {
+        if (
+          this.logCombatEvents &&
+          this.zone?.isDungeon &&
+          target.isPlayer &&
+          attackResult.didHit &&
+          attackResult.damageDone > 0
+        ) {
           const log = this.generateCombatLog(source, ability.hrid, target, attackResult);
           this.addToWipeLogs(log);
         }
@@ -2159,7 +2213,7 @@ class CombatSimulator extends EventTarget {
         if (attackResult.thornDamageDone > 0) {
           this.simResult.addAttack(target, source, attackResult.thornType, attackResult.thornDamageDone);
         }
-        if (this.zone?.isDungeon && attackResult.thornDamageDone > 0 && source.isPlayer) {
+        if (this.logCombatEvents && this.zone?.isDungeon && attackResult.thornDamageDone > 0 && source.isPlayer) {
           const log = this.buildCombatLog(target, attackResult.thornType, source, attackResult.thornDamageDone);
           this.addToWipeLogs(log);
         }
@@ -2172,7 +2226,7 @@ class CombatSimulator extends EventTarget {
             attackResult.retaliationDamageDone > 0 ? attackResult.retaliationDamageDone : 'miss',
           );
         }
-        if (this.zone?.isDungeon && attackResult.retaliationDamageDone > 0 && source.isPlayer) {
+        if (this.logCombatEvents && this.zone?.isDungeon && attackResult.retaliationDamageDone > 0 && source.isPlayer) {
           const log = this.buildCombatLog(target, 'retaliation', source, attackResult.retaliationDamageDone);
           this.addToWipeLogs(log);
         }

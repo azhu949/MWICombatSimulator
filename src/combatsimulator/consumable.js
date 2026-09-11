@@ -2,6 +2,11 @@ import Buff from './buff';
 import itemDetailMap from './data/itemDetailMap.json';
 import Trigger from './trigger';
 
+const SELF_DEPENDENCY = '/combat_trigger_dependencies/self';
+const MISSING_HP = '/combat_trigger_conditions/missing_hp';
+const MISSING_MP = '/combat_trigger_conditions/missing_mp';
+const GREATER_THAN_EQUAL = '/combat_trigger_comparators/greater_than_equal';
+
 class Consumable {
   constructor(hrid, triggers = null) {
     this.hrid = hrid;
@@ -74,6 +79,23 @@ class Consumable {
 
     if (this.triggers.length == 0) {
       return true;
+    }
+
+    // Food optimizer candidates (and the game's common HP/MP food triggers)
+    // use one self resource comparison. Keep calling compareValue so the
+    // optimizer's threshold observer remains on the exact comparison path,
+    // while avoiding generic dependency-map and condition dispatch.
+    const trigger = this.triggers.length === 1 ? this.triggers[0] : null;
+    if (
+      trigger?.dependencyHrid === SELF_DEPENDENCY &&
+      trigger.comparatorHrid === GREATER_THAN_EQUAL &&
+      (trigger.conditionHrid === MISSING_HP || trigger.conditionHrid === MISSING_MP)
+    ) {
+      const current =
+        trigger.conditionHrid === MISSING_HP
+          ? source.combatDetails.maxHitpoints - source.combatDetails.currentHitpoints
+          : source.combatDetails.maxManapoints - source.combatDetails.currentManapoints;
+      return trigger.compareValue(current);
     }
 
     let shouldTrigger = true;

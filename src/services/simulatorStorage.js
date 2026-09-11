@@ -30,6 +30,14 @@ import {
 import { normalizeEquipmentSetQueueChanges } from './queueVariants.js';
 import { getVendorPriceByItemHrid } from './queueUpgradeCost.js';
 import { clamp, clampPositiveInteger, deepClone, isPlainObject, toFiniteNumber } from './utils.js';
+import {
+  FOOD_OPTIMIZER_SEARCH_MODE_COMPLETE,
+  FOOD_OPTIMIZER_SEARCH_MODE_TOP10,
+  normalizeFoodOptimizerStep,
+  normalizeFoodOptimizerRounds,
+  normalizeFoodOptimizerSearchMode,
+  normalizeFoodOptimizerFoodHrids,
+} from './foodOptimizerDomain.js';
 
 const EQUIPMENT_SET_STORAGE_KEY = 'mwi.equipmentSets.v2';
 const PRICE_SETTINGS_STORAGE_KEY = 'mwi.price.settings.v1';
@@ -41,6 +49,8 @@ const QUEUE_RUN_SETTINGS_STORAGE_KEY = 'mwi.queue.runSettings.v1';
 const QUEUE_RUN_SETTINGS_STORAGE_VERSION = 1;
 const ADVISOR_SETTINGS_STORAGE_KEY = 'mwi.advisor.settings.v1';
 const ADVISOR_SETTINGS_STORAGE_VERSION = 1;
+const FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY = 'mwi.foodOptimizer.settings.v1';
+const FOOD_OPTIMIZER_SETTINGS_STORAGE_VERSION = 1;
 const PLAYER_DATA_SNAPSHOT_STORAGE_KEY = 'mwi.player.data.snapshot.v1';
 const PLAYER_DATA_SNAPSHOT_STORAGE_VERSION = 1;
 const PLAYER_ACHIEVEMENTS_STORAGE_KEY = 'mwi.player.achievements.v1';
@@ -686,6 +696,39 @@ export function persistQueueRuntimeSettingsToStorage(settings) {
     parallelWorkerLimit: normalized.parallelWorkerLimit,
   };
   setJsonStorage(QUEUE_SETTINGS_STORAGE_KEY, payload, { throwIfUnavailable: true });
+  return normalized;
+}
+
+export function normalizeFoodOptimizerSettings(raw = {}) {
+  const source = isPlainObject(raw) ? raw : {};
+  return {
+    thresholdStepPercent: normalizeFoodOptimizerStep(source.thresholdStepPercent),
+    rounds: normalizeFoodOptimizerRounds(source.rounds),
+    searchMode: normalizeFoodOptimizerSearchMode(source.searchMode, FOOD_OPTIMIZER_SEARCH_MODE_TOP10),
+    // 旧数据没有该字段：null 即“全部食物”，保持原有候选域不变。
+    foodHrids: normalizeFoodOptimizerFoodHrids(source.foodHrids),
+  };
+}
+
+export function loadFoodOptimizerSettingsFromStorage() {
+  const parsed = readJsonStorage(FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY);
+  if (!isPlainObject(parsed) || parsed.version !== FOOD_OPTIMIZER_SETTINGS_STORAGE_VERSION) {
+    return normalizeFoodOptimizerSettings({});
+  }
+  // Existing preferences retain the original complete-statistics behavior.
+  return normalizeFoodOptimizerSettings({
+    ...parsed,
+    searchMode: parsed.searchMode ?? FOOD_OPTIMIZER_SEARCH_MODE_COMPLETE,
+  });
+}
+
+export function persistFoodOptimizerSettingsToStorage(settings) {
+  const normalized = normalizeFoodOptimizerSettings(settings);
+  setJsonStorage(FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY, {
+    version: FOOD_OPTIMIZER_SETTINGS_STORAGE_VERSION,
+    savedAt: Date.now(),
+    ...normalized,
+  });
   return normalized;
 }
 

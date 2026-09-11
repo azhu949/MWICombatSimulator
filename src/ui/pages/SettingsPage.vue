@@ -864,7 +864,8 @@ const pricingSettingsDisabled = computed(
     simulator.runtime.isRunning ||
     simulator.isAnyQueueRunning ||
     simulator.advisor.runtime?.isRunning === true ||
-    simulator.advisor.runtime?.scanInFlight === true,
+    simulator.advisor.runtime?.scanInFlight === true ||
+    simulator.foodOptimizer.runtime.isRunning,
 );
 
 const consumablePriceModeProxy = computed({

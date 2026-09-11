@@ -159,6 +159,7 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
       this.syncActiveResultPlayerToActivePlayer(this.activePlayerId);
     },
     stopSimulation() {
+      if (this.foodOptimizer?.runtime.isRunning) this.stopFoodOptimizer();
       const queueRunInProgress = this.isAnyQueueRunning;
       const advisorRunInProgress = Boolean(this.advisor.runtime?.isRunning);
       const manualRunInProgress = Boolean(this.runtime.isRunning && !queueRunInProgress && !advisorRunInProgress);
@@ -186,6 +187,11 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
       this.runtime.error = '';
       this.normalizeRunScope();
 
+      if (this.foodOptimizer?.runtime.isRunning) {
+        this.runtime.error = 'common:foodOptimizer.busy';
+        return;
+      }
+
       if (this.isAnyQueueRunning) {
         this.runtime.error = 'common:simulation.errorQueueInProgress';
         return;
@@ -196,7 +202,7 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
         return;
       }
 
-      if (hasSharedWorkerRunInProgress()) {
+      if (hasSharedWorkerRunInProgress() || this.foodOptimizer?.runtime.isRunning) {
         this.runtime.error = 'common:simulation.errorAnotherRunInProgress';
         return;
       }
@@ -247,7 +253,7 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
       const startedAt = Date.now();
 
       // 在上面的 await 之后重新检查：共享运行可能在此期间已经开始。
-      if (hasSharedWorkerRunInProgress()) {
+      if (hasSharedWorkerRunInProgress() || this.foodOptimizer?.runtime.isRunning) {
         this.runtime.error = 'common:simulation.errorAnotherRunInProgress';
         return;
       }

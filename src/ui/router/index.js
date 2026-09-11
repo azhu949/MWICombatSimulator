@@ -16,6 +16,18 @@ const routes = [
     meta: { navLabelKey: 'common:menu.advisor', navLabel: 'Advisor / 刷图推荐', navGroup: 'simulation', navOrder: 2 },
   },
   {
+    path: '/food-optimizer',
+    name: 'food-optimizer',
+    component: () => import('../pages/FoodOptimizerPage.vue'),
+    meta: {
+      showCombatToolbar: false,
+      navLabelKey: 'common:menu.foodOptimizer',
+      navLabel: 'Food Optimizer',
+      navGroup: 'simulation',
+      navOrder: 2.5,
+    },
+  },
+  {
     path: '/enhancement',
     name: 'enhancement',
     component: () => import('../pages/EnhancementPage.vue'),

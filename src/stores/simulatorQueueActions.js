@@ -404,7 +404,12 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
         throw new Error('common:queue.requireImportBeforeBaseline');
       }
 
-      if (this.runtime.isRunning || this.isAnyQueueRunning || this.advisor.runtime?.isRunning) {
+      if (
+        this.runtime.isRunning ||
+        this.isAnyQueueRunning ||
+        this.advisor.runtime?.isRunning ||
+        this.foodOptimizer?.runtime.isRunning
+      ) {
         throw new Error('common:queue.errorBusy');
       }
 
@@ -449,6 +454,7 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
       }
 
       const selectedPlayersSnapshot = [{ id: activePlayerId, name: activePlayer?.name || `Player ${activePlayerId}` }];
+      if (this.foodOptimizer?.runtime.isRunning) throw new Error('common:queue.errorBusy');
       const pricingOptions = createProfitPricingOptions(this.pricing);
       const startedAt = Date.now();
 

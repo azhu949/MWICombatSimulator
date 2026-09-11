@@ -1,11 +1,123 @@
 import Ability from './ability';
-import CombatUnit from './combatUnit';
+import CombatUnit, { FRESH_COMBAT_STATS } from './combatUnit';
 import Consumable from './consumable';
 import Equipment from './equipment';
 import HouseRoom from './houseRoom';
 import Achievement from './achievement';
 import GuildBuff from './guildBuff';
 import { normalizeCombatScrolls } from '../shared/combatScrolls.js';
+
+const EQUIPMENT_COMBAT_STATS = [
+  'stabAccuracy',
+  'slashAccuracy',
+  'smashAccuracy',
+  'rangedAccuracy',
+  'magicAccuracy',
+  'stabDamage',
+  'slashDamage',
+  'smashDamage',
+  'rangedDamage',
+  'magicDamage',
+  'defensiveDamage',
+  'taskDamage',
+  'physicalAmplify',
+  'waterAmplify',
+  'natureAmplify',
+  'fireAmplify',
+  'healingAmplify',
+  'stabEvasion',
+  'slashEvasion',
+  'smashEvasion',
+  'rangedEvasion',
+  'magicEvasion',
+  'armor',
+  'waterResistance',
+  'natureResistance',
+  'fireResistance',
+  'maxHitpoints',
+  'maxManapoints',
+  'lifeSteal',
+  'hpRegenPer10',
+  'mpRegenPer10',
+  'physicalThorns',
+  'elementalThorns',
+  'combatDropRate',
+  'combatRareFind',
+  'combatDropQuantity',
+  'combatExperience',
+  'criticalRate',
+  'criticalDamage',
+  'armorPenetration',
+  'waterPenetration',
+  'naturePenetration',
+  'firePenetration',
+  'abilityHaste',
+  'tenacity',
+  'manaLeech',
+  'castSpeed',
+  'threat',
+  'parry',
+  'mayhem',
+  'pierce',
+  'curse',
+  'fury',
+  'weaken',
+  'ripple',
+  'bloom',
+  'blaze',
+  'attackSpeed',
+  'foodHaste',
+  'drinkConcentration',
+  'autoAttackDamage',
+  'abilityDamage',
+  'staminaExperience',
+  'intelligenceExperience',
+  'attackExperience',
+  'defenseExperience',
+  'meleeExperience',
+  'rangedExperience',
+  'magicExperience',
+  'retaliation',
+];
+
+const equipmentStatsCaches = new WeakMap();
+const nativeGetCombatStat = Equipment.prototype.getCombatStat;
+
+// Item definitions are immutable during a simulation. Live equipment objects,
+// enhancement levels and method overrides still invalidate the optional cache.
+function readNativeEquipmentState(item) {
+  if (Object.getPrototypeOf(item) !== Equipment.prototype || Object.hasOwn(item, 'getCombatStat')) return null;
+  const enhancement = Object.getOwnPropertyDescriptor(item, 'enhancementLevel');
+  const gameItem = Object.getOwnPropertyDescriptor(item, 'gameItem');
+  if (!enhancement || !Object.hasOwn(enhancement, 'value') || !gameItem || !Object.hasOwn(gameItem, 'value'))
+    return null;
+  const detail = gameItem.value?.equipmentDetail;
+  return detail
+    ? [item, enhancement.value, gameItem.value, detail, detail.combatStats, detail.combatEnhancementBonuses]
+    : null;
+}
+
+function readEquipmentTotals(cache, equippedItems) {
+  if (!cache) return null;
+  const method = Object.getOwnPropertyDescriptor(Equipment.prototype, 'getCombatStat');
+  if (method?.value !== nativeGetCombatStat) {
+    cache.states = null;
+    return null;
+  }
+  const states = equippedItems.map(readNativeEquipmentState);
+  if (states.some((state) => !state)) {
+    cache.states = null;
+    return null;
+  }
+  if (
+    cache.states?.length === states.length &&
+    states.every((state, index) => state.every((value, field) => Object.is(value, cache.states[index][field])))
+  )
+    return cache.totals;
+  cache.states = states;
+  cache.totals = null;
+  return null;
+}
 
 class Player extends CombatUnit {
   equipment = {
@@ -33,7 +145,7 @@ class Player extends CombatUnit {
     this.hrid = 'player';
   }
 
-  static createFromDTO(dto) {
+  static createFromDTO(dto, { cacheEquipmentStats = false } = {}) {
     let player = new Player();
 
     player.staminaLevel = dto.staminaLevel;
@@ -83,6 +195,8 @@ class Player extends CombatUnit {
 
     player.debuffOnLevelGap = dto.debuffOnLevelGap;
 
+    if (cacheEquipmentStats) equipmentStatsCaches.set(player, { states: null, totals: null });
+
     return player;
   }
 
@@ -113,83 +227,25 @@ class Player extends CombatUnit {
       this.combatDetails.combatStats.focusTraining = '';
     }
 
-    [
-      'stabAccuracy',
-      'slashAccuracy',
-      'smashAccuracy',
-      'rangedAccuracy',
-      'magicAccuracy',
-      'stabDamage',
-      'slashDamage',
-      'smashDamage',
-      'rangedDamage',
-      'magicDamage',
-      'defensiveDamage',
-      'taskDamage',
-      'physicalAmplify',
-      'waterAmplify',
-      'natureAmplify',
-      'fireAmplify',
-      'healingAmplify',
-      'stabEvasion',
-      'slashEvasion',
-      'smashEvasion',
-      'rangedEvasion',
-      'magicEvasion',
-      'armor',
-      'waterResistance',
-      'natureResistance',
-      'fireResistance',
-      'maxHitpoints',
-      'maxManapoints',
-      'lifeSteal',
-      'hpRegenPer10',
-      'mpRegenPer10',
-      'physicalThorns',
-      'elementalThorns',
-      'combatDropRate',
-      'combatRareFind',
-      'combatDropQuantity',
-      'combatExperience',
-      'criticalRate',
-      'criticalDamage',
-      'armorPenetration',
-      'waterPenetration',
-      'naturePenetration',
-      'firePenetration',
-      'abilityHaste',
-      'tenacity',
-      'manaLeech',
-      'castSpeed',
-      'threat',
-      'parry',
-      'mayhem',
-      'pierce',
-      'curse',
-      'fury',
-      'weaken',
-      'ripple',
-      'bloom',
-      'blaze',
-      'attackSpeed',
-      'foodHaste',
-      'drinkConcentration',
-      'autoAttackDamage',
-      'abilityDamage',
-      'staminaExperience',
-      'intelligenceExperience',
-      'attackExperience',
-      'defenseExperience',
-      'meleeExperience',
-      'rangedExperience',
-      'magicExperience',
-      'retaliation',
-    ].forEach((stat) => {
-      this.combatDetails.combatStats[stat] = Object.values(this.equipment)
-        .filter((equipment) => equipment != null)
-        .map((equipment) => equipment.getCombatStat(stat))
-        .reduce((prev, cur) => prev + cur, 0);
-    });
+    const equippedItems = Object.values(this.equipment).filter((equipment) => equipment != null);
+    const cache = equipmentStatsCaches.get(this);
+    const totals = readEquipmentTotals(cache, equippedItems);
+    if (totals) Object.assign(this.combatDetails.combatStats, totals);
+    else {
+      // Preserve equipment enumeration and addition order, including custom
+      // implementations. Capture only fields this loop writes, before buffs.
+      for (const stat of EQUIPMENT_COMBAT_STATS) {
+        let total = 0;
+        for (const equipment of equippedItems) {
+          total += equipment.getCombatStat(stat);
+        }
+        this.combatDetails.combatStats[stat] = total;
+      }
+      if (cache?.states)
+        cache.totals = Object.fromEntries(
+          EQUIPMENT_COMBAT_STATS.map((stat) => [stat, this.combatDetails.combatStats[stat]]),
+        );
+    }
 
     if (this.equipment['/equipment_types/pouch']) {
       this.combatDetails.combatStats.foodSlots =
@@ -202,7 +258,7 @@ class Player extends CombatUnit {
     }
 
     this.refreshBaseCombatStats();
-    super.updateCombatDetails();
+    super.updateCombatDetails(FRESH_COMBAT_STATS);
   }
 }
 

@@ -1,7 +1,9 @@
 import { describe, expect, it, vi } from 'vitest';
 import Ability from '../ability.js';
 import CombatSimulator from '../combatSimulator.js';
+import Consumable from '../consumable.js';
 import Player from '../player.js';
+import Trigger from '../trigger.js';
 import Zone from '../zone.js';
 import CheckBuffExpirationEvent from '../events/checkBuffExpirationEvent.js';
 import EventQueue from '../events/eventQueue.js';
@@ -21,7 +23,7 @@ class BoundaryProbeSimulator extends CombatSimulator {
     }
   }
 
-  async processEvent(event) {
+  processEvent(event) {
     this.simulationTime = event.time;
     if (event.type === 'boundaryProbe') {
       this.processedEventTimes.push(event.time);
@@ -30,6 +32,61 @@ class BoundaryProbeSimulator extends CombatSimulator {
 }
 
 describe('CombatSimulator', () => {
+  it('resolves chained food triggers in faction order while skipping dead units', () => {
+    const units = ['player1', 'player2', 'playerDead', 'enemy1', 'enemy2', 'enemyDead'].map((hrid) => {
+      const unit = new Player();
+      unit.hrid = hrid;
+      unit.isPlayer = hrid.startsWith('player');
+      unit.updateCombatDetails();
+      unit.combatDetails.maxHitpoints = 100;
+      unit.combatDetails.currentHitpoints = 10;
+      unit.food = [new Consumable('/items/donut', [])];
+      return unit;
+    });
+    const [player1, player2, playerDead, enemy1, enemy2, enemyDead] = units;
+    playerDead.combatDetails.currentHitpoints = 0;
+    enemyDead.combatDetails.currentHitpoints = -1;
+    for (const unit of [player1, enemy1]) {
+      unit.food[0].triggers = [
+        new Trigger(
+          '/combat_trigger_dependencies/all_allies',
+          '/combat_trigger_conditions/current_hp',
+          '/combat_trigger_comparators/greater_than_equal',
+          60,
+        ),
+      ];
+    }
+    const simulator = new CombatSimulator([player1, playerDead, player2], null, null, {});
+    simulator.enemies = [enemy1, enemyDead, enemy2];
+    simulator.simulationTime = 0;
+    const consume = vi.spyOn(simulator.simResult, 'addConsumableUse');
+
+    simulator.checkTriggers();
+
+    expect(consume.mock.calls.map(([unit]) => unit.hrid)).toEqual(['player2', 'enemy2', 'player1', 'enemy1']);
+    expect(units.map((unit) => unit.combatDetails.currentHitpoints)).toEqual([50, 50, 0, 50, 50, -1]);
+    simulator.checkTriggers();
+    expect(consume).toHaveBeenCalledTimes(4);
+  });
+
+  it.each([undefined, null, []])('checks food cooldowns without enemies (%j)', (enemies) => {
+    const player = new Player();
+    player.updateCombatDetails();
+    player.combatDetails.maxHitpoints = 100;
+    player.combatDetails.currentHitpoints = 10;
+    player.food = [new Consumable('/items/donut', [])];
+    const simulator = new CombatSimulator([player], null, null, {});
+    simulator.enemies = enemies;
+    simulator.simulationTime = 0;
+    const consume = vi.spyOn(simulator.simResult, 'addConsumableUse');
+
+    simulator.checkTriggers();
+    simulator.checkTriggers();
+
+    expect(player.combatDetails.currentHitpoints).toBe(50);
+    expect(consume).toHaveBeenCalledOnce();
+  });
+
   it('uses the fixed encounter respawn interval instead of the zone base time cost', () => {
     const simulator = new CombatSimulator([], new Zone('/actions/combat/sorcerers_tower', 4), null, {});
 
@@ -47,6 +104,52 @@ describe('CombatSimulator', () => {
     expect(simulator.processedEventTimes).toEqual([99]);
     expect(simulator.eventQueue.peekNextEvent()).toMatchObject({ time: 100 });
     expect(result.simulatedTime).toBe(100);
+  });
+
+  it('waits for asynchronous events before observing early stop or selecting the next event', async () => {
+    class AsyncBoundaryProbeSimulator extends BoundaryProbeSimulator {
+      async processEvent(event) {
+        await Promise.resolve();
+        super.processEvent(event);
+        if (event.type === 'boundaryProbe' && event.time === 20) {
+          this.eventQueue.addEvent({ type: 'boundaryProbe', time: 25 });
+        }
+      }
+    }
+    const simulator = new AsyncBoundaryProbeSimulator([20, 30, 100]);
+    const observedTimes = [];
+
+    const result = await simulator.simulate(100, {
+      shouldStop: (engine) => {
+        observedTimes.push(engine.simulationTime);
+        return engine.simulationTime >= 25;
+      },
+    });
+
+    expect(observedTimes).toEqual([0, 20, 25]);
+    expect(simulator.processedEventTimes).toEqual([20, 25]);
+    expect(simulator.eventQueue.peekNextEvent()).toMatchObject({ time: 30 });
+    expect(result).toMatchObject({ stoppedEarly: true, simulatedTime: 25 });
+  });
+
+  it('propagates asynchronous thenable failures without advancing to another event', async () => {
+    const simulator = new BoundaryProbeSimulator([20, 30]);
+    const failure = new Error('Asynchronous event failed');
+    const processEvent = simulator.processEvent.bind(simulator);
+    simulator.processEvent = (event) => {
+      if (event.type !== 'boundaryProbe') return processEvent(event);
+      return {
+        then(resolve, reject) {
+          queueMicrotask(() => reject(failure));
+        },
+      };
+    };
+
+    await expect(simulator.simulate(100)).rejects.toBe(failure);
+
+    expect(simulator.processedEventTimes).toEqual([]);
+    expect(simulator.eventQueue.peekNextEvent()).toMatchObject({ time: 30 });
+    expect(simulator.simulationTime).toBe(0);
   });
 
   it('emits initial and terminal progress for a zero-length simulation', async () => {
@@ -72,6 +175,25 @@ describe('CombatSimulator', () => {
 
     await simulator.simulate(100);
 
+    expect(progressValues.at(-1)).toBe(1);
+  });
+
+  it('finalizes an early stop at its actual time and resets the stop state on reuse', async () => {
+    const simulator = new BoundaryProbeSimulator([20, 30, 99]);
+    const progressValues = [];
+    simulator.addEventListener('progress', (event) => progressValues.push(event.detail.progress));
+    const finalize = vi.spyOn(simulator, 'finalizeScrollUsage');
+    const cleanup = vi.spyOn(simulator, 'discardPendingExperience');
+    const stopped = await simulator.simulate(100, { shouldStop: (engine) => engine.simulationTime >= 20 });
+    expect(stopped).toMatchObject({ simulatedTime: 20, stoppedEarly: true });
+    expect(simulator.processedEventTimes).toEqual([20]);
+    expect(finalize).toHaveBeenLastCalledWith(20);
+    expect(cleanup).toHaveBeenCalledOnce();
+    expect(progressValues.at(-1)).toBe(0.2);
+    const complete = await simulator.simulate(100);
+    expect(complete).toMatchObject({ simulatedTime: 100, stoppedEarly: false });
+    expect(simulator.processedEventTimes).toEqual([20, 30, 99]);
+    expect(finalize).toHaveBeenLastCalledWith(100);
     expect(progressValues.at(-1)).toBe(1);
   });
 

@@ -1,7 +1,44 @@
 import combatStyleDetailMap from './data/combatStyleDetailMap.json';
 
 class SimResult {
-  constructor(zone, labyrinth, numberOfPlayers) {
+  constructor(zone, labyrinth, numberOfPlayers, { minimal = false } = {}) {
+    if (minimal) {
+      this.deaths = {};
+      this.consumablesUsed = {};
+      this.playerRanOutOfMana = {
+        player1: false,
+        player2: false,
+        player3: false,
+        player4: false,
+        player5: false,
+      };
+      this.playerRanOutOfManaTime = {};
+      this.scrollUsage = {
+        allowed: !labyrinth,
+        ignoredReason: labyrinth ? 'labyrinth' : '',
+        disabled: false,
+        byPlayer: {},
+      };
+      this.timeSpentAlive = [];
+      this.bossSpawns = [];
+      this.zoneName = zone?.hrid;
+      this.difficultyTier = zone?.difficultyTier;
+      this.labyrinthName = labyrinth?.monsterHrid;
+      this.roomLevel = labyrinth?.roomLevel;
+      this.isDungeon = false;
+      this.isLabyrinth = Boolean(labyrinth);
+      this.dungeonsCompleted = 0;
+      this.dungeonsFailed = 0;
+      this.maxWaveReached = 0;
+      this.numberOfPlayers = numberOfPlayers;
+      this.maxEnrageStack = 0;
+      this.minDungenonTime = 0;
+      this.lastDungeonFinishTime = 0;
+      this.lastEncounterFinishTime = 0;
+      this.simulatedTime = 0;
+      this.stoppedEarly = false;
+      return;
+    }
     this.deaths = {};
     this.experienceGained = {};
     this.encounters = 0;

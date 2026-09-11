@@ -112,6 +112,7 @@ import {
   ShieldPlus,
   Sparkles,
   Sword,
+  Utensils,
   X,
 } from '@lucide/vue';
 import { Button } from '@/ui/components/ui/button/index.js';
@@ -150,6 +151,7 @@ function handlePatchNotesClick(mobile, event, navigate) {
 const iconByRoute = {
   home: House,
   advisor: Sparkles,
+  'food-optimizer': Utensils,
   enhancement: ShieldPlus,
   skilling: Sword,
   queue: ListChecks,

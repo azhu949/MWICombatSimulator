@@ -21,14 +21,36 @@ class EventQueue {
   }
 
   containsEventOfType(type) {
-    let heapEvents = this.minHeap.toArray();
-
-    return heapEvents.some((event) => event.type == type);
+    const heap = this.minHeap;
+    for (let index = 0, length = heap.length; index < length; index += 1) {
+      if (heap.get(index).type == type) return true;
+    }
+    return false;
   }
 
   containsEventOfTypeAndHrid(type, hrid) {
-    let heapEvents = this.minHeap.toArray();
-    return heapEvents.some((event) => event.type == type && event.hrid == hrid);
+    const heap = this.minHeap;
+    for (let index = 0, length = heap.length; index < length; index += 1) {
+      const event = heap.get(index);
+      if (event.type == type && event.hrid == hrid) return true;
+    }
+    return false;
+  }
+
+  containsEventOfTypesAndSource(types, source) {
+    const heap = this.minHeap;
+    for (let index = 0, length = heap.length; index < length; index += 1) {
+      const event = heap.get(index);
+      for (let typeIndex = 0; typeIndex < types.length; typeIndex += 1) {
+        if (event.type == types[typeIndex]) {
+          if (event.source == source) return true;
+          // Preserve the original OR chain: a matching type ends type checks
+          // even when this event belongs to another source.
+          break;
+        }
+      }
+    }
+    return false;
   }
 
   clear() {

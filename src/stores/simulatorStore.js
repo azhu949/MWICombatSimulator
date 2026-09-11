@@ -92,6 +92,9 @@ import { createPricingActions, ensureQueueMarketPriceSnapshot } from './simulato
 import { createAdvisorActions } from './simulatorAdvisorActions.js';
 import { createSimulationActions } from './simulatorSimulationActions.js';
 import { createCachedModuleLoader } from '../services/cachedModuleLoader.js';
+import { createFoodOptimizerActions, createFoodOptimizerState } from './simulatorFoodOptimizerActions.js';
+import { snapshotFoodOptimizerInput } from '../services/foodOptimizerSnapshot.js';
+import { createFoodOptimizerInputSignature } from '../services/foodOptimizerDomain.js';
 
 const ABILITY_BOOK_CATEGORY_HRID = '/item_categories/ability_book';
 
@@ -266,6 +269,7 @@ export const useSimulatorStore = defineStore('simulator', {
         ...createAdvisorState(),
         ...loadAdvisorSettingsFromStorage(),
       },
+      foodOptimizer: createFoodOptimizerState(),
       queue: {
         byPlayer: createQueueStateByPlayer(playerList, persistedQueueRunSettingsByPlayer),
         importedProfileByPlayer: createImportedProfileByPlayer(),
@@ -282,6 +286,16 @@ export const useSimulatorStore = defineStore('simulator', {
     };
   },
   getters: {
+    foodOptimizerInputSignature() {
+      return createFoodOptimizerInputSignature(snapshotFoodOptimizerInput(this));
+    },
+    foodOptimizerReportStale(state) {
+      const report = state.foodOptimizer.report;
+      return Boolean(
+        report &&
+        (report.stale || this.foodOptimizerInputSignature !== (report.appliedInputSignature || report.inputSignature)),
+      );
+    },
     activePlayer(state) {
       return state.players.find((player) => player.id === state.activePlayerId) ?? state.players[0];
     },
@@ -1027,6 +1041,7 @@ export const useSimulatorStore = defineStore('simulator', {
       }
     },
     ...createPricingActions(),
+    ...createFoodOptimizerActions({ loadPlayerMapperModule }),
     ...createAdvisorActions({
       loadPlayerMapperModule,
     }),

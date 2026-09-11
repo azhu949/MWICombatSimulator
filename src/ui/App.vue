@@ -876,6 +876,7 @@ const queueActionsDisabled = computed(() =>
     simulator.runtime?.isRunning ||
     activeQueueState.value?.isRunning ||
     simulator.advisor.runtime?.isRunning ||
+    simulator.foodOptimizer.runtime.isRunning ||
     queueAdditionPending.value,
   ),
 );

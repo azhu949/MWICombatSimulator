@@ -467,7 +467,12 @@ function handleAdvisorScanEntryError(error, store) {
 
 export async function executeAdvisorScan({ store, loadPlayerMapperModule }) {
   store.advisor.error = '';
-  if (store.runtime.isRunning || store.isAnyQueueRunning || store.advisor.runtime?.isRunning) {
+  if (
+    store.runtime.isRunning ||
+    store.isAnyQueueRunning ||
+    store.advisor.runtime?.isRunning ||
+    store.foodOptimizer?.runtime.isRunning
+  ) {
     store.advisor.error = ADVISOR_ERROR_ANOTHER_RUN;
     return [];
   }
@@ -502,6 +507,10 @@ export async function executeAdvisorScan({ store, loadPlayerMapperModule }) {
   let context = null;
   try {
     const { buildPlayersForSimulation } = await loadPlayerMapperModule();
+    if (store.foodOptimizer?.runtime.isRunning) {
+      store.advisor.error = ADVISOR_ERROR_ANOTHER_RUN;
+      return [];
+    }
     const playersToSim = buildPlayersForSimulation(store.players);
     if (playersToSim.length === 0) {
       store.advisor.error = ADVISOR_ERROR_NO_SIMULATION_PLAYERS;

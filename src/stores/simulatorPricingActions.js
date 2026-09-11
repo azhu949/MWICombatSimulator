@@ -99,6 +99,7 @@ function isPricingMutationBlocked(store) {
     store.pricing.isLoading ||
     store.runtime.isRunning ||
     store.isAnyQueueRunning ||
+    store.foodOptimizer?.runtime.isRunning ||
     store.advisor.runtime?.isRunning === true ||
     store.advisor.runtime?.scanInFlight === true
   );

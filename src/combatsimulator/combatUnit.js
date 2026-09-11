@@ -1,5 +1,39 @@
 import { BUFF_SOURCE_POLICY, getPartyAuraBuffStrength, isStrongerPartyAuraBuff } from './buffSourcePolicy.js';
 
+// A snapshot exists only during one synchronous stat recalculation. Direct
+// legacy writes, source replacement, and expiration therefore need no cache
+// invalidation protocol. Keep source order to preserve floating-point results.
+const buffBoostSnapshots = new WeakMap();
+
+// Internal handoff used immediately after Player/Monster rebuild and capture
+// their equipment-only stats. Ordinary public arguments cannot enable it.
+export const FRESH_COMBAT_STATS = Symbol('fresh-combat-stats');
+
+function hasNativeCombatStatMethods(unit) {
+  return (
+    unit.refreshBaseCombatStats === nativeRefreshBaseCombatStats &&
+    unit.resetCombatStatsToBase === nativeResetCombatStatsToBase &&
+    unit.updateCombatDetailsFromBuffs === nativeUpdateCombatDetailsFromBuffs
+  );
+}
+
+function indexBuffsByType(buffs) {
+  const index = new Map();
+  for (const buff of Object.values(buffs)) {
+    // Legacy malformed/non-string records keep the original lookup semantics.
+    if (!buff || typeof buff.typeHrid !== 'string') return null;
+    let group = index.get(buff.typeHrid);
+    if (!group) {
+      group = { buffs: [], boost: { ratioBoost: 0, flatBoost: 0 } };
+      index.set(buff.typeHrid, group);
+    }
+    group.buffs.push(buff);
+    group.boost.ratioBoost += buff.ratioBoost ?? 0;
+    group.boost.flatBoost += buff.flatBoost ?? 0;
+  }
+  return index;
+}
+
 // 为需要定位当前活动源的调用方提供的显式哨兵值。
 // 默认值保持省略/未定义参数的向后兼容性。
 export const REMOVE_ACTIVE_SOURCE = Symbol('remove-active-source');
@@ -126,6 +160,22 @@ function normalizeBuffSourcePolicy(policy) {
   }
   throw new TypeError(`Unsupported buff source policy: ${policy}`);
 }
+
+const COMBAT_LEVEL_FIELDS = [
+  ['staminaLevel', '/buff_types/stamina_level'],
+  ['intelligenceLevel', '/buff_types/intelligence_level'],
+  ['attackLevel', '/buff_types/attack_level'],
+  ['meleeLevel', '/buff_types/melee_level'],
+  ['defenseLevel', '/buff_types/defense_level'],
+  ['rangedLevel', '/buff_types/ranged_level'],
+  ['magicLevel', '/buff_types/magic_level'],
+];
+
+const MELEE_STYLE_FIELDS = [
+  ['stabAccuracyRating', 'stabAccuracy', 'stabMaxDamage', 'stabDamage', 'stabEvasionRating', 'stabEvasion'],
+  ['slashAccuracyRating', 'slashAccuracy', 'slashMaxDamage', 'slashDamage', 'slashEvasionRating', 'slashEvasion'],
+  ['smashAccuracyRating', 'smashAccuracy', 'smashMaxDamage', 'smashDamage', 'smashEvasionRating', 'smashEvasion'],
+];
 
 class CombatUnit {
   isPlayer;
@@ -323,6 +373,8 @@ class CombatUnit {
   // 每个覆写类（Player / Monster）必须在调用 super.updateCombatDetails()
   // 之前调用 refreshBaseCombatStats()，以捕获"纯净的"仅装备状态。
   // resetCombatStatsToBase() 恢复该纯净快照，使重复重算保持幂等。
+  // 原生 Player/Monster 可传 FRESH_COMBAT_STATS，省去刚捕获之后
+  // 立即将相同数值写回的复制；覆写和重入仍走完整恢复。
   resetCombatStatsToBase() {
     if (!this.baseCombatStats) {
       this.refreshBaseCombatStats();
@@ -330,22 +382,45 @@ class CombatUnit {
     Object.assign(this.combatDetails.combatStats, this.baseCombatStats);
   }
 
-  updateCombatDetails() {
-    this.resetCombatStatsToBase();
+  updateCombatDetails(baseState) {
+    const hadSnapshot = buffBoostSnapshots.has(this);
+    const previous = buffBoostSnapshots.get(this);
+    const useFreshBase =
+      baseState === FRESH_COMBAT_STATS &&
+      !hadSnapshot &&
+      this.baseCombatStats != null &&
+      hasNativeCombatStatMethods(this);
+    buffBoostSnapshots.set(this, indexBuffsByType(this.combatBuffs));
+    try {
+      if (useFreshBase) this.updateCombatDetailsFromBuffs(FRESH_COMBAT_STATS);
+      else this.updateCombatDetailsFromBuffs();
+    } finally {
+      if (hadSnapshot) buffBoostSnapshots.set(this, previous);
+      else buffBoostSnapshots.delete(this);
+    }
+  }
+
+  updateCombatDetailsFromBuffs(baseState) {
+    if (baseState !== FRESH_COMBAT_STATS || this.baseCombatStats == null || !hasNativeCombatStatMethods(this)) {
+      this.resetCombatStatsToBase();
+    }
 
     if (this.isPlayer) {
       this.combatDetails.combatStats.hpRegenPer10 += 0.01;
       this.combatDetails.combatStats.mpRegenPer10 += 0.01;
     }
 
-    ['stamina', 'intelligence', 'attack', 'melee', 'defense', 'ranged', 'magic'].forEach((stat) => {
-      this.combatDetails[stat + 'Level'] = this[stat + 'Level'];
-      let boosts = this.getBuffBoosts('/buff_types/' + stat + '_level');
-      boosts.forEach((buff) => {
-        this.combatDetails[stat + 'Level'] += this[stat + 'Level'] * buff.ratioBoost;
-        this.combatDetails[stat + 'Level'] += buff.flatBoost;
-      });
-    });
+    for (const [levelField, buffType] of COMBAT_LEVEL_FIELDS) {
+      this.combatDetails[levelField] = this[levelField];
+      const boosts = this.getBuffBoosts(buffType);
+      // Preserve forEach's initial length and treatment of sparse projections.
+      for (let index = 0, length = boosts.length; index < length; index += 1) {
+        if (!(index in boosts)) continue;
+        const buff = boosts[index];
+        this.combatDetails[levelField] += this[levelField] * buff.ratioBoost;
+        this.combatDetails[levelField] += buff.flatBoost;
+      }
+    }
 
     const maxHitpointsBoost = this.getBuffBoost('/buff_types/max_hitpoints');
     const maxManapointsBoost = this.getBuffBoost('/buff_types/max_manapoints');
@@ -367,26 +442,25 @@ class CombatUnit {
     let accuracyRatioBoost = this.getBuffBoost('/buff_types/accuracy').ratioBoost;
     let damageRatioBoost = this.getBuffBoost('/buff_types/damage').ratioBoost;
 
-    ['stab', 'slash', 'smash'].forEach((style) => {
-      this.combatDetails[style + 'AccuracyRating'] =
+    const evasionBoosts = this.getBuffBoosts('/buff_types/evasion');
+    for (const [accuracyRating, accuracy, maxDamage, damage, evasionRating, evasion] of MELEE_STYLE_FIELDS) {
+      this.combatDetails[accuracyRating] =
         (10 + this.combatDetails.attackLevel) *
-        (1 + this.combatDetails.combatStats[style + 'Accuracy']) *
+        (1 + this.combatDetails.combatStats[accuracy]) *
         (1 + accuracyRatioBoost) *
         (1 + accuracyRatioBoostFromFury);
-      this.combatDetails[style + 'MaxDamage'] =
+      this.combatDetails[maxDamage] =
         (10 + this.combatDetails.meleeLevel) *
-        (1 + this.combatDetails.combatStats[style + 'Damage']) *
+        (1 + this.combatDetails.combatStats[damage]) *
         (1 + damageRatioBoost) *
         (1 + damageRatioBoostFromFury);
-      let baseEvasion =
-        (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats[style + 'Evasion']);
-      this.combatDetails[style + 'EvasionRating'] = baseEvasion;
-      let evasionBoosts = this.getBuffBoosts('/buff_types/evasion');
+      const baseEvasion = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats[evasion]);
+      this.combatDetails[evasionRating] = baseEvasion;
       for (const boost of evasionBoosts) {
-        this.combatDetails[style + 'EvasionRating'] += boost.flatBoost;
-        this.combatDetails[style + 'EvasionRating'] += baseEvasion * boost.ratioBoost;
+        this.combatDetails[evasionRating] += boost.flatBoost;
+        this.combatDetails[evasionRating] += baseEvasion * boost.ratioBoost;
       }
-    });
+    }
 
     this.combatDetails.defensiveMaxDamage =
       (10 + this.combatDetails.defenseLevel) *
@@ -412,7 +486,6 @@ class CombatUnit {
 
     let baseRangedEvasion = (10 + this.combatDetails.defenseLevel) * (1 + this.combatDetails.combatStats.rangedEvasion);
     this.combatDetails.rangedEvasionRating = baseRangedEvasion;
-    let evasionBoosts = this.getBuffBoosts('/buff_types/evasion');
     for (const boost of evasionBoosts) {
       this.combatDetails.rangedEvasionRating += boost.flatBoost;
       this.combatDetails.rangedEvasionRating += baseRangedEvasion * boost.ratioBoost;
@@ -856,7 +929,13 @@ class CombatUnit {
   }
 
   clearBuffs() {
-    this.combatBuffs = structuredClone(this.permanentBuffs);
+    const buffs = this.permanentBuffs;
+    // Enemy resets usually carry no permanent buffs. Keep a fresh dictionary;
+    // other containers and populated records still require the full clone.
+    this.combatBuffs =
+      !this.isPlayer && buffs && Object.getPrototypeOf(buffs) === Object.prototype && Object.keys(buffs).length === 0
+        ? {}
+        : structuredClone(buffs);
     this.buffSources = {};
     this.activeBuffSourceKeys = {};
     this.buffSourcePolicies = {};
@@ -876,30 +955,26 @@ class CombatUnit {
   }
 
   getBuffBoosts(type) {
-    let boosts = [];
-    Object.values(this.combatBuffs)
-      .filter((buff) => buff.typeHrid == type)
-      .forEach((buff) => {
-        const { ratioBoost, flatBoost } = projectBuffStats(buff);
-        boosts.push({ ratioBoost, flatBoost });
-      });
-
-    return boosts;
+    const snapshot = typeof type === 'string' ? buffBoostSnapshots.get(this) : null;
+    const indexed = snapshot?.get(type);
+    const buffs =
+      indexed?.buffs || (snapshot ? [] : Object.values(this.combatBuffs).filter((buff) => buff.typeHrid == type));
+    return buffs.map((buff) => {
+      const { ratioBoost, flatBoost } = projectBuffStats(buff);
+      return { ratioBoost, flatBoost };
+    });
   }
 
   getBuffBoost(type) {
-    let boosts = this.getBuffBoosts(type);
-
-    let boost = {
-      ratioBoost: 0,
-      flatBoost: 0,
-    };
-
-    for (let i = 0; i < boosts.length; i++) {
-      boost.ratioBoost += boosts[i]?.ratioBoost ?? 0;
-      boost.flatBoost += boosts[i]?.flatBoost ?? 0;
+    const snapshot = typeof type === 'string' ? buffBoostSnapshots.get(this) : null;
+    const indexed = snapshot?.get(type);
+    if (indexed) return { ...indexed.boost };
+    const buffs = snapshot ? [] : Object.values(this.combatBuffs).filter((buff) => buff.typeHrid == type);
+    const boost = { ratioBoost: 0, flatBoost: 0 };
+    for (const buff of buffs) {
+      boost.ratioBoost += buff?.ratioBoost ?? 0;
+      boost.flatBoost += buff?.flatBoost ?? 0;
     }
-
     return boost;
   }
 
@@ -910,7 +985,6 @@ class CombatUnit {
     if (currentTime == 0 || !this.isPlayer) {
       // 首次战斗开始 或 敌人重置：完全重置
       this.clearBuffs();
-      this.updateCombatDetails();
       this.resetCooldowns(currentTime);
     } else {
       // 地下城团灭重开（仅玩家）：只移除过期buff，保留CD
@@ -972,5 +1046,11 @@ class CombatUnit {
     return manapointsAdded;
   }
 }
+
+// Capture identities once so replacing a prototype method cannot accidentally
+// make an override eligible for the native fresh-base path.
+const nativeRefreshBaseCombatStats = CombatUnit.prototype.refreshBaseCombatStats;
+const nativeResetCombatStatsToBase = CombatUnit.prototype.resetCombatStatsToBase;
+const nativeUpdateCombatDetailsFromBuffs = CombatUnit.prototype.updateCombatDetailsFromBuffs;
 
 export default CombatUnit;

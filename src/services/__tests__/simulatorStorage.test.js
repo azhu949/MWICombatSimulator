@@ -8,19 +8,23 @@ import {
   loadPlayerDataSnapshotFromStorage,
   loadSimulationUiSettingsFromStorage,
   loadEquipmentSetsFromStorage,
+  loadFoodOptimizerSettingsFromStorage,
   loadQueueRunSettingsByPlayerFromStorage,
   normalizeAdvisorSettings,
+  normalizeFoodOptimizerSettings,
   normalizeMarketItemValues,
   normalizeMarketItemValueSources,
   normalizePricingSettings,
   normalizeSimulationUiSettings,
   normalizeStoredPlayerDataMap,
   persistAdvisorSettingsToStorage,
+  persistFoodOptimizerSettingsToStorage,
   persistSimulationUiSettingsToStorage,
   readJsonStorage,
   removeStorageItem,
   setJsonStorage,
 } from '../simulatorStorage.js';
+import { getFoodOptimizerCatalogHrids } from '../foodOptimizerDomain.js';
 
 const PLAYER_DATA_SNAPSHOT_STORAGE_KEY = 'mwi.player.data.snapshot.v1';
 const QUEUE_RUN_SETTINGS_STORAGE_KEY = 'mwi.queue.runSettings.v1';
@@ -28,6 +32,7 @@ const PRICE_SETTINGS_STORAGE_KEY = 'mwi.price.settings.v1';
 const PRICE_MARKET_CACHE_STORAGE_KEY = 'mwi.price.marketCache.v1';
 const SIMULATION_UI_STORAGE_KEY = 'mwi.simulation.ui.v1';
 const ADVISOR_SETTINGS_STORAGE_KEY = 'mwi.advisor.settings.v1';
+const FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY = 'mwi.foodOptimizer.settings.v1';
 
 function createMemoryStorage(initialValues = {}) {
   const data = new Map(Object.entries(initialValues));
@@ -60,6 +65,63 @@ function createMeaningfulPlayerSnapshot(overrides = {}) {
 describe('simulatorStorage', () => {
   afterEach(() => {
     vi.unstubAllGlobals();
+  });
+
+  describe('food optimizer settings', () => {
+    it('uses exact top 10 for first use and unreadable preferences', () => {
+      const storage = createMemoryStorage();
+      vi.stubGlobal('localStorage', storage);
+      const expected = { thresholdStepPercent: 10, rounds: 3, searchMode: 'top10', foodHrids: null };
+      expect(loadFoodOptimizerSettingsFromStorage()).toEqual(expected);
+
+      storage.data.set(FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY, '{broken');
+      expect(loadFoodOptimizerSettingsFromStorage()).toEqual(expected);
+      storage.data.set(FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY, JSON.stringify({ version: 999, searchMode: 'complete' }));
+      expect(loadFoodOptimizerSettingsFromStorage()).toEqual(expected);
+    });
+
+    it('preserves complete statistics when loading preferences saved before search modes existed', () => {
+      const storage = createMemoryStorage({
+        [FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY]: JSON.stringify({ version: 1, thresholdStepPercent: 15, rounds: 4 }),
+      });
+      vi.stubGlobal('localStorage', storage);
+      const settings = loadFoodOptimizerSettingsFromStorage();
+      expect(settings).toEqual({ thresholdStepPercent: 15, rounds: 4, searchMode: 'complete', foodHrids: null });
+      persistFoodOptimizerSettingsToStorage(settings);
+      expect(JSON.parse(storage.data.get(FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY)).searchMode).toBe('complete');
+    });
+
+    it.each(['top10', 'complete'])('round-trips the %s mode with the other optimizer settings', (searchMode) => {
+      const storage = createMemoryStorage();
+      vi.stubGlobal('localStorage', storage);
+      const settings = { thresholdStepPercent: 25, rounds: 5, searchMode, foodHrids: null };
+      expect(persistFoodOptimizerSettingsToStorage(settings)).toEqual(settings);
+      expect(loadFoodOptimizerSettingsFromStorage()).toEqual(settings);
+      expect(JSON.parse(storage.data.get(FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY))).toMatchObject({
+        version: 1,
+        ...settings,
+      });
+    });
+
+    it('normalizes the stored food scope to catalog order and drops unknown items', () => {
+      const storage = createMemoryStorage();
+      vi.stubGlobal('localStorage', storage);
+      const catalog = getFoodOptimizerCatalogHrids();
+      expect(catalog.length).toBeGreaterThan(2);
+
+      const settings = {
+        thresholdStepPercent: 25,
+        rounds: 5,
+        searchMode: 'top10',
+        foodHrids: [catalog[1], catalog[0]],
+      };
+      expect(persistFoodOptimizerSettingsToStorage(settings).foodHrids).toEqual([catalog[0], catalog[1]]);
+      expect(loadFoodOptimizerSettingsFromStorage().foodHrids).toEqual([catalog[0], catalog[1]]);
+
+      // 无效、空集合与全选都回退到“全部食物”的 null 口径。
+      for (const raw of [['/items/not_a_food'], [], catalog])
+        expect(normalizeFoodOptimizerSettings({ foodHrids: raw }).foodHrids).toBeNull();
+    });
   });
 
   it('reads JSON objects and falls back for missing, invalid, or non-object values', () => {

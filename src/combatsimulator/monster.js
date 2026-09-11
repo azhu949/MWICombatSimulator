@@ -1,7 +1,73 @@
 import Ability from './ability';
-import CombatUnit from './combatUnit';
+import CombatUnit, { FRESH_COMBAT_STATS } from './combatUnit';
 import combatMonsterDetailMap from './data/combatMonsterDetailMap.json';
 import Drops from './drops';
+
+const OPTIONAL_COMBAT_STATS = [
+  'stabAccuracy',
+  'slashAccuracy',
+  'smashAccuracy',
+  'rangedAccuracy',
+  'magicAccuracy',
+  'stabDamage',
+  'slashDamage',
+  'smashDamage',
+  'rangedDamage',
+  'magicDamage',
+  'defensiveDamage',
+  'taskDamage',
+  'physicalAmplify',
+  'waterAmplify',
+  'natureAmplify',
+  'fireAmplify',
+  'healingAmplify',
+  'stabEvasion',
+  'slashEvasion',
+  'smashEvasion',
+  'rangedEvasion',
+  'magicEvasion',
+  'armor',
+  'waterResistance',
+  'natureResistance',
+  'fireResistance',
+  'maxHitpoints',
+  'maxManapoints',
+  'lifeSteal',
+  'hpRegenPer10',
+  'mpRegenPer10',
+  'physicalThorns',
+  'elementalThorns',
+  'combatDropRate',
+  'combatRareFind',
+  'combatDropQuantity',
+  'combatExperience',
+  'criticalRate',
+  'criticalDamage',
+  'armorPenetration',
+  'waterPenetration',
+  'naturePenetration',
+  'firePenetration',
+  'abilityHaste',
+  'tenacity',
+  'manaLeech',
+  'castSpeed',
+  'threat',
+  'parry',
+  'mayhem',
+  'pierce',
+  'curse',
+  'fury',
+  'weaken',
+  'ripple',
+  'bloom',
+  'blaze',
+  'attackSpeed',
+  'foodHaste',
+  'drinkConcentration',
+  'autoAttackDamage',
+  'abilityDamage',
+  'retaliation',
+];
 
 class Monster extends CombatUnit {
   difficultyTier = 0;
@@ -86,91 +152,25 @@ class Monster extends CombatUnit {
 
     this.combatDetails.combatStats.combatStyleHrid = gameMonster.combatDetails.combatStats.combatStyleHrids[0];
 
-    for (const [key, value] of Object.entries(gameMonster.combatDetails.combatStats)) {
-      this.combatDetails.combatStats[key] = value;
-    }
+    Object.assign(this.combatDetails.combatStats, gameMonster.combatDetails.combatStats);
 
     this.combatDetails.combatStats.armor *= labyrinthScaleFactor;
     this.combatDetails.combatStats.waterResistance *= labyrinthScaleFactor;
     this.combatDetails.combatStats.natureResistance *= labyrinthScaleFactor;
     this.combatDetails.combatStats.fireResistance *= labyrinthScaleFactor;
 
-    [
-      'stabAccuracy',
-      'slashAccuracy',
-      'smashAccuracy',
-      'rangedAccuracy',
-      'magicAccuracy',
-      'stabDamage',
-      'slashDamage',
-      'smashDamage',
-      'rangedDamage',
-      'magicDamage',
-      'defensiveDamage',
-      'taskDamage',
-      'physicalAmplify',
-      'waterAmplify',
-      'natureAmplify',
-      'fireAmplify',
-      'healingAmplify',
-      'stabEvasion',
-      'slashEvasion',
-      'smashEvasion',
-      'rangedEvasion',
-      'magicEvasion',
-      'armor',
-      'waterResistance',
-      'natureResistance',
-      'fireResistance',
-      'maxHitpoints',
-      'maxManapoints',
-      'lifeSteal',
-      'hpRegenPer10',
-      'mpRegenPer10',
-      'physicalThorns',
-      'elementalThorns',
-      'combatDropRate',
-      'combatRareFind',
-      'combatDropQuantity',
-      'combatExperience',
-      'criticalRate',
-      'criticalDamage',
-      'armorPenetration',
-      'waterPenetration',
-      'naturePenetration',
-      'firePenetration',
-      'abilityHaste',
-      'tenacity',
-      'manaLeech',
-      'castSpeed',
-      'threat',
-      'parry',
-      'mayhem',
-      'pierce',
-      'curse',
-      'fury',
-      'weaken',
-      'ripple',
-      'bloom',
-      'blaze',
-      'attackSpeed',
-      'foodHaste',
-      'drinkConcentration',
-      'autoAttackDamage',
-      'abilityDamage',
-      'retaliation',
-    ].forEach((stat) => {
+    for (const stat of OPTIONAL_COMBAT_STATS) {
       if (gameMonster.combatDetails.combatStats[stat] == null) {
         this.combatDetails.combatStats[stat] = 0;
       }
-    });
+    }
 
     if (this.combatDetails.combatStats.attackInterval == 0) {
       this.combatDetails.combatStats.attackInterval = gameMonster.combatDetails.attackInterval;
     }
 
     this.refreshBaseCombatStats();
-    super.updateCombatDetails();
+    super.updateCombatDetails(FRESH_COMBAT_STATS);
   }
 }
 

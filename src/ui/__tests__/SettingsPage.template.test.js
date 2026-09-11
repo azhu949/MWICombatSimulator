@@ -102,6 +102,7 @@ describe('SettingsPage baseline round defaults', () => {
     expect(settingsPageSource).toContain('simulator.runtime.isRunning ||');
     expect(settingsPageSource).toContain('simulator.isAnyQueueRunning ||');
     expect(settingsPageSource).toContain('simulator.advisor.runtime?.isRunning === true ||');
-    expect(settingsPageSource).toContain('simulator.advisor.runtime?.scanInFlight === true,');
+    expect(settingsPageSource).toContain('simulator.advisor.runtime?.scanInFlight === true ||');
+    expect(settingsPageSource).toContain('simulator.foodOptimizer.runtime.isRunning,');
   });
 });
