@@ -54,6 +54,19 @@ describe('food optimizer engine execution', () => {
     expect(Math.random).toBe(original);
   });
 
+  it('rejects an overlapping round instead of corrupting the shared Math.random scope', async () => {
+    const input = request();
+    const original = Math.random;
+    // 第一轮在 simulate 的 await 处挂起，其播种作用域仍处于安装状态。
+    const first = simulateFoodOptimizerRound(input, null, 12345);
+    const second = simulateFoodOptimizerRound(input, null, 12345);
+    // 同步窗口：当前作用域完好无损，被拒绝的那一轮从未替换过它。
+    expect(Math.random).not.toBe(original);
+    await expect(second).rejects.toThrow(/must not overlap/);
+    await expect(first).resolves.toMatchObject({ seed: 12345 });
+    expect(Math.random).toBe(original);
+  });
+
   it('uses initialized attributes in zone and dungeon contexts', () => {
     const input = request();
     for (const target of [

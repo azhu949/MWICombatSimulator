@@ -19,6 +19,24 @@ import {
   finishFoodOptimizerEvaluation,
 } from './foodOptimizerEvaluation.js';
 
+// RNG 隔离契约
+// ------------
+// 战斗引擎在模拟期间读取 realm 全局的 Math.random，因此
+// simulateFoodOptimizerRound 会在一轮模拟期间安装按种子生成的
+// 随机数发生器，并在 finally 块中恢复之前的发生器。
+//
+// 只有当每个 JS realm 中至多有一个轮次作用域处于活动状态时，
+// 这一做法才成立：生产环境的轮次运行在专用 worker 中，协调器
+// 每个客户端只允许一条消息在途（FoodOptimizerWorkerClient.call），
+// worker 入口自身也断言单飞评估。未来任何在主线程上启动轮次、
+// 或在同一 realm 中重叠轮次的调用方都必须显式失败，而不是破坏
+// 轨迹或泄漏已播种的发生器；activeRandomScopes 正是强制这一不变式。
+//
+// getFoodOptimizerResources 在主线程上共享构造/重置/初始化路径，
+// 但有意不安装任何播种作用域：该路径必须不消耗 Math.random
+//（当前如此），而每个播种作用域都归 simulateFoodOptimizerRound 所有。
+let activeRandomScopes = 0;
+
 export function createFoodOptimizerRandom(seed) {
   let state = seed >>> 0;
   return () => {
@@ -63,6 +81,9 @@ export function createFoodOptimizerSimulation(request, candidate = null) {
 }
 
 export function getFoodOptimizerResources(request) {
+  // 与一轮模拟相同的构造/重置/初始化路径，但在主线程上使用原生
+  // Math.random 运行。该路径不得消耗随机数（见上文 RNG 隔离契约），
+  // 它只读取战斗前属性。
   const simulator = createFoodOptimizerSimulation(request);
   simulator.simulationTimeLimit = request.payload.simulationTimeLimit;
   simulator.reset();
@@ -85,9 +106,15 @@ export async function simulateFoodOptimizerRound(
   { collectThresholds = true, costBound = null } = {},
 ) {
   assertFoodOptimizerTarget(request);
-  // Each dedicated worker runs one round at a time. The engine's RNG is isolated here.
+  if (activeRandomScopes > 0)
+    throw new Error(
+      'Food optimizer rounds must not overlap in the same realm: a seeded Math.random scope is already active.',
+    );
+  // 万一安装随机数发生器时抛出异常，作用域计数也不能泄漏，因此
+  // 自增语句保持为受保护区域之前的最后一条语句。
   const originalRandom = Math.random;
   Math.random = createFoodOptimizerRandom(seed);
+  activeRandomScopes += 1;
   try {
     const simulator = createFoodOptimizerSimulation(request, candidate);
     const hrid = `player${request.activePlayerId}`;
@@ -154,6 +181,7 @@ export async function simulateFoodOptimizerRound(
     };
   } finally {
     Math.random = originalRandom;
+    activeRandomScopes -= 1;
   }
 }
 

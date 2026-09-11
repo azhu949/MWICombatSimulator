@@ -1,6 +1,10 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
-import { createFoodOptimizerSearch } from '../foodOptimizerSearch.js';
-import { generateFoodOptimizerCandidates, getFoodOptimizerItems } from '../foodOptimizerDomain.js';
+import { createFoodOptimizerSearch, FoodOptimizerWorkerClient } from '../foodOptimizerSearch.js';
+import {
+  compareFoodOptimizerResults,
+  generateFoodOptimizerCandidates,
+  getFoodOptimizerItems,
+} from '../foodOptimizerDomain.js';
 
 afterEach(() => {
   vi.restoreAllMocks();
@@ -92,7 +96,14 @@ describe('bounded exhaustive food search', () => {
     }).done;
     expect(report).toMatchObject({
       complete: true,
-      stats: { totalCandidates: 3, completedCandidates: 3, simulatedCandidates: 1, reusedCandidates: 2 },
+      stats: {
+        totalCandidates: 3,
+        completedCandidates: 3,
+        simulatedCandidates: 1,
+        reusedCandidates: 2,
+        completedRounds: 4,
+        reusedRounds: 8,
+      },
     });
     expect(updates.at(-1).progress.progress).toBe(1);
     expect(client.stop).toHaveBeenCalled();
@@ -168,6 +179,14 @@ describe('bounded exhaustive food search', () => {
       workerFactory: () => client,
     });
     const report = await search.done;
+    expect(calls[0]).toBeNull();
+    expect(calls.slice(1, 5).map((candidate) => candidate.slots.map((slot) => slot.threshold))).toEqual([
+      [],
+      [20],
+      [30, 20],
+      [30],
+    ]);
+    expect(calls[5].slots).toMatchObject([{ hrid: 'other-mana-food', threshold: 100 }]);
     const signatures = calls.slice(1).map((candidate) => candidate.signature);
     expect(signatures.slice().sort()).toEqual(
       [...generateFoodOptimizerCandidates(items, 2)].map((candidate) => candidate.signature).sort(),
@@ -212,24 +231,34 @@ describe('bounded exhaustive food search', () => {
       workerLimit: 1,
       workerFactory: () => client,
     }).done;
-    const dispatched = calls.map((candidate) => candidate?.slots[0]?.threshold);
-    expect(dispatched).toContain(20);
-    expect(dispatched).toContain(100);
+    expect(calls.map((candidate) => candidate?.slots[0]?.threshold)).toEqual([undefined, undefined, 20, 100]);
+    expect(report.stats.screenedCompositions).toBe(2);
+    expect(report.stats.passedCompositions).toBe(0);
     expect(report.stats.completedCandidates).toBe(report.stats.totalCandidates);
     expect(report.complete).toBe(true);
   });
   it('finishes baseline first, batches candidates, reuses the pool and retains only ten results', async () => {
     const updates = [];
-    const { search } = setup({
+    const { search, clients, peak, calls } = setup({
       onUpdate: (report, progress) => updates.push({ report, progress }),
     });
     const report = await search.done;
     expect(report.complete).toBe(true);
+    expect(report.stats.completedCandidates + 1).toBe(calls());
     expect(report.stats.completedCandidates).toBe(report.stats.totalCandidates);
     expect(report.stats.completedRounds).toBe(report.stats.maxSimulationRounds);
+    expect(report.stats.screenedCompositions).toBe(report.stats.totalCompositions);
     expect(report.topResults).toHaveLength(10);
     expect(report.topResults[0].food).toEqual([]);
+    expect(clients).toHaveLength(3);
+    expect(peak()).toBeLessThanOrEqual(3);
+    expect(clients.every((client) => client.stop.mock.calls.length)).toBe(true);
     expect(updates.at(-1).progress).toMatchObject({ phase: 'completed', progress: 1 });
+    expect(updates.map(({ progress }) => progress.phase)).toContain('screening');
+    expect(updates.every(({ report }) => report.topResults.length <= 10)).toBe(true);
+    expect(
+      updates.every(({ progress }, index) => index === 0 || progress.progress >= updates[index - 1].progress.progress),
+    ).toBe(true);
   });
 
   it('can stop during composition screening without expanding a billion threshold candidates', async () => {
@@ -243,6 +272,9 @@ describe('bounded exhaustive food search', () => {
     });
     const report = await state.search.done;
     expect(report.stats.totalCandidates).toBeGreaterThan(1_000_000_000);
+    expect(report.stats.totalCompositions).toBe(3683);
+    expect(report.stats.completedCandidates).toBe(4);
+    expect(state.calls()).toBe(5);
     expect(report).toMatchObject({ status: 'cancelled', complete: false });
   });
 
@@ -259,17 +291,52 @@ describe('bounded exhaustive food search', () => {
     expect(report.topResults.length).toBeGreaterThan(0);
     expect(report.topResults.every((entry) => entry.roundsCompleted === 3)).toBe(true);
     expect(report.stats.completedCandidates).toBeLessThan(report.stats.totalCandidates);
+    expect(state.clients.every((client) => client.stop.mock.calls.length)).toBe(true);
+  });
+
+  it('preserves screening results when cancelled during threshold search', async () => {
+    let state;
+    state = setup({
+      onUpdate(report, progress) {
+        if (progress.phase === 'searching' && report.stats.completedCandidates > report.stats.totalCompositions)
+          state.search.cancel();
+      },
+    });
+    const report = await state.search.done;
+    expect(report).toMatchObject({ status: 'cancelled', complete: false });
+    expect(report.stats.screenedCompositions).toBe(report.stats.totalCompositions);
+    expect(report.stats.completedCandidates).toBeGreaterThan(report.stats.totalCompositions);
+    expect(report.stats.completedCandidates).toBeLessThan(report.stats.totalCandidates);
+    expect(report.topResults).toHaveLength(10);
+    expect(state.clients).toHaveLength(3);
+    expect(state.clients.every((client) => client.stop.mock.calls.length)).toBe(true);
   });
 
   it.each([5, 30])(
     'terminates all workers and preserves partial results on an exception at call %i',
     async (failAfter) => {
-      const { search } = setup({ failAfter });
+      const { search, clients } = setup({ failAfter });
       const report = await search.done;
       expect(report).toMatchObject({ status: 'error', complete: false, error: 'failed candidate' });
       expect(report.topResults.length).toBeGreaterThan(0);
+      expect(clients.every((client) => client.stop.mock.calls.length)).toBe(true);
     },
   );
+
+  it('settles pending RPCs and ignores late replies after termination', async () => {
+    const worker = { postMessage: vi.fn(), terminate: vi.fn() };
+    vi.stubGlobal(
+      'Worker',
+      vi.fn(() => worker),
+    );
+    const client = new FoodOptimizerWorkerClient();
+    const pending = client.call({ type: 'evaluate' });
+    client.stop();
+    await expect(pending).rejects.toThrow('stopped');
+    expect(worker.terminate).toHaveBeenCalledOnce();
+    worker.onmessage({ data: { type: 'result', result: 'late' } });
+    expect(client.pending).toBeNull();
+  });
 
   it.each([false, true])(
     'uses certified pruning across the pool and releases it on completion or cancellation (%s)',
@@ -351,10 +418,90 @@ describe('bounded exhaustive food search', () => {
       const report = await search.done;
       expect(report.status).toBe(cancel ? 'cancelled' : 'completed');
       expect(report.complete).toBe(!cancel);
+      expect(peak).toBeGreaterThan(1);
+      expect(peak).toBeLessThanOrEqual(3);
+      expect(clients.every((client) => client.stop.mock.calls.length > 0)).toBe(true);
       expect(report.stats.skippedCandidates).toBeGreaterThan(0);
+      expect(report.stats.simulatedCandidates + report.stats.skippedCandidates + report.stats.reusedCandidates).toBe(
+        report.stats.completedCandidates,
+      );
       if (cancel) return;
+      const expected = [...generateFoodOptimizerCandidates(items, 3)]
+        .map((candidate) => ({
+          ...candidate,
+          ...evaluate(candidate),
+          savingsPerHour: 1000 - evaluate(candidate).costPerHour,
+        }))
+        .filter((result) => result.feasible)
+        .sort(compareFoodOptimizerResults);
+      expect(report.topResults).toEqual(expected.slice(0, 10));
+      expect(report.stats.feasibleCandidates).toBe(expected.length);
       expect(report.stats.completedCandidates).toBe(report.stats.totalCandidates);
-      expect(report.topResults.length).toBeGreaterThan(0);
+      expect(calls).toBeLessThan(report.stats.totalCandidates + 1);
     },
   );
+  it('keeps all workers occupied even when a phase has fewer than one old batch of candidates', async () => {
+    const items = getFoodOptimizerItems({ maxHp: 100, maxMp: 100, thresholdStepPercent: 100 })
+      .slice(0, 2)
+      .map((item) => ({ ...item, restore: 100, thresholds: [100] }));
+    const { search, peak } = setup({ items, workerLimit: 3 });
+    const report = await search.done;
+    expect(report.stats.totalCandidates).toBe(4);
+    expect(report.complete).toBe(true);
+    expect(peak()).toBe(3);
+  });
+
+  it('can cancel during bulk reuse of feasible results while retaining completed rankings', async () => {
+    const items = getFoodOptimizerItems({ maxHp: 10000, maxMp: 10000, thresholdStepPercent: 1 }).slice(0, 3);
+    let calls = 0;
+    let clock = 0;
+    vi.spyOn(Date, 'now').mockImplementation(() => (clock += 200));
+    const result = {
+      feasible: true,
+      rejected: '',
+      ranOutOfMana: false,
+      deaths: 0,
+      roundsCompleted: 3,
+      costPerHour: 0,
+      foodUsed: {},
+      unusedFoodThresholds: { hp: 1, mp: 1 },
+      samples: [1, 2, 3].map((seed) => ({
+        seed,
+        foodUsed: {},
+        costPerHour: 0,
+        stoppedEarly: false,
+        ranOutOfMana: false,
+        unusedFoodThresholds: { hp: 1, mp: 1 },
+      })),
+    };
+    const client = {
+      stop: vi.fn(),
+      async call(message) {
+        if (message.type === 'init') return;
+        calls += 1;
+        return structuredClone(result);
+      },
+    };
+    let search;
+    search = createFoodOptimizerSearch({
+      request: { rounds: 3 },
+      items,
+      foodSlots: 3,
+      workerLimit: 1,
+      workerFactory: () => client,
+      onUpdate(report, progress) {
+        if (progress.phase === 'searching' && report.stats.completedCandidates > report.stats.totalCompositions)
+          search.cancel();
+      },
+    });
+    const report = await search.done;
+    expect(report).toMatchObject({ status: 'cancelled', complete: false });
+    expect(calls).toBe(2);
+    expect(report.stats.totalCandidates).toBeGreaterThan(1000000);
+    expect(report.stats.reusedCandidates).toBeGreaterThan(0);
+    expect(report.stats.completedCandidates).toBeLessThan(report.stats.totalCandidates);
+    expect(report.topResults.length).toBeGreaterThan(0);
+    expect(report.topResults.every((candidate) => candidate.feasible && candidate.roundsCompleted === 3)).toBe(true);
+    expect(client.stop).toHaveBeenCalled();
+  });
 });

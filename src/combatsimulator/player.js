@@ -83,8 +83,9 @@ const EQUIPMENT_COMBAT_STATS = [
 const equipmentStatsCaches = new WeakMap();
 const nativeGetCombatStat = Equipment.prototype.getCombatStat;
 
-// Item definitions are immutable during a simulation. Live equipment objects,
-// enhancement levels and method overrides still invalidate the optional cache.
+// 物品定义在模块加载时已被 equipment.js 冻结，因此这里引用相等即
+// 可完整代表内容相同。实时的装备对象、强化等级和方法覆写仍会使
+// 可选缓存失效。
 function readNativeEquipmentState(item) {
   if (Object.getPrototypeOf(item) !== Equipment.prototype || Object.hasOwn(item, 'getCombatStat')) return null;
   const enhancement = Object.getOwnPropertyDescriptor(item, 'enhancementLevel');

@@ -1,6 +1,22 @@
 import itemDetailMap from './data/itemDetailMap.json';
 import enhancementLevelTotalMultiplierTable from './data/enhancementLevelTotalBonusMultiplierTable.json';
 
+// 装备定义是模块级单例，由所有 Equipment 实例共享。player.js 中的
+// 可选总量缓存只比较对象引用，因此对这些表做字段级修改会让缓存
+// 悄悄保留过期的总量。冻结这些表可以把这种失效模式变成快速失败的
+// TypeError。
+function deepFreeze(value) {
+  if (value === null || typeof value !== 'object') return value;
+  Object.freeze(value);
+  for (const nested of Object.values(value)) deepFreeze(nested);
+  return value;
+}
+
+for (const item of Object.values(itemDetailMap)) {
+  if (item?.equipmentDetail) deepFreeze(item.equipmentDetail);
+}
+deepFreeze(enhancementLevelTotalMultiplierTable);
+
 class Equipment {
   constructor(hrid, enhancementLevel) {
     this.hrid = hrid;
