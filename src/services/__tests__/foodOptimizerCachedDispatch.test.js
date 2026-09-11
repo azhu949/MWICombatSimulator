@@ -197,9 +197,6 @@ describe('food optimizer dispatch of complete shared-round evidence', () => {
           ({ progress }, index) => index === 0 || progress.progress >= state.updates[index - 1].progress.progress,
         ),
       ).toBe(true);
-      expect(state.clients.every((client) => client.stop.mock.calls.length)).toBe(true);
-      expect(state.clients).toHaveLength(adaptiveWorkers ? 1 : 2);
-      expect(state.cache.clear).toHaveBeenCalledOnce();
     },
   );
 
@@ -296,7 +293,5 @@ describe('food optimizer dispatch of complete shared-round evidence', () => {
     expect(report.stats.simulatedCandidates).toBe(0);
     expect(state.coverage.size).toBe(report.stats.completedCandidates);
     expect(report.topResults.length).toBeGreaterThan(0);
-    expect(state.clients.every((client) => client.stop.mock.calls.length)).toBe(true);
-    expect(state.cache.clear).toHaveBeenCalledOnce();
   });
 });

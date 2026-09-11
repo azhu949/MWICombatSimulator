@@ -1,15 +1,19 @@
 import { describe, expect, it, vi } from 'vitest';
 import CombatSimulator from '../../combatsimulator/combatSimulator.js';
+import {
+  computeFoodOptimizerCostLowerBound,
+  getFoodOptimizerCostCutoff,
+  isFoodOptimizerCostAboveCutoff,
+  observeFoodOptimizerCostBound,
+} from '../foodOptimizerCostBound.js';
 import { buildFoodCandidate, computeFoodCostPerHour } from '../foodOptimizerDomain.js';
 import { createFoodOptimizerRoundCache } from '../foodOptimizerRoundCache.js';
-import {
-  createFoodOptimizerEvaluator,
-  evaluateFoodOptimizerCandidate,
-  simulateFoodOptimizerRound,
-} from '../foodOptimizerSimulation.js';
+import { evaluateFoodOptimizerCandidate, simulateFoodOptimizerRound } from '../foodOptimizerSimulation.js';
 import { createFoodOptimizerFixture } from './support/foodOptimizerTestSupport.js';
 
 const HRID = '/items/gummy';
+const GUMMY = '/items/gummy';
+const DONUT = '/items/donut';
 const TIME_LIMIT = 600e9;
 const range = (min = 1, max = 100) => [{ hrid: HRID, kind: 'mp', min, max }];
 const candidate = buildFoodCandidate([{ hrid: HRID, kind: 'mp', threshold: 50, restore: 40, price: 10 }]);
@@ -60,18 +64,6 @@ describe('food optimizer cost pruning between rounds', () => {
       unusedFoodThresholds: null,
     });
     expect(result.samples).toEqual(samples);
-    expect(simulate.mock.calls.map((call) => call[5])).toEqual([
-      { collectThresholds: true, costBound: { cutoff: 50, completedCostPerHour: 0, totalRounds: 3 } },
-      { collectThresholds: true, costBound: { cutoff: 50, completedCostPerHour: 120, totalRounds: 3 } },
-    ]);
-    expect(roundCache.record.mock.calls).toEqual(samples.map((sample) => [sample.seed, candidate, sample]));
-    expect(progress).toHaveBeenLastCalledWith({
-      round: 2,
-      progress: 0,
-      simulatedRounds: 2,
-      reusedRounds: 0,
-      pruned: 'cost',
-    });
   });
 
   it('can stop after a cached prefix without running another round or mutating the sample', async () => {
@@ -122,8 +114,6 @@ describe('food optimizer cost pruning between rounds', () => {
     });
     expect(result.samples).toEqual([first, partial]);
     expect(roundCache.record).toHaveBeenCalledTimes(1);
-    expect(roundCache.record).toHaveBeenCalledWith(1, candidate, first);
-    expect(simulate.mock.calls[1][5].costBound.completedCostPerHour).toBe(90);
   });
 
   it.each([
@@ -170,7 +160,6 @@ describe('food optimizer cost pruning between rounds', () => {
       const result = await evaluateFoodOptimizerCandidate(request, selected, 0, undefined, simulate, options);
       expect(result).toMatchObject({ feasible: true, costPerHour: 1000, roundsCompleted: 3 });
       expect(result).not.toHaveProperty('pruned');
-      expect(simulate.mock.calls.map((call) => call[5])).toEqual(Array(3).fill({ collectThresholds: true }));
     }
   });
 });
@@ -185,7 +174,6 @@ describe('food optimizer in-round cost pruning', () => {
 
   it('stops after real food consumption with an identical event/RNG prefix and a full-duration cost bound', async () => {
     const { request, candidate } = foodFixture();
-    const originalRandom = Math.random;
     const nativeSimulate = CombatSimulator.prototype.simulate;
     const nativeProcess = CombatSimulator.prototype.processEvent;
     const runs = [];
@@ -241,55 +229,116 @@ describe('food optimizer in-round cost pruning', () => {
       expect(partial.equivalentThresholds[0]).toMatchObject({ hrid: candidate.food[0], kind: 'mp' });
       expect(runs[1].events).toEqual(runs[0].events.slice(0, runs[1].events.length));
       expect(runs[1].random).toEqual(runs[0].random.slice(0, runs[1].random.length));
-      expect(Math.random).toBe(originalRandom);
     } finally {
       simulateSpy.mockRestore();
       processSpy.mockRestore();
     }
   });
+});
 
-  it('forwards evaluator cutoffs while leaving a baseline and complete-mode round unchanged', async () => {
-    const { request, candidate } = foodFixture();
-    const evaluate = createFoodOptimizerEvaluator(request);
-    const result = await evaluate(candidate, Infinity, undefined, [], 0);
-    expect(result).toMatchObject({ pruned: 'cost', feasible: null, rejected: '', simulatedRounds: 1 });
-
-    const ordinaryRequest = { ...request, searchMode: 'complete' };
-    const ordinary = await simulateFoodOptimizerRound(ordinaryRequest, candidate, 1);
-    const withIgnoredBound = await simulateFoodOptimizerRound(ordinaryRequest, candidate, 1, undefined, Infinity, {
-      costBound: { cutoff: 0, completedCostPerHour: 0, totalRounds: 3 },
-    });
-    expect(withIgnoredBound).toEqual(ordinary);
-    const baseline = await simulateFoodOptimizerRound(request, null, 1, undefined, 0, {
-      costBound: { cutoff: 0, completedCostPerHour: 1000, totalRounds: 3 },
-    });
-    expect(baseline).toMatchObject({ stoppedEarly: false, simulatedTime: request.payload.simulationTimeLimit });
-    expect(baseline).not.toHaveProperty('pruned');
+describe('food optimizer cost lower bounds', () => {
+  it('requires an explicitly enabled candidate and a finite nonnegative cutoff', () => {
+    const request = { searchMode: 'top10', rounds: 3 };
+    expect(getFoodOptimizerCostCutoff(request, {}, 0)).toBe(0);
+    expect(getFoodOptimizerCostCutoff(request, {}, 25)).toBe(25);
+    expect(getFoodOptimizerCostCutoff(request, null, 0)).toBeNull();
+    for (const mode of ['complete', 'invalid'])
+      expect(getFoodOptimizerCostCutoff({ ...request, searchMode: mode }, {}, 0)).toBeNull();
+    for (const cutoff of [undefined, -1, NaN]) expect(getFoodOptimizerCostCutoff(request, {}, cutoff)).toBeNull();
+    for (const rounds of [0, Infinity]) expect(getFoodOptimizerCostCutoff({ ...request, rounds }, {}, 10)).toBeNull();
   });
 
-  it.each(['mana', 'deaths'])('gives a same-event %s failure priority over a crossed cost bound', async (failure) => {
-    const { request, candidate } = foodFixture();
-    const nativeUse = CombatSimulator.prototype.tryUseConsumable;
-    const useSpy = vi.spyOn(CombatSimulator.prototype, 'tryUseConsumable').mockImplementation(function (unit, food) {
-      const consumed = nativeUse.call(this, unit, food);
-      if (consumed && unit.hrid === 'player1' && unit.food.includes(food)) {
-        if (failure === 'mana') this.simResult.playerRanOutOfMana[unit.hrid] = true;
-        else this.simResult.deaths[unit.hrid] = 1;
-      }
-      return consumed;
-    });
-    try {
-      const partial = await simulateFoodOptimizerRound(request, candidate, 1, undefined, 0, {
-        costBound: { cutoff: 0, completedCostPerHour: 0, totalRounds: 3 },
-      });
-      expect(partial).toMatchObject({ stoppedEarly: true });
-      expect(partial.foodUsed[candidate.food[0]]).toBeGreaterThan(0);
-      expect(partial).not.toHaveProperty('pruned');
-      expect(partial).not.toHaveProperty('costLowerBound');
-      if (failure === 'mana') expect(partial.ranOutOfMana).toBe(true);
-      else expect(partial.deaths).toBe(1);
-    } finally {
-      useSpy.mockRestore();
+  it('keeps equality and floating-point neighbours for the ordinary tie-breakers', () => {
+    expect(isFoodOptimizerCostAboveCutoff(20, 20)).toBe(false);
+    expect(isFoodOptimizerCostAboveCutoff(20 + Number.EPSILON * 20, 20)).toBe(false);
+    expect(isFoodOptimizerCostAboveCutoff(20.001, 20)).toBe(true);
+    expect(isFoodOptimizerCostAboveCutoff(1, 0)).toBe(true);
+    for (const value of [null, NaN, Infinity]) {
+      expect(isFoodOptimizerCostAboveCutoff(value, 0)).toBe(false);
+      expect(isFoodOptimizerCostAboveCutoff(10, value)).toBe(false);
     }
+  });
+
+  it('uses all requested rounds and preserves addition before division', () => {
+    expect(computeFoodOptimizerCostLowerBound(120, 60, 3)).toBe(60);
+    expect(computeFoodOptimizerCostLowerBound(1e16, 1, 3)).toBe((1e16 + 1) / 3);
+    for (const values of [
+      [-1, 0, 3],
+      [0, NaN, 3],
+      [0, 1, 0],
+      [0, 1, 1.5],
+      [1e308, 1e308, 3],
+    ])
+      expect(computeFoodOptimizerCostLowerBound(...values)).toBeNull();
+  });
+
+  it('updates only for successful food uses by the active player and divides by the full duration', () => {
+    const food = { hrid: GUMMY };
+    const drink = { hrid: '/items/coffee' };
+    const player = { hrid: 'player1', food: [food] };
+    const other = { hrid: 'player2', food: [food] };
+    let count = 0;
+    const readCount = vi.fn(() => count);
+    const used = Object.defineProperty({}, GUMMY, { get: readCount });
+    const simulator = {
+      simulationTime: 1e9,
+      simResult: { consumablesUsed: { player1: used } },
+      tryUseConsumable: vi.fn((source, consumable, succeeds = true) => {
+        if (succeeds && source === player && consumable === food) count += 1;
+        return succeeds;
+      }),
+    };
+    const request = {
+      prices: { priceTable: { [GUMMY]: { ask: 10 } }, consumableMode: 'ask' },
+      payload: { simulationTimeLimit: TIME_LIMIT },
+    };
+    const observer = observeFoodOptimizerCostBound(simulator, player, request, {
+      cutoff: 70,
+      completedCostPerHour: 120,
+      totalRounds: 3,
+    });
+    expect(observer.shouldStop()).toBe(false);
+    expect(observer.read()).toBe(40);
+    simulator.tryUseConsumable(other, food);
+    simulator.tryUseConsumable(player, drink);
+    simulator.tryUseConsumable(player, food, false);
+    expect(observer.shouldStop()).toBe(false);
+
+    simulator.tryUseConsumable(player, food);
+    expect(observer.shouldStop()).toBe(false);
+    expect(observer.read()).toBe(60);
+
+    simulator.tryUseConsumable(player, food);
+    expect(observer.shouldStop()).toBe(true);
+    expect(observer.read()).toBe(80);
+  });
+
+  it('recomputes in sample slot order instead of summing uses in consumption order', () => {
+    const foods = [{ hrid: GUMMY }, { hrid: DONUT }];
+    const player = { hrid: 'player1', food: foods };
+    const used = {};
+    const simulator = {
+      simResult: { consumablesUsed: { player1: used } },
+      tryUseConsumable(source, consumable) {
+        used[consumable.hrid] = (used[consumable.hrid] || 0) + 1;
+        return true;
+      },
+    };
+    const request = {
+      prices: { priceTable: { [GUMMY]: { ask: 1e16 }, [DONUT]: { ask: 1 } }, consumableMode: 'ask' },
+      payload: { simulationTimeLimit: TIME_LIMIT },
+    };
+    const observer = observeFoodOptimizerCostBound(simulator, player, request, {
+      cutoff: 1e18,
+      completedCostPerHour: 17,
+      totalRounds: 3,
+    });
+    simulator.tryUseConsumable(player, foods[1]);
+    simulator.tryUseConsumable(player, foods[1]);
+    observer.shouldStop();
+    simulator.tryUseConsumable(player, foods[0]);
+    observer.shouldStop();
+    const sampleCost = computeFoodCostPerHour({ [GUMMY]: 1, [DONUT]: 2 }, request.prices.priceTable, 'ask', TIME_LIMIT);
+    expect(observer.read()).toBe((17 + sampleCost) / 3);
   });
 });

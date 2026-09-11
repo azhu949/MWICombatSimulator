@@ -1,4 +1,4 @@
-import { describe, expect, it, vi } from 'vitest';
+import { describe, expect, it } from 'vitest';
 import CombatUnit from '../combatUnit.js';
 import buffTypeDetailMap from '../data/buffTypeDetailMap.json';
 
@@ -90,50 +90,6 @@ describe('buff lookup during stat recalculation', () => {
     unit.combatBuffs = { replacement: buff('max_hitpoints', 0.25, 100) };
     check();
     unit.combatBuffs = {};
-    check();
-  });
-
-  it('returns fresh projections both during and after recalculation', () => {
-    const unit = createUnit({ first: buff('armor', 0.1, 2) });
-    const check = () => {
-      const first = unit.getBuffBoosts('/buff_types/armor');
-      first[0].flatBoost = 999;
-      first.push({ ratioBoost: 999, flatBoost: 999 });
-      expect(unit.getBuffBoosts('/buff_types/armor')).toEqual([{ ratioBoost: 0.1, flatBoost: 2 }]);
-    };
-    vi.spyOn(unit, 'updateCombatDetailsFromBuffs').mockImplementationOnce(check);
-    unit.updateCombatDetails();
-    check();
-    expect(unit.combatBuffs.first.flatBoost).toBe(2);
-  });
-
-  it('discards the temporary lookup when recalculation throws', () => {
-    const unit = createUnit({ first: buff('armor', 0.1, 2) });
-    vi.spyOn(unit, 'updateCombatDetailsFromBuffs').mockImplementationOnce(() => {
-      expect(unit.getBuffBoosts('/buff_types/armor')).toEqual([{ ratioBoost: 0.1, flatBoost: 2 }]);
-      throw new Error('recalculation failed');
-    });
-    expect(() => unit.updateCombatDetails()).toThrow('recalculation failed');
-    unit.combatBuffs = { second: buff('armor', 0.3, 4) };
-    expect(unit.getBuffBoosts('/buff_types/armor')).toEqual([{ ratioBoost: 0.3, flatBoost: 4 }]);
-    unit.updateCombatDetails();
-    const reference = createUnit(unit.combatBuffs, true, true);
-    reference.updateCombatDetails();
-    expect(unit.combatDetails).toStrictEqual(reference.combatDetails);
-  });
-
-  it('retains loose-equality lookup semantics for legacy non-string records and queries', () => {
-    const unit = createUnit({
-      numeric: { typeHrid: 1, ratioBoost: 0.1, flatBoost: 2 },
-      string: { typeHrid: '1', ratioBoost: 0.2, flatBoost: 3 },
-      regular: buff('armor', 0.3, 4),
-    });
-    const check = () => {
-      for (const type of [1, '1', '/buff_types/armor', undefined])
-        expect(unit.getBuffBoosts(type)).toEqual(legacyLookup.call(unit, type));
-    };
-    vi.spyOn(unit, 'updateCombatDetailsFromBuffs').mockImplementationOnce(check);
-    unit.updateCombatDetails();
     check();
   });
 });

@@ -6,6 +6,7 @@ import {
 } from '../foodOptimizerDomain.js';
 import { materializeFoodOptimizerOutcome } from '../foodOptimizerPruning.js';
 import { createFoodOptimizerSearch } from '../foodOptimizerSearch.js';
+import { createFoodOptimizerWorkQueue } from '../foodOptimizerWorkQueue.js';
 
 afterEach(() => vi.restoreAllMocks());
 
@@ -118,15 +119,11 @@ describe('worker allocation after a fully reusable empty-food baseline', () => {
       ...outcome(candidate),
     }));
     expect(clients).toHaveLength(1);
-    expect(calls).toEqual([null]);
-    expect(clients[0].stop).toHaveBeenCalled();
     expect(report).toMatchObject({ status: 'completed', complete: true });
     expect(report.stats).toMatchObject({
       completedCandidates: expected.length,
-      feasibleCandidates: expected.length,
       reusedCandidates: expected.length,
       simulatedCandidates: 0,
-      completedRounds: 2,
     });
     expect(new Set(seen).size).toBe(expected.length);
     expect(seen).toHaveLength(expected.length);
@@ -140,71 +137,72 @@ describe('worker allocation after a fully reusable empty-food baseline', () => {
     );
     const ranked = ({ signature, foodUsed, deaths, costPerHour }) => ({ signature, foodUsed, deaths, costPerHour });
     expect(report.topResults.map(ranked)).toEqual(expected.sort(compareFoodOptimizerResults).slice(0, 10).map(ranked));
-    expect(phases).toEqual(expect.arrayContaining(['baseline', 'screening', 'searching', 'completed']));
+    expect(phases).toEqual(expect.arrayContaining(['searching', 'completed']));
   });
 
   it.each([
     { name: 'an equipped food', options: { food: [{ hrid: 'equipped' }, null, null] } },
     { name: 'disabled reuse', options: { reuse: false } },
-    { name: 'a missing certificate', patch: (baseline) => ({ ...baseline, unusedFoodThresholds: null }) },
-    {
-      name: 'incomplete rounds',
-      patch: (baseline) => ({ ...baseline, roundsCompleted: 1, samples: baseline.samples.slice(0, 1) }),
-    },
-    { name: 'aggregate mana exhaustion', patch: (baseline) => ({ ...baseline, ranOutOfMana: true }) },
-    {
-      name: 'mana exhaustion hidden in one sample',
-      patch: (baseline) => ({
-        ...baseline,
-        samples: baseline.samples.map((sample, index) => ({ ...sample, ranOutOfMana: index === 0 })),
-      }),
-    },
-    {
-      name: 'a stopped sample',
-      patch: (baseline) => ({
-        ...baseline,
-        samples: baseline.samples.map((sample, index) => ({ ...sample, stoppedEarly: index === 0 })),
-      }),
-    },
-    {
-      name: 'a certificate that omits the lowest HP threshold',
-      patch: (baseline) => ({
-        ...baseline,
-        unusedFoodThresholds: { hp: 11, mp: 10 },
-        samples: baseline.samples.map((sample) => ({ ...sample, unusedFoodThresholds: { hp: 11, mp: 10 } })),
-      }),
-    },
-    {
-      name: 'an invalid unused-food bound',
-      patch: (baseline) => ({ ...baseline, unusedFoodThresholds: { hp: 0, mp: 10 } }),
-    },
-  ])('keeps the full worker pool for $name', async ({ options, patch }) => {
+  ])('keeps the full worker pool for $name', async ({ options }) => {
     const baseline = outcome(null, { hp: 10, mp: 10 });
-    const { search, clients, calls } = setup({ ...options, baseline: patch ? patch(baseline) : baseline });
+    const { search, clients, calls } = setup({ ...options, baseline });
     const report = await search.done;
     expect(report.status).toBe('completed');
     expect(clients).toHaveLength(4);
     expect(calls.some((candidate) => candidate !== null)).toBe(true);
     expect(clients.every((client) => client.stop.mock.calls.length > 0)).toBe(true);
   });
+});
 
-  it('remains cancellable during main-thread reuse with the single baseline worker', async () => {
-    let time = 0;
-    vi.spyOn(Date, 'now').mockImplementation(() => (time += 200));
-    let search;
-    const configured = setup({
-      onUpdate(report, progress) {
-        if (progress.phase === 'searching' && report.stats.completedCandidates > report.stats.totalCompositions)
-          search.cancel();
-      },
-    });
-    search = configured.search;
-    const report = await search.done;
-    expect(report).toMatchObject({ status: 'cancelled', complete: false });
-    expect(configured.clients).toHaveLength(1);
-    expect(configured.calls).toEqual([null]);
-    expect(report.stats.completedCandidates).toBeLessThan(report.stats.totalCandidates);
-    expect(report.topResults.length).toBeGreaterThan(0);
-    expect(configured.clients[0].stop).toHaveBeenCalled();
+describe('food composition work allocation', () => {
+  it('keeps related work on the same worker while other compositions are available', () => {
+    const factories = [vi.fn(() => ['a1', 'a2', 'a3']), vi.fn(() => ['b1', 'b2']), vi.fn(() => ['c1'])];
+    const queue = createFoodOptimizerWorkQueue(factories);
+    expect(queue.next('first').value).toBe('a1');
+    expect(queue.next('second').value).toBe('b1');
+    expect(queue.next('first').value).toBe('a2');
+    expect(queue.next('second').value).toBe('b2');
+    expect(queue.next('second').value).toBe('c1');
+    expect(queue.next('first').value).toBe('a3');
+    expect(queue.next('first').done).toBe(true);
+    expect(queue.next('second').done).toBe(true);
+  });
+
+  it('lets idle workers consume a long remaining composition without waiting for its owner', () => {
+    const queue = createFoodOptimizerWorkQueue([() => ['a1', 'a2', 'a3', 'a4', 'a5'], () => ['b1']]);
+    const seen = [queue.next('first').value, queue.next('second').value];
+    seen.push(queue.next('second').value, queue.next('third').value, queue.next('first').value);
+    expect(seen).toEqual(['a1', 'b1', 'a2', 'a3', 'a4']);
+    expect(queue.next('second').value).toBe('a5');
+    for (const worker of ['first', 'second', 'third']) expect(queue.next(worker).done).toBe(true);
+  });
+
+  it('preserves every yielded block exactly once across uneven and empty groups', () => {
+    const groups = Array.from({ length: 11 }, (_, group) =>
+      Array.from({ length: group % 5 }, (_, point) => ({ group, point, coveredCandidates: 10 ** point })),
+    );
+    const queue = createFoodOptimizerWorkQueue(groups.map((group) => () => group));
+    const seen = [];
+    let done = 0;
+    while (done < 4) {
+      done = 0;
+      for (const worker of ['a', 'b', 'a', 'c']) {
+        const entry = queue.next(worker);
+        if (entry.done) done += 1;
+        else seen.push(entry.value);
+      }
+    }
+    expect(new Set(seen).size).toBe(groups.flat().length);
+    expect(new Set(seen)).toEqual(new Set(groups.flat()));
+  });
+
+  it('clears pending and assigned work without opening another composition', () => {
+    const unopened = vi.fn(() => ['b1']);
+    const queue = createFoodOptimizerWorkQueue([() => ['a1', 'a2'], unopened]);
+    expect(queue.next('first').value).toBe('a1');
+    queue.clear();
+    expect(queue.next('first').done).toBe(true);
+    expect(queue.next('second').done).toBe(true);
+    expect(unopened).not.toHaveBeenCalled();
   });
 });

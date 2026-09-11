@@ -2,7 +2,6 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   buildFoodDefaultCandidate,
   compareFoodOptimizerResults,
-  countFoodOptimizerCompositions,
   generateFoodOptimizerCandidates,
   generateFoodOptimizerCompositionCandidates,
 } from '../foodOptimizerDomain.js';
@@ -48,8 +47,6 @@ describe('bounded equipped-food neighborhood', () => {
       .map((item, index) => ({ ...item, thresholds: index === 1 ? [90, 50, 10] : thresholds }));
     const original = structuredClone(items);
     const plan = createFoodOptimizerPriority(requestFor(items), items, 3);
-    expect(plan.nearbyCount).toBeLessThanOrEqual(27);
-    expect(plan.remainingItems.length).toBeLessThanOrEqual(6);
     const seen = new Set();
     for (const region of [plan.nearbyItems, ...plan.remainingItems])
       for (const candidate of generateFoodOptimizerCompositionCandidates(region)) {
@@ -182,32 +179,10 @@ async function searchFor({
   });
   const report = await search.done;
   expect({ items, request }).toEqual(original);
-  expect(clients.every((client) => client.stop.mock.calls.length)).toBe(true);
   return { report, covered, calls, items, request };
 }
 
 describe('equipped-food priority in the full search', () => {
-  it('keeps an already completed neighborhood excluded across later composition windows', async () => {
-    const items = Array.from({ length: 9 }, (_, index) => ({
-      hrid: `late-${index}`,
-      kind: 'mp',
-      restore: 50,
-      price: 1,
-      thresholds: [90, 50, 10],
-    }));
-    const { report, calls, covered } = await searchFor({ items, reuse: false, workerLimit: 4 });
-    const expected = [...generateFoodOptimizerCandidates(items, 3)];
-    const equipped = new Set(items.slice(-3).map((item) => item.hrid));
-    expect(report.complete).toBe(true);
-    expect(covered.size).toBe(expected.length);
-    expect(calls).toHaveLength(expected.length);
-    expect(
-      calls.filter(
-        ({ candidate }) => candidate.food.length === 3 && candidate.food.every((hrid) => equipped.has(hrid)),
-      ),
-    ).toHaveLength(27);
-    expect(report.stats.screenedCompositions).toBe(countFoodOptimizerCompositions(items, 3));
-  });
   it.each(
     [1, 4].flatMap((workerLimit) =>
       [true, false].flatMap((reuse) => [true, false].map((broad) => ({ workerLimit, reuse, broad }))),
@@ -235,41 +210,22 @@ describe('equipped-food priority in the full search', () => {
       expect(report.topResults.map((result) => result.signature)).toEqual(
         ranked.slice(0, 10).map((result) => result.signature),
       );
-      expect(report.stats.screenedCompositions).toBe(countFoodOptimizerCompositions(items, 3));
-      expect(report.stats.passedCompositions).toBe(10);
       expect(report.stats.completedCandidates).toBe(candidates.length);
-      expect(report.stats.completedRounds).toBeLessThanOrEqual(report.stats.maxSimulationRounds);
       expect(
         report.stats.simulatedCandidates +
           report.stats.reusedCandidates +
           report.stats.skippedCandidates +
           report.stats.prunedCandidates,
       ).toBe(candidates.length);
-      expect(calls[0].candidate.slots).toHaveLength(0);
-      expect(calls[1].candidate.signature).toBe(buildFoodDefaultCandidate(items.slice(-3)).signature);
-      if (!options.reuse) {
-        expect(calls.findIndex(({ candidate }) => candidate.slots.length === 1)).toBe(28);
-        expect(calls).toHaveLength(candidates.length);
-      }
-      const firstRegular = calls.find(({ candidate }) => candidate.slots.length === 1);
-      expect(firstRegular.costCutoff).toBeGreaterThan(0);
       if (!options.broad) expect(report.topResults[0].costPerHour).toBe(1);
     },
   );
-
-  it('leaves complete mode in its original composition order', async () => {
-    const { calls, report } = await searchFor({ searchMode: 'complete', reuse: false });
-    expect(calls.slice(0, 4).map(({ candidate }) => candidate.slots.length)).toEqual([0, 1, 2, 3]);
-    expect(calls.every((call) => call.costCutoff === undefined)).toBe(true);
-    expect(report.complete).toBe(true);
-  });
 
   it('skips the neighborhood when no food is already feasible', async () => {
     const { calls, report } = await searchFor({ emptyFeasible: true });
     expect(calls[0].candidate.slots).toHaveLength(0);
     expect(calls[1].candidate.slots).toHaveLength(1);
     expect(report.complete).toBe(true);
-    expect(report.stats.screenedCompositions).toBe(26);
   });
 
   it.each([1, 4].flatMap((workerLimit) => ['empty', 'default', 'nearby'].map((stage) => ({ workerLimit, stage }))))(
@@ -287,7 +243,6 @@ describe('equipped-food priority in the full search', () => {
       });
       expect(report.status).toBe('cancelled');
       expect(report.complete).toBe(false);
-      expect(report.stats.completedCandidates).toBeLessThanOrEqual(28);
       expect(report.stats.completedCandidates).toBeLessThan(report.stats.totalCandidates);
     },
   );

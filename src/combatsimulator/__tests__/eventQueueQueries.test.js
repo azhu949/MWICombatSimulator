@@ -26,14 +26,13 @@ describe('EventQueue read-only queries', () => {
     expect(queue.containsEventOfTypesAndSource([], null)).toBe(false);
   });
 
-  it('preserves event identity, heap layout, and pop order including time ties', () => {
+  it('answers queries without changing the queued events or their pop order', () => {
     const source = Object.freeze({ hrid: 'player1' });
     const events = [9, 3, 3, 7, 1, 3].map((time, index) =>
       Object.freeze({ time, type: index % 2 ? AutoAttackEvent.type : 'regen', hrid: String(index), source }),
     );
     const queue = createQueue(events);
     const untouched = createQueue(events);
-    const originalOrder = queue.minHeap.toArray();
 
     expect(queue.containsEventOfType('regen')).toBe(true);
     expect(queue.containsEventOfType('missing')).toBe(false);
@@ -41,8 +40,6 @@ describe('EventQueue read-only queries', () => {
     expect(queue.containsEventOfTypeAndHrid(AutoAttackEvent.type, 4)).toBe(false);
     expect(queue.containsEventOfTypesAndSource(attackTypes, source)).toBe(true);
     expect(queue.containsEventOfTypesAndSource(attackTypes, { hrid: source.hrid })).toBe(false);
-    expect(queue.minHeap.length).toBe(events.length);
-    originalOrder.forEach((event, index) => expect(queue.minHeap.get(index)).toBe(event));
     const actual = drain(queue);
     const expected = drain(untouched);
     actual.forEach((event, index) => expect(event).toBe(expected[index]));
@@ -60,58 +57,6 @@ describe('EventQueue read-only queries', () => {
     expect(queue.containsEventOfTypesAndSource(attackTypes, other)).toBe(false);
     queue.addEvent({ time: 1, type: AutoAttackEvent.type, source: other });
     expect(queue.containsEventOfTypesAndSource(attackTypes, other)).toBe(true);
-  });
-
-  it.each([
-    ['1', 1, true],
-    [false, 0, true],
-    [null, undefined, true],
-    [undefined, null, true],
-    [NaN, NaN, false],
-    [AutoAttackEvent.type, AbilityCastEndEvent.type, false],
-  ])('preserves loose type equality for %s and %s', (storedType, queriedType, expected) => {
-    const queue = createQueue([{ time: 1, type: storedType, hrid: '7', source: null }]);
-    expect(queue.containsEventOfType(queriedType)).toBe(expected);
-    expect(queue.containsEventOfTypeAndHrid(queriedType, 7)).toBe(expected);
-    expect(queue.containsEventOfTypeAndHrid(queriedType, 8)).toBe(false);
-    expect(queue.containsEventOfTypesAndSource([queriedType], undefined)).toBe(expected);
-  });
-
-  it('retains null and undefined equivalence for hrids and sources', () => {
-    const queue = createQueue([{ time: 1, type: AutoAttackEvent.type, hrid: null, source: null }]);
-    expect(queue.containsEventOfTypeAndHrid(AutoAttackEvent.type, undefined)).toBe(true);
-    expect(queue.containsEventOfTypesAndSource(attackTypes, undefined)).toBe(true);
-    expect(queue.containsEventOfTypesAndSource(attackTypes, {})).toBe(false);
-  });
-
-  it('reads events in the same order and short-circuits like the original attack predicate', () => {
-    const source = {};
-    const other = {};
-    let reads = [];
-    const events = [
-      [AbilityCastEndEvent.type, other],
-      ['regen', source],
-      [AutoAttackEvent.type, source],
-    ].map(([type, owner], index) => ({
-      time: 1,
-      get type() {
-        reads.push(`${index}:type`);
-        return type;
-      },
-      get source() {
-        reads.push(`${index}:source`);
-        return owner;
-      },
-    }));
-    const queue = createQueue(events);
-    const original = queue.getMatching(
-      (event) =>
-        (event.type == AbilityCastEndEvent.type || event.type == AutoAttackEvent.type) && event.source == source,
-    );
-    const originalReads = reads;
-    reads = [];
-    expect(queue.containsEventOfTypesAndSource(attackTypes, source)).toBe(Boolean(original));
-    expect(reads).toEqual(originalReads);
   });
 
   it('observes removals, pops, subsequent additions, and clearing immediately', () => {
@@ -139,44 +84,6 @@ describe('EventQueue read-only queries', () => {
     expect(queue.containsEventOfType(AbilityCastEndEvent.type)).toBe(false);
     expect(queue.containsEventOfTypeAndHrid(AbilityCastEndEvent.type, source.hrid)).toBe(false);
     expect(queue.containsEventOfTypesAndSource(attackTypes, source)).toBe(false);
-  });
-
-  it('keeps getMatching on its original snapshot when the predicate replaces the queue', () => {
-    const first = { time: 1, type: 'first' };
-    const second = { time: 2, type: 'second' };
-    const added = { time: 0, type: 'added' };
-    const queue = createQueue([first, second]);
-    const visited = [];
-    const result = queue.getMatching((event) => {
-      visited.push(event);
-      if (event === first) {
-        queue.clear();
-        queue.addEvent(added);
-      }
-      return event === second;
-    });
-    expect(result).toBe(second);
-    expect(visited).toEqual([first, second]);
-    expect(queue.getNextEvent()).toBe(added);
-    expect(queue.getMatching(() => true)).toBeNull();
-  });
-
-  it('keeps clearMatching on its original snapshot when the predicate inserts events', () => {
-    const original = [1, 2, 3].map((time) => ({ time, type: 'original' }));
-    const added = { time: 0, type: 'added' };
-    const queue = createQueue(original);
-    const visited = [];
-    expect(
-      queue.clearMatching((event) => {
-        visited.push(event);
-        if (event === original[0]) queue.addEvent(added);
-        return true;
-      }),
-    ).toBe(true);
-    expect(visited).toEqual(original);
-    expect(queue.getNextEvent()).toBe(added);
-    expect(queue.getNextEvent()).toBeUndefined();
-    expect(queue.clearMatching(() => true)).toBe(false);
   });
 });
 

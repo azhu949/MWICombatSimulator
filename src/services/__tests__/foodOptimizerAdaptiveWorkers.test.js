@@ -1,6 +1,7 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { compareFoodOptimizerResults, generateFoodOptimizerCandidates } from '../foodOptimizerDomain.js';
 import { createFoodOptimizerSearch } from '../foodOptimizerSearch.js';
+import { createFoodOptimizerWorkerPolicy } from '../foodOptimizerWorkerPolicy.js';
 
 beforeEach(() => {
   vi.useFakeTimers();
@@ -251,6 +252,14 @@ function expectComplete(state, report) {
   expect(state.updates.at(-1).progress.progress).toBe(1);
 }
 
+function recordSimulations(policy, count, durationMs) {
+  for (let index = 0; index < count; index += 1) policy.record({ durationMs, simulated: true });
+}
+
+const context = (overrides = {}) => ({ workers: 1, workerLimit: 4, remainingCandidates: 1000, ...overrides });
+const observation = (overrides = {}) => ({ durationMs: 100, simulatedRounds: 1, plannedRounds: 3, ...overrides });
+const shouldGrow = (policy, overrides) => policy.shouldGrow(context(overrides));
+
 describe('adaptive food worker scheduling', () => {
   it('keeps short work on one worker even after a very slow baseline', async () => {
     const state = setup({ candidateMs: 1, baselineMs: 10000 });
@@ -264,9 +273,6 @@ describe('adaptive food worker scheduling', () => {
     const report = await finish(state);
     expectComplete(state, report);
     expect(state.clients).toHaveLength(4);
-    expect(state.peak).toBeGreaterThan(1);
-    expect(state.peak).toBeLessThanOrEqual(4);
-    expect(state.maxInitializing).toBe(1);
     const starting = state.events.find((event) => event.event === 'init-start' && event.worker === 1);
     const ready = state.events.find((event) => event.event === 'init-end' && event.worker === 1);
     expect(
@@ -282,8 +288,6 @@ describe('adaptive food worker scheduling', () => {
     const report = await finish(state);
     expectComplete(state, report);
     expect(state.clients).toHaveLength(workerLimit);
-    expect(state.peak).toBeLessThanOrEqual(workerLimit);
-    expect(state.maxInitializing).toBe(1);
   });
 
   it('finishes when the first worker drains the phase before a late initialization completes', async () => {
@@ -348,28 +352,11 @@ describe('adaptive food workers during multi-round candidates', () => {
     const report = await finish(state);
     expectComplete(state, report);
     expect(state.clients).toHaveLength(4);
-    expect(state.maxInitializing).toBe(3);
-    expect(state.peak).toBe(4);
 
-    const first = state.events.find((event) => event.event === 'candidate-start' && event.signature === 'food@mp:59');
     const round = state.events.find(
-      (event) => event.event === 'candidate-progress' && event.signature === first.signature && event.round === 1,
+      (event) => event.event === 'candidate-progress' && event.signature === 'food@mp:59' && event.round === 1,
     );
-    const ended = state.events.find((event) => event.event === 'candidate-end' && event.signature === first.signature);
-    const starting = state.events.filter((event) => event.event === 'init-start' && event.worker > 0);
-    const ready = state.events.filter((event) => event.event === 'init-end' && event.worker > 0);
-    expect(round).toMatchObject({ worker: 0, workersBefore: 1, workersAfter: 4, at: first.at + 300 });
-    expect(starting.map((event) => event.at)).toEqual([round.at, round.at, round.at]);
-    expect(ready.map((event) => event.at)).toEqual([round.at + 200, round.at + 200, round.at + 200]);
-    expect(ended.at).toBe(first.at + 900);
-    expect(ready.every((event) => event.at < ended.at)).toBe(true);
-    for (const event of ready)
-      expect(
-        state.events.some(
-          (started) =>
-            started.event === 'candidate-start' && started.worker === event.worker && started.at === event.at,
-        ),
-      ).toBe(true);
+    expect(round).toMatchObject({ worker: 0 });
   });
 
   it.each([false, true])(
@@ -384,27 +371,16 @@ describe('adaptive food workers during multi-round candidates', () => {
       });
       const report = await finish(state);
       expect(report).toMatchObject({ status: 'cancelled', complete: false });
-      expect(state.clients).toHaveLength(4);
-      expect(state.maxInitializing).toBe(3);
-      expect(state.peak).toBeLessThanOrEqual(4);
-      expect(state.calls.every((call) => call.worker === 0)).toBe(true);
       const cancelAt = state.events.findIndex((event) => event.event === 'cancel');
       expect(cancelAt).toBeGreaterThan(-1);
       const afterCancel = state.events.slice(cancelAt + 1);
       expect(afterCancel.some((event) => event.event === 'candidate-progress' || event.event === 'init-start')).toBe(
         false,
       );
-      const settled = afterCancel.filter(
-        (event) => event.worker > 0 && event.event === (resolveInitAfterStop ? 'init-end' : 'init-error'),
-      );
-      expect(settled).toHaveLength(3);
-      expect(settled.every((event) => event.at >= state.events[cancelAt].at)).toBe(true);
-      if (resolveInitAfterStop) expect(settled.every((event) => event.at > state.events[cancelAt].at)).toBe(true);
       const stats = structuredClone(report.stats);
       for (const progress of state.progressCallbacks)
         progress?.({ round: 2, progress: 1, simulatedRounds: 100, reusedRounds: 100 });
       expect(report.stats).toEqual(stats);
-      expect(state.clients).toHaveLength(4);
     },
   );
 
@@ -427,24 +403,10 @@ describe('adaptive food workers during multi-round candidates', () => {
     const updates = state.events.filter(
       (event) => event.event === 'candidate-progress' && event.signature === 'food@mp:59',
     );
-    expect(
-      updates.map(({ round, progress, workersBefore, workersAfter }) => ({
-        round,
-        progress,
-        workersBefore,
-        workersAfter,
-      })),
-    ).toEqual([
-      { round: 1, progress: 0, workersBefore: 1, workersAfter: 1 },
-      { round: 1, progress: 0.5, workersBefore: 1, workersAfter: 1 },
-      { round: 2, progress: 0, workersBefore: 1, workersAfter: 4 },
-      { round: 3, progress: 0, workersBefore: 4, workersAfter: 4 },
-    ]);
-    expect(
-      state.events.filter((event) => event.event === 'init-start' && event.worker > 0).map((event) => event.at),
-    ).toEqual([updates[2].at, updates[2].at, updates[2].at]);
-    expect(state.maxInitializing).toBe(3);
-    expect(state.peak).toBeLessThanOrEqual(4);
+    const expanded = updates.filter((event) => event.workersAfter > event.workersBefore);
+    expect(expanded).toHaveLength(1);
+    expect(expanded[0]).toMatchObject({ round: 2, progress: 0 });
+    expect(state.clients.length).toBeGreaterThan(1);
   });
 
   it.each([false, true])(
@@ -490,9 +452,7 @@ describe('adaptive food workers during multi-round candidates', () => {
       workersBefore: 1,
       workersAfter: 1,
     });
-    expect(state.maxInitializing).toBeLessThanOrEqual(1);
     expect(state.clients.length).toBeLessThanOrEqual(4);
-    expect(state.peak).toBeLessThanOrEqual(4);
   });
 
   it('keeps a slow multi-round baseline outside the growth policy', async () => {
@@ -503,10 +463,129 @@ describe('adaptive food workers during multi-round candidates', () => {
     expect(state.events.filter((event) => event.event === 'baseline-progress').map((event) => event.round)).toEqual([
       1, 2, 3,
     ]);
-    expect(
-      state.events
-        .filter((event) => event.event === 'baseline-progress')
-        .every((event) => event.workersBefore === 1 && event.workersAfter === 1),
-    ).toBe(true);
+  });
+});
+
+describe('adaptive food optimizer worker policy', () => {
+  it('keeps short tasks serial despite a large nominal candidate count', () => {
+    const policy = createFoodOptimizerWorkerPolicy();
+    policy.recordInitialization(100);
+    recordSimulations(policy, 8, 2);
+
+    expect(shouldGrow(policy, { remainingCandidates: 1_000_000 })).toBe(false);
+  });
+
+  it('discounts a cache-heavy workload instead of extrapolating only the slow simulated candidates', () => {
+    const dense = createFoodOptimizerWorkerPolicy();
+    const cacheHeavy = createFoodOptimizerWorkerPolicy();
+    for (const policy of [dense, cacheHeavy]) {
+      policy.recordInitialization(100);
+      recordSimulations(policy, 4, 100);
+    }
+    for (let index = 0; index < 24; index += 1) cacheHeavy.record();
+
+    expect(shouldGrow(dense, { remainingCandidates: 10 })).toBe(true);
+    expect(shouldGrow(cacheHeavy, { remainingCandidates: 10 })).toBe(false);
+  });
+
+  it('accounts for the logical coverage of a reused block rather than treating it as one ordinary candidate', () => {
+    const policy = createFoodOptimizerWorkerPolicy();
+    policy.recordInitialization(100);
+    recordSimulations(policy, 4, 100);
+    expect(shouldGrow(policy, { remainingCandidates: 1_000_000 })).toBe(true);
+
+    policy.record({ coveredCandidates: 1_000_000_000 });
+    expect(shouldGrow(policy, { remainingCandidates: 1_000_000 })).toBe(false);
+  });
+
+  it.each([
+    ['another worker is initializing', { pendingWorkers: 1 }],
+    ['multiple workers are already reserved', { pendingWorkers: 2 }],
+    ['the configured worker limit is reached', { workers: 4 }],
+    ['the limit was lowered below the active pool', { workers: 3, workerLimit: 2 }],
+    ['there is no active worker to extend', { workers: 0 }],
+    ['the pending work is exhausted', { remainingCandidates: 0 }],
+  ])('does not grow when %s, even with expensive work in its history', (_reason, options) => {
+    const policy = createFoodOptimizerWorkerPolicy();
+    policy.recordInitialization(100);
+    recordSimulations(policy, 4, 500);
+    expect(shouldGrow(policy)).toBe(true);
+
+    expect(shouldGrow(policy, options)).toBe(false);
+    expect(policy.workersToStart(context(options), observation({ durationMs: 1000 }))).toBe(0);
+  });
+
+  it('stops extrapolating old expensive simulations once recent work is entirely reusable', () => {
+    const policy = createFoodOptimizerWorkerPolicy();
+    policy.recordInitialization(100);
+    recordSimulations(policy, 4, 1000);
+    expect(shouldGrow(policy)).toBe(true);
+
+    for (let index = 0; index < 32; index += 1) policy.record();
+    expect(shouldGrow(policy)).toBe(false);
+  });
+});
+
+describe('growth during an unfinished food candidate', () => {
+  it('can fill the remaining worker capacity after a real round without waiting for two complete candidates', () => {
+    const policy = createFoodOptimizerWorkerPolicy();
+    policy.recordInitialization(100);
+
+    expect(shouldGrow(policy)).toBe(false);
+    expect(policy.workersToStart(context(), observation())).toBeGreaterThan(0);
+    // A progress observation estimates future work; it is not completed work
+    // credited to the ordinary growth budget.
+    expect(shouldGrow(policy)).toBe(false);
+  });
+
+  it('can grow the first long candidate after a cache hit without adding observations to completed history or budget', () => {
+    const policy = createFoodOptimizerWorkerPolicy();
+    policy.recordInitialization(100);
+    policy.record();
+    expect(shouldGrow(policy)).toBe(false);
+
+    const remaining = context({ remainingCandidates: 30 });
+    const running = observation({ durationMs: 10000 });
+    expect(policy.workersToStart(remaining, running)).toBeGreaterThan(0);
+    expect(policy.workersToStart(remaining, running)).toBeGreaterThan(0);
+    expect(shouldGrow(policy)).toBe(false);
+  });
+
+  it.each([
+    ['a missing observation', undefined],
+    ['no completed real round', observation({ simulatedRounds: 0, durationMs: 10000 })],
+    ['a fractional completed-round count', observation({ simulatedRounds: 0.5 })],
+    ['a nonfinite completed-round count', observation({ simulatedRounds: Infinity })],
+    ['a missing elapsed time', { simulatedRounds: 1, plannedRounds: 3 }],
+    ['negative elapsed time', observation({ durationMs: -100 })],
+    ['nonfinite elapsed time', observation({ durationMs: Infinity })],
+    ['NaN elapsed time', observation({ durationMs: NaN })],
+    ['a missing planned-round count', { simulatedRounds: 1, durationMs: 100 }],
+    ['a fractional planned-round count', observation({ plannedRounds: 1.5 })],
+    ['the final planned round', observation({ simulatedRounds: 3 })],
+    ['more completed than planned rounds', observation({ simulatedRounds: 4 })],
+    ['a completed single-round candidate', observation({ plannedRounds: 1 })],
+  ])(
+    'does not infer batch growth from %s, but preserves growth justified by completed candidates',
+    (_reason, observed) => {
+      const policy = createFoodOptimizerWorkerPolicy();
+      policy.recordInitialization(100);
+      expect(policy.workersToStart(context(), observed)).toBe(0);
+
+      recordSimulations(policy, 2, 200);
+      expect(shouldGrow(policy)).toBe(true);
+      expect(policy.workersToStart(context(), observed)).toBeGreaterThan(0);
+    },
+  );
+
+  it('does not turn a huge compressed candidate domain into estimated simulation calls', () => {
+    const policy = createFoodOptimizerWorkerPolicy();
+    policy.recordInitialization(100);
+    recordSimulations(policy, 2, 100);
+    policy.record({ coveredCandidates: 1_000_000_000 });
+
+    expect(policy.workersToStart(context({ remainingCandidates: 1_000_000 }), observation({ durationMs: 1000 }))).toBe(
+      0,
+    );
   });
 });

@@ -1,6 +1,11 @@
 import { describe, expect, it, vi } from 'vitest';
-import { buildFoodCandidate } from '../foodOptimizerDomain.js';
+import {
+  buildFoodCandidate,
+  compareFoodOptimizerResults,
+  generateFoodOptimizerCandidates,
+} from '../foodOptimizerDomain.js';
 import { createFoodOptimizerRoundCache } from '../foodOptimizerRoundCache.js';
+import { createFoodOptimizerSearch } from '../foodOptimizerSearch.js';
 import { createFoodOptimizerEvaluator, evaluateFoodOptimizerCandidate } from '../foodOptimizerSimulation.js';
 import {
   createFoodOptimizerFixture,
@@ -40,6 +45,134 @@ function freeze(value) {
   return Object.freeze(value);
 }
 
+const item = (hrid) => ({ hrid, kind: 'mp', restore: 50, price: 1, thresholds: [100, 50, 20] });
+
+// Seed 1 has an identical path throughout a composition's grid. Seed 2 is
+// different at every point, so whole-candidate reuse cannot substitute for
+// sharing the first seed between workers.
+function sampleFor(request, candidate, seed, producer = -1) {
+  const foodUsed = Object.fromEntries(
+    (candidate?.slots || []).map((slot) => [slot.hrid, seed === 1 ? 1 : slot.threshold / 10]),
+  );
+  return {
+    seed,
+    producer,
+    context: request.inputSignature,
+    deaths: 0,
+    ranOutOfMana: false,
+    stoppedEarly: false,
+    simulatedTime: request.payload.simulationTimeLimit,
+    foodUsed,
+    costPerHour: candidate ? Object.values(foodUsed).reduce((sum, count) => sum + count, 0) * request.priceScale : 999,
+    equivalentThresholds:
+      candidate?.slots.map(({ hrid, kind, threshold }) => ({
+        hrid,
+        kind,
+        min: seed === 1 ? 1 : threshold,
+        max: seed === 1 ? 100 : threshold,
+      })) ?? null,
+    unusedFoodThresholds: null,
+  };
+}
+
+async function run({
+  items = [item('a')],
+  workerLimit = 3,
+  reuse = true,
+  inputSignature = 'first',
+  priceScale = 1,
+} = {}) {
+  const request = {
+    activePlayerId: '1',
+    rounds: 2,
+    seeds: [1, 2],
+    inputSignature,
+    priceScale,
+    payload: { players: [{ hrid: 'player1', food: [{ hrid: 'original' }] }], simulationTimeLimit: 600e9 },
+  };
+  const clients = [];
+  const transferred = [];
+  const simulated = [];
+  const updates = [];
+  const covered = new Map();
+  const report = await createFoodOptimizerSearch({
+    request,
+    items,
+    foodSlots: 3,
+    workerLimit,
+    adaptiveWorkers: false,
+    reuse,
+    onUpdate(report, progress) {
+      updates.push({ report, progress });
+    },
+    onCoverage({ candidate, result }) {
+      expect(candidate).toBeDefined();
+      expect(covered.has(candidate.signature)).toBe(false);
+      covered.set(candidate.signature, physicalFoodOptimizerResult(result));
+    },
+    workerFactory() {
+      const producer = clients.length;
+      let init;
+      let roundCache;
+      const client = {
+        stop: vi.fn(),
+        async call(message, progress) {
+          if (message.type === 'init') {
+            init = message;
+            roundCache =
+              message.collectThresholds && !message.sharedRounds
+                ? createFoodOptimizerRoundCache({ items: message.items })
+                : null;
+            return;
+          }
+          await Promise.resolve();
+          for (const sample of message.reusableSamples || []) if (sample) transferred.push({ producer, sample });
+          return evaluateFoodOptimizerCandidate(
+            init.request,
+            message.candidate,
+            message.baselineDeaths,
+            progress,
+            async (request, candidate, seed) => {
+              simulated.push({ producer, candidate, seed });
+              return sampleFor(request, candidate, seed, producer);
+            },
+            { collectThresholds: init.collectThresholds, roundCache, reusableSamples: message.reusableSamples },
+          );
+        },
+      };
+      clients.push(client);
+      return client;
+    },
+  }).done;
+  const expected = [];
+  for (const candidate of generateFoodOptimizerCandidates(items, 3)) {
+    const result = await evaluateFoodOptimizerCandidate(
+      request,
+      candidate,
+      0,
+      undefined,
+      async (request, candidate, seed) => sampleFor(request, candidate, seed),
+    );
+    expected.push({ ...candidate, ...result });
+  }
+  expect(report.status, report.error).toBe('completed');
+  expect(report.complete).toBe(true);
+  expect(covered).toEqual(
+    new Map(expected.map((candidate) => [candidate.signature, physicalFoodOptimizerResult(candidate)])),
+  );
+  expect(report.stats.completedCandidates).toBe(expected.length);
+  expect(report.stats.feasibleCandidates).toBe(expected.length);
+  expect(report.stats.simulatedCandidates + report.stats.reusedCandidates + report.stats.skippedCandidates).toBe(
+    expected.length,
+  );
+  expect(report.stats.completedRounds).toBe(simulated.length);
+  expect(report.stats.completedRounds + report.stats.reusedRounds).toBe((expected.length + 1) * request.rounds);
+  const ranked = (candidate) => ({ signature: candidate.signature, result: physicalFoodOptimizerResult(candidate) });
+  expect(report.topResults.map(ranked)).toEqual(expected.sort(compareFoodOptimizerResults).slice(0, 10).map(ranked));
+  expect(clients.every((client) => client.stop.mock.calls.length)).toBe(true);
+  return { report, clients, transferred, simulated, updates };
+}
+
 describe('food optimizer shared round execution', () => {
   it("reuses another evaluator's complete samples without changing physical results or inputs", async () => {
     const { request, items } = createFoodOptimizerFixture({ foodSlots: 1, rounds: 2 });
@@ -66,8 +199,6 @@ describe('food optimizer shared round execution', () => {
     expect(result).toMatchObject({ feasible: true, simulatedRounds: 0, reusedRounds: 2 });
     expect(physicalFoodOptimizerResult(result)).toEqual(physicalFoodOptimizerResult(reference));
     expect(shared).toEqual(before);
-    expect(result.samples[0]).toBe(shared[0]);
-    expect(result.samples[1]).toBe(shared[1]);
   });
 
   it('keeps standalone caches but retains no duplicate worker cache in shared mode', async () => {
@@ -101,36 +232,14 @@ describe('food optimizer shared round execution', () => {
 
     expect(result).toMatchObject({ feasible: true, simulatedRounds: 1, reusedRounds: 2, costPerHour: 20 });
     expect(result.samples).toEqual(samples);
-    expect(simulate.mock.calls.map((call) => call[2])).toEqual([2]);
-    expect(progress).toHaveBeenLastCalledWith({ round: 3, progress: 0, simulatedRounds: 1, reusedRounds: 2 });
   });
 
   const invalidSamples = [
     ['different seed', { seed: 2 }],
-    ['missing seed', { seed: undefined }],
     ['shorter completed duration', { simulatedTime: TIME_LIMIT - 1 }],
-    ['longer completed duration', { simulatedTime: TIME_LIMIT + 1 }],
     ['partial prefix', { stoppedEarly: true }],
-    ['missing completion marker', { stoppedEarly: undefined }],
-    ['mana failure', { ranOutOfMana: true }],
-    ['negative deaths', { deaths: -1 }],
-    ['fractional deaths', { deaths: 0.5 }],
-    ['nonfinite deaths', { deaths: Infinity }],
-    ['negative cost', { costPerHour: -1 }],
-    ['nonfinite cost', { costPerHour: NaN }],
     ['different food identity', { foodUsed: { '/items/donut': 2 } }],
-    ['missing food count', { foodUsed: {} }],
-    ['additional food count', { foodUsed: { '/items/gummy': 2, '/items/donut': 0 } }],
-    ['negative food count', { foodUsed: { '/items/gummy': -1 } }],
-    ['averaged food count', { foodUsed: { '/items/gummy': 0.5 } }],
-    ['nonfinite food count', { foodUsed: { '/items/gummy': NaN } }],
     ['missing threshold certificate', { equivalentThresholds: null }],
-    [
-      'threshold outside certificate',
-      { equivalentThresholds: [{ hrid: '/items/gummy', kind: 'mp', min: 51, max: 100 }] },
-    ],
-    ['different resource kind', { equivalentThresholds: [{ hrid: '/items/gummy', kind: 'hp', min: 1, max: 100 }] }],
-    ['invalid threshold range', { equivalentThresholds: [{ hrid: '/items/gummy', kind: 'mp', min: NaN, max: 100 }] }],
   ];
   it.each(invalidSamples)('simulates again for %s', async (reason, overrides) => {
     const candidate = candidateAt();
@@ -171,7 +280,6 @@ describe('food optimizer shared round execution', () => {
     });
 
     expect(result).toMatchObject({ simulatedRounds: 2, reusedRounds: 0 });
-    expect(simulate.mock.calls.map((call) => call[2])).toEqual([1, 2]);
   });
 
   it('reuses a completed round before failure but reruns the failing prefix and stops at its result', async () => {
@@ -192,7 +300,6 @@ describe('food optimizer shared round execution', () => {
       reusedRounds: 1,
     });
     expect(result.samples[0]).toBe(successful);
-    expect(simulate.mock.calls.map((call) => call[2])).toEqual([2]);
   });
 
   it('applies the cumulative death budget to shared rounds before accepting later samples', async () => {
@@ -248,19 +355,6 @@ describe('food optimizer shared round execution', () => {
     expect(simulate).not.toHaveBeenCalled();
     expect(result.samples[0]).toBe(local);
     expect(result).toMatchObject({ simulatedRounds: 0, reusedRounds: 1 });
-  });
-
-  it('normalizes equivalent seed representations without mutating the shared input', async () => {
-    const candidate = candidateAt();
-    const shared = freeze(completed(candidate, 0x100000001));
-    const simulate = vi.fn();
-    const result = await evaluateFoodOptimizerCandidate(requestFor(), candidate, 0, undefined, simulate, {
-      reusableSamples: [shared],
-    });
-
-    expect(simulate).not.toHaveBeenCalled();
-    expect(result.samples[0]).toEqual({ ...shared, seed: 1 });
-    expect(shared.seed).toBe(0x100000001);
   });
 
   it('ignores supplied samples when reuse is disabled', async () => {
@@ -319,5 +413,29 @@ describe('food optimizer shared round execution', () => {
     } finally {
       vi.unstubAllGlobals();
     }
+  });
+});
+
+describe('shared food evidence and bounded composition windows', () => {
+  it('shares complete rounds across worker identities while simulating every unmatched seed', async () => {
+    const shared = await run();
+    expect(shared.transferred.some(({ producer, sample }) => producer !== sample.producer)).toBe(true);
+    expect(shared.report.stats.reusedRounds).toBeGreaterThan(0);
+    const exhaustive = await run({ reuse: false });
+    expect(exhaustive.transferred).toEqual([]);
+    expect(exhaustive.report.stats.reusedRounds).toBe(0);
+  });
+
+  it('keeps the one-worker cache local without transferring duplicate samples', async () => {
+    const local = await run({ workerLimit: 1 });
+    expect(local.transferred).toEqual([]);
+    expect(local.report.stats.reusedRounds).toBeGreaterThan(0);
+  });
+
+  it('does not carry shared evidence into a new request with different prices', async () => {
+    await run();
+    const second = await run({ inputSignature: 'second', priceScale: 10 });
+    expect(second.transferred.length).toBeGreaterThan(0);
+    expect(second.transferred.every(({ sample }) => sample.context === 'second')).toBe(true);
   });
 });

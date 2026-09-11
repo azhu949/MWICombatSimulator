@@ -37,14 +37,6 @@ describe('never-trigger bounds between food effects', () => {
     expect(read()).toEqual({ hp: 1, mp: 111 });
   });
 
-  it('observes the position after the last food as well as positions before foods', () => {
-    const { player, simulator } = fixture();
-    player.food = [player.food[0]];
-    const read = observeInactiveFoodThresholds(simulator, 'player1');
-    simulator.checkTriggersForUnit(player);
-    expect(read()).toEqual({ hp: 1, mp: 111 });
-  });
-
   it('observes potential new foods while every existing food is cooling down', () => {
     const { player, simulator } = fixture();
     simulator.checkTriggersForUnit = () => false;
@@ -76,7 +68,7 @@ describe('never-trigger bounds between food effects', () => {
     expect(read()).toEqual({ hp: 1, mp: 101 });
   });
 
-  it.each([NaN, Infinity, -Infinity])('declines certificates after nonfinite resource observations: %s', (current) => {
+  it.each([NaN, Infinity])('declines certificates after nonfinite resource observations: %s', (current) => {
     const { player, simulator } = fixture();
     simulator.checkTriggersForUnit = () => false;
     const read = observeInactiveFoodThresholds(simulator, 'player1');

@@ -1,10 +1,12 @@
 import { describe, expect, it } from 'vitest';
 import { buildFoodCandidate } from '../foodOptimizerDomain.js';
+import { createFoodOptimizerInactiveCache } from '../foodOptimizerInactiveCache.js';
 import {
   createFoodOptimizerPruningCache,
   materializeFoodOptimizerOutcome,
   selectFoodOptimizerConsumedCoreCapacity,
 } from '../foodOptimizerPruning.js';
+import { createFoodOptimizerRoundCache, matchFoodOptimizerReusableSample } from '../foodOptimizerRoundCache.js';
 
 const MAX_THRESHOLD = Number.MAX_SAFE_INTEGER;
 const food = (hrid, kind, thresholds, restore = 50) => ({ hrid, kind, thresholds, restore, price: 1 });
@@ -41,13 +43,43 @@ const manaWitness = (candidate, cores, inactive, coreRanges) => ({
   inactiveFoodThresholds: inactive,
 });
 
+const item = (hrid, threshold = 50, kind = 'mp', overrides = {}) => ({
+  hrid,
+  threshold,
+  kind,
+  restore: 40,
+  price: 10,
+  recoveryDuration: 0,
+  ...overrides,
+});
+const candidateAt = (threshold = 50, hrid = 'core') => buildFoodCandidate([item(hrid, threshold)]);
+const sampleFor = (candidate, overrides = {}) => ({
+  seed: 1,
+  deaths: 2,
+  ranOutOfMana: false,
+  stoppedEarly: false,
+  simulatedTime: 600e9,
+  foodUsed: Object.fromEntries(candidate.food.map((hrid) => [hrid, 3])),
+  costPerHour: candidate.food.length * 180,
+  equivalentThresholds: candidate.slots.map(({ hrid, kind, threshold }) => ({
+    hrid,
+    kind,
+    min: Math.max(1, threshold - 30),
+    max: threshold + 30,
+  })),
+  unusedFoodThresholds: null,
+  inactiveFoodThresholds: { hp: 101, mp: 101 },
+  ...overrides,
+});
+const withExtra = (core, threshold = 101, kind = 'hp') =>
+  buildFoodCandidate([...core.slots, item('extra', threshold, kind)]);
+
 describe('consumed-core cross-composition reuse', () => {
   it('stays disabled by default so only explicit capacities change behavior', () => {
     const cache = createFoodOptimizerPruningCache({ rounds: 1 });
     const witness = buildFoodCandidate([at(MANA, 50), at(HEALTH, 20)]);
     cache.record(witness, manaWitness(witness, { mana: 2 }, { hp: 20, mp: 61 }, {}));
     expect(cache.match(buildFoodCandidate([at(MANA, 50), at(SCRATCH, 80)]))).toBeNull();
-    expect(cache.coreMetrics).toMatchObject({ probes: 0, hits: 0, records: 0 });
   });
 
   it('reuses a mana failure for larger compositions whose added foods never trigger', () => {
@@ -62,8 +94,6 @@ describe('consumed-core cross-composition reuse', () => {
         { mana: { min: 45, max: 60 }, health: { min: 15, max: 25 } },
       ),
     );
-    expect(cache.coreMetrics.records).toBe(1);
-
     // Sorted order: mana (mp) first, then the HP foods by descending threshold.
     const covered = buildFoodCandidate([at(MANA, 50), at(SCRATCH, 80), at(HEALTH, 20)]);
     expect(cache.match(covered)?.result).toMatchObject({ rejected: 'mana', feasible: false });
@@ -71,7 +101,6 @@ describe('consumed-core cross-composition reuse', () => {
     expect(cache.match(buildFoodCandidate([at(OTHER, 80), at(MANA, 50)]))?.result).toMatchObject({
       rejected: 'mana',
     });
-    expect(cache.coreMetrics.hits).toBe(2);
     // A too-low added threshold, a threshold outside the core range, and a
     // different core are never certified by this entry.
     expect(cache.match(buildFoodCandidate([at(MANA, 50), at(SCRATCH, 19)]))).toBeNull();
@@ -193,11 +222,13 @@ describe('consumed-core cross-composition reuse', () => {
       { hrid: 'health', kind: 'hp', min: 15, max: 25 },
     ]);
     expect(outcome.samples).toHaveLength(3);
-    for (const entry of outcome.samples) {
-      expect(entry.foodUsed).toEqual({ mana: 2, scratch: 0, health: 1 });
-      expect(entry.equivalentThresholds[1]).toEqual({ hrid: 'scratch', kind: 'hp', min: 30, max: MAX_THRESHOLD });
-      expect(entry.deaths).toBe(0);
-    }
+    expect(outcome.samples[0]).toMatchObject({ foodUsed: { mana: 2, scratch: 0, health: 1 }, deaths: 0 });
+    expect(outcome.samples[0].equivalentThresholds[1]).toEqual({
+      hrid: 'scratch',
+      kind: 'hp',
+      min: 30,
+      max: MAX_THRESHOLD,
+    });
   });
 
   it('keeps a consumed pair eligible only while the recorded slot order holds', () => {
@@ -285,59 +316,212 @@ describe('consumed-core cross-composition reuse', () => {
     expect(cache.match(candidate)?.result).toMatchObject({ pruned: 'cost' });
   });
 
-  it('bounds retained cores and evicts without unbounded growth', () => {
-    const cache = createFoodOptimizerPruningCache({
-      rounds: 1,
-      maxFailureCoreEntries: 2,
-      maxCoreGroupEntries: 1,
-    });
-    for (const [core, threshold] of [
-      [MANA, 50],
-      [OTHER, 30],
-      [THIRD, 40],
-    ]) {
-      const candidate = buildFoodCandidate([at(core, threshold), at(HEALTH, 20)]);
-      cache.record(candidate, manaWitness(candidate, { [core.hrid]: 1 }, { hp: 20, mp: threshold + 11 }, {}));
-    }
-    expect(cache.coreMetrics.failureEntries).toBeLessThanOrEqual(2);
-    expect(cache.coreMetrics.groups).toBeLessThanOrEqual(2);
-    expect(cache.coreMetrics.evictions).toBeGreaterThan(0);
-    cache.clear();
-    expect(cache.coreMetrics).toMatchObject({ failureEntries: 0, feasibleEntries: 0, groups: 0 });
-  });
-
-  it('never registers three consumed foods or uncertified results', () => {
-    const cache = createFoodOptimizerPruningCache({ rounds: 1, ...failureCapacity });
-    const trio = buildFoodCandidate([at(MANA, 50), at(HEALTH, 20), at(SCRATCH, 80)]);
-    cache.record(trio, {
-      ...manaWitness(trio, { mana: 1, health: 1, scratch: 1 }, { hp: 20, mp: 61 }, {}),
-    });
-    // A ranking rejection proves nothing about the physical outcome.
-    const ranked = buildFoodCandidate([at(MANA, 50)]);
-    cache.record(ranked, {
-      pruned: 'rank',
-      feasible: null,
-      rejected: '',
-      roundsCompleted: 1,
-      samples: [{ seed: 1, ranOutOfMana: false, stoppedEarly: false }],
-      equivalentThresholds: [{ hrid: 'mana', kind: 'mp', min: 1, max: 100 }],
-    });
-    expect(cache.coreMetrics.records).toBe(0);
-  });
-
   it('scales the consumed-core capacity with the search space', () => {
     const tiers = [0, 2048, 65536, 524288, 5_000_000].map((total) => selectFoodOptimizerConsumedCoreCapacity(total));
-    for (const tier of tiers)
-      expect(tier).toMatchObject({
-        maxFailureCoreEntries: expect.any(Number),
-        maxFeasibleCoreEntries: expect.any(Number),
-        maxCoreGroupEntries: expect.any(Number),
-      });
     for (let index = 1; index < tiers.length; index += 1) {
       expect(tiers[index].maxFailureCoreEntries).toBeGreaterThanOrEqual(tiers[index - 1].maxFailureCoreEntries);
       expect(tiers[index].maxFeasibleCoreEntries).toBeGreaterThanOrEqual(tiers[index - 1].maxFeasibleCoreEntries);
     }
     expect(selectFoodOptimizerConsumedCoreCapacity(Number.NaN)).toEqual(tiers[0]);
     expect(selectFoodOptimizerConsumedCoreCapacity(-1)).toEqual(tiers[0]);
+  });
+});
+
+describe('food optimizer consumed-core round certificates', () => {
+  it('adds two inactive foods and materializes complete target counts and threshold ranges', () => {
+    const cache = createFoodOptimizerInactiveCache();
+    const source = candidateAt();
+    const sample = sampleFor(source);
+    const original = structuredClone(sample);
+    cache.record(1, source, sample);
+    const target = buildFoodCandidate([item('core', 75), item('health-a', 101, 'hp'), item('health-b', 150, 'hp')]);
+    const reused = cache.match(1, target);
+
+    expect(reused).toEqual({
+      ...sample,
+      foodUsed: { core: 3, 'health-b': 0, 'health-a': 0 },
+      equivalentThresholds: [
+        { hrid: 'core', kind: 'mp', min: 20, max: 80 },
+        { hrid: 'health-b', kind: 'hp', min: 101, max: Number.MAX_SAFE_INTEGER },
+        { hrid: 'health-a', kind: 'hp', min: 101, max: Number.MAX_SAFE_INTEGER },
+      ],
+    });
+    expect(matchFoodOptimizerReusableSample(1, target, reused, sample.simulatedTime)).toBe(reused);
+    expect(sample).toEqual(original);
+  });
+
+  it('removes explicitly unused source foods even if their thresholds are below the global inactive bound', () => {
+    const cache = createFoodOptimizerInactiveCache();
+    const source = buildFoodCandidate([item('core'), item('unused', 5, 'hp')]);
+    const sample = sampleFor(source, { foodUsed: { core: 3, unused: 0 }, costPerHour: 180 });
+    cache.record(1, source, sample);
+
+    expect(cache.match(1, candidateAt(75))).toEqual({
+      ...sample,
+      foodUsed: { core: 3 },
+      equivalentThresholds: [{ hrid: 'core', kind: 'mp', min: 20, max: 80 }],
+    });
+    expect(cache.match(1, withExtra(candidateAt(), 101))).toMatchObject({ foodUsed: { core: 3, extra: 0 } });
+    expect(cache.match(1, source)).toBeNull();
+  });
+
+  it.each([
+    ['before', [item('core')], item('extra', 101), ['extra', 'core']],
+    [
+      'between',
+      [item('core-mp'), item('core-hp', 40, 'hp')],
+      item('extra', 101, 'hp'),
+      ['core-mp', 'extra', 'core-hp'],
+    ],
+    ['after', [item('core')], item('extra', 101, 'hp'), ['core', 'extra']],
+  ])('allows adding and removing an inactive food %s the consumed core', (position, coreItems, extra, order) => {
+    const core = buildFoodCandidate(coreItems);
+    const target = buildFoodCandidate([...coreItems, extra]);
+    const cache = createFoodOptimizerInactiveCache();
+    const sample = sampleFor(core);
+    cache.record(1, core, sample);
+    const added = cache.match(1, target);
+
+    expect(target.food).toEqual(order);
+    expect(added).not.toBeNull();
+    expect(added.foodUsed.extra).toBe(0);
+    expect(added.costPerHour).toBe(sample.costPerHour);
+    const reverse = createFoodOptimizerInactiveCache();
+    reverse.record(1, target, added);
+    expect(reverse.match(1, core)).toEqual(sample);
+  });
+
+  it('requires every consumed food and preserves their relative order', () => {
+    const cache = createFoodOptimizerInactiveCache();
+    const source = buildFoodCandidate([item('first', 70), item('second', 50)]);
+    const sample = sampleFor(source, {
+      equivalentThresholds: source.slots.map(({ hrid, kind }) => ({ hrid, kind, min: 20, max: 90 })),
+    });
+    cache.record(1, source, sample);
+
+    expect(cache.match(1, buildFoodCandidate([item('first', 80), item('second', 30)]))).not.toBeNull();
+    expect(cache.match(1, buildFoodCandidate([item('first', 30), item('second', 80)]))).toBeNull();
+    expect(cache.match(1, candidateAt(70, 'first'))).toBeNull();
+    expect(cache.match(1, buildFoodCandidate([item('first', 70), item('replacement', 50)]))).toBeNull();
+  });
+
+  it('accepts the exact inactive and core bounds while rejecting a threshold outside either proof', () => {
+    const cache = createFoodOptimizerInactiveCache();
+    const source = candidateAt();
+    cache.record(1, source, sampleFor(source, { inactiveFoodThresholds: { hp: 101, mp: 121 } }));
+
+    expect(cache.match(1, withExtra(candidateAt(20), 101))).not.toBeNull();
+    expect(cache.match(1, withExtra(candidateAt(80), 121, 'mp'))).not.toBeNull();
+    expect(cache.match(1, withExtra(candidateAt(), 100))).toBeNull();
+    expect(cache.match(1, withExtra(candidateAt(), 120, 'mp'))).toBeNull();
+    expect(cache.match(1, withExtra(candidateAt(19)))).toBeNull();
+    expect(cache.match(1, withExtra(candidateAt(81)))).toBeNull();
+  });
+
+  it.each([
+    ['missing restore', (candidate) => delete candidate.slots[0].restore],
+    ['invalid kind', (candidate) => (candidate.slots[0].kind = 'other')],
+    ['wrong condition', (candidate) => (candidate.triggerMap[candidate.food[0]][0].conditionHrid = 'missing_hp')],
+    ['misaligned foods', (candidate) => candidate.food.reverse()],
+    [
+      'noncanonical order',
+      (candidate) => {
+        candidate.food.reverse();
+        candidate.slots.reverse();
+      },
+    ],
+  ])('rejects a source or target with %s', (label, invalidate) => {
+    const source = buildFoodCandidate([item('first', 70), item('second', 50)]);
+    const invalid = structuredClone(source);
+    const sample = sampleFor(source);
+    invalidate(invalid);
+    const rejected = createFoodOptimizerInactiveCache();
+    rejected.record(1, invalid, sample);
+    expect(rejected.size).toBe(0);
+
+    const cache = createFoodOptimizerInactiveCache();
+    cache.record(1, source, sample);
+    expect(cache.match(1, invalid)).toBeNull();
+  });
+
+  it.each([
+    ['absent ranges', (sample) => (sample.equivalentThresholds = null)],
+    ['invalid range bound', (sample) => (sample.equivalentThresholds[0].max = Infinity)],
+    ['nonpositive inactive bound', (sample) => (sample.inactiveFoodThresholds.hp = 0)],
+    ['early stop', (sample) => (sample.stoppedEarly = true)],
+    ['mana failure', (sample) => (sample.ranOutOfMana = true)],
+    ['invalid cost', (sample) => (sample.costPerHour = NaN)],
+  ])('does not infer a consumed core from a sample with %s', (label, invalidate) => {
+    const source = buildFoodCandidate([item('core'), item('unused', 101, 'hp')]);
+    const sample = sampleFor(source, { foodUsed: { core: 3, unused: 0 } });
+    invalidate(sample);
+    const cache = createFoodOptimizerInactiveCache();
+    cache.record(1, source, sample);
+    expect(cache.size).toBe(0);
+    expect(cache.match(1, candidateAt())).toBeNull();
+  });
+
+  it('snapshots source evidence and returns independent counts, ranges and inactive bounds', () => {
+    const source = candidateAt();
+    const sample = sampleFor(source);
+    const expected = structuredClone(sample);
+    const cache = createFoodOptimizerInactiveCache();
+    cache.record(1, source, sample);
+    source.slots[0].restore = 999;
+    sample.costPerHour = 0;
+    sample.foodUsed.core = 99;
+    sample.equivalentThresholds[0].min = 1;
+    sample.inactiveFoodThresholds.hp = 1;
+
+    const target = withExtra(candidateAt());
+    const first = cache.match(1, target);
+    expect(first.costPerHour).toBe(expected.costPerHour);
+    expect(first.foodUsed.core).toBe(3);
+    expect(first.equivalentThresholds[0].min).toBe(20);
+    expect(first.inactiveFoodThresholds.hp).toBe(101);
+    first.foodUsed.core = 77;
+    first.equivalentThresholds[0].max = 1000;
+    first.inactiveFoodThresholds.hp = 1;
+    const second = cache.match(1, target);
+    expect(second.foodUsed.core).toBe(3);
+    expect(second.equivalentThresholds[0].max).toBe(80);
+    expect(second.inactiveFoodThresholds.hp).toBe(101);
+    expect(cache.match(1, withExtra(candidateAt(), 100))).toBeNull();
+  });
+
+  it('suppresses duplicate and dominated proofs while keeping independently useful bounds', () => {
+    const cache = createFoodOptimizerInactiveCache();
+    const source = candidateAt();
+    const proof = (min, max, inactive) =>
+      sampleFor(source, {
+        equivalentThresholds: [{ hrid: 'core', kind: 'mp', min, max }],
+        inactiveFoodThresholds: { hp: inactive, mp: inactive },
+      });
+    cache.record(1, source, proof(30, 70, 101));
+    cache.record(1, source, proof(30, 70, 101));
+    cache.record(1, source, proof(40, 60, 120));
+    expect(cache.size).toBe(1);
+    cache.record(1, source, proof(20, 80, 90));
+    expect(cache.size).toBe(1);
+    expect(cache.match(1, withExtra(candidateAt(75), 90))).not.toBeNull();
+    cache.record(1, source, proof(10, 50, 95));
+    expect(cache.size).toBe(2);
+    expect(cache.match(1, withExtra(candidateAt(10), 95))).not.toBeNull();
+    expect(cache.match(1, withExtra(candidateAt(75), 90))).not.toBeNull();
+  });
+});
+
+describe('consumed-core integration with the complete-round cache', () => {
+  it('prefers an ordinary certificate and preserves its sample identity and inactive bounds', () => {
+    const cache = createFoodOptimizerRoundCache();
+    const source = candidateAt();
+    const sample = sampleFor(source);
+    cache.record(1, source, sample);
+
+    expect(cache.match(1, candidateAt(75))).toBe(sample);
+    expect(cache.match(1, withExtra(candidateAt(75)))).toMatchObject({
+      inactiveFoodThresholds: sample.inactiveFoodThresholds,
+      foodUsed: { core: 3, extra: 0 },
+    });
   });
 });
