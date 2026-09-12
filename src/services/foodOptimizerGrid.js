@@ -34,16 +34,30 @@ export function createFoodOptimizerGrid(items) {
   return grid;
 }
 
-function gridItem(grid, slot) {
+// Exported for the pruning cache, which resolves one grid item per composition
+// instead of one per probe.
+export function resolveFoodOptimizerGridItem(grid, slot) {
   const item = grid.get(slot?.hrid);
   return item && item.kind === slot.kind && item.restore === slot.restore && item.price === slot.price ? item : null;
 }
 
-export function matchesFoodOptimizerGrid(grid, domains) {
-  return domains.every((domain) => {
-    const item = gridItem(grid, domain);
+// Shared by the grid helper and the pruning cache, which resolves one item per
+// composition and then reuses this membership test for every probe. The lists
+// must be equally long: a short or missing item list fails closed instead of
+// silently skipping its trailing domains.
+export function matchesFoodOptimizerGridItems(items, domains) {
+  if (!Array.isArray(items) || !Array.isArray(domains) || items.length !== domains.length) return false;
+  return domains.every((domain, index) => {
+    const item = items[index];
     return item && domain.min <= domain.max && item.thresholdSet.has(domain.min) && item.thresholdSet.has(domain.max);
   });
+}
+
+export function matchesFoodOptimizerGrid(grid, domains) {
+  return matchesFoodOptimizerGridItems(
+    domains.map((domain) => resolveFoodOptimizerGridItem(grid, domain)),
+    domains,
+  );
 }
 
 export function projectFoodOptimizerRanges(grid, candidate, ranges) {
@@ -63,7 +77,7 @@ export function projectFoodOptimizerRanges(grid, candidate, ranges) {
   const projected = [];
   for (let index = 0; index < slots.length; index += 1) {
     const slot = slots[index];
-    const item = gridItem(grid, slot);
+    const item = resolveFoodOptimizerGridItem(grid, slot);
     const range = ranges[index];
     if (
       !item ||

@@ -47,6 +47,44 @@ const proofFor = (candidate, overrides = {}) => ({
   ...overrides,
 });
 
+// Small consumed-core budgets: the identity rewrites below certify a single
+// food through the failure core index.
+const failureCapacity = { maxFailureCoreEntries: 32, maxCoreGroupEntries: 8 };
+// One recorded failure whose consumed core is food 'a' alone, plus the two-food
+// probe block both identity tests reuse. The core covers the probe's first food
+// while the second one only has to stay inactive, so the frozen query answers
+// the block through its memoized grid membership and core proof even after one
+// of its slots stops being answerable.
+const recordedProbe = () => {
+  // The third food only exists in the grid: the probe block starts at two slots,
+  // so a later grown block still resolves there and a fresh query can answer it.
+  const items = [food('a'), food('c'), food('d')];
+  const cache = createFoodOptimizerPruningCache({ items, rounds: 1, ...failureCapacity });
+  const recorded = buildFoodCandidate([{ ...items[0], threshold: 60 }]);
+  cache.record(recorded, {
+    rejected: 'mana',
+    roundsCompleted: 1,
+    samples: [
+      {
+        seed: 1,
+        ranOutOfMana: true,
+        stoppedEarly: true,
+        foodUsed: { a: 1 },
+        inactiveFoodThresholds: { hp: 1, mp: 1 },
+      },
+    ],
+    equivalentThresholds: recorded.slots.map(({ hrid, kind }) => ({ hrid, kind, min: 1, max: 100 })),
+  });
+  return {
+    cache,
+    domains: [
+      { ...items[0], min: 60, max: 60 },
+      { ...items[1], min: 60, max: 60 },
+    ],
+    items,
+  };
+};
+
 describe('provable food optimizer pruning', () => {
   it('records integer threshold intervals from actual comparisons, including fractional resource values', () => {
     const candidate = buildFoodCandidate([{ ...item('mana'), threshold: 50 }]);
@@ -286,6 +324,54 @@ describe('food optimizer ranking certificates', () => {
     expect(cache.match(pair)).toBeNull();
     cutoff = undefined;
     expect(cache.match(pair)).toBeNull();
+  });
+
+  // QUERY_GUARD_FIELDS freezes every identity field the memoized derivations
+  // keep. A rewritten slot is only safe while the guard drops the query, so
+  // each case compares the reused answer against a freshly built one.
+  it.each([
+    ['hrid', (domain) => (domain.hrid = 'missing')],
+    ['kind', (domain) => (domain.kind = 'hp')],
+    ['restore', (domain) => (domain.restore += 1)],
+    ['price', (domain) => (domain.price += 1)],
+    ['recoveryDuration', (domain) => (domain.recoveryDuration = 1)],
+  ])('drops the memoized query when the slot %s is rewritten in place', (_field, rewrite) => {
+    const { cache, domains } = recordedProbe();
+    // The first call answers the recorded failure through the memoized query.
+    expect(cache.matchRanges(domains)?.result.rejected).toBe('mana');
+    rewrite(domains[1]);
+    const reused = cache.matchRanges(domains);
+    // recoveryDuration feeds no decision today, so its rewrite cannot change
+    // any answer yet; every other field leaves the rewritten slot unanswerable,
+    // and the reused query must match a freshly built one in every case.
+    expect(reused?.result.rejected).toEqual(_field === 'recoveryDuration' ? 'mana' : undefined);
+    expect(reused).toEqual(cache.matchRanges(domains, false));
+  });
+
+  // The import-time coverage proof checks the replaced-slot branch of the guard
+  // directly; this covers the end-to-end wiring through the reuse guard.
+  it('drops the memoized query when a caller replaces a slot object', () => {
+    const { cache, domains } = recordedProbe();
+    expect(cache.matchRanges(domains)?.result.rejected).toBe('mana');
+    // The replacement carries a kind the grid cannot resolve, so a freshly built
+    // query rejects the block; a reused one must not answer it from the frozen
+    // grid items instead.
+    domains[1] = { ...domains[1], kind: 'hp' };
+    const reused = cache.matchRanges(domains);
+    expect(reused).toEqual(cache.matchRanges(domains, false));
+    expect(reused).toBeNull();
+  });
+
+  // The probe block is addressed by position and the reused array is expected to
+  // keep its length; a grown block rebuilds the query instead of answering from
+  // the memoized grid items of the shorter one.
+  it('rebuilds the memoized query when the probe block grows', () => {
+    const { cache, domains, items } = recordedProbe();
+    expect(cache.matchRanges(domains)?.result.rejected).toBe('mana');
+    domains.push({ ...items[2], min: 60, max: 60 });
+    const reused = cache.matchRanges(domains);
+    expect(reused).toEqual(cache.matchRanges(domains, false));
+    expect(reused?.result.rejected).toBe('mana');
   });
 
   it('compresses a newly dominated billion-point region without losing or duplicating its default', () => {

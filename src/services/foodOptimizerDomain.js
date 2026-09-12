@@ -136,6 +136,16 @@ export function getFoodOptimizerItems({ maxHp, maxMp, thresholdStepPercent, pric
     .filter((item) => !scope || scope.has(item.hrid));
 }
 
+// Strict total order over consumed slots: kind, threshold, restore, price and
+// hrid, with no tie breakers left. The threshold is read from the slot itself
+// because callers that compare candidates rewrite it in place; the other fields
+// (kind, restore, price, hrid) are mirrored by QUERY_GUARD_FIELDS
+// (foodOptimizerPruning.js), whose memoized comparison templates rewrite only
+// the threshold after the first copy. Add any new non-threshold field read here
+// to that list as well, or the replaced template would feed this comparator a
+// stale value and corrupt the pruning answer silently;
+// assertComparatorReadCoverage (foodOptimizerPruning.js) fails the import as
+// soon as the two drift apart.
 export function compareFoodSlots(left, right) {
   const leftMp = left.kind === 'mp' ? 0 : 1;
   const rightMp = right.kind === 'mp' ? 0 : 1;

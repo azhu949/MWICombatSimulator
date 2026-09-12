@@ -4,7 +4,11 @@ import {
   buildFoodDefaultCandidate,
   generateFoodOptimizerCompositionCandidates,
 } from '../foodOptimizerDomain.js';
-import { createFoodOptimizerGrid, projectFoodOptimizerRanges } from '../foodOptimizerGrid.js';
+import {
+  createFoodOptimizerGrid,
+  matchesFoodOptimizerGridItems,
+  projectFoodOptimizerRanges,
+} from '../foodOptimizerGrid.js';
 import {
   createFoodOptimizerPruningCache,
   generatePrunedFoodOptimizerCandidates,
@@ -152,6 +156,25 @@ describe('discrete food optimizer evidence', () => {
     }
     expect(projectFoodOptimizerRanges(grid, candidate, [...ranges].reverse())).toBeNull();
     expect(projectFoodOptimizerRanges(grid, { ...candidate, food: [...candidate.food].reverse() }, ranges)).toBeNull();
+  });
+});
+
+describe('grid item membership contract', () => {
+  const item = food('mana', 'mp', [100, 50, 10]);
+  const grid = createFoodOptimizerGrid([item]);
+  const domain = (min, max) => ({ ...item, min, max });
+
+  it('accepts an equal-length list whose domains sit inside the threshold set', () => {
+    expect(matchesFoodOptimizerGridItems([grid.get('mana')], [domain(50, 100)])).toBe(true);
+    expect(matchesFoodOptimizerGridItems([], [])).toBe(true);
+  });
+
+  it('fails closed on length or element mismatches', () => {
+    expect(matchesFoodOptimizerGridItems([], [domain(50, 100)])).toBe(false);
+    expect(matchesFoodOptimizerGridItems([grid.get('mana'), grid.get('mana')], [domain(50, 100)])).toBe(false);
+    expect(matchesFoodOptimizerGridItems(null, [domain(50, 100)])).toBe(false);
+    expect(matchesFoodOptimizerGridItems([grid.get('mana')], [domain(60, 100)])).toBe(false);
+    expect(matchesFoodOptimizerGridItems([grid.get('mana')], [domain(100, 50)])).toBe(false);
   });
 });
 

@@ -1,15 +1,40 @@
 import { buildFoodCandidate, compareFoodSlots } from './foodOptimizerDomain.js';
-import { createFoodOptimizerGrid, matchesFoodOptimizerGrid, projectFoodOptimizerRanges } from './foodOptimizerGrid.js';
+import {
+  createFoodOptimizerGrid,
+  matchesFoodOptimizerGridItems,
+  projectFoodOptimizerRanges,
+  resolveFoodOptimizerGridItem,
+} from './foodOptimizerGrid.js';
 import { materializeFoodOptimizerDomains } from './foodOptimizerRepresentatives.js';
 import { isFoodOptimizerCostAboveCutoff } from './foodOptimizerCostBound.js';
 
 const MAX_THRESHOLD = Number.MAX_SAFE_INTEGER;
 const FAILURE_REASONS = new Set(['mana', 'deaths']);
+// Every identity field the memoized query snapshot has to freeze. hrid, kind,
+// restore and price are what compareFoodSlots (foodOptimizerDomain.js) reads
+// besides the caller-written threshold; recoveryDuration is frozen ahead of the
+// tie breaker it is the likeliest candidate for. The snapshot, hrid positions,
+// grid items and comparison templates all mirror this list, and the guard drops
+// the query whenever an entry is rewritten in place, so a new non-threshold
+// field read anywhere in those derivations has to be added here. The guard
+// compares the fields by name for speed, and assertQueryGuardCoverage below
+// proves at import time that the two never drift apart, while
+// assertComparatorReadCoverage rejects any compareFoodSlots observation the
+// frozen fields and the threshold do not cover. The parametrized rewrite
+// test in __tests__/foodOptimizerPruning.test.js exercises every entry.
+const QUERY_GUARD_FIELDS = ['hrid', 'kind', 'restore', 'price', 'recoveryDuration'];
 const nativePruningCacheMatchers = new WeakMap();
 // Consumed-core group keys join hrids. No valid hrid contains NUL, and entries
 // with such an hrid are never registered, so the key stays injective.
 const CORE_SEPARATOR = '\u0000';
-const coreKeyOf = (hrids) => [...hrids].sort().join(CORE_SEPARATOR);
+// Cores hold at most two foods, so ordering that pair reproduces the sorted key
+// without allocating and sorting.
+const coreKeyOf = (hrids) => {
+  if (hrids.length === 2)
+    return hrids[0] < hrids[1] ? `${hrids[0]}${CORE_SEPARATOR}${hrids[1]}` : `${hrids[1]}${CORE_SEPARATOR}${hrids[0]}`;
+  if (hrids.length === 1) return `${hrids[0]}`;
+  return [...hrids].sort().join(CORE_SEPARATOR);
+};
 const validCoreMinimum = (minimum) =>
   Boolean(
     minimum &&
@@ -17,6 +42,164 @@ const validCoreMinimum = (minimum) =>
       (kind) => Number.isSafeInteger(minimum[kind]) && minimum[kind] >= 1 && minimum[kind] <= MAX_THRESHOLD,
     ),
   );
+
+// The query reuse guard, written out by field name: it runs once per probe on
+// the matchRanges hot path, where a dynamic loop over QUERY_GUARD_FIELDS costs
+// at least twice as much. assertQueryGuardCoverage below proves at import time
+// that this comparison and the frozen field list never drift apart.
+const queryGuardAccepts = (candidate, slots, length) => {
+  for (let index = 0; index < length; index += 1) {
+    const domain = candidate[index];
+    const slot = slots[index];
+    if (
+      domain !== slot.ref ||
+      domain.hrid !== slot.hrid ||
+      domain.kind !== slot.kind ||
+      domain.restore !== slot.restore ||
+      domain.price !== slot.price ||
+      domain.recoveryDuration !== slot.recoveryDuration
+    )
+      return false;
+  }
+  return true;
+};
+// A value no frozen identity field can hold; the coverage proof rewrites one
+// frozen field at a time with it.
+const QUERY_GUARD_PROBE = Symbol('queryGuardProbe');
+// Freeze a synthetic slot carrying every field a real domain can hold and
+// require the guard to accept the pristine pair, keep accepting it while the
+// traversal-mutable bounds move, while rejecting a rewrite of every
+// QUERY_GUARD_FIELDS entry and a replacement slot object. A missing or
+// inverted comparison, a comparison against the wrong field, or a comparison
+// reading a field outside the list fails the import instead of letting the
+// cache answer from a stale snapshot or rebuild the query on every probe.
+function assertQueryGuardCoverage() {
+  const slot = {
+    hrid: 'a',
+    name: 'a',
+    itemLevel: 1,
+    kind: 'mp',
+    restore: 1,
+    recoveryDuration: 1,
+    thresholds: [1],
+    price: 1,
+    threshold: 1,
+    min: 1,
+    max: 1,
+  };
+  const frozen = { ref: slot };
+  for (const field of QUERY_GUARD_FIELDS) frozen[field] = slot[field];
+  if (!queryGuardAccepts([slot], [frozen], 1))
+    throw new Error('The query guard does not accept a pristine frozen slot.');
+  for (const bound of ['min', 'max']) {
+    const saved = slot[bound];
+    slot[bound] = 2;
+    const accepted = queryGuardAccepts([slot], [frozen], 1);
+    slot[bound] = saved;
+    if (!accepted) throw new Error(`The query guard compares the traversal-mutable ${bound}.`);
+  }
+  if (queryGuardAccepts([{ ...slot }], [frozen], 1))
+    throw new Error('The query guard does not reject a replaced slot.');
+  for (const field of QUERY_GUARD_FIELDS) {
+    const saved = frozen[field];
+    frozen[field] = QUERY_GUARD_PROBE;
+    const accepted = queryGuardAccepts([slot], [frozen], 1);
+    frozen[field] = saved;
+    if (accepted) throw new Error(`The query guard does not compare the frozen field "${field}".`);
+  }
+}
+assertQueryGuardCoverage();
+// The comparison templates copy each slot once and then only ever rewrite the
+// threshold, so every other field compareFoodSlots reads has to be frozen by
+// QUERY_GUARD_FIELDS: an in-place rewrite of an unfrozen field keeps the guard
+// accepting the query while the stale template keeps feeding the comparator,
+// silently corrupting the pruning answer. This proof wraps recording proxies
+// around synthetic slots and compares every relative state (less, equal,
+// greater) of every frozen field plus the caller-written threshold, in every
+// combination, so a read hiding behind an inequality, or behind a conjunction
+// of inequalities, is recorded just like one in the all-equal tail; the
+// numeric states also cover falsy and nullish values, so a read gated behind
+// a truthy or nullish fallback of a falsy field is recorded too. Key
+// enumeration, in checks, descriptor reads and prototype queries record
+// through their own traps (a plain property get never queries the prototype,
+// so ordinary reads cannot trip that one). No finite probe set closes every
+// guard: a read taken only when a field takes a value outside the grid's
+// domain (an arbitrary constant predicate), or gated behind a side effect,
+// stays out of reach. The import fails when a recorded key is neither the
+// threshold nor a QUERY_GUARD_FIELDS entry.
+function assertComparatorReadCoverage() {
+  const reads = new Set();
+  const record = (slot) =>
+    new Proxy(slot, {
+      get(target, key) {
+        reads.add(key);
+        return Reflect.get(target, key);
+      },
+      has(target, key) {
+        reads.add(key);
+        return Reflect.has(target, key);
+      },
+      getOwnPropertyDescriptor(target, key) {
+        reads.add(key);
+        return Reflect.getOwnPropertyDescriptor(target, key);
+      },
+      ownKeys(target) {
+        reads.add('ownKeys');
+        return Reflect.ownKeys(target);
+      },
+      getPrototypeOf(target) {
+        reads.add('getPrototypeOf');
+        return Reflect.getPrototypeOf(target);
+      },
+    });
+  // kind holds only the two values, so its relative states are the four
+  // ordered pairs; every other field is probed as less, equal and greater,
+  // and with one side falsy (0) or nullish (undefined): free foods price at
+  // 0 and most recovery durations are 0 in the game data, so a read gated
+  // behind a truthy (||) or nullish (??) fallback is production-reachable
+  // and has to be recorded too. The hrids look like production hrids so
+  // prefix checks behave as they would on real data.
+  const numericStates = [
+    [0, 2],
+    [2, 2],
+    [2, 0],
+    [undefined, 2],
+    [2, undefined],
+  ];
+  const statesByField = {
+    kind: [
+      ['mp', 'hp'],
+      ['mp', 'mp'],
+      ['hp', 'mp'],
+      ['hp', 'hp'],
+    ],
+    hrid: [
+      ['/items/a', '/items/c'],
+      ['/items/b', '/items/b'],
+      ['/items/c', '/items/a'],
+    ],
+  };
+  const fields = [...QUERY_GUARD_FIELDS, 'threshold'];
+  const states = fields.map((field) => statesByField[field] || numericStates);
+  const totals = states.map((list) => list.length);
+  const probes = totals.reduce((product, count) => product * count, 1);
+  for (let probe = 0; probe < probes; probe += 1) {
+    const left = {};
+    const right = {};
+    let rest = probe;
+    for (let index = 0; index < fields.length; index += 1) {
+      const [leftValue, rightValue] = states[index][rest % totals[index]];
+      rest = Math.floor(rest / totals[index]);
+      left[fields[index]] = leftValue;
+      right[fields[index]] = rightValue;
+    }
+    compareFoodSlots(record(left), record(right));
+  }
+  for (const key of reads)
+    if (key !== 'threshold' && !QUERY_GUARD_FIELDS.includes(key))
+      throw new Error(`compareFoodSlots reads "${String(key)}", which QUERY_GUARD_FIELDS does not freeze.`);
+}
+assertComparatorReadCoverage();
 
 // A consumed core is the set of foods a result actually consumed. Any candidate
 // whose core foods keep thresholds inside the recorded equivalence ranges, and
@@ -169,8 +352,13 @@ export function materializeFoodOptimizerOutcome(evidence, candidate) {
   };
 }
 
+// Composition keys stay inside one cache instance, so they only have to be
+// injective: joining the sorted hrids avoids the per-probe serialization.
 function compositionKey(items) {
-  return JSON.stringify(items.map((item) => item.hrid).sort());
+  const hrids = items.map((item) => item.hrid).sort();
+  let key = '';
+  for (let index = 0; index < hrids.length; index += 1) key += `${hrids[index]}${CORE_SEPARATOR}`;
+  return key;
 }
 
 function containsRanges(outer, inner) {
@@ -303,6 +491,9 @@ export function createFoodOptimizerPruningCache({
     insertCore({
       key: coreKeyOf(core.map((slot) => slot.hrid)),
       core,
+      // Immutable entry data: every coverage probe tests each food outside the
+      // core against this set, so it is built once per record.
+      consumedHrids: new Set(core.map((slot) => slot.hrid)),
       minimum: { ...minimum },
       result: feasible
         ? result
@@ -321,26 +512,36 @@ export function createFoodOptimizerPruningCache({
             },
     });
   };
-  const probeCore = (domains, coreDomains) => {
-    const group = coreGroups.get(coreKeyOf(coreDomains.map((domain) => domain.hrid)));
+  // The probed foods are addressed by position so the caller can reuse the
+  // query's precomputed subset key instead of hashing hrids per probe.
+  const probeCore = (query, first, second, key) => {
+    const { domains } = query;
+    const group = key === null ? null : coreGroups.get(key);
     if (!group) return null;
+    const size = second < 0 ? 1 : 2;
     for (const entry of group) {
-      if (entry.core.length !== coreDomains.length) continue;
-      let matched = true;
-      for (let index = 0; index < entry.core.length; index += 1) {
-        const domain = coreDomains[index];
+      if (entry.core.length !== size) continue;
+      const head = entry.core[0];
+      const headDomain = domains[first];
+      if (
+        headDomain.kind !== head.kind ||
+        headDomain.hrid !== head.hrid ||
+        headDomain.min < head.min ||
+        headDomain.max > head.max
+      )
+        continue;
+      if (size === 2) {
+        const tail = entry.core[1];
+        const tailDomain = domains[second];
         if (
-          domain.kind !== entry.core[index].kind ||
-          domain.hrid !== entry.core[index].hrid ||
-          domain.min < entry.core[index].min ||
-          domain.max > entry.core[index].max
-        ) {
-          matched = false;
-          break;
-        }
+          tailDomain.kind !== tail.kind ||
+          tailDomain.hrid !== tail.hrid ||
+          tailDomain.min < tail.min ||
+          tailDomain.max > tail.max
+        )
+          continue;
       }
-      if (!matched) continue;
-      const consumedHrids = new Set(entry.core.map((slot) => slot.hrid));
+      const consumedHrids = entry.consumedHrids;
       let covered = true;
       // Every food outside the core must stay inactive: the query may hold more
       // slots than the probed subset, and each of them needs the bound check.
@@ -352,31 +553,32 @@ export function createFoodOptimizerPruningCache({
       if (!covered) continue;
       // The recorded core order must survive every point of the block, so the
       // covered candidates keep the witness's slot order for these two foods.
-      if (
-        entry.core.length === 2 &&
-        compareFoodSlots(
-          { ...coreDomains[0], threshold: coreDomains[0].min },
-          { ...coreDomains[1], threshold: coreDomains[1].max },
-        ) >= 0
-      )
-        continue;
+      if (size === 2) {
+        const [left, right] = query.comparisonPair(first, second);
+        left.threshold = domains[first].min;
+        right.threshold = domains[second].max;
+        if (compareFoodSlots(left, right) >= 0) continue;
+      }
       return entry;
     }
     return null;
   };
   // A query may cover at most six ordered cores with the three-slot limit, and
   // the remaining foods must stay inactive, so no linear scan is ever needed.
-  const matchConsumedCore = (domains) => {
+  const matchConsumedCore = (query) => {
     if (!coreEnabled || (!failureCoreEntries.size && !feasibleCoreEntries.size)) return null;
+    const { domains } = query;
     coreProbes += 1;
+    const keys = query.subsetKeys();
+    const singles = domains.length * domains.length;
     for (let first = 0; first < domains.length; first += 1) {
-      const single = probeCore(domains, [domains[first]]);
+      const single = probeCore(query, first, -1, keys[singles + first]);
       if (single) {
         coreHits += 1;
         return single;
       }
       for (let second = first + 1; second < domains.length; second += 1) {
-        const pair = probeCore(domains, [domains[first], domains[second]]);
+        const pair = probeCore(query, first, second, keys[first * domains.length + second]);
         if (pair) {
           coreHits += 1;
           return pair;
@@ -390,6 +592,171 @@ export function createFoodOptimizerPruningCache({
     coreRanges: entry.core.map((range) => ({ ...range })),
     minimum: { ...entry.minimum },
   });
+  // Every probe of one traversal shares the same domains array and only moves its
+  // bounds, so the hrids, kinds, restores, prices and recovery durations stay
+  // fixed. A query memoizes that invariant half — the composition key, hrid
+  // positions, grid items, comparison templates and the core subset keys — and is
+  // reused for as long as the slots themselves are untouched. The slot checks
+  // below make that reuse safe: a replaced slot or an in-place rewrite of a
+  // QUERY_GUARD_FIELDS entry drops the query and builds a new one.
+  const createQuery = (domains, { reuse = true } = {}) => {
+    const length = domains.length;
+    // Only a reused query needs the slot snapshot for its guard: a point query is
+    // answered once, so it skips that copy entirely. The snapshot freezes the slot
+    // reference and every QUERY_GUARD_FIELDS entry, and queryGuardAccepts compares
+    // the same fields by name, so a replaced slot and an in-place rewrite alike
+    // drop the query.
+    const slots = reuse
+      ? Array.from({ length }, (unused, index) => {
+          const slot = domains[index];
+          const frozen = { ref: slot };
+          for (const field of QUERY_GUARD_FIELDS) frozen[field] = slot[field];
+          return frozen;
+        })
+      : null;
+    let composition = null;
+    let positions = null;
+    let items = null;
+    let templates = null;
+    let subsetKeys = null;
+    const query = {
+      domains,
+      match() {
+        return matchDomains(query);
+      },
+      holds(candidate) {
+        return slots !== null && candidate.length === length && queryGuardAccepts(candidate, slots, length);
+      },
+      composition() {
+        return (composition ??= compositionKey(domains));
+      },
+      positions() {
+        if (!positions) {
+          positions = new Map();
+          for (let index = 0; index < length; index += 1) {
+            const hrid = domains[index]?.hrid;
+            if (!positions.has(hrid)) positions.set(hrid, index);
+          }
+        }
+        return positions;
+      },
+      items() {
+        return (items ??= grid ? domains.map((domain) => resolveFoodOptimizerGridItem(grid, domain)) : null);
+      },
+      // comparisonPair returns writable copies of two slots: the caller only ever
+      // replaces their thresholds, exactly like the per-probe spreads did. The
+      // frozen identity fields above stay valid because QUERY_GUARD_FIELDS has
+      // to cover every non-threshold field compareFoodSlots reads, which
+      // assertComparatorReadCoverage enforces at import time.
+      comparisonPair(previous, current) {
+        if (!templates) templates = new Array(length);
+        if (!templates[previous]) templates[previous] = { ...domains[previous] };
+        if (!templates[current]) templates[current] = { ...domains[current] };
+        return [templates[previous], templates[current]];
+      },
+      subsetKeys() {
+        if (!subsetKeys) {
+          subsetKeys = new Array(length * length + length).fill(null);
+          for (let index = 0; index < length; index += 1) {
+            subsetKeys[length * length + index] = coreKeyOf([domains[index].hrid]);
+            for (let other = index + 1; other < length; other += 1)
+              subsetKeys[index * length + other] = coreKeyOf([domains[index].hrid, domains[other].hrid]);
+          }
+        }
+        return subsetKeys;
+      },
+    };
+    return query;
+  };
+  // Reused arrays keep their amortized query; a point query is answered once and
+  // skips both the guard copy and the bookkeeping.
+  const queries = new WeakMap();
+  const queryFor = (domains, reuse = true) => {
+    if (!reuse) return createQuery(domains, { reuse: false });
+    const cached = queries.get(domains);
+    if (cached && cached.holds(domains)) return cached;
+    const query = createQuery(domains);
+    queries.set(domains, query);
+    return query;
+  };
+  const matchDomains = (query) => {
+    const { domains } = query;
+    // In a no-food run, thresholds above every observed deficit never fire.
+    // Adding any number of such foods leaves combat unchanged, in any order.
+    if (unusedFood && domains.every((domain) => domain.min >= unusedFood.result.unusedFoodThresholds[domain.kind]))
+      return unusedFood;
+    const gridItems = query.items();
+    if (grid && !matchesFoodOptimizerGridItems(gridItems, domains)) return null;
+    const rankCutoff = getRankCutoff?.();
+    // Cost and deaths cannot be negative. Once ten zero-cost, zero-death
+    // solutions use fewer slots, every point of this domain loses even in
+    // its best possible outcome. No statement about feasibility is implied.
+    if (
+      rankCutoff?.costPerHour === 0 &&
+      rankCutoff.deaths === 0 &&
+      Array.isArray(rankCutoff.slots) &&
+      domains.length > rankCutoff.slots.length
+    )
+      return {
+        result: {
+          feasible: null,
+          rejected: '',
+          pruned: 'rank',
+          roundsCompleted: 0,
+          costLowerBound: 0,
+          rankLowerBound: { costPerHour: 0, deaths: 0, slotCount: domains.length },
+        },
+      };
+    const group = groups.get(query.composition());
+    if (group) {
+      const positions = query.positions();
+      for (const entry of group) {
+        if (
+          entry.result.pruned === 'cost' &&
+          !isFoodOptimizerCostAboveCutoff(entry.result.costLowerBound, getCostCutoff?.())
+        )
+          continue;
+        const ranges = entry.ranges;
+        let contained = true;
+        for (let index = 0; index < ranges.length; index += 1) {
+          const position = positions.get(ranges[index].hrid);
+          if (position === undefined) {
+            contained = false;
+            break;
+          }
+          const domain = domains[position];
+          if (domain.kind !== ranges[index].kind || domain.min < ranges[index].min || domain.max > ranges[index].max) {
+            contained = false;
+            break;
+          }
+        }
+        if (!contained) continue;
+        // The least threshold on the earlier slot must still sort before the
+        // greatest threshold on the next slot, including all tie breakers.
+        let ordered = true;
+        for (let index = 1; index < ranges.length; index += 1) {
+          const previous = positions.get(ranges[index - 1].hrid);
+          const current = positions.get(ranges[index].hrid);
+          const [left, right] = query.comparisonPair(previous, current);
+          left.threshold = domains[previous].min;
+          right.threshold = domains[current].max;
+          if (compareFoodSlots(left, right) >= 0) {
+            ordered = false;
+            break;
+          }
+        }
+        if (!ordered) continue;
+        return entry;
+      }
+    }
+    const core = matchConsumedCore(query);
+    if (!core) return null;
+    // Cost-pruned cores stay valid only while their recorded lower bound
+    // still exceeds the current ranking cutoff, like same-composition ones.
+    if (core.result.pruned === 'cost' && !isFoodOptimizerCostAboveCutoff(core.result.costLowerBound, getCostCutoff?.()))
+      return null;
+    return coreEvidence(core);
+  };
   const cache = {
     get size() {
       return entries.size;
@@ -514,79 +881,14 @@ export function createFoodOptimizerPruningCache({
       while (entries.size > limit) remove(entries.values().next().value);
     },
     match(candidate) {
-      return this.matchRanges(candidate.slots.map((slot) => ({ ...slot, min: slot.threshold, max: slot.threshold })));
+      // A point query is answered once, so it skips the reuse guard.
+      return this.matchRanges(
+        candidate.slots.map((slot) => ({ ...slot, min: slot.threshold, max: slot.threshold })),
+        false,
+      );
     },
-    matchRanges(domains) {
-      // In a no-food run, thresholds above every observed deficit never fire.
-      // Adding any number of such foods leaves combat unchanged, in any order.
-      if (unusedFood && domains.every((domain) => domain.min >= unusedFood.result.unusedFoodThresholds[domain.kind]))
-        return unusedFood;
-      if (grid && !matchesFoodOptimizerGrid(grid, domains)) return null;
-      const rankCutoff = getRankCutoff?.();
-      // Cost and deaths cannot be negative. Once ten zero-cost, zero-death
-      // solutions use fewer slots, every point of this domain loses even in
-      // its best possible outcome. No statement about feasibility is implied.
-      if (
-        rankCutoff?.costPerHour === 0 &&
-        rankCutoff.deaths === 0 &&
-        Array.isArray(rankCutoff.slots) &&
-        domains.length > rankCutoff.slots.length
-      )
-        return {
-          result: {
-            feasible: null,
-            rejected: '',
-            pruned: 'rank',
-            roundsCompleted: 0,
-            costLowerBound: 0,
-            rankLowerBound: { costPerHour: 0, deaths: 0, slotCount: domains.length },
-          },
-        };
-      const group = groups.get(compositionKey(domains));
-      if (group) {
-        for (const entry of group) {
-          if (
-            entry.result.pruned === 'cost' &&
-            !isFoodOptimizerCostAboveCutoff(entry.result.costLowerBound, getCostCutoff?.())
-          )
-            continue;
-          const ordered = entry.ranges.map((range) => domains.find((domain) => domain.hrid === range.hrid));
-          if (
-            !ordered.every(
-              (domain, index) =>
-                domain &&
-                domain.kind === entry.ranges[index].kind &&
-                domain.min >= entry.ranges[index].min &&
-                domain.max <= entry.ranges[index].max,
-            )
-          )
-            continue;
-          // The least threshold on the earlier slot must still sort before the
-          // greatest threshold on the next slot, including all tie breakers.
-          if (
-            ordered.some(
-              (domain, index) =>
-                index > 0 &&
-                compareFoodSlots(
-                  { ...ordered[index - 1], threshold: ordered[index - 1].min },
-                  { ...domain, threshold: domain.max },
-                ) >= 0,
-            )
-          )
-            continue;
-          return entry;
-        }
-      }
-      const core = matchConsumedCore(domains);
-      if (!core) return null;
-      // Cost-pruned cores stay valid only while their recorded lower bound
-      // still exceeds the current ranking cutoff, like same-composition ones.
-      if (
-        core.result.pruned === 'cost' &&
-        !isFoodOptimizerCostAboveCutoff(core.result.costLowerBound, getCostCutoff?.())
-      )
-        return null;
-      return coreEvidence(core);
+    matchRanges(domains, reuse = true) {
+      return matchDomains(queryFor(domains, reuse));
     },
   };
   nativePruningCacheMatchers.set(cache, cache.matchRanges);
