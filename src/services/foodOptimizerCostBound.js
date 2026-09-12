@@ -1,4 +1,4 @@
-import { computeFoodCostPerHour } from './foodOptimizerDomain.js';
+import { computeFoodCostPerHour, isFoodOptimizerTopTenRequest } from './foodOptimizerDomain.js';
 
 // Ties must still reach the ordinary death/slot/signature tie-breakers. Leave a
 // small margin around the floating-point boundary rather than rounding either
@@ -11,7 +11,7 @@ export function isFoodOptimizerCostAboveCutoff(costLowerBound, costCutoff) {
 }
 
 export function getFoodOptimizerCostCutoff(request, candidate, costCutoff) {
-  return request?.searchMode === 'top10' &&
+  return isFoodOptimizerTopTenRequest(request) &&
     candidate != null &&
     Number.isSafeInteger(request.rounds) &&
     request.rounds > 0 &&

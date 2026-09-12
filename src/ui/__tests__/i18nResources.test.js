@@ -4,6 +4,12 @@ import { fileURLToPath } from 'node:url';
 import { describe, expect, it } from 'vitest';
 import enCommon from '../../../locales/en/common.json';
 import zhCommon from '../../../locales/zh/common.json';
+import {
+  FOOD_OPTIMIZER_MAX_ROUNDS,
+  FOOD_OPTIMIZER_MAX_STEP_PERCENT,
+  FOOD_OPTIMIZER_MIN_ROUNDS,
+  FOOD_OPTIMIZER_MIN_STEP_PERCENT,
+} from '../../services/foodOptimizerDomain.js';
 
 const SRC_ROOT = fileURLToPath(new URL('../../../src', import.meta.url));
 
@@ -241,6 +247,21 @@ describe('common locale resources', () => {
       }
     }
     expect(offenders).toEqual([]);
+  });
+
+  it('keeps the food optimizer bound copy in sync with the domain range constants', () => {
+    // invalidSettings 内嵌 1/100/1/10；常量改了文案没改，提示就会与校验不一致。
+    // 按出现顺序比对，既允许两种语言的措辞差异，又能捕捉区间错位或漏改。
+    const bounds = [
+      FOOD_OPTIMIZER_MIN_STEP_PERCENT,
+      FOOD_OPTIMIZER_MAX_STEP_PERCENT,
+      FOOD_OPTIMIZER_MIN_ROUNDS,
+      FOOD_OPTIMIZER_MAX_ROUNDS,
+    ];
+    for (const locale of [enCommon, zhCommon]) {
+      const numbers = (locale.foodOptimizer.invalidSettings.match(/\d+/g) || []).map(Number);
+      expect(numbers).toEqual(bounds);
+    }
   });
 
   it('resolves every literal common: t() key from both locale files', () => {

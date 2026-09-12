@@ -7,6 +7,8 @@ import {
   generateFoodOptimizerCompositionCandidates,
   hasEmptyFoodOptimizerBaseline,
   FOOD_OPTIMIZER_MAX_SLOTS,
+  isFoodOptimizerTopTenRequest,
+  resolveFoodOptimizerRequestSearchMode,
 } from './foodOptimizerDomain.js';
 import {
   createFoodOptimizerPruningCache,
@@ -230,11 +232,15 @@ export function createFoodOptimizerSearch({
   now = () => globalThis.performance?.now() ?? Date.now(),
   workerFactory = () => new FoodOptimizerWorkerClient(),
 }) {
+  // searchMode 只在这里解析一次：缺失/非法按“完整搜索”执行，并把解析结果写回 request，
+  // 让报告及其下游（UI 统计口径、缓存、复制本请求的调用方）看到实际执行的模式，
+  // 而不是留下 undefined 这第三种状态。
+  request.searchMode = resolveFoodOptimizerRequestSearchMode(request.searchMode);
   const report = createFoodOptimizerReport(request, items, foodSlots);
   const clients = new Set();
   const inFlight = new Map();
   const completedRoundsByClient = new Map();
-  const topTen = request.searchMode === 'top10';
+  const topTen = isFoodOptimizerTopTenRequest(request);
   let rankWitnesses = null;
   let rankCutoff;
   const getRankCutoff = () => rankCutoff;

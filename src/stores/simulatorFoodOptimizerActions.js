@@ -28,7 +28,9 @@ const reportCaches = new WeakMap();
 const trackedStores = new WeakSet();
 const applyingStores = new WeakSet();
 
-// 归一化后的范围数组按目录顺序排列，可直接用连接串比较；null 与 [] 都表示全部。
+// 归一化后的范围数组按目录顺序排列，可直接用连接串比较。仅作设置变更的
+// 比较键：null（未保存范围）与空数组都折叠为空串；默认范围不在本层解析
+// （快照层 resolveFoodScopeHrids 负责把 null 解析为装备默认）。
 function foodScopeKey(hrids) {
   return Array.isArray(hrids) && hrids.length ? hrids.join('|') : '';
 }

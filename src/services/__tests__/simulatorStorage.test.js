@@ -24,7 +24,7 @@ import {
   removeStorageItem,
   setJsonStorage,
 } from '../simulatorStorage.js';
-import { getFoodOptimizerCatalogHrids } from '../foodOptimizerDomain.js';
+import { FOOD_OPTIMIZER_DEFAULT_ROUNDS, getFoodOptimizerCatalogHrids } from '../foodOptimizerDomain.js';
 
 const PLAYER_DATA_SNAPSHOT_STORAGE_KEY = 'mwi.player.data.snapshot.v1';
 const QUEUE_RUN_SETTINGS_STORAGE_KEY = 'mwi.queue.runSettings.v1';
@@ -71,7 +71,7 @@ describe('simulatorStorage', () => {
     it('uses exact top 10 for first use and unreadable preferences', () => {
       const storage = createMemoryStorage();
       vi.stubGlobal('localStorage', storage);
-      const expected = { thresholdStepPercent: 10, rounds: 3, searchMode: 'top10', foodHrids: null };
+      const expected = { thresholdStepPercent: 10, rounds: 1, searchMode: 'top10', foodHrids: null };
       expect(loadFoodOptimizerSettingsFromStorage()).toEqual(expected);
 
       storage.data.set(FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY, '{broken');
@@ -80,15 +80,33 @@ describe('simulatorStorage', () => {
       expect(loadFoodOptimizerSettingsFromStorage()).toEqual(expected);
     });
 
-    it('preserves complete statistics when loading preferences saved before search modes existed', () => {
+    it('recovers invalid stored rounds with the same shared default as first use', () => {
+      // 契约：非法/损坏的存储值回落到“首次使用”的同一个常量（脏数据跟随产品默认，
+      // 不引入第二个魔法数）。改默认值不会让这两条路径分裂，除非有人刻意拆常量。
+      for (const rounds of [0, 11, 'nonsense', true]) {
+        const storage = createMemoryStorage({
+          [FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY]: JSON.stringify({ version: 1, thresholdStepPercent: 10, rounds }),
+        });
+        vi.stubGlobal('localStorage', storage);
+        expect(loadFoodOptimizerSettingsFromStorage().rounds).toBe(FOOD_OPTIMIZER_DEFAULT_ROUNDS);
+      }
+      // 负向对照：合法值必须原样保留，否则上面的断言可能被“一律回默认”蒙混过去。
+      const control = createMemoryStorage({
+        [FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY]: JSON.stringify({ version: 1, thresholdStepPercent: 10, rounds: 4 }),
+      });
+      vi.stubGlobal('localStorage', control);
+      expect(loadFoodOptimizerSettingsFromStorage().rounds).toBe(4);
+    });
+
+    it('uses exact top 10 when loading preferences saved before search modes existed', () => {
       const storage = createMemoryStorage({
         [FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY]: JSON.stringify({ version: 1, thresholdStepPercent: 15, rounds: 4 }),
       });
       vi.stubGlobal('localStorage', storage);
       const settings = loadFoodOptimizerSettingsFromStorage();
-      expect(settings).toEqual({ thresholdStepPercent: 15, rounds: 4, searchMode: 'complete', foodHrids: null });
+      expect(settings).toEqual({ thresholdStepPercent: 15, rounds: 4, searchMode: 'top10', foodHrids: null });
       persistFoodOptimizerSettingsToStorage(settings);
-      expect(JSON.parse(storage.data.get(FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY)).searchMode).toBe('complete');
+      expect(JSON.parse(storage.data.get(FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY)).searchMode).toBe('top10');
     });
 
     it.each(['top10', 'complete'])('round-trips the %s mode with the other optimizer settings', (searchMode) => {
@@ -118,9 +136,10 @@ describe('simulatorStorage', () => {
       expect(persistFoodOptimizerSettingsToStorage(settings).foodHrids).toEqual([catalog[0], catalog[1]]);
       expect(loadFoodOptimizerSettingsFromStorage().foodHrids).toEqual([catalog[0], catalog[1]]);
 
-      // 无效、空集合与全选都回退到“全部食物”的 null 口径。
-      for (const raw of [['/items/not_a_food'], [], catalog])
+      // 无效与空集合回退到“未保存范围”的 null 口径；全选保留显式完整数组。
+      for (const raw of [['/items/not_a_food'], []])
         expect(normalizeFoodOptimizerSettings({ foodHrids: raw }).foodHrids).toBeNull();
+      expect(normalizeFoodOptimizerSettings({ foodHrids: catalog }).foodHrids).toEqual(catalog);
     });
   });
 

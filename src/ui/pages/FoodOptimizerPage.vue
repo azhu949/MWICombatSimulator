@@ -84,8 +84,8 @@
           v-model="stepDraft"
           class="control-input w-full"
           type="number"
-          min="1"
-          max="100"
+          :min="FOOD_OPTIMIZER_MIN_STEP_PERCENT"
+          :max="FOOD_OPTIMIZER_MAX_STEP_PERCENT"
           step="1"
           :disabled="running"
           :aria-invalid="!validDraft"
@@ -97,8 +97,8 @@
           v-model="roundsDraft"
           class="control-input w-full"
           type="number"
-          min="1"
-          max="10"
+          :min="FOOD_OPTIMIZER_MIN_ROUNDS"
+          :max="FOOD_OPTIMIZER_MAX_ROUNDS"
           step="1"
           :disabled="running"
           :aria-invalid="!validDraft"
@@ -143,6 +143,9 @@
             : 'common:foodOptimizer.completeModeHint',
         )
       }}
+    </p>
+    <p class="text-xs text-muted-foreground" data-food-optimizer-rounds-hint>
+      {{ t('common:foodOptimizer.roundsHint') }}
     </p>
     <p v-if="!validDraft" class="text-sm text-destructive" role="alert">
       {{ t('common:foodOptimizer.invalidSettings') }}
@@ -325,6 +328,10 @@ import { useSimulatorStore } from '../../stores/simulatorStore.js';
 import { foodOptimizerBusy } from '../../stores/simulatorFoodOptimizerActions.js';
 import { snapshotFoodOptimizerInput } from '../../services/foodOptimizerSnapshot.js';
 import {
+  FOOD_OPTIMIZER_MAX_ROUNDS,
+  FOOD_OPTIMIZER_MAX_STEP_PERCENT,
+  FOOD_OPTIMIZER_MIN_ROUNDS,
+  FOOD_OPTIMIZER_MIN_STEP_PERCENT,
   FOOD_OPTIMIZER_SEARCH_MODE_COMPLETE,
   FOOD_OPTIMIZER_SEARCH_MODE_TOP10,
   getFoodOptimizerItems,

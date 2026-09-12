@@ -242,7 +242,7 @@ describe('food optimizer cost lower bounds', () => {
     expect(getFoodOptimizerCostCutoff(request, {}, 0)).toBe(0);
     expect(getFoodOptimizerCostCutoff(request, {}, 25)).toBe(25);
     expect(getFoodOptimizerCostCutoff(request, null, 0)).toBeNull();
-    for (const mode of ['complete', 'invalid'])
+    for (const mode of ['complete', 'invalid', undefined])
       expect(getFoodOptimizerCostCutoff({ ...request, searchMode: mode }, {}, 0)).toBeNull();
     for (const cutoff of [undefined, -1, NaN]) expect(getFoodOptimizerCostCutoff(request, {}, cutoff)).toBeNull();
     for (const rounds of [0, Infinity]) expect(getFoodOptimizerCostCutoff({ ...request, rounds }, {}, 10)).toBeNull();

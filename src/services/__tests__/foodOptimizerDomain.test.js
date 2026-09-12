@@ -1,5 +1,10 @@
 import { describe, expect, it } from 'vitest';
 import {
+  FOOD_OPTIMIZER_DEFAULT_ROUNDS,
+  FOOD_OPTIMIZER_MAX_ROUNDS,
+  FOOD_OPTIMIZER_MAX_STEP_PERCENT,
+  FOOD_OPTIMIZER_MIN_ROUNDS,
+  FOOD_OPTIMIZER_MIN_STEP_PERCENT,
   batchFoodOptimizerCandidates,
   buildFoodCandidate,
   buildFoodDefaultCandidate,
@@ -14,16 +19,81 @@ import {
   getFoodOptimizerCatalogHrids,
   getFoodOptimizerItems,
   isValidFoodOptimizerSettings,
+  isFoodOptimizerTopTenRequest,
   normalizeFoodOptimizerFoodHrids,
+  normalizeFoodOptimizerRounds,
   normalizeFoodOptimizerSearchMode,
+  resolveFoodOptimizerRequestSearchMode,
 } from '../foodOptimizerDomain.js';
 import { foodOptions } from '../../shared/gameDataIndex.js';
 import { sanitizeTriggerList } from '../triggerMapper.js';
 
 describe('food optimizer thresholds and candidates', () => {
-  it('keeps complete mode for callers that omit the search mode', () => {
-    expect(normalizeFoodOptimizerSearchMode()).toBe('complete');
+  it('defaults to exact top 10 for callers that omit the search mode', () => {
+    expect(normalizeFoodOptimizerSearchMode()).toBe('top10');
+    expect(normalizeFoodOptimizerSearchMode('nonsense')).toBe('top10');
     expect(isValidFoodOptimizerSettings({ thresholdStepPercent: 10, rounds: 3 })).toBe(true);
+    expect(isValidFoodOptimizerSettings({ thresholdStepPercent: 10, rounds: 3, searchMode: undefined })).toBe(true);
+  });
+
+  // 引擎请求层的缺省与设置层刻意不同：缺失/非法一律解析为“完整搜索”，绝不静默启用裁剪。
+  it('resolves an omitted or invalid request mode to the complete engine fallback', () => {
+    expect(resolveFoodOptimizerRequestSearchMode(undefined)).toBe('complete');
+    expect(resolveFoodOptimizerRequestSearchMode('nonsense')).toBe('complete');
+    expect(resolveFoodOptimizerRequestSearchMode('top10')).toBe('top10');
+    expect(resolveFoodOptimizerRequestSearchMode('complete')).toBe('complete');
+    expect(isFoodOptimizerTopTenRequest({ searchMode: 'top10' })).toBe(true);
+    expect(isFoodOptimizerTopTenRequest({ searchMode: 'complete' })).toBe(false);
+    expect(isFoodOptimizerTopTenRequest({})).toBe(false);
+    expect(isFoodOptimizerTopTenRequest(null)).toBe(false);
+  });
+
+  // 与 searchMode 相反，重复次数的“产品默认”与“非法值回落”刻意共用同一个常量：
+  // 脏数据跟随产品默认，不引入第二个魔法数。回落关系用常量（而非字面量）钉住，
+  // 有人拆成两个数字时会立刻失败；产品默认值本身仍由字面量 1 显式钉住。
+  // 该常量同时就是结论强度：轮次越少，可行性与成本越依赖单次抽样。
+  it('recovers every invalid rounds value with the single shared default', () => {
+    expect(FOOD_OPTIMIZER_DEFAULT_ROUNDS).toBe(1);
+    // 非法值覆盖“低于下界 / 高于上界 / 非整数 / 非数值”四类；上下界用常量相对表示，
+    // 具体数值由下一条用例（边界契约）钉住，避免这里再藏一份 11/0 的隐式耦合。
+    for (const value of [
+      undefined,
+      null,
+      '',
+      FOOD_OPTIMIZER_MIN_ROUNDS - 1,
+      FOOD_OPTIMIZER_MAX_ROUNDS + 1,
+      1.5,
+      NaN,
+      Infinity,
+      'nonsense',
+      true,
+      false,
+    ])
+      expect(normalizeFoodOptimizerRounds(value)).toBe(FOOD_OPTIMIZER_DEFAULT_ROUNDS);
+    // 区间内的数字字符串照旧接受（相对上界取值，避免写死 7）。
+    expect(normalizeFoodOptimizerRounds(String(FOOD_OPTIMIZER_MAX_ROUNDS))).toBe(FOOD_OPTIMIZER_MAX_ROUNDS);
+    expect(normalizeFoodOptimizerRounds(FOOD_OPTIMIZER_DEFAULT_ROUNDS)).toBe(FOOD_OPTIMIZER_DEFAULT_ROUNDS);
+  });
+
+  // 合法区间来自域常量、且被 isValidFoodOptimizerSettings 直接引用：把边界值与常量绑定，
+  // 改常量而不改测试/页面 min-max/invalidSettings 文案就会失败。
+  it('derives the validation bounds from the shared range constants', () => {
+    expect([
+      FOOD_OPTIMIZER_MIN_STEP_PERCENT,
+      FOOD_OPTIMIZER_MAX_STEP_PERCENT,
+      FOOD_OPTIMIZER_MIN_ROUNDS,
+      FOOD_OPTIMIZER_MAX_ROUNDS,
+    ]).toEqual([1, 100, 1, 10]);
+    for (const step of [FOOD_OPTIMIZER_MIN_STEP_PERCENT, FOOD_OPTIMIZER_MAX_STEP_PERCENT])
+      expect(isValidFoodOptimizerSettings({ thresholdStepPercent: step, rounds: FOOD_OPTIMIZER_MIN_ROUNDS })).toBe(
+        true,
+      );
+    for (const step of [FOOD_OPTIMIZER_MIN_STEP_PERCENT - 1, FOOD_OPTIMIZER_MAX_STEP_PERCENT + 1])
+      expect(isValidFoodOptimizerSettings({ thresholdStepPercent: step, rounds: 3 })).toBe(false);
+    for (const rounds of [FOOD_OPTIMIZER_MIN_ROUNDS, FOOD_OPTIMIZER_MAX_ROUNDS])
+      expect(isValidFoodOptimizerSettings({ thresholdStepPercent: 10, rounds })).toBe(true);
+    for (const rounds of [FOOD_OPTIMIZER_MIN_ROUNDS - 1, FOOD_OPTIMIZER_MAX_ROUNDS + 1])
+      expect(isValidFoodOptimizerSettings({ thresholdStepPercent: 10, rounds })).toBe(false);
   });
 
   it.each(['top10', 'complete'])('accepts search mode %s', (searchMode) => {
@@ -82,11 +152,12 @@ describe('food optimizer thresholds and candidates', () => {
     const scope = [catalog[2], catalog[0]];
     expect(build(scope).map((item) => item.hrid)).toEqual([catalog[0], catalog[2]]);
 
-    // 归一化：null/无效/空集合/覆盖全目录都回退到 null；有效子集按目录顺序去重。
+    // 归一化：null/无效/空集合回退到 null；全目录保留显式完整数组（防止下次
+    // 打开被静默改回装备默认）；有效子集按目录顺序去重。
     expect(normalizeFoodOptimizerFoodHrids(null)).toBeNull();
     expect(normalizeFoodOptimizerFoodHrids([])).toBeNull();
     expect(normalizeFoodOptimizerFoodHrids(['/items/not_a_food'])).toBeNull();
-    expect(normalizeFoodOptimizerFoodHrids([...catalog, '/items/not_a_food'])).toBeNull();
+    expect(normalizeFoodOptimizerFoodHrids([...catalog, '/items/not_a_food'])).toEqual(catalog);
     expect(normalizeFoodOptimizerFoodHrids([catalog[1], catalog[0], catalog[0]])).toEqual([catalog[0], catalog[1]]);
   });
 

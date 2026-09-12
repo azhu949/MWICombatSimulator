@@ -31,8 +31,6 @@ import { normalizeEquipmentSetQueueChanges } from './queueVariants.js';
 import { getVendorPriceByItemHrid } from './queueUpgradeCost.js';
 import { clamp, clampPositiveInteger, deepClone, isPlainObject, toFiniteNumber } from './utils.js';
 import {
-  FOOD_OPTIMIZER_SEARCH_MODE_COMPLETE,
-  FOOD_OPTIMIZER_SEARCH_MODE_TOP10,
   normalizeFoodOptimizerStep,
   normalizeFoodOptimizerRounds,
   normalizeFoodOptimizerSearchMode,
@@ -704,8 +702,9 @@ export function normalizeFoodOptimizerSettings(raw = {}) {
   return {
     thresholdStepPercent: normalizeFoodOptimizerStep(source.thresholdStepPercent),
     rounds: normalizeFoodOptimizerRounds(source.rounds),
-    searchMode: normalizeFoodOptimizerSearchMode(source.searchMode, FOOD_OPTIMIZER_SEARCH_MODE_TOP10),
-    // 旧数据没有该字段：null 即“全部食物”，保持原有候选域不变。
+    // 设置层缺省是 normalizeFoodOptimizerSearchMode 的默认参数，不再在这里重复字面值。
+    searchMode: normalizeFoodOptimizerSearchMode(source.searchMode),
+    // 旧数据没有该字段：null 即“未保存范围”，快照层会解析为当前佩戴食物的默认范围。
     foodHrids: normalizeFoodOptimizerFoodHrids(source.foodHrids),
   };
 }
@@ -715,11 +714,8 @@ export function loadFoodOptimizerSettingsFromStorage() {
   if (!isPlainObject(parsed) || parsed.version !== FOOD_OPTIMIZER_SETTINGS_STORAGE_VERSION) {
     return normalizeFoodOptimizerSettings({});
   }
-  // Existing preferences retain the original complete-statistics behavior.
-  return normalizeFoodOptimizerSettings({
-    ...parsed,
-    searchMode: parsed.searchMode ?? FOOD_OPTIMIZER_SEARCH_MODE_COMPLETE,
-  });
+  // 旧数据没有 searchMode 字段时与首次使用一致，默认精确前十。
+  return normalizeFoodOptimizerSettings(parsed);
 }
 
 export function persistFoodOptimizerSettingsToStorage(settings) {

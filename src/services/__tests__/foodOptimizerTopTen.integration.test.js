@@ -169,6 +169,18 @@ describe('exact top ten versus a full native-engine oracle', () => {
       thresholdStepPercent: 50,
     },
     {
+      // 产品默认口径（1 轮 + app 的第 0 个种子 0x4d574946）也要与穷举 oracle 逐候选
+      // 一致：rounds=1 时没有跨轮成本下界可用，剪枝只能来自轮内早期停止与排名界，
+      // 正是最容易出偏差的路径。
+      name: 'single round at the product default',
+      foodSlots: 2,
+      seconds: 600,
+      rounds: 1,
+      thresholdStepPercent: 25,
+      expectPruned: true,
+      seeds: [0x4d574946],
+    },
+    {
       name: 'wrapped and nonconsecutive seeds',
       foodSlots: 2,
       seconds: 240,
@@ -282,8 +294,13 @@ describe('exact top ten versus a full native-engine oracle', () => {
           expect(pruned).toBe(0);
           expect(knownFeasible).toBe(feasible.length);
           expect(sentCutoffs.every((cutoff) => cutoff == null || cutoff === Infinity)).toBe(true);
-        } else if (scenario.name === 'dungeon') {
+        } else if (scenario.name === 'dungeon' || scenario.expectPruned) {
           expect(pruned).toBeGreaterThan(0);
+        }
+        if (scenario.expectPruned) {
+          // 非空保证：前 10 名必须真实存在，否则与 oracle 的比较是空对空。
+          expect(feasible.length).toBeGreaterThanOrEqual(10);
+          expect(report.topResults).toHaveLength(10);
         }
         if (mode === 'top10' && scenario.equipped === 'inactive') {
           expect(sentCutoffs[0]).toBeUndefined();
@@ -303,6 +320,8 @@ describe('exact top ten versus a full native-engine oracle', () => {
     const fixture = createFoodOptimizerFixture({ foodSlots: 2, seconds: 120, rounds: 2, thresholdStepPercent: 50 });
     const implicit = await runSearch(fixture);
     const complete = await runSearch(fixture, 'complete');
+    // 引擎把缺失解析为完整搜索并写回 request，报告因此自描述实际执行的模式。
+    expect(implicit.report.request.searchMode).toBe('complete');
     expect(implicit.report.stats).toEqual(complete.report.stats);
     expect(implicit.report.stats.prunedCandidates).toBe(0);
     expect(rankedPhysical(implicit.report.topResults)).toEqual(rankedPhysical(complete.report.topResults));

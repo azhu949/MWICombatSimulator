@@ -67,7 +67,7 @@ function attachReport(store) {
     inputSignature: store.foodOptimizerInputSignature,
     stale: false,
     appliedSignature: null,
-    topResults: [{ ...candidate, feasible: true, roundsCompleted: 3 }],
+    topResults: [{ ...candidate, feasible: true, roundsCompleted: input.rounds }],
     complete: false,
     status: 'cancelled',
   };
@@ -419,7 +419,7 @@ describe('food optimizer store', () => {
     const store = importedStore();
     expect(store.foodOptimizer.settings).toEqual({
       thresholdStepPercent: 10,
-      rounds: 3,
+      rounds: 1,
       searchMode: 'top10',
       foodHrids: null,
     });
@@ -480,10 +480,27 @@ describe('food optimizer store', () => {
     expect(call.request.foodHrids).toEqual(scope);
     expect(call.items.map((item) => item.hrid)).toEqual(scope);
 
-    // 覆盖整个目录的选择等价于“全部食物”，并让已完成的报告过期。
+    // 全选保留为显式完整数组（不再折叠为 null——那会让下次打开被静默改回
+    // 新用户的装备默认），同样让已完成的报告过期。
     expect(store.setFoodOptimizerSettings({ foodHrids: getFoodOptimizerCatalogHrids() })).toBe(true);
-    expect(store.foodOptimizer.settings.foodHrids).toBeNull();
+    expect(store.foodOptimizer.settings.foodHrids).toEqual(getFoodOptimizerCatalogHrids());
     expect(store.foodOptimizerReportStale).toBe(true);
+  });
+
+  it('resolves an unsaved scope to the equipped foods while keeping saved scopes verbatim', () => {
+    const store = importedStore();
+    const [first, second, third] = getFoodOptimizerCatalogHrids();
+    // 新用户（未保存范围）：解析为当前佩戴食物 ∩ 目录，按目录顺序去重、忽略非目录装备。
+    store.players[0].food = [second, null, first, second, '/items/not_a_food'];
+    expect(snapshotFoodOptimizerInput(store).foodHrids).toEqual([first, second]);
+    // 已保存的范围原样生效，不随装备变化。
+    expect(store.setFoodOptimizerSettings({ foodHrids: [third] })).toBe(true);
+    store.players[0].food = [first, '', ''];
+    expect(snapshotFoodOptimizerInput(store).foodHrids).toEqual([third]);
+    // 未保存范围且未佩戴任何目录内食物时保持 null（引擎语义：全部食物）。
+    expect(store.setFoodOptimizerSettings({ foodHrids: null })).toBe(true);
+    store.players[0].food = ['', '', ''];
+    expect(snapshotFoodOptimizerInput(store).foodHrids).toBeNull();
   });
 
   it('changes the run signature and expires the report without changing candidate counts when switching modes', async () => {
@@ -593,7 +610,7 @@ describe('food optimizer store', () => {
       inputSignature: request.inputSignature,
       stale: false,
       appliedSignature: null,
-      topResults: [{ ...candidate, feasible: true, roundsCompleted: 3 }],
+      topResults: [{ ...candidate, feasible: true, roundsCompleted: request.rounds }],
       status: 'running',
       complete: false,
     };

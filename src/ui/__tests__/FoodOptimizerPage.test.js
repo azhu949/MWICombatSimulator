@@ -10,7 +10,15 @@ import { initI18n } from '../i18n/i18n.js';
 import appRouter from '../router/index.js';
 import FoodOptimizerDetails from '../components/FoodOptimizerDetails.vue';
 import { createFoodOptimizerReport } from '../../services/foodOptimizerSearch.js';
-import { buildFoodCandidate, getFoodOptimizerItems } from '../../services/foodOptimizerDomain.js';
+import {
+  FOOD_OPTIMIZER_MAX_ROUNDS,
+  FOOD_OPTIMIZER_MAX_STEP_PERCENT,
+  FOOD_OPTIMIZER_MIN_ROUNDS,
+  FOOD_OPTIMIZER_MIN_STEP_PERCENT,
+  buildFoodCandidate,
+  getFoodOptimizerCatalogHrids,
+  getFoodOptimizerItems,
+} from '../../services/foodOptimizerDomain.js';
 import { snapshotFoodOptimizerInput } from '../../services/foodOptimizerSnapshot.js';
 
 vi.mock('../../services/itemIconSprite.js', () => ({
@@ -163,7 +171,7 @@ describe('food optimizer page', () => {
     await flushPromises();
     const inputs = wrapper.findAll('input[type="number"]');
     expect(inputs[0].element.value).toBe('10');
-    expect(inputs[1].element.value).toBe('3');
+    expect(inputs[1].element.value).toBe('1');
     await inputs[0].setValue('15');
     expect(store.foodOptimizer.settings.thresholdStepPercent).toBe(15);
     await inputs[0].setValue('1.5');
@@ -174,18 +182,34 @@ describe('food optimizer page', () => {
   });
 
   it('opens the food scope dialog before starting and searches with the chosen foods', async () => {
-    const { wrapper, store } = await mountPage((current) => current.setImportedProfileState('1', true));
+    const catalog = getFoodOptimizerCatalogHrids();
+    const equipped = [catalog[0], catalog[1]];
+    const { wrapper, store } = await mountPage((current) => {
+      current.setImportedProfileState('1', true);
+      current.activePlayer.food = [equipped[0], null, equipped[1]];
+    });
     const start = vi.spyOn(store, 'startFoodOptimizer').mockImplementation(() => {});
     const scopeItems = () => wrapper.findAll('[data-food-optimizer-scope-item]');
+    const checkedHrids = () =>
+      scopeItems()
+        .filter((box) => box.element.checked)
+        .map((box) => box.attributes('data-food-optimizer-scope-item'));
     const scopeButton = (text) => wrapper.findAll('button').find((button) => button.text().includes(text));
 
     expect(wrapper.find('[data-food-optimizer-scope-item]').exists()).toBe(false);
     await wrapper.get('[data-food-optimizer-open-scope]').trigger('click');
     await flushPromises();
 
-    expect(scopeItems().length).toBeGreaterThan(2);
-    expect(scopeItems().every((box) => box.element.checked)).toBe(true);
-    expect(wrapper.get('[data-food-optimizer-scope-summary]').text()).toContain(`已选 ${scopeItems().length}`);
+    // 新用户（未保存过范围）默认只勾选当前佩戴的食物：快照层把 null 解析为
+    // 装备∩目录，页面标签与弹窗勾选同口径，且解析结果不落盘。
+    expect(scopeItems().length).toBeGreaterThan(equipped.length);
+    expect(checkedHrids().sort()).toEqual([...equipped].sort());
+    expect(wrapper.get('[data-food-optimizer-scope-summary]').text()).toContain(`已选 ${equipped.length}`);
+    expect(wrapper.get('[data-food-optimizer-scope]').text()).toBe(`${equipped.length}/${scopeItems().length}`);
+    expect(wrapper.text()).toContain('默认只勾选当前佩戴的食物');
+    expect(wrapper.text()).toContain('当前佩戴');
+    expect(store.foodOptimizer.settings.foodHrids).toBeNull();
+    const total = scopeItems().length;
 
     // 恢复生命值与恢复法力值分列成组，每组带自己的计数、全选/清空与食物图标（缺图标时用占位图标）。
     const hpGroup = wrapper.get('[data-food-optimizer-scope-group="hp"]');
@@ -197,6 +221,11 @@ describe('food optimizer page', () => {
     expect(mpGroup.text()).toContain('恢复法力值');
     expect(groupItems(hpGroup).length + groupItems(mpGroup).length).toBe(scopeItems().length);
     expect(hpGroup.findAll('svg').length).toBe(groupItems(hpGroup).length);
+
+    // 组内交互、清空校验与确认搜索的既有行为保持不变。
+    await scopeButton('全选').trigger('click');
+    await flushPromises();
+    expect(scopeItems().every((box) => box.element.checked)).toBe(true);
     expect(hpGroup.text()).toContain(`已选 ${groupItems(hpGroup).length}/${groupItems(hpGroup).length}`);
     await groupItems(hpGroup)[0].setValue(false);
     await flushPromises();
@@ -231,6 +260,64 @@ describe('food optimizer page', () => {
     expect([...store.foodOptimizer.settings.foodHrids].sort()).toEqual([...kept].sort());
     expect(wrapper.find('[data-food-optimizer-scope-item]').exists()).toBe(false);
     expect(start).toHaveBeenCalledOnce();
+    expect(wrapper.get('[data-food-optimizer-scope]').text()).toBe(`${kept.length}/${total}`);
+
+    // 再次打开恢复上次保存的范围：与页面「食物范围」标签同口径，不再静默改回装备集。
+    await wrapper.get('[data-food-optimizer-open-scope]').trigger('click');
+    await flushPromises();
+    expect(checkedHrids().sort()).toEqual([...kept].sort());
+  });
+
+  it('restores the persisted food scope on reopen in sync with the page label', async () => {
+    const catalog = getFoodOptimizerCatalogHrids();
+    const saved = [catalog[2], catalog[5]];
+    const { wrapper } = await mountPage((current) => {
+      current.setImportedProfileState('1', true);
+      current.setFoodOptimizerSettings({ foodHrids: saved });
+    });
+    // 刷新后页面标签显示已保存的范围，重新打开弹窗的默认勾选与之完全一致。
+    expect(wrapper.get('[data-food-optimizer-scope]').text()).toBe(`2/${catalog.length}`);
+    await wrapper.get('[data-food-optimizer-open-scope]').trigger('click');
+    await flushPromises();
+    const checked = wrapper
+      .findAll('[data-food-optimizer-scope-item]')
+      .filter((box) => box.element.checked)
+      .map((box) => box.attributes('data-food-optimizer-scope-item'));
+    expect(checked.sort()).toEqual([...saved].sort());
+    expect(wrapper.get('[data-food-optimizer-scope-summary]').text()).toContain(`已选 ${saved.length}`);
+  });
+
+  it('checks every food by default when no equipped food is available', async () => {
+    const { wrapper } = await mountPage((current) => current.setImportedProfileState('1', true));
+    await wrapper.get('[data-food-optimizer-open-scope]').trigger('click');
+    await flushPromises();
+    const scopeItems = () => wrapper.findAll('[data-food-optimizer-scope-item]');
+    expect(scopeItems().length).toBeGreaterThan(2);
+    expect(scopeItems().every((box) => box.element.checked)).toBe(true);
+  });
+
+  it('keeps a confirmed full selection instead of falling back to the equipped default', async () => {
+    const catalog = getFoodOptimizerCatalogHrids();
+    const { wrapper, store } = await mountPage((current) => {
+      current.setImportedProfileState('1', true);
+      current.activePlayer.food = [catalog[0], null, null];
+    });
+    vi.spyOn(store, 'startFoodOptimizer').mockImplementation(() => {});
+    await wrapper.get('[data-food-optimizer-open-scope]').trigger('click');
+    await flushPromises();
+    await wrapper
+      .findAll('button')
+      .find((button) => button.text().includes('全选'))
+      .trigger('click');
+    await flushPromises();
+    await wrapper.get('[data-food-optimizer-scope-start]').trigger('click');
+    await flushPromises();
+
+    // 全选确认后保留显式完整数组（不折叠为 null），重开仍全选而非装备默认。
+    expect(store.foodOptimizer.settings.foodHrids).toEqual(catalog);
+    await wrapper.get('[data-food-optimizer-open-scope]').trigger('click');
+    await flushPromises();
+    expect(wrapper.findAll('[data-food-optimizer-scope-item]').every((box) => box.element.checked)).toBe(true);
   });
 
   it('recommends exact top 10 and saves a switch to complete statistics', async () => {
@@ -247,6 +334,29 @@ describe('food optimizer page', () => {
     expect(JSON.parse(localStorage.getItem('mwi.foodOptimizer.settings.v1')).searchMode).toBe('complete');
     expect(wrapper.get('[data-food-optimizer-mode-hint]').text()).toContain('统计全部候选的可行性');
     expect(store.foodOptimizer.preview.totalCandidates).toBe(100);
+  });
+
+  it('discloses the single-sample default of one round next to the controls', async () => {
+    const { wrapper, store } = await mountPage();
+    // 默认 1 轮是产品口径，页面必须同时披露“结论只由单次抽样证明”。
+    expect(store.foodOptimizer.settings.rounds).toBe(1);
+    const hint = wrapper.get('[data-food-optimizer-rounds-hint]').text();
+    expect(hint).toContain('重复次数越少');
+    expect(hint).toContain('单次抽样');
+  });
+
+  it('binds the numeric input bounds to the shared range constants', async () => {
+    const { wrapper } = await mountPage();
+    const inputs = wrapper.findAll('input[type="number"]');
+    expect(inputs).toHaveLength(2);
+    expect(inputs.map((input) => input.attributes('min'))).toEqual([
+      String(FOOD_OPTIMIZER_MIN_STEP_PERCENT),
+      String(FOOD_OPTIMIZER_MIN_ROUNDS),
+    ]);
+    expect(inputs.map((input) => input.attributes('max'))).toEqual([
+      String(FOOD_OPTIMIZER_MAX_STEP_PERCENT),
+      String(FOOD_OPTIMIZER_MAX_ROUNDS),
+    ]);
   });
 
   it('locks controls while running and does not stop on unmount', async () => {

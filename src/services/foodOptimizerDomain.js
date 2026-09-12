@@ -2,7 +2,16 @@ import { foodOptions, itemDetailIndex } from '../shared/gameDataIndex.js';
 import { resolveMarketPrice } from './marketPriceService.js';
 
 export const FOOD_OPTIMIZER_DEFAULT_STEP_PERCENT = 10;
-export const FOOD_OPTIMIZER_DEFAULT_ROUNDS = 3;
+// 重复次数默认值与兜底值的唯一来源，刻意兼任两个角色：①“首次使用/字段缺失”的产品
+// 默认值；②非法或损坏存储值的回落值（normalizeFoodOptimizerRounds 的默认参数，见
+// simulatorStorage.js）。共用一个数字是契约而非巧合——脏数据跟随产品默认，不另设
+// 第二个魔法数；改这里等于同时改“脏数据兜底”。它同时决定结论强度：rounds=1 时
+// feasible 与排名只由单一种子证明，跨轮成本下界剪枝也被 round + 1 < request.rounds
+// 守卫挡在末轮（只剩轮内早期停止）；UI 侧用 foodOptimizer.roundsHint 披露该口径。
+export const FOOD_OPTIMIZER_DEFAULT_ROUNDS = 1;
+// 步长与轮次的合法区间：这四个常量是唯一来源——isValidFoodOptimizerSettings 直接
+// 引用它们，页面输入框的 min/max 也绑定到它们；两条 invalidSettings 文案（zh/en）
+// 内嵌同样的数字，由 i18nResources.test.js 逐语言核对常量与文案一致。
 export const FOOD_OPTIMIZER_MIN_STEP_PERCENT = 1;
 export const FOOD_OPTIMIZER_MAX_STEP_PERCENT = 100;
 export const FOOD_OPTIMIZER_MIN_ROUNDS = 1;
@@ -10,6 +19,10 @@ export const FOOD_OPTIMIZER_MAX_ROUNDS = 10;
 export const FOOD_OPTIMIZER_MAX_SLOTS = 3;
 export const FOOD_OPTIMIZER_SEARCH_MODE_TOP10 = 'top10';
 export const FOOD_OPTIMIZER_SEARCH_MODE_COMPLETE = 'complete';
+// 引擎请求层对缺失 searchMode 的容错口径：一律按“完整搜索”执行——缺失或非法的输入
+// 绝不静默启用裁剪。它与用户设置层的缺省（top10，见 normalizeFoodOptimizerSearchMode
+// 的默认参数）是刻意区分的两个概念，不要互相合并。
+export const FOOD_OPTIMIZER_ENGINE_SEARCH_MODE_FALLBACK = FOOD_OPTIMIZER_SEARCH_MODE_COMPLETE;
 
 const SELF = '/combat_trigger_dependencies/self';
 const MISSING_HP = '/combat_trigger_conditions/missing_hp';
@@ -21,24 +34,34 @@ function finite(value, fallback = 0) {
   return Number.isFinite(parsed) ? parsed : fallback;
 }
 
-export function normalizeFoodOptimizerSearchMode(value, fallback = FOOD_OPTIMIZER_SEARCH_MODE_COMPLETE) {
+export function normalizeFoodOptimizerSearchMode(value, fallback = FOOD_OPTIMIZER_SEARCH_MODE_TOP10) {
   return value === FOOD_OPTIMIZER_SEARCH_MODE_TOP10 || value === FOOD_OPTIMIZER_SEARCH_MODE_COMPLETE ? value : fallback;
 }
 
-export function isValidFoodOptimizerSettings({
-  thresholdStepPercent,
-  rounds,
-  searchMode = FOOD_OPTIMIZER_SEARCH_MODE_COMPLETE,
-}) {
+// 引擎请求 searchMode 的唯一解析入口：合法值原样返回，缺失/非法回落到“完整搜索”。
+export function resolveFoodOptimizerRequestSearchMode(value) {
+  return normalizeFoodOptimizerSearchMode(value, FOOD_OPTIMIZER_ENGINE_SEARCH_MODE_FALLBACK);
+}
+
+// 引擎各处只通过它判断是否启用前十模式，避免再出现散落的字面量比较。
+export function isFoodOptimizerTopTenRequest(request) {
+  return resolveFoodOptimizerRequestSearchMode(request?.searchMode) === FOOD_OPTIMIZER_SEARCH_MODE_TOP10;
+}
+
+export function isValidFoodOptimizerSettings({ thresholdStepPercent, rounds, searchMode }) {
   return (
-    (searchMode === FOOD_OPTIMIZER_SEARCH_MODE_TOP10 || searchMode === FOOD_OPTIMIZER_SEARCH_MODE_COMPLETE) &&
+    // 只校验显式给出的 searchMode：省略（undefined）表示调用方只关心步长与轮次。
+    // 缺省语义不在这里定义——设置层与引擎请求层各有自己的解析入口与命名常量。
+    (searchMode === undefined ||
+      searchMode === FOOD_OPTIMIZER_SEARCH_MODE_TOP10 ||
+      searchMode === FOOD_OPTIMIZER_SEARCH_MODE_COMPLETE) &&
     [thresholdStepPercent, rounds].every((value) => value !== '' && value != null && typeof value !== 'boolean') &&
     Number.isInteger(Number(thresholdStepPercent)) &&
-    Number(thresholdStepPercent) >= 1 &&
-    Number(thresholdStepPercent) <= 100 &&
+    Number(thresholdStepPercent) >= FOOD_OPTIMIZER_MIN_STEP_PERCENT &&
+    Number(thresholdStepPercent) <= FOOD_OPTIMIZER_MAX_STEP_PERCENT &&
     Number.isInteger(Number(rounds)) &&
-    Number(rounds) >= 1 &&
-    Number(rounds) <= 10
+    Number(rounds) >= FOOD_OPTIMIZER_MIN_ROUNDS &&
+    Number(rounds) <= FOOD_OPTIMIZER_MAX_ROUNDS
   );
 }
 
@@ -73,6 +96,8 @@ export function buildFoodThresholds({
   const maxResource = Math.max(1, Math.floor(rawMax));
   const restore = getFoodRestore(foodHrid);
   const thresholds = new Set([maxResource]);
+  // 这里的 100 是百分比刻度上限（percent 的量程），与 FOOD_OPTIMIZER_MAX_STEP_PERCENT
+  // （步长本身的上界）无关，不要合并成同一个常量。
   for (let percent = step; percent < 100; percent += step) {
     thresholds.add(Math.max(1, Math.min(maxResource, Math.ceil((rawMax * percent) / 100))));
   }
@@ -95,9 +120,10 @@ export function getFoodOptimizerCatalogHrids() {
     });
 }
 
-// 食物范围只保存“排除了一部分食物”的子集：null 表示全部（默认），显式数组
-// 按目录顺序去重、丢弃未知 hrid；空集合或覆盖全部目录同样归一化为 null，
-// 使“未勾选任何食物”这类无效输入回退到默认范围而不是产出空域。
+// 食物范围持久化：null 表示“未保存范围”（新用户，由快照层解析为当前佩戴
+// 食物），显式数组按目录顺序去重、丢弃未知 hrid。空集合归一化为 null（无效
+// 输入不产出空域）；覆盖全部目录保留显式完整数组——默认范围不再等价于“全部
+// 食物”，折叠会让用户确认过的全选在下次打开时被静默改回装备默认。
 export function normalizeFoodOptimizerFoodHrids(value) {
   const catalog = getFoodOptimizerCatalogHrids();
   if (!Array.isArray(value) || catalog.length === 0) return null;
@@ -107,12 +133,12 @@ export function normalizeFoodOptimizerFoodHrids(value) {
     const normalized = String(hrid ?? '');
     if (allowed.has(normalized)) picked.add(normalized);
   }
-  if (picked.size === 0 || picked.size >= catalog.length) return null;
+  if (picked.size === 0) return null;
   return catalog.filter((hrid) => picked.has(hrid));
 }
 
 export function getFoodOptimizerItems({ maxHp, maxMp, thresholdStepPercent, prices, consumableMode, hrids } = {}) {
-  // 范围与归一化使用同一语义：null/非数组/空数组都表示全部食物。
+  // 引擎口径：null/非数组/空数组都表示全部食物（“未保存范围”的装备默认由快照层解析）。
   const scope = Array.isArray(hrids) && hrids.length > 0 ? new Set(hrids.map((hrid) => String(hrid ?? ''))) : null;
   return foodOptions
     .map((option) => {

@@ -106,6 +106,11 @@ export function createFoodOptimizerRoundCache({
   maxEntries = 128,
   maxInactiveEntries = 64,
   maxConsumedCoreEntries = 64,
+  // Seed-bucket capacity, not the rounds bound: ten buckets happen to cover
+  // FOOD_OPTIMIZER_MAX_ROUNDS (one bucket per seed) under the current range.
+  // Raising the rounds bound past this cap would only evict older buckets — a
+  // miss just re-simulates that round, so correctness never depends on it; size
+  // it to the request's seed count if that ever happens.
   maxSeeds = 10,
   items,
 } = {}) {

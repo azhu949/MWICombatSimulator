@@ -9,7 +9,7 @@
       {{
         t(
           'common:foodOptimizer.scopeHint',
-          'Unchecked foods are excluded from the candidate set. Fewer foods search faster.',
+          'With no saved scope, only equipped foods are checked by default. Unchecked foods are excluded; fewer foods search faster.',
         )
       }}
     </p>
@@ -177,6 +177,9 @@ const number = (value, digits = 2) =>
 function restoreLabel(item) {
   return `+${number(item.restore, 0)}`;
 }
+// 打开时恢复传入的已解析范围（selected 来自快照：已保存范围，或新用户的当前
+// 佩戴食物——与页面「食物范围」标签、预览候选数同口径）。null（未佩戴任何
+// 目录内食物=全部食物）或与当前目录交集为空时回退全选，避免默认空选无法开始搜索。
 function currentSelection() {
   const available = new Set(props.items.map((item) => item.hrid));
   const picked = Array.isArray(props.selected)
