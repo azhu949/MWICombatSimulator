@@ -1,4 +1,24 @@
 {
+  "2026年9月14日（v2.5.0）": {
+    "label": {
+      "zh": "2026年9月14日（v2.5.0）",
+      "en": "September 14, 2026 (v2.5.0)"
+    },
+    "newFeatures": {
+      "zh": [
+        "新增「食物优化」页面：为当前地图与配装搜索成本最低的前 10 套食物方案，支持设置食物范围、取价方式与搜索模式，可一键应用到当前配置。"
+      ],
+      "en": [
+        "Added a Food Optimizer page: find the 10 lowest-cost food setups for your current map and build; adjust the food scope, pricing, and search mode, then apply one with a single click."
+      ]
+    },
+    "improvements": {
+      "zh": ["战斗模拟性能优化：模拟运行更快，食物优化搜索同样受益。"],
+      "en": [
+        "Combat simulation performance improvements: simulations run faster, and Food Optimizer searches benefit too."
+      ]
+    }
+  },
   "2026年9月5日（v2.4.5）": {
     "label": {
       "zh": "2026年9月5日（v2.4.5）",
