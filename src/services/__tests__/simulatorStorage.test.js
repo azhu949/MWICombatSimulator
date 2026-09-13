@@ -71,7 +71,13 @@ describe('simulatorStorage', () => {
     it('uses exact top 10 for first use and unreadable preferences', () => {
       const storage = createMemoryStorage();
       vi.stubGlobal('localStorage', storage);
-      const expected = { thresholdStepPercent: 10, rounds: 1, searchMode: 'top10', foodHrids: null };
+      const expected = {
+        thresholdStepPercent: 10,
+        rounds: 1,
+        searchMode: 'top10',
+        foodHrids: null,
+        requireZeroDeaths: false,
+      };
       expect(loadFoodOptimizerSettingsFromStorage()).toEqual(expected);
 
       storage.data.set(FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY, '{broken');
@@ -104,7 +110,13 @@ describe('simulatorStorage', () => {
       });
       vi.stubGlobal('localStorage', storage);
       const settings = loadFoodOptimizerSettingsFromStorage();
-      expect(settings).toEqual({ thresholdStepPercent: 15, rounds: 4, searchMode: 'top10', foodHrids: null });
+      expect(settings).toEqual({
+        thresholdStepPercent: 15,
+        rounds: 4,
+        searchMode: 'top10',
+        foodHrids: null,
+        requireZeroDeaths: false,
+      });
       persistFoodOptimizerSettingsToStorage(settings);
       expect(JSON.parse(storage.data.get(FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY)).searchMode).toBe('top10');
     });
@@ -112,7 +124,7 @@ describe('simulatorStorage', () => {
     it.each(['top10', 'complete'])('round-trips the %s mode with the other optimizer settings', (searchMode) => {
       const storage = createMemoryStorage();
       vi.stubGlobal('localStorage', storage);
-      const settings = { thresholdStepPercent: 25, rounds: 5, searchMode, foodHrids: null };
+      const settings = { thresholdStepPercent: 25, rounds: 5, searchMode, foodHrids: null, requireZeroDeaths: false };
       expect(persistFoodOptimizerSettingsToStorage(settings)).toEqual(settings);
       expect(loadFoodOptimizerSettingsFromStorage()).toEqual(settings);
       expect(JSON.parse(storage.data.get(FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY))).toMatchObject({
@@ -140,6 +152,29 @@ describe('simulatorStorage', () => {
       for (const raw of [['/items/not_a_food'], []])
         expect(normalizeFoodOptimizerSettings({ foodHrids: raw }).foodHrids).toBeNull();
       expect(normalizeFoodOptimizerSettings({ foodHrids: catalog }).foodHrids).toEqual(catalog);
+    });
+
+    it('normalizes the zero-death switch across old, enabled and corrupt preferences', () => {
+      // 旧数据没有该字段：与首次使用一致，默认不排除有死亡的方案（不静默加严搜索）。
+      const storage = createMemoryStorage({
+        [FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY]: JSON.stringify({ version: 1, thresholdStepPercent: 10, rounds: 2 }),
+      });
+      vi.stubGlobal('localStorage', storage);
+      expect(loadFoodOptimizerSettingsFromStorage().requireZeroDeaths).toBe(false);
+      for (const raw of ['true', 1, 0, null, {}, []])
+        expect(normalizeFoodOptimizerSettings({ requireZeroDeaths: raw }).requireZeroDeaths).toBe(false);
+
+      const enabled = createMemoryStorage();
+      vi.stubGlobal('localStorage', enabled);
+      const settings = {
+        thresholdStepPercent: 10,
+        rounds: 2,
+        searchMode: 'top10',
+        foodHrids: null,
+        requireZeroDeaths: true,
+      };
+      expect(persistFoodOptimizerSettingsToStorage(settings)).toEqual(settings);
+      expect(loadFoodOptimizerSettingsFromStorage()).toEqual(settings);
     });
   });
 

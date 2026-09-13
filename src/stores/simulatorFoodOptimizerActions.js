@@ -121,6 +121,7 @@ export function createFoodOptimizerActions({ loadPlayerMapperModule }) {
         next.thresholdStepPercent !== this.foodOptimizer.settings.thresholdStepPercent ||
         next.rounds !== this.foodOptimizer.settings.rounds ||
         next.searchMode !== this.foodOptimizer.settings.searchMode ||
+        next.requireZeroDeaths !== this.foodOptimizer.settings.requireZeroDeaths ||
         foodScopeKey(next.foodHrids) !== foodScopeKey(this.foodOptimizer.settings.foodHrids)
       ) {
         if (this.foodOptimizer.report) this.foodOptimizer.report.stale = true;

@@ -20,6 +20,9 @@ const catalog = () =>
 const requestFor = (items, searchMode = 'top10') => ({
   activePlayerId: '2',
   searchMode,
+  // 与 searchMode 一样，引擎只会补全缺失/非法的开关；已解析的请求必须原样保留
+  // （searchFor 末尾的纯函数断言依赖这一点）。
+  requireZeroDeaths: false,
   rounds: 1,
   seeds: [1],
   payload: {

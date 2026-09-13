@@ -20,9 +20,11 @@ import {
   getFoodOptimizerItems,
   isValidFoodOptimizerSettings,
   isFoodOptimizerTopTenRequest,
+  isFoodOptimizerZeroDeathsRequest,
   normalizeFoodOptimizerFoodHrids,
   normalizeFoodOptimizerRounds,
   normalizeFoodOptimizerSearchMode,
+  normalizeFoodOptimizerZeroDeaths,
   resolveFoodOptimizerRequestSearchMode,
 } from '../foodOptimizerDomain.js';
 import { foodOptions } from '../../shared/gameDataIndex.js';
@@ -46,6 +48,23 @@ describe('food optimizer thresholds and candidates', () => {
     expect(isFoodOptimizerTopTenRequest({ searchMode: 'complete' })).toBe(false);
     expect(isFoodOptimizerTopTenRequest({})).toBe(false);
     expect(isFoodOptimizerTopTenRequest(null)).toBe(false);
+  });
+
+  // 「排除有死亡的方案」只有显式 true 才生效：设置层与引擎层的缺失/脏值回落都是 false
+  // （不静默给搜索加严条件），与上面 searchMode「缺失绝不启用裁剪」同一条原则。
+  it('treats only an explicit true as the forced zero-death switch', () => {
+    expect(normalizeFoodOptimizerZeroDeaths(true)).toBe(true);
+    expect(normalizeFoodOptimizerZeroDeaths(false)).toBe(false);
+    for (const value of [undefined, null, '', 0, 1, 'true', {}, []])
+      expect(normalizeFoodOptimizerZeroDeaths(value)).toBe(false);
+    expect(isFoodOptimizerZeroDeathsRequest({ requireZeroDeaths: true })).toBe(true);
+    expect(isFoodOptimizerZeroDeathsRequest({ requireZeroDeaths: false })).toBe(false);
+    expect(isFoodOptimizerZeroDeathsRequest({})).toBe(false);
+    expect(isFoodOptimizerZeroDeathsRequest(null)).toBe(false);
+    // 与 searchMode 一样只校验显式给出的那一份：省略表示调用方不关心该开关。
+    expect(isValidFoodOptimizerSettings({ thresholdStepPercent: 10, rounds: 3, requireZeroDeaths: true })).toBe(true);
+    expect(isValidFoodOptimizerSettings({ thresholdStepPercent: 10, rounds: 3, requireZeroDeaths: false })).toBe(true);
+    expect(isValidFoodOptimizerSettings({ thresholdStepPercent: 10, rounds: 3, requireZeroDeaths: 'yes' })).toBe(false);
   });
 
   // 与 searchMode 相反，重复次数的“产品默认”与“非法值回落”刻意共用同一个常量：

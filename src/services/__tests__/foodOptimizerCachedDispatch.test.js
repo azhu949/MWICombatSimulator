@@ -131,7 +131,7 @@ function start({ items = foods(), baselineDeaths = 0, cachedSample = sampleFor, 
           return evaluateFoodOptimizerCandidate(
             request,
             message.candidate,
-            message.baselineDeaths,
+            message.deathBudget,
             progress,
             simulateRound,
             { reusableSamples: message.reusableSamples },

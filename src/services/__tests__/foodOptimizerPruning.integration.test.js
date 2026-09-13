@@ -89,7 +89,7 @@ describe('complete food coverage versus an independent native-engine oracle', ()
             });
             return;
           }
-          return evaluate(message.candidate, message.baselineDeaths, progress, message.reusableSamples);
+          return evaluate(message.candidate, message.deathBudget, progress, message.reusableSamples);
         },
       };
       // Browser workers have isolated RNGs. One in-process client keeps this oracle

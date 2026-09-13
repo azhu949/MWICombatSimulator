@@ -130,7 +130,7 @@ async function run({
           return evaluateFoodOptimizerCandidate(
             init.request,
             message.candidate,
-            message.baselineDeaths,
+            message.deathBudget,
             progress,
             async (request, candidate, seed) => {
               simulated.push({ producer, candidate, seed });
@@ -386,16 +386,16 @@ describe('food optimizer shared round execution', () => {
         return messages.at(-1).result;
       };
       await send({ type: 'init', request, items, sharedRounds: true });
-      const first = await send({ type: 'evaluate', candidate, baselineDeaths: Infinity });
+      const first = await send({ type: 'evaluate', candidate, deathBudget: Infinity });
       expect(first).toMatchObject({ simulatedRounds: 1, reusedRounds: 0 });
       const reused = await send({
         type: 'evaluate',
         candidate,
-        baselineDeaths: Infinity,
+        deathBudget: Infinity,
         reusableSamples: first.samples,
       });
       expect(reused).toMatchObject({ simulatedRounds: 0, reusedRounds: 1 });
-      expect(await send({ type: 'evaluate', candidate, baselineDeaths: Infinity })).toMatchObject({
+      expect(await send({ type: 'evaluate', candidate, deathBudget: Infinity })).toMatchObject({
         simulatedRounds: 1,
         reusedRounds: 0,
       });
@@ -405,7 +405,7 @@ describe('food optimizer shared round execution', () => {
       const refreshed = await send({
         type: 'evaluate',
         candidate,
-        baselineDeaths: Infinity,
+        deathBudget: Infinity,
         reusableSamples: first.samples,
       });
       expect(refreshed).toMatchObject({ simulatedRounds: 1, reusedRounds: 0 });

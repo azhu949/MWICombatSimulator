@@ -345,6 +345,115 @@ describe('food optimizer page', () => {
     expect(hint).toContain('单次抽样');
   });
 
+  it.each([1, 2])('labels cumulative deaths as the sum of %i sample round(s)', async (rounds) => {
+    const { wrapper } = await mountPage((current) => {
+      current.setImportedProfileState('1', true);
+      current.setFoodOptimizerSettings({ rounds });
+      const input = snapshotFoodOptimizerInput(current);
+      const request = {
+        ...input,
+        inputSignature: current.foodOptimizerInputSignature,
+        payload: { ...input.simulation, players: [{ hrid: 'player1', food: [null, null, null] }] },
+      };
+      const food = getFoodOptimizerItems({ maxHp: 110, maxMp: 110, thresholdStepPercent: 10 })[0];
+      const candidate = buildFoodCandidate([{ ...food, threshold: 40 }]);
+      const report = createFoodOptimizerReport(request, [food], 1);
+      Object.assign(report, {
+        complete: true,
+        status: 'completed',
+        baseline: { foodUsed: {}, costPerHour: 12, deaths: rounds === 1 ? 0 : 1, ranOutOfMana: false },
+        topResults: [{ ...candidate, foodUsed: {}, costPerHour: 10, savingsPerHour: 2, deaths: rounds === 1 ? 0 : 1 }],
+      });
+      current.foodOptimizer.report = report;
+      current.foodOptimizer.runtime.phase = 'completed';
+    });
+
+    // 「累计死亡」是各轮死亡数之和：标签必须写明轮数；rounds=1 时还要在榜单旁披露
+    // 单条抽样风险，避免用户按 0 死落地、提高重复次数复核时被翻案。
+    expect(wrapper.text()).toContain(`累计死亡（${rounds} 轮抽样之和）`);
+    const hint = wrapper.find('[data-food-optimizer-single-round-deaths-hint]');
+    expect(hint.exists()).toBe(rounds === 1);
+    if (rounds === 1) expect(hint.text()).toContain('单条抽样');
+  });
+
+  it('keeps the plain deaths label when the report rounds are unusable', async () => {
+    const { wrapper } = await mountPage((current) => {
+      current.setImportedProfileState('1', true);
+      const input = snapshotFoodOptimizerInput(current);
+      const request = {
+        ...input,
+        inputSignature: current.foodOptimizerInputSignature,
+        payload: { ...input.simulation, players: [{ hrid: 'player1', food: [null, null, null] }] },
+      };
+      const report = createFoodOptimizerReport(request, [], 0);
+      Object.assign(report, {
+        complete: true,
+        status: 'completed',
+        baseline: { foodUsed: {}, costPerHour: 12, deaths: 0, ranOutOfMana: false },
+        topResults: [],
+      });
+      delete report.request.rounds;
+      current.foodOptimizer.report = report;
+      current.foodOptimizer.runtime.phase = 'completed';
+    });
+
+    // 旧报告/异常请求缺 rounds 时退回原标签，不显示带轮数文案与单轮提示。
+    expect(wrapper.find('[data-food-optimizer-single-round-deaths-hint]').exists()).toBe(false);
+    expect(wrapper.text()).toContain('累计死亡');
+    expect(wrapper.text()).not.toContain('轮抽样之和');
+  });
+
+  it('toggles the zero-death switch, discloses it next to the controls, and persists it', async () => {
+    const { wrapper, store } = await mountPage();
+    const box = () => wrapper.get('[data-food-optimizer-zero-deaths]');
+    expect(box().element.checked).toBe(false);
+    expect(wrapper.find('[data-food-optimizer-zero-deaths-hint]').exists()).toBe(false);
+
+    await box().setValue(true);
+    await flushPromises();
+    expect(store.foodOptimizer.settings.requireZeroDeaths).toBe(true);
+    expect(JSON.parse(localStorage.getItem('mwi.foodOptimizer.settings.v1')).requireZeroDeaths).toBe(true);
+    expect(wrapper.get('[data-food-optimizer-zero-deaths-hint]').text()).toContain('累计死亡');
+
+    // 搜索期间设置锁死：勾选框也必须不可改（persist:false 的前提）。
+    store.foodOptimizer.runtime.isRunning = true;
+    await flushPromises();
+    expect(box().element.disabled).toBe(true);
+  });
+
+  it.each([true, false])('labels the ranking with the zero-death criterion (%s)', async (requireZeroDeaths) => {
+    const { wrapper } = await mountPage((current) => {
+      current.setImportedProfileState('1', true);
+      current.setFoodOptimizerSettings({ requireZeroDeaths });
+      const input = snapshotFoodOptimizerInput(current);
+      const request = {
+        ...input,
+        inputSignature: current.foodOptimizerInputSignature,
+        payload: { ...input.simulation, players: [{ hrid: 'player1', food: [null, null, null] }] },
+      };
+      const food = getFoodOptimizerItems({ maxHp: 110, maxMp: 110, thresholdStepPercent: 10 })[0];
+      const candidate = buildFoodCandidate([{ ...food, threshold: 40 }]);
+      const report = createFoodOptimizerReport(request, [food], 1);
+      Object.assign(report, {
+        complete: true,
+        status: 'completed',
+        baseline: { foodUsed: {}, costPerHour: 12, deaths: 0, ranOutOfMana: false },
+        topResults: [{ ...candidate, foodUsed: {}, costPerHour: 10, savingsPerHour: 2, deaths: 0 }],
+      });
+      // 旧报告没有该字段：按未启用处理，与引擎的缺失回落一致。
+      if (!requireZeroDeaths) delete report.request.requireZeroDeaths;
+      current.foodOptimizer.report = report;
+      current.foodOptimizer.runtime.phase = 'completed';
+    });
+
+    const note = wrapper.find('[data-food-optimizer-zero-deaths-report-hint]');
+    expect(note.exists()).toBe(requireZeroDeaths);
+    if (requireZeroDeaths) {
+      expect(note.text()).toContain('排除有死亡的方案');
+      expect(note.text()).toContain('累计死亡为 0');
+    }
+  });
+
   it('binds the numeric input bounds to the shared range constants', async () => {
     const { wrapper } = await mountPage();
     const inputs = wrapper.findAll('input[type="number"]');

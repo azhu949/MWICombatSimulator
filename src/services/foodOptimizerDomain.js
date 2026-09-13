@@ -48,13 +48,26 @@ export function isFoodOptimizerTopTenRequest(request) {
   return resolveFoodOptimizerRequestSearchMode(request?.searchMode) === FOOD_OPTIMIZER_SEARCH_MODE_TOP10;
 }
 
-export function isValidFoodOptimizerSettings({ thresholdStepPercent, rounds, searchMode }) {
+// 「排除有死亡的方案」开关的归一化：只有显式 true 才算启用。设置层与引擎层共用同一个回落
+// （false）——缺失或脏值绝不静默加严搜索，与 searchMode「缺失绝不启用裁剪」同一原则。
+export function normalizeFoodOptimizerZeroDeaths(value) {
+  return value === true;
+}
+
+// 引擎各处只通过它判断是否启用“排除有死亡的方案”，避免散落的真值比较。
+export function isFoodOptimizerZeroDeathsRequest(request) {
+  return normalizeFoodOptimizerZeroDeaths(request?.requireZeroDeaths);
+}
+
+export function isValidFoodOptimizerSettings({ thresholdStepPercent, rounds, searchMode, requireZeroDeaths }) {
   return (
     // 只校验显式给出的 searchMode：省略（undefined）表示调用方只关心步长与轮次。
     // 缺省语义不在这里定义——设置层与引擎请求层各有自己的解析入口与命名常量。
     (searchMode === undefined ||
       searchMode === FOOD_OPTIMIZER_SEARCH_MODE_TOP10 ||
       searchMode === FOOD_OPTIMIZER_SEARCH_MODE_COMPLETE) &&
+    // 同上：只校验显式给出的开关，省略表示调用方不关心它。
+    (requireZeroDeaths === undefined || typeof requireZeroDeaths === 'boolean') &&
     [thresholdStepPercent, rounds].every((value) => value !== '' && value != null && typeof value !== 'boolean') &&
     Number.isInteger(Number(thresholdStepPercent)) &&
     Number(thresholdStepPercent) >= FOOD_OPTIMIZER_MIN_STEP_PERCENT &&

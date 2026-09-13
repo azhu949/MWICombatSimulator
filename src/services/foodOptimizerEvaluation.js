@@ -16,7 +16,7 @@ export function createFoodOptimizerEvaluationState() {
   };
 }
 
-export function appendFoodOptimizerEvaluationSample(state, sample, candidate, baselineDeaths) {
+export function appendFoodOptimizerEvaluationSample(state, sample, candidate, deathBudget) {
   const first = state.samples.length === 0;
   state.samples.push(sample);
   state.equivalentThresholds = first
@@ -35,7 +35,7 @@ export function appendFoodOptimizerEvaluationSample(state, sample, candidate, ba
     // follow the same path; cumulative death failures still need the intersection.
     state.equivalentThresholds = sample.equivalentThresholds ?? null;
     state.unusedFoodThresholds = sample.unusedFoodThresholds ?? null;
-  } else if (candidate && state.deaths > baselineDeaths) state.rejected = 'deaths';
+  } else if (candidate && state.deaths > deathBudget) state.rejected = 'deaths';
 }
 
 export function finishFoodOptimizerEvaluation(state, request) {
@@ -66,7 +66,7 @@ export function finishFoodOptimizerEvaluation(state, request) {
 
 // This path accepts only a complete aligned set of certificates. Validate even
 // rounds beyond a possible death-failure prefix before choosing to skip a Worker.
-export function tryEvaluateFoodOptimizerCachedCandidate(request, candidate, baselineDeaths, reusableSamples) {
+export function tryEvaluateFoodOptimizerCachedCandidate(request, candidate, deathBudget, reusableSamples) {
   assertFoodOptimizerTarget(request);
   if (
     !Number.isSafeInteger(request?.rounds) ||
@@ -93,7 +93,7 @@ export function tryEvaluateFoodOptimizerCachedCandidate(request, candidate, base
   const state = createFoodOptimizerEvaluationState();
   for (const sample of samples) {
     state.reusedRounds += 1;
-    appendFoodOptimizerEvaluationSample(state, sample, candidate, baselineDeaths);
+    appendFoodOptimizerEvaluationSample(state, sample, candidate, deathBudget);
     if (state.rejected) break;
   }
   return finishFoodOptimizerEvaluation(state, request);

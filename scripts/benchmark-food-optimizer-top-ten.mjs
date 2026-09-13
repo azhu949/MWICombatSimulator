@@ -15,7 +15,7 @@ import { isMainThread, parentPort, Worker, workerData } from 'node:worker_thread
 
 // Do not share the production evaluator or result aggregation with the oracle.
 // Even invalid candidates run every seed to the original full time limit.
-async function referenceEvaluation(request, candidate, baselineDeaths, simulateRound, progress = () => {}) {
+async function referenceEvaluation(request, candidate, deathBudget, simulateRound, progress = () => {}) {
   const samples = [];
   for (const seed of request.seeds) {
     samples.push(await simulateRound(request, candidate, seed));
@@ -23,7 +23,7 @@ async function referenceEvaluation(request, candidate, baselineDeaths, simulateR
   }
   const deaths = samples.reduce((sum, sample) => sum + sample.deaths, 0);
   const ranOutOfMana = samples.some((sample) => sample.ranOutOfMana);
-  const rejected = candidate ? (ranOutOfMana ? 'mana' : deaths > baselineDeaths ? 'deaths' : '') : '';
+  const rejected = candidate ? (ranOutOfMana ? 'mana' : deaths > deathBudget ? 'deaths' : '') : '';
   const foodUsed = {};
   for (const sample of samples)
     for (const [hrid, count] of Object.entries(sample.foodUsed))
@@ -63,8 +63,8 @@ if (!isMainThread) {
         if (data.type === 'init') {
           request = data.request;
           evaluate = referenceRound
-            ? (candidate, baselineDeaths, progress) =>
-                referenceEvaluation(request, candidate, baselineDeaths, referenceRound, progress)
+            ? (candidate, deathBudget, progress) =>
+                referenceEvaluation(request, candidate, deathBudget, referenceRound, progress)
             : createEvaluator(request, {
                 collectThresholds: data.collectThresholds !== false,
                 sharedRounds: data.sharedRounds,
@@ -75,7 +75,7 @@ if (!isMainThread) {
         }
         const result = await evaluate(
           data.candidate,
-          data.baselineDeaths,
+          data.deathBudget,
           (progress) => parentPort.postMessage({ type: 'progress', ...progress }),
           data.reusableSamples,
           data.costCutoff,
@@ -591,7 +591,7 @@ async function main() {
         : finalists.map((result) => domain.buildFoodCandidate(result.slots));
       for (const candidate of candidates) {
         assert(!results.has(candidate.signature), 'Duplicate oracle candidate');
-        const result = await client.call({ type: 'evaluate', candidate, baselineDeaths: baseline.deaths });
+        const result = await client.call({ type: 'evaluate', candidate, deathBudget: baseline.deaths });
         results.set(candidate.signature, result);
         if (result.feasible) ranked.push({ ...candidate, ...result });
       }

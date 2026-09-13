@@ -67,7 +67,7 @@ async function runSearch(fixture, searchMode) {
         return;
       }
       if (message.candidate) sentCutoffs.push(message.costCutoff);
-      return evaluate(message.candidate, message.baselineDeaths, progress, message.reusableSamples, message.costCutoff);
+      return evaluate(message.candidate, message.deathBudget, progress, message.reusableSamples, message.costCutoff);
     },
   };
   // The in-process engine temporarily installs a seeded Math.random. Keep this

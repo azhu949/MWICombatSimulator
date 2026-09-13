@@ -22,7 +22,7 @@ self.onmessage = async ({ data }) => {
     try {
       const result = await evaluate(
         data.candidate,
-        data.baselineDeaths,
+        data.deathBudget,
         (progress) => self.postMessage({ type: 'progress', ...progress }),
         data.reusableSamples,
         data.costCutoff,

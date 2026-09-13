@@ -35,6 +35,7 @@ import {
   normalizeFoodOptimizerRounds,
   normalizeFoodOptimizerSearchMode,
   normalizeFoodOptimizerFoodHrids,
+  normalizeFoodOptimizerZeroDeaths,
 } from './foodOptimizerDomain.js';
 
 const EQUIPMENT_SET_STORAGE_KEY = 'mwi.equipmentSets.v2';
@@ -704,6 +705,8 @@ export function normalizeFoodOptimizerSettings(raw = {}) {
     rounds: normalizeFoodOptimizerRounds(source.rounds),
     // 设置层缺省是 normalizeFoodOptimizerSearchMode 的默认参数，不再在这里重复字面值。
     searchMode: normalizeFoodOptimizerSearchMode(source.searchMode),
+    // 旧数据没有该字段：false 即“不排除有死亡的方案”，与首次使用一致（脏值回落到同一个默认）。
+    requireZeroDeaths: normalizeFoodOptimizerZeroDeaths(source.requireZeroDeaths),
     // 旧数据没有该字段：null 即“未保存范围”，快照层会解析为当前佩戴食物的默认范围。
     foodHrids: normalizeFoodOptimizerFoodHrids(source.foodHrids),
   };

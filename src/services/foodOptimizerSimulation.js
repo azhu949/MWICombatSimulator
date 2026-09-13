@@ -188,7 +188,7 @@ export async function simulateFoodOptimizerRound(
 export async function evaluateFoodOptimizerCandidate(
   request,
   candidate,
-  baselineDeaths,
+  deathBudget,
   onProgress = () => {},
   simulateRound = simulateFoodOptimizerRound,
   { collectThresholds = true, roundCache = null, reusableSamples = [], costCutoff } = {},
@@ -222,7 +222,7 @@ export async function evaluateFoodOptimizerCandidate(
             simulatedRounds: evaluation.simulatedRounds,
             reusedRounds: evaluation.reusedRounds,
           }),
-        candidate ? (baselineDeaths ?? Infinity) - evaluation.deaths : Infinity,
+        candidate ? (deathBudget ?? Infinity) - evaluation.deaths : Infinity,
         cutoff === null
           ? { collectThresholds }
           : { collectThresholds, costBound: { cutoff, completedCostPerHour, totalRounds: request.rounds } },
@@ -234,7 +234,7 @@ export async function evaluateFoodOptimizerCandidate(
       if (collectThresholds && observedCandidate && sample.pruned !== 'cost')
         roundCache?.record(seed, observedCandidate, sample);
     }
-    appendFoodOptimizerEvaluationSample(evaluation, sample, candidate, baselineDeaths);
+    appendFoodOptimizerEvaluationSample(evaluation, sample, candidate, deathBudget);
     if (cutoff !== null && !evaluation.rejected) {
       if (sample.pruned === 'cost') {
         evaluation.pruned = 'cost';
@@ -267,8 +267,8 @@ export async function evaluateFoodOptimizerCandidate(
 export function createFoodOptimizerEvaluator(request, { collectThresholds = true, sharedRounds = false, items } = {}) {
   assertFoodOptimizerTarget(request);
   const roundCache = collectThresholds && !sharedRounds ? createFoodOptimizerRoundCache({ items }) : null;
-  return (candidate, baselineDeaths, onProgress, reusableSamples = [], costCutoff) =>
-    evaluateFoodOptimizerCandidate(request, candidate, baselineDeaths, onProgress, undefined, {
+  return (candidate, deathBudget, onProgress, reusableSamples = [], costCutoff) =>
+    evaluateFoodOptimizerCandidate(request, candidate, deathBudget, onProgress, undefined, {
       collectThresholds,
       roundCache,
       reusableSamples,

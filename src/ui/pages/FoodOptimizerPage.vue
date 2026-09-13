@@ -104,6 +104,16 @@
           :aria-invalid="!validDraft"
           @input="updateSettings('rounds', $event.target.value)"
       /></label>
+      <label class="flex items-center gap-2 pb-2 text-sm">
+        <input
+          type="checkbox"
+          data-food-optimizer-zero-deaths
+          :checked="zeroDeathsSetting"
+          :disabled="running"
+          @change="simulator.setFoodOptimizerSettings({ requireZeroDeaths: $event.target.checked })"
+        />
+        <span>{{ t('common:foodOptimizer.zeroDeaths') }}</span>
+      </label>
       <dl class="flex min-w-0 flex-wrap gap-x-6 gap-y-2 text-sm">
         <div>
           <dt class="text-xs text-muted-foreground">{{ t('common:foodOptimizer.candidates') }}</dt>
@@ -146,6 +156,9 @@
     </p>
     <p class="text-xs text-muted-foreground" data-food-optimizer-rounds-hint>
       {{ t('common:foodOptimizer.roundsHint') }}
+    </p>
+    <p v-if="zeroDeathsSetting" class="text-xs text-muted-foreground" data-food-optimizer-zero-deaths-hint>
+      {{ t('common:foodOptimizer.zeroDeathsHint') }}
     </p>
     <p v-if="!validDraft" class="text-sm text-destructive" role="alert">
       {{ t('common:foodOptimizer.invalidSettings') }}
@@ -236,7 +249,7 @@
             <dd class="tabular-nums">{{ number(report.baseline.costPerHour) }}</dd>
           </div>
           <div>
-            <dt class="text-xs text-muted-foreground">{{ t('common:foodOptimizer.deaths') }}</dt>
+            <dt class="text-xs text-muted-foreground">{{ deathsLabel }}</dt>
             <dd>{{ report.baseline.deaths }}</dd>
           </div>
           <div>
@@ -259,6 +272,17 @@
       <h3 class="text-base font-semibold">
         {{ t(report.complete ? 'common:foodOptimizer.optimalTitle' : 'common:foodOptimizer.partialTitle') }}
       </h3>
+      <p
+        v-if="showSingleRoundDeathsHint"
+        class="text-sm text-warning"
+        role="status"
+        data-food-optimizer-single-round-deaths-hint
+      >
+        {{ t('common:foodOptimizer.singleRoundDeathsHint') }}
+      </p>
+      <p v-if="reportZeroDeaths" class="text-xs text-muted-foreground" data-food-optimizer-zero-deaths-report-hint>
+        {{ zeroDeathsReportText }}
+      </p>
       <p v-if="!report.topResults.length" class="text-sm text-muted-foreground">
         {{ t('common:foodOptimizer.noResults') }}
       </p>
@@ -275,9 +299,7 @@
               <strong class="tabular-nums">{{ number(result.costPerHour) }}</strong></span
             ><span :class="result.savingsPerHour >= 0 ? 'text-success' : 'text-destructive'"
               >{{ t('common:foodOptimizer.savings') }}: {{ number(result.savingsPerHour) }}</span
-            ><span class="text-xs text-muted-foreground"
-              >{{ t('common:foodOptimizer.deaths') }}: {{ result.deaths }}</span
-            >
+            ><span class="text-xs text-muted-foreground">{{ deathsLabel }}: {{ result.deaths }}</span>
           </div>
           <Button
             size="sm"
@@ -335,7 +357,9 @@ import {
   FOOD_OPTIMIZER_SEARCH_MODE_COMPLETE,
   FOOD_OPTIMIZER_SEARCH_MODE_TOP10,
   getFoodOptimizerItems,
+  isFoodOptimizerZeroDeathsRequest,
   isValidFoodOptimizerSettings,
+  normalizeFoodOptimizerZeroDeaths,
 } from '../../services/foodOptimizerDomain.js';
 import { FOOD_OPTIMIZER_LABYRINTH_ERROR, isFoodOptimizerLabyrinth } from '../../services/foodOptimizerTarget.js';
 import { getDefaultTriggerDtosForHrid } from '../../services/triggerMapper.js';
@@ -358,6 +382,28 @@ const reportTop10 = computed(() => report.value?.request.searchMode === FOOD_OPT
 const labyrinthTarget = computed(() => isFoodOptimizerLabyrinth(input.value));
 const labyrinthReport = computed(() => isFoodOptimizerLabyrinth(report.value?.request));
 const stale = computed(() => simulator.foodOptimizerReportStale);
+// 「累计死亡」是各轮死亡数的求和：把轮数写进标签，避免把 1 轮抽样误读成长期结论。
+// 轮数缺失/非法时回退原标签，旧报告与异常请求都不会渲染出错误口径。
+const reportRounds = computed(() => {
+  const rounds = Number(report.value?.request?.rounds);
+  return Number.isInteger(rounds) && rounds >= FOOD_OPTIMIZER_MIN_ROUNDS ? rounds : null;
+});
+const deathsLabel = computed(() =>
+  reportRounds.value == null
+    ? t('common:foodOptimizer.deaths')
+    : t('common:foodOptimizer.deathsWithRounds', '', { rounds: reportRounds.value }),
+);
+const showSingleRoundDeathsHint = computed(() => Boolean(report.value?.baseline) && reportRounds.value === 1);
+// 「排除有死亡的方案」：设置侧决定下一次搜索的口径；报告侧记录榜单实际执行的口径（旧报告没有
+// 该字段时按未启用处理，与引擎的缺失回落一致）。
+const zeroDeathsSetting = computed(() =>
+  normalizeFoodOptimizerZeroDeaths(simulator.foodOptimizer.settings.requireZeroDeaths),
+);
+const reportZeroDeaths = computed(() => isFoodOptimizerZeroDeathsRequest(report.value?.request));
+// 报告区的口径说明与勾选框共用同一份标签文案（locale 的 zeroDeaths）：改名只需改一处。
+const zeroDeathsReportText = computed(() =>
+  t('common:foodOptimizer.zeroDeathsReportHint', '', { label: t('common:foodOptimizer.zeroDeaths') }),
+);
 const stepDraft = ref(simulator.foodOptimizer.settings.thresholdStepPercent);
 const roundsDraft = ref(simulator.foodOptimizer.settings.rounds);
 const validDraft = computed(() =>

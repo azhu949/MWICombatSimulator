@@ -8,6 +8,7 @@ import {
   hasEmptyFoodOptimizerBaseline,
   FOOD_OPTIMIZER_MAX_SLOTS,
   isFoodOptimizerTopTenRequest,
+  isFoodOptimizerZeroDeathsRequest,
   resolveFoodOptimizerRequestSearchMode,
 } from './foodOptimizerDomain.js';
 import {
@@ -71,11 +72,11 @@ function* generateTopTenCompositions(items, slotLimit = FOOD_OPTIMIZER_MAX_SLOTS
 // The empty-food run can already certify ten distinct zero-consumption choices
 // before ordinary traversal reaches them. Keep these witnesses out of coverage
 // and report statistics; they only establish a ranking bound.
-function findUnusedFoodRankWitnesses(request, items, foodSlots, candidate, result, baselineDeaths) {
+function findUnusedFoodRankWitnesses(request, items, foodSlots, candidate, result, deathBudget) {
   if (
     candidate.slots.length ||
-    !Number.isSafeInteger(baselineDeaths) ||
-    baselineDeaths < 0 ||
+    !Number.isSafeInteger(deathBudget) ||
+    deathBudget < 0 ||
     result.feasible !== true ||
     result.rejected ||
     result.pruned ||
@@ -84,8 +85,9 @@ function findUnusedFoodRankWitnesses(request, items, foodSlots, candidate, resul
   )
     return null;
   // Revalidate every seed and the full duration, and recompute the intersection
-  // and cumulative deaths against the original equipped baseline's budget.
-  const verified = tryEvaluateFoodOptimizerCachedCandidate(request, candidate, baselineDeaths, result.samples);
+  // and cumulative deaths against the candidate death budget: the equipped
+  // baseline's cumulative deaths, or zero in zero-deaths mode.
+  const verified = tryEvaluateFoodOptimizerCachedCandidate(request, candidate, deathBudget, result.samples);
   if (!verified?.feasible || verified.costPerHour !== 0 || !verified.unusedFoodThresholds) return null;
   const unusedItems = (items || [])
     .map((item) => ({
@@ -236,7 +238,12 @@ export function createFoodOptimizerSearch({
   // 让报告及其下游（UI 统计口径、缓存、复制本请求的调用方）看到实际执行的模式，
   // 而不是留下 undefined 这第三种状态。
   request.searchMode = resolveFoodOptimizerRequestSearchMode(request.searchMode);
+  // 同上：把「排除有死亡的方案」的解析结果写回 request，报告与 UI 看到的是实际执行的口径。
+  request.requireZeroDeaths = isFoodOptimizerZeroDeathsRequest(request);
   const report = createFoodOptimizerReport(request, items, foodSlots);
+  // 候选的死亡预算：普通模式等于基线累计死亡（不高于基线即可）；启用「排除有死亡的方案」
+  // 时压到 0——有死亡的候选一律按 rejected='deaths' 淘汰，前十自然只剩 0 死方案。
+  const candidateDeathBudget = () => (request.requireZeroDeaths ? 0 : report.baseline.deaths);
   const clients = new Set();
   const inFlight = new Map();
   const completedRoundsByClient = new Map();
@@ -328,7 +335,7 @@ export function createFoodOptimizerSearch({
   const rememberResult = (candidate, result) => {
     if (reuse) pruning.record(candidate, result);
     if (topTen && reuse && !rankWitnesses && candidate.slots.length === 0) {
-      rankWitnesses = findUnusedFoodRankWitnesses(request, items, foodSlots, candidate, result, report.baseline.deaths);
+      rankWitnesses = findUnusedFoodRankWitnesses(request, items, foodSlots, candidate, result, candidateDeathBudget());
       if (rankWitnesses) refreshRankCutoff();
     }
     if (sharedRoundCache && Array.isArray(result.samples))
@@ -349,7 +356,17 @@ export function createFoodOptimizerSearch({
         report.baseline.reusedRounds,
       );
       const emptyBaseline = reuse && hasEmptyFoodOptimizerBaseline(request);
-      if (emptyBaseline) rememberResult(buildFoodDefaultCandidate([]), report.baseline);
+      // 空槽基线（用户当前没带食物）会把自身结论直接复用为“空候选”的证据；启用「排除有死亡的
+      // 方案」且基线自身会死亡时，这条捷径会把带死亡的基线当成合格候选送进榜单，因此不再复用，
+      // 让空候选走普通候选的死亡预算（0）淘汰。
+      //
+      // 性能口径：跳过捷径的净代价只是空候选自身的一次首死截断模拟。这次死亡淘汰结果仍携带
+      // “食物从未触发”证书，pruning.record 的失败分支照常收录，因此下方 allUnused 只在这
+      // 一次模拟之前悲观为 false，此后的覆盖能力不弱于直接复用基线；rankWitnesses 在该口径
+      // 下则本就不可能成立——零成本（从不触发）方案与基线同轨迹、必然同死，无资格作为排名
+      // 下界。据此也不值得改造基线记录或重算 allUnused：可省的上限就是这一次截断模拟。
+      if (emptyBaseline && !(request.requireZeroDeaths && report.baseline.deaths > 0))
+        rememberResult(buildFoodDefaultCandidate([]), report.baseline);
       phase = 'screening';
       publish(true);
       // A certified never-trigger bound for every food's full grid also covers
@@ -490,7 +507,7 @@ export function createFoodOptimizerSearch({
               ? request.seeds?.map((seed) => sharedRoundCache.match(seed, candidate))
               : undefined;
             let result = sharedRoundCache
-              ? tryEvaluateFoodOptimizerCachedCandidate(request, candidate, report.baseline.deaths, reusableSamples)
+              ? tryEvaluateFoodOptimizerCachedCandidate(request, candidate, candidateDeathBudget(), reusableSamples)
               : null;
             const completedFromCache = result !== null;
             if (completedFromCache) {
@@ -506,7 +523,7 @@ export function createFoodOptimizerSearch({
                 {
                   type: 'evaluate',
                   candidate,
-                  baselineDeaths: report.baseline.deaths,
+                  deathBudget: candidateDeathBudget(),
                   reusableSamples,
                   ...(topTen ? { costCutoff: getCostCutoff() } : {}),
                 },

@@ -2,7 +2,11 @@ import { foodOptions } from '../shared/gameDataIndex.js';
 import { buildSingleSimulationPayload } from './simulationDomain.js';
 import { normalizePriceMode, PRICE_MODE_ASK } from './marketPriceService.js';
 import { deepClone } from './utils.js';
-import { getFoodOptimizerCatalogHrids, normalizeFoodOptimizerSearchMode } from './foodOptimizerDomain.js';
+import {
+  getFoodOptimizerCatalogHrids,
+  normalizeFoodOptimizerSearchMode,
+  normalizeFoodOptimizerZeroDeaths,
+} from './foodOptimizerDomain.js';
 
 const COMBAT_PLAYER_KEYS = [
   'id',
@@ -70,6 +74,9 @@ export function snapshotFoodOptimizerInput(store) {
     },
     thresholdStepPercent: store.foodOptimizer.settings.thresholdStepPercent,
     rounds: store.foodOptimizer.settings.rounds,
+    // 「排除有死亡的方案」改变候选准入（死亡预算压到 0），必须参与输入签名：否则开关切换会
+    // 复用另一口径的缓存报告，页面也会把两种结果当成同一份输入。
+    requireZeroDeaths: normalizeFoodOptimizerZeroDeaths(store.foodOptimizer.settings.requireZeroDeaths),
     // 设置层缺省只由 normalizeFoodOptimizerSearchMode 定义（精确前十）；快照永远向引擎
     // 递交合法枚举，引擎侧另有自己的容错兜底（见 resolveFoodOptimizerRequestSearchMode）。
     searchMode: normalizeFoodOptimizerSearchMode(store.foodOptimizer.settings.searchMode),

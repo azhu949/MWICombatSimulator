@@ -25,8 +25,8 @@ if (!isMainThread) {
         request = data.request;
         collectThresholds = data.collectThresholds !== false;
         evaluator = referenceRound
-          ? (candidate, baselineDeaths, progress) =>
-              evaluateFoodOptimizerCandidate(request, candidate, baselineDeaths, progress, referenceRound, {
+          ? (candidate, deathBudget, progress) =>
+              evaluateFoodOptimizerCandidate(request, candidate, deathBudget, progress, referenceRound, {
                 collectThresholds: false,
               })
           : createFoodOptimizerEvaluator?.(request, {
@@ -39,11 +39,11 @@ if (!isMainThread) {
       }
       const progress = (value) => parentPort.postMessage({ type: 'progress', ...value });
       const result = evaluator
-        ? await evaluator(data.candidate, data.baselineDeaths, progress, data.reusableSamples)
+        ? await evaluator(data.candidate, data.deathBudget, progress, data.reusableSamples)
         : await evaluateFoodOptimizerCandidate(
             request,
             data.candidate,
-            data.baselineDeaths,
+            data.deathBudget,
             progress,
             undefined,
             workerData.legacy ? { costPerHourLimit: data.costPerHourLimit } : { collectThresholds },

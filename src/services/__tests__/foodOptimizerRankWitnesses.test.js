@@ -127,7 +127,7 @@ async function run({
           return evaluateFoodOptimizerCandidate(
             request,
             message.candidate,
-            message.baselineDeaths,
+            message.deathBudget,
             progress,
             async (_request, candidate, seed) => {
               await Promise.resolve();

@@ -24,7 +24,7 @@ describe('food optimizer worker cost control', () => {
     await worker.onmessage({ data: { type: 'init', request, sharedRounds: true } });
     const candidate = { signature: 'food@mp:50' };
     const reusableSamples = [];
-    await worker.onmessage({ data: { candidate, baselineDeaths: 0, reusableSamples, costCutoff: 50 } });
+    await worker.onmessage({ data: { candidate, deathBudget: 0, reusableSamples, costCutoff: 50 } });
     expect(evaluate).toHaveBeenCalledTimes(1);
     expect(evaluate).toHaveBeenCalledWith(candidate, 0, expect.any(Function), reusableSamples, 50);
     expect(worker.postMessage.mock.calls.map(([message]) => message)).toEqual([
@@ -44,9 +44,9 @@ describe('food optimizer worker cost control', () => {
     vi.resetModules();
     await import('../../foodOptimizerWorker.js');
     await worker.onmessage({ data: { type: 'init', request: {}, sharedRounds: true } });
-    const first = worker.onmessage({ data: { candidate: 1, baselineDeaths: 0 } });
+    const first = worker.onmessage({ data: { candidate: 1, deathBudget: 0 } });
     // 第二条消息在第一次评估仍挂起时到达。
-    await worker.onmessage({ data: { candidate: 2, baselineDeaths: 0 } });
+    await worker.onmessage({ data: { candidate: 2, deathBudget: 0 } });
     expect(worker.postMessage.mock.calls.map(([message]) => message)).toContainEqual(
       expect.objectContaining({ type: 'error', error: expect.stringMatching(/Overlapping message/) }),
     );

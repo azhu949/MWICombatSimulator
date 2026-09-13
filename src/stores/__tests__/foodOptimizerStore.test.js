@@ -203,6 +203,9 @@ describe('food optimizer store', () => {
       store.setFoodOptimizerSettings({ searchMode: 'complete' });
     },
     (store) => {
+      store.setFoodOptimizerSettings({ requireZeroDeaths: true });
+    },
+    (store) => {
       store.setFoodOptimizerSettings({ foodHrids: getFoodOptimizerCatalogHrids().slice(0, 2) });
     },
     (store) => {
@@ -422,19 +425,29 @@ describe('food optimizer store', () => {
       rounds: 1,
       searchMode: 'top10',
       foodHrids: null,
+      requireZeroDeaths: false,
     });
-    expect(store.setFoodOptimizerSettings({ thresholdStepPercent: 15, rounds: 7, searchMode: 'complete' })).toBe(true);
+    expect(
+      store.setFoodOptimizerSettings({
+        thresholdStepPercent: 15,
+        rounds: 7,
+        searchMode: 'complete',
+        requireZeroDeaths: true,
+      }),
+    ).toBe(true);
     expect(store.setFoodOptimizerSettings({ thresholdStepPercent: 1.5 })).toBe(false);
     expect(store.setFoodOptimizerSettings({ rounds: 11 })).toBe(false);
     expect(store.setFoodOptimizerSettings({ rounds: '' })).toBe(false);
     expect(store.setFoodOptimizerSettings({ searchMode: 'approximate' })).toBe(false);
     expect(store.setFoodOptimizerSettings({ searchMode: null })).toBe(false);
+    expect(store.setFoodOptimizerSettings({ requireZeroDeaths: 'yes' })).toBe(false);
     setActivePinia(createPinia());
     expect(useSimulatorStore().foodOptimizer.settings).toEqual({
       thresholdStepPercent: 15,
       rounds: 7,
       searchMode: 'complete',
       foodHrids: null,
+      requireZeroDeaths: true,
     });
   });
 
@@ -651,6 +664,7 @@ describe('food optimizer store', () => {
     (store) => store.setFoodOptimizerSettings({ thresholdStepPercent: 15 }),
     (store) => store.setFoodOptimizerSettings({ rounds: 4 }),
     (store) => store.setFoodOptimizerSettings({ searchMode: 'complete' }),
+    (store) => store.setFoodOptimizerSettings({ requireZeroDeaths: true }),
     (store) => (store.pricing.priceTable['/items/donut'].ask = 12345),
     (store) => (store.pricing.consumableMode = 'vendor'),
     (store) => (store.pricing.overrides['/items/donut'] = { ask: 2 }),
