@@ -158,3 +158,14 @@ describe('Home enhancement pricing', () => {
     expect(sources.equipment).not.toContain('onEquipmentUpgradeCostChanged');
   });
 });
+
+describe('Home equipment options', () => {
+  it('takes the base equipment dropdown options from the store-owned caliber', () => {
+    expect(sources.equipment).toContain(
+      'getEquipmentComboboxOptions(slot, activePlayer.value?.equipment?.[slot]?.itemHrid)',
+    );
+    // UI 层不得携带标记知识或第二份过滤实现（口径只在 shared/gameDataIndex + store 出品层）。
+    expect(sources.equipment).not.toContain('isCombatInert');
+    expect(sources.equipment).not.toContain('homeEquipmentOptions');
+  });
+});

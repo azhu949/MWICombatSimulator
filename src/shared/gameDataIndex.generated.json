@@ -1,6 +1,6 @@
 {
   "metadata": {
-    "generatedAt": "2026-09-02T15:38:56.949Z",
+    "generatedAt": "2026-09-14T06:40:54.365Z",
     "levelKeys": [
       "stamina",
       "intelligence",
@@ -36822,512 +36822,614 @@
       {
         "hrid": "/items/trainee_alchemy_charm",
         "name": "Trainee Alchemy Charm",
-        "itemLevel": 1
+        "itemLevel": 1,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/trainee_attack_charm",
         "name": "Trainee Attack Charm",
-        "itemLevel": 1
+        "itemLevel": 1,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/trainee_brewing_charm",
         "name": "Trainee Brewing Charm",
-        "itemLevel": 1
+        "itemLevel": 1,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/trainee_cheesesmithing_charm",
         "name": "Trainee Cheesesmithing Charm",
-        "itemLevel": 1
+        "itemLevel": 1,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/trainee_cooking_charm",
         "name": "Trainee Cooking Charm",
-        "itemLevel": 1
+        "itemLevel": 1,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/trainee_crafting_charm",
         "name": "Trainee Crafting Charm",
-        "itemLevel": 1
+        "itemLevel": 1,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/trainee_defense_charm",
         "name": "Trainee Defense Charm",
-        "itemLevel": 1
+        "itemLevel": 1,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/trainee_enhancing_charm",
         "name": "Trainee Enhancing Charm",
-        "itemLevel": 1
+        "itemLevel": 1,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/trainee_foraging_charm",
         "name": "Trainee Foraging Charm",
-        "itemLevel": 1
+        "itemLevel": 1,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/trainee_intelligence_charm",
         "name": "Trainee Intelligence Charm",
-        "itemLevel": 1
+        "itemLevel": 1,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/trainee_magic_charm",
         "name": "Trainee Magic Charm",
-        "itemLevel": 1
+        "itemLevel": 1,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/trainee_melee_charm",
         "name": "Trainee Melee Charm",
-        "itemLevel": 1
+        "itemLevel": 1,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/trainee_milking_charm",
         "name": "Trainee Milking Charm",
-        "itemLevel": 1
+        "itemLevel": 1,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/trainee_ranged_charm",
         "name": "Trainee Ranged Charm",
-        "itemLevel": 1
+        "itemLevel": 1,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/trainee_stamina_charm",
         "name": "Trainee Stamina Charm",
-        "itemLevel": 1
+        "itemLevel": 1,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/trainee_tailoring_charm",
         "name": "Trainee Tailoring Charm",
-        "itemLevel": 1
+        "itemLevel": 1,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/trainee_woodcutting_charm",
         "name": "Trainee Woodcutting Charm",
-        "itemLevel": 1
+        "itemLevel": 1,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/basic_alchemy_charm",
         "name": "Basic Alchemy Charm",
-        "itemLevel": 20
+        "itemLevel": 20,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/basic_attack_charm",
         "name": "Basic Attack Charm",
-        "itemLevel": 20
+        "itemLevel": 20,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/basic_brewing_charm",
         "name": "Basic Brewing Charm",
-        "itemLevel": 20
+        "itemLevel": 20,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/basic_cheesesmithing_charm",
         "name": "Basic Cheesesmithing Charm",
-        "itemLevel": 20
+        "itemLevel": 20,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/basic_cooking_charm",
         "name": "Basic Cooking Charm",
-        "itemLevel": 20
+        "itemLevel": 20,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/basic_crafting_charm",
         "name": "Basic Crafting Charm",
-        "itemLevel": 20
+        "itemLevel": 20,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/basic_defense_charm",
         "name": "Basic Defense Charm",
-        "itemLevel": 20
+        "itemLevel": 20,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/basic_enhancing_charm",
         "name": "Basic Enhancing Charm",
-        "itemLevel": 20
+        "itemLevel": 20,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/basic_foraging_charm",
         "name": "Basic Foraging Charm",
-        "itemLevel": 20
+        "itemLevel": 20,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/basic_intelligence_charm",
         "name": "Basic Intelligence Charm",
-        "itemLevel": 20
+        "itemLevel": 20,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/basic_magic_charm",
         "name": "Basic Magic Charm",
-        "itemLevel": 20
+        "itemLevel": 20,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/basic_melee_charm",
         "name": "Basic Melee Charm",
-        "itemLevel": 20
+        "itemLevel": 20,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/basic_milking_charm",
         "name": "Basic Milking Charm",
-        "itemLevel": 20
+        "itemLevel": 20,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/basic_ranged_charm",
         "name": "Basic Ranged Charm",
-        "itemLevel": 20
+        "itemLevel": 20,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/basic_stamina_charm",
         "name": "Basic Stamina Charm",
-        "itemLevel": 20
+        "itemLevel": 20,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/basic_tailoring_charm",
         "name": "Basic Tailoring Charm",
-        "itemLevel": 20
+        "itemLevel": 20,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/basic_woodcutting_charm",
         "name": "Basic Woodcutting Charm",
-        "itemLevel": 20
+        "itemLevel": 20,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/advanced_alchemy_charm",
         "name": "Advanced Alchemy Charm",
-        "itemLevel": 40
+        "itemLevel": 40,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/advanced_attack_charm",
         "name": "Advanced Attack Charm",
-        "itemLevel": 40
+        "itemLevel": 40,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/advanced_brewing_charm",
         "name": "Advanced Brewing Charm",
-        "itemLevel": 40
+        "itemLevel": 40,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/advanced_cheesesmithing_charm",
         "name": "Advanced Cheesesmithing Charm",
-        "itemLevel": 40
+        "itemLevel": 40,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/advanced_cooking_charm",
         "name": "Advanced Cooking Charm",
-        "itemLevel": 40
+        "itemLevel": 40,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/advanced_crafting_charm",
         "name": "Advanced Crafting Charm",
-        "itemLevel": 40
+        "itemLevel": 40,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/advanced_defense_charm",
         "name": "Advanced Defense Charm",
-        "itemLevel": 40
+        "itemLevel": 40,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/advanced_enhancing_charm",
         "name": "Advanced Enhancing Charm",
-        "itemLevel": 40
+        "itemLevel": 40,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/advanced_foraging_charm",
         "name": "Advanced Foraging Charm",
-        "itemLevel": 40
+        "itemLevel": 40,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/advanced_intelligence_charm",
         "name": "Advanced Intelligence Charm",
-        "itemLevel": 40
+        "itemLevel": 40,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/advanced_magic_charm",
         "name": "Advanced Magic Charm",
-        "itemLevel": 40
+        "itemLevel": 40,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/advanced_melee_charm",
         "name": "Advanced Melee Charm",
-        "itemLevel": 40
+        "itemLevel": 40,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/advanced_milking_charm",
         "name": "Advanced Milking Charm",
-        "itemLevel": 40
+        "itemLevel": 40,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/advanced_ranged_charm",
         "name": "Advanced Ranged Charm",
-        "itemLevel": 40
+        "itemLevel": 40,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/advanced_stamina_charm",
         "name": "Advanced Stamina Charm",
-        "itemLevel": 40
+        "itemLevel": 40,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/advanced_tailoring_charm",
         "name": "Advanced Tailoring Charm",
-        "itemLevel": 40
+        "itemLevel": 40,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/advanced_woodcutting_charm",
         "name": "Advanced Woodcutting Charm",
-        "itemLevel": 40
+        "itemLevel": 40,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/expert_alchemy_charm",
         "name": "Expert Alchemy Charm",
-        "itemLevel": 60
+        "itemLevel": 60,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/expert_attack_charm",
         "name": "Expert Attack Charm",
-        "itemLevel": 60
+        "itemLevel": 60,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/expert_brewing_charm",
         "name": "Expert Brewing Charm",
-        "itemLevel": 60
+        "itemLevel": 60,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/expert_cheesesmithing_charm",
         "name": "Expert Cheesesmithing Charm",
-        "itemLevel": 60
+        "itemLevel": 60,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/expert_cooking_charm",
         "name": "Expert Cooking Charm",
-        "itemLevel": 60
+        "itemLevel": 60,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/expert_crafting_charm",
         "name": "Expert Crafting Charm",
-        "itemLevel": 60
+        "itemLevel": 60,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/expert_defense_charm",
         "name": "Expert Defense Charm",
-        "itemLevel": 60
+        "itemLevel": 60,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/expert_enhancing_charm",
         "name": "Expert Enhancing Charm",
-        "itemLevel": 60
+        "itemLevel": 60,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/expert_foraging_charm",
         "name": "Expert Foraging Charm",
-        "itemLevel": 60
+        "itemLevel": 60,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/expert_intelligence_charm",
         "name": "Expert Intelligence Charm",
-        "itemLevel": 60
+        "itemLevel": 60,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/expert_magic_charm",
         "name": "Expert Magic Charm",
-        "itemLevel": 60
+        "itemLevel": 60,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/expert_melee_charm",
         "name": "Expert Melee Charm",
-        "itemLevel": 60
+        "itemLevel": 60,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/expert_milking_charm",
         "name": "Expert Milking Charm",
-        "itemLevel": 60
+        "itemLevel": 60,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/expert_ranged_charm",
         "name": "Expert Ranged Charm",
-        "itemLevel": 60
+        "itemLevel": 60,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/expert_stamina_charm",
         "name": "Expert Stamina Charm",
-        "itemLevel": 60
+        "itemLevel": 60,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/expert_tailoring_charm",
         "name": "Expert Tailoring Charm",
-        "itemLevel": 60
+        "itemLevel": 60,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/expert_woodcutting_charm",
         "name": "Expert Woodcutting Charm",
-        "itemLevel": 60
+        "itemLevel": 60,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/master_alchemy_charm",
         "name": "Master Alchemy Charm",
-        "itemLevel": 80
+        "itemLevel": 80,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/master_attack_charm",
         "name": "Master Attack Charm",
-        "itemLevel": 80
+        "itemLevel": 80,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/master_brewing_charm",
         "name": "Master Brewing Charm",
-        "itemLevel": 80
+        "itemLevel": 80,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/master_cheesesmithing_charm",
         "name": "Master Cheesesmithing Charm",
-        "itemLevel": 80
+        "itemLevel": 80,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/master_cooking_charm",
         "name": "Master Cooking Charm",
-        "itemLevel": 80
+        "itemLevel": 80,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/master_crafting_charm",
         "name": "Master Crafting Charm",
-        "itemLevel": 80
+        "itemLevel": 80,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/master_defense_charm",
         "name": "Master Defense Charm",
-        "itemLevel": 80
+        "itemLevel": 80,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/master_enhancing_charm",
         "name": "Master Enhancing Charm",
-        "itemLevel": 80
+        "itemLevel": 80,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/master_foraging_charm",
         "name": "Master Foraging Charm",
-        "itemLevel": 80
+        "itemLevel": 80,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/master_intelligence_charm",
         "name": "Master Intelligence Charm",
-        "itemLevel": 80
+        "itemLevel": 80,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/master_magic_charm",
         "name": "Master Magic Charm",
-        "itemLevel": 80
+        "itemLevel": 80,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/master_melee_charm",
         "name": "Master Melee Charm",
-        "itemLevel": 80
+        "itemLevel": 80,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/master_milking_charm",
         "name": "Master Milking Charm",
-        "itemLevel": 80
+        "itemLevel": 80,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/master_ranged_charm",
         "name": "Master Ranged Charm",
-        "itemLevel": 80
+        "itemLevel": 80,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/master_stamina_charm",
         "name": "Master Stamina Charm",
-        "itemLevel": 80
+        "itemLevel": 80,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/master_tailoring_charm",
         "name": "Master Tailoring Charm",
-        "itemLevel": 80
+        "itemLevel": 80,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/master_woodcutting_charm",
         "name": "Master Woodcutting Charm",
-        "itemLevel": 80
+        "itemLevel": 80,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/grandmaster_alchemy_charm",
         "name": "Grandmaster Alchemy Charm",
-        "itemLevel": 100
+        "itemLevel": 100,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/grandmaster_attack_charm",
         "name": "Grandmaster Attack Charm",
-        "itemLevel": 100
+        "itemLevel": 100,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/grandmaster_brewing_charm",
         "name": "Grandmaster Brewing Charm",
-        "itemLevel": 100
+        "itemLevel": 100,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/grandmaster_cheesesmithing_charm",
         "name": "Grandmaster Cheesesmithing Charm",
-        "itemLevel": 100
+        "itemLevel": 100,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/grandmaster_cooking_charm",
         "name": "Grandmaster Cooking Charm",
-        "itemLevel": 100
+        "itemLevel": 100,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/grandmaster_crafting_charm",
         "name": "Grandmaster Crafting Charm",
-        "itemLevel": 100
+        "itemLevel": 100,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/grandmaster_defense_charm",
         "name": "Grandmaster Defense Charm",
-        "itemLevel": 100
+        "itemLevel": 100,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/grandmaster_enhancing_charm",
         "name": "Grandmaster Enhancing Charm",
-        "itemLevel": 100
+        "itemLevel": 100,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/grandmaster_foraging_charm",
         "name": "Grandmaster Foraging Charm",
-        "itemLevel": 100
+        "itemLevel": 100,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/grandmaster_intelligence_charm",
         "name": "Grandmaster Intelligence Charm",
-        "itemLevel": 100
+        "itemLevel": 100,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/grandmaster_magic_charm",
         "name": "Grandmaster Magic Charm",
-        "itemLevel": 100
+        "itemLevel": 100,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/grandmaster_melee_charm",
         "name": "Grandmaster Melee Charm",
-        "itemLevel": 100
+        "itemLevel": 100,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/grandmaster_milking_charm",
         "name": "Grandmaster Milking Charm",
-        "itemLevel": 100
+        "itemLevel": 100,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/grandmaster_ranged_charm",
         "name": "Grandmaster Ranged Charm",
-        "itemLevel": 100
+        "itemLevel": 100,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/grandmaster_stamina_charm",
         "name": "Grandmaster Stamina Charm",
-        "itemLevel": 100
+        "itemLevel": 100,
+        "isCombatInert": false
       },
       {
         "hrid": "/items/grandmaster_tailoring_charm",
         "name": "Grandmaster Tailoring Charm",
-        "itemLevel": 100
+        "itemLevel": 100,
+        "isCombatInert": true
       },
       {
         "hrid": "/items/grandmaster_woodcutting_charm",
         "name": "Grandmaster Woodcutting Charm",
-        "itemLevel": 100
+        "itemLevel": 100,
+        "isCombatInert": true
       }
     ]
   },

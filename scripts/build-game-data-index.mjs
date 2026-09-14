@@ -129,7 +129,73 @@ function resolveEquipmentSlotName(equipmentType, equipmentTypeDetailMap) {
   return EQUIPMENT_SLOT_KEYS.includes(slotName) ? slotName : '';
 }
 
-function createItemIndex(itemDetailMap, equipmentTypeDetailMap) {
+// 护符过滤口径的判定依据是引擎语义本身：equipment.js 的 getCombatStat 对 combatStats
+// 中不存在的属性一律返回 0、getFocusTraining 直读 combatStats.focusTraining，因此
+// combatStats 为空的护符在战斗模拟里不产生任何战斗贡献，也就没有理由出现在战斗向的
+// 装备下拉里（消费点在 simulatorStore 选项出品层 → shared/gameDataIndex.
+// resolveEquipmentComboboxItems；与驱动饮品过滤的 combatUsable 同款构建期语义标记）。
+//
+// 字段语义 =「引擎口径的产出」，不是身份：投影名 isCombatInert（战斗惰性 = 战斗上读不到
+// 贡献）而非 isSkillingCharm（生活技能护符）——后者断言「这是一条生活护符」，在下面
+// 「combatStats 缺数据」的 fail-safe 分支里并不成立（缺数据的未来战斗护符同样会被投影为
+// true），身份命名会让下游把「无数据兜底」误读成「生活护符」。字段只承诺「引擎在战斗里读不到
+// 贡献 ⇒ 不作为战斗向选项出品（标记由 simulatorStore / shared 的选项出品层消费）」，不承诺身份
+// （当前数据下两者恰好等价：102 条护符中 60 条 combatStats 为空 = 生活护符、42 条有战斗属性 = 战斗护符）。
+//
+// 历史实现（2026-09-14 初审）用「专精技能是否生活技能」作代理变量
+// （levelRequirements[0].skillHrid → skillDetailMap.isSkilling）：当前官方数据 102 条
+// 护符中两者 100% 等价，但该代理依赖 levelRequirements 的位置假设——官方改成多需求、
+// 把 total_level 放到第 0 位或出现「双专精」护符时会静默与语义脱节。现在它只作为
+// 数据形态哨兵（背离即 console.warn；shared/__tests__/gameDataIndex.charmOptions.test.js
+// 硬性失败），不再参与判定。
+//
+// 缺数据（combatStats 缺失或非对象）回退为 true：引擎读取 combatStats 时是直接取属性
+// （equipment.js 的 getCombatStat / getFocusTraining 都没有兜底），字段缺失时连读都会失败，
+// 更谈不上战斗贡献；与「combatStats 为空」同支处理（同样投影为 true），并由哨兵告警暴露
+// 形态变化。这是 fail-safe（宁可不提供），不是「生活护符」判定；该分支在真实数据下
+// 从不触达（shared 侧测试锁定每条护符都声明 combatStats 对象），分支取值由
+// scripts/__tests__/build-game-data-index.test.js 用合成输入锁定。
+export function resolveIsCombatInert(equipmentDetail) {
+  const combatStats = equipmentDetail?.combatStats;
+  if (!combatStats || typeof combatStats !== 'object') {
+    return true;
+  }
+
+  return Object.keys(combatStats).length === 0;
+}
+
+// 护符口径哨兵（只告警，不改变判定）：输入形态不再是「每条护符都声明 combatStats 对象 +
+// 单条 levelRequirements」时、或代理变量与引擎口径背离时，提示人工复核护符过滤口径。
+function warnOnCharmCaliberDrift(equipmentHrid, equipmentDetail, skillDetailMap, isCombatInert) {
+  const combatStats = equipmentDetail?.combatStats;
+  if (!combatStats || typeof combatStats !== 'object') {
+    console.warn(
+      `[charm 口径哨兵] ${equipmentHrid}: 缺少 combatStats 对象（引擎读取会报错）；已按 fail-safe 投影 isCombatInert=true（这不是「生活技能护符」判定，该标记只表示战斗向下拉默认不提供该条），请人工复核`,
+    );
+  }
+
+  const requirements = Array.isArray(equipmentDetail?.levelRequirements) ? equipmentDetail.levelRequirements : [];
+  if (requirements.length > 1) {
+    console.warn(
+      `[charm 口径哨兵] ${equipmentHrid}: levelRequirements 变为 ${requirements.length} 条，[0] 位置假设失效`,
+    );
+  }
+
+  const skillHrid = String(requirements[0]?.skillHrid || '');
+  if (!skillHrid) {
+    console.warn(`[charm 口径哨兵] ${equipmentHrid}: 缺少 levelRequirements[0].skillHrid，无法交叉校验`);
+    return;
+  }
+
+  const proxyIsSkilling = skillDetailMap?.[skillHrid]?.isSkilling === true;
+  if (proxyIsSkilling !== isCombatInert) {
+    console.warn(
+      `[charm 口径哨兵] ${equipmentHrid}: 专精技能 ${skillHrid}（isSkilling=${proxyIsSkilling}）与引擎口径（isCombatInert=${isCombatInert}）背离，请复核护符过滤口径`,
+    );
+  }
+}
+
+function createItemIndex(itemDetailMap, equipmentTypeDetailMap, skillDetailMap) {
   const itemDetailIndex = {};
   const itemNameByHrid = {};
   const itemVendorPriceByHrid = {};
@@ -212,10 +278,18 @@ function createItemIndex(itemDetailMap, equipmentTypeDetailMap) {
     if (categoryHrid === '/item_categories/equipment' && equipmentType) {
       const slotName = resolveEquipmentSlotName(equipmentType, equipmentTypeDetailMap);
       if (slotName) {
+        // 仅护符槽位携带「战斗惰性」语义标记，其余槽位保持既有的紧凑形状。
+        let isCombatInert;
+        if (slotName === 'charm') {
+          isCombatInert = resolveIsCombatInert(item?.equipmentDetail);
+          warnOnCharmCaliberDrift(hrid, item?.equipmentDetail, skillDetailMap, isCombatInert);
+        }
+
         equipmentBySlot[slotName].push({
           hrid,
           name: option.name,
           itemLevel,
+          ...(slotName === 'charm' ? { isCombatInert } : {}),
         });
       }
     }
@@ -1035,6 +1109,7 @@ async function main() {
     itemDetailMap,
     openableLootDropMap,
     personalBuffTypeDetailMap,
+    skillDetailMap,
   ] = await Promise.all([
     readJsonFile('abilityDetailMap.json'),
     readJsonFile('achievementTierDetailMap.json'),
@@ -1049,9 +1124,10 @@ async function main() {
     readJsonFile('itemDetailMap.json'),
     readJsonFile('openableLootDropMap.json'),
     readJsonFile('personalBuffTypeDetailMap.json'),
+    readJsonFile('skillDetailMap.json'),
   ]);
 
-  const itemIndex = createItemIndex(itemDetailMap, equipmentTypeDetailMap);
+  const itemIndex = createItemIndex(itemDetailMap, equipmentTypeDetailMap, skillDetailMap);
   const abilityIndex = createAbilityIndex(abilityDetailMap);
   const actionIndex = createActionIndex(actionDetailMap);
   const zoneMonsterSpawnIndex = createZoneMonsterSpawnIndex(actionDetailMap);
@@ -1099,7 +1175,14 @@ async function main() {
   console.log(`Wrote ${path.relative(projectRoot, outputPath)}`);
 }
 
-main().catch((error) => {
-  console.error(error);
-  process.exitCode = 1;
-});
+// 入口守卫：只在被当作入口直接执行（npm run build-game-data-index / node scripts/...）时构建写盘；
+// 被测试 import 时（scripts/__tests__/build-game-data-index.test.js）仅取用导出的纯函数
+// resolveIsCombatInert，不产生对 src/shared/gameDataIndex.generated.json 的写盘副作用。
+const isDirectExecution = Boolean(process.argv[1]) && path.resolve(process.argv[1]) === __filename;
+
+if (isDirectExecution) {
+  main().catch((error) => {
+    console.error(error);
+    process.exitCode = 1;
+  });
+}

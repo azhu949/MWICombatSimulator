@@ -1,5 +1,6 @@
 import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
+import { toRaw } from 'vue';
 import actionDetailMap from '../../combatsimulator/data/actionDetailMap.json';
 import abilityDetailMap from '../../combatsimulator/data/abilityDetailMap.json';
 import combatMonsterDetailMap from '../../combatsimulator/data/combatMonsterDetailMap.json';
@@ -19,6 +20,7 @@ import {
   computePlayerAssetScore,
 } from '../../services/assetScoreService.js';
 import { exportSoloConfig } from '../../services/importExportMapper.js';
+import { equipmentOptionsBySlot } from '../../shared/gameDataIndex.js';
 import { createEmptyPlayerConfig } from '../../shared/playerConfig.js';
 import { useSimulatorStore } from '../simulatorStore.js';
 import { PHILOSOPHERS_MIRROR_ITEM_HRID } from '../../services/queueUpgradeCost.js';
@@ -6535,5 +6537,45 @@ describe('simulatorStore', () => {
     expect(result).toBeNull();
     expect(simulator.fetchMarketPrices).toHaveBeenCalledTimes(1);
     expect(simulator.pricing.error).toBe('boom');
+  });
+
+  // 装备下拉口径必须与饮品同层（store 选项出品层），否则新增装备下拉消费方会静默带出
+  // 60 条战斗惰性护符（构建期 isCombatInert = 引擎读不到战斗贡献；当前数据即生活技能护符）；
+  // 「保留已选中」例外只在 getEquipmentComboboxOptions 里补回。
+  describe('equipment options caliber', () => {
+    it('filters combat-inert charms out of the store equipment options', () => {
+      const simulator = useSimulatorStore();
+      const charmOptions = simulator.options.equipmentBySlot.charm;
+
+      expect(Array.isArray(charmOptions)).toBe(true);
+      expect(charmOptions.length).toBeGreaterThan(0);
+      expect(charmOptions.every((option) => option.isCombatInert !== true)).toBe(true);
+      expect(charmOptions.some((option) => option.hrid === '/items/trainee_attack_charm')).toBe(true);
+      expect(charmOptions.some((option) => option.hrid === '/items/trainee_milking_charm')).toBe(false);
+    });
+
+    it('keeps the equipped life-skill charm visible through the combobox helper', () => {
+      const simulator = useSimulatorStore();
+      const equippedHrid = '/items/trainee_milking_charm';
+      const combatOptions = simulator.getEquipmentComboboxOptions('charm');
+
+      expect(combatOptions.some((option) => option.hrid === equippedHrid)).toBe(false);
+
+      const visibleOptions = simulator.getEquipmentComboboxOptions('charm', equippedHrid);
+      expect(visibleOptions.length).toBe(combatOptions.length + 1);
+      expect(visibleOptions.at(-1)?.hrid).toBe(equippedHrid);
+    });
+
+    it('leaves slots without the projection marker untouched', () => {
+      const simulator = useSimulatorStore();
+
+      expect(simulator.options.equipmentBySlot.head).toEqual(equipmentOptionsBySlot.head);
+      expect(simulator.getEquipmentComboboxOptions('head')).toEqual(equipmentOptionsBySlot.head);
+      // 引用同一性（G2）：无标记槽位的 store 选项就是共享索引里的同一个数组（不得退回逐槽位
+      // 复制）。Pinia 的 reactive 深层包装会让 store 值成为代理、与原始数组 toBe 假阴性，故用
+      // toRaw 穿透代理后比较；action 返回值未经包装，可直接 toBe。
+      expect(toRaw(simulator.options.equipmentBySlot.head)).toBe(equipmentOptionsBySlot.head);
+      expect(simulator.getEquipmentComboboxOptions('head')).toBe(equipmentOptionsBySlot.head);
+    });
   });
 });

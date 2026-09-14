@@ -1,4 +1,20 @@
 {
+  "2026年9月14日（v2.5.1）": {
+    "label": {
+      "zh": "2026年9月14日（v2.5.1）",
+      "en": "September 14, 2026 (v2.5.1)"
+    },
+    "improvements": {
+      "zh": [
+        "首页「基础设置」的装备面板中，护符下拉框现在只列出能带来战斗加成的护符，只提升生活技能的生活技能护符不再出现，避免选中后发现配装没有任何战斗收益。",
+        "当前已装备的生活技能护符仍会保留在列表末尾，不会显示成空白选项或让人误以为装备丢失。"
+      ],
+      "en": [
+        "On the Equipment panel of the Home page (Base Setup tab), the charm dropdown now lists only charms with combat bonuses; life-skill-only charms no longer appear, so you can't accidentally pick one that adds nothing in combat.",
+        "A life-skill charm you already have equipped stays at the end of the list, so the dropdown never goes blank or looks like your gear is missing."
+      ]
+    }
+  },
   "2026年9月14日（v2.5.0）": {
     "label": {
       "zh": "2026年9月14日（v2.5.0）",

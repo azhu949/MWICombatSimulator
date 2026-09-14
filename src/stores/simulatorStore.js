@@ -10,6 +10,7 @@ import {
   itemDetailIndex,
   labyrinthCrateOptions,
   labyrinthOptions,
+  resolveEquipmentComboboxItems,
   soloZoneHrids,
   zoneOptions,
 } from '../shared/gameDataIndex.js';
@@ -128,8 +129,15 @@ function resolveFoodConsumableSortGroup(option) {
   return 99;
 }
 
+// 装备下拉口径与饮品一致：过滤发生在选项「出品」层（store 状态）而不是各消费方——
+// 战斗惰性护符（构建期 isCombatInert 标记 = 引擎口径下战斗上读不到贡献，是产出语义而非
+// 「生活技能护符」身份判定；当前这类护符即生活技能护符，只提供生活经验加成）在
+// options.equipmentBySlot 里本就不存在，新消费方直接读该状态也不会漏进生活护符。
+// 唯一读原始索引的地方是 getEquipmentComboboxOptions 的「保留已选中」例外（见其注释）。
 function getEquipmentOptionsBySlot() {
-  return equipmentOptionsBySlot;
+  return Object.fromEntries(
+    Object.entries(equipmentOptionsBySlot).map(([slot, options]) => [slot, resolveEquipmentComboboxItems(options)]),
+  );
 }
 
 function getConsumableOptions(categoryHrid) {
@@ -440,6 +448,14 @@ export const useSimulatorStore = defineStore('simulator', {
     },
   },
   actions: {
+    // 装备下拉的唯一入口（基础设置页等）：返回该槽位的「战斗向」选项，并把当前已装备的
+    // 被过滤项（战斗惰性护符；当前数据即生活技能护符）补回列表末尾，避免 SearchCombobox
+    // 的 displayValue 落空。
+    // 「保留已选中」例外必须查原始索引（模块常量 equipmentOptionsBySlot）——不能改读
+    // this.options.equipmentBySlot：后者已是过滤后的结果，读它会静默丢掉例外。
+    getEquipmentComboboxOptions(slotKey, selectedItemHrid = '') {
+      return resolveEquipmentComboboxItems(equipmentOptionsBySlot[slotKey] || [], selectedItemHrid);
+    },
     ensurePlayerConfig(player = this.activePlayer) {
       return ensurePlayerAdvancedState(player);
     },

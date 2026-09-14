@@ -46,6 +46,41 @@ export const levelExperienceTable = Array.isArray(gameDataIndex?.levelExperience
 export const abilityBookInfoByAbilityHrid = gameDataIndex?.abilityBookInfoByAbilityHrid || {};
 
 export const equipmentOptionsBySlot = gameDataIndex?.equipmentBySlot || {};
+// 装备下拉口径（与饮品 combatUsable 过滤同层：在选项「出品」处过滤，而不是由各消费方
+// 各自过滤）：护符槽位构建期投影的 isCombatInert 默认不出现在战斗向装备下拉里。判定
+// 依据是引擎口径本身——equipment.js 的 getCombatStat 对 combatStats 中不存在的属性一律
+// 返回 0、getFocusTraining 直读 combatStats.focusTraining，所以 combatStats 为空的护符
+// 在战斗模拟里不产生任何战斗贡献（当前 102 条护符：60 条为空、42 条有战斗属性）。
+// 字段是产出语义而非身份语义：isCombatInert = 「引擎在战斗里读不到贡献 ⇒ 不作为战斗向
+// 选项出品」，combatStats 缺数据时同样投影为 true 作 fail-safe（见构建脚本
+// resolveIsCombatInert 注释），因此不要把它当「生活技能护符」身份判定使用。
+// selectedItemHrid 是「保留已选中」例外——当前已装备的被过滤项追加到列表末尾，避免
+// SearchCombobox 的 displayValue 落空、把已装备物品显示成空白（让人误判装备丢失）。
+// simulatorStore 用它产出 options.equipmentBySlot（默认已过滤），并以
+// getEquipmentComboboxOptions(slotKey, selectedItemHrid) 暴露该例外；装备下拉消费方
+// 取选项一律走该 action，绕过它只会丢掉「保留已选中」，不会带出生活技能护符。
+// 反向提醒：simulator.options.* 是「战斗模拟器选项目录」（已剔除生活技能护符）；
+// 需要全量护符（含生活技能护符）的非战斗消费方，请直接读本模块的原始导出
+// equipmentOptionsBySlot，不要指望 store 状态。
+export function resolveEquipmentComboboxItems(options, selectedItemHrid = '') {
+  const optionList = Array.isArray(options) ? options : [];
+  const visibleOptions = optionList.filter((option) => option?.isCombatInert !== true);
+  // filter 只做删除、不重排：长度不变即「一条都没被剔除」，可见项与入参逐元素相同，
+  // 此时返回入参本身而不是过滤副本——无标记槽位的 store 选项就是共享索引里的同一个数组
+  // （equipmentOptionsBySlot[slot]），返回副本会让「选项 === 索引」在引用层面不成立，
+  // 并让每个无标记槽位都常驻一份等价副本。调用方只读，不得原地修改（含排序）。
+  if (visibleOptions.length === optionList.length) {
+    return optionList;
+  }
+
+  const selectedHrid = String(selectedItemHrid || '');
+  if (!selectedHrid || visibleOptions.some((option) => String(option?.hrid || '') === selectedHrid)) {
+    return visibleOptions;
+  }
+
+  const selectedOption = optionList.find((option) => String(option?.hrid || '') === selectedHrid);
+  return selectedOption ? [...visibleOptions, selectedOption] : visibleOptions;
+}
 export const foodOptions = Array.isArray(gameDataIndex?.foodOptions) ? gameDataIndex.foodOptions : [];
 export const drinkOptions = Array.isArray(gameDataIndex?.drinkOptions) ? gameDataIndex.drinkOptions : [];
 // 已知战斗不可用饮品的 hrid 集合，来源于构建期

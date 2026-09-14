@@ -129,13 +129,15 @@ const equipmentSlots = EQUIPMENT_SLOT_KEYS;
 const equipmentLabelMap = computed(() =>
   Object.fromEntries(equipmentSlots.map((slot) => [slot, getEquipmentSlotName(slot, slot)])),
 );
+// 护符下拉口径由 store 统一出品（options.equipmentBySlot 已剔除生活技能护符；
+// getEquipmentComboboxOptions 额外保留当前已装备的被过滤项，避免选择框显示为空）。
 const equipmentComboboxOptionsBySlot = computed(() =>
   Object.fromEntries(
     equipmentSlots.map((slot) => [
       slot,
       [
         { value: '', label: t('common:vue.common.none', 'None') },
-        ...(simulator.options.equipmentBySlot[slot] || []).map((item) => ({
+        ...simulator.getEquipmentComboboxOptions(slot, activePlayer.value?.equipment?.[slot]?.itemHrid).map((item) => ({
           value: item.hrid,
           label: `${t('common:vue.home.levelShort', 'Lv')}${item.itemLevel} ${getItemName(item.hrid, item.name)}`,
         })),
