@@ -735,6 +735,11 @@
       "foodSlot": "Food {{index}}",
       "drinkSlot": "Drink {{index}}",
       "abilitySlot": "Ability {{index}}",
+      "abilityOrder": {
+        "hint": "Use the arrow buttons to swap an ability with its neighbour. The special ability slot always stays first.",
+        "moveUp": "Move up",
+        "moveDown": "Move down"
+      },
       "combatScrolls": {
         "title": "Combat Scrolls",
         "button": "Enable Combat Scroll Effects",

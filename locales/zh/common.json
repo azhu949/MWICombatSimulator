@@ -735,6 +735,11 @@
       "foodSlot": "食物 {{index}}",
       "drinkSlot": "饮品 {{index}}",
       "abilitySlot": "技能 {{index}}",
+      "abilityOrder": {
+        "hint": "点击箭头按钮与相邻技能槽互换：特殊技能槽固定在最前。",
+        "moveUp": "上移",
+        "moveDown": "下移"
+      },
       "combatScrolls": {
         "title": "战斗卷轴",
         "button": "启用战斗卷轴效果",

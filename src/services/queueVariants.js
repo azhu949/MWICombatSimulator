@@ -621,6 +621,12 @@ export function computeQueueChangeSummary(baselinePlayer, candidatePlayer) {
     }
   }
 
+  // 技能变更按槽位描述（逐槽对比 before/after 快照）：这里是「快照差异描述」，供条目命名、变体生成与变更
+  // 列表展示使用，**刻意不改成技能锚定**——重排确实换了槽位内容与施法优先级（等级随技能走），描述必须
+  // 如实反映；需要技能锚定的地方只有升级成本与「参考数据加载门」（见 queueUpgradeCost.resolveAbilityUpgradeFromLevel
+  // 与 collectAbilityUpgradeRanges，两者都直接看快照、与本描述无关）。
+  // 两条互相搬槽的变更仍各自成条（摘要不做合并），「必须一起应用」的原子性由变体生成阶段负责
+  // （buildAtomicQueueChangeGroups：镜像搬槽合成一个变体，避免半交换快照）。
   for (let i = 0; i < 5; i++) {
     const beforeAbility = baseline?.abilities?.[i] ?? { abilityHrid: '', level: 1 };
     const afterAbility = candidate?.abilities?.[i] ?? { abilityHrid: '', level: 1 };
@@ -853,6 +859,143 @@ export function applySingleQueueChange(snapshot, targetSnapshot, change) {
   return false;
 }
 
+// 「可搬槽」的槽位变更类型：技能/食物/饮品的同一身份（hrid）通常只占一格，且两格之间的对调/轮转在语义上
+// 是「整对搬动」而不是两条独立变更——镜像变更必须成组应用（见下），否则会产出同名身份占两格的快照
+// （技能在游戏里一个只能占一格；食物优化器同样以「不重复」为搜索不变量）。
+// 装备不在此列：配置里每个槽位类型只有一格（见 EQUIPMENT_SLOT_KEYS），不存在同类型槽位之间的搬槽。
+const QUEUE_ATOMIC_SLOT_CHANGE_KINDS = {
+  ability: {
+    indexKey: 'index',
+    afterKey: 'afterAbilityHrid',
+    baselineKey: 'abilities',
+    baselineIdentityKey: 'abilityHrid',
+  },
+  food: { indexKey: 'index', afterKey: 'afterItemHrid', baselineKey: 'food', baselineIdentityKey: '' },
+  drink: { indexKey: 'index', afterKey: 'afterItemHrid', baselineKey: 'drinks', baselineIdentityKey: '' },
+};
+
+function resolveQueueSlotIdentity(entry, identityKey) {
+  if (identityKey) {
+    return String(entry?.[identityKey] || '');
+  }
+  return String(entry || '');
+}
+
+// 原子变更分组：把「互相搬槽」的变更合成一组，同组必须一起应用。
+//
+// 背景：多变更差异会被拆成「一条变更 = 一个变体」的单变更快照，用来分别评估每条变更的收益——这对互不
+// 相关的变更是正确的（换装备 / 升技能 / 升房间），但对「同一类槽位里两格对调」这种互为镜像的成对变更
+// 不成立：单独应用其中一条的语义是「把目标侧那一格整格覆盖到基准上」（见 applySingleQueueChange），
+// 于是同一个技能/食物会同时占两格（[B@3, B@3] 与 [A@5, A@5]）——既不是用户想评估的配置（同名技能在游戏里
+// 不可能占两格），用户真实的完整重排反而从未被整体模拟。首页箭头互换把这种形状提升成一等操作，触发频率更高。
+//
+// 规则：把「本槽位新拿到的身份在基准里所在的那个槽位」与本槽位连一条边（身份 = 技能/食物/饮品 hrid），
+// 再取连通分量。两格互换是 2 环、三格轮转是 3 环：组内变更之间不冲突——互为镜像的搬槽一起应用，不会被
+// 拆成半交换；组外槽位保持基准值。
+//
+// 这不是「快照恒无重复身份」的全局保证：目标侧自身就重复（手改下拉/导入模板可造出的退化配置）时，分组只能
+// 如实复制、修不掉。最直接的一种是「基准里该身份的搬出方本轮没变」（见下方「该槽位本轮没变」分支）：这条边
+// 没有可合并的变更，该变更本身仍可能经由别的边并入其它组，但目标侧自带的重复照旧保留。本函数只保证两点：
+// ① 组内变更之间不冲突；② 变体里的重复身份一定来自目标侧（拆分/分组不制造目标侧没有的重复）。
+//
+// 基准里没有的新身份（新增技能/食物）没有边，独立成组；被清空的槽位没有「新拿到的身份」，同样不产生边
+// ——两条互不相干的删除各自成组，变体粒度不丢。
+function buildAtomicQueueChangeGroups(baselineSnapshot, changes) {
+  const list = Array.isArray(changes) ? changes : [];
+  const parent = list.map((_, index) => index);
+
+  const findRoot = (index) => {
+    let current = index;
+    while (parent[current] !== current) {
+      parent[current] = parent[parent[current]];
+      current = parent[current];
+    }
+    return current;
+  };
+  const union = (left, right) => {
+    const leftRoot = findRoot(left);
+    const rightRoot = findRoot(right);
+    if (leftRoot !== rightRoot) {
+      parent[rightRoot] = leftRoot;
+    }
+  };
+
+  // 本轮差异里「类型 + 槽位」→ 变更下标（同一槽位同一类型至多一条变更）。
+  const changeIndexByKindSlot = new Map();
+  const slotEntriesByChangeIndex = new Map();
+  for (let index = 0; index < list.length; index++) {
+    const change = list[index];
+    const kind = String(change?.kind || '');
+    const descriptor = QUEUE_ATOMIC_SLOT_CHANGE_KINDS[kind];
+    if (!descriptor) {
+      continue;
+    }
+    const slot = Math.floor(toFiniteNumber(change?.[descriptor.indexKey], -1));
+    if (slot < 0) {
+      continue;
+    }
+    changeIndexByKindSlot.set(`${kind}|${slot}`, index);
+    slotEntriesByChangeIndex.set(index, { kind, descriptor, slot });
+  }
+
+  // 基准里每个身份占用的槽位（可能不止一格：手改下拉/导入的重复配置可达）。
+  const baselineSlotsByKindIdentity = new Map();
+  for (const [kind, descriptor] of Object.entries(QUEUE_ATOMIC_SLOT_CHANGE_KINDS)) {
+    const slots = Array.isArray(baselineSnapshot?.[descriptor.baselineKey])
+      ? baselineSnapshot[descriptor.baselineKey]
+      : [];
+    for (let slot = 0; slot < slots.length; slot++) {
+      const identity = resolveQueueSlotIdentity(slots[slot], descriptor.baselineIdentityKey);
+      if (!identity) {
+        continue;
+      }
+      const key = `${kind}|${identity}`;
+      const owners = baselineSlotsByKindIdentity.get(key);
+      if (owners) {
+        owners.push(slot);
+      } else {
+        baselineSlotsByKindIdentity.set(key, [slot]);
+      }
+    }
+  }
+
+  for (const [index, entry] of slotEntriesByChangeIndex) {
+    const gainedIdentity = String(list[index]?.[entry.descriptor.afterKey] || '');
+    if (!gainedIdentity) {
+      continue;
+    }
+    const owners = baselineSlotsByKindIdentity.get(`${entry.kind}|${gainedIdentity}`) || [];
+    for (const ownerSlot of owners) {
+      if (ownerSlot === entry.slot) {
+        continue;
+      }
+      const ownerChangeIndex = changeIndexByKindSlot.get(`${entry.kind}|${ownerSlot}`);
+      if (ownerChangeIndex === undefined) {
+        // 该槽位本轮没变（目标侧自身就重复）：这条边没有可合并的变更，分组救不了这种退化配置——本条变更仍
+        // 可能经由别的边并入其它组，但目标侧自带的重复照旧如实复制（分组不制造新的重复，也修不掉它；见上方注释）。
+        continue;
+      }
+      union(index, ownerChangeIndex);
+    }
+  }
+
+  // 按变更原始顺序输出各组（组内也保持原始顺序），未参与搬槽的变更各自成组。
+  const groups = [];
+  const groupIndexByRoot = new Map();
+  for (let index = 0; index < list.length; index++) {
+    const root = findRoot(index);
+    let groupIndex = groupIndexByRoot.get(root);
+    if (groupIndex === undefined) {
+      groupIndex = groups.length;
+      groupIndexByRoot.set(root, groupIndex);
+      groups.push([]);
+    }
+    groups[groupIndex].push(list[index]);
+  }
+
+  return groups;
+}
+
 export function buildQueueVariantSnapshotsFromChanges(baselineSnapshot, targetSnapshot, changeSummary) {
   const safeSummary = changeSummary && typeof changeSummary === 'object' ? changeSummary : { count: 0, changes: [] };
   if (!baselineSnapshot || !targetSnapshot || safeSummary.count <= 0) {
@@ -861,6 +1004,8 @@ export function buildQueueVariantSnapshotsFromChanges(baselineSnapshot, targetSn
 
   const changes = Array.isArray(safeSummary.changes) ? safeSummary.changes : [];
   if (changes.length <= 1) {
+    // 直返目标快照：目标侧自身重复（手改下拉/导入模板）时变体就如实带重复——分组只在多变更时才有机会
+    // 合并搬槽，且保证范围同样只到「不制造目标侧没有的重复」（见 buildAtomicQueueChangeGroups 注释）。
     const labels = Array.isArray(safeSummary.labels) ? safeSummary.labels : [];
     const changeDetails = Array.isArray(safeSummary.changes) ? deepClone(safeSummary.changes) : [];
     return [
@@ -873,12 +1018,19 @@ export function buildQueueVariantSnapshotsFromChanges(baselineSnapshot, targetSn
     ];
   }
 
+  const groups = buildAtomicQueueChangeGroups(baselineSnapshot, changes);
   const variants = [];
   const seenSignatures = new Set();
 
-  for (const change of changes) {
+  for (const group of groups) {
     const variantSnapshot = deepClone(baselineSnapshot);
-    if (!applySingleQueueChange(variantSnapshot, targetSnapshot, change)) {
+    let appliedCount = 0;
+    for (const change of group) {
+      if (applySingleQueueChange(variantSnapshot, targetSnapshot, change)) {
+        appliedCount += 1;
+      }
+    }
+    if (appliedCount <= 0) {
       continue;
     }
 

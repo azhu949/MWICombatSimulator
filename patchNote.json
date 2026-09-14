@@ -1,4 +1,26 @@
 {
+  "2026年9月14日（v2.5.2）": {
+    "label": {
+      "zh": "2026年9月14日（v2.5.2）",
+      "en": "September 14, 2026 (v2.5.2)"
+    },
+    "newFeatures": {
+      "zh": ["首页「基础设置」技能面板新增 ↑ / ↓ 排序按钮，技能 1–4 可与相邻技能槽互换位置（特殊技能槽固定在最前）。"],
+      "en": [
+        "On the Home page (Base Setup tab), ability slots now have ↑ / ↓ buttons, so Abilities 1–4 can be swapped with their neighbour (the special ability slot stays first)."
+      ]
+    },
+    "improvements": {
+      "zh": [
+        "技能升级成本按技能本身计算，不再随技能所在槽位变化，队列成本与排名更准确。",
+        "两格技能、食物或饮品对调时，队列对比会作为一个整体方案评估。"
+      ],
+      "en": [
+        "Ability upgrade costs now follow the ability itself instead of its slot, keeping queue costs and rankings accurate.",
+        "Swapping abilities, food, or drinks between two slots is now evaluated as a single plan in queue comparisons."
+      ]
+    }
+  },
   "2026年9月14日（v2.5.1）": {
     "label": {
       "zh": "2026年9月14日（v2.5.1）",

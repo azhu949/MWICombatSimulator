@@ -47,8 +47,120 @@ export function normalizeQueuePriceMethod(value) {
   return isUserLockedPriceMethod(value) ? String(value || '') : QUEUE_PRICE_METHOD_LEFT1;
 }
 
-export function getAbilityUpgradeCostKey(abilitySlot, abilityHrid, fromLevel, toLevel) {
-  return `${abilitySlot}|${abilityHrid}|${fromLevel}|${toLevel}`;
+// 技能升级成本覆盖表的键：`${abilityHrid}|${fromLevel}|${toLevel}`。
+// 锚点是「技能 + 等级区间」，不是槽位：技能等级属于技能本身（首页箭头互换时 { abilityHrid, level } 整体
+// 随行），游戏内重排只改施法优先级、不产生任何升级开销，所以 from 必须按 hrid 在基准里匹配同名技能的
+// 等级（见 resolveAbilityUpgradeFromLevel），不能拿同一槽位的基准技能对比——否则纯重排会把两个被搬动的
+// 槽当成「该槽换了个技能」，从 1 级起按技能书全额计费（幽灵成本，会污染队列排名与 gold-per-point）。
+// 两个消费方（resolveActivePlayerAbilityUpgradeCostDraft 与 computeQueueItemUpgradeCost）共用此键，
+// 因此同一条覆盖在技能换到任何槽位后都查得到；换槽/换技能时**无需也无法**对整表做「键搬迁」
+// （键里没有槽位号，搬键只会把同一条覆盖挪到查不到的键上）。
+// 格式变更史与残留键处置（2026-09-14）：本键曾为槽位锚定的 4 段格式
+// `${abilitySlot}|${abilityHrid}|${fromLevel}|${toLevel}`；函数名沿用旧名而参数个数从 4 变 3，旧 4 段键在
+// 新口径下永远查不到，属死键。本表只存在于内存 queueState（simulatorStorage.js 只落盘 queueSettings /
+// runSettings / equipmentSets 等，队列 items / baseline / abilityUpgradeCosts 均不持久化、也没有任何
+// 导入导出路径携带它），刷新即清空、无需迁移；src/ + scripts/ 也没有任何读取方解析键内容（无 split('|')）。**前提是
+// 「不持久化」**：若将来把队列状态落盘或让它随导入载荷流转，必须同时给本表加存储版本或入口规范化
+// （旧键一律丢弃重建），否则旧的槽位锚定键会变成「用户手填的覆盖静默失效」。
+// 参数形状：JS 无类型检查 ⇒ 漏改的调用点不会报错，只会静默生成永远查不到的键（手工覆盖被无声丢弃、
+// 回落自动算值，正是本次改动要消灭的静默降级）。因此这里把「两端必然同键」的前提写成开发期断言（见下），
+// 并由 queueUpgradeCost.keyContract.test.js 静态巡检全仓调用点实参个数。
+export function getAbilityUpgradeCostKey(abilityHrid, fromLevel, toLevel) {
+  // 开发期契约断言：任何「两端不可能同键」的入参都立即 throw，让 CI（vitest 里 import.meta.env.DEV 恒为
+  // true）而不是用户的成本表来发现回归。具体拒绝：数字槽位号（旧 4 参写法的首个实参）、空 hrid、含 '|'
+  // 的 hrid、非整数 / <1 的等级，以及 to ≤ from——后者不是升级区间（两个消费方都在成键前对 to ≤ from
+  // 提前返回），from/to 写反的调用点同样属于「静默生成永远查不到的键」那一类，必须在开发期响出来。
+  // 生产构建中 import.meta.env.DEV 被 Vite 静态替换为 false 并被 tree-shaking 移除，零开销零副作用
+  // （与文件内 computeMirrorPlan 的等价性断言同款）。该替换是 Vite 专属：scripts/benchmark-*.mjs 用
+  // esbuild 直接打包 src 时 import.meta.env 是运行期 undefined——本函数当前不在那些入口的调用链上
+  // （它们只跑食物优化器），一旦将来进入，需改用等价的环境判断，而不是让它误抛 TypeError。
+  if (import.meta.env.DEV) {
+    const isLevelValue = (value) => Number.isInteger(value) && value >= 1;
+    if (
+      typeof abilityHrid !== 'string' ||
+      !abilityHrid ||
+      abilityHrid.includes('|') ||
+      !isLevelValue(fromLevel) ||
+      !isLevelValue(toLevel) ||
+      toLevel <= fromLevel
+    ) {
+      throw new Error(
+        `[getAbilityUpgradeCostKey] 参数形状非法（应为 (abilityHrid, fromLevel < toLevel)；旧签名 (slot, hrid, from, to) 已废弃）: ` +
+          `abilityHrid=${JSON.stringify(abilityHrid)} fromLevel=${JSON.stringify(fromLevel)} toLevel=${JSON.stringify(toLevel)}`,
+      );
+    }
+  }
+
+  return `${abilityHrid}|${fromLevel}|${toLevel}`;
+}
+
+// 技能升级的起点等级：按 hrid 在基准技能列表里找同名技能（等级随技能走，与槽位无关）。
+// 基准里没有该技能（新加技能）时从 1 级起算。同名技能在基准里出现多次时取首个匹配项：玩家配置里一个技能
+// 只能占一格（游戏限制），但重复配置确实可达（首页两个槽位手选同一个技能、导入的队列变更模板、历史脏数据，
+// 以及目标侧自身就重复的退化快照）——这些同名条目都只是同一个技能的多次露面，共享同一个基准等级，首匹配
+// 即正确；重复条目导致的「同一笔升级被重复计费」由 collectAbilityUpgradeRanges 按 hrid 聚合解决（该函数同时
+// 是「技能书参考数据是否需要加载」的判据），首页草稿则共用同一条覆盖键。**不要**改成「消耗式匹配」（第二份
+// 会查不到而退回 from=1，凭空多计一笔）。注：镜像搬槽曾额外制造这种形状（变体按单条变更套用），现已由
+// queueVariants.js 内的 buildAtomicQueueChangeGroups 归并为原子变体——本函数的首匹配口径仍然必须保持。
+export function resolveAbilityUpgradeFromLevel(baselineSnapshot, abilityHrid) {
+  const hrid = String(abilityHrid || '');
+  if (!hrid) {
+    return 1;
+  }
+
+  const baselineAbilities = Array.isArray(baselineSnapshot?.abilities) ? baselineSnapshot.abilities : [];
+  for (const entry of baselineAbilities) {
+    if (String(entry?.abilityHrid || '') === hrid) {
+      return Math.max(1, Math.floor(toFiniteNumber(entry?.level, 1)));
+    }
+  }
+
+  return 1;
+}
+
+// 技能升级区间（按 hrid 聚合的**唯一权威口径**）：一个技能在游戏里只能占一格，所以同一 hrid 出现在多个槽位
+// （首页两个槽位手选同一个技能、导入的队列变更模板、历史脏数据）时仍然只是同一次升级——终点取该技能在目标侧
+// 的最高等级（最贴近「最终练到几级」，也不会漏掉任何一段真实存在的升级），起点取基准里该技能的首匹配等级
+// （见 resolveAbilityUpgradeFromLevel）。只返回 to > from 的真实升级。
+//
+// 本函数同时是「技能书/技能经验参考数据是否需要加载」的判据：成本模型需要默认成本 ⇒ 这里必然返回非空
+// （反向不成立，多触发的情形见本注释末尾）。消费方之一
+// simulatorQueueActions.queueEntriesNeedAbilityUpgradeReference 直接复用本函数。历史上加载门是逐条变更的
+// 槽位启发式（同槽 hrid 一致才用该槽 beforeLevel，否则 from=1），而成本模型始终按 hrid 聚合，两者在
+// 「基准自带重复 hrid」时会分叉：基准 [A@5, A@6] → 目标 [A@3, A@6] 时槽位 1 的变更（5→3）不触发加载，
+// 但成本模型仍要算 5→6，参考数据没加载就只能返回 null（totalUpgradeCost 未知），与已加载时算出的 5→6
+// 自相矛盾。两处共用本函数后，该分叉在结构上不可能再出现（模型需要默认成本 ⇒ 门必然触发）；反向的多触发
+// 都属于「加载了也用不上」，情形见 queueEntriesNeedAbilityUpgradeReference 的注释。
+export function collectAbilityUpgradeRanges(baselineSnapshot, targetSnapshot) {
+  const targetAbilityLevelByHrid = new Map();
+  for (let i = 0; i < 5; i++) {
+    const afterAbility = targetSnapshot?.abilities?.[i] ?? { abilityHrid: '', level: 1 };
+    const afterHrid = String(afterAbility?.abilityHrid || '');
+
+    if (!afterHrid) {
+      continue;
+    }
+
+    const afterLevel = Math.max(1, Math.floor(toFiniteNumber(afterAbility?.level, 1)));
+    // 同名技能在各槽位的等级不一致本身就是非法配置（游戏里一个技能只能占一格）：取其中最高等级，
+    // 语义上最贴近「这个技能最终练到几级」，也保证不会漏掉任何一段真实存在的升级。
+    const knownLevel = targetAbilityLevelByHrid.get(afterHrid);
+    if (knownLevel == null || afterLevel > knownLevel) {
+      targetAbilityLevelByHrid.set(afterHrid, afterLevel);
+    }
+  }
+
+  const ranges = [];
+  for (const [abilityHrid, toLevel] of targetAbilityLevelByHrid) {
+    const fromLevel = resolveAbilityUpgradeFromLevel(baselineSnapshot, abilityHrid);
+    if (toLevel <= fromLevel) {
+      continue;
+    }
+
+    ranges.push({ abilityHrid, fromLevel, toLevel });
+  }
+
+  return ranges;
 }
 
 export function getVendorPriceByItemHrid(itemHrid) {
@@ -1565,30 +1677,18 @@ export function computeQueueItemUpgradeCost(baselineSnapshot, targetSnapshot, pr
     totalCost += Math.max(0, estimatedCost);
   }
 
-  for (let i = 0; i < 5; i++) {
-    const beforeAbility = baselineSnapshot?.abilities?.[i] ?? { abilityHrid: '', level: 1 };
-    const afterAbility = targetSnapshot?.abilities?.[i] ?? { abilityHrid: '', level: 1 };
-    const beforeHrid = String(beforeAbility?.abilityHrid || '');
-    const afterHrid = String(afterAbility?.abilityHrid || '');
-    const beforeLevel = Math.max(1, Math.floor(toFiniteNumber(beforeAbility?.level, 1)));
-    const afterLevel = Math.max(1, Math.floor(toFiniteNumber(afterAbility?.level, 1)));
-
-    if (!afterHrid) {
-      continue;
-    }
-
-    const fromLevel = beforeHrid && beforeHrid === afterHrid ? beforeLevel : 1;
-    if (afterLevel <= fromLevel) {
-      continue;
-    }
-
-    const costKey = getAbilityUpgradeCostKey(i, afterHrid, fromLevel, afterLevel);
+  // 技能升级按 hrid 聚合、每个技能只计一笔，口径来自 collectAbilityUpgradeRanges（技能锚定：from 按 hrid 匹配
+  // 基准等级，to 取目标侧最高等级）——与「参考数据加载门」（simulatorQueueActions）同源，门不会漏掉这里的
+  // 任何一笔。逐槽累加会把同一笔升级算成好几笔（手工覆盖也会被重复取用），把 totalUpgradeCost 抬高，连带
+  // 压低 gold-per-point 与购买天数。纯重排（换槽不改等级）的 from 等于 to，这里不会产生任何幽灵成本。
+  for (const { abilityHrid, fromLevel, toLevel } of collectAbilityUpgradeRanges(baselineSnapshot, targetSnapshot)) {
+    const costKey = getAbilityUpgradeCostKey(abilityHrid, fromLevel, toLevel);
     const defaultCost = computeDefaultAbilityUpgradeCost(
       {
-        abilityHrid: afterHrid,
+        abilityHrid,
         level: fromLevel,
       },
-      afterLevel,
+      toLevel,
       pricingState,
     );
     let estimatedCost = null;

@@ -45,9 +45,16 @@ import {
   getAbilityUpgradeCostKey,
   hasAbilityUpgradeReferenceDataLoaded,
   inspectEquipmentTransitionCost,
+  resolveAbilityUpgradeFromLevel,
   resolveEnhancementLevelPriceFromPricingState,
 } from '../services/queueUpgradeCost.js';
-import { clamp, clampPositiveInteger, normalizeBaselineSaleSide, toFiniteNumber } from '../services/utils.js';
+import {
+  clamp,
+  clampPositiveInteger,
+  normalizeAbilitySlotIndex,
+  normalizeBaselineSaleSide,
+  toFiniteNumber,
+} from '../services/utils.js';
 
 function getDetectedHardwareCoreCount() {
   const hardwareConcurrency = Number(typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : NaN);
@@ -500,7 +507,9 @@ export function createPricingActions() {
       };
     },
     resolveActivePlayerAbilityUpgradeCostDraft(slotIndex) {
-      const index = Math.floor(toFiniteNumber(slotIndex, -1));
+      // 槽位号走统一口径（utils 的 normalizeAbilitySlotIndex）：与首页 UI、swapActivePlayerAbilitySlots
+      // 同源，不再各自 floor，避免同一概念多份实现漂移。
+      const index = normalizeAbilitySlotIndex(slotIndex);
       if (!Number.isInteger(index) || index < 0 || index >= 5) {
         return null;
       }
@@ -514,23 +523,22 @@ export function createPricingActions() {
         return null;
       }
 
-      const baselineAbility = baselineSnapshot?.abilities?.[index] ?? { abilityHrid: '', level: 1 };
       const currentAbility = this.activePlayer?.abilities?.[index] ?? { abilityHrid: '', level: 1 };
-      const baselineHrid = String(baselineAbility?.abilityHrid || '');
       const currentHrid = String(currentAbility?.abilityHrid || '');
-      const baselineLevel = Math.max(1, Math.floor(toFiniteNumber(baselineAbility?.level, 1)));
       const currentLevel = Math.max(1, Math.floor(toFiniteNumber(currentAbility?.level, 1)));
 
       if (!currentHrid) {
         return null;
       }
 
-      const fromLevel = baselineHrid && baselineHrid === currentHrid ? baselineLevel : 1;
+      // from 与 computeQueueItemUpgradeCost 同口径（技能锚定）：按 hrid 匹配基准里的同名技能等级，
+      // 于是首页箭头重排（等级随技能走）不会再冒出「1 级起算」的幽灵成本；只有新加技能才从 1 级起算。
+      const fromLevel = resolveAbilityUpgradeFromLevel(baselineSnapshot, currentHrid);
       if (currentLevel <= fromLevel) {
         return null;
       }
 
-      const costKey = getAbilityUpgradeCostKey(index, currentHrid, fromLevel, currentLevel);
+      const costKey = getAbilityUpgradeCostKey(currentHrid, fromLevel, currentLevel);
       const costMap = this.ensureQueueState(this.activePlayerId)?.abilityUpgradeCosts || {};
       const hasSavedCost = Object.prototype.hasOwnProperty.call(costMap, costKey);
       const cost = hasSavedCost

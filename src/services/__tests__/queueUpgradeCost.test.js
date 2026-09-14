@@ -12,6 +12,7 @@ import {
   buildConfirmedEquipmentPriceMap,
   buildHouseRoomUpgradeCostPreview,
   buildQueueCostWarnings,
+  collectAbilityUpgradeRanges,
   computeDefaultAbilityUpgradeCost,
   computeMirrorPlan,
   computeQueueItemUpgradeCost,
@@ -754,7 +755,8 @@ describe('queueUpgradeCost', () => {
       ),
     });
     const housePreview = buildHouseRoomUpgradeCostPreview(baseline.houseRooms, target.houseRooms, pricingState);
-    const abilityCostKey = getAbilityUpgradeCostKey(0, abilityBookInfo.abilityHrid, 1, 4);
+    // 槽位 0 在基准里是空的（新加技能）⇒ 起点等级按技能锚定规则取 1。
+    const abilityCostKey = getAbilityUpgradeCostKey(abilityBookInfo.abilityHrid, 1, 4);
 
     expect(
       computeQueueItemUpgradeCost(baseline, target, pricingState, {
@@ -763,6 +765,417 @@ describe('queueUpgradeCost', () => {
         },
       }),
     ).toBe(1200 + 345 + housePreview.totals.totalCost);
+  });
+
+  it('charges no ability upgrade cost for a pure slot reorder (level travels with the ability)', () => {
+    const abilityBookInfo = findAbilityBookInfo();
+    expect(abilityBookInfo).toBeTruthy();
+
+    const abilityA = String(abilityBookInfo.abilityHrid || '');
+    const abilityB = String(
+      Object.keys(abilityBookInfoByAbilityHrid || {}).find((hrid) => String(hrid) !== abilityA) || '',
+    );
+    expect(abilityA).toBeTruthy();
+    expect(abilityB).toBeTruthy();
+
+    const globalRef = globalThis;
+    const previousTable = globalRef.jigsLevelExperienceTable;
+    const previousBookMap = globalRef.jigsSpellBookXpByName;
+
+    try {
+      // 参考数据齐备（技能书有价、等级经验表存在）⇒ 旧口径会算出真金白银的幽灵成本，而不是「未知」。
+      globalRef.jigsLevelExperienceTable = [0, 100, 700, 1700, 3100, 5100];
+      globalRef.jigsSpellBookXpByName = {};
+      const pricingState = buildPricingState({
+        priceTable: { [abilityBookInfo.itemHrid]: { ask: 9, bid: 7, vendor: 1 } },
+      });
+
+      const baseline = createSnapshot();
+      const target = createSnapshot();
+      // 纯重排：同一批技能、同一批等级，只把槽位 1 与槽位 2 换个位置（首页箭头按钮的用法）。
+      baseline.abilities[1] = { abilityHrid: abilityA, level: 5 };
+      baseline.abilities[2] = { abilityHrid: abilityB, level: 3 };
+      target.abilities[1] = { abilityHrid: abilityB, level: 3 };
+      target.abilities[2] = { abilityHrid: abilityA, level: 5 };
+
+      // 槽位锚定的旧口径把两个被搬动的槽当成「该槽换了个技能」从 1 级全额计费（books(1→3)+books(1→5)
+      // 两段技能书成本），而重排只改施法优先级、游戏内不产生任何升级开销 ⇒ 必须是 0。
+      expect(computeQueueItemUpgradeCost(baseline, target, pricingState)).toBe(0);
+    } finally {
+      if (previousTable === undefined) {
+        delete globalRef.jigsLevelExperienceTable;
+      } else {
+        globalRef.jigsLevelExperienceTable = previousTable;
+      }
+      if (previousBookMap === undefined) {
+        delete globalRef.jigsSpellBookXpByName;
+      } else {
+        globalRef.jigsSpellBookXpByName = previousBookMap;
+      }
+    }
+  });
+
+  it('derives the ability upgrade start level from the same ability in the baseline, not from the same slot', () => {
+    const abilityBookInfo = findAbilityBookInfo();
+    expect(abilityBookInfo).toBeTruthy();
+
+    const abilityA = String(abilityBookInfo.abilityHrid || '');
+    const abilityB = String(
+      Object.keys(abilityBookInfoByAbilityHrid || {}).find((hrid) => String(hrid) !== abilityA) || '',
+    );
+    expect(abilityA).toBeTruthy();
+    expect(abilityB).toBeTruthy();
+
+    const baseline = createSnapshot();
+    const target = createSnapshot();
+    // 重排 + 顺带升级：技能 A（基准 5 级）从槽位 1 搬到槽位 2 并升到 6 级，技能 B 反向搬回槽位 1。
+    baseline.abilities[1] = { abilityHrid: abilityA, level: 5 };
+    baseline.abilities[2] = { abilityHrid: abilityB, level: 3 };
+    target.abilities[1] = { abilityHrid: abilityB, level: 3 };
+    target.abilities[2] = { abilityHrid: abilityA, level: 6 };
+
+    const abilityCostMap = {
+      // 技能 A 在基准里已是 5 级 ⇒ 只补 5→6 这一段。
+      [getAbilityUpgradeCostKey(abilityA, 5, 6)]: 777,
+      // 幽灵键：旧槽位锚定口径（同槽 hrid 不一致 ⇒ from=1）会命中它，本用例必须取不到。
+      [getAbilityUpgradeCostKey(abilityA, 1, 6)]: 999,
+    };
+
+    expect(computeQueueItemUpgradeCost(baseline, target, buildPricingState(), { abilityCostMap })).toBe(777);
+  });
+
+  it('charges nothing when a moved ability keeps a target level at or below its baseline level', () => {
+    const abilityBookInfo = findAbilityBookInfo();
+    expect(abilityBookInfo).toBeTruthy();
+
+    const abilityA = String(abilityBookInfo.abilityHrid || '');
+    const abilityB = String(
+      Object.keys(abilityBookInfoByAbilityHrid || {}).find((hrid) => String(hrid) !== abilityA) || '',
+    );
+    expect(abilityA).toBeTruthy();
+    expect(abilityB).toBeTruthy();
+
+    const baseline = createSnapshot();
+    const target = createSnapshot();
+    // 重排 + 把等级填小/填回（用户纠正填错的等级，或只是把两个技能换个顺序后再对齐等级）：
+    // 技能 A 基准 5 级、搬到槽位 2 后填 3 级，技能 B 保持 1 级。
+    baseline.abilities[1] = { abilityHrid: abilityA, level: 5 };
+    baseline.abilities[2] = { abilityHrid: abilityB, level: 1 };
+    target.abilities[1] = { abilityHrid: abilityB, level: 1 };
+    target.abilities[2] = { abilityHrid: abilityA, level: 3 };
+
+    // 等级不会倒扣：该技能在基准里已经是 5 级 ⇒ 0；旧槽位锚定口径会按「新技能 1→3」全额计费。
+    expect(computeQueueItemUpgradeCost(baseline, target, buildPricingState())).toBe(0);
+  });
+
+  it('bills a duplicated ability entry (two slots holding the same ability) only once, from that ability baseline level', () => {
+    const abilityBookInfo = findAbilityBookInfo();
+    expect(abilityBookInfo).toBeTruthy();
+
+    const abilityA = String(abilityBookInfo.abilityHrid || '');
+    const abilityB = String(
+      Object.keys(abilityBookInfoByAbilityHrid || {}).find((hrid) => String(hrid) !== abilityA) || '',
+    );
+    expect(abilityA).toBeTruthy();
+    expect(abilityB).toBeTruthy();
+
+    const baseline = createSnapshot();
+    const variant = createSnapshot();
+    baseline.abilities[1] = { abilityHrid: abilityA, level: 5 };
+    baseline.abilities[2] = { abilityHrid: abilityB, level: 1 };
+    // 「同名技能占两格」的真实来源：首页两个槽位手选同一个技能、导入的队列变更模板、历史脏数据。
+    // （镜像搬槽曾经也产出这种形状——变体按单条变更整格覆盖基准；现已由
+    // queueVariants.js 内的 buildAtomicQueueChangeGroups 归并为原子变体，本用例锁的是快照本身仍可达时的计费口径。）
+    variant.abilities[1] = { abilityHrid: abilityA, level: 5 };
+    variant.abilities[2] = { abilityHrid: abilityA, level: 6 };
+
+    const abilityCostMap = {
+      // A 在基准里是 5 级 ⇒ 这次升级只该按 5→6 计一笔。
+      [getAbilityUpgradeCostKey(abilityA, 5, 6)]: 777,
+      // 若「首个匹配项」被改成「消耗式匹配」（槽位 1 吃掉基准里的 A ⇒ 槽位 2 查不到 ⇒ from=1），会命中这里。
+      [getAbilityUpgradeCostKey(abilityA, 1, 6)]: 999,
+    };
+
+    expect(computeQueueItemUpgradeCost(baseline, variant, buildPricingState(), { abilityCostMap })).toBe(777);
+  });
+
+  it('bills a duplicated ability entry once when both copies sit above the baseline level', () => {
+    const abilityBookInfo = findAbilityBookInfo();
+    expect(abilityBookInfo).toBeTruthy();
+
+    const abilityA = String(abilityBookInfo.abilityHrid || '');
+    const abilityB = String(
+      Object.keys(abilityBookInfoByAbilityHrid || {}).find((hrid) => String(hrid) !== abilityA) || '',
+    );
+    expect(abilityA).toBeTruthy();
+    expect(abilityB).toBeTruthy();
+
+    const baseline = createSnapshot();
+    const target = createSnapshot();
+    baseline.abilities[1] = { abilityHrid: abilityA, level: 5 };
+    baseline.abilities[2] = { abilityHrid: abilityB, level: 1 };
+    // 两份同名技能都高于基准等级（首页两次下拉选同一个技能即可构造；导入的队列变更模板会直接落成这种快照）：
+    // 逐槽累加会把同一笔 5→6 记两遍（2×777）。
+    target.abilities[1] = { abilityHrid: abilityA, level: 6 };
+    target.abilities[2] = { abilityHrid: abilityA, level: 6 };
+
+    const abilityCostMap = {
+      [getAbilityUpgradeCostKey(abilityA, 5, 6)]: 777,
+    };
+
+    expect(computeQueueItemUpgradeCost(baseline, target, buildPricingState(), { abilityCostMap })).toBe(777);
+  });
+
+  it('bills a duplicated ability entry once, at the highest of its configured levels', () => {
+    const abilityBookInfo = findAbilityBookInfo();
+    expect(abilityBookInfo).toBeTruthy();
+
+    const abilityA = String(abilityBookInfo.abilityHrid || '');
+    const abilityB = String(
+      Object.keys(abilityBookInfoByAbilityHrid || {}).find((hrid) => String(hrid) !== abilityA) || '',
+    );
+    expect(abilityA).toBeTruthy();
+    expect(abilityB).toBeTruthy();
+
+    const baseline = createSnapshot();
+    const target = createSnapshot();
+    baseline.abilities[1] = { abilityHrid: abilityA, level: 3 };
+    baseline.abilities[2] = { abilityHrid: abilityB, level: 1 };
+    // 同名技能填了两个不同等级（本身是非法配置）：按技能只计一笔，取其中最高等级 6 作为终点，
+    // 于是只该有 3→6 这一笔；逐槽累加会再补一笔 3→4。
+    target.abilities[1] = { abilityHrid: abilityA, level: 6 };
+    target.abilities[2] = { abilityHrid: abilityA, level: 4 };
+
+    const abilityCostMap = {
+      [getAbilityUpgradeCostKey(abilityA, 3, 6)]: 888,
+      [getAbilityUpgradeCostKey(abilityA, 3, 4)]: 444,
+    };
+
+    expect(computeQueueItemUpgradeCost(baseline, target, buildPricingState(), { abilityCostMap })).toBe(888);
+  });
+
+  it('bills a duplicated ability entry once even when the baseline itself holds two copies', () => {
+    const abilityBookInfo = findAbilityBookInfo();
+    expect(abilityBookInfo).toBeTruthy();
+
+    const abilityA = String(abilityBookInfo.abilityHrid || '');
+
+    const baseline = createSnapshot();
+    const target = createSnapshot();
+    // 基准自带两份同名技能（导入的脏数据 / 历史配置），两处等级还不一致：from 按既有规则取首匹配（3）。
+    baseline.abilities[1] = { abilityHrid: abilityA, level: 3 };
+    baseline.abilities[2] = { abilityHrid: abilityA, level: 5 };
+    target.abilities[1] = { abilityHrid: abilityA, level: 6 };
+    target.abilities[2] = { abilityHrid: abilityA, level: 5 };
+
+    const abilityCostMap = {
+      [getAbilityUpgradeCostKey(abilityA, 3, 6)]: 888,
+      // 未被改动的第二份（5 > 3）在逐槽累加口径下会再计一笔，本用例必须只算 3→6。
+      [getAbilityUpgradeCostKey(abilityA, 3, 5)]: 555,
+    };
+
+    expect(computeQueueItemUpgradeCost(baseline, target, buildPricingState(), { abilityCostMap })).toBe(888);
+  });
+
+  it('collects the 5→6 range implied by a duplicated baseline even when the only change lowers that slot', () => {
+    const abilityBookInfo = findAbilityBookInfo();
+    expect(abilityBookInfo).toBeTruthy();
+
+    const abilityA = String(abilityBookInfo.abilityHrid || '');
+    const baseline = createSnapshot();
+    const target = createSnapshot();
+    // 基准自带两份同名技能（导入脏数据 / 历史配置）且等级不一致：首匹配 5、另一份 6。
+    baseline.abilities[1] = { abilityHrid: abilityA, level: 5 };
+    baseline.abilities[2] = { abilityHrid: abilityA, level: 6 };
+    // 唯一变更：把槽位 1 的等级改小（beforeHrid === afterHrid、afterLevel < beforeLevel），槽位 2 原样保留。
+    // 逐条变更的槽位启发式（旧「参考数据加载门」）据此判定「不需要参考数据」；而成本模型按 hrid 聚合后
+    // 仍要从首匹配 5 记到终点 max(3, 6) = 6 ⇒ 门与模型必须由同一个函数判定，否则这条升级会因参考数据未
+    // 加载而只能算成「未知」（null），与已加载时算出的 5→6 自相矛盾。
+    target.abilities[1] = { abilityHrid: abilityA, level: 3 };
+    target.abilities[2] = { abilityHrid: abilityA, level: 6 };
+
+    expect(collectAbilityUpgradeRanges(baseline, target)).toEqual([
+      { abilityHrid: abilityA, fromLevel: 5, toLevel: 6 },
+    ]);
+  });
+
+  it('reports the duplicated-baseline upgrade as unknown (null) while the reference table is missing', () => {
+    const abilityBookInfo = findAbilityBookInfo();
+    expect(abilityBookInfo).toBeTruthy();
+
+    const abilityA = String(abilityBookInfo.abilityHrid || '');
+    const baseline = createSnapshot();
+    const target = createSnapshot();
+    baseline.abilities[1] = { abilityHrid: abilityA, level: 5 };
+    baseline.abilities[2] = { abilityHrid: abilityA, level: 6 };
+    target.abilities[1] = { abilityHrid: abilityA, level: 3 };
+    target.abilities[2] = { abilityHrid: abilityA, level: 6 };
+
+    const globalRef = globalThis;
+    const previousTable = globalRef.jigsLevelExperienceTable;
+    const previousBookMap = globalRef.jigsSpellBookXpByName;
+
+    try {
+      // 参考数据未加载（经验表为空）⇒ 5→6 这一段算不出来，只能是「未知」(null)，而不是错值或 0。
+      delete globalRef.jigsLevelExperienceTable;
+      globalRef.jigsSpellBookXpByName = {};
+      expect(computeQueueItemUpgradeCost(baseline, target, buildPricingState())).toBeNull();
+
+      // 手工覆盖不依赖参考数据：命中的键恰好是 5→6 ⇒ 上面那条「未知」就是这一幕升级。
+      expect(
+        computeQueueItemUpgradeCost(baseline, target, buildPricingState(), {
+          abilityCostMap: { [getAbilityUpgradeCostKey(abilityA, 5, 6)]: 777 },
+        }),
+      ).toBe(777);
+    } finally {
+      if (previousTable === undefined) {
+        delete globalRef.jigsLevelExperienceTable;
+      } else {
+        globalRef.jigsLevelExperienceTable = previousTable;
+      }
+      if (previousBookMap === undefined) {
+        delete globalRef.jigsSpellBookXpByName;
+      } else {
+        globalRef.jigsSpellBookXpByName = previousBookMap;
+      }
+    }
+  });
+
+  // 加载门（判据 = collectAbilityUpgradeRanges 非空）与成本模型必须永远同源：这里用「区间 → 覆盖键」的等价性
+  // 把两者钉在一起——模型实际计费的集合恰好等于该函数返回的区间集合（多一笔/少一笔/换区间都会红）。
+  // 这也是 G2 修复的正式不变量：缺参考数据时，只有「零区间」的场景才允许返回 0，其余必须是「未知」(null)。
+  it('bills exactly the ranges collectAbilityUpgradeRanges reports (load-gate/model lockstep)', () => {
+    const abilityBookInfo = findAbilityBookInfo();
+    expect(abilityBookInfo).toBeTruthy();
+
+    const abilityA = String(abilityBookInfo.abilityHrid || '');
+    const abilityB = String(
+      Object.keys(abilityBookInfoByAbilityHrid || {}).find((hrid) => String(hrid) !== abilityA) || '',
+    );
+    expect(abilityA).toBeTruthy();
+    expect(abilityB).toBeTruthy();
+
+    const buildSnapshotWithAbilities = (abilityEntries) => {
+      const snapshot = createSnapshot();
+      for (let i = 0; i < 5; i++) {
+        const entry = abilityEntries[i];
+        snapshot.abilities[i] = entry ? { abilityHrid: entry.hrid, level: entry.level } : { abilityHrid: '', level: 1 };
+      }
+      return snapshot;
+    };
+
+    const scenarios = [
+      {
+        name: '纯重排（等级随技能走）',
+        baseline: [null, { hrid: abilityA, level: 3 }, { hrid: abilityB, level: 4 }],
+        target: [null, { hrid: abilityB, level: 4 }, { hrid: abilityA, level: 3 }],
+        rangeCount: 0,
+      },
+      {
+        name: '重复脏数据基准 + 唯一变更把首匹配那格调小（G2 反例）',
+        baseline: [null, { hrid: abilityA, level: 5 }, { hrid: abilityA, level: 6 }],
+        target: [null, { hrid: abilityA, level: 3 }, { hrid: abilityA, level: 6 }],
+        rangeCount: 1,
+      },
+      {
+        name: '重复基准、两格都升（终点取最高等级）',
+        baseline: [null, { hrid: abilityA, level: 3 }, { hrid: abilityA, level: 4 }],
+        target: [null, { hrid: abilityA, level: 5 }, { hrid: abilityA, level: 6 }],
+        rangeCount: 1,
+      },
+      {
+        name: '单格升级',
+        baseline: [null, { hrid: abilityA, level: 2 }],
+        target: [null, { hrid: abilityA, level: 4 }],
+        rangeCount: 1,
+      },
+      {
+        name: '单格降级',
+        baseline: [null, { hrid: abilityA, level: 4 }],
+        target: [null, { hrid: abilityA, level: 2 }],
+        rangeCount: 0,
+      },
+      { name: '新加技能（from=1）', baseline: [null], target: [null, { hrid: abilityA, level: 3 }], rangeCount: 1 },
+      { name: '移除技能', baseline: [null, { hrid: abilityA, level: 3 }], target: [null], rangeCount: 0 },
+      {
+        name: '无变化',
+        baseline: [null, { hrid: abilityA, level: 3 }],
+        target: [null, { hrid: abilityA, level: 3 }],
+        rangeCount: 0,
+      },
+    ];
+
+    const globalRef = globalThis;
+    const previousTable = globalRef.jigsLevelExperienceTable;
+    const previousBookMap = globalRef.jigsSpellBookXpByName;
+
+    try {
+      // 参考数据缺失：模型唯一能算出的就是「0 笔升级」，任何一段真实区间都必须让它判「未知」(null)。
+      delete globalRef.jigsLevelExperienceTable;
+      globalRef.jigsSpellBookXpByName = {};
+
+      for (const scenario of scenarios) {
+        const baseline = buildSnapshotWithAbilities(scenario.baseline);
+        const target = buildSnapshotWithAbilities(scenario.target);
+        const ranges = collectAbilityUpgradeRanges(baseline, target);
+
+        expect(ranges, scenario.name).toHaveLength(scenario.rangeCount);
+        if (ranges.length === 0) {
+          // 门不触发是安全的：模型这边确实是实打实的 0，而不是「未知」。
+          expect(computeQueueItemUpgradeCost(baseline, target, buildPricingState()), scenario.name).toBe(0);
+          continue;
+        }
+
+        // 有区间 ⇒ 模型需要默认成本（缺表 ⇒ 只能算成「未知」）……
+        expect(computeQueueItemUpgradeCost(baseline, target, buildPricingState()), scenario.name).toBeNull();
+        // ……而把区间逐个写进覆盖表后，模型计费的恰好就是这些区间，不多不少。
+        const abilityCostMap = Object.fromEntries(
+          ranges.map((range) => [getAbilityUpgradeCostKey(range.abilityHrid, range.fromLevel, range.toLevel), 1]),
+        );
+        expect(
+          computeQueueItemUpgradeCost(baseline, target, buildPricingState(), { abilityCostMap }),
+          scenario.name,
+        ).toBe(ranges.length);
+      }
+    } finally {
+      if (previousTable === undefined) {
+        delete globalRef.jigsLevelExperienceTable;
+      } else {
+        globalRef.jigsLevelExperienceTable = previousTable;
+      }
+      if (previousBookMap === undefined) {
+        delete globalRef.jigsSpellBookXpByName;
+      } else {
+        globalRef.jigsSpellBookXpByName = previousBookMap;
+      }
+    }
+  });
+
+  it('keeps one charge per distinct ability when two different abilities are upgraded together', () => {
+    const abilityBookInfo = findAbilityBookInfo();
+    expect(abilityBookInfo).toBeTruthy();
+
+    const abilityA = String(abilityBookInfo.abilityHrid || '');
+    const abilityB = String(
+      Object.keys(abilityBookInfoByAbilityHrid || {}).find((hrid) => String(hrid) !== abilityA) || '',
+    );
+    expect(abilityA).toBeTruthy();
+    expect(abilityB).toBeTruthy();
+
+    const baseline = createSnapshot();
+    const target = createSnapshot();
+    baseline.abilities[1] = { abilityHrid: abilityA, level: 1 };
+    baseline.abilities[2] = { abilityHrid: abilityB, level: 1 };
+    target.abilities[1] = { abilityHrid: abilityA, level: 4 };
+    target.abilities[2] = { abilityHrid: abilityB, level: 5 };
+
+    const abilityCostMap = {
+      [getAbilityUpgradeCostKey(abilityA, 1, 4)]: 100,
+      [getAbilityUpgradeCostKey(abilityB, 1, 5)]: 200,
+    };
+
+    // 聚合按 hrid 分组：两个不同技能必须各留一笔（既不能合并成一笔，也不能漏掉任何一笔）。
+    expect(computeQueueItemUpgradeCost(baseline, target, buildPricingState(), { abilityCostMap })).toBe(300);
   });
 
   it('resolves recent trade averages from the cached enhancement quote table', () => {

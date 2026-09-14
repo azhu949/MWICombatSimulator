@@ -77,7 +77,7 @@ import {
   normalizeEquipmentSetQueueChanges,
   queueStateHasUnsupportedEquipmentSetQueueChanges,
 } from '../services/queueVariants.js';
-import { clamp, deepClone, isPlainObject } from '../services/utils.js';
+import { clamp, deepClone, isPlainObject, normalizeAbilitySlotIndex } from '../services/utils.js';
 import {
   QUEUE_PLAYER_IDS,
   buildQueuePartyComparisonPlayers,
@@ -455,6 +455,46 @@ export const useSimulatorStore = defineStore('simulator', {
     // this.options.equipmentBySlot：后者已是过滤后的结果，读它会静默丢掉例外。
     getEquipmentComboboxOptions(slotKey, selectedItemHrid = '') {
       return resolveEquipmentComboboxItems(equipmentOptionsBySlot[slotKey] || [], selectedItemHrid);
+    },
+    // 技能槽顺序切换（首页「基础设置」技能面板的唯一写入点）：技能槽 1（index 0）是特殊技能
+    // 槽，固定在最前、不参与切换；其余槽位点箭头按钮与相邻槽位「互换占位」。
+    // 随行搬运：① 条目本身（{ abilityHrid, level } 一起走——技能等级属于技能，不属于槽位）；
+    // ② 触发器不用搬——triggerMap 以 hrid 为键，随技能走。
+    // ③ 手工覆盖的技能升级成本键（queueState.abilityUpgradeCosts）不用搬、也无从搬：键按技能锚定
+    // （`hrid|from|to`，见 queueUpgradeCost.getAbilityUpgradeCostKey），成本模型同样按 hrid 匹配基准
+    // 等级推导 from（resolveAbilityUpgradeFromLevel）⇒ 重排后同一技能在任何槽位读到的都是同一条覆盖，
+    // 键本身与槽位无关，整表无需改动。重排是纯优先级调整，不产生任何升级开销（与游戏内一致）。
+    // 槽位顺序 = 引擎的施法优先级（combatSimulator.addNextAttackEvent 按 abilities 数组顺序取
+    // 第一个就绪技能 ⇒ 顺序会改变模拟结果）；与面板既有的「下拉选技能」路径同款不做运行中禁用
+    // （G1 只封定价/设置类写入，技能槽编辑本就允许）。
+    swapActivePlayerAbilitySlots(firstIndex, secondIndex) {
+      const abilities = this.activePlayer?.abilities;
+      if (!Array.isArray(abilities)) {
+        return false;
+      }
+
+      // 槽位号与首页 UI 共用同一口径（utils 的 normalizeAbilitySlotIndex）：UI 侧必须用完全相同的两个
+      // 数字判断「编辑器是否正开在被交换的槽位上」，两侧各写一份归一化会在小数入参上静默分叉。
+      const first = normalizeAbilitySlotIndex(firstIndex);
+      const second = normalizeAbilitySlotIndex(secondIndex);
+      if (first <= 0 || second <= 0 || first >= abilities.length || second >= abilities.length || first === second) {
+        return false;
+      }
+
+      const beforeHridBySlot = abilities.map((entry) => String(entry?.abilityHrid || ''));
+      const firstAbility = abilities[first];
+      abilities[first] = abilities[second];
+      abilities[second] = firstAbility;
+
+      // 手工覆盖的升级成本表（abilityUpgradeCosts）在此刻意不动：键按技能锚定、与槽位无关（见上方注释）。
+      const movedHrids = new Set(
+        [String(firstAbility?.abilityHrid || ''), String(beforeHridBySlot[second] || '')].filter(Boolean),
+      );
+      for (const hrid of movedHrids) {
+        this.ensureActivePlayerTriggerDefaults(hrid);
+      }
+
+      return true;
     },
     ensurePlayerConfig(player = this.activePlayer) {
       return ensurePlayerAdvancedState(player);

@@ -169,3 +169,53 @@ describe('Home equipment options', () => {
     expect(sources.equipment).not.toContain('homeEquipmentOptions');
   });
 });
+
+describe('Home ability slot order', () => {
+  it('swaps ability slots through the store and keeps the official ability catalog', () => {
+    expect(sources.loadout).toContain(
+      'const options = Number(slotIndex) === 0 ? specialAbilityOptions.value : simulator.options.abilities;',
+    );
+    // UI 只发一条 store 写入指令：不自行改配置、不直连存储（传的是下面归一后的槽位号）。
+    expect(sources.loadout).toContain('simulator.swapActivePlayerAbilitySlots(normalizedFromIndex, normalizedToIndex)');
+    expect(sources.loadout).not.toContain('localStorage');
+  });
+
+  it('pins the special ability slot and swaps with the neighbour through prominent arrow buttons', () => {
+    expect(sources.loadout).toContain("'common:vue.home.abilityOrder.hint'");
+    // 切换只由点击驱动：拖拽排序的实现必须整体消失。
+    expect(sources.loadout).not.toContain('draggable');
+    expect(sources.loadout).not.toContain('onAbilitySlotDrag');
+    // 两个方向按钮共用同一条「显眼」样式（可用态实心 primary、禁用态退回灰底）。
+    expect(sources.loadout).toContain('const ABILITY_SLOT_MOVE_BUTTON_CLASS =');
+    expect(sources.loadout.match(/:class="ABILITY_SLOT_MOVE_BUTTON_CLASS"/g)).toHaveLength(2);
+    expect(sources.loadout).toContain('bg-primary text-primary-foreground shadow-sm');
+    expect(sources.loadout).toContain('disabled:bg-muted/60');
+    expect(sources.loadout).toContain(':disabled="!canMoveAbilitySlotUp(slotIndex - 1)"');
+    expect(sources.loadout).toContain(':disabled="!canMoveAbilitySlotDown(slotIndex - 1)"');
+    expect(sources.loadout).toContain('@click="swapAbilitySlots(slotIndex - 1, slotIndex - 2)"');
+    expect(sources.loadout).toContain('@click="swapAbilitySlots(slotIndex - 1, slotIndex)"');
+    // 技能槽 1（index 0）不是可移动槽位：方向按钮只出现在 isAbilitySlotMovable 为真的行。
+    expect(sources.loadout).toContain('v-if="isAbilitySlotMovable(slotIndex - 1)"');
+    expect(sources.loadout).toContain('return Number(slotIndex) > 0;');
+  });
+
+  it('guards the swap behind the trigger draft gate and closes only the editors sitting on the swapped slots', () => {
+    expect(sources.loadout).toContain('if (!props.triggerController.canLeave()) {');
+    // reset() 只对「编辑器正好开在被互换的两个槽位」生效：无条件 reset() 会把用户正打开的
+    // 无关编辑器（食物/饮品或其他技能槽）一并关掉。行为锚定见 HomeLoadoutPanels.abilitySwap.test.js。
+    // 槽位号必须先按 store 的同款口径归一（shared utils 的 normalizeAbilitySlotIndex），比较与传参用的是
+    // 同一对数字：UI 若按原值比对（Number 不 floor）、store 按 floor 后的值动手，小数入参下就会静默分叉
+    // ——store 换掉了槽位、UI 却认为「没换」，编辑器被留在内容已经换过的旧槽位上。
+    expect(sources.loadout).toContain("import { normalizeAbilitySlotIndex } from '../../../services/utils.js';");
+    expect(sources.loadout).toContain('const normalizedFromIndex = normalizeAbilitySlotIndex(fromIndex);');
+    expect(sources.loadout).toContain('const normalizedToIndex = normalizeAbilitySlotIndex(toIndex);');
+    expect(sources.loadout).toContain("props.triggerController.isActive('ability', normalizedFromIndex)");
+    expect(sources.loadout).toContain("props.triggerController.isActive('ability', normalizedToIndex)");
+    // 旧口径的调用形态（isActive('ability', Number(...))，不 floor）与 store 的实际交换目标分叉，
+    // 必须整体消失（注释里提到旧写法不算，这里锚定的是真调用）。
+    expect(sources.loadout).not.toContain("isActive('ability', Number(fromIndex))");
+    expect(sources.loadout).not.toContain("isActive('ability', Number(toIndex))");
+    expect(sources.loadout).toContain('if (closesTriggerEditor) {');
+    expect(sources.loadout).toContain('props.triggerController.reset();');
+  });
+});

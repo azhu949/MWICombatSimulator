@@ -23,7 +23,11 @@ import { exportSoloConfig } from '../../services/importExportMapper.js';
 import { equipmentOptionsBySlot } from '../../shared/gameDataIndex.js';
 import { createEmptyPlayerConfig } from '../../shared/playerConfig.js';
 import { useSimulatorStore } from '../simulatorStore.js';
-import { PHILOSOPHERS_MIRROR_ITEM_HRID } from '../../services/queueUpgradeCost.js';
+import {
+  computeQueueItemUpgradeCost,
+  getAbilityUpgradeCostKey,
+  PHILOSOPHERS_MIRROR_ITEM_HRID,
+} from '../../services/queueUpgradeCost.js';
 
 const ONE_HOUR = 60 * 60 * 1e9;
 const PLAYER_ACHIEVEMENTS_STORAGE_KEY = 'mwi.player.achievements.v1';
@@ -404,6 +408,261 @@ describe('simulatorStore', () => {
     expect(simulator.simulationSettings.comExp).toBe(17);
     expect(simulator.simulationSettings.comDrop).toBe(18);
     expect(simulator.simulationSettings.enableHpMpVisualization).toBe(false);
+  });
+
+  describe('swapActivePlayerAbilitySlots（首页「基础设置」技能槽点击切换）', () => {
+    function seedAbilitySlots(simulator) {
+      const normalHrids = Object.values(abilityDetailMap)
+        .filter((ability) => ability?.isSpecialAbility !== true)
+        .slice(0, 4)
+        .map((ability) => String(ability.hrid));
+      const specialHrid = findFirstSpecialAbility();
+      const player = simulator.activePlayer;
+      // 真实形状：index 0 = 特殊技能槽，1-4 = 普通技能槽；等级各不相同，便于验证「等级随技能走」。
+      player.abilities = [
+        { abilityHrid: specialHrid, level: 1 },
+        ...normalHrids.map((hrid, index) => ({ abilityHrid: hrid, level: index + 2 })),
+      ];
+      return { player, normalHrids, specialHrid };
+    }
+
+    it('技能与等级随条目一起互换（只交换相邻两格，其余槽位保持原位）', () => {
+      const simulator = useSimulatorStore();
+      const { player, normalHrids, specialHrid } = seedAbilitySlots(simulator);
+      const levelByHrid = Object.fromEntries(player.abilities.map((entry) => [entry.abilityHrid, entry.level]));
+
+      expect(simulator.swapActivePlayerAbilitySlots(1, 2)).toBe(true);
+      expect(player.abilities.map((entry) => entry.abilityHrid)).toEqual([
+        specialHrid,
+        normalHrids[1],
+        normalHrids[0],
+        normalHrids[2],
+        normalHrids[3],
+      ]);
+      // 等级跟着技能走，不跟着槽位走。
+      expect(player.abilities.map((entry) => entry.level)).toEqual([
+        levelByHrid[specialHrid],
+        levelByHrid[normalHrids[1]],
+        levelByHrid[normalHrids[0]],
+        levelByHrid[normalHrids[2]],
+        levelByHrid[normalHrids[3]],
+      ]);
+
+      // 同一对槽位再换一次即回到初始排布（↓ 与 ↑ 是同一个互换，方向只决定传参顺序）。
+      expect(simulator.swapActivePlayerAbilitySlots(2, 1)).toBe(true);
+      expect(player.abilities.map((entry) => entry.abilityHrid)).toEqual([specialHrid, ...normalHrids]);
+    });
+
+    it('纯重排不产生升级成本草稿（成本按技能锚定：重排只改优先级、不产生升级开销）', async () => {
+      const simulator = useSimulatorStore();
+      const { normalHrids } = seedAbilitySlots(simulator);
+      await simulator.setQueueBaselineForActivePlayer();
+
+      // 基准 = 当前配置（普通技能等级 2..5）⇒ 本来就没有任何升级项，两个槽位都不该有成本草稿。
+      expect(simulator.resolveActivePlayerAbilityUpgradeCostDraft(1)).toBeNull();
+      expect(simulator.resolveActivePlayerAbilityUpgradeCostDraft(2)).toBeNull();
+
+      expect(simulator.swapActivePlayerAbilitySlots(1, 2)).toBe(true);
+      expect(simulator.activePlayer.abilities[1].abilityHrid).toBe(normalHrids[1]);
+      expect(simulator.activePlayer.abilities[2].abilityHrid).toBe(normalHrids[0]);
+      // 被搬动的两个槽位仍然没有升级项：旧槽位锚定口径会在这里凭空冒出「1 级起算」的升级成本，
+      // 首页成本框随之弹出（并诱导用户手填覆盖），队列排名里的 totalUpgradeCost 也会一起被抬高。
+      expect(simulator.resolveActivePlayerAbilityUpgradeCostDraft(1)).toBeNull();
+      expect(simulator.resolveActivePlayerAbilityUpgradeCostDraft(2)).toBeNull();
+    });
+
+    it('纯重排入队是一条「整对互换」条目，而不是两个半交换变体（用户真实意图被整体评估）', async () => {
+      const simulator = useSimulatorStore();
+      const { normalHrids } = seedAbilitySlots(simulator);
+      await simulator.setQueueBaselineForActivePlayer();
+
+      expect(simulator.swapActivePlayerAbilitySlots(1, 2)).toBe(true);
+      const addedItems = simulator.addActivePlayerToQueue();
+
+      // 旧口径：两条槽位变更被拆成两个变体（[B,B] 与 [A,A]——同名技能占两格，游戏里不可能出现），
+      // 用户想评估的整对互换从未被模拟过，指标增量无从解释。
+      expect(addedItems).toHaveLength(1);
+      expect(addedItems[0].snapshot.abilities.slice(1, 3).map((entry) => entry.abilityHrid)).toEqual([
+        normalHrids[1],
+        normalHrids[0],
+      ]);
+      const hrids = addedItems[0].snapshot.abilities.map((entry) => String(entry.abilityHrid || '')).filter(Boolean);
+      expect(new Set(hrids).size).toBe(hrids.length);
+
+      // 入队后编辑器状态照旧还原回基准（既有行为不变）：意图留在队列条目里。
+      expect(simulator.activePlayer.abilities.slice(1, 3).map((entry) => entry.abilityHrid)).toEqual([
+        normalHrids[0],
+        normalHrids[1],
+      ]);
+    });
+
+    it('技能槽 1（特殊技能）固定：原地 / 越界 / 非法参数的互换一律拒绝且不改配置', () => {
+      const simulator = useSimulatorStore();
+      const { player, normalHrids, specialHrid } = seedAbilitySlots(simulator);
+      const before = player.abilities.map((entry) => entry.abilityHrid);
+
+      expect(simulator.swapActivePlayerAbilitySlots(0, 2)).toBe(false);
+      expect(simulator.swapActivePlayerAbilitySlots(2, 0)).toBe(false);
+      expect(simulator.swapActivePlayerAbilitySlots(2, 2)).toBe(false);
+      expect(simulator.swapActivePlayerAbilitySlots(-1, 2)).toBe(false);
+      expect(simulator.swapActivePlayerAbilitySlots(2, 5)).toBe(false);
+      expect(simulator.swapActivePlayerAbilitySlots('x', 2)).toBe(false);
+
+      expect(player.abilities.map((entry) => entry.abilityHrid)).toEqual(before);
+      expect(player.abilities[0].abilityHrid).toBe(specialHrid);
+      expect(before.slice(1)).toEqual(normalHrids);
+    });
+
+    it('槽位号与首页 UI 同口径归一（小数/数字字符串按 floor 同义），非法值照旧不动配置', () => {
+      const simulator = useSimulatorStore();
+      const { player, normalHrids } = seedAbilitySlots(simulator);
+
+      // 1.9 → 1、'2' → 2：shared utils 的 normalizeAbilitySlotIndex 口径。首页 UI 用同一函数拿到同一对
+      // 数字后才比对「编辑器是否正开在被交换的槽位上」并把它们原样回传——两侧口径一致才不会出现
+      // 「store 换掉了槽位 1、UI 却按 1.9 认为没换」的失配（编辑器会留在内容已经换过的旧槽位上）。
+      expect(simulator.swapActivePlayerAbilitySlots(1.9, '2')).toBe(true);
+      expect(player.abilities.slice(1, 3).map((entry) => entry.abilityHrid)).toEqual([normalHrids[1], normalHrids[0]]);
+
+      // 0.5 → 0（固定的特殊技能槽）⇒ 照旧拒绝；非法值同样一个字节都不改。
+      const afterSwap = player.abilities.map((entry) => entry.abilityHrid);
+      expect(simulator.swapActivePlayerAbilitySlots(0.5, 2)).toBe(false);
+      expect(simulator.swapActivePlayerAbilitySlots(1.9, Number.POSITIVE_INFINITY)).toBe(false);
+      expect(simulator.swapActivePlayerAbilitySlots(1.9, 'x')).toBe(false);
+      expect(player.abilities.map((entry) => entry.abilityHrid)).toEqual(afterSwap);
+    });
+
+    it('互换不改写手工覆盖的升级成本表（键按技能锚定，互换既不需要也无从搬键）', () => {
+      const simulator = useSimulatorStore();
+      const { normalHrids, specialHrid } = seedAbilitySlots(simulator);
+      const hridAtSlot = (slotIndex) => normalHrids[slotIndex - 1];
+      const queueState = simulator.activeQueueState;
+      queueState.abilityUpgradeCosts = {
+        [getAbilityUpgradeCostKey(hridAtSlot(1), 1, 20)]: 111,
+        [getAbilityUpgradeCostKey(hridAtSlot(2), 5, 6)]: 222,
+        [getAbilityUpgradeCostKey(specialHrid, 1, 2)]: 444,
+        // 旧版「槽位号前缀」形状的脏键（历史会话可能残留）：互换同样一个字都不改。
+        '9|/abilities/unknown|1|2': 555,
+      };
+      const before = JSON.parse(JSON.stringify(queueState.abilityUpgradeCosts));
+
+      expect(simulator.swapActivePlayerAbilitySlots(1, 2)).toBe(true);
+      // 成本键是「技能 + 等级区间」（`${hrid}|${from}|${to}`，见 queueUpgradeCost.getAbilityUpgradeCostKey），
+      // 键里没有槽位号：两个消费方（resolveActivePlayerAbilityUpgradeCostDraft / computeQueueItemUpgradeCost）
+      // 都按 resolveAbilityUpgradeFromLevel 以 hrid 匹配基准等级推导 from ⇒ 互换后同一技能在任何槽位
+      // 查到的都是同一条覆盖，用不着、也没法「搬键」。
+      expect(queueState.abilityUpgradeCosts).toEqual(before);
+    });
+
+    it('互换后既有队列条目仍按技能锚定的键读到手工覆盖（端到端：排名时实时查这张成本表）', async () => {
+      const simulator = useSimulatorStore();
+      const normalHrids = Object.values(abilityDetailMap)
+        .filter((ability) => ability?.isSpecialAbility !== true)
+        .slice(0, 4)
+        .map((ability) => String(ability.hrid));
+      const specialHrid = findFirstSpecialAbility();
+      simulator.activePlayer.abilities = [
+        { abilityHrid: specialHrid, level: 1 },
+        { abilityHrid: normalHrids[0], level: 5 },
+        { abilityHrid: normalHrids[1], level: 5 },
+        { abilityHrid: normalHrids[2], level: 3 },
+        { abilityHrid: normalHrids[3], level: 3 },
+      ];
+
+      // 基准 = 上面这份配置：槽位 1 的 A1 已在基准里、等级 5。
+      await simulator.setQueueBaselineForActivePlayer();
+
+      // 最常见的「升级已有技能」流：槽位 1 的 A1 升到 6，并手工覆盖这次 5→6 的成本。
+      simulator.activePlayer.abilities[1].level = 6;
+      // from 取该技能在基准里的等级（5），与它此刻坐在哪个槽位无关。
+      expect(simulator.resolveActivePlayerAbilityUpgradeCostDraft(1)?.costKey).toBe(
+        getAbilityUpgradeCostKey(normalHrids[0], 5, 6),
+      );
+      expect(simulator.setActivePlayerAbilityUpgradeCost(1, 777)).toBe(true);
+
+      // 入队：条目快照记下「槽位 1 = A1@6」，随后编辑器状态被还原回基准。
+      const addedItems = simulator.addActivePlayerToQueue();
+      expect(addedItems).toHaveLength(1);
+      const queueState = simulator.activeQueueState;
+      const baselineSnapshot = JSON.parse(JSON.stringify(queueState.baseline.snapshot));
+      const queuedSnapshot = JSON.parse(JSON.stringify(queueState.items[0].snapshot));
+      const queuedItemCost = () =>
+        computeQueueItemUpgradeCost(baselineSnapshot, queuedSnapshot, simulator.pricing, {
+          abilityCostMap: queueState.abilityUpgradeCosts,
+        });
+
+      expect(queuedItemCost()).toBe(777);
+
+      // 互换槽位 1 ↔ 2：技能随行，既有条目的快照仍是旧槽序（槽位 1 = A1@6）。
+      // 键按技能锚定（A1 的 5→6，与槽位无关）⇒ 必须继续查到 777，而不是回落到自动算值。
+      expect(simulator.swapActivePlayerAbilitySlots(1, 2)).toBe(true);
+      expect(queuedItemCost()).toBe(777);
+
+      // 顺带钉住「覆盖跟着技能走」：互换后槽位 2 坐着 A1@6，from 取该技能在基准里的等级
+      // （5，而不是按同槽基准对比出来的 1），所以查到的还是同一条覆盖；重排本身不产生任何新成本。
+      simulator.activePlayer.abilities[2].level = 6;
+      const swappedSlotDraft = simulator.resolveActivePlayerAbilityUpgradeCostDraft(2);
+      expect(swappedSlotDraft?.costKey).toBe(getAbilityUpgradeCostKey(normalHrids[0], 5, 6));
+      expect(swappedSlotDraft?.cost).toBe(777);
+
+      // 最后走一遍真正的评分链路（runActiveQueue → buildQueueItemCostInsights → 同一张成本表）：
+      // 结果行的「总升级成本」必须仍是 777，而不是互换后被改成查不到的键、回落到默认算值。
+      simulator.updateActiveQueueSettings({
+        rounds: 1,
+        executionMode: 'serial',
+        medianBlend: 0.5,
+        weightProfit: 1,
+        weightXp: 0,
+        weightDeathSafety: 0,
+      });
+      simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+        onProgress?.({ progress: 1 });
+        return {
+          simulatedTime: ONE_HOUR,
+          encounters: 100,
+          experienceGained: {
+            player1: {
+              stamina: 1000,
+            },
+          },
+          deaths: {
+            player1: 0,
+          },
+          consumablesUsed: {},
+        };
+      });
+
+      const rows = await simulator.runActiveQueue();
+      expect(rows).toHaveLength(1);
+      expect(Number(rows[0]?.costInsights?.totalUpgradeCost)).toBe(777);
+    });
+
+    it('互换后只为被搬动的技能补触发器默认项（triggerMap 以 hrid 为键，随技能走）', () => {
+      const simulator = useSimulatorStore();
+      const { player, normalHrids, specialHrid } = seedAbilitySlots(simulator);
+      player.triggerMap = {};
+
+      expect(simulator.swapActivePlayerAbilitySlots(1, 2)).toBe(true);
+      expect(new Set(Object.keys(player.triggerMap))).toEqual(new Set([normalHrids[0], normalHrids[1]]));
+      // 没被搬动的特殊技能槽不会凭空多出一个键。
+      expect(player.triggerMap[specialHrid]).toBeUndefined();
+    });
+
+    it('空槽位也能参与互换，但不会为空格补触发器默认项', () => {
+      const simulator = useSimulatorStore();
+      const { player, normalHrids, specialHrid } = seedAbilitySlots(simulator);
+      player.triggerMap = {};
+      player.abilities[2] = { abilityHrid: '', level: 1 };
+
+      expect(simulator.swapActivePlayerAbilitySlots(1, 2)).toBe(true);
+      expect(player.abilities.map((entry) => entry.abilityHrid)).toEqual([
+        specialHrid,
+        '',
+        normalHrids[0],
+        normalHrids[2],
+        normalHrids[3],
+      ]);
+      expect(new Set(Object.keys(player.triggerMap))).toEqual(new Set([normalHrids[0]]));
+    });
   });
 
   it('refreshAssetScores：行情不可用时保留与配置一致的快照，配置变化后重算', () => {
@@ -3335,6 +3594,127 @@ describe('simulatorStore', () => {
     expect(simulator.activeQueueState.ranking.map((row) => row.id)).toEqual([firstItems[0].id]);
     expect(simulator.activeQueueState.ranking).toHaveLength(1);
     expect(secondItems[0].id).not.toBe(firstItems[0].id);
+  });
+
+  it('loads ability upgrade references when a duplicated baseline implies an upgrade the slot change hides', async () => {
+    const simulator = useSimulatorStore();
+    const abilityBookInfo = findFirstAbilityBookInfo();
+    expect(abilityBookInfo).toBeTruthy();
+
+    const abilityHrid = String(abilityBookInfo.abilityHrid || '');
+    // 参考数据尚未加载（App.vue 的延迟初始化还没跑到，或加载失败后的窗口）。
+    global.jigsLevelExperienceTable = [];
+    global.jigsSpellBookXpByName = {};
+
+    // 基准自带两份同名技能（导入脏数据 / 历史配置）且等级不一致：首匹配 5、另一份 6。
+    simulator.activePlayer.abilities[1] = { abilityHrid, level: 5 };
+    simulator.activePlayer.abilities[2] = { abilityHrid, level: 6 };
+    await simulator.setQueueBaselineForActivePlayer();
+
+    // 唯一变更：把槽位 1 的等级改小（beforeHrid === afterHrid、afterLevel < beforeLevel）。
+    // 旧加载门（逐条变更的槽位启发式）据此判定「不需要参考数据」⇒ 不加载，成本只能算成 null；
+    // 成本模型按 hrid 聚合后仍要从首匹配 5 记到终点 6 ⇒ 门必须命中并先把参考数据拉起来。
+    simulator.activePlayer.abilities[1] = { abilityHrid, level: 3 };
+    const addedItems = simulator.addActivePlayerToQueue();
+    expect(addedItems).toHaveLength(1);
+
+    simulator.updateActiveQueueSettings({
+      rounds: 1,
+      executionMode: 'serial',
+      medianBlend: 0.5,
+      weightProfit: 1,
+      weightXp: 0,
+      weightDeathSafety: 0,
+    });
+    simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+      onProgress?.({ progress: 1 });
+      return {
+        simulatedTime: ONE_HOUR,
+        encounters: 100,
+        experienceGained: {
+          player1: {
+            stamina: 1000,
+          },
+        },
+        deaths: {
+          player1: 0,
+        },
+        consumablesUsed: {},
+      };
+    });
+
+    const ensureReferenceSpy = vi.spyOn(simulator, 'ensureAbilityUpgradeReferenceDataLoaded');
+    const rows = await simulator.runActiveQueue();
+
+    // 这一笔必须恰好是 5→6 那一段的技能书价（不是「未知」null、也不是别的区间）：门拉起的参考数据正是
+    // 这一段升级所需的，模型的起点/终点（基准首匹配 5 → 目标最高 6）也必须与 collectAbilityUpgradeRanges 一致。
+    const expectedBooks = Math.ceil(
+      (Number(levelExperienceTable[6]) - Number(levelExperienceTable[5])) / Number(abilityBookInfo.xpPerBook),
+    );
+    const expectedUnitPrice = Number(simulator.pricing?.priceTable?.[abilityBookInfo.bookItemHrid]?.vendor || 0);
+    expect(expectedBooks).toBeGreaterThan(0);
+    expect(expectedUnitPrice).toBeGreaterThan(0);
+    expect(ensureReferenceSpy).toHaveBeenCalledTimes(1);
+    expect(rows).toHaveLength(1);
+    expect(Number(rows[0].costInsights?.totalUpgradeCost)).toBe(expectedBooks * expectedUnitPrice);
+  });
+
+  it('does not load ability upgrade references for a pure ability slot swap', async () => {
+    const simulator = useSimulatorStore();
+    const [abilityA, abilityB] = Object.values(abilityDetailMap)
+      .filter((ability) => ability?.isSpecialAbility !== true)
+      .slice(0, 2)
+      .map((ability) => String(ability.hrid));
+    expect(abilityA).toBeTruthy();
+    expect(abilityB).toBeTruthy();
+
+    // 参考数据尚未加载：这一条本来就不需要它，加载只会白跑一趟（含内部重排）。
+    global.jigsLevelExperienceTable = [];
+    global.jigsSpellBookXpByName = {};
+
+    simulator.activePlayer.abilities[1] = { abilityHrid: abilityA, level: 3 };
+    simulator.activePlayer.abilities[2] = { abilityHrid: abilityB, level: 4 };
+    await simulator.setQueueBaselineForActivePlayer();
+
+    // 纯重排（两格对调）：等级随技能走 ⇒ 按 hrid 聚合后一段真实升级都没有，旧口径的槽位启发式
+    // （同槽 hrid 不一致即 from=1）会在这里无谓地触发加载。
+    simulator.activePlayer.abilities[1] = { abilityHrid: abilityB, level: 4 };
+    simulator.activePlayer.abilities[2] = { abilityHrid: abilityA, level: 3 };
+    const addedItems = simulator.addActivePlayerToQueue();
+    expect(addedItems.length).toBeGreaterThan(0);
+
+    simulator.updateActiveQueueSettings({
+      rounds: 1,
+      executionMode: 'serial',
+      medianBlend: 0.5,
+      weightProfit: 1,
+      weightXp: 0,
+      weightDeathSafety: 0,
+    });
+    simulator.runSingleSimulationPayload = vi.fn(async (_payload, onProgress) => {
+      onProgress?.({ progress: 1 });
+      return {
+        simulatedTime: ONE_HOUR,
+        encounters: 100,
+        experienceGained: {
+          player1: {
+            stamina: 1000,
+          },
+        },
+        deaths: {
+          player1: 0,
+        },
+        consumablesUsed: {},
+      };
+    });
+
+    const ensureReferenceSpy = vi.spyOn(simulator, 'ensureAbilityUpgradeReferenceDataLoaded');
+    const rows = await simulator.runActiveQueue();
+
+    expect(ensureReferenceSpy).not.toHaveBeenCalled();
+    expect(rows.length).toBeGreaterThan(0);
+    // 门不触发是安全的：这一条本来就没有升级项 ⇒ 成本是实打实的 0，而不是「未知」(null)。
+    expect(rows.every((row) => row.costInsights?.totalUpgradeCost === 0)).toBe(true);
   });
 
   it('runs multi-round baseline simulation when requested', async () => {

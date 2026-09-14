@@ -91,9 +91,17 @@
     </div>
 
     <div class="surface-panel">
-      <h2 class="mb-3 font-heading text-lg font-semibold text-primary">
+      <h2 class="mb-1 font-heading text-lg font-semibold text-primary">
         {{ getOfficialGameText('abilitiesPanel', 'title', 'Abilities') }}
       </h2>
+      <p class="mb-3 text-xs text-muted-foreground">
+        {{
+          t(
+            'common:vue.home.abilityOrder.hint',
+            'Use the arrow buttons to swap an ability with its neighbour. The special ability slot always stays first.',
+          )
+        }}
+      </p>
       <div class="space-y-3">
         <div
           v-for="slotIndex in 5"
@@ -105,7 +113,33 @@
         >
           <div class="grid gap-2 sm:grid-cols-[1fr_88px]">
             <div>
-              <label class="control-label">{{ triggerController.getAbilitySlotLabel(slotIndex - 1) }}</label>
+              <div class="flex items-center justify-between gap-2">
+                <span class="control-label min-w-0 truncate">
+                  {{ triggerController.getAbilitySlotLabel(slotIndex - 1) }}
+                </span>
+                <span v-if="isAbilitySlotMovable(slotIndex - 1)" class="flex shrink-0 items-center gap-1.5">
+                  <button
+                    type="button"
+                    :class="ABILITY_SLOT_MOVE_BUTTON_CLASS"
+                    :disabled="!canMoveAbilitySlotUp(slotIndex - 1)"
+                    :title="`${triggerController.getAbilitySlotLabel(slotIndex - 1)} ${t('common:vue.home.abilityOrder.moveUp', 'Move up')}`"
+                    :aria-label="`${triggerController.getAbilitySlotLabel(slotIndex - 1)} ${t('common:vue.home.abilityOrder.moveUp', 'Move up')}`"
+                    @click="swapAbilitySlots(slotIndex - 1, slotIndex - 2)"
+                  >
+                    <ArrowUp class="size-4" aria-hidden="true" />
+                  </button>
+                  <button
+                    type="button"
+                    :class="ABILITY_SLOT_MOVE_BUTTON_CLASS"
+                    :disabled="!canMoveAbilitySlotDown(slotIndex - 1)"
+                    :title="`${triggerController.getAbilitySlotLabel(slotIndex - 1)} ${t('common:vue.home.abilityOrder.moveDown', 'Move down')}`"
+                    :aria-label="`${triggerController.getAbilitySlotLabel(slotIndex - 1)} ${t('common:vue.home.abilityOrder.moveDown', 'Move down')}`"
+                    @click="swapAbilitySlots(slotIndex - 1, slotIndex)"
+                  >
+                    <ArrowDown class="size-4" aria-hidden="true" />
+                  </button>
+                </span>
+              </div>
               <SearchCombobox
                 :model-value="activePlayer.abilities[slotIndex - 1].abilityHrid"
                 :options="abilityComboboxOptions(slotIndex - 1)"
@@ -173,8 +207,10 @@
 
 <script setup>
 import { computed } from 'vue';
+import { ArrowDown, ArrowUp } from '@lucide/vue';
 import { abilityDetailIndex as abilityDetailMap } from '../../../shared/gameDataIndex.js';
 import { MAX_TRIGGER_COUNT } from '../../../services/triggerMapper.js';
+import { normalizeAbilitySlotIndex } from '../../../services/utils.js';
 import { useSimulatorStore } from '../../../stores/simulatorStore.js';
 import { useHomeBuildComparison } from '../../composables/useHomeBuildComparison.js';
 import { useGameDataText } from '../../composables/useGameDataText.js';
@@ -239,5 +275,52 @@ function abilityComboboxOptions(slotIndex) {
       label: getAbilityName(ability.hrid, ability.name),
     })),
   ];
+}
+
+// 技能槽切换（在「基础设置」面板里直接操作技能行）：技能槽 1（index 0）是特殊技能槽，
+// 固定在最前；其余槽位（技能 1…技能 4）点 ↑/↓ 按钮与相邻槽位互换，写入统一走 store 的
+// swapActivePlayerAbilitySlots——技能与等级随条目一起换位，UI 不自行改配置。
+// 按钮做成实心 primary：切换是这些行唯一的操作入口，要一眼可见；不可换的方向退回灰底禁用态。
+const ABILITY_SLOT_MOVE_BUTTON_CLASS =
+  'inline-flex size-8 shrink-0 items-center justify-center rounded-md border border-primary bg-primary text-primary-foreground shadow-sm transition-colors outline-none hover:bg-primary-hover focus-visible:ring-2 focus-visible:ring-ring focus-visible:ring-offset-2 focus-visible:ring-offset-background disabled:border-border disabled:bg-muted/60 disabled:text-muted-foreground disabled:shadow-none';
+
+const abilitySlotCount = computed(() => Math.max(2, Number(activePlayer.value?.abilities?.length || 5)));
+
+function isAbilitySlotMovable(slotIndex) {
+  return Number(slotIndex) > 0;
+}
+
+function canMoveAbilitySlotUp(slotIndex) {
+  return isAbilitySlotMovable(slotIndex) && isAbilitySlotMovable(slotIndex - 1);
+}
+
+function canMoveAbilitySlotDown(slotIndex) {
+  return isAbilitySlotMovable(slotIndex) && Number(slotIndex) < abilitySlotCount.value - 1;
+}
+
+// 互换会改变「槽位 ↔ 技能」的对应关系：先用与切换玩家/替换配置同款的门卫拦住正在编辑的
+// 触发器草稿（脏草稿被拦下并提示），互换成功后再关掉编辑器——否则内联编辑器会停在旧槽位
+// 上，把草稿错写到互换后坐在那一格的另一个技能上。
+// 但只有「正好开在被互换的两个槽位上」的编辑器需要关：state.hrid 绑的是技能，食物/饮品与
+// 其他技能槽的内容没被这次互换改动，草稿依然对得上——无条件 reset() 会把用户正打开的无关
+// 编辑器一并关掉（编辑器是否展开是用户可见状态，不能顺手丢）。
+function swapAbilitySlots(fromIndex, toIndex) {
+  if (!props.triggerController.canLeave()) {
+    return;
+  }
+  // 槽位号归一化必须与 store 同源（shared utils 的 normalizeAbilitySlotIndex）：比较与传参用的是同一个
+  // 数字——UI 若按原值比对（Number(fromIndex)）、store 按 floor 后的值动手，非整数入参下就会静默分叉，
+  // 把编辑器留在已经换过内容的旧槽位上。
+  const normalizedFromIndex = normalizeAbilitySlotIndex(fromIndex);
+  const normalizedToIndex = normalizeAbilitySlotIndex(toIndex);
+  const closesTriggerEditor =
+    props.triggerController.isActive('ability', normalizedFromIndex) ||
+    props.triggerController.isActive('ability', normalizedToIndex);
+  if (!simulator.swapActivePlayerAbilitySlots(normalizedFromIndex, normalizedToIndex)) {
+    return;
+  }
+  if (closesTriggerEditor) {
+    props.triggerController.reset();
+  }
 }
 </script>

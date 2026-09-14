@@ -37,6 +37,7 @@ import { executeActiveQueueRun } from '../services/queueRunExecution.js';
 import { runParallelWorkerPool } from '../services/workerPool.js';
 import {
   buildQueueCostWarnings,
+  collectAbilityUpgradeRanges,
   computeMirrorPlan,
   computeQueueItemUpgradeCost,
   createEquipmentPriceConfirmationError,
@@ -307,29 +308,18 @@ function sortQueueRawRuns(rows = [], entrySortIndexById = new Map()) {
   });
 }
 
-function queueChangeNeedsAbilityUpgradeReference(change) {
-  if (String(change?.kind || '') !== 'ability') {
-    return false;
-  }
-
-  const afterHrid = String(change?.afterAbilityHrid || '');
-  if (!afterHrid) {
-    return false;
-  }
-
-  const beforeHrid = String(change?.beforeAbilityHrid || '');
-  const beforeLevel = Math.max(1, Math.floor(toFiniteNumber(change?.beforeLevel, 1)));
-  const afterLevel = Math.max(1, Math.floor(toFiniteNumber(change?.afterLevel, 1)));
-  const fromLevel = beforeHrid && beforeHrid === afterHrid ? beforeLevel : 1;
-  return afterLevel > fromLevel;
-}
-
-function queueEntriesNeedAbilityUpgradeReference(entries = []) {
-  return (entries ?? []).some(
-    (entry) =>
-      Array.isArray(entry?.changeDetails) &&
-      entry.changeDetails.some((change) => queueChangeNeedsAbilityUpgradeReference(change)),
-  );
+// 技能书/技能经验参考数据的**加载门**：判据与成本模型同源——直接问 queueUpgradeCost.collectAbilityUpgradeRanges
+// 「按 hrid 聚合后是否还有真实升级区间」（成本模型需要默认成本 ⇒ 这里必然返回非空；反向的多触发见下）。
+// 旧实现是逐条变更的槽位启发式（同槽 hrid 一致才用该槽 beforeLevel，否则 from=1），而成本模型始终按 hrid 聚合，
+// 两者在「基准自带重复 hrid」的脏数据下会分叉：基准 [A@5, A@6] → 目标 [A@3, A@6] 时，槽位 1 的变更（5→3）不
+// 触发加载，成本模型却仍要算 5→6 ⇒ 参考数据没加载时该条目只能算成 null（成本未知），与已加载时算出的 5→6
+// 自相矛盾。改成快照口径后不需要「宁多勿少」的兜底：模型需要默认成本 ⇒ 门必然触发（漏触发在结构上不存在）；
+// 反向的多触发都属于「加载了也用不上」（不是错误，只是白加载一次参考数据）——已知的有「所需区间已被手工
+// 覆盖（模型不需要默认成本）」「该条目最终没有参与排名」，以及「该技能查不到技能书信息 / 价格」这类数据缺口。
+// 纯重排（换槽不改等级）不会触发。入参必须是**成本模型用的同一份快照**
+// （buildQueueEntriesFromState 深拷贝出的 entry.snapshot + queueState.baseline.snapshot）。
+function queueEntriesNeedAbilityUpgradeReference(entries = [], baselineSnapshot = null) {
+  return (entries ?? []).some((entry) => collectAbilityUpgradeRanges(baselineSnapshot, entry?.snapshot).length > 0);
 }
 
 export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerMapperModule, workerClient }) {
@@ -662,6 +652,8 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
         return [];
       }
 
+      // 变体按「原子变更组」拆分（见 queueVariants.js 内的 buildAtomicQueueChangeGroups）：镜像搬槽
+      // （技能/食物两格对调、三格轮转）合成一条，互不相关的变更各自一条——条目因此可能带多条 changeDetails。
       const variants = buildQueueVariantSnapshotsFromChanges(queueState.baseline.snapshot, snapshot, changeSummary);
       if (variants.length === 0) {
         return [];
@@ -1120,7 +1112,7 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
 
       if (
         allowReferenceLoad &&
-        queueEntriesNeedAbilityUpgradeReference(entries) &&
+        queueEntriesNeedAbilityUpgradeReference(entries, queueState.baseline?.snapshot ?? null) &&
         !hasAbilityUpgradeReferenceDataLoaded()
       ) {
         await this.ensureAbilityUpgradeReferenceDataLoaded();
