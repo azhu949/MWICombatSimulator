@@ -1,4 +1,20 @@
 {
+  "2026年9月15日（v2.5.3）": {
+    "label": {
+      "zh": "2026年9月15日（v2.5.3）",
+      "en": "September 15, 2026 (v2.5.3)"
+    },
+    "improvements": {
+      "zh": [
+        "食物优化器的推荐更靠谱：少带一格食物，就必须换来更少的死亡次数，不会再出现省了食物、死亡率却没降低的推荐方案。",
+        "同一条烹饪线的食物（如各口味的甜甜圈、软糖）在优化器里视为一类，一套方案最多选择其中一种。"
+      ],
+      "en": [
+        "Food Optimizer recommendations are more sensible: carrying one less food slot must result in fewer deaths, so plans that save a slot without reducing deaths are no longer recommended.",
+        "Foods from the same cooking line (such as the donut or gummy flavours) count as one family, and a plan picks at most one food from each family."
+      ]
+    }
+  },
   "2026年9月14日（v2.5.2）": {
     "label": {
       "zh": "2026年9月14日（v2.5.2）",
