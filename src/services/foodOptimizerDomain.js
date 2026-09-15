@@ -224,6 +224,27 @@ export function hasEmptyFoodOptimizerBaseline(request) {
   return Array.isArray(food) && food.every((item) => !item);
 }
 
+// 基线携带的食物槽位数（非空槽计数）。食物数组不是数组（快照缺失或脏值）时返回 null，
+// 调用方据此失败开放——槽位数不可判绝不静默加严搜索，与「缺失/非法不启用裁剪」同源。
+export function resolveFoodOptimizerBaselineSlotCount(request) {
+  const food = request?.payload?.players?.find((player) => player.hrid === `player${request.activePlayerId}`)?.food;
+  return Array.isArray(food) ? food.filter(Boolean).length : null;
+}
+
+// 候选的死亡预算（槽位感知）：槽位少于基线携带槽位数说明玩家要放弃一件食物，必须换来
+// 「严格更少死」，因此预算比基线累计死亡少一；槽位数持平或更多时保持原口径（允许并列，
+// 不高于基线即可）。基线的空槽方案也算「少带」，同样按 -1 处理——它就是最典型的少带。
+//
+// 失败开放：预算或槽位数不是非负安全整数时原样返回（不加严）。脏值只可能让候选的准入
+// 条件与原口径一致，绝不会把候选误判成「必须更少死」，与仓库既有「脏值绝不静默加严」
+// 的原则一致。
+export function resolveFoodOptimizerCandidateDeathBudget(baseBudget, candidateSlotCount, baselineSlotCount) {
+  if (!Number.isSafeInteger(baseBudget) || baseBudget < 0) return baseBudget;
+  if (!Number.isSafeInteger(baselineSlotCount) || baselineSlotCount < 0) return baseBudget;
+  if (!Number.isSafeInteger(candidateSlotCount) || candidateSlotCount < 0) return baseBudget;
+  return candidateSlotCount < baselineSlotCount ? Math.max(0, baseBudget - 1) : baseBudget;
+}
+
 export function buildFoodDefaultCandidate(items = []) {
   return buildFoodCandidate(
     items.map((item) => {

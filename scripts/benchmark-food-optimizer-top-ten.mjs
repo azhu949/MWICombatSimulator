@@ -5,12 +5,16 @@
 // Full normal-map catalog at the default grid: --case=catalog-mp30-three-default --mode=top10
 // Optional: --seconds=600 --rounds=3 --seed=1 --threshold-step=25 --oracle-limit=10000 --report=tmp/report.json
 // Same-mode comparison: --mode=top10 --before-mode=top10 --before=<snapshot directory>
+// --before accepts any build: a snapshot whose death-budget caliber differs from the current build is
+// accepted for timing only -- cross-mode result equality and oracle comparison are skipped for it, the
+// drift is recorded per case, while a matching snapshot keeps every equality assertion.
 import assert from 'node:assert/strict';
 import { createHash } from 'node:crypto';
 import { access, mkdir, readFile, writeFile } from 'node:fs/promises';
 import { availableParallelism, cpus } from 'node:os';
 import { dirname, isAbsolute, relative, resolve, sep } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
+import { isDeepStrictEqual } from 'node:util';
 import { isMainThread, parentPort, Worker, workerData } from 'node:worker_threads';
 
 // Do not share the production evaluator or result aggregation with the oracle.
@@ -487,17 +491,77 @@ async function main() {
     if (file.endsWith('.mjs'))
       moduleSha256[relative(output, resolve(root, file))] = sha256(await readFile(resolve(root, file)));
   const moduleUrl = (directory, name) => pathToFileURL(resolve(directory, `${name}.mjs`)).href;
-  const { createFoodOptimizerFixture, physicalFoodOptimizerResult } = await import(moduleUrl(output, 'support'));
+  const { createFoodOptimizerFixture, physicalFoodOptimizerResult, referenceDeathBudget } = await import(
+    moduleUrl(output, 'support')
+  );
   const domain = await import(moduleUrl(output, 'domain'));
   const pruning = await import(moduleUrl(output, 'pruning'));
   const search = (await import(moduleUrl(output, 'search'))).createFoodOptimizerSearch;
+  // 口径探针（跨版本快照的语义标记）：快照自己的死亡预算实现是否与当前构建一致。口径就是该
+  // helper 在一组判别输入上的行为；缺失或行为不同都算「早于该口径」。探针只登记死亡预算这一处
+  // 口径——新增口径变更时必须在这里补登记，未登记的差异会退回严格相等断言（响亮失败，不静默放宽）。
+  const caliberProbeInputs = [
+    [3, 1, 3],
+    [3, 3, 3],
+    [0, 0, 2],
+    [2, 5, 2],
+  ];
+  const caliberSignature = (modules) => {
+    const rule = modules?.resolveFoodOptimizerCandidateDeathBudget;
+    return typeof rule === 'function' ? JSON.stringify(caliberProbeInputs.map((input) => rule(...input))) : null;
+  };
+  const currentCaliber = caliberSignature(domain);
+  let beforeCaliber = 'not-used';
+  if (beforeSnapshot) {
+    // 只有被 checksum 覆盖的 domain.mjs 才参与探针；缺失或导入失败一律按未验证处理并保持严格。
+    beforeCaliber = 'unverified';
+    if (!beforeSnapshot.metadata.sha256['domain.mjs'])
+      console.log(
+        'Before snapshot does not checksum domain.mjs; caliber unverified, cross-mode result equality stays enforced.',
+      );
+    else {
+      try {
+        const signature = caliberSignature(await import(moduleUrl(beforeSnapshot.directory, 'domain')));
+        beforeCaliber = signature === currentCaliber ? 'same' : 'different';
+      } catch (error) {
+        console.log(
+          `Before snapshot domain module is unavailable (${error?.message ?? error}); caliber unverified, cross-mode result equality stays enforced.`,
+        );
+      }
+    }
+    if (beforeCaliber === 'same')
+      console.log(
+        'Before snapshot death-budget caliber matches the current build; cross-mode result equality is enforced.',
+      );
+    else if (beforeCaliber === 'different')
+      console.log(
+        'Before snapshot death-budget caliber differs from the current build; before-* modes keep timings and per-mode self-checks only (cross-mode equality is skipped and the drift is recorded).',
+      );
+  }
+  // comparison='equality' 的模式必须与当前结果逐项一致；'timing-only' 是跨口径快照的分组，只保留
+  // 计时、覆盖审计与各自的自洽性检查，不参与跨模式结果相等比较。
   const modes = [
-    { name: 'complete', searchMode: 'complete', search, workerUrl: moduleUrl(output, 'worker'), pruning },
-    { name: 'top10', searchMode: 'top10', search, workerUrl: moduleUrl(output, 'worker'), pruning },
+    {
+      name: 'complete',
+      comparison: 'equality',
+      searchMode: 'complete',
+      search,
+      workerUrl: moduleUrl(output, 'worker'),
+      pruning,
+    },
+    {
+      name: 'top10',
+      comparison: 'equality',
+      searchMode: 'top10',
+      search,
+      workerUrl: moduleUrl(output, 'worker'),
+      pruning,
+    },
   ].filter((mode) => selectedMode === 'both' || mode.searchMode === selectedMode);
   if (beforeSnapshot)
     modes.push({
       name: `before-${beforeMode}`,
+      comparison: beforeCaliber === 'different' ? 'timing-only' : 'equality',
       searchMode: beforeMode,
       search: (await import(moduleUrl(beforeSnapshot.directory, 'search'))).createFoodOptimizerSearch,
       workerUrl: beforeSnapshot.metadata.sha256['worker.mjs']
@@ -521,11 +585,12 @@ async function main() {
     oracleLimit,
     arguments: process.argv.slice(2),
     beforeSnapshot,
+    beforeCaliber,
     moduleSha256,
     benchmarkSha256: sha256(await readFile(fileURLToPath(import.meta.url))),
-    note: 'Every timed run uses fresh real Node workers and includes startup, baseline, search, and awaited termination. Compilation and separate audits are excluded. Current modes and snapshots containing worker.mjs execute their production worker entry. Modes rotate for each repeated sample and use identical combat fixtures and seeds. --mode and --before-mode allow comparisons within one search mode. Top10 preserves exact rankings but does not determine feasibility of cost/rank-pruned candidates. Large domains receive exact compressed coverage checks and independent finalist verification, not per-candidate exhaustive simulation.',
+    note: 'Every timed run uses fresh real Node workers and includes startup, baseline, search, and awaited termination. Compilation and separate audits are excluded. Current modes and snapshots containing worker.mjs execute their production worker entry. Modes rotate for each repeated sample and use identical combat fixtures and seeds. --mode and --before-mode allow comparisons within one search mode. Top10 preserves exact rankings but does not determine feasibility of cost/rank-pruned candidates. Large domains receive exact compressed coverage checks and independent finalist verification, not per-candidate exhaustive simulation. A before snapshot whose death-budget caliber differs from the current build is accepted for timing only: cross-mode result equality and oracle comparison are skipped for its modes and the drift is recorded per case, while a matching snapshot keeps every equality assertion.',
     oracleNote:
-      'The independent oracle runs full native-engine rounds with generic triggers and legacy buff lookup, and aggregates them independently of the production evaluator. With --before, its engine comes from the verified snapshot. Full-domain oracle is limited by --oracle-limit; the limit never disables compressed duplicate/missing coverage checks.',
+      'The independent oracle runs full native-engine rounds with generic triggers and legacy buff lookup, and aggregates them independently of the production evaluator. With --before, its engine comes from the verified snapshot. Full-domain oracle is limited by --oracle-limit; the limit never disables compressed duplicate/missing coverage checks. Death budgets are recomputed per candidate from the equipped baseline slots (carrying fewer slots than the baseline must die strictly less), as an independent implementation of the production rule. Cross-mode result equality is enforced only inside one caliber: a before-* mode whose death-budget caliber differs from the current build is not compared against the oracle or the current expectations, while its own coverage audit and self-checks still run.',
     cases: [],
   };
   await mkdir(dirname(reportPath), { recursive: true });
@@ -591,7 +656,14 @@ async function main() {
         : finalists.map((result) => domain.buildFoodCandidate(result.slots));
       for (const candidate of candidates) {
         assert(!results.has(candidate.signature), 'Duplicate oracle candidate');
-        const result = await client.call({ type: 'evaluate', candidate, deathBudget: baseline.deaths });
+        const result = await client.call({
+          type: 'evaluate',
+          candidate,
+          // 少带食物必须严格更少死：预算按候选槽位数重算，与生产判定同形但独立实现，
+          // 因此随附的 --before 快照若早于该口径，会在少带候选上合理分歧——此时脚本按口径分组断言：
+          // 跨口径快照只保留计时与各自的自洽性检查，分歧记进 caliberDrift，不做结果相等比较。
+          deathBudget: referenceDeathBudget(fixture.request, candidate, baseline.deaths),
+        });
         results.set(candidate.signature, result);
         if (result.feasible) ranked.push({ ...candidate, ...result });
       }
@@ -615,10 +687,18 @@ async function main() {
       fixture.request.seeds = Array.from({ length: fixture.request.rounds }, (_, index) => (seed + index) >>> 0);
       const totalCandidates = domain.countFoodOptimizerCandidates(fixture.items, fixture.foodSlots);
       const measurements = new Map(modes.map((mode) => [mode.name, []]));
-      let expectedTop;
-      let expectedTopCandidates;
-      let expectedBaseline;
-      let expectedFeasible;
+      // 同 comparison 分组的模式之间必须给出一致结果；跨口径快照单独成组，只做组内自洽检查。
+      const expectations = new Map();
+      const expectationFor = (comparison) => {
+        if (!expectations.has(comparison))
+          expectations.set(comparison, {
+            top: undefined,
+            topCandidates: undefined,
+            baseline: undefined,
+            feasible: undefined,
+          });
+        return expectations.get(comparison);
+      };
       summary.activeCase = {
         scenario,
         fixtureSha256: sha256(JSON.stringify(fixture)),
@@ -632,20 +712,21 @@ async function main() {
           const { report, elapsedMs, workerMetrics } = await run(mode, fixture);
           const context = `${scenario.name}/${mode.name}`;
           countsFor(report, totalCandidates, context);
+          const expected = expectationFor(mode.comparison);
           const top = physicalTop(report.topResults);
           const baseline = physicalFoodOptimizerResult(report.baseline);
-          if (expectedTop) assert.deepEqual(top, expectedTop, `${context}: top-ten physical results changed`);
+          if (expected.top) assert.deepEqual(top, expected.top, `${context}: top-ten physical results changed`);
           else {
-            expectedTop = top;
-            expectedTopCandidates = report.topResults;
+            expected.top = top;
+            expected.topCandidates = report.topResults;
           }
-          if (expectedBaseline) assert.deepEqual(baseline, expectedBaseline, `${context}: baseline changed`);
-          else expectedBaseline = baseline;
+          if (expected.baseline) assert.deepEqual(baseline, expected.baseline, `${context}: baseline changed`);
+          else expected.baseline = baseline;
           if (mode.searchMode === 'complete') {
             assert.equal(report.stats.prunedCandidates ?? 0, 0, `${context}: complete mode pruned a candidate`);
-            if (expectedFeasible !== undefined)
-              assert.equal(report.stats.feasibleCandidates, expectedFeasible, `${context}: feasible count changed`);
-            else expectedFeasible = report.stats.feasibleCandidates;
+            if (expected.feasible !== undefined)
+              assert.equal(report.stats.feasibleCandidates, expected.feasible, `${context}: feasible count changed`);
+            else expected.feasible = report.stats.feasibleCandidates;
           }
           measurements.get(mode.name).push({ elapsedMs, stats: report.stats, workerMetrics });
           summary.activeCase.measurements.push({
@@ -661,6 +742,34 @@ async function main() {
           );
         }
       }
+
+      // 当前口径组的期望值就是跨模式比较的唯一基准；跨口径快照另成一组，只记录、不比较。
+      const current = expectations.get('equality');
+      assert(current, 'No current-caliber mode produced expectations');
+      const {
+        top: expectedTop,
+        topCandidates: expectedTopCandidates,
+        baseline: expectedBaseline,
+        feasible: expectedFeasible,
+      } = current;
+      const beforeExpectations = expectations.get('timing-only');
+      // 跨口径快照的结果不作相等断言，但必须留下可见凭据：匹配情况与两侧取值都进报告。
+      const caliberDrift = beforeExpectations && {
+        crossModeEquality: 'skipped',
+        topTenMatches: isDeepStrictEqual(beforeExpectations.top, expectedTop),
+        baselineMatches: isDeepStrictEqual(beforeExpectations.baseline, expectedBaseline),
+        beforeTopResults: beforeExpectations.top,
+        beforeBaseline: beforeExpectations.baseline,
+        beforeFeasibleCandidates: beforeExpectations.feasible ?? null,
+        feasibleDelta:
+          beforeExpectations.feasible === undefined || expectedFeasible === undefined
+            ? null
+            : beforeExpectations.feasible - expectedFeasible,
+      };
+      if (caliberDrift)
+        console.log(
+          `${scenario.name}: before snapshot caliber drift recorded (top-ten match ${caliberDrift.topTenMatches}, baseline match ${caliberDrift.baselineMatches}, feasible delta ${caliberDrift.feasibleDelta ?? 'n/a'})`,
+        );
 
       // The oracle and all coverage expansion/subtraction run outside timings.
       const oracle = await oracleFor(fixture, expectedTopCandidates, totalCandidates <= oracleLimit);
@@ -683,6 +792,7 @@ async function main() {
       const coverageAudits = {};
       for (const mode of modes) {
         const context = `${scenario.name}/${mode.name}`;
+        const enforcesEquality = mode.comparison === 'equality';
         const audit = createCoverageAudit(fixture, domain, context);
         let comparedCandidates = 0;
         const checkCandidate = (candidate, result) => {
@@ -709,7 +819,8 @@ async function main() {
         };
         const { report } = await run(mode, fixture, (coverage) => {
           audit.accept(coverage);
-          if (!oracle.fullDomain) return;
+          // 跨口径模式不做 oracle 逐候选比对：oracle 按当前口径判定，跨口径结果不等是预期行为。
+          if (!oracle.fullDomain || !enforcesEquality) return;
           if (coverage.candidate) checkCandidate(coverage.candidate, coverage.result);
           else
             for (const candidate of domain.generateFoodOptimizerCompositionCandidates(coverage.items)) {
@@ -718,17 +829,23 @@ async function main() {
             }
         });
         countsFor(report, totalCandidates, context);
-        assert.deepEqual(physicalTop(report.topResults), expectedTop, `${context}: audited top-ten mismatch`);
-        assert.deepEqual(
-          physicalFoodOptimizerResult(report.baseline),
-          expectedBaseline,
-          `${context}: audited baseline mismatch`,
-        );
-        if (oracle.fullDomain)
+        if (enforcesEquality) {
+          assert.deepEqual(physicalTop(report.topResults), expectedTop, `${context}: audited top-ten mismatch`);
+          assert.deepEqual(
+            physicalFoodOptimizerResult(report.baseline),
+            expectedBaseline,
+            `${context}: audited baseline mismatch`,
+          );
+        }
+        if (oracle.fullDomain && enforcesEquality)
           assert.equal(comparedCandidates, totalCandidates, `${context}: incomplete per-candidate audit`);
-        coverageAudits[mode.name] = { ...audit.finish(report), independentlyComparedCandidates: comparedCandidates };
+        coverageAudits[mode.name] = {
+          ...audit.finish(report),
+          independentlyComparedCandidates: comparedCandidates,
+          ...(enforcesEquality ? {} : { resultComparison: 'skipped (different caliber)' }),
+        };
         console.log(
-          `${context}: exact coverage verified (${totalCandidates} candidates, ${coverageAudits[mode.name].records} compressed records)`,
+          `${context}: exact coverage verified (${totalCandidates} candidates, ${coverageAudits[mode.name].records} compressed records)${enforcesEquality ? '' : '; oracle and expected-result comparisons skipped (different caliber)'}`,
         );
       }
       const result = {
@@ -747,6 +864,7 @@ async function main() {
           workerMetrics: oracle.workerMetrics,
         },
         coverageAudits,
+        ...(caliberDrift ? { caliberDrift } : {}),
         modes: Object.fromEntries(
           [...measurements].map(([name, runs]) => [name, { medianMs: median(runs.map((run) => run.elapsedMs)), runs }]),
         ),

@@ -13,11 +13,15 @@ import { createFoodOptimizerEvaluator } from '../foodOptimizerSimulation.js';
 import {
   createFoodOptimizerFixture,
   physicalFoodOptimizerResult,
+  referenceDeathBudget,
   referenceFoodOptimizerRound,
 } from './support/foodOptimizerTestSupport.js';
 
 // Deliberately do not call the production evaluator or its aggregation helpers.
 // Every oracle seed runs to the full time limit, including infeasible candidates.
+// The death budget follows the slot-aware rule (fewer slots than the equipped
+// baseline must die strictly less), so this oracle does not share the production
+// helper that decides it.
 async function referenceResult(request, candidate, baselineDeaths = Infinity) {
   const samples = [];
   for (const seed of request.seeds) samples.push(await referenceFoodOptimizerRound(request, candidate, seed));
@@ -27,7 +31,8 @@ async function referenceResult(request, candidate, baselineDeaths = Infinity) {
   for (const sample of samples)
     for (const [hrid, count] of Object.entries(sample.foodUsed))
       foodUsed[hrid] = (foodUsed[hrid] || 0) + count / samples.length;
-  const rejected = candidate ? (ranOutOfMana ? 'mana' : deaths > baselineDeaths ? 'deaths' : '') : '';
+  const budget = referenceDeathBudget(request, candidate, baselineDeaths);
+  const rejected = candidate ? (ranOutOfMana ? 'mana' : deaths > budget ? 'deaths' : '') : '';
   return {
     feasible: !rejected,
     rejected,
@@ -230,7 +235,13 @@ describe('exact top ten versus a full native-engine oracle', () => {
         expect(expected.get('').feasible).toBe(false);
         expect(feasible[0].costPerHour).toBeGreaterThan(0);
       }
-      if (scenario.equipped) expect(expected.get('').feasible).toBe(scenario.equipped === 'inactive');
+      // 少带食物必须严格更少死：'inactive' 基线的 2 件食物阈值在上限、从不触发，空方案与基线
+      // 同轨迹同死亡数，却只带 0 槽（< 基线 2 槽）⇒ 空方案按死亡预算淘汰，不再与基线并列入榜。
+      if (scenario.equipped) expect(expected.get('').feasible).toBe(false);
+      if (scenario.equipped === 'inactive') {
+        expect(expected.get('').deaths).toBe(baseline.deaths);
+        expect(expected.get('').rejected).toBe('deaths');
+      }
       if (scenario.noManaUse && scenario.target === 'dungeon')
         expect(
           [...expected.values()].some((result) =>
@@ -303,8 +314,10 @@ describe('exact top ten versus a full native-engine oracle', () => {
           expect(report.topResults).toHaveLength(10);
         }
         if (mode === 'top10' && scenario.equipped === 'inactive') {
+          // 改造前：空方案（0 槽）与 inactive 基线同轨迹，复用它即可立刻建立 0 成本排名下界。
+          // 改造后：空方案少带食物却不多死，先被死亡预算淘汰，下界只能由真实候选逐步建立。
           expect(sentCutoffs[0]).toBeUndefined();
-          expect(sentCutoffs.slice(1, 10)).toContain(0);
+          expect(sentCutoffs.slice(1, 10)).not.toContain(0);
         }
         if (scenario.unusedDomain) {
           if (mode === 'complete') expect(pruned).toBe(0);

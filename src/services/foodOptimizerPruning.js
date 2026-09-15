@@ -382,6 +382,7 @@ export function createFoodOptimizerPruningCache({
   grid = items == null ? null : createFoodOptimizerGrid(items),
   getCostCutoff,
   getRankCutoff,
+  getDeathBudget,
 } = {}) {
   const groups = new Map();
   const entries = new Set();
@@ -400,6 +401,43 @@ export function createFoodOptimizerPruningCache({
   let coreRecords = 0;
   let coreEvictions = 0;
   let unusedFood = null;
+  // Death-budget gate (slot-aware). A recorded verdict holds only for the budget
+  // its run was truncated at, and that budget shrinks when a query carries fewer
+  // slots than the equipped baseline ("carry less, die strictly less"), so one
+  // certificate can face several budgets. The getter is optional and every
+  // non-negative-safe-integer answer counts as unknown: an ungated cache behaves
+  // exactly like before, and a dirty value never tightens a search silently.
+  const budgetOf = typeof getDeathBudget === 'function' ? getDeathBudget : null;
+  // The effective budget of a candidate holding that many slots; undefined means
+  // "unknown" and leaves the gate open.
+  const budgetFor = (slotCount) => {
+    if (!budgetOf) return undefined;
+    const value = budgetOf(slotCount);
+    return Number.isSafeInteger(value) && value >= 0 ? value : undefined;
+  };
+  // The evidence a certificate may serve a query holding slotCount slots, or null
+  // when it proves nothing under that budget (the caller then has to simulate).
+  // A complete feasible run states its own death total, so it is reclassified to
+  // the deaths failure instead of being dropped; a truncated run only states that
+  // it exceeded its own budget, which keeps the verdict for a query budget no
+  // higher, and a mana or cost verdict needs the trajectory to reach its event,
+  // which a query budget no lower preserves. The reclassified wrapper is built
+  // once per certificate: one trajectory has at most one such form, and repeated
+  // queries must not allocate per probe.
+  const gatedEvidence = (entry, slotCount) => {
+    const budget = budgetFor(slotCount);
+    if (budget === undefined) return entry;
+    const result = entry.result;
+    if (result.feasible === true) {
+      if (!Number.isSafeInteger(result.deaths) || result.deaths <= budget) return entry;
+      return (entry.deathsEvidence ??= { ...entry, result: { ...result, feasible: false, rejected: 'deaths' } });
+    }
+    const recorded = entry.budget;
+    if (recorded === undefined) return entry;
+    if (result.rejected === 'deaths') return budget <= recorded ? entry : null;
+    if (result.pruned === 'cost' || result.rejected === 'mana') return budget >= recorded ? entry : null;
+    return entry;
+  };
   const remove = (entry) => {
     entries.delete(entry);
     feasibleEntries.delete(entry);
@@ -495,6 +533,11 @@ export function createFoodOptimizerPruningCache({
       // core against this set, so it is built once per record.
       consumedHrids: new Set(core.map((slot) => slot.hrid)),
       minimum: { ...minimum },
+      // The budget this verdict was truncated at. A core serves queries whose slot
+      // count differs from the recorded candidate's, so the gate has to know which
+      // budget the verdict belongs to instead of assuming the query's.
+      budget: budgetFor(candidate.slots.length),
+      deathsEvidence: null,
       result: feasible
         ? result
         : prunedForCost
@@ -559,6 +602,9 @@ export function createFoodOptimizerPruningCache({
         right.threshold = domains[second].max;
         if (compareFoodSlots(left, right) >= 0) continue;
       }
+      // A certificate this query cannot use must not stop the probe: the next
+      // entry of the same core group may hold a verdict for this budget.
+      if (!gatedEvidence(entry, domains.length)) continue;
       return entry;
     }
     return null;
@@ -683,8 +729,17 @@ export function createFoodOptimizerPruningCache({
     const { domains } = query;
     // In a no-food run, thresholds above every observed deficit never fire.
     // Adding any number of such foods leaves combat unchanged, in any order.
-    if (unusedFood && domains.every((domain) => domain.min >= unusedFood.result.unusedFoodThresholds[domain.kind]))
-      return unusedFood;
+    // The certificate is gated like every other one: it was recorded from the
+    // empty composition, so a query carrying at least as many slots as the
+    // baseline may need a verdict its budget never produced. A certificate this
+    // query cannot use must not void the query either: the block is still
+    // validated against the grid and may be answered by the ranking bound, a
+    // same-composition entry or a consumed core, while returning null here would
+    // send the whole region back to per-candidate simulation.
+    if (unusedFood && domains.every((domain) => domain.min >= unusedFood.result.unusedFoodThresholds[domain.kind])) {
+      const evidence = gatedEvidence(unusedFood, domains.length);
+      if (evidence) return evidence;
+    }
     const gridItems = query.items();
     if (grid && !matchesFoodOptimizerGridItems(gridItems, domains)) return null;
     const rankCutoff = getRankCutoff?.();
@@ -746,7 +801,8 @@ export function createFoodOptimizerPruningCache({
           }
         }
         if (!ordered) continue;
-        return entry;
+        const evidence = gatedEvidence(entry, domains.length);
+        if (evidence) return evidence;
       }
     }
     const core = matchConsumedCore(query);
@@ -755,7 +811,8 @@ export function createFoodOptimizerPruningCache({
     // still exceeds the current ranking cutoff, like same-composition ones.
     if (core.result.pruned === 'cost' && !isFoodOptimizerCostAboveCutoff(core.result.costLowerBound, getCostCutoff?.()))
       return null;
-    return coreEvidence(core);
+    const evidence = gatedEvidence(core, domains.length);
+    return evidence && coreEvidence(evidence);
   };
   const cache = {
     get size() {
@@ -822,7 +879,7 @@ export function createFoodOptimizerPruningCache({
           ) &&
           result.samples?.every((sample) => sample.unusedFoodThresholds)
         )
-          unusedFood = { result, unusedFood: true };
+          unusedFood = { result, unusedFood: true, budget: budgetFor(0), deathsEvidence: null };
         return;
       }
       const ranges = result.equivalentThresholds;
@@ -860,6 +917,11 @@ export function createFoodOptimizerPruningCache({
         key,
         ranges: matchingRanges.map((range) => ({ ...range })),
         order: candidate.food,
+        // A group entry only ever answers queries with this exact composition, so
+        // its budget is the query's; it is recorded anyway because the gate reads
+        // one field for every certificate shape.
+        budget: budgetFor(candidate.slots.length),
+        deathsEvidence: null,
         result: feasible
           ? result
           : prunedForCost

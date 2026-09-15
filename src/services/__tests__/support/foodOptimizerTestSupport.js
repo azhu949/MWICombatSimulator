@@ -195,6 +195,14 @@ export function installLegacyBuffLookup() {
   };
 }
 
+// 死亡预算的独立实现（刻意不复用生产侧 helper，避免同一个错误在两边同时成立）：候选少带
+// 食物（槽位少于基线携带槽位数）时必须严格更少死，其余情况沿用「不高于基线累计死亡」。
+export function referenceDeathBudget(request, candidate, baselineDeaths = Infinity) {
+  if (!candidate) return baselineDeaths;
+  const food = request.payload.players.find((player) => player.hrid === `player${request.activePlayerId}`)?.food || [];
+  return candidate.slots.length < food.filter(Boolean).length ? Math.max(0, baselineDeaths - 1) : baselineDeaths;
+}
+
 export function physicalFoodOptimizerResult(result) {
   if (!result.feasible) return { feasible: false };
   return {

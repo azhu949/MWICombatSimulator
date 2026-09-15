@@ -390,3 +390,181 @@ describe('food optimizer ranking certificates', () => {
     expect(blocks.filter((block) => block.excludedSignature === excluded.signature)).toHaveLength(1);
   });
 });
+
+describe('food optimizer slot-aware death budgets', () => {
+  // 预算只随槽位数变化（少带食物 ⇒ 更低），而证书是按记录那次运行的预算签发的。这里用一份
+  // 可变预算复现「同一份证书面对两个预算」：闸门必须按查询预算重判，或拒绝复用、退回重新模拟。
+  const gated = (overrides = {}) => {
+    let budget = 3;
+    const items = [food('a')];
+    const candidate = candidateFor(items);
+    const cache = createFoodOptimizerPruningCache({
+      items,
+      rounds: 3,
+      getDeathBudget: () => budget,
+      ...overrides,
+    });
+    return { cache, candidate, setBudget: (value) => (budget = value) };
+  };
+
+  it('reclassifies a complete run that dies beyond the query budget instead of lending it out as feasible', () => {
+    const { cache, candidate, setBudget } = gated();
+    cache.record(candidate, { ...success(candidate), deaths: 3 });
+    expect(cache.match(candidate)?.result).toMatchObject({ feasible: true, deaths: 3 });
+
+    // 少带一件食物的查询预算更低（3 → 2）：同一份证书必须就地改判成死亡淘汰。
+    setBudget(2);
+    expect(cache.match(candidate)?.result).toMatchObject({ feasible: false, rejected: 'deaths', deaths: 3 });
+
+    // 改判只影响返回值：证书本身没有被改写，预算回升后依旧按可行签发。
+    setBudget(3);
+    expect(cache.match(candidate)?.result.feasible).toBe(true);
+    expect(cache.size).toBe(1);
+    expect(cache.feasibleSize).toBe(1);
+  });
+
+  it('keeps a deaths certificate only while the query budget can no longer prove a higher one', () => {
+    const { cache, candidate, setBudget } = gated();
+    cache.record(candidate, { ...success(candidate), feasible: false, rejected: 'deaths', deaths: 4 });
+    expect(cache.match(candidate)?.result.rejected).toBe('deaths');
+
+    // 查询预算更低：记录那次在 4 死处截断，低预算下同样成立。
+    setBudget(2);
+    expect(cache.match(candidate)?.result.rejected).toBe('deaths');
+
+    // 查询预算更高：那份结论只证明「超过 3 死」，不能拿来断言 4 死预算下也失败。
+    setBudget(4);
+    expect(cache.match(candidate)).toBeNull();
+  });
+
+  it('needs the trajectory to reach its event before lending a mana or cost certificate', () => {
+    const { cache, candidate, setBudget } = gated();
+    cache.record(candidate, failure(candidate));
+    expect(cache.match(candidate)?.result.rejected).toBe('mana');
+
+    // 查询预算更高：同一轨迹依旧先空蓝，结论照常成立。
+    setBudget(4);
+    expect(cache.match(candidate)?.result.rejected).toBe('mana');
+
+    // 查询预算更低：查询可能更早因死亡截断，空蓝结论不再成立。
+    setBudget(2);
+    expect(cache.match(candidate)).toBeNull();
+
+    const cost = gated({ getCostCutoff: () => 100 });
+    cost.cache.record(cost.candidate, proofFor(cost.candidate));
+    expect(cost.cache.match(cost.candidate)?.result.pruned).toBe('cost');
+    cost.setBudget(4);
+    expect(cost.cache.match(cost.candidate)?.result.pruned).toBe('cost');
+    cost.setBudget(2);
+    expect(cost.cache.match(cost.candidate)).toBeNull();
+  });
+
+  it('gates a cross-slot core certificate by the budget of the query that matches it', () => {
+    const items = [food('a'), food('b')];
+    const oneSlot = buildFoodCandidate([{ ...items[0], threshold: 60 }]);
+    const twoSlot = buildFoodCandidate([
+      { ...items[0], threshold: 60 },
+      { ...items[1], threshold: 60 },
+    ]);
+    const domains = ({ slots }) => slots.map((slot) => ({ ...slot, min: slot.threshold, max: slot.threshold }));
+    const deaths = (candidate) => ({
+      feasible: false,
+      rejected: 'deaths',
+      roundsCompleted: 3,
+      deaths: 4,
+      foodUsed: { a: 1, b: 0 },
+      inactiveFoodThresholds: { hp: 1, mp: 1 },
+      samples: [1, 2, 3].map((seed) => ({ seed, ranOutOfMana: false, stoppedEarly: false, foodUsed: { a: 1, b: 0 } })),
+      equivalentThresholds: candidate.slots.map(({ hrid, kind }) => ({ hrid, kind, min: 1, max: 100 })),
+    });
+    // 基线 2 槽：只带 1 件的候选预算 3，带满 2 件的候选预算 4。
+    const cacheFor = (candidate) => {
+      const cache = createFoodOptimizerPruningCache({
+        items,
+        rounds: 3,
+        getDeathBudget: (slotCount) => (slotCount < 2 ? 3 : 4),
+        ...failureCapacity,
+      });
+      cache.record(candidate, deaths(candidate));
+      return cache;
+    };
+
+    // 1 槽记录（预算 3）的「已死」结论只在 3 死以内成立：2 槽查询（预算 4）必须重新模拟。
+    expect(cacheFor(oneSlot).matchRanges(domains(twoSlot))).toBeNull();
+
+    // 2 槽记录（预算 4）的同一结论对 1 槽查询（预算 3）依然成立：核心证书可以照常复用。
+    const evidence = cacheFor(twoSlot).matchRanges(domains(oneSlot));
+    expect(evidence?.result.rejected).toBe('deaths');
+    expect(evidence?.coreRanges).toEqual([{ hrid: 'a', kind: 'mp', min: 1, max: 100 }]);
+  });
+
+  // 空跑证书只按记录那次运行的预算签发：基线 2 槽时它记录在 0 槽的预算（3）上，对 2 槽查询
+  // （预算 4）只能证明「0 槽会死」，不能外借。闸门拒绝后必须继续往下找别的证书，而不是把整条
+  // 查询作废——否则这一整块会连同排名界、同 composition 组证书、consumed-core 一起退回逐候选模拟。
+  const unusedFoodBlock = (overrides = {}) => {
+    const items = [food('a'), food('b')];
+    const cache = createFoodOptimizerPruningCache({
+      items,
+      rounds: 3,
+      getDeathBudget: (slotCount) => (slotCount < 2 ? 3 : 4),
+      ...overrides,
+    });
+    cache.record(buildFoodCandidate([]), {
+      feasible: false,
+      rejected: 'deaths',
+      deaths: 4,
+      costPerHour: 0,
+      foodUsed: {},
+      roundsCompleted: 3,
+      unusedFoodThresholds: { hp: 1, mp: 1 },
+      samples: [1, 2, 3].map((seed) => ({
+        seed,
+        stoppedEarly: true,
+        ranOutOfMana: false,
+        foodUsed: {},
+        unusedFoodThresholds: { hp: 1, mp: 1 },
+      })),
+    });
+    // 两个食物都在网格里，且阈值高于空跑观察到的亏损上界 ⇒ 整块命中空跑证书。
+    // 控制断言（守住用例本身的有效性）：同一片区域的 1 槽查询（预算 3 = 记录预算）必须由
+    // 空跑证书亲自回答。少了它，「证书没登记」会让下面两条用例因为「反正没有证书可用」而
+    // 空过——断言从「闸门拒绝 ⇒ 继续下探」退化成「证书存在 ⇒ 有答案」，守不住落空语义。
+    expect(cache.matchRanges([{ ...items[0], min: 90, max: 90 }])?.unusedFood).toBe(true);
+    return { cache, items, domains: items.map((item) => ({ ...item, min: 90, max: 90 })) };
+  };
+
+  it('falls through to the ranking bound when the unused-food certificate cannot serve the query budget', () => {
+    const { cache, domains } = unusedFoodBlock({
+      getRankCutoff: () => ({ costPerHour: 0, deaths: 0, slots: [{}] }),
+    });
+    expect(cache.matchRanges(domains)?.result).toMatchObject({ pruned: 'rank', feasible: null });
+  });
+
+  it('falls through to the composition group when the unused-food certificate cannot serve the query budget', () => {
+    const { cache, items, domains } = unusedFoodBlock();
+    const pair = buildFoodCandidate([
+      { ...items[0], threshold: 90 },
+      { ...items[1], threshold: 90 },
+    ]);
+    cache.record(pair, success(pair));
+    const evidence = cache.matchRanges(domains);
+    // 答案必须来自同 composition 组证书，而不是空跑证书（后者是 0 槽的死亡淘汰结论）。
+    expect(evidence?.unusedFood).toBeUndefined();
+    expect(evidence?.result.feasible).toBe(true);
+  });
+
+  it('stays ungated when the budget source is missing or dirty', () => {
+    const items = [food('a')];
+    const candidate = candidateFor(items);
+    const dying = { ...success(candidate), deaths: 4 };
+    for (const value of [undefined, null, -1, 1.5, NaN, '2']) {
+      const cache = createFoodOptimizerPruningCache({ items, rounds: 3, getDeathBudget: () => value });
+      cache.record(candidate, dying);
+      expect(cache.match(candidate)?.result.feasible).toBe(true);
+    }
+    // 没注入 getter 的缓存（自定义缓存或只关心成本/等效性的调用方）保持原有复用行为。
+    const plain = createFoodOptimizerPruningCache({ items, rounds: 3 });
+    plain.record(candidate, dying);
+    expect(plain.match(candidate)?.result.feasible).toBe(true);
+  });
+});

@@ -9,6 +9,8 @@ import {
   FOOD_OPTIMIZER_MAX_SLOTS,
   isFoodOptimizerTopTenRequest,
   isFoodOptimizerZeroDeathsRequest,
+  resolveFoodOptimizerBaselineSlotCount,
+  resolveFoodOptimizerCandidateDeathBudget,
   resolveFoodOptimizerRequestSearchMode,
 } from './foodOptimizerDomain.js';
 import {
@@ -241,9 +243,17 @@ export function createFoodOptimizerSearch({
   // 同上：把「排除有死亡的方案」的解析结果写回 request，报告与 UI 看到的是实际执行的口径。
   request.requireZeroDeaths = isFoodOptimizerZeroDeathsRequest(request);
   const report = createFoodOptimizerReport(request, items, foodSlots);
-  // 候选的死亡预算：普通模式等于基线累计死亡（不高于基线即可）；启用「排除有死亡的方案」
-  // 时压到 0——有死亡的候选一律按 rejected='deaths' 淘汰，前十自然只剩 0 死方案。
-  const candidateDeathBudget = () => (request.requireZeroDeaths ? 0 : report.baseline.deaths);
+  // 候选的死亡预算：普通模式等于基线累计死亡（不高于基线即可），但「少带食物」必须严格更少死
+  // ——槽位少于基线携带槽位数时预算减一（槽位数持平或更多仍允许并列）。启用「排除有死亡的方案」
+  // 时一切压到 0，有死亡的候选一律按 rejected='deaths' 淘汰，前十自然只剩 0 死方案。
+  // 预算只随槽位数变化，因此同一个函数同时服务候选评估（worker/缓存/rank witnesses）与剪枝
+  // 缓存的按查询槽位重算：证书必须按槽位重算预算，才不会把属于低预算的「已死」证书发给槽位
+  // 更多的查询。基线轮次自身（candidate = null）不受预算约束，槽位数不可判时也会失败开放。
+  const baselineSlotCount = resolveFoodOptimizerBaselineSlotCount(request);
+  const deathBudgetForSlots = (slotCount) =>
+    request.requireZeroDeaths
+      ? 0
+      : resolveFoodOptimizerCandidateDeathBudget(report.baseline?.deaths, slotCount, baselineSlotCount);
   const clients = new Set();
   const inFlight = new Map();
   const completedRoundsByClient = new Map();
@@ -265,6 +275,9 @@ export function createFoodOptimizerSearch({
     rounds: request.rounds,
     items,
     ...(topTen ? { getCostCutoff, getRankCutoff } : {}),
+    // 证书按查询槽位重算死亡预算：少带食物的查询预算更低，可行证书要就地改判，低预算的
+    // 「已死」证书也不能外借给槽位更多的查询（见 foodOptimizerPruning.js 的预算闸门）。
+    getDeathBudget: deathBudgetForSlots,
     // Consumed-core capacity follows the search space: fine grids observe far
     // more distinct cores, while small domains must not pay for a large index.
     ...selectFoodOptimizerConsumedCoreCapacity(report.stats.totalCandidates),
@@ -335,7 +348,14 @@ export function createFoodOptimizerSearch({
   const rememberResult = (candidate, result) => {
     if (reuse) pruning.record(candidate, result);
     if (topTen && reuse && !rankWitnesses && candidate.slots.length === 0) {
-      rankWitnesses = findUnusedFoodRankWitnesses(request, items, foodSlots, candidate, result, candidateDeathBudget());
+      rankWitnesses = findUnusedFoodRankWitnesses(
+        request,
+        items,
+        foodSlots,
+        candidate,
+        result,
+        deathBudgetForSlots(candidate.slots.length),
+      );
       if (rankWitnesses) refreshRankCutoff();
     }
     if (sharedRoundCache && Array.isArray(result.samples))
@@ -507,7 +527,12 @@ export function createFoodOptimizerSearch({
               ? request.seeds?.map((seed) => sharedRoundCache.match(seed, candidate))
               : undefined;
             let result = sharedRoundCache
-              ? tryEvaluateFoodOptimizerCachedCandidate(request, candidate, candidateDeathBudget(), reusableSamples)
+              ? tryEvaluateFoodOptimizerCachedCandidate(
+                  request,
+                  candidate,
+                  deathBudgetForSlots(candidate.slots.length),
+                  reusableSamples,
+                )
               : null;
             const completedFromCache = result !== null;
             if (completedFromCache) {
@@ -523,7 +548,7 @@ export function createFoodOptimizerSearch({
                 {
                   type: 'evaluate',
                   candidate,
-                  deathBudget: candidateDeathBudget(),
+                  deathBudget: deathBudgetForSlots(candidate.slots.length),
                   reusableSamples,
                   ...(topTen ? { costCutoff: getCostCutoff() } : {}),
                 },

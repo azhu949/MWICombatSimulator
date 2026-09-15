@@ -8,7 +8,7 @@ import { createFoodOptimizerSearch } from '../foodOptimizerSearch.js';
 import { evaluateFoodOptimizerCandidate } from '../foodOptimizerSimulation.js';
 import { createFoodOptimizerRoundCache } from '../foodOptimizerRoundCache.js';
 import { materializeFoodOptimizerOutcome } from '../foodOptimizerPruning.js';
-import { physicalFoodOptimizerResult } from './support/foodOptimizerTestSupport.js';
+import { physicalFoodOptimizerResult, referenceDeathBudget } from './support/foodOptimizerTestSupport.js';
 
 const catalog = (count = 5, thresholds = [100, 90, 60, 30]) =>
   Array.from({ length: count }, (_, index) => ({
@@ -72,7 +72,7 @@ async function run({
       samples,
       deaths,
       ranOutOfMana,
-      feasible: !ranOutOfMana && deaths <= baselineDeaths,
+      feasible: !ranOutOfMana && deaths <= referenceDeathBudget(request, candidate, baselineDeaths),
       roundsCompleted: 2,
       costPerHour: samples.reduce((sum, sample) => sum + sample.costPerHour, 0) / 2,
       foodUsed: samples[0].foodUsed,
@@ -183,7 +183,8 @@ describe('certified zero-consumption ranking witnesses', () => {
   it.each([1, 4])(
     'can establish the bound from an empty candidate after an equipped baseline with %i workers',
     async (workerLimit) => {
-      const { calls } = await run({ equipped: true, workerLimit });
+      // 少带食物（0 槽 < 基线 1 槽）必须严格更少死：空方案 4 死 < 基线 6 死，才够格当排名下界。
+      const { calls } = await run({ equipped: true, workerLimit, emptyDeaths: 4 });
       expect(calls[0].candidate.signature).toBe('');
       expect(calls[0].costCutoff).toBeUndefined();
       expect(calls.some((call) => call.costCutoff === 0 && call.feasibleBeforeDispatch < 10)).toBe(true);

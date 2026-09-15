@@ -18,6 +18,7 @@ import {
   generateFoodOptimizerCandidates,
   getFoodOptimizerCatalogHrids,
   getFoodOptimizerItems,
+  hasEmptyFoodOptimizerBaseline,
   isValidFoodOptimizerSettings,
   isFoodOptimizerTopTenRequest,
   isFoodOptimizerZeroDeathsRequest,
@@ -25,6 +26,8 @@ import {
   normalizeFoodOptimizerRounds,
   normalizeFoodOptimizerSearchMode,
   normalizeFoodOptimizerZeroDeaths,
+  resolveFoodOptimizerBaselineSlotCount,
+  resolveFoodOptimizerCandidateDeathBudget,
   resolveFoodOptimizerRequestSearchMode,
 } from '../foodOptimizerDomain.js';
 import { foodOptions } from '../../shared/gameDataIndex.js';
@@ -271,6 +274,54 @@ describe('food optimizer thresholds and candidates', () => {
     ];
     expect(rows.sort(compareFoodOptimizerResults).map((row) => row.signature)).toEqual(['', 'a', 'b', '', '']);
     expect(rows[4].costPerHour).toBe(5);
+  });
+
+  // 基线的「携带槽位数」与死亡预算共用同一个取数口径（活动玩家的 food 字段），快照缺失或
+  // 脏值一律返回 null，让调用方失败开放而不是按 0 槽加严搜索。
+  it('counts the equipped baseline slots of the active player or reports an unreadable snapshot', () => {
+    const payload = {
+      players: [
+        { hrid: 'player1', food: [{ hrid: 'a' }, null, { hrid: 'b' }] },
+        { hrid: 'player2', food: [{ hrid: 'c' }] },
+        { hrid: 'player3', food: [] },
+      ],
+    };
+    expect(resolveFoodOptimizerBaselineSlotCount({ activePlayerId: '1', payload })).toBe(2);
+    // 只数活动玩家：队友带满食物不影响本次搜索的预算。
+    expect(resolveFoodOptimizerBaselineSlotCount({ activePlayerId: '2', payload })).toBe(1);
+    // 空槽基线读作 0：任何候选都不会「比基线带得更少」，少带规则自然失效。
+    expect(resolveFoodOptimizerBaselineSlotCount({ activePlayerId: '3', payload })).toBe(0);
+    expect(hasEmptyFoodOptimizerBaseline({ activePlayerId: '3', payload })).toBe(true);
+    for (const request of [
+      // 活动玩家不在快照里、快照缺失、或 food 不是数组：一律 null，由调用方失败开放。
+      { activePlayerId: '4', payload },
+      { activePlayerId: '1' },
+      { activePlayerId: '1', payload: {} },
+      { activePlayerId: '1', payload: { players: [{ hrid: 'player1', food: {} }] } },
+      { activePlayerId: '1', payload: { players: [{ hrid: 'player1', food: 'a' }] } },
+      null,
+    ])
+      expect(resolveFoodOptimizerBaselineSlotCount(request)).toBeNull();
+  });
+
+  // 少带食物必须严格更少死：槽位少于基线携带槽位数时预算减一（不允许并列），槽位持平或更多
+  // 时保持「不高于基线累计死亡」。预算或槽位数不是非负安全整数时原样返回——脏值绝不静默加严。
+  it('lowers the death budget by one for candidates that carry fewer slots than the baseline', () => {
+    expect(resolveFoodOptimizerCandidateDeathBudget(4, 3, 3)).toBe(4);
+    expect(resolveFoodOptimizerCandidateDeathBudget(4, 4, 3)).toBe(4);
+    expect(resolveFoodOptimizerCandidateDeathBudget(4, 2, 3)).toBe(3);
+    expect(resolveFoodOptimizerCandidateDeathBudget(4, 0, 1)).toBe(3);
+    // 基线零死时「更少」只可能是 0 死：下限不为负。
+    expect(resolveFoodOptimizerCandidateDeathBudget(0, 0, 2)).toBe(0);
+    expect(resolveFoodOptimizerCandidateDeathBudget(1, 1, 2)).toBe(0);
+    // 0 预算本身合法（「排除有死亡的方案」口径），照常参与减一判定。
+    expect(resolveFoodOptimizerCandidateDeathBudget(0, 1, 2)).toBe(0);
+    for (const value of [undefined, null, -1, 2.5, NaN, Infinity, '3'])
+      expect(resolveFoodOptimizerCandidateDeathBudget(value, 1, 3)).toBe(value);
+    for (const value of [undefined, null, -1, 1.5, NaN, '2'])
+      expect(resolveFoodOptimizerCandidateDeathBudget(4, value, 3)).toBe(4);
+    for (const value of [undefined, null, -1, 1.5, NaN, '3'])
+      expect(resolveFoodOptimizerCandidateDeathBudget(4, 1, value)).toBe(4);
   });
 
   it('charges all food with frozen fallback prices and excludes drinks', () => {
