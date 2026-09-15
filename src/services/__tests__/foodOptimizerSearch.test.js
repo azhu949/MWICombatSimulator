@@ -11,6 +11,15 @@ afterEach(() => {
   vi.unstubAllGlobals();
 });
 
+// 夹具必须跨烹饪线（每件自成一类）：优化器把同一条烹饪线（甜甜圈/蛋糕/软糖/酸奶）
+// 视为一类、每个候选最多占一个槽位；目录前几项全是甜甜圈线，直接截取会让搜索空间塌缩。
+// probe-* 是不在目录里的假 hrid（没有官方烹饪分类），按 fail-open 各自成一类；
+// 尾缀只是可读标记，不参与分族判定。
+function spanCookingFamilies(items) {
+  const suffixes = ['_donut', '_cake', '_gummy', '_yogurt', ''];
+  return items.map((item, index) => ({ ...item, hrid: `probe-${index}${suffixes[index]}` }));
+}
+
 function setup({ onUpdate, failAfter = Infinity, items, workerLimit = 3 } = {}) {
   const clients = [];
   let active = 0;
@@ -21,7 +30,9 @@ function setup({ onUpdate, failAfter = Infinity, items, workerLimit = 3 } = {}) 
   const request = { rounds: 3, seeds: [1, 2, 3], inputSignature: 'input' };
   const search = createFoodOptimizerSearch({
     request,
-    items: items || getFoodOptimizerItems({ maxHp: 100, maxMp: 100, thresholdStepPercent: 100 }).slice(0, 5),
+    items:
+      items ||
+      spanCookingFamilies(getFoodOptimizerItems({ maxHp: 100, maxMp: 100, thresholdStepPercent: 100 }).slice(0, 5)),
     foodSlots: 3,
     workerLimit,
     adaptiveWorkers: false,
@@ -272,7 +283,9 @@ describe('bounded exhaustive food search', () => {
     });
     const report = await state.search.done;
     expect(report.stats.totalCandidates).toBeGreaterThan(1_000_000_000);
-    expect(report.stats.totalCompositions).toBe(3683);
+    // 全目录（28 件）分 4 条烹饪线、每类最多 1 件：组合数 = Σ C(4,s)·7^s (s≤3)
+    // = 1 + 28 + 294 + 1372 = 1695（旧口径每件独立成轴时为 C(28,0..3) = 3683）。
+    expect(report.stats.totalCompositions).toBe(1695);
     expect(report.stats.completedCandidates).toBe(4);
     expect(state.calls()).toBe(5);
     expect(report).toMatchObject({ status: 'cancelled', complete: false });
@@ -441,9 +454,15 @@ describe('bounded exhaustive food search', () => {
     },
   );
   it('keeps all workers occupied even when a phase has fewer than one old batch of candidates', async () => {
+    // 两件夹具必须分属两条烹饪线（甜甜圈 + 蛋糕），否则同类互斥会把候选数压到 3。
     const items = getFoodOptimizerItems({ maxHp: 100, maxMp: 100, thresholdStepPercent: 100 })
       .slice(0, 2)
-      .map((item) => ({ ...item, restore: 100, thresholds: [100] }));
+      .map((item, index) => ({
+        ...item,
+        restore: 100,
+        thresholds: [100],
+        hrid: `probe-${index}${index === 0 ? '_donut' : '_cake'}`,
+      }));
     const { search, peak } = setup({ items, workerLimit: 3 });
     const report = await search.done;
     expect(report.stats.totalCandidates).toBe(4);
@@ -452,7 +471,9 @@ describe('bounded exhaustive food search', () => {
   });
 
   it('can cancel during bulk reuse of feasible results while retaining completed rankings', async () => {
-    const items = getFoodOptimizerItems({ maxHp: 10000, maxMp: 10000, thresholdStepPercent: 1 }).slice(0, 3);
+    const items = spanCookingFamilies(
+      getFoodOptimizerItems({ maxHp: 10000, maxMp: 10000, thresholdStepPercent: 1 }).slice(0, 3),
+    );
     let calls = 0;
     let clock = 0;
     vi.spyOn(Date, 'now').mockImplementation(() => (clock += 200));

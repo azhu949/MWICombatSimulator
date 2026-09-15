@@ -1,4 +1,8 @@
-import { buildFoodDefaultCandidate, FOOD_OPTIMIZER_MAX_SLOTS } from './foodOptimizerDomain.js';
+import {
+  buildFoodDefaultCandidate,
+  FOOD_OPTIMIZER_MAX_SLOTS,
+  getFoodOptimizerFamilyKey,
+} from './foodOptimizerDomain.js';
 
 const NEARBY_CHOICES_PER_FOOD = 3;
 
@@ -14,6 +18,11 @@ export function createFoodOptimizerPriority(request, items, foodSlots) {
     new Set(equipped).size !== equipped.length
   )
     return null;
+  // 与搜索主路径同一「每类最多 1 件」不变量：装备基线里出现两条同烹饪线的食物
+  // （如甜甜圈 + 蓝莓甜甜圈）时，基线候选本身就不在合法搜索空间里，优先搜索直接
+  // 放弃（fail-open，回落到常规枚举），绝不产出破坏不变量的候选。
+  const equippedFamilies = equipped.map(getFoodOptimizerFamilyKey);
+  if (new Set(equippedFamilies).size !== equippedFamilies.length) return null;
   const composition = items.filter((item) => equipped.includes(item.hrid));
   if (
     composition.length !== equipped.length ||

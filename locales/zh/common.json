@@ -72,6 +72,7 @@
     "foodScope": "食物范围",
     "scopeTitle": "选择参与模拟的食物",
     "scopeHint": "未保存过范围时，默认只勾选当前佩戴的食物；未勾选的食物不会参与候选方案，勾选越少搜索越快。",
+    "scopeFamilyHint": "同一类食物（同一条烹饪线，如各口味软糖）在一个候选方案里最多占一个槽位。",
     "scopeSelected": "已选 {{selected}} / {{total}} 种食物",
     "scopeSelectAll": "全选",
     "scopeClearAll": "清空",

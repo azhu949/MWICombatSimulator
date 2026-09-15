@@ -1,4 +1,4 @@
-import { foodOptions, itemDetailIndex } from '../shared/gameDataIndex.js';
+import { foodOptions, GAME_DATA_VERSION, itemDetailIndex, skillingData } from '../shared/gameDataIndex.js';
 import { resolveMarketPrice } from './marketPriceService.js';
 
 export const FOOD_OPTIMIZER_DEFAULT_STEP_PERCENT = 10;
@@ -258,14 +258,89 @@ export function buildFoodDefaultCandidate(items = []) {
   );
 }
 
+// 「同类食物」＝同一条烹饪线：游戏里每个槽位可以各自放一件任意食物，但优化器把
+// 同一条线的所有等级变体视为一类，一个候选方案里每类最多占一个槽位（用户口径：
+// 软糖家族整体只能装备 1 格，不能三格都带软糖线）。
+//
+// 族键直接取游戏官方的烹饪分类（cooking 动作的 action category，如 instant_heal /
+// heal_over_time / instant_mana / mana_over_time），族键字符串内嵌完整 category。
+// 分类索引来自 skillingData.actions（type=/action_types/cooking）的 outputItems：
+// 食物产物 → 生产它的烹饪动作的 category。当前 28 件食物全部反查到唯一分类、零冲突，
+// 且四条分类线与四条恢复线一一对应（crate 的 outputItems 是 crate 自身、食物在其
+// inputItems，不会污染映射）。之所以不由物品的恢复属性反推（资源 HP/MP × 是否持续
+// recoveryDuration > 0）：机制组合只有四种，任何新增烹饪线必然与既有线之一同机制，
+// 会被静默并入同族，让「新线 + 旧线」的合法组合不再被枚举（漏解）——这类过度合并
+// 必须显式暴露：实现偏离官方分类时由逐条等式拦住，官方数据自身合并/拆分时逐条等式
+// 自洽、只有目录守卫的冻结分区比对能拦住（见 foodOptimizerDomain.test.js 的
+// FROZEN_FOOD_FAMILIES）。官方分类是游戏数据对「线」的显式定义：新分类自动成为
+// 新族并参与互斥，官方把新线并入既有分类时优化器与官方语义保持一致。
+// 之所以不按尾缀/白名单判定：命名是脆弱的启发式（cupcake 就不带 _cake 尾缀，只为
+// 它维护过一条别名），游戏新增线时命名未知，白名单会静默漏掉新线、让同类约束失效。
+//
+// 无法判定（不在索引、分类缺失或同一产物出现在多个分类）的 hrid（测试桩、脏值）
+// 自成一类，且 unknown: 前缀与分类键域隔离——绝不与已知类互斥，遵循「未知输入不
+// 静默加严搜索」的仓库原则：脏值只会让约束退化为旧行为（各自独立），不会误伤合法
+// 组合。
+//
+// 目录中的真实食物必须全部可归入唯一官方分类。数据更新引入无法归类的食物时，由
+// foodOptimizerDomain.test.js 的目录全量归族守卫用例（真实目录）与
+// foodOptimizerFamilyFallback.test.js 的合成形态用例（分类冲突/缺失）显式失败并
+// 列出未归类食物，而不是静默放过。守卫用例同时把「官方分类 → 目录成员」分区冻结成
+// FROZEN_FOOD_FAMILIES：官方数据合并两条线、拆分一条线或在既有类之间挪动变体时，
+// 逐条等式仍会自洽通过，族键集合与族数这类弱检查也拦不住（挪动连族键集合都不变），
+// 只有分区比对能拦住——必须先复核官方数据、再更新冻结表，不允许让「同类最多占一个
+// 槽位」静默变松或变严。
+//
+// 分类索引按 GAME_DATA_VERSION 记忆化：共享索引热重载（版本变化）后自动重建，
+// 与 advisorDropItems.js 等消费方的既有失效模式一致。
+let foodFamilyByHridCache = null;
+let foodFamilyByHridVersion = '';
+function getFoodFamilyByHrid() {
+  if (foodFamilyByHridCache && foodFamilyByHridVersion === GAME_DATA_VERSION) return foodFamilyByHridCache;
+  const families = new Map();
+  const conflicted = new Set();
+  for (const action of skillingData?.actions || []) {
+    if (String(action?.type || '') !== '/action_types/cooking') continue;
+    const category = String(action?.category || '');
+    if (!category) continue;
+    for (const output of action.outputItems || []) {
+      const itemHrid = String(output?.itemHrid || '');
+      if (!itemHrid || conflicted.has(itemHrid)) continue;
+      const existing = families.get(itemHrid);
+      if (existing === undefined) families.set(itemHrid, category);
+      else if (existing !== category) {
+        // 同一产物被多个分类的烹饪动作输出：归属无法判定，自成一类（fail-open），
+        // 绝不静默挑一条线合并；目录守卫会把该冲突显式暴露出来。
+        families.delete(itemHrid);
+        conflicted.add(itemHrid);
+      }
+    }
+  }
+  foodFamilyByHridCache = families;
+  foodFamilyByHridVersion = GAME_DATA_VERSION;
+  return families;
+}
+
+export function getFoodOptimizerFamilyKey(hrid) {
+  const key = String(hrid ?? '');
+  const category = getFoodFamilyByHrid().get(key);
+  return category ? `food-family:${category}` : `food-family:unknown:${key.replace(/^\/items\//, '')}`;
+}
+
 export function countFoodOptimizerCompositions(items, slotLimit = FOOD_OPTIMIZER_MAX_SLOTS) {
   const slots = Math.max(0, Math.min(FOOD_OPTIMIZER_MAX_SLOTS, Math.floor(finite(slotLimit))));
-  const dp = Array(slots + 1).fill(0);
-  dp[0] = 1;
+  // 每类最多选 1 件 ⇒ 每类对组合数的贡献是因子 (1 + size·x)。按类聚合后做同一
+  // 个「选 0 或 1」背包 DP，与 generateFoodOptimizerCompositionItems 逐类互斥的
+  // 枚举严格一致（既有测试逐槽位对照枚举数校验这条一致性）。
+  const familySizes = new Map();
   for (const item of items || []) {
     if (!item?.thresholds?.length) continue;
-    for (let used = slots; used >= 1; used -= 1) dp[used] += dp[used - 1];
+    const family = getFoodOptimizerFamilyKey(item.hrid);
+    familySizes.set(family, (familySizes.get(family) || 0) + 1);
   }
+  const dp = Array(slots + 1).fill(0);
+  dp[0] = 1;
+  for (const size of familySizes.values()) for (let used = slots; used >= 1; used -= 1) dp[used] += dp[used - 1] * size;
   return dp.reduce((total, value) => total + value, 0);
 }
 
@@ -273,13 +348,18 @@ export function* generateFoodOptimizerCompositionItems(items, slotLimit = FOOD_O
   const normalizedItems = Array.isArray(items) ? items.filter((item) => item?.thresholds?.length) : [];
   const limit = Math.max(0, Math.min(FOOD_OPTIMIZER_MAX_SLOTS, Math.floor(finite(slotLimit))));
   const picked = [];
+  const pickedFamilies = new Set();
   function* visit(index) {
     yield picked.slice();
     if (picked.length >= limit) return;
     for (let next = index; next < normalizedItems.length; next += 1) {
+      const family = getFoodOptimizerFamilyKey(normalizedItems[next].hrid);
+      if (pickedFamilies.has(family)) continue;
       picked.push(normalizedItems[next]);
+      pickedFamilies.add(family);
       yield* visit(next + 1);
       picked.pop();
+      pickedFamilies.delete(family);
     }
   }
   yield* visit(0);
@@ -302,13 +382,20 @@ export function* generateFoodOptimizerCompositionCandidates(items = []) {
 
 export function countFoodOptimizerCandidates(items, slotLimit = FOOD_OPTIMIZER_MAX_SLOTS) {
   const slots = Math.max(0, Math.min(FOOD_OPTIMIZER_MAX_SLOTS, Math.floor(finite(slotLimit))));
-  // Coefficients of product(1 + thresholdCount * x), retaining only up to three slots.
+  // 与组合枚举同一条「每类最多 1 件」约束：每类的因子是 (1 + T_f·x)，其中
+  // T_f = 该类全体成员的档位数之和（选中该类时任取一个成员再任取一个档位）。
+  // 按类聚合后逐类做「选 0 或 1」背包 DP，与 countFoodOptimizerCompositions
+  // （size·x 因子）共用同一骨架，只差每类的权重来源。
+  const familyChoices = new Map();
+  for (const item of items || []) {
+    if (!item?.thresholds?.length) continue;
+    const family = getFoodOptimizerFamilyKey(item.hrid);
+    familyChoices.set(family, (familyChoices.get(family) || 0) + item.thresholds.length);
+  }
   const dp = Array(slots + 1).fill(0);
   dp[0] = 1;
-  for (const item of items || []) {
-    const choices = Array.isArray(item?.thresholds) ? item.thresholds.length : 0;
+  for (const choices of familyChoices.values())
     for (let used = slots; used >= 1; used -= 1) dp[used] += dp[used - 1] * choices;
-  }
   return dp.reduce((total, value) => total + value, 0);
 }
 

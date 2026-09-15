@@ -13,6 +13,14 @@
         )
       }}
     </p>
+    <p class="text-xs text-muted-foreground">
+      {{
+        t(
+          'common:foodOptimizer.scopeFamilyHint',
+          'Foods from the same cooking line (for example, every gummy flavor) take at most one slot in a candidate plan.',
+        )
+      }}
+    </p>
     <div class="flex flex-wrap items-center justify-between gap-2">
       <p class="text-sm font-medium" data-food-optimizer-scope-summary>{{ scopeSummaryText }}</p>
       <div class="flex flex-wrap gap-2">

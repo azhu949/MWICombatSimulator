@@ -81,6 +81,18 @@ describe('bounded equipped-food neighborhood', () => {
   );
 });
 
+it('falls back when the equipped baseline spans two foods of the same cooking family', () => {
+  // 三条 hrid 不同、但其中两件同族（/items/donut 与 /items/blueberry_donut 同为
+  // 官方 instant_heal 烹饪线）的装备：hrid 去重检查放行、分族检查必须放弃优先搜索
+  // （fail-open 回落常规枚举），证明新增检查独立生效。族键来自官方烹饪分类，
+  // 假 hrid 没有分类（自成一类、互不互斥），所以这里必须用目录中的真实食物。
+  const sameFamilyHrids = ['/items/donut', '/items/blueberry_donut', '/items/gummy'];
+  const items = catalog().map((item, index) => (index >= 2 ? { ...item, hrid: sameFamilyHrids[index - 2] } : item));
+  const request = requestFor(items);
+  expect(new Set(items.slice(-3).map((item) => item.hrid)).size).toBe(3);
+  expect(createFoodOptimizerPriority(request, items, 3)).toBeNull();
+});
+
 function resultFor(candidate, { broad = false, emptyFeasible = false } = {}) {
   const slots = candidate?.slots || [];
   const feasible = !candidate || slots.length === 3 || (emptyFeasible && slots.length === 0);

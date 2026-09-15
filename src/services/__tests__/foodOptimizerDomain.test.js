@@ -17,6 +17,7 @@ import {
   generateFoodOptimizerCompositionCandidates,
   generateFoodOptimizerCandidates,
   getFoodOptimizerCatalogHrids,
+  getFoodOptimizerFamilyKey,
   getFoodOptimizerItems,
   hasEmptyFoodOptimizerBaseline,
   isValidFoodOptimizerSettings,
@@ -30,7 +31,7 @@ import {
   resolveFoodOptimizerCandidateDeathBudget,
   resolveFoodOptimizerRequestSearchMode,
 } from '../foodOptimizerDomain.js';
-import { foodOptions } from '../../shared/gameDataIndex.js';
+import { foodOptions, skillingData } from '../../shared/gameDataIndex.js';
 import { sanitizeTriggerList } from '../triggerMapper.js';
 
 describe('food optimizer thresholds and candidates', () => {
@@ -199,16 +200,154 @@ describe('food optimizer thresholds and candidates', () => {
     }
   });
 
+  // 夹具刻意跨 4 条烹饪线各取 1 件基础款（甜甜圈/蛋糕/软糖/酸奶）：族互斥（同类最多占
+  // 一个槽位）下，取目录前 4 件（全是甜甜圈线）会让 limit≥1 的组合塌缩为至多 1 件，
+  // limit 2/3/7 分支与 limit 1 完全等价——用例照样通过，槽位枚举覆盖被静默削弱。
+  // 每线 1 件使全部 C(4, k) 跨线组合合法，limit 0/1/2/3/7 真实覆盖 0/1/2/3 件上限（7 截到 3）。
   it.each([0, 1, 2, 3, 7])('matches exact enumeration with slot limit %i and no duplicate food', (limit) => {
-    const items = getFoodOptimizerItems({ maxHp: 100, maxMp: 100, thresholdStepPercent: 100 }).slice(0, 4);
+    const items = getFoodOptimizerItems({
+      maxHp: 100,
+      maxMp: 100,
+      thresholdStepPercent: 100,
+      hrids: ['/items/donut', '/items/cupcake', '/items/gummy', '/items/yogurt'],
+    });
+    // 夹具规模也是覆盖的一部分：目录变动导致取件不足时显式失败，不允许静默缩小。
+    expect(items).toHaveLength(4);
     const candidates = [...generateFoodOptimizerCandidates(items, limit)];
+    const slotCap = Math.min(3, limit);
     expect(candidates).toHaveLength(countFoodOptimizerCandidates(items, limit));
     expect(candidates[0].food).toEqual([]);
     expect(new Set(candidates.map((entry) => entry.signature)).size).toBe(candidates.length);
+    // 上限必须被真实用满（存在恰好达到 slotCap 件的候选）：原先只有「不超过上限」的
+    // 单向断言，同族夹具下候选全是 0/1 件也照样全绿；补上这条后，此类塌缩立即失败。
+    expect(candidates.some((entry) => entry.food.length === slotCap)).toBe(true);
     for (const candidate of candidates) {
-      expect(candidate.food.length).toBeLessThanOrEqual(Math.min(3, limit));
+      expect(candidate.food.length).toBeLessThanOrEqual(slotCap);
       expect(new Set(candidate.food).size).toBe(candidate.food.length);
     }
+  });
+
+  // 「同类食物最多占一个槽位」：同一条烹饪线（甜甜圈/蛋糕/软糖/酸奶）的任意两个
+  // 等级变体不得同时出现在一个组合或候选里。计数函数与枚举逐槽位对拍锁定一致性。
+  it.each([1, 2, 3])('never places two foods of the same cooking family in one composition (limit %i)', (limit) => {
+    const items = getFoodOptimizerItems({ maxHp: 100, maxMp: 100, thresholdStepPercent: 100 });
+    const compositions = [...generateFoodOptimizerCompositionItems(items, limit)];
+    expect(compositions.length).toBe(countFoodOptimizerCompositions(items, limit));
+    for (const composition of compositions) {
+      const families = composition.map((item) => getFoodOptimizerFamilyKey(item.hrid));
+      expect(new Set(families).size).toBe(families.length);
+    }
+    for (const candidate of generateFoodOptimizerCandidates(items, limit)) {
+      const families = candidate.food.map(getFoodOptimizerFamilyKey);
+      expect(new Set(families).size).toBe(families.length);
+    }
+  });
+
+  // 族键 = 游戏官方的烹饪分类（cooking 动作的 category）：族键字符串直接内嵌 category，
+  // 不再从恢复属性反推。cupcake 不带 _cake 尾缀，但官方分类与蛋糕线一致，天然同族。
+  it('derives the family from the official cooking category and folds the cake-line base cupcake into cake', () => {
+    expect(getFoodOptimizerFamilyKey('/items/donut')).toBe('food-family:/action_categories/cooking/instant_heal');
+    expect(getFoodOptimizerFamilyKey('/items/blueberry_donut')).toBe(getFoodOptimizerFamilyKey('/items/donut'));
+    expect(getFoodOptimizerFamilyKey('/items/cupcake')).toBe('food-family:/action_categories/cooking/heal_over_time');
+    expect(getFoodOptimizerFamilyKey('/items/spaceberry_cake')).toBe(getFoodOptimizerFamilyKey('/items/cupcake'));
+    expect(getFoodOptimizerFamilyKey('/items/gummy')).toBe('food-family:/action_categories/cooking/instant_mana');
+    expect(getFoodOptimizerFamilyKey('/items/star_fruit_gummy')).toBe(getFoodOptimizerFamilyKey('/items/gummy'));
+    expect(getFoodOptimizerFamilyKey('/items/yogurt')).toBe('food-family:/action_categories/cooking/mana_over_time');
+    expect(getFoodOptimizerFamilyKey('/items/apple_yogurt')).toBe(getFoodOptimizerFamilyKey('/items/yogurt'));
+    // 未知 hrid 自成一类且绝不与已知类互斥（fail-open：脏值退化为旧行为而非误伤）。
+    expect(getFoodOptimizerFamilyKey('/items/mystery_snack')).toBe('food-family:unknown:mystery_snack');
+    expect(getFoodOptimizerFamilyKey('/items/mystery_snack')).not.toBe(getFoodOptimizerFamilyKey('/items/donut'));
+  });
+
+  // 目录分区守卫的冻结快照：官方烹饪分类 → 目录成员（升序）。拍摄时官方数据为
+  // 4 条食物线 × 7 件（见 skillingData.actions 的 cooking 动作 outputItems）。
+  // 之所以冻结完整分区，而不是只锁族键集合或族数（「> 1」兜底）：优化器的
+  // 「同类最多占一个槽位」约束只由分区决定，而分区是官方数据的事实（实现逐条跟随
+  // 官方分类），重分区一旦发生，无论是变严（合并两条线：跨线组合被静默排除，漏解）
+  // 还是变松（拆分一条线或挪动变体：同线变体被静默放开，漏出用户口径禁止的组合；
+  // 挪动还会把变体并入新类、反向漏解），都只有分区比对能拦住——挪动连族键集合都
+  // 原封不动，「只锁集合」会被完全放行。
+  // 官方数据重组或增减食物时：先复核官方数据确实如此、再据此更新下表，不允许静默跟随
+  // （守卫失败是要求人工确认，不是让实现去猜，也不是让人默默刷新快照）。
+  const FROZEN_FOOD_FAMILIES = {
+    '/action_categories/cooking/instant_heal': [
+      '/items/blackberry_donut',
+      '/items/blueberry_donut',
+      '/items/donut',
+      '/items/marsberry_donut',
+      '/items/mooberry_donut',
+      '/items/spaceberry_donut',
+      '/items/strawberry_donut',
+    ],
+    '/action_categories/cooking/heal_over_time': [
+      '/items/blackberry_cake',
+      '/items/blueberry_cake',
+      '/items/cupcake',
+      '/items/marsberry_cake',
+      '/items/mooberry_cake',
+      '/items/spaceberry_cake',
+      '/items/strawberry_cake',
+    ],
+    '/action_categories/cooking/instant_mana': [
+      '/items/apple_gummy',
+      '/items/dragon_fruit_gummy',
+      '/items/gummy',
+      '/items/orange_gummy',
+      '/items/peach_gummy',
+      '/items/plum_gummy',
+      '/items/star_fruit_gummy',
+    ],
+    '/action_categories/cooking/mana_over_time': [
+      '/items/apple_yogurt',
+      '/items/dragon_fruit_yogurt',
+      '/items/orange_yogurt',
+      '/items/peach_yogurt',
+      '/items/plum_yogurt',
+      '/items/star_fruit_yogurt',
+      '/items/yogurt',
+    ],
+  };
+
+  // 目录守卫：目录中的每个真实食物都必须能解析出唯一、非 unknown 的官方烹饪分类
+  // （即 28/28 食物可在 skillingData 的 cooking 动作 outputItems 中反查到唯一 category），
+  // 且整条「分类 → 成员」分区必须与冻结快照逐项一致。数据更新引入无法归类的食物
+  // （分类缺失、多分类冲突）时立即失败并列出未归类食物，而不是让「每类最多一件」约束
+  // 静默退化（自成一类的 fail-open 只留给测试桩与脏值）。
+  it('assigns every catalog food to a unique official cooking category and freezes the partition', () => {
+    const catalog = getFoodOptimizerCatalogHrids();
+    expect(catalog.length).toBeGreaterThan(0);
+    const categoryByHrid = new Map();
+    for (const action of skillingData.actions.filter((entry) => entry.type === '/action_types/cooking'))
+      for (const output of action.outputItems || []) categoryByHrid.set(output.itemHrid, action.category);
+    // 族键必须跟随官方分类：分类缺失（undefined）、多分类冲突（实现判为 unknown）都在此失败。
+    const unclassified = catalog.filter(
+      (hrid) => getFoodOptimizerFamilyKey(hrid) !== `food-family:${categoryByHrid.get(hrid)}`,
+    );
+    expect(unclassified).toEqual([]);
+    // 分区冻结：上面的逐条等式只在「实现偏离官方分类、或分类彻底退化（无分类 / 多分类冲突）」
+    // 时失败；官方重分区（合并 / 拆分 / 挪动变体）时实现与官方分类同步变化，逐条等式天然自洽
+    // （族键集合、族数这类弱检查也拦不住），只有下面的分区比对能拦住——绝不放行静默变松或变严。
+    const membersByCategory = {};
+    for (const hrid of catalog) {
+      const category = categoryByHrid.get(hrid);
+      if (!membersByCategory[category]) membersByCategory[category] = [];
+      membersByCategory[category].push(hrid);
+    }
+    for (const members of Object.values(membersByCategory)) members.sort();
+    expect(membersByCategory).toEqual(FROZEN_FOOD_FAMILIES);
+  });
+
+  it('excludes same-family duplicates from the search space by construction', () => {
+    const line = (hrid) => ({ hrid, kind: 'hp', restore: 40, thresholds: [40], price: 1 });
+    const donutLine = ['/items/donut', '/items/blueberry_donut', '/items/spaceberry_donut'].map(line);
+    const items = [...donutLine, line('/items/gummy')];
+    // 2 条线、4 件食物（甜甜圈线 3 件 + 软糖线 1 件），单档位：
+    // 0 件 1 个 + 1 件 4 个 + 2 件只能跨线 3*1=3 个 + 3 件需 3 条线不可行 0 个 = 8。
+    const compositions = [...generateFoodOptimizerCompositionItems(items, 3)];
+    expect(compositions.length).toBe(8);
+    expect(compositions.length).toBe(countFoodOptimizerCompositions(items, 3));
+    expect(countFoodOptimizerCandidates(items, 3)).toBe(8);
+    expect(compositions.some((composition) => composition.length === 3)).toBe(false);
   });
 
   it('keeps enumeration lazy even when the candidate count exceeds a billion', () => {

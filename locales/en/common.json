@@ -72,6 +72,7 @@
     "foodScope": "Food scope",
     "scopeTitle": "Foods to include",
     "scopeHint": "With no saved scope, only equipped foods are checked by default. Unchecked foods are excluded; fewer foods search faster.",
+    "scopeFamilyHint": "Foods from the same cooking line (for example, every gummy flavor) take at most one slot in a candidate plan.",
     "scopeSelected": "{{selected}} of {{total}} foods selected",
     "scopeSelectAll": "Select all",
     "scopeClearAll": "Clear all",
