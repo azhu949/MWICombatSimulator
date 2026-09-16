@@ -64,6 +64,7 @@ import {
   normalizeLabyrinthCrates,
   toPlayerHrid,
 } from '../services/simulationDomain.js';
+import { normalizeLabyrinthShopUpgrades } from '../shared/labyrinthShopUpgrades.js';
 import { createAdvisorState, resolveAdvisorMetricPlayer } from '../services/advisorDomain.js';
 import {
   QUEUE_PARALLEL_WORKER_LIMIT_MIN,
@@ -251,6 +252,7 @@ export const useSimulatorStore = defineStore('simulator', {
         selectedGroupZoneHrids: initialGroupZoneHrids,
         selectedSoloZoneHrids: initialSoloZoneHrids,
         labyrinthCrates: normalizeLabyrinthCrates({}),
+        labyrinthUpgrades: normalizeLabyrinthShopUpgrades(simulationUiSettings.labyrinthUpgrades),
       },
       runtime: {
         isRunning: false,
@@ -685,6 +687,9 @@ export const useSimulatorStore = defineStore('simulator', {
           }
           this.normalizeRunScope();
           this.normalizeDifficulty();
+          // 导入合并携带的 UI 级字段（含主站带回的迷宫升级等级）随之落盘，防止刷新后
+          // 回落到上次持久化值；persist 只写 8 字段白名单，mode/zone 等会话级字段不入存储。
+          this.persistSimulationUiSettings();
         }
 
         this.playerDataSnapshot = {
@@ -1010,6 +1015,8 @@ export const useSimulatorStore = defineStore('simulator', {
       };
       this.normalizeRunScope();
       this.normalizeDifficulty();
+      // 导入合并携带的 UI 级字段（含迷宫升级等级）随之落盘（白名单口径同快照恢复分支）。
+      this.persistSimulationUiSettings();
       this.refreshAssetScores();
       return result;
     },
@@ -1053,6 +1060,9 @@ export const useSimulatorStore = defineStore('simulator', {
       };
       this.normalizeRunScope();
       this.normalizeDifficulty();
+      // 导入合并携带的 UI 级字段（含主站桥带回的迷宫升级等级）随之落盘
+      // （白名单口径同快照恢复分支），防止刷新后回落。
+      this.persistSimulationUiSettings();
       this.refreshAssetScores([targetId]);
       return result;
     },

@@ -265,6 +265,10 @@ function handleTampermonkeyImportWindowMessage(event) {
       requestId,
       ok: true,
       detectedFormat: result?.detectedFormat || '',
+      // 迷宫商店升级等级的覆盖摘要（载荷未携带等级时为 null）：脚本状态栏据此提示
+      // 「等级被主站数据覆盖 / 清零」——该字段是破坏性整包覆盖，只回报 ok 会让用户
+      // 手填的多选框等级在导入瞬间无声消失（文案由脚本侧本地化，判定单点在 mapper）。
+      labyrinthUpgradesImport: result?.labyrinthUpgradesImport || null,
       message: result?.message || '',
     });
   } catch (error) {

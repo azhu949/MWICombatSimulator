@@ -25,10 +25,15 @@ onmessage = async function (event) {
           event.data.labyrinth.labyrinthHrid,
           event.data.labyrinth.roomLevel,
           event.data.labyrinth.crates,
+          event.data.labyrinth.shopUpgrades,
         );
       }
       for (let i = 0; i < playersData.length; i++) {
         let currentPlayer = Player.createFromDTO(structuredClone(playersData[i]));
+        // zoneBuffs/extraBuffs 刻意按引用共享给全队伍（区域/补给箱 buff 还是模块级
+        // JSON 常量）：跨玩家安全依赖引擎侧 addPermanentBuff「首次写入必克隆」。
+        // 禁止就地改写这些对象（会永久污染同一 worker realm 的下一次模拟），
+        // 也不要绕过 addPermanentBuff 直接写 permanentBuffs。
         currentPlayer.zoneBuffs = zone?.buffs || labyrinth?.buffs || [];
         currentPlayer.extraBuffs = extraBuffs;
         players.push(currentPlayer);

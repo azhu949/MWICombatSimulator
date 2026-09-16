@@ -32,6 +32,9 @@ function resolveActivateAfterImport(message) {
  * @returns {{
  *   resolvedPlayerId: string,
  *   detectedFormat: string,
+ *   labyrinthUpgradesImport: {
+ *     levelCount: number, previousLevelCount: number, changed: boolean, cleared: boolean,
+ *   } | null,
  *   message: string,
  * }}
  */
@@ -81,6 +84,11 @@ export function applyTampermonkeyImportMessage(simulator, message) {
   return {
     resolvedPlayerId,
     detectedFormat: result?.detectedFormat || '',
+    // 迷宫商店升级等级的覆盖摘要（主站载荷携带时才有值，见 mapper 的
+    // describeLabyrinthUpgradesImport）：等级覆盖/清零是破坏性动作，必须随桥接响应
+    // 回传给脚本状态栏，否则用户手填等级在导入瞬间无声消失（脚本侧只做本地化拼接，
+    // 不重算 characterInfo）。字段缺失 = 载荷未携带等级（保留现有配置），无需提示。
+    labyrinthUpgradesImport: result?.labyrinthUpgradesImport || null,
     message: `Imported main-site profile into player ${resolvedPlayerId}.`,
   };
 }

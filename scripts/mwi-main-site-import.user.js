@@ -3,7 +3,7 @@
 // @name:zh      MWI Combat Simulator 主站一键导入
 // @name:zh-CN   MWI Combat Simulator 主站一键导入
 // @namespace    https://azhu949.github.io/MWICombatSimulator
-// @version      0.1.47
+// @version      0.1.49
 // @license      ISC
 // @description  Import the current Milky Way Idle character or cached team into the combat simulator, enhancement simulator, or skilling planner.
 // @description:zh      将 Milky Way Idle 主站当前角色或缓存队伍导入战斗模拟器、强化模拟器或生活技能规划器。
@@ -103,6 +103,10 @@
       marketValuesStatusMixed:
         'Official estimates forwarded: {officialCount} items + synthetic mid-price estimates: {syntheticCount} items (synthetic part not official; ~4-5% deviation vs MWITools).',
       marketValuesStatusEmpty: 'Official estimates: 0 items (asset score falls back to order-book prices).',
+      labyrinthUpgradesStatusApplied:
+        'Labyrinth shop upgrade levels overwritten by main-site data: {count} level(s) (was {previous}).',
+      labyrinthUpgradesStatusCleared:
+        'Labyrinth shop upgrade levels reset by main-site data (main site shows no purchases): {previous} manual level(s) cleared.',
     },
     zh: {
       button: '从主站导入',
@@ -136,6 +140,9 @@
       marketValuesStatusMixed:
         '官方估值已透传：{officialCount} 个物品 + 合成中价估值：{syntheticCount} 个物品（合成部分非官方估算，与 MWITools 口径或有 4-5% 偏差）。',
       marketValuesStatusEmpty: '官方估值：0 个物品（资产分将使用挂单价）。',
+      labyrinthUpgradesStatusApplied: '迷宫商店升级等级已按主站数据覆盖：{count} 项（原 {previous} 项）。',
+      labyrinthUpgradesStatusCleared:
+        '迷宫商店升级等级已按主站数据清零（主站显示未购买）：原有 {previous} 项手动等级已被清除。',
     },
   };
   const pageWindow = typeof unsafeWindow !== 'undefined' ? unsafeWindow : window;
@@ -171,6 +178,11 @@
   const COMBAT_ACTION_TYPE_HRID = '/action_types/combat';
   const CURRENT_CHARACTER_SNAPSHOT_KEYS = [
     'character',
+    // 迷宫商店「永久 BUFF 升级」等级在 characterInfo 上（init_character_data 与
+    // character_info_updated 下发，不在 init_client_data）；快照携带后随导入载荷
+    // 透传给模拟器（模拟器侧从 payload.characterInfo 提取战斗 5 项等级）。
+    // 快照侧按顶层字段级合并累积（【一般-2】），见 mergeCharacterInfoSnapshotField。
+    'characterInfo',
     'characterSkills',
     'characterItems',
     'combatUnit',
@@ -1041,6 +1053,79 @@
     return snapshot;
   }
 
+  // characterInfo 顶层字段级合并（【一般-2】前向兼容加固，2026-09-16）：
+  // 现状依据：既有代码一致按「官方 character_info_updated 顶层整包下发 characterInfo」处理
+  // （该前提来自实包观测，代码内无从自动校验）；此前提下本函数与整包替换完全等价。但若官方
+  // 改为「仅下发变更字段」，整包替换会把快照的 characterInfo 缩成部分对象，而模拟器侧
+  // extractMainSiteLabyrinthUpgrades 只要任一等级字段携带即整包采用（缺失字段落空 = 未购买），
+  // 未出现在下发载荷中的迷宫商店升级等级会被静默清零。合并下发对象的顶层自有键即可消除对
+  // 「整包下发」的前向依赖，且不改变模拟器侧口径（显式 0 仍能清零，见 importExportMapper 用例）。
+  // 语义：升级等级均为顶层标量，顶层浅合并即字段级语义；嵌套对象按字段整体替换（与官方
+  // 「字段级下发」一致）；跳过 '__proto__'——JSON.parse 会为该键建立自有键，而普通赋值会
+  // 命中 __proto__ 访问器改写目标对象原型（与 mergeStoredMarketItemValues 同款防御）。
+  // 边界：shouldMerge 为假时直接采用下发对象——首次收到 / reset 重建快照，或下发值不是普通对象；
+  // 数组等异形下发照整包采用，与原实现同形。下发值为非对象标量（null / 字符串 / 数字，经
+  // clonePlainObject 归一为 {}）时合并结果即既有值——不缩容也不清空（旧实现会把快照替换成 {}，
+  // 等于丢弃快照内容；本层不复用「{} = 未携带」这条消费侧判断，避免快照被静默掏空）。
+  // 未覆盖的残留：官方若改用「字段级 null」表达「该项未下发」，字段级 null 仍会照写进快照，并在
+  // 混合载荷下被模拟器按落空清零——该口径属【一般-1】范围（消费侧现锁 null = 无数据 ≠ 0 级），
+  // 本函数不在此层再发明第二套 null 规则。
+  // 【字段级删除无回滚路径】本函数只服务于 characterInfo（调用点见 updateCurrentCharacterSnapshot），
+  // 不是可复用的通用合并工具，勿挪用到其它快照字段（用例「合并只对 characterInfo 生效」已锚定此边界）：
+  // 合并语义只增不减——结果键集恒为 existing ∪ incoming，characterInfo 的字段一旦进入快照，除 reset
+  // （init_character_data 重建快照，或 character_updated 身份变更触发 resetCurrentCharacterTracking）外
+  // 没有任何删除路径。若官方把某个等级字段从下发载荷中整体移除（升级下线 / 字段改名——本层既无从区分二者，
+  // 也区分不了「下线」与「部分下发」），该字段的陈旧值会一直留在快照里，并随导入载荷送达模拟器：
+  // 快照侧残留寿命 = 当前页面会话（至下次快照重建为止；快照对象仅存内存、不落 GM 存储，桥接派生载荷虽会
+  // 写入 GM 的 response 记录，但按 requestId 匹配消费，不构成跨会话回放），但载荷一旦被导入即成为模拟器侧
+  // 持久配置（simulatorStorage 的 labyrinthUpgrades 落盘），不再受快照重建回收。
+  // 消费侧 extractMainSiteLabyrinthUpgrades 只提取战斗 5 项，对其中任一项「字段携带即整包采用、缺失字段
+  // 落空 = 未购买」，故残留值会被当作有效等级，导入后继续按已下线的升级模拟（生活向 4 项不被提取，其残留
+  // 无消费方）。
+  // 持久侧残留的回收路径（复核修正：上面的「没有任何删除路径」只指快照侧；持久侧并非「没有任何回收路径」，
+  // 而是「取决于携带门是否还会通过」）：
+  // ① 快照重建（新页面会话）后该键不再进入载荷 → 下次导入的载荷携带门通过（至少一项等级字段 level >= 0）
+  //    时，导入只映射目录 5 项、缺失键落空 ⇒ 整包覆盖把该键一并丢弃；
+  // ② 用户在 UI 手工改这 5 项（setLabyrinthUpgrade，改成 0 级即从持久配置里消失）；
+  // ③ 导入模拟器原生格式/备份（simulationSettings.labyrinthUpgrades 按「全量替换/恢复备份」契约生效，
+  //    机制见 importExportMapper 的 normalizeImportedSimulationSettings，该契约有用例锚定）。
+  // 于是携带门不再通过（下称「永不回收」情形）时，持久残留就只剩 ②③ 两条回收路径。触发条件有两条：
+  // 其一，官方把战斗 5 项字段全部下掉、或全部改名而目录未同步；其二，官方改用「省略未购买键」表达 0
+  // （当前实包观测为显式下发 0，代码内无从校验）而该玩家其余项也均为 0。此时携带门
+  // （level !== undefined && level >= 0）对 5 项全部落空
+  // ⇒ ① 永不发生。改名另有镜像失效：新字段名读不到 = 缺失 = 未购买，目录同步之前的那次导入会把该 key
+  // 静默清零（前提同样是携带门通过；5 项同时全部改名即落进上面的「永不回收」一侧），目录同步官方字段名
+  // 后的下一次导入即自愈。
+  // 取舍说明：这是与「部分下发误清零」（本函数要修的问题）之间的有意权衡，两个方向都缺少协议信号
+  // （无法判定某次载荷是整包还是部分），故本层不做删除推断——字段白名单 / 缺席水位线之类的启发式会引入
+  // 「误删有效等级」这一新失效模式，代价高于残留本身；「字段级 null」的表达仍属消费侧【一般-1】范围。
+  // 【操作要求】官方等级字段改名/下线时，改目录里的官方字段名（单点在 shared/labyrinthShopUpgrades.js，见
+  // 其头注释）不算修完——本层既无字段表也无删除路径，帮不上忙：改名须与目录同步同批发布；下线须同时给出
+  // 用户已落盘 labyrinthUpgrades 的清理路径（storage 版本号 / 一次性迁移 / UI 提示核对）。持久残留不在本层
+  // 与消费侧【一般-1】口径的覆盖范围内（后者只锁「字段级 null」）。
+  function mergeCharacterInfoSnapshotField(existing, incoming) {
+    const shouldMerge =
+      Boolean(existing) &&
+      typeof existing === 'object' &&
+      !Array.isArray(existing) &&
+      Boolean(incoming) &&
+      typeof incoming === 'object' &&
+      !Array.isArray(incoming);
+    if (!shouldMerge) {
+      return incoming;
+    }
+
+    const merged = clonePlainObject(existing);
+    for (const key of Object.keys(incoming)) {
+      if (key === '__proto__') {
+        continue;
+      }
+      merged[key] = incoming[key];
+    }
+
+    return merged;
+  }
+
   function updateCurrentCharacterSnapshot(message, reset = false) {
     const nextFields = pickCurrentCharacterSnapshotFields(message);
     const type = String(message?.type || '');
@@ -1065,7 +1150,10 @@
       reset || !mainSiteState.currentCharacterSnapshot ? {} : clonePlainObject(mainSiteState.currentCharacterSnapshot);
 
     for (const key of nextKeys) {
-      baseSnapshot[key] = nextFields[key];
+      // characterInfo 走顶层字段级合并（【一般-2】前向兼容，见 mergeCharacterInfoSnapshotField）；
+      // 其余字段维持整字段替换。
+      baseSnapshot[key] =
+        key === 'characterInfo' ? mergeCharacterInfoSnapshotField(baseSnapshot[key], nextFields[key]) : nextFields[key];
     }
 
     mainSiteState.currentCharacterSnapshot = baseSnapshot;
@@ -1162,6 +1250,15 @@
 
     if (type === 'achievements_updated') {
       mergeCurrentCharacterSnapshotEntries('characterAchievements', message.achievements, ['achievementHrid']);
+      updateCurrentCharacterSnapshot(message);
+      return;
+    }
+
+    if (type === 'character_info_updated') {
+      // 整包替换 characterInfo（迷宫商店升级等级所在字段）；message 顶层即带
+      // characterInfo，pickCurrentCharacterSnapshotFields 会整包克隆。快照落盘走顶层字段级
+      // 合并（【一般-2】mergeCharacterInfoSnapshotField）：整包下发下与整包替换等价，官方若
+      // 改为部分字段下发也不会把未下发的等级从快照里抹掉。
       updateCurrentCharacterSnapshot(message);
       return;
     }
@@ -2557,19 +2654,77 @@
     return formatUiText(getUiText('marketValuesStatusReady'), { count: itemCount });
   }
 
+  // 迷宫商店升级等级的覆盖提示（2026-09-16）：等级是破坏性整包覆盖字段——主站角色
+  // 未购买任何升级（characterInfo 全 0）时导入会把用户在模拟器里手填的等级整包清零，
+  // 而导入反馈此前只报格式与官方估值计数 ⇒ 配置无声消失。摘要由 app 侧 mapper 单点
+  // 判定（src/services/importExportMapper.js describeLabyrinthUpgradesImport，随桥接响应
+  // labyrinthUpgradesImport 回传，见 HomePage.vue），此处只做本地化措辞——禁止在本脚本
+  // 重算 characterInfo（重复口径迟早与导入门口径分叉，与「目录 key 单点维护」同一教训）。
+  // 未携带（null/缺失 = 载荷无 characterInfo，等级保持原样）或覆盖前后一致
+  //（changed=false）时返回空串（调用方过滤空段），避免每次导入都刷同一行噪音；
+  // 清零单独措辞：那是用户最需要当场知道的一类覆盖。
+  // 注意：估值句 describeMarketItemValuesStatus 恒 zh 是既有行为（不在本次改动内）。
+  function describeLabyrinthUpgradesStatus(labyrinthUpgradesImport, preferredLanguage = '') {
+    const info =
+      labyrinthUpgradesImport && typeof labyrinthUpgradesImport === 'object' ? labyrinthUpgradesImport : null;
+    if (!info || info.changed !== true) {
+      return '';
+    }
+
+    if (info.cleared === true) {
+      return formatUiText(getUiText('labyrinthUpgradesStatusCleared', preferredLanguage), {
+        previous: Math.max(0, Number(info.previousLevelCount) || 0),
+      });
+    }
+
+    return formatUiText(getUiText('labyrinthUpgradesStatusApplied', preferredLanguage), {
+      count: Math.max(0, Number(info.levelCount) || 0),
+      previous: Math.max(0, Number(info.previousLevelCount) || 0),
+    });
+  }
+
+  // 团队导入逐 member 累积迷宫商店升级覆盖摘要（2026-09-16）。
+  // 为什么必须「保留最近一次非空摘要」而不是直接取最后一个成员：团队里只有**当前角色
+  // member** 的载荷携带 characterInfo（buildTeamMemberResponse 的 isCurrent 分支走
+  // buildCurrentMainSiteResponse → 模拟器侧整包覆盖等级），其余 member 是缓存分享档
+  // （format 'shareable-profile' → 模拟器侧保留现有等级，摘要为 null）。而当前角色通常
+  // 不是最后一个成功导入的成员 ⇒ 若用「最后一个成员的结果」覆盖，清理提示会被 null 冲掉，
+  // 团队导入重新变成「配置无声消失」。因至多一个 member 携带 characterInfo，最近一次非空
+  // 摘要恰好就是那次有效写入，且其 changed 是对「导入前」状态算的 ⇒ 聚合语义准确。
+  function mergeLabyrinthUpgradesImportSummary(currentSummary, nextSummary) {
+    return nextSummary || currentSummary || null;
+  }
+
+  // 单人导入成功反馈文案拼接（#22 同款：把接线可测化）。段序固定为
+  // 成功文案 → 官方估值计数 → 迷宫商店升级覆盖提示；空段被过滤，
+  // 无覆盖提示时输出与旧实现（`${importSuccess} ${marketValuesStatus}`）逐字节一致。
+  function buildSingleImportFeedbackText({ uiLanguage, payload, labyrinthUpgradesImport }) {
+    return [
+      getUiText('importSuccess', uiLanguage),
+      describeMarketItemValuesStatus(payload),
+      describeLabyrinthUpgradesStatus(labyrinthUpgradesImport, uiLanguage),
+    ]
+      .filter(Boolean)
+      .join(' ');
+  }
+
   // 团队导入成功反馈文案拼接（#22 从深层闭包 importTeamMainSiteResponse 提取为顶层
   // 可注入纯函数，使该接线可用行为断言测试，替代锁源码字符串的 scriptSource.toContain）：
   // summary 为空 = 全部成功（importSuccess + 估值文案）；非空 = 部分成功
   //（导入完成/Import finished + summary + 估值文案）。firstSuccessPayload 取任一
   // 成功 member 载荷即可（各 member 挂同一份 merged 快照）。
-  function buildTeamImportFeedbackText({ uiLanguage, summary, firstSuccessPayload }) {
+  // labyrinthUpgradesImport 由调用方用 mergeLabyrinthUpgradesImportSummary 累积得到
+  //（团队里只有当前角色 member 的载荷携带等级，其余 member 的摘要为 null，不能被冲掉）。
+  function buildTeamImportFeedbackText({ uiLanguage, summary, firstSuccessPayload, labyrinthUpgradesImport = null }) {
     const marketValuesStatusText = describeMarketItemValuesStatus(firstSuccessPayload);
-    if (summary) {
-      return uiLanguage === 'zh'
-        ? `导入完成：${summary} ${marketValuesStatusText}`
-        : `Import finished: ${summary} ${marketValuesStatusText}`;
-    }
-    return `${getUiText('importSuccess', uiLanguage)} ${marketValuesStatusText}`;
+    const labyrinthUpgradesStatusText = describeLabyrinthUpgradesStatus(labyrinthUpgradesImport, uiLanguage);
+    const baseText = summary
+      ? uiLanguage === 'zh'
+        ? `导入完成：${summary}`
+        : `Import finished: ${summary}`
+      : getUiText('importSuccess', uiLanguage);
+
+    return [baseText, marketValuesStatusText, labyrinthUpgradesStatusText].filter(Boolean).join(' ');
   }
 
   // 团队导入部分成功摘要拼装（#22 P3① 从深层闭包 importTeamMainSiteResponse 提取为
@@ -4235,8 +4390,14 @@
       // 模拟器页脚本实例与主站不同源，本页 merged 缓存恒为空，会误报「0 个物品」。
       // 0 个物品时用户能立刻发现透传为空（资产分将降级挂单价），
       // 而不是等到 tooltip 全是挂单价才排查。
+      // 迷宫商店升级等级的覆盖提示同样在此拼接（appResponse 回传摘要，纯函数见上方
+      // buildSingleImportFeedbackText）：等级被主站数据覆盖/清零必须当场可见。
       setStatus(
-        `${getUiText('importSuccess', state.uiLanguage)} ${describeMarketItemValuesStatus(mainSiteResponse.payload)}`,
+        buildSingleImportFeedbackText({
+          uiLanguage: state.uiLanguage,
+          payload: mainSiteResponse.payload,
+          labyrinthUpgradesImport: appResponse.labyrinthUpgradesImport,
+        }),
         'success',
       );
     }
@@ -4319,6 +4480,11 @@
       const teamTargetPlayerIds = [...TEAM_IMPORT_PLAYER_IDS];
       let didClearTeamSlots = false;
       let didResetTeamSelection = false;
+      // 迷宫商店升级等级是全局（非按玩家）模拟设置，团队导入只有「当前角色」那个 member
+      // 的载荷携带 characterInfo（会整包覆盖等级），其余 member 是缓存分享档（保留等级 ⇒
+      // 摘要为 null）。故必须用 mergeLabyrinthUpgradesImportSummary 累积「最近一次非空摘要」，
+      // 不能被后续 member 的 null 冲掉（否则清理提示静默消失，见该函数注释）。
+      let lastLabyrinthUpgradesImport = null;
       for (const member of successfulMembers.slice(0, TEAM_IMPORT_PLAYER_IDS.length)) {
         const targetPlayerId = TEAM_IMPORT_PLAYER_IDS[importedCount] || String(importedCount + 1);
         const appRequestId = createRequestId();
@@ -4345,6 +4511,10 @@
         didClearTeamSlots = true;
         didResetTeamSelection = true;
         importedCount += 1;
+        lastLabyrinthUpgradesImport = mergeLabyrinthUpgradesImportSummary(
+          lastLabyrinthUpgradesImport,
+          appResponse.labyrinthUpgradesImport,
+        );
       }
 
       if (importedCount <= 0) {
@@ -4369,6 +4539,7 @@
         summary:
           failureEntries.length === 0 ? '' : formatTeamImportSummary(importedCount, failureEntries, state.uiLanguage),
         firstSuccessPayload: successfulMembers[0]?.payload,
+        labyrinthUpgradesImport: lastLabyrinthUpgradesImport,
       });
       setStatus(feedbackText, 'success');
     }

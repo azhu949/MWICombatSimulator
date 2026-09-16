@@ -13,6 +13,7 @@ import {
   summarizeBatchResults,
   summarizeResult,
 } from '../services/simulationDomain.js';
+import { normalizeLabyrinthShopUpgrades } from '../shared/labyrinthShopUpgrades.js';
 import { normalizeParallelWorkerLimit } from '../services/queueScoring.js';
 import { createProfitPricingOptions, persistSimulationUiSettingsToStorage } from '../services/simulatorStorage.js';
 import {
@@ -66,6 +67,9 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
         soloHrids,
       );
       this.simulationSettings.labyrinthCrates = normalizeLabyrinthCrates(this.simulationSettings.labyrinthCrates);
+      this.simulationSettings.labyrinthUpgrades = normalizeLabyrinthShopUpgrades(
+        this.simulationSettings.labyrinthUpgrades,
+      );
     },
     setSelectedGroupZoneHrids(hrids = []) {
       const allHrids = this.groupZoneOptions.map((zone) => String(zone.hrid || ''));
@@ -107,6 +111,19 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
         [crateType]: itemHrid,
       });
       this.simulationSettings.labyrinthCrates = normalized;
+    },
+    setLabyrinthUpgrade(upgradeKey, level) {
+      const normalized = normalizeLabyrinthShopUpgrades({
+        ...this.simulationSettings.labyrinthUpgrades,
+        [upgradeKey]: level,
+      });
+      this.simulationSettings.labyrinthUpgrades = normalized;
+      // 升级等级属「随 UI 设置持久化」口径（simulatorStorage.normalizeSimulationUiSettings）：
+      // 离散下拉改动即时落盘，防止刷新后回落；导入路径的落盘在 simulatorStore 导入合并点。
+      this.persistSimulationUiSettings();
+    },
+    getActiveLabyrinthUpgrades() {
+      return normalizeLabyrinthShopUpgrades(this.simulationSettings.labyrinthUpgrades);
     },
     getActiveLabyrinthCrates() {
       const crates = this.simulationSettings.labyrinthCrates || {};
@@ -298,7 +315,7 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
       }
 
       if (runScope === RUN_SCOPE_ALL_LABYRINTHS) {
-        const labyrinths = buildAllLabyrinthTargets(this.getActiveLabyrinthCrates());
+        const labyrinths = buildAllLabyrinthTargets(this.getActiveLabyrinthCrates(), this.getActiveLabyrinthUpgrades());
         if (labyrinths.length === 0) {
           this.runtime.isRunning = false;
           this.runtime.error = 'common:simulation.errorNoLabyrinthTargets';

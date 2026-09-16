@@ -31,6 +31,7 @@ import {
 
 const ONE_HOUR = 60 * 60 * 1e9;
 const PLAYER_ACHIEVEMENTS_STORAGE_KEY = 'mwi.player.achievements.v1';
+const SIMULATION_UI_STORAGE_KEY = 'mwi.simulation.ui.v1';
 const QUEUE_SETTINGS_STORAGE_KEY = 'mwi.queue.settings.v1';
 const QUEUE_RUN_SETTINGS_STORAGE_KEY = 'mwi.queue.runSettings.v1';
 const ACHIEVEMENT_HRID = '/achievements/total_level_100';
@@ -4047,6 +4048,56 @@ describe('simulatorStore', () => {
     expect(simulator.players[0].achievements[ACHIEVEMENT_HRID]).toBe(true);
     expect(JSON.parse(global.localStorage.getItem(PLAYER_ACHIEVEMENTS_STORAGE_KEY)).achievementsByPlayer['1']).toEqual({
       [ACHIEVEMENT_HRID]: true,
+    });
+  });
+
+  it('persists labyrinth upgrade changes across store restart (S2)', () => {
+    const simulator = useSimulatorStore();
+    simulator.setLabyrinthUpgrade('damage', 7);
+    expect(simulator.simulationSettings.labyrinthUpgrades).toEqual({ damage: 7 });
+    expect(JSON.parse(global.localStorage.getItem(SIMULATION_UI_STORAGE_KEY)).labyrinthUpgrades).toEqual({
+      damage: 7,
+    });
+
+    // 重启：新 pinia（新 store 实例），升级等级从 mwi.simulation.ui.v1 恢复而非回落为空。
+    setActivePinia(createPinia());
+    const restarted = useSimulatorStore();
+    expect(restarted.simulationSettings.labyrinthUpgrades).toEqual({ damage: 7 });
+  });
+
+  it('persists main-site imported labyrinth upgrades across store restart (S2)', () => {
+    const simulator = useSimulatorStore();
+    const payload = {
+      ...createMainSiteCurrentCharacterFixture({ characterName: 'Upgrade Hero' }),
+      characterInfo: {
+        labyrinthCombatDamageLevel: 5,
+        labyrinthAttackSpeedLevel: 3,
+        labyrinthCastSpeedLevel: 0,
+        labyrinthCriticalRateLevel: 2,
+        labyrinthExperienceLevel: 12,
+      },
+    };
+    simulator.importSoloConfig(JSON.stringify(payload), '1');
+    expect(simulator.simulationSettings.labyrinthUpgrades).toEqual({
+      damage: 5,
+      attack_speed: 3,
+      critical_rate: 2,
+      experience: 12,
+    });
+    expect(JSON.parse(global.localStorage.getItem(SIMULATION_UI_STORAGE_KEY)).labyrinthUpgrades).toEqual({
+      damage: 5,
+      attack_speed: 3,
+      critical_rate: 2,
+      experience: 12,
+    });
+
+    setActivePinia(createPinia());
+    const restarted = useSimulatorStore();
+    expect(restarted.simulationSettings.labyrinthUpgrades).toEqual({
+      damage: 5,
+      attack_speed: 3,
+      critical_rate: 2,
+      experience: 12,
     });
   });
 

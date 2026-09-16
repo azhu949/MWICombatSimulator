@@ -244,8 +244,9 @@ function handleGroupImport() {
 // 消除「组队侧静默应用零反馈」的不对称。
 const OFFICIAL_ESTIMATE_FORMATS = new Set(['main-site-current-character', 'main-site-share-profile']);
 
-// 组队/单人导入共用的成功反馈构建：基础成功文案 + 官方估值计数行（按格式门控），
-// 让用户导入后立刻确认资产分取价链第①级是否可用。载荷级来源标记
+// 组队/单人导入共用的成功反馈构建：基础成功文案 + 迷宫商店升级等级覆盖提示 + 官方估值
+// 计数行（按格式门控），让用户导入后立刻确认资产分取价链第①级是否可用，并看到被覆盖的
+// 模拟设置。载荷级来源标记
 // marketEstimateSource='synthetic'（主站脚本回落合成中价，脚本状态栏同批标注
 // 「合成中价估值已透传」）时整体切换合成中价文案，与脚本状态栏反馈一致；无标记
 // （旧载荷/复制粘贴载荷）保持官方估值文案（向后兼容，不劣化）。
@@ -253,18 +254,54 @@ const OFFICIAL_ESTIMATE_FORMATS = new Set(['main-site-current-character', 'main-
 // 计数——官方与合成中价并存时，把合成部分整体报成官方估值正是逐件真值丢失的用户
 // 面失真。混合仅在载荷级标记非 synthetic 时成立：标记 synthetic 本身已声明全部
 // 物品为合成中价，此时清单冗余（矛盾载荷）不进入混合分支。
+// 段落按「有内容才拼接」组装（空串被过滤），因此没有提示时输出与旧实现逐字节一致。
 function buildImportSuccessText(result, baseSuccessText) {
-  const officialEstimateCount = result.marketItemValues ? Object.keys(result.marketItemValues).length : 0;
-  const syntheticItemHrids = Array.isArray(result.syntheticItemHrids) ? result.syntheticItemHrids : [];
+  return [
+    baseSuccessText,
+    buildLabyrinthUpgradesNoticeText(result?.labyrinthUpgradesImport),
+    buildMarketEstimatesText(result),
+  ]
+    .filter(Boolean)
+    .join(' ');
+}
+
+// 迷宫商店升级等级在主站载荷携带时是整包权威覆盖（0 级 = 主站未购买 ⇒ 清空），会覆盖
+// 用户在模拟器里手填的多选框等级。摘要由 mapper 单点判定
+//（importExportMapper.describeLabyrinthUpgradesImport），此处只做措辞，禁止重算 characterInfo。
+// 未携带（null）或覆盖前后一致（changed=false）时保持沉默——每次导入都刷同一行是噪音；
+// 清零（原手动配置被清空）单独措辞，那正是用户最需要当场知道的一类覆盖。
+function buildLabyrinthUpgradesNoticeText(importInfo) {
+  if (!importInfo || importInfo.changed !== true) {
+    return '';
+  }
+  if (importInfo.cleared === true) {
+    return t(
+      'common:vue.settings.msgImportLabyrinthUpgradesCleared',
+      'Labyrinth shop upgrade levels reset by main-site data (main site shows no purchases): {{previous}} manual level(s) cleared.',
+      { previous: importInfo.previousLevelCount },
+    );
+  }
+  return t(
+    'common:vue.settings.msgImportLabyrinthUpgradesApplied',
+    'Labyrinth shop upgrade levels overwritten by main-site data: {{count}} level(s) (was {{previous}}).',
+    { count: importInfo.levelCount, previous: importInfo.previousLevelCount },
+  );
+}
+
+function buildMarketEstimatesText(result) {
+  const officialEstimateCount = result?.marketItemValues ? Object.keys(result.marketItemValues).length : 0;
+  const syntheticItemHrids = Array.isArray(result?.syntheticItemHrids) ? result.syntheticItemHrids : [];
   const syntheticItemCount = syntheticItemHrids.length;
   const isMixedEstimates =
-    result.marketEstimateSource !== 'synthetic' && syntheticItemCount > 0 && syntheticItemCount < officialEstimateCount;
-  const isSyntheticEstimates = result.marketEstimateSource === 'synthetic';
-  const showOfficialEstimates = officialEstimateCount > 0 || OFFICIAL_ESTIMATE_FORMATS.has(result.detectedFormat);
+    result?.marketEstimateSource !== 'synthetic' &&
+    syntheticItemCount > 0 &&
+    syntheticItemCount < officialEstimateCount;
+  const isSyntheticEstimates = result?.marketEstimateSource === 'synthetic';
+  const showOfficialEstimates = officialEstimateCount > 0 || OFFICIAL_ESTIMATE_FORMATS.has(result?.detectedFormat);
   if (!showOfficialEstimates) {
-    return baseSuccessText;
+    return '';
   }
-  return `${baseSuccessText} ${t(
+  return t(
     isMixedEstimates
       ? 'common:vue.settings.msgImportMixedEstimates'
       : isSyntheticEstimates
@@ -280,7 +317,7 @@ function buildImportSuccessText(result, baseSuccessText) {
       officialCount: Math.max(0, officialEstimateCount - syntheticItemCount),
       syntheticCount: syntheticItemCount,
     },
-  )}`;
+  );
 }
 
 function handleSoloImport() {

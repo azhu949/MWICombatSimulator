@@ -110,8 +110,12 @@ describe('simulationDomain', () => {
       labyrinthHrid: firstLabyrinth.hrid,
       roomLevel: LABYRINTH_BATCH_ROOM_LEVEL_MIN,
       crates: ['/items/basic_coffee_crate'],
+      shopUpgrades: {},
     });
     expect(labyrinthTargets[labyrinthTargets.length - 1].roomLevel).toBe(LABYRINTH_ROOM_LEVEL_MAX);
+
+    const upgradedTargets = buildAllLabyrinthTargets([], { damage: 12, attack_speed: 'bad', experience: 99 });
+    expect(upgradedTargets[0].shopUpgrades).toEqual({ damage: 12, experience: 12 });
   });
 
   it('derives labyrinth crate HRID allow lists from game data options', () => {
@@ -183,8 +187,31 @@ describe('simulationDomain', () => {
         labyrinthHrid: '/monsters/test',
         roomLevel: LABYRINTH_ROOM_LEVEL_MIN,
         crates: ['crate'],
+        shopUpgrades: {},
       },
       simulationTimeLimit: 2 * ONE_HOUR,
+    });
+
+    expect(
+      buildSingleSimulationPayload(
+        players,
+        {
+          mode: 'labyrinth',
+          labyrinthHrid: '/monsters/test',
+          roomLevel: 40,
+          simulationTimeHours: 2,
+          labyrinthUpgrades: { damage: 12, cast_speed: 5, attack_speed: 0, critical_rate: 'bad', experience: 13 },
+        },
+        [],
+        {
+          workerId: 'labyrinth-upgrade-worker',
+        },
+      ),
+    ).toMatchObject({
+      labyrinth: {
+        labyrinthHrid: '/monsters/test',
+        shopUpgrades: { damage: 12, cast_speed: 5, experience: 12 },
+      },
     });
   });
 

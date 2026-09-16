@@ -1,7 +1,10 @@
 import { nextTick } from 'vue';
 import { beforeEach, describe, expect, it, vi } from 'vitest';
 import { createPinia, setActivePinia } from 'pinia';
-import { createMainSiteShareProfileFixture } from './fixtures/mainSiteShareProfileFixture.js';
+import {
+  createMainSiteCurrentCharacterFixture,
+  createMainSiteShareProfileFixture,
+} from './fixtures/mainSiteShareProfileFixture.js';
 import {
   applyTampermonkeyEnhancementImportMessage,
   applyTampermonkeyImportMessage,
@@ -242,5 +245,38 @@ describe('tampermonkeyImportBridge', () => {
     const refreshedEnhancement = useEnhancementStore();
     expect(refreshedEnhancement.config.targetLevel).toBe(7);
     expect(refreshedEnhancement.config.skillLevel).toBe(100);
+  });
+
+  // 迷宫商店升级等级的覆盖摘要必须随桥接响应回传给脚本状态栏：该字段是破坏性整包
+  // 覆盖（主站未购买 = 全 0 → 清空），只回 ok 会让用户手填的多选框等级无声消失。
+  it('forwards the labyrinth upgrade overwrite summary to the script status bar', () => {
+    const simulator = useSimulatorStore();
+    simulator.simulationSettings.labyrinthUpgrades = { damage: 5, cast_speed: 2 };
+    const payload = createMainSiteCurrentCharacterFixture({ characterName: 'No Upgrades Hero' });
+    payload.characterInfo = { labyrinthCombatDamageLevel: 0, labyrinthAttackSpeedLevel: 0 };
+
+    const result = applyTampermonkeyImportMessage(simulator, { requestId: 'labyrinth-1', payload });
+
+    expect(result.detectedFormat).toBe('main-site-current-character');
+    expect(result.labyrinthUpgradesImport).toEqual({
+      levelCount: 0,
+      previousLevelCount: 2,
+      changed: true,
+      cleared: true,
+    });
+    expect(simulator.simulationSettings.labyrinthUpgrades).toEqual({});
+  });
+
+  it('reports no labyrinth upgrade summary when the payload carries no levels', () => {
+    const simulator = useSimulatorStore();
+    simulator.simulationSettings.labyrinthUpgrades = { damage: 5 };
+
+    const shareProfile = applyTampermonkeyImportMessage(
+      simulator,
+      createImportMessage({ requestId: 'labyrinth-2', characterName: 'Share Profile Hero' }),
+    );
+
+    expect(shareProfile.labyrinthUpgradesImport).toBeNull();
+    expect(simulator.simulationSettings.labyrinthUpgrades).toEqual({ damage: 5 });
   });
 });

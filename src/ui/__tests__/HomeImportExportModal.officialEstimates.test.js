@@ -193,3 +193,59 @@ describe('HomeImportExportModal 组队导入估值反馈对称（#40）', () => 
     wrapper.unmount();
   });
 });
+
+// 迷宫商店升级等级（2026-09-16）：主站角色未购买升级（characterInfo 全 0）时导入会把
+// 用户手填的多选框等级整包清零，此前反馈只报格式与官方估值计数 ⇒ 配置无声消失。
+// 摘要由 mapper 单点判定（labyrinthUpgradesImport），此处断言「清零/改写/等值/未携带」
+// 四种形态的措辞与沉默行为。
+describe('HomeImportExportModal 迷宫商店升级等级覆盖反馈', () => {
+  it('清零（原有手动等级被清空）：反馈明示覆盖来源与被清除的项数', async () => {
+    const wrapper = mountModal();
+    await runSoloImport(wrapper, {
+      detectedFormat: 'main-site-current-character',
+      labyrinthUpgradesImport: { levelCount: 0, previousLevelCount: 5, changed: true, cleared: true },
+    });
+
+    expect(wrapper.text()).toContain('Solo import success (main-site-current-character).');
+    expect(wrapper.text()).toContain('Labyrinth shop upgrade levels reset by main-site data');
+    expect(wrapper.text()).toContain('5 manual level(s) cleared');
+    wrapper.unmount();
+  });
+
+  it('改写为非零等级：反馈给出覆盖后项数与原项数', async () => {
+    const wrapper = mountModal();
+    await runSoloImport(wrapper, {
+      detectedFormat: 'main-site-current-character',
+      labyrinthUpgradesImport: { levelCount: 2, previousLevelCount: 1, changed: true, cleared: false },
+    });
+
+    expect(wrapper.text()).toContain('overwritten by main-site data: 2 level(s) (was 1)');
+    wrapper.unmount();
+  });
+
+  it('覆盖前后一致（changed=false）或载荷未携带等级：保持沉默（不刷噪音）', async () => {
+    const wrapper = mountModal();
+    await runSoloImport(wrapper, {
+      detectedFormat: 'main-site-current-character',
+      labyrinthUpgradesImport: { levelCount: 3, previousLevelCount: 3, changed: false, cleared: false },
+    });
+
+    expect(wrapper.text()).not.toContain('Labyrinth shop upgrade levels');
+
+    await runSoloImport(wrapper, { detectedFormat: 'main-site-current-character', labyrinthUpgradesImport: null });
+
+    expect(wrapper.text()).not.toContain('Labyrinth shop upgrade levels');
+    // 段组装不得留下空段/双空格：基础文案与估值行仍按单个空格相接（与旧实现逐字节一致）。
+    expect(wrapper.text()).toContain('Solo import success (main-site-current-character). Official estimates: 0 items.');
+    wrapper.unmount();
+  });
+
+  it('组队导入（无该摘要）不受影响，且仍保留官方估值计数行', async () => {
+    const wrapper = mountModal();
+    await runGroupImport(wrapper, { detectedFormat: 'modern-group', marketItemValues: null });
+
+    expect(wrapper.text()).toContain('Group import success (modern-group).');
+    expect(wrapper.text()).not.toContain('Labyrinth shop upgrade levels');
+    wrapper.unmount();
+  });
+});

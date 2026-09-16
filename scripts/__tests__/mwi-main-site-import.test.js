@@ -1,6 +1,8 @@
 import { readFileSync } from 'node:fs';
 import { runInNewContext } from 'node:vm';
 import { describe, expect, it, vi } from 'vitest';
+import { importSoloConfig } from '../../src/services/importExportMapper.js';
+import { createEmptyPlayerConfig } from '../../src/services/playerMapper.js';
 
 const scriptSource = readFileSync(new URL('../mwi-main-site-import.user.js', import.meta.url), 'utf8');
 
@@ -94,6 +96,9 @@ function loadScriptTestApi({ console: consoleStub = console, mainSiteMode = fals
         buildCachedProfilePayload,
         persistProfileCacheEntry,
         buildTeamImportFeedbackText,
+        buildSingleImportFeedbackText,
+        describeLabyrinthUpgradesStatus,
+        mergeLabyrinthUpgradesImportSummary,
         formatTeamImportSummary,
     };
 
@@ -650,6 +655,209 @@ describe('mwi main-site import userscript', () => {
 
       // 冷却中：返回剩余毫秒，供调用方排程一次性兜底重试
       expect(api.resolveProfileDialogScanGate(500, 1000)).toEqual({ state: 'cooling', retryAfterMs: 500 });
+    });
+  });
+});
+
+describe('当前角色 characterInfo 快照合并（【一般-2】前向兼容）', () => {
+  function createSocketHarness(api) {
+    const handlers = {};
+    api.instrumentMainSiteSocket({
+      addEventListener(type, handler) {
+        handlers[type] = handler;
+      },
+    });
+    return {
+      dispatch(message) {
+        handlers.message({ data: JSON.stringify(message) });
+      },
+    };
+  }
+
+  function createLabyrinthCharacterInfo(overrides = {}) {
+    return {
+      labyrinthCombatDamageLevel: 12,
+      labyrinthAttackSpeedLevel: 3,
+      labyrinthCastSpeedLevel: 2,
+      labyrinthCriticalRateLevel: 4,
+      labyrinthExperienceLevel: 1,
+      labyrinthSkillActionSpeedLevel: 7,
+      labyrinthSkillingEfficiencyLevel: 6,
+      labyrinthSkillingSuccessLevel: 5,
+      labyrinthSkillingDoubleProgressLevel: 2,
+      ...overrides,
+    };
+  }
+
+  function createInitMessage(characterInfo) {
+    return {
+      type: 'init_character_data',
+      character: { id: 101, name: 'Snapshot Hero' },
+      characterSkills: [{ skillHrid: '/skills/melee', level: 42 }],
+      characterItems: [],
+      combatUnit: {},
+      actionTypeFoodSlotsMap: { '/action_types/combat': {} },
+      actionTypeDrinkSlotsMap: { '/action_types/combat': {} },
+      characterInfo,
+    };
+  }
+
+  it('部分字段下发：未下发的升级等级保留在快照与导入载荷（不再被清零）', () => {
+    const { api } = loadScriptTestApi();
+    const harness = createSocketHarness(api);
+
+    harness.dispatch(createInitMessage(createLabyrinthCharacterInfo()));
+    expect(api.mainSiteState.currentCharacterSnapshot.characterInfo.labyrinthCombatDamageLevel).toBe(12);
+
+    // 前向兼容假设被打破的场景：官方改为「仅下发变更字段」，只带 damage 一项。
+    // 整包替换会把快照缩成 { damage } 单字段对象。
+    harness.dispatch({
+      type: 'character_info_updated',
+      characterInfo: { labyrinthCombatDamageLevel: 3 },
+    });
+
+    const snapshotInfo = api.mainSiteState.currentCharacterSnapshot.characterInfo;
+    expect(snapshotInfo.labyrinthCombatDamageLevel).toBe(3);
+    expect(snapshotInfo.labyrinthAttackSpeedLevel).toBe(3);
+    expect(snapshotInfo.labyrinthCastSpeedLevel).toBe(2);
+    expect(snapshotInfo.labyrinthCriticalRateLevel).toBe(4);
+    expect(snapshotInfo.labyrinthExperienceLevel).toBe(1);
+    // 官方其余字段（生活向 4 项）同样保留：合并对整包字段集生效，不限于战斗 5 项。
+    expect(snapshotInfo.labyrinthSkillActionSpeedLevel).toBe(7);
+
+    // 连续多次部分下发（每次购买一项升级 = 一条事件）逐次累积：后到的字段不覆盖先前字段。
+    harness.dispatch({ type: 'character_info_updated', characterInfo: { labyrinthExperienceLevel: 6 } });
+    const accumulatedInfo = api.mainSiteState.currentCharacterSnapshot.characterInfo;
+    expect(accumulatedInfo.labyrinthExperienceLevel).toBe(6);
+    expect(accumulatedInfo.labyrinthCombatDamageLevel).toBe(3);
+
+    // 端到端防线：导入载荷仍携带 5 项等级 → 模拟器侧「任一字段携带即整包采用、缺失字段
+    // 落空（= 未购买）」不会把用户其余迷宫商店升级等级静默清零。
+    const payload = api.buildCurrentCharacterPayload();
+    expect(payload.characterInfo.labyrinthCombatDamageLevel).toBe(3);
+    expect(payload.characterInfo.labyrinthAttackSpeedLevel).toBe(3);
+    expect(payload.characterInfo.labyrinthCastSpeedLevel).toBe(2);
+    expect(payload.characterInfo.labyrinthCriticalRateLevel).toBe(4);
+    expect(payload.characterInfo.labyrinthExperienceLevel).toBe(6);
+  });
+
+  it('非对象下发（null / 字符串，「无数据」）不缩容既有快照', () => {
+    const { api } = loadScriptTestApi();
+    const harness = createSocketHarness(api);
+
+    harness.dispatch(createInitMessage(createLabyrinthCharacterInfo()));
+    // 解除引用型下发（null）经 clonePlainObject 归一为 {}：合并结果即既有值——「无数据」不清配置；
+    // 旧实现会把快照替换成 {}（无等级可提取 → 模拟器保留现有配置），语义上等价于丢弃快照内容。
+    harness.dispatch({ type: 'character_info_updated', characterInfo: null });
+
+    const snapshotInfo = api.mainSiteState.currentCharacterSnapshot.characterInfo;
+    expect(snapshotInfo.labyrinthCombatDamageLevel).toBe(12);
+    expect(snapshotInfo.labyrinthExperienceLevel).toBe(1);
+
+    // 同分支的其它非对象伪值（字符串）同样归一为 {}，不得缩容。
+    harness.dispatch({ type: 'character_info_updated', characterInfo: 'no-data' });
+    expect(api.mainSiteState.currentCharacterSnapshot.characterInfo.labyrinthCombatDamageLevel).toBe(12);
+  });
+
+  it('异形下发（数组）走形状防御：整包采用，且不把后续对象合进数组', () => {
+    const { api } = loadScriptTestApi();
+    const harness = createSocketHarness(api);
+
+    harness.dispatch(createInitMessage(createLabyrinthCharacterInfo()));
+    harness.dispatch({ type: 'character_info_updated', characterInfo: [] });
+    expect(api.mainSiteState.currentCharacterSnapshot.characterInfo).toEqual([]);
+
+    // 既有值形状异常（数组）时不合并：整包采用新对象，避免产出「数组 + 命名键」的混合形态。
+    harness.dispatch({ type: 'character_info_updated', characterInfo: { labyrinthCombatDamageLevel: 3 } });
+    expect(api.mainSiteState.currentCharacterSnapshot.characterInfo).toEqual({ labyrinthCombatDamageLevel: 3 });
+  });
+
+  it('合并只对 characterInfo 生效：其余字段维持整字段替换', () => {
+    const { api } = loadScriptTestApi();
+    const harness = createSocketHarness(api);
+
+    harness.dispatch({ ...createInitMessage(createLabyrinthCharacterInfo()), communityBuffs: { a: 1 } });
+    expect(api.mainSiteState.currentCharacterSnapshot.communityBuffs).toEqual({ a: 1 });
+
+    harness.dispatch({ type: 'community_buffs_updated', communityBuffs: { b: 2 } });
+    // 整字段替换（非合并）：旧键 a 不保留——防止未来把合并语义过度推广到全部快照字段。
+    expect(api.mainSiteState.currentCharacterSnapshot.communityBuffs).toEqual({ b: 2 });
+    // 该消息未下发 characterInfo：既有值保持不动。
+    expect(api.mainSiteState.currentCharacterSnapshot.characterInfo.labyrinthCombatDamageLevel).toBe(12);
+  });
+
+  it('整包下发（当前协议）：合并结果与整包替换等价', () => {
+    const { api } = loadScriptTestApi();
+    const harness = createSocketHarness(api);
+
+    harness.dispatch(createInitMessage(createLabyrinthCharacterInfo()));
+    const nextCharacterInfo = createLabyrinthCharacterInfo({
+      labyrinthCombatDamageLevel: 3,
+      labyrinthSkillingDoubleProgressLevel: 9,
+    });
+    harness.dispatch({ type: 'character_info_updated', characterInfo: nextCharacterInfo });
+
+    expect(api.mainSiteState.currentCharacterSnapshot.characterInfo).toEqual(nextCharacterInfo);
+  });
+
+  it('reset（换角色 / 快照重建）仍整包替换：不留上一角色的升级等级', () => {
+    const { api } = loadScriptTestApi();
+    const harness = createSocketHarness(api);
+
+    harness.dispatch(createInitMessage(createLabyrinthCharacterInfo()));
+    // character_updated 携带身份变更 → resetCurrentCharacterTracking 重建快照。
+    harness.dispatch({
+      type: 'character_updated',
+      character: { id: 202, name: 'Other Hero' },
+      characterInfo: { labyrinthCombatDamageLevel: 5 },
+    });
+
+    expect(api.mainSiteState.currentCharacterSnapshot.characterInfo).toEqual({ labyrinthCombatDamageLevel: 5 });
+  });
+
+  it("跳过 '__proto__' 键：下发载荷不得改写快照 characterInfo 的原型", () => {
+    const { api } = loadScriptTestApi();
+    const harness = createSocketHarness(api);
+
+    harness.dispatch(createInitMessage(createLabyrinthCharacterInfo()));
+    // JSON.parse 会为 "__proto__" 建立自有键（与官方 WS 载荷同路径）；合并若用普通赋值
+    // 写该键会命中访问器改写目标对象原型。
+    harness.dispatch(
+      JSON.parse(
+        '{"type":"character_info_updated","characterInfo":{"labyrinthCombatDamageLevel":3,"__proto__":{"polluted":true}}}',
+      ),
+    );
+
+    const snapshotInfo = api.mainSiteState.currentCharacterSnapshot.characterInfo;
+    expect(snapshotInfo.labyrinthCombatDamageLevel).toBe(3);
+    expect(Object.prototype.hasOwnProperty.call(snapshotInfo, '__proto__')).toBe(false);
+    expect('polluted' in snapshotInfo).toBe(false);
+    // 原型未被替换：沙箱内普通对象的原型是沙箱 realm 的 Object.prototype（其自身原型为
+    // null）；若被写成 { polluted: true }，其原型将是 Object.prototype（非 null）。
+    expect(Object.getPrototypeOf(Object.getPrototypeOf(snapshotInfo))).toBeNull();
+  });
+
+  it('端到端：部分字段下发后，载荷经真实导入器仍得到完整 5 项等级（不再清零）', () => {
+    const { api } = loadScriptTestApi();
+    const harness = createSocketHarness(api);
+
+    harness.dispatch(createInitMessage(createLabyrinthCharacterInfo()));
+    harness.dispatch({ type: 'character_info_updated', characterInfo: { labyrinthCombatDamageLevel: 3 } });
+
+    const payload = api.buildCurrentCharacterPayload();
+    // 修复前：载荷只带 damage 一项 → 模拟器「任一字段携带即整包采用、缺失落空 = 未购买」
+    // → 其余 4 项被当成未购买清零（现值 3/2/4/1 会全部消失）。
+    const result = importSoloConfig(JSON.stringify(payload), createEmptyPlayerConfig(1), {
+      labyrinthUpgrades: { damage: 7, cast_speed: 6 },
+    });
+
+    expect(result.detectedFormat).toBe('main-site-current-character');
+    expect(result.simulationSettings.labyrinthUpgrades).toEqual({
+      damage: 3,
+      attack_speed: 3,
+      cast_speed: 2,
+      critical_rate: 4,
+      experience: 1,
     });
   });
 });
@@ -1302,6 +1510,131 @@ describe('官方估值透传（captureMarketItemValues）', () => {
     expect(scriptSource).toMatch(
       /function importTeamMainSiteResponse[\s\S]*?buildTeamImportFeedbackText\(\s*\{[^}]*firstSuccessPayload:\s*successfulMembers\[0\]\?\.payload/,
     );
+  });
+
+  // 迷宫商店升级等级（2026-09-16）：主站角色未购买升级（characterInfo 全 0）时导入会把
+  // 用户手填等级整包清零，而状态栏此前只报格式与官方估值计数 ⇒ 配置无声消失。
+  // 摘要由 app 侧 mapper 单点判定并随桥接响应回传，脚本只做措辞。
+  it('迷宫商店升级等级覆盖提示：清零/改写/等值/未携带四态（中英文）', () => {
+    const { api } = loadScriptTestApi();
+
+    // 清零：明示覆盖来源 + 被清除的项数（用户最需要当场知道的一类覆盖）
+    const clearedZh = api.describeLabyrinthUpgradesStatus(
+      { levelCount: 0, previousLevelCount: 5, changed: true, cleared: true },
+      'zh',
+    );
+    expect(clearedZh).toContain('原有 5 项');
+    expect(clearedZh).toContain('已被清除');
+    expect(
+      api.describeLabyrinthUpgradesStatus({ levelCount: 0, previousLevelCount: 5, changed: true, cleared: true }, 'en'),
+    ).toContain('5 manual level(s) cleared');
+
+    // 改写为非零等级：给出覆盖后项数与原项数
+    expect(
+      api.describeLabyrinthUpgradesStatus(
+        { levelCount: 2, previousLevelCount: 1, changed: true, cleared: false },
+        'zh',
+      ),
+    ).toContain('已按主站数据覆盖：2 项（原 1 项）');
+
+    // 等值（changed=false）/未携带（null）/畸形摘要：空串——调用方过滤空段 ⇒ 不刷噪音
+    expect(
+      api.describeLabyrinthUpgradesStatus(
+        { levelCount: 3, previousLevelCount: 3, changed: false, cleared: false },
+        'zh',
+      ),
+    ).toBe('');
+    expect(api.describeLabyrinthUpgradesStatus(null, 'zh')).toBe('');
+    expect(api.describeLabyrinthUpgradesStatus('no-data', 'zh')).toBe('');
+    expect(api.describeLabyrinthUpgradesStatus({}, 'zh')).toBe('');
+
+    // 计数字段缺失/非数字：回落 0，不得把 undefined/NaN 塞进用户面文案
+    const fallback = api.describeLabyrinthUpgradesStatus({ changed: true, cleared: true }, 'zh');
+    expect(fallback).toContain('原有 0 项');
+    expect(fallback).not.toContain('undefined');
+    expect(fallback).not.toContain('NaN');
+  });
+
+  it('单人导入成功反馈：覆盖提示拼接在估值文案之后，无提示时与旧文案逐字节一致', () => {
+    const { api } = loadScriptTestApi();
+    const payload = { marketItemValues: { '/items/a': { 0: 100 } }, marketEstimateSource: 'official' };
+
+    // 无覆盖提示：输出必须与旧实现 `${importSuccess} ${marketValuesStatus}` 逐字节一致
+    //（老载荷/等值覆盖不应因本次改动多出空格或空段）。
+    expect(api.buildSingleImportFeedbackText({ uiLanguage: 'zh', payload, labyrinthUpgradesImport: null })).toBe(
+      `导入成功。 ${api.describeMarketItemValuesStatus(payload)}`,
+    );
+
+    const cleared = api.buildSingleImportFeedbackText({
+      uiLanguage: 'zh',
+      payload,
+      labyrinthUpgradesImport: { levelCount: 0, previousLevelCount: 5, changed: true, cleared: true },
+    });
+    expect(cleared).toContain('导入成功。');
+    expect(cleared).toContain('官方估值已透传：1 个物品');
+    expect(cleared).toContain('原有 5 项');
+  });
+
+  it('团队导入反馈同样携带覆盖提示（摘要由 mergeLabyrinthUpgradesImportSummary 累积）', () => {
+    const { api } = loadScriptTestApi();
+    const payload = { marketItemValues: { '/items/a': { 0: 100 } } };
+
+    const text = api.buildTeamImportFeedbackText({
+      uiLanguage: 'zh',
+      summary: '',
+      firstSuccessPayload: payload,
+      labyrinthUpgradesImport: { levelCount: 0, previousLevelCount: 2, changed: true, cleared: true },
+    });
+
+    expect(text).toContain('导入成功');
+    expect(text).toContain('官方估值已透传：1 个物品');
+    expect(text).toContain('原有 2 项');
+    // 无覆盖提示时不得多出空段（老脚本载荷 / 等值覆盖）：段间恒为单个空格
+    expect(api.buildTeamImportFeedbackText({ uiLanguage: 'zh', summary: '', firstSuccessPayload: payload })).toBe(
+      `导入成功。 ${api.describeMarketItemValuesStatus(payload)}`,
+    );
+
+    // 接线护栏：① 团队路径必须传累积后的覆盖摘要（见下一用例的聚合规则），
+    // ② 单人路径摘要必须取自 appResponse（app 侧 mapper 单点判定）；
+    // ③ 脚本自身不得出现 characterInfo 等级字段名（禁止就地重算等级口径，
+    //    与「目录 key / 取值口径单点」同一教训）。
+    expect(scriptSource).toMatch(
+      /buildTeamImportFeedbackText\(\s*\{[^}]*labyrinthUpgradesImport:\s*lastLabyrinthUpgradesImport/,
+    );
+    expect(scriptSource).toMatch(
+      /lastLabyrinthUpgradesImport = mergeLabyrinthUpgradesImportSummary\(\s*lastLabyrinthUpgradesImport,\s*appResponse\.labyrinthUpgradesImport,?\s*\)/,
+    );
+    expect(scriptSource).toMatch(
+      /buildSingleImportFeedbackText\(\s*\{[^}]*labyrinthUpgradesImport:\s*appResponse\.labyrinthUpgradesImport/,
+    );
+    expect(scriptSource).not.toContain('labyrinthCombatDamageLevel');
+    expect(scriptSource).not.toContain('labyrinthAttackSpeedLevel');
+  });
+
+  // 回归护栏（本次自审发现）：团队成员的载荷只有「当前角色」那个 carry characterInfo
+  //（buildTeamMemberResponse 的 isCurrent 分支 → 当前角色载荷；其余 member 是缓存分享档，
+  // 模拟器侧保留等级 ⇒ 摘要 null）。当前角色通常不是最后一个成功导入的 member，
+  // 若用「最后一个 member 的结果」直接覆盖，覆盖提示会被 null 冲掉 ⇒ 团队导入重新变成
+  // 「配置无声消失」。三态断言：null 不冲掉已有摘要 / 新摘要胜出（最后写入者生效）/ 全 null 得 null。
+  it('团队覆盖摘要聚合：后续 member 的 null 不得冲掉已有摘要', () => {
+    const { api } = loadScriptTestApi();
+    const cleared = { levelCount: 0, previousLevelCount: 2, changed: true, cleared: true };
+    const applied = { levelCount: 3, previousLevelCount: 0, changed: true, cleared: false };
+
+    let summary = null;
+    // member1：当前角色（含 characterInfo）→ 有效覆盖摘要
+    summary = api.mergeLabyrinthUpgradesImportSummary(summary, cleared);
+    expect(summary).toBe(cleared);
+    // member2..4：缓存分享档 → null，必须保留 member1 的摘要
+    summary = api.mergeLabyrinthUpgradesImportSummary(summary, null);
+    summary = api.mergeLabyrinthUpgradesImportSummary(summary, undefined);
+    expect(summary).toBe(cleared);
+    // member5：若真出现第二个携带等级的载荷，最后写入者胜出
+    summary = api.mergeLabyrinthUpgradesImportSummary(summary, applied);
+    expect(summary).toBe(applied);
+    // 全 null：保持 null（反馈面据此沉默）
+    expect(api.mergeLabyrinthUpgradesImportSummary(null, null)).toBeNull();
+    expect(api.mergeLabyrinthUpgradesImportSummary(null, undefined)).toBeNull();
   });
 
   it('formatTeamImportSummary：部分成功摘要拼装（0/1/2/3+ 失败、中英文、空名回落）', () => {

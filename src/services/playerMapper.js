@@ -29,6 +29,7 @@ import {
 import { normalizeCombatScrolls } from '../shared/combatScrolls.js';
 import { combatGuildBuffDetails, guildShrineDetailIndex, normalizeGuildBuffLevels } from '../shared/guildBuffs.js';
 import { LABYRINTH_ROOM_LEVEL_DEFAULT, LABYRINTH_ROOM_LEVEL_MIN } from '../shared/labyrinthConfig.js';
+import { normalizeLabyrinthShopUpgrades } from '../shared/labyrinthShopUpgrades.js';
 import { buildSimulationExtraBuffs, normalizeSimulationExtra } from '../shared/simulationExtraBuffs.js';
 import { getEffectiveTriggerState, sanitizeTriggerMap, toTriggerInstances } from './triggerMapper.js';
 
@@ -915,6 +916,7 @@ function normalizeCombatPreviewContext(previewContext) {
       crates: Array.isArray(previewContext?.crates)
         ? previewContext.crates.map((crate) => String(crate || '')).filter(Boolean)
         : [],
+      shopUpgrades: normalizeLabyrinthShopUpgrades(previewContext?.shopUpgrades),
     };
   }
 
@@ -982,6 +984,7 @@ function buildCombatPreviewEnvironment(previewContext = null) {
         normalizedContext.labyrinthHrid,
         normalizedContext.roomLevel,
         normalizedContext.crates,
+        normalizedContext.shopUpgrades,
       );
       const enemies = (previewLabyrinth.getMonster() ?? [])
         .map((enemy) => initializeCombatPreviewEnemy(enemy))

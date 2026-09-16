@@ -712,6 +712,14 @@
         "target": "目标"
       },
       "simulationHours": "模拟时长（小时）",
+      "labyrinthShopUpgrades": {
+        "label": "迷宫商店升级（永久 BUFF · 仅迷宫内生效）",
+        "damage": "伤害",
+        "attack_speed": "攻击速度",
+        "cast_speed": "施法速度",
+        "critical_rate": "暴击率",
+        "experience": "经验"
+      },
       "visualization": "可视化",
       "hpmpOn": "开启 HP/MP",
       "hpmpOff": "关闭 HP/MP",
@@ -980,6 +988,8 @@
       "msgImportOfficialEstimates": "官方估值：{{count}} 个物品。",
       "msgImportSyntheticEstimates": "合成中价估值：{{count}} 个物品（非官方估算，与 MWITools 口径或有 4-5% 偏差）。",
       "msgImportMixedEstimates": "官方估值：{{officialCount}} 个物品 + 合成中价估值：{{syntheticCount}} 个物品（合成部分非官方估算，与 MWITools 口径或有 4-5% 偏差）。",
+      "msgImportLabyrinthUpgradesCleared": "迷宫商店升级等级已按主站数据清零（主站显示未购买）：原有 {{previous}} 项手动等级已被清除。",
+      "msgImportLabyrinthUpgradesApplied": "迷宫商店升级等级已按主站数据覆盖：{{count}} 项（原 {{previous}} 项）。",
       "msgSoloImportFailed": "单人导入失败：{{error}}",
       "msgNothingToCopy": "没有可复制内容。",
       "msgCopied": "已复制到剪贴板。",

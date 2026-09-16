@@ -712,6 +712,14 @@
         "target": "Target"
       },
       "simulationHours": "Simulation Hours",
+      "labyrinthShopUpgrades": {
+        "label": "Labyrinth Shop Upgrades (Permanent Buffs · Labyrinth Only)",
+        "damage": "Damage",
+        "attack_speed": "Attack Speed",
+        "cast_speed": "Cast Speed",
+        "critical_rate": "Critical Rate",
+        "experience": "Experience"
+      },
       "visualization": "Visualization",
       "hpmpOn": "HP/MP On",
       "hpmpOff": "HP/MP Off",
@@ -980,6 +988,8 @@
       "msgImportOfficialEstimates": "Official estimates: {{count}} items.",
       "msgImportSyntheticEstimates": "Synthetic mid-price estimates: {{count}} items (not official; may differ from MWITools by ~4-5%).",
       "msgImportMixedEstimates": "Official estimates: {{officialCount}} items + synthetic mid-price estimates: {{syntheticCount}} items (synthetic part not official; may differ from MWITools by ~4-5%).",
+      "msgImportLabyrinthUpgradesCleared": "Labyrinth shop upgrade levels reset by main-site data (main site shows no purchases): {{previous}} manual level(s) cleared.",
+      "msgImportLabyrinthUpgradesApplied": "Labyrinth shop upgrade levels overwritten by main-site data: {{count}} level(s) (was {{previous}}).",
       "msgSoloImportFailed": "Solo import failed: {{error}}",
       "msgNothingToCopy": "Nothing to copy.",
       "msgCopied": "Copied to clipboard.",

@@ -17,6 +17,11 @@ import { LABYRINTH_ROOM_LEVEL_DEFAULT, LABYRINTH_ROOM_LEVEL_MIN } from '../share
 import { combatGuildBuffDetails, getGuildBuffMaxLevel, normalizeGuildBuffLevels } from '../shared/guildBuffs.js';
 import { sanitizeTriggerList, sanitizeTriggerMap } from './triggerMapper.js';
 import { normalizeCombatScrolls } from '../shared/combatScrolls.js';
+import {
+  COMBAT_LABYRINTH_SHOP_UPGRADES,
+  normalizeLabyrinthShopUpgrades,
+  readLabyrinthShopUpgradeLevel,
+} from '../shared/labyrinthShopUpgrades.js';
 import { sanitizeAssetScorePayload } from './assetScoreService.js';
 
 const NON_WEAPON_SLOTS = EQUIPMENT_SLOT_KEYS.filter((slot) => slot !== 'weapon');
@@ -1243,6 +1248,116 @@ function importShareableProfile(parsed, existingPlayer, existingSimulationSettin
   };
 }
 
+// characterInfo 上的迷宫商店升级等级字段（官方经 init_character_data / character_info_updated
+// 下发，不在 init_client_data；字段名与取值口径见 shared/labyrinthShopUpgrades.js 头注释）。
+// 「目录 key → characterInfo 字段」对照表由升级目录单点维护（catalog 条目的 characterInfoField），
+// 此处只做派生：目录 key 改名时映射自动跟随，不会再出现「映射陈旧 → normalizeLabyrinthShopUpgrades
+// 静默剔除未知 key → 导入结果静默变空」的失配。
+// 映射只遍历 COMBAT_LABYRINTH_SHOP_UPGRADES（combatRelevant 过滤），生活向 4 项天然不进本映射
+// （它们也刻意不携带 characterInfoField：战斗模拟不消费，将来误加也不会被带进来）；目录新增战斗向
+// 升级时若漏填 characterInfoField，该项会被 filter 静默跳过——该不变量由目录侧用例锚定
+// （src/combatsimulator/__tests__/labyrinth.test.js：每项战斗向条目必须携带非空且互不重复的字段名），
+// 导入侧另有从目录生成夹具的端到端用例（importExportMapper.test.js「derives the characterInfo
+// upgrade mapping from the shop catalog」）随目录自动覆盖新键。
+// 官方下掉/改名这些字段时，只改目录 characterInfoField 不算修完：改名须与目录同批发布（否则同步前那次
+// 导入会按「缺失 = 未购买」把该 key 静默清零——前提是携带门仍通过，5 项同时全部改名时反之），下线须一并
+// 给出用户持久配置（labyrinthUpgrades 落盘）的清理路径——完整操作要求见 shared/labyrinthShopUpgrades.js
+// 头注释。
+const CHARACTER_INFO_LABYRINTH_UPGRADE_FIELDS = Object.freeze(
+  Object.fromEntries(
+    COMBAT_LABYRINTH_SHOP_UPGRADES.filter((upgrade) => Boolean(upgrade.characterInfoField)).map((upgrade) => [
+      upgrade.key,
+      upgrade.characterInfoField,
+    ]),
+  ),
+);
+
+// 返回 undefined 表示载荷未携带可用等级（旧版脚本快照无 characterInfo，或等级字段
+// 为 null/空串/布尔/数组等「无数据」伪值或负数这类「无意义值」），调用方据此保留现有配置；
+// 携带时整包归一化（缺字段/0 级自然落空）。
+// 取值口径 = 归一化口径：与 normalizeLabyrinthShopUpgrades 共用 shared/labyrinthShopUpgrades.js 的
+// readLabyrinthShopUpgradeLevel（own 属性 + 有限数字或非空白十进制数字串），因此不存在
+// 「门放行、归一化又按另一套规则取值」的分叉——分叉会让伪值凭空变成有效等级并落盘：
+// 混合载荷 {damageField: true, speedField: 5} 里布尔字段被门拒绝，但同包真实数字字段
+// 让整包通过，归一化若各自 Number() 一把转换，true 会变成用户从未购买的 damage: 1。
+// 真正的数字 0 仍算携带（整包权威快照语义，全 0 显式覆盖）。
+//
+// 门必须在「非正值」里区分两类：0 = 玩家真实的「未购买」（整包权威覆盖才是正确语义），
+// 负数 = 游戏内不可能出现的无意义数据（等级恒为非负整数，与 null/'' 同类）。旧门只判
+// `!== undefined`，-1 / '-2' / -0.5 也放行 → 归一化把全部非正数字段剔除、整包落空为 {} →
+// 调用方 `labyrinthUpgrades !== undefined` 成立 → 用空对象覆盖，静默清空用户手填的 5 项等级。
+// 故门额外要求 level >= 0。数字 -0 与串 '-0' 落在同一侧（`-0 >= 0` 为真）＝ 与 0 同待遇，
+// 这是有意的而非疏漏：JSON.stringify(-0) 写成 0，但 JSON.parse('-0') 仍得 -0（Object.is 为真），
+// 二者数值等同且同样表示「0 级」，拆成两种行为只会给未来读者埋坑。
+// 导出仅供测试锚定「门与取值同一口径」不变量（JSON/结构化克隆通道构造不出原型链形状，
+// 端到端无法覆盖）；业务侧唯一调用方是下方 importMainSiteCurrentCharacter，
+// 反馈面禁止各自重算 characterInfo（重复口径迟早与导入门口径分叉）。
+export function extractMainSiteLabyrinthUpgrades(characterInfo) {
+  if (!characterInfo || typeof characterInfo !== 'object') {
+    return undefined;
+  }
+
+  const hasLevelField = Object.values(CHARACTER_INFO_LABYRINTH_UPGRADE_FIELDS).some((field) => {
+    const level = readLabyrinthShopUpgradeLevel(characterInfo, field);
+    return level !== undefined && level >= 0;
+  });
+  if (!hasLevelField) {
+    return undefined;
+  }
+
+  // 中间对象的取值必须与门走同一函数（readLabyrinthShopUpgradeLevel）：若此处裸读
+  // characterInfo[field]，原型链继承值会被 Object.fromEntries 提升为中间对象的自有键，
+  // 恰好绕过 normalize 侧的 own 属性守卫（own 守卫作用于中间对象，而非原始 characterInfo），
+  // 让「门用 own 守卫、取值走原型链」的隐性分叉把从未下发的等级凭空写入导入结果。
+  // shared 模块口径：原型链继承值一律不算携带。
+  return normalizeLabyrinthShopUpgrades(
+    Object.fromEntries(
+      Object.entries(CHARACTER_INFO_LABYRINTH_UPGRADE_FIELDS).map(([upgradeKey, field]) => [
+        upgradeKey,
+        readLabyrinthShopUpgradeLevel(characterInfo, field),
+      ]),
+    ),
+  );
+}
+
+// 迷宫商店升级等级在主站载荷携带时是「整包权威快照」：显式 0 级 = 玩家未购买，
+// 整包覆盖当前配置（与相邻 combatScrolls / guildBuffs 的「缺失即保留」并不矛盾——
+// 那是「字段缺失」，这里是「显式携带 0」）。语义自洽，却是破坏性的：角色未购买任何升级时
+// 导入会把用户手工填入的多选框等级静默清零（用例「resets labyrinth upgrades to empty…」
+// 已锚定该覆盖），而导入反馈此前只报格式与官方估值计数，用户无从察觉。
+// 因此把「覆盖前 → 覆盖后」的差异以数据形式随导入结果回传（labyrinthUpgradesImport），
+// 文案由各反馈面自行本地化：UI 侧 HomeImportExportModal，桥接侧
+// scripts/mwi-main-site-import.user.js 状态栏。判定单点在本函数——反馈面禁止各自
+// 重算 characterInfo（重复口径迟早与导入门口径分叉）。
+//
+// 返回值：null = 载荷未携带等级（保留现有配置，无需提示）；
+// 其余字段含义——levelCount/previousLevelCount 为覆盖后/覆盖前的有效项数，
+// changed 为「与覆盖前是否不同」（相等则反馈面保持沉默，避免每次导入刷同一行噪音），
+// cleared 为「原有手动配置被清零」（破坏性最强的一类覆盖，反馈面单独措辞）。
+function describeLabyrinthUpgradesImport(importedUpgrades, existingSimulationSettings) {
+  if (importedUpgrades === undefined) {
+    return null;
+  }
+
+  const previous = normalizeLabyrinthShopUpgrades(existingSimulationSettings?.labyrinthUpgrades);
+  const previousKeys = Object.keys(previous);
+  const importedKeys = Object.keys(importedUpgrades);
+  const previousLevelCount = previousKeys.length;
+  const levelCount = importedKeys.length;
+  // 两侧都只含目录内的 5 个战斗向键 ⇒ 键数相同 + previous 每个键值都相等即两映射相等，
+  // 无需比较 imported 侧的键集。
+  const changed = !(
+    previousLevelCount === levelCount && previousKeys.every((key) => previous[key] === importedUpgrades[key])
+  );
+
+  return {
+    levelCount,
+    previousLevelCount,
+    changed,
+    cleared: previousLevelCount > 0 && levelCount === 0,
+  };
+}
+
 function importMainSiteCurrentCharacter(parsed, existingPlayer, existingSimulationSettings) {
   const fallbackPlayer = deepClone(existingPlayer || createEmptyPlayerConfig(1));
   const rawPlayer = {
@@ -1287,13 +1402,27 @@ function importMainSiteCurrentCharacter(parsed, existingPlayer, existingSimulati
     rawPlayer.guildBuffs = guildBuffs;
   }
 
+  // 主站导入只回填迷宫商店升级等级，不强制切换模拟模式（extractShareableSimulationSettings
+  // 保持 zone 语义不动；与 combatScrolls 的 preserve 策略同语义）：旧版脚本载荷无
+  // characterInfo 时保留现有 labyrinthUpgrades 不覆盖。
+  // 携带时则是整包权威覆盖（可能是「主站未购买」= 全 0 → 空映射），故同时算出
+  // labyrinthUpgradesImport 差异摘要随结果回传，让反馈面在导入瞬间把覆盖/清零说清楚
+  //（见 describeLabyrinthUpgradesImport）。
+  const simulationSettings = extractShareableSimulationSettings(parsed, existingSimulationSettings);
+  const labyrinthUpgrades = extractMainSiteLabyrinthUpgrades(parsed?.characterInfo);
+  const labyrinthUpgradesImport = describeLabyrinthUpgradesImport(labyrinthUpgrades, existingSimulationSettings);
+  if (labyrinthUpgrades !== undefined) {
+    simulationSettings.labyrinthUpgrades = labyrinthUpgrades;
+  }
+
   return {
     player: sanitizePlayerConfig(rawPlayer, fallbackPlayer, {
       preserveMissingGuildBuffs: true,
       preserveMissingCombatScrolls: true,
     }),
-    simulationSettings: extractShareableSimulationSettings(parsed, existingSimulationSettings),
+    simulationSettings,
     detectedFormat: 'main-site-current-character',
+    labyrinthUpgradesImport,
   };
 }
 

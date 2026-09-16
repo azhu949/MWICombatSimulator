@@ -251,6 +251,26 @@
           </Select>
         </label>
       </div>
+
+      <p class="control-label mt-3">
+        {{ t('common:vue.home.labyrinthShopUpgrades.label', 'Labyrinth Shop Upgrades') }}
+      </p>
+      <div class="grid gap-3 sm:grid-cols-5">
+        <label v-for="upgrade in labyrinthShopUpgradeTypes" :key="upgrade.key" class="block">
+          <span class="control-label">{{ t(upgrade.labelKey, upgrade.fallback) }}</span>
+          <Select
+            :model-value="labyrinthUpgradeSelectValue(upgrade.key)"
+            @update:model-value="setLabyrinthUpgradeSelection(upgrade.key, $event)"
+          >
+            <SelectTrigger :aria-label="t(upgrade.labelKey, upgrade.fallback)" />
+            <SelectContent>
+              <SelectItem v-for="level in LABYRINTH_SHOP_UPGRADE_LEVELS" :key="level" :value="String(level)">
+                {{ labyrinthUpgradeLevelLabel(level) }}
+              </SelectItem>
+            </SelectContent>
+          </Select>
+        </label>
+      </div>
     </div>
 
     <div class="mb-3 grid gap-3 sm:grid-cols-2">
@@ -405,6 +425,10 @@
 <script setup>
 import { computed, onBeforeUnmount, watch } from 'vue';
 import { LABYRINTH_ROOM_LEVEL_MAX, LABYRINTH_ROOM_LEVEL_MIN } from '../../../shared/labyrinthConfig.js';
+import {
+  COMBAT_LABYRINTH_SHOP_UPGRADES,
+  LABYRINTH_SHOP_UPGRADE_MAX_LEVEL,
+} from '../../../shared/labyrinthShopUpgrades.js';
 import { useSimulatorStore } from '../../../stores/simulatorStore.js';
 import { useGameDataText } from '../../composables/useGameDataText.js';
 import { useI18nText } from '../../composables/useI18nText.js';
@@ -436,6 +460,20 @@ const labyrinthCrateTypes = [
   { key: 'food', labelKey: 'foodCrate', fallback: 'Food Crate' },
   { key: 'tea', labelKey: 'teaCrate', fallback: 'Tea Crate' },
 ];
+// 迷宫商店升级 buff（仅迷宫内生效，每级 +1%，最高 12 级）：下拉框 0（无）..12。
+const LABYRINTH_SHOP_UPGRADE_LEVELS = Array.from({ length: LABYRINTH_SHOP_UPGRADE_MAX_LEVEL + 1 }, (_, level) => level);
+const LABYRINTH_SHOP_UPGRADE_FALLBACKS = {
+  damage: 'Damage',
+  attack_speed: 'Attack Speed',
+  cast_speed: 'Cast Speed',
+  critical_rate: 'Critical Rate',
+  experience: 'Experience',
+};
+const labyrinthShopUpgradeTypes = COMBAT_LABYRINTH_SHOP_UPGRADES.map((upgrade) => ({
+  key: upgrade.key,
+  labelKey: `common:vue.home.labyrinthShopUpgrades.${upgrade.key}`,
+  fallback: LABYRINTH_SHOP_UPGRADE_FALLBACKS[upgrade.key] || upgrade.key,
+}));
 const snapshotStatusText = props.snapshotController.statusText;
 const snapshotStatusClass = props.snapshotController.statusClass;
 const combatScrollsEffectsEnabled = computed(() => Boolean(simulator.simulationSettings.combatScrollsEnabled));
@@ -553,6 +591,19 @@ function labyrinthCrateSelectValue(crateType) {
 
 function setLabyrinthCrateSelection(crateType, value) {
   simulator.setLabyrinthCrate(crateType, value === EMPTY_SELECT_VALUE ? '' : String(value || ''));
+}
+
+function labyrinthUpgradeSelectValue(upgradeKey) {
+  const level = Math.floor(Number(simulator.simulationSettings.labyrinthUpgrades?.[upgradeKey] || 0));
+  return String(Number.isFinite(level) && level > 0 ? level : 0);
+}
+
+function setLabyrinthUpgradeSelection(upgradeKey, value) {
+  simulator.setLabyrinthUpgrade(upgradeKey, Number(value) || 0);
+}
+
+function labyrinthUpgradeLevelLabel(level) {
+  return level === 0 ? t('common:vue.common.none', 'None') : `+${level}%`;
 }
 
 function toggleAllGroupZones(checked) {

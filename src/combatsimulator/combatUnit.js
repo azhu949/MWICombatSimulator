@@ -790,7 +790,15 @@ class CombatUnit {
       this.permanentBuffs[buff.typeHrid].flatBoost += buff.flatBoost;
       this.permanentBuffs[buff.typeHrid].ratioBoost += buff.ratioBoost;
     } else {
-      this.permanentBuffs[buff.typeHrid] = buff;
+      // 首次写入必须克隆：调用方（worker 中全队伍共享的 zoneBuffs/extraBuffs、
+      // 模块级补给箱 JSON 等）可能把同一对象传给多名玩家。直接存引用会让
+      // 后续玩家对同 typeHrid 的累加就地改写共享对象，反向抬高先前玩家，
+      // 并在 clearBuffs()/复活路径把污染值固化进战斗属性，同时永久污染
+      // 模块级数据。克隆后累加只作用于本单位自有的副本。
+      // 生产路径中本方法是 permanentBuffs 的唯一写入口（与 addBuff 的
+      // cloneBuffForRegistration 同一契约）；任何绕过它的直接写入都必须
+      // 自行保证对象独占，否则将复发跨玩家/跨局污染。
+      this.permanentBuffs[buff.typeHrid] = { ...buff };
     }
   }
 

@@ -189,6 +189,7 @@ export function useHomeCombatPreview() {
               Number(simulator.simulationSettings.roomLevel || LABYRINTH_ROOM_LEVEL_DEFAULT),
             ),
             crates: simulator.getActiveLabyrinthCrates(),
+            shopUpgrades: simulator.getActiveLabyrinthUpgrades(),
           }
         : null;
     }

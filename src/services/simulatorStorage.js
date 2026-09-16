@@ -6,6 +6,7 @@ import {
 } from '../shared/gameDataIndex.js';
 import { EQUIPMENT_SLOT_KEYS, LEVEL_KEYS } from '../shared/playerConfig.js';
 import { normalizeCombatScrolls } from '../shared/combatScrolls.js';
+import { normalizeLabyrinthShopUpgrades } from '../shared/labyrinthShopUpgrades.js';
 import {
   createDefaultPriceTable,
   normalizePriceMode,
@@ -174,6 +175,10 @@ export function normalizeSimulationUiSettings(rawSettings) {
     comDrop: clamp(Math.floor(toFiniteNumber(source.comDrop, 20)), 1, 99),
     combatScrollsEnabled: Boolean(source.combatScrollsEnabled),
     enableHpMpVisualization: Boolean(source.enableHpMpVisualization),
+    // 迷宫商店升级 buff 等级（仅迷宫内生效；combatRelevant 5 项，0..12），随 UI 设置持久化；
+    // 落盘触发点在 store 层（setLabyrinthUpgrade 与导入合并点），此处只定义归一化形状。
+    // labyrinthCrates 有意不持久化：与 mode/zoneHrid/difficultyTier 等同为会话级运行输入。
+    labyrinthUpgrades: normalizeLabyrinthShopUpgrades(source.labyrinthUpgrades),
   };
 }
 

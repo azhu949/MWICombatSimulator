@@ -1,8 +1,9 @@
 import Monster from './monster';
 import labyrinthCrateDetailMap from './data/labyrinthCrateDetailMap.json';
+import { buildLabyrinthShopUpgradeBuffs } from '../shared/labyrinthShopUpgrades.js';
 
 class Labyrinth {
-  constructor(monsterHrid, roomLevel, crates = []) {
+  constructor(monsterHrid, roomLevel, crates = [], shopUpgrades = null) {
     this.monsterHrid = monsterHrid;
     this.roomLevel = roomLevel;
 
@@ -11,6 +12,12 @@ class Labyrinth {
       for (let crate of crates) {
         this.buffs = this.buffs.concat(labyrinthCrateDetailMap[crate]);
       }
+    }
+
+    // 迷宫商店升级 buff（仅迷宫内生效；「永久」指升级等级永久保留。每级 +1%，最高 12 级）。
+    // 定义不在 init_client_data 中，见 shared/labyrinthShopUpgrades.js 的来源说明。
+    if (shopUpgrades) {
+      this.buffs = this.buffs.concat(buildLabyrinthShopUpgradeBuffs(shopUpgrades));
     }
   }
 

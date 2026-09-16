@@ -9,6 +9,7 @@ import {
   LABYRINTH_ROOM_LEVEL_MIN,
   LABYRINTH_TEA_CRATE_HRIDS,
 } from '../shared/labyrinthConfig.js';
+import { normalizeLabyrinthShopUpgrades } from '../shared/labyrinthShopUpgrades.js';
 import { estimateNoRngProfit } from './profitEstimator.js';
 import { normalizeQueueSettings } from './queueScoring.js';
 import { toFiniteNumber } from './utils.js';
@@ -101,12 +102,13 @@ export function buildZoneTargetsByScope(runScope, selectedZoneHrids = []) {
   });
 }
 
-export function buildAllLabyrinthTargets(crates = []) {
+export function buildAllLabyrinthTargets(crates = [], shopUpgrades = null) {
   const labyrinthMonsters = Object.values(monsterDetailIndex)
     .filter((monster) => monster.isLabyrinthMonster === true)
     .sort((a, b) => Number(a.sortIndex ?? 0) - Number(b.sortIndex ?? 0));
 
   const normalizedCrates = Array.isArray(crates) ? crates.map((value) => String(value || '')).filter(Boolean) : [];
+  const normalizedShopUpgrades = normalizeLabyrinthShopUpgrades(shopUpgrades);
 
   return labyrinthMonsters.flatMap((monster) => {
     const labyrinths = [];
@@ -119,6 +121,7 @@ export function buildAllLabyrinthTargets(crates = []) {
         labyrinthHrid: monster.hrid,
         roomLevel,
         crates: [...normalizedCrates],
+        shopUpgrades: { ...normalizedShopUpgrades },
       });
     }
     return labyrinths;
@@ -296,6 +299,7 @@ export function buildSingleSimulationPayload(
         toFiniteNumber(simulationSettings.roomLevel, LABYRINTH_ROOM_LEVEL_DEFAULT),
       ),
       crates: activeLabyrinthCrates,
+      shopUpgrades: normalizeLabyrinthShopUpgrades(simulationSettings?.labyrinthUpgrades),
     };
   } else {
     const zoneHrid = simulationSettings?.useDungeon ? simulationSettings?.dungeonHrid : simulationSettings?.zoneHrid;

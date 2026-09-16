@@ -3,8 +3,15 @@ import actionDetailMap from '../../combatsimulator/data/actionDetailMap.json';
 import abilityDetailMap from '../../combatsimulator/data/abilityDetailMap.json';
 import itemDetailMap from '../../combatsimulator/data/itemDetailMap.json';
 import { combatGuildBuffDetails, combatGuildBuffHrids, getGuildBuffMaxLevel } from '../../shared/guildBuffs.js';
+import { COMBAT_LABYRINTH_SHOP_UPGRADES } from '../../shared/labyrinthShopUpgrades.js';
 import { createEmptyPlayerConfig } from '../playerMapper.js';
-import { exportGroupConfig, exportSoloConfig, importGroupConfig, importSoloConfig } from '../importExportMapper.js';
+import {
+  exportGroupConfig,
+  exportSoloConfig,
+  extractMainSiteLabyrinthUpgrades,
+  importGroupConfig,
+  importSoloConfig,
+} from '../importExportMapper.js';
 import {
   createMainSiteCurrentCharacterFixture,
   createMainSiteShareProfileFixture,
@@ -1278,5 +1285,296 @@ describe('importExportMapper', () => {
     });
     // __proto__ 自有键被剔除后不得触发原型 setter：结果对象必须保持普通对象原型。
     expect(Object.getPrototypeOf(result.player.craftingTeaSlots)).toBe(Object.prototype);
+  });
+
+  it('imports labyrinth shop upgrade levels from characterInfo on the current-character path', () => {
+    // characterInfo 携带迷宫商店 9 项升级等级（官方 init_character_data /
+    // character_info_updated 下发）；模拟器只消费战斗 5 项：钳 0–12、非正数剔除、
+    // 生活向 4 项字段丢弃（combatRelevant=false）。
+    const fixture = createMainSiteCurrentCharacterFixture({ characterName: 'Labyrinth Upgrades Hero' });
+    fixture.characterInfo = {
+      labyrinthCombatDamageLevel: 12,
+      labyrinthAttackSpeedLevel: 3,
+      labyrinthCastSpeedLevel: 0,
+      labyrinthCriticalRateLevel: 99,
+      labyrinthExperienceLevel: '5',
+      labyrinthSkillActionSpeedLevel: 7,
+      labyrinthSkillingEfficiencyLevel: 6,
+      labyrinthSkillingSuccessLevel: 4,
+      labyrinthSkillingDoubleProgressLevel: 2,
+    };
+
+    const result = importSoloConfig(JSON.stringify(fixture), createEmptyPlayerConfig(20), createSimulationSettings());
+
+    expect(result.detectedFormat).toBe('main-site-current-character');
+    expect(result.simulationSettings.labyrinthUpgrades).toEqual({
+      damage: 12,
+      attack_speed: 3,
+      critical_rate: 12,
+      experience: 5,
+    });
+  });
+
+  it('ignores prototype-chain inherited labyrinth levels when remapping characterInfo fields', () => {
+    // 门与取值必须同一口径（都走 readLabyrinthShopUpgradeLevel）：自有字段开门后，原型链上的
+    // 继承等级不得经 Object.fromEntries 提升为中间对象的自有键、绕过 normalize 的 own 守卫
+    // （shared 口径：原型链继承值一律不算携带）。JSON/结构化克隆通道构造不出原型链形状，
+    // 端到端无法覆盖，故直接单测本函数。
+    const characterInfo = Object.assign(Object.create({ labyrinthAttackSpeedLevel: 9 }), {
+      labyrinthCombatDamageLevel: 1,
+      labyrinthCriticalRateLevel: '3',
+    });
+
+    // 攻速 9 只存在于原型链上：不得混入导入结果；自有携带的 damage / critical_rate 正常解析。
+    expect(extractMainSiteLabyrinthUpgrades(characterInfo)).toEqual({ damage: 1, critical_rate: 3 });
+    // 全部等级字段都在原型链上：门不通过 → undefined（调用方据此保留现有配置）。
+    expect(extractMainSiteLabyrinthUpgrades(Object.create({ labyrinthCombatDamageLevel: 5 }))).toBeUndefined();
+  });
+
+  it('resets labyrinth upgrades to empty when characterInfo reports zero levels', () => {
+    // characterInfo 是整包权威快照：全部字段存在但等级为 0（角色未购买）时，
+    // 归一化结果为空对象并显式覆盖（而非保留导入前的旧配置）。
+    const fallbackSettings = { ...createSimulationSettings(), labyrinthUpgrades: { damage: 8 } };
+    const fixture = createMainSiteCurrentCharacterFixture({ characterName: 'Labyrinth Zero Levels Hero' });
+    fixture.characterInfo = { labyrinthCombatDamageLevel: 0, labyrinthAttackSpeedLevel: 0 };
+
+    const result = importSoloConfig(JSON.stringify(fixture), createEmptyPlayerConfig(21), fallbackSettings);
+
+    expect(result.simulationSettings.labyrinthUpgrades).toEqual({});
+  });
+
+  it('keeps existing labyrinth upgrades when characterInfo levels are null（无数据 ≠ 0 级）', () => {
+    // 官方 WS 载荷惯用 null 表示「无数据」：Number(null) === 0 曾让 null 伪装成
+    // 「携带了 0 级」，全 null 载荷会以空对象整包覆盖、静默清空用户手动配置。
+    // null 不算携带（与「无 characterInfo → 保留」同语义）；真正的数字 0 仍显式覆盖（见上例）。
+    const fallbackSettings = { ...createSimulationSettings(), labyrinthUpgrades: { damage: 5, cast_speed: 2 } };
+    const fixture = createMainSiteCurrentCharacterFixture({ characterName: 'Null Levels Hero' });
+    fixture.characterInfo = {
+      labyrinthCombatDamageLevel: null,
+      labyrinthAttackSpeedLevel: null,
+    };
+
+    const result = importSoloConfig(JSON.stringify(fixture), createEmptyPlayerConfig(23), fallbackSettings);
+
+    expect(result.detectedFormat).toBe('main-site-current-character');
+    expect(result.simulationSettings.labyrinthUpgrades).toEqual({ damage: 5, cast_speed: 2 });
+  });
+
+  it('imports real levels and drops null fields in mixed characterInfo（null 字段同缺省落空）', () => {
+    // 部分字段为 null、其余携带真实等级：真实字段触发整包导入，null 字段经归一化
+    // 落空（与缺字段同语义），null 不得反向污染判定或让整包被误判为「未携带」。
+    const fixture = createMainSiteCurrentCharacterFixture({ characterName: 'Mixed Levels Hero' });
+    fixture.characterInfo = {
+      labyrinthCombatDamageLevel: 5,
+      labyrinthAttackSpeedLevel: null,
+    };
+
+    const result = importSoloConfig(JSON.stringify(fixture), createEmptyPlayerConfig(24), createSimulationSettings());
+
+    expect(result.simulationSettings.labyrinthUpgrades).toEqual({ damage: 5 });
+  });
+
+  it('treats empty string / array / boolean as not-carried（空串/数组/布尔 同 null 语义）', () => {
+    // 类型门只认数字与数字字符串：空串、[]、false 经 Number() 也都是有限数
+    // （空串→0、[]→0、false→0），若不排除会与 null 一样伪装成「携带 0 级」并清空用户配置。
+    const fallbackSettings = { ...createSimulationSettings(), labyrinthUpgrades: { damage: 5, cast_speed: 2 } };
+    const fixture = createMainSiteCurrentCharacterFixture({ characterName: 'Pseudo Values Hero' });
+    fixture.characterInfo = {
+      labyrinthCombatDamageLevel: '',
+      labyrinthAttackSpeedLevel: [],
+      labyrinthCastSpeedLevel: false,
+    };
+
+    const result = importSoloConfig(JSON.stringify(fixture), createEmptyPlayerConfig(25), fallbackSettings);
+
+    expect(result.simulationSettings.labyrinthUpgrades).toEqual({ damage: 5, cast_speed: 2 });
+  });
+
+  it('never fabricates levels from pseudo values in a mixed characterInfo（门与归一化必须同一口径）', () => {
+    // 混合载荷：布尔/数组字段被类型门判为「不携带」，但同包的真实数字字段让整包通过。
+    // 若归一化侧各自 Number() 一把转换，布尔 true 会凭空变成 damage: 1、数组 [3] 变成
+    // cast_speed: 3——用户从未购买的等级，并随导入落盘进持久配置。
+    const fallbackSettings = { ...createSimulationSettings(), labyrinthUpgrades: { damage: 8, cast_speed: 4 } };
+    const fixture = createMainSiteCurrentCharacterFixture({ characterName: 'Mixed Pseudo Values Hero' });
+    fixture.characterInfo = {
+      labyrinthCombatDamageLevel: true,
+      labyrinthCastSpeedLevel: [3],
+      labyrinthAttackSpeedLevel: 5,
+    };
+
+    const result = importSoloConfig(JSON.stringify(fixture), createEmptyPlayerConfig(27), fallbackSettings);
+
+    expect(result.simulationSettings.labyrinthUpgrades).toEqual({ attack_speed: 5 });
+  });
+
+  it('keeps existing labyrinth upgrades when characterInfo levels are negative（负数 ≠ 0 级）', () => {
+    // 游戏内等级恒为非负整数：负数（含 '-2' 这类数字串、负小数）属无意义数据，
+    // 必须与 null/''/[]/false 同待遇——不算「携带」，保留用户手动配置。
+    // 旧门只判 `!== undefined`：-1 也放行 → 归一化把全部非正数字段落空成 {} →
+    // `labyrinthUpgrades !== undefined` 成立 → 空对象整包覆盖，静默清空用户 5 项等级。
+    const fallbackSettings = { ...createSimulationSettings(), labyrinthUpgrades: { damage: 5, cast_speed: 2 } };
+    const fixture = createMainSiteCurrentCharacterFixture({ characterName: 'Negative Levels Hero' });
+    fixture.characterInfo = {
+      labyrinthCombatDamageLevel: -1,
+      labyrinthAttackSpeedLevel: -3,
+      labyrinthCastSpeedLevel: '-2',
+      labyrinthCriticalRateLevel: -0.5,
+    };
+
+    const result = importSoloConfig(JSON.stringify(fixture), createEmptyPlayerConfig(28), fallbackSettings);
+
+    expect(result.detectedFormat).toBe('main-site-current-character');
+    expect(result.simulationSettings.labyrinthUpgrades).toEqual({ damage: 5, cast_speed: 2 });
+  });
+
+  it('imports only the real levels from a mixed characterInfo with negative fields（负数不得反向污染同包真实等级）', () => {
+    // 反向保护：收紧负数门不得误伤同包真实等级——真实字段仍需触发整包导入。
+    const fixture = createMainSiteCurrentCharacterFixture({ characterName: 'Mixed Negative Levels Hero' });
+    fixture.characterInfo = {
+      labyrinthCombatDamageLevel: -1,
+      labyrinthAttackSpeedLevel: 5,
+      labyrinthCastSpeedLevel: '-2',
+    };
+
+    const result = importSoloConfig(JSON.stringify(fixture), createEmptyPlayerConfig(29), createSimulationSettings());
+
+    expect(result.simulationSettings.labyrinthUpgrades).toEqual({ attack_speed: 5 });
+  });
+
+  it('keeps existing labyrinth upgrades when the payload has no characterInfo（旧版脚本载荷）', () => {
+    // 旧版用户脚本快照白名单无 characterInfo → 载荷缺该字段：必须保留现有
+    // labyrinthUpgrades 不覆盖（与 combatScrolls 的 preserve 策略同语义），且
+    // 不强制切换模拟模式（无 mainSiteCombat 时 mode 保持原值）。
+    const fallbackSettings = { ...createSimulationSettings(), labyrinthUpgrades: { damage: 5, cast_speed: 2 } };
+    const fixture = createMainSiteCurrentCharacterFixture({ characterName: 'No CharacterInfo Hero' });
+    delete fixture.characterInfo;
+
+    const result = importSoloConfig(JSON.stringify(fixture), createEmptyPlayerConfig(22), fallbackSettings);
+
+    expect(result.detectedFormat).toBe('main-site-current-character');
+    expect(result.simulationSettings.mode).toBe('zone');
+    expect(result.simulationSettings.labyrinthUpgrades).toEqual({ damage: 5, cast_speed: 2 });
+  });
+
+  it('derives the characterInfo upgrade mapping from the shop catalog（目录改名不再静默失配）', () => {
+    // 契约锚定：导入侧的「目录 key → characterInfo 字段」对照表由 COMBAT_LABYRINTH_SHOP_UPGRADES
+    // 派生，不再手写第二份清单。夹具同样从目录生成（每项战斗向升级一个不同等级），因此：
+    // ① 目录新增战斗向升级 → 本用例自动把新键纳入覆盖；② 目录 key 改名 → 映射自动跟随；
+    // ③ 某条目录条目漏填 characterInfoField → 该字段名 undefined，夹具里没有对应键，
+    //    导入结果缺少该 key，用例立即转红（旧实现下这类陈旧/缺失映射是静默的：
+    //    normalizeLabyrinthShopUpgrades 只按目录 key 取值，映射侧多出来的陈旧 key 被无声丢弃）。
+    const fixture = createMainSiteCurrentCharacterFixture({ characterName: 'Catalog Derived Upgrades Hero' });
+    fixture.characterInfo = Object.fromEntries(
+      COMBAT_LABYRINTH_SHOP_UPGRADES.map((upgrade, index) => [upgrade.characterInfoField, index + 1]),
+    );
+
+    const result = importSoloConfig(JSON.stringify(fixture), createEmptyPlayerConfig(26), createSimulationSettings());
+
+    expect(result.detectedFormat).toBe('main-site-current-character');
+    expect(result.simulationSettings.labyrinthUpgrades).toEqual(
+      Object.fromEntries(COMBAT_LABYRINTH_SHOP_UPGRADES.map((upgrade, index) => [upgrade.key, index + 1])),
+    );
+  });
+
+  // 反馈面契约（2026-09-16）：等级覆盖此前完全无反馈——用户手填的 5 项等级会被
+  // 「主站未购买（全 0）」的整包权威快照静默清零。差异摘要由 mapper 单点算出并随导入
+  // 结果回传，UI 弹窗（HomeImportExportModal）与脚本状态栏（mwi-main-site-import.user.js）
+  // 只做本地化拼接。
+  it('reports a cleared-summary when the main-site character has bought no upgrades（清零必须有反馈）', () => {
+    const fallbackSettings = { ...createSimulationSettings(), labyrinthUpgrades: { damage: 5, cast_speed: 2 } };
+    const fixture = createMainSiteCurrentCharacterFixture({ characterName: 'Cleared Upgrades Hero' });
+    fixture.characterInfo = { labyrinthCombatDamageLevel: 0, labyrinthAttackSpeedLevel: 0 };
+
+    const result = importSoloConfig(JSON.stringify(fixture), createEmptyPlayerConfig(2), fallbackSettings);
+
+    // 覆盖行为本身不变（用例「resets labyrinth upgrades to empty…」已锚定），新增的是可见性。
+    expect(result.simulationSettings.labyrinthUpgrades).toEqual({});
+    expect(result.labyrinthUpgradesImport).toEqual({
+      levelCount: 0,
+      previousLevelCount: 2,
+      changed: true,
+      cleared: true,
+    });
+  });
+
+  it('reports changed=false when the imported levels already match the current ones（等值不刷噪音）', () => {
+    const fallbackSettings = { ...createSimulationSettings(), labyrinthUpgrades: { damage: 5 } };
+    const fixture = createMainSiteCurrentCharacterFixture({ characterName: 'Equal Upgrades Hero' });
+    fixture.characterInfo = { labyrinthCombatDamageLevel: 5 };
+
+    const result = importSoloConfig(JSON.stringify(fixture), createEmptyPlayerConfig(3), fallbackSettings);
+
+    expect(result.simulationSettings.labyrinthUpgrades).toEqual({ damage: 5 });
+    expect(result.labyrinthUpgradesImport).toEqual({
+      levelCount: 1,
+      previousLevelCount: 1,
+      changed: false,
+      cleared: false,
+    });
+  });
+
+  it('reports changed=true / cleared=false when the imported levels differ（改写而非清零）', () => {
+    const fallbackSettings = { ...createSimulationSettings(), labyrinthUpgrades: { damage: 5 } };
+    const fixture = createMainSiteCurrentCharacterFixture({ characterName: 'Rewritten Upgrades Hero' });
+    fixture.characterInfo = { labyrinthCombatDamageLevel: 8, labyrinthCastSpeedLevel: 3 };
+
+    const result = importSoloConfig(JSON.stringify(fixture), createEmptyPlayerConfig(4), fallbackSettings);
+
+    expect(result.labyrinthUpgradesImport).toEqual({
+      levelCount: 2,
+      previousLevelCount: 1,
+      changed: true,
+      cleared: false,
+    });
+  });
+
+  it('reports a null summary when the payload carries no levels（保留现有配置 ⇒ 无需提示）', () => {
+    const fallbackSettings = { ...createSimulationSettings(), labyrinthUpgrades: { damage: 5, cast_speed: 2 } };
+    const withoutCharacterInfo = createMainSiteCurrentCharacterFixture({ characterName: 'No Summary Hero' });
+    delete withoutCharacterInfo.characterInfo;
+
+    const kept = importSoloConfig(JSON.stringify(withoutCharacterInfo), createEmptyPlayerConfig(5), fallbackSettings);
+    expect(kept.labyrinthUpgradesImport).toBeNull();
+
+    // 伪值（''/[]/false）同样不算「携带」，不得凭空报出覆盖摘要（否则反馈面会对一次
+    // 未发生的覆盖提示用户，比沉默更有害）。
+    const pseudo = createMainSiteCurrentCharacterFixture({ characterName: 'Pseudo Summary Hero' });
+    pseudo.characterInfo = {
+      labyrinthCombatDamageLevel: '',
+      labyrinthAttackSpeedLevel: [],
+      labyrinthCastSpeedLevel: false,
+    };
+    const pseudoResult = importSoloConfig(JSON.stringify(pseudo), createEmptyPlayerConfig(6), fallbackSettings);
+    expect(pseudoResult.labyrinthUpgradesImport).toBeNull();
+
+    // 原生载荷（modern-solo）不走主站角色路径：字段整体缺失，反馈面无从误报。
+    const nativeSolo = importSoloConfig(
+      JSON.stringify({ version: 2, format: 'mwi-vue-solo', player: createEmptyPlayerConfig(7) }),
+      createEmptyPlayerConfig(7),
+      fallbackSettings,
+    );
+    expect(nativeSolo.detectedFormat).toBe('modern-solo');
+    expect(nativeSolo.labyrinthUpgradesImport).toBeUndefined();
+  });
+
+  // 设计边界锚定（2026-09-16 自审）：原生格式（modern-solo / modern-group / player-only）
+  // 的载荷自带 simulationSettings，经 normalizeImportedSimulationSettings 全量 spread
+  // ⇒ 其中的 labyrinthUpgrades 按「全量替换/恢复备份」契约生效，且不产生覆盖摘要
+  //（无提示）。这不是本次修复遗漏，而是该格式的既有语义（载入自己的导出/备份即恢复），
+  // 但必须锚定：实现若哪天改成「保留」，此断言转红，提示同步评估是否需要给原生路径也加反馈。
+  it('native solo payloads still replace labyrinth upgrades by the full-replace contract（设计边界，无摘要）', () => {
+    const existingSettings = { ...createSimulationSettings(), labyrinthUpgrades: { damage: 1 } };
+    const payload = {
+      version: 2,
+      format: 'mwi-vue-solo',
+      simulationSettings: { labyrinthUpgrades: { damage: 9 } },
+      player: createEmptyPlayerConfig(8),
+    };
+
+    const result = importSoloConfig(JSON.stringify(payload), createEmptyPlayerConfig(8), existingSettings);
+
+    expect(result.detectedFormat).toBe('modern-solo');
+    expect(result.simulationSettings.labyrinthUpgrades).toEqual({ damage: 9 });
+    expect(result.labyrinthUpgradesImport).toBeUndefined();
   });
 });

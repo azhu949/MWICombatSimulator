@@ -67,6 +67,10 @@ export function createFoodOptimizerSimulation(request, candidate = null) {
       };
     }
     const player = Player.createFromDTO(dto, { cacheEquipmentStats: true });
+    // 与 worker.js 相同的共享契约：zone.buffs（模块级 actionDetailMap JSON，Zone
+    // 构造不拷贝）与 extraBuffs 按引用共享，本 realm 可能被 worker 池复用跑多轮，
+    // 跨玩家/跨轮次安全依赖 addPermanentBuff「首次写入必克隆」。禁止就地改写
+    // 这些对象，或绕过 addPermanentBuff 直接写 permanentBuffs。
     player.zoneBuffs = zone?.buffs || [];
     player.extraBuffs = extraBuffs;
     return player;
