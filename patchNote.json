@@ -1,4 +1,20 @@
 {
+  "2026年9月17日（v2.5.4）": {
+    "label": {
+      "zh": "2026年9月17日（v2.5.4）",
+      "en": "September 17, 2026 (v2.5.4)"
+    },
+    "newFeatures": {
+      "zh": [
+        "迷宫模拟新增「迷宫商店升级」设置：可为伤害、攻击速度、施法速度、暴击率、经验五类升级设置等级，模拟会计入对应加成。",
+        "主站一键导入会自动带上角色已购买的迷宫商店升级等级，被覆盖或清空时会当场提示。"
+      ],
+      "en": [
+        "Labyrinth simulations gain a \"Labyrinth Shop Upgrades\" setting: set levels for the five upgrades and the simulation applies the bonuses.",
+        "Main-site import now carries your character's purchased Labyrinth Shop Upgrade levels automatically, with a clear notice when they're overwritten or reset."
+      ]
+    }
+  },
   "2026年9月15日（v2.5.3）": {
     "label": {
       "zh": "2026年9月15日（v2.5.3）",
