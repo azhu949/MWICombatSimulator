@@ -1,90 +1,118 @@
-//! Deterministic RNG surface for the engine.
+//! mulberry32 确定性伪随机源：与 JS 侧 `src/services/seededRandom.js` 逐位一致。
 //!
-//! Slice 2 will port the event-queue RNG semantics. The JS engine uses
-//! `Math.random()` (uniform f64 in [0,1)); for parity testing we need a
-//! reproducible stream, so we expose xorshift128+ (same generator family
-//! V8 uses, seeded) for deterministic runs on both sides.
+//! 为什么必须一致：`src/worker.js` 在给定 seed 时用 mulberry32 替换 `Math.random`，
+//! 「同一 payload + 同一 seed 必然产出相同 simResult」是该项目的既定契约（公共随机数 /
+//! Common Random Numbers，技能与食物优化器精度的来源）。Rust 引擎要在切片 4/5 接管
+//! 模拟，就必须消费与 JS 完全相同的随机流，本模块是逐位 parity 的第一块基石。
+//!
+//! 位运算说明：JS 侧 `Math.imul`/`^`/`>>>` 在 int32 与 ToUint32 之间往返，
+//! 但全程只影响低 32 位模式；Rust 侧统一在 u32 域用 wrapping 运算，位模式完全一致。
 
-/// xorshift128+ generator producing uniform f64 in [0, 1).
-pub struct DeterministicRng {
-    s0: u64,
-    s1: u64,
+/// mulberry32：32 位种子 → 均匀序列，逐位复刻 JS `createSeededRandom`。
+pub struct Mulberry32 {
+    state: u32,
 }
 
-impl DeterministicRng {
-    pub fn new(seed: u64) -> Self {
-        // splitmix64 to expand the seed into two non-zero state words
-        let mut z = seed.wrapping_add(0x9E3779B97F4A7C15);
-        let mix = |z: &mut u64| -> u64 {
-            *z = z.wrapping_add(0x9E3779B97F4A7C15);
-            let mut x = *z;
-            x = (x ^ (x >> 30)).wrapping_mul(0xBF58476D1CE4E5B9);
-            x = (x ^ (x >> 27)).wrapping_mul(0x94D049BB133111EB);
-            x ^ (x >> 31)
-        };
-        DeterministicRng { s0: mix(&mut z), s1: mix(&mut z) }
+impl Mulberry32 {
+    pub fn new(seed: u32) -> Self {
+        Self { state: seed }
     }
 
-    /// Uniform f64 in [0, 1) — matches the distribution of `Math.random()`.
+    /// 一次抽样，等价于 JS `createSeededRandom(seed)()` 的一次调用，返回 [0,1)。
     pub fn next_f64(&mut self) -> f64 {
-        let x = self.next_u64();
-        // V8-style conversion: 53-bit mantissa into [0,1)
-        (x >> 11) as f64 * (1.0 / 9007199254740992.0)
+        self.state = self.state.wrapping_add(0x6d2b79f5);
+        let mut value = (self.state ^ (self.state >> 15)).wrapping_mul(1 | self.state);
+        value ^= value.wrapping_add((value ^ (value >> 7)).wrapping_mul(61 | value));
+        ((value ^ (value >> 14)) as f64) / 4294967296.0
     }
+}
 
-    /// Raw u64 stream (xorshift128+).
-    pub fn next_u64(&mut self) -> u64 {
-        let mut s1 = self.s0;
-        let s0 = self.s1;
-        let result = s0.wrapping_add(s1);
-        s1 ^= s1 << 23;
-        self.s0 = s0 ^ s1 ^ (s1 >> 17) ^ (s0 >> 26);
-        self.s1 = s1;
-        result
+/// 字符串 → 32 位种子（FNV-1a 变体），与 JS `hashSeed` 一致。
+/// 按 UTF-16 码元折叠（`encode_utf16`），与 JS `charCodeAt` 的语义对齐。
+pub fn hash_seed(text: &str) -> u32 {
+    let mut hash: u32 = 0x811c9dc5;
+    for unit in text.encode_utf16() {
+        hash ^= unit as u32;
+        hash = hash.wrapping_mul(0x01000193);
     }
+    hash
+}
+
+/// 从基础种子派生 `count` 个互不相同的种子，与 JS `deriveSeedSet` 一致。
+pub fn derive_seed_set(base_seed: u32, count: u32) -> Vec<u32> {
+    let mut rng = Mulberry32::new(base_seed);
+    (0..count)
+        .map(|_| ((rng.next_f64() * 4294967296.0).floor()) as u32)
+        .collect()
 }
 
 #[cfg(test)]
 mod tests {
     use super::*;
 
+    // 以下期望值由真实 JS 实现（node 运行 src/services/seededRandom.js）生成，
+    // 任何位级偏差都会让本测试失败。
+
     #[test]
-    fn rng_is_deterministic_per_seed() {
-        let mut a = DeterministicRng::new(42);
-        let mut b = DeterministicRng::new(42);
+    fn matches_js_stream_for_seed_0() {
+        let mut rng = Mulberry32::new(0);
+        let actual: Vec<f64> = (0..5).map(|_| rng.next_f64()).collect();
+        let expected = [
+            0.26642920868471265,
+            0.0003297457005828619,
+            0.2232720274478197,
+            0.1462021479383111,
+            0.46732782293111086,
+        ];
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn matches_js_stream_for_seed_42() {
+        let mut rng = Mulberry32::new(42);
+        let actual: Vec<f64> = (0..5).map(|_| rng.next_f64()).collect();
+        let expected = [
+            0.6011037519201636,
+            0.44829055899754167,
+            0.8524657934904099,
+            0.6697340414393693,
+            0.17481389874592423,
+        ];
+        assert_eq!(actual, expected);
+    }
+
+    #[test]
+    fn stream_is_deterministic_per_seed() {
+        let mut a = Mulberry32::new(7);
+        let mut b = Mulberry32::new(7);
         for _ in 0..1000 {
-            assert_eq!(a.next_u64(), b.next_u64());
+            assert_eq!(a.next_f64(), b.next_f64());
         }
     }
 
     #[test]
-    fn rng_values_in_unit_interval() {
-        let mut rng = DeterministicRng::new(1);
+    fn values_stay_in_unit_interval() {
+        let mut rng = Mulberry32::new(1);
         for _ in 0..10_000 {
-            let v = rng.next_f64();
-            assert!((0.0..1.0).contains(&v), "value out of range: {v}");
+            let value = rng.next_f64();
+            assert!((0.0..1.0).contains(&value), "value out of range: {value}");
         }
     }
 
     #[test]
-    fn different_seeds_diverge() {
-        let mut a = DeterministicRng::new(1);
-        let mut b = DeterministicRng::new(2);
-        let mut same = true;
-        for _ in 0..10 {
-            if a.next_u64() != b.next_u64() {
-                same = false;
-            }
-        }
-        assert!(!same);
+    fn matches_js_hash_seed() {
+        assert_eq!(hash_seed("hello"), 1335831723);
+        assert_eq!(hash_seed("中文测试"), 349844549);
+        assert_eq!(hash_seed(""), 0x811c9dc5);
     }
 
     #[test]
-    fn mean_is_approximately_uniform() {
-        let mut rng = DeterministicRng::new(7);
-        let n = 100_000;
-        let sum: f64 = (0..n).map(|_| rng.next_f64()).sum();
-        let mean = sum / n as f64;
-        assert!((mean - 0.5).abs() < 0.01, "mean drifted: {mean}");
+    fn matches_js_derive_seed_set() {
+        assert_eq!(derive_seed_set(1, 3), vec![2693262067, 11749833, 2265367787]);
+        assert_eq!(
+            derive_seed_set(0, 5),
+            vec![1144304738, 1416247, 958946056, 627933444, 2007157716]
+        );
+        assert_eq!(derive_seed_set(123, 0), Vec::<u32>::new());
     }
 }
