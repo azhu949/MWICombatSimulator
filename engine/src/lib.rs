@@ -3,10 +3,17 @@
 //! Slice 1: infrastructure (crate skeleton, wasm build chain, loader, benchmark + parity harness).
 //! Slice 2: event queue (exact port of the heap-js based `EventQueue`) + mulberry32 RNG
 //! (bit-for-bit identical to `src/services/seededRandom.js`), with JS-vs-Rust parity probes.
+//! Slice 3: combat units (exact port of `combatUnit.js` / `buff.js` / `buffSourcePolicy.js`
+//! stat resolution + buff lifecycle, plus the equipment stat rule), with unit parity probes.
 
+pub mod buff;
+pub mod equipment;
 pub mod event_queue;
+pub mod ordered_map;
 pub mod queue_probe;
 pub mod rng;
+pub mod unit;
+pub mod unit_probe;
 
 use wasm_bindgen::prelude::*;
 
@@ -42,4 +49,12 @@ pub fn derive_seed_set_probe(seed: u32, count: u32) -> Vec<u32> {
 pub fn run_event_queue_operations(ops_json: &str) -> String {
     queue_probe::run_event_queue_operations(ops_json)
         .unwrap_or_else(|error| panic!("event queue probe failed: {error}"))
+}
+
+/// Parity probe: replays a combat-unit operation script (JSON) against the Rust `CombatUnit`
+/// (stat resolution + buff lifecycle) and returns the execution trace (JSON).
+/// See `unit_probe.rs` for the schema.
+#[wasm_bindgen]
+pub fn run_unit_operations(ops_json: &str) -> String {
+    unit_probe::run_unit_operations(ops_json).unwrap_or_else(|error| panic!("unit probe failed: {error}"))
 }
