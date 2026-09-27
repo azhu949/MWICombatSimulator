@@ -9,3 +9,8 @@ tmp/
 docs/superpowers
 /.snow/*
 /.codefree/*
+
+# Rust / WASM engine
+engine/target/
+engine/pkg/
+engine/Cargo.lock
