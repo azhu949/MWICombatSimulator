@@ -4,14 +4,14 @@ This branch ports the combat simulator engine from JavaScript to Rust + WebAssem
 
 ## Slice plan
 
-| Slice | Scope                                                                                             | Status      |
-| ----- | ------------------------------------------------------------------------------------------------- | ----------- |
-| 1     | Infra: crate skeleton, wasm-pack build chain, loader with JS fallback, benchmark + parity harness | in progress |
-| 2     | Event queue + RNG (eventQueue / event base classes)                                               | pending     |
-| 3     | Units & stat resolution (combatUnit / equipment / buff)                                           | pending     |
-| 4     | Combat main loop (abilities / triggers / all event types)                                         | pending     |
-| 5     | Result aggregation + worker integration + A/B switch                                              | pending     |
-| 6     | Wrap-up: performance report, decide JS engine fate                                                | pending     |
+| Slice | Scope                                                                                             | Status                    |
+| ----- | ------------------------------------------------------------------------------------------------- | ------------------------- |
+| 1     | Infra: crate skeleton, wasm-pack build chain, loader with JS fallback, benchmark + parity harness | done (tag `wasm-slice-1`) |
+| 2     | Event queue + RNG (exact heap-js port + bit-for-bit mulberry32 parity)                            | pending merge             |
+| 3     | Units & stat resolution (combatUnit / equipment / buff)                                           | pending                   |
+| 4     | Combat main loop (abilities / triggers / all event types)                                         | pending                   |
+| 5     | Result aggregation + worker integration + A/B switch                                              | pending                   |
+| 6     | Wrap-up: performance report, decide JS engine fate                                                | pending                   |
 
 ## Commands
 
