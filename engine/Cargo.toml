@@ -1,0 +1,25 @@
+[package]
+name = "mwi-combat-engine"
+version = "0.1.0"
+edition = "2021"
+description = "Rust/WASM port of the MWI combat simulator engine (slice-by-slice parity with the JS engine)"
+
+[lib]
+crate-type = ["cdylib", "rlib"]
+
+[dependencies]
+wasm-bindgen = "0.2"
+serde = { version = "1", features = ["derive"] }
+serde_json = "1"
+
+[dev-dependencies]
+wasm-bindgen-test = "0.2"
+
+[profile.release]
+opt-level = 3
+lto = true
+
+# wasm-opt (binaryen) 从 GitHub Release 下载在国内网络下极慢/易挂起（实测 3 次构建全部卡死）。
+# 切片 1-4 不依赖其体积/性能收益；切片 5+ 做性能对照前再启用（可通过镜像或 PATH 安装 binaryen）。
+[package.metadata.wasm-pack.profile.release]
+wasm-opt = false
