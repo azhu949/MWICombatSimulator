@@ -67,9 +67,9 @@ import {
 import { normalizeLabyrinthShopUpgrades } from '../shared/labyrinthShopUpgrades.js';
 import { createAdvisorState, resolveAdvisorMetricPlayer } from '../services/advisorDomain.js';
 import {
-  QUEUE_PARALLEL_WORKER_LIMIT_MIN,
-  QUEUE_PARALLEL_WORKER_LIMIT_MAX,
-  QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS,
+  getDetectedHardwareCoreCount,
+  getParallelWorkerHardMaxForCurrentMachine,
+  getRecommendedParallelWorkerLimit,
 } from '../services/queueScoring.js';
 import {
   buildEquipmentSetQueueChangesFromQueueState,
@@ -97,6 +97,12 @@ import { createCachedModuleLoader } from '../services/cachedModuleLoader.js';
 import { createFoodOptimizerActions, createFoodOptimizerState } from './simulatorFoodOptimizerActions.js';
 import { snapshotFoodOptimizerInput } from '../services/foodOptimizerSnapshot.js';
 import { createFoodOptimizerInputSignature } from '../services/foodOptimizerDomain.js';
+import {
+  createTriggerOptimizerActions,
+  createTriggerOptimizerState,
+  snapshotTriggerOptimizerInput,
+} from './simulatorTriggerOptimizerActions.js';
+import { createTriggerOptimizerInputSignature } from '../services/triggerOptimizerDomain.js';
 
 const ABILITY_BOOK_CATEGORY_HRID = '/item_categories/ability_book';
 
@@ -166,30 +172,6 @@ function getZoneOptions() {
 
 function getLabyrinthOptions() {
   return labyrinthOptions;
-}
-
-function getDetectedHardwareCoreCount() {
-  const hardwareConcurrency = Number(typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : NaN);
-  if (!Number.isFinite(hardwareConcurrency) || hardwareConcurrency <= 0) {
-    return null;
-  }
-  return Math.max(1, Math.floor(hardwareConcurrency));
-}
-
-function getParallelWorkerHardMaxForCurrentMachine() {
-  const detectedCoreCount = getDetectedHardwareCoreCount();
-  if (!Number.isFinite(detectedCoreCount)) {
-    return QUEUE_PARALLEL_WORKER_LIMIT_MAX;
-  }
-  return clamp(detectedCoreCount, QUEUE_PARALLEL_WORKER_LIMIT_MIN, QUEUE_PARALLEL_WORKER_LIMIT_MAX);
-}
-
-function getRecommendedParallelWorkerLimit() {
-  const detectedCoreCount = getDetectedHardwareCoreCount();
-  const upperBound = Number.isFinite(detectedCoreCount)
-    ? Math.min(QUEUE_PARALLEL_WORKER_LIMIT_MAX, detectedCoreCount)
-    : QUEUE_PARALLEL_WORKER_LIMIT_MAX;
-  return clamp(QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS, QUEUE_PARALLEL_WORKER_LIMIT_MIN, upperBound);
 }
 
 /**
@@ -280,12 +262,15 @@ export const useSimulatorStore = defineStore('simulator', {
         ...loadAdvisorSettingsFromStorage(),
       },
       foodOptimizer: createFoodOptimizerState(),
+      triggerOptimizer: createTriggerOptimizerState(),
       queue: {
         byPlayer: createQueueStateByPlayer(playerList, persistedQueueRunSettingsByPlayer),
         importedProfileByPlayer: createImportedProfileByPlayer(),
         importedBaselineByPlayer: createImportedBaselineByPlayer(),
       },
-      queueRuntime: loadQueueRuntimeSettingsFromStorage(),
+      queueRuntime: loadQueueRuntimeSettingsFromStorage({
+        parallelWorkerLimit: getRecommendedParallelWorkerLimit(),
+      }),
       playerDataSnapshot: createPlayerDataSnapshotState(),
       equipmentSets: loadEquipmentSetsFromStorage(),
       pricing: createPricingState(),
@@ -304,6 +289,17 @@ export const useSimulatorStore = defineStore('simulator', {
       return Boolean(
         report &&
         (report.stale || this.foodOptimizerInputSignature !== (report.appliedInputSignature || report.inputSignature)),
+      );
+    },
+    triggerOptimizerInputSignature() {
+      return createTriggerOptimizerInputSignature(snapshotTriggerOptimizerInput(this));
+    },
+    triggerOptimizerReportStale(state) {
+      const results = state.triggerOptimizer.results;
+      return Boolean(
+        results?.createdAt &&
+        (results.stale ||
+          this.triggerOptimizerInputSignature !== (results.appliedInputSignature || results.inputSignature)),
       );
     },
     activePlayer(state) {
@@ -672,6 +668,8 @@ export const useSimulatorStore = defineStore('simulator', {
           return resolved || player;
         });
         this.persistPlayerAchievements();
+        // 快照恢复同样整体替换玩家配置，触发器优化结果随之失效。
+        this.resetTriggerOptimizerResults();
 
         const nextSimulationSettings = preferredSimulationSettings || fallbackSimulationSettings;
         if (nextSimulationSettings) {
@@ -1009,6 +1007,8 @@ export const useSimulatorStore = defineStore('simulator', {
         this.setImportedProfileState(player.id, true);
         this.setImportedBaselineSnapshot(player.id, player);
       });
+      // 玩家配置被整体替换，既有触发器优化结果不再对应任何当前输入。
+      this.resetTriggerOptimizerResults();
       this.simulationSettings = {
         ...this.simulationSettings,
         ...result.simulationSettings,
@@ -1054,6 +1054,8 @@ export const useSimulatorStore = defineStore('simulator', {
       this.persistPlayerAchievements();
       this.setImportedProfileState(targetId, true);
       this.setImportedBaselineSnapshot(targetId, result.player);
+      // 玩家配置被替换，既有触发器优化结果不再对应任何当前输入。
+      this.resetTriggerOptimizerResults();
       this.simulationSettings = {
         ...this.simulationSettings,
         ...result.simulationSettings,
@@ -1108,6 +1110,7 @@ export const useSimulatorStore = defineStore('simulator', {
     },
     ...createPricingActions(),
     ...createFoodOptimizerActions({ loadPlayerMapperModule }),
+    ...createTriggerOptimizerActions({ loadPlayerMapperModule }),
     ...createAdvisorActions({
       loadPlayerMapperModule,
     }),

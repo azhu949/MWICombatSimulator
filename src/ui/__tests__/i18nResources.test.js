@@ -10,6 +10,16 @@ import {
   FOOD_OPTIMIZER_MIN_ROUNDS,
   FOOD_OPTIMIZER_MIN_STEP_PERCENT,
 } from '../../services/foodOptimizerDomain.js';
+import {
+  TRIGGER_OPTIMIZER_MAX_CANDIDATE_LIMIT,
+  TRIGGER_OPTIMIZER_MAX_MAX_ROUNDS,
+  TRIGGER_OPTIMIZER_MAX_ROUNDS,
+  TRIGGER_OPTIMIZER_MAX_SIMULATION_HOURS,
+  TRIGGER_OPTIMIZER_MIN_CANDIDATE_LIMIT,
+  TRIGGER_OPTIMIZER_MIN_MAX_ROUNDS,
+  TRIGGER_OPTIMIZER_MIN_ROUNDS,
+  TRIGGER_OPTIMIZER_MIN_SIMULATION_HOURS,
+} from '../../services/triggerOptimizerDomain.js';
 
 const SRC_ROOT = fileURLToPath(new URL('../../../src', import.meta.url));
 
@@ -116,6 +126,55 @@ describe('common locale resources', () => {
     expect(zhCommon?.skilling?.currentLevelAlternatives).toBe('当前等级候选对比');
     expect(enCommon?.skilling?.drinkUsedUp).toContain('used up');
     expect(Object.keys(enCommon?.skilling || {}).sort()).toEqual(Object.keys(zhCommon?.skilling || {}).sort());
+  });
+
+  it('keeps the trigger optimizer resource keys synchronized across locales', () => {
+    expect(enCommon?.menu?.triggerOptimizer).toBe('Trigger Optimizer');
+    expect(zhCommon?.menu?.triggerOptimizer).toBe('技能优化');
+    // 搜索强度预设（四个档位名）与重复次数文案在两种语言里对齐——下拉直接读它们。
+    expect(zhCommon?.triggerOptimizer?.rounds).toBe('重复次数');
+    expect(enCommon?.triggerOptimizer?.rounds).toBe('Rounds');
+    expect(Object.keys(zhCommon?.triggerOptimizer?.presets || {}).sort()).toEqual(
+      Object.keys(enCommon?.triggerOptimizer?.presets || {}).sort(),
+    );
+    expect(zhCommon?.triggerOptimizer?.invalidSettings).toContain('重复次数 1–12');
+    expect(enCommon?.triggerOptimizer?.invalidSettings).toContain('rounds 1-12');
+    expect(Object.keys(enCommon?.triggerOptimizer || {}).sort()).toEqual(
+      Object.keys(zhCommon?.triggerOptimizer || {}).sort(),
+    );
+    for (const nested of ['phases', 'metrics', 'role', 'candidate', 'metricSignificance', 'robustnessVerdicts']) {
+      expect(Object.keys(enCommon?.triggerOptimizer?.[nested] || {}).sort()).toEqual(
+        Object.keys(zhCommon?.triggerOptimizer?.[nested] || {}).sort(),
+      );
+    }
+    // 「空列表 = 立即释放，不是禁用」的澄清文案必须在两种语言里都存在（设计 §1.1/§9.2）。
+    expect(zhCommon?.triggerOptimizer?.candidate?.disabledHint).toContain('并非禁用');
+    expect(enCommon?.triggerOptimizer?.candidate?.disabledHint).toContain('not disabled');
+    expect(zhCommon?.triggerOptimizer?.emptyState).toContain('导入');
+    expect(enCommon?.triggerOptimizer?.emptyState).toContain('import');
+  });
+
+  it('keeps the trigger optimizer bound copy in sync with the domain range constants', () => {
+    // invalidSettings 内嵌「权重 0–100（出现两次）/ 搜索轮数 1–5 / 每技能候选 2–20 / 重复次数 1–12 /
+    // 时长 1–168」；常量改了文案没改，提示就会与校验不一致（2026-09-27 正是这样抓到「候选上限」文案
+    // 停在 16、常量已是 20 的漂移）。按出现顺序比对（两种语言同序）。
+    const bounds = [
+      0,
+      100,
+      100,
+      TRIGGER_OPTIMIZER_MIN_MAX_ROUNDS,
+      TRIGGER_OPTIMIZER_MAX_MAX_ROUNDS,
+      TRIGGER_OPTIMIZER_MIN_CANDIDATE_LIMIT,
+      TRIGGER_OPTIMIZER_MAX_CANDIDATE_LIMIT,
+      TRIGGER_OPTIMIZER_MIN_ROUNDS,
+      TRIGGER_OPTIMIZER_MAX_ROUNDS,
+      TRIGGER_OPTIMIZER_MIN_SIMULATION_HOURS,
+      TRIGGER_OPTIMIZER_MAX_SIMULATION_HOURS,
+    ];
+    for (const locale of [enCommon, zhCommon]) {
+      const numbers = (locale.triggerOptimizer.invalidSettings.match(/\d+/g) || []).map(Number);
+      expect(numbers).toEqual(bounds);
+    }
   });
 
   it('defines the reorganized Home workspace tabs in both supported languages', () => {

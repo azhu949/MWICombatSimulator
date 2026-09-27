@@ -3,6 +3,8 @@ import sharedWorkerClient, { WorkerClient } from './workerClient.js';
 export const DEDICATED_WORKER_SCOPE_QUEUE = 'queue';
 export const DEDICATED_WORKER_SCOPE_ADVISOR = 'advisor';
 export const DEDICATED_WORKER_SCOPE_EXPERIMENTAL = 'experimental';
+// 技能触发器优化器：每个候选评估各起一个专用 worker（设计 §3.2/§4.1）。
+export const DEDICATED_WORKER_SCOPE_TRIGGER_OPTIMIZER = 'trigger-optimizer';
 
 const dedicatedWorkerRuns = new Set();
 let sharedWorkerRunHandle = null;
@@ -51,6 +53,12 @@ export function stopQueueWorkerClients() {
 
 export function stopAdvisorWorkerRuns() {
   cancelDedicatedWorkerRuns((workerRunHandle) => workerRunHandle.scope === DEDICATED_WORKER_SCOPE_ADVISOR);
+}
+
+// 用户点「停止」时由 store 调用（设计 §4.3）：取消所有触发器优化器专用 worker
+// 运行，在途任务以 code:'cancelled' 拒绝，搜索层据此收尾而非上报失败。
+export function stopTriggerOptimizerWorkerRuns() {
+  cancelDedicatedWorkerRuns((workerRunHandle) => workerRunHandle.scope === DEDICATED_WORKER_SCOPE_TRIGGER_OPTIMIZER);
 }
 
 function unregisterSharedWorkerRun(workerRunHandle) {
@@ -140,6 +148,122 @@ export function runSingleSimulationPayloadWithDedicatedWorker(payload, onProgres
           settle(reject, error);
         },
       });
+    } catch (error) {
+      settle(reject, error);
+    }
+  });
+}
+
+// 批量能力探测（§54，2026-09-27）：生产 WorkerClient 有 startSimulationBatch（一个 realm 跑完
+// 一次评估的全部种子）；测试注入的桩通常只有 startSimulation/stopSimulation —— 调用方据此
+// 决定走批量还是逐场路径（逐场路径的语义完全不变）。
+export function supportsSimulationBatch(WorkerClientCtor) {
+  const Ctor = typeof WorkerClientCtor === 'function' ? WorkerClientCtor : WorkerClient;
+  return typeof Ctor?.prototype?.startSimulationBatch === 'function';
+}
+
+// §54（2026-09-27）批量入口：一个 realm 跑完 list 里的全部 payload（每条 = 一场模拟）。
+// 与 runSingleSimulationPayloadWithDedicatedWorker 的取消语义、scope、handle 注册完全一致
+// （stopTriggerOptimizerWorkerRuns 一样能定向取消、以 code:'cancelled' 拒绝整批），区别只在
+// 「realm 只建一次」—— 生产端每建一个 realm 都要付一次模块加载（装置实测 ≈0.43s/场，占单场
+// 墙钟约一半），而一次评估的 N 场本来就是串行跑的，收进同一个 realm 不改变任何样本
+// （装置 parity 16/16 逐位一致，见设计 §54）。
+// 返回 Promise<{ simResults, errors }>：与 payloads 等长；失败位 simResults[i] = null、
+// errors[i] = 失败原因（调用方按 createDegenerateMetrics 处置，与逐场路径的 catch 分支同款）。
+// realm 级崩溃：把在飞的那一条记为失败，换一个新 realm 接着跑剩下的 —— 与「每场新建 realm」
+// 形态的失败传播等价（那一场退化为失败样本，其余照跑）。
+// 正确性前提（评审检查项）：引擎在同一 realm 连续两次 simulate 之间没有会改变结果的状态
+// 残留（共享 buff 对象不得就地改写、模块级缓存不得跨场积累等）。该前提由
+// src/services/__tests__/simulatorRealmReuseParity.test.js 在常规流水线内锚定：
+// 同一批种子「同 realm 连跑」与「每场全新 realm」的 simResult 逐位一致 ——
+// 改动引擎引入任何非确定性残留时该测试即红。
+export function runSimulationBatchWithDedicatedWorker(payloads, onProgress = () => {}, options = {}) {
+  const ClientCtor = typeof options?.WorkerClientCtor === 'function' ? options.WorkerClientCtor : WorkerClient;
+  const list = Array.isArray(payloads) ? payloads : [];
+  return new Promise((resolve, reject) => {
+    const scope = String(options?.scope || DEDICATED_WORKER_SCOPE_QUEUE);
+    const simResults = new Array(list.length).fill(null);
+    const errors = new Array(list.length).fill(null);
+    let settled = false;
+    let nextIndex = 0;
+    let client = new ClientCtor();
+    let workerRunHandle = null;
+
+    const settle = (callback, value) => {
+      if (settled) {
+        return;
+      }
+      settled = true;
+
+      try {
+        client.stopSimulation();
+      } catch (error) {
+        // 收尾专属 worker 时忽略停止错误（与逐场路径同款）
+      }
+
+      unregisterDedicatedWorkerRun(workerRunHandle);
+      callback(value);
+    };
+
+    workerRunHandle = {
+      scope,
+      cancel: (error = createWorkerRunCancellationError()) => settle(reject, error),
+    };
+    registerDedicatedWorkerRun(workerRunHandle);
+
+    const startRealmBatch = () => {
+      if (settled) {
+        return;
+      }
+      if (nextIndex >= list.length) {
+        settle(resolve, { simResults, errors });
+        return;
+      }
+      const base = nextIndex;
+      const activeClient = client;
+      activeClient.startSimulationBatch(list.slice(base), {
+        onProgress: (data) => {
+          if (settled) {
+            return;
+          }
+          try {
+            onProgress(data);
+          } catch (error) {
+            settle(reject, error);
+          }
+        },
+        onResult: (simResult, offset) => {
+          simResults[base + offset] = simResult;
+          nextIndex = base + offset + 1;
+        },
+        onError: (error, offset) => {
+          errors[base + offset] = error;
+          nextIndex = base + offset + 1;
+        },
+        onAbort: (error, offset) => {
+          // realm 级崩溃：在飞的那一条记失败，换一个新 realm 从下一条继续（见上方说明）。
+          if (settled) {
+            return;
+          }
+          const failedIndex = base + Math.max(0, Number(offset) || 0);
+          errors[failedIndex] = error;
+          nextIndex = failedIndex + 1;
+
+          try {
+            activeClient.stopSimulation();
+          } catch (stopError) {
+            // 崩溃的 realm 可能已经不在：忽略
+          }
+
+          client = new ClientCtor();
+          startRealmBatch();
+        },
+        onComplete: () => settle(resolve, { simResults, errors }),
+      });
+    };
+
+    try {
+      startRealmBatch();
     } catch (error) {
       settle(reject, error);
     }

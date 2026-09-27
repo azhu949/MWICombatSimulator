@@ -22,6 +22,7 @@ import {
   runSharedSingleSimulationPayload,
   runSingleSimulationPayloadWithDedicatedWorker,
   stopQueueWorkerClients,
+  stopTriggerOptimizerWorkerRuns,
 } from '../services/simulatorWorkerRuns.js';
 import { clamp, toFiniteNumber } from '../services/utils.js';
 
@@ -177,6 +178,7 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
     },
     stopSimulation() {
       if (this.foodOptimizer?.runtime.isRunning) this.stopFoodOptimizer();
+      if (this.triggerOptimizer?.runtime.isRunning) this.stopTriggerOptimizer();
       const queueRunInProgress = this.isAnyQueueRunning;
       const advisorRunInProgress = Boolean(this.advisor.runtime?.isRunning);
       const manualRunInProgress = Boolean(this.runtime.isRunning && !queueRunInProgress && !advisorRunInProgress);
@@ -189,6 +191,7 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
       cancelSharedWorkerRun();
       workerClient.stopSimulation();
       stopQueueWorkerClients();
+      stopTriggerOptimizerWorkerRuns();
       if (manualRunInProgress) {
         this.runtime.isRunning = false;
         this.runtime.progress = 0;
@@ -209,6 +212,11 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
         return;
       }
 
+      if (this.triggerOptimizer?.runtime.isRunning) {
+        this.runtime.error = 'common:triggerOptimizer.busy';
+        return;
+      }
+
       if (this.isAnyQueueRunning) {
         this.runtime.error = 'common:simulation.errorQueueInProgress';
         return;
@@ -219,7 +227,11 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
         return;
       }
 
-      if (hasSharedWorkerRunInProgress() || this.foodOptimizer?.runtime.isRunning) {
+      if (
+        hasSharedWorkerRunInProgress() ||
+        this.foodOptimizer?.runtime.isRunning ||
+        this.triggerOptimizer?.runtime.isRunning
+      ) {
         this.runtime.error = 'common:simulation.errorAnotherRunInProgress';
         return;
       }
@@ -270,7 +282,11 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
       const startedAt = Date.now();
 
       // 在上面的 await 之后重新检查：共享运行可能在此期间已经开始。
-      if (hasSharedWorkerRunInProgress() || this.foodOptimizer?.runtime.isRunning) {
+      if (
+        hasSharedWorkerRunInProgress() ||
+        this.foodOptimizer?.runtime.isRunning ||
+        this.triggerOptimizer?.runtime.isRunning
+      ) {
         this.runtime.error = 'common:simulation.errorAnotherRunInProgress';
         return;
       }

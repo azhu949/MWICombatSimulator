@@ -1,4 +1,22 @@
 {
+  "2026年9月27日（v2.6.0）": {
+    "label": {
+      "zh": "2026年9月27日（v2.6.0）",
+      "en": "September 27, 2026 (v2.6.0)"
+    },
+    "improvements": {
+      "zh": [
+        "战斗模拟引擎性能优化：模拟批次并行度更高、运行更快。",
+        "随机数改为可复现的种子随机，同一配置的模拟结果可稳定复现。",
+        "优化后台任务调度与运行状态管理，长任务可中途停止且不阻塞其他页面操作。"
+      ],
+      "en": [
+        "Combat simulation engine performance improvements: higher parallelism and faster runs.",
+        "Randomness now uses seeded, reproducible RNG, so simulation results for the same setup are stable.",
+        "Improved background task scheduling and run-state handling: long tasks can be stopped mid-run without blocking other pages."
+      ]
+    }
+  },
   "2026年9月17日（v2.5.4）": {
     "label": {
       "zh": "2026年9月17日（v2.5.4）",

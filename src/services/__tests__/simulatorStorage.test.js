@@ -1,5 +1,6 @@
 import { afterEach, describe, expect, it, vi } from 'vitest';
 import {
+  clearTriggerOptimizerReportFromStorage,
   createPricingState,
   createProfitPricingOptions,
   getStorageItem,
@@ -10,6 +11,7 @@ import {
   loadEquipmentSetsFromStorage,
   loadFoodOptimizerSettingsFromStorage,
   loadQueueRunSettingsByPlayerFromStorage,
+  loadTriggerOptimizerReportFromStorage,
   normalizeAdvisorSettings,
   normalizeFoodOptimizerSettings,
   normalizeMarketItemValues,
@@ -20,6 +22,7 @@ import {
   persistAdvisorSettingsToStorage,
   persistFoodOptimizerSettingsToStorage,
   persistSimulationUiSettingsToStorage,
+  persistTriggerOptimizerReportToStorage,
   readJsonStorage,
   removeStorageItem,
   setJsonStorage,
@@ -33,6 +36,7 @@ const PRICE_MARKET_CACHE_STORAGE_KEY = 'mwi.price.marketCache.v1';
 const SIMULATION_UI_STORAGE_KEY = 'mwi.simulation.ui.v1';
 const ADVISOR_SETTINGS_STORAGE_KEY = 'mwi.advisor.settings.v1';
 const FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY = 'mwi.foodOptimizer.settings.v1';
+const TRIGGER_OPTIMIZER_REPORT_STORAGE_KEY = 'mwi.triggerOptimizer.report.v1';
 
 function createMemoryStorage(initialValues = {}) {
   const data = new Map(Object.entries(initialValues));
@@ -976,6 +980,52 @@ describe('simulatorStorage', () => {
 
       storage.data.delete(ADVISOR_SETTINGS_STORAGE_KEY);
       expect(loadAdvisorSettingsFromStorage()).toEqual(defaults);
+    });
+  });
+
+  describe('triggerOptimizer 报告持久化', () => {
+    it('round-trip：persist → load 深拷贝解耦，clear 后回到 null', () => {
+      const storage = createMemoryStorage();
+      vi.stubGlobal('localStorage', storage);
+      const report = { createdAt: 1727000000000, perAbilityChoices: [], bestTriggerMap: {} };
+
+      expect(persistTriggerOptimizerReportToStorage(report)).toBe(true);
+      const stored = JSON.parse(storage.data.get(TRIGGER_OPTIMIZER_REPORT_STORAGE_KEY));
+      expect(stored.version).toBe(1);
+      expect(stored.savedAt).toBeGreaterThan(0);
+
+      const loaded = loadTriggerOptimizerReportFromStorage();
+      expect(loaded).toEqual(report);
+      // 深拷贝解耦：改内存里这份不回灌存储（store 会原地写 stale 等字段）。
+      loaded.perAbilityChoices.push({ slotIndex: 1 });
+      expect(loadTriggerOptimizerReportFromStorage()).toEqual(report);
+
+      expect(clearTriggerOptimizerReportFromStorage()).toBe(true);
+      expect(loadTriggerOptimizerReportFromStorage()).toBeNull();
+    });
+
+    it('损坏 JSON / 版本不符 / 形状不合法一律静默回落（null / false）', () => {
+      const storage = createMemoryStorage({
+        [TRIGGER_OPTIMIZER_REPORT_STORAGE_KEY]: '{broken',
+      });
+      vi.stubGlobal('localStorage', storage);
+      expect(loadTriggerOptimizerReportFromStorage()).toBeNull();
+
+      storage.data.set(
+        TRIGGER_OPTIMIZER_REPORT_STORAGE_KEY,
+        JSON.stringify({ version: 999, report: { createdAt: 1 } }),
+      );
+      expect(loadTriggerOptimizerReportFromStorage()).toBeNull();
+
+      storage.data.set(
+        TRIGGER_OPTIMIZER_REPORT_STORAGE_KEY,
+        JSON.stringify({ version: 1, report: { perAbilityChoices: [] } }),
+      );
+      expect(loadTriggerOptimizerReportFromStorage()).toBeNull();
+
+      expect(persistTriggerOptimizerReportToStorage({ noCreatedAt: true })).toBe(false);
+      // 空结果（createEmptyResult 自带 createdAt: 0）不是报告：不落盘，否则开跑清空会覆盖好报告。
+      expect(persistTriggerOptimizerReportToStorage({ createdAt: 0, perAbilityChoices: [] })).toBe(false);
     });
   });
 });

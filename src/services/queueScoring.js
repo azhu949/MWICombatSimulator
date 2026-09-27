@@ -19,7 +19,13 @@ import { clamp, deepClone, isPlainObject, normalizeBaselineSaleSide, toFiniteNum
 export const QUEUE_PARALLEL_WORKER_LIMIT_MIN = 1;
 export const QUEUE_PARALLEL_WORKER_LIMIT_MAX = 64;
 export const QUEUE_WEIGHT_SUM_EPSILON = 1e-6;
+// 历史固定默认（§55 起语义收窄为「回退值」）：核数未知的机型、以及纯服务级调用（无 navigator
+// 上下文的存储 / 测试路径）继续沿用 4；读得到机型的机器由 resolveAdaptiveParallelWorkerDefault
+// 给出自适应推荐（见下方「机型探测与自适应推荐」段）。
 export const QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS = 4;
+// 自适应推荐的绝对上限（不随核数无限放大）：每多一个工人就多一份引擎 realm 的内存（引擎 chunk +
+// 游戏数据），桌面端还要给用户其它工作留余量；用户仍可在设置页手动调到核数（保存校验只拦 > 核数）。
+export const QUEUE_PARALLEL_WORKER_ADAPTIVE_CAP = 8;
 export const QUEUE_MULTI_ROUND_METRIC_KEYS = ['dps', 'dailyNoRngProfit', 'xpPerHour', 'killsPerHour'];
 export const QUEUE_BASELINE_METRIC_KEYS = [
   'encountersPerHour',
@@ -78,7 +84,9 @@ function getStdDev(values, meanValue) {
   return Math.sqrt(variance);
 }
 
-export function getDefaultQueueRuntimeSettings() {
+// options.parallelWorkerLimit（§55）：调用方（store）可注入「本机自适应推荐」作为无存储值时的
+// 默认；省略时沿用历史回退值 4（服务级 / 测试路径行为不变）。
+export function getDefaultQueueRuntimeSettings(options = {}) {
   return {
     finalWeights: {
       performance: QUEUE_MULTI_ROUND_FINAL_WEIGHT_PERFORMANCE,
@@ -86,7 +94,7 @@ export function getDefaultQueueRuntimeSettings() {
       cost: QUEUE_MULTI_ROUND_FINAL_WEIGHT_COST,
     },
     costScoreGoldPerPointMode: QUEUE_COST_SCORE_GOLD_METRIC_STRICT,
-    parallelWorkerLimit: QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS,
+    parallelWorkerLimit: normalizeParallelWorkerLimit(options?.parallelWorkerLimit),
   };
 }
 
@@ -166,8 +174,71 @@ export function haveQueueRunRankingSettingsChanged(previousSettings, nextSetting
   );
 }
 
-export function normalizeParallelWorkerLimit(value, maxLimit = QUEUE_PARALLEL_WORKER_LIMIT_MAX) {
-  const parsed = Math.floor(toFiniteNumber(value, QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS));
+// ── 机型探测与自适应推荐（§55，2026-09-27）───────────────────────────────────────
+// 浏览器上下文读探测值；无 navigator / 字段缺失 / 非法值一律返回 null（调用方回退历史值）。
+export function getDetectedHardwareCoreCount() {
+  const hardwareConcurrency = Number(typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : NaN);
+  if (!Number.isFinite(hardwareConcurrency) || hardwareConcurrency <= 0) {
+    return null;
+  }
+  return Math.max(1, Math.floor(hardwareConcurrency));
+}
+
+// Chromium 专有（其它浏览器与测试环境无此字段，返回 null）：量化后的设备内存 GB（规格封顶 8）。
+export function getDetectedDeviceMemoryGb() {
+  const deviceMemory = Number(typeof navigator !== 'undefined' ? navigator.deviceMemory : NaN);
+  if (!Number.isFinite(deviceMemory) || deviceMemory <= 0) {
+    return null;
+  }
+  return deviceMemory;
+}
+
+// 本机保存校验用的硬上限 = min(QUEUE_PARALLEL_WORKER_LIMIT_MAX, 核数)；核数未知 ⇒ 64。
+export function getParallelWorkerHardMaxForCurrentMachine() {
+  const detectedCoreCount = getDetectedHardwareCoreCount();
+  if (!Number.isFinite(detectedCoreCount)) {
+    return QUEUE_PARALLEL_WORKER_LIMIT_MAX;
+  }
+  return clamp(detectedCoreCount, QUEUE_PARALLEL_WORKER_LIMIT_MIN, QUEUE_PARALLEL_WORKER_LIMIT_MAX);
+}
+
+// 自适应并行默认（纯函数，便于矩阵单测）：按机型给出「开箱推荐值」。
+//  - 核数未知 / 非法 ⇒ 历史回退 4；
+//  - 核数 ≤ 4：与历史 min(4, 核数) 逐位一致（小机型零变化）；
+//  - 核数 > 4：留 1 核给主线程 / 界面（核数 − 1）；
+//  - 内存护栏（deviceMemory，缺失时不启用）：≤2GB ⇒ 2、≤4GB ⇒ 4、其余 ⇒ 上限；
+//  - 绝对上限 QUEUE_PARALLEL_WORKER_ADAPTIVE_CAP（内存与界面余量的双重考虑）。
+export function resolveAdaptiveParallelWorkerDefault(cores, deviceMemoryGb) {
+  const coreCount = Math.floor(Number(cores));
+  if (!Number.isFinite(coreCount) || coreCount <= 0) {
+    return QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS;
+  }
+  const byCores = coreCount <= QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS ? coreCount : coreCount - 1;
+  const memoryGb = Number(deviceMemoryGb);
+  let byMemory = QUEUE_PARALLEL_WORKER_ADAPTIVE_CAP;
+  if (Number.isFinite(memoryGb) && memoryGb > 0) {
+    byMemory = memoryGb <= 2 ? 2 : memoryGb <= 4 ? 4 : QUEUE_PARALLEL_WORKER_ADAPTIVE_CAP;
+  }
+  return clamp(Math.min(byCores, byMemory), QUEUE_PARALLEL_WORKER_LIMIT_MIN, QUEUE_PARALLEL_WORKER_ADAPTIVE_CAP);
+}
+
+// 推荐值（store 的 queueParallelWorkerRecommended / 设置页提示 / 重置默认共用）：
+// 自适应值再按本机硬上限收口，保证「推荐 ≤ 可保存的最大值」。
+export function getRecommendedParallelWorkerLimit() {
+  const detectedCoreCount = getDetectedHardwareCoreCount();
+  const adaptive = resolveAdaptiveParallelWorkerDefault(detectedCoreCount, getDetectedDeviceMemoryGb());
+  const upperBound = Number.isFinite(detectedCoreCount)
+    ? Math.min(QUEUE_PARALLEL_WORKER_LIMIT_MAX, detectedCoreCount)
+    : QUEUE_PARALLEL_WORKER_LIMIT_MAX;
+  return clamp(adaptive, QUEUE_PARALLEL_WORKER_LIMIT_MIN, upperBound);
+}
+
+export function normalizeParallelWorkerLimit(
+  value,
+  maxLimit = QUEUE_PARALLEL_WORKER_LIMIT_MAX,
+  fallbackValue = QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS,
+) {
+  const parsed = Math.floor(toFiniteNumber(value, fallbackValue));
   const hardMax = clamp(
     Math.floor(toFiniteNumber(maxLimit, QUEUE_PARALLEL_WORKER_LIMIT_MAX)),
     QUEUE_PARALLEL_WORKER_LIMIT_MIN,
@@ -176,11 +247,16 @@ export function normalizeParallelWorkerLimit(value, maxLimit = QUEUE_PARALLEL_WO
   return clamp(parsed, QUEUE_PARALLEL_WORKER_LIMIT_MIN, hardMax);
 }
 
-export function normalizeQueueRuntimeSettings(settings) {
+// options.parallelWorkerLimit（§55）：存储值缺失时的回退（store 注入本机自适应推荐）。
+export function normalizeQueueRuntimeSettings(settings, options = {}) {
   return {
     finalWeights: normalizeQueueScoreWeights(settings?.finalWeights),
     costScoreGoldPerPointMode: normalizeQueueCostScoreGoldMetricMode(settings?.costScoreGoldPerPointMode),
-    parallelWorkerLimit: normalizeParallelWorkerLimit(settings?.parallelWorkerLimit),
+    parallelWorkerLimit: normalizeParallelWorkerLimit(
+      settings?.parallelWorkerLimit,
+      QUEUE_PARALLEL_WORKER_LIMIT_MAX,
+      options?.parallelWorkerLimit,
+    ),
   };
 }
 

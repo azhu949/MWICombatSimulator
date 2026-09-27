@@ -398,7 +398,8 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
         this.runtime.isRunning ||
         this.isAnyQueueRunning ||
         this.advisor.runtime?.isRunning ||
-        this.foodOptimizer?.runtime.isRunning
+        this.foodOptimizer?.runtime.isRunning ||
+        this.triggerOptimizer?.runtime.isRunning
       ) {
         throw new Error('common:queue.errorBusy');
       }
@@ -444,7 +445,14 @@ export function createQueueActions({ ensureQueueMarketPriceSnapshot, loadPlayerM
       }
 
       const selectedPlayersSnapshot = [{ id: activePlayerId, name: activePlayer?.name || `Player ${activePlayerId}` }];
-      if (this.foodOptimizer?.runtime.isRunning) throw new Error('common:queue.errorBusy');
+      if (
+        this.foodOptimizer?.runtime.isRunning ||
+        this.triggerOptimizer?.runtime.isRunning ||
+        this.advisor.runtime?.isRunning ||
+        this.isAnyQueueRunning
+      ) {
+        throw new Error('common:queue.errorBusy');
+      }
       const pricingOptions = createProfitPricingOptions(this.pricing);
       const startedAt = Date.now();
 

@@ -8,7 +8,11 @@ import {
   normalizeFoodOptimizerZeroDeaths,
 } from './foodOptimizerDomain.js';
 
-const COMBAT_PLAYER_KEYS = [
+// 战斗玩家的模拟输入键清单（触发器优化器的输入指纹也用同一份，见
+// triggerOptimizerDomain.createOptimizerInput —— 玩家对象上另有 assetScore 之类
+// 由行情/资产管线异步写入的派生字段，绝不能进指纹，否则资产重算会把未过期的
+// 报告误判成过期）。增删键必须同步评估两侧的过期语义。
+export const COMBAT_PLAYER_KEYS = [
   'id',
   'name',
   'levels',

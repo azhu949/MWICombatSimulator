@@ -28,6 +28,18 @@ const routes = [
     },
   },
   {
+    path: '/trigger-optimizer',
+    name: 'trigger-optimizer',
+    component: () => import('../pages/TriggerOptimizerPage.vue'),
+    meta: {
+      showCombatToolbar: false,
+      navLabelKey: 'common:menu.triggerOptimizer',
+      navLabel: 'Trigger Optimizer',
+      navGroup: 'simulation',
+      navOrder: 2.6,
+    },
+  },
+  {
     path: '/enhancement',
     name: 'enhancement',
     component: () => import('../pages/EnhancementPage.vue'),

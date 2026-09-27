@@ -22,6 +22,7 @@ import {
   getAllNonDungeonActions,
   normalizeLabyrinthCrates,
   normalizeZoneSelection,
+  resolveAdjacentDifficultyTier,
   summarizeBatchResults,
   summarizeQueueBaselineMetrics,
   summarizeResult,
@@ -87,6 +88,35 @@ describe('simulationDomain', () => {
       food: '',
       tea: '',
     });
+  });
+
+  // 相邻难度解析（2026-09-23，设计 §29）：难度是区域属性，合法区间 0..maxDifficulty。
+  // 换难度复核的目标难度由它决定 —— 越界必须返回 null（调用方据此说「没有可复核的相邻难度」），
+  // 而不是静默回落到原难度（那会跑出一份「换难度」的假复核）。
+  it('resolves the neighbouring difficulty inside the zone bounds, or null when there is none', () => {
+    const zone = findZoneBySpawnCount(1);
+    const maxDifficulty = Number(zone.maxDifficulty ?? 0);
+    expect(maxDifficulty).toBeGreaterThan(1);
+
+    // 优先 +1（更难）。
+    expect(resolveAdjacentDifficultyTier(zone.hrid, 0)).toBe(1);
+    expect(resolveAdjacentDifficultyTier(zone.hrid, 2)).toBe(3);
+    // 已在最高难度 → 退回 −1。
+    expect(resolveAdjacentDifficultyTier(zone.hrid, maxDifficulty)).toBe(maxDifficulty - 1);
+    // 越界的输入先钳到合法下界，再按同一规则解析。
+    expect(resolveAdjacentDifficultyTier(zone.hrid, -3)).toBe(1);
+    // 未知目标 / 空 hrid / 缺失 maxDifficulty 的目标 → null（不能复核）。
+    expect(resolveAdjacentDifficultyTier('/actions/combat/not_a_real_zone', 0)).toBeNull();
+    expect(resolveAdjacentDifficultyTier('', 0)).toBeNull();
+    expect(resolveAdjacentDifficultyTier(null)).toBeNull();
+    // 地下城走同一条规则（它们的区间是 0..2）：中间档 +1、顶档退回 −1。
+    const dungeon = Object.values(actionDetailIndex || {}).find(
+      (action) => action?.category === '/action_categories/combat/dungeons',
+    );
+    expect(dungeon).toBeTruthy();
+    expect(Number(dungeon.maxDifficulty)).toBe(2);
+    expect(resolveAdjacentDifficultyTier(dungeon.hrid, 1)).toBe(2);
+    expect(resolveAdjacentDifficultyTier(dungeon.hrid, 2)).toBe(1);
   });
 
   it('builds scoped zone and labyrinth targets with existing ordering', () => {

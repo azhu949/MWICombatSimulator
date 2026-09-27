@@ -1990,7 +1990,9 @@ function buildGuildBuffPreviewSources(playerConfig, previewPlayer) {
     const beforeValues = snapshotCombatPreviewStatValues(previewPlayer);
     const guildBuff = new GuildBuff(guildBuffHrid, level);
     for (const buff of guildBuff.buffs) {
-      previewPlayer.addPermanentBuff(structuredClone(buff));
+      // 无需预先克隆：addPermanentBuff 首次写入自带克隆（见其「共享入参」契约注释），
+      // worker 全队伍共享 zoneBuffs/extraBuffs 也走同一契约。
+      previewPlayer.addPermanentBuff(buff);
     }
     previewPlayer.clearBuffs();
 

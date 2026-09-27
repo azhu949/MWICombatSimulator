@@ -102,6 +102,24 @@ export function buildZoneTargetsByScope(runScope, selectedZoneHrids = []) {
   });
 }
 
+// 相邻难度解析（2026-09-23，设计 §29）：难度是**区域属性**（actionDetailMap[hrid].maxDifficulty），
+// 合法区间是 0 .. maxDifficulty。优先往**更难**一档（tier + 1，复核的意义更大：结论如果在更难的
+// 难度上依然成立，可信度明显更高）；已经在最高难度则退回 tier − 1；两端都越界（maxDifficulty = 0
+// 的目标，或 hrid 不在表里）返回 null —— 调用方据此说明「该目标没有相邻难度可复核」，
+// 而不是静默拿原难度重跑一遍假复核。
+export function resolveAdjacentDifficultyTier(zoneHrid, difficultyTier = 0) {
+  const hrid = String(zoneHrid || '');
+  if (!hrid) return null;
+  const action = actionDetailIndex[hrid];
+  if (!action) return null;
+  const maxDifficulty = Math.floor(Number(action.maxDifficulty));
+  if (!Number.isFinite(maxDifficulty) || maxDifficulty < 0) return null;
+  const tier = Math.max(0, Math.floor(toFiniteNumber(difficultyTier, 0)));
+  if (tier + 1 <= maxDifficulty) return tier + 1;
+  if (tier >= 1) return tier - 1;
+  return null;
+}
+
 export function buildAllLabyrinthTargets(crates = [], shopUpgrades = null) {
   const labyrinthMonsters = Object.values(monsterDetailIndex)
     .filter((monster) => monster.isLabyrinthMonster === true)

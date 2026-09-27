@@ -171,6 +171,27 @@ describe('food optimizer store', () => {
     expect(store.applyFoodOptimizerResult(signature)).toBe(true);
   });
 
+  // 同 simulatorTriggerOptimizerActions 的 storeKey 回归：Pinia 的 devtools 插件（dev
+  // 下对 options store 生效）会给每次 action 调用传一个新建的 `new Proxy(store)` 当
+  // this，以 store 身份为键的 WeakSet 因此永不命中——apply 期间的遮蔽失效，$patch 里
+  // 写 food/triggerMap 的那一刻（appliedInputSignature 还空着）就把刚应用的报告判成过期。
+  it('keeps apply-time masking when the action is invoked through a rebound `this` (Pinia devtools proxy)', async () => {
+    const store = importedStore();
+    const original = await completeSearch(store);
+    const signature = original.topResults[0].signature;
+
+    const reboundThis = () =>
+      new Proxy(store, {
+        get: (target, key) => Reflect.get(target, key),
+        set: (target, key, value) => Reflect.set(target, key, value),
+      });
+
+    expect(store.applyFoodOptimizerResult.call(reboundThis(), signature)).toBe(true);
+    expect(store.foodOptimizer.report.appliedSignature).toBe(signature);
+    expect(store.foodOptimizer.report.stale).toBe(false);
+    expect(store.foodOptimizerReportStale).toBe(false);
+  });
+
   it.each([
     (store) => {
       store.activePlayer.levels.stamina += 1;

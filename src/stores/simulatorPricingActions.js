@@ -25,12 +25,13 @@ import {
   rehydratePricingTable,
 } from '../services/simulatorStorage.js';
 import {
-  QUEUE_MULTI_ROUND_DEFAULT_PARALLEL_WORKERS,
-  QUEUE_PARALLEL_WORKER_LIMIT_MAX,
   QUEUE_PARALLEL_WORKER_LIMIT_MIN,
   QUEUE_WEIGHT_SUM_EPSILON,
   getDefaultQueueRunSettings,
   getDefaultQueueRuntimeSettings,
+  getDetectedHardwareCoreCount,
+  getParallelWorkerHardMaxForCurrentMachine,
+  getRecommendedParallelWorkerLimit,
   haveQueueRuntimeRankingSettingsChanged,
   isQueueCostScoreGoldMetricMode,
   normalizeParallelWorkerLimit,
@@ -55,22 +56,6 @@ import {
   normalizeBaselineSaleSide,
   toFiniteNumber,
 } from '../services/utils.js';
-
-function getDetectedHardwareCoreCount() {
-  const hardwareConcurrency = Number(typeof navigator !== 'undefined' ? navigator.hardwareConcurrency : NaN);
-  if (!Number.isFinite(hardwareConcurrency) || hardwareConcurrency <= 0) {
-    return null;
-  }
-  return Math.max(1, Math.floor(hardwareConcurrency));
-}
-
-function getParallelWorkerHardMaxForCurrentMachine() {
-  const detectedCoreCount = getDetectedHardwareCoreCount();
-  if (!Number.isFinite(detectedCoreCount)) {
-    return QUEUE_PARALLEL_WORKER_LIMIT_MAX;
-  }
-  return clamp(detectedCoreCount, QUEUE_PARALLEL_WORKER_LIMIT_MIN, QUEUE_PARALLEL_WORKER_LIMIT_MAX);
-}
 
 let abilityUpgradeReferenceLoadPromise = null;
 const marketPriceLoadPromises = new WeakMap();
@@ -691,7 +676,9 @@ export function createPricingActions() {
     },
     resetQueueRuntimeSettings() {
       try {
-        const defaults = getDefaultQueueRuntimeSettings();
+        const defaults = getDefaultQueueRuntimeSettings({
+          parallelWorkerLimit: getRecommendedParallelWorkerLimit(),
+        });
         const previousRuntimeSettings = this.queueRuntime;
         const normalized = persistQueueRuntimeSettingsToStorage(defaults);
         this.queueRuntime = normalized;
@@ -728,7 +715,9 @@ export function createPricingActions() {
       }
 
       try {
-        const runtimeSettings = persistQueueRuntimeSettingsToStorage(getDefaultQueueRuntimeSettings());
+        const runtimeSettings = persistQueueRuntimeSettingsToStorage(
+          getDefaultQueueRuntimeSettings({ parallelWorkerLimit: getRecommendedParallelWorkerLimit() }),
+        );
         this.queueRuntime = runtimeSettings;
         if (haveQueueRuntimeRankingSettingsChanged(previousRuntimeSettings, runtimeSettings)) {
           this.refreshStoredQueueRankingsForCurrentSettings();

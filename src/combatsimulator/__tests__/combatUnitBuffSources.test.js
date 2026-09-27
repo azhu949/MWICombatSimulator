@@ -40,6 +40,27 @@ async function runSimulation(players, durationNs = MINUTE) {
   return simulator;
 }
 
+describe('CombatUnit permanent buff defaults and shared-input contract', () => {
+  it('generates permanent buffs without zone/extra buffs assigned (array-shaped defaults)', () => {
+    const unit = new CombatUnit();
+    expect(() => unit.generatePermanentBuffs()).not.toThrow();
+    expect(unit.permanentBuffs).toEqual({});
+  });
+
+  it('addPermanentBuff clones on first write so shared buff objects never cross-contaminate', () => {
+    const shared = { typeHrid: '/buff_types/wisdom', flatBoost: 1, ratioBoost: 0 };
+    const first = new CombatUnit();
+    const second = new CombatUnit();
+    first.addPermanentBuff(shared);
+    second.addPermanentBuff(shared);
+    // 累加分支只改各自的副本：先入者的值不被后来者抬高，共享对象本身也保持原值。
+    first.addPermanentBuff(shared);
+    expect(first.permanentBuffs['/buff_types/wisdom'].flatBoost).toBe(2);
+    expect(second.permanentBuffs['/buff_types/wisdom'].flatBoost).toBe(1);
+    expect(shared.flatBoost).toBe(1);
+  });
+});
+
 describe('CombatUnit buff sources and party aura engine', () => {
   it('compares buffs by identity and effective stat values', () => {
     const baseBuff = {

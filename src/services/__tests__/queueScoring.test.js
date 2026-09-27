@@ -2,12 +2,18 @@ import { describe, expect, it, vi } from 'vitest';
 import {
   MANUAL_EQUIPMENT_PRICE_SOURCE,
   QUEUE_COST_SCORE_GOLD_METRIC_COMPOSITE,
+  QUEUE_PARALLEL_WORKER_ADAPTIVE_CAP,
   buildQueueBaselineAggregate,
   buildQueueItemCostInsights,
   buildQueueRankedRowsFromSampleState,
+  getDefaultQueueRuntimeSettings,
+  getDetectedDeviceMemoryGb,
+  getParallelWorkerHardMaxForCurrentMachine,
+  getRecommendedParallelWorkerLimit,
   normalizeQueueRuntimeSettings,
   normalizeQueueSettings,
   rankScoreList,
+  resolveAdaptiveParallelWorkerDefault,
   resolveQueueMetricSummaryDeltaPct,
   summarizeMetric,
 } from '../queueScoring.js';
@@ -533,5 +539,73 @@ describe('queueScoring', () => {
     expect(rows[0].scoringProfitPerHour).toBeCloseTo((20 * 100 + 1000) / 21, 6);
     expect(rows[0].scoringDeltaProfitPerHour).toBeCloseTo((20 * 100 + 1000) / 21 - 100, 6);
     expect(rows[0].scoringDeltaProfitPct).toBeCloseTo((((20 * 100 + 1000) / 21 - 100) / 100) * 100, 6);
+  });
+});
+
+describe('queueScoring 并行默认自适应（§55）', () => {
+  it('核数矩阵：≤4 核与历史 min(4, 核数) 逐位一致，>4 核留一核，且受上限收口', () => {
+    expect(resolveAdaptiveParallelWorkerDefault(undefined, undefined)).toBe(4);
+    expect(resolveAdaptiveParallelWorkerDefault(0, 8)).toBe(4);
+    expect(resolveAdaptiveParallelWorkerDefault(-3, 8)).toBe(4);
+    expect(resolveAdaptiveParallelWorkerDefault(1, 8)).toBe(1);
+    expect(resolveAdaptiveParallelWorkerDefault(2, 8)).toBe(2);
+    expect(resolveAdaptiveParallelWorkerDefault(4, 8)).toBe(4);
+    expect(resolveAdaptiveParallelWorkerDefault(6, 8)).toBe(5);
+    expect(resolveAdaptiveParallelWorkerDefault(8, 8)).toBe(7);
+    expect(resolveAdaptiveParallelWorkerDefault(9, 8)).toBe(8);
+    expect(resolveAdaptiveParallelWorkerDefault(16, 8)).toBe(8);
+    expect(resolveAdaptiveParallelWorkerDefault(64, 8)).toBe(QUEUE_PARALLEL_WORKER_ADAPTIVE_CAP);
+  });
+
+  it('内存护栏只在 deviceMemory 可用时生效，且不抬高核数档', () => {
+    expect(resolveAdaptiveParallelWorkerDefault(16, 2)).toBe(2);
+    expect(resolveAdaptiveParallelWorkerDefault(16, 4)).toBe(4);
+    expect(resolveAdaptiveParallelWorkerDefault(16, 8)).toBe(QUEUE_PARALLEL_WORKER_ADAPTIVE_CAP);
+    expect(resolveAdaptiveParallelWorkerDefault(16, undefined)).toBe(QUEUE_PARALLEL_WORKER_ADAPTIVE_CAP);
+    expect(resolveAdaptiveParallelWorkerDefault(2, 2)).toBe(2);
+    expect(resolveAdaptiveParallelWorkerDefault(6, 4)).toBe(4);
+  });
+
+  it('机型读取防御式：缺 navigator / 缺字段 ⇒ 历史回退，硬上限 = min(64, 核数)', () => {
+    const originalNavigatorDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+    const withNavigator = (value, run) => {
+      Object.defineProperty(globalThis, 'navigator', { configurable: true, value });
+      try {
+        return run();
+      } finally {
+        if (originalNavigatorDescriptor) {
+          Object.defineProperty(globalThis, 'navigator', originalNavigatorDescriptor);
+        } else {
+          delete globalThis.navigator;
+        }
+      }
+    };
+
+    expect(withNavigator({ hardwareConcurrency: 16, deviceMemory: 8 }, () => getRecommendedParallelWorkerLimit())).toBe(
+      8,
+    );
+    expect(withNavigator({ hardwareConcurrency: 16 }, () => getRecommendedParallelWorkerLimit())).toBe(8);
+    expect(withNavigator({ hardwareConcurrency: 16, deviceMemory: 2 }, () => getRecommendedParallelWorkerLimit())).toBe(
+      2,
+    );
+    expect(withNavigator({ hardwareConcurrency: 4 }, () => getRecommendedParallelWorkerLimit())).toBe(4);
+    expect(withNavigator({ hardwareConcurrency: 2 }, () => getRecommendedParallelWorkerLimit())).toBe(2);
+    expect(withNavigator({}, () => getRecommendedParallelWorkerLimit())).toBe(4);
+    expect(withNavigator({ hardwareConcurrency: 16 }, () => getParallelWorkerHardMaxForCurrentMachine())).toBe(16);
+    expect(withNavigator({}, () => getParallelWorkerHardMaxForCurrentMachine())).toBe(64);
+    expect(withNavigator({ hardwareConcurrency: 16, deviceMemory: 8 }, () => getDetectedDeviceMemoryGb())).toBe(8);
+    expect(withNavigator({}, () => getDetectedDeviceMemoryGb())).toBeNull();
+  });
+
+  it('运行时设置归一化：注入回退值只在存储值缺失时生效', () => {
+    expect(getDefaultQueueRuntimeSettings().parallelWorkerLimit).toBe(4);
+    expect(getDefaultQueueRuntimeSettings({ parallelWorkerLimit: 8 }).parallelWorkerLimit).toBe(8);
+    expect(
+      normalizeQueueRuntimeSettings({ parallelWorkerLimit: undefined }, { parallelWorkerLimit: 8 }).parallelWorkerLimit,
+    ).toBe(8);
+    expect(normalizeQueueRuntimeSettings({ parallelWorkerLimit: undefined }).parallelWorkerLimit).toBe(4);
+    expect(
+      normalizeQueueRuntimeSettings({ parallelWorkerLimit: 3 }, { parallelWorkerLimit: 8 }).parallelWorkerLimit,
+    ).toBe(3);
   });
 });

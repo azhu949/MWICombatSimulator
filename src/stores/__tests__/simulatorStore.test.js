@@ -362,6 +362,20 @@ function computePreviewTotalFromCounts(counts, priceTable) {
   }, 0);
 }
 
+function withStubbedNavigator(navigatorValue, run) {
+  const originalNavigatorDescriptor = Object.getOwnPropertyDescriptor(globalThis, 'navigator');
+  Object.defineProperty(globalThis, 'navigator', { configurable: true, value: navigatorValue });
+  try {
+    return run();
+  } finally {
+    if (originalNavigatorDescriptor) {
+      Object.defineProperty(globalThis, 'navigator', originalNavigatorDescriptor);
+    } else {
+      delete globalThis.navigator;
+    }
+  }
+}
+
 describe('simulatorStore', () => {
   beforeEach(() => {
     setActivePinia(createPinia());
@@ -386,6 +400,52 @@ describe('simulatorStore', () => {
     expect(simulator.simulationSettings.comExp).toBe(20);
     expect(simulator.simulationSettings.comDrop).toBe(20);
     expect(simulator.simulationSettings.enableHpMpVisualization).toBe(true);
+  });
+
+  it('并行默认自适应（§55）：无存储值 ⇒ 按机型推荐并直接作为 queueRuntime 初始值', () => {
+    withStubbedNavigator({ hardwareConcurrency: 16, deviceMemory: 8 }, () => {
+      const simulator = useSimulatorStore();
+
+      expect(simulator.detectedHardwareCoreCount).toBe(16);
+      expect(simulator.queueParallelWorkerHardMax).toBe(16);
+      expect(simulator.queueParallelWorkerRecommended).toBe(8);
+      expect(simulator.queueRuntime.parallelWorkerLimit).toBe(8);
+    });
+  });
+
+  it('并行默认自适应（§55）：小机型与无核数环境均回退到历史行为', () => {
+    withStubbedNavigator({ hardwareConcurrency: 2 }, () => {
+      const small = useSimulatorStore();
+      expect(small.queueParallelWorkerRecommended).toBe(2);
+      expect(small.queueRuntime.parallelWorkerLimit).toBe(2);
+    });
+
+    setActivePinia(createPinia());
+    global.localStorage = createLocalStorageMock();
+    withStubbedNavigator({}, () => {
+      const unknown = useSimulatorStore();
+      expect(unknown.queueParallelWorkerRecommended).toBe(4);
+      expect(unknown.queueRuntime.parallelWorkerLimit).toBe(4);
+    });
+  });
+
+  it('并行默认自适应（§55）：已存值优先，不被推荐值覆盖', () => {
+    global.localStorage.setItem(
+      'mwi.queue.settings.v1',
+      JSON.stringify({
+        version: 1,
+        finalWeights: { performance: 0.4, stability: 0.2, cost: 0.4 },
+        costScoreGoldPerPointMode: 'strict',
+        parallelWorkerLimit: 3,
+      }),
+    );
+
+    withStubbedNavigator({ hardwareConcurrency: 16, deviceMemory: 8 }, () => {
+      const simulator = useSimulatorStore();
+
+      expect(simulator.queueRuntime.parallelWorkerLimit).toBe(3);
+      expect(simulator.queueParallelWorkerRecommended).toBe(8);
+    });
   });
 
   it('does not override stored simulation UI flags', () => {

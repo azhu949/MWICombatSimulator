@@ -53,6 +53,49 @@ describe('workerClient', () => {
     expect(onResult).toHaveBeenCalledWith({ encounters: 1 });
   });
 
+  it('batches payloads in one realm, posting the next only after a reply (§54)', () => {
+    const client = new WorkerClient();
+    const onResult = vi.fn();
+    const onError = vi.fn();
+    const onComplete = vi.fn();
+    const payloads = [{ workerId: 'w#r1' }, { workerId: 'w#r2' }];
+
+    client.startSimulationBatch(payloads, { onResult, onError, onComplete });
+
+    expect(FakeWorker.instances).toHaveLength(1);
+    const worker = FakeWorker.instances[0];
+    // 串行投递：第二条要等第一条的结果回来才发出（同一 realm 不许并跑两场）。
+    expect(worker.postMessage).toHaveBeenCalledTimes(1);
+    expect(worker.postMessage).toHaveBeenLastCalledWith(payloads[0]);
+
+    worker.emit({ type: 'simulation_result', simResult: { encounters: 1 } });
+    expect(onResult).toHaveBeenLastCalledWith({ encounters: 1 }, 0);
+    expect(worker.postMessage).toHaveBeenCalledTimes(2);
+    expect(worker.postMessage).toHaveBeenLastCalledWith(payloads[1]);
+
+    // 单场失败不打断整批：继续跑下一条，然后收尾。
+    worker.emit({ type: 'simulation_error', error: 'boom' });
+    expect(onError).toHaveBeenLastCalledWith('boom', 1);
+    expect(onComplete).toHaveBeenCalledTimes(1);
+  });
+
+  it('stops posting after a realm-level crash and reports the in-flight index (§54)', () => {
+    const client = new WorkerClient();
+    const onAbort = vi.fn();
+    const payloads = [{ workerId: 'w#r1' }, { workerId: 'w#r2' }];
+
+    client.startSimulationBatch(payloads, { onAbort });
+
+    const worker = FakeWorker.instances[0];
+    expect(worker.postMessage).toHaveBeenCalledTimes(1);
+
+    worker.onerror(new Error('realm exploded'));
+
+    expect(onAbort).toHaveBeenCalledWith('realm exploded', 0);
+    // 崩溃之后不再投递（realm 已经不在）。
+    expect(worker.postMessage).toHaveBeenCalledTimes(1);
+  });
+
   it('routes multi simulation messages', () => {
     const client = new WorkerClient();
     const onItemResult = vi.fn();

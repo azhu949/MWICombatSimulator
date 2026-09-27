@@ -38,6 +38,7 @@ import {
   normalizeFoodOptimizerFoodHrids,
   normalizeFoodOptimizerZeroDeaths,
 } from './foodOptimizerDomain.js';
+import { normalizeTriggerOptimizerSettings } from './triggerOptimizerDomain.js';
 
 const EQUIPMENT_SET_STORAGE_KEY = 'mwi.equipmentSets.v2';
 const PRICE_SETTINGS_STORAGE_KEY = 'mwi.price.settings.v1';
@@ -51,10 +52,14 @@ const ADVISOR_SETTINGS_STORAGE_KEY = 'mwi.advisor.settings.v1';
 const ADVISOR_SETTINGS_STORAGE_VERSION = 1;
 const FOOD_OPTIMIZER_SETTINGS_STORAGE_KEY = 'mwi.foodOptimizer.settings.v1';
 const FOOD_OPTIMIZER_SETTINGS_STORAGE_VERSION = 1;
+const TRIGGER_OPTIMIZER_SETTINGS_STORAGE_KEY = 'mwi.triggerOptimizer.settings.v1';
+const TRIGGER_OPTIMIZER_SETTINGS_STORAGE_VERSION = 1;
 const PLAYER_DATA_SNAPSHOT_STORAGE_KEY = 'mwi.player.data.snapshot.v1';
 const PLAYER_DATA_SNAPSHOT_STORAGE_VERSION = 1;
 const PLAYER_ACHIEVEMENTS_STORAGE_KEY = 'mwi.player.achievements.v1';
 const PLAYER_ACHIEVEMENTS_STORAGE_VERSION = 1;
+const TRIGGER_OPTIMIZER_REPORT_STORAGE_KEY = 'mwi.triggerOptimizer.report.v1';
+const TRIGGER_OPTIMIZER_REPORT_STORAGE_VERSION = 1;
 const QUEUE_PLAYER_IDS = ['1', '2', '3', '4', '5'];
 
 function hasJsonStorageChanged(before, after) {
@@ -661,8 +666,10 @@ export function createProfitPricingOptions(pricingState) {
   };
 }
 
-export function loadQueueRuntimeSettingsFromStorage() {
-  const defaults = getDefaultQueueRuntimeSettings();
+// options.parallelWorkerLimit（§55）：无存储值 / 存储值缺失时的默认（store 注入本机自适应推荐；
+// 省略 ⇒ 历史回退 4，服务级 / 测试路径行为不变）。
+export function loadQueueRuntimeSettingsFromStorage(options = {}) {
+  const defaults = getDefaultQueueRuntimeSettings(options);
   if (!isLocalStorageAvailable()) {
     return defaults;
   }
@@ -678,11 +685,14 @@ export function loadQueueRuntimeSettingsFromStorage() {
       return defaults;
     }
 
-    return normalizeQueueRuntimeSettings({
-      finalWeights: parsed.finalWeights,
-      costScoreGoldPerPointMode: parsed.costScoreGoldPerPointMode,
-      parallelWorkerLimit: parsed.parallelWorkerLimit,
-    });
+    return normalizeQueueRuntimeSettings(
+      {
+        finalWeights: parsed.finalWeights,
+        costScoreGoldPerPointMode: parsed.costScoreGoldPerPointMode,
+        parallelWorkerLimit: parsed.parallelWorkerLimit,
+      },
+      options,
+    );
   } catch (error) {
     return defaults;
   }
@@ -734,6 +744,63 @@ export function persistFoodOptimizerSettingsToStorage(settings) {
     ...normalized,
   });
   return normalized;
+}
+
+// 触发器优化器设置（设计 §8.2/§12：键名带版本，脏数据回落到产品默认）。
+// 归一化口径由 triggerOptimizerDomain 独占，本层只负责版本闸门与序列化。
+export function loadTriggerOptimizerSettingsFromStorage() {
+  const parsed = readJsonStorage(TRIGGER_OPTIMIZER_SETTINGS_STORAGE_KEY);
+  if (!isPlainObject(parsed) || parsed.version !== TRIGGER_OPTIMIZER_SETTINGS_STORAGE_VERSION) {
+    return normalizeTriggerOptimizerSettings({});
+  }
+  return normalizeTriggerOptimizerSettings(parsed);
+}
+
+export function persistTriggerOptimizerSettingsToStorage(settings) {
+  const normalized = normalizeTriggerOptimizerSettings(settings);
+  setJsonStorage(TRIGGER_OPTIMIZER_SETTINGS_STORAGE_KEY, {
+    version: TRIGGER_OPTIMIZER_SETTINGS_STORAGE_VERSION,
+    savedAt: Date.now(),
+    ...normalized,
+  });
+  return normalized;
+}
+
+// 触发器优化报告落盘（2026-09-24，设计 §40）：最近一份报告自动持久化，刷新/崩溃/重进后
+// 由 store 的 state 工厂 hydrate 回来。版本闸门同 settings.v1 —— 脏数据/版本不符一律静默
+// 回落 null（当作没有存档），不抛错也不半恢复。
+export function loadTriggerOptimizerReportFromStorage() {
+  const parsed = readJsonStorage(TRIGGER_OPTIMIZER_REPORT_STORAGE_KEY);
+  if (!isPlainObject(parsed) || parsed.version !== TRIGGER_OPTIMIZER_REPORT_STORAGE_VERSION) {
+    return null;
+  }
+  const report = parsed.report;
+  const createdAt = isPlainObject(report) ? Number(report.createdAt) : NaN;
+  // 形状闸门：createdAt 必须是正时间戳 —— 空结果（createEmptyResult）自带 createdAt: 0，
+  // 不能被当成一份报告存/取（否则开跑清空会把上一份好报告覆盖成空壳）。
+  if (!Number.isFinite(createdAt) || createdAt <= 0) {
+    return null;
+  }
+  // 深拷贝解耦：store 会往 results 上原地写 stale / appliedInputSignature 等字段，
+  // 不能让内存报告与存储共享引用（否则每次原地写都间接改到存档对象）。
+  return JSON.parse(JSON.stringify(report));
+}
+
+export function persistTriggerOptimizerReportToStorage(report) {
+  const createdAt = isPlainObject(report) ? Number(report.createdAt) : NaN;
+  // 与 load 同一口径：只有「真报告」（createdAt 正时间戳）才落盘；空结果不写不删。
+  if (!Number.isFinite(createdAt) || createdAt <= 0) {
+    return false;
+  }
+  return setJsonStorage(TRIGGER_OPTIMIZER_REPORT_STORAGE_KEY, {
+    version: TRIGGER_OPTIMIZER_REPORT_STORAGE_VERSION,
+    savedAt: Date.now(),
+    report,
+  });
+}
+
+export function clearTriggerOptimizerReportFromStorage() {
+  return removeStorageItem(TRIGGER_OPTIMIZER_REPORT_STORAGE_KEY);
 }
 
 export function loadQueueRunSettingsByPlayerFromStorage() {

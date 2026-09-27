@@ -3,6 +3,26 @@ import Player from './combatsimulator/player';
 import Zone from './combatsimulator/zone';
 import Labyrinth from './combatsimulator/labyrinth';
 import { buildSimulationExtraBuffs } from './shared/simulationExtraBuffs.js';
+import { createSeededRandom } from './services/seededRandom.js';
+
+// 确定性播种（公共随机数 / Common Random Numbers）
+// -------------------------------------------------
+// payload.seed 是**可选**字段。给定时，本次模拟全程运行在按种子生成的随机数发生器上，
+// 于是「同一 payload + 同一 seed」在任意时刻、任意机器上都产出完全相同的 simResult。
+// 这让优化器可以把同一组种子喂给基线与全部候选，把「候选 vs 基线」的差异变成
+// 配对差（同一随机流下的事件路径差异），大幅抑制随机噪声——技能优化精度的来源。
+//
+// 不传 seed 时行为与历史完全一致（原生 Math.random），其他调用方（首页模拟 / 队列 /
+// 推荐扫描）不受任何影响。每次 runSingleSimulationPayloadWithDedicatedWorker 都会
+// 新建一个 Worker（全新 realm），因此播种是 realm 私有的，不存在跨任务串扰。
+function installSeedScope(seed) {
+  if (!Number.isFinite(Number(seed))) return null;
+  const originalRandom = Math.random;
+  Math.random = createSeededRandom(Number(seed) >>> 0);
+  return () => {
+    Math.random = originalRandom;
+  };
+}
 
 onmessage = async function (event) {
   switch (event.data.type) {
@@ -34,7 +54,14 @@ onmessage = async function (event) {
         // JSON 常量）：跨玩家安全依赖引擎侧 addPermanentBuff「首次写入必克隆」。
         // 禁止就地改写这些对象（会永久污染同一 worker realm 的下一次模拟），
         // 也不要绕过 addPermanentBuff 直接写 permanentBuffs。
-        currentPlayer.zoneBuffs = zone?.buffs || labyrinth?.buffs || [];
+        // buff 按「labyrinth 非空即迷宫模式」显式选取（与 CombatSimulator 一致：
+        // scrollsAllowed、模式标签、遭遇取用都是 labyrinth 优先）。正常路径的
+        // zone / labyrinth 严格互斥（buildSingleSimulationPayload 的 if/else、
+        // multiWorker 单键消息、advisorDomain 的 labyrinth:null），此时与旧写法
+        // `zone?.buffs || labyrinth?.buffs` 等价；仅 HomeExperimentalModal 批处理
+        // 透传用户 JSON 可能双非空——旧写法在 zone.buffs 为空数组时被 truthy 的
+        // `[]` 短路、静默吞掉迷宫 buff，这里显式选取消除该边界。
+        currentPlayer.zoneBuffs = (labyrinth ? labyrinth.buffs : zone?.buffs) || [];
         currentPlayer.extraBuffs = extraBuffs;
         players.push(currentPlayer);
       }
@@ -44,6 +71,9 @@ onmessage = async function (event) {
         enableHpMpVisualization,
         combatScrollsEnabled: Boolean(extra.combatScrollsEnabled),
         isGuildTrial: Boolean(event.data.simulationContext?.isGuildTrial),
+        // 仅当调用方显式传 false 时关闭战斗事件日志（默认 true = 历史行为）。
+        // 优化器会关掉它：wipe 日志与逐事件控制台输出对只读指标的评估毫无价值。
+        logCombatEvents: event.data.logCombatEvents !== false,
       });
       combatSimulator.addEventListener('progress', (event) => {
         this.postMessage({
@@ -57,12 +87,17 @@ onmessage = async function (event) {
         });
       });
 
+      const restoreRandom = installSeedScope(event.data.seed);
       try {
         let simResult = await combatSimulator.simulate(simulationTimeLimit);
         this.postMessage({ type: 'simulation_result', simResult: simResult });
       } catch (e) {
         console.log(e);
         this.postMessage({ type: 'simulation_error', error: e });
+      } finally {
+        // 本 worker 一次只处理一条消息，恢复只是为了不把已播种的发生器留在
+        // realm 里（若将来复用 realm，这一步就是安全前提）。
+        if (restoreRandom) restoreRandom();
       }
       break;
   }

@@ -20,13 +20,21 @@ import { normalizeParallelWorkerLimit } from '../services/queueScoring.js';
 import { createCachedModuleLoader } from '../services/cachedModuleLoader.js';
 import { createFoodOptimizerReportCache } from '../services/foodOptimizerReportCache.js';
 import { deepClone } from '../services/utils.js';
-import { effectScope, watch } from 'vue';
+import { effectScope, toRaw, watch } from 'vue';
 
 const loadOptimizer = createCachedModuleLoader(() => import('../services/foodOptimizerSimulation.js'));
 const runs = new WeakMap();
 const reportCaches = new WeakMap();
 const trackedStores = new WeakSet();
 const applyingStores = new WeakSet();
+
+// WeakSet 的键取 store 的**原始对象**（toRaw）而不是 action 里的 this：Pinia 的
+// devtools 插件（dev 下对 options store 生效）会给每次 action 调用传一个新建的
+// `new Proxy(store)` 当 this，身份键因此永不命中——注册去重与遮蔽会同时失效
+//（同 simulatorTriggerOptimizerActions 的 storeKey，2026-09-17 定案）。
+function storeKey(store) {
+  return toRaw(store);
+}
 
 // 归一化后的范围数组按目录顺序排列，可直接用连接串比较。仅作设置变更的
 // 比较键：null（未保存范围）与空数组都折叠为空串；默认范围不在本层解析
@@ -42,14 +50,15 @@ function clearLabyrinthPreview(store) {
 }
 
 function trackReportChanges(store) {
-  if (trackedStores.has(store)) return;
-  trackedStores.add(store);
+  const key = storeKey(store);
+  if (trackedStores.has(key)) return;
+  trackedStores.add(key);
   const scope = effectScope(true);
   scope.run(() =>
     watch(
       [() => store.foodOptimizerInputSignature, () => store.foodOptimizer.report],
       () => {
-        if (applyingStores.has(store)) return;
+        if (applyingStores.has(key)) return;
         const report = store.foodOptimizer.report;
         if (report && store.foodOptimizerReportStale) report.stale = true;
       },
@@ -60,9 +69,9 @@ function trackReportChanges(store) {
   store.$dispose = () => {
     store.stopFoodOptimizer();
     scope.stop();
-    trackedStores.delete(store);
-    reportCaches.get(store)?.clear();
-    reportCaches.delete(store);
+    trackedStores.delete(key);
+    reportCaches.get(key)?.clear();
+    reportCaches.delete(key);
     dispose();
   };
 }
@@ -84,6 +93,7 @@ export function foodOptimizerBusy(store) {
     store.isAnyQueueRunning ||
     store.advisor.runtime?.isRunning ||
     store.advisor.runtime?.scanInFlight ||
+    store.triggerOptimizer?.runtime?.isRunning ||
     store.pricing.isLoading ||
     hasSharedWorkerRunInProgress()
   );
@@ -225,7 +235,7 @@ export function createFoodOptimizerActions({ loadPlayerMapperModule }) {
         reportPublished = true;
       };
       try {
-        const cached = reportCaches.get(this)?.get(inputSignature);
+        const cached = reportCaches.get(storeKey(this))?.get(inputSignature);
         if (cached) {
           if (!active()) return;
           assertFoodOptimizerTarget(snapshotFoodOptimizerInput(this));
@@ -262,14 +272,14 @@ export function createFoodOptimizerActions({ loadPlayerMapperModule }) {
             Object.assign(runtime, progress);
           },
         });
-        runs.set(this, search);
+        runs.set(storeKey(this), search);
         const report = await search.done;
         if (runtime.runId === runId) {
           acceptReport(report);
           runtime.phase = report.status;
           runtime.error = report.error || '';
-          let cache = reportCaches.get(this);
-          if (!cache) reportCaches.set(this, (cache = createFoodOptimizerReportCache()));
+          let cache = reportCaches.get(storeKey(this));
+          if (!cache) reportCaches.set(storeKey(this), (cache = createFoodOptimizerReportCache()));
           cache.record(inputSignature, report);
         }
       } catch (error) {
@@ -280,13 +290,13 @@ export function createFoodOptimizerActions({ loadPlayerMapperModule }) {
       } finally {
         if (runtime.runId === runId) {
           runtime.isRunning = false;
-          runs.delete(this);
+          runs.delete(storeKey(this));
         }
       }
     },
     stopFoodOptimizer() {
       if (!this.foodOptimizer.runtime.isRunning) return;
-      const search = runs.get(this);
+      const search = runs.get(storeKey(this));
       if (search) search.cancel();
       else {
         this.foodOptimizer.runtime.runId += 1;
@@ -310,7 +320,7 @@ export function createFoodOptimizerActions({ loadPlayerMapperModule }) {
       if (!result?.feasible || result.roundsCompleted !== report.request.rounds) return false;
       const player = this.players.find((entry) => String(entry.id) === report.request.activePlayerId);
       if (!player) return false;
-      applyingStores.add(this);
+      applyingStores.add(storeKey(this));
       try {
         this.$patch(() => {
           player.food = Array.from({ length: 3 }, (_, index) => result.food[index] || '');
@@ -319,7 +329,7 @@ export function createFoodOptimizerActions({ loadPlayerMapperModule }) {
           report.appliedInputSignature = createFoodOptimizerInputSignature(snapshotFoodOptimizerInput(this));
         });
       } finally {
-        applyingStores.delete(this);
+        applyingStores.delete(storeKey(this));
       }
       return true;
     },

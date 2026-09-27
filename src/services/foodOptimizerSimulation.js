@@ -37,15 +37,13 @@ import {
 //（当前如此），而每个播种作用域都归 simulateFoodOptimizerRound 所有。
 let activeRandomScopes = 0;
 
-export function createFoodOptimizerRandom(seed) {
-  let state = seed >>> 0;
-  return () => {
-    state = (state + 0x6d2b79f5) >>> 0;
-    let value = Math.imul(state ^ (state >>> 15), 1 | state);
-    value ^= value + Math.imul(value ^ (value >>> 7), 61 | value);
-    return ((value ^ (value >>> 14)) >>> 0) / 4294967296;
-  };
-}
+// mulberry32 的实现已抽到 services/seededRandom.js 共享（技能优化器需要同一套
+// 确定性随机源做公共随机数配对比较）。
+// 注意：必须 `import` 后再导出，不能用 `export { createSeededRandom as createFoodOptimizerRandom } from ...`——
+// 具名转发**不建立本地绑定**，模块体内的 createFoodOptimizerRandom 会是 undefined。
+import { createSeededRandom } from './seededRandom.js';
+
+export const createFoodOptimizerRandom = createSeededRandom;
 
 export function createFoodOptimizerSimulation(request, candidate = null) {
   assertFoodOptimizerTarget(request);

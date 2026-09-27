@@ -471,7 +471,8 @@ export async function executeAdvisorScan({ store, loadPlayerMapperModule }) {
     store.runtime.isRunning ||
     store.isAnyQueueRunning ||
     store.advisor.runtime?.isRunning ||
-    store.foodOptimizer?.runtime.isRunning
+    store.foodOptimizer?.runtime.isRunning ||
+    store.triggerOptimizer?.runtime.isRunning
   ) {
     store.advisor.error = ADVISOR_ERROR_ANOTHER_RUN;
     return [];
@@ -507,7 +508,7 @@ export async function executeAdvisorScan({ store, loadPlayerMapperModule }) {
   let context = null;
   try {
     const { buildPlayersForSimulation } = await loadPlayerMapperModule();
-    if (store.foodOptimizer?.runtime.isRunning) {
+    if (store.foodOptimizer?.runtime.isRunning || store.triggerOptimizer?.runtime.isRunning) {
       store.advisor.error = ADVISOR_ERROR_ANOTHER_RUN;
       return [];
     }

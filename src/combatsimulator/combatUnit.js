@@ -346,8 +346,11 @@ class CombatUnit {
   baseCombatStats = null;
   combatBuffs = {};
   permanentBuffs = {};
-  zoneBuffs = {};
-  extraBuffs = {};
+  // 这两项是**数组**（区域 / 补给箱 buff 列表，generatePermanentBuffs 逐条 forEach）——
+  // 默认值必须与消费方式同形：对象默认值会让「未赋值就 generate」直接 TypeError
+  //（生产装配总会赋数组，这里兜的是裸单元与未来调用方）。
+  zoneBuffs = [];
+  extraBuffs = [];
   // 映射 buffUniqueHrid -> Map<sourceKey, { buff, expiresAt, sequence }>。
   // 源跟踪支持对所有运行时增益的精确移除/过期。
   // 选择仍为"后写覆盖"，除非调用方显式将增益

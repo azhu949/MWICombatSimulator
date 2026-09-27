@@ -3,6 +3,7 @@ import {
   DEDICATED_WORKER_SCOPE_ADVISOR,
   DEDICATED_WORKER_SCOPE_EXPERIMENTAL,
   DEDICATED_WORKER_SCOPE_QUEUE,
+  DEDICATED_WORKER_SCOPE_TRIGGER_OPTIMIZER,
   cancelDedicatedWorkerRuns,
   cancelSharedWorkerRun,
   createWorkerRunCancellationError,
@@ -10,9 +11,12 @@ import {
   isWorkerRunCancelledError,
   runMultiSimulationPayloadWithDedicatedWorker,
   runSharedSingleSimulationPayload,
+  runSimulationBatchWithDedicatedWorker,
   runSingleSimulationPayloadWithDedicatedWorker,
   stopAdvisorWorkerRuns,
   stopQueueWorkerClients,
+  stopTriggerOptimizerWorkerRuns,
+  supportsSimulationBatch,
 } from '../simulatorWorkerRuns.js';
 
 class FakeWorkerClient {
@@ -32,6 +36,27 @@ class FakeWorkerClient {
   startMultiSimulation(payload, handlers = {}) {
     this.payload = payload;
     this.handlers = handlers;
+  }
+
+  startSimulationBatch(payloads, handlers = {}) {
+    this.payloads = Array.isArray(payloads) ? payloads : [];
+    this.batchHandlers = handlers;
+  }
+
+  emitBatchResult(simResult, index) {
+    this.batchHandlers?.onResult?.(simResult, index);
+  }
+
+  emitBatchError(error, index) {
+    this.batchHandlers?.onError?.(error, index);
+  }
+
+  emitBatchAbort(error, index) {
+    this.batchHandlers?.onAbort?.(error, index);
+  }
+
+  emitBatchComplete() {
+    this.batchHandlers?.onComplete?.();
   }
 
   emit(type, ...args) {
@@ -264,5 +289,61 @@ describe('simulatorWorkerRuns', () => {
 
     await expect(promise).rejects.toBe(progressError);
     expect(client.stopSimulation).toHaveBeenCalledTimes(1);
+  });
+
+  it('detects batch capability of the production client vs a batch-less stub', () => {
+    class BatchLessClient {}
+
+    expect(supportsSimulationBatch(undefined)).toBe(true);
+    expect(supportsSimulationBatch(BatchLessClient)).toBe(false);
+  });
+
+  it('collects per-index batch results/errors from one client (§54)', async () => {
+    const promise = runSimulationBatchWithDedicatedWorker([{ id: 1 }, { id: 2 }], vi.fn(), {
+      scope: DEDICATED_WORKER_SCOPE_TRIGGER_OPTIMIZER,
+      WorkerClientCtor: FakeWorkerClient,
+    });
+    const client = FakeWorkerClient.instances[0];
+    expect(client.payloads).toEqual([{ id: 1 }, { id: 2 }]);
+
+    client.emitBatchResult({ encounters: 1 }, 0);
+    client.emitBatchError('boom', 1);
+    client.emitBatchComplete();
+
+    await expect(promise).resolves.toEqual({ simResults: [{ encounters: 1 }, null], errors: [null, 'boom'] });
+    expect(client.stopSimulation).toHaveBeenCalledTimes(1);
+  });
+
+  it('restarts the realm for the remaining payloads after a realm-level crash (§54)', async () => {
+    const promise = runSimulationBatchWithDedicatedWorker([{ id: 1 }, { id: 2 }, { id: 3 }], vi.fn(), {
+      scope: DEDICATED_WORKER_SCOPE_TRIGGER_OPTIMIZER,
+      WorkerClientCtor: FakeWorkerClient,
+    });
+    const first = FakeWorkerClient.instances[0];
+    first.emitBatchResult({ encounters: 1 }, 0);
+    first.emitBatchAbort('realm exploded', 1);
+
+    // 在飞的那一条记失败，新 realm 只带剩下的 payload。
+    const second = FakeWorkerClient.instances[1];
+    expect(second.payloads).toEqual([{ id: 3 }]);
+    second.emitBatchResult({ encounters: 3 }, 0);
+    second.emitBatchComplete();
+
+    await expect(promise).resolves.toEqual({
+      simResults: [{ encounters: 1 }, null, { encounters: 3 }],
+      errors: [null, 'realm exploded', null],
+    });
+  });
+
+  it('cancels the whole batch through the scoped handle (§54)', async () => {
+    const promise = runSimulationBatchWithDedicatedWorker([{ id: 1 }], vi.fn(), {
+      scope: DEDICATED_WORKER_SCOPE_TRIGGER_OPTIMIZER,
+      WorkerClientCtor: FakeWorkerClient,
+    });
+    stopTriggerOptimizerWorkerRuns();
+
+    const error = await promise.catch((reason) => reason);
+    expect(isWorkerRunCancelledError(error)).toBe(true);
+    expect(FakeWorkerClient.instances[0].stopSimulation).toHaveBeenCalledTimes(1);
   });
 });
