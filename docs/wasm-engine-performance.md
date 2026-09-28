@@ -9,8 +9,10 @@
 > （同机、事件/秒口径）；差距来源、构建参数实验与可借鉴项见第 5 节。
 >
 > 切片 7（2026-09-28）：用可关闭的 `prof` 分段计时定位热点，完成首批**保语义**优化后，
-> **WASM 引擎 1 小时场景 43.2–49.3 ms → 22.7–25.3 ms（≈1.8–2.0×）**，
-> JS/WASM 提速比由 2.09–2.57× 升到 **4.15–4.39×**（方法与读数见第 6 节）。
+> **WASM 引擎 1 小时场景 43.2–49.3 ms → 24–27 ms、4 小时场景 223.7 ms → 96.1 ms（≈2.3×）**，
+> JS/WASM 提速比由 2.09–2.57× 升到 **3.4–3.7×**；
+> 切片 8 继续做去克隆（`add_next_attack_event` / `check_triggers`），并用背靠背 A/B
+> **否决了 `Rc<Ability>` 试验**（原生更快、WASM 更慢）。方法与读数见第 6、7 节。
 
 ## 1. 测量方法
 
@@ -237,8 +239,7 @@ WASM 引擎 47.0–49.3 ms → 43.2–46.6 ms（**约 -5%～-10%**），JS 侧�
 ### 6.5 剩余热点与下一批候选（按 prof 读数排序）
 
 1. `ability.try_use` 仍约 11.8 ms/轮（≈40%）：残余为每次施放的第一次 `Ability` 深拷贝
-   （需 `Rc<Ability>` + `last_used` 可变性方案，注意 `Rc` 共享会改变单位克隆语义，须先做
-   隔离设计）与 `ability.effect.buff`（15.7 µs/次）。
+   （`Rc<Ability>` 方案已在切片 8 试做并经 A/B **否决**，见 7.2）与 `ability.effect.buff`（15.7 µs/次）。
 2. `event.enemyRespawn` ≈7.3 ms/轮：`encounter.instantiate`（5.05）中的
    `unit.build_from_spec`（3.7）——新增的 `unit.spec_apply` / `unit.spec_loadout` 分段可
    继续细分；模板查找仍是 `encounter_templates` 线性扫描，可按 `(hrid, difficultyTier)` 建索引。
@@ -247,3 +248,60 @@ WASM 引擎 47.0–49.3 ms → 43.2–46.6 ms（**约 -5%～-10%**），JS 侧�
    操作序列与 heap-js 同构、parity 不破（第 5.3 节第 3 条的定量版本）。
 5. `unit_hrid()` 每次返回新 `String`（15,925 次/轮）：改返回 `&str` 或 u32 驻留 id。
 6. `wasm-opt` 仍关闭（binaryen 下载受阻）；后续可尝试镜像或预置二进制。
+
+## 7. 切片 8：第二批去克隆优化与一次被否决的试验（2026-09-28）
+
+### 7.1 本批改动（全部保 parity）
+
+1. `simulator.rs` `add_next_attack_event`：不再克隆 players/enemies 两个 `Vec`
+   （原实现连同派生的 friendlies/enemiesArg 每次共 6 次克隆），改为对 `self.players` /
+   `self.enemies` 的只读切片视图；`first_alive_in` 改收 `Option<&[UnitId]>`。
+   顺序、内容与 `is_none` 判定与原实现逐个一致。
+2. `simulator.rs` `check_triggers` / `check_triggers_for_unit`：每次调用原先克隆 6 个 `Vec`
+   （players×3 / enemies×3，调用量约 5.7k 次/轮 ⇒ 约 3.4 万次分配/轮）。改为下标遍历 +
+   `is_player` 标记 + 内部按需借用切片；传入 `should_trigger` 的友方/敌方列表与顺序不变。
+
+### 7.2 被 A/B 否决的试验：`Rc<Ability>`
+
+动机：`try_use_ability` 每次施放都要深拷贝一份 `Ability`（效果数组 + 触发器 + 多个 `String`）。
+试验把 `CombatUnit.abilities` 改为 `Vec<Option<Rc<Ability>>>`（构建期 `Rc::new(clone)`，
+`last_used` 写回走 `Rc::make_mut`，并把写回点安排在快照释放之后以保持引用计数为 1）。
+
+结果（**背靠背交换 `engine/pkg` 复测**，15 轮中位数，同机同会话）：
+
+| 口径          | 原生 prof（1h）      | WASM 1h 引擎             |
+| ------------- | -------------------- | ------------------------ |
+| 试验前        | 29.6 ms/轮（中位数） | 25.0–25.9 ms             |
+| `Rc<Ability>` | 26.2 ms/轮（-11%）   | 26.3–34.5 ms（+5%～15%） |
+
+**结论：原生更快、WASM 反而更慢 → 弃用**（代码已回退，仅在 `unit.rs` 留注释记录）。
+教训：`wasm32` 对「多一层指针追逐 + 每单位多若干次堆分配」的惩罚远大于原生；
+**原生 prof 只用来定位热点占比，任何改动能否落地必须由 WASM 端到端基准裁决**。
+（这一条与切片 7 的相反案例共同说明：原生 prof 会**低估**去分配类优化的收益、
+也会**高估**加间接层类优化的收益。）
+
+### 7.3 累计实测（`npm run benchmark:wasm-engine`，同机 AMD Ryzen 7 8845H）
+
+| 场景 | 引擎 | 优化前（切片 6） | 现在         | 变化                   |
+| ---- | ---- | ---------------- | ------------ | ---------------------- |
+| 1h   | JS   | 98.8–122.7 ms    | 86–113 ms    | 未改动（机器状态波动） |
+| 1h   | WASM | 43.2–49.3 ms     | 24.1–27.3 ms | **≈1.8×**              |
+| 4h   | WASM | 223.7 ms         | **96.1 ms**  | **≈2.3×**              |
+
+> 4h 是最稳的口径（单轮约 0.1 s，负载尖峰影响小）：WASM 96.1 ms 与同版本原生 prof 的
+> 4h 中位数 95.6 ms/轮吻合。同次 JS 4h 为 355.4 ms（与切片 6 的 428.3 ms 之差来自机器状态：
+> 该时段 JS 侧整体快约 17%；按此归一后 WASM 的净提速仍约 **1.9×**）。
+
+### 7.4 仍未解决的（下一批候选，按 4h prof 读数排序）
+
+1. `ability.try_use` 4,047 ns/次（7.8 万次/4h）：每次施放的 `Ability` 深拷贝仍在。
+   继续攻它需要一个**不引入指针追逐**的方案（例如「按槽位索引 + 分步归还借用」的效果处理重构，
+   让效果循环直接借用 arena 中的技能，而不是先克隆一份）。
+2. `unit.update_details` 1,547 ns/次（其中 `index_buffs` 858 ns）：结算索引每轮次重建；
+   可考虑单位内复用缓冲（`#[serde(skip)]` 暂存区）或小容器化。
+3. `event.enemyRespawn` 22.0 µs/次、`encounter.instantiate` 15.7 µs/次、
+   `unit.build_from_spec` 3.9 µs/次（其中 `spec_loadout` 1.8 µs = 技能/消耗品深拷贝）。
+   注意：本批已证明「技能定义 Rc 化」在 WASM 端得不偿失，若继续需换思路（如按模板缓存已构建的单位代价）。
+4. 队列 `clear_matching` / `remove_by_id` 仍是 O(n²)/O(n)：`id → 堆下标` 侧表可降为 O(1)，parity 不破。
+5. `unit_hrid()` 每次返回新 `String`（1.6 万次/轮）：可逐点改为直接借用 `self.arena.get(id).hrid`。
+6. `wasm-opt` 仍关闭；尝试镜像/预置 binaryen 可再拿单位数到十位数百分比。

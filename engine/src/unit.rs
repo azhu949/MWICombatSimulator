@@ -615,6 +615,10 @@ pub struct CombatUnit {
     /// JS 模拟器写入的 `source.weakenExpireTime`（写入后无读取点，仅保持状态完整）。
     pub weaken_expire_time: Option<f64>,
     /// 技能槽（JS 固定 4 个，未装备为 null）。
+    ///
+    /// 注：曾试验把这里改成 `Rc<Ability>`（省掉施法路径的快照深拷贝）：原生 prof 快约 11%，
+    /// 但 **WASM 端到端反而慢 5%–15%**（多一层指针追逐 + 每个单位多若干次堆分配），
+    /// 故保持裸值。教训见 `docs/wasm-engine-performance.md` 第 7 节。
     pub abilities: Vec<Option<Ability>>,
     /// 食物 / 饮料槽（JS 各 3 个）。
     pub food: Vec<Option<Consumable>>,

@@ -610,8 +610,9 @@ pub struct CombatSimulator {
     is_guild_trial: bool,
 }
 
-fn first_alive_in(arena: &UnitArena, ids: &Option<Vec<UnitId>>) -> Option<UnitId> {
-    let ids = ids.as_ref()?;
+/// 取「第一个存活单位」：改成收 `Option<&[UnitId]>` 切片视图，调用方无需克隆单位列表。
+fn first_alive_in(arena: &UnitArena, ids: Option<&[UnitId]>) -> Option<UnitId> {
+    let ids = ids?;
     ids.iter()
         .copied()
         .find(|id| arena.get(*id).combat_details.current_hitpoints > 0.0)
@@ -1182,16 +1183,14 @@ impl CombatSimulator {
         }
 
         let is_player = self.arena.get(source).is_player;
-        let enemies_list = self.enemies.clone();
-        let players_list = self.players.clone();
-
+        // 免克隆：原先每次排程都克隆 enemies/players 两个 Vec（再派生出 friendlies/enemiesArg
+        // 又是 4 次克隆）；这里改成对 players/enemies 的只读切片视图，语义等价。
         let target = if is_player {
-            first_alive_in(&self.arena, &enemies_list)
+            first_alive_in(&self.arena, self.enemies.as_deref())
         } else {
-            first_alive_in(&self.arena, &Some(players_list.clone()))
+            first_alive_in(&self.arena, Some(self.players.as_slice()))
         };
-        let friendlies: Vec<UnitId> = if is_player { players_list.clone() } else { enemies_list.clone().unwrap_or_default() };
-        let enemies_arg: Option<Vec<UnitId>> = if is_player { enemies_list.clone() } else { Some(players_list.clone()) };
+        let has_enemies = self.enemies.is_some();
 
         let mut used_ability = false;
         let mut skip_next_ability = false;
@@ -1212,8 +1211,8 @@ impl CombatSimulator {
                     &self.arena,
                     source,
                     target,
-                    &friendlies,
-                    enemies_arg.as_deref(),
+                    if is_player { self.players.as_slice() } else { self.enemies.as_deref().unwrap_or(&[]) },
+                    if is_player { self.enemies.as_deref() } else { Some(self.players.as_slice()) },
                     self.simulation_time,
                 )?;
                 (should, ability.mana_cost, ability.cast_duration)
@@ -1241,7 +1240,7 @@ impl CombatSimulator {
             return Ok(());
         }
 
-        if enemies_arg.is_none() {
+        if !has_enemies {
             return Ok(());
         }
 
@@ -1843,24 +1842,27 @@ impl CombatSimulator {
         loop {
             let mut triggered_something = false;
 
-            for player in self.players.clone() {
+            // 免克隆：原先每个循环都克隆 players / enemies（每次 checkTriggers 约 6 次 Vec 分配，
+            // 5,700 次/轮量级）。改为下标遍历：checkTriggersForUnit 不增删单位列表，
+            // 因此读到的顺序与内容与原快照遍历完全一致。
+            let players_len = self.players.len();
+            for index in 0..players_len {
+                let player = self.players[index];
                 if self.arena.get(player).combat_details.current_hitpoints > 0.0 {
-                    let friendlies = self.players.clone();
-                    let enemies = self.enemies.clone();
-                    if self.check_triggers_for_unit(player, &friendlies, enemies.as_deref())? {
+                    if self.check_triggers_for_unit(player, true)? {
                         triggered_something = true;
                     }
                 }
             }
 
-            if let Some(enemies) = self.enemies.clone() {
-                for enemy in enemies {
-                    if self.arena.get(enemy).combat_details.current_hitpoints > 0.0 {
-                        let friendlies = self.enemies.clone().unwrap_or_default();
-                        let players = self.players.clone();
-                        if self.check_triggers_for_unit(enemy, &friendlies, Some(&players))? {
-                            triggered_something = true;
-                        }
+            let enemies_len = self.enemies.as_ref().map_or(0, |enemies| enemies.len());
+            for index in 0..enemies_len {
+                let Some(enemy) = self.enemies.as_ref().and_then(|enemies| enemies.get(index)).copied() else {
+                    break;
+                };
+                if self.arena.get(enemy).combat_details.current_hitpoints > 0.0 {
+                    if self.check_triggers_for_unit(enemy, false)? {
+                        triggered_something = true;
                     }
                 }
             }
@@ -1872,22 +1874,23 @@ impl CombatSimulator {
         Ok(())
     }
 
-    fn check_triggers_for_unit(
-        &mut self,
-        unit: UnitId,
-        friendlies: &[UnitId],
-        enemies: Option<&[UnitId]>,
-    ) -> Result<bool, UnitError> {
+    /// 免克隆：原先每次调用都克隆 6 个 Vec（players×3 / enemies×3）来绕开借用检查；
+    /// 现在只传 `is_player` 标记，友方/敌方切片视图在内部按需借用 `self.players` / `self.enemies`，
+    /// 传入 `should_trigger` 的内容与顺序与原实现逐个一致。
+    fn check_triggers_for_unit(&mut self, unit: UnitId, is_player: bool) -> Result<bool, UnitError> {
         if self.arena.get(unit).combat_details.current_hitpoints <= 0.0 {
             return Err(UnitError::error("Checking triggers for a dead unit"));
         }
 
         let mut triggered_something = false;
-        let target = enemies.and_then(|list| {
-            list.iter()
-                .copied()
-                .find(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0)
-        });
+        let target = {
+            let enemies_slice = if is_player { self.enemies.as_deref() } else { Some(self.players.as_slice()) };
+            enemies_slice.and_then(|list| {
+                list.iter()
+                    .copied()
+                    .find(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0)
+            })
+        };
 
         let food_len = self.arena.get(unit).food.len();
         for slot in 0..food_len {
@@ -1898,8 +1901,8 @@ impl CombatSimulator {
                     &self.arena,
                     unit,
                     target,
-                    friendlies,
-                    enemies,
+                    if is_player { self.players.as_slice() } else { self.enemies.as_deref().unwrap_or(&[]) },
+                    if is_player { self.enemies.as_deref() } else { Some(self.players.as_slice()) },
                     self.simulation_time,
                 )?,
                 None => continue,
@@ -1916,8 +1919,8 @@ impl CombatSimulator {
                     &self.arena,
                     unit,
                     target,
-                    friendlies,
-                    enemies,
+                    if is_player { self.players.as_slice() } else { self.enemies.as_deref().unwrap_or(&[]) },
+                    if is_player { self.enemies.as_deref() } else { Some(self.players.as_slice()) },
                     self.simulation_time,
                 )?,
                 None => continue,
