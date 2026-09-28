@@ -369,6 +369,11 @@ pub struct UnitSpec {
     pub levels: Option<LevelsSpec>,
     #[serde(default)]
     pub combat_stats: Vec<(String, f64)>,
+    /// 面板字符串字段（`combatStyleHrid` / `damageType` / `primaryTraining` / `focusTraining`）：
+    /// 与 `combat_stats` 同源快照，数字键走前者、字符串键走这里；自动攻击的命中/伤害
+    /// 分派依赖战斗风格与伤害类型，缺省会静默退回 `/combat_styles/smash`。
+    #[serde(default)]
+    pub combat_stats_strings: Vec<(String, String)>,
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub two_hand_hrid: Option<String>,
     #[serde(default)]
@@ -396,6 +401,10 @@ pub struct UnitSpec {
     pub food: Vec<Option<Consumable>>,
     #[serde(default)]
     pub drinks: Vec<Option<Consumable>>,
+    /// 该单位在 JS 侧是否由 `Player` / `Monster` 构建（类覆写会重写「类自有」面板字段）。
+    /// 生产桥始终为 true；合成单位（探针）保持 false 以对齐同样合成构建的 JS 侧。
+    #[serde(default)]
+    pub class_owned_stats: bool,
 }
 
 /// 由场景定义构建单位（JS 侧同序：等级 → 面板 → 基准捕获 → 结算 → 技能/消耗品）。
@@ -419,6 +428,12 @@ pub fn build_unit_from_spec(spec: &UnitSpec) -> Result<CombatUnit, UnitError> {
         }
     }
 
+    for (name, value) in &spec.combat_stats_strings {
+        if !unit.combat_details.combat_stats.set_string_field(name, value) {
+            return Err(UnitError::error(format!("unknown combat stat string field: {name}")));
+        }
+    }
+
     unit.enrage_time = spec.enrage_time;
     unit.experience = spec.experience;
     unit.two_hand_hrid = spec.two_hand_hrid.clone();
@@ -432,24 +447,31 @@ pub fn build_unit_from_spec(spec: &UnitSpec) -> Result<CombatUnit, UnitError> {
         unit.permanent_buffs.set(buff.type_hrid.clone(), buff.clone());
     }
 
+    // 构造期「类自有」面板快照：与基准同源，供 `clear_ccs` 的基准刷新点恢复字段。
+    if spec.class_owned_stats {
+        unit.class_base_combat_stats = Some(unit.combat_details.combat_stats.clone());
+    }
+
     unit.refresh_base_combat_stats();
     unit.update_combat_details();
 
     for (index, ability) in spec.abilities.iter().enumerate() {
         if index >= unit.abilities.len() {
-            break;
+            // JS `player.abilities = dto.abilities.map(...)`：槽位数 = DTO 长度（可超过默认 4 槽），
+            // 模拟器按数组长度遍历，因此这里按需扩展而不是截断。
+            unit.abilities.push(None);
         }
         unit.abilities[index] = ability.clone();
     }
     for (index, item) in spec.food.iter().enumerate() {
         if index >= unit.food.len() {
-            break;
+            unit.food.push(None);
         }
         unit.food[index] = item.clone();
     }
     for (index, item) in spec.drinks.iter().enumerate() {
         if index >= unit.drinks.len() {
-            break;
+            unit.drinks.push(None);
         }
         unit.drinks[index] = item.clone();
     }

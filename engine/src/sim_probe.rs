@@ -38,7 +38,7 @@ struct SimProbeRequest {
     runs: Vec<SimRunRequest>,
 }
 
-fn unit_snapshot(unit: &CombatUnit) -> Value {
+pub(crate) fn unit_snapshot(unit: &CombatUnit) -> Value {
     let combat_buff_keys: Vec<&String> = unit.combat_buffs.keys().collect();
     let mut combat_buffs = Map::new();
     for (key, buff) in unit.combat_buffs.iter() {

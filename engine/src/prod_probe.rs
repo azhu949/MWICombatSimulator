@@ -67,6 +67,14 @@ pub fn run_production_simulation(request_json: &str) -> Result<String, String> {
 
     serde_json::to_string(&json!({
         "simResult": sim_result,
+        "eventCount": simulator.event_count,
+        // 仅在 `traceLimit > 0` 时有内容；生产 parity 对账与分歧定位用。
+        "eventTrace": simulator.trace,
+        "units": if simulator.trace_limit > 0 {
+            simulator.arena.units.iter().map(crate::sim_probe::unit_snapshot).collect::<Vec<Value>>()
+        } else {
+            Vec::new()
+        },
         "error": error.map(|error| json!({ "name": error.kind.name(), "message": error.message })),
     }))
     .map_err(|error| error.to_string())

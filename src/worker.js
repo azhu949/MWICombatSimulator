@@ -4,6 +4,7 @@ import Zone from './combatsimulator/zone';
 import Labyrinth from './combatsimulator/labyrinth';
 import { buildSimulationExtraBuffs } from './shared/simulationExtraBuffs.js';
 import { createSeededRandom } from './services/seededRandom.js';
+import { tryRunWasmProductionRound } from './services/wasmProductionSimulation.js';
 
 // 确定性播种（公共随机数 / Common Random Numbers）
 // -------------------------------------------------
@@ -67,14 +68,36 @@ onmessage = async function (event) {
       }
       let simulationTimeLimit = event.data.simulationTimeLimit;
       let enableHpMpVisualization = Boolean(extra.enableHpMpVisualization);
-      let combatSimulator = new CombatSimulator(players, zone, labyrinth, {
-        enableHpMpVisualization,
-        combatScrollsEnabled: Boolean(extra.combatScrollsEnabled),
-        isGuildTrial: Boolean(event.data.simulationContext?.isGuildTrial),
+
+      // 切片 5-B A/B 开关（默认关）：仅当调用方显式传 `useWasmEngine: true` 且配置落在
+      // wasm 引擎覆盖范围内（minimal 结果 + 无副本/迷宫/卷轴/日志/可视化）时才走 wasm；
+      // 其余情况 `tryRunWasmProductionRound` 返回 null，静默回退下面的 JS 引擎。
+      const options = {
+        minimalResult: event.data.minimalResult === true,
         // 仅当调用方显式传 false 时关闭战斗事件日志（默认 true = 历史行为）。
         // 优化器会关掉它：wipe 日志与逐事件控制台输出对只读指标的评估毫无价值。
         logCombatEvents: event.data.logCombatEvents !== false,
+        enableHpMpVisualization,
+        combatScrollsEnabled: Boolean(extra.combatScrollsEnabled),
+        isGuildTrial: Boolean(event.data.simulationContext?.isGuildTrial),
+      };
+      const wasmSimResult = await tryRunWasmProductionRound({
+        useWasmEngine: event.data.useWasmEngine === true,
+        players,
+        zone,
+        labyrinth,
+        simulationContext: event.data.simulationContext,
+        seed: event.data.seed,
+        simulationTimeLimit,
+        options,
       });
+      if (wasmSimResult) {
+        // wasm 路径自带确定性，不需要（也不消耗）播种后的 Math.random 作用域。
+        this.postMessage({ type: 'simulation_result', simResult: wasmSimResult });
+        break;
+      }
+
+      let combatSimulator = new CombatSimulator(players, zone, labyrinth, options);
       combatSimulator.addEventListener('progress', (event) => {
         this.postMessage({
           type: 'simulation_progress',

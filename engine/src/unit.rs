@@ -356,6 +356,27 @@ combat_stats_numeric_fields! {
     max_manapoints_ratio => "maxManapointsRatio",
 }
 
+macro_rules! combat_stats_string_fields {
+    ($($field:ident => $name:literal),* $(,)?) => {
+        impl CombatStats {
+            /// 按 JS 字段名写入字符串字段（生产桥 / 探针装配用）。返回是否命中。
+            pub fn set_string_field(&mut self, name: &str, value: &str) -> bool {
+                match name {
+                    $( $name => { self.$field = value.to_string(); true } )*
+                    _ => false,
+                }
+            }
+        }
+    };
+}
+
+combat_stats_string_fields! {
+    combat_style_hrid => "combatStyleHrid",
+    damage_type => "damageType",
+    primary_training => "primaryTraining",
+    focus_training => "focusTraining",
+}
+
 /// 结算后面板（等价 JS `combatDetails`，含派生等级/伤害/闪避/抗性等）。
 #[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
 #[serde(rename_all = "camelCase")]
@@ -566,6 +587,10 @@ pub struct CombatUnit {
     pub extra_buffs: Vec<RawBuffInput>,
     pub combat_details: CombatDetails,
     pub base_combat_stats: Option<CombatStats>,
+    /// 「类自有」面板快照（仅 spec 标记 `classOwnedStats` 时存在）：
+    /// JS 的 `Player` / `Monster` 覆写在捕获基准前会重写类自有字段（装备 / 怪物数据），
+    /// Rust 无该覆写步骤，因此在 `clear_ccs` 的基准刷新点用它恢复这些字段。
+    pub class_base_combat_stats: Option<CombatStats>,
     pub combat_buffs: OrderedMap<String, Buff>,
     pub permanent_buffs: OrderedMap<String, Buff>,
     pub buff_sources: OrderedMap<String, OrderedMap<String, BuffSourceEntry>>,
@@ -622,6 +647,7 @@ impl Default for CombatUnit {
             extra_buffs: Vec::new(),
             combat_details: CombatDetails::default(),
             base_combat_stats: None,
+            class_base_combat_stats: None,
             combat_buffs: OrderedMap::new(),
             permanent_buffs: OrderedMap::new(),
             buff_sources: OrderedMap::new(),
@@ -1371,6 +1397,14 @@ impl CombatUnit {
         self.is_blinded = false;
         self.blind_expire_time = None;
         self.combat_details.combat_stats.damage_taken = 0.0;
+        // JS 的 `Player` / `Monster` 覆写会在紧随其后的 `updateCombatDetails` 里把
+        // 「类自有」面板字段重写回装备 / 怪物数据（`refreshBaseCombatStats` 因此总是
+        // 捕获干净基准）；合成单位（探针）没有该覆写，基准会带上派生值。
+        // Rust 无类覆写，故仅在 spec 标记类自有面板时把字段恢复为构造期快照。
+        if let Some(class_base) = &self.class_base_combat_stats {
+            self.combat_details.combat_stats = class_base.clone();
+            self.combat_details.combat_stats.damage_taken = 0.0;
+        }
         self.refresh_base_combat_stats();
     }
 
