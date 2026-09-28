@@ -8,6 +8,7 @@
     "build:wasm": "wasm-pack build engine --target web",
     "verify:wasm": "node scripts/verify-wasm-build.mjs",
     "benchmark:combat-engine": "node scripts/benchmark-combat-engine.mjs",
+    "benchmark:wasm-engine": "node scripts/run-wasm-benchmark.mjs",
     "build-game-data-index": "node scripts/build-game-data-index.mjs",
     "sync-official-translations": "node scripts/sync-official-translations.mjs",
     "check-official-translations": "node scripts/sync-official-translations.mjs --check",
