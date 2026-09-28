@@ -38,7 +38,11 @@ struct ProductionRequest {
 
 /// 跑一轮生产模拟，返回 `{ simResult, error }` JSON 字符串。
 pub fn run_production_simulation(request_json: &str) -> Result<String, String> {
-    let request: ProductionRequest = serde_json::from_str(request_json).map_err(|error| error.to_string())?;
+    let request: ProductionRequest = {
+        let _prof = crate::prof::start("prod.parse");
+        serde_json::from_str(request_json).map_err(|error| error.to_string())?
+    };
+    let prof_setup = crate::prof::start("prod.setup");
     let mut simulator = CombatSimulator::new(request.options);
     let mut error: Option<UnitError> = None;
 
@@ -52,12 +56,15 @@ pub fn run_production_simulation(request_json: &str) -> Result<String, String> {
         }
     }
 
+    drop(prof_setup);
+
     if error.is_none() {
         if let Err(unit_error) = simulator.simulate() {
             error = Some(unit_error);
         }
     }
 
+    let _prof_output = crate::prof::start("prod.output");
     let sim_result: Value = simulator
         .tally
         .real

@@ -473,9 +473,12 @@ impl BuffBoost {
 }
 
 /// 结算期索引条目（等价 JS `{ buffs, boost: { ratioBoost, flatBoost } }`）。
+///
+/// `buffs` 仅被 `snapshot_boosts` 逐项读取 ratio/flat（消费端不触碰 Buff 的其他字段），
+/// 故直接存投影后的 `BuffBoost`——省掉每次结算对每个增益的 Buff 深拷贝。
 #[derive(Clone, Debug, Default)]
 pub struct BuffBoostEntry {
-    pub buffs: Vec<Buff>,
+    pub buffs: Vec<BuffBoost>,
     pub ratio_boost: f64,
     pub flat_boost: f64,
 }
@@ -490,15 +493,16 @@ pub type BuffBoostIndex = OrderedMap<String, BuffBoostEntry>;
 pub fn index_buffs_by_type(buffs: &OrderedMap<String, Buff>) -> BuffBoostIndex {
     let mut index = BuffBoostIndex::new();
     for buff in buffs.values() {
+        let projection = BuffBoost { ratio_boost: buff.ratio_boost, flat_boost: buff.flat_boost };
         if let Some(group) = index.get_mut(&buff.type_hrid) {
-            group.buffs.push(buff.clone());
+            group.buffs.push(projection);
             group.ratio_boost += buff.ratio_boost;
             group.flat_boost += buff.flat_boost;
         } else {
             index.set(
                 buff.type_hrid.clone(),
                 BuffBoostEntry {
-                    buffs: vec![buff.clone()],
+                    buffs: vec![projection],
                     ratio_boost: buff.ratio_boost,
                     flat_boost: buff.flat_boost,
                 },
@@ -776,14 +780,12 @@ fn snapshot_boost(snapshot: &BuffBoostIndex, type_hrid: &str) -> BuffBoost {
     }
 }
 
-fn snapshot_boosts(snapshot: &BuffBoostIndex, type_hrid: &str) -> Vec<BuffBoost> {
+/// 该 typeHrid 下的逐项投影（顺序 = 索引构建顺序）。返回借用切片而非新建 Vec：
+/// 结算热路径每个单位要查十余个 typeHrid，其中仅少数命中。
+fn snapshot_boosts<'a>(snapshot: &'a BuffBoostIndex, type_hrid: &str) -> &'a [BuffBoost] {
     match snapshot.get_str(type_hrid) {
-        Some(entry) => entry
-            .buffs
-            .iter()
-            .map(|buff| BuffBoost { ratio_boost: buff.ratio_boost, flat_boost: buff.flat_boost })
-            .collect(),
-        None => Vec::new(),
+        Some(entry) => &entry.buffs,
+        None => &[],
     }
 }
 
@@ -809,12 +811,17 @@ impl CombatUnit {
 
     /// 等价 JS `updateCombatDetails`：构建快照 → 结算。
     pub fn update_combat_details(&mut self) {
-        let snapshot = index_buffs_by_type(&self.combat_buffs);
+        let _prof = crate::prof::start("unit.update_details");
+        let snapshot = {
+            let _prof_index = crate::prof::start("unit.index_buffs");
+            index_buffs_by_type(&self.combat_buffs)
+        };
         self.update_combat_details_with_snapshot(&snapshot);
     }
 
     /// 结算主体（等价 JS `updateCombatDetailsFromBuffs`，忽略 FRESH_COMBAT_STATS 微优化）。
     pub fn update_combat_details_with_snapshot(&mut self, snapshot: &BuffBoostIndex) {
+        let _prof = crate::prof::start("unit.update_details_full");
         self.reset_combat_stats_to_base();
 
         if self.is_player {
@@ -823,14 +830,14 @@ impl CombatUnit {
         }
 
         // COMBAT_LEVEL_FIELDS（JS 164-172 行）——加成基数取单位自身等级字段。
-        let stamina_level = settled_level(self.stamina_level, &snapshot_boosts(snapshot, "/buff_types/stamina_level"));
+        let stamina_level = settled_level(self.stamina_level, snapshot_boosts(snapshot, "/buff_types/stamina_level"));
         let intelligence_level =
-            settled_level(self.intelligence_level, &snapshot_boosts(snapshot, "/buff_types/intelligence_level"));
-        let attack_level = settled_level(self.attack_level, &snapshot_boosts(snapshot, "/buff_types/attack_level"));
-        let melee_level = settled_level(self.melee_level, &snapshot_boosts(snapshot, "/buff_types/melee_level"));
-        let defense_level = settled_level(self.defense_level, &snapshot_boosts(snapshot, "/buff_types/defense_level"));
-        let ranged_level = settled_level(self.ranged_level, &snapshot_boosts(snapshot, "/buff_types/ranged_level"));
-        let magic_level = settled_level(self.magic_level, &snapshot_boosts(snapshot, "/buff_types/magic_level"));
+            settled_level(self.intelligence_level, snapshot_boosts(snapshot, "/buff_types/intelligence_level"));
+        let attack_level = settled_level(self.attack_level, snapshot_boosts(snapshot, "/buff_types/attack_level"));
+        let melee_level = settled_level(self.melee_level, snapshot_boosts(snapshot, "/buff_types/melee_level"));
+        let defense_level = settled_level(self.defense_level, snapshot_boosts(snapshot, "/buff_types/defense_level"));
+        let ranged_level = settled_level(self.ranged_level, snapshot_boosts(snapshot, "/buff_types/ranged_level"));
+        let magic_level = settled_level(self.magic_level, snapshot_boosts(snapshot, "/buff_types/magic_level"));
 
         let is_bulwark = self.two_hand_hrid.as_deref().is_some_and(|hrid| hrid.contains("bulwark"));
         let cd = &mut self.combat_details;
@@ -871,7 +878,7 @@ impl CombatUnit {
             * (1.0 + damage_ratio_boost_from_fury);
         let base_evasion = (10.0 + cd.defense_level) * (1.0 + cd.combat_stats.stab_evasion);
         cd.stab_evasion_rating = base_evasion;
-        for boost in &evasion_boosts {
+        for boost in evasion_boosts {
             cd.stab_evasion_rating += boost.flat_boost;
             cd.stab_evasion_rating += base_evasion * boost.ratio_boost;
         }
@@ -886,7 +893,7 @@ impl CombatUnit {
             * (1.0 + damage_ratio_boost_from_fury);
         let base_evasion = (10.0 + cd.defense_level) * (1.0 + cd.combat_stats.slash_evasion);
         cd.slash_evasion_rating = base_evasion;
-        for boost in &evasion_boosts {
+        for boost in evasion_boosts {
             cd.slash_evasion_rating += boost.flat_boost;
             cd.slash_evasion_rating += base_evasion * boost.ratio_boost;
         }
@@ -901,7 +908,7 @@ impl CombatUnit {
             * (1.0 + damage_ratio_boost_from_fury);
         let base_evasion = (10.0 + cd.defense_level) * (1.0 + cd.combat_stats.smash_evasion);
         cd.smash_evasion_rating = base_evasion;
-        for boost in &evasion_boosts {
+        for boost in evasion_boosts {
             cd.smash_evasion_rating += boost.flat_boost;
             cd.smash_evasion_rating += base_evasion * boost.ratio_boost;
         }
@@ -927,7 +934,7 @@ impl CombatUnit {
 
         let base_ranged_evasion = (10.0 + cd.defense_level) * (1.0 + cd.combat_stats.ranged_evasion);
         cd.ranged_evasion_rating = base_ranged_evasion;
-        for boost in &evasion_boosts {
+        for boost in evasion_boosts {
             cd.ranged_evasion_rating += boost.flat_boost;
             cd.ranged_evasion_rating += base_ranged_evasion * boost.ratio_boost;
         }
@@ -945,7 +952,7 @@ impl CombatUnit {
 
         let base_magic_evasion = (10.0 + cd.defense_level) * (1.0 + cd.combat_stats.magic_evasion);
         cd.magic_evasion_rating = base_magic_evasion;
-        for boost in &evasion_boosts {
+        for boost in evasion_boosts {
             cd.magic_evasion_rating += boost.flat_boost;
             cd.magic_evasion_rating += base_magic_evasion * boost.ratio_boost;
         }
@@ -1055,6 +1062,7 @@ impl CombatUnit {
         source_hrid: Option<&str>,
         source_policy: Option<&str>,
     ) -> Result<(), UnitError> {
+        let _prof = crate::prof::start("unit.add_buff");
         if !current_time.is_finite() {
             return Err(UnitError::type_error("CombatUnit.addBuff requires a finite numeric currentTime"));
         }
@@ -1104,8 +1112,7 @@ impl CombatUnit {
             sources.set(source_key.to_string(), BuffSourceEntry { buff: registered_buff, expires_at, sequence });
         }
 
-        let sources_snapshot = self.buff_sources.get_str(&unique_hrid).cloned();
-        self.reconcile_buff_source(&unique_hrid, sources_snapshot.as_ref(), true, Some(source_key))?;
+        self.reconcile_buff_source_live(&unique_hrid, true, Some(source_key))?;
         Ok(())
     }
 
@@ -1134,6 +1141,44 @@ impl CombatUnit {
         }
 
         let active_buff_changed = !buffs_affect_stats_equally(next_active_buff.as_ref(), previous_active_buff.as_ref());
+        if active_buff_changed && update_details {
+            self.update_combat_details();
+        }
+
+        Ok(active_buff_changed)
+    }
+
+    /// `reconcileBuffSource` 的「直接读自身源注册表」变体（免快照）。
+    ///
+    /// 调用方（addBuff / removeBuff / 过期清理）在调用前已完成对 `self.buff_sources` 的
+    /// 全部改动，原实现传入的 `sources` 快照与实时表逐字段相同；此处直接借用实时表，
+    /// 省掉「每注册一次增益就深拷贝整张源表（含所有 Buff）」的开销。可观察行为不变。
+    fn reconcile_buff_source_live(
+        &mut self,
+        unique_hrid: &str,
+        update_details: bool,
+        preferred_source_key: Option<&str>,
+    ) -> Result<bool, UnitError> {
+        let policy = self.buff_source_policies.get_str(unique_hrid).copied().unwrap_or(BuffSourcePolicy::Replace);
+        let next_active_source = match self.buff_sources.get_str(unique_hrid) {
+            Some(sources) if !sources.is_empty() => pick_active_buff_source(sources, policy, preferred_source_key)?,
+            _ => None,
+        };
+        let next_active = next_active_source.map(|(key, entry)| (key.clone(), entry.buff.clone()));
+
+        let active_buff_changed = {
+            let previous_active_buff = self.combat_buffs.get_str(unique_hrid);
+            !buffs_affect_stats_equally(next_active.as_ref().map(|(_, buff)| buff), previous_active_buff)
+        };
+
+        if let Some((source_key, buff)) = next_active {
+            self.active_buff_source_keys.set(unique_hrid.to_string(), source_key);
+            self.combat_buffs.set(unique_hrid.to_string(), buff);
+        } else {
+            self.active_buff_source_keys.delete(&unique_hrid.to_string());
+            self.combat_buffs.delete(&unique_hrid.to_string());
+        }
+
         if active_buff_changed && update_details {
             self.update_combat_details();
         }
@@ -1204,8 +1249,7 @@ impl CombatUnit {
                 self.buff_source_policies.delete(&unique_hrid.to_string());
                 self.reconcile_buff_source(unique_hrid, None, true, None)?;
             } else if source_was_active || self.active_buff_source_keys.get_str(unique_hrid).is_none() {
-                let live_snapshot = self.buff_sources.get_str(unique_hrid).cloned();
-                self.reconcile_buff_source(unique_hrid, live_snapshot.as_ref(), true, None)?;
+                self.reconcile_buff_source_live(unique_hrid, true, None)?;
             }
             return Ok(());
         }
@@ -1322,9 +1366,7 @@ impl CombatUnit {
                 details_dirty =
                     self.reconcile_buff_source(unique_hrid, None, false, None)? || details_dirty;
             } else if active_source_expired || active_key_missing {
-                let live_snapshot = self.buff_sources.get_str(unique_hrid).cloned();
-                details_dirty =
-                    self.reconcile_buff_source(unique_hrid, live_snapshot.as_ref(), false, None)? || details_dirty;
+                details_dirty = self.reconcile_buff_source_live(unique_hrid, false, None)? || details_dirty;
             }
         } else {
             // 与源注册机制引入前由旧调用方恢复的运行时增益保持兼容。
@@ -1348,6 +1390,7 @@ impl CombatUnit {
 
     /// 等价 JS `removeExpiredBuffs(currentTime, { updateDetails })`。
     pub fn remove_expired_buffs(&mut self, current_time: f64, update_details: bool) -> Result<bool, UnitError> {
+        let _prof = crate::prof::start("unit.remove_expired_buffs");
         let mut details_dirty = false;
         // Object.keys 快照：先收集再逐项处理（处理过程会删除条目）。
         let unique_hrids: Vec<String> = self.buff_sources.keys().cloned().collect();
@@ -1410,6 +1453,7 @@ impl CombatUnit {
 
     /// 等价 JS `getBuffBoosts(type)`（无快照路径：按 combatBuffs 遍历序投影）。
     pub fn get_buff_boosts(&self, type_hrid: &str) -> Vec<BuffBoost> {
+        let _prof = crate::prof::start("unit.get_buff_boosts");
         self.combat_buffs
             .values()
             .filter(|buff| buff.type_hrid == type_hrid)

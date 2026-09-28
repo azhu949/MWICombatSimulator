@@ -15,6 +15,7 @@ pub mod consumable;
 pub mod equipment;
 pub mod event_queue;
 pub mod ordered_map;
+pub mod prof;
 pub mod prod_probe;
 pub mod queue_probe;
 pub mod rng;

@@ -5,7 +5,7 @@
 // 每轮都重建玩家实例（与 worker 每轮装配一致），模板缓存跨轮复用（与 worker realm 一致）。
 //
 // 环境变量：WASM_BENCH_ROUNDS（默认 5）、WASM_BENCH_HOURS（默认 1）、WASM_BENCH_SEED（默认 101）。
-import { existsSync } from 'node:fs';
+import { existsSync, writeFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
@@ -157,6 +157,28 @@ describe.runIf(benchEnabled && wasmPackageBuilt)('wasm engine production benchma
     expect(engine).not.toBeNull();
 
     const payload = buildPayload();
+
+    // 可选：把本次基准的生产请求导出为 JSON，供原生 profiling 使用
+    // （`$env:WASM_BENCH_DUMP='<path>'; npm run benchmark:wasm-engine`）。
+    if (process.env.WASM_BENCH_DUMP) {
+      const { zone, players } = buildLivePieces(payload);
+      const request = buildProductionRequest({
+        players,
+        zone,
+        seed: payload.seed,
+        simulationTimeLimit: payload.simulationTimeLimit,
+        options: {
+          minimalResult: true,
+          logCombatEvents: false,
+          enableHpMpVisualization: false,
+          combatScrollsEnabled: false,
+          isGuildTrial: false,
+        },
+      });
+      writeFileSync(process.env.WASM_BENCH_DUMP, JSON.stringify(request));
+      console.log(`request JSON dumped to ${process.env.WASM_BENCH_DUMP}`);
+    }
+
     const jsTimes = [];
     const wasmTimes = [];
     const jsSetupTimes = [];
