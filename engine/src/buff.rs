@@ -142,6 +142,30 @@ pub fn strength_field_for(unique_hrid: &str) -> Option<&'static str> {
         .map(|(_, field)| *field)
 }
 
+/// 官方队伍光环技能 hrid 集合（等价 JS `PARTY_AURA_ABILITY_HRIDS`）。
+pub const PARTY_AURA_ABILITY_HRIDS: &[&str] = &[
+    "/abilities/speed_aura",
+    "/abilities/guardian_aura",
+    "/abilities/fierce_aura",
+    "/abilities/critical_aura",
+    "/abilities/mystic_aura",
+];
+
+/// 等价 JS `isPartyAuraBuff`。
+pub fn is_party_aura_buff(unique_hrid: &str) -> bool {
+    strength_field_for(unique_hrid).is_some()
+}
+
+/// 等价 JS `getAbilityBuffSourcePolicy(ability, buff)`：
+/// 官方队伍光环技能施加官方队伍光环增益才启用最强源策略，其余一律 replace。
+pub fn get_ability_buff_source_policy(ability_hrid: &str, buff_unique_hrid: &str) -> BuffSourcePolicy {
+    if PARTY_AURA_ABILITY_HRIDS.contains(&ability_hrid) && is_party_aura_buff(buff_unique_hrid) {
+        BuffSourcePolicy::Strongest
+    } else {
+        BuffSourcePolicy::Replace
+    }
+}
+
 /// 等价 JS `getPartyAuraBuffStrength`；形状/数值不符时返回 Err（JS 抛异常）。
 pub fn get_party_aura_buff_strength(buff: &Buff) -> Result<f64, PartyAuraError> {
     let Some(strength_field) = strength_field_for(&buff.unique_hrid) else {

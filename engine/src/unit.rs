@@ -18,10 +18,12 @@
 //!   而 `removeBuff` / `clearBuffs` 等包装方法不返回任何值（探针轨迹记 null）；
 //! - threat 结算的 `if (ratioBoost !== 0)` 分支：ratio 为 0 时直接覆盖为 base 再叠加 flat。
 
+use crate::ability::Ability;
 use crate::buff::{
     buffs_affect_stats_equally, get_party_aura_buff_strength, is_stronger_party_aura_buff, Buff, BuffSourcePolicy,
     PartyAuraError, PartyAuraErrorKind,
 };
+use crate::consumable::Consumable;
 use crate::ordered_map::OrderedMap;
 use serde::{Deserialize, Serialize};
 
@@ -164,6 +166,10 @@ pub struct CombatStats {
     /// `None` = JS 的 undefined（序列化为缺失键），`Some(NaN)` = 结算后的 NaN（序列化为 null）。
     #[serde(default, skip_serializing_if = "Option::is_none")]
     pub tenacity: Option<f64>,
+    /// 同为 JS 的「可能缺失」字段：`combatStats.abilityHaste` 仅由怪物数据写入
+    /// （monster.js 的 OPTIONAL_COMBAT_STATS 会补 0），玩家侧为 undefined ⇒ 冷却缩放恒不生效。
+    #[serde(default, skip_serializing_if = "Option::is_none")]
+    pub ability_haste: Option<f64>,
     pub max_hitpoints_ratio: f64,
     pub max_manapoints_ratio: f64,
 }
@@ -250,6 +256,7 @@ impl Default for CombatStats {
             magic_experience: 0.0,
             retaliation: 0.0,
             tenacity: None,
+            ability_haste: None,
             max_hitpoints_ratio: 0.0,
             max_manapoints_ratio: 0.0,
         }
@@ -567,6 +574,24 @@ pub struct CombatUnit {
     pub buff_source_sequence: u64,
     /// `/equipment_types/two_hand` 槽位的 hrid（bulwark 判定；等价 JS `equipment?.[...]?.hrid`）。
     pub two_hand_hrid: Option<String>,
+    // -----------------------------------------------------------------------
+    // 模拟循环所需的单位状态（JS `combatUnit.js` 字段 + 模拟器写入的运行时字段）
+    // -----------------------------------------------------------------------
+    /// 单位标识（JS `unit.hrid`）；事件定位、按 hrid 查找与日志都使用它。
+    pub hrid: String,
+    /// JS `isWeakened` 在整个仓库中从未被赋值（恒 undefined ⇒ 恒假），如实建模。
+    pub is_weakened: bool,
+    /// JS `weakenPercentage` 同样从未赋值；`processAttack` 的命中惩罚分支恒不触发。
+    pub weaken_percentage: f64,
+    /// JS 模拟器写入的 `source.weakenExpireTime`（写入后无读取点，仅保持状态完整）。
+    pub weaken_expire_time: Option<f64>,
+    /// 技能槽（JS 固定 4 个，未装备为 null）。
+    pub abilities: Vec<Option<Ability>>,
+    /// 食物 / 饮料槽（JS 各 3 个）。
+    pub food: Vec<Option<Consumable>>,
+    pub drinks: Vec<Option<Consumable>>,
+    /// 每个技能累计消耗的魔法值（JS `abilityManaCosts` Map，仅玩家记账）。
+    pub ability_mana_costs: OrderedMap<String, f64>,
 }
 
 impl Default for CombatUnit {
@@ -604,6 +629,14 @@ impl Default for CombatUnit {
             buff_source_policies: OrderedMap::new(),
             buff_source_sequence: 0,
             two_hand_hrid: None,
+            hrid: String::new(),
+            is_weakened: false,
+            weaken_percentage: 0.0,
+            weaken_expire_time: None,
+            abilities: vec![None, None, None, None],
+            food: vec![None, None, None],
+            drinks: vec![None, None, None],
+            ability_mana_costs: OrderedMap::new(),
         }
     }
 }

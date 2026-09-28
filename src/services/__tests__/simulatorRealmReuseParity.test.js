@@ -143,6 +143,8 @@ async function runFreshRealmArm(players, seeds) {
 }
 
 describe('worker realm 复用 parity（§54 常规回归防线）', () => {
+  // 两臂共 6 场真实模拟（单独跑约 4-5s），全量流水线并行负载下会超过默认 5s 上限：
+  // 显式放宽超时（只防抖，不放宽任何断言）。
   it('同一批种子在「同一 realm 连跑」与「每场全新 realm」下逐位一致', async () => {
     const players = createPayloadPlayers();
     const sharedResults = await runSharedRegistryArm(players, SEEDS);
@@ -155,7 +157,7 @@ describe('worker realm 复用 parity（§54 常规回归防线）', () => {
       // 这里 simResult 是 worker postMessage 的纯数据，JSON 等值即逐位等值）。
       expect(JSON.stringify(sharedResults[i])).toBe(JSON.stringify(freshResults[i]));
     }
-  });
+  }, 30000);
 
   it('对照组：不同种子的结果不同（排除「两臂都跑出空结果」的假阳性）', async () => {
     const players = createPayloadPlayers();
