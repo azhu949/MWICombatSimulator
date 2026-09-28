@@ -194,9 +194,13 @@ fn apply_op(unit: &mut Option<CombatUnit>, op: UnitOp) -> Result<Value, UnitErro
         }
         UnitOp::SetCombatStat { name, value } => {
             let combat_stats = &mut require_unit(unit)?.combat_details.combat_stats;
-            if name == "tenacity" {
-                // JS 基础面板缺失该键；显式设置后参与 `+=` 结算。
-                combat_stats.tenacity = Some(value);
+            if name == "tenacity" || name == "abilityHaste" {
+                // JS 基础面板缺失这两个键；显式设置后参与后续结算/冷却缩放。
+                if name == "tenacity" {
+                    combat_stats.tenacity = Some(value);
+                } else {
+                    combat_stats.ability_haste = Some(value);
+                }
             } else if !combat_stats.set_numeric_field(&name, value) {
                 // 探针防御：脚本写错字段名（JS 侧会静默新增键，脚本本身即错误）。
                 return Err(UnitError::error(format!("unknown combat stat field: {name}")));

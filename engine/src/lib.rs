@@ -5,13 +5,23 @@
 //! (bit-for-bit identical to `src/services/seededRandom.js`), with JS-vs-Rust parity probes.
 //! Slice 3: combat units (exact port of `combatUnit.js` / `buff.js` / `buffSourcePolicy.js`
 //! stat resolution + buff lifecycle, plus the equipment stat rule), with unit parity probes.
+//! Slice 4: combat main loop (event types, ability/trigger/consumable behaviour, damage math,
+//! unit arena) ported from `combatSimulator.js` / `combatUtilities.js`.
 
+pub mod ability;
 pub mod buff;
+pub mod combat_utilities;
+pub mod consumable;
 pub mod equipment;
 pub mod event_queue;
 pub mod ordered_map;
 pub mod queue_probe;
 pub mod rng;
+pub mod sim_events;
+pub mod sim_probe;
+pub mod sim_unit;
+pub mod simulator;
+pub mod trigger;
 pub mod unit;
 pub mod unit_probe;
 
@@ -57,4 +67,13 @@ pub fn run_event_queue_operations(ops_json: &str) -> String {
 #[wasm_bindgen]
 pub fn run_unit_operations(ops_json: &str) -> String {
     unit_probe::run_unit_operations(ops_json).unwrap_or_else(|error| panic!("unit probe failed: {error}"))
+}
+
+/// Parity probe: replays a full combat scenario (JSON) against the Rust `CombatSimulator`
+/// (main loop, events, abilities, triggers, consumables) and returns per-run aggregates.
+/// See `sim_probe.rs` for the schema.
+#[wasm_bindgen]
+pub fn run_simulator_operations(request_json: &str) -> String {
+    sim_probe::run_simulator_operations(request_json)
+        .unwrap_or_else(|error| panic!("simulator probe failed: {error}"))
 }

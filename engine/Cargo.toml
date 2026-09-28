@@ -10,7 +10,10 @@ crate-type = ["cdylib", "rlib"]
 [dependencies]
 wasm-bindgen = "0.2"
 serde = { version = "1", features = ["derive"] }
-serde_json = "1"
+# float_roundtrip：serde_json 默认的浮点解析不是正确舍入的（实测 "0.18359999999999999"
+# 会解析成差 1 ULP 的另一侧），而逐位 parity 要求 JSON 里的十进制浮点必须与 JS 解析
+# 结果完全一致。开启该特性后使用正确舍入的解析器。
+serde_json = { version = "1", features = ["float_roundtrip"] }
 
 [dev-dependencies]
 wasm-bindgen-test = "0.2"

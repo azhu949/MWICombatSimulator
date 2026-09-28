@@ -8,8 +8,8 @@ This branch ports the combat simulator engine from JavaScript to Rust + WebAssem
 | ----- | ------------------------------------------------------------------------------------------------- | ------------------------- |
 | 1     | Infra: crate skeleton, wasm-pack build chain, loader with JS fallback, benchmark + parity harness | done (tag `wasm-slice-1`) |
 | 2     | Event queue + RNG (exact heap-js port + bit-for-bit mulberry32 parity)                            | done (tag `wasm-slice-2`) |
-| 3     | Units & stat resolution (combatUnit / equipment / buff)                                           | pending merge             |
-| 4     | Combat main loop (abilities / triggers / all event types)                                         | pending                   |
+| 3     | Units & stat resolution (combatUnit / equipment / buff)                                           | done (tag `wasm-slice-3`) |
+| 4     | Combat main loop (abilities / triggers / all event types)                                         | pending merge             |
 | 5     | Result aggregation + worker integration + A/B switch                                              | pending                   |
 | 6     | Wrap-up: performance report, decide JS engine fate                                                | pending                   |
 
@@ -18,13 +18,14 @@ This branch ports the combat simulator engine from JavaScript to Rust + WebAssem
 Each slice exports a JSON "operation script → trace" probe that the JS test drives against the
 real JS implementation and compares entry by entry (no tolerance):
 
-| Export                       | Rust module      | JS driver / test                                                            |
-| ---------------------------- | ---------------- | --------------------------------------------------------------------------- |
-| `run_event_queue_operations` | `queue_probe.rs` | `wasmEngineParitySupport.js` / `wasmEngineParity.test.js` (slice 2)         |
-| `run_unit_operations`        | `unit_probe.rs`  | `wasmCombatUnitParitySupport.js` / `wasmEngineUnitParity.test.js` (slice 3) |
+| Export                       | Rust module      | JS driver / test                                                                |
+| ---------------------------- | ---------------- | ------------------------------------------------------------------------------- |
+| `run_event_queue_operations` | `queue_probe.rs` | `wasmEngineParitySupport.js` / `wasmEngineParity.test.js` (slice 2)             |
+| `run_unit_operations`        | `unit_probe.rs`  | `wasmCombatUnitParitySupport.js` / `wasmEngineUnitParity.test.js` (slice 3)     |
+| `run_simulator_operations`   | `sim_probe.rs`   | `wasmSimulatorParitySupport.js` / `wasmEngineSimulatorParity.test.js` (slice 4) |
 
 The probes round-trip every float through JSON, so non-finite values (NaN/±Infinity) are
-normalized to `null` on both sides before deep comparison. Both suites are guarded by
+normalized to `null` on both sides before deep comparison. All suites are guarded by
 `describe.runIf(wasmPackageBuilt)` — they skip (stay green) when `engine/pkg` is absent.
 
 ## Commands
