@@ -117,6 +117,10 @@ pub struct ResultCall {
 }
 
 /// 最小 simResult：切片 4 只记录调用序列（等价 JS `minimalResult` 语义）。
+///
+/// 切片 5 起该结构同时充当「记账门面」：探针模式（`real == None`）记录调用流水；
+/// 生产模式（`real == Some(...)`）把同样的调用转发给真实 `SimResultState`，
+/// 不再保留调用流水。所有调用点因此无需分支。
 #[derive(Clone, Debug, Default)]
 pub struct SimResultTally {
     pub calls: Vec<ResultCall>,
@@ -125,6 +129,8 @@ pub struct SimResultTally {
     pub simulated_time: f64,
     pub stopped_early: bool,
     pub is_dungeon: bool,
+    /// 生产模式下的真实聚合结果（JS `SimResult` / `FoodOptimizerSimResult`）。
+    pub real: Option<Box<crate::sim_result::SimResultState>>,
 }
 
 impl SimResultTally {
@@ -136,6 +142,7 @@ impl SimResultTally {
             simulated_time: 0.0,
             stopped_early: false,
             is_dungeon: false,
+            real: None,
         }
     }
 
@@ -147,10 +154,18 @@ impl SimResultTally {
     }
 
     pub fn add_death(&mut self, hrid: &str) {
+        if let Some(real) = self.real.as_mut() {
+            real.add_death(hrid);
+            return;
+        }
         self.push("addDeath", vec![json!(hrid)]);
     }
 
     pub fn add_attack(&mut self, source_hrid: &str, target_hrid: &str, ability: &str, outcome: AttackOutcome) {
+        if let Some(real) = self.real.as_mut() {
+            real.add_attack(source_hrid, target_hrid, ability, &outcome);
+            return;
+        }
         self.push(
             "addAttack",
             vec![json!(source_hrid), json!(target_hrid), json!(ability), outcome.to_value()],
@@ -158,47 +173,121 @@ impl SimResultTally {
     }
 
     pub fn add_hitpoints_gained(&mut self, hrid: &str, source_hrid: &str, amount: f64) {
+        if let Some(real) = self.real.as_mut() {
+            real.add_hitpoints_gained(hrid, source_hrid, amount);
+            return;
+        }
         self.push("addHitpointsGained", vec![json!(hrid), json!(source_hrid), json!(amount)]);
     }
 
     pub fn add_manapoints_gained(&mut self, hrid: &str, source_hrid: &str, amount: f64) {
+        if let Some(real) = self.real.as_mut() {
+            real.add_manapoints_gained(hrid, source_hrid, amount);
+            return;
+        }
         self.push("addManapointsGained", vec![json!(hrid), json!(source_hrid), json!(amount)]);
     }
 
     pub fn add_hitpoints_spent(&mut self, hrid: &str, source_hrid: &str, amount: f64) {
+        if let Some(real) = self.real.as_mut() {
+            real.add_hitpoints_spent(hrid, source_hrid, amount);
+            return;
+        }
         self.push("addHitpointsSpent", vec![json!(hrid), json!(source_hrid), json!(amount)]);
     }
 
     pub fn add_ran_out_of_mana_count(&mut self, hrid: &str, ran_out: bool, time: f64) {
+        if let Some(real) = self.real.as_mut() {
+            real.add_ran_out_of_mana_count(hrid, ran_out, time);
+            return;
+        }
         self.push("addRanOutOfManaCount", vec![json!(hrid), json!(ran_out), json!(time)]);
     }
 
     pub fn add_consumable_use(&mut self, hrid: &str, consumable_hrid: &str) {
+        if let Some(real) = self.real.as_mut() {
+            real.add_consumable_use(hrid, consumable_hrid);
+            return;
+        }
         self.push("addConsumableUse", vec![json!(hrid), json!(consumable_hrid)]);
     }
 
     pub fn add_encounter_end(&mut self) {
+        if let Some(real) = self.real.as_mut() {
+            real.add_encounter_end();
+            return;
+        }
         self.push("addEncounterEnd", vec![]);
     }
 
     pub fn update_time_spent_alive(&mut self, hrid: &str, alive: bool, time: f64) {
+        if let Some(real) = self.real.as_mut() {
+            // JS minimal 变体把该方法重写为空操作；失败路径与 JS 一样不应触发 panic。
+            let _ = real.update_time_spent_alive(hrid, alive, time);
+            return;
+        }
         self.push("updateTimeSpentAlive", vec![json!(hrid), json!(alive), json!(time)]);
     }
 
-    pub fn set_drop_rate_multipliers(&mut self, hrid: &str) {
+    /// 探针模式只记录 hrid（与 JS `ParitySimResult` 一致）；生产模式转发完整统计值。
+    pub fn set_drop_rate_multipliers(
+        &mut self,
+        hrid: &str,
+        combat_drop_rate: f64,
+        combat_rare_find: f64,
+        combat_drop_quantity: f64,
+        debuff_on_level_gap: f64,
+    ) {
+        if let Some(real) = self.real.as_mut() {
+            real.set_drop_rate_multipliers(
+                hrid,
+                1.0 + combat_drop_rate,
+                1.0 + combat_rare_find,
+                combat_drop_quantity,
+                debuff_on_level_gap,
+            );
+            return;
+        }
         self.push("setDropRateMultipliers", vec![json!(hrid)]);
     }
 
-    pub fn set_mana_used(&mut self, hrid: &str) {
+    /// 探针模式只记录 hrid；生产模式复制 `abilityManaCosts` 快照。
+    pub fn set_mana_used(&mut self, hrid: &str, entries: &[(String, f64)]) {
+        if let Some(real) = self.real.as_mut() {
+            real.set_mana_used(hrid, entries);
+            return;
+        }
         self.push("setManaUsed", vec![json!(hrid)]);
     }
 
     pub fn set_scroll_usage_context(&mut self, allowed: bool, context: &str) {
+        if let Some(real) = self.real.as_mut() {
+            real.set_scroll_usage_context(allowed, context);
+            return;
+        }
         self.push("setScrollUsageContext", vec![json!(allowed), json!(context)]);
     }
 
     pub fn set_scroll_usage_disabled(&mut self, disabled: bool) {
+        if let Some(real) = self.real.as_mut() {
+            real.set_scroll_usage_disabled(disabled);
+            return;
+        }
         self.push("setScrollUsageDisabled", vec![json!(disabled)]);
+    }
+
+    /// 生产模式专用：`simResult.lastEncounterFinishTime = time` 的直接属性写入。
+    pub fn set_last_encounter_finish_time(&mut self, value: f64) {
+        if let Some(real) = self.real.as_mut() {
+            real.set_last_encounter_finish_time(value);
+        }
+    }
+
+    /// 生产模式专用：`addTimeSeriesSnapshot`（可视化关闭时不会被调用）。
+    pub fn add_time_series_snapshot(&mut self, time: f64, players: &[(String, f64, f64, f64, f64)]) {
+        if let Some(real) = self.real.as_mut() {
+            real.add_time_series_snapshot(time, players);
+        }
     }
 
     /// 等价 JS `reset()` 里 `this.simResult = this.createSimResult()` 之后的两次上下文调用。
@@ -296,6 +385,11 @@ pub struct UnitSpec {
     pub zone_buffs: Vec<RawBuffInput>,
     #[serde(default)]
     pub extra_buffs: Vec<RawBuffInput>,
+    /// 构造期已合并的永久增益（JS `unit.permanentBuffs` 的 `Object.values` 快照，
+    /// 装备/房屋等来源已在 JS 侧按 typeHrid 合并；键序 = JS 插入序）。
+    /// `generatePermanentBuffs` 会在 t=0 把 zone/extra 等来源继续并入同一张表。
+    #[serde(default)]
+    pub permanent_buffs: Vec<crate::buff::Buff>,
     #[serde(default)]
     pub abilities: Vec<Option<Ability>>,
     #[serde(default)]
@@ -333,6 +427,10 @@ pub fn build_unit_from_spec(spec: &UnitSpec) -> Result<CombatUnit, UnitError> {
     unit.achievements = spec.achievements.clone();
     unit.zone_buffs = spec.zone_buffs.clone();
     unit.extra_buffs = spec.extra_buffs.clone();
+    // 构造期永久增益：JS 侧 `permanentBuffs` 已按 typeHrid 合并，这里直接按序播种。
+    for buff in &spec.permanent_buffs {
+        unit.permanent_buffs.set(buff.type_hrid.clone(), buff.clone());
+    }
 
     unit.refresh_base_combat_stats();
     unit.update_combat_details();
@@ -357,6 +455,15 @@ pub fn build_unit_from_spec(spec: &UnitSpec) -> Result<CombatUnit, UnitError> {
     }
 
     Ok(unit)
+}
+
+/// 怪物模板（切片 5 生产模式）：按 `(hrid, difficultyTier)` 预生成，遭遇战开始时按需实例化。
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct TemplateSpec {
+    pub hrid: String,
+    pub difficulty_tier: f64,
+    pub spec: UnitSpec,
 }
 
 /// 模拟器构造选项。
@@ -388,6 +495,45 @@ pub struct SimulatorOptions {
     pub blaze_ability: Option<Ability>,
     #[serde(default)]
     pub bloom_ability: Option<Ability>,
+    // ------------------------------------------------------------------
+    // 切片 5：生产模式（真实区域 + 真实聚合结果）
+    // ------------------------------------------------------------------
+    /// `true` 时使用真实 `SimResult`/`FoodOptimizerSimResult` 聚合（`minimal_result` 同时选择
+    /// 结果类），而不是探针的调用流水。
+    #[serde(default)]
+    pub real_result: bool,
+    /// `true` = JS `FoodOptimizerSimResult`（字段更少、多个钩子为空操作）。
+    #[serde(default)]
+    pub minimal_result: bool,
+    #[serde(default)]
+    pub zone_hrid: Option<String>,
+    #[serde(default)]
+    pub zone_difficulty_tier: f64,
+    #[serde(default)]
+    pub zone_monster_spawn_info: Option<Value>,
+    #[serde(default)]
+    pub zone_dungeon_spawn_info: Option<Value>,
+    #[serde(default)]
+    pub encounter_templates: Vec<TemplateSpec>,
+    #[serde(default)]
+    pub labyrinth_name: Option<String>,
+    #[serde(default)]
+    pub labyrinth_room_level: f64,
+    /// `combatStyleDetailMap[styleHrid].skillExpMap` 的键序快照（经验计算用）。
+    #[serde(default)]
+    pub combat_style_skill_exp_map: Vec<(String, Vec<String>)>,
+    /// JS `logCombatEvents`（当前生产路径要求 false，否则回退 JS）。
+    #[serde(default)]
+    pub log_combat_events: bool,
+    /// JS `enableHpMpVisualization`（当前生产路径要求 false）。
+    #[serde(default)]
+    pub enable_hp_mp_visualization: bool,
+    /// JS `combatScrollsEnabled`（当前生产路径要求 false）。
+    #[serde(default)]
+    pub combat_scrolls_enabled: bool,
+    /// JS `isGuildTrial`（为 true 时 `scrollsAllowed` 为假、卷轴上下文为 'guild_trial'）。
+    #[serde(default)]
+    pub is_guild_trial: bool,
 }
 
 fn default_max_result_calls() -> usize {
@@ -420,6 +566,19 @@ pub struct CombatSimulator {
     promotion_specs: OrderedMap<String, UnitSpec>,
     blaze_ability: Option<Ability>,
     bloom_ability: Option<Ability>,
+    // 切片 5 生产模式字段
+    real_result: bool,
+    minimal_result: bool,
+    zone: Option<crate::zone::Zone>,
+    encounter_templates: Vec<TemplateSpec>,
+    labyrinth_name: Option<String>,
+    labyrinth_room_level: f64,
+    combat_style_skill_exp_map: Vec<(String, Vec<String>)>,
+    log_combat_events: bool,
+    enable_hp_mp_visualization: bool,
+    combat_scrolls_enabled: bool,
+    player_count: usize,
+    is_guild_trial: bool,
 }
 
 fn first_alive_in(arena: &UnitArena, ids: &Option<Vec<UnitId>>) -> Option<UnitId> {
@@ -448,6 +607,15 @@ impl CombatSimulator {
             }
             map
         };
+        let zone = options.zone_monster_spawn_info.as_ref().map(|spawn_info| {
+            crate::zone::Zone::new(
+                options.zone_hrid.clone().unwrap_or_default(),
+                options.zone_difficulty_tier,
+                spawn_info.clone(),
+                options.zone_dungeon_spawn_info.clone().unwrap_or(Value::Null),
+                options.zone_is_dungeon,
+            )
+        });
         Self {
             arena: UnitArena::new(),
             players: Vec::new(),
@@ -473,6 +641,18 @@ impl CombatSimulator {
             promotion_specs,
             blaze_ability: options.blaze_ability,
             bloom_ability: options.bloom_ability,
+            real_result: options.real_result,
+            minimal_result: options.minimal_result,
+            zone,
+            encounter_templates: options.encounter_templates,
+            labyrinth_name: options.labyrinth_name,
+            labyrinth_room_level: options.labyrinth_room_level,
+            combat_style_skill_exp_map: options.combat_style_skill_exp_map,
+            log_combat_events: options.log_combat_events,
+            enable_hp_mp_visualization: options.enable_hp_mp_visualization,
+            combat_scrolls_enabled: options.combat_scrolls_enabled,
+            player_count: 0,
+            is_guild_trial: options.is_guild_trial,
         }
     }
 
@@ -480,7 +660,39 @@ impl CombatSimulator {
         let unit = build_unit_from_spec(spec)?;
         let id = self.arena.push(unit);
         self.players.push(id);
+        self.player_count += 1;
         Ok(id)
+    }
+
+    /// 生产模式支持边界（其余情形由 JS 侧回退）。
+    fn validate_production_support(&self) -> Result<(), UnitError> {
+        if !self.minimal_result {
+            return Err(UnitError::error(
+                "wasm production path currently supports only minimalResult simulations",
+            ));
+        }
+        if self.zone.is_none() {
+            return Err(UnitError::error("wasm production path requires a zone"));
+        }
+        if self.zone_is_dungeon {
+            return Err(UnitError::error("wasm production path does not support dungeon zones yet"));
+        }
+        if self.labyrinth_present {
+            return Err(UnitError::error("wasm production path does not support labyrinth runs yet"));
+        }
+        if self.combat_scrolls_enabled {
+            return Err(UnitError::error("wasm production path does not support combat scrolls yet"));
+        }
+        if self.log_combat_events {
+            return Err(UnitError::error("wasm production path does not support logCombatEvents yet"));
+        }
+        if self.enable_hp_mp_visualization {
+            return Err(UnitError::error("wasm production path does not support hp/mp visualization yet"));
+        }
+        if self.encounter_templates.is_empty() {
+            return Err(UnitError::error("wasm production path requires encounter templates"));
+        }
+        Ok(())
     }
 
     fn take_event_id(&mut self) -> u64 {
@@ -508,11 +720,15 @@ impl CombatSimulator {
     // -----------------------------------------------------------------------
 
     pub fn simulate(&mut self) -> Result<(), UnitError> {
-        if self.zone_is_dungeon {
-            return Err(UnitError::error("dungeon zones are not supported by the slice-4 simulator"));
-        }
-        if self.labyrinth_present {
-            return Err(UnitError::error("labyrinth runs are not supported by the slice-4 simulator"));
+        if self.real_result {
+            self.validate_production_support()?;
+        } else {
+            if self.zone_is_dungeon {
+                return Err(UnitError::error("dungeon zones are not supported by the slice-4 simulator"));
+            }
+            if self.labyrinth_present {
+                return Err(UnitError::error("labyrinth runs are not supported by the slice-4 simulator"));
+            }
         }
 
         let limit = normalize_time_limit(self.simulation_time_limit);
@@ -548,11 +764,30 @@ impl CombatSimulator {
         // finalizeScrollUsage / discardPendingExperience：切片 4 无卷轴与挂起经验。
         self.tally.simulated_time = effective_simulation_time;
         self.tally.stopped_early = false;
+        if let Some(real) = self.tally.real.as_mut() {
+            // JS：`simResult.isDungeon = this.zone?.isDungeon ?? false`（生产路径仅普通区域）。
+            real.set_is_dungeon(false);
+            real.set_simulated_time(effective_simulation_time);
+            real.set_stopped_early(false);
+        }
 
         for player in self.players.clone() {
             let hrid = self.unit_hrid(player);
-            self.tally.set_drop_rate_multipliers(&hrid);
-            self.tally.set_mana_used(&hrid);
+            let (drop_rate, rare_find, drop_quantity) = {
+                let stats = &self.arena.get(player).combat_details.combat_stats;
+                (stats.combat_drop_rate, stats.combat_rare_find, stats.combat_drop_quantity)
+            };
+            let mana_entries: Vec<(String, f64)> = self
+                .arena
+                .get(player)
+                .ability_mana_costs
+                .iter()
+                .map(|(key, value)| (key.clone(), *value))
+                .collect();
+            // JS `setDropRateMultipliers(unit)` 会读 `unit.debuffOnLevelGap`；当前生产路径只支持
+            // minimal 结果（该方法在 FoodOptimizerSimResult 里是空操作），故此处传 0。
+            self.tally.set_drop_rate_multipliers(&hrid, drop_rate, rare_find, drop_quantity, 0.0);
+            self.tally.set_mana_used(&hrid, &mana_entries);
         }
 
         Ok(())
@@ -563,11 +798,33 @@ impl CombatSimulator {
         self.simulation_time = 0.0;
         self.queue.clear();
         self.tally.reset_like_js();
-        self.tally.set_scroll_usage_context(true, "");
-        // JS：`setScrollUsageDisabled(!this.combatScrollsEnabled)`；切片 4 恒为 true。
-        self.tally.set_scroll_usage_disabled(true);
+        self.tally.real = None;
+        if self.real_result {
+            // JS `reset()` 里 `this.simResult = this.createSimResult()`：每次重置都换新结果对象。
+            let zone_hrid = self.zone.as_ref().map(|zone| zone.hrid.clone());
+            let zone_tier = self.zone.as_ref().map(|zone| zone.difficulty_tier());
+            self.tally.real = Some(Box::new(crate::sim_result::SimResultState::new(
+                self.minimal_result,
+                zone_hrid,
+                zone_tier,
+                self.labyrinth_name.clone(),
+                if self.labyrinth_present { Some(self.labyrinth_room_level) } else { None },
+                self.player_count,
+                self.combat_style_skill_exp_map.clone(),
+            )));
+        }
+        let scrolls_allowed = !self.labyrinth_present && !self.is_guild_trial;
+        let context = if self.is_guild_trial {
+            "guild_trial"
+        } else if self.labyrinth_present {
+            "labyrinth"
+        } else {
+            ""
+        };
+        self.tally.set_scroll_usage_context(scrolls_allowed, context);
+        // JS：`setScrollUsageDisabled(!this.combatScrollsEnabled)`。
+        self.tally.set_scroll_usage_disabled(!self.combat_scrolls_enabled);
         self.simulation_time_limit = normalize_time_limit(self.simulation_time_limit);
-        // 卷轴运行时不启用（切片 4）。
     }
 
     fn process_event(&mut self, event: SimEvent) -> Result<(), UnitError> {
@@ -779,11 +1036,22 @@ impl CombatSimulator {
     fn start_new_encounter(&mut self) -> Result<(), UnitError> {
         if self.all_players_dead {
             self.all_players_dead = false;
-            // zone.failWave()：普通区域无副作用（普通区域没有 failWave）。
+            // JS：`if (this.zone) this.zone.failWave();`（普通区域也会计数一次失败波次）。
+            if let Some(zone) = self.zone.as_mut() {
+                zone.fail_wave();
+            }
         }
         self.encounter_start_time = self.simulation_time;
 
-        if self.zone_present && !self.zone_is_dungeon {
+        if self.zone.is_some() {
+            // 生产路径：真实 Zone 生成遭遇战（每次迭代恰好一次抽样，与 JS 逐位一致）。
+            let entries = {
+                let zone = self.zone.as_mut().expect("zone checked above");
+                zone.get_random_encounter(&mut self.rng)?
+            };
+            let enemies = self.instantiate_templates(&entries)?;
+            self.enemies = Some(enemies);
+        } else if self.zone_present && !self.zone_is_dungeon {
             let encounter = self.get_random_encounter()?;
             self.enemies = Some(encounter);
         }
@@ -825,6 +1093,27 @@ impl CombatSimulator {
         let mut ids = Vec::with_capacity(specs.len());
         for spec in &specs {
             let unit = build_unit_from_spec(spec)?;
+            ids.push(self.arena.push(unit));
+        }
+        Ok(ids)
+    }
+
+    /// 生产路径：按 `(hrid, difficultyTier)` 查模板并实例化新单位（等价 JS 每次 `new Monster(...)`）。
+    ///
+    /// 竞技场只增不减：旧敌人保留在 `units` 里（JS 侧由 GC 回收），
+    /// 长时间模拟会累积单位快照，属已知取舍。
+    fn instantiate_templates(&mut self, entries: &[(String, f64)]) -> Result<Vec<UnitId>, UnitError> {
+        let mut ids = Vec::with_capacity(entries.len());
+        for (hrid, tier) in entries {
+            let index = self
+                .encounter_templates
+                .iter()
+                .position(|template| template.hrid == *hrid && template.difficulty_tier == *tier)
+                .ok_or_else(|| {
+                    UnitError::error(format!("missing encounter template for {hrid} (difficultyTier {tier})"))
+                })?;
+            let spec = self.encounter_templates[index].spec.clone();
+            let unit = build_unit_from_spec(&spec)?;
             ids.push(self.arena.push(unit));
         }
         Ok(ids)
@@ -1242,6 +1531,8 @@ impl CombatSimulator {
                 // minimal 结果：跳过经验告警/提交（JS minimalResult 分支）。
                 self.enemies = None;
                 self.tally.add_encounter_end();
+                // JS：`this.simResult.lastEncounterFinishTime = this.simulationTime;`（普通与 minimal 都写）。
+                self.tally.set_last_encounter_finish_time(self.simulation_time);
                 encounter_ended = true;
             }
         }
