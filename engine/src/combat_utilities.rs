@@ -97,6 +97,7 @@ pub fn process_attack(
     ability_effect: Option<&AbilityEffect>,
     rng: &mut Mulberry32,
 ) -> AttackResult {
+    let _prof = crate::prof::start("attack.process");
     // JS：abilityEffect 存在时用效果自带的战斗风格 / 伤害类型；两个字段缺失时均为 undefined。
     let combat_style: String = match ability_effect {
         Some(effect) => effect.combat_style().unwrap_or("undefined").to_string(),

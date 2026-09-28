@@ -45,6 +45,7 @@ impl<E: QueueItem> EventQueue<E> {
 
     /// JS `addEvent`：push 后从末尾上浮。
     pub fn add_event(&mut self, event: E) {
+        let _prof = crate::prof::start("queue.add_event");
         self.heap.push(event);
         let index = self.heap.len() - 1;
         self.sort_node_up(index);
@@ -52,6 +53,7 @@ impl<E: QueueItem> EventQueue<E> {
 
     /// JS `getNextEvent`（heap-js `pop`）：取根，末元素顶到根后下沉。
     pub fn get_next_event(&mut self) -> Option<E> {
+        let _prof = crate::prof::start("queue.get_next_event");
         let last = self.heap.pop()?;
         if self.heap.is_empty() {
             return Some(last);
@@ -84,6 +86,7 @@ impl<E: QueueItem> EventQueue<E> {
     /// JS `clearMatching`：先对 `toArray()` 快照按数组顺序求值，匹配者按身份逐个移除。
     /// 返回是否有事件被清除。
     pub fn clear_matching<F: Fn(&E) -> bool>(&mut self, matcher: F) -> bool {
+        let _prof = crate::prof::start("queue.clear_matching");
         let snapshot: Vec<u64> = self.heap.iter().map(|event| event.id()).collect();
         let mut cleared = false;
         for id in snapshot {
@@ -128,6 +131,7 @@ impl<E: QueueItem> EventQueue<E> {
 
     /// heap-js `remove`（默认身份比较）的等价实现：按 id 找到首个匹配项后移除。
     pub fn remove_by_id(&mut self, id: u64) -> bool {
+        let _prof = crate::prof::start("queue.remove_by_id");
         if self.heap.is_empty() {
             return false;
         }

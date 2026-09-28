@@ -409,9 +409,11 @@ pub struct UnitSpec {
 
 /// 由场景定义构建单位（JS 侧同序：等级 → 面板 → 基准捕获 → 结算 → 技能/消耗品）。
 pub fn build_unit_from_spec(spec: &UnitSpec) -> Result<CombatUnit, UnitError> {
+    let _prof = crate::prof::start("unit.build_from_spec");
     let mut unit = CombatUnit { is_player: spec.is_player, ..Default::default() };
     unit.hrid = spec.hrid.clone();
 
+    let _prof_spec_apply = crate::prof::start("unit.spec_apply");
     if let Some(levels) = &spec.levels {
         levels.apply(&mut unit);
     }
@@ -434,6 +436,8 @@ pub fn build_unit_from_spec(spec: &UnitSpec) -> Result<CombatUnit, UnitError> {
         }
     }
 
+    drop(_prof_spec_apply);
+
     unit.enrage_time = spec.enrage_time;
     unit.experience = spec.experience;
     unit.two_hand_hrid = spec.two_hand_hrid.clone();
@@ -455,6 +459,7 @@ pub fn build_unit_from_spec(spec: &UnitSpec) -> Result<CombatUnit, UnitError> {
     unit.refresh_base_combat_stats();
     unit.update_combat_details();
 
+    let _prof_spec_loadout = crate::prof::start("unit.spec_loadout");
     for (index, ability) in spec.abilities.iter().enumerate() {
         if index >= unit.abilities.len() {
             // JS `player.abilities = dto.abilities.map(...)`：槽位数 = DTO 长度（可超过默认 4 槽），
@@ -475,6 +480,8 @@ pub fn build_unit_from_spec(spec: &UnitSpec) -> Result<CombatUnit, UnitError> {
         }
         unit.drinks[index] = item.clone();
     }
+
+    drop(_prof_spec_loadout);
 
     Ok(unit)
 }
@@ -724,10 +731,12 @@ impl CombatSimulator {
     }
 
     fn unit_hrid(&self, id: UnitId) -> String {
+        let _prof = crate::prof::start("unit_hrid");
         self.arena.get(id).hrid.clone()
     }
 
     fn clear_events_for_unit(&mut self, id: UnitId) {
+        let _prof = crate::prof::start("queue.clear_for_unit");
         self.queue.clear_events_for_unit(id as u64);
     }
 
@@ -761,6 +770,7 @@ impl CombatSimulator {
         let combat_start = SimEvent::CombatStart { time: 0.0, id: self.take_event_id() };
         self.queue.add_event(combat_start);
 
+        let prof_total = crate::prof::start("simulate(total)");
         loop {
             if !(self.simulation_time < limit) {
                 break;
@@ -781,7 +791,9 @@ impl CombatSimulator {
                 ticks = 0;
             }
         }
+        drop(prof_total);
 
+        let prof_finalize = crate::prof::start("simulate(finalize)");
         let effective_simulation_time = limit;
         // finalizeScrollUsage / discardPendingExperience：切片 4 无卷轴与挂起经验。
         self.tally.simulated_time = effective_simulation_time;
@@ -811,6 +823,7 @@ impl CombatSimulator {
             self.tally.set_drop_rate_multipliers(&hrid, drop_rate, rare_find, drop_quantity, 0.0);
             self.tally.set_mana_used(&hrid, &mana_entries);
         }
+        drop(prof_finalize);
 
         Ok(())
     }
@@ -850,6 +863,7 @@ impl CombatSimulator {
     }
 
     fn process_event(&mut self, event: SimEvent) -> Result<(), UnitError> {
+        let _prof = crate::prof::start(event.kind());
         self.simulation_time = event.time();
         self.event_count += 1;
         if self.trace.len() < self.trace_limit {
@@ -1125,6 +1139,7 @@ impl CombatSimulator {
     /// 竞技场只增不减：旧敌人保留在 `units` 里（JS 侧由 GC 回收），
     /// 长时间模拟会累积单位快照，属已知取舍。
     fn instantiate_templates(&mut self, entries: &[(String, f64)]) -> Result<Vec<UnitId>, UnitError> {
+        let _prof = crate::prof::start("encounter.instantiate");
         let mut ids = Vec::with_capacity(entries.len());
         for (hrid, tier) in entries {
             let index = self
@@ -1134,8 +1149,9 @@ impl CombatSimulator {
                 .ok_or_else(|| {
                     UnitError::error(format!("missing encounter template for {hrid} (difficultyTier {tier})"))
                 })?;
-            let spec = self.encounter_templates[index].spec.clone();
-            let unit = build_unit_from_spec(&spec)?;
+            // 免克隆：`build_unit_from_spec` 只读 spec 且返回的 unit 不借用它，原实现每次刷怪
+            // 都深拷贝一份 UnitSpec（遭遇生成的主要开销之一）。
+            let unit = build_unit_from_spec(&self.encounter_templates[index].spec)?;
             ids.push(self.arena.push(unit));
         }
         Ok(ids)
@@ -1160,6 +1176,7 @@ impl CombatSimulator {
     // -----------------------------------------------------------------------
 
     fn add_next_attack_event(&mut self, source: UnitId) -> Result<(), UnitError> {
+        let _prof = crate::prof::start("attack.schedule");
         if self.queue.contains_event_of_types_and_source(&ATTACK_EVENT_TYPES, source as u64) {
             return Ok(());
         }
@@ -1184,40 +1201,34 @@ impl CombatSimulator {
             if used_ability || skip_next_ability {
                 break;
             }
-            let should = {
+            // 免克隆：只取后续真正需要的字段（should / manaCost / castDuration），
+            // 原实现会为每次「可施放」判定深拷贝一份 Ability。
+            let (should, mana_cost, cast_duration) = {
                 let unit = self.arena.get(source);
                 let Some(ability) = unit.abilities.get(slot).and_then(|slot_ability| slot_ability.as_ref()) else {
                     continue;
                 };
-                ability.should_trigger(
+                let should = ability.should_trigger(
                     &self.arena,
                     source,
                     target,
                     &friendlies,
                     enemies_arg.as_deref(),
                     self.simulation_time,
-                )?
+                )?;
+                (should, ability.mana_cost, ability.cast_duration)
             };
             if !should {
                 continue;
             }
 
-            let ability = self
-                .arena
-                .get(source)
-                .abilities
-                .get(slot)
-                .and_then(|slot_ability| slot_ability.as_ref())
-                .expect("ability checked above")
-                .clone();
-
-            if !self.can_use_ability(source, &ability, true) {
+            if !self.can_use_ability(source, mana_cost, true) {
                 skip_next_ability = true;
             }
 
             if !skip_next_ability {
                 let cast_speed = self.arena.get(source).combat_details.combat_stats.cast_speed;
-                let cast_duration = ability.cast_duration / (1.0 + cast_speed);
+                let cast_duration = cast_duration / (1.0 + cast_speed);
                 let time = self.simulation_time + cast_duration;
                 let id = self.take_event_id();
                 self.queue.add_event(SimEvent::AbilityCastEnd { time, id, source, ability_slot: slot });
@@ -1828,6 +1839,7 @@ impl CombatSimulator {
     // -----------------------------------------------------------------------
 
     fn check_triggers(&mut self) -> Result<(), UnitError> {
+        let _prof = crate::prof::start("triggers.check");
         loop {
             let mut triggered_something = false;
 
@@ -1879,17 +1891,19 @@ impl CombatSimulator {
 
         let food_len = self.arena.get(unit).food.len();
         for slot in 0..food_len {
-            let Some(consumable) = consumable_slot_ref(self.arena.get(unit), true, slot).cloned() else {
-                continue;
+            // 免克隆求值：`consumable_slot_ref` 与 `should_trigger` 都是共享借用，原实现的
+            // `.cloned()` 只是绕开借用检查，却让热路径每次触发检查都深拷贝一份 Consumable。
+            let should = match consumable_slot_ref(self.arena.get(unit), true, slot) {
+                Some(consumable) => consumable.should_trigger(
+                    &self.arena,
+                    unit,
+                    target,
+                    friendlies,
+                    enemies,
+                    self.simulation_time,
+                )?,
+                None => continue,
             };
-            let should = consumable.should_trigger(
-                &self.arena,
-                unit,
-                target,
-                friendlies,
-                enemies,
-                self.simulation_time,
-            )?;
             if should && self.try_use_consumable(unit, true, slot)? {
                 triggered_something = true;
             }
@@ -1897,17 +1911,17 @@ impl CombatSimulator {
 
         let drink_len = self.arena.get(unit).drinks.len();
         for slot in 0..drink_len {
-            let Some(consumable) = consumable_slot_ref(self.arena.get(unit), false, slot).cloned() else {
-                continue;
+            let should = match consumable_slot_ref(self.arena.get(unit), false, slot) {
+                Some(consumable) => consumable.should_trigger(
+                    &self.arena,
+                    unit,
+                    target,
+                    friendlies,
+                    enemies,
+                    self.simulation_time,
+                )?,
+                None => continue,
             };
-            let should = consumable.should_trigger(
-                &self.arena,
-                unit,
-                target,
-                friendlies,
-                enemies,
-                self.simulation_time,
-            )?;
             if should && self.try_use_consumable(unit, false, slot)? {
                 triggered_something = true;
             }
@@ -2014,12 +2028,12 @@ impl CombatSimulator {
     // 技能使用
     // -----------------------------------------------------------------------
 
-    fn can_use_ability(&mut self, source: UnitId, ability: &Ability, oom_check: bool) -> bool {
+    fn can_use_ability(&mut self, source: UnitId, mana_cost: f64, oom_check: bool) -> bool {
         if self.arena.get(source).combat_details.current_hitpoints <= 0.0 {
             return false;
         }
         let is_player = self.arena.get(source).is_player;
-        if self.arena.get(source).combat_details.current_manapoints < ability.mana_cost {
+        if self.arena.get(source).combat_details.current_manapoints < mana_cost {
             if is_player && oom_check {
                 let hrid = self.unit_hrid(source);
                 let time = self.simulation_time;
@@ -2055,6 +2069,7 @@ impl CombatSimulator {
     }
 
     fn try_use_ability(&mut self, source: UnitId, slot: usize) -> Result<bool, UnitError> {
+        let _prof = crate::prof::start("ability.try_use");
         let Some(ability) = self
             .arena
             .get(source)
@@ -2066,47 +2081,56 @@ impl CombatSimulator {
             return Ok(false);
         };
 
-        if !self.can_use_ability(source, &ability, true) {
+        if !self.can_use_ability(source, ability.mana_cost, true) {
             return Ok(false);
         }
 
         self.spend_ability_mana(source, &ability.hrid, ability.mana_cost, slot);
 
-        let mut todo_abilities: Vec<Ability> = vec![ability.clone()];
-
+        // 免克隆：原先 `todo_abilities: Vec<Ability>` 会把每个待施放技能再深拷贝一遍；
+        // 改为「owned 主技能 + 可选 blaze/bloom owned 技能」的引用链——遍历顺序、
+        // 元素身份与 RNG 消费顺序与原实现逐个一致。
         let blaze = self.arena.get(source).combat_details.combat_stats.blaze;
-        if blaze > 0.0 && self.rng.next_f64() < blaze {
-            let Some(blaze_ability) = self.blaze_ability.clone() else {
-                return Err(UnitError::error("scenario is missing the blaze ability definition"));
-            };
-            todo_abilities.push(blaze_ability);
-        }
+        let blaze_ability: Option<Ability> = if blaze > 0.0 && self.rng.next_f64() < blaze {
+            match self.blaze_ability.clone() {
+                Some(blaze_ability) => Some(blaze_ability),
+                None => return Err(UnitError::error("scenario is missing the blaze ability definition")),
+            }
+        } else {
+            None
+        };
 
         let bloom = self.arena.get(source).combat_details.combat_stats.bloom;
-        if bloom > 0.0 && self.rng.next_f64() < bloom {
-            let Some(bloom_ability) = self.bloom_ability.clone() else {
-                return Err(UnitError::error("scenario is missing the bloom ability definition"));
-            };
-            todo_abilities.push(bloom_ability);
-        }
+        let bloom_ability: Option<Ability> = if bloom > 0.0 && self.rng.next_f64() < bloom {
+            match self.bloom_ability.clone() {
+                Some(bloom_ability) => Some(bloom_ability),
+                None => return Err(UnitError::error("scenario is missing the bloom ability definition")),
+            }
+        } else {
+            None
+        };
 
         let mut current_source = source;
-        for todo_ability in &todo_abilities {
+        for todo_ability in std::iter::once(&ability).chain(blaze_ability.iter()).chain(bloom_ability.iter()) {
             for effect in &todo_ability.ability_effects {
                 match effect.effect_type.as_str() {
                     "/ability_effect_types/buff" => {
+                        let _prof = crate::prof::start("ability.effect.buff");
                         self.process_ability_buff_effect(current_source, todo_ability, effect, true)?;
                     }
                     "/ability_effect_types/damage" => {
                         self.process_ability_damage_effect(current_source, todo_ability, effect)?;
                     }
                     "/ability_effect_types/heal" => {
+                        let _prof = crate::prof::start("ability.effect.heal");
                         self.process_ability_heal_effect(current_source, todo_ability, effect)?;
                     }
                     "/ability_effect_types/spend_hp" => {
+                        let _prof = crate::prof::start("ability.effect.spendHp");
                         self.process_ability_spend_hp_effect(current_source, todo_ability, effect)?;
                     }
                     "/ability_effect_types/revive" => {
+                        let _prof = crate::prof::start("ability.effect.revive");
                         self.process_ability_revive_effect(current_source, todo_ability, effect)?;
                     }
                     "/ability_effect_types/promote" => {
@@ -2282,6 +2306,7 @@ impl CombatSimulator {
         ability: &Ability,
         effect: &AbilityEffect,
     ) -> Result<(), UnitError> {
+        let _prof = crate::prof::start("ability.damage");
         let is_player = self.arena.get(source).is_player;
         let targets_option: Option<Vec<UnitId>> = match effect.target_type.as_str() {
             "enemy" | "allEnemies" => {

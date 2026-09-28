@@ -352,6 +352,7 @@ impl SimResultState {
 
     /// JS `addDeath(unit)`（minimal 分支未重写，照常记账）。
     pub fn add_death(&mut self, hrid: &str) {
+        let _prof = crate::prof::start("result.add_death");
         *ensure_child(&mut self.deaths, hrid) += 1.0;
     }
 
@@ -442,6 +443,7 @@ impl SimResultState {
 
     /// JS `addConsumableUse(unit, consumable)`（minimal 分支仍记账）。
     pub fn add_consumable_use(&mut self, unit_hrid: &str, consumable_hrid: &str) {
+        let _prof = crate::prof::start("result.add_consumable_use");
         let consumables = ensure_child(&mut self.consumables_used, unit_hrid);
         *ensure_child(consumables, consumable_hrid) += 1.0;
     }
@@ -504,6 +506,7 @@ impl SimResultState {
 
     /// JS `addRanOutOfManaCount(unit, isOutOfMana, time)`（minimal 分支仍记账）。
     pub fn add_ran_out_of_mana_count(&mut self, hrid: &str, is_out_of_mana: bool, time: f64) {
+        let _prof = crate::prof::start("result.add_ran_out_of_mana");
         if is_out_of_mana {
             // JS `this.playerRanOutOfMana[unit.hrid] = true`：真实 hrid 是**新增**键。
             self.player_ran_out_of_mana.set(hrid.to_string(), true);

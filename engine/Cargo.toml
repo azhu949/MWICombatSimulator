@@ -18,9 +18,16 @@ serde_json = { version = "1", features = ["float_roundtrip"] }
 [dev-dependencies]
 wasm-bindgen-test = "0.2"
 
+[features]
+# 仅用于**原生** profiling（`cargo run --release --features prof --example production_profile`）。
+# 关闭时 `prof::start()` 是零大小空 Guard，调用点会被优化器整条消除；不影响 wasm 构建。
+prof = []
+
 [profile.release]
 opt-level = 3
 lto = true
+# 对齐 mwi-fastsim 的构建配置：单 codegen 单元（实测 WASM 引擎 47–49 ms → 43–47 ms）。
+codegen-units = 1
 
 # wasm-opt (binaryen) 从 GitHub Release 下载在国内网络下极慢/易挂起（实测 3 次构建全部卡死）。
 # 切片 1-4 不依赖其体积/性能收益；切片 5+ 做性能对照前再启用（可通过镜像或 PATH 安装 binaryen）。

@@ -161,6 +161,31 @@ impl SimEvent {
         }
     }
 
+    /// 事件种类名（profiling 分段标签用，不做业务判断）。
+    pub fn kind(&self) -> &'static str {
+        match self {
+            SimEvent::CombatStart { .. } => "event.combatStart",
+            SimEvent::PlayerRespawn { .. } => "event.playerRespawn",
+            SimEvent::EnemyRespawn { .. } => "event.enemyRespawn",
+            SimEvent::AutoAttack { .. } => "event.autoAttack",
+            SimEvent::AbilityCastEnd { .. } => "event.abilityCastEnd",
+            SimEvent::ConsumableTick { .. } => "event.consumableTick",
+            SimEvent::DamageOverTime { .. } => "event.damageOverTime",
+            SimEvent::CheckBuffExpiration { .. } => "event.checkBuffExpiration",
+            SimEvent::ScrollRenewal { .. } => "event.scrollRenewal",
+            SimEvent::RegenTick { .. } => "event.regenTick",
+            SimEvent::StunExpiration { .. } => "event.stunExpiration",
+            SimEvent::BlindExpiration { .. } => "event.blindExpiration",
+            SimEvent::SilenceExpiration { .. } => "event.silenceExpiration",
+            SimEvent::CurseExpiration { .. } => "event.curseExpiration",
+            SimEvent::WeakenExpiration { .. } => "event.weakenExpiration",
+            SimEvent::FuryExpiration { .. } => "event.furyExpiration",
+            SimEvent::EnrageTick { .. } => "event.enrageTick",
+            SimEvent::AwaitCooldown { .. } => "event.awaitCooldown",
+            SimEvent::CooldownReady { .. } => "event.cooldownReady",
+        }
+    }
+
     pub fn source_ref(&self) -> Option<UnitId> {
         match self {
             SimEvent::DamageOverTime { source_ref, .. } => Some(*source_ref),
