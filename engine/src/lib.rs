@@ -15,15 +15,19 @@ pub mod consumable;
 pub mod equipment;
 pub mod event_queue;
 pub mod ordered_map;
+pub mod prod_probe;
 pub mod queue_probe;
 pub mod rng;
+pub mod scroll;
 pub mod sim_events;
 pub mod sim_probe;
+pub mod sim_result;
 pub mod sim_unit;
 pub mod simulator;
 pub mod trigger;
 pub mod unit;
 pub mod unit_probe;
+pub mod zone;
 
 use wasm_bindgen::prelude::*;
 
@@ -76,4 +80,13 @@ pub fn run_unit_operations(ops_json: &str) -> String {
 pub fn run_simulator_operations(request_json: &str) -> String {
     sim_probe::run_simulator_operations(request_json)
         .unwrap_or_else(|error| panic!("simulator probe failed: {error}"))
+}
+
+/// Production entry (slice 5): runs a real zone simulation with real `SimResult`
+/// aggregation and returns `{ "simResult": {...}, "error": null }`.
+/// See `prod_probe.rs` for the schema and supported subset.
+#[wasm_bindgen]
+pub fn run_production_simulation(request_json: &str) -> String {
+    prod_probe::run_production_simulation(request_json)
+        .unwrap_or_else(|error| panic!("production simulation failed: {error}"))
 }

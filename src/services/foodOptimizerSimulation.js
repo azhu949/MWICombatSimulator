@@ -18,6 +18,7 @@ import {
   createFoodOptimizerEvaluationState,
   finishFoodOptimizerEvaluation,
 } from './foodOptimizerEvaluation.js';
+import { tryRunWasmProductionRound } from './wasmProductionSimulation.js';
 
 // RNG 隔离契约
 // ------------
@@ -45,8 +46,8 @@ import { createSeededRandom } from './seededRandom.js';
 
 export const createFoodOptimizerRandom = createSeededRandom;
 
-export function createFoodOptimizerSimulation(request, candidate = null) {
-  assertFoodOptimizerTarget(request);
+// 玩家 / 区域装配：JS 引擎与 wasm 引擎共用同一份口径（wasm 请求只做状态快照）。
+function buildFoodOptimizerPieces(request, candidate = null) {
   const payload = request.payload;
   const zone = payload.zone ? new Zone(payload.zone.zoneHrid, payload.zone.difficultyTier) : null;
   const extraBuffs = buildSimulationExtraBuffs(payload.extra);
@@ -73,6 +74,13 @@ export function createFoodOptimizerSimulation(request, candidate = null) {
     player.extraBuffs = extraBuffs;
     return player;
   });
+  return { zone, players };
+}
+
+export function createFoodOptimizerSimulation(request, candidate = null) {
+  assertFoodOptimizerTarget(request);
+  const payload = request.payload;
+  const { zone, players } = buildFoodOptimizerPieces(request, candidate);
   return new CombatSimulator(players, zone, null, {
     enableHpMpVisualization: false,
     logCombatEvents: false,
@@ -80,6 +88,43 @@ export function createFoodOptimizerSimulation(request, candidate = null) {
     combatScrollsEnabled: Boolean(payload.extra?.combatScrollsEnabled),
     isGuildTrial: Boolean(payload.simulationContext?.isGuildTrial),
   });
+}
+
+// 单轮评估的对外样本形状：JS 引擎与 wasm 引擎共用（wasm 分支没有观察器，阈值字段为 null）。
+function buildRoundSample({
+  request,
+  seed,
+  simResult,
+  hrid,
+  foodHrids,
+  equivalentThresholds = null,
+  unusedFoodThresholds = null,
+  inactiveFoodThresholds = null,
+  stoppedForCost = false,
+  costLowerBound = undefined,
+}) {
+  const used = simResult.consumablesUsed?.[hrid] || {};
+  const foodUsed = Object.fromEntries(foodHrids.map((item) => [item, used[item] || 0]));
+  return {
+    seed,
+    deaths: simResult.deaths?.[hrid] || 0,
+    ranOutOfMana: simResult.playerRanOutOfMana?.[hrid] === true,
+    foodUsed,
+    costPerHour: simResult.stoppedEarly
+      ? 0
+      : computeFoodCostPerHour(
+          foodUsed,
+          request.prices.priceTable,
+          request.prices.consumableMode,
+          simResult.simulatedTime,
+        ),
+    equivalentThresholds,
+    unusedFoodThresholds,
+    inactiveFoodThresholds,
+    stoppedEarly: Boolean(simResult.stoppedEarly),
+    simulatedTime: simResult.simulatedTime,
+    ...(stoppedForCost ? { pruned: 'cost', costLowerBound } : {}),
+  };
 }
 
 export function getFoodOptimizerResources(request) {
@@ -99,6 +144,13 @@ export function getFoodOptimizerResources(request) {
   };
 }
 
+/// 单轮是否走 wasm 引擎（切片 5-B，默认关）：只有调用方显式开启，且本轮不需要
+/// JS 侧观察点 / 停止钩子时才为真——候选轮次的 `shouldStop`（空蓝 / 死亡预算）依赖
+/// JS 运行时状态，阈值与成本上界观察器改写 JS 模拟器实例。
+export function shouldUseWasmOptimizerRound(request, candidate, collectThresholds, costBound) {
+  return request.useWasmEngine === true && !candidate && !collectThresholds && !costBound;
+}
+
 export async function simulateFoodOptimizerRound(
   request,
   candidate,
@@ -112,6 +164,34 @@ export async function simulateFoodOptimizerRound(
     throw new Error(
       'Food optimizer rounds must not overlap in the same realm: a seeded Math.random scope is already active.',
     );
+
+  const hrid = `player${request.activePlayerId}`;
+
+  // 切片 5-B A/B 分支（默认关）：判据见 `shouldUseWasmOptimizerRound`。
+  if (shouldUseWasmOptimizerRound(request, candidate, collectThresholds, costBound)) {
+    const { zone, players } = buildFoodOptimizerPieces(request, null);
+    const simResult = await tryRunWasmProductionRound({
+      useWasmEngine: true,
+      players,
+      zone,
+      simulationContext: request.payload.simulationContext,
+      seed,
+      simulationTimeLimit: request.payload.simulationTimeLimit,
+      options: {
+        minimalResult: true,
+        logCombatEvents: false,
+        enableHpMpVisualization: false,
+        combatScrollsEnabled: Boolean(request.payload.extra?.combatScrollsEnabled),
+        isGuildTrial: Boolean(request.payload.simulationContext?.isGuildTrial),
+      },
+    });
+    if (simResult) {
+      const player = players.find((entry) => entry.hrid === hrid);
+      const foodHrids = [...new Set(player.food.filter(Boolean).map((item) => item.hrid))];
+      return buildRoundSample({ request, seed, simResult, hrid, foodHrids });
+    }
+  }
+
   // 万一安装随机数发生器时抛出异常，作用域计数也不能泄漏，因此
   // 自增语句保持为受保护区域之前的最后一条语句。
   const originalRandom = Math.random;
@@ -119,7 +199,6 @@ export async function simulateFoodOptimizerRound(
   activeRandomScopes += 1;
   try {
     const simulator = createFoodOptimizerSimulation(request, candidate);
-    const hrid = `player${request.activePlayerId}`;
     const player = simulator.players.find((entry) => entry.hrid === hrid);
     const observedCandidate = candidate ?? (hasEmptyFoodOptimizerBaseline(request) ? buildFoodCandidate([]) : null);
     const readThresholds = collectThresholds ? observeFoodOptimizerThresholds(player, observedCandidate) : () => null;
@@ -158,29 +237,19 @@ export async function simulateFoodOptimizerRound(
       };
     }
     const result = await simulator.simulate(request.payload.simulationTimeLimit, { shouldStop });
-    const used = result.consumablesUsed[hrid] || {};
-    const foodUsed = Object.fromEntries(foodHrids.map((item) => [item, used[item] || 0]));
     const inactiveFoodThresholds = readInactiveFood();
-    return {
+    return buildRoundSample({
+      request,
       seed,
-      deaths: result.deaths[hrid] || 0,
-      ranOutOfMana: result.playerRanOutOfMana[hrid] === true,
-      foodUsed,
-      costPerHour: result.stoppedEarly
-        ? 0
-        : computeFoodCostPerHour(
-            foodUsed,
-            request.prices.priceTable,
-            request.prices.consumableMode,
-            result.simulatedTime,
-          ),
+      simResult: result,
+      hrid,
+      foodHrids,
       equivalentThresholds: readThresholds(),
       unusedFoodThresholds: !stoppedForCost && observedCandidate?.slots.length === 0 ? inactiveFoodThresholds : null,
       inactiveFoodThresholds,
-      stoppedEarly: Boolean(result.stoppedEarly),
-      simulatedTime: result.simulatedTime,
-      ...(stoppedForCost ? { pruned: 'cost', costLowerBound: costObserver.read() } : {}),
-    };
+      stoppedForCost,
+      costLowerBound: stoppedForCost ? costObserver.read() : undefined,
+    });
   } finally {
     Math.random = originalRandom;
     activeRandomScopes -= 1;
