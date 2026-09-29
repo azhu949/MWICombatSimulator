@@ -2216,12 +2216,19 @@ impl CombatSimulator {
         schedule_expiration_events: bool,
     ) -> Result<(), UnitError> {
         if effect.target_type == "allAllies" {
-            let targets = if self.arena.get(source).is_player {
-                self.players.clone()
-            } else {
-                self.enemies.clone().unwrap_or_default()
-            };
-            for target in targets {
+            // 免克隆：下标遍历替代 players/enemies 的 Vec 克隆（循环内只调
+            // add_ability_buff / schedule，不增删单位列表，遍历语义与快照一致）。
+            let is_player = self.arena.get(source).is_player;
+            let targets_len = if is_player { self.players.len() } else { self.enemies.as_ref().map_or(0, |e| e.len()) };
+            for index in 0..targets_len {
+                let target = if is_player {
+                    self.players[index]
+                } else {
+                    match self.enemies.as_ref().and_then(|enemies| enemies.get(index)) {
+                        Some(enemy) => *enemy,
+                        None => break,
+                    }
+                };
                 if self.arena.get(target).combat_details.current_hitpoints <= 0.0 {
                     continue;
                 }
@@ -2656,14 +2663,19 @@ impl CombatSimulator {
         ability: &Ability,
         effect: &AbilityEffect,
     ) -> Result<(), UnitError> {
-        let allies: Vec<UnitId> = if self.arena.get(source).is_player {
-            self.players.clone()
-        } else {
-            self.enemies.clone().unwrap_or_default()
+        let is_player = self.arena.get(source).is_player;
+        let allies_len = if is_player { self.players.len() } else { self.enemies.as_ref().map_or(0, |e| e.len()) };
+        let ally_at = |index: usize| -> Option<UnitId> {
+            if is_player {
+                self.players.get(index).copied()
+            } else {
+                self.enemies.as_ref().and_then(|enemies| enemies.get(index)).copied()
+            }
         };
 
         if effect.target_type == "allAllies" {
-            for target in allies {
+            for index in 0..allies_len {
+                let Some(target) = ally_at(index) else { break };
                 if self.arena.get(target).combat_details.current_hitpoints <= 0.0 {
                     continue;
                 }
@@ -2683,7 +2695,8 @@ impl CombatSimulator {
 
         if effect.target_type == "lowestHpAlly" {
             let mut heal_target: Option<UnitId> = None;
-            for target in allies {
+            for index in 0..allies_len {
+                let Some(target) = ally_at(index) else { break };
                 if self.arena.get(target).combat_details.current_hitpoints <= 0.0 {
                     continue;
                 }

@@ -472,44 +472,141 @@ impl BuffBoost {
     pub const ZERO: Self = Self { ratio_boost: 0.0, flat_boost: 0.0 };
 }
 
-/// 结算期索引条目（等价 JS `{ buffs, boost: { ratioBoost, flatBoost } }`）。
+/// 结算期增益汇总（切片 11-A）：单遍遍历 `combat_buffs`，按 `type_hrid` 直接
+/// 分派到固定槽位——替代旧方案「`index_buffs_by_type` 建 OrderedMap 索引
+/// （每类型一次 String 克隆）+ 结算体 40 次线性查找」。
 ///
-/// `buffs` 仅被 `snapshot_boosts` 逐项读取 ratio/flat（消费端不触碰 Buff 的其他字段），
-/// 故直接存投影后的 `BuffBoost`——省掉每次结算对每个增益的 Buff 深拷贝。
-#[derive(Clone, Debug, Default)]
-pub struct BuffBoostEntry {
-    pub buffs: Vec<BuffBoost>,
-    pub ratio_boost: f64,
-    pub flat_boost: f64,
+/// 两类槽位对应旧 `BuffBoostEntry` 的两种消费形态：
+/// - **逐项槽**（12 个，`Vec<BuffBoost>`）：等级字段 / evasion / armor / 三系
+///   抗性。消费端逐项循环（`value += base * ratio; value += flat`），浮点加法
+///   不满足结合律、逐项顺序不可合并，故按遍历顺序保序追加（等价旧 `entry.buffs`）。
+/// - **汇总槽**（28 个，`BuffBoost`）：消费端只读 ratio/flat 总和。从 `0.0`
+///   起按遍历顺序 `+=` 累加——与 JS `indexBuffsByType` 的
+///   `{ ratioBoost: 0, flatBoost: 0 }` 起点 `+=` 序列逐位一致
+///   （attack_speed 消费端的 `fold(0.0)` 与该序列逐位相同，故归入此类）。
+///
+/// 未匹配任何槽位的 `type_hrid`（结算体不消费的类型）直接跳过——旧索引虽会
+/// 为其建组，但无消费方读取，行为等价。
+#[derive(Default)]
+pub struct SettlementBoosts {
+    // ---- 逐项槽 ----
+    pub stamina_level: Vec<BuffBoost>,
+    pub intelligence_level: Vec<BuffBoost>,
+    pub attack_level: Vec<BuffBoost>,
+    pub melee_level: Vec<BuffBoost>,
+    pub defense_level: Vec<BuffBoost>,
+    pub ranged_level: Vec<BuffBoost>,
+    pub magic_level: Vec<BuffBoost>,
+    pub evasion: Vec<BuffBoost>,
+    pub armor: Vec<BuffBoost>,
+    pub water_resistance: Vec<BuffBoost>,
+    pub nature_resistance: Vec<BuffBoost>,
+    pub fire_resistance: Vec<BuffBoost>,
+    // ---- 汇总槽 ----
+    pub max_hitpoints: BuffBoost,
+    pub max_manapoints: BuffBoost,
+    pub fury_accuracy: BuffBoost,
+    pub fury_damage: BuffBoost,
+    pub accuracy: BuffBoost,
+    pub damage: BuffBoost,
+    pub damage_taken: BuffBoost,
+    pub physical_amplify: BuffBoost,
+    pub water_amplify: BuffBoost,
+    pub nature_amplify: BuffBoost,
+    pub fire_amplify: BuffBoost,
+    pub healing_amplify: BuffBoost,
+    pub attack_speed: BuffBoost,
+    pub hp_regen: BuffBoost,
+    pub mp_regen: BuffBoost,
+    pub life_steal: BuffBoost,
+    pub physical_thorns: BuffBoost,
+    pub elemental_thorns: BuffBoost,
+    pub wisdom: BuffBoost,
+    pub critical_rate: BuffBoost,
+    pub critical_damage: BuffBoost,
+    pub cast_speed: BuffBoost,
+    pub combat_drop_rate: BuffBoost,
+    pub rare_find: BuffBoost,
+    pub combat_drop_quantity: BuffBoost,
+    pub threat: BuffBoost,
+    pub retaliation: BuffBoost,
+    pub tenacity: BuffBoost,
 }
 
-/// 增益类型索引（等价 JS `buffBoostSnapshots` 的 WeakMap 值）。
-pub type BuffBoostIndex = OrderedMap<String, BuffBoostEntry>;
+/// `type_hrid` → 槽位的可变引用分派目标。
+enum Slot<'a> {
+    Items(&'a mut Vec<BuffBoost>),
+    Sum(&'a mut BuffBoost),
+}
 
-/// 等价 JS `indexBuffsByType`：按遍历顺序累积每个 typeHrid 的 ratio/flat 总和。
-///
-/// JS 侧畸形记录（非字符串 typeHrid）会让整个索引退化为 `null`；Rust 侧 `Buff`
-/// 类型保证 typeHrid 为字符串、生产数据不存在该分支，故不做建模。
-pub fn index_buffs_by_type(buffs: &OrderedMap<String, Buff>) -> BuffBoostIndex {
-    let mut index = BuffBoostIndex::new();
-    for buff in buffs.values() {
-        let projection = BuffBoost { ratio_boost: buff.ratio_boost, flat_boost: buff.flat_boost };
-        if let Some(group) = index.get_mut(&buff.type_hrid) {
-            group.buffs.push(projection);
-            group.ratio_boost += buff.ratio_boost;
-            group.flat_boost += buff.flat_boost;
-        } else {
-            index.set(
-                buff.type_hrid.clone(),
-                BuffBoostEntry {
-                    buffs: vec![projection],
-                    ratio_boost: buff.ratio_boost,
-                    flat_boost: buff.flat_boost,
-                },
-            );
+impl SettlementBoosts {
+    /// 单遍构建：遍历顺序 = `combat_buffs` 键序（浮点累加序的前提）。
+    pub fn build(buffs: &OrderedMap<String, Buff>) -> Self {
+        let _prof = crate::prof::start("unit.index_buffs");
+        let mut boosts = Self::default();
+        for buff in buffs.values() {
+            match boosts.slot_mut(&buff.type_hrid) {
+                Some(Slot::Items(list)) => {
+                    list.push(BuffBoost { ratio_boost: buff.ratio_boost, flat_boost: buff.flat_boost });
+                }
+                Some(Slot::Sum(entry)) => {
+                    entry.ratio_boost += buff.ratio_boost;
+                    entry.flat_boost += buff.flat_boost;
+                }
+                None => {}
+            }
         }
+        boosts
     }
-    index
+
+    /// 结算体消费的 40 个 `type_hrid` → 槽位；其余类型返回 `None`（跳过）。
+    /// 匹配集即 `update_combat_details_with_boosts` 的全部消费键，二者成对维护。
+    #[inline]
+    fn slot_mut(&mut self, type_hrid: &str) -> Option<Slot<'_>> {
+        Some(match type_hrid {
+            "/buff_types/stamina_level" => Slot::Items(&mut self.stamina_level),
+            "/buff_types/intelligence_level" => Slot::Items(&mut self.intelligence_level),
+            "/buff_types/attack_level" => Slot::Items(&mut self.attack_level),
+            "/buff_types/melee_level" => Slot::Items(&mut self.melee_level),
+            "/buff_types/defense_level" => Slot::Items(&mut self.defense_level),
+            "/buff_types/ranged_level" => Slot::Items(&mut self.ranged_level),
+            "/buff_types/magic_level" => Slot::Items(&mut self.magic_level),
+            "/buff_types/evasion" => Slot::Items(&mut self.evasion),
+            "/buff_types/armor" => Slot::Items(&mut self.armor),
+            "/buff_types/water_resistance" => Slot::Items(&mut self.water_resistance),
+            "/buff_types/nature_resistance" => Slot::Items(&mut self.nature_resistance),
+            "/buff_types/fire_resistance" => Slot::Items(&mut self.fire_resistance),
+            "/buff_types/max_hitpoints" => Slot::Sum(&mut self.max_hitpoints),
+            "/buff_types/max_manapoints" => Slot::Sum(&mut self.max_manapoints),
+            "/buff_types/fury_accuracy" => Slot::Sum(&mut self.fury_accuracy),
+            "/buff_types/fury_damage" => Slot::Sum(&mut self.fury_damage),
+            "/buff_types/accuracy" => Slot::Sum(&mut self.accuracy),
+            "/buff_types/damage" => Slot::Sum(&mut self.damage),
+            "/buff_types/damage_taken" => Slot::Sum(&mut self.damage_taken),
+            "/buff_types/physical_amplify" => Slot::Sum(&mut self.physical_amplify),
+            "/buff_types/water_amplify" => Slot::Sum(&mut self.water_amplify),
+            "/buff_types/nature_amplify" => Slot::Sum(&mut self.nature_amplify),
+            "/buff_types/fire_amplify" => Slot::Sum(&mut self.fire_amplify),
+            "/buff_types/healing_amplify" => Slot::Sum(&mut self.healing_amplify),
+            "/buff_types/attack_speed" => Slot::Sum(&mut self.attack_speed),
+            "/buff_types/hp_regen" => Slot::Sum(&mut self.hp_regen),
+            "/buff_types/mp_regen" => Slot::Sum(&mut self.mp_regen),
+            "/buff_types/life_steal" => Slot::Sum(&mut self.life_steal),
+            "/buff_types/physical_thorns" => Slot::Sum(&mut self.physical_thorns),
+            "/buff_types/elemental_thorns" => Slot::Sum(&mut self.elemental_thorns),
+            "/buff_types/wisdom" => Slot::Sum(&mut self.wisdom),
+            "/buff_types/critical_rate" => Slot::Sum(&mut self.critical_rate),
+            "/buff_types/critical_damage" => Slot::Sum(&mut self.critical_damage),
+            "/buff_types/cast_speed" => Slot::Sum(&mut self.cast_speed),
+            "/buff_types/combat_drop_rate" => Slot::Sum(&mut self.combat_drop_rate),
+            "/buff_types/rare_find" => Slot::Sum(&mut self.rare_find),
+            "/buff_types/combat_drop_quantity" => Slot::Sum(&mut self.combat_drop_quantity),
+            "/buff_types/threat" => Slot::Sum(&mut self.threat),
+            "/buff_types/retaliation" => Slot::Sum(&mut self.retaliation),
+            "/buff_types/tenacity" => Slot::Sum(&mut self.tenacity),
+            _ => return None,
+        })
+    }
 }
 
 /// 注册表中的一个源（等价 JS `{ buff, expiresAt, sequence }`）。
@@ -777,22 +874,6 @@ fn settled_level(base_level: f64, boosts: &[BuffBoost]) -> f64 {
     value
 }
 
-fn snapshot_boost(snapshot: &BuffBoostIndex, type_hrid: &str) -> BuffBoost {
-    match snapshot.get_str(type_hrid) {
-        Some(entry) => BuffBoost { ratio_boost: entry.ratio_boost, flat_boost: entry.flat_boost },
-        None => BuffBoost::ZERO,
-    }
-}
-
-/// 该 typeHrid 下的逐项投影（顺序 = 索引构建顺序）。返回借用切片而非新建 Vec：
-/// 结算热路径每个单位要查十余个 typeHrid，其中仅少数命中。
-fn snapshot_boosts<'a>(snapshot: &'a BuffBoostIndex, type_hrid: &str) -> &'a [BuffBoost] {
-    match snapshot.get_str(type_hrid) {
-        Some(entry) => &entry.buffs,
-        None => &[],
-    }
-}
-
 impl CombatUnit {
     // -----------------------------------------------------------------------
     // 基准属性（JS 368-404 行）
@@ -813,18 +894,15 @@ impl CombatUnit {
         }
     }
 
-    /// 等价 JS `updateCombatDetails`：构建快照 → 结算。
+    /// 等价 JS `updateCombatDetails`：构建增益汇总 → 结算。
     pub fn update_combat_details(&mut self) {
         let _prof = crate::prof::start("unit.update_details");
-        let snapshot = {
-            let _prof_index = crate::prof::start("unit.index_buffs");
-            index_buffs_by_type(&self.combat_buffs)
-        };
-        self.update_combat_details_with_snapshot(&snapshot);
+        let boosts = SettlementBoosts::build(&self.combat_buffs);
+        self.update_combat_details_with_boosts(&boosts);
     }
 
     /// 结算主体（等价 JS `updateCombatDetailsFromBuffs`，忽略 FRESH_COMBAT_STATS 微优化）。
-    pub fn update_combat_details_with_snapshot(&mut self, snapshot: &BuffBoostIndex) {
+    pub fn update_combat_details_with_boosts(&mut self, boosts: &SettlementBoosts) {
         let _prof = crate::prof::start("unit.update_details_full");
         self.reset_combat_stats_to_base();
 
@@ -834,14 +912,13 @@ impl CombatUnit {
         }
 
         // COMBAT_LEVEL_FIELDS（JS 164-172 行）——加成基数取单位自身等级字段。
-        let stamina_level = settled_level(self.stamina_level, snapshot_boosts(snapshot, "/buff_types/stamina_level"));
-        let intelligence_level =
-            settled_level(self.intelligence_level, snapshot_boosts(snapshot, "/buff_types/intelligence_level"));
-        let attack_level = settled_level(self.attack_level, snapshot_boosts(snapshot, "/buff_types/attack_level"));
-        let melee_level = settled_level(self.melee_level, snapshot_boosts(snapshot, "/buff_types/melee_level"));
-        let defense_level = settled_level(self.defense_level, snapshot_boosts(snapshot, "/buff_types/defense_level"));
-        let ranged_level = settled_level(self.ranged_level, snapshot_boosts(snapshot, "/buff_types/ranged_level"));
-        let magic_level = settled_level(self.magic_level, snapshot_boosts(snapshot, "/buff_types/magic_level"));
+        let stamina_level = settled_level(self.stamina_level, &boosts.stamina_level);
+        let intelligence_level = settled_level(self.intelligence_level, &boosts.intelligence_level);
+        let attack_level = settled_level(self.attack_level, &boosts.attack_level);
+        let melee_level = settled_level(self.melee_level, &boosts.melee_level);
+        let defense_level = settled_level(self.defense_level, &boosts.defense_level);
+        let ranged_level = settled_level(self.ranged_level, &boosts.ranged_level);
+        let magic_level = settled_level(self.magic_level, &boosts.magic_level);
 
         let is_bulwark = self.two_hand_hrid.as_deref().is_some_and(|hrid| hrid.contains("bulwark"));
         let cd = &mut self.combat_details;
@@ -854,8 +931,8 @@ impl CombatUnit {
         cd.ranged_level = ranged_level;
         cd.magic_level = magic_level;
 
-        let max_hitpoints_boost = snapshot_boost(snapshot, "/buff_types/max_hitpoints");
-        let max_manapoints_boost = snapshot_boost(snapshot, "/buff_types/max_manapoints");
+        let max_hitpoints_boost = boosts.max_hitpoints;
+        let max_manapoints_boost = boosts.max_manapoints;
         cd.max_hitpoints = (((10.0 * (10.0 + cd.stamina_level)) + cd.combat_stats.max_hitpoints)
             + max_hitpoints_boost.flat_boost)
             * (((1.0 + cd.combat_stats.max_hitpoints_ratio) + max_hitpoints_boost.ratio_boost));
@@ -865,12 +942,12 @@ impl CombatUnit {
             * (((1.0 + cd.combat_stats.max_manapoints_ratio) + max_manapoints_boost.ratio_boost));
         cd.max_manapoints = cd.max_manapoints.floor();
 
-        let accuracy_ratio_boost_from_fury = snapshot_boost(snapshot, "/buff_types/fury_accuracy").ratio_boost;
-        let damage_ratio_boost_from_fury = snapshot_boost(snapshot, "/buff_types/fury_damage").ratio_boost;
-        let accuracy_ratio_boost = snapshot_boost(snapshot, "/buff_types/accuracy").ratio_boost;
-        let damage_ratio_boost = snapshot_boost(snapshot, "/buff_types/damage").ratio_boost;
+        let accuracy_ratio_boost_from_fury = boosts.fury_accuracy.ratio_boost;
+        let damage_ratio_boost_from_fury = boosts.fury_damage.ratio_boost;
+        let accuracy_ratio_boost = boosts.accuracy.ratio_boost;
+        let damage_ratio_boost = boosts.damage.ratio_boost;
 
-        let evasion_boosts = snapshot_boosts(snapshot, "/buff_types/evasion");
+        let evasion_boosts = &boosts.evasion;
         // MELEE_STYLE_FIELDS（stab / slash / smash）
         cd.stab_accuracy_rating = (10.0 + cd.attack_level)
             * (1.0 + cd.combat_stats.stab_accuracy)
@@ -943,7 +1020,7 @@ impl CombatUnit {
             cd.ranged_evasion_rating += base_ranged_evasion * boost.ratio_boost;
         }
 
-        cd.combat_stats.damage_taken = snapshot_boost(snapshot, "/buff_types/damage_taken").flat_boost;
+        cd.combat_stats.damage_taken = boosts.damage_taken.flat_boost;
 
         cd.magic_accuracy_rating = (10.0 + cd.attack_level)
             * (1.0 + cd.combat_stats.magic_accuracy)
@@ -961,81 +1038,80 @@ impl CombatUnit {
             cd.magic_evasion_rating += base_magic_evasion * boost.ratio_boost;
         }
 
-        cd.combat_stats.physical_amplify += snapshot_boost(snapshot, "/buff_types/physical_amplify").flat_boost;
-        cd.combat_stats.water_amplify += snapshot_boost(snapshot, "/buff_types/water_amplify").flat_boost;
-        cd.combat_stats.nature_amplify += snapshot_boost(snapshot, "/buff_types/nature_amplify").flat_boost;
-        cd.combat_stats.fire_amplify += snapshot_boost(snapshot, "/buff_types/fire_amplify").flat_boost;
-        cd.combat_stats.healing_amplify += snapshot_boost(snapshot, "/buff_types/healing_amplify").flat_boost;
+        cd.combat_stats.physical_amplify += boosts.physical_amplify.flat_boost;
+        cd.combat_stats.water_amplify += boosts.water_amplify.flat_boost;
+        cd.combat_stats.nature_amplify += boosts.nature_amplify.flat_boost;
+        cd.combat_stats.fire_amplify += boosts.fire_amplify.flat_boost;
+        cd.combat_stats.healing_amplify += boosts.healing_amplify.flat_boost;
 
         cd.combat_stats.attack_interval /= 1.0 + cd.attack_level / 2000.0;
 
         let base_attack_speed = cd.combat_stats.attack_speed;
         cd.combat_stats.attack_interval /= 1.0 + base_attack_speed;
-        let attack_interval_boosts = snapshot_boosts(snapshot, "/buff_types/attack_speed");
-        let attack_interval_ratio_boost =
-            attack_interval_boosts.iter().map(|boost| boost.ratio_boost).fold(0.0, |prev, cur| prev + cur);
+        // fold(0.0) 与汇总槽「0.0 起按序 +=」的浮点序列逐位一致，直接读汇总。
+        let attack_interval_ratio_boost = boosts.attack_speed.ratio_boost;
         cd.combat_stats.attack_interval /= 1.0 + attack_interval_ratio_boost;
 
         let base_armor = 0.2 * cd.defense_level + cd.combat_stats.armor;
         cd.total_armor = base_armor;
-        for boost in snapshot_boosts(snapshot, "/buff_types/armor") {
+        for boost in &boosts.armor {
             cd.total_armor += boost.flat_boost;
             cd.total_armor += base_armor * boost.ratio_boost;
         }
 
         let base_water_resistance = 0.2 * cd.defense_level + cd.combat_stats.water_resistance;
         cd.total_water_resistance = base_water_resistance;
-        for boost in snapshot_boosts(snapshot, "/buff_types/water_resistance") {
+        for boost in &boosts.water_resistance {
             cd.total_water_resistance += boost.flat_boost;
             cd.total_water_resistance += base_water_resistance * boost.ratio_boost;
         }
 
         let base_nature_resistance = 0.2 * cd.defense_level + cd.combat_stats.nature_resistance;
         cd.total_nature_resistance = base_nature_resistance;
-        for boost in snapshot_boosts(snapshot, "/buff_types/nature_resistance") {
+        for boost in &boosts.nature_resistance {
             cd.total_nature_resistance += boost.flat_boost;
             cd.total_nature_resistance += base_nature_resistance * boost.ratio_boost;
         }
 
         let base_fire_resistance = 0.2 * cd.defense_level + cd.combat_stats.fire_resistance;
         cd.total_fire_resistance = base_fire_resistance;
-        for boost in snapshot_boosts(snapshot, "/buff_types/fire_resistance") {
+        for boost in &boosts.fire_resistance {
             cd.total_fire_resistance += boost.flat_boost;
             cd.total_fire_resistance += base_fire_resistance * boost.ratio_boost;
         }
 
-        let hp_regen_boosts = snapshot_boost(snapshot, "/buff_types/hp_regen");
+        let hp_regen_boosts = boosts.hp_regen;
         cd.combat_stats.hp_regen_per10 += cd.combat_stats.hp_regen_per10 * hp_regen_boosts.ratio_boost;
         cd.combat_stats.hp_regen_per10 += hp_regen_boosts.flat_boost;
 
-        let mp_regen_boosts = snapshot_boost(snapshot, "/buff_types/mp_regen");
+        let mp_regen_boosts = boosts.mp_regen;
         cd.combat_stats.mp_regen_per10 += cd.combat_stats.mp_regen_per10 * mp_regen_boosts.ratio_boost;
         cd.combat_stats.mp_regen_per10 += mp_regen_boosts.flat_boost;
 
-        cd.combat_stats.life_steal += snapshot_boost(snapshot, "/buff_types/life_steal").flat_boost;
-        cd.combat_stats.physical_thorns += snapshot_boost(snapshot, "/buff_types/physical_thorns").flat_boost;
-        cd.combat_stats.elemental_thorns += snapshot_boost(snapshot, "/buff_types/elemental_thorns").flat_boost;
-        cd.combat_stats.combat_experience += snapshot_boost(snapshot, "/buff_types/wisdom").flat_boost;
-        cd.combat_stats.critical_rate += snapshot_boost(snapshot, "/buff_types/critical_rate").flat_boost;
-        cd.combat_stats.critical_damage += snapshot_boost(snapshot, "/buff_types/critical_damage").flat_boost;
+        cd.combat_stats.life_steal += boosts.life_steal.flat_boost;
+        cd.combat_stats.physical_thorns += boosts.physical_thorns.flat_boost;
+        cd.combat_stats.elemental_thorns += boosts.elemental_thorns.flat_boost;
+        cd.combat_stats.combat_experience += boosts.wisdom.flat_boost;
+        cd.combat_stats.critical_rate += boosts.critical_rate.flat_boost;
+        cd.combat_stats.critical_damage += boosts.critical_damage.flat_boost;
 
-        cd.combat_stats.cast_speed += snapshot_boost(snapshot, "/buff_types/cast_speed").flat_boost;
+        cd.combat_stats.cast_speed += boosts.cast_speed.flat_boost;
         cd.combat_stats.cast_speed += cd.attack_level / 2000.0;
 
-        let combat_drop_rate_boosts = snapshot_boost(snapshot, "/buff_types/combat_drop_rate");
+        let combat_drop_rate_boosts = boosts.combat_drop_rate;
         cd.combat_stats.combat_drop_rate += (1.0 + cd.combat_stats.combat_drop_rate) * combat_drop_rate_boosts.ratio_boost;
         cd.combat_stats.combat_drop_rate += combat_drop_rate_boosts.flat_boost;
-        let combat_rare_find_boosts = snapshot_boost(snapshot, "/buff_types/rare_find");
+        let combat_rare_find_boosts = boosts.rare_find;
         cd.combat_stats.combat_rare_find += (1.0 + cd.combat_stats.combat_rare_find) * combat_rare_find_boosts.ratio_boost;
         cd.combat_stats.combat_rare_find += combat_rare_find_boosts.flat_boost;
-        let combat_drop_quantity_boosts = snapshot_boost(snapshot, "/buff_types/combat_drop_quantity");
+        let combat_drop_quantity_boosts = boosts.combat_drop_quantity;
         cd.combat_stats.combat_drop_quantity +=
             (1.0 + cd.combat_stats.combat_drop_quantity) * combat_drop_quantity_boosts.ratio_boost;
         cd.combat_stats.combat_drop_quantity += combat_drop_quantity_boosts.flat_boost;
 
         let base_threat = 100.0 + cd.combat_stats.threat;
         cd.total_threat = base_threat;
-        let threat_boosts = snapshot_boost(snapshot, "/buff_types/threat");
+        let threat_boosts = boosts.threat;
         if threat_boosts.ratio_boost != 0.0 {
             cd.combat_stats.threat += base_threat * threat_boosts.ratio_boost;
         } else {
@@ -1043,10 +1119,10 @@ impl CombatUnit {
         }
         cd.combat_stats.threat += threat_boosts.flat_boost;
 
-        cd.combat_stats.retaliation += snapshot_boost(snapshot, "/buff_types/retaliation").flat_boost;
+        cd.combat_stats.retaliation += boosts.retaliation.flat_boost;
         // JS：combatStats.tenacity 缺失时为 undefined，`undefined + x` 得 NaN（键随之出现且此后保持）。
         cd.combat_stats.tenacity = Some(match cd.combat_stats.tenacity {
-            Some(value) => value + snapshot_boost(snapshot, "/buff_types/tenacity").flat_boost,
+            Some(value) => value + boosts.tenacity.flat_boost,
             None => f64::NAN,
         });
     }
@@ -1776,17 +1852,18 @@ mod tests {
     }
 
     #[test]
-    fn index_buffs_by_type_accumulates_in_iteration_order() {
+    fn settlement_boosts_accumulate_in_iteration_order() {
         let mut unit = CombatUnit::default();
         unit.add_buff(&raw("/u/a", "/buff_types/damage", 0.1, 1.0, 1000.0), 0.0, None, None).expect("registers");
         unit.add_buff(&raw("/u/b", "/buff_types/damage", 0.2, 2.0, 1000.0), 1.0, None, None).expect("registers");
         unit.add_buff(&raw("/u/c", "/buff_types/armor", 0.0, 0.5, 1000.0), 2.0, None, None).expect("registers");
-        let index = index_buffs_by_type(&unit.combat_buffs);
-        let damage = index.get_str("/buff_types/damage").expect("damage group");
-        assert_eq!(damage.ratio_boost, 0.1 + 0.2);
-        assert_eq!(damage.flat_boost, 3.0);
-        assert_eq!(damage.buffs.len(), 2);
-        assert_eq!(index.get_str("/buff_types/armor").expect("armor group").flat_boost, 0.5);
+        // 结算体不消费的类型：分派跳过，不影响任何槽位。
+        unit.add_buff(&raw("/u/d", "/buff_types/not_consumed", 0.5, 5.0, 1000.0), 3.0, None, None).expect("registers");
+        let boosts = SettlementBoosts::build(&unit.combat_buffs);
+        assert_eq!(boosts.damage.ratio_boost, 0.1 + 0.2);
+        assert_eq!(boosts.damage.flat_boost, 3.0);
+        assert_eq!(boosts.armor.len(), 1);
+        assert_eq!(boosts.armor[0].flat_boost, 0.5);
     }
 
     #[test]
