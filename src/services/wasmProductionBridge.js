@@ -345,20 +345,18 @@ function buildCombatScrollDefinitions(players) {
 /// 战斗日志只影响控制台输出（无数据），时序随 simResult 的 `timeSeriesData` 一次性返回
 /// （wasm 侧没有流式 progress）。
 ///
-/// 切片 15：副本（dungeon）波次机制纳入覆盖。唯一仍留 JS 的副本组合是 full-result +
-/// `logCombatEvents`：副本团灭时 JS 写 `wipeEvents`（日志内容含 `new Date().toISOString()`
-/// 墙钟时间戳，天然不可复现），引擎侧不生成该日志；minimal 变体把 `addWipeEvent` 覆写为
-/// 空操作、也不序列化 `wipeEvents`，不受影响。
+/// 切片 15：副本（dungeon）波次机制纳入覆盖（含团灭计数、逐波存活时间、
+/// maxWaveReached、bossSpawns）。minimal 变体把 `addWipeEvent` 覆写为空操作、
+/// 也不序列化 `wipeEvents`，不受影响。
 ///
 /// 切片 16：迷宫（labyrinth）纳入覆盖——无 zone 的单怪循环 + 120s 超时重启。
-/// 切片 17：战斗卷轴窗口语义纳入覆盖（定义表随请求快照传入）；
+/// 切片 17：战斗卷轴窗口语义纳入覆盖（定义表随请求快照传入）。
+/// 切片 19：副本 + full-result + `logCombatEvents` 组合纳入覆盖——团灭日志
+/// （`wipeEvents`）由引擎生成，timestamp 用确定性字符串 `t+{simulationTime}`
+/// 替代 JS 的 `new Date().toISOString()` 墙钟（UI 仅用作 v-for key，不显示）。
 /// 仍留 JS 的还有公会试炼与无区域。
 export function getProductionSupport({ zone, labyrinth, isDungeon, simulationContext, options }) {
   if (!zone && !labyrinth) return { supported: false, reason: 'no_zone' };
-  const dungeon = Boolean(isDungeon || zone?.isDungeon);
-  if (dungeon && options?.logCombatEvents && !options?.minimalResult) {
-    return { supported: false, reason: 'dungeon_combat_logs' };
-  }
   if (simulationContext?.isGuildTrial) return { supported: false, reason: 'guild_trial' };
   return { supported: true, reason: '' };
 }

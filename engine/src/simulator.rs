@@ -23,17 +23,20 @@ use crate::ability::{Ability, AbilityEffect};
 use crate::buff::{get_ability_buff_source_policy, BuffSourcePolicy};
 use crate::combat_utilities::{
     calculate_tick_value, process_attack, process_heal_with_stats, process_revive_with_stats, process_spend_hp,
+    AttackResult,
 };
 use crate::consumable::Consumable;
 use crate::event_queue::{EventQueue, QueueItem};
 use crate::ordered_map::OrderedMap;
 use crate::rng::Mulberry32;
 use crate::sim_events::SimEvent;
+use crate::sim_result::js_number_value;
 use crate::sim_unit::{UnitArena, UnitId};
 use crate::scroll::{CombatScrollDefinition, ScrollState};
 use crate::unit::{policy_name, BuffList, BuffSourceSelector, CombatScrollConfig, CombatUnit, RawBuffInput, UnitError};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
+use std::collections::VecDeque;
 
 pub const ONE_SECOND: f64 = 1e9;
 pub const HOT_TICK_INTERVAL: f64 = 5.0 * ONE_SECOND;
@@ -351,6 +354,14 @@ impl SimResultTally {
     pub fn set_last_encounter_finish_time(&mut self, value: f64) {
         if let Some(real) = self.real.as_mut() {
             real.set_last_encounter_finish_time(value);
+        }
+    }
+
+    /// 切片 19：生产模式专用：JS `simResult.addWipeEvent(logs, simulationTime, wave)`。
+    /// 探针分支不消费（minimal 恒空），仅记名。
+    pub fn add_wipe_event(&mut self, logs: Value, simulation_time: f64, wave: f64, timestamp: String) {
+        if let Some(real) = self.real.as_mut() {
+            real.add_wipe_event(logs, simulation_time, wave, timestamp);
         }
     }
 
@@ -882,10 +893,10 @@ pub struct CombatSimulator {
     /// 起始时间（120s 超时判定用；`checkTimeout` 读它）。
     labyrinth_encounter_start_time: f64,
     combat_style_skill_exp_map: Vec<(String, Vec<String>)>,
-    /// JS `logCombatEvents`：切片 14 起不再参与支持判定。它只控制 JS 控制台输出
-    /// （wipe 日志等），不产生结果数据，因此在 wasm 侧接受但不消费。
-    #[allow(dead_code)]
-    log_combat_events: bool,
+    /// JS `logCombatEvents`：切片 19 起驱动副本团灭日志（wipeEvents）。仅副本
+    /// （`zone_is_dungeon`）消费它——7 个结算点写环形缓冲，团灭时快照进 simResult。
+    /// 构造后条件已编码进 `wipe_logs`（Some = 启用），字段本身不再保留。
+    wipe_logs: Option<WipeLogBuffer>,
     enable_hp_mp_visualization: bool,
     combat_scrolls_enabled: bool,
     /// 切片 17：战斗卷轴定义表（桥侧快照）与运行时状态。`scroll_runtime` 顺序 =
@@ -915,6 +926,35 @@ fn first_alive_in(arena: &UnitArena, ids: Option<&[UnitId]>) -> Option<UnitId> {
     ids.iter()
         .copied()
         .find(|id| arena.get(*id).combat_details.current_hitpoints > 0.0)
+}
+
+/// 切片 19：JS `wipeLogs` 环形缓冲（`new Array(200)` + index/count）。
+#[derive(Default)]
+struct WipeLogBuffer {
+    buffer: VecDeque<Value>,
+    capacity: usize,
+}
+
+impl WipeLogBuffer {
+    fn new() -> Self {
+        Self { buffer: VecDeque::with_capacity(200), capacity: 200 }
+    }
+
+    /// JS `addToWipeLogs`：环形覆盖最老条目。
+    fn push(&mut self, entry: Value) {
+        if self.capacity == 0 {
+            return;
+        }
+        if self.buffer.len() == self.capacity {
+            self.buffer.pop_front();
+        }
+        self.buffer.push_back(entry);
+    }
+
+    /// JS `getOrderedWipeLogs`（顺序快照）+ 团灭后的 `index = 0; count = 0`（取走即清空）。
+    fn take(&mut self) -> Vec<Value> {
+        self.buffer.drain(..).collect()
+    }
 }
 
 fn consumable_slot_ref(unit: &CombatUnit, is_food: bool, slot: usize) -> Option<&Consumable> {
@@ -978,7 +1018,11 @@ impl CombatSimulator {
             labyrinth_room_level: options.labyrinth_room_level,
             labyrinth_encounter_start_time: 0.0,
             combat_style_skill_exp_map: options.combat_style_skill_exp_map,
-            log_combat_events: options.log_combat_events,
+            wipe_logs: if options.log_combat_events && options.zone_is_dungeon && !options.minimal_result {
+                Some(WipeLogBuffer::new())
+            } else {
+                None
+            },
             enable_hp_mp_visualization: options.enable_hp_mp_visualization,
             combat_scrolls_enabled: options.combat_scrolls_enabled,
             scroll_definitions: options.combat_scroll_definitions,
@@ -1030,11 +1074,6 @@ impl CombatSimulator {
         // 因此「必须有区域」放宽为「区域或迷宫至少有一个」。
         if self.zone.is_none() && !self.labyrinth_present {
             return Err(UnitError::error("wasm production path requires a zone"));
-        }
-        if self.zone_is_dungeon && self.log_combat_events && !self.minimal_result {
-            return Err(UnitError::error(
-                "wasm production path does not support dungeon wipe logs (logCombatEvents) yet",
-            ));
         }
         if self.encounter_templates.is_empty() {
             return Err(UnitError::error("wasm production path requires encounter templates"));
@@ -1957,7 +1996,91 @@ impl CombatSimulator {
     }
 
     // -----------------------------------------------------------------------
-    // 遭遇战与玩家初始化
+    // 切片 19：副本团灭日志（JS wipeLogs / wipeEvents）。
+    // -----------------------------------------------------------------------
+
+    /// JS `buildCombatLog`（不带 isCrit 的条目：thorn / retaliation / damageOverTime）。
+    /// source/target 传 hrid 字符串；JS `source?.hrid || 'UNKNOWN_SOURCE'` 的 fallback
+    /// 等价映射为「空字符串 → `UNKNOWN_SOURCE`」（DoT 点 JS 传 `''`，其余点传单位对象，
+    /// 单位 hrid 恒非空；target 恒为单位对象，无 fallback 分支）。
+    fn build_wipe_log_entry(
+        &self,
+        source_hrid: &str,
+        ability: &str,
+        target: UnitId,
+        damage: f64,
+    ) -> Value {
+        let target_unit = self.arena.get(target);
+        let after_hp = target_unit.combat_details.current_hitpoints;
+        let before_hp = js_math_max(0.0, after_hp + damage);
+        let source_value = if source_hrid.is_empty() { "UNKNOWN_SOURCE" } else { source_hrid };
+        json!({
+            "time": js_number_value(self.simulation_time),
+            "wave": js_number_value(self.wipe_wave()),
+            "source": source_value,
+            "ability": ability,
+            "target": target_unit.hrid.clone(),
+            "damage": js_number_value(damage),
+            "beforeHp": js_number_value(before_hp),
+            "afterHp": js_number_value(after_hp),
+            "playersHp": self.players_hp_snapshot(),
+            "isCrit": false,
+        })
+    }
+
+    /// JS `generateCombatLog`（带 isCrit：普攻与技能直击）。ability 为 `'autoAttack'` 或技能 hrid。
+    /// damage 取 `attackResult?.damageDone || 0`（NaN/未命中归 0）。
+    fn generate_wipe_log_entry(&self, source: UnitId, ability: &str, target: UnitId, attack_result: &AttackResult) -> Value {
+        let damage = if attack_result.damage_done.is_finite() { attack_result.damage_done } else { 0.0 };
+        let mut entry = self.build_wipe_log_entry(&self.unit_hrid(source), ability, target, damage);
+        if let Some(object) = entry.as_object_mut() {
+            object.insert("isCrit".to_string(), serde_json::json!(attack_result.is_crit));
+        }
+        entry
+    }
+
+    /// JS `this.zone.encountersKilled - 1`（副本专用；调用方保证 zone 存在）。
+    fn wipe_wave(&self) -> f64 {
+        match self.zone.as_ref() {
+            Some(zone) => zone.encounters_killed() - 1.0,
+            None => -1.0,
+        }
+    }
+
+    /// JS `playersHp` 快照：`this.players.map(p => ({hrid, current, max}))`（按玩家序）。
+    fn players_hp_snapshot(&self) -> Value {
+        Value::Array(
+            self.players
+                .iter()
+                .map(|id| {
+                    let unit = self.arena.get(*id);
+                    json!({
+                        "hrid": unit.hrid.clone(),
+                        "current": js_number_value(unit.combat_details.current_hitpoints),
+                        "max": js_number_value(unit.combat_details.max_hitpoints),
+                    })
+                })
+                .collect(),
+        )
+    }
+
+    /// JS `saveWipeLogsToSimResult(wave)` + 团灭分支的 `index = 0; count = 0`：
+    /// 取走缓冲快照进 simResult（timestamp 用确定性字符串 `t+{simulation_time}`——
+    /// JS 是 `new Date().toISOString()` 墙钟时间戳，UI 仅用它做 v-for key，不显示）。
+    fn save_wipe_logs_to_result(&mut self) {
+        let Some(buffer) = self.wipe_logs.as_mut() else { return };
+        let logs = buffer.take();
+        if logs.is_empty() {
+            return;
+        }
+        let time = self.simulation_time;
+        let wave = self.wipe_wave();
+        let timestamp = format!("t+{}", crate::zone::js_number_key(time));
+        self.tally.add_wipe_event(Value::Array(logs), time, wave, timestamp);
+    }
+
+    // -----------------------------------------------------------------------
+    // 切片 17：战斗卷轴窗口语义。
     // -----------------------------------------------------------------------
 
     fn initialize_combat_players(&mut self, time: f64) -> Result<(), UnitError> {
@@ -2386,6 +2509,16 @@ impl CombatSimulator {
                 process_attack(source_unit, target_unit, None, &mut self.rng)
             };
 
+            // 切片 19：JS :1017-1027——副本日志（普攻直击玩家且造成伤害）。
+            if self.wipe_logs.is_some()
+                && self.arena.get(target).is_player
+                && attack_result.did_hit
+                && attack_result.damage_done > 0.0
+            {
+                let entry = self.generate_wipe_log_entry(current_source, "autoAttack", target, &attack_result);
+                self.wipe_logs.as_mut().expect("checked").push(entry);
+            }
+
             let mayhem_power = self.arena.get(current_source).combat_details.combat_stats.mayhem;
             let mayhem = mayhem_power > self.rng.next_f64();
 
@@ -2430,6 +2563,16 @@ impl CombatSimulator {
                     AttackOutcome::Damage(attack_result.thorn_damage_done),
                 );
             }
+            // 切片 19：JS :1146-1149——反伤日志（thorn 打到玩家）。
+            if self.wipe_logs.is_some() && attack_result.thorn_damage_done > 0.0 && self.arena.get(current_source).is_player {
+                let entry = self.build_wipe_log_entry(
+                    &target_hrid,
+                    &attack_result.thorn_type,
+                    current_source,
+                    attack_result.thorn_damage_done,
+                );
+                self.wipe_logs.as_mut().expect("checked").push(entry);
+            }
             if self.arena.get(target).combat_details.combat_stats.retaliation > 0.0 {
                 let outcome = if attack_result.retaliation_damage_done > 0.0 {
                     AttackOutcome::Damage(attack_result.retaliation_damage_done)
@@ -2437,6 +2580,19 @@ impl CombatSimulator {
                     AttackOutcome::Miss
                 };
                 self.tally.add_attack(&target_hrid, &source_hrid, "retaliation", outcome);
+            }
+            // 切片 19：JS :1159-1162——反击日志（retaliation 打到玩家）。
+            if self.wipe_logs.is_some()
+                && attack_result.retaliation_damage_done > 0.0
+                && self.arena.get(current_source).is_player
+            {
+                let entry = self.build_wipe_log_entry(
+                    &target_hrid,
+                    "retaliation",
+                    current_source,
+                    attack_result.retaliation_damage_done,
+                );
+                self.wipe_logs.as_mut().expect("checked").push(entry);
             }
 
             if self.arena.get(target).combat_details.current_hitpoints == 0.0 {
@@ -2685,8 +2841,11 @@ impl CombatSimulator {
                 // 切片 15：副本团灭（JS :1268-1315）——只清战斗相关事件（保留增益过期与
                 // CD 事件），丢弃挂起经验并让 enemies 失效；RESTART_INTERVAL 后以
                 // CombatStart 重开（`start_new_encounter` 的 allPlayersDead 分支随后记一次
-                // failWave）。`logCombatEvents` 为真时 JS 会写 wipeEvents（墙钟时间戳），
-                // 该组合已被 `validate_production_support` 挡在生产路径之外。
+                // failWave）。切片 19：`logCombatEvents` 为真时先快照团灭日志进 simResult
+                // （JS saveWipeLogsToSimResult + 缓冲清零；console 输出无数据、不移植）。
+                if self.wipe_logs.is_some() {
+                    self.save_wipe_logs_to_result();
+                }
                 self.queue.clear_events_of_type("autoAttack");
                 self.queue.clear_events_of_type("abilityCastEndEvent");
                 self.queue.clear_events_of_type("damageOverTime");
@@ -2800,6 +2959,12 @@ impl CombatSimulator {
         let source_hrid = self.unit_hrid(source_ref);
         let target_hrid = self.unit_hrid(target);
         self.tally.add_attack(&source_hrid, &target_hrid, "damageOverTime", AttackOutcome::Damage(applied));
+
+        // 切片 19：JS :1453-1456——副本日志（DoT tick，无 isPlayer/伤害门控——JS 原样记录）。
+        if self.wipe_logs.is_some() {
+            let entry = self.build_wipe_log_entry("", "damageOverTime", target, applied);
+            self.wipe_logs.as_mut().expect("checked").push(entry);
+        }
 
         if current_tick < total_ticks {
             let time = self.simulation_time + DOT_TICK_INTERVAL;
@@ -3653,6 +3818,16 @@ impl CombatSimulator {
                 let source_hrid = self.unit_hrid(source);
                 let target_hrid = self.unit_hrid(target);
 
+                // 切片 19：JS :2023-2032——副本日志（技能直击玩家且造成伤害）。
+                if self.wipe_logs.is_some()
+                    && self.arena.get(target).is_player
+                    && attack_result.did_hit
+                    && attack_result.damage_done > 0.0
+                {
+                    let entry = self.generate_wipe_log_entry(source, &ability.hrid, target, &attack_result);
+                    self.wipe_logs.as_mut().expect("checked").push(entry);
+                }
+
                 if attack_result.hp_drain > 0.0 {
                     self.tally.add_hitpoints_gained(&source_hrid, &ability.hrid, attack_result.hp_drain);
                 }
@@ -3810,6 +3985,16 @@ impl CombatSimulator {
                         AttackOutcome::Damage(attack_result.thorn_damage_done),
                     );
                 }
+                // 切片 19：JS :2216-2219——技能反伤日志（thorn 打到玩家攻击者）。
+                if self.wipe_logs.is_some() && attack_result.thorn_damage_done > 0.0 && self.arena.get(source).is_player {
+                    let entry = self.build_wipe_log_entry(
+                        &target_hrid,
+                        &attack_result.thorn_type,
+                        source,
+                        attack_result.thorn_damage_done,
+                    );
+                    self.wipe_logs.as_mut().expect("checked").push(entry);
+                }
 
                 if self.arena.get(target).combat_details.combat_stats.retaliation > 0.0 {
                     let outcome = if attack_result.retaliation_damage_done > 0.0 {
@@ -3818,6 +4003,19 @@ impl CombatSimulator {
                         AttackOutcome::Miss
                     };
                     self.tally.add_attack(&target_hrid, &source_hrid, "retaliation", outcome);
+                }
+                // 切片 19：JS :2229-2232——技能反击日志（retaliation 打到玩家攻击者）。
+                if self.wipe_logs.is_some()
+                    && attack_result.retaliation_damage_done > 0.0
+                    && self.arena.get(source).is_player
+                {
+                    let entry = self.build_wipe_log_entry(
+                        &target_hrid,
+                        "retaliation",
+                        source,
+                        attack_result.retaliation_damage_done,
+                    );
+                    self.wipe_logs.as_mut().expect("checked").push(entry);
                 }
 
                 if self.arena.get(target).combat_details.current_hitpoints == 0.0 {
@@ -4671,19 +4869,113 @@ mod tests {
         assert!(simulator.enemies.is_some(), "重开后重新开波");
     }
 
+    /// 切片 19：副本 + full-result + logCombatEvents 不再被拒绝——团灭日志由引擎生成
+    /// （7 个结算点写环形缓冲，团灭时快照进 `wipeEvents`；timestamp 为确定性字符串）。
+    /// 怪物体力拉到极高（打不死）→ 持续普攻玩家留痕；再手动置零玩家血量制造团灭。
     #[test]
-    fn dungeon_full_result_rejects_combat_event_logging() {
+    fn dungeon_full_result_emits_wipe_events_when_logging() {
         let (mut options, player) = dungeon_production_options();
+        options.log_combat_events = true;
+        // 怪物模板换成打不死的高体力版（沿用 dungeon_production_options 的其余骨架）：
+        // attack_level 1000 → 命中率 ≈99.8%（acc^1.4/(acc^1.4+eva^1.4)，玩家闪避 11）、
+        // 攻击间隔 1s/1.5≈667ms；melee_level 1000 → 单击伤害 ≤1010 ≪ 玩家 HP 100100
+        // （stamina 10000），引导窗内玩家不会被击杀 → 缓冲稳定累积，杜绝随机团灭。
+        let enemy = UnitSpec {
+            hrid: "/monsters/dummy".to_string(),
+            is_player: false,
+            levels: Some(LevelsSpec {
+                stamina_level: Some(1.0e12),
+                attack_level: Some(1_000.0),
+                melee_level: Some(1_000.0),
+                defense_level: Some(1.0),
+                ..Default::default()
+            }),
+            combat_stats: vec![("attackInterval".to_string(), 1_000_000_000.0)],
+            ..Default::default()
+        };
+        options.encounter_templates = vec![TemplateSpec {
+            hrid: "/monsters/dummy".to_string(),
+            difficulty_tier: 0.0,
+            spec: enemy,
+        }];
+        let mut simulator = CombatSimulator::new(options);
+        simulator.add_player(&player).expect("player builds");
+
+        // 手动引导开局（等价 `simulate` 的前导段）。
+        simulator.reset();
+        let id = simulator.take_event_id();
+        simulator.queue.add_event(SimEvent::CombatStart { time: 0.0, id });
+        // 推进 5s：怪物普攻玩家（每次命中伤害>0 → 普攻直击日志点必然留痕）。
+        // 玩家攻速 1ms → 每毫秒约 1 个攻击事件，5s ≈ 5000+ 事件；怪物首击在
+        // t≈1s，迭代上限必须远大于事件数，否则永远轮不到怪物攻击事件。
+        for _ in 0..50_000 {
+            let Some(event) = simulator.queue.get_next_event() else { break };
+            simulator.simulation_time = event.time();
+            if simulator.simulation_time > 5.0 * ONE_SECOND {
+                break;
+            }
+            simulator.process_event(event).expect("event processes");
+        }
+        assert!(
+            simulator
+                .wipe_logs
+                .as_ref()
+                .expect("副本 + 日志 → 缓冲启用")
+                .buffer
+                .len()
+                > 0,
+            "怪物攻击玩家必须留下日志"
+        );
+
+        // 置零玩家血量（敌人存活）→ 副本团灭分支快照日志进 simResult。
+        for player_id in simulator.players.clone() {
+            simulator.arena.get_mut(player_id).combat_details.current_hitpoints = 0.0;
+        }
+        simulator.check_encounter_end().expect("check succeeds");
+
+        let result = simulator.tally.real.as_ref().expect("real result").to_value();
+        let events = result["wipeEvents"].as_array().expect("wipeEvents 数组");
+        assert_eq!(events.len(), 1, "一次团灭 = 一个事件");
+        let event = events[0].as_object().expect("事件是对象");
+        assert!(event.contains_key("simulationTime"));
+        assert!(event.contains_key("wave"));
+        // 确定性 timestamp：`t+{simulationTime}`（UI 只用作 v-for key，不显示）。
+        assert!(event["timestamp"].as_str().expect("timestamp 字符串").starts_with("t+"));
+        let logs = event["logs"].as_array().expect("logs 数组");
+        assert!(!logs.is_empty(), "团灭日志不能为空（怪物打玩家的过程必然留痕）");
+        for log in logs {
+            let log_object = log.as_object().expect("日志条目是对象");
+            for key in ["time", "wave", "source", "ability", "target", "damage", "beforeHp", "afterHp", "playersHp", "isCrit"] {
+                assert!(log_object.contains_key(key), "日志条目缺 {key}");
+            }
+            assert_eq!(log_object["source"].as_str().expect("source"), "/monsters/dummy", "伤害来源是怪");
+            assert_eq!(log_object["target"].as_str().expect("target"), "player1", "被打的是玩家");
+            assert!(log_object["isCrit"].is_boolean(), "isCrit 为布尔");
+            let players_hp = log_object["playersHp"].as_array().expect("playersHp 数组");
+            assert_eq!(players_hp.len(), 1, "单人场景的 HP 快照");
+        }
+        // 5s 引导窗内至少有一条普攻直击日志（怪物 autoAttack 玩家）。
+        assert!(
+            logs
+                .iter()
+                .any(|log| log["ability"] == serde_json::json!("autoAttack")),
+            "普攻直击日志点必须留痕"
+        );
+        // 团灭后缓冲清零（JS index=0; count=0）。
+        assert_eq!(simulator.wipe_logs.as_ref().expect("buffer").buffer.len(), 0, "团灭后缓冲清空");
+    }
+
+    /// 切片 19：非副本（普通区域）不启用日志缓冲——`zone?.isDungeon` 门控。
+    #[test]
+    fn regular_zone_with_logging_keeps_wipe_events_empty() {
+        let (mut options, player) = dungeon_production_options();
+        options.zone_is_dungeon = false;
         options.log_combat_events = true;
         let mut simulator = CombatSimulator::new(options);
         simulator.add_player(&player).expect("player builds");
-        let error = simulator
-            .simulate()
-            .expect_err("副本 + logCombatEvents 的 full-result 组合必须被拒绝");
-        assert_eq!(
-            error,
-            UnitError::error("wasm production path does not support dungeon wipe logs (logCombatEvents) yet")
-        );
+        simulator.simulate().expect("simulate succeeds");
+        let result = simulator.tally.real.as_ref().expect("real result").to_value();
+        assert_eq!(result["wipeEvents"], serde_json::json!([]), "非副本恒空数组");
     }
 
     #[test]
