@@ -356,6 +356,16 @@ impl SimResultState {
         *ensure_child(&mut self.deaths, hrid) += 1.0;
     }
 
+    /// 切片 12：提前停止谓词的只读视图（JS `deaths[hrid] || 0` 的归一语义）。
+    pub fn deaths_value(&self, hrid: &str) -> f64 {
+        self.deaths.get_str(hrid).copied().unwrap_or(0.0)
+    }
+
+    /// 切片 12：`playerRanOutOfMana[hrid] === true`（缺键为 false）。
+    pub fn player_ran_out_of_mana_value(&self, hrid: &str) -> bool {
+        self.player_ran_out_of_mana.get_str(hrid).copied().unwrap_or(false)
+    }
+
     /// JS `addWipeEvent(logs, simulationTime, wave)`（timestamp 由调用方注入）。
     pub fn add_wipe_event(&mut self, logs: Value, simulation_time: f64, wave: f64, timestamp: String) {
         if self.minimal {

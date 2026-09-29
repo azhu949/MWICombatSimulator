@@ -93,7 +93,7 @@ function buildLivePieces(payload) {
   return { zone, players };
 }
 
-async function runJsProductionSimulation(payload) {
+async function runJsProductionSimulation(payload, { shouldStop } = {}) {
   const { zone, players } = buildLivePieces(payload);
   const originalRandom = Math.random;
   Math.random = createSeededRandom(payload.seed >>> 0);
@@ -105,13 +105,13 @@ async function runJsProductionSimulation(payload) {
       combatScrollsEnabled: false,
       isGuildTrial: false,
     });
-    return await simulator.simulate(payload.simulationTimeLimit);
+    return await simulator.simulate(payload.simulationTimeLimit, { shouldStop });
   } finally {
     Math.random = originalRandom;
   }
 }
 
-function runRustProductionSimulation(engine, payload) {
+function runRustProductionSimulation(engine, payload, extraOptions = {}) {
   const { zone, players } = buildLivePieces(payload);
   const request = buildProductionRequest({
     players,
@@ -124,6 +124,7 @@ function runRustProductionSimulation(engine, payload) {
       enableHpMpVisualization: false,
       combatScrollsEnabled: false,
       isGuildTrial: false,
+      ...extraOptions,
     },
   });
   return runWasmProductionSimulation(engine, request);
@@ -201,5 +202,47 @@ describe.runIf(wasmPackageBuilt)('wasm engine slice-5 production parity (minimal
       const rustSimResult = runRustProductionSimulation(engine, payload);
       expect(firstDiff(jsonProjection(jsSimResult), rustSimResult), `seed ${seed} must match exactly`).toBeNull();
     }
+  });
+
+  // 切片 12：提前停止轮（候选轮 shouldStop → Rust earlyStop）在真实夹具上逐字段对账。
+  // watchHrid 用怪物 hrid 构造确定性死亡预算触发（谓词本身通用：读 deaths[watchHrid]）。
+  it('matches early-stop rounds (death budget) on the real fixture zone', async () => {
+    const engine = await getEngine();
+    const watchHrid = '/monsters/luna_empress';
+    const deathLimit = 10;
+    const payload = buildPayload(1, 101);
+
+    // 与 foodOptimizerSimulation 的候选轮 shouldStop 定义逐字一致。
+    const shouldStop = (instance) =>
+      instance.simResult.playerRanOutOfMana[watchHrid] === true ||
+      (instance.simResult.deaths[watchHrid] || 0) > deathLimit;
+
+    const jsSimResult = await runJsProductionSimulation(payload, { shouldStop });
+    const rustSimResult = runRustProductionSimulation(engine, payload, {
+      earlyStop: { watchHrid, deathLimit },
+    });
+
+    expect(firstDiff(jsonProjection(jsSimResult), rustSimResult)).toBeNull();
+    // 确认真的提前停了（防止退化成跑满对照）。
+    expect(rustSimResult.stoppedEarly).toBe(true);
+    expect(rustSimResult.simulatedTime).toBeLessThan(payload.simulationTimeLimit);
+    expect(rustSimResult.deaths[watchHrid]).toBe(11);
+  });
+
+  // deathLimit 不可达（等价 Infinity → null）时不提前停止，与 JS 无死亡分支一致。
+  it('matches when the early-stop death limit is unreachable', async () => {
+    const engine = await getEngine();
+    const watchHrid = 'player1';
+    const payload = buildPayload(1, 101);
+
+    const jsSimResult = await runJsProductionSimulation(payload, {
+      shouldStop: (instance) => instance.simResult.playerRanOutOfMana[watchHrid] === true,
+    });
+    const rustSimResult = runRustProductionSimulation(engine, payload, {
+      earlyStop: { watchHrid, deathLimit: Infinity },
+    });
+
+    expect(firstDiff(jsonProjection(jsSimResult), rustSimResult)).toBeNull();
+    expect(rustSimResult.stoppedEarly).toBe(false);
   });
 });

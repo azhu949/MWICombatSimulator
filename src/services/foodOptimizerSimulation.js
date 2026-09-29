@@ -144,11 +144,12 @@ export function getFoodOptimizerResources(request) {
   };
 }
 
-/// 单轮是否走 wasm 引擎（切片 5-B，默认关）：只有调用方显式开启，且本轮不需要
-/// JS 侧观察点 / 停止钩子时才为真——候选轮次的 `shouldStop`（空蓝 / 死亡预算）依赖
-/// JS 运行时状态，阈值与成本上界观察器改写 JS 模拟器实例。
+/// 单轮是否走 wasm 引擎（切片 5-B，默认关；切片 12 放宽）：调用方显式开启，且本轮
+/// 不需要 JS 侧数据观察器（阈值收集 `collectThresholds` / 成本上界 `costBound` 仍留 JS）。
+/// 候选轮的 `shouldStop`（空蓝 / 死亡预算）自切片 12 起由 Rust `earlyStop` 谓词承接
+///（谓词单调，两侧逐事件检查点一致）；基线轮（candidate 为空）本就无 shouldStop。
 export function shouldUseWasmOptimizerRound(request, candidate, collectThresholds, costBound) {
-  return request.useWasmEngine === true && !candidate && !collectThresholds && !costBound;
+  return request.useWasmEngine === true && !collectThresholds && !costBound;
 }
 
 export async function simulateFoodOptimizerRound(
@@ -169,7 +170,7 @@ export async function simulateFoodOptimizerRound(
 
   // 切片 5-B A/B 分支（默认关）：判据见 `shouldUseWasmOptimizerRound`。
   if (shouldUseWasmOptimizerRound(request, candidate, collectThresholds, costBound)) {
-    const { zone, players } = buildFoodOptimizerPieces(request, null);
+    const { zone, players } = buildFoodOptimizerPieces(request, candidate);
     const simResult = await tryRunWasmProductionRound({
       useWasmEngine: true,
       players,
@@ -183,6 +184,11 @@ export async function simulateFoodOptimizerRound(
         enableHpMpVisualization: false,
         combatScrollsEnabled: Boolean(request.payload.extra?.combatScrollsEnabled),
         isGuildTrial: Boolean(request.payload.simulationContext?.isGuildTrial),
+        // 切片 12：候选轮把 JS shouldStop 谓词映射为 Rust earlyStop（与下方 JS 分支
+        // 的 shouldStop 定义逐字对应：空蓝或死亡数超预算）。deathLimit 形参在调用方
+        // 已是 `(deathBudget ?? Infinity) - 已累计死亡`，可能为负（早已超限）或 Infinity
+        //（负值/Infinity 由 bridge 归一：Infinity → null，负值原样传递——两侧语义一致）。
+        ...(candidate ? { earlyStop: { watchHrid: hrid, deathLimit } } : {}),
       },
     });
     if (simResult) {
