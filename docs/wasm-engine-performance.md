@@ -433,3 +433,47 @@ npmmirror 的 `binaryen@121` npm 包自带可用的 `wasm-opt`（`node_modules/b
 1. `update_details` 池化 / `enemyRespawn` 单位模板缓存（parity 风险高，RNG 时点）。
 2. WASM 覆盖扩展（shouldStop 提前停止 / 观察器数据）——解锁主页端到端收益的主线。
 3. `Interner` 字符串驻留（大工程，收益待估）。
+
+## 11. 切片 12：WASM 覆盖扩展——shouldStop 提前停止（2026-09-29）
+
+### 11.1 背景
+
+切片 5 起 WASM 引擎只覆盖「无 JS 侧观察点」的轮次，食物优化器的**候选轮**（带
+`shouldStop` 空蓝/死亡预算提前停止）全部留在 JS 引擎——而候选轮恰是优化器工作量的
+大头。本切片把这类轮次也纳入 WASM。
+
+### 11.2 实现
+
+- **Rust `earlyStop` 谓词**（simulator.rs）：`SimulatorOptions.earlyStop: Option<
+EarlyStopSpec>`（`{ watchHrid, deathLimit }`，camelCase）。主循环**每个事件处理后**
+  求值（与 JS `simulate(limit, { shouldStop })` 的检查点逐事件一致）：
+  `playerRanOutOfMana[watchHrid] === true || (deaths[watchHrid] || 0) > deathLimit`。
+  谓词单调（空蓝粘滞、死亡只增），无漏检窗口。`deathLimit: null` = JS `Infinity`
+  （仅空蓝停止）。命中后收尾与 JS 一致：`simulatedTime = 最后事件时间`、
+  `stoppedEarly = true`。`SimResultState` 新增只读访问器 `deaths_value` /
+  `player_ran_out_of_mana_value`（tally 层转发）。
+- **JS 桥**（wasmProductionBridge.js + foodOptimizerSimulation.js）：请求 options 透传
+  `earlyStop`（`Infinity`/非有限 → `null`）；`shouldUseWasmOptimizerRound` 放宽——
+  候选轮放行，阈值收集（`collectThresholds`）与成本上界（`costBound`）轮次仍留 JS
+  （两者需拦截 JS 模拟器实例，收益待后续切片评估）。
+- **覆盖变化**：`useWasmEngine` 开启时，优化器轮次中仅剩阈值收集轮与 top-ten 成本
+  剪枝轮走 JS。
+
+### 11.3 验收
+
+- cargo test **105 passed**（+3：死亡预算触发含部分时间/无 earlyStop 跑满/
+  None 死亡上限忽略死亡）；
+- parity **19 passed**（+2：真实夹具 + luna_empress deathLimit=10 精确触发——
+  `stoppedEarly=true`、部分 `simulatedTime`、`deaths=11` 逐字段对账；
+  deathLimit 不可达（Infinity→null）与 JS 无死亡分支一致）；
+- npm test 2638 passed + prettier；build + verify-pages-build 全过。
+- 性能：热节流下配对 A/B（s11 vs s12）两轮方向相反（105.4/106.3、116.6/104.1），
+  逐事件谓词检查无可分辨回退。
+
+### 11.4 剩余候选（更新）
+
+1. 观察器数据扩展：阈值收集（`observeFoodOptimizerThresholds`）与成本上界
+   （`observeFoodOptimizerCostBound`）的 WASM 化——需把逐事件消费快照导出或
+   把谓词下推到 Rust，复杂度高于本切片。
+2. `update_details` 池化 / `enemyRespawn` 单位模板缓存（parity 风险高，RNG 时点）。
+3. `Interner` 字符串驻留（大工程，收益待估）。

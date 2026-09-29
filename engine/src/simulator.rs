@@ -229,6 +229,22 @@ impl SimResultTally {
         self.push("updateTimeSpentAlive", vec![json!(hrid), json!(alive), json!(time)]);
     }
 
+    /// 切片 12：提前停止谓词的只读视图（`hrid` 未记账时等价 JS 的 `undefined` 归一）。
+    pub fn deaths_for(&self, hrid: &str) -> f64 {
+        match self.real.as_ref() {
+            Some(real) => real.deaths_value(hrid),
+            None => 0.0,
+        }
+    }
+
+    /// `playerRanOutOfMana[hrid] === true`（缺键 / false / 探针模式都为假）。
+    pub fn mana_out_for(&self, hrid: &str) -> bool {
+        match self.real.as_ref() {
+            Some(real) => real.player_ran_out_of_mana_value(hrid),
+            None => false,
+        }
+    }
+
     /// 探针模式只记录 hrid（与 JS `ParitySimResult` 一致）；生产模式转发完整统计值。
     pub fn set_drop_rate_multipliers(
         &mut self,
@@ -563,6 +579,25 @@ pub struct SimulatorOptions {
     /// JS `isGuildTrial`（为 true 时 `scrollsAllowed` 为假、卷轴上下文为 'guild_trial'）。
     #[serde(default)]
     pub is_guild_trial: bool,
+    /// 切片 12：提前停止谓词（等价 JS `simulate(limit, { shouldStop })` 回调）。
+    ///
+    /// 生产调用方只用一种谓词（食物优化器候选轮）：`playerRanOutOfMana[watchHrid] ===
+    /// true || (deaths[watchHrid] || 0) > deathLimit`——两个状态都单调（空蓝粘滞、
+    /// 死亡只增），Rust 侧在**每个事件处理后**求值（与 JS 检查点逐事件一致）。
+    /// `death_limit` 为 `None` 时表示 JS 的 `Infinity`（无死亡上限，仅空蓝停止）。
+    /// 通用 JS 回调（任意谓词）不在 WASM 契约内，仍由 JS 引擎承接。
+    #[serde(default)]
+    pub early_stop: Option<EarlyStopSpec>,
+}
+
+/// 提前停止谓词参数（切片 12）。
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct EarlyStopSpec {
+    /// 监视单位的 hrid（如 `player1`）。
+    pub watch_hrid: String,
+    /// 死亡上限；`None` = JS `Infinity`（不因死亡停止）。
+    pub death_limit: Option<f64>,
 }
 
 fn default_max_result_calls() -> usize {
@@ -608,6 +643,8 @@ pub struct CombatSimulator {
     combat_scrolls_enabled: bool,
     player_count: usize,
     is_guild_trial: bool,
+    /// 切片 12：提前停止谓词参数（`None` = 无提前停止）。
+    early_stop: Option<EarlyStopSpec>,
 }
 
 /// 取「第一个存活单位」：改成收 `Option<&[UnitId]>` 切片视图，调用方无需克隆单位列表。
@@ -683,6 +720,7 @@ impl CombatSimulator {
             combat_scrolls_enabled: options.combat_scrolls_enabled,
             player_count: 0,
             is_guild_trial: options.is_guild_trial,
+            early_stop: options.early_stop,
         }
     }
 
@@ -751,6 +789,22 @@ impl CombatSimulator {
         // minimal 结果：跳过经验快照与掉落记账（JS `if (this.minimalResult) return;`）。
     }
 
+    /// 切片 12：提前停止谓词（等价食物优化器候选轮的 JS `shouldStop`）。
+    ///
+    /// `playerRanOutOfMana[watch_hrid] === true || (deaths[watch_hrid] || 0) > death_limit`。
+    fn early_stop_hit(&self) -> bool {
+        let Some(spec) = self.early_stop.as_ref() else {
+            return false;
+        };
+        if self.tally.mana_out_for(&spec.watch_hrid) {
+            return true;
+        }
+        match spec.death_limit {
+            Some(death_limit) => self.tally.deaths_for(&spec.watch_hrid) > death_limit,
+            None => false,
+        }
+    }
+
     // -----------------------------------------------------------------------
     // simulate / reset / processEvent
     // -----------------------------------------------------------------------
@@ -772,6 +826,7 @@ impl CombatSimulator {
         self.reset();
 
         let mut ticks = 0u64;
+        let mut stopped_early = false;
         let combat_start = SimEvent::CombatStart { time: 0.0, id: self.take_event_id() };
         self.queue.add_event(combat_start);
 
@@ -791,6 +846,13 @@ impl CombatSimulator {
             let event = self.queue.get_next_event().expect("peeked event exists");
             self.process_event(event)?;
 
+            // 切片 12：JS 在每个事件处理后调用 `shouldStop(this)`；谓词单调
+            //（空蓝粘滞、死亡只增），与 JS 检查点一致地逐事件求值。
+            if self.early_stop_hit() {
+                stopped_early = true;
+                break;
+            }
+
             ticks += 1;
             if ticks == 1000 {
                 ticks = 0;
@@ -799,15 +861,16 @@ impl CombatSimulator {
         drop(prof_total);
 
         let prof_finalize = crate::prof::start("simulate(finalize)");
-        let effective_simulation_time = limit;
+        // JS：`stoppedEarly ? this.simulationTime : normalizedSimulationTimeLimit`。
+        let effective_simulation_time = if stopped_early { self.simulation_time } else { limit };
         // finalizeScrollUsage / discardPendingExperience：切片 4 无卷轴与挂起经验。
         self.tally.simulated_time = effective_simulation_time;
-        self.tally.stopped_early = false;
+        self.tally.stopped_early = stopped_early;
         if let Some(real) = self.tally.real.as_mut() {
             // JS：`simResult.isDungeon = this.zone?.isDungeon ?? false`（生产路径仅普通区域）。
             real.set_is_dungeon(false);
             real.set_simulated_time(effective_simulation_time);
-            real.set_stopped_early(false);
+            real.set_stopped_early(stopped_early);
         }
 
         for player in self.players.clone() {
@@ -2929,5 +2992,103 @@ mod tests {
         assert_eq!(normalize_time_limit(f64::NAN), 0.0);
         assert_eq!(normalize_time_limit(-5.0), 0.0);
         assert_eq!(normalize_time_limit(12.5), 12.5);
+    }
+
+    /// 切片 12：真实区域 + 模板的小型生产场景（无需 JS 侧夹具）。
+    fn early_stop_production_options(early_stop: Option<EarlyStopSpec>) -> (SimulatorOptions, UnitSpec) {
+        let player = UnitSpec {
+            hrid: "player1".to_string(),
+            is_player: true,
+            levels: Some(LevelsSpec { stamina_level: Some(10.0), ..Default::default() }),
+            combat_stats: vec![("attackInterval".to_string(), 1_000_000.0)],
+            ..Default::default()
+        };
+        let enemy = UnitSpec {
+            hrid: "/monsters/dummy".to_string(),
+            is_player: false,
+            levels: Some(LevelsSpec { defense_level: Some(1.0), ..Default::default() }),
+            ..Default::default()
+        };
+        let options = SimulatorOptions {
+            seed: 7,
+            simulation_time_limit: 60.0 * ONE_SECOND,
+            zone_present: true,
+            real_result: true,
+            minimal_result: true,
+            zone_hrid: Some("/actions/combat/early_stop_test".to_string()),
+            zone_monster_spawn_info: Some(serde_json::json!({
+                "randomSpawnInfo": {
+                    "maxSpawnCount": 1,
+                    "maxTotalStrength": 1,
+                    "spawns": [
+                        { "combatMonsterHrid": "/monsters/dummy", "difficultyTier": 0, "rate": 1, "strength": 1 }
+                    ]
+                },
+                "bossSpawns": null,
+                "battlesPerBoss": 0
+            })),
+            encounter_templates: vec![TemplateSpec {
+                hrid: "/monsters/dummy".to_string(),
+                difficulty_tier: 0.0,
+                spec: enemy,
+            }],
+            early_stop,
+            ..Default::default()
+        };
+        (options, player)
+    }
+
+    #[test]
+    fn early_stop_triggers_on_death_limit_and_reports_partial_time() {
+        // 监视怪物死亡数：deathLimit=2 → 第 3 次死亡后立即停止（怪物 HP 很低，玩家速杀）。
+        let (mut options, player) = early_stop_production_options(Some(EarlyStopSpec {
+            watch_hrid: "/monsters/dummy".to_string(),
+            death_limit: Some(2.0),
+        }));
+        // 拉长时限，让死亡预算成为唯一停止原因。
+        options.simulation_time_limit = 20.0 * 60.0 * ONE_SECOND;
+        let mut simulator = CombatSimulator::new(options.clone());
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+        let result = simulator.tally.real.as_ref().expect("real result").to_value();
+        assert_eq!(result["stoppedEarly"], serde_json::json!(true));
+        assert!(result["simulatedTime"].as_f64().expect("time") < options.simulation_time_limit);
+        let deaths = result["deaths"]["/monsters/dummy"].as_f64().expect("monster deaths recorded");
+        assert_eq!(deaths, 3.0);
+    }
+
+    #[test]
+    fn early_stop_absent_runs_to_limit() {
+        let (mut options, player) = early_stop_production_options(None);
+        options.simulation_time_limit = 30.0 * ONE_SECOND;
+        let mut simulator = CombatSimulator::new(options.clone());
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+        let result = simulator.tally.real.as_ref().expect("real result").to_value();
+        assert_eq!(result["stoppedEarly"], serde_json::json!(false));
+        assert_eq!(
+            result["simulatedTime"].as_f64().expect("time"),
+            options.simulation_time_limit
+        );
+    }
+
+    #[test]
+    fn early_stop_none_death_limit_ignores_deaths() {
+        // deathLimit: None（JS Infinity）：怪物死亡不触发停止，跑满时限。
+        let (mut options, player) = early_stop_production_options(Some(EarlyStopSpec {
+            watch_hrid: "/monsters/dummy".to_string(),
+            death_limit: None,
+        }));
+        options.simulation_time_limit = 30.0 * ONE_SECOND;
+        let mut simulator = CombatSimulator::new(options.clone());
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+        let result = simulator.tally.real.as_ref().expect("real result").to_value();
+        assert_eq!(result["stoppedEarly"], serde_json::json!(false));
+        assert_eq!(
+            result["simulatedTime"].as_f64().expect("time"),
+            options.simulation_time_limit
+        );
+        assert!(result["deaths"].get("/monsters/dummy").is_some());
     }
 }

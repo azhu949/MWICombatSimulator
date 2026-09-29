@@ -140,8 +140,10 @@ describe('wasm production A/B wiring', () => {
     const request = { useWasmEngine: true };
     const candidate = { food: [] };
     expect(shouldUseWasmOptimizerRound({}, null, false, null)).toBe(false);
-    expect(shouldUseWasmOptimizerRound(request, candidate, false, null)).toBe(false);
+    // 切片 12：候选轮（shouldStop 由 Rust earlyStop 承接）已放行。
+    expect(shouldUseWasmOptimizerRound(request, candidate, false, null)).toBe(true);
     expect(shouldUseWasmOptimizerRound(request, null, true, null)).toBe(false);
+    expect(shouldUseWasmOptimizerRound(request, candidate, true, null)).toBe(false);
     expect(shouldUseWasmOptimizerRound(request, null, false, { cutoff: 1 })).toBe(false);
     expect(shouldUseWasmOptimizerRound(request, null, false, null)).toBe(true);
   });

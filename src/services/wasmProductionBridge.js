@@ -277,6 +277,17 @@ export function buildProductionRequest({ players, zone, labyrinth = null, seed, 
       isGuildTrial: Boolean(options.isGuildTrial),
       blazeAbility: getBlazeAbilityTemplate(),
       bloomAbility: getBloomAbilityTemplate(),
+      // 切片 12：候选轮 shouldStop 谓词（watchHrid + deathLimit）。deathLimit 为
+      // Infinity / 非有限数时传 null——Rust 侧反序列化为 None（= JS Infinity，仅空蓝停止）。
+      earlyStop: options.earlyStop
+        ? {
+            watchHrid: options.earlyStop.watchHrid,
+            deathLimit:
+              options.earlyStop.deathLimit != null && Number.isFinite(options.earlyStop.deathLimit)
+                ? options.earlyStop.deathLimit
+                : null,
+          }
+        : null,
     },
     players: players.map((player) => dumpUnitSpec(player)),
   };
