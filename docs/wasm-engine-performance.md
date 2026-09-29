@@ -22,7 +22,11 @@
 > 切片 16（2026-09-29）：**迷宫**纳入覆盖（迷宫 full-result **5.42–5.54×**，第 15 节）。
 >
 > 切片 17（2026-09-29）：**战斗卷轴**窗口语义纳入覆盖（卷轴 full-result **3.21–3.31×**，第 16 节）。
-> 当前只剩公会试炼 / 无区域与「副本 + full-result + `logCombatEvents`」组合留 JS。
+>
+> 切片 18（2026-09-29）：**生产载荷默认点亮 wasm 引擎**并让产物进部署链
+> （`public/engine/pkg` 随仓库提交 → vite 拷进 `dist`，Pages 子路径 URL 修正；
+> 见第 17 节）。仍留 JS 的只有：公会试炼 / 无区域（生产不可达的预留语义）、
+> 「副本 + full-result + `logCombatEvents`」组合与成本上界观察器。
 
 ## 1. 测量方法
 
@@ -68,32 +72,38 @@ JS 152 ms / WASM 75.7 ms（2.01×）与 JS 245 ms / WASM 100 ms（2.45×）之�
 | 区域                    | 普通区域 + **副本**（切片 15）+ **迷宫**（切片 16）    | 副本唯一例外：full-result 且 `logCombatEvents`（wipeEvents 含墙钟时间戳）；迷宫为无 zone 单怪循环 |
 | 战斗卷轴                | ✅ 开启（切片 17）                                     | 窗口语义 / 库存记账与 JS 逐位一致；迷宫内自动忽略（`allowed: false`）                             |
 | 战斗日志 / HP-MP 可视化 | ✅ 均可（切片 14）                                     | 日志仅控制台输出；可视化无流式 progress（时序随结果一次性返回）                                   |
-| 公会试炼                | 否                                                     | 走 JS                                                                                             |
+| 公会试炼                | 否（生产不可达的预留语义）                             | `options.isGuildTrial` 无生产传值点；接入公会试炼模拟时再评估                                     |
 | 优化器观察点            | 阈值/闲置观察（切片 13 `observers`）                   | 仅成本上界观察器（`costBound`）留 JS                                                              |
 | 提前停止                | 空蓝 / 死亡预算（切片 12 `earlyStop`）                 | 无需留 JS                                                                                         |
 
-> 本表为切片 17 后的当前边界（迷宫细节见第 15 节、卷轴见第 16 节）。切片 5–11 期间的历史边界
+> 本表为切片 18 后的当前边界（迷宫细节见第 15 节、卷轴见第 16 节、默认开关与部署见第 17 节）。切片 5–11 期间的历史边界
 > （候选轮/阈值轮全部留 JS）见第 11 节勘误与第 12 节——彼时默认生产路径
 > （`collectThresholds: reuse` 且 `reuse` 默认 true）的所有优化器轮次实际都走 JS。
 
 据此，食物优化器当前的判据（`shouldUseWasmOptimizerRound`）为：
 `useWasmEngine === true && !costBound`——除 top-ten 成本剪枝轮外全部放行
-（候选轮的 `earlyStop` 与阈值/闲置 `observers` 分别由切片 12/13 承接）。
+（候选轮的 `earlyStop` 与阈值/闲置 `observers` 分别由切片 12/13 承接；
+切片 18 起优化器请求快照默认带 `useWasmEngine: true`，不再依赖调用方显式开启）。
 
 ## 4. 结论与建议
 
 1. **JS 引擎保留**：它是唯一全功能实现与 parity 基准（用户定案：最终只保留 WASM，
    待剩余缺口——公会试炼 / 无区域 / 副本日志组合——清零后再删），
    删掉它会让 WASM 的正确性失去参照。
-2. **WASM 引擎保留为可选加速器**：A/B 开关（`useWasmEngine`）**默认关**，
-   引擎缺失 / 配置不支持 / 快照或运行时出错一律静默回退 JS，不会让页面不可用。
+2. **WASM 引擎为默认引擎（切片 18 翻转）**：所有生产载荷默认带 `useWasmEngine: true`
+   （首页单轮 / 队列场景与基线轮 / 食物优化器 / 触发器优化器 / 批量区域与迷宫扫描 /
+   推荐扫描），引擎缺失 / 配置不支持 / 快照或运行时出错一律静默回退 JS，不会让页面
+   不可用；显式 `false` / 缺省的 JS 路径完整保留（测试与实验载荷用）。产物随仓库
+   提交（`public/engine/pkg`），CI 无 Rust 工具链也能构建出带 wasm 的部署产物。
 3. **端到端提速已兑现（切片 13–17）**：观察器 WASM 化后，默认优化器路径（除成本剪枝轮）
    全部落在 WASM 覆盖内，任务级配对 A/B 实测 **1.50–1.53×**（第 12 节）；切片 14 起
    首页单轮全量结果（full-result + 可视化）也走 WASM，单轮引擎级配对 A/B 实测
    **3.20×**（第 13 节）；切片 15 副本波次纳入覆盖，副本 full-result 单轮实测
    **2.59–2.64×**（第 14 节）；切片 16 迷宫纳入覆盖，迷宫 full-result 单轮实测
    **5.42–5.54×**（第 15 节）；切片 17 战斗卷轴纳入覆盖，卷轴 full-result 单轮实测
-   **3.21–3.31×**（第 16 节）。后续扩展方向：公会试炼 / 无区域。
+   **3.21–3.31×**（第 16 节）；切片 18 生产载荷默认点亮 + 产物进部署链，线上用户
+   直接用上 wasm 引擎（第 17 节）。后续扩展方向：剩余留 JS 组合（生产不可达的
+   公会试炼 / 无区域语义、副本日志组合与成本上界观察器）。
 4. 打开 `useWasmEngine` 的前提（引擎已构建、配置落在覆盖表内）见第 3 节；行为分叉
    （JS/WASM 双路径）由 parity 测试兜底（第 12.3 节）。
 
@@ -914,9 +924,88 @@ WASM 侧则复用模板实例化；请求 JSON 也最小（38.1 KB，无区域�
   `npm test` 192 文件 / 2651 用例 + prettier 全绿；`build:wasm`
   （wasm-opt -O4：916874 → 800932 bytes，-12.6%）→ `build` → `verify-pages-build` 全过。
 
-### 16.7 仍留 JS 的部分（更新）
+### 16.7 仍留 JS 的部分（截至切片 17）
 
 1. 公会试炼与无区域（无 zone 且无迷宫）。
 2. 「副本 + full-result + `logCombatEvents`」组合（`wipeEvents` 墙钟时间戳）。
 3. 成本上界观察器（`observeFoodOptimizerCostBound`）。
 4. `useWasmEngine` 默认仍为 false——「默认开关翻转」是独立切片候选。
+
+## 17. 切片 18：生产载荷默认点亮 wasm 引擎 + 产物进部署链（2026-09-29）
+
+### 17.1 背景与动机
+
+切片 5–17 把 WASM 的能力面铺满（结果形状 / 区域类型 / 卷轴 / 观察器 / 提前停止），
+但 `useWasmEngine` 在主线程**从未有过发送点**——worker.js 只读 `event.data.useWasmEngine`，
+而全部生产 payload 构造函数（store / 快照 / 域层）都不设置它。同时摸底确认两个部署缺口：
+
+- **CI 无 Rust 工具链且 `engine/pkg` 被 gitignore**：`npm run build` 产出的 `dist` 不含
+  wasm，线上（GitHub Pages）永远 `engine_unavailable` 回退 JS。
+- **loader 固定两级上跳**（`../../engine/pkg`）：worker bundle 位于 `<site>/assets/`，
+  两级上跳在 Pages 子路径（`user.github.io/<repo>/`）会越出 `<repo>/` 前缀 → 404。
+
+另一个摸底结论（用户指认 + 代码验证）：**公会试炼与无区域在生产载荷里不可达**——
+`options.isGuildTrial === true` 无任何生产调用方传值（只有测试），
+`buildSingleSimulationPayload` 的 if/else 保证 zone 或 labyrinth 至少其一。
+两者是「预留语义」，不是当前缺口，从留 JS 清单改记为「接入时再评估」。
+
+### 17.2 实现
+
+**点亮发送点（六处生产 payload 构造）**
+
+- `simulationDomain.buildSingleSimulationPayload`：payload 加 `useWasmEngine: true`
+  （覆盖首页单轮、队列场景轮 / 基线轮、触发器优化器候选轮——三者共用该函数）。
+- `foodOptimizerSnapshot.snapshotFoodOptimizerInput`：优化器请求快照加
+  `useWasmEngine: true`（该字段进输入签名：引擎切换让存量缓存报告过期一次，保守正确；
+  成本上界剪枝轮仍由 `shouldUseWasmOptimizerRound` 挡回 JS）。
+- `advisorDomain.createAdvisorSimulationPayload` + `advisorRunExecution` 批量消息：
+  推荐扫描单轮与 quick/refine 批量轮点亮。
+- `simulatorSimulationActions` 的 `start_simulation_all_zones` / `all_labyrinths` 批量消息。
+- `multiWorker.buildWorkerMessage`：主线程批量消息的开关透传给每个子 worker
+  （未开启时不注入字段，消息形状最小化）。
+
+**worker.js 的 seed 兜底**：Rust RNG 自带确定性、必须显式 seed；载荷未带 seed 时
+（首页单轮 / 批量扫描）在 `installSeedScope` 之前随机采一个
+（`(Math.random() * 0x100000000) >>> 0`，此时 Math.random 仍是原生），
+保持「每场独立随机流」——与 JS 分支无 seed 时的统计语义等价。带 seed 的路径
+（优化器公共随机数）原样透传。
+
+**部署链**
+
+- 新增 `scripts/sync-wasm-to-public.mjs`（`build:wasm` 末步）：把
+  `mwi_combat_engine.js` + `mwi_combat_engine_bg.wasm`（wasm-opt 后）拷进
+  `public/engine/pkg`。public 由 vite 接管：dev 映射到站点根、构建原样拷进
+  `dist/engine/pkg`；**产物随仓库提交**，CI 无 Rust 工具链也能构建出带引擎的 dist。
+- `verify-pages-build` 新增两条断言：`dist/engine/pkg` 两个文件必须存在（缺失即
+  线上永远回退 JS，构建红灯）。
+- `wasmEngineLoader` 改为候选式解析：源码布局两级上跳（dev / Node）→ 打包布局
+  一级上跳（`assets/` → 站点根），修复 Pages 子路径 404；`.prettierignore` 排除
+  wasm-pack 生成的胶水代码（每次 build:wasm 重新生成，格式化无意义）。
+
+### 17.3 验证
+
+- `npm test` 192 文件 / **2652 用例** + prettier 全绿（multiWorker 透传 +1 用例；
+  simulationDomain / advisorDomain 的 payload 精确断言同步更新为含开关字段）。
+- 5 个 wasm 套件 **32 passed**（两侧逐字段一致性未受影响）。
+- `npm run build` + `verify-pages-build` 全过，`dist/engine/pkg` 实测含
+  `mwi_combat_engine.js`（13 KB）+ `mwi_combat_engine_bg.wasm`（800932 bytes，
+  wasm-opt -O4 后）。
+- `cargo test` 122 passed（Rust 侧零改动，复跑确认）。
+
+### 17.4 行为语义（用户可见变化）
+
+- 所有生产模拟默认走 wasm：引擎级单轮提速按口径 2.6–5.5×（第 14–16 节实测），
+  优化器任务级 1.50–1.53×（第 12 节）。
+- **无流式进度条**（wasm 路径时序随结果一次性返回）：首页单轮进度条 0→完成直跳、
+  HP/MP 图表在结束时渲染——这是切片 14 起已存在并文档化的行为，本切片只是让它
+  真正生效。若需回退流式体验，清掉 localStorage 的引擎开关相关实验项即可走 JS。
+- wasm 失败静默回退 JS：引擎缺失（部署产物不含 wasm）/ 「副本 + full-result + 日志」
+  组合 / 运行时出错，页面行为与切片 17 前完全一致。
+
+### 17.5 仍留 JS 的部分（截至切片 18）
+
+1. 「副本 + full-result + `logCombatEvents`」组合（`wipeEvents` 墙钟时间戳）。
+2. 成本上界观察器（`observeFoodOptimizerCostBound`，依赖 JS 运行时状态）。
+3. 公会试炼与无区域：**生产不可达的预留语义**（无传值点 / 构造保证 zone 或
+   labyrinth 至少其一），接入公会试炼模拟时再评估，不计入「删 JS 引擎」缺口。
+4. （已消项）~~默认开关翻转~~——本切片完成。

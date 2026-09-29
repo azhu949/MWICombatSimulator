@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:wasm": "wasm-pack build engine --target web && node scripts/optimize-wasm.mjs",
+    "build:wasm": "wasm-pack build engine --target web && node scripts/optimize-wasm.mjs && node scripts/sync-wasm-to-public.mjs",
     "verify:wasm": "node scripts/verify-wasm-build.mjs",
     "benchmark:combat-engine": "node scripts/benchmark-combat-engine.mjs",
     "benchmark:wasm-engine": "node scripts/run-wasm-benchmark.mjs",

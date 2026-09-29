@@ -1,3 +1,6 @@
 # 脚本读取后生成的 JSON，格式化会与脚本输出不一致，排除避免来回改动
 src/combatsimulator/data/
 src/shared/gameDataIndex.generated.json
+# wasm-pack 生成的胶水代码（切片 18 随仓库提交）：每次 build:wasm 重新生成，
+# prettier 重排无意义且会与生成器输出冲突
+public/engine/pkg/
