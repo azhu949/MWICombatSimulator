@@ -2057,43 +2057,48 @@ impl CombatSimulator {
         true
     }
 
-    fn spend_ability_mana(&mut self, source: UnitId, ability_hrid: &str, mana_cost: f64, slot: usize) {
+    /// 只扣蓝 + 玩家侧蓝耗记账。`last_used` 的写入由调用方完成：取还式窗口内
+    /// （见 `try_use_ability`）技能槽位为 None，冷却时间戳写在调用方的 owned 副本上，
+    /// 随 restore 一并落回槽位。
+    fn spend_ability_mana(&mut self, source: UnitId, ability_hrid: &str, mana_cost: f64) {
         let is_player = self.arena.get(source).is_player;
         if is_player {
             let unit = self.arena.get_mut(source);
             let existing = unit.ability_mana_costs.get_str(ability_hrid).copied();
             match existing {
-                Some(current) => unit.ability_mana_costs.set(ability_hrid.to_string(), current + mana_cost),
+                Some(current) => unit.ability_mana_costs.set_str(ability_hrid, current + mana_cost),
                 None => unit.ability_mana_costs.set(ability_hrid.to_string(), mana_cost),
             }
         }
 
-        let time = self.simulation_time;
-        let unit = self.arena.get_mut(source);
-        unit.combat_details.current_manapoints -= mana_cost;
-        if let Some(ability) = unit.abilities.get_mut(slot).and_then(|slot_ability| slot_ability.as_mut()) {
-            ability.last_used = time;
-        }
+        self.arena.get_mut(source).combat_details.current_manapoints -= mana_cost;
     }
 
     fn try_use_ability(&mut self, source: UnitId, slot: usize) -> Result<bool, UnitError> {
         let _prof = crate::prof::start("ability.try_use");
-        let Some(ability) = self
+        // 免深拷贝（第三批）：取还式（take → 处理 → restore）。原先每次施放都要深拷贝一份
+        // `Ability`（效果数组 + 触发器 + 多个 String）；现在把槽内技能**移出**到局部 owned
+        // 变量，效果循环结束后原样放回——零克隆。安全性：效果循环内的所有路径都只触
+        // 「敌方列表/新单位/死者」或清队列，不会读 source 单位的技能槽（damage 效果目标
+        // 恒为敌方列表，永不可能等于 source；parry 分支只 clear 队列）。
+        let Some(mut ability) = self
             .arena
-            .get(source)
+            .get_mut(source)
             .abilities
-            .get(slot)
-            .and_then(|slot_ability| slot_ability.as_ref())
-            .cloned()
+            .get_mut(slot)
+            .and_then(|slot_ability| slot_ability.take())
         else {
             return Ok(false);
         };
 
         if !self.can_use_ability(source, ability.mana_cost, true) {
+            self.arena.get_mut(source).abilities[slot] = Some(ability);
             return Ok(false);
         }
 
-        self.spend_ability_mana(source, &ability.hrid, ability.mana_cost, slot);
+        let time = self.simulation_time;
+        ability.last_used = time;
+        self.spend_ability_mana(source, &ability.hrid, ability.mana_cost);
 
         // 免克隆：原先 `todo_abilities: Vec<Ability>` 会把每个待施放技能再深拷贝一遍；
         // 改为「owned 主技能 + 可选 blaze/bloom owned 技能」的引用链——遍历顺序、
@@ -2156,6 +2161,11 @@ impl CombatSimulator {
                 }
             }
         }
+
+        // restore：把（已写好 last_used 的）owned 副本放回槽位。放在 ripple 段**之前**——
+        // ripple 冷却回溯会遍历技能槽写 last_used，必须看到完整槽位；效果循环内也无任何
+        // 路径读 source 的技能槽（已核实 damage 目标恒为敌方列表、promote/revive 触新单位）。
+        self.arena.get_mut(source).abilities[slot] = Some(ability);
 
         let ripple = self.arena.get(current_source).combat_details.combat_stats.ripple;
         if ripple > 0.0 && self.rng.next_f64() < ripple {
