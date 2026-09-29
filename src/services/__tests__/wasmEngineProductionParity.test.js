@@ -17,6 +17,7 @@ import { describe, expect, it } from 'vitest';
 import CombatSimulator from '../../combatsimulator/combatSimulator.js';
 import Player from '../../combatsimulator/player.js';
 import Zone from '../../combatsimulator/zone.js';
+import Labyrinth from '../../combatsimulator/labyrinth.js';
 import { buildSimulationExtraBuffs } from '../../shared/simulationExtraBuffs.js';
 import { importSoloConfig } from '../importExportMapper.js';
 import { buildPlayersForSimulation, createEmptyPlayerConfig } from '../playerMapper.js';
@@ -40,6 +41,16 @@ const wasmPackageBuilt = existsSync(gluePath) && existsSync(wasmPath);
 
 const FIXTURE_ZONE_HRID = '/actions/combat/jungle_planet';
 const FIXTURE_DUNGEON_HRID = '/actions/combat/chimerical_den';
+// 切片 16：迷宫（labyrinth）——第一只迷宫怪 + 一个真实补给箱 + 已购满/中档商店升级。
+const FIXTURE_LABYRINTH_HRID = '/monsters/cyclops';
+const FIXTURE_LABYRINTH_CRATE = '/items/basic_coffee_crate';
+const FIXTURE_LABYRINTH_UPGRADES = {
+  damage: 12,
+  attack_speed: 7,
+  cast_speed: 7,
+  critical_rate: 7,
+  experience: 7,
+};
 
 let enginePromise = null;
 function getEngine() {
@@ -106,6 +117,69 @@ function buildDungeonPayload(hours, seed) {
   return payload;
 }
 
+/**
+ * 切片 16：迷宫（labyrinth）payload —— `mode: 'labyrinth'`（zone 为 null）、真实迷宫怪 +
+ * 一个真实补给箱 + 5 项已购商店升级（升级 buff 只在迷宫内生效，类型全在引擎槽表内）。
+ */
+function buildLabyrinthPayload(hours, seed) {
+  const settings = {
+    ...createSettings(hours),
+    mode: 'labyrinth',
+    labyrinthHrid: FIXTURE_LABYRINTH_HRID,
+    roomLevel: 100,
+    labyrinthUpgrades: FIXTURE_LABYRINTH_UPGRADES,
+  };
+  const imported = importSoloConfig(JSON.stringify(fixture), createEmptyPlayerConfig(1), settings);
+  const playersDto = buildPlayersForSimulation([{ ...imported.player, selected: true }]);
+  const payload = buildSingleSimulationPayload(playersDto, settings, [FIXTURE_LABYRINTH_CRATE], {
+    workerId: 'wasm-production-parity-labyrinth',
+    extra: { ...buildSimulationExtra(settings), enableHpMpVisualization: false },
+  });
+  payload.logCombatEvents = false;
+  payload.seed = seed;
+  return payload;
+}
+
+/** 切片 16：JS 侧迷宫单轮（与 `worker.js` 的迷宫分支同构：zone 为 null、labyrinth 非空）。 */
+async function runJsLabyrinthSimulation(payload, { enableHpMpVisualization = false } = {}) {
+  const { labyrinth, players } = buildLabyrinthLivePieces(payload);
+  const originalRandom = Math.random;
+  Math.random = createSeededRandom(payload.seed >>> 0);
+  try {
+    const simulator = new CombatSimulator(players, null, labyrinth, {
+      minimalResult: false,
+      logCombatEvents: false,
+      enableHpMpVisualization,
+      combatScrollsEnabled: false,
+      isGuildTrial: false,
+    });
+    return await simulator.simulate(payload.simulationTimeLimit);
+  } finally {
+    Math.random = originalRandom;
+  }
+}
+
+/** 切片 16：Rust 侧迷宫单轮（请求带 labyrinth 三字段、无 zone）。 */
+function runRustLabyrinthSimulation(engine, payload, extraOptions = {}) {
+  const { labyrinth, players } = buildLabyrinthLivePieces(payload);
+  const request = buildProductionRequest({
+    players,
+    zone: null,
+    labyrinth,
+    seed: payload.seed,
+    simulationTimeLimit: payload.simulationTimeLimit,
+    options: {
+      minimalResult: false,
+      logCombatEvents: false,
+      enableHpMpVisualization: false,
+      combatScrollsEnabled: false,
+      isGuildTrial: false,
+      ...extraOptions,
+    },
+  });
+  return runWasmProductionSimulation(engine, request).simResult;
+}
+
 /** 按生产 worker 的装配方式构建活单位（玩家 + Zone），供两侧各自使用（互不共享实例）。 */
 function buildLivePieces(payload) {
   const extraBuffs = buildSimulationExtraBuffs(payload.extra || {});
@@ -117,6 +191,24 @@ function buildLivePieces(payload) {
     return player;
   });
   return { zone, players };
+}
+
+/** 切片 16：迷宫活单位装配——与 `worker.js` 的迷宫分支一致（zone 为 null、buff 取 labyrinth.buffs）。 */
+function buildLabyrinthLivePieces(payload) {
+  const extraBuffs = buildSimulationExtraBuffs(payload.extra || {});
+  const labyrinth = new Labyrinth(
+    payload.labyrinth.labyrinthHrid,
+    payload.labyrinth.roomLevel,
+    payload.labyrinth.crates,
+    payload.labyrinth.shopUpgrades,
+  );
+  const players = payload.players.map((dto) => {
+    const player = Player.createFromDTO(structuredClone(dto));
+    player.zoneBuffs = labyrinth.buffs || [];
+    player.extraBuffs = extraBuffs;
+    return player;
+  });
+  return { labyrinth, players };
 }
 
 async function runJsProductionSimulation(payload, { shouldStop } = {}) {
@@ -561,5 +653,44 @@ describe.runIf(wasmPackageBuilt)('wasm engine production parity (minimal + full 
     expect(firstDiff(jsonProjection(jsSimResult), rustSimResult)).toBeNull();
     expect(rustSimResult.encounters).toBeGreaterThan(100);
     expect(rustSimResult.dungeonsFailed).toBeGreaterThan(100);
+  });
+
+  // 切片 16：迷宫（labyrinth）——无 zone 的单怪循环 + 120s 超时重启 + 补给箱/商店升级 buff。
+  it('matches the JS labyrinth pipeline on the real labyrinth monster', async () => {
+    const engine = await getEngine();
+    const payload = buildLabyrinthPayload(1, 101);
+
+    const jsSimResult = await runJsLabyrinthSimulation(payload);
+    const rustSimResult = runRustLabyrinthSimulation(engine, payload);
+
+    expect(firstDiff(jsonProjection(jsSimResult), rustSimResult)).toBeNull();
+
+    // 防退化：必须是迷宫路径，且单怪循环真的重启过（spawnedAt 推进或击杀计数 > 0）。
+    expect(rustSimResult.isLabyrinth).toBe(true);
+    expect(rustSimResult.isDungeon).toBe(false);
+    expect(rustSimResult.labyrinthName).toBe(FIXTURE_LABYRINTH_HRID);
+    expect(rustSimResult.roomLevel).toBe(100);
+    expect(rustSimResult.zoneName).toBeUndefined();
+    expect(rustSimResult.difficultyTier).toBeUndefined();
+    expect(rustSimResult.scrollUsage.allowed).toBe(false);
+    expect(rustSimResult.scrollUsage.ignoredReason).toBe('labyrinth');
+    const monsterEntry = rustSimResult.timeSpentAlive.find((entry) => entry.name === FIXTURE_LABYRINTH_HRID);
+    expect(monsterEntry).toBeDefined();
+    expect(monsterEntry.alive).toBe(true);
+    expect(monsterEntry.count > 0 || monsterEntry.spawnedAt > 0).toBe(true);
+  });
+
+  // 切片 16：迷宫 24h 长时段回归——大量团灭/超时重开循环下逐字段仍一致。
+  it('matches the JS labyrinth pipeline at the 24h horizon', async () => {
+    const engine = await getEngine();
+    const payload = buildLabyrinthPayload(24, 101);
+
+    const jsSimResult = await runJsLabyrinthSimulation(payload);
+    const rustSimResult = runRustLabyrinthSimulation(engine, payload);
+
+    expect(firstDiff(jsonProjection(jsSimResult), rustSimResult)).toBeNull();
+    // 防退化：24h 内必然发生多轮重开（击杀或全队阵亡都计入 deaths）。
+    const totalDeaths = Object.values(rustSimResult.deaths).reduce((total, value) => total + value, 0);
+    expect(totalDeaths).toBeGreaterThan(0);
   });
 });

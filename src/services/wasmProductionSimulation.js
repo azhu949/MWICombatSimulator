@@ -85,7 +85,7 @@ export async function tryRunWasmProductionRound({
   }
 
   try {
-    const request = buildProductionRequest({ players, zone, seed, simulationTimeLimit, options });
+    const request = buildProductionRequest({ players, zone, labyrinth, seed, simulationTimeLimit, options });
     const output = runWasmProductionSimulation(engine, request);
     lastFallbackReason = '';
     return output;

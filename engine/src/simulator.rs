@@ -826,6 +826,9 @@ pub struct CombatSimulator {
     encounter_templates: Vec<TemplateSpec>,
     labyrinth_name: Option<String>,
     labyrinth_room_level: f64,
+    /// 切片 16：JS `labyrinth.updateEnconterStartTime(simulationTime)`——迷宫每轮遭遇的
+    /// 起始时间（120s 超时判定用；`checkTimeout` 读它）。
+    labyrinth_encounter_start_time: f64,
     combat_style_skill_exp_map: Vec<(String, Vec<String>)>,
     /// JS `logCombatEvents`：切片 14 起不再参与支持判定。它只控制 JS 控制台输出
     /// （wipe 日志等），不产生结果数据，因此在 wasm 侧接受但不消费。
@@ -916,6 +919,7 @@ impl CombatSimulator {
             encounter_templates: options.encounter_templates,
             labyrinth_name: options.labyrinth_name,
             labyrinth_room_level: options.labyrinth_room_level,
+            labyrinth_encounter_start_time: 0.0,
             combat_style_skill_exp_map: options.combat_style_skill_exp_map,
             log_combat_events: options.log_combat_events,
             enable_hp_mp_visualization: options.enable_hp_mp_visualization,
@@ -957,18 +961,18 @@ impl CombatSimulator {
     /// full-result + `logCombatEvents`：副本团灭时 JS 写 `wipeEvents`（日志内容含
     /// `new Date().toISOString()` 墙钟时间戳，天然不可复现），本引擎不生成该日志。
     /// minimal 变体把 `addWipeEvent` 覆写为空操作、也不序列化 `wipeEvents`，不受影响。
-    /// 仍留 JS 的还有迷宫 / 卷轴 / 公会试炼与无区域。
+    /// 切片 16：迷宫（labyrinth）模式纳入引擎（无 zone 的单怪循环 + 120s 超时重启）。
+    /// 仍留 JS 的还有卷轴 / 公会试炼与无区域。
     fn validate_production_support(&self) -> Result<(), UnitError> {
-        if self.zone.is_none() {
+        // 迷宫模式没有 zone（JS `payload.zone` 为 null、labyrinth 非空），
+        // 因此「必须有区域」放宽为「区域或迷宫至少有一个」。
+        if self.zone.is_none() && !self.labyrinth_present {
             return Err(UnitError::error("wasm production path requires a zone"));
         }
         if self.zone_is_dungeon && self.log_combat_events && !self.minimal_result {
             return Err(UnitError::error(
                 "wasm production path does not support dungeon wipe logs (logCombatEvents) yet",
             ));
-        }
-        if self.labyrinth_present {
-            return Err(UnitError::error("wasm production path does not support labyrinth runs yet"));
         }
         if self.combat_scrolls_enabled {
             return Err(UnitError::error("wasm production path does not support combat scrolls yet"));
@@ -1338,6 +1342,7 @@ impl CombatSimulator {
 
     fn reset(&mut self) {
         self.temp_dungeon_count = 0.0;
+        self.labyrinth_encounter_start_time = 0.0;
         self.simulation_time = 0.0;
         self.queue.clear();
         self.tally.reset_like_js();
@@ -1558,7 +1563,9 @@ impl CombatSimulator {
             if time == 0.0 {
                 self.arena.get_mut(player).generate_permanent_buffs();
             }
-            let reset_time = self.simulation_time;
+            // 切片 16：JS 迷宫分支用 `player.reset()`（缺省 `currentTime = 0` → 完全重置、
+            // 清空战斗增益并复位 CD）；普通区域 / 副本沿用当前模拟时间。
+            let reset_time = if self.labyrinth_present { 0.0 } else { self.simulation_time };
             self.arena.get_mut(player).reset(reset_time, &mut self.rng);
         }
         // activateInitialScrolls / syncScrollsToTime：切片 4 无卷轴。
@@ -1639,6 +1646,19 @@ impl CombatSimulator {
         } else if self.zone_present && !self.zone_is_dungeon {
             let encounter = self.get_random_encounter()?;
             self.enemies = Some(encounter);
+        }
+
+        if self.labyrinth_present {
+            // 切片 16：JS `if (this.labyrinth) { this.enemies = this.labyrinth.getMonster();
+            // this.labyrinth.updateEnconterStartTime(this.simulationTime); }`——每次遭遇生成
+            // 一只全新怪物（模板由桥按 roomLevel 缩放后快照，difficultyTier 恒 0）。
+            let hrid = self
+                .labyrinth_name
+                .clone()
+                .expect("labyrinth mode requires labyrinthName (monster hrid)");
+            let enemies = self.instantiate_templates(&[(hrid, 0.0)])?;
+            self.enemies = Some(enemies);
+            self.labyrinth_encounter_start_time = self.simulation_time;
         }
 
         if let Some(enemies) = self.enemies.clone() {
@@ -2186,6 +2206,7 @@ impl CombatSimulator {
         }
 
         let mut encounter_ended = false;
+        let mut encounter_cleared = false;
 
         if let Some(enemies) = self.enemies.clone() {
             let all_dead = !enemies
@@ -2222,6 +2243,7 @@ impl CombatSimulator {
                 self.tally.add_encounter_end();
                 // JS：`this.simResult.lastEncounterFinishTime = this.simulationTime;`（普通与 minimal 都写）。
                 self.tally.set_last_encounter_finish_time(self.simulation_time);
+                encounter_cleared = true;
                 encounter_ended = true;
             }
         }
@@ -2275,6 +2297,25 @@ impl CombatSimulator {
             }
             encounter_ended = true;
             self.all_players_dead = true;
+        }
+
+        if self.labyrinth_present {
+            // 切片 16：JS :1318-1330——迷宫无「清波」概念：怪物死亡（encounterEnded）或
+            // 单轮遭遇超过 120s（`checkTimeout`）都立刻整队重启：清空事件队列并在**当前
+            // 时间**排入 CombatStart（新怪物由 `start_new_encounter` 生成）；未清场时丢弃
+            // 挂起经验。JS 的 `eventQueue.clear()` 会连带丢弃刚排入的 EnemyRespawn。
+            let timed_out = self.simulation_time - self.labyrinth_encounter_start_time > 120.0 * 1e9;
+            if timed_out || encounter_ended {
+                if !encounter_cleared {
+                    self.pending_experience_gains.clear();
+                }
+                self.enemies = None;
+                encounter_ended = true;
+                self.queue.clear();
+                let time = self.simulation_time;
+                let id = self.take_event_id();
+                self.queue.add_event(SimEvent::CombatStart { time, id });
+            }
         }
 
         Ok(encounter_ended)
@@ -4253,5 +4294,111 @@ mod tests {
         );
         assert_eq!(result["maxWaveReached"].as_f64(), Some(3.0));
         assert!(result.get("wipeEvents").is_none(), "minimal 不序列化 wipeEvents");
+    }
+
+    // -----------------------------------------------------------------------
+    // 切片 16：迷宫（labyrinth）单怪循环 / 120s 超时重启 / 身份字段
+    // -----------------------------------------------------------------------
+
+    /// 迷宫生产场景：无 zone、单怪模板（difficultyTier 恒 0）、120s 超时重启。
+    /// `unkillable` 时把怪物体力拉到极高，用于覆盖「打不死 → 超时重启」分支。
+    fn labyrinth_production_options(unkillable: bool) -> (SimulatorOptions, UnitSpec) {
+        let player = UnitSpec {
+            hrid: "player1".to_string(),
+            is_player: true,
+            levels: Some(LevelsSpec { stamina_level: Some(10_000.0), ..Default::default() }),
+            combat_stats: vec![("attackInterval".to_string(), 1_000_000.0)],
+            combat_stats_strings: vec![("combatStyleHrid".to_string(), "/combat_styles/smash".to_string())],
+            ..Default::default()
+        };
+        let enemy = UnitSpec {
+            hrid: "/monsters/lab_dummy".to_string(),
+            is_player: false,
+            levels: Some(LevelsSpec {
+                defense_level: Some(1.0),
+                stamina_level: Some(if unkillable { 1.0e12 } else { 1.0 }),
+                ..Default::default()
+            }),
+            ..Default::default()
+        };
+        let options = SimulatorOptions {
+            seed: 16,
+            simulation_time_limit: 30.0 * ONE_SECOND,
+            zone_present: false,
+            real_result: true,
+            minimal_result: false,
+            labyrinth_present: true,
+            labyrinth_name: Some("/monsters/lab_dummy".to_string()),
+            labyrinth_room_level: 100.0,
+            encounter_templates: vec![TemplateSpec {
+                hrid: "/monsters/lab_dummy".to_string(),
+                difficulty_tier: 0.0,
+                spec: enemy,
+            }],
+            combat_style_skill_exp_map: vec![(
+                "/combat_styles/smash".to_string(),
+                vec!["/skills/melee".to_string()],
+            )],
+            log_combat_events: false,
+            ..Default::default()
+        };
+        (options, player)
+    }
+
+    #[test]
+    fn labyrinth_respawns_monsters_and_reports_identity() {
+        let (options, player) = labyrinth_production_options(false);
+        let mut simulator = CombatSimulator::new(options.clone());
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+        let result = simulator.tally.real.as_ref().expect("real result").to_value();
+
+        assert_eq!(result["isLabyrinth"], serde_json::json!(true));
+        assert_eq!(result["labyrinthName"], serde_json::json!("/monsters/lab_dummy"));
+        assert_eq!(result["roomLevel"].as_f64(), Some(100.0));
+        assert_eq!(result["scrollUsage"]["ignoredReason"], serde_json::json!("labyrinth"));
+        assert_eq!(result["scrollUsage"]["allowed"], serde_json::json!(false));
+        assert!(result.get("zoneName").is_none(), "迷宫没有 zoneName");
+        assert!(result.get("difficultyTier").is_none(), "迷宫没有难度档");
+
+        // 单怪循环：怪物被打死后立刻重开（不等待 ENEMY_RESPAWN_INTERVAL）。
+        assert!(
+            result["deaths"]["/monsters/lab_dummy"].as_f64().expect("deaths") >= 2.0,
+            "30s 内应击杀同一只迷宫怪多次"
+        );
+        let entry = result["timeSpentAlive"]
+            .as_array()
+            .expect("timeSpentAlive")
+            .iter()
+            .find(|entry| entry["name"] == "/monsters/lab_dummy")
+            .expect("迷宫怪必须有存活时间线条目");
+        assert!(entry["count"].as_f64().expect("count") >= 2.0, "每轮死亡记一次 count");
+        assert!(result["encounters"].as_f64().expect("encounters") >= 2.0);
+    }
+
+    #[test]
+    fn labyrinth_timeout_restarts_unfinished_encounter() {
+        let (mut options, player) = labyrinth_production_options(true);
+        options.simulation_time_limit = 130.0 * ONE_SECOND;
+        let mut simulator = CombatSimulator::new(options.clone());
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+        let result = simulator.tally.real.as_ref().expect("real result").to_value();
+
+        // 130s 打不死（体力 1e12）：120s 超时重开把 spawnedAt 推到 120s 之后，
+        // 且没有死亡记录（count 保持 0、deaths 无该怪）。
+        let entry = result["timeSpentAlive"]
+            .as_array()
+            .expect("timeSpentAlive")
+            .iter()
+            .find(|entry| entry["name"] == "/monsters/lab_dummy")
+            .expect("迷宫怪必须有存活时间线条目");
+        assert!(
+            entry["spawnedAt"].as_f64().expect("spawnedAt") >= 120.0 * 1e9,
+            "120s 超时必须重开一轮遭遇（spawnedAt 推进）"
+        );
+        assert_eq!(entry["count"].as_f64(), Some(0.0));
+        assert!(result["deaths"].get("/monsters/lab_dummy").is_none());
+        assert_eq!(result["encounters"].as_f64(), Some(0.0), "超时重开不记遭遇结束");
     }
 }
