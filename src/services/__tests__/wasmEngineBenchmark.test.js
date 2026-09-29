@@ -5,6 +5,9 @@
 // 每轮都重建玩家实例（与 worker 每轮装配一致），模板缓存跨轮复用（与 worker realm 一致）。
 //
 // 环境变量：WASM_BENCH_ROUNDS（默认 5）、WASM_BENCH_HOURS（默认 1）、WASM_BENCH_SEED（默认 101）。
+//
+// 三个口径：minimal（食物优化器）、full-result（首页单轮 + 可视化）、
+// 副本 full-result（切片 15，chimerical_den）。
 import { existsSync, writeFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
@@ -32,14 +35,17 @@ const ROUNDS = Number(process.env.WASM_BENCH_ROUNDS ?? 5);
 const HOURS = Number(process.env.WASM_BENCH_HOURS ?? 1);
 const SEED = Number(process.env.WASM_BENCH_SEED ?? 101);
 const FIXTURE_ZONE_HRID = '/actions/combat/jungle_planet';
+// 切片 15：副本口径。fixture 玩家在 chimerical_den 反复团灭（打不完整副本），基准覆盖
+// 团灭重开 + 逐波计数路径；完整副本完成分支由 Rust 单测覆盖（见 simulator.rs 测试模块）。
+const FIXTURE_DUNGEON_HRID = '/actions/combat/chimerical_den';
 
-function buildPayload() {
+function buildPayload({ dungeon = false } = {}) {
   const settings = {
     mode: 'zone',
     runScope: 'single',
-    useDungeon: false,
+    useDungeon: dungeon,
     zoneHrid: FIXTURE_ZONE_HRID,
-    dungeonHrid: '',
+    dungeonHrid: dungeon ? FIXTURE_DUNGEON_HRID : '',
     difficultyTier: 1,
     labyrinthHrid: '',
     roomLevel: 100,
@@ -260,6 +266,30 @@ describe.runIf(benchEnabled && wasmPackageBuilt)('wasm engine production benchma
 
     // 防退化：两侧都必须真的采到时序快照（否则对照跑在空负载上）。
     expect(wasmResult.timeSeriesData.timestamps.length).toBeGreaterThan(0);
+    expect(canonicalJson(wasmResult)).toBe(canonicalJson(jsResult));
+  }, 600000);
+
+  // 切片 15：副本口径（chimerical_den，full-result）——波次生成 / 团灭重开 / 逐波存活时间
+  // 与失败计数全在计时范围内。fixture 玩家在该副本反复团灭（打不完整副本），因此本口径
+  // 覆盖团灭路径；完整副本完成分支由 Rust 单测覆盖（见 simulator.rs 的副本单测）。
+  it('compares JS and WASM on the real dungeon workload', async () => {
+    const engine = await loadBenchEngine();
+    expect(engine).not.toBeNull();
+
+    const payload = buildPayload({ dungeon: true });
+    const { jsResult, wasmResult } = await runBenchmark(
+      engine,
+      payload,
+      { minimal: false, enableHpMpVisualization: false },
+      'full-result 副本（chimerical_den）',
+    );
+
+    // 防退化：两侧都必须真的在副本路径上（否则对照跑在普通区域口径上）。
+    expect(wasmResult.isDungeon).toBe(true);
+    expect(wasmResult.dungeonsFailed).toBeGreaterThan(0);
+    expect(wasmResult.maxWaveReached).toBeGreaterThan(0);
+    expect(wasmResult.timeSpentAlive.length).toBeGreaterThan(0);
+    expect(wasmResult.bossSpawns).toHaveLength(10);
     expect(canonicalJson(wasmResult)).toBe(canonicalJson(jsResult));
   }, 600000);
 });

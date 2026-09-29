@@ -32,6 +32,14 @@ pub mod zone;
 
 use wasm_bindgen::prelude::*;
 
+/// wasm 侧 panic 钩子：把 Rust panic 消息（含位置）写到 console.error。
+/// 没有它时 wasm 崩溃只表现为 `RuntimeError: unreachable`，无法定位。
+#[cfg(target_arch = "wasm32")]
+#[wasm_bindgen(start)]
+pub fn wasm_start() {
+    console_error_panic_hook::set_once();
+}
+
 /// Slice-1 smoke export: proves the JS<->WASM bridge and the build chain work.
 #[wasm_bindgen]
 pub fn bridge_probe(a: u32, b: u32) -> String {

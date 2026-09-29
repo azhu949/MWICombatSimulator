@@ -833,6 +833,28 @@ impl SimResultState {
         self.max_wave_reached = max_wave_reached;
     }
 
+    /// 切片 15：JS 收尾的 `maxWaveReached` 计算（在 `dungeonsCompleted` 赋值之后执行）。
+    ///
+    /// `dungeonsCompleted >= 1` 时直接取 `maxWaves`；否则从 `#1` 起逐波在 `timeSpentAlive`
+    /// 里找同名条目，缺条目或 `count == 0`（该波从未完整结束）即停。
+    /// minimal 变体的 `updateTimeSpentAlive` 是空操作 → 恒返回 0（JS 同）。
+    pub fn compute_max_wave_reached(&self, dungeons_completed: f64, max_waves: f64) -> f64 {
+        if dungeons_completed >= 1.0 {
+            return max_waves;
+        }
+        let mut reached = 0.0;
+        let mut wave = 1.0;
+        while wave <= max_waves {
+            let wave_name = format!("#{}", js_number_key(wave));
+            match self.time_spent_alive.iter().find(|entry| entry.name == wave_name) {
+                Some(entry) if entry.count != 0.0 => reached = wave,
+                _ => break,
+            }
+            wave += 1.0;
+        }
+        reached
+    }
+
     /// JS `this.simResult.maxEnrageStack = Math.max(...)`（取 max 由调用方完成）。
     pub fn set_max_enrage_stack(&mut self, value: f64) {
         self.max_enrage_stack = value;
