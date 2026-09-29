@@ -8,10 +8,11 @@
 > 横向对比（2026-09-28 实测）：第三方 Rust 引擎 **mwi-fastsim** 的 WASM 吞吐约为本引擎的 **6–9 倍**
 > （同机、事件/秒口径）；差距来源、构建参数实验与可借鉴项见第 5 节。
 >
-> 切片 7–9（2026-09-28/29）：prof 定位 + 三批**保语义**优化后，
-> **WASM 引擎 1h 43.2–49.3 ms → 24–27 ms、4h 223.7 ms → 82.6–86.9 ms（≈2.6×）**，
-> JS/WASM 提速比由 2.09–2.57× 升到 **3.6–3.7×**；期间一次 `Rc<Ability>` 试验经
-> 背靠背 A/B 否决（原生更快、WASM 更慢）。方法与读数见第 6–8 节。
+> 切片 7–10（2026-09-28/29）：prof 定位 + 四批**保语义**优化后，
+> **WASM 引擎 1h 43.2–49.3 ms → 24–27 ms、4h 223.7 ms → 78–97 ms（最好 77.8）**，
+> JS/WASM 提速比由 2.09–2.57× 升到 **3.6–4.5×**；期间 `Rc<Ability>` 与队列侧表两个
+> 试验经背靠背 A/B 否决（原生/理论更快、WASM 更慢），wasm-opt 验证可用（-12.6% 体积）。
+> 方法与读数见第 6–9 节。
 
 ## 1. 测量方法
 
@@ -331,3 +332,51 @@ WASM 引擎 47.0–49.3 ms → 43.2–46.6 ms（**约 -5%～-10%**），JS 侧�
 - 1h 最好 24.9 ms，与切片 8 持平。
 - 验收：cargo test 102 passed；parity 17 passed；npm test 2636 passed + prettier；
   build + verify-pages-build 通过。
+
+## 9. 切片 10：施法路径取还式免克隆 + 一次被否决的队列侧表 + wasm-opt 验证（2026-09-29）
+
+### 9.1 保留：`try_use_ability` 取还式（take → 处理 → restore）
+
+原实现每次施放深拷贝一份 `Ability`（占 4h prof 的 ~35%）。改为把槽内技能 `take()` 到局部
+owned 变量，效果循环结束后原样 `restore`——零克隆。安全性已逐路径核实：效果循环内
+damage 目标恒为敌方列表（永不可能等于 source）、promote/revive 触新单位、parry 分支只清
+队列；restore 放在 ripple 段之前（ripple 会遍历技能槽写 last_used）。`spend_ability_mana`
+的 `last_used` 写入移到调用方（owned 副本上），顺带消除了该方法内的第二次技能槽查找。
+A/B 多轮无可分辨差异（min 79.8 vs 80.1，互有胜负），保留理由是零克隆 + 代码更简洁。
+
+### 9.2 否决：事件队列 `id → 堆下标` 侧表
+
+侧表（`std::collections::HashMap<u64, usize>`）把 `remove_by_id`/`clear_matching` 的
+O(n²) 查找降为 O(1)，堆操作序列与 heap-js 同构（parity 不破，全部 heap-js 基准测试通过）。
+但 A/B/A 复测：**WASM 端到端反而慢 ~4%**（100.0 vs 95.9 ms，A/A 自检一致）。
+原因：本负载的堆很小（队列长度通常 < 50），线性扫描缓存友好；而每次 sift 交换要维护
+2 次 SipHash 插入/删除，在 WASM 上开销更高——与切片 8 的 `Rc<Ability>` 教训同族
+（**WASM 惩罚间接层，小集合上“更优”的数据结构反而更慢**）。已回退。
+
+### 9.3 wasm-opt 验证成功（可启用，待决定）
+
+npmmirror 的 `binaryen@121` npm 包自带可用的 `wasm-opt`（`node_modules/binaryen/bin/wasm-opt`
+是 Node 脚本入口，用 `node bin/wasm-opt` 调用）。对当前包 `-O4`：
+
+- 体积 838.9 KB → 733.4 KB（**-12.6%**），parity 17/17 全过，4h 基准最好 77.8 ms（历史最快）；
+  热节流下的 A/B 无可分辨差异（无回退）。
+- 启用需在 `devDependencies` 加 `binaryen`（约 10 MB）并给 `build:wasm` 加一步
+  `node node_modules/binaryen/bin/wasm-opt <pkg>.wasm -O4 -o <pkg>.wasm`。
+  **是否把它写进构建脚本待定**（涉包体积与 CI 稳定性权衡，本切片只记录方法与验证结果）。
+
+### 9.4 实测与验收
+
+- 4h WASM 引擎（无 wasm-opt，取还式）：A/B 多轮 79.8–97 ms，与切片 9 的 82.6–96.9 ms
+  在噪声内持平；机器热节流当日读数漂移明显（同配置 JS 4h 在 296–711 ms 间波动），
+  结论以 A/B 配对比较为准。
+- 验收：cargo test 102 passed；parity 17 passed；npm test 2636 passed + prettier；
+  build:wasm 正常。
+
+### 9.5 剩余候选（更新）
+
+1. `update_details` / `index_buffs`（0.86–1.5 µs/次 × 8.2 万次/4h）：结算索引每轮重建，
+   可做单位内复用缓冲。
+2. `enemyRespawn` / `instantiate` / `build_from_spec`（22 / 15.7 / 3.9 µs/次）：
+   按模板缓存已构建单位（注意：会改 RNG 消费时点，须 parity 验证）。
+3. wasm-opt 启用与否（见 9.3）。
+4. WASM 覆盖范围扩展（提前停止 / 观察器 / 完整 SimResult）——解锁主页端到端收益的主线。
