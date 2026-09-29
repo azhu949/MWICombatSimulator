@@ -115,8 +115,8 @@ function runWasmRound(engine, payload) {
   const requestBytes = JSON.stringify(request).length;
   const setupMs = performance.now() - setupStartedAt;
   const engineStartedAt = performance.now();
-  const result = runWasmProductionSimulation(engine, request);
-  return { result, setupMs, engineMs: performance.now() - engineStartedAt, requestBytes };
+  const { simResult } = runWasmProductionSimulation(engine, request);
+  return { result: simResult, setupMs, engineMs: performance.now() - engineStartedAt, requestBytes };
 }
 
 /**

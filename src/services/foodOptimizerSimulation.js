@@ -90,7 +90,8 @@ export function createFoodOptimizerSimulation(request, candidate = null) {
   });
 }
 
-// 单轮评估的对外样本形状：JS 引擎与 wasm 引擎共用（wasm 分支没有观察器，阈值字段为 null）。
+// 单轮评估的对外样本形状：JS 引擎与 wasm 引擎共用（wasm 分支自切片 13 起同样携带
+// 阈值字段——阈值/闲置观察由 Rust 观察器承接，映射方式与 JS 分支逐字对齐）。
 function buildRoundSample({
   request,
   seed,
@@ -144,12 +145,13 @@ export function getFoodOptimizerResources(request) {
   };
 }
 
-/// 单轮是否走 wasm 引擎（切片 5-B，默认关；切片 12 放宽）：调用方显式开启，且本轮
-/// 不需要 JS 侧数据观察器（阈值收集 `collectThresholds` / 成本上界 `costBound` 仍留 JS）。
-/// 候选轮的 `shouldStop`（空蓝 / 死亡预算）自切片 12 起由 Rust `earlyStop` 谓词承接
-///（谓词单调，两侧逐事件检查点一致）；基线轮（candidate 为空）本就无 shouldStop。
+/// 单轮是否走 wasm 引擎（切片 5-B，默认关；切片 12/13 放宽）：调用方显式开启，且本轮
+/// 不需要成本上界观察器（`costBound` 仍留 JS）。候选轮的 `shouldStop`（空蓝 / 死亡预算）
+/// 自切片 12 起由 Rust `earlyStop` 谓词承接；阈值/闲置观察自切片 13 起由 Rust
+/// `observers` 承接（纯读窥视，simResult 逐字节不变）。`collectThresholds` 参数保留
+/// 以对齐调用方签名——它不再阻止 wasm 轮次。
 export function shouldUseWasmOptimizerRound(request, candidate, collectThresholds, costBound) {
-  return request.useWasmEngine === true && !collectThresholds && !costBound;
+  return request.useWasmEngine === true && !costBound;
 }
 
 export async function simulateFoodOptimizerRound(
@@ -168,10 +170,16 @@ export async function simulateFoodOptimizerRound(
 
   const hrid = `player${request.activePlayerId}`;
 
-  // 切片 5-B A/B 分支（默认关）：判据见 `shouldUseWasmOptimizerRound`。
+  // 切片 5-B A/B 分支（默认关）：判据见 `shouldUseWasmOptimizerRound`。切片 13 起阈值/
+  // 闲置观察由 Rust 观察器承接（`observers` 请求 + 独立输出字段），样本映射与下方 JS
+  // 分支（`readThresholds` / `readInactiveFood` / `unusedFoodThresholds`）逐字对齐。
   if (shouldUseWasmOptimizerRound(request, candidate, collectThresholds, costBound)) {
     const { zone, players } = buildFoodOptimizerPieces(request, candidate);
-    const simResult = await tryRunWasmProductionRound({
+    const observedCandidate = candidate ?? (hasEmptyFoodOptimizerBaseline(request) ? buildFoodCandidate([]) : null);
+    // 与 JS 分支的观察器安装条件一一对应（collectThresholds 且 observedCandidate 非空）；
+    // 未开启时 Rust 侧 observers 为 null，样本字段随之为 null。
+    const collectObservers = Boolean(collectThresholds) && observedCandidate != null;
+    const output = await tryRunWasmProductionRound({
       useWasmEngine: true,
       players,
       zone,
@@ -189,12 +197,25 @@ export async function simulateFoodOptimizerRound(
         // 已是 `(deathBudget ?? Infinity) - 已累计死亡`，可能为负（早已超限）或 Infinity
         //（负值/Infinity 由 bridge 归一：Infinity → null，负值原样传递——两侧语义一致）。
         ...(candidate ? { earlyStop: { watchHrid: hrid, deathLimit } } : {}),
+        ...(collectObservers ? { observers: { watchHrid: hrid } } : {}),
       },
     });
-    if (simResult) {
+    if (output) {
+      const { simResult, observers } = output;
       const player = players.find((entry) => entry.hrid === hrid);
       const foodHrids = [...new Set(player.food.filter(Boolean).map((item) => item.hrid))];
-      return buildRoundSample({ request, seed, simResult, hrid, foodHrids });
+      const inactiveFoodThresholds = collectObservers ? (observers?.inactiveMinimum ?? null) : null;
+      // wasm 分支无成本观察（costBound 轮全部留在 JS），`!stoppedForCost` 恒真。
+      return buildRoundSample({
+        request,
+        seed,
+        simResult,
+        hrid,
+        foodHrids,
+        equivalentThresholds: collectObservers ? (observers?.thresholdRanges ?? null) : null,
+        unusedFoodThresholds: observedCandidate?.slots.length === 0 ? inactiveFoodThresholds : null,
+        inactiveFoodThresholds,
+      });
     }
   }
 

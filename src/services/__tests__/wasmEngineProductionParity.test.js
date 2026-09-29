@@ -23,6 +23,12 @@ import { createSeededRandom } from '../seededRandom.js';
 import { buildSimulationExtra, buildSingleSimulationPayload } from '../simulationDomain.js';
 import { loadWasmEngine } from '../wasmEngineLoader.js';
 import { buildProductionRequest, runWasmProductionSimulation } from '../wasmProductionBridge.js';
+import { observeInactiveFoodThresholds } from '../foodOptimizerInactiveFood.js';
+import { observeFoodOptimizerThresholds } from '../foodOptimizerPruning.js';
+import { buildFoodCandidate } from '../foodOptimizerDomain.js';
+import { simulateFoodOptimizerRound } from '../foodOptimizerSimulation.js';
+import { getWasmProductionDiagnostics, setWasmProductionEngineForTests } from '../wasmProductionSimulation.js';
+import { createFoodOptimizerFixture } from './support/foodOptimizerTestSupport.js';
 import fixture from './fixtures/modernPlayerJunglePlanetFixture.json';
 
 const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
@@ -111,6 +117,33 @@ async function runJsProductionSimulation(payload, { shouldStop } = {}) {
   }
 }
 
+/**
+ * 切片 13：JS 侧手动安装两个观察器（与 `foodOptimizerSimulation` 的 JS 分支同一路径），
+ * 返回 `{ simResult, equivalentThresholds, inactiveFoodThresholds }` 供与 WASM `observers`
+ * 输出逐字段对账。
+ */
+async function runJsObservedSimulation(payload, { watchHrid, candidate }) {
+  const { zone, players } = buildLivePieces(payload);
+  const originalRandom = Math.random;
+  Math.random = createSeededRandom(payload.seed >>> 0);
+  try {
+    const simulator = new CombatSimulator(players, zone, null, {
+      minimalResult: true,
+      logCombatEvents: false,
+      enableHpMpVisualization: false,
+      combatScrollsEnabled: false,
+      isGuildTrial: false,
+    });
+    const player = simulator.players.find((entry) => entry.hrid === watchHrid);
+    const readThresholds = observeFoodOptimizerThresholds(player, candidate);
+    const readInactiveFood = observeInactiveFoodThresholds(simulator, watchHrid);
+    const simResult = await simulator.simulate(payload.simulationTimeLimit);
+    return { simResult, equivalentThresholds: readThresholds(), inactiveFoodThresholds: readInactiveFood() };
+  } finally {
+    Math.random = originalRandom;
+  }
+}
+
 function runRustProductionSimulation(engine, payload, extraOptions = {}) {
   const { zone, players } = buildLivePieces(payload);
   const request = buildProductionRequest({
@@ -127,7 +160,7 @@ function runRustProductionSimulation(engine, payload, extraOptions = {}) {
       ...extraOptions,
     },
   });
-  return runWasmProductionSimulation(engine, request);
+  return runWasmProductionSimulation(engine, request).simResult;
 }
 
 /**
@@ -140,6 +173,8 @@ function jsonProjection(value) {
 
 /** 逐字段定位第一处分歧（键序无关；数值要求逐位相等）。 */
 function firstDiff(left, right, path = '$') {
+  // 先短路完全相等的值（含两侧同为 null/undefined 的字段，如 unusedFoodThresholds）。
+  if (left === right) return null;
   if (left === null || right === null || typeof left !== 'object' || typeof right !== 'object') {
     if (typeof left === 'number' || typeof right === 'number') {
       if (left !== right) return `${path}: js=${String(left)} rust=${String(right)}`;
@@ -244,5 +279,115 @@ describe.runIf(wasmPackageBuilt)('wasm engine slice-5 production parity (minimal
 
     expect(firstDiff(jsonProjection(jsSimResult), rustSimResult)).toBeNull();
     expect(rustSimResult.stoppedEarly).toBe(false);
+  });
+
+  // 切片 13：观察器 parity——真实夹具 + 玩家 food 槽塞 missing_hp/mp 触发器的消耗品
+  //（模拟候选轮；food 与 candidate.slots 的对应关系与生产构造一致），JS 侧手动装两个
+  // 观察器，与 WASM `observers` 输出（thresholdRanges / inactiveMinimum）逐字段对账。
+  it('matches threshold and inactive observers on the real fixture zone', async () => {
+    const engine = await getEngine();
+    const payload = buildPayload(1, 101);
+    const hpThreshold = 100;
+    const mpThreshold = 50;
+    const playerDto = payload.players.find((entry) => entry.hrid === 'player1');
+    playerDto.food = [
+      {
+        hrid: '/items/blackberry_donut',
+        triggers: [
+          {
+            dependencyHrid: '/combat_trigger_dependencies/self',
+            conditionHrid: '/combat_trigger_conditions/missing_hp',
+            comparatorHrid: '/combat_trigger_comparators/greater_than_equal',
+            value: hpThreshold,
+          },
+        ],
+      },
+      {
+        hrid: '/items/apple_gummy',
+        triggers: [
+          {
+            dependencyHrid: '/combat_trigger_dependencies/self',
+            conditionHrid: '/combat_trigger_conditions/missing_mp',
+            comparatorHrid: '/combat_trigger_comparators/greater_than_equal',
+            value: mpThreshold,
+          },
+        ],
+      },
+      null,
+    ];
+    const candidate = {
+      slots: [
+        { hrid: '/items/blackberry_donut', kind: 'hp', threshold: hpThreshold },
+        { hrid: '/items/apple_gummy', kind: 'mp', threshold: mpThreshold },
+      ],
+    };
+
+    const js = await runJsObservedSimulation(payload, { watchHrid: 'player1', candidate });
+
+    const { zone, players } = buildLivePieces(payload);
+    const request = buildProductionRequest({
+      players,
+      zone,
+      seed: payload.seed,
+      simulationTimeLimit: payload.simulationTimeLimit,
+      options: {
+        minimalResult: true,
+        logCombatEvents: false,
+        enableHpMpVisualization: false,
+        combatScrollsEnabled: false,
+        isGuildTrial: false,
+        observers: { watchHrid: 'player1' },
+      },
+    });
+    const { simResult: rustSimResult, observers } = runWasmProductionSimulation(engine, request);
+
+    // simResult 不受观察影响（观察器是纯读窥视）。
+    expect(firstDiff(jsonProjection(js.simResult), rustSimResult)).toBeNull();
+    // 阈值区间逐字段对账（hrid/kind/min/max）。
+    expect(observers.thresholdRanges).not.toBeNull();
+    expect(firstDiff(jsonProjection(js.equivalentThresholds), observers.thresholdRanges)).toBeNull();
+    // 闲置下界逐字段对账（hp/mp）。
+    expect(observers.inactiveMinimum).not.toBeNull();
+    expect(firstDiff(jsonProjection(js.inactiveFoodThresholds), observers.inactiveMinimum)).toBeNull();
+    // 防退化：两侧都真的观察到了两个槽位。
+    expect(observers.thresholdRanges).toHaveLength(2);
+  });
+
+  // 切片 13-3：生产默认时长（24h）的长时长回归——上方用例只覆盖 1h。
+  // 走生产单轮函数 `simulateFoodOptimizerRound`（食物优化器真实 fixture，fly 区域），
+  // 对照 baseline 轮（无早停）与候选轮（空蓝早停 + 阈值观察器）两条路径。
+  it('matches the food-optimizer rounds at the production 24h horizon', async () => {
+    const engine = await getEngine();
+    setWasmProductionEngineForTests(engine);
+
+    const fixture = createFoodOptimizerFixture({ foodSlots: 3, seconds: 86400, rounds: 3, thresholdStepPercent: 25 });
+    const mpItem = fixture.items.find((item) => item.kind === 'mp');
+    const candidate = buildFoodCandidate([{ ...mpItem, threshold: mpItem.thresholds[mpItem.thresholds.length >> 1] }]);
+
+    const jsRequest = structuredClone(fixture.request);
+    const wasmRequest = structuredClone(fixture.request);
+    wasmRequest.useWasmEngine = true;
+
+    const jsBaseline = await simulateFoodOptimizerRound(jsRequest, null, 1, undefined, Infinity, {
+      collectThresholds: true,
+    });
+    // 防退化：wasm 轮必须真走了 wasm（引擎注入成功且无回退），否则对照退化成 JS vs JS。
+    expect(getWasmProductionDiagnostics().engineUnavailable).toBe(false);
+    const wasmBaseline = await simulateFoodOptimizerRound(wasmRequest, null, 1, undefined, Infinity, {
+      collectThresholds: true,
+    });
+    expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('');
+    expect(firstDiff(jsonProjection(jsBaseline), jsonProjection(wasmBaseline))).toBeNull();
+
+    const jsCandidate = await simulateFoodOptimizerRound(jsRequest, candidate, 1, undefined, Infinity, {
+      collectThresholds: true,
+    });
+    const wasmCandidate = await simulateFoodOptimizerRound(wasmRequest, candidate, 1, undefined, Infinity, {
+      collectThresholds: true,
+    });
+    expect(firstDiff(jsonProjection(jsCandidate), jsonProjection(wasmCandidate))).toBeNull();
+    // 防退化：候选轮确实触发早停 + 安装了观察器（阈值区间非空）。
+    expect(wasmCandidate.stoppedEarly).toBe(true);
+    expect(wasmCandidate.equivalentThresholds).toHaveLength(1);
   });
 });

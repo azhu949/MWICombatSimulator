@@ -588,6 +588,10 @@ pub struct SimulatorOptions {
     /// 通用 JS 回调（任意谓词）不在 WASM 契约内，仍由 JS 引擎承接。
     #[serde(default)]
     pub early_stop: Option<EarlyStopSpec>,
+    /// 切片 13：观察器（等价 JS `observeFoodOptimizerThresholds` /
+    /// `observeInactiveFoodThresholds`）。`None` = 不观察（基线轮）。
+    #[serde(default)]
+    pub observers: Option<ObserverSpec>,
 }
 
 /// 提前停止谓词参数（切片 12）。
@@ -599,6 +603,153 @@ pub struct EarlyStopSpec {
     /// 死亡上限；`None` = JS `Infinity`（不因死亡停止）。
     pub death_limit: Option<f64>,
 }
+
+/// 切片 13：观察器参数（等价 JS 侧 `observeFoodOptimizerThresholds` +
+/// `observeInactiveFoodThresholds` 包装）。两者都是**纯读窥视**：不改 RNG、不改
+/// 事件流、不改比较结果——只在既有代码路径旁同步记录。
+#[derive(Clone, Debug, Default, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ObserverSpec {
+    /// 监视单位的 hrid（食物优化器为活动玩家，如 `player1`）。
+    pub watch_hrid: String,
+}
+
+/// 单槽位阈值区间（等价 JS `observeFoodOptimizerThresholds` 的 ranges 元素）。
+#[derive(Clone, Debug, Serialize)]
+#[serde(rename_all = "camelCase")]
+pub struct ThresholdRange {
+    pub hrid: String,
+    pub kind: String,
+    pub min: f64,
+    pub max: f64,
+}
+
+/// 观察器运行时状态（切片 13）。
+#[derive(Debug)]
+pub struct ObserverState {
+    /// 阈值观察（None = 形态不匹配或观察到非有限值，等价 JS `() => null`）。
+    threshold_valid: bool,
+    /// 每个已观察槽位的 (hrid, kind, min, max)；槽位索引为下标。
+    threshold_ranges: Vec<ThresholdRange>,
+    /// 闲置食物观察（None = 无效）。
+    inactive_valid: bool,
+    inactive_hp: f64,
+    inactive_mp: f64,
+}
+
+impl ObserverState {
+    fn new(_spec: &ObserverSpec, player_food: &[Option<Consumable>]) -> Self {
+        // JS observeFoodOptimizerThresholds：形态不匹配 → readThresholds() 返回 null；
+        // 闲置观察器（observeInactiveFoodThresholds）不依赖形态，恒为有效。
+        let mut state = Self {
+            threshold_valid: true,
+            threshold_ranges: Vec::new(),
+            inactive_valid: true,
+            inactive_hp: 1.0,
+            inactive_mp: 1.0,
+        };
+        for slot in player_food {
+            let Some(consumable) = slot else { continue };
+            let Some(trigger) = consumable.triggers.first() else {
+                state.threshold_valid = false;
+                state.threshold_ranges.clear();
+                break;
+            };
+            let kind = match trigger.condition_hrid.as_str() {
+                "/combat_trigger_conditions/missing_hp" => "hp",
+                "/combat_trigger_conditions/missing_mp" => "mp",
+                _ => {
+                    state.threshold_valid = false;
+                    state.threshold_ranges.clear();
+                    break;
+                }
+            };
+            if trigger.dependency_hrid != "/combat_trigger_dependencies/self"
+                || trigger.comparator_hrid != "/combat_trigger_comparators/greater_than_equal"
+                || consumable.triggers.len() != 1
+                || !is_safe_integer(trigger.value)
+            {
+                state.threshold_valid = false;
+                state.threshold_ranges.clear();
+                break;
+            }
+            state.threshold_ranges.push(ThresholdRange {
+                hrid: consumable.hrid.clone(),
+                kind: kind.to_string(),
+                min: 1.0,
+                max: MAX_SAFE_INTEGER_F64,
+            });
+        }
+        state
+    }
+
+    /// JS 包装后的 compareValue：窥视 (value, active) 收敛区间。
+    fn observe_threshold_compare(&mut self, slot_index: usize, value: f64, active: bool) {
+        let Some(range) = self.threshold_ranges.get_mut(slot_index) else { return };
+        if !value.is_finite() {
+            self.threshold_valid = false;
+            return;
+        }
+        if active {
+            range.max = range.max.min(value.floor());
+        } else {
+            range.min = range.min.max(value.floor() + 1.0);
+        }
+    }
+
+    /// JS observeInactiveFoodThresholds 的 observe(unit)：存活且未眩晕时更新缺口下界。
+    fn observe_inactive(&mut self, hp_deficit: f64, mp_deficit: f64) {
+        if !hp_deficit.is_finite() || !mp_deficit.is_finite() {
+            self.inactive_valid = false;
+            return;
+        }
+        self.inactive_hp = self.inactive_hp.max(hp_deficit.floor() + 1.0);
+        self.inactive_mp = self.inactive_mp.max(mp_deficit.floor() + 1.0);
+        if !is_safe_integer(self.inactive_hp) || !is_safe_integer(self.inactive_mp) {
+            self.inactive_valid = false;
+        }
+    }
+
+    /// 导出（等价 JS readThresholds() / readInactiveFood() 的返回形状）。
+    fn to_value(&self) -> Value {
+        json!({
+            "thresholdRanges": if self.threshold_valid {
+                json!(self.threshold_ranges)
+            } else {
+                Value::Null
+            },
+            "inactiveMinimum": if self.inactive_valid {
+                json!({ "hp": self.inactive_hp, "mp": self.inactive_mp })
+            } else {
+                Value::Null
+            },
+        })
+    }
+}
+
+/// 切片 13：`should_trigger` 快速路径的阈值窥视句柄（等价 JS
+/// `observeFoodOptimizerThresholds` 包装的 compareValue）——借用 `ObserverState`，
+/// 在 compare_value 被真正调用的那一刻转发 (value, active)。具体 struct 而非
+/// `dyn FnMut`：零虚调用开销，food 循环用 take/put 绕开借用冲突时也能整体移动。
+pub struct ThresholdObserve<'a> {
+    state: &'a mut ObserverState,
+    slot_index: usize,
+}
+
+impl ThresholdObserve<'_> {
+    /// 记录一次比较观察：active 收缩上界 / inactive 抬高下界（等价 JS 包装体）。
+    pub fn record(&mut self, value: f64, active: bool) {
+        self.state.observe_threshold_compare(self.slot_index, value, active);
+    }
+}
+
+/// JS Number.isSafeInteger.
+fn is_safe_integer(value: f64) -> bool {
+    value.is_finite() && value.fract() == 0.0 && value.abs() <= MAX_SAFE_INTEGER_F64
+}
+
+/// JS `Number.MAX_SAFE_INTEGER`（`observeFoodOptimizerThresholds` 的区间上界）。
+const MAX_SAFE_INTEGER_F64: f64 = 9_007_199_254_740_991.0;
 
 fn default_max_result_calls() -> usize {
     4000
@@ -645,6 +796,11 @@ pub struct CombatSimulator {
     is_guild_trial: bool,
     /// 切片 12：提前停止谓词参数（`None` = 无提前停止）。
     early_stop: Option<EarlyStopSpec>,
+    /// 切片 13：观察器参数与运行时状态（`None` = 不观察；state 在匹配玩家入池时初始化，
+    /// reset 重建——等价 JS 每轮模拟前新装观察器）。
+    observer_spec: Option<ObserverSpec>,
+    observer_state: Option<ObserverState>,
+    observer_unit: Option<UnitId>,
 }
 
 /// 取「第一个存活单位」：改成收 `Option<&[UnitId]>` 切片视图，调用方无需克隆单位列表。
@@ -721,6 +877,9 @@ impl CombatSimulator {
             player_count: 0,
             is_guild_trial: options.is_guild_trial,
             early_stop: options.early_stop,
+            observer_spec: options.observers,
+            observer_state: None,
+            observer_unit: None,
         }
     }
 
@@ -729,6 +888,13 @@ impl CombatSimulator {
         let id = self.arena.push(unit);
         self.players.push(id);
         self.player_count += 1;
+        // 切片 13：观察器跟随匹配玩家初始化（JS 在轮次开始前对找到的 player 装观察器）。
+        if let Some(spec_observer) = self.observer_spec.as_ref() {
+            if spec_observer.watch_hrid == spec.hrid && self.observer_state.is_none() {
+                self.observer_state = Some(ObserverState::new(spec_observer, &self.arena.get(id).food));
+                self.observer_unit = Some(id);
+            }
+        }
         Ok(id)
     }
 
@@ -928,6 +1094,21 @@ impl CombatSimulator {
         // JS：`setScrollUsageDisabled(!this.combatScrollsEnabled)`。
         self.tally.set_scroll_usage_disabled(!self.combat_scrolls_enabled);
         self.simulation_time_limit = normalize_time_limit(self.simulation_time_limit);
+        // 切片 13：每轮模拟前重建观察器状态（等价 JS 每轮新装；food 列表结构在战斗中
+        // 不变，只有 last_used 会动，而形态校验只看 triggers）。
+        if let (Some(spec), Some(unit)) = (self.observer_spec.as_ref(), self.observer_unit) {
+            self.observer_state = Some(ObserverState::new(spec, &self.arena.get(unit).food));
+        }
+    }
+
+    /// 切片 13：观察器导出（`observer_state` 为私有字段；无观察器或观察单位未出场时
+    /// 为 null）。**不并入 simResult**——生产 parity 对账对象必须逐字节不变，观察数据
+    /// 走独立输出字段。
+    pub fn observers_output(&self) -> Value {
+        self.observer_state
+            .as_ref()
+            .map(|state| state.to_value())
+            .unwrap_or(Value::Null)
     }
 
     fn process_event(&mut self, event: SimEvent) -> Result<(), UnitError> {
@@ -1942,6 +2123,37 @@ impl CombatSimulator {
         Ok(())
     }
 
+    /// 切片 13：闲置食物观察（等价 JS observeInactiveFoodThresholds 的 observe(unit)：
+    /// 监视单位存活且未眩晕时更新 hp/mp 缺口下界）。两个调用点——check_triggers_for_unit
+    /// 入口与 try_use_consumable 使用成功后，与 JS 的两处方法包装一一对应。
+    fn observe_inactive_for(&mut self, unit: UnitId) {
+        if self.observer_unit != Some(unit) {
+            return;
+        }
+        let Some(observer) = self.observer_state.as_mut() else { return; };
+        let unit_ref = self.arena.get(unit);
+        if unit_ref.combat_details.current_hitpoints <= 0.0 || unit_ref.is_stunned {
+            return;
+        }
+        let hp = unit_ref.combat_details.max_hitpoints - unit_ref.combat_details.current_hitpoints;
+        let mp = unit_ref.combat_details.max_manapoints - unit_ref.combat_details.current_manapoints;
+        observer.observe_inactive(hp, mp);
+    }
+
+    /// 切片 13：food 槽位的**过滤序**索引（等价 JS `observeFoodOptimizerThresholds`
+    /// 按 `player.food.filter(Boolean)` 的下标——阈值区间按非空槽位排列，而引擎循环
+    /// 按原始下标遍历）。仅当阈值观察生效（观察单位匹配且槽位非空）时返回 Some。
+    fn observer_food_slot_index(&self, unit: UnitId, slot: usize) -> Option<usize> {
+        if self.observer_unit != Some(unit) {
+            return None;
+        }
+        let food = &self.arena.get(unit).food;
+        if slot >= food.len() || food[slot].is_none() {
+            return None;
+        }
+        Some(food.iter().take(slot + 1).filter(|item| item.is_some()).count() - 1)
+    }
+
     /// 免克隆：原先每次调用都克隆 6 个 Vec（players×3 / enemies×3）来绕开借用检查；
     /// 现在只传 `is_player` 标记，友方/敌方切片视图在内部按需借用 `self.players` / `self.enemies`，
     /// 传入 `should_trigger` 的内容与顺序与原实现逐个一致。
@@ -1949,6 +2161,10 @@ impl CombatSimulator {
         if self.arena.get(unit).combat_details.current_hitpoints <= 0.0 {
             return Err(UnitError::error("Checking triggers for a dead unit"));
         }
+
+        // 切片 13：闲置食物观察（等价 JS observeInactiveFoodThresholds 包装
+        // checkTriggersForUnit：监视单位存活且未眩晕时更新缺口下界）。
+        self.observe_inactive_for(unit);
 
         let mut triggered_something = false;
         let target = {
@@ -1964,17 +2180,34 @@ impl CombatSimulator {
         for slot in 0..food_len {
             // 免克隆求值：`consumable_slot_ref` 与 `should_trigger` 都是共享借用，原实现的
             // `.cloned()` 只是绕开借用检查，却让热路径每次触发检查都深拷贝一份 Consumable。
-            let should = match consumable_slot_ref(self.arena.get(unit), true, slot) {
-                Some(consumable) => consumable.should_trigger(
+            //
+            // 切片 13：开启阈值观察时把观察句柄一并传入——`should_trigger` 在快速路径真正
+            // 调用 compare_value 的那一刻同步记录 (value, active)（等价 JS 包装 compareValue；
+            // 门控早退则不记录，与 JS 观察点一致）。观察状态临时 take 出来构造句柄以绕开
+            // 与 `&self.arena` 的借用冲突，**任何路径**（含空槽位 continue）都先放回——
+            // 后续 `try_use_consumable` 需要 &mut self。
+            let slot_consumable = consumable_slot_ref(self.arena.get(unit), true, slot);
+            let mut taken = self.observer_state.take();
+            let probe = match self.observer_food_slot_index(unit, slot) {
+                Some(slot_index) => taken.as_mut().map(|state| ThresholdObserve { state, slot_index }),
+                None => None,
+            };
+            let should_result = match slot_consumable {
+                Some(consumable) => Some(consumable.should_trigger(
                     &self.arena,
                     unit,
                     target,
                     if is_player { self.players.as_slice() } else { self.enemies.as_deref().unwrap_or(&[]) },
                     if is_player { self.enemies.as_deref() } else { Some(self.players.as_slice()) },
                     self.simulation_time,
-                )?,
-                None => continue,
+                    probe,
+                )),
+                None => None,
             };
+            // 放回必须先于 `?`：即便 should_trigger 出错（随后整轮中止），观察状态也不丢。
+            self.observer_state = taken;
+            let should = should_result.transpose()?;
+            let Some(should) = should else { continue };
             if should && self.try_use_consumable(unit, true, slot)? {
                 triggered_something = true;
             }
@@ -1990,6 +2223,8 @@ impl CombatSimulator {
                     if is_player { self.players.as_slice() } else { self.enemies.as_deref().unwrap_or(&[]) },
                     if is_player { self.enemies.as_deref() } else { Some(self.players.as_slice()) },
                     self.simulation_time,
+                    // 切片 13：JS 观察器只包 food 槽（compareValue/闲置观察都不含 drinks）。
+                    None,
                 )?,
                 None => continue,
             };
@@ -2090,6 +2325,13 @@ impl CombatSimulator {
                 buff_unique_hrid: None,
                 buff_source_key: None,
             });
+        }
+
+        // 切片 13：闲置食物观察第②钩子（等价 JS observeInactiveFoodThresholds 包装
+        // tryUseConsumable：使用成功后——即时恢复/buff 已生效——再观察一次缺口下界；
+        // JS 包装按 `unit.food.includes(consumable)` 只观察 food 槽，drink 槽不观察）。
+        if is_food {
+            self.observe_inactive_for(source);
         }
 
         Ok(true)
@@ -3090,5 +3332,118 @@ mod tests {
             options.simulation_time_limit
         );
         assert!(result["deaths"].get("/monsters/dummy").is_some());
+    }
+
+    /// 切片 13：带单一 missing_hp/mp 触发器的测试食物（cooldown 0 → 门控恒过，
+    /// 每次触发检查都会走到 compare_value，观察点充分暴露）。
+    fn observer_trigger_food(hrid: &str, condition: &str, value: f64) -> Consumable {
+        Consumable {
+            hrid: hrid.to_string(),
+            cooldown_duration: 0.0,
+            hitpoint_restore: 10.0,
+            manapoint_restore: 10.0,
+            recovery_duration: 0.0,
+            category_hrid: "/item_categories/food".to_string(),
+            buffs: Vec::new(),
+            triggers: vec![crate::trigger::Trigger {
+                dependency_hrid: "/combat_trigger_dependencies/self".to_string(),
+                condition_hrid: condition.to_string(),
+                comparator_hrid: "/combat_trigger_comparators/greater_than_equal".to_string(),
+                value,
+                is_single_target: true,
+            }],
+            last_used: crate::ability::default_last_used(),
+        }
+    }
+
+    #[test]
+    fn observers_export_threshold_ranges_and_inactive_minimum() {
+        let (mut options, mut player) = early_stop_production_options(None);
+        options.simulation_time_limit = 30.0 * ONE_SECOND;
+        // 过滤序场景：中间空槽不占阈值区间位（JS 按 filter(Boolean) 下标）。
+        player.food = vec![
+            Some(observer_trigger_food(
+                "/items/donut",
+                "/combat_trigger_conditions/missing_hp",
+                1.0,
+            )),
+            None,
+            Some(observer_trigger_food(
+                "/items/mana_donut",
+                "/combat_trigger_conditions/missing_mp",
+                1_000_000_000.0,
+            )),
+        ];
+
+        // 纯读契约基线：同 seed 同输入，仅 observers 差异。
+        let mut baseline = CombatSimulator::new(options.clone());
+        baseline.add_player(&player).expect("baseline player builds");
+        baseline.simulate().expect("baseline runs");
+        let baseline_result = baseline.tally.real.as_ref().expect("real result").to_value();
+
+        options.observers = Some(ObserverSpec { watch_hrid: "player1".to_string() });
+        let mut observed = CombatSimulator::new(options.clone());
+        observed.add_player(&player).expect("player builds");
+        observed.simulate().expect("observed run succeeds");
+
+        assert_eq!(observed.event_count, baseline.event_count);
+        assert_eq!(
+            observed.tally.real.as_ref().expect("real result").to_value(),
+            baseline_result
+        );
+
+        let observers = observed.observers_output();
+        let ranges = observers["thresholdRanges"].as_array().expect("threshold ranges exported");
+        assert_eq!(ranges.len(), 2, "None 槽不占区间位（过滤序）");
+        assert_eq!(ranges[0]["hrid"], json!("/items/donut"));
+        assert_eq!(ranges[0]["kind"], json!("hp"));
+        assert_eq!(ranges[1]["hrid"], json!("/items/mana_donut"));
+        assert_eq!(ranges[1]["kind"], json!("mp"));
+        for range in ranges {
+            let min = range["min"].as_f64().expect("min");
+            let max = range["max"].as_f64().expect("max");
+            assert!(min >= 1.0, "下界不低于初值 1");
+            assert!(max <= MAX_SAFE_INTEGER_F64, "上界不超过 MAX_SAFE_INTEGER");
+            assert!(max >= min, "区间收敛不自交");
+        }
+        let minimum = &observers["inactiveMinimum"];
+        assert!(minimum.is_object(), "闲置观察不依赖触发器形态");
+        assert!(minimum["hp"].as_f64().expect("hp") >= 1.0);
+        assert!(minimum["mp"].as_f64().expect("mp") >= 1.0);
+    }
+
+    #[test]
+    fn observers_invalid_trigger_shape_nulls_threshold_ranges_only() {
+        let (mut options, mut player) = early_stop_production_options(None);
+        options.simulation_time_limit = 10.0 * ONE_SECOND;
+        let mut bad = observer_trigger_food(
+            "/items/donut",
+            "/combat_trigger_conditions/missing_hp",
+            // value=-1 使 less_than_equal 恒假（缺口恒 >= 0）：非 gte 形态走通用
+            // is_active 路径且永不触发，避免冷却 0 的食物在满血下无限使用。
+            -1.0,
+        );
+        bad.triggers[0].comparator_hrid =
+            "/combat_trigger_comparators/less_than_equal".to_string();
+        player.food = vec![Some(bad)];
+        options.observers = Some(ObserverSpec { watch_hrid: "player1".to_string() });
+
+        let mut simulator = CombatSimulator::new(options);
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+
+        let observers = simulator.observers_output();
+        assert!(observers["thresholdRanges"].is_null(), "形态不匹配 → 阈值段 null");
+        assert!(observers["inactiveMinimum"].is_object(), "闲置观察仍有效");
+    }
+
+    #[test]
+    fn observers_output_null_without_spec() {
+        let (mut options, player) = early_stop_production_options(None);
+        options.simulation_time_limit = 5.0 * ONE_SECOND;
+        let mut simulator = CombatSimulator::new(options);
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+        assert!(simulator.observers_output().is_null());
     }
 }

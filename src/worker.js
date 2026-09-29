@@ -81,7 +81,7 @@ onmessage = async function (event) {
         combatScrollsEnabled: Boolean(extra.combatScrollsEnabled),
         isGuildTrial: Boolean(event.data.simulationContext?.isGuildTrial),
       };
-      const wasmSimResult = await tryRunWasmProductionRound({
+      const wasmOutput = await tryRunWasmProductionRound({
         useWasmEngine: event.data.useWasmEngine === true,
         players,
         zone,
@@ -91,9 +91,9 @@ onmessage = async function (event) {
         simulationTimeLimit,
         options,
       });
-      if (wasmSimResult) {
+      if (wasmOutput) {
         // wasm 路径自带确定性，不需要（也不消耗）播种后的 Math.random 作用域。
-        this.postMessage({ type: 'simulation_result', simResult: wasmSimResult });
+        this.postMessage({ type: 'simulation_result', simResult: wasmOutput.simResult });
         break;
       }
 
