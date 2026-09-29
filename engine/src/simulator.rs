@@ -258,6 +258,14 @@ impl SimResultTally {
         }
     }
 
+    /// 切片 20：`consumablesUsed[unitHrid]?.[itemHrid] || 0`（探针模式恒 0）。
+    pub fn consumables_used_for(&self, unit_hrid: &str, item_hrid: &str) -> f64 {
+        match self.real.as_ref() {
+            Some(real) => real.consumables_used_value(unit_hrid, item_hrid),
+            None => 0.0,
+        }
+    }
+
     /// 探针模式只记录 hrid（与 JS `ParitySimResult` 一致）；生产模式转发完整统计值。
     pub fn set_drop_rate_multipliers(
         &mut self,
@@ -693,6 +701,11 @@ pub struct SimulatorOptions {
     /// `observeInactiveFoodThresholds`）。`None` = 不观察（基线轮）。
     #[serde(default)]
     pub observers: Option<ObserverSpec>,
+    /// 切片 20：成本上界观察器（等价 JS `observeFoodOptimizerCostBound`）。`None` =
+    /// 不安装（非 top-ten 剪枝轮）。与 `earlyStop` 组合成 JS `shouldStop` 的完整语义
+    ///（失败谓词优先、成本其次——`||` 短路顺序一致）。
+    #[serde(default)]
+    pub cost_bound: Option<CostBoundSpec>,
 }
 
 /// 提前停止谓词参数（切片 12）。
@@ -713,6 +726,27 @@ pub struct EarlyStopSpec {
 pub struct ObserverSpec {
     /// 监视单位的 hrid（食物优化器为活动玩家，如 `player1`）。
     pub watch_hrid: String,
+}
+
+/// 切片 20：成本上界观察器参数（等价 JS `observeFoodOptimizerCostBound` 的安装快照）。
+///
+/// 价格由桥侧预解析成 `[hrid, price]` 快照：键序 = 监视玩家 food 槽序（`filter(Boolean)`
+/// 去重——与 JS `foodUsed` 的求和序逐字一致），且只含 food 类目条目（等价
+/// `computeFoodCostPerHour` 的 `itemDetailIndex` 类目过滤）；`resolveMarketPrice` 的
+/// bid/ask/vendor 兜底也一并固化在快照里，引擎不持有市场数据。
+#[derive(Clone, Debug, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CostBoundSpec {
+    /// 监视单位的 hrid（食物优化器为活动玩家，如 `player1`）。
+    pub watch_hrid: String,
+    /// 成本上界（JS `cutoff`；有限非负由桥侧安装条件保证，非法值不激活观察器）。
+    pub cutoff: f64,
+    /// 已完成轮次的累计小时成本（JS `completedCostPerHour`）。
+    pub completed_cost_per_hour: f64,
+    /// 总轮数（JS `totalRounds`；安全整数 ≥ 1）。
+    pub total_rounds: f64,
+    /// 价格快照（`[[hrid, price], ...]`，求和按此顺序）。
+    pub prices: Vec<(String, f64)>,
 }
 
 /// 单槽位阈值区间（等价 JS `observeFoodOptimizerThresholds` 的 ranges 元素）。
@@ -844,9 +878,100 @@ impl ThresholdObserve<'_> {
     }
 }
 
-/// JS Number.isSafeInteger.
+/// JS `Number.isSafeInteger`.
 fn is_safe_integer(value: f64) -> bool {
     value.is_finite() && value.fract() == 0.0 && value.abs() <= MAX_SAFE_INTEGER_F64
+}
+
+/// 切片 20：成本上界观察器运行时状态（等价 JS `observeFoodOptimizerCostBound` 闭包）。
+///
+/// 与阈值/闲置观察器不同，本观察器**会停止模拟**（等价 JS `shouldStop` 谓词的成本
+/// 分支），但不改 RNG、不改事件流、不改 simResult——停止结论与下界只走独立输出字段。
+struct CostBoundState {
+    cutoff: f64,
+    completed_cost_per_hour: f64,
+    total_rounds: f64,
+    /// 价格快照（求和顺序 = 玩家 food 槽序；空 = 无食物槽，恒不置 dirty）。
+    prices: Vec<(String, f64)>,
+    /// JS `dirty`：监视玩家成功使用其 food 槽物品后置位，下一次检查点重算。
+    dirty: bool,
+    /// 最新成本下界（None = 非有限，等价 JS `null`）。
+    cost_lower_bound: Option<f64>,
+    /// JS `aboveCutoff`。
+    above_cutoff: bool,
+    /// JS `stoppedForCost`：本轮是否已因成本停止（earlyStop 先触发时恒 false）。
+    stopped_for_cost: bool,
+}
+
+impl CostBoundState {
+    /// 安装校验 + 初值（等价 JS 观察器构造体：`computeFoodOptimizerCostLowerBound` 与
+    /// `isFoodOptimizerCostAboveCutoff` 的首轮求值）。守卫不过 → 不激活（None）。
+    fn try_new(spec: &CostBoundSpec) -> Option<Self> {
+        let initial = cost_lower_bound_of(spec.completed_cost_per_hour, 0.0, spec.total_rounds)?;
+        Some(Self {
+            cutoff: spec.cutoff,
+            completed_cost_per_hour: spec.completed_cost_per_hour,
+            total_rounds: spec.total_rounds,
+            prices: spec.prices.clone(),
+            dirty: false,
+            cost_lower_bound: Some(initial),
+            above_cutoff: cost_above_cutoff(Some(initial), spec.cutoff),
+            stopped_for_cost: false,
+        })
+    }
+
+    /// JS `foods.has(consumable)` 的等价判断（价格快照键集 = food 槽 hrid 集合）。
+    fn watches_food(&self, hrid: &str) -> bool {
+        self.prices.iter().any(|(food, _)| food == hrid)
+    }
+
+    /// JS `shouldStop()` 的 dirty 分支：从 `consumablesUsed` 全量快照重算。
+    ///
+    /// 逐字镜像 `computeFoodCostPerHour`：以**全额** `simulationTimeLimit` 为除数
+    ///（绝不除以已流逝时长）、按 foodUsed 键序（= 槽序）累加 `max(0,count)*max(0,price)`、
+    /// 总和除以小时数。`hours <= 0` 在安装守卫下不可达（JS 会抛 RangeError），防御性
+    /// 保持上次结果不变。
+    fn recompute(&mut self, tally: &SimResultTally, watch_hrid: &str, simulation_time_limit: f64) {
+        self.dirty = false;
+        let hours = simulation_time_limit / 3_600_000_000_000.0;
+        if !(hours > 0.0) {
+            return;
+        }
+        let mut total = 0.0;
+        for (hrid, price) in &self.prices {
+            let count = tally.consumables_used_for(watch_hrid, hrid);
+            total += count.max(0.0) * price.max(0.0);
+        }
+        let current_cost_per_hour = total / hours;
+        self.cost_lower_bound =
+            cost_lower_bound_of(self.completed_cost_per_hour, current_cost_per_hour, self.total_rounds);
+        self.above_cutoff = cost_above_cutoff(self.cost_lower_bound, self.cutoff);
+    }
+}
+
+/// JS `computeFoodOptimizerCostLowerBound`（守卫不过 / 非有限和 → None = null）。
+fn cost_lower_bound_of(completed: f64, current: f64, total_rounds: f64) -> Option<f64> {
+    if !completed.is_finite()
+        || completed < 0.0
+        || !current.is_finite()
+        || current < 0.0
+        || !is_safe_integer(total_rounds)
+        || total_rounds < 1.0
+    {
+        return None;
+    }
+    let lower = (completed + current) / total_rounds;
+    if lower.is_finite() { Some(lower) } else { None }
+}
+
+/// JS `isFoodOptimizerCostAboveCutoff`（非有限/负值输入恒 false；浮点边界留 margin）。
+fn cost_above_cutoff(lower: Option<f64>, cutoff: f64) -> bool {
+    let Some(lower) = lower else { return false };
+    if !lower.is_finite() || lower < 0.0 || !cutoff.is_finite() || cutoff < 0.0 {
+        return false;
+    }
+    let margin = 16.0 * f64::EPSILON * 1.0f64.max(lower).max(cutoff);
+    lower - cutoff > margin
 }
 
 /// JS `Number.MAX_SAFE_INTEGER`（`observeFoodOptimizerThresholds` 的区间上界）。
@@ -918,6 +1043,11 @@ pub struct CombatSimulator {
     observer_spec: Option<ObserverSpec>,
     observer_state: Option<ObserverState>,
     observer_unit: Option<UnitId>,
+    /// 切片 20：成本上界观察器（spec 常驻；state 在匹配玩家入池时初始化、reset 重建，
+    /// 等价 JS 每轮模拟前新装观察器闭包）。
+    cost_bound_spec: Option<CostBoundSpec>,
+    cost_bound_state: Option<CostBoundState>,
+    cost_bound_unit: Option<UnitId>,
 }
 
 /// 取「第一个存活单位」：改成收 `Option<&[UnitId]>` 切片视图，调用方无需克隆单位列表。
@@ -1037,6 +1167,16 @@ impl CombatSimulator {
             observer_spec: options.observers,
             observer_state: None,
             observer_unit: None,
+            // 切片 20：JS 安装守卫要求 `Number.isFinite(limit) && limit > 0`（成本以全额
+            // 时长为除数）；不满足时不激活（等价 JS 不装观察器）。
+            cost_bound_spec: match &options.cost_bound {
+                Some(spec) if options.simulation_time_limit.is_finite() && options.simulation_time_limit > 0.0 => {
+                    Some(spec.clone())
+                }
+                _ => None,
+            },
+            cost_bound_state: None,
+            cost_bound_unit: None,
         }
     }
 
@@ -1050,6 +1190,16 @@ impl CombatSimulator {
             if spec_observer.watch_hrid == spec.hrid && self.observer_state.is_none() {
                 self.observer_state = Some(ObserverState::new(spec_observer, &self.arena.get(id).food));
                 self.observer_unit = Some(id);
+            }
+        }
+        // 切片 20：成本观察器同样跟随匹配玩家初始化（等价 JS `simulateFoodOptimizerRound`
+        // 找到 player 后装观察器；安装校验不过 → 恒不激活——unit 不写入，reset 守卫随之跳过）。
+        if let Some(spec_cost) = self.cost_bound_spec.as_ref() {
+            if spec_cost.watch_hrid == spec.hrid && self.cost_bound_state.is_none() {
+                self.cost_bound_state = CostBoundState::try_new(spec_cost);
+                if self.cost_bound_state.is_some() {
+                    self.cost_bound_unit = Some(id);
+                }
             }
         }
         Ok(id)
@@ -1308,6 +1458,22 @@ impl CombatSimulator {
         }
     }
 
+    /// 切片 20：成本上界停止谓词（等价 JS `costObserver.shouldStop()`——仅在 dirty 时
+    /// 重算，返回最新 `aboveCutoff`）。调用方必须把它放在 `early_stop_hit()` 之后求值
+    ///（`||` 短路 = JS `hasFailed(instance) || costObserver.shouldStop()` 的失败优先序）。
+    fn cost_stop_hit(&mut self) -> bool {
+        let Some(spec) = self.cost_bound_spec.as_ref() else {
+            return false;
+        };
+        let Some(state) = self.cost_bound_state.as_mut() else {
+            return false;
+        };
+        if state.dirty {
+            state.recompute(&self.tally, &spec.watch_hrid, self.simulation_time_limit);
+        }
+        state.above_cutoff
+    }
+
     // -----------------------------------------------------------------------
     // simulate / reset / processEvent
     // -----------------------------------------------------------------------
@@ -1351,7 +1517,15 @@ impl CombatSimulator {
 
             // 切片 12：JS 在每个事件处理后调用 `shouldStop(this)`；谓词单调
             //（空蓝粘滞、死亡只增），与 JS 检查点一致地逐事件求值。
-            if self.early_stop_hit() {
+            // 切片 20：`failed || cost_stop` = JS `hasFailed(instance) ||
+            // costObserver.shouldStop()` 的短路求值序（真实失败优先于成本停止）；
+            // `stopped_for_cost` 仅在成本分支真的被求值时写入（等价 JS 的赋值语义）。
+            let failed = self.early_stop_hit();
+            let cost_stop = !failed && self.cost_stop_hit();
+            if failed || cost_stop {
+                if let Some(state) = self.cost_bound_state.as_mut() {
+                    state.stopped_for_cost = cost_stop;
+                }
                 stopped_early = true;
                 break;
             }
@@ -1487,6 +1661,12 @@ impl CombatSimulator {
         if let (Some(spec), Some(unit)) = (self.observer_spec.as_ref(), self.observer_unit) {
             self.observer_state = Some(ObserverState::new(spec, &self.arena.get(unit).food));
         }
+        // 切片 20：成本观察器同样每轮重建（等价 JS 每轮新装闭包；dirty/下界回到初值）。
+        // 与 observer 同守卫：仅当监视单位已入池（state 存在）时重建——单位未出场/非法
+        // spec 恒不激活（输出保持 null）。
+        if let (Some(spec), Some(_)) = (self.cost_bound_spec.as_ref(), self.cost_bound_unit) {
+            self.cost_bound_state = CostBoundState::try_new(spec);
+        }
     }
 
     /// 切片 13：观察器导出（`observer_state` 为私有字段；无观察器或观察单位未出场时
@@ -1496,6 +1676,23 @@ impl CombatSimulator {
         self.observer_state
             .as_ref()
             .map(|state| state.to_value())
+            .unwrap_or(Value::Null)
+    }
+
+    /// 切片 20：成本上界观察器导出（未安装/未激活/监视单位未出场时为 null）。**不并入
+    /// simResult**——与 `observers` 同一独立输出字段纪律（生产 parity 对账对象逐字节不变）。
+    pub fn cost_bound_output(&self) -> Value {
+        self.cost_bound_state
+            .as_ref()
+            .map(|state| {
+                json!({
+                    "stoppedForCost": state.stopped_for_cost,
+                    "costLowerBound": state
+                        .cost_lower_bound
+                        .map(crate::sim_result::js_number_value)
+                        .unwrap_or(Value::Null),
+                })
+            })
             .unwrap_or(Value::Null)
     }
 
@@ -3383,6 +3580,19 @@ impl CombatSimulator {
         // JS 包装按 `unit.food.includes(consumable)` 只观察 food 槽，drink 槽不观察）。
         if is_food {
             self.observe_inactive_for(source);
+            // 切片 20：成本观察 dirty 钩子（等价 JS 包装 tryUseConsumable 的
+            // `consumed && source === player && foods.has(consumable)`——成功使用监视
+            // 玩家 food 槽物品才置位；失败路径/其他单位/drink 槽不影响）。
+            if let Some(cost_unit) = self.cost_bound_unit {
+                if source == cost_unit
+                    && self
+                        .cost_bound_state
+                        .as_ref()
+                        .is_some_and(|state| state.watches_food(&consumable.hrid))
+                {
+                    self.cost_bound_state.as_mut().expect("checked above").dirty = true;
+                }
+            }
         }
 
         Ok(true)
@@ -4442,6 +4652,32 @@ mod tests {
         }
     }
 
+    /// 切片 20：打不死的高体力怪模板（同切片 19 团灭日志用例的调参）。
+    /// `early_stop_production_options` 的默认怪 defense_level 1，会被玩家
+    /// 1ms 攻速在首击前秒杀 → 玩家 HP 永不下降 → 食物永不消费。换此强怪：
+    /// attack_level 1000 → 命中率 ≈99.8%，攻速 1s/1.5≈667ms；melee_level
+    /// 1000 → 单击 ≤1010 ≪ 玩家 HP 100100（stamina 10000），玩家全程存活且
+    /// 持续掉血，missing_hp 触发器必然满足、食物必然消费。
+    fn unkillable_enemy_template() -> TemplateSpec {
+        TemplateSpec {
+            hrid: "/monsters/dummy".to_string(),
+            difficulty_tier: 0.0,
+            spec: UnitSpec {
+                hrid: "/monsters/dummy".to_string(),
+                is_player: false,
+                levels: Some(LevelsSpec {
+                    stamina_level: Some(1.0e12),
+                    attack_level: Some(1_000.0),
+                    melee_level: Some(1_000.0),
+                    defense_level: Some(1.0),
+                    ..Default::default()
+                }),
+                combat_stats: vec![("attackInterval".to_string(), 1_000_000_000.0)],
+                ..Default::default()
+            },
+        }
+    }
+
     #[test]
     fn observers_export_threshold_ranges_and_inactive_minimum() {
         let (mut options, mut player) = early_stop_production_options(None);
@@ -4531,6 +4767,168 @@ mod tests {
         simulator.add_player(&player).expect("player builds");
         simulator.simulate().expect("simulate succeeds");
         assert!(simulator.observers_output().is_null());
+    }
+
+    // -----------------------------------------------------------------------
+    // 切片 20：成本上界观察器（等价 JS observeFoodOptimizerCostBound）
+    // -----------------------------------------------------------------------
+
+    #[test]
+    fn cost_bound_stops_after_real_food_use_and_reports_partial_time() {
+        // 与 JS `food optimizer in-round cost pruning` 用例同构：cutoff=0 → 首次真实
+        // 食物使用后立即剪枝。cooldown 0 + 阈值 1 的食物保证极早期消费。
+        let (mut options, mut player) = early_stop_production_options(None);
+        options.simulation_time_limit = 60.0 * ONE_SECOND;
+        // 默认脆皮怪会被玩家 1ms 攻速在首击前秒杀 → 玩家 HP 永不下降 →
+        // 食物永不消费；换打不死强怪并抬玩家血量（见 unkillable_enemy_template）。
+        player.levels =
+            Some(LevelsSpec { stamina_level: Some(10_000.0), ..Default::default() });
+        options.encounter_templates = vec![unkillable_enemy_template()];
+        player.food = vec![Some(observer_trigger_food(
+            "/items/donut",
+            "/combat_trigger_conditions/missing_hp",
+            1.0,
+        ))];
+        options.cost_bound = Some(CostBoundSpec {
+            watch_hrid: "player1".to_string(),
+            cutoff: 0.0,
+            completed_cost_per_hour: 0.0,
+            total_rounds: 3.0,
+            prices: vec![("/items/donut".to_string(), 10.0)],
+        });
+
+        let mut simulator = CombatSimulator::new(options.clone());
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+
+        let result = simulator.tally.real.as_ref().expect("real result").to_value();
+        assert_eq!(result["stoppedEarly"], serde_json::json!(true));
+        assert!(
+            result["simulatedTime"].as_f64().expect("time") < options.simulation_time_limit,
+            "成本剪枝必须留下部分时间"
+        );
+        assert!(
+            result["consumablesUsed"]["player1"]["/items/donut"]
+                .as_f64()
+                .expect("food use recorded")
+                > 0.0
+        );
+
+        let cost = simulator.cost_bound_output();
+        assert_eq!(cost["stoppedForCost"], serde_json::json!(true));
+        let lower = cost["costLowerBound"].as_f64().expect("lower bound exported");
+        // (0 + 10×uses/小时)/3 —— uses ≥ 1 → 下界必然为正。
+        assert!(lower > 0.0);
+    }
+
+    #[test]
+    fn cost_bound_runs_to_limit_under_unreachable_cutoff() {
+        // cutoff 极大 → 永不剪枝；输出仍导出有限下界，stoppedForCost=false。
+        let (mut options, mut player) = early_stop_production_options(None);
+        options.simulation_time_limit = 20.0 * ONE_SECOND;
+        // 同上：换打不死强怪（否则食物永不消费，重算路径永远不被走到），
+        // 确保本用例真正覆盖「dirty → recompute → 下界仍低于 1e12 → 不剪枝」。
+        player.levels =
+            Some(LevelsSpec { stamina_level: Some(10_000.0), ..Default::default() });
+        options.encounter_templates = vec![unkillable_enemy_template()];
+        player.food = vec![Some(observer_trigger_food(
+            "/items/donut",
+            "/combat_trigger_conditions/missing_hp",
+            1.0,
+        ))];
+        options.cost_bound = Some(CostBoundSpec {
+            watch_hrid: "player1".to_string(),
+            cutoff: 1e12,
+            completed_cost_per_hour: 0.0,
+            total_rounds: 3.0,
+            prices: vec![("/items/donut".to_string(), 10.0)],
+        });
+
+        let mut simulator = CombatSimulator::new(options.clone());
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+
+        let result = simulator.tally.real.as_ref().expect("real result").to_value();
+        assert_eq!(result["stoppedEarly"], serde_json::json!(false));
+        assert_eq!(result["simulatedTime"].as_f64().expect("time"), options.simulation_time_limit);
+        let cost = simulator.cost_bound_output();
+        assert_eq!(cost["stoppedForCost"], serde_json::json!(false));
+        assert!(cost["costLowerBound"].as_f64().expect("finite lower bound").is_finite());
+    }
+
+    #[test]
+    fn cost_bound_invalid_spec_or_missing_player_keeps_null_output() {
+        // 安装守卫（totalRounds=0 → try_new None）与监视单位未出场 → 输出 null，
+        // 模拟照常跑满（等价 JS 不装观察器）。
+        let (mut options, player) = early_stop_production_options(None);
+        options.simulation_time_limit = 5.0 * ONE_SECOND;
+        options.cost_bound = Some(CostBoundSpec {
+            watch_hrid: "player1".to_string(),
+            cutoff: 0.0,
+            completed_cost_per_hour: 0.0,
+            total_rounds: 0.0,
+            prices: vec![("/items/donut".to_string(), 10.0)],
+        });
+        let mut simulator = CombatSimulator::new(options);
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+        assert!(simulator.cost_bound_output().is_null(), "非法 spec → 不激活");
+
+        let (mut options, player) = early_stop_production_options(None);
+        options.simulation_time_limit = 5.0 * ONE_SECOND;
+        options.cost_bound = Some(CostBoundSpec {
+            watch_hrid: "/players/ghost".to_string(),
+            cutoff: 0.0,
+            completed_cost_per_hour: 0.0,
+            total_rounds: 3.0,
+            prices: vec![("/items/donut".to_string(), 10.0)],
+        });
+        let mut simulator = CombatSimulator::new(options);
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+        assert!(simulator.cost_bound_output().is_null(), "监视单位未出场 → 不激活");
+    }
+
+    #[test]
+    fn cost_bound_failure_takes_priority_over_cost_stop() {
+        // earlyStop 与 costBound 并存：空蓝（真实失败）与成本同事件触发时，失败优先
+        //（等价 JS hasFailed 短路），stoppedForCost 必须保持 false。
+        let (mut options, mut player) = early_stop_production_options(None);
+        options.simulation_time_limit = 20.0 * ONE_SECOND;
+        player.food = vec![Some(observer_trigger_food(
+            "/items/donut",
+            "/combat_trigger_conditions/missing_hp",
+            1.0,
+        ))];
+        // 0 蓝玩家：无法施法（无技能）但触发不了空蓝——改用死亡预算监视怪物：
+        // 玩家速杀怪物（HP 低），deathLimit=0 → 首杀即停，成本分支永不被求值。
+        options.early_stop = Some(EarlyStopSpec {
+            watch_hrid: "/monsters/dummy".to_string(),
+            death_limit: Some(0.0),
+        });
+        options.cost_bound = Some(CostBoundSpec {
+            watch_hrid: "player1".to_string(),
+            cutoff: 0.0,
+            completed_cost_per_hour: 0.0,
+            total_rounds: 3.0,
+            prices: vec![("/items/donut".to_string(), 10.0)],
+        });
+
+        let mut simulator = CombatSimulator::new(options.clone());
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+
+        let result = simulator.tally.real.as_ref().expect("real result").to_value();
+        assert_eq!(result["stoppedEarly"], serde_json::json!(true));
+        assert!(
+            result["deaths"]["/monsters/dummy"].as_f64().expect("monster death recorded") >= 1.0
+        );
+        let cost = simulator.cost_bound_output();
+        assert_eq!(
+            cost["stoppedForCost"],
+            serde_json::json!(false),
+            "真实失败优先：成本分支被短路，stoppedForCost 保持 false"
+        );
     }
 
     // -----------------------------------------------------------------------

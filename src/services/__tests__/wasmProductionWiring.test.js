@@ -185,7 +185,7 @@ describe('wasm production A/B wiring', () => {
     expect(sample.simulatedTime).toBeGreaterThan(0);
   });
 
-  it('gates optimizer rounds onto wasm unless the cost observer is needed', () => {
+  it('gates optimizer rounds onto wasm by the explicit engine switch', () => {
     const request = { useWasmEngine: true };
     const candidate = { food: [] };
     expect(shouldUseWasmOptimizerRound({}, null, false, null)).toBe(false);
@@ -194,9 +194,9 @@ describe('wasm production A/B wiring', () => {
     // 切片 13：阈值/闲置观察由 Rust observers 承接，collectThresholds 不再阻止 wasm 轮次。
     expect(shouldUseWasmOptimizerRound(request, null, true, null)).toBe(true);
     expect(shouldUseWasmOptimizerRound(request, candidate, true, null)).toBe(true);
-    // 成本上界观察器（observeFoodOptimizerCostBound）仍留 JS：costBound 轮不放开。
-    expect(shouldUseWasmOptimizerRound(request, null, false, { cutoff: 1 })).toBe(false);
-    expect(shouldUseWasmOptimizerRound(request, null, true, { cutoff: 1 })).toBe(false);
+    // 切片 20：成本上界观察由 Rust costBound 承接，costBound 轮同样放行。
+    expect(shouldUseWasmOptimizerRound(request, null, false, { cutoff: 1 })).toBe(true);
+    expect(shouldUseWasmOptimizerRound(request, null, true, { cutoff: 1 })).toBe(true);
     expect(shouldUseWasmOptimizerRound(request, null, false, null)).toBe(true);
   });
 

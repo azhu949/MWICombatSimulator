@@ -367,6 +367,16 @@ impl SimResultState {
         self.player_ran_out_of_mana.get_str(hrid).copied().unwrap_or(false)
     }
 
+    /// 切片 20：成本上界观察器的只读视图（JS `consumablesUsed[unitHrid]?.[itemHrid] || 0`）。
+    /// minimal 分支同样记账（`addConsumableUse` 未被覆写），优化器轮次可直接消费。
+    pub fn consumables_used_value(&self, unit_hrid: &str, item_hrid: &str) -> f64 {
+        self.consumables_used
+            .get_str(unit_hrid)
+            .and_then(|items| items.get_str(item_hrid))
+            .copied()
+            .unwrap_or(0.0)
+    }
+
     /// JS `addWipeEvent(logs, simulationTime, wave)`（timestamp 由调用方注入）。
     pub fn add_wipe_event(&mut self, logs: Value, simulation_time: f64, wave: f64, timestamp: String) {
         if self.minimal {
