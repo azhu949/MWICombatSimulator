@@ -5,7 +5,7 @@
   "scripts": {
     "dev": "vite",
     "build": "vite build",
-    "build:wasm": "wasm-pack build engine --target web",
+    "build:wasm": "wasm-pack build engine --target web && node scripts/optimize-wasm.mjs",
     "verify:wasm": "node scripts/verify-wasm-build.mjs",
     "benchmark:combat-engine": "node scripts/benchmark-combat-engine.mjs",
     "benchmark:wasm-engine": "node scripts/run-wasm-benchmark.mjs",
@@ -38,6 +38,7 @@
     "@vitejs/plugin-vue": "^5.2.4",
     "@vue/test-utils": "^2.4.11",
     "acorn": "^8.12.1",
+    "binaryen": "^121.0.0",
     "jsdom": "^26.1.0",
     "prettier": "3.9.6",
     "tailwindcss": "^4.3.3",

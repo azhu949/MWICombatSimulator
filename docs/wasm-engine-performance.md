@@ -363,6 +363,7 @@ npmmirror 的 `binaryen@121` npm 包自带可用的 `wasm-opt`（`node_modules/b
 - 启用需在 `devDependencies` 加 `binaryen`（约 10 MB）并给 `build:wasm` 加一步
   `node node_modules/binaryen/bin/wasm-opt <pkg>.wasm -O4 -o <pkg>.wasm`。
   **是否把它写进构建脚本待定**（涉包体积与 CI 稳定性权衡，本切片只记录方法与验证结果）。
+  → **切片 11 已启用并写进 `build:wasm`，见第 10 节。**
 
 ### 9.4 实测与验收
 
@@ -380,3 +381,55 @@ npmmirror 的 `binaryen@121` npm 包自带可用的 `wasm-opt`（`node_modules/b
    按模板缓存已构建单位（注意：会改 RNG 消费时点，须 parity 验证）。
 3. wasm-opt 启用与否（见 9.3）。
 4. WASM 覆盖范围扩展（提前停止 / 观察器 / 完整 SimResult）——解锁主页端到端收益的主线。
+
+## 10. 切片 11：结算单遍分派 + 施法目标免克隆 + wasm-opt 常态化（2026-09-29）
+
+### 10.1 本批改动（全部保 parity）
+
+1. **`SettlementBoosts` 单遍分派（unit.rs）**：退役 `index_buffs_by_type` /
+   `BuffBoostEntry` / `BuffBoostIndex` / `snapshot_boost(s)` 旧链路。新方案单遍遍历
+   `combat_buffs`，`slot_mut(&type_hrid)` match 直分派到固定槽位：
+   - 12 个**逐项槽**（`Vec<BuffBoost>` 保序）：7 等级字段 + evasion + armor + 三系抗性
+     ——消费端逐项循环，浮点累加序不可合并；
+   - 28 个**汇总槽**（`BuffBoost`）：消费端只读 ratio/flat 总和，从 `0.0` 起按序累加
+     ——与 JS `indexBuffsByType` 的 `{0,0}` 起点 `+=` 序列**逐位一致**（旧 Rust 索引
+     首项直接赋值，仅在首项恰为 -0.0 时有理论符号差，新方案更忠实）；
+     `attack_speed` 消费端的 `fold(0.0)` 与该序列逐位相同，一并归入此类。
+   - 消除：索引构建的每类型 `String` 克隆 + OrderedMap 写入 + 结算体 40 次
+     `get_str` 线性查找（每次 O(类型数)）。
+2. **施法目标列表免克隆（simulator.rs）**：`process_ability_buff_effect` /
+   `process_ability_heal_effect` 的 allAllies/lowestHpAlly 路径去掉
+   `self.players.clone()` / `self.enemies.clone().unwrap_or_default()`，改下标遍历
+   （heal 处 `ally_at` 闭包取 `Option<UnitId>`；buff 处 if/else 直取，越界 break）。
+   循环内不增删单位列表，遍历顺序与快照一致。
+3. **wasm-opt 常态化（scripts/optimize-wasm.mjs）**：`build:wasm` 追加
+   `wasm-opt -O4`（binaryen@121 devDep）。输出走临时文件 + rename 原子替换，
+   失败即退出非零。体积 835.4 KB → 730.1 KB（**-12.6%**）。
+
+### 10.2 实测（`npm run benchmark:wasm-engine`，同机 AMD Ryzen 7 8845H）
+
+- **4h 背靠背 A/B 三轮（pkg_opt=切片10 vs pkg_s11=切片11，交替覆盖）**：
+
+  | 轮次 | A（切片10）WASM | B（切片11）WASM | 配对差 |
+  | ---- | --------------- | --------------- | ------ |
+  | 1    | 84.8 ms         | 72.6 ms         | -12.2  |
+  | 2    | 82.5 ms         | 71.4 ms         | -11.1  |
+  | 3    | 89.4 ms         | 69.4 ms         | -20.0  |
+
+  三轮配对全部同向，均值 85.6 → 71.1 ms（**约 -17%**），切片 10 记录的
+  78–97 ms 区间被压至 ~69–73 ms。
+
+- **1h 基准**：21.1 ms（4.93×），历史最低（切片 10 为 24–27 ms）。
+- 同轮 JS 读数 331–401 ms 波动，印证热节流下只有配对比较可靠的既有结论。
+
+### 10.3 验收
+
+- cargo test 102 passed；parity 17 passed（真实夹具 + 多种子，覆盖三项改动 +
+  wasm-opt 输出的逐位一致性）；npm test 2636 passed + prettier；
+  `build:wasm` → `build` → `verify-pages-build` 全过。
+
+### 10.4 剩余候选（更新）
+
+1. `update_details` 池化 / `enemyRespawn` 单位模板缓存（parity 风险高，RNG 时点）。
+2. WASM 覆盖扩展（shouldStop 提前停止 / 观察器数据）——解锁主页端到端收益的主线。
+3. `Interner` 字符串驻留（大工程，收益待估）。
