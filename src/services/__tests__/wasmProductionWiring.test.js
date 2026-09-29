@@ -136,15 +136,18 @@ describe('wasm production A/B wiring', () => {
     expect(sample.simulatedTime).toBeGreaterThan(0);
   });
 
-  it('gates optimizer rounds onto wasm only when no JS-side observer is needed', () => {
+  it('gates optimizer rounds onto wasm unless the cost observer is needed', () => {
     const request = { useWasmEngine: true };
     const candidate = { food: [] };
     expect(shouldUseWasmOptimizerRound({}, null, false, null)).toBe(false);
     // 切片 12：候选轮（shouldStop 由 Rust earlyStop 承接）已放行。
     expect(shouldUseWasmOptimizerRound(request, candidate, false, null)).toBe(true);
-    expect(shouldUseWasmOptimizerRound(request, null, true, null)).toBe(false);
-    expect(shouldUseWasmOptimizerRound(request, candidate, true, null)).toBe(false);
+    // 切片 13：阈值/闲置观察由 Rust observers 承接，collectThresholds 不再阻止 wasm 轮次。
+    expect(shouldUseWasmOptimizerRound(request, null, true, null)).toBe(true);
+    expect(shouldUseWasmOptimizerRound(request, candidate, true, null)).toBe(true);
+    // 成本上界观察器（observeFoodOptimizerCostBound）仍留 JS：costBound 轮不放开。
     expect(shouldUseWasmOptimizerRound(request, null, false, { cutoff: 1 })).toBe(false);
+    expect(shouldUseWasmOptimizerRound(request, null, true, { cutoff: 1 })).toBe(false);
     expect(shouldUseWasmOptimizerRound(request, null, false, null)).toBe(true);
   });
 
@@ -154,19 +157,23 @@ describe('wasm production A/B wiring', () => {
     });
 
     it('produces the same optimizer round sample on both engines', async () => {
-      const jsRequest = buildRequest();
-      const wasmRequest = buildRequest();
-      wasmRequest.useWasmEngine = true;
+      // 切片 13：collectThresholds 两种取值都逐字段对照（true 时阈值/闲置观察由两侧
+      // 各自的观察器承接：JS 观察器 vs Rust observers 映射，样本必须一致）。
+      for (const collectThresholds of [false, true]) {
+        const jsRequest = buildRequest();
+        const wasmRequest = buildRequest();
+        wasmRequest.useWasmEngine = true;
 
-      const jsSample = await simulateFoodOptimizerRound(jsRequest, null, 12345, () => {}, Infinity, {
-        collectThresholds: false,
-      });
-      const wasmSample = await simulateFoodOptimizerRound(wasmRequest, null, 12345, () => {}, Infinity, {
-        collectThresholds: false,
-      });
+        const jsSample = await simulateFoodOptimizerRound(jsRequest, null, 12345, () => {}, Infinity, {
+          collectThresholds,
+        });
+        const wasmSample = await simulateFoodOptimizerRound(wasmRequest, null, 12345, () => {}, Infinity, {
+          collectThresholds,
+        });
 
-      expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('');
-      expect(wasmSample).toEqual(jsSample);
+        expect(getWasmProductionDiagnostics().lastFallbackReason, `collectThresholds=${collectThresholds}`).toBe('');
+        expect(wasmSample, `collectThresholds=${collectThresholds}`).toEqual(jsSample);
+      }
     });
   });
 });

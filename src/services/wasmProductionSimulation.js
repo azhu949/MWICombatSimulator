@@ -8,10 +8,10 @@
 //   · 配置不受支持（副本 / 迷宫 / 卷轴 / 战斗日志 / HP-MP 可视化 / 非 minimal 结果 /
 //     公会试炼 / 无区域）→ 见 `getProductionSupport`；
 //   · 快照或运行时抛错（非有限数、缺模板、缺技能定义等）→ 同样回退，绝不让页面不可用。
-// - wasm 引擎只覆盖「不需要 JS 侧实时观察点」的轮次：食物优化器的阈值观察器
-//   （`observeFoodOptimizerThresholds` / `observeInactiveFoodThresholds`）、成本上界观察器
-//   （`observeFoodOptimizerCostBound`）以及 `shouldStop`（空蓝 / 死亡预算提前停止）都依赖
-//   JS 模拟器实例的运行时状态，这些轮次由调用方留在 JS 引擎（调用方负责判定）。
+// - wasm 引擎覆盖的轮次边界随切片 12/13 扩大：提前停止（`shouldStop` 的空蓝/死亡预算
+//   谓词）由 Rust `earlyStop` 承接；阈值观察器（`observeFoodOptimizerThresholds` /
+//   `observeInactiveFoodThresholds`）由 Rust `observers` 导出承接（纯读，simResult 不变）。
+//   仍留在 JS 的只有成本上界观察器（`observeFoodOptimizerCostBound`，依赖 JS 运行时状态）。
 // - 同一输入 + 同一 seed 下两侧结果逐字段一致（`wasmEngineProductionParity.test.js`）；
 //   wasm 路径自带确定性，不需要 `Math.random` 播种作用域，也不消耗它。
 import { loadWasmEngine } from './wasmEngineLoader.js';
@@ -44,7 +44,8 @@ function loadEngine() {
 }
 
 /**
- * 尝试用 wasm 引擎跑一轮生产模拟；返回 `simResult`（Rust `SimResultState.to_value()` 形状）。
+ * 尝试用 wasm 引擎跑一轮生产模拟；返回 `{ simResult, observers }`（`observers` 未开启时
+ * 为 null；Rust `SimResultState.to_value()` / `ObserverState.to_value()` 形状）。
  * 返回 `null` 表示调用方应当回退 JS 引擎（`getWasmProductionDiagnostics().lastFallbackReason`
  * 给出原因，便于日志 / UI 展示）。
  */
@@ -82,9 +83,9 @@ export async function tryRunWasmProductionRound({
 
   try {
     const request = buildProductionRequest({ players, zone, seed, simulationTimeLimit, options });
-    const simResult = runWasmProductionSimulation(engine, request);
+    const output = runWasmProductionSimulation(engine, request);
     lastFallbackReason = '';
-    return simResult;
+    return output;
   } catch (error) {
     lastFallbackReason = `run_error: ${error?.message ?? String(error)}`;
     return null;

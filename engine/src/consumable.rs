@@ -9,6 +9,7 @@
 
 use crate::buff::Buff;
 use crate::sim_unit::{UnitArena, UnitId};
+use crate::simulator::ThresholdObserve;
 use crate::trigger::Trigger;
 use crate::unit::UnitError;
 use serde::{Deserialize, Serialize};
@@ -32,6 +33,9 @@ pub struct Consumable {
 
 impl Consumable {
     /// 等价 JS `Consumable.shouldTrigger(currentTime, source, target, friendlies, enemies)`。
+    ///
+    /// `observe`（切片 13）：快速路径调用 compare_value 的那一刻同步记录
+    /// (value, active)——与 JS 侧包装 compareValue 的观察点逐次一致（门控早退不记录）。
     pub fn should_trigger(
         &self,
         arena: &UnitArena,
@@ -40,6 +44,7 @@ impl Consumable {
         friendlies: &[UnitId],
         enemies: Option<&[UnitId]>,
         current_time: f64,
+        observe: Option<ThresholdObserve<'_>>,
     ) -> Result<bool, UnitError> {
         let unit = arena.get(source);
         if unit.is_stunned {
@@ -82,7 +87,11 @@ impl Consumable {
                 } else {
                     unit.combat_details.max_manapoints - unit.combat_details.current_manapoints
                 };
-                return trigger.compare_value(&crate::trigger::TriggerValue::Number(current));
+                let active = trigger.compare_value(&crate::trigger::TriggerValue::Number(current))?;
+                if let Some(mut observe) = observe {
+                    observe.record(current, active);
+                }
+                return Ok(active);
             }
         }
 
@@ -142,7 +151,7 @@ mod tests {
         let mut arena = UnitArena::new();
         let id = arena.push(unit);
         let item = consumable("/items/donut", "/item_categories/food", 1000.0, Vec::new());
-        assert_eq!(item.should_trigger(&arena, id, None, &[id], None, 5000.0), Ok(false));
+        assert_eq!(item.should_trigger(&arena, id, None, &[id], None, 5000.0, None), Ok(false));
     }
 
     #[test]
@@ -157,17 +166,17 @@ mod tests {
         // 因此显式写 0 才能观察到冷却缩放。
         let mut food = consumable("/items/donut", "/item_categories/food", 1000.0, Vec::new());
         food.last_used = 0.0;
-        assert_eq!(food.should_trigger(&arena, id, None, &[id], None, 499.0), Ok(false));
-        assert_eq!(food.should_trigger(&arena, id, None, &[id], None, 500.0), Ok(true));
+        assert_eq!(food.should_trigger(&arena, id, None, &[id], None, 499.0, None), Ok(false));
+        assert_eq!(food.should_trigger(&arena, id, None, &[id], None, 500.0, None), Ok(true));
 
         let mut drink = consumable("/items/water", "/item_categories/drink", 1000.0, Vec::new());
         drink.last_used = 0.0;
-        assert_eq!(drink.should_trigger(&arena, id, None, &[id], None, 666.0), Ok(false));
-        assert_eq!(drink.should_trigger(&arena, id, None, &[id], None, 667.0), Ok(true));
+        assert_eq!(drink.should_trigger(&arena, id, None, &[id], None, 666.0, None), Ok(false));
+        assert_eq!(drink.should_trigger(&arena, id, None, &[id], None, 667.0, None), Ok(true));
 
         let mut fresh_food = consumable("/items/donut", "/item_categories/food", 1000.0, Vec::new());
         fresh_food.last_used = default_last_used();
-        assert_eq!(fresh_food.should_trigger(&arena, id, None, &[id], None, 0.0), Ok(true));
+        assert_eq!(fresh_food.should_trigger(&arena, id, None, &[id], None, 0.0, None), Ok(true));
     }
 
     #[test]
@@ -184,7 +193,7 @@ mod tests {
             0.0,
             vec![missing_hp_trigger(60.0)],
         );
-        assert_eq!(hp_item.should_trigger(&arena, id, None, &[id], None, 0.0), Ok(true));
+        assert_eq!(hp_item.should_trigger(&arena, id, None, &[id], None, 0.0, None), Ok(true));
 
         let strict_item = consumable(
             "/items/donut",
@@ -192,7 +201,7 @@ mod tests {
             0.0,
             vec![missing_hp_trigger(61.0)],
         );
-        assert_eq!(strict_item.should_trigger(&arena, id, None, &[id], None, 0.0), Ok(false));
+        assert_eq!(strict_item.should_trigger(&arena, id, None, &[id], None, 0.0, None), Ok(false));
 
         let mp_item = consumable(
             "/items/mana_potion",
@@ -206,6 +215,6 @@ mod tests {
                 is_single_target: true,
             }],
         );
-        assert_eq!(mp_item.should_trigger(&arena, id, None, &[id], None, 0.0), Ok(true));
+        assert_eq!(mp_item.should_trigger(&arena, id, None, &[id], None, 0.0, None), Ok(true));
     }
 }

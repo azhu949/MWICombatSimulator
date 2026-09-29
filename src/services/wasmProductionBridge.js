@@ -288,21 +288,27 @@ export function buildProductionRequest({ players, zone, labyrinth = null, seed, 
                 : null,
           }
         : null,
+      // 切片 13：观察器（阈值区间 + 闲置食物下界，等价 JS observeFoodOptimizerThresholds /
+      // observeInactiveFoodThresholds）。纯读窥视——不改 RNG/事件流/simResult。
+      observers: options.observers ? { watchHrid: options.observers.watchHrid } : null,
     },
     players: players.map((player) => dumpUnitSpec(player)),
   };
 }
 
 /// 调用 wasm 生产出口；`error` 非空时抛错（调用方捕获后回退 JS）。
+/// 返回 `{ simResult, observers }`：simResult 与 JS 引擎逐字段一致（parity 对账对象）；
+/// observers 在未开启时为 null，开启时为 `{ thresholdRanges, inactiveMinimum }`（独立输出
+/// 字段，保证 simResult 逐字节不变）。
 export function runWasmProductionSimulation(engine, request) {
   const output = JSON.parse(engine.run_production_simulation(JSON.stringify(request)));
   if (output.error) {
     throw new Error(`wasm production simulation failed: ${output.error.name}: ${output.error.message}`);
   }
-  return output.simResult;
+  return { simResult: output.simResult, observers: output.observers ?? null };
 }
 
-/// 调试用：返回 `{ simResult, eventCount, eventTrace, error }` 原始输出（`traceLimit > 0` 时轨迹有内容）。
+/// 调试用：返回 `{ simResult, observers, eventCount, eventTrace, error }` 原始输出（`traceLimit > 0` 时轨迹有内容）。
 export function runWasmProductionSimulationVerbose(engine, request) {
   return JSON.parse(engine.run_production_simulation(JSON.stringify(request)));
 }

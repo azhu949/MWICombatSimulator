@@ -74,6 +74,8 @@ pub fn run_production_simulation(request_json: &str) -> Result<String, String> {
 
     serde_json::to_string(&json!({
         "simResult": sim_result,
+        // 切片 13：观察器导出（未开启时为 null）。独立字段——simResult 保持逐字节不变。
+        "observers": simulator.observers_output(),
         "eventCount": simulator.event_count,
         // 仅在 `traceLimit > 0` 时有内容；生产 parity 对账与分歧定位用。
         "eventTrace": simulator.trace,
