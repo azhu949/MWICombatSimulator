@@ -182,4 +182,57 @@ describe('multiWorker', () => {
       }),
     );
   });
+
+  // 切片 18：主线程批量消息的 wasm 开关（useWasmEngine）必须透传给每个子 worker，
+  // 否则批量扫描永远落在 JS 引擎上。
+  it('forwards the wasm engine switch to each child worker', async () => {
+    FakeChildWorker.behaviors = [
+      (worker) =>
+        setTimeout(() => {
+          worker.emit({ type: 'simulation_result', simResult: { encounters: 0 } });
+        }, 0),
+    ];
+    const workerScope = { postMessage: vi.fn(), close: vi.fn() };
+
+    await handleMultiSimulationMessage(
+      {
+        type: 'start_simulation_all_zones',
+        players: [],
+        zones: [{ zoneHrid: '/actions/combat/fly', difficultyTier: 0 }],
+        simulationTimeLimit: 100,
+        extra: { mooPass: false, comExp: 0, comDrop: 0, enableHpMpVisualization: false },
+        useWasmEngine: true,
+      },
+      workerScope,
+    );
+
+    expect(FakeChildWorker.instances[0].postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ useWasmEngine: true }),
+    );
+
+    // 未开启时不注入该字段（保持消息形状最小化）。
+    FakeChildWorker.instances.length = 0;
+    FakeChildWorker.behaviors = [
+      (worker) =>
+        setTimeout(() => {
+          worker.emit({ type: 'simulation_result', simResult: { encounters: 0 } });
+        }, 0),
+    ];
+    await handleMultiSimulationMessage(
+      {
+        type: 'start_simulation_all_labyrinths',
+        players: [],
+        labyrinths: [{ labyrinthHrid: '/monsters/cyclops', roomLevel: 100 }],
+        simulationTimeLimit: 100,
+        extra: { mooPass: false, comExp: 0, comDrop: 0, enableHpMpVisualization: false },
+      },
+      workerScope,
+    );
+
+    expect(FakeChildWorker.instances[0].postMessage).toHaveBeenCalledWith(
+      expect.objectContaining({ type: 'start_simulation' }),
+    );
+    const forwarded = FakeChildWorker.instances[0].postMessage.mock.calls[0][0];
+    expect(forwarded.useWasmEngine).toBeUndefined();
+  });
 });

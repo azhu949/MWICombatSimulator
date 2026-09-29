@@ -1,7 +1,10 @@
-// 切片 5-B：生产路径 A/B 接线（WASM 引擎 / JS 引擎，**开关默认关**）。
+// 切片 5-B：生产路径 A/B 接线（WASM 引擎 / JS 引擎）。
 //
 // 契约（与 `wasmProductionBridge.js` / `worker.js` / `foodOptimizerSimulation.js` 成对维护）：
 // - 调用方必须显式传 `useWasmEngine: true` 才会尝试 wasm 引擎；未开启时直接返回 `null`（走 JS）。
+//   切片 18 起生产载荷默认带 true（见 simulationDomain / advisorDomain /
+//   foodOptimizerSnapshot / simulatorSimulationActions / advisorRunExecution），
+//   本函数的显式契约不变——显式 false / 缺省仍完整保留 JS 路径（测试与实验载荷用）。
 // - 任何「不可用 / 不支持 / 运行失败」都返回 `null`，由调用方静默回退 JS 引擎：
 //   · 引擎加载失败（`engine/pkg` 未构建、部署产物不含 wasm、加载异常）→ 本 realm 记住
 //     「不可用」，后续请求不再重复尝试加载；

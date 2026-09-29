@@ -69,8 +69,9 @@ onmessage = async function (event) {
       let simulationTimeLimit = event.data.simulationTimeLimit;
       let enableHpMpVisualization = Boolean(extra.enableHpMpVisualization);
 
-      // 切片 5-B A/B 开关（默认关）：仅当调用方显式传 `useWasmEngine: true` 且配置落在
-      // wasm 引擎覆盖范围内（无副本/迷宫/卷轴/公会试炼/无区域）时才走 wasm；其余情况
+      // 切片 18：生产载荷默认带 `useWasmEngine: true`（首页单轮 / 队列场景与基线轮 /
+      // 食物优化器 / 触发器优化器 / 批量区域与迷宫扫描）。引擎缺失 / 配置不受支持
+      // （「副本 + full-result + 日志」组合、公会试炼、无区域）/ 运行出错时
       // `tryRunWasmProductionRound` 返回 null，静默回退下面的 JS 引擎。
       // 切片 14 起 full-result（经验/掉落桶/时序/激怒层数）与日志/可视化组合也走 wasm：
       // 时序数据随 simResult 的 `timeSeriesData` 一次性返回，因此这里没有流式 progress
@@ -84,13 +85,20 @@ onmessage = async function (event) {
         combatScrollsEnabled: Boolean(extra.combatScrollsEnabled),
         isGuildTrial: Boolean(event.data.simulationContext?.isGuildTrial),
       };
+      // wasm 引擎必须显式 seed（Rust RNG 自带确定性）：载荷未带 seed 时（首页单轮 /
+      // 批量区域扫描）随机采一个，保持「每场独立随机流」——与 JS 分支无 seed 时
+      // 原生 Math.random 的统计语义等价。此处置于 installSeedScope 之前，
+      // Math.random 仍是原生。
+      const wasmSeed = Number.isFinite(Number(event.data.seed))
+        ? Number(event.data.seed) >>> 0
+        : (Math.random() * 0x100000000) >>> 0;
       const wasmOutput = await tryRunWasmProductionRound({
         useWasmEngine: event.data.useWasmEngine === true,
         players,
         zone,
         labyrinth,
         simulationContext: event.data.simulationContext,
-        seed: event.data.seed,
+        seed: wasmSeed,
         simulationTimeLimit,
         options,
       });

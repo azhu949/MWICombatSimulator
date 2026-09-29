@@ -193,6 +193,8 @@ describe('simulationDomain', () => {
         enableHpMpVisualization: true,
         combatScrollsEnabled: false,
       },
+      // 切片 18：生产 payload 默认点亮 wasm 引擎（worker 侧不可用时静默回退 JS）。
+      useWasmEngine: true,
     });
 
     expect(
