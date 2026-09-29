@@ -8,11 +8,10 @@
 > 横向对比（2026-09-28 实测）：第三方 Rust 引擎 **mwi-fastsim** 的 WASM 吞吐约为本引擎的 **6–9 倍**
 > （同机、事件/秒口径）；差距来源、构建参数实验与可借鉴项见第 5 节。
 >
-> 切片 7（2026-09-28）：用可关闭的 `prof` 分段计时定位热点，完成首批**保语义**优化后，
-> **WASM 引擎 1 小时场景 43.2–49.3 ms → 24–27 ms、4 小时场景 223.7 ms → 96.1 ms（≈2.3×）**，
-> JS/WASM 提速比由 2.09–2.57× 升到 **3.4–3.7×**；
-> 切片 8 继续做去克隆（`add_next_attack_event` / `check_triggers`），并用背靠背 A/B
-> **否决了 `Rc<Ability>` 试验**（原生更快、WASM 更慢）。方法与读数见第 6、7 节。
+> 切片 7–9（2026-09-28/29）：prof 定位 + 三批**保语义**优化后，
+> **WASM 引擎 1h 43.2–49.3 ms → 24–27 ms、4h 223.7 ms → 82.6–86.9 ms（≈2.6×）**，
+> JS/WASM 提速比由 2.09–2.57× 升到 **3.6–3.7×**；期间一次 `Rc<Ability>` 试验经
+> 背靠背 A/B 否决（原生更快、WASM 更慢）。方法与读数见第 6–8 节。
 
 ## 1. 测量方法
 
@@ -305,3 +304,30 @@ WASM 引擎 47.0–49.3 ms → 43.2–46.6 ms（**约 -5%～-10%**），JS 侧�
 4. 队列 `clear_matching` / `remove_by_id` 仍是 O(n²)/O(n)：`id → 堆下标` 侧表可降为 O(1)，parity 不破。
 5. `unit_hrid()` 每次返回新 `String`（1.6 万次/轮）：可逐点改为直接借用 `self.arena.get(id).hrid`。
 6. `wasm-opt` 仍关闭；尝试镜像/预置 binaryen 可再拿单位数到十位数百分比。
+
+## 8. 切片 9：增益生命周期免 String 分配（2026-09-29）
+
+### 8.1 本批改动（全部保 parity）
+
+1. `ordered_map.rs`：新增 `get_mut_str` / `delete_str` / `set_str`（str 键版本的可变查询、
+   删除、写入；键已存在时零 `String` 分配，语义与 `set`/`delete` 完全一致）。
+2. `unit.rs` 增益生命周期（addBuff / removeBuff / 过期清理 / reconcile 共 5 个方法，
+   约 20 处调用点）：`unique_hrid.to_string()` 传键改为 `delete_str`/`set_str`/`get_mut_str`，
+   消除该路径每次增益增删/过期处理的一批临时 `String` 分配。
+3. `simulator.rs` `process_event`：`CheckBuffExpiration` 事件不再 `clone` 其
+   `buff_unique_hrid`（事件本身拥有该 String，按值解构后以 `&str` 传递）。
+
+### 8.2 试过并搁置：`unit_hrid()` 返回 `&str`
+
+把 `unit_hrid` 改成返回借用后，与其交错的约 30 处调用点全部报借用冲突（hrid 的取用与
+`tally` 记账 / `arena.get_mut` 深度交错、频率分布很平、无单点热点）。收益约 2–4%，
+改动面与风险不成比例——留注释并归入下一批，与「效果循环直借 arena 技能」的更大重构一起做。
+
+### 8.3 实测（`npm run benchmark:wasm-engine`，同机）
+
+- 4h 稳态三轮：WASM 引擎 82.6–86.9 ms（提速比 3.61–3.71×），与切片 8 的 96.1 ms /
+  3.70× 相比**在噪声内小幅偏好**；本批改动集中在增益生命周期路径（每轮数千次调用），
+  单点收益小但确定性为正。
+- 1h 最好 24.9 ms，与切片 8 持平。
+- 验收：cargo test 102 passed；parity 17 passed；npm test 2636 passed + prettier；
+  build + verify-pages-build 通过。

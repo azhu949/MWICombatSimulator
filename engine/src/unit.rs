@@ -1109,11 +1109,11 @@ impl CombatUnit {
                 )));
             }
         }
-        self.buff_source_policies.set(unique_hrid.clone(), normalized_policy);
+        self.buff_source_policies.set_str(&unique_hrid, normalized_policy);
         self.buff_source_sequence += 1;
         let sequence = self.buff_source_sequence;
         if let Some(sources) = self.buff_sources.get_mut(&unique_hrid) {
-            sources.set(source_key.to_string(), BuffSourceEntry { buff: registered_buff, expires_at, sequence });
+            sources.set_str(source_key, BuffSourceEntry { buff: registered_buff, expires_at, sequence });
         }
 
         self.reconcile_buff_source_live(&unique_hrid, true, Some(source_key))?;
@@ -1137,11 +1137,11 @@ impl CombatUnit {
         let next_active_buff = next_active_source.map(|(_, entry)| entry.buff.clone());
 
         if let Some((source_key, entry)) = next_active_source {
-            self.active_buff_source_keys.set(unique_hrid.to_string(), source_key.clone());
-            self.combat_buffs.set(unique_hrid.to_string(), entry.buff.clone());
+            self.active_buff_source_keys.set_str(unique_hrid, source_key.clone());
+            self.combat_buffs.set_str(unique_hrid, entry.buff.clone());
         } else {
-            self.active_buff_source_keys.delete(&unique_hrid.to_string());
-            self.combat_buffs.delete(&unique_hrid.to_string());
+            self.active_buff_source_keys.delete_str(unique_hrid);
+            self.combat_buffs.delete_str(unique_hrid);
         }
 
         let active_buff_changed = !buffs_affect_stats_equally(next_active_buff.as_ref(), previous_active_buff.as_ref());
@@ -1176,11 +1176,11 @@ impl CombatUnit {
         };
 
         if let Some((source_key, buff)) = next_active {
-            self.active_buff_source_keys.set(unique_hrid.to_string(), source_key);
-            self.combat_buffs.set(unique_hrid.to_string(), buff);
+            self.active_buff_source_keys.set_str(unique_hrid, source_key);
+            self.combat_buffs.set_str(unique_hrid, buff);
         } else {
-            self.active_buff_source_keys.delete(&unique_hrid.to_string());
-            self.combat_buffs.delete(&unique_hrid.to_string());
+            self.active_buff_source_keys.delete_str(unique_hrid);
+            self.combat_buffs.delete_str(unique_hrid);
         }
 
         if active_buff_changed && update_details {
@@ -1237,7 +1237,7 @@ impl CombatUnit {
             let source_was_active =
                 self.active_buff_source_keys.get_str(unique_hrid).is_some_and(|active| *active == source_key);
             let mut remaining = sources.len();
-            if let Some(live_sources) = self.buff_sources.get_mut(&unique_hrid.to_string()) {
+            if let Some(live_sources) = self.buff_sources.get_mut_str(unique_hrid) {
                 if live_sources.delete(&source_key) {
                     remaining -= 1;
                 }
@@ -1245,12 +1245,12 @@ impl CombatUnit {
 
             if policy == BuffSourcePolicy::Replace && source_was_active {
                 // 后写覆盖的增益被移除时不揭示旧值：级联清除该 uniqueHrid 的全部源。
-                self.buff_sources.delete(&unique_hrid.to_string());
-                self.buff_source_policies.delete(&unique_hrid.to_string());
+                self.buff_sources.delete_str(unique_hrid);
+                self.buff_source_policies.delete_str(unique_hrid);
                 self.reconcile_buff_source(unique_hrid, None, true, None)?;
             } else if remaining == 0 {
-                self.buff_sources.delete(&unique_hrid.to_string());
-                self.buff_source_policies.delete(&unique_hrid.to_string());
+                self.buff_sources.delete_str(unique_hrid);
+                self.buff_source_policies.delete_str(unique_hrid);
                 self.reconcile_buff_source(unique_hrid, None, true, None)?;
             } else if source_was_active || self.active_buff_source_keys.get_str(unique_hrid).is_none() {
                 self.reconcile_buff_source_live(unique_hrid, true, None)?;
@@ -1260,9 +1260,9 @@ impl CombatUnit {
 
         // 早于源注册机制的旧式增益兼容回退。
         if self.combat_buffs.contains_key_str(unique_hrid) {
-            self.combat_buffs.delete(&unique_hrid.to_string());
-            self.active_buff_source_keys.delete(&unique_hrid.to_string());
-            self.buff_source_policies.delete(&unique_hrid.to_string());
+            self.combat_buffs.delete_str(unique_hrid);
+            self.active_buff_source_keys.delete_str(unique_hrid);
+            self.buff_source_policies.delete_str(unique_hrid);
             self.update_combat_details();
         }
         Ok(())
@@ -1336,7 +1336,7 @@ impl CombatUnit {
             {
                 let sources = self
                     .buff_sources
-                    .get_mut(&unique_hrid.to_string())
+                    .get_mut_str(unique_hrid)
                     .expect("buff sources entry exists for known uniqueHrid");
                 // 在扫描快照时删除，避免修改影响迭代语义。
                 let mut expired_keys: Vec<String> = Vec::new();
@@ -1360,13 +1360,13 @@ impl CombatUnit {
             };
 
             if policy == BuffSourcePolicy::Replace && active_source_expired {
-                self.buff_sources.delete(&unique_hrid.to_string());
-                self.buff_source_policies.delete(&unique_hrid.to_string());
+                self.buff_sources.delete_str(unique_hrid);
+                self.buff_source_policies.delete_str(unique_hrid);
                 details_dirty =
                     self.reconcile_buff_source(unique_hrid, None, false, None)? || details_dirty;
             } else if remaining == 0 {
-                self.buff_sources.delete(&unique_hrid.to_string());
-                self.buff_source_policies.delete(&unique_hrid.to_string());
+                self.buff_sources.delete_str(unique_hrid);
+                self.buff_source_policies.delete_str(unique_hrid);
                 details_dirty =
                     self.reconcile_buff_source(unique_hrid, None, false, None)? || details_dirty;
             } else if active_source_expired || active_key_missing {
@@ -1377,9 +1377,9 @@ impl CombatUnit {
             let buff = self.combat_buffs.get_str(unique_hrid).cloned();
             if let Some(buff) = buff {
                 if is_timed_buff_expired(&buff, current_time) {
-                    self.combat_buffs.delete(&unique_hrid.to_string());
-                    self.active_buff_source_keys.delete(&unique_hrid.to_string());
-                    self.buff_source_policies.delete(&unique_hrid.to_string());
+                    self.combat_buffs.delete_str(unique_hrid);
+                    self.active_buff_source_keys.delete_str(unique_hrid);
+                    self.buff_source_policies.delete_str(unique_hrid);
                     details_dirty = true;
                 }
             }
