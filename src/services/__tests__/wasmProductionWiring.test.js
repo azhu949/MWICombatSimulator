@@ -119,8 +119,9 @@ describe('wasm production A/B wiring', () => {
     ).toBeNull();
     expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('guild_trial');
 
-    // 切片 15：副本不再被配置闸门挡住（引擎未注入 → engine_unavailable）；
-    // 唯一仍留 JS 的副本组合是 full-result + logCombatEvents（wipe 日志含墙钟时间戳）。
+    // 切片 15：副本不再被配置闸门挡住（引擎未注入 → engine_unavailable）。
+    // 切片 19：full-result + logCombatEvents 组合也不再留 JS——团灭日志由引擎生成，
+    // 不再回退 dungeon_combat_logs。
     expect(
       await tryRunWasmProductionRound({
         useWasmEngine: true,
@@ -143,7 +144,7 @@ describe('wasm production A/B wiring', () => {
         options: { minimalResult: false, logCombatEvents: true },
       }),
     ).toBeNull();
-    expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('dungeon_combat_logs');
+    expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('engine_unavailable');
 
     // 切片 16：迷宫不再被配置闸门挡住（引擎未注入 → engine_unavailable）；迷宫模式
     // 没有 zone，`no_zone` 判据只对「既无区域又无迷宫」成立。

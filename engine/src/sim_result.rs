@@ -112,7 +112,8 @@ fn js_number_key(value: f64) -> String {
 }
 
 /// JS `JSON.stringify` 的数字表示：整数值不带小数点、非有限值写成 `null`。
-fn js_number_value(value: f64) -> Value {
+/// 切片 19 起 `pub`：simulator.rs 的团灭日志条目（wave/time/damage/HP 快照）复用同一口径。
+pub fn js_number_value(value: f64) -> Value {
     if !value.is_finite() {
         return Value::Null;
     }

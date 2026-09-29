@@ -27,6 +27,11 @@
 > （`public/engine/pkg` 随仓库提交 → vite 拷进 `dist`，Pages 子路径 URL 修正；
 > 见第 17 节）。仍留 JS 的只有：公会试炼 / 无区域（生产不可达的预留语义）、
 > 「副本 + full-result + `logCombatEvents`」组合与成本上界观察器。
+>
+> 切片 19（2026-09-29）：**副本团灭日志（wipeEvents）引擎生成**，「副本 + full-result +
+> `logCombatEvents`」组合解除闸门——timestamp 用确定性字符串 `t+{simulationTime}`
+> 替代墙钟（UI 仅用作 v-for key；见第 18 节）。仍留 JS 的只剩：成本上界观察器与
+> 公会试炼 / 无区域（生产不可达的预留语义）。
 
 ## 1. 测量方法
 
@@ -66,17 +71,18 @@ JS 152 ms / WASM 75.7 ms（2.01×）与 JS 245 ms / WASM 100 ms（2.45×）之�
 
 `wasmProductionSimulation.js` 的判定（`getProductionSupport`）决定何时可走 WASM，不满足即静默回退 JS：
 
-| 维度                    | WASM 支持                                              | 说明                                                                                              |
-| ----------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
-| 结果形状                | ✅ 全量：`minimalResult` 与完整 `SimResult`（切片 14） | 完整结果含经验记账 / 掉落上下文桶 / 1000-tick 时序快照 / 激怒层数                                 |
-| 区域                    | 普通区域 + **副本**（切片 15）+ **迷宫**（切片 16）    | 副本唯一例外：full-result 且 `logCombatEvents`（wipeEvents 含墙钟时间戳）；迷宫为无 zone 单怪循环 |
-| 战斗卷轴                | ✅ 开启（切片 17）                                     | 窗口语义 / 库存记账与 JS 逐位一致；迷宫内自动忽略（`allowed: false`）                             |
-| 战斗日志 / HP-MP 可视化 | ✅ 均可（切片 14）                                     | 日志仅控制台输出；可视化无流式 progress（时序随结果一次性返回）                                   |
-| 公会试炼                | 否（生产不可达的预留语义）                             | `options.isGuildTrial` 无生产传值点；接入公会试炼模拟时再评估                                     |
-| 优化器观察点            | 阈值/闲置观察（切片 13 `observers`）                   | 仅成本上界观察器（`costBound`）留 JS                                                              |
-| 提前停止                | 空蓝 / 死亡预算（切片 12 `earlyStop`）                 | 无需留 JS                                                                                         |
+| 维度                    | WASM 支持                                              | 说明                                                                               |
+| ----------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------- |
+| 结果形状                | ✅ 全量：`minimalResult` 与完整 `SimResult`（切片 14） | 完整结果含经验记账 / 掉落上下文桶 / 1000-tick 时序快照 / 激怒层数                  |
+| 区域                    | 普通区域 + **副本**（切片 15/19）+ **迷宫**（切片 16） | ✅ 全支持：副本团灭日志（wipeEvents）由引擎生成（切片 19）；迷宫为无 zone 单怪循环 |
+| 战斗卷轴                | ✅ 开启（切片 17）                                     | 窗口语义 / 库存记账与 JS 逐位一致；迷宫内自动忽略（`allowed: false`）              |
+| 战斗日志 / HP-MP 可视化 | ✅ 均可（切片 14）                                     | 日志仅控制台输出；可视化无流式 progress（时序随结果一次性返回）                    |
+| 公会试炼                | 否（生产不可达的预留语义）                             | `options.isGuildTrial` 无生产传值点；接入公会试炼模拟时再评估                      |
+| 优化器观察点            | 阈值/闲置观察（切片 13 `observers`）                   | 仅成本上界观察器（`costBound`）留 JS                                               |
+| 提前停止                | 空蓝 / 死亡预算（切片 12 `earlyStop`）                 | 无需留 JS                                                                          |
 
-> 本表为切片 18 后的当前边界（迷宫细节见第 15 节、卷轴见第 16 节、默认开关与部署见第 17 节）。切片 5–11 期间的历史边界
+> 本表为切片 19 后的当前边界（迷宫细节见第 15 节、卷轴见第 16 节、默认开关与部署见第 17 节、
+> 副本团灭日志见第 18 节）。切片 5–11 期间的历史边界
 > （候选轮/阈值轮全部留 JS）见第 11 节勘误与第 12 节——彼时默认生产路径
 > （`collectThresholds: reuse` 且 `reuse` 默认 true）的所有优化器轮次实际都走 JS。
 
@@ -88,7 +94,7 @@ JS 152 ms / WASM 75.7 ms（2.01×）与 JS 245 ms / WASM 100 ms（2.45×）之�
 ## 4. 结论与建议
 
 1. **JS 引擎保留**：它是唯一全功能实现与 parity 基准（用户定案：最终只保留 WASM，
-   待剩余缺口——公会试炼 / 无区域 / 副本日志组合——清零后再删），
+   待剩余缺口——成本上界观察器（公会试炼 / 无区域为生产不可达的预留语义）——清零后再删），
    删掉它会让 WASM 的正确性失去参照。
 2. **WASM 引擎为默认引擎（切片 18 翻转）**：所有生产载荷默认带 `useWasmEngine: true`
    （首页单轮 / 队列场景与基线轮 / 食物优化器 / 触发器优化器 / 批量区域与迷宫扫描 /
@@ -999,13 +1005,101 @@ WASM 侧则复用模板实例化；请求 JSON 也最小（38.1 KB，无区域�
 - **无流式进度条**（wasm 路径时序随结果一次性返回）：首页单轮进度条 0→完成直跳、
   HP/MP 图表在结束时渲染——这是切片 14 起已存在并文档化的行为，本切片只是让它
   真正生效。若需回退流式体验，清掉 localStorage 的引擎开关相关实验项即可走 JS。
-- wasm 失败静默回退 JS：引擎缺失（部署产物不含 wasm）/ 「副本 + full-result + 日志」
-  组合 / 运行时出错，页面行为与切片 17 前完全一致。
+- wasm 失败静默回退 JS：引擎缺失（部署产物不含 wasm）/ 运行时出错——页面行为与
+  切片 17 前完全一致。「副本 + full-result + 日志」组合的回退分支已在切片 19 移除
+  （见第 18 节）。
 
 ### 17.5 仍留 JS 的部分（截至切片 18）
 
-1. 「副本 + full-result + `logCombatEvents`」组合（`wipeEvents` 墙钟时间戳）。
+1. （已消项，切片 19——见第 18 节）~~「副本 + full-result + `logCombatEvents`」组合~~
+   （`wipeEvents` 改由引擎生成，timestamp 用确定性字符串替代墙钟）。
 2. 成本上界观察器（`observeFoodOptimizerCostBound`，依赖 JS 运行时状态）。
 3. 公会试炼与无区域：**生产不可达的预留语义**（无传值点 / 构造保证 zone 或
    labyrinth 至少其一），接入公会试炼模拟时再评估，不计入「删 JS 引擎」缺口。
 4. （已消项）~~默认开关翻转~~——本切片完成。
+
+## 18. 切片 19：副本团灭日志（wipeEvents）引擎生成（2026-09-29）
+
+### 18.1 背景与动机
+
+切片 18 点亮默认开关后，仍留 JS 的最后一个**真实路径缺口**是「副本 + full-result +
+`logCombatEvents`」：首页 / 队列的副本模拟若开启战斗日志（UI 的团灭日志浏览器消费
+`simResult.wipeEvents`），整轮回退 JS，吃不到副本口径 2.59–2.64× 的提速。本切片把
+团灭日志生成下推进引擎，解除该组合闸门。
+
+### 18.2 JS 语义（逐行确认，`combatSimulator.js`）
+
+- **生成点 7 处**：普攻直击 `:1017-1027`（`target.isPlayer && didHit && damageDone > 0`，
+  `generateCombatLog`，ability=`'autoAttack'`，isCrit 取 attackResult）；普攻 thorn
+  `:1146-1149` 与 retaliation `:1159-1162`（`damageDone > 0 && source.isPlayer`，
+  `buildCombatLog`，isCrit 恒 false）；DoT `:1453-1456`（**仅 `zone?.isDungeon` 门控**，
+  source 传 `''`——经 `source?.hrid || 'UNKNOWN_SOURCE'` 记为 `'UNKNOWN_SOURCE'`，
+  damage 可为 0 也记）；技能直击 `:2023-2032`（同普攻直击，ability=技能 hrid）；
+  技能 thorn `:2216-2219` / retaliation `:2229-2232`。**技能 parry 块 `:1943-1990`
+  不写日志**（Rust parry 块同样不接）。
+- **条目 10 键**：`{time: simulationTime, wave: encountersKilled - 1, source, ability,
+target, damage, beforeHp: max(0, afterHp + damage), afterHp, playersHp（全玩家
+{hrid, current, max} 快照）, isCrit}`。
+- **缓冲**：`wipeLogs` 200 条环形；团灭分支 `:1268-1315` 在
+  `saveWipeLogsToSimResult(encountersKilled - 1)` 后 `index = 0; count = 0` 清零；
+  团灭前的 console.log 敌人血量输出无数据价值，不移植。
+- `simResult.addWipeEvent`（simResult.js:108）：`{simulationTime, logs, wave,
+timestamp: new Date().toISOString()}`——**timestamp 是唯一不可复现部分**，UI 仅用作
+  v-for `:key`（SimulationResultsView.vue），不显示 → Rust 用确定性字符串
+  `t+{simulationTime}` 替代。
+- minimal 变体 `addWipeEvent` 为空操作；`logAndResetWipeLogs` 无调用点（死代码）。
+
+### 18.3 Rust 实现（`engine/src/simulator.rs`）
+
+- `CombatSimulator.wipe_logs: Option<WipeLogBuffer>`：`log_combat_events &&
+zone_is_dungeon && !minimal_result` 时启用；`VecDeque` 环形容量 200（**不可 derive
+  Default**——capacity=0 会让 push 恒 no-op）。
+- 方法组：`build_wipe_log_entry`（isCrit=false 族；**空 source 串映射
+  `'UNKNOWN_SOURCE'`**，等价 JS `source?.hrid || 'UNKNOWN_SOURCE'`——DoT 点专用）、
+  `generate_wipe_log_entry`（isCrit 覆写、damage NaN→0）、`wipe_wave`、
+  `players_hp_snapshot`、`save_wipe_logs_to_result`（timestamp=
+  `t+{js_number_key(simulation_time)}`，空日志跳过）。
+- 7 个结算点按各自 isPlayer / damage 条件接入（`self.wipe_logs.is_some()` 门控）；
+  团灭分支在清事件**之前**快照缓冲进 simResult。
+- `validate_production_support` 删除 `dungeon_combat_logs` Err 闸门；`SimResultTally`
+  转发 `add_wipe_event`（探针分支不 push 仅记名，探针无副作用原则不变）。
+
+### 18.4 桥与接线
+
+- `getProductionSupport`（wasmProductionBridge.js）删除
+  `dungeon && logCombatEvents && !minimalResult` 判据——现在只剩 `no_zone` 与
+  `guild_trial` 两条。
+- wiring 测试期望更新：该组合在引擎未注入时的回退原因 `dungeon_combat_logs` →
+  `engine_unavailable`。
+
+### 18.5 parity 与单测
+
+- Rust 单测 **+2 / -1**：`dungeon_full_result_emits_wipe_events_when_logging`
+  （打不死 + 低伤高命中的怪引导 5s 留痕 → 手动置零玩家 HP 制造团灭 → 断言 wipeEvents
+  形状 / 每条日志 10 键 / `t+` 时间戳 / autoAttack 条目 / 团灭后缓冲清空；
+  `regular_zone_with_logging_keeps_wipe_events_empty`（非副本不启用缓冲）；
+  删除 `dungeon_full_result_rejects_combat_event_logging`。**测试场景调参要点**：
+  手动引导循环的迭代上限必须远大于事件数（玩家 1ms 攻速下 5s ≈ 5000+ 事件），
+  且怪物 `attack_level` 同时决定命中率与攻击间隔（`/(1 + level/2000)`）、
+  `melee_level` 决定单击伤害——须调到「必命中且引导窗内杀不死玩家」，否则循环内
+  提前团灭清空缓冲）。`cargo test` **123 passed**。
+- 生产 parity **+1 例**（真实 chimerical_den + 真实夹具，1h）：两侧
+  `logCombatEvents: true`，剥离 timestamp 字段（JS 墙钟 ISO vs Rust `t+{ns}`）后完整
+  simResult 逐字段一致；防退化断言两侧 wipeEvents 非空且含 `ability: 'autoAttack'`
+  条目、Rust timestamp 全部 `t+` 前缀。首跑即揪出一处真实语义缺口：DoT 条目 JS 记
+  `'UNKNOWN_SOURCE'`（`''?.hrid || fallback`）而 Rust 初版记 `""`——补空串映射后
+  逐位一致（parity 对账的价值直接兑现）。
+
+### 18.6 验收
+
+- `cargo test` 123 passed；5 个 wasm 套件全绿（生产 parity 17 例，含新副本日志用例）；
+  `npm test` 192 文件 / **2653 用例** + prettier 全绿；`build:wasm`
+  （wasm-opt -O4：928840 → 811298 bytes，-12.7%）→ `npm run build` →
+  `verify-pages-build` 全过。
+- 基准未跑：本片是覆盖面收尾非性能片，副本口径沿用切片 15 实测 2.59–2.64×
+  （第 14 节），开启日志的副本轮从此也落在该提速内。
+
+### 18.7 仍留 JS 的部分（截至切片 19）
+
+1. 成本上界观察器（`observeFoodOptimizerCostBound`，依赖 JS 运行时状态）。
+2. 公会试炼与无区域：**生产不可达的预留语义**（同 §17.5），接入时再评估。

@@ -103,8 +103,8 @@ function buildPayload(hours, seed) {
 
 /**
  * 切片 15：副本（dungeon）payload —— 与 `buildPayload` 同构，只把目标切到副本区域。
- * 副本团灭日志（`wipeEvents` 含 `new Date().toISOString()` 墙钟时间戳）不可复现，
- * 两个副本用例都保持 `logCombatEvents: false`。
+ * 切片 19 起 `logCombatEvents` 组合已由引擎覆盖（团灭日志 timestamp 用确定性字符串），
+ * 各用例经由 runner 选项自行传开关；payload 字段仅作 worker 载荷形状参考。
  */
 function buildDungeonPayload(hours, seed) {
   const settings = { ...createSettings(hours), useDungeon: true, dungeonHrid: FIXTURE_DUNGEON_HRID };
@@ -338,15 +338,19 @@ function runRustProductionSimulation(engine, payload, extraOptions = {}) {
 /**
  * 切片 14：full-result 生产模拟（`minimalResult: false`，可选 HP/MP 可视化）。
  * 与 `runJsProductionSimulation` 逐字同构，只把结果类与可视化开关换成完整版。
+ * 切片 19：`logCombatEvents` 可选开启（副本团灭日志用例），默认 false 保持既有行为。
  */
-async function runJsFullResultSimulation(payload, { shouldStop, enableHpMpVisualization = false } = {}) {
+async function runJsFullResultSimulation(
+  payload,
+  { shouldStop, enableHpMpVisualization = false, logCombatEvents = false } = {},
+) {
   const { zone, players } = buildLivePieces(payload);
   const originalRandom = Math.random;
   Math.random = createSeededRandom(payload.seed >>> 0);
   try {
     const simulator = new CombatSimulator(players, zone, null, {
       minimalResult: false,
-      logCombatEvents: false,
+      logCombatEvents,
       enableHpMpVisualization,
       combatScrollsEnabled: false,
       isGuildTrial: false,
@@ -683,6 +687,37 @@ describe.runIf(wasmPackageBuilt)('wasm engine production parity (minimal + full 
     expect(rustSimResult.timeSpentAlive.some((entry) => entry.name === '#1')).toBe(true);
     expect(rustSimResult.bossSpawns).toHaveLength(10);
     expect(rustSimResult.wipeEvents).toEqual([]);
+  });
+
+  // 切片 19：副本 + full-result + logCombatEvents —— 团灭日志由引擎生成，唯一两侧
+  // 天然不同的是 `timestamp`（JS `new Date().toISOString()` 墙钟 vs Rust `t+{ns}` 确定性
+  // 字符串；UI 只用作 v-for key，不显示）。剥离该字段后 `simulationTime/logs/wave`
+  // 及每条日志的 10 个键必须逐位一致。
+  it('matches the JS full-result dungeon pipeline with combat-event logging (wipeEvents)', async () => {
+    const engine = await getEngine();
+    const payload = buildDungeonPayload(1, 101);
+
+    const jsSimResult = await runJsFullResultSimulation(payload, { logCombatEvents: true });
+    const rustSimResult = runRustFullResultSimulation(engine, payload, { logCombatEvents: true });
+
+    // 防退化：该夹具在 chimerical_den 反复团灭 → 两侧必须有团灭日志负载。
+    expect(jsSimResult.wipeEvents.length).toBeGreaterThan(0);
+    expect(rustSimResult.wipeEvents.length).toBeGreaterThan(0);
+    expect(jsSimResult.wipeEvents.some((event) => event.logs.some((log) => log.ability === 'autoAttack'))).toBe(true);
+    // Rust timestamp 是确定性字符串（JS 是墙钟 ISO——只断言两侧都非空字符串）。
+    expect(rustSimResult.wipeEvents.every((event) => event.timestamp.startsWith('t+'))).toBe(true);
+    expect(
+      jsSimResult.wipeEvents.every((event) => typeof event.timestamp === 'string' && event.timestamp.length > 0),
+    ).toBe(true);
+
+    const stripTimestamps = (result) => ({
+      ...result,
+      wipeEvents: result.wipeEvents.map((event) => {
+        const { timestamp, ...rest } = event;
+        return rest;
+      }),
+    });
+    expect(firstDiff(jsonProjection(stripTimestamps(jsSimResult)), stripTimestamps(rustSimResult))).toBeNull();
   });
 
   // 切片 15：副本 + minimal（优化器轮次形状：logCombatEvents=false + 时间线钩子为空操作）。
