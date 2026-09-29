@@ -30,7 +30,8 @@ use crate::ordered_map::OrderedMap;
 use crate::rng::Mulberry32;
 use crate::sim_events::SimEvent;
 use crate::sim_unit::{UnitArena, UnitId};
-use crate::unit::{policy_name, BuffList, BuffSourceSelector, CombatUnit, RawBuffInput, UnitError};
+use crate::scroll::{CombatScrollDefinition, ScrollState};
+use crate::unit::{policy_name, BuffList, BuffSourceSelector, CombatScrollConfig, CombatUnit, RawBuffInput, UnitError};
 use serde::{Deserialize, Serialize};
 use serde_json::{json, Value};
 
@@ -303,6 +304,49 @@ impl SimResultTally {
         self.push("setScrollUsageDisabled", vec![json!(disabled)]);
     }
 
+    /// 切片 17：生产模式专用：JS `simResult.setScrollConfiguration(playerHrid, itemHrid, finiteQuantity)`。
+    pub fn set_scroll_configuration(&mut self, player_hrid: &str, item_hrid: &str, configured_quantity: Option<f64>) {
+        if let Some(real) = self.real.as_mut() {
+            real.set_scroll_configuration(player_hrid, item_hrid, configured_quantity);
+            return;
+        }
+        self.push("setScrollConfiguration", vec![json!(player_hrid), json!(item_hrid)]);
+    }
+
+    /// 切片 17：生产模式专用：JS `simResult.recordScrollOpen(playerHrid, itemHrid, details)`。
+    pub fn record_scroll_open(
+        &mut self,
+        player_hrid: &str,
+        item_hrid: &str,
+        opened_count: f64,
+        active_duration_ns: f64,
+        exhausted: Option<bool>,
+    ) {
+        if let Some(real) = self.real.as_mut() {
+            real.record_scroll_open(player_hrid, item_hrid, opened_count, active_duration_ns, exhausted);
+            return;
+        }
+        self.push("recordScrollOpen", vec![json!(player_hrid), json!(item_hrid)]);
+    }
+
+    /// 切片 17：生产模式专用：JS `simResult.recordScrollWindow(playerHrid, itemHrid, duration)`。
+    pub fn record_scroll_window(&mut self, player_hrid: &str, item_hrid: &str, active_duration_ns: f64) {
+        if let Some(real) = self.real.as_mut() {
+            real.record_scroll_window(player_hrid, item_hrid, active_duration_ns);
+            return;
+        }
+        self.push("recordScrollWindow", vec![json!(player_hrid), json!(item_hrid)]);
+    }
+
+    /// 切片 17：生产模式专用：JS `finalizeScrollUsage` 的 `entry.exhausted = ...` 直写。
+    pub fn finalize_scroll_exhausted(&mut self, player_hrid: &str, item_hrid: &str, configured_quantity: Option<f64>) {
+        if let Some(real) = self.real.as_mut() {
+            real.finalize_scroll_exhausted(player_hrid, item_hrid, configured_quantity);
+            return;
+        }
+        self.push("finalizeScrollExhausted", vec![json!(player_hrid), json!(item_hrid)]);
+    }
+
     /// 生产模式专用：`simResult.lastEncounterFinishTime = time` 的直接属性写入。
     pub fn set_last_encounter_finish_time(&mut self, value: f64) {
         if let Some(real) = self.real.as_mut() {
@@ -453,6 +497,9 @@ pub struct UnitSpec {
     pub food: Vec<Option<Consumable>>,
     #[serde(default)]
     pub drinks: Vec<Option<Consumable>>,
+    /// 切片 17：玩家配置的战斗卷轴（JS `player.combatScrolls` 归一投影；怪物为空）。
+    #[serde(default)]
+    pub combat_scrolls: Vec<CombatScrollConfig>,
     /// 该单位在 JS 侧是否由 `Player` / `Monster` 构建（类覆写会重写「类自有」面板字段）。
     /// 生产桥始终为 true；合成单位（探针）保持 false 以对齐同样合成构建的 JS 侧。
     #[serde(default)]
@@ -499,6 +546,7 @@ pub fn build_unit_from_spec(spec: &UnitSpec) -> Result<CombatUnit, UnitError> {
     unit.achievements = spec.achievements.clone();
     unit.zone_buffs = spec.zone_buffs.clone();
     unit.extra_buffs = spec.extra_buffs.clone();
+    unit.combat_scrolls = spec.combat_scrolls.clone();
     // 构造期永久增益：JS 侧 `permanentBuffs` 已按 typeHrid 合并，这里直接按序播种。
     for buff in &spec.permanent_buffs {
         unit.permanent_buffs.set(buff.type_hrid.clone(), buff.clone());
@@ -611,12 +659,16 @@ pub struct SimulatorOptions {
     /// 随 simResult 的 `timeSeriesData` 一次性返回）。
     #[serde(default)]
     pub enable_hp_mp_visualization: bool,
-    /// JS `combatScrollsEnabled`（当前生产路径要求 false）。
+    /// JS `combatScrollsEnabled`（切片 17 起引擎侧完整支持：窗口开启/续期/关闭与记账）。
     #[serde(default)]
     pub combat_scrolls_enabled: bool,
     /// JS `isGuildTrial`（为 true 时 `scrollsAllowed` 为假、卷轴上下文为 'guild_trial'）。
     #[serde(default)]
     pub is_guild_trial: bool,
+    /// 切片 17：战斗卷轴定义表（桥侧对 `getCombatScrollDefinition(itemHrid)` 的快照：
+    /// `durationNs` + `buff` 模板）。Rust 不持有游戏数据，缺定义的配置项在初始化时跳过。
+    #[serde(default)]
+    pub combat_scroll_definitions: Vec<CombatScrollDefinition>,
     /// 切片 12：提前停止谓词（等价 JS `simulate(limit, { shouldStop })` 回调）。
     ///
     /// 生产调用方只用一种谓词（食物优化器候选轮）：`playerRanOutOfMana[watchHrid] ===
@@ -836,6 +888,11 @@ pub struct CombatSimulator {
     log_combat_events: bool,
     enable_hp_mp_visualization: bool,
     combat_scrolls_enabled: bool,
+    /// 切片 17：战斗卷轴定义表（桥侧快照）与运行时状态。`scroll_runtime` 顺序 =
+    /// 玩家序 × 配置序；`next_scroll_renewal_time` 等价 JS `nextScrollRenewalTime`。
+    scroll_definitions: Vec<CombatScrollDefinition>,
+    scroll_runtime: Vec<ScrollState>,
+    next_scroll_renewal_time: f64,
     player_count: usize,
     // 切片 14 full-result 经验簿记（JS pendingExperienceGains / enemyDeathSnapshots /
     // experienceAwardedEnemies 的按 UnitId 版本；WeakSet/WeakMap 语义 = id 存活期内去重）。
@@ -924,6 +981,9 @@ impl CombatSimulator {
             log_combat_events: options.log_combat_events,
             enable_hp_mp_visualization: options.enable_hp_mp_visualization,
             combat_scrolls_enabled: options.combat_scrolls_enabled,
+            scroll_definitions: options.combat_scroll_definitions,
+            scroll_runtime: Vec::new(),
+            next_scroll_renewal_time: f64::INFINITY,
             player_count: 0,
             pending_experience_gains: Vec::new(),
             enemy_death_snapshots: Vec::new(),
@@ -962,7 +1022,9 @@ impl CombatSimulator {
     /// `new Date().toISOString()` 墙钟时间戳，天然不可复现），本引擎不生成该日志。
     /// minimal 变体把 `addWipeEvent` 覆写为空操作、也不序列化 `wipeEvents`，不受影响。
     /// 切片 16：迷宫（labyrinth）模式纳入引擎（无 zone 的单怪循环 + 120s 超时重启）。
-    /// 仍留 JS 的还有卷轴 / 公会试炼与无区域。
+    /// 切片 17：战斗卷轴窗口语义纳入引擎（定义表随请求传入；窗口开启/续期/关闭与记账，
+    /// 迷宫/公会试炼按下文 `scrollsAllowed` 规则忽略）。
+    /// 仍留 JS 的还有公会试炼与无区域。
     fn validate_production_support(&self) -> Result<(), UnitError> {
         // 迷宫模式没有 zone（JS `payload.zone` 为 null、labyrinth 非空），
         // 因此「必须有区域」放宽为「区域或迷宫至少有一个」。
@@ -973,9 +1035,6 @@ impl CombatSimulator {
             return Err(UnitError::error(
                 "wasm production path does not support dungeon wipe logs (logCombatEvents) yet",
             ));
-        }
-        if self.combat_scrolls_enabled {
-            return Err(UnitError::error("wasm production path does not support combat scrolls yet"));
         }
         if self.encounter_templates.is_empty() {
             return Err(UnitError::error("wasm production path requires encounter templates"));
@@ -1287,8 +1346,9 @@ impl CombatSimulator {
         let prof_finalize = crate::prof::start("simulate(finalize)");
         // JS：`stoppedEarly ? this.simulationTime : normalizedSimulationTimeLimit`。
         let effective_simulation_time = if stopped_early { self.simulation_time } else { limit };
-        // JS：`finalizeScrollUsage(effectiveSimulationTime)`（切片 4 无卷轴）后紧跟
+        // JS：`finalizeScrollUsage(effectiveSimulationTime)` 后紧跟
         // `discardPendingExperience()`——模拟可能停在遭遇战中途，挂起收益不得泄漏到下一轮。
+        self.finalize_scroll_usage(effective_simulation_time)?;
         self.pending_experience_gains.clear();
         self.tally.simulated_time = effective_simulation_time;
         self.tally.stopped_early = stopped_early;
@@ -1345,6 +1405,9 @@ impl CombatSimulator {
         self.labyrinth_encounter_start_time = 0.0;
         self.simulation_time = 0.0;
         self.queue.clear();
+        // JS `reset()` 在重建 simResult 之前用**上一轮**的运行时状态按源移除卷轴 buff
+        //（幂等；Replace 策略 + 显式源键与 JS 同路径不会触发策略校验错误）。
+        self.clear_scroll_runtime_buffs();
         self.tally.reset_like_js();
         self.tally.real = None;
         // JS `reset()` 重建 WeakSet/WeakMap/Map：经验挂起表、死亡快照与颁奖集合一律清空。
@@ -1377,6 +1440,9 @@ impl CombatSimulator {
         // JS：`setScrollUsageDisabled(!this.combatScrollsEnabled)`。
         self.tally.set_scroll_usage_disabled(!self.combat_scrolls_enabled);
         self.simulation_time_limit = normalize_time_limit(self.simulation_time_limit);
+        // JS：`this.scrollRuntimeByPlayer = {}; … this.initializeScrollRuntime();`——从玩家配置
+        // 重建运行时库存并注册 `scrollUsage.byPlayer` 条目（tally.real 已在上方重建）。
+        self.initialize_scroll_runtime();
         // 切片 13：每轮模拟前重建观察器状态（等价 JS 每轮新装；food 列表结构在战斗中
         // 不变，只有 last_used 会动，而形态校验只看 triggers）。
         if let (Some(spec), Some(unit)) = (self.observer_spec.as_ref(), self.observer_unit) {
@@ -1397,6 +1463,8 @@ impl CombatSimulator {
     fn process_event(&mut self, event: SimEvent) -> Result<(), UnitError> {
         let _prof = crate::prof::start(event.kind());
         self.simulation_time = event.time();
+        // JS `processEvent`：处理任何事件前先做卷轴到期守卫（O(1)，仅当到期才全量同步）。
+        self.sync_scrolls_if_due(self.simulation_time)?;
         self.event_count += 1;
         if self.trace.len() < self.trace_limit {
             let entry = self.build_trace_entry(&event);
@@ -1431,9 +1499,8 @@ impl CombatSimulator {
                 // 免克隆：事件本身已拥有该 String（process_event 按值收事件），直接移动后按 &str 传递。
                 self.process_check_buff_expiration_event(source, buff_unique_hrid.as_deref())?
             }
-            SimEvent::ScrollRenewal { .. } => {
-                // 切片 4 不启用卷轴；事件到达说明场景配置有误。
-                return Err(UnitError::error("scrollRenewal events are not supported by the slice-4 simulator"));
+            SimEvent::ScrollRenewal { time, player_hrid, item_hrid, token, .. } => {
+                self.process_scroll_renewal_event(&player_hrid, &item_hrid, token, time)?;
             }
             SimEvent::RegenTick { .. } => self.process_regen_tick_event()?,
             SimEvent::StunExpiration { source, .. } => {
@@ -1555,6 +1622,341 @@ impl CombatSimulator {
     }
 
     // -----------------------------------------------------------------------
+    // 切片 17：战斗卷轴窗口状态机（JS 215-438 / 745-861 / 413-438 行）
+    // -----------------------------------------------------------------------
+
+    /// JS `this.scrollsAllowed`（构造期固定：`!labyrinth && !isGuildTrial`）。
+    fn scrolls_allowed(&self) -> bool {
+        !self.labyrinth_present && !self.is_guild_trial
+    }
+
+    /// JS `clearScrollRuntimeBuffs()`：按 `scroll:<itemHrid>` 源移除所有卷轴运行时增益。
+    fn clear_scroll_runtime_buffs(&mut self) {
+        for index in 0..self.scroll_runtime.len() {
+            let (player_id, buff_unique_hrid, item_hrid) = {
+                let state = &self.scroll_runtime[index];
+                (state.player_id, state.buff_unique_hrid.clone(), state.item_hrid.clone())
+            };
+            if buff_unique_hrid.is_empty() {
+                continue;
+            }
+            let source_key = format!("scroll:{item_hrid}");
+            // Replace 策略 + 显式源键：与 JS `removeBuff` 同路径不会触发策略校验错误。
+            let _ = self
+                .arena
+                .get_mut(player_id)
+                .remove_buff(Some(&buff_unique_hrid), BuffSourceSelector::Explicit(Some(source_key)));
+        }
+    }
+
+    /// JS `initializeScrollRuntime()`：按玩家配置重建运行时库存并注册 `scrollUsage` 条目。
+    fn initialize_scroll_runtime(&mut self) {
+        self.scroll_runtime = Vec::new();
+        self.next_scroll_renewal_time = f64::INFINITY;
+
+        for player_id in self.players.clone() {
+            let player_hrid = self.unit_hrid(player_id);
+            if player_hrid.is_empty() {
+                continue;
+            }
+            let configs = self.arena.get(player_id).combat_scrolls.clone();
+            for config in configs {
+                let Some(definition_index) = self
+                    .scroll_definitions
+                    .iter()
+                    .position(|definition| definition.item_hrid == config.item_hrid)
+                else {
+                    // JS `getCombatScrollDefinition` 缺定义时整项跳过（不注册库存与账目）。
+                    continue;
+                };
+                // JS：`Number.isSafeInteger(q) && q > 0 ? q : null`（无效数量折叠为无限库存）。
+                let configured_quantity = match config.quantity {
+                    Some(quantity) if is_safe_integer(quantity) && quantity > 0.0 => Some(quantity),
+                    _ => None,
+                };
+                let buff_unique_hrid = self.scroll_definitions[definition_index]
+                    .buff
+                    .unique_hrid
+                    .clone()
+                    .unwrap_or_default();
+                self.scroll_runtime.push(ScrollState {
+                    player_id,
+                    player_hrid: player_hrid.clone(),
+                    item_hrid: config.item_hrid.clone(),
+                    configured_quantity,
+                    remaining: configured_quantity,
+                    started: false,
+                    active: false,
+                    active_start_time: 0.0,
+                    active_until: 0.0,
+                    accumulated_duration_ns: 0.0,
+                    token: 0.0,
+                    buff_unique_hrid,
+                    definition_index,
+                });
+                self.tally
+                    .set_scroll_configuration(&player_hrid, &config.item_hrid, configured_quantity);
+            }
+        }
+    }
+
+    /// JS `canOpenScroll(state, startTime)`。
+    fn can_open_scroll(&self, index: usize, start_time: f64) -> bool {
+        let state = &self.scroll_runtime[index];
+        if !self.scrolls_allowed() || !self.combat_scrolls_enabled || start_time >= self.simulation_time_limit {
+            return false;
+        }
+        match state.remaining {
+            None => true,
+            Some(remaining) => remaining > 0.0,
+        }
+    }
+
+    /// JS `scheduleScrollRenewal(state)`：`activeUntil < simulationTimeLimit` 时更新下一次到期
+    /// 时间并排入 `ScrollRenewal` 事件（token 守卫旧事件）。
+    fn schedule_scroll_renewal(&mut self, index: usize) {
+        let (active, active_until, player_hrid, item_hrid, token) = {
+            let state = &self.scroll_runtime[index];
+            (
+                state.active,
+                state.active_until,
+                state.player_hrid.clone(),
+                state.item_hrid.clone(),
+                state.token,
+            )
+        };
+        if !active || active_until >= self.simulation_time_limit {
+            return;
+        }
+        self.next_scroll_renewal_time = self.next_scroll_renewal_time.min(active_until);
+        let id = self.take_event_id();
+        self.queue.add_event(SimEvent::ScrollRenewal { time: active_until, id, player_hrid, item_hrid, token });
+    }
+
+    /// JS `openScrollWindow(state, startTime, consumeInventory = true)`。
+    fn open_scroll_window(&mut self, index: usize, start_time: f64, consume_inventory: bool) -> Result<bool, UnitError> {
+        if !self.can_open_scroll(index, start_time) {
+            return Ok(false);
+        }
+        let (definition_index, duration_ns) = {
+            let state = &self.scroll_runtime[index];
+            (state.definition_index, self.scroll_definitions[state.definition_index].duration_ns)
+        };
+        // JS：`Number(definition?.durationNs || definition?.duration || 0)` + 有限性校验。
+        if !duration_ns.is_finite() || duration_ns <= 0.0 {
+            return Ok(false);
+        }
+        let (player_id, item_hrid) = {
+            let state = &self.scroll_runtime[index];
+            (state.player_id, state.item_hrid.clone())
+        };
+        // JS `createCombatScrollBuff(itemHrid)`：每次开启都从定义新建 Buff 实例（level=1）。
+        let buff_input = self.scroll_definitions[definition_index].buff.clone();
+        let source_key = format!("scroll:{item_hrid}");
+        self.arena.get_mut(player_id).add_buff(&buff_input, start_time, Some(&source_key), None)?;
+
+        {
+            let state = &mut self.scroll_runtime[index];
+            state.started = true;
+            state.active = true;
+            state.active_start_time = start_time;
+            state.active_until = start_time + duration_ns;
+            state.token += 1.0;
+        }
+
+        if consume_inventory {
+            let (configured_quantity, remaining) = {
+                let state = &self.scroll_runtime[index];
+                (state.configured_quantity, state.remaining)
+            };
+            if let Some(remaining) = remaining {
+                self.scroll_runtime[index].remaining = Some(remaining - 1.0);
+            }
+            // JS：`exhausted: state.configuredQuantity !== null && state.remaining <= 0`。
+            let exhausted = match (configured_quantity, self.scroll_runtime[index].remaining) {
+                (Some(_), Some(remaining)) => remaining <= 0.0,
+                _ => false,
+            };
+            let (player_hrid, item_hrid) = {
+                let state = &self.scroll_runtime[index];
+                (state.player_hrid.clone(), state.item_hrid.clone())
+            };
+            self.tally.record_scroll_open(&player_hrid, &item_hrid, 1.0, 0.0, Some(exhausted));
+        }
+
+        self.schedule_scroll_renewal(index);
+        Ok(true)
+    }
+
+    /// JS `closeScrollWindow(state, endTime)`：结算窗口时长、按源移除增益、清空窗口状态。
+    fn close_scroll_window(&mut self, index: usize, end_time: f64) -> Result<(), UnitError> {
+        if !self.scroll_runtime[index].active {
+            return Ok(());
+        }
+        let (player_id, item_hrid, active_start_time, buff_unique_hrid, player_hrid) = {
+            let state = &self.scroll_runtime[index];
+            (
+                state.player_id,
+                state.item_hrid.clone(),
+                state.active_start_time,
+                state.buff_unique_hrid.clone(),
+                state.player_hrid.clone(),
+            )
+        };
+        // JS `Math.min(Math.max(Number(endTime) || 0, state.activeStartTime), this.simulationTimeLimit)`。
+        let end_time = if end_time.is_nan() { 0.0 } else { end_time };
+        let bounded_end = end_time.max(active_start_time).min(self.simulation_time_limit);
+        let duration = (bounded_end - active_start_time).max(0.0);
+        if duration > 0.0 {
+            self.scroll_runtime[index].accumulated_duration_ns += duration;
+            self.tally.record_scroll_window(&player_hrid, &item_hrid, duration);
+        }
+        if !buff_unique_hrid.is_empty() {
+            let source_key = format!("scroll:{item_hrid}");
+            self.arena
+                .get_mut(player_id)
+                .remove_buff(Some(&buff_unique_hrid), BuffSourceSelector::Explicit(Some(source_key)))?;
+        }
+        let state = &mut self.scroll_runtime[index];
+        state.active = false;
+        state.active_until = 0.0;
+        state.active_start_time = 0.0;
+        Ok(())
+    }
+
+    /// JS `restoreActiveScrollBuff(state, currentTime)`：活跃窗口的增益被清空（复活/重置）后
+    /// 按 registry 检查重新挂接，不消耗库存。
+    fn restore_active_scroll_buff(&mut self, index: usize, current_time: f64) -> Result<(), UnitError> {
+        let (active, active_until, active_start_time, buff_unique_hrid, player_id) = {
+            let state = &self.scroll_runtime[index];
+            (
+                state.active,
+                state.active_until,
+                state.active_start_time,
+                state.buff_unique_hrid.clone(),
+                state.player_id,
+            )
+        };
+        if !active || current_time >= active_until || buff_unique_hrid.is_empty() {
+            return Ok(());
+        }
+        let item_hrid = self.scroll_runtime[index].item_hrid.clone();
+        let source_key = format!("scroll:{item_hrid}");
+        let has_registered_source = self.arena.get(player_id).has_buff_source(&buff_unique_hrid, &source_key);
+        if !has_registered_source {
+            let buff_input = self.scroll_definitions[self.scroll_runtime[index].definition_index].buff.clone();
+            self.arena
+                .get_mut(player_id)
+                .add_buff(&buff_input, active_start_time, Some(&source_key), None)?;
+        }
+        Ok(())
+    }
+
+    /// JS `syncScrollsToTime(currentTime)`：全量对账——关闭到期窗口、补开新窗口（半开区间）、
+    /// 重挂活跃增益，并重算下一次续期时间。
+    fn sync_scrolls_to_time(&mut self, current_time: f64) -> Result<(), UnitError> {
+        let time = if current_time.is_nan() { 0.0 } else { current_time.max(0.0) };
+        self.next_scroll_renewal_time = f64::INFINITY;
+        for index in 0..self.scroll_runtime.len() {
+            let (started, active, active_until) = {
+                let state = &self.scroll_runtime[index];
+                (state.started, state.active, state.active_until)
+            };
+            if !started && time < self.simulation_time_limit {
+                continue;
+            }
+            if active && time < active_until {
+                self.restore_active_scroll_buff(index, time)?;
+                if active_until < self.simulation_time_limit {
+                    self.next_scroll_renewal_time = self.next_scroll_renewal_time.min(active_until);
+                }
+                continue;
+            }
+            while self.scroll_runtime[index].active && time >= self.scroll_runtime[index].active_until {
+                let renewal_time = self.scroll_runtime[index].active_until;
+                self.close_scroll_window(index, renewal_time)?;
+                if !self.can_open_scroll(index, renewal_time) {
+                    break;
+                }
+                self.open_scroll_window(index, renewal_time, true)?;
+            }
+        }
+        Ok(())
+    }
+
+    /// JS `syncScrollsIfDue(currentTime)`：O(1) 到期守卫（每个事件处理前调用；仅在
+    /// `nextScrollRenewalTime` 到期时做全量同步）。
+    fn sync_scrolls_if_due(&mut self, current_time: f64) -> Result<bool, UnitError> {
+        let time = if current_time.is_nan() { 0.0 } else { current_time.max(0.0) };
+        if !self.next_scroll_renewal_time.is_finite() || time < self.next_scroll_renewal_time {
+            return Ok(false);
+        }
+        self.sync_scrolls_to_time(time)?;
+        Ok(true)
+    }
+
+    /// JS `activateInitialScrolls()`：首个 CombatStart（time == 0）时开启所有未开始的窗口。
+    fn activate_initial_scrolls(&mut self) -> Result<(), UnitError> {
+        if !self.scrolls_allowed() || !self.combat_scrolls_enabled || self.simulation_time_limit <= 0.0 {
+            return Ok(());
+        }
+        for index in 0..self.scroll_runtime.len() {
+            if !self.scroll_runtime[index].started {
+                self.open_scroll_window(index, 0.0, true)?;
+            }
+        }
+        Ok(())
+    }
+
+    /// JS `processScrollRenewalEvent(event)`：token/时间守卫后全量同步（守卫先处理时本分支
+    /// 通常因 token 已变而短路）。
+    fn process_scroll_renewal_event(
+        &mut self,
+        player_hrid: &str,
+        item_hrid: &str,
+        token: f64,
+        time: f64,
+    ) -> Result<(), UnitError> {
+        let Some(index) = self
+            .scroll_runtime
+            .iter()
+            .position(|state| state.player_hrid == player_hrid && state.item_hrid == item_hrid)
+        else {
+            return Ok(());
+        };
+        let (active, state_token, active_until) = {
+            let state = &self.scroll_runtime[index];
+            (state.active, state.token, state.active_until)
+        };
+        if !active || token != state_token || time < active_until {
+            return Ok(());
+        }
+        self.sync_scrolls_to_time(time)
+    }
+
+    /// JS `finalizeScrollUsage(simulationTimeLimit)`：收尾关闭活跃窗口并重写 exhausted
+    ///（`entry.exhausted = configuredQuantity !== null && openedCount >= configuredQuantity`）。
+    fn finalize_scroll_usage(&mut self, simulation_time_limit: f64) -> Result<(), UnitError> {
+        let limit = if simulation_time_limit.is_nan() {
+            0.0
+        } else {
+            simulation_time_limit.max(0.0)
+        };
+        for index in 0..self.scroll_runtime.len() {
+            if self.scroll_runtime[index].active {
+                self.close_scroll_window(index, limit)?;
+            }
+            let (player_hrid, item_hrid, configured_quantity) = {
+                let state = &self.scroll_runtime[index];
+                (state.player_hrid.clone(), state.item_hrid.clone(), state.configured_quantity)
+            };
+            self.tally
+                .finalize_scroll_exhausted(&player_hrid, &item_hrid, configured_quantity);
+        }
+        Ok(())
+    }
+
+    // -----------------------------------------------------------------------
     // 遭遇战与玩家初始化
     // -----------------------------------------------------------------------
 
@@ -1568,7 +1970,13 @@ impl CombatSimulator {
             let reset_time = if self.labyrinth_present { 0.0 } else { self.simulation_time };
             self.arena.get_mut(player).reset(reset_time, &mut self.rng);
         }
-        // activateInitialScrolls / syncScrollsToTime：切片 4 无卷轴。
+        // JS：`time === 0` 走 `activateInitialScrolls()`（首个战斗开始），否则
+        //（副本重启）`syncScrollsToTime(this.simulationTime)` 让窗口计时继续并重挂增益。
+        if time == 0.0 {
+            self.activate_initial_scrolls()?;
+        } else {
+            self.sync_scrolls_to_time(self.simulation_time)?;
+        }
         Ok(())
     }
 
@@ -1594,6 +2002,9 @@ impl CombatSimulator {
             unit.combat_details.current_manapoints = unit.combat_details.max_manapoints;
             unit.clear_buffs();
         }
+        // JS：`clearBuffs()` 之后、`clearCCs()` 之前 `syncScrollsToTime(this.simulationTime)`——
+        // 活跃窗口的增益按 registry 检查重新挂接（不消耗库存）。
+        self.sync_scrolls_to_time(self.simulation_time)?;
         self.arena.get_mut(player).clear_ccs();
         if self.all_players_dead {
             self.all_players_dead = false;
@@ -4400,5 +4811,184 @@ mod tests {
         assert_eq!(entry["count"].as_f64(), Some(0.0));
         assert!(result["deaths"].get("/monsters/lab_dummy").is_none());
         assert_eq!(result["encounters"].as_f64(), Some(0.0), "超时重开不记遭遇结束");
+    }
+
+    // -----------------------------------------------------------------------
+    // 切片 17：战斗卷轴（窗口开/续期/关闭、有限库存耗尽、迷宫忽略、开关禁用）
+    // -----------------------------------------------------------------------
+
+    const SCROLL_ITEM_HRID: &str = "/items/test_scroll";
+
+    /// 卷轴 buff 输入（合成定义；level=1 不做等级并入，ratio/flat 原样注册）。
+    fn scroll_test_buff(duration_ns: f64) -> RawBuffInput {
+        RawBuffInput {
+            unique_hrid: Some("/buff_uniques/test_scroll".to_string()),
+            type_hrid: Some("/buff_types/damage".to_string()),
+            ratio_boost: Some(0.5),
+            flat_boost: Some(0.0),
+            duration: Some(duration_ns),
+            multiplier_for_skill_hrid: None,
+            multiplier_per_skill_level: None,
+            start_time: None,
+        }
+    }
+
+    /// 切片 17：普通区域 + 单怪模板 + 卷轴定义/配置（合成数据，不依赖游戏数据）。
+    /// `quantity` 为 `None` 表示无限库存；模拟时长由调用方给定。
+    fn scroll_production_options(
+        duration_ns: f64,
+        quantity: Option<f64>,
+        simulation_time_limit: f64,
+    ) -> (SimulatorOptions, UnitSpec) {
+        let player = UnitSpec {
+            hrid: "player1".to_string(),
+            is_player: true,
+            levels: Some(LevelsSpec { stamina_level: Some(10_000.0), ..Default::default() }),
+            combat_stats: vec![("attackInterval".to_string(), 1_000_000.0)],
+            combat_stats_strings: vec![("combatStyleHrid".to_string(), "/combat_styles/smash".to_string())],
+            combat_scrolls: vec![CombatScrollConfig { item_hrid: SCROLL_ITEM_HRID.to_string(), quantity }],
+            ..Default::default()
+        };
+        let enemy = UnitSpec {
+            hrid: "/monsters/dummy".to_string(),
+            is_player: false,
+            levels: Some(LevelsSpec { defense_level: Some(1.0), stamina_level: Some(1.0), ..Default::default() }),
+            ..Default::default()
+        };
+        let options = SimulatorOptions {
+            seed: 17,
+            simulation_time_limit,
+            zone_present: true,
+            zone_hrid: Some("/actions/combat/test_zone".to_string()),
+            zone_difficulty_tier: 0.0,
+            zone_monster_spawn_info: Some(serde_json::json!({
+                "randomSpawnInfo": {
+                    "maxSpawnCount": 1,
+                    "maxTotalStrength": 1,
+                    "spawns": [
+                        { "combatMonsterHrid": "/monsters/dummy", "difficultyTier": 0, "rate": 1, "strength": 1 }
+                    ]
+                },
+                "bossSpawns": null,
+                "battlesPerBoss": 0
+            })),
+            real_result: true,
+            minimal_result: false,
+            encounter_templates: vec![TemplateSpec {
+                hrid: "/monsters/dummy".to_string(),
+                difficulty_tier: 0.0,
+                spec: enemy,
+            }],
+            combat_style_skill_exp_map: vec![(
+                "/combat_styles/smash".to_string(),
+                vec!["/skills/melee".to_string()],
+            )],
+            combat_scrolls_enabled: true,
+            combat_scroll_definitions: vec![CombatScrollDefinition {
+                item_hrid: SCROLL_ITEM_HRID.to_string(),
+                duration_ns,
+                buff: scroll_test_buff(duration_ns),
+            }],
+            log_combat_events: false,
+            ..Default::default()
+        };
+        (options, player)
+    }
+
+    #[test]
+    fn combat_scrolls_open_renew_and_finalize_semi_open_windows() {
+        let duration = 20.0 * ONE_SECOND;
+        let limit = 45.0 * ONE_SECOND;
+        let (options, player) = scroll_production_options(duration, None, limit);
+        let mut simulator = CombatSimulator::new(options.clone());
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+        let result = simulator.tally.real.as_ref().expect("real result").to_value();
+
+        let entry = &result["scrollUsage"]["byPlayer"]["player1"][SCROLL_ITEM_HRID];
+        assert_eq!(
+            entry["openedCount"].as_f64(),
+            Some(3.0),
+            "45s 内应开 3 个 20s 窗口（[0,20) [20,40) [40,45)）"
+        );
+        assert_eq!(
+            entry["activeDurationNs"].as_f64(),
+            Some(limit),
+            "窗口连续覆盖整个模拟时长（半开区间在 20s/40s 边界续期）"
+        );
+        assert_eq!(entry["exhausted"], serde_json::json!(false));
+        assert_eq!(entry["configuredQuantity"], serde_json::Value::Null, "无限库存");
+
+        // 收尾关闭窗口后按源移除增益（finalizeScrollUsage → closeScrollWindow）。
+        let unit = simulator.arena.get(simulator.players[0]);
+        assert!(
+            !unit.combat_buffs.contains_key_str("/buff_uniques/test_scroll"),
+            "finalize 后卷轴增益必须已按源移除"
+        );
+    }
+
+    #[test]
+    fn combat_scrolls_exhaust_finite_inventory_and_stop() {
+        let duration = 20.0 * ONE_SECOND;
+        let limit = 90.0 * ONE_SECOND;
+        let (options, player) = scroll_production_options(duration, Some(2.0), limit);
+        let mut simulator = CombatSimulator::new(options.clone());
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+        let result = simulator.tally.real.as_ref().expect("real result").to_value();
+
+        let entry = &result["scrollUsage"]["byPlayer"]["player1"][SCROLL_ITEM_HRID];
+        assert_eq!(entry["configuredQuantity"].as_f64(), Some(2.0));
+        assert_eq!(entry["openedCount"].as_f64(), Some(2.0), "库存 2 → 只开 2 个窗口");
+        assert_eq!(
+            entry["activeDurationNs"].as_f64(),
+            Some(40.0 * ONE_SECOND),
+            "两段完整窗口 [0,20) [20,40)，耗尽后不再开启"
+        );
+        assert_eq!(entry["exhausted"], serde_json::json!(true));
+    }
+
+    #[test]
+    fn combat_scrolls_ignored_in_labyrinth_context() {
+        let (mut options, mut player) = labyrinth_production_options(false);
+        options.combat_scrolls_enabled = true;
+        options.combat_scroll_definitions = vec![CombatScrollDefinition {
+            item_hrid: SCROLL_ITEM_HRID.to_string(),
+            duration_ns: 20.0 * ONE_SECOND,
+            buff: scroll_test_buff(20.0 * ONE_SECOND),
+        }];
+        player.combat_scrolls = vec![CombatScrollConfig { item_hrid: SCROLL_ITEM_HRID.to_string(), quantity: None }];
+
+        let mut simulator = CombatSimulator::new(options.clone());
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+        let result = simulator.tally.real.as_ref().expect("real result").to_value();
+
+        assert_eq!(result["scrollUsage"]["allowed"], serde_json::json!(false));
+        assert_eq!(result["scrollUsage"]["ignoredReason"], serde_json::json!("labyrinth"));
+        assert_eq!(result["scrollUsage"]["disabled"], serde_json::json!(false));
+        let entry = &result["scrollUsage"]["byPlayer"]["player1"][SCROLL_ITEM_HRID];
+        assert_eq!(entry["openedCount"].as_f64(), Some(0.0), "迷宫内不得开启卷轴");
+        assert_eq!(entry["activeDurationNs"].as_f64(), Some(0.0));
+        assert_eq!(entry["configuredQuantity"], serde_json::Value::Null, "配置行保留");
+    }
+
+    #[test]
+    fn combat_scrolls_disabled_keeps_rows_without_opening() {
+        let duration = 20.0 * ONE_SECOND;
+        let limit = 45.0 * ONE_SECOND;
+        let (mut options, player) = scroll_production_options(duration, Some(3.0), limit);
+        options.combat_scrolls_enabled = false;
+        let mut simulator = CombatSimulator::new(options.clone());
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+        let result = simulator.tally.real.as_ref().expect("real result").to_value();
+
+        assert_eq!(result["scrollUsage"]["disabled"], serde_json::json!(true));
+        let entry = &result["scrollUsage"]["byPlayer"]["player1"][SCROLL_ITEM_HRID];
+        assert_eq!(entry["configuredQuantity"].as_f64(), Some(3.0), "开关关闭时配置行保留");
+        assert_eq!(entry["openedCount"].as_f64(), Some(0.0));
+        assert_eq!(entry["activeDurationNs"].as_f64(), Some(0.0));
+        assert_eq!(entry["exhausted"], serde_json::json!(false));
     }
 }

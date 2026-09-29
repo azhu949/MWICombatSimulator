@@ -651,6 +651,17 @@ pub struct RawBuffInput {
     pub multiplier_per_skill_level: Option<f64>,
 }
 
+/// 玩家配置的战斗卷轴行（JS `normalizeCombatScrolls` 后的 `{ itemHrid: { quantity } }`
+/// 投影；数组顺序 = JS 对象键序。切片 17：桥侧快照，Rust 不持有游戏数据）。
+#[derive(Clone, Debug, PartialEq, Serialize, Deserialize)]
+#[serde(rename_all = "camelCase")]
+pub struct CombatScrollConfig {
+    pub item_hrid: String,
+    /// `None` = JS `null`（无限库存）；`Some` = 正安全整数。
+    #[serde(default)]
+    pub quantity: Option<f64>,
+}
+
 /// `removeBuff` 的源选择器（等价 JS 的 `REMOVE_ACTIVE_SOURCE` / 显式键 / `null`）。
 #[derive(Clone, Debug, PartialEq, Eq)]
 pub enum BuffSourceSelector {
@@ -693,6 +704,8 @@ pub struct CombatUnit {
     pub achievements: Option<BuffList>,
     pub zone_buffs: Vec<RawBuffInput>,
     pub extra_buffs: Vec<RawBuffInput>,
+    /// 切片 17：玩家配置的战斗卷轴（JS `player.combatScrolls` 归一投影；怪物为空）。
+    pub combat_scrolls: Vec<CombatScrollConfig>,
     pub combat_details: CombatDetails,
     pub base_combat_stats: Option<CombatStats>,
     /// 「类自有」面板快照（仅 spec 标记 `classOwnedStats` 时存在）：
@@ -759,6 +772,7 @@ impl Default for CombatUnit {
             achievements: None,
             zone_buffs: Vec::new(),
             extra_buffs: Vec::new(),
+            combat_scrolls: Vec::new(),
             combat_details: CombatDetails::default(),
             base_combat_stats: None,
             class_base_combat_stats: None,
@@ -1273,6 +1287,13 @@ impl CombatUnit {
         }
 
         Ok(active_buff_changed)
+    }
+
+    /// JS `unit.buffSources?.[uniqueHrid]?.has(sourceKey)`（切片 17：卷轴活跃 buff 恢复判定）。
+    pub fn has_buff_source(&self, unique_hrid: &str, source_key: &str) -> bool {
+        self.buff_sources
+            .get_str(unique_hrid)
+            .is_some_and(|sources| sources.contains_key_str(source_key))
     }
 
     /// 等价 JS `removeBuff(buff, sourceHrid = REMOVE_ACTIVE_SOURCE)`（`uniqueHrid` 为空则不动作）。
