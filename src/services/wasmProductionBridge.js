@@ -256,6 +256,30 @@ export function buildEncounterTemplates(zoneHrid, difficultyTier, fightInfo, dun
   return templates;
 }
 
+/// 切片 16：迷宫怪物模板（`Labyrinth.getMonster()` = `new Monster(hrid, 0, roomLevel)`，单只）。
+///
+/// 迷宫每轮遭遇都会生成一只**全新**怪物，但模板只读：这里按 `(monsterHrid, roomLevel)` 缓存
+/// 一份已按房间等级缩放并结算过的快照，Rust 侧每次遭遇用 `instantiate_templates` 复刻实例。
+/// `difficultyTier` 恒 0（JS `new Monster(hrid, 0, roomLevel)`）。
+const labyrinthTemplateCache = new Map();
+export function buildLabyrinthEncounterTemplate(labyrinth) {
+  const cacheKey = `${labyrinth.monsterHrid}|${labyrinth.roomLevel}`;
+  const cached = labyrinthTemplateCache.get(cacheKey);
+  if (cached) return cached;
+
+  const monster = labyrinth.getMonster()[0];
+  settleUnitForSnapshot(monster);
+  const templates = [
+    {
+      hrid: monster.hrid,
+      difficultyTier: Number(monster.difficultyTier ?? 0),
+      spec: dumpUnitSpec(monster),
+    },
+  ];
+  labyrinthTemplateCache.set(cacheKey, templates);
+  return templates;
+}
+
 /// `tryUseAbility` 在 blaze / bloom 属性命中时现场 `new Ability('blaze' | 'bloom')`（JS 语义：
 /// 等级固定 1、触发器取默认表、构造不消耗随机数也不依赖运行时状态），因此模板可一次构造复用。
 /// 数据缺定义时返回 `null`：Rust 侧在属性真正命中时会给出对应报错，等价 JS 现场构造抛错。
@@ -297,14 +321,16 @@ function getBloomAbilityTemplate() {
 /// 切片 15：副本（dungeon）波次机制纳入覆盖。唯一仍留 JS 的副本组合是 full-result +
 /// `logCombatEvents`：副本团灭时 JS 写 `wipeEvents`（日志内容含 `new Date().toISOString()`
 /// 墙钟时间戳，天然不可复现），引擎侧不生成该日志；minimal 变体把 `addWipeEvent` 覆写为
-/// 空操作、也不序列化 `wipeEvents`，不受影响。仍留 JS 的还有迷宫 / 卷轴 / 公会试炼与无区域。
+/// 空操作、也不序列化 `wipeEvents`，不受影响。
+///
+/// 切片 16：迷宫（labyrinth）纳入覆盖——无 zone 的单怪循环 + 120s 超时重启；
+/// 仍留 JS 的还有卷轴 / 公会试炼与无区域。
 export function getProductionSupport({ zone, labyrinth, isDungeon, simulationContext, options }) {
-  if (!zone) return { supported: false, reason: 'no_zone' };
-  const dungeon = Boolean(isDungeon || zone.isDungeon);
+  if (!zone && !labyrinth) return { supported: false, reason: 'no_zone' };
+  const dungeon = Boolean(isDungeon || zone?.isDungeon);
   if (dungeon && options?.logCombatEvents && !options?.minimalResult) {
     return { supported: false, reason: 'dungeon_combat_logs' };
   }
-  if (labyrinth) return { supported: false, reason: 'labyrinth' };
   if (options?.combatScrollsEnabled) return { supported: false, reason: 'combat_scrolls' };
   if (simulationContext?.isGuildTrial) return { supported: false, reason: 'guild_trial' };
   return { supported: true, reason: '' };
@@ -334,9 +360,16 @@ export function buildProductionRequest({ players, zone, labyrinth = null, seed, 
       zoneIsDungeon: Boolean(zone?.isDungeon),
       zoneMonsterSpawnInfo: zone?.monsterSpawnInfo ?? null,
       zoneDungeonSpawnInfo: zone?.dungeonSpawnInfo ?? null,
+      // 切片 16：迷宫模式没有 zone（`payload.zone` 为 null），怪物模板来自
+      // `Labyrinth.getMonster()` 的单怪快照（difficultyTier 恒 0）。
+      labyrinthPresent: Boolean(labyrinth),
+      labyrinthName: labyrinth?.monsterHrid ?? null,
+      labyrinthRoomLevel: labyrinth?.roomLevel ?? 0,
       encounterTemplates: zone
         ? buildEncounterTemplates(zoneHrid, zoneDifficultyTier, zone.monsterSpawnInfo, zone.dungeonSpawnInfo)
-        : [],
+        : labyrinth
+          ? buildLabyrinthEncounterTemplate(labyrinth)
+          : [],
       // 切片 14：full-result 经验记账需要的风格技能表（静态数据，进程内缓存）。
       combatStyleSkillExpMap: getCombatStyleSkillExpMap(),
       logCombatEvents: Boolean(options.logCombatEvents),

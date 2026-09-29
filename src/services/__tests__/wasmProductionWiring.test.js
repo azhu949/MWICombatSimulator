@@ -145,18 +145,20 @@ describe('wasm production A/B wiring', () => {
     ).toBeNull();
     expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('dungeon_combat_logs');
 
+    // 切片 16：迷宫不再被配置闸门挡住（引擎未注入 → engine_unavailable）；迷宫模式
+    // 没有 zone，`no_zone` 判据只对「既无区域又无迷宫」成立。
     expect(
       await tryRunWasmProductionRound({
         useWasmEngine: true,
         players: [],
-        zone: { hrid: '/actions/combat/fly', difficultyTier: 0, isDungeon: false },
-        labyrinth: { hrid: '/labyrinths/x' },
+        zone: null,
+        labyrinth: { monsterHrid: '/monsters/cyclops', roomLevel: 100 },
         seed: 1,
         simulationTimeLimit: 1e9,
         options: { minimalResult: true, logCombatEvents: false },
       }),
     ).toBeNull();
-    expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('labyrinth');
+    expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('engine_unavailable');
   });
 
   it('falls back to the JS engine when the wasm package cannot be loaded', async () => {

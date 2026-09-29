@@ -16,6 +16,7 @@ import { describe, expect, it } from 'vitest';
 import CombatSimulator from '../../combatsimulator/combatSimulator.js';
 import Player from '../../combatsimulator/player.js';
 import Zone from '../../combatsimulator/zone.js';
+import Labyrinth from '../../combatsimulator/labyrinth.js';
 import { buildSimulationExtraBuffs } from '../../shared/simulationExtraBuffs.js';
 import { importSoloConfig } from '../importExportMapper.js';
 import { buildPlayersForSimulation, createEmptyPlayerConfig } from '../playerMapper.js';
@@ -38,17 +39,28 @@ const FIXTURE_ZONE_HRID = '/actions/combat/jungle_planet';
 // 切片 15：副本口径。fixture 玩家在 chimerical_den 反复团灭（打不完整副本），基准覆盖
 // 团灭重开 + 逐波计数路径；完整副本完成分支由 Rust 单测覆盖（见 simulator.rs 测试模块）。
 const FIXTURE_DUNGEON_HRID = '/actions/combat/chimerical_den';
+// 切片 16：迷宫口径（第一只迷宫怪 + 真实补给箱 + 5 项商店升级）。
+const FIXTURE_LABYRINTH_HRID = '/monsters/cyclops';
+const FIXTURE_LABYRINTH_CRATE = '/items/basic_coffee_crate';
+const FIXTURE_LABYRINTH_UPGRADES = {
+  damage: 12,
+  attack_speed: 7,
+  cast_speed: 7,
+  critical_rate: 7,
+  experience: 7,
+};
 
-function buildPayload({ dungeon = false } = {}) {
+function buildPayload({ dungeon = false, labyrinth = false } = {}) {
   const settings = {
-    mode: 'zone',
+    mode: labyrinth ? 'labyrinth' : 'zone',
     runScope: 'single',
     useDungeon: dungeon,
     zoneHrid: FIXTURE_ZONE_HRID,
     dungeonHrid: dungeon ? FIXTURE_DUNGEON_HRID : '',
+    labyrinthHrid: labyrinth ? FIXTURE_LABYRINTH_HRID : '',
+    roomLevel: labyrinth ? 100 : 0,
+    ...(labyrinth ? { labyrinthUpgrades: FIXTURE_LABYRINTH_UPGRADES } : {}),
     difficultyTier: 1,
-    labyrinthHrid: '',
-    roomLevel: 100,
     simulationTimeHours: HOURS,
     mooPass: false,
     comExpEnabled: false,
@@ -59,7 +71,7 @@ function buildPayload({ dungeon = false } = {}) {
   };
   const imported = importSoloConfig(JSON.stringify(fixture), createEmptyPlayerConfig(1), settings);
   const playersDto = buildPlayersForSimulation([{ ...imported.player, selected: true }]);
-  const payload = buildSingleSimulationPayload(playersDto, settings, [], {
+  const payload = buildSingleSimulationPayload(playersDto, settings, labyrinth ? [FIXTURE_LABYRINTH_CRATE] : [], {
     workerId: 'wasm-bench',
     extra: { ...buildSimulationExtra(settings), enableHpMpVisualization: false },
   });
@@ -70,24 +82,32 @@ function buildPayload({ dungeon = false } = {}) {
 
 function buildLivePieces(payload) {
   const extraBuffs = buildSimulationExtraBuffs(payload.extra || {});
-  const zone = new Zone(payload.zone.zoneHrid, payload.zone.difficultyTier);
+  const labyrinth = payload.labyrinth
+    ? new Labyrinth(
+        payload.labyrinth.labyrinthHrid,
+        payload.labyrinth.roomLevel,
+        payload.labyrinth.crates,
+        payload.labyrinth.shopUpgrades,
+      )
+    : null;
+  const zone = payload.zone ? new Zone(payload.zone.zoneHrid, payload.zone.difficultyTier) : null;
   const players = payload.players.map((dto) => {
     const player = Player.createFromDTO(structuredClone(dto));
-    player.zoneBuffs = zone.buffs || [];
+    player.zoneBuffs = (labyrinth ? labyrinth.buffs : zone?.buffs) || [];
     player.extraBuffs = extraBuffs;
     return player;
   });
-  return { zone, players };
+  return { zone, labyrinth, players };
 }
 
 async function runJsRound(payload, { minimal, enableHpMpVisualization }) {
   const setupStartedAt = performance.now();
-  const { zone, players } = buildLivePieces(payload);
+  const { zone, labyrinth, players } = buildLivePieces(payload);
   const setupMs = performance.now() - setupStartedAt;
   const originalRandom = Math.random;
   Math.random = createSeededRandom(payload.seed >>> 0);
   try {
-    const simulator = new CombatSimulator(players, zone, null, {
+    const simulator = new CombatSimulator(players, zone, labyrinth, {
       minimalResult: minimal,
       logCombatEvents: false,
       enableHpMpVisualization,
@@ -104,10 +124,11 @@ async function runJsRound(payload, { minimal, enableHpMpVisualization }) {
 
 function runWasmRound(engine, payload, { minimal, enableHpMpVisualization }) {
   const setupStartedAt = performance.now();
-  const { zone, players } = buildLivePieces(payload);
+  const { zone, labyrinth, players } = buildLivePieces(payload);
   const request = buildProductionRequest({
     players,
     zone,
+    labyrinth,
     seed: payload.seed,
     simulationTimeLimit: payload.simulationTimeLimit,
     options: {
@@ -290,6 +311,31 @@ describe.runIf(benchEnabled && wasmPackageBuilt)('wasm engine production benchma
     expect(wasmResult.maxWaveReached).toBeGreaterThan(0);
     expect(wasmResult.timeSpentAlive.length).toBeGreaterThan(0);
     expect(wasmResult.bossSpawns).toHaveLength(10);
+    expect(canonicalJson(wasmResult)).toBe(canonicalJson(jsResult));
+  }, 600000);
+
+  // 切片 16：迷宫口径（cyclops + 真实补给箱 + 5 项商店升级）——无 zone 的单怪循环 +
+  // 120s 超时重启；两侧结果逐字段一致后再比较耗时。
+  it('compares JS and WASM on the real labyrinth workload', async () => {
+    const engine = await loadBenchEngine();
+    expect(engine).not.toBeNull();
+
+    const payload = buildPayload({ labyrinth: true });
+    const { jsResult, wasmResult } = await runBenchmark(
+      engine,
+      payload,
+      { minimal: false, enableHpMpVisualization: false },
+      'full-result 迷宫（/monsters/cyclops）',
+    );
+
+    // 防退化：必须真的在迷宫路径上（无 zone），且单怪循环重启过。
+    expect(wasmResult.isLabyrinth).toBe(true);
+    expect(wasmResult.isDungeon).toBe(false);
+    expect(wasmResult.labyrinthName).toBe(FIXTURE_LABYRINTH_HRID);
+    expect(wasmResult.zoneName).toBeUndefined();
+    const monsterEntry = wasmResult.timeSpentAlive.find((entry) => entry.name === FIXTURE_LABYRINTH_HRID);
+    expect(monsterEntry).toBeDefined();
+    expect(monsterEntry.count > 0 || monsterEntry.spawnedAt > 0).toBe(true);
     expect(canonicalJson(wasmResult)).toBe(canonicalJson(jsResult));
   }, 600000);
 });
