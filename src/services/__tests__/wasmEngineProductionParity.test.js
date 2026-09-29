@@ -608,6 +608,74 @@ describe.runIf(wasmPackageBuilt)('wasm engine production parity (minimal + full 
     expect(wasmCandidate.equivalentThresholds).toHaveLength(1);
   });
 
+  // 切片 20：成本上界观察器 parity——真实夹具 + top10 轮内成本剪枝（cutoff=0 → 首次
+  // 真实食物消费后的检查点立即剪枝）。JS 侧走 simulateFoodOptimizerRound 的 costBound
+  // 安装路径（observeFoodOptimizerCostBound），wasm 侧由 Rust costBound 观察器承接，
+  // 单轮样本逐字段对账 + 防退化断言（真剪枝、部分时长、有限下界、costPerHour=0）。
+  it('matches the cost-bound pruning round on the real fixture zone', async () => {
+    const engine = await getEngine();
+    setWasmProductionEngineForTests(engine);
+
+    const fixture = createFoodOptimizerFixture({ foodSlots: 1, seconds: 600, rounds: 3 });
+    fixture.request.searchMode = 'top10';
+    const food = fixture.items.find((item) => item.hrid === '/items/star_fruit_yogurt');
+    const candidate = buildFoodCandidate([{ ...food, threshold: food.thresholds.at(-1) }]);
+
+    const jsRequest = structuredClone(fixture.request);
+    const wasmRequest = structuredClone(fixture.request);
+    wasmRequest.useWasmEngine = true;
+    const costBound = { cutoff: 0, completedCostPerHour: 0, totalRounds: fixture.request.rounds };
+
+    const jsSample = await simulateFoodOptimizerRound(jsRequest, candidate, 1, undefined, Infinity, {
+      collectThresholds: true,
+      costBound,
+    });
+    const wasmSample = await simulateFoodOptimizerRound(wasmRequest, candidate, 1, undefined, Infinity, {
+      collectThresholds: true,
+      costBound,
+    });
+
+    expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('');
+    expect(firstDiff(jsonProjection(jsSample), jsonProjection(wasmSample))).toBeNull();
+    // 防退化：wasm 轮真走了成本剪枝（与 JS 侧同点停止）。
+    expect(wasmSample.pruned).toBe('cost');
+    expect(wasmSample.stoppedEarly).toBe(true);
+    expect(wasmSample.simulatedTime).toBeLessThan(wasmRequest.payload.simulationTimeLimit);
+    expect(Number.isFinite(wasmSample.costLowerBound)).toBe(true);
+    expect(wasmSample.costPerHour).toBe(0);
+  });
+
+  // 切片 20：安装条件不满足（cutoff 非有限 → getFoodOptimizerCostCutoff 为 null）时，
+  // wasm 分支不携带 costBound、JS 分支不装观察器——两侧跑满整轮，样本逐字段一致。
+  it('matches when the cost-bound install guards reject the observer', async () => {
+    const engine = await getEngine();
+    setWasmProductionEngineForTests(engine);
+
+    const fixture = createFoodOptimizerFixture({ foodSlots: 1, seconds: 600, rounds: 3 });
+    fixture.request.searchMode = 'top10';
+    const food = fixture.items.find((item) => item.hrid === '/items/star_fruit_yogurt');
+    const candidate = buildFoodCandidate([{ ...food, threshold: food.thresholds.at(-1) }]);
+
+    const jsRequest = structuredClone(fixture.request);
+    const wasmRequest = structuredClone(fixture.request);
+    wasmRequest.useWasmEngine = true;
+    const costBound = { cutoff: Infinity, completedCostPerHour: 0, totalRounds: fixture.request.rounds };
+
+    const jsSample = await simulateFoodOptimizerRound(jsRequest, candidate, 1, undefined, Infinity, {
+      collectThresholds: true,
+      costBound,
+    });
+    const wasmSample = await simulateFoodOptimizerRound(wasmRequest, candidate, 1, undefined, Infinity, {
+      collectThresholds: true,
+      costBound,
+    });
+
+    expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('');
+    expect(firstDiff(jsonProjection(jsSample), jsonProjection(wasmSample))).toBeNull();
+    expect(wasmSample.stoppedEarly).toBe(false);
+    expect(wasmSample).not.toHaveProperty('pruned');
+  });
+
   // 切片 14：full-result（完整 SimResult 字段面）逐字段对账——经验记账
   //（击杀快照 → 遭遇战提交的时序）、掉落上下文桶（含怪物实例难度档）与激怒层数。
   it('matches the JS full-result pipeline on the real fixture zone', async () => {

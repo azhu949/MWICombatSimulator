@@ -91,7 +91,8 @@ export function createFoodOptimizerSimulation(request, candidate = null) {
 }
 
 // 单轮评估的对外样本形状：JS 引擎与 wasm 引擎共用（wasm 分支自切片 13 起同样携带
-// 阈值字段——阈值/闲置观察由 Rust 观察器承接，映射方式与 JS 分支逐字对齐）。
+// 阈值字段、自切片 20 起同样携带成本剪枝字段——两者由 Rust 观察器承接，映射方式
+// 与 JS 分支逐字对齐）。
 function buildRoundSample({
   request,
   seed,
@@ -128,6 +129,20 @@ function buildRoundSample({
   };
 }
 
+/// 切片 20：costBound 观察器安装条件（JS 分支与 wasm 分支共用同一份判定，逐字镜像
+/// foodOptimizerCostBound 的安装守卫）。不满足时 JS 分支不装观察器、wasm 分支不携带
+/// costBound 请求字段——两侧语义一致（观察器缺席，轮次跑满或仅由失败谓词停止）。
+function shouldInstallCostBoundObserver(request, candidate, costBound) {
+  return Boolean(
+    costBound &&
+    getFoodOptimizerCostCutoff(request, candidate, costBound.cutoff) !== null &&
+    costBound.totalRounds === request.rounds &&
+    computeFoodOptimizerCostLowerBound(costBound.completedCostPerHour, 0, costBound.totalRounds) !== null &&
+    Number.isFinite(request.payload.simulationTimeLimit) &&
+    request.payload.simulationTimeLimit > 0,
+  );
+}
+
 export function getFoodOptimizerResources(request) {
   // 与一轮模拟相同的构造/重置/初始化路径，但在主线程上使用原生
   // Math.random 运行。该路径不得消耗随机数（见上文 RNG 隔离契约），
@@ -145,13 +160,14 @@ export function getFoodOptimizerResources(request) {
   };
 }
 
-/// 单轮是否走 wasm 引擎（切片 5-B，默认关；切片 12/13 放宽）：调用方显式开启，且本轮
-/// 不需要成本上界观察器（`costBound` 仍留 JS）。候选轮的 `shouldStop`（空蓝 / 死亡预算）
-/// 自切片 12 起由 Rust `earlyStop` 谓词承接；阈值/闲置观察自切片 13 起由 Rust
-/// `observers` 承接（纯读窥视，simResult 逐字节不变）。`collectThresholds` 参数保留
-/// 以对齐调用方签名——它不再阻止 wasm 轮次。
+/// 单轮是否走 wasm 引擎（切片 5-B，默认关；切片 12/13/20 放宽）：调用方显式开启即可。
+/// 候选轮的 `shouldStop`（空蓝 / 死亡预算）自切片 12 起由 Rust `earlyStop` 谓词承接；
+/// 阈值/闲置观察自切片 13 起由 Rust `observers` 承接（纯读窥视，simResult 逐字节不变）；
+/// 成本上界观察自切片 20 起由 Rust `costBound` 承接（价格快照由桥侧预解析，下界/停止
+/// 结论走独立输出字段）。`collectThresholds` / `costBound` 参数保留以对齐调用方签名
+/// ——它们不再阻止 wasm 轮次。
 export function shouldUseWasmOptimizerRound(request, candidate, collectThresholds, costBound) {
-  return request.useWasmEngine === true && !costBound;
+  return request.useWasmEngine === true;
 }
 
 export async function simulateFoodOptimizerRound(
@@ -171,14 +187,18 @@ export async function simulateFoodOptimizerRound(
   const hrid = `player${request.activePlayerId}`;
 
   // 切片 5-B A/B 分支（默认关）：判据见 `shouldUseWasmOptimizerRound`。切片 13 起阈值/
-  // 闲置观察由 Rust 观察器承接（`observers` 请求 + 独立输出字段），样本映射与下方 JS
-  // 分支（`readThresholds` / `readInactiveFood` / `unusedFoodThresholds`）逐字对齐。
+  // 闲置观察由 Rust 观察器承接（`observers` 请求 + 独立输出字段）；切片 20 起成本上界
+  // 观察由 Rust `costBound` 承接。样本映射与下方 JS 分支（`readThresholds` /
+  // `readInactiveFood` / `unusedFoodThresholds` / `stoppedForCost`）逐字对齐。
   if (shouldUseWasmOptimizerRound(request, candidate, collectThresholds, costBound)) {
     const { zone, players } = buildFoodOptimizerPieces(request, candidate);
     const observedCandidate = candidate ?? (hasEmptyFoodOptimizerBaseline(request) ? buildFoodCandidate([]) : null);
     // 与 JS 分支的观察器安装条件一一对应（collectThresholds 且 observedCandidate 非空）；
     // 未开启时 Rust 侧 observers 为 null，样本字段随之为 null。
     const collectObservers = Boolean(collectThresholds) && observedCandidate != null;
+    // 切片 20：与 JS 分支共用同一份安装判定（shouldInstallCostBoundObserver）；安装时
+    // 价格由桥侧按监视玩家 food 槽序预解析成快照（引擎不持有市场数据）。
+    const installCostBound = shouldInstallCostBoundObserver(request, candidate, costBound);
     const output = await tryRunWasmProductionRound({
       useWasmEngine: true,
       players,
@@ -198,14 +218,32 @@ export async function simulateFoodOptimizerRound(
         //（负值/Infinity 由 bridge 归一：Infinity → null，负值原样传递——两侧语义一致）。
         ...(candidate ? { earlyStop: { watchHrid: hrid, deathLimit } } : {}),
         ...(collectObservers ? { observers: { watchHrid: hrid } } : {}),
+        // 切片 20：成本上界观察器——Rust 侧把 earlyStop（失败优先）与 costBound 组合成
+        // JS shouldStop 的完整语义（|| 短路顺序一致）；priceTable/consumableMode 供桥侧
+        // 预解析价格快照。
+        ...(installCostBound
+          ? {
+              costBound: {
+                watchHrid: hrid,
+                cutoff: costBound.cutoff,
+                completedCostPerHour: costBound.completedCostPerHour,
+                totalRounds: costBound.totalRounds,
+                priceTable: request.prices.priceTable,
+                consumableMode: request.prices.consumableMode,
+              },
+            }
+          : {}),
       },
     });
     if (output) {
-      const { simResult, observers } = output;
+      const { simResult, observers, costBound: costBoundOutput } = output;
       const player = players.find((entry) => entry.hrid === hrid);
       const foodHrids = [...new Set(player.food.filter(Boolean).map((item) => item.hrid))];
       const inactiveFoodThresholds = collectObservers ? (observers?.inactiveMinimum ?? null) : null;
-      // wasm 分支无成本观察（costBound 轮全部留在 JS），`!stoppedForCost` 恒真。
+      // 切片 20：成本剪枝样本映射与 JS 分支逐字对齐——stoppedForCost → pruned: 'cost' +
+      // costLowerBound；unusedFoodThresholds 的 !stoppedForCost 门；costPerHour 恒 0 由
+      // buildRoundSample 的 stoppedEarly 分支给出。
+      const stoppedForCost = costBoundOutput?.stoppedForCost === true;
       return buildRoundSample({
         request,
         seed,
@@ -213,8 +251,10 @@ export async function simulateFoodOptimizerRound(
         hrid,
         foodHrids,
         equivalentThresholds: collectObservers ? (observers?.thresholdRanges ?? null) : null,
-        unusedFoodThresholds: observedCandidate?.slots.length === 0 ? inactiveFoodThresholds : null,
+        unusedFoodThresholds: !stoppedForCost && observedCandidate?.slots.length === 0 ? inactiveFoodThresholds : null,
         inactiveFoodThresholds,
+        stoppedForCost,
+        costLowerBound: stoppedForCost ? costBoundOutput?.costLowerBound : undefined,
       });
     }
   }
@@ -232,15 +272,9 @@ export async function simulateFoodOptimizerRound(
     const readInactiveFood =
       collectThresholds && observedCandidate ? observeInactiveFoodThresholds(simulator, hrid) : () => null;
     const foodHrids = [...new Set(player.food.filter(Boolean).map((item) => item.hrid))];
-    const costObserver =
-      costBound &&
-      getFoodOptimizerCostCutoff(request, candidate, costBound.cutoff) !== null &&
-      costBound.totalRounds === request.rounds &&
-      computeFoodOptimizerCostLowerBound(costBound.completedCostPerHour, 0, costBound.totalRounds) !== null &&
-      Number.isFinite(request.payload.simulationTimeLimit) &&
-      request.payload.simulationTimeLimit > 0
-        ? observeFoodOptimizerCostBound(simulator, player, request, costBound)
-        : null;
+    const costObserver = shouldInstallCostBoundObserver(request, candidate, costBound)
+      ? observeFoodOptimizerCostBound(simulator, player, request, costBound)
+      : null;
     let stoppedForCost = false;
     let lastProgressAt = 0;
     simulator.addEventListener('progress', (event) => {

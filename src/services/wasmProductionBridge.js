@@ -18,7 +18,9 @@ import Ability from '../combatsimulator/ability.js';
 import Monster from '../combatsimulator/monster.js';
 import combatStyleDetailMap from '../combatsimulator/data/combatStyleDetailMap.json';
 import combatTriggerDependencyDetailMap from '../combatsimulator/data/combatTriggerDependencyDetailMap.json';
+import { itemDetailIndex } from '../shared/gameDataIndex.js';
 import { getCombatScrollBuffTemplate, getCombatScrollDefinition } from '../shared/combatScrolls.js';
+import { resolveMarketPrice } from './marketPriceService.js';
 
 const encounterTemplateCache = new Map();
 
@@ -338,6 +340,38 @@ function buildCombatScrollDefinitions(players) {
   return definitions;
 }
 
+/// 切片 20：成本上界观察器请求字段（等价 JS `observeFoodOptimizerCostBound` 的安装快照）。
+///
+/// 价格由桥侧预解析成 `[hrid, price]` 快照：键序 = 监视玩家 food 槽 `filter(Boolean)`
+/// 去重（与 JS 观察器 `foodUsed` 的求和序逐字一致——浮点加法顺序即结果），且只含
+/// food 类目条目（等价 `computeFoodCostPerHour` 的 `itemDetailIndex` 类目过滤）；
+/// `resolveMarketPrice` 的 ask/bid/vendor 兜底也一并固化，引擎不持有市场数据。
+/// 监视玩家未出场或时长非法 → null（Rust 侧同样不激活，输出 null，等价 JS 不装观察器）。
+function buildCostBoundSpec(costBound, players, simulationTimeLimit) {
+  if (!costBound) return null;
+  if (!Number.isFinite(simulationTimeLimit) || simulationTimeLimit <= 0) return null;
+  const watch = players.find((player) => player?.hrid === costBound.watchHrid);
+  if (!watch) return null;
+  assertFinite(costBound.cutoff, 'costBound.cutoff');
+  assertFinite(costBound.completedCostPerHour, 'costBound.completedCostPerHour');
+  assertFinite(costBound.totalRounds, 'costBound.totalRounds');
+  const seen = new Set();
+  const prices = [];
+  for (const food of watch.food ?? []) {
+    if (!food || seen.has(food.hrid)) continue;
+    seen.add(food.hrid);
+    if (itemDetailIndex[food.hrid]?.categoryHrid !== '/item_categories/food') continue;
+    prices.push([food.hrid, resolveMarketPrice(costBound.priceTable, food.hrid, costBound.consumableMode)]);
+  }
+  return {
+    watchHrid: costBound.watchHrid,
+    cutoff: costBound.cutoff,
+    completedCostPerHour: costBound.completedCostPerHour,
+    totalRounds: costBound.totalRounds,
+    prices,
+  };
+}
+
 /// 生产路径支持判定：不满足时调用方必须回退 JS 引擎（返回原因供日志/UI 使用）。
 ///
 /// 切片 14：`minimalResult` / `logCombatEvents` / `enableHpMpVisualization` 三条闸门已解除
@@ -419,21 +453,26 @@ export function buildProductionRequest({ players, zone, labyrinth = null, seed, 
       // 切片 13：观察器（阈值区间 + 闲置食物下界，等价 JS observeFoodOptimizerThresholds /
       // observeInactiveFoodThresholds）。纯读窥视——不改 RNG/事件流/simResult。
       observers: options.observers ? { watchHrid: options.observers.watchHrid } : null,
+      // 切片 20：成本上界观察器（等价 JS observeFoodOptimizerCostBound）。与 earlyStop
+      // 组合成 JS shouldStop 的完整语义（失败谓词优先、成本其次——|| 短路顺序一致）；
+      // 停止结论与下界走独立输出字段 costBound，simResult 逐字节不变。
+      costBound: buildCostBoundSpec(options.costBound, players, simulationTimeLimit),
     },
     players: players.map((player) => dumpUnitSpec(player)),
   };
 }
 
 /// 调用 wasm 生产出口；`error` 非空时抛错（调用方捕获后回退 JS）。
-/// 返回 `{ simResult, observers }`：simResult 与 JS 引擎逐字段一致（parity 对账对象）；
-/// observers 在未开启时为 null，开启时为 `{ thresholdRanges, inactiveMinimum }`（独立输出
-/// 字段，保证 simResult 逐字节不变）。
+/// 返回 `{ simResult, observers, costBound }`：simResult 与 JS 引擎逐字段一致（parity
+/// 对账对象）；observers 在未开启时为 null，开启时为 `{ thresholdRanges, inactiveMinimum }`；
+/// costBound（切片 20）在未激活时为 null，激活时为 `{ stoppedForCost, costLowerBound }`
+///（独立输出字段，保证 simResult 逐字节不变）。
 export function runWasmProductionSimulation(engine, request) {
   const output = JSON.parse(engine.run_production_simulation(JSON.stringify(request)));
   if (output.error) {
     throw new Error(`wasm production simulation failed: ${output.error.name}: ${output.error.message}`);
   }
-  return { simResult: output.simResult, observers: output.observers ?? null };
+  return { simResult: output.simResult, observers: output.observers ?? null, costBound: output.costBound ?? null };
 }
 
 /// 调试用：返回 `{ simResult, observers, eventCount, eventTrace, error }` 原始输出（`traceLimit > 0` 时轨迹有内容）。

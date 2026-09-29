@@ -32,6 +32,11 @@
 > `logCombatEvents`」组合解除闸门——timestamp 用确定性字符串 `t+{simulationTime}`
 > 替代墙钟（UI 仅用作 v-for key；见第 18 节）。仍留 JS 的只剩：成本上界观察器与
 > 公会试炼 / 无区域（生产不可达的预留语义）。
+>
+> 切片 20（2026-09-29）：**成本上界观察器（costBound）下推**——top-10 轮内成本剪枝
+> （`observeFoodOptimizerCostBound`）由 Rust 观察器承接，`shouldUseWasmOptimizerRound`
+> 判据放宽为 `useWasmEngine === true`（见第 19 节）。真实路径缺口清零：仍留 JS 的只剩
+> 公会试炼 / 无区域（生产不可达的预留语义）。
 
 ## 1. 测量方法
 
@@ -71,45 +76,47 @@ JS 152 ms / WASM 75.7 ms（2.01×）与 JS 245 ms / WASM 100 ms（2.45×）之�
 
 `wasmProductionSimulation.js` 的判定（`getProductionSupport`）决定何时可走 WASM，不满足即静默回退 JS：
 
-| 维度                    | WASM 支持                                              | 说明                                                                               |
-| ----------------------- | ------------------------------------------------------ | ---------------------------------------------------------------------------------- |
-| 结果形状                | ✅ 全量：`minimalResult` 与完整 `SimResult`（切片 14） | 完整结果含经验记账 / 掉落上下文桶 / 1000-tick 时序快照 / 激怒层数                  |
-| 区域                    | 普通区域 + **副本**（切片 15/19）+ **迷宫**（切片 16） | ✅ 全支持：副本团灭日志（wipeEvents）由引擎生成（切片 19）；迷宫为无 zone 单怪循环 |
-| 战斗卷轴                | ✅ 开启（切片 17）                                     | 窗口语义 / 库存记账与 JS 逐位一致；迷宫内自动忽略（`allowed: false`）              |
-| 战斗日志 / HP-MP 可视化 | ✅ 均可（切片 14）                                     | 日志仅控制台输出；可视化无流式 progress（时序随结果一次性返回）                    |
-| 公会试炼                | 否（生产不可达的预留语义）                             | `options.isGuildTrial` 无生产传值点；接入公会试炼模拟时再评估                      |
-| 优化器观察点            | 阈值/闲置观察（切片 13 `observers`）                   | 仅成本上界观察器（`costBound`）留 JS                                               |
-| 提前停止                | 空蓝 / 死亡预算（切片 12 `earlyStop`）                 | 无需留 JS                                                                          |
+| 维度                    | WASM 支持                                                             | 说明                                                                               |
+| ----------------------- | --------------------------------------------------------------------- | ---------------------------------------------------------------------------------- |
+| 结果形状                | ✅ 全量：`minimalResult` 与完整 `SimResult`（切片 14）                | 完整结果含经验记账 / 掉落上下文桶 / 1000-tick 时序快照 / 激怒层数                  |
+| 区域                    | 普通区域 + **副本**（切片 15/19）+ **迷宫**（切片 16）                | ✅ 全支持：副本团灭日志（wipeEvents）由引擎生成（切片 19）；迷宫为无 zone 单怪循环 |
+| 战斗卷轴                | ✅ 开启（切片 17）                                                    | 窗口语义 / 库存记账与 JS 逐位一致；迷宫内自动忽略（`allowed: false`）              |
+| 战斗日志 / HP-MP 可视化 | ✅ 均可（切片 14）                                                    | 日志仅控制台输出；可视化无流式 progress（时序随结果一次性返回）                    |
+| 公会试炼                | 否（生产不可达的预留语义）                                            | `options.isGuildTrial` 无生产传值点；接入公会试炼模拟时再评估                      |
+| 优化器观察点            | 阈值/闲置观察（切片 13 `observers`）+ 成本上界（切片 20 `costBound`） | 无需留 JS（成本停止结论/下界走独立输出字段）                                       |
+| 提前停止                | 空蓝 / 死亡预算（切片 12 `earlyStop`）                                | 无需留 JS                                                                          |
 
-> 本表为切片 19 后的当前边界（迷宫细节见第 15 节、卷轴见第 16 节、默认开关与部署见第 17 节、
-> 副本团灭日志见第 18 节）。切片 5–11 期间的历史边界
+> 本表为切片 20 后的当前边界（迷宫细节见第 15 节、卷轴见第 16 节、默认开关与部署见第 17 节、
+> 副本团灭日志见第 18 节、成本上界观察器见第 19 节）。切片 5–11 期间的历史边界
 > （候选轮/阈值轮全部留 JS）见第 11 节勘误与第 12 节——彼时默认生产路径
 > （`collectThresholds: reuse` 且 `reuse` 默认 true）的所有优化器轮次实际都走 JS。
 
 据此，食物优化器当前的判据（`shouldUseWasmOptimizerRound`）为：
-`useWasmEngine === true && !costBound`——除 top-ten 成本剪枝轮外全部放行
-（候选轮的 `earlyStop` 与阈值/闲置 `observers` 分别由切片 12/13 承接；
-切片 18 起优化器请求快照默认带 `useWasmEngine: true`，不再依赖调用方显式开启）。
+`useWasmEngine === true`——全部轮次放行（候选轮的 `earlyStop`、阈值/闲置 `observers`
+与成本上界 `costBound` 分别由切片 12/13/20 承接；切片 18 起优化器请求快照默认带
+`useWasmEngine: true`，不再依赖调用方显式开启）。
 
 ## 4. 结论与建议
 
-1. **JS 引擎保留**：它是唯一全功能实现与 parity 基准（用户定案：最终只保留 WASM，
-   待剩余缺口——成本上界观察器（公会试炼 / 无区域为生产不可达的预留语义）——清零后再删），
+1. **JS 引擎保留**：它是唯一全功能实现与 parity 基准（用户定案：最终只保留 WASM；
+   真实路径缺口已随切片 20 清零，仅剩生产不可达的预留语义——删 JS 的前置就绪，
+   删除动作本身待用户启动），
    删掉它会让 WASM 的正确性失去参照。
 2. **WASM 引擎为默认引擎（切片 18 翻转）**：所有生产载荷默认带 `useWasmEngine: true`
    （首页单轮 / 队列场景与基线轮 / 食物优化器 / 触发器优化器 / 批量区域与迷宫扫描 /
    推荐扫描），引擎缺失 / 配置不支持 / 快照或运行时出错一律静默回退 JS，不会让页面
    不可用；显式 `false` / 缺省的 JS 路径完整保留（测试与实验载荷用）。产物随仓库
    提交（`public/engine/pkg`），CI 无 Rust 工具链也能构建出带 wasm 的部署产物。
-3. **端到端提速已兑现（切片 13–17）**：观察器 WASM 化后，默认优化器路径（除成本剪枝轮）
-   全部落在 WASM 覆盖内，任务级配对 A/B 实测 **1.50–1.53×**（第 12 节）；切片 14 起
+3. **端到端提速已兑现（切片 13–20）**：观察器 WASM 化后，默认优化器路径的全部轮次
+   （含 top-10 成本剪枝轮，切片 20）落在 WASM 覆盖内，任务级配对 A/B 实测 **1.50–1.53×**（第 12 节）；切片 14 起
    首页单轮全量结果（full-result + 可视化）也走 WASM，单轮引擎级配对 A/B 实测
    **3.20×**（第 13 节）；切片 15 副本波次纳入覆盖，副本 full-result 单轮实测
    **2.59–2.64×**（第 14 节）；切片 16 迷宫纳入覆盖，迷宫 full-result 单轮实测
    **5.42–5.54×**（第 15 节）；切片 17 战斗卷轴纳入覆盖，卷轴 full-result 单轮实测
    **3.21–3.31×**（第 16 节）；切片 18 生产载荷默认点亮 + 产物进部署链，线上用户
-   直接用上 wasm 引擎（第 17 节）。后续扩展方向：剩余留 JS 组合（生产不可达的
-   公会试炼 / 无区域语义、副本日志组合与成本上界观察器）。
+   直接用上 wasm 引擎（第 17 节）；切片 20 成本上界观察器下推后，优化器全部轮次
+   （含 top-10 成本剪枝轮）落在 WASM 覆盖内（第 19 节）。后续扩展方向：仅剩
+   生产不可达的预留语义（公会试炼 / 无区域），接入时再评估。
 4. 打开 `useWasmEngine` 的前提（引擎已构建、配置落在覆盖表内）见第 3 节；行为分叉
    （JS/WASM 双路径）由 parity 测试兜底（第 12.3 节）。
 
@@ -617,8 +624,8 @@ worker 侧每次评估后自检 `lastFallbackReason`，任何静默回退即大�
 
 ### 12.5 剩余候选（更新）
 
-1. 成本上界观察器（`observeFoodOptimizerCostBound`）WASM 化——依赖逐事件成本记账
-   下推到 Rust，是优化器路径上最后一块 JS 飞地。
+1. ~~成本上界观察器（`observeFoodOptimizerCostBound`）WASM 化~~——已于切片 20 完成
+   （见第 19 节；dirty 检查点重算而非逐事件记账）。
 2. 完整 `SimResult` 支持——解锁首页模拟本体（主页端到端收益的主线）。
 3. `update_details` 池化 / `enemyRespawn` 单位模板缓存（parity 风险高，RNG 时点）。
 4. `Interner` 字符串驻留（大工程，收益待估）。
@@ -679,14 +686,14 @@ full-result 轮比 minimal 贵（WASM 侧 +71%）：经验 / 掉落桶记账与�
    `onResult` 里从 `simResult.timeSeriesData` 兜底取时序。
 2. **副本 / 迷宫 / 卷轴 / 公会试炼**：仍由 JS 承接（后续切片）。→ 副本已于切片 15 覆盖
    （第 14 节），仅剩「副本 + full-result + `logCombatEvents`」组合留 JS。
-3. **成本上界观察器**（`observeFoodOptimizerCostBound`）：依赖 JS 运行时状态，仍留 JS。
+3. ~~**成本上界观察器**（`observeFoodOptimizerCostBound`）~~：已于切片 20 下推（第 19 节）。
 
 ### 13.7 剩余候选（更新）
 
 1. ~~副本 / 迷宫支持（`updateTimeSpentAlive` / `wipeEvents` / 波次结算）~~ ——
    副本已于**切片 15** 完成（第 14 节），迷宫仍留 JS。
 2. 战斗卷轴窗口语义（`scroll.rs` 空壳）。
-3. 成本上界观察器下推（逐事件成本记账）。
+3. ~~成本上界观察器下推~~——已于切片 20 完成（第 19 节）。
 4. `Interner` 字符串驻留（大工程，收益待估）。
 
 ## 14. 切片 15：副本（dungeon）波次覆盖（2026-09-29）
@@ -770,7 +777,7 @@ JS 侧绝对值在同一口径两次取样间漂移（310 → 382 ms），再次
 
 1. 「副本 + full-result + `logCombatEvents`」组合（`wipeEvents` 墙钟时间戳）。
 2. ~~迷宫~~ / 战斗卷轴 / 公会试炼 / 无区域——迷宫已于切片 16 覆盖（第 15 节）。
-3. 成本上界观察器（`observeFoodOptimizerCostBound`）。
+3. ~~成本上界观察器（`observeFoodOptimizerCostBound`）~~——已于切片 20 覆盖（第 19 节）。
 4. `useWasmEngine` 默认仍为 false——「默认开关翻转」是独立切片候选。
 
 ## 15. 切片 16：迷宫（labyrinth）覆盖（2026-09-29）
@@ -850,7 +857,7 @@ WASM 侧则复用模板实例化；请求 JSON 也最小（38.1 KB，无区域�
 1. ~~战斗卷轴窗口语义（`scroll.rs` 空壳）~~——已于切片 17 覆盖（第 16 节）。
 2. 公会试炼与无区域（无 zone 且无迷宫）。
 3. 「副本 + full-result + `logCombatEvents`」组合（`wipeEvents` 墙钟时间戳）。
-4. 成本上界观察器（`observeFoodOptimizerCostBound`）。
+4. ~~成本上界观察器（`observeFoodOptimizerCostBound`）~~——已于切片 20 覆盖（第 19 节）。
 5. `useWasmEngine` 默认仍为 false——「默认开关翻转」是独立切片候选。
 
 ## 16. 切片 17：战斗卷轴（combat scroll）窗口语义覆盖（2026-09-29）
@@ -934,7 +941,7 @@ WASM 侧则复用模板实例化；请求 JSON 也最小（38.1 KB，无区域�
 
 1. 公会试炼与无区域（无 zone 且无迷宫）。
 2. 「副本 + full-result + `logCombatEvents`」组合（`wipeEvents` 墙钟时间戳）。
-3. 成本上界观察器（`observeFoodOptimizerCostBound`）。
+3. ~~成本上界观察器（`observeFoodOptimizerCostBound`）~~——已于切片 20 覆盖（第 19 节）。
 4. `useWasmEngine` 默认仍为 false——「默认开关翻转」是独立切片候选。
 
 ## 17. 切片 18：生产载荷默认点亮 wasm 引擎 + 产物进部署链（2026-09-29）
@@ -963,7 +970,7 @@ WASM 侧则复用模板实例化；请求 JSON 也最小（38.1 KB，无区域�
   （覆盖首页单轮、队列场景轮 / 基线轮、触发器优化器候选轮——三者共用该函数）。
 - `foodOptimizerSnapshot.snapshotFoodOptimizerInput`：优化器请求快照加
   `useWasmEngine: true`（该字段进输入签名：引擎切换让存量缓存报告过期一次，保守正确；
-  成本上界剪枝轮仍由 `shouldUseWasmOptimizerRound` 挡回 JS）。
+  成本上界剪枝轮彼时由 `shouldUseWasmOptimizerRound` 挡回 JS——自切片 20 起也走 wasm，第 19 节）。
 - `advisorDomain.createAdvisorSimulationPayload` + `advisorRunExecution` 批量消息：
   推荐扫描单轮与 quick/refine 批量轮点亮。
 - `simulatorSimulationActions` 的 `start_simulation_all_zones` / `all_labyrinths` 批量消息。
@@ -1013,7 +1020,7 @@ WASM 侧则复用模板实例化；请求 JSON 也最小（38.1 KB，无区域�
 
 1. （已消项，切片 19——见第 18 节）~~「副本 + full-result + `logCombatEvents`」组合~~
    （`wipeEvents` 改由引擎生成，timestamp 用确定性字符串替代墙钟）。
-2. 成本上界观察器（`observeFoodOptimizerCostBound`，依赖 JS 运行时状态）。
+2. （已消项，切片 20——见第 19 节）~~成本上界观察器（`observeFoodOptimizerCostBound`）~~。
 3. 公会试炼与无区域：**生产不可达的预留语义**（无传值点 / 构造保证 zone 或
    labyrinth 至少其一），接入公会试炼模拟时再评估，不计入「删 JS 引擎」缺口。
 4. （已消项）~~默认开关翻转~~——本切片完成。
@@ -1101,5 +1108,66 @@ zone_is_dungeon && !minimal_result` 时启用；`VecDeque` 环形容量 200（**
 
 ### 18.7 仍留 JS 的部分（截至切片 19）
 
-1. 成本上界观察器（`observeFoodOptimizerCostBound`，依赖 JS 运行时状态）。
+1. ~~成本上界观察器（`observeFoodOptimizerCostBound`，依赖 JS 运行时状态）~~——
+   已于切片 20 下推（第 19 节）。
 2. 公会试炼与无区域：**生产不可达的预留语义**（同 §17.5），接入时再评估。
+
+## 19. 切片 20：成本上界观察器（costBound）下推（2026-09-29）
+
+### 19.1 背景与动机
+
+切片 19 收尾后，仍留 JS 的最后一个**真实路径缺口**是 top-10 轮内成本剪枝
+（`observeFoodOptimizerCostBound`）：食物优化器候选评估轮通过 monkey-patch
+`tryUseConsumable` 监视食物消费，在成本下界越过 cutoff 时提前停止——它依赖 JS
+模拟器实例，`shouldUseWasmOptimizerRound` 判据 `!costBound` 把这类轮次整体挡回 JS，
+top-10 搜索的任务级提速吃不到成本剪枝轮。本切片把该观察器下推进 Rust。
+
+### 19.2 实现
+
+- **Rust `CostBoundSpec` / `CostBoundState`**（simulator.rs）：请求 options 增
+  `costBound`（`{ watchHrid, cutoff, completedCostPerHour, totalRounds, prices }`，
+  camelCase；价格由桥侧预解析成 `[hrid, price]` 快照——键序 = 监视玩家 food 槽
+  `filter(Boolean)` 去重，与 JS `foodUsed` 的求和序逐字一致，且只含 food 类目条目，
+  `resolveMarketPrice` 的 ask/bid/vendor 兜底一并固化，引擎不持有市场数据）。
+  安装守卫镜像 JS（`try_new`：首轮下界非法 → 不激活；监视单位未出场 → 不激活——
+  `reset()` 重建 state 必须带 `cost_bound_unit` 守卫）。运行时 `try_use_consumable`
+  成功消费监视玩家的被监视食物 → `dirty`；主循环检查点（每个事件处理后，与 JS
+  `simulate` 的 `shouldStop` 调用点一致）dirty 时从 `consumablesUsed` 全量快照重算——
+  以**全额** `simulationTimeLimit` 为除数（绝不除以已流逝时长）、按快照序累加
+  `max(0,count)*max(0,price)`。与 `earlyStop` 组合成 JS `shouldStop` 完整语义：
+  失败谓词（空蓝/死亡预算）优先、成本其次（`||` 短路顺序一致）；`stoppedForCost`
+  仅在成本分支被求值且命中时置位。
+- **独立输出字段**：`costBound: { stoppedForCost, costLowerBound }`（未激活 → null），
+  simResult 逐字节不变（`prod_probe.rs` 输出 `simResult` / `observers` / `costBound`
+  三字段纪律）。
+- **JS 桥**（wasmProductionBridge.js + foodOptimizerSimulation.js）：
+  `buildProductionRequest` 增 `costBound` 构造（`buildCostBoundSpec`：时长有限 >0、
+  监视玩家在场、价格快照按 food 槽序去重只含 food 类目）；安装条件提取为
+  `shouldInstallCostBoundObserver`（JS/wasm 两分支共用同一份判定，逐字镜像原 JS
+  守卫）；`runWasmProductionSimulation` 返回值增第三字段 `costBound`；
+  `shouldUseWasmOptimizerRound` 判据放宽为 `useWasmEngine === true`；wasm 分支样本
+  映射与 JS 分支逐字对齐（`stoppedForCost` → `pruned: 'cost'` + `costLowerBound`、
+  `unusedFoodThresholds` 的 `!stoppedForCost` 门、`costPerHour` 恒 0 由 stoppedEarly
+  分支给出）。
+
+### 19.3 验收
+
+- `cargo test` **127 passed**（+4：真实食物消费后剪枝 + 部分时长、不可达 cutoff 跑满
+  （仍导出有限下界）、非法 spec / 监视单位未出场 → 输出 null、失败优先于成本停止）。
+  测试场景坑：`early_stop_production_options` 的默认怪（defense 1）会被玩家 1ms 攻速
+  秒杀 → 玩家 HP 永不下降 → 食物永不消费；换切片 19 的「打不死强怪」模板
+  （stamina 1e12 + attack/melee 1000 + attackInterval 1s）才能真实驱动食物消费。
+- parity +2（19 passed）：真实夹具 top10 costBound 轮（cutoff=0 → 首次食物消费即剪枝）
+  JS/wasm 单轮样本逐字段一致 + 防退化（真剪枝、部分时长、有限下界、costPerHour=0）；
+  安装守卫拒绝（cutoff 非有限）时两侧跑满整轮一致。wiring 判据断言更新
+  （costBound 轮 false → true）。
+- `npm test` 192 文件 / **2655 用例** + prettier 全绿；`build:wasm`
+  （wasm-opt -O4：940141 → 821670 bytes，-12.6%）→ `build` → `verify-pages-build` 全过。
+- 基准未跑：本片是覆盖面收尾非性能片，优化器任务级口径沿用切片 13 实测 1.50–1.53×
+  （第 12 节），成本剪枝轮从此也落在该提速内（此前这些轮次整体走 JS）。
+
+### 19.4 仍留 JS 的部分（截至切片 20）
+
+1. 公会试炼与无区域：**生产不可达的预留语义**（同 §17.5），接入时再评估。
+2. 真实路径缺口清零——「删 JS 引擎」的删除动作本身待用户启动
+   （下一候选：JS 引擎审计与删除）。
