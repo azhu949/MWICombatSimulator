@@ -731,6 +731,10 @@ impl CombatSimulator {
         id
     }
 
+    /// 注：曾试验改成返回 `&str` 借用（热路径约 1.6 万次/轮的 String 克隆），但调用点
+    /// 与 `self.tally` / `self.arena.get_mut` 交错的约 30 处会全部报借用冲突，且调用
+    /// 频率分布很平（无单点热点）。收益约 2–4%，改动面大；待与「效果循环直借 arena
+    /// 中技能」的重构（第 7.4 节第 1 条）一起做。
     fn unit_hrid(&self, id: UnitId) -> String {
         let _prof = crate::prof::start("unit_hrid");
         self.arena.get(id).hrid.clone()
@@ -896,8 +900,9 @@ impl CombatSimulator {
                 current_tick,
                 combat_style_hrid,
             )?,
-            SimEvent::CheckBuffExpiration { source, ref buff_unique_hrid, .. } => {
-                self.process_check_buff_expiration_event(source, buff_unique_hrid.clone())?
+            SimEvent::CheckBuffExpiration { source, buff_unique_hrid, .. } => {
+                // 免克隆：事件本身已拥有该 String（process_event 按值收事件），直接移动后按 &str 传递。
+                self.process_check_buff_expiration_event(source, buff_unique_hrid.as_deref())?
             }
             SimEvent::ScrollRenewal { .. } => {
                 // 切片 4 不启用卷轴；事件到达说明场景配置有误。
@@ -1738,14 +1743,14 @@ impl CombatSimulator {
     fn process_check_buff_expiration_event(
         &mut self,
         source: UnitId,
-        buff_unique_hrid: Option<String>,
+        buff_unique_hrid: Option<&str>,
     ) -> Result<(), UnitError> {
         let time = self.simulation_time;
         match buff_unique_hrid {
             Some(unique_hrid) => {
                 self.arena
                     .get_mut(source)
-                    .remove_expired_buff_by_unique_hrid(&unique_hrid, time, true)?;
+                    .remove_expired_buff_by_unique_hrid(unique_hrid, time, true)?;
             }
             None => {
                 self.arena.get_mut(source).remove_expired_buffs(time, true)?;

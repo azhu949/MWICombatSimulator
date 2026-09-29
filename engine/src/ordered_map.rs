@@ -82,6 +82,31 @@ impl<V> OrderedMap<String, V> {
     pub fn contains_key_str(&self, key: &str) -> bool {
         self.entries.iter().any(|(candidate, _)| candidate.as_str() == key)
     }
+
+    /// `&str` 键的可变查询（键已存在时零分配）。
+    pub fn get_mut_str(&mut self, key: &str) -> Option<&mut V> {
+        self.entries.iter_mut().find(|(candidate, _)| candidate.as_str() == key).map(|(_, value)| value)
+    }
+
+    /// `&str` 键删除（键已存在时零分配）。
+    pub fn delete_str(&mut self, key: &str) -> bool {
+        if let Some(index) = self.entries.iter().position(|(candidate, _)| candidate.as_str() == key) {
+            self.entries.remove(index);
+            true
+        } else {
+            false
+        }
+    }
+
+    /// `&str` 键写入：与 `set` 语义一致（已存在则原位替换、否则追加），
+    /// 但键已存在时**不分配**新 `String`——热路径里多数写入都是覆盖已有键。
+    pub fn set_str(&mut self, key: &str, value: V) {
+        if let Some((_, slot)) = self.entries.iter_mut().find(|(candidate, _)| candidate.as_str() == key) {
+            *slot = value;
+        } else {
+            self.entries.push((key.to_string(), value));
+        }
+    }
 }
 
 #[cfg(test)]
