@@ -93,6 +93,15 @@ fn normalize_time_limit(value: f64) -> f64 {
     }
 }
 
+/// 切片 15：`zone.dungeonSpawnInfo.maxWaves`（缺失时为 NaN —— JS `undefined` 参与
+/// 比较恒为假，与 `getNextWave` 的守卫语义一致）。
+fn dungeon_max_waves(zone: &crate::zone::Zone) -> f64 {
+    zone.dungeon_spawn_info()
+        .get("maxWaves")
+        .map(|value| crate::zone::js_number(value))
+        .unwrap_or(f64::NAN)
+}
+
 /// 攻击累加结果（`simResult.addAttack` 的第 4 参数：命中伤害值或 `'miss'`）。
 #[derive(Clone, Debug, PartialEq)]
 pub enum AttackOutcome {
@@ -298,6 +307,27 @@ impl SimResultTally {
     pub fn set_last_encounter_finish_time(&mut self, value: f64) {
         if let Some(real) = self.real.as_mut() {
             real.set_last_encounter_finish_time(value);
+        }
+    }
+
+    /// 切片 15：生产模式专用：JS `simResult.updateDungenonFinish(beginFlag, finishTime)`。
+    pub fn update_dungenon_finish(&mut self, begin_flag: &str, finish_time: f64) {
+        if let Some(real) = self.real.as_mut() {
+            real.update_dungenon_finish(begin_flag, finish_time);
+        }
+    }
+
+    /// 切片 15：生产模式专用：JS `simResult.lastDungeonFinishTime = time` 的直接属性写入。
+    pub fn set_last_dungeon_finish_time(&mut self, value: f64) {
+        if let Some(real) = self.real.as_mut() {
+            real.set_last_dungeon_finish_time(value);
+        }
+    }
+
+    /// 切片 15：生产模式专用：JS `simResult.bossSpawns.push(...)`（minimal 变体也照常写）。
+    pub fn push_boss_spawn(&mut self, label: String) {
+        if let Some(real) = self.real.as_mut() {
+            real.push_boss_spawn(label);
         }
     }
 
@@ -921,14 +951,21 @@ impl CombatSimulator {
     ///
     /// 切片 14：full-result 全量覆盖（经验记账 / 掉落上下文桶 / 1000-tick 时序快照 /
     /// 激怒层数），因此 `minimalResult`、`logCombatEvents`（仅控制台输出，无数据）
-    /// 与 `enableHpMpVisualization`（时序随 simResult 一次性返回）三条闸门已解除；
-    /// 仍留 JS 的是副本 / 迷宫 / 卷轴 / 公会试炼与无区域。
+    /// 与 `enableHpMpVisualization`（时序随 simResult 一次性返回）三条闸门已解除。
+    ///
+    /// 切片 15：副本（dungeon）波次机制纳入引擎。唯一仍留 JS 的副本组合是
+    /// full-result + `logCombatEvents`：副本团灭时 JS 写 `wipeEvents`（日志内容含
+    /// `new Date().toISOString()` 墙钟时间戳，天然不可复现），本引擎不生成该日志。
+    /// minimal 变体把 `addWipeEvent` 覆写为空操作、也不序列化 `wipeEvents`，不受影响。
+    /// 仍留 JS 的还有迷宫 / 卷轴 / 公会试炼与无区域。
     fn validate_production_support(&self) -> Result<(), UnitError> {
         if self.zone.is_none() {
             return Err(UnitError::error("wasm production path requires a zone"));
         }
-        if self.zone_is_dungeon {
-            return Err(UnitError::error("wasm production path does not support dungeon zones yet"));
+        if self.zone_is_dungeon && self.log_combat_events && !self.minimal_result {
+            return Err(UnitError::error(
+                "wasm production path does not support dungeon wipe logs (logCombatEvents) yet",
+            ));
         }
         if self.labyrinth_present {
             return Err(UnitError::error("wasm production path does not support labyrinth runs yet"));
@@ -1251,11 +1288,24 @@ impl CombatSimulator {
         self.pending_experience_gains.clear();
         self.tally.simulated_time = effective_simulation_time;
         self.tally.stopped_early = stopped_early;
+        // JS：`simResult.isDungeon = this.zone?.isDungeon ?? false`（切片 15 起副本可到达）。
+        let zone_is_dungeon = self.zone.as_ref().map(|zone| zone.is_dungeon()).unwrap_or(false);
         if let Some(real) = self.tally.real.as_mut() {
-            // JS：`simResult.isDungeon = this.zone?.isDungeon ?? false`（生产路径仅普通区域）。
-            real.set_is_dungeon(false);
+            real.set_is_dungeon(zone_is_dungeon);
             real.set_simulated_time(effective_simulation_time);
             real.set_stopped_early(stopped_early);
+        }
+        if zone_is_dungeon {
+            // JS：副本收尾写入 dungeonsCompleted / dungeonsFailed / maxWaveReached
+            //（maxWaveReached 的逐波计数依赖 timeSpentAlive；`dungeonsCompleted >= 1` 时直接取 maxWaves）。
+            let (dungeons_completed, dungeons_failed, max_waves) = {
+                let zone = self.zone.as_ref().expect("dungeon zone checked above");
+                (zone.dungeons_completed(), zone.dungeons_failed(), dungeon_max_waves(zone))
+            };
+            if let Some(real) = self.tally.real.as_mut() {
+                let max_wave_reached = real.compute_max_wave_reached(dungeons_completed, max_waves);
+                real.set_dungeon_summary(dungeons_completed, dungeons_failed, max_wave_reached);
+            }
         }
 
         for player in self.players.clone() {
@@ -1276,6 +1326,10 @@ impl CombatSimulator {
             let debuff_on_level_gap = self.arena.get(player).debuff_on_level_gap;
             self.tally.set_drop_rate_multipliers(&hrid, drop_rate, rare_find, drop_quantity, debuff_on_level_gap);
             self.tally.set_mana_used(&hrid, &mana_entries);
+        }
+        if zone_is_dungeon {
+            // JS：副本收尾把 fixedSpawnsMap 的波次清单与普通 bossSpawns 追加到 simResult.bossSpawns。
+            self.push_dungeon_boss_spawns();
         }
         drop(prof_finalize);
 
@@ -1554,13 +1608,34 @@ impl CombatSimulator {
         self.encounter_start_time = self.simulation_time;
 
         if self.zone.is_some() {
-            // 生产路径：真实 Zone 生成遭遇战（每次迭代恰好一次抽样，与 JS 逐位一致）。
-            let entries = {
-                let zone = self.zone.as_mut().expect("zone checked above");
-                zone.get_random_encounter(&mut self.rng)?
-            };
-            let enemies = self.instantiate_templates(&entries)?;
-            self.enemies = Some(enemies);
+            let is_dungeon = self.zone.as_ref().map(|zone| zone.is_dungeon()).unwrap_or(false);
+            if is_dungeon {
+                // 切片 15：副本波次（JS `getNextWave()`）。波次名用自增后的
+                // `encountersKilled - 1`（固定波次先自增再返回、随机波次先选取再自增，
+                // 两条路径在返回前都已自增，故与 JS 命名一致）。
+                let (entries, wave_name, current_dungeon_count) = {
+                    let zone = self.zone.as_mut().expect("zone checked above");
+                    let entries = zone.get_next_wave(&mut self.rng)?;
+                    let wave_name = format!("#{}", crate::zone::js_number_key(zone.encounters_killed() - 1.0));
+                    (entries, wave_name, zone.dungeons_completed())
+                };
+                self.tally.update_time_spent_alive(&wave_name, true, self.simulation_time);
+                if current_dungeon_count > self.temp_dungeon_count {
+                    // JS：完成副本数刷新后全队回满（下一轮副本的起始状态）。
+                    self.temp_dungeon_count = current_dungeon_count;
+                    self.restore_players_to_full();
+                }
+                let enemies = self.instantiate_templates(&entries)?;
+                self.enemies = Some(enemies);
+            } else {
+                // 生产路径：真实 Zone 生成遭遇战（每次迭代恰好一次抽样，与 JS 逐位一致）。
+                let entries = {
+                    let zone = self.zone.as_mut().expect("zone checked above");
+                    zone.get_random_encounter(&mut self.rng)?
+                };
+                let enemies = self.instantiate_templates(&entries)?;
+                self.enemies = Some(enemies);
+            }
         } else if self.zone_present && !self.zone_is_dungeon {
             let encounter = self.get_random_encounter()?;
             self.enemies = Some(encounter);
@@ -1591,6 +1666,79 @@ impl CombatSimulator {
         self.check_triggers()?;
 
         self.start_attacks()
+    }
+
+    /// JS `startNewEncounter`：副本完成数刷新时把全队 HP/MP 回满（不消耗随机数、不触发行程）。
+    fn restore_players_to_full(&mut self) {
+        for player in self.players.clone() {
+            let unit = self.arena.get_mut(player);
+            unit.combat_details.current_hitpoints = unit.combat_details.max_hitpoints;
+            unit.combat_details.current_manapoints = unit.combat_details.max_manapoints;
+        }
+    }
+
+    /// 切片 15（收尾）：副本时把 `dungeonSpawnInfo.fixedSpawnsMap` 的每个波次拼成
+    /// `#<wave>,<monster1>,<monster2>,...` 追加到 `bossSpawns`，随后追加
+    /// `monsterSpawnInfo.bossSpawns` 的 `combatMonsterHrid`。
+    ///
+    /// `Object.entries` 对整数键按数值升序枚举，这里显式排序（serde_json 的 Map 迭代序
+    /// 不可依赖）；JS 字符串拼接里 `undefined` 字面量为 `"undefined"`。
+    fn push_dungeon_boss_spawns(&mut self) {
+        let mut labels: Vec<String> = Vec::new();
+        {
+            let Some(zone) = self.zone.as_ref() else {
+                return;
+            };
+            if let Some(fixed_spawns_map) = zone
+                .dungeon_spawn_info()
+                .get("fixedSpawnsMap")
+                .and_then(|value| value.as_object())
+            {
+                let mut keys: Vec<&String> = fixed_spawns_map.keys().collect();
+                keys.sort_by(|first, second| {
+                    first
+                        .as_str()
+                        .parse::<f64>()
+                        .unwrap_or(f64::NAN)
+                        .partial_cmp(&second.as_str().parse::<f64>().unwrap_or(f64::NAN))
+                        .unwrap_or(std::cmp::Ordering::Equal)
+                });
+                for key in keys {
+                    let Some(monsters) = fixed_spawns_map.get(key.as_str()).and_then(|value| value.as_array()) else {
+                        continue;
+                    };
+                    let mut label = format!("#{key}");
+                    for monster in monsters {
+                        label.push(',');
+                        label.push_str(
+                            monster
+                                .get("combatMonsterHrid")
+                                .and_then(|value| value.as_str())
+                                .unwrap_or("undefined"),
+                        );
+                    }
+                    labels.push(label);
+                }
+            }
+            // JS：`if (... && this.zone.monsterSpawnInfo.bossSpawns)`（空数组为真但循环零次）。
+            if let Some(boss_spawns) = zone
+                .monster_spawn_info()
+                .get("bossSpawns")
+                .and_then(|value| value.as_array())
+            {
+                for boss in boss_spawns {
+                    labels.push(
+                        boss.get("combatMonsterHrid")
+                            .and_then(|value| value.as_str())
+                            .unwrap_or("undefined")
+                            .to_string(),
+                    );
+                }
+            }
+        }
+        for label in labels {
+            self.tally.push_boss_spawn(label);
+        }
     }
 
     fn get_random_encounter(&mut self) -> Result<Vec<UnitId>, UnitError> {
@@ -2053,6 +2201,24 @@ impl CombatSimulator {
                 // （JS `commitPendingExperience()`；之后的副本团灭不得保留它们）。
                 self.commit_pending_experience();
                 self.enemies = None;
+                // 切片 15：副本清波按波次名结算存活时间；整个副本打完
+                //（`encountersKilled > maxWaves`）时记一次副本耗时。
+                if self.zone_present && self.zone_is_dungeon {
+                    let (wave_name, dungeon_finished) = {
+                        let zone = self.zone.as_ref().expect("dungeon zone must exist");
+                        let encounters_killed = zone.encounters_killed();
+                        (
+                            format!("#{}", crate::zone::js_number_key(encounters_killed - 1.0)),
+                            encounters_killed > dungeon_max_waves(zone),
+                        )
+                    };
+                    let time = self.simulation_time;
+                    self.tally.update_time_spent_alive(&wave_name, false, time);
+                    if dungeon_finished {
+                        self.tally.update_dungenon_finish("#1", time);
+                        self.tally.set_last_dungeon_finish_time(time);
+                    }
+                }
                 self.tally.add_encounter_end();
                 // JS：`this.simResult.lastEncounterFinishTime = this.simulationTime;`（普通与 minimal 都写）。
                 self.tally.set_last_encounter_finish_time(self.simulation_time);
@@ -2082,7 +2248,28 @@ impl CombatSimulator {
             .iter()
             .any(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0);
         if !any_alive {
-            if self.zone_present && !self.zone_is_dungeon {
+            if self.zone_present && self.zone_is_dungeon {
+                // 切片 15：副本团灭（JS :1268-1315）——只清战斗相关事件（保留增益过期与
+                // CD 事件），丢弃挂起经验并让 enemies 失效；RESTART_INTERVAL 后以
+                // CombatStart 重开（`start_new_encounter` 的 allPlayersDead 分支随后记一次
+                // failWave）。`logCombatEvents` 为真时 JS 会写 wipeEvents（墙钟时间戳），
+                // 该组合已被 `validate_production_support` 挡在生产路径之外。
+                self.queue.clear_events_of_type("autoAttack");
+                self.queue.clear_events_of_type("abilityCastEndEvent");
+                self.queue.clear_events_of_type("damageOverTime");
+                self.queue.clear_events_of_type("consumableTick");
+                self.queue.clear_events_of_type("regenTick");
+                self.queue.clear_events_of_type("enrageTick");
+                self.queue.clear_events_of_type("stunExpiration");
+                self.queue.clear_events_of_type("blindExpiration");
+                self.queue.clear_events_of_type("silenceExpiration");
+                self.queue.clear_events_of_type("awaitCooldownEvent");
+                self.pending_experience_gains.clear();
+                self.enemies = None;
+                let time = self.simulation_time + RESTART_INTERVAL;
+                let id = self.take_event_id();
+                self.queue.add_event(SimEvent::CombatStart { time, id });
+            } else if self.zone_present && !self.zone_is_dungeon {
                 self.queue.clear_events_of_type("autoAttack");
                 self.queue.clear_events_of_type("abilityCastEndEvent");
             }
@@ -3847,5 +4034,224 @@ mod tests {
         let plain_result = plain.tally.real.as_ref().expect("real result").to_value();
         assert_eq!(plain_result["timeSeriesData"]["timestamps"].as_array().expect("timestamps").len(), 0);
         assert_eq!(simulator.event_count, plain.event_count, "开关不改变事件流");
+    }
+
+    // -----------------------------------------------------------------------
+    // 切片 15：副本（dungeon）波次 / 团灭 / 收尾聚合
+    // -----------------------------------------------------------------------
+
+    /// 小副本生产场景：maxWaves=3、波次 1..3 全为固定怪（固定分支不消耗随机数），
+    /// `randomSpawnInfoMap` 仅作兜底。玩家高血量 + 1ms 攻速：清波快且不会被反杀。
+    fn dungeon_production_options() -> (SimulatorOptions, UnitSpec) {
+        let player = UnitSpec {
+            hrid: "player1".to_string(),
+            is_player: true,
+            levels: Some(LevelsSpec { stamina_level: Some(10_000.0), ..Default::default() }),
+            combat_stats: vec![("attackInterval".to_string(), 1_000_000.0)],
+            combat_stats_strings: vec![("combatStyleHrid".to_string(), "/combat_styles/smash".to_string())],
+            ..Default::default()
+        };
+        let enemy = UnitSpec {
+            hrid: "/monsters/dummy".to_string(),
+            is_player: false,
+            levels: Some(LevelsSpec { defense_level: Some(1.0), ..Default::default() }),
+            ..Default::default()
+        };
+        let options = SimulatorOptions {
+            seed: 15,
+            simulation_time_limit: 30.0 * ONE_SECOND,
+            zone_present: true,
+            real_result: true,
+            minimal_result: false,
+            zone_hrid: Some("/actions/combat/dungeon_test".to_string()),
+            zone_is_dungeon: true,
+            zone_monster_spawn_info: Some(serde_json::json!({
+                "randomSpawnInfo": {
+                    "maxSpawnCount": 1,
+                    "maxTotalStrength": 1,
+                    "spawns": [
+                        { "combatMonsterHrid": "/monsters/dummy", "difficultyTier": 0, "rate": 1, "strength": 1 }
+                    ]
+                },
+                "bossSpawns": null,
+                "battlesPerBoss": 0
+            })),
+            zone_dungeon_spawn_info: Some(serde_json::json!({
+                "maxWaves": 3,
+                "fixedSpawnsMap": {
+                    "1": [ { "combatMonsterHrid": "/monsters/dummy", "difficultyTier": 0 } ],
+                    "2": [ { "combatMonsterHrid": "/monsters/dummy", "difficultyTier": 0 } ],
+                    "3": [ { "combatMonsterHrid": "/monsters/dummy", "difficultyTier": 0 } ]
+                },
+                "randomSpawnInfoMap": {
+                    "0": {
+                        "maxSpawnCount": 1,
+                        "maxTotalStrength": 1,
+                        "spawns": [
+                            { "combatMonsterHrid": "/monsters/dummy", "difficultyTier": 0, "rate": 1, "strength": 1 }
+                        ]
+                    }
+                }
+            })),
+            encounter_templates: vec![TemplateSpec {
+                hrid: "/monsters/dummy".to_string(),
+                difficulty_tier: 0.0,
+                spec: enemy,
+            }],
+            combat_style_skill_exp_map: vec![(
+                "/combat_styles/smash".to_string(),
+                vec!["/skills/melee".to_string()],
+            )],
+            log_combat_events: false,
+            ..Default::default()
+        };
+        (options, player)
+    }
+
+    #[test]
+    fn dungeon_waves_advance_and_finalize_summary() {
+        let (options, player) = dungeon_production_options();
+        let mut simulator = CombatSimulator::new(options.clone());
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+        let result = simulator.tally.real.as_ref().expect("real result").to_value();
+
+        assert_eq!(result["isDungeon"], serde_json::json!(true));
+        assert!(
+            result["dungeonsCompleted"].as_f64().expect("dungeonsCompleted") >= 1.0,
+            "30s 内至少完成一个副本（清空 3 波）"
+        );
+        assert_eq!(result["maxWaveReached"].as_f64(), Some(3.0), "完成过整副本 → maxWaves");
+        assert!(
+            result["lastDungeonFinishTime"].as_f64().expect("lastDungeonFinishTime") > 0.0,
+            "副本完成瞬间写入时间戳"
+        );
+        assert_eq!(result["dungeonsFailed"].as_f64(), Some(0.0), "高血量玩家不应失败");
+
+        // 每波开波记 true、清波记 false → count >= 1。
+        let waves = result["timeSpentAlive"].as_array().expect("timeSpentAlive");
+        for wave_name in ["#1", "#2", "#3"] {
+            let entry = waves
+                .iter()
+                .find(|entry| entry["name"] == wave_name)
+                .unwrap_or_else(|| panic!("缺少波次条目 {wave_name}"));
+            assert!(
+                entry["count"].as_f64().expect("count") >= 1.0,
+                "{wave_name} 至少完整结束过一次"
+            );
+        }
+
+        // bossSpawns：fixedSpawnsMap 按数值升序输出 `#<wave>,<hrid>`；普通 boss 列表为空。
+        let boss_spawns = result["bossSpawns"].as_array().expect("bossSpawns");
+        assert_eq!(
+            boss_spawns,
+            &vec![
+                serde_json::json!("#1,/monsters/dummy"),
+                serde_json::json!("#2,/monsters/dummy"),
+                serde_json::json!("#3,/monsters/dummy"),
+            ]
+        );
+    }
+
+    #[test]
+    fn dungeon_max_wave_reached_counts_partial_waves() {
+        let (mut options, player) = dungeon_production_options();
+        // 2s：只来得及清第 1 波（第 2 波要等 3s 的敌人重生间隔）。
+        options.simulation_time_limit = 2.0 * ONE_SECOND;
+        let mut simulator = CombatSimulator::new(options.clone());
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+        let result = simulator.tally.real.as_ref().expect("real result").to_value();
+
+        assert_eq!(
+            result["dungeonsCompleted"].as_f64(),
+            Some(0.0),
+            "时限内未完成整副本 → 走逐波计数分支"
+        );
+        assert_eq!(result["maxWaveReached"].as_f64(), Some(1.0), "只完整结束 #1");
+        assert_eq!(
+            result["lastDungeonFinishTime"].as_f64(),
+            Some(0.0),
+            "未打完副本不记完成时间"
+        );
+    }
+
+    #[test]
+    fn dungeon_wipe_schedules_combat_start_and_counts_failure() {
+        let (options, player) = dungeon_production_options();
+        let mut simulator = CombatSimulator::new(options.clone());
+        simulator.add_player(&player).expect("player builds");
+
+        // 手动引导开局（等价 `simulate` 的前导段），避免依赖伤害平衡来制造团灭。
+        simulator.reset();
+        let id = simulator.take_event_id();
+        simulator.queue.add_event(SimEvent::CombatStart { time: 0.0, id });
+        let event = simulator.queue.get_next_event().expect("combat start queued");
+        simulator.process_event(event).expect("combat start processes");
+        assert!(simulator.enemies.is_some(), "开波后应有敌人");
+
+        // 打死全队（敌人存活）→ 走副本团灭分支。
+        for player_id in simulator.players.clone() {
+            simulator.arena.get_mut(player_id).combat_details.current_hitpoints = 0.0;
+        }
+        let ended = simulator.check_encounter_end().expect("check succeeds");
+        assert!(ended, "全队死亡必须结束遭遇战");
+        assert!(simulator.all_players_dead);
+        assert!(simulator.enemies.is_none(), "团灭后 enemies 失效");
+
+        // CombatStart 排到 RESTART_INTERVAL 之后（而不是立即重开）。
+        let restart = simulator
+            .queue
+            .get_matching(|event| event.event_type() == "combatStart")
+            .expect("团灭必须排程 CombatStart");
+        let restart_time = restart.time();
+        assert_eq!(restart_time, simulator.simulation_time + RESTART_INTERVAL);
+
+        // 处理重开事件：failWave 记一次失败并重新开波。
+        simulator.simulation_time = restart_time;
+        simulator.process_combat_start_event(restart_time).expect("restart processes");
+        assert_eq!(
+            simulator.zone.as_ref().expect("zone").dungeons_failed(),
+            1.0,
+            "重开前记一次失败波次"
+        );
+        assert!(!simulator.all_players_dead);
+        assert!(simulator.enemies.is_some(), "重开后重新开波");
+    }
+
+    #[test]
+    fn dungeon_full_result_rejects_combat_event_logging() {
+        let (mut options, player) = dungeon_production_options();
+        options.log_combat_events = true;
+        let mut simulator = CombatSimulator::new(options);
+        simulator.add_player(&player).expect("player builds");
+        let error = simulator
+            .simulate()
+            .expect_err("副本 + logCombatEvents 的 full-result 组合必须被拒绝");
+        assert_eq!(
+            error,
+            UnitError::error("wasm production path does not support dungeon wipe logs (logCombatEvents) yet")
+        );
+    }
+
+    #[test]
+    fn dungeon_minimal_result_skips_wave_timeline() {
+        let (mut options, player) = dungeon_production_options();
+        options.minimal_result = true;
+        let mut simulator = CombatSimulator::new(options.clone());
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+        let result = simulator.tally.real.as_ref().expect("real result").to_value();
+
+        assert_eq!(result["isDungeon"], serde_json::json!(true));
+        // minimal 把 updateTimeSpentAlive 覆写为空操作 → 时间线恒空。
+        assert_eq!(result["timeSpentAlive"].as_array().expect("timeSpentAlive").len(), 0);
+        // 完成过整副本 → maxWaveReached 直接取 maxWaves。
+        assert!(
+            result["dungeonsCompleted"].as_f64().expect("dungeonsCompleted") >= 1.0,
+            "30s 内至少完成一个副本"
+        );
+        assert_eq!(result["maxWaveReached"].as_f64(), Some(3.0));
+        assert!(result.get("wipeEvents").is_none(), "minimal 不序列化 wipeEvents");
     }
 }

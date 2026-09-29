@@ -13,6 +13,12 @@
 > JS/WASM 提速比由 2.09–2.57× 升到 **3.6–4.5×**；期间 `Rc<Ability>` 与队列侧表两个
 > 试验经背靠背 A/B 否决（原生/理论更快、WASM 更慢），wasm-opt 验证可用（-12.6% 体积）。
 > 方法与读数见第 6–9 节。
+>
+> 切片 11–15（2026-09-29）：结算单遍分派 + 施法免克隆 + wasm-opt 常态化，并把 WASM 覆盖
+> 从 minimal 扩到完整 SimResult、提前停止、观察器与**副本波次**——默认优化器路径任务级
+> **1.50–1.53×**（第 12 节）、首页单轮 full-result **3.20×**（第 13 节）、副本 full-result
+> **2.59–2.64×**（第 14 节，4h 配对中位数）。当前只剩迷宫 / 卷轴 / 公会试炼与
+> 「副本 + full-result + `logCombatEvents`」组合留 JS。
 
 ## 1. 测量方法
 
@@ -52,19 +58,19 @@ JS 152 ms / WASM 75.7 ms（2.01×）与 JS 245 ms / WASM 100 ms（2.45×）之�
 
 `wasmProductionSimulation.js` 的判定（`getProductionSupport`）决定何时可走 WASM，不满足即静默回退 JS：
 
-| 维度                    | WASM 支持                                              | 说明                                                              |
-| ----------------------- | ------------------------------------------------------ | ----------------------------------------------------------------- |
-| 结果形状                | ✅ 全量：`minimalResult` 与完整 `SimResult`（切片 14） | 完整结果含经验记账 / 掉落上下文桶 / 1000-tick 时序快照 / 激怒层数 |
-| 区域                    | 普通区域（非副本）                                     | 副本 / 迷宫走 JS                                                  |
-| 战斗卷轴                | 关闭                                                   | 开启走 JS                                                         |
-| 战斗日志 / HP-MP 可视化 | ✅ 均可（切片 14）                                     | 日志仅控制台输出；可视化无流式 progress（时序随结果一次性返回）   |
-| 公会试炼                | 否                                                     | 走 JS                                                             |
-| 优化器观察点            | 阈值/闲置观察（切片 13 `observers`）                   | 仅成本上界观察器（`costBound`）留 JS                              |
-| 提前停止                | 空蓝 / 死亡预算（切片 12 `earlyStop`）                 | 无需留 JS                                                         |
+| 维度                    | WASM 支持                                              | 说明                                                                                 |
+| ----------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------ |
+| 结果形状                | ✅ 全量：`minimalResult` 与完整 `SimResult`（切片 14） | 完整结果含经验记账 / 掉落上下文桶 / 1000-tick 时序快照 / 激怒层数                    |
+| 区域                    | 普通区域 + **副本**（切片 15）                         | 副本唯一例外：full-result 且 `logCombatEvents`（wipeEvents 含墙钟时间戳）；迷宫走 JS |
+| 战斗卷轴                | 关闭                                                   | 开启走 JS                                                                            |
+| 战斗日志 / HP-MP 可视化 | ✅ 均可（切片 14）                                     | 日志仅控制台输出；可视化无流式 progress（时序随结果一次性返回）                      |
+| 公会试炼                | 否                                                     | 走 JS                                                                                |
+| 优化器观察点            | 阈值/闲置观察（切片 13 `observers`）                   | 仅成本上界观察器（`costBound`）留 JS                                                 |
+| 提前停止                | 空蓝 / 死亡预算（切片 12 `earlyStop`）                 | 无需留 JS                                                                            |
 
-> 本表为切片 14 后的当前边界。切片 5–11 期间的历史边界（候选轮/阈值轮全部留 JS）
-> 见第 11 节勘误与第 12 节——彼时默认生产路径（`collectThresholds: reuse` 且
-> `reuse` 默认 true）的所有优化器轮次实际都走 JS。
+> 本表为切片 15 后的当前边界（副本覆盖细节见第 14 节）。切片 5–11 期间的历史边界
+> （候选轮/阈值轮全部留 JS）见第 11 节勘误与第 12 节——彼时默认生产路径
+> （`collectThresholds: reuse` 且 `reuse` 默认 true）的所有优化器轮次实际都走 JS。
 
 据此，食物优化器当前的判据（`shouldUseWasmOptimizerRound`）为：
 `useWasmEngine === true && !costBound`——除 top-ten 成本剪枝轮外全部放行
@@ -72,14 +78,16 @@ JS 152 ms / WASM 75.7 ms（2.01×）与 JS 245 ms / WASM 100 ms（2.45×）之�
 
 ## 4. 结论与建议
 
-1. **JS 引擎保留**：它是唯一全功能实现（副本、迷宫、卷轴、完整结果、观察器、提前停止），
-   同时是 WASM 的 parity 基准——删掉它会让 WASM 的正确性失去参照。
+1. **JS 引擎保留**：它是唯一全功能实现与 parity 基准（用户定案：最终只保留 WASM，
+   待剩余缺口——迷宫 / 卷轴 / 公会试炼 / 副本日志组合——清零后再删），
+   删掉它会让 WASM 的正确性失去参照。
 2. **WASM 引擎保留为可选加速器**：A/B 开关（`useWasmEngine`）**默认关**，
    引擎缺失 / 配置不支持 / 快照或运行时出错一律静默回退 JS，不会让页面不可用。
-3. **端到端提速已兑现（切片 13/14）**：观察器 WASM 化后，默认优化器路径（除成本剪枝轮）
+3. **端到端提速已兑现（切片 13–15）**：观察器 WASM 化后，默认优化器路径（除成本剪枝轮）
    全部落在 WASM 覆盖内，任务级配对 A/B 实测 **1.50–1.53×**（第 12 节）；切片 14 起
    首页单轮全量结果（full-result + 可视化）也走 WASM，单轮引擎级配对 A/B 实测
-   **3.20×**（4h、15 轮中位数，第 13 节）。后续扩展方向：副本 / 迷宫 / 卷轴支持。
+   **3.20×**（第 13 节）；切片 15 副本波次纳入覆盖，副本 full-result 单轮实测
+   **2.59–2.64×**（第 14 节）。后续扩展方向：迷宫 / 卷轴 / 公会试炼。
 4. 打开 `useWasmEngine` 的前提（引擎已构建、配置落在覆盖表内）见第 3 节；行为分叉
    （JS/WASM 双路径）由 parity 测试兜底（第 12.3 节）。
 
@@ -647,12 +655,98 @@ full-result 轮比 minimal 贵（WASM 侧 +71%）：经验 / 掉落桶记账与�
 1. **无流式 progress**：WASM 路径一次性返回 `simResult`，首页进度条 0→完成直跳、图表在结束时
    渲染（时序数据本身逐字段一致）；JS 路径仍按 1000 事件派发 `progress`。首页 store 已在
    `onResult` 里从 `simResult.timeSeriesData` 兜底取时序。
-2. **副本 / 迷宫 / 卷轴 / 公会试炼**：仍由 JS 承接（后续切片）。
+2. **副本 / 迷宫 / 卷轴 / 公会试炼**：仍由 JS 承接（后续切片）。→ 副本已于切片 15 覆盖
+   （第 14 节），仅剩「副本 + full-result + `logCombatEvents`」组合留 JS。
 3. **成本上界观察器**（`observeFoodOptimizerCostBound`）：依赖 JS 运行时状态，仍留 JS。
 
 ### 13.7 剩余候选（更新）
 
-1. 副本 / 迷宫支持（`updateTimeSpentAlive` / `wipeEvents` / 波次结算）。
+1. ~~副本 / 迷宫支持（`updateTimeSpentAlive` / `wipeEvents` / 波次结算）~~ ——
+   副本已于**切片 15** 完成（第 14 节），迷宫仍留 JS。
 2. 战斗卷轴窗口语义（`scroll.rs` 空壳）。
 3. 成本上界观察器下推（逐事件成本记账）。
 4. `Interner` 字符串驻留（大工程，收益待估）。
+
+## 14. 切片 15：副本（dungeon）波次覆盖（2026-09-29）
+
+### 14.1 背景与动机
+
+用户定案最终只保留 WASM 引擎；此前副本（`zone.isDungeon === true`）整条路径留 JS
+（Rust `validate_production_support` 无条件拒绝），首页副本单轮与「副本 + 食物优化器」
+永远回退。本切片把副本波次机制移入 Rust：波次生成（`getNextWave` 固定波 / 随机波）、
+团灭重开与失败计数、逐波存活时间（`timeSpentAlive`），以及
+`maxWaveReached` / `dungeonsCompleted` / `bossSpawns` 收尾聚合；同时解锁原「副本」闸门。
+
+### 14.2 实现要点
+
+**Rust（simulator.rs / sim_result.rs）**
+
+- `start_new_encounter` 副本分支：`zone.get_next_wave(&mut rng)`（同构移植 `getNextWave`
+  的固定波 / 随机波两条路径，RNG 消费顺序与 JS 一致）、波次名 `#<encountersKilled - 1>`
+  （JS 两个分支都在返回前自增）、`dungeonsCompleted > tempDungeonCount` 时全队 HP/MP
+  回满（`restore_players_to_full`）。
+- 清波 / 团灭两条分支的差异：清波记 `timeSpentAlive("#<ek-1>", false)`，
+  `encountersKilled > maxWaves` 时记整副本完成与 `lastDungeonFinishTime`；
+  团灭清 10 类事件队列 + 清空 pending 经验 + 重排 `CombatStart`（非副本只清 2 类）。
+- 收尾：`set_is_dungeon(zone.is_dungeon)`（此前 Rust 写死 `false`）、
+  `compute_max_wave_reached(dungeonsCompleted, maxWaves)`（`>=1` 直接取 `maxWaves`，
+  否则从 `#1` 起逐波查 `timeSpentAlive` 直到缺条目或计数为 0）、`bossSpawns`
+  （`fixedSpawnsMap` 整数键升序拼接 + `monsterSpawnInfo.bossSpawns` 追加）。
+- 闸门：`validate_production_support` 只在「副本 + full-result + `logCombatEvents`」时报错
+  （JS 团灭写 `wipeEvents`，内容含 `new Date().toISOString()` 墙钟，不可复现）；
+  桥侧 `getProductionSupport` 同判据（`reason: 'dungeon_combat_logs'`）。
+
+**桥（wasmProductionBridge.js）——本切片修掉两个既有缺陷**
+
+1. `zoneIsDungeon` 从未传：Rust 把副本当普通区域跑（走 `getRandomEncounter`）。
+   证据：真实副本 `fightInfo.randomSpawnInfo.spawns` 为 **null**（`maxSpawnCount: 0`、
+   `bossSpawns: []`），误走随机会在读取 `spawns` 时抛
+   `Cannot read properties of undefined`。
+2. buff `startTime` 可能是 .NET 日期字符串（真实副本区域 `buffs` 的
+   `"0001-01-01T00:00:00Z"`），Rust `Option<f64>` 会因类型不符拒绝整条请求。
+   桥侧 `stripNonNumericStartTime` 归一为「非数字即丢弃」——JS 只在
+   `typeof startTime === 'number'` 时消费它（`removeExpiredBuffs`），语义等价。
+3. 副本波次模板需进 `encounterTemplates`：`fixedSpawnsMap` +
+   `randomSpawnInfoMap` 的刷新表（否则副本刷怪因缺模板报错）。
+
+**工具链**：`console_error_panic_hook` + wasm start 钩子——wasm panic 现在输出真实消息
+（此前只有 `RuntimeError: unreachable`），为后续排障的常驻设施。
+
+### 14.3 parity 与单测
+
+- `cargo test` **116 passed**（+5 副本单测：整副本完成 → `dungeonsCompleted>=1` /
+  `maxWaveReached=maxWaves` / `lastDungeonFinishTime>0` / 每波 `timeSpentAlive` 计数；
+  2s 部分波次；团灭重开与失败计数；full-result 日志组合报错；minimal 时间线为空）。
+- 生产 parity **+3 例**（真实 chimerical_den：1h full-result / 1h minimal / 24h full-result），
+  逐字段对账全过。**关键事实**：fixture 玩家在该副本反复团灭（1h：`dungeonsFailed=76`、
+  `maxWaveReached=2`、`encounters=62`；24h：`dungeonsFailed=1818`、`encounters=1517`；
+  `bossSpawns` 恒 10），因此生产 parity 覆盖的是「团灭重开 + 逐波计数 + 失败计数」；
+  **完成整副本的分支由 Rust 单测覆盖**——两者互补，缺一不可。
+
+### 14.4 实测（`npm run benchmark:wasm-engine`，4h、15 轮配对中位数，同机 AMD Ryzen 7 8845H）
+
+新增副本口径（fixture 玩家 + chimerical_den + full-result；`WASM_BENCH_ROUNDS/HOURS` 同前）：
+
+| 口径                               | JS 单轮        | WASM 单轮      | 提速           |
+| ---------------------------------- | -------------- | -------------- | -------------- |
+| minimal（食物优化器）              | 310.5–330.7 ms | 61.4–75.4 ms   | **4.39–5.06×** |
+| full-result（首页 + 可视化）       | 312.4–365.6 ms | 111.6–115.3 ms | **2.80–3.17×** |
+| full-result 副本（chimerical_den） | 303.4–382.0 ms | 117.0–144.8 ms | **2.59–2.64×** |
+
+两次独立取样的副本提速比高度一致（2.594 / 2.638）——副本负载由大量短遭遇战 +
+团灭重排事件构成；副本请求 JSON 152408 bytes（约普通区域 3 倍，含波次模板）。
+JS 侧绝对值在同一口径两次取样间漂移（310 → 382 ms），再次说明热节流下
+**只看同轮配对比值**。
+
+### 14.5 验收
+
+- `cargo test` 116 passed；5 个 wasm 套件 28 passed（parity +3）；`npm test`
+  192 文件 / 2647 测试 + prettier 全绿；`build:wasm`（wasm-opt -O4：890453 → 777753 bytes，
+  -12.7%）→ `build` → `verify-pages-build` 全过。
+
+### 14.6 仍留 JS 的部分（更新）
+
+1. 「副本 + full-result + `logCombatEvents`」组合（`wipeEvents` 墙钟时间戳）。
+2. 迷宫 / 战斗卷轴 / 公会试炼 / 无区域。
+3. 成本上界观察器（`observeFoodOptimizerCostBound`）。
+4. `useWasmEngine` 默认仍为 false——「默认开关翻转」是独立切片候选。

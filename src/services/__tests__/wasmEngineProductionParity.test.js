@@ -39,6 +39,7 @@ const wasmPath = resolve(pkgDir, 'mwi_combat_engine_bg.wasm');
 const wasmPackageBuilt = existsSync(gluePath) && existsSync(wasmPath);
 
 const FIXTURE_ZONE_HRID = '/actions/combat/jungle_planet';
+const FIXTURE_DUNGEON_HRID = '/actions/combat/chimerical_den';
 
 let enginePromise = null;
 function getEngine() {
@@ -80,6 +81,24 @@ function buildPayload(hours, seed) {
   const playersDto = buildPlayersForSimulation([{ ...imported.player, selected: true }]);
   const payload = buildSingleSimulationPayload(playersDto, settings, [], {
     workerId: 'wasm-production-parity',
+    extra: { ...buildSimulationExtra(settings), enableHpMpVisualization: false },
+  });
+  payload.logCombatEvents = false;
+  payload.seed = seed;
+  return payload;
+}
+
+/**
+ * 切片 15：副本（dungeon）payload —— 与 `buildPayload` 同构，只把目标切到副本区域。
+ * 副本团灭日志（`wipeEvents` 含 `new Date().toISOString()` 墙钟时间戳）不可复现，
+ * 两个副本用例都保持 `logCombatEvents: false`。
+ */
+function buildDungeonPayload(hours, seed) {
+  const settings = { ...createSettings(hours), useDungeon: true, dungeonHrid: FIXTURE_DUNGEON_HRID };
+  const imported = importSoloConfig(JSON.stringify(fixture), createEmptyPlayerConfig(1), settings);
+  const playersDto = buildPlayersForSimulation([{ ...imported.player, selected: true }]);
+  const payload = buildSingleSimulationPayload(playersDto, settings, [], {
+    workerId: 'wasm-production-parity-dungeon',
     extra: { ...buildSimulationExtra(settings), enableHpMpVisualization: false },
   });
   payload.logCombatEvents = false;
@@ -489,5 +508,58 @@ describe.runIf(wasmPackageBuilt)('wasm engine production parity (minimal + full 
     // 防退化：24h 必然多次清场 + 多次提交经验。
     expect(rustSimResult.encounters).toBeGreaterThan(10);
     expect(Object.values(rustSimResult.experienceGained.player1).some((value) => value > 0)).toBe(true);
+  });
+
+  // 切片 15：副本（dungeon）波次机制 —— 逐波存活时间 / bossSpawns 清单 / maxWaveReached
+  //（1h 未完成整副本 → 逐波计数分支）/ 团灭重开与失败波次计数全字段对账。
+  it('matches the JS full-result dungeon pipeline on the real dungeon zone', async () => {
+    const engine = await getEngine();
+    const payload = buildDungeonPayload(1, 101);
+
+    const jsSimResult = await runJsFullResultSimulation(payload);
+    const rustSimResult = runRustFullResultSimulation(engine, payload);
+
+    expect(firstDiff(jsonProjection(jsSimResult), rustSimResult)).toBeNull();
+
+    // 防退化：fixture 玩家在 chimerical_den 反复团灭（怪物档位高于其装备），本用例因此覆盖
+    // 「逐波存活时间 + 团灭重开 + 失败波次计数」；1h 内打不完 50 波 → maxWaveReached 走
+    // 逐波计数分支（完成整副本的分支由 Rust 单测 `dungeon_waves_advance_and_finalize_summary` 覆盖）。
+    expect(rustSimResult.isDungeon).toBe(true);
+    expect(rustSimResult.dungeonsCompleted).toBe(0);
+    expect(rustSimResult.dungeonsFailed).toBeGreaterThan(0);
+    expect(rustSimResult.maxWaveReached).toBeGreaterThan(0);
+    expect(rustSimResult.timeSpentAlive.some((entry) => entry.name === '#1')).toBe(true);
+    expect(rustSimResult.bossSpawns).toHaveLength(10);
+    expect(rustSimResult.wipeEvents).toEqual([]);
+  });
+
+  // 切片 15：副本 + minimal（优化器轮次形状：logCombatEvents=false + 时间线钩子为空操作）。
+  it('matches the JS minimal-result dungeon pipeline (optimizer shape)', async () => {
+    const engine = await getEngine();
+    const payload = buildDungeonPayload(1, 101);
+
+    const jsSimResult = await runJsProductionSimulation(payload);
+    const rustSimResult = runRustProductionSimulation(engine, payload);
+
+    expect(firstDiff(jsonProjection(jsSimResult), rustSimResult)).toBeNull();
+
+    // 防退化：minimal 时间线被覆写为空操作，但副本计数与 bossSpawns 照常。
+    expect(rustSimResult.isDungeon).toBe(true);
+    expect(rustSimResult.timeSpentAlive).toEqual([]);
+    expect(rustSimResult.dungeonsFailed).toBeGreaterThan(0);
+    expect(rustSimResult.bossSpawns).toHaveLength(10);
+  });
+
+  // 切片 15：副本 24h 长时段回归 —— 大量团灭/重开循环下副本计数与聚合仍逐字段一致。
+  it('matches the JS full-result dungeon pipeline at the 24h horizon', async () => {
+    const engine = await getEngine();
+    const payload = buildDungeonPayload(24, 101);
+
+    const jsSimResult = await runJsFullResultSimulation(payload);
+    const rustSimResult = runRustFullResultSimulation(engine, payload);
+
+    expect(firstDiff(jsonProjection(jsSimResult), rustSimResult)).toBeNull();
+    expect(rustSimResult.encounters).toBeGreaterThan(100);
+    expect(rustSimResult.dungeonsFailed).toBeGreaterThan(100);
   });
 });

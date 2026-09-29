@@ -43,6 +43,17 @@ function assertFinite(value, path) {
   return value;
 }
 
+/// 游戏数据里的 buff `startTime` 可能是 .NET 日期字符串（如副本区域 `buffs` 的
+/// `"0001-01-01T00:00:00Z"`）。JS 引擎只在 `typeof startTime === 'number'` 时才把它当作
+/// 定时增益（永久增益的字符串/null 开始时间被明确排除在过期判定外，见
+/// `combatUnit.js` 的 `removeExpiredBuffs` 注释），因此快照时丢弃非数字 startTime 与
+/// JS 语义一致；不丢弃会让 Rust 侧 `startTime: Option<f64>` 反序列化整条请求失败。
+function stripNonNumericStartTime(buff) {
+  if (!buff || typeof buff !== 'object' || Number.isFinite(buff.startTime)) return buff;
+  const { startTime: _ignored, ...rest } = buff;
+  return rest;
+}
+
 function serializeTrigger(trigger) {
   const dependency = combatTriggerDependencyDetailMap[trigger.dependencyHrid];
   if (!dependency) {
@@ -64,7 +75,7 @@ function serializeBuff(buff) {
     ratioBoost: assertFinite(buff.ratioBoost, `buff ${buff.uniqueHrid}.ratioBoost`),
     flatBoost: assertFinite(buff.flatBoost, `buff ${buff.uniqueHrid}.flatBoost`),
     ...(buff.duration === undefined ? {} : { duration: buff.duration }),
-    ...(buff.startTime === undefined ? {} : { startTime: buff.startTime }),
+    ...(Number.isFinite(buff.startTime) ? { startTime: buff.startTime } : {}),
     ...(buff.multiplierForSkillHrid === undefined ? {} : { multiplierForSkillHrid: buff.multiplierForSkillHrid }),
     ...(buff.multiplierPerSkillLevel === undefined ? {} : { multiplierPerSkillLevel: buff.multiplierPerSkillLevel }),
   };
@@ -182,11 +193,22 @@ export function dumpUnitSpec(unit) {
     // 切片 14：JS 玩家 DTO 顶层字段（`playerMapper` 按等级差计算；怪物缺省 0）。
     // 影响经验收益与掉落上下文桶的 `debuffOnLevelGap`。
     debuffOnLevelGap: Number.isFinite(unit.debuffOnLevelGap) ? unit.debuffOnLevelGap : 0,
-    houseRooms: unit.houseRooms ?? [],
-    guildBuffs: unit.guildBuffs ?? [],
-    achievements: unit.achievements ?? null,
-    zoneBuffs: unit.zoneBuffs ?? [],
-    extraBuffs: unit.extraBuffs ?? [],
+    houseRooms: (unit.houseRooms ?? []).map((room) => ({
+      ...room,
+      buffs: (room?.buffs ?? []).map((buff) => stripNonNumericStartTime(buff)),
+    })),
+    guildBuffs: (unit.guildBuffs ?? []).map((guildBuff) => ({
+      ...guildBuff,
+      buffs: (guildBuff?.buffs ?? []).map((buff) => stripNonNumericStartTime(buff)),
+    })),
+    achievements: unit.achievements
+      ? {
+          ...unit.achievements,
+          buffs: (unit.achievements.buffs ?? []).map((buff) => stripNonNumericStartTime(buff)),
+        }
+      : null,
+    zoneBuffs: (unit.zoneBuffs ?? []).map((buff) => stripNonNumericStartTime(buff)),
+    extraBuffs: (unit.extraBuffs ?? []).map((buff) => stripNonNumericStartTime(buff)),
     permanentBuffs: Object.values(unit.permanentBuffs ?? {})
       .filter(Boolean)
       .map((buff) => serializeBuff(buff)),
@@ -198,7 +220,11 @@ export function dumpUnitSpec(unit) {
 
 /// 区域怪物模板：对 `randomSpawnInfo.spawns` + `bossSpawns` 里每个 hrid 实例化 `new Monster(...)`
 /// 并快照；按 `(zoneHrid, difficultyTier)` 缓存（模板只读，可跨模拟复用）。
-export function buildEncounterTemplates(zoneHrid, difficultyTier, fightInfo) {
+///
+/// 切片 15：副本时还要把 `dungeonInfo` 两张波次表里的怪物一并纳入模板集合——副本刷怪走
+/// `getNextWave()`，怪物定义不在 `fightInfo` 里（`fixedSpawnsMap` 各固定波次 +
+/// `randomSpawnInfoMap` 各波次区间的 spawns）。
+export function buildEncounterTemplates(zoneHrid, difficultyTier, fightInfo, dungeonInfo = null) {
   const cacheKey = `${zoneHrid}|${difficultyTier}`;
   const cached = encounterTemplateCache.get(cacheKey);
   if (cached) return cached;
@@ -206,6 +232,12 @@ export function buildEncounterTemplates(zoneHrid, difficultyTier, fightInfo) {
   const entries = [
     ...(fightInfo?.randomSpawnInfo?.spawns ?? []).map((spawn) => [spawn.combatMonsterHrid, spawn.difficultyTier]),
     ...(fightInfo?.bossSpawns ?? []).map((spawn) => [spawn.combatMonsterHrid, spawn.difficultyTier]),
+    ...Object.values(dungeonInfo?.fixedSpawnsMap ?? {}).flatMap((monsters) =>
+      (monsters ?? []).map((monster) => [monster.combatMonsterHrid, monster.difficultyTier]),
+    ),
+    ...Object.values(dungeonInfo?.randomSpawnInfoMap ?? {}).flatMap((wave) =>
+      (wave?.spawns ?? []).map((spawn) => [spawn.combatMonsterHrid, spawn.difficultyTier]),
+    ),
   ];
 
   const seen = new Set();
@@ -260,10 +292,18 @@ function getBloomAbilityTemplate() {
 /// 切片 14：`minimalResult` / `logCombatEvents` / `enableHpMpVisualization` 三条闸门已解除
 /// ——full-result 全量覆盖（经验记账、掉落上下文桶、1000-tick 时序快照、激怒层数），
 /// 战斗日志只影响控制台输出（无数据），时序随 simResult 的 `timeSeriesData` 一次性返回
-/// （wasm 侧没有流式 progress）。仍留 JS 的是副本 / 迷宫 / 卷轴 / 公会试炼与无区域。
+/// （wasm 侧没有流式 progress）。
+///
+/// 切片 15：副本（dungeon）波次机制纳入覆盖。唯一仍留 JS 的副本组合是 full-result +
+/// `logCombatEvents`：副本团灭时 JS 写 `wipeEvents`（日志内容含 `new Date().toISOString()`
+/// 墙钟时间戳，天然不可复现），引擎侧不生成该日志；minimal 变体把 `addWipeEvent` 覆写为
+/// 空操作、也不序列化 `wipeEvents`，不受影响。仍留 JS 的还有迷宫 / 卷轴 / 公会试炼与无区域。
 export function getProductionSupport({ zone, labyrinth, isDungeon, simulationContext, options }) {
   if (!zone) return { supported: false, reason: 'no_zone' };
-  if (isDungeon || zone.isDungeon) return { supported: false, reason: 'dungeon' };
+  const dungeon = Boolean(isDungeon || zone.isDungeon);
+  if (dungeon && options?.logCombatEvents && !options?.minimalResult) {
+    return { supported: false, reason: 'dungeon_combat_logs' };
+  }
   if (labyrinth) return { supported: false, reason: 'labyrinth' };
   if (options?.combatScrollsEnabled) return { supported: false, reason: 'combat_scrolls' };
   if (simulationContext?.isGuildTrial) return { supported: false, reason: 'guild_trial' };
@@ -289,9 +329,14 @@ export function buildProductionRequest({ players, zone, labyrinth = null, seed, 
       zonePresent: Boolean(zone),
       zoneHrid,
       zoneDifficultyTier,
+      // 切片 15：副本标记必须显式传递——Rust 侧 `zone_is_dungeon` 默认 false，
+      // 缺失时副本会被当作普通区域跑（`getRandomEncounter` 而非 `getNextWave`）。
+      zoneIsDungeon: Boolean(zone?.isDungeon),
       zoneMonsterSpawnInfo: zone?.monsterSpawnInfo ?? null,
       zoneDungeonSpawnInfo: zone?.dungeonSpawnInfo ?? null,
-      encounterTemplates: zone ? buildEncounterTemplates(zoneHrid, zoneDifficultyTier, zone.monsterSpawnInfo) : [],
+      encounterTemplates: zone
+        ? buildEncounterTemplates(zoneHrid, zoneDifficultyTier, zone.monsterSpawnInfo, zone.dungeonSpawnInfo)
+        : [],
       // 切片 14：full-result 经验记账需要的风格技能表（静态数据，进程内缓存）。
       combatStyleSkillExpMap: getCombatStyleSkillExpMap(),
       logCombatEvents: Boolean(options.logCombatEvents),

@@ -119,17 +119,31 @@ describe('wasm production A/B wiring', () => {
     ).toBeNull();
     expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('guild_trial');
 
+    // 切片 15：副本不再被配置闸门挡住（引擎未注入 → engine_unavailable）；
+    // 唯一仍留 JS 的副本组合是 full-result + logCombatEvents（wipe 日志含墙钟时间戳）。
     expect(
       await tryRunWasmProductionRound({
         useWasmEngine: true,
         players: [],
-        zone: { hrid: '/actions/combat/fly', difficultyTier: 0, isDungeon: true },
+        zone: { hrid: '/actions/combat/spider_queen', difficultyTier: 0, isDungeon: true },
         seed: 1,
         simulationTimeLimit: 1e9,
         options: { minimalResult: true, logCombatEvents: false },
       }),
     ).toBeNull();
-    expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('dungeon');
+    expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('engine_unavailable');
+
+    expect(
+      await tryRunWasmProductionRound({
+        useWasmEngine: true,
+        players: [],
+        zone: { hrid: '/actions/combat/spider_queen', difficultyTier: 0, isDungeon: true },
+        seed: 1,
+        simulationTimeLimit: 1e9,
+        options: { minimalResult: false, logCombatEvents: true },
+      }),
+    ).toBeNull();
+    expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('dungeon_combat_logs');
 
     expect(
       await tryRunWasmProductionRound({
