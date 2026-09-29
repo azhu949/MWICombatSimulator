@@ -16,9 +16,25 @@
 // - 怪物模板按 `(zoneHrid, difficultyTier)` 缓存：模板只读，可跨模拟复用。
 import Ability from '../combatsimulator/ability.js';
 import Monster from '../combatsimulator/monster.js';
+import combatStyleDetailMap from '../combatsimulator/data/combatStyleDetailMap.json';
 import combatTriggerDependencyDetailMap from '../combatsimulator/data/combatTriggerDependencyDetailMap.json';
 
 const encounterTemplateCache = new Map();
+
+/// `combatStyleDetailMap` 的投影：styleHrid → `Object.keys(skillExpMap)` 顺序表。
+///
+/// Rust `SimResultState` 用它在击杀时把经验拆到 7 个技能（focus 命中风格表 → 0.7 独占，
+/// 否则 0.7 / 技能数均摊），键序即 JSON 声明序。`skillExpMap` 为 `null` 的风格
+///（heal，非普攻风格）不进表——JS 侧对它 `Object.keys(null)` 会抛 TypeError。
+let combatStyleSkillExpMapCache = null;
+function getCombatStyleSkillExpMap() {
+  if (!combatStyleSkillExpMapCache) {
+    combatStyleSkillExpMapCache = Object.entries(combatStyleDetailMap)
+      .filter(([, detail]) => detail?.skillExpMap)
+      .map(([styleHrid, detail]) => [styleHrid, Object.keys(detail.skillExpMap)]);
+  }
+  return combatStyleSkillExpMapCache;
+}
 
 function assertFinite(value, path) {
   if (typeof value === 'number' && !Number.isFinite(value)) {
@@ -163,6 +179,9 @@ export function dumpUnitSpec(unit) {
       : {}),
     enrageTime: Number.isFinite(unit.enrageTime) ? unit.enrageTime : 0,
     experience: Number.isFinite(unit.experience) ? unit.experience : 0,
+    // 切片 14：JS 玩家 DTO 顶层字段（`playerMapper` 按等级差计算；怪物缺省 0）。
+    // 影响经验收益与掉落上下文桶的 `debuffOnLevelGap`。
+    debuffOnLevelGap: Number.isFinite(unit.debuffOnLevelGap) ? unit.debuffOnLevelGap : 0,
     houseRooms: unit.houseRooms ?? [],
     guildBuffs: unit.guildBuffs ?? [],
     achievements: unit.achievements ?? null,
@@ -237,14 +256,16 @@ function getBloomAbilityTemplate() {
 }
 
 /// 生产路径支持判定：不满足时调用方必须回退 JS 引擎（返回原因供日志/UI 使用）。
+///
+/// 切片 14：`minimalResult` / `logCombatEvents` / `enableHpMpVisualization` 三条闸门已解除
+/// ——full-result 全量覆盖（经验记账、掉落上下文桶、1000-tick 时序快照、激怒层数），
+/// 战斗日志只影响控制台输出（无数据），时序随 simResult 的 `timeSeriesData` 一次性返回
+/// （wasm 侧没有流式 progress）。仍留 JS 的是副本 / 迷宫 / 卷轴 / 公会试炼与无区域。
 export function getProductionSupport({ zone, labyrinth, isDungeon, simulationContext, options }) {
   if (!zone) return { supported: false, reason: 'no_zone' };
   if (isDungeon || zone.isDungeon) return { supported: false, reason: 'dungeon' };
   if (labyrinth) return { supported: false, reason: 'labyrinth' };
   if (options?.combatScrollsEnabled) return { supported: false, reason: 'combat_scrolls' };
-  if (options?.logCombatEvents !== false) return { supported: false, reason: 'combat_logs' };
-  if (options?.enableHpMpVisualization) return { supported: false, reason: 'hp_mp_visualization' };
-  if (options?.minimalResult !== true) return { supported: false, reason: 'full_result' };
   if (simulationContext?.isGuildTrial) return { supported: false, reason: 'guild_trial' };
   return { supported: true, reason: '' };
 }
@@ -271,6 +292,8 @@ export function buildProductionRequest({ players, zone, labyrinth = null, seed, 
       zoneMonsterSpawnInfo: zone?.monsterSpawnInfo ?? null,
       zoneDungeonSpawnInfo: zone?.dungeonSpawnInfo ?? null,
       encounterTemplates: zone ? buildEncounterTemplates(zoneHrid, zoneDifficultyTier, zone.monsterSpawnInfo) : [],
+      // 切片 14：full-result 经验记账需要的风格技能表（静态数据，进程内缓存）。
+      combatStyleSkillExpMap: getCombatStyleSkillExpMap(),
       logCombatEvents: Boolean(options.logCombatEvents),
       enableHpMpVisualization: Boolean(options.enableHpMpVisualization),
       combatScrollsEnabled: Boolean(options.combatScrollsEnabled),

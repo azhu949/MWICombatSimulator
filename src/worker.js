@@ -70,8 +70,11 @@ onmessage = async function (event) {
       let enableHpMpVisualization = Boolean(extra.enableHpMpVisualization);
 
       // 切片 5-B A/B 开关（默认关）：仅当调用方显式传 `useWasmEngine: true` 且配置落在
-      // wasm 引擎覆盖范围内（minimal 结果 + 无副本/迷宫/卷轴/日志/可视化）时才走 wasm；
-      // 其余情况 `tryRunWasmProductionRound` 返回 null，静默回退下面的 JS 引擎。
+      // wasm 引擎覆盖范围内（无副本/迷宫/卷轴/公会试炼/无区域）时才走 wasm；其余情况
+      // `tryRunWasmProductionRound` 返回 null，静默回退下面的 JS 引擎。
+      // 切片 14 起 full-result（经验/掉落桶/时序/激怒层数）与日志/可视化组合也走 wasm：
+      // 时序数据随 simResult 的 `timeSeriesData` 一次性返回，因此这里没有流式 progress
+      // （进度条 0→完成直跳；首页 store 在 onResult 里从 simResult 兜底取时序）。
       const options = {
         minimalResult: event.data.minimalResult === true,
         // 仅当调用方显式传 false 时关闭战斗事件日志（默认 true = 历史行为）。

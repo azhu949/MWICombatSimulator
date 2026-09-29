@@ -52,17 +52,17 @@ JS 152 ms / WASM 75.7 ms（2.01×）与 JS 245 ms / WASM 100 ms（2.45×）之�
 
 `wasmProductionSimulation.js` 的判定（`getProductionSupport`）决定何时可走 WASM，不满足即静默回退 JS：
 
-| 维度                    | WASM 支持                              | 说明                                 |
-| ----------------------- | -------------------------------------- | ------------------------------------ |
-| 结果形状                | 仅 `minimalResult`（食物优化器口径）   | 完整 `SimResult` 仍走 JS             |
-| 区域                    | 普通区域（非副本）                     | 副本 / 迷宫走 JS                     |
-| 战斗卷轴                | 关闭                                   | 开启走 JS                            |
-| 战斗日志 / HP-MP 可视化 | 关闭                                   | 开启走 JS                            |
-| 公会试炼                | 否                                     | 走 JS                                |
-| 优化器观察点            | 阈值/闲置观察（切片 13 `observers`）   | 仅成本上界观察器（`costBound`）留 JS |
-| 提前停止                | 空蓝 / 死亡预算（切片 12 `earlyStop`） | 无需留 JS                            |
+| 维度                    | WASM 支持                                              | 说明                                                              |
+| ----------------------- | ------------------------------------------------------ | ----------------------------------------------------------------- |
+| 结果形状                | ✅ 全量：`minimalResult` 与完整 `SimResult`（切片 14） | 完整结果含经验记账 / 掉落上下文桶 / 1000-tick 时序快照 / 激怒层数 |
+| 区域                    | 普通区域（非副本）                                     | 副本 / 迷宫走 JS                                                  |
+| 战斗卷轴                | 关闭                                                   | 开启走 JS                                                         |
+| 战斗日志 / HP-MP 可视化 | ✅ 均可（切片 14）                                     | 日志仅控制台输出；可视化无流式 progress（时序随结果一次性返回）   |
+| 公会试炼                | 否                                                     | 走 JS                                                             |
+| 优化器观察点            | 阈值/闲置观察（切片 13 `observers`）                   | 仅成本上界观察器（`costBound`）留 JS                              |
+| 提前停止                | 空蓝 / 死亡预算（切片 12 `earlyStop`）                 | 无需留 JS                                                         |
 
-> 本表为切片 13 后的当前边界。切片 5–11 期间的历史边界（候选轮/阈值轮全部留 JS）
+> 本表为切片 14 后的当前边界。切片 5–11 期间的历史边界（候选轮/阈值轮全部留 JS）
 > 见第 11 节勘误与第 12 节——彼时默认生产路径（`collectThresholds: reuse` 且
 > `reuse` 默认 true）的所有优化器轮次实际都走 JS。
 
@@ -76,9 +76,10 @@ JS 152 ms / WASM 75.7 ms（2.01×）与 JS 245 ms / WASM 100 ms（2.45×）之�
    同时是 WASM 的 parity 基准——删掉它会让 WASM 的正确性失去参照。
 2. **WASM 引擎保留为可选加速器**：A/B 开关（`useWasmEngine`）**默认关**，
    引擎缺失 / 配置不支持 / 快照或运行时出错一律静默回退 JS，不会让页面不可用。
-3. **端到端提速已兑现（切片 13）**：观察器 WASM 化后，默认优化器路径（除成本剪枝轮）
-   全部落在 WASM 覆盖内，任务级配对 A/B 实测 **1.50–1.53×**（第 12 节）。
-   后续扩展方向：完整 `SimResult` 与副本 / 迷宫 / 卷轴支持——解锁首页模拟本体。
+3. **端到端提速已兑现（切片 13/14）**：观察器 WASM 化后，默认优化器路径（除成本剪枝轮）
+   全部落在 WASM 覆盖内，任务级配对 A/B 实测 **1.50–1.53×**（第 12 节）；切片 14 起
+   首页单轮全量结果（full-result + 可视化）也走 WASM，单轮引擎级配对 A/B 实测
+   **3.20×**（4h、15 轮中位数，第 13 节）。后续扩展方向：副本 / 迷宫 / 卷轴支持。
 4. 打开 `useWasmEngine` 的前提（引擎已构建、配置落在覆盖表内）见第 3 节；行为分叉
    （JS/WASM 双路径）由 parity 测试兜底（第 12.3 节）。
 
@@ -590,4 +591,68 @@ worker 侧每次评估后自检 `lastFallbackReason`，任何静默回退即大�
    下推到 Rust，是优化器路径上最后一块 JS 飞地。
 2. 完整 `SimResult` 支持——解锁首页模拟本体（主页端到端收益的主线）。
 3. `update_details` 池化 / `enemyRespawn` 单位模板缓存（parity 风险高，RNG 时点）。
+4. `Interner` 字符串驻留（大工程，收益待估）。
+
+## 13. 切片 14：完整 SimResult 覆盖（full-result 解锁首页单轮）（2026-09-29）
+
+### 13.1 背景与动机
+
+用户定案：最终只保留 WASM 引擎，JS 引擎删除。删除的前置是**结果面必须全量对齐**——
+此前 WASM 生产路径只覆盖 `minimalResult`（食物优化器口径），首页模拟本体（完整 `SimResult`）
+永远回退 JS。本切片补齐 full-result 的五个缺口，并解除双重闸门（桥三条 + Rust 三条）。
+
+### 13.2 实现（缺口 → 接线）
+
+| 缺口               | JS 语义                                                                                      | Rust 实现                                                                                                                                                                                 |
+| ------------------ | -------------------------------------------------------------------------------------------- | ----------------------------------------------------------------------------------------------------------------------------------------------------------------------------------------- |
+| 经验记账           | `recordUnitDeath` 击杀快照（按 enrage 比率）→ `finalizeEnemyExperience` → pending → 清场提交 | `capture_enemy_death_snapshot` / `finalize_enemy_experience` / `append_pending_experience_gains` / `commit_pending_experience`（`ensure_experience_gain_entry` 保「空增益也建零值模板」） |
+| 掉落上下文桶       | `recordMonsterDeathFromUnit(player, monster, 1)`                                             | `record_monster_death_from_unit`：玩家结算面板三倍率 + `debuffOnLevelGap`；难度档取**怪物实例**的 `difficultyTier`（`CombatUnit` 新增字段，刷怪 / 升变时写入）                            |
+| 激怒层数           | `processEnrageTickEvent` 内 `maxEnrageStack = max(旧, nowStack)`                             | `SimResultState::bump_max_enrage_stack`（保 `Math.max` 的 NaN 传播）；minimal 结果同样记录（JS 亦如此）                                                                                   |
+| 1000-tick 时序快照 | `ticks === 1000` 且 `enableHpMpVisualization` → `addTimeSeriesSnapshot(simTime, players)`    | 主循环同点位采集 `(hrid, hp, mp, maxHp, maxMp)` → `add_time_series_snapshot`                                                                                                              |
+| `debuffOnLevelGap` | 玩家 DTO 顶层字段（`playerMapper` 按等级差算）                                               | 桥 `dumpUnitSpec` 增字段；`UnitSpec` / `CombatUnit` 承接；收尾 `setDropRateMultipliers` 读它                                                                                              |
+
+同时解除 `getProductionSupport` 的 `full_result` / `combat_logs` / `hp_mp_visualization`
+三条闸门与 Rust `validate_production_support` 的对应三条（战斗日志只影响控制台输出，
+时序随 `simResult` 一次性返回）。另新增一条**保守校验**：full-result 时若玩家的
+`combatStyleHrid` 不在风格技能表内（JS 会在首次击杀 `Object.keys(null)` / 缺风格时抛
+TypeError），Rust 直接报错 → 回退 JS，避免静默产出「0 经验」。
+
+### 13.3 对账中抓到的两个真实缺陷（本切片修复）
+
+1. **`dropRateMultiplier` / `rareFindMultiplier` 双重 `+1`**：`SimulatorTally::set_drop_rate_multipliers`
+   先加 1、`SimResultState::set_drop_rate_multipliers` 又加 1 → 结果里是 `2 + stat`。
+   minimal 结果不含这两个字段，故此前的 minimal parity 掩盖了它；现由状态层单独施加 `1 +`。
+2. **风格技能表未接线**：`combatStyleSkillExpMap` 从未进过生产请求 → full-result 经验恒为 0。
+   现由桥按 `combatStyleDetailMap` 投影（`Object.keys(skillExpMap)` 键序；`null` 风格不进表）。
+
+### 13.4 实测（`npm run benchmark:wasm-engine`，4h、15 轮配对中位数，同机 AMD Ryzen 7 8845H）
+
+| 口径                             | JS 单轮  | WASM 单轮 | 提速      |
+| -------------------------------- | -------- | --------- | --------- |
+| minimal（食物优化器口径）        | 554.3 ms | 110.1 ms  | **5.03×** |
+| full-result（首页单轮 + 可视化） | 604.7 ms | 189.0 ms  | **3.20×** |
+
+full-result 轮比 minimal 贵（WASM 侧 +71%）：经验 / 掉落桶记账与每 1000 事件的时序快照
+都随事件流发生；JS 侧同口径只贵 9%（其记账本就更重）。
+
+### 13.5 验收
+
+- `cargo test`：**111 passed**（新增 3 个 full-result 单测：经验 + 掉落桶、激怒层数、时序快照开关）。
+- parity：**24 passed**（生产 parity 新增 3 例：1h full-result 逐字段、可视化时序、24h full-result；
+  接线测试新增 1 例首页单轮 full-result A/B，`lastFallbackReason === ''`）。
+- `npm test`：192 文件 / 2643 测试通过 + prettier 全绿；`npm run build` + `verify-pages-build` 通过。
+
+### 13.6 已知差异与仍留 JS 的部分
+
+1. **无流式 progress**：WASM 路径一次性返回 `simResult`，首页进度条 0→完成直跳、图表在结束时
+   渲染（时序数据本身逐字段一致）；JS 路径仍按 1000 事件派发 `progress`。首页 store 已在
+   `onResult` 里从 `simResult.timeSeriesData` 兜底取时序。
+2. **副本 / 迷宫 / 卷轴 / 公会试炼**：仍由 JS 承接（后续切片）。
+3. **成本上界观察器**（`observeFoodOptimizerCostBound`）：依赖 JS 运行时状态，仍留 JS。
+
+### 13.7 剩余候选（更新）
+
+1. 副本 / 迷宫支持（`updateTimeSpentAlive` / `wipeEvents` / 波次结算）。
+2. 战斗卷轴窗口语义（`scroll.rs` 空壳）。
+3. 成本上界观察器下推（逐事件成本记账）。
 4. `Interner` 字符串驻留（大工程，收益待估）。
