@@ -20,7 +20,9 @@
 > **2.59–2.64×**（第 14 节，4h 配对中位数）。
 >
 > 切片 16（2026-09-29）：**迷宫**纳入覆盖（迷宫 full-result **5.42–5.54×**，第 15 节）。
-> 当前只剩战斗卷轴 / 公会试炼 / 无区域与「副本 + full-result + `logCombatEvents`」组合留 JS。
+>
+> 切片 17（2026-09-29）：**战斗卷轴**窗口语义纳入覆盖（卷轴 full-result **3.21–3.31×**，第 16 节）。
+> 当前只剩公会试炼 / 无区域与「副本 + full-result + `logCombatEvents`」组合留 JS。
 
 ## 1. 测量方法
 
@@ -64,13 +66,13 @@ JS 152 ms / WASM 75.7 ms（2.01×）与 JS 245 ms / WASM 100 ms（2.45×）之�
 | ----------------------- | ------------------------------------------------------ | ------------------------------------------------------------------------------------------------- |
 | 结果形状                | ✅ 全量：`minimalResult` 与完整 `SimResult`（切片 14） | 完整结果含经验记账 / 掉落上下文桶 / 1000-tick 时序快照 / 激怒层数                                 |
 | 区域                    | 普通区域 + **副本**（切片 15）+ **迷宫**（切片 16）    | 副本唯一例外：full-result 且 `logCombatEvents`（wipeEvents 含墙钟时间戳）；迷宫为无 zone 单怪循环 |
-| 战斗卷轴                | 关闭                                                   | 开启走 JS                                                                                         |
+| 战斗卷轴                | ✅ 开启（切片 17）                                     | 窗口语义 / 库存记账与 JS 逐位一致；迷宫内自动忽略（`allowed: false`）                             |
 | 战斗日志 / HP-MP 可视化 | ✅ 均可（切片 14）                                     | 日志仅控制台输出；可视化无流式 progress（时序随结果一次性返回）                                   |
 | 公会试炼                | 否                                                     | 走 JS                                                                                             |
 | 优化器观察点            | 阈值/闲置观察（切片 13 `observers`）                   | 仅成本上界观察器（`costBound`）留 JS                                                              |
 | 提前停止                | 空蓝 / 死亡预算（切片 12 `earlyStop`）                 | 无需留 JS                                                                                         |
 
-> 本表为切片 16 后的当前边界（迷宫覆盖细节见第 15 节）。切片 5–11 期间的历史边界
+> 本表为切片 17 后的当前边界（迷宫细节见第 15 节、卷轴见第 16 节）。切片 5–11 期间的历史边界
 > （候选轮/阈值轮全部留 JS）见第 11 节勘误与第 12 节——彼时默认生产路径
 > （`collectThresholds: reuse` 且 `reuse` 默认 true）的所有优化器轮次实际都走 JS。
 
@@ -81,16 +83,17 @@ JS 152 ms / WASM 75.7 ms（2.01×）与 JS 245 ms / WASM 100 ms（2.45×）之�
 ## 4. 结论与建议
 
 1. **JS 引擎保留**：它是唯一全功能实现与 parity 基准（用户定案：最终只保留 WASM，
-   待剩余缺口——卷轴 / 公会试炼 / 副本日志组合——清零后再删），
+   待剩余缺口——公会试炼 / 无区域 / 副本日志组合——清零后再删），
    删掉它会让 WASM 的正确性失去参照。
 2. **WASM 引擎保留为可选加速器**：A/B 开关（`useWasmEngine`）**默认关**，
    引擎缺失 / 配置不支持 / 快照或运行时出错一律静默回退 JS，不会让页面不可用。
-3. **端到端提速已兑现（切片 13–15）**：观察器 WASM 化后，默认优化器路径（除成本剪枝轮）
+3. **端到端提速已兑现（切片 13–17）**：观察器 WASM 化后，默认优化器路径（除成本剪枝轮）
    全部落在 WASM 覆盖内，任务级配对 A/B 实测 **1.50–1.53×**（第 12 节）；切片 14 起
    首页单轮全量结果（full-result + 可视化）也走 WASM，单轮引擎级配对 A/B 实测
    **3.20×**（第 13 节）；切片 15 副本波次纳入覆盖，副本 full-result 单轮实测
    **2.59–2.64×**（第 14 节）；切片 16 迷宫纳入覆盖，迷宫 full-result 单轮实测
-   **5.42–5.54×**（第 15 节）。后续扩展方向：战斗卷轴 / 公会试炼。
+   **5.42–5.54×**（第 15 节）；切片 17 战斗卷轴纳入覆盖，卷轴 full-result 单轮实测
+   **3.21–3.31×**（第 16 节）。后续扩展方向：公会试炼 / 无区域。
 4. 打开 `useWasmEngine` 的前提（引擎已构建、配置落在覆盖表内）见第 3 节；行为分叉
    （JS/WASM 双路径）由 parity 测试兜底（第 12.3 节）。
 
@@ -826,10 +829,94 @@ WASM 侧则复用模板实例化；请求 JSON 也最小（38.1 KB，无区域�
 - `cargo test` 118 passed；`npm test` 全绿 + prettier；`build:wasm`
   （wasm-opt -O4：891700 → 778912 bytes，-12.6%）→ `build` → `verify-pages-build` 全过。
 
-### 15.7 仍留 JS 的部分（更新）
+### 15.7 仍留 JS 的部分（截至切片 16）
 
-1. 战斗卷轴窗口语义（`scroll.rs` 空壳）。
+1. ~~战斗卷轴窗口语义（`scroll.rs` 空壳）~~——已于切片 17 覆盖（第 16 节）。
 2. 公会试炼与无区域（无 zone 且无迷宫）。
 3. 「副本 + full-result + `logCombatEvents`」组合（`wipeEvents` 墙钟时间戳）。
 4. 成本上界观察器（`observeFoodOptimizerCostBound`）。
 5. `useWasmEngine` 默认仍为 false——「默认开关翻转」是独立切片候选。
+
+## 16. 切片 17：战斗卷轴（combat scroll）窗口语义覆盖（2026-09-29）
+
+### 16.1 背景与动机
+
+战斗卷轴是「删 JS 引擎」缺口清单上的第三块：`getProductionSupport` 里 `combat_scrolls` 闸门
+把 `combatScrollsEnabled: true` 的整条路径挡回 JS，而 `engine/src/scroll.rs` 从切片 4 起一直是空壳。
+本切片把卷轴的窗口开启 / 续期 / 关闭、库存记账与 buff 生命周期移入 Rust，并保持与
+`CombatSimulator` 逐位一致。
+
+### 16.2 JS 语义（先行摸底，实现逐条对照）
+
+- 配置面：玩家 `combatScrolls = { [itemHrid]: { quantity } }`（`quantity: null` = 无限库存），
+  定义来自 `shared/combatScrolls.js`（单窗口 30 分钟 = `COMBAT_SCROLL_DURATION_NS`）。
+- 窗口语义：半开区间 `[activeStartTime, activeUntil)`——开启即注册 buff（源键
+  `scroll:<itemHrid>`、Replace 策略、level 1 无等级并入）、token++、扣库存并记
+  `openedCount`；到期由 `syncScrollsToTime` 关闭窗口（记录 bounded 时长）并在原
+  `renewalTime` 续开；`renewalTime >= simulationTimeLimit` 时不再排续期事件。
+- 与普通 buff 的差异：卷轴 buff **不排** `CheckBuffExpiration`——只由窗口关闭按源移除。
+- 作用域：`scrollsAllowed = !labyrinth && !isGuildTrial`；开关关闭时记
+  `setScrollUsageDisabled` 但保留配置行（opened 0）。
+- 收尾：`finalizeScrollUsage(effectiveSimulationTime)` 关掉活跃窗口，并以直读 `openedCount`
+  的 exhausted 公式（`configuredQuantity` 非 null 且 `openedCount >= quantity`）落最终记账。
+
+### 16.3 实现
+
+**Rust（scroll.rs / unit.rs / sim_result.rs / simulator.rs）**
+
+- `scroll.rs`（空壳 → 51 行）：`CombatScrollDefinition`（桥侧快照：`item_hrid` /
+  `duration_ns` / buff）与只读 `ScrollState`。
+- `simulator.rs`：卷轴状态机（`initialize_scroll_runtime` / `can_open_scroll` /
+  `schedule_scroll_renewal` / `open_scroll_window` / `close_scroll_window` /
+  `restore_active_scroll_buff` / `sync_scrolls_to_time` / `sync_scrolls_if_due` /
+  `activate_initial_scrolls` / `process_scroll_renewal_event` / `finalize_scroll_usage`）+
+  `ScrollRenewal` 事件；`reset()` 先清卷轴 buff 再重建运行时；每事件前 O(1) 前置守卫
+  `sync_scrolls_if_due`；`validate_production_support` 删除卷轴闸门。
+- `unit.rs`：`CombatScrollConfig`（`quantity: null` → `None`）+ `CombatUnit.combat_scrolls` +
+  `has_buff_source`（JS `buffSources?.[u]?.has(k)` 的等价）。
+- `sim_result.rs`：`finalize_scroll_exhausted`（直接按键查表、缺失即返回，不建条目）。
+
+**桥（wasmProductionBridge.js）**
+
+- `dumpUnitSpec` 新增 `combatScrolls`（键序与 `normalizeCombatScrolls` 一致）；
+  `buildCombatScrollDefinitions(players)` 把玩家配置的卷轴快照为 `combatScrollDefinitions`
+  （duration + buff 模板；缺定义跳过）；`getProductionSupport` 删除 `combat_scrolls` 闸门。
+
+### 16.4 parity 与单测
+
+- `cargo test` **122 passed**（+4 卷轴单测：半开窗口 45s/20s 续期 → opened 3 /
+  activeDuration 45s / 无限库存 null / finalize 后 buff 已移除；有限库存 qty 2 耗尽停止；
+  迷宫内 `allowed=false` 但配置行保留、opened 0；开关关闭时同样保留行但不开窗）。
+- 生产 parity **+2 例**（真实卷轴 `/items/seal_of_damage`）：1h 防退化断言
+  openedCount=2 / activeDurationNs=simulationTimeLimit / exhausted=false / allowed=true /
+  disabled=false；24h openedCount=48。两侧逐字段一致。
+- 接线测试：`combatScrollsEnabled: true` 的普通区域轮不再被配置闸门挡住
+  （期望 `engine_unavailable`）。
+
+### 16.5 实测（`npm run benchmark:wasm-engine`，4h、15 轮配对中位数，同机 AMD Ryzen 7 8845H）
+
+| 口径                  | JS 单轮        | WASM 单轮      | 提速           |
+| --------------------- | -------------- | -------------- | -------------- |
+| minimal（食物优化器） | 296.6–311.6 ms | 64.5–65.4 ms   | **4.60–4.76×** |
+| full-result（首页）   | 306.8–364.2 ms | 106.5–118.4 ms | **2.88–3.08×** |
+| full-result 副本      | 304.0–326.8 ms | 116.0–117.9 ms | **2.62–2.77×** |
+| full-result 迷宫      | 467.4–484.1 ms | 90.9–91.8 ms   | **5.14–5.27×** |
+| full-result 卷轴      | 352.6–365.3 ms | 109.8–110.3 ms | **3.21–3.31×** |
+
+新增卷轴口径两次取样 3.311× / 3.211×：卷轴 buff 提升玩家输出，4h 内击杀数上升
+（1h 冒烟对照同口径：`jungle_sprite` 击杀 193 → 224），JS 侧每遭遇的属性重算更多；
+请求 JSON 52299 bytes（比无卷轴口径 +314 bytes，即一条 `combatScrollDefinitions` +
+玩家 `combatScrolls` 配置）。其余口径读数与切片 16 同量级（同一台机器的热节流抖动范围内）。
+
+### 16.6 验收
+
+- `cargo test` 122 passed；5 个 wasm 套件 **32 passed**（生产 parity 16，+2 卷轴）；
+  `npm test` 192 文件 / 2651 用例 + prettier 全绿；`build:wasm`
+  （wasm-opt -O4：916874 → 800932 bytes，-12.6%）→ `build` → `verify-pages-build` 全过。
+
+### 16.7 仍留 JS 的部分（更新）
+
+1. 公会试炼与无区域（无 zone 且无迷宫）。
+2. 「副本 + full-result + `logCombatEvents`」组合（`wipeEvents` 墙钟时间戳）。
+3. 成本上界观察器（`observeFoodOptimizerCostBound`）。
+4. `useWasmEngine` 默认仍为 false——「默认开关翻转」是独立切片候选。

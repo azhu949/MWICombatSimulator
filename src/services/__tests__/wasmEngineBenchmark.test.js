@@ -6,8 +6,9 @@
 //
 // 环境变量：WASM_BENCH_ROUNDS（默认 5）、WASM_BENCH_HOURS（默认 1）、WASM_BENCH_SEED（默认 101）。
 //
-// 三个口径：minimal（食物优化器）、full-result（首页单轮 + 可视化）、
-// 副本 full-result（切片 15，chimerical_den）。
+// 五个口径：minimal（食物优化器）、full-result（首页单轮 + 可视化）、
+// 副本 full-result（切片 15，chimerical_den）、迷宫 full-result（切片 16，/monsters/cyclops）、
+// 卷轴 full-result（切片 17，/items/seal_of_damage）。
 import { existsSync, writeFileSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
@@ -49,8 +50,10 @@ const FIXTURE_LABYRINTH_UPGRADES = {
   critical_rate: 7,
   experience: 7,
 };
+// 切片 17：卷轴口径（真实卷轴：30 分钟窗口、无限库存）。
+const FIXTURE_SCROLL_ITEM = '/items/seal_of_damage';
 
-function buildPayload({ dungeon = false, labyrinth = false } = {}) {
+function buildPayload({ dungeon = false, labyrinth = false, scrolls = false } = {}) {
   const settings = {
     mode: labyrinth ? 'labyrinth' : 'zone',
     runScope: 'single',
@@ -68,8 +71,11 @@ function buildPayload({ dungeon = false, labyrinth = false } = {}) {
     comDropEnabled: false,
     comDrop: 1,
     enableHpMpVisualization: false,
+    ...(scrolls ? { combatScrollsEnabled: true } : {}),
   };
   const imported = importSoloConfig(JSON.stringify(fixture), createEmptyPlayerConfig(1), settings);
+  // 切片 17：夹具本身无 combatScrolls 字段，卷轴配置由测试注入（无限库存）。
+  if (scrolls) imported.player.combatScrolls = { [FIXTURE_SCROLL_ITEM]: { quantity: null } };
   const playersDto = buildPlayersForSimulation([{ ...imported.player, selected: true }]);
   const payload = buildSingleSimulationPayload(playersDto, settings, labyrinth ? [FIXTURE_LABYRINTH_CRATE] : [], {
     workerId: 'wasm-bench',
@@ -100,7 +106,7 @@ function buildLivePieces(payload) {
   return { zone, labyrinth, players };
 }
 
-async function runJsRound(payload, { minimal, enableHpMpVisualization }) {
+async function runJsRound(payload, { minimal, enableHpMpVisualization, scrolls = false }) {
   const setupStartedAt = performance.now();
   const { zone, labyrinth, players } = buildLivePieces(payload);
   const setupMs = performance.now() - setupStartedAt;
@@ -111,7 +117,7 @@ async function runJsRound(payload, { minimal, enableHpMpVisualization }) {
       minimalResult: minimal,
       logCombatEvents: false,
       enableHpMpVisualization,
-      combatScrollsEnabled: false,
+      combatScrollsEnabled: scrolls,
       isGuildTrial: false,
     });
     const engineStartedAt = performance.now();
@@ -122,7 +128,7 @@ async function runJsRound(payload, { minimal, enableHpMpVisualization }) {
   }
 }
 
-function runWasmRound(engine, payload, { minimal, enableHpMpVisualization }) {
+function runWasmRound(engine, payload, { minimal, enableHpMpVisualization, scrolls = false }) {
   const setupStartedAt = performance.now();
   const { zone, labyrinth, players } = buildLivePieces(payload);
   const request = buildProductionRequest({
@@ -135,7 +141,7 @@ function runWasmRound(engine, payload, { minimal, enableHpMpVisualization }) {
       minimalResult: minimal,
       logCombatEvents: false,
       enableHpMpVisualization,
-      combatScrollsEnabled: false,
+      combatScrollsEnabled: scrolls,
       isGuildTrial: false,
     },
   });
@@ -336,6 +342,28 @@ describe.runIf(benchEnabled && wasmPackageBuilt)('wasm engine production benchma
     const monsterEntry = wasmResult.timeSpentAlive.find((entry) => entry.name === FIXTURE_LABYRINTH_HRID);
     expect(monsterEntry).toBeDefined();
     expect(monsterEntry.count > 0 || monsterEntry.spawnedAt > 0).toBe(true);
+    expect(canonicalJson(wasmResult)).toBe(canonicalJson(jsResult));
+  }, 600000);
+
+  // 切片 17：卷轴口径（/items/seal_of_damage，full-result）——卷轴窗口开启/续期/关闭、
+  // 库存记账与 buff 影响面全在计时范围内；两侧结果逐字段一致后再比较耗时。
+  it('compares JS and WASM on the real combat-scroll workload', async () => {
+    const engine = await loadBenchEngine();
+    expect(engine).not.toBeNull();
+
+    const payload = buildPayload({ scrolls: true });
+    const { jsResult, wasmResult } = await runBenchmark(
+      engine,
+      payload,
+      { minimal: false, enableHpMpVisualization: false, scrolls: true },
+      'full-result 卷轴（/items/seal_of_damage）',
+    );
+
+    // 防退化：两侧都必须真的开出了卷轴窗口（否则对照跑在无卷轴的分支上）。
+    const scrollEntry = wasmResult.scrollUsage.byPlayer.player1[FIXTURE_SCROLL_ITEM];
+    expect(wasmResult.scrollUsage.allowed).toBe(true);
+    expect(wasmResult.scrollUsage.disabled).toBe(false);
+    expect(scrollEntry.openedCount).toBeGreaterThanOrEqual(1);
     expect(canonicalJson(wasmResult)).toBe(canonicalJson(jsResult));
   }, 600000);
 });

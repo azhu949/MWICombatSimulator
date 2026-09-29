@@ -18,6 +18,7 @@ import Ability from '../combatsimulator/ability.js';
 import Monster from '../combatsimulator/monster.js';
 import combatStyleDetailMap from '../combatsimulator/data/combatStyleDetailMap.json';
 import combatTriggerDependencyDetailMap from '../combatsimulator/data/combatTriggerDependencyDetailMap.json';
+import { getCombatScrollBuffTemplate, getCombatScrollDefinition } from '../shared/combatScrolls.js';
 
 const encounterTemplateCache = new Map();
 
@@ -215,6 +216,11 @@ export function dumpUnitSpec(unit) {
     abilities: unit.abilities.map((ability) => (ability ? serializeAbility(ability) : null)),
     food: unit.food.map((item) => (item ? serializeConsumable(item) : null)),
     drinks: unit.drinks.map((item) => (item ? serializeConsumable(item) : null)),
+    // 切片 17：玩家配置的战斗卷轴（JS `normalizeCombatScrolls` 后的对象键序；怪物为空）。
+    combatScrolls: Object.entries(unit.combatScrolls ?? {}).map(([itemHrid, configuration]) => ({
+      itemHrid,
+      quantity: configuration?.quantity ?? null,
+    })),
   };
 }
 
@@ -311,6 +317,27 @@ function getBloomAbilityTemplate() {
   return bloomAbilityTemplate;
 }
 
+/// 切片 17：战斗卷轴定义表——玩家配置引用到的 itemHrid 去重后快照
+///（`durationNs` + `new Buff(template, 1)` 的注册输入）。Rust 侧不持有游戏数据。
+function buildCombatScrollDefinitions(players) {
+  const seen = new Set();
+  const definitions = [];
+  for (const player of players) {
+    for (const itemHrid of Object.keys(player.combatScrolls ?? {})) {
+      if (seen.has(itemHrid)) continue;
+      seen.add(itemHrid);
+      const definition = getCombatScrollDefinition(itemHrid);
+      if (!definition) continue;
+      definitions.push({
+        itemHrid,
+        durationNs: definition.durationNs,
+        buff: serializeBuff(getCombatScrollBuffTemplate(itemHrid)),
+      });
+    }
+  }
+  return definitions;
+}
+
 /// 生产路径支持判定：不满足时调用方必须回退 JS 引擎（返回原因供日志/UI 使用）。
 ///
 /// 切片 14：`minimalResult` / `logCombatEvents` / `enableHpMpVisualization` 三条闸门已解除
@@ -323,15 +350,15 @@ function getBloomAbilityTemplate() {
 /// 墙钟时间戳，天然不可复现），引擎侧不生成该日志；minimal 变体把 `addWipeEvent` 覆写为
 /// 空操作、也不序列化 `wipeEvents`，不受影响。
 ///
-/// 切片 16：迷宫（labyrinth）纳入覆盖——无 zone 的单怪循环 + 120s 超时重启；
-/// 仍留 JS 的还有卷轴 / 公会试炼与无区域。
+/// 切片 16：迷宫（labyrinth）纳入覆盖——无 zone 的单怪循环 + 120s 超时重启。
+/// 切片 17：战斗卷轴窗口语义纳入覆盖（定义表随请求快照传入）；
+/// 仍留 JS 的还有公会试炼与无区域。
 export function getProductionSupport({ zone, labyrinth, isDungeon, simulationContext, options }) {
   if (!zone && !labyrinth) return { supported: false, reason: 'no_zone' };
   const dungeon = Boolean(isDungeon || zone?.isDungeon);
   if (dungeon && options?.logCombatEvents && !options?.minimalResult) {
     return { supported: false, reason: 'dungeon_combat_logs' };
   }
-  if (options?.combatScrollsEnabled) return { supported: false, reason: 'combat_scrolls' };
   if (simulationContext?.isGuildTrial) return { supported: false, reason: 'guild_trial' };
   return { supported: true, reason: '' };
 }
@@ -375,6 +402,8 @@ export function buildProductionRequest({ players, zone, labyrinth = null, seed, 
       logCombatEvents: Boolean(options.logCombatEvents),
       enableHpMpVisualization: Boolean(options.enableHpMpVisualization),
       combatScrollsEnabled: Boolean(options.combatScrollsEnabled),
+      // 切片 17：卷轴定义表（玩家配置引用的 itemHrid 去重快照）。
+      combatScrollDefinitions: buildCombatScrollDefinitions(players),
       isGuildTrial: Boolean(options.isGuildTrial),
       blazeAbility: getBlazeAbilityTemplate(),
       bloomAbility: getBloomAbilityTemplate(),

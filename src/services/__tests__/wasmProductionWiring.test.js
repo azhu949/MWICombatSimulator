@@ -159,6 +159,19 @@ describe('wasm production A/B wiring', () => {
       }),
     ).toBeNull();
     expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('engine_unavailable');
+
+    // 切片 17：卷轴不再被配置闸门挡住（引擎未注入 → engine_unavailable）。
+    expect(
+      await tryRunWasmProductionRound({
+        useWasmEngine: true,
+        players: [],
+        zone: { hrid: '/actions/combat/fly', difficultyTier: 0, isDungeon: false },
+        seed: 1,
+        simulationTimeLimit: 1e9,
+        options: { minimalResult: true, logCombatEvents: false, combatScrollsEnabled: true },
+      }),
+    ).toBeNull();
+    expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('engine_unavailable');
   });
 
   it('falls back to the JS engine when the wasm package cannot be loaded', async () => {

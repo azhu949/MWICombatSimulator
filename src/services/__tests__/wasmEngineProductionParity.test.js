@@ -51,6 +51,8 @@ const FIXTURE_LABYRINTH_UPGRADES = {
   critical_rate: 7,
   experience: 7,
 };
+// 切片 17：战斗卷轴——真实卷轴物品（无限库存；1h 天然跨 2 个 30 分钟窗口）。
+const FIXTURE_SCROLL_ITEM = '/items/seal_of_damage';
 
 let enginePromise = null;
 function getEngine() {
@@ -140,6 +142,24 @@ function buildLabyrinthPayload(hours, seed) {
   return payload;
 }
 
+/**
+ * 切片 17：战斗卷轴 payload —— 与 `buildPayload` 同构，额外打开卷轴开关并给玩家配置一个
+ * 真实卷轴（无限库存）。`createSettings` 的时长决定跨过的 30 分钟窗口数。
+ */
+function buildScrollPayload(hours, seed) {
+  const settings = { ...createSettings(hours), combatScrollsEnabled: true };
+  const imported = importSoloConfig(JSON.stringify(fixture), createEmptyPlayerConfig(1), settings);
+  imported.player.combatScrolls = { [FIXTURE_SCROLL_ITEM]: { quantity: null } };
+  const playersDto = buildPlayersForSimulation([{ ...imported.player, selected: true }]);
+  const payload = buildSingleSimulationPayload(playersDto, settings, [], {
+    workerId: 'wasm-production-parity-scroll',
+    extra: { ...buildSimulationExtra(settings), enableHpMpVisualization: false },
+  });
+  payload.logCombatEvents = false;
+  payload.seed = seed;
+  return payload;
+}
+
 /** 切片 16：JS 侧迷宫单轮（与 `worker.js` 的迷宫分支同构：zone 为 null、labyrinth 非空）。 */
 async function runJsLabyrinthSimulation(payload, { enableHpMpVisualization = false } = {}) {
   const { labyrinth, players } = buildLabyrinthLivePieces(payload);
@@ -173,6 +193,46 @@ function runRustLabyrinthSimulation(engine, payload, extraOptions = {}) {
       logCombatEvents: false,
       enableHpMpVisualization: false,
       combatScrollsEnabled: false,
+      isGuildTrial: false,
+      ...extraOptions,
+    },
+  });
+  return runWasmProductionSimulation(engine, request).simResult;
+}
+
+/** 切片 17：卷轴 JS 侧单轮（`combatScrollsEnabled: true`，其余与 full-result 配对一致）。 */
+async function runJsScrollSimulation(payload, extraOptions = {}) {
+  const { zone, players } = buildLivePieces(payload);
+  const originalRandom = Math.random;
+  Math.random = createSeededRandom(payload.seed >>> 0);
+  try {
+    const simulator = new CombatSimulator(players, zone, null, {
+      minimalResult: false,
+      logCombatEvents: false,
+      enableHpMpVisualization: false,
+      combatScrollsEnabled: true,
+      isGuildTrial: false,
+      ...extraOptions,
+    });
+    return await simulator.simulate(payload.simulationTimeLimit);
+  } finally {
+    Math.random = originalRandom;
+  }
+}
+
+/** 切片 17：卷轴 Rust 侧单轮（请求带 `combatScrollDefinitions` + 玩家 `combatScrolls` 配置）。 */
+function runRustScrollSimulation(engine, payload, extraOptions = {}) {
+  const { zone, players } = buildLivePieces(payload);
+  const request = buildProductionRequest({
+    players,
+    zone,
+    seed: payload.seed,
+    simulationTimeLimit: payload.simulationTimeLimit,
+    options: {
+      minimalResult: false,
+      logCombatEvents: false,
+      enableHpMpVisualization: false,
+      combatScrollsEnabled: true,
       isGuildTrial: false,
       ...extraOptions,
     },
@@ -692,5 +752,41 @@ describe.runIf(wasmPackageBuilt)('wasm engine production parity (minimal + full 
     // 防退化：24h 内必然发生多轮重开（击杀或全队阵亡都计入 deaths）。
     const totalDeaths = Object.values(rustSimResult.deaths).reduce((total, value) => total + value, 0);
     expect(totalDeaths).toBeGreaterThan(0);
+  });
+
+  // 切片 17：战斗卷轴（1h ≥ 2 个 30 分钟窗口）——窗口开启/续期/关闭、按源移除与
+  // 逐击杀经验/掉落桶（buff 影响面）全字段对账。
+  it('matches the JS combat-scroll pipeline on the real fixture zone', async () => {
+    const engine = await getEngine();
+    const payload = buildScrollPayload(1, 101);
+
+    const jsSimResult = await runJsScrollSimulation(payload);
+    const rustSimResult = runRustScrollSimulation(engine, payload);
+
+    expect(firstDiff(jsonProjection(jsSimResult), rustSimResult)).toBeNull();
+
+    // 防退化：1h 内应开 2 个 30 分钟窗口（半开区间 [0,1800s) [1800s,3600s)）。
+    const entry = rustSimResult.scrollUsage.byPlayer.player1[FIXTURE_SCROLL_ITEM];
+    expect(entry.openedCount).toBe(2);
+    expect(entry.activeDurationNs).toBe(payload.simulationTimeLimit);
+    expect(entry.exhausted).toBe(false);
+    expect(rustSimResult.scrollUsage.allowed).toBe(true);
+    expect(rustSimResult.scrollUsage.disabled).toBe(false);
+  });
+
+  // 切片 17：卷轴 24h 长时段回归——48 个窗口的续期/记账与跨窗口增益切换逐字段一致。
+  it('matches the JS combat-scroll pipeline at the 24h horizon', async () => {
+    const engine = await getEngine();
+    const payload = buildScrollPayload(24, 101);
+
+    const jsSimResult = await runJsScrollSimulation(payload);
+    const rustSimResult = runRustScrollSimulation(engine, payload);
+
+    expect(firstDiff(jsonProjection(jsSimResult), rustSimResult)).toBeNull();
+
+    // 防退化：24h = 48 个 30 分钟窗口。
+    const entry = rustSimResult.scrollUsage.byPlayer.player1[FIXTURE_SCROLL_ITEM];
+    expect(entry.openedCount).toBe(48);
+    expect(entry.activeDurationNs).toBe(payload.simulationTimeLimit);
   });
 });

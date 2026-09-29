@@ -738,6 +738,23 @@ impl SimResultState {
         }
     }
 
+    /// 切片 17：JS `finalizeScrollUsage` 最后一步的 `entry.exhausted = ...` 直写——仅当条目
+    /// 已存在（`?.` 链，缺失不创建）；键不做 trim（JS 用未归一的 state 键直读，正常路径两者相同）。
+    pub fn finalize_scroll_exhausted(
+        &mut self,
+        player_hrid: &str,
+        item_hrid: &str,
+        configured_quantity: Option<f64>,
+    ) {
+        let Some(by_item) = self.scroll_usage.by_player.get_mut_str(player_hrid) else {
+            return;
+        };
+        let Some(entry) = by_item.get_mut_str(item_hrid) else {
+            return;
+        };
+        entry.exhausted = configured_quantity.is_some_and(|quantity| entry.opened_count >= quantity);
+    }
+
     /// JS `recordMonsterDeathFromContext(...)`：按（玩家, 怪物）维护掉落上下文桶。
     ///
     /// 倍率入参对应 JS `readMultiplier` 的计算结果；这里保留 JS 结尾的兜底归一化
