@@ -74,7 +74,7 @@ function buildLivePieces(payload) {
   return { zone, players };
 }
 
-async function runJsRound(payload) {
+async function runJsRound(payload, { minimal, enableHpMpVisualization }) {
   const setupStartedAt = performance.now();
   const { zone, players } = buildLivePieces(payload);
   const setupMs = performance.now() - setupStartedAt;
@@ -82,9 +82,9 @@ async function runJsRound(payload) {
   Math.random = createSeededRandom(payload.seed >>> 0);
   try {
     const simulator = new CombatSimulator(players, zone, null, {
-      minimalResult: true,
+      minimalResult: minimal,
       logCombatEvents: false,
-      enableHpMpVisualization: false,
+      enableHpMpVisualization,
       combatScrollsEnabled: false,
       isGuildTrial: false,
     });
@@ -96,7 +96,7 @@ async function runJsRound(payload) {
   }
 }
 
-function runWasmRound(engine, payload) {
+function runWasmRound(engine, payload, { minimal, enableHpMpVisualization }) {
   const setupStartedAt = performance.now();
   const { zone, players } = buildLivePieces(payload);
   const request = buildProductionRequest({
@@ -105,9 +105,9 @@ function runWasmRound(engine, payload) {
     seed: payload.seed,
     simulationTimeLimit: payload.simulationTimeLimit,
     options: {
-      minimalResult: true,
+      minimalResult: minimal,
       logCombatEvents: false,
-      enableHpMpVisualization: false,
+      enableHpMpVisualization,
       combatScrollsEnabled: false,
       isGuildTrial: false,
     },
@@ -148,12 +148,66 @@ function formatMs(value) {
   return `${value.toFixed(1)} ms`;
 }
 
+function loadBenchEngine() {
+  return loadWasmEngine({
+    glueUrl: pathToFileURL(gluePath).href,
+    moduleOrPath: readFile(wasmPath),
+  });
+}
+
+/** 单口径 A/B：两侧各跑 ROUNDS 轮（含预热，不计量），打印中位数并返回两侧结果。 */
+async function runBenchmark(engine, payload, benchOptions, label) {
+  const jsTimes = [];
+  const wasmTimes = [];
+  const jsSetupTimes = [];
+  const wasmSetupTimes = [];
+  const jsEngineTimes = [];
+  const wasmEngineTimes = [];
+  let jsResult = null;
+  let wasmResult = null;
+  let requestBytes = 0;
+
+  // 预热（模板缓存 + wasm 实例化 + JIT），不计量。
+  jsResult = (await runJsRound(payload, benchOptions)).result;
+  wasmResult = runWasmRound(engine, payload, benchOptions).result;
+
+  for (let round = 0; round < ROUNDS; round += 1) {
+    let startedAt = performance.now();
+    const jsRound = await runJsRound(payload, benchOptions);
+    jsTimes.push(performance.now() - startedAt);
+    jsSetupTimes.push(jsRound.setupMs);
+    jsEngineTimes.push(jsRound.engineMs);
+    jsResult = jsRound.result;
+
+    startedAt = performance.now();
+    const wasmRound = runWasmRound(engine, payload, benchOptions);
+    wasmTimes.push(performance.now() - startedAt);
+    wasmSetupTimes.push(wasmRound.setupMs);
+    wasmEngineTimes.push(wasmRound.engineMs);
+    wasmResult = wasmRound.result;
+    requestBytes = wasmRound.requestBytes;
+  }
+
+  const jsMedian = median(jsTimes);
+  const wasmMedian = median(wasmTimes);
+  console.log(
+    [
+      '',
+      `=== wasm engine production benchmark · ${label} (${HOURS}h simulated, ${ROUNDS} rounds, seed ${SEED}) ===`,
+      `JS   total ${formatMs(jsMedian)}  = 装配 ${formatMs(median(jsSetupTimes))} + 引擎 ${formatMs(median(jsEngineTimes))}`,
+      `WASM total ${formatMs(wasmMedian)}  = 装配/快照 ${formatMs(median(wasmSetupTimes))} + 引擎 ${formatMs(median(wasmEngineTimes))}`,
+      `speedup (JS/WASM) = ${(jsMedian / wasmMedian).toFixed(3)}x   请求 JSON ${requestBytes} bytes`,
+      `JS deaths ${JSON.stringify(jsResult.deaths)}`,
+      `WASM deaths ${JSON.stringify(wasmResult.deaths)}`,
+      '',
+    ].join('\n'),
+  );
+  return { jsResult, wasmResult };
+}
+
 describe.runIf(benchEnabled && wasmPackageBuilt)('wasm engine production benchmark', () => {
   it('compares JS and WASM on the real minimal-result workload', async () => {
-    const engine = await loadWasmEngine({
-      glueUrl: pathToFileURL(gluePath).href,
-      moduleOrPath: readFile(wasmPath),
-    });
+    const engine = await loadBenchEngine();
     expect(engine).not.toBeNull();
 
     const payload = buildPayload();
@@ -179,53 +233,33 @@ describe.runIf(benchEnabled && wasmPackageBuilt)('wasm engine production benchma
       console.log(`request JSON dumped to ${process.env.WASM_BENCH_DUMP}`);
     }
 
-    const jsTimes = [];
-    const wasmTimes = [];
-    const jsSetupTimes = [];
-    const wasmSetupTimes = [];
-    const jsEngineTimes = [];
-    const wasmEngineTimes = [];
-    let jsResult = null;
-    let wasmResult = null;
-    let requestBytes = 0;
-
-    // 预热（模板缓存 + wasm 实例化 + JIT），不计量。
-    jsResult = (await runJsRound(payload)).result;
-    wasmResult = runWasmRound(engine, payload).result;
-
-    for (let round = 0; round < ROUNDS; round += 1) {
-      let startedAt = performance.now();
-      const jsRound = await runJsRound(payload);
-      jsTimes.push(performance.now() - startedAt);
-      jsSetupTimes.push(jsRound.setupMs);
-      jsEngineTimes.push(jsRound.engineMs);
-      jsResult = jsRound.result;
-
-      startedAt = performance.now();
-      const wasmRound = runWasmRound(engine, payload);
-      wasmTimes.push(performance.now() - startedAt);
-      wasmSetupTimes.push(wasmRound.setupMs);
-      wasmEngineTimes.push(wasmRound.engineMs);
-      wasmResult = wasmRound.result;
-      requestBytes = wasmRound.requestBytes;
-    }
-
-    const jsMedian = median(jsTimes);
-    const wasmMedian = median(wasmTimes);
-    console.log(
-      [
-        '',
-        `=== wasm engine production benchmark (${HOURS}h simulated, ${ROUNDS} rounds, seed ${SEED}) ===`,
-        `JS   total ${formatMs(jsMedian)}  = 装配 ${formatMs(median(jsSetupTimes))} + 引擎 ${formatMs(median(jsEngineTimes))}`,
-        `WASM total ${formatMs(wasmMedian)}  = 装配/快照 ${formatMs(median(wasmSetupTimes))} + 引擎 ${formatMs(median(wasmEngineTimes))}`,
-        `speedup (JS/WASM) = ${(jsMedian / wasmMedian).toFixed(3)}x   请求 JSON ${requestBytes} bytes`,
-        `JS deaths ${JSON.stringify(jsResult.deaths)}`,
-        `WASM deaths ${JSON.stringify(wasmResult.deaths)}`,
-        '',
-      ].join('\n'),
+    const { jsResult, wasmResult } = await runBenchmark(
+      engine,
+      payload,
+      { minimal: true, enableHpMpVisualization: false },
+      'minimal（食物优化器口径）',
     );
 
     // 顺带再确认一次两侧结果一致（避免基准跑在错误的分支上）。
+    expect(canonicalJson(wasmResult)).toBe(canonicalJson(jsResult));
+  }, 600000);
+
+  // 切片 14：首页单轮口径（full-result + HP/MP 可视化开启）——经验记账、掉落上下文桶
+  // 与每 1000 事件的时序快照全部计入两侧引擎耗时。
+  it('compares JS and WASM on the full-result workload', async () => {
+    const engine = await loadBenchEngine();
+    expect(engine).not.toBeNull();
+
+    const payload = buildPayload();
+    const { jsResult, wasmResult } = await runBenchmark(
+      engine,
+      payload,
+      { minimal: false, enableHpMpVisualization: true },
+      'full-result（首页单轮 + 可视化）',
+    );
+
+    // 防退化：两侧都必须真的采到时序快照（否则对照跑在空负载上）。
+    expect(wasmResult.timeSeriesData.timestamps.length).toBeGreaterThan(0);
     expect(canonicalJson(wasmResult)).toBe(canonicalJson(jsResult));
   }, 600000);
 });

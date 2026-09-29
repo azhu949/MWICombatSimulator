@@ -1,13 +1,14 @@
-// 切片 5 生产 parity：Rust `run_production_simulation`（真实区域生成敌人 + 真实最小结果聚合）
-// 与 JS `CombatSimulator`（`minimalResult: true`，食物优化器路径）在**真实夹具 + 真实区域**上的
-// simResult 逐字段对账。
+// 切片 5 生产 parity：Rust `run_production_simulation`（真实区域生成敌人 + 真实结果聚合）
+// 与 JS `CombatSimulator` 在**真实夹具 + 真实区域**上的 simResult 逐字段对账：
+// - minimal 结果（食物优化器路径 `FoodOptimizerSimResult`）；
+// - 切片 14：full-result（`minimalResult: false`，完整 SimResult 字段面 + HP/MP 时序快照）。
 //
 // 前置：npm run build:wasm 产出 engine/pkg；未构建时整组跳过。
 // 对账契约（与 `engine/src/prod_probe.rs` 成对维护）：
 // - 玩家 / 怪物在 JS 侧按生产路径构建（Player.createFromDTO / new Monster），
 //   两侧共用同一份快照约定（wasmProductionBridge.dumpUnitSpec）；
 // - `Math.random` 整轮替换为 `createSeededRandom(seed)`（Rust 为 Mulberry32）；
-// - 结果只比对 `minimalResult`（FoodOptimizerSimResult）形状；支持边界见 getProductionSupport。
+// - 支持边界见 `getProductionSupport`（切片 14 起含 full-result / 日志 / 可视化）。
 import { existsSync } from 'node:fs';
 import { readFile } from 'node:fs/promises';
 import { dirname, resolve } from 'node:path';
@@ -164,6 +165,47 @@ function runRustProductionSimulation(engine, payload, extraOptions = {}) {
 }
 
 /**
+ * 切片 14：full-result 生产模拟（`minimalResult: false`，可选 HP/MP 可视化）。
+ * 与 `runJsProductionSimulation` 逐字同构，只把结果类与可视化开关换成完整版。
+ */
+async function runJsFullResultSimulation(payload, { shouldStop, enableHpMpVisualization = false } = {}) {
+  const { zone, players } = buildLivePieces(payload);
+  const originalRandom = Math.random;
+  Math.random = createSeededRandom(payload.seed >>> 0);
+  try {
+    const simulator = new CombatSimulator(players, zone, null, {
+      minimalResult: false,
+      logCombatEvents: false,
+      enableHpMpVisualization,
+      combatScrollsEnabled: false,
+      isGuildTrial: false,
+    });
+    return await simulator.simulate(payload.simulationTimeLimit, { shouldStop });
+  } finally {
+    Math.random = originalRandom;
+  }
+}
+
+/** 切片 14：full-result 的 Rust 侧配对（其余选项与 `runRustProductionSimulation` 一致）。 */
+function runRustFullResultSimulation(engine, payload, extraOptions = {}) {
+  const { zone, players } = buildLivePieces(payload);
+  const request = buildProductionRequest({
+    players,
+    zone,
+    seed: payload.seed,
+    simulationTimeLimit: payload.simulationTimeLimit,
+    options: {
+      minimalResult: false,
+      logCombatEvents: false,
+      enableHpMpVisualization: false,
+      combatScrollsEnabled: false,
+      isGuildTrial: false,
+      ...extraOptions,
+    },
+  });
+  return runWasmProductionSimulation(engine, request).simResult;
+}
+/**
  * JS 结果先过一遍 JSON 投影：`undefined` 值的自有属性在序列化时消失，
  * 与 Rust `to_value()` 的「键不存在」语义对齐（worker postMessage 同样只消费可序列化字段）。
  */
@@ -214,7 +256,7 @@ function firstDiff(left, right, path = '$') {
   return null;
 }
 
-describe.runIf(wasmPackageBuilt)('wasm engine slice-5 production parity (minimal result)', () => {
+describe.runIf(wasmPackageBuilt)('wasm engine production parity (minimal + full result)', () => {
   it('matches the JS minimal-result pipeline on the real fixture zone', async () => {
     const engine = await getEngine();
     const payload = buildPayload(1, 101);
@@ -389,5 +431,63 @@ describe.runIf(wasmPackageBuilt)('wasm engine slice-5 production parity (minimal
     // 防退化：候选轮确实触发早停 + 安装了观察器（阈值区间非空）。
     expect(wasmCandidate.stoppedEarly).toBe(true);
     expect(wasmCandidate.equivalentThresholds).toHaveLength(1);
+  });
+
+  // 切片 14：full-result（完整 SimResult 字段面）逐字段对账——经验记账
+  //（击杀快照 → 遭遇战提交的时序）、掉落上下文桶（含怪物实例难度档）与激怒层数。
+  it('matches the JS full-result pipeline on the real fixture zone', async () => {
+    const engine = await getEngine();
+    const payload = buildPayload(1, 101);
+
+    const jsSimResult = await runJsFullResultSimulation(payload);
+    const rustSimResult = runRustFullResultSimulation(engine, payload);
+
+    expect(firstDiff(jsonProjection(jsSimResult), rustSimResult)).toBeNull();
+
+    // 防退化：完整字段面必须真的有数据，否则对账退化成两侧空结果。
+    expect(rustSimResult.encounters).toBeGreaterThan(0);
+    expect(Object.keys(rustSimResult.experienceGained).length).toBeGreaterThan(0);
+    expect(Object.keys(rustSimResult.dropContextBuckets).length).toBeGreaterThan(0);
+    const gains = rustSimResult.experienceGained.player1;
+    expect(Object.keys(gains).sort()).toEqual([
+      'attack',
+      'defense',
+      'intelligence',
+      'magic',
+      'melee',
+      'ranged',
+      'stamina',
+    ]);
+    expect(Object.values(gains).some((value) => value > 0)).toBe(true);
+    expect(rustSimResult.wipeEvents).toEqual([]);
+  });
+
+  // 切片 14：可视化开启 → 1000-tick 时序快照随 simResult 一次性返回（wasm 无流式 progress），
+  // `timeSeriesData` 逐字段与 JS 一致。
+  it('matches the JS time-series snapshots when visualization is enabled', async () => {
+    const engine = await getEngine();
+    const payload = buildPayload(1, 101);
+
+    const jsSimResult = await runJsFullResultSimulation(payload, { enableHpMpVisualization: true });
+    const rustSimResult = runRustFullResultSimulation(engine, payload, { enableHpMpVisualization: true });
+
+    expect(firstDiff(jsonProjection(jsSimResult), rustSimResult)).toBeNull();
+    // 防退化：1h 内必然跨过多次 1000 事件边界。
+    expect(jsSimResult.timeSeriesData.timestamps.length).toBeGreaterThan(0);
+    expect(Object.keys(rustSimResult.timeSeriesData.players).length).toBeGreaterThan(0);
+  });
+
+  // 切片 14：生产 24h 长时长 full-result 回归（掉落桶跨增益窗口的合并/拆分与经验累加）。
+  it('matches the JS full-result pipeline at the production 24h horizon', async () => {
+    const engine = await getEngine();
+    const payload = buildPayload(24, 101);
+
+    const jsSimResult = await runJsFullResultSimulation(payload);
+    const rustSimResult = runRustFullResultSimulation(engine, payload);
+
+    expect(firstDiff(jsonProjection(jsSimResult), rustSimResult)).toBeNull();
+    // 防退化：24h 必然多次清场 + 多次提交经验。
+    expect(rustSimResult.encounters).toBeGreaterThan(10);
+    expect(Object.values(rustSimResult.experienceGained.player1).some((value) => value > 0)).toBe(true);
   });
 });

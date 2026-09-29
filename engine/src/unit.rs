@@ -681,6 +681,13 @@ pub struct CombatUnit {
     pub experience: f64,
     pub experience_rate: f64,
     pub enrage_time: f64,
+    /// 该怪物实例的有效难度档（JS `Monster.difficultyTier` = spawn 偏移 + 区域档）。
+    /// 掉落上下文桶的 `difficultyTier` 取此值——同一 hrid 可能以多档出现，不能按 hrid 反查。
+    /// 玩家 / 探针合成单位为 `None`（等价 JS DTO 单位上的 undefined）。
+    pub difficulty_tier: Option<f64>,
+    /// JS `unit.debuffOnLevelGap`（玩家 DTO 顶层字段，怪物恒 0）：经验计算与
+    /// 掉落上下文桶按 `(1 + debuffOnLevelGap)` 缩放。切片 14 起由桥序列化。
+    pub debuff_on_level_gap: f64,
     pub house_rooms: Vec<BuffList>,
     pub guild_buffs: Vec<BuffList>,
     pub achievements: Option<BuffList>,
@@ -745,6 +752,8 @@ impl Default for CombatUnit {
             experience: 0.0,
             experience_rate: 0.0,
             enrage_time: 0.0,
+            difficulty_tier: None,
+            debuff_on_level_gap: 0.0,
             house_rooms: Vec::new(),
             guild_buffs: Vec::new(),
             achievements: None,

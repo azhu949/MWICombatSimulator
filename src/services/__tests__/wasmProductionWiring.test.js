@@ -5,7 +5,11 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createEmptyPlayerConfig } from '../../shared/playerConfig.js';
+import CombatSimulator from '../../combatsimulator/combatSimulator.js';
+import Player from '../../combatsimulator/player.js';
+import Zone from '../../combatsimulator/zone.js';
 import { buildPlayersForSimulation } from '../playerMapper.js';
+import { createSeededRandom } from '../seededRandom.js';
 import { shouldUseWasmOptimizerRound, simulateFoodOptimizerRound } from '../foodOptimizerSimulation.js';
 import { loadWasmEngine } from '../wasmEngineLoader.js';
 import {
@@ -95,10 +99,25 @@ describe('wasm production A/B wiring', () => {
         zone: { hrid: '/actions/combat/fly', difficultyTier: 0, isDungeon: false },
         seed: 1,
         simulationTimeLimit: 1e9,
-        options: { minimalResult: false, logCombatEvents: false },
+        // 切片 14：full-result / 战斗日志 / 可视化不再阻止 wasm——引擎未注入时回退原因
+        // 应落到 engine_unavailable（而不是配置不受支持）。
+        options: { minimalResult: false, logCombatEvents: true, enableHpMpVisualization: true },
       }),
     ).toBeNull();
-    expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('full_result');
+    expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('engine_unavailable');
+
+    expect(
+      await tryRunWasmProductionRound({
+        useWasmEngine: true,
+        players: [],
+        zone: { hrid: '/actions/combat/fly', difficultyTier: 0, isDungeon: false },
+        simulationContext: { isGuildTrial: true },
+        seed: 1,
+        simulationTimeLimit: 1e9,
+        options: { minimalResult: true, logCombatEvents: false },
+      }),
+    ).toBeNull();
+    expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('guild_trial');
 
     expect(
       await tryRunWasmProductionRound({
@@ -174,6 +193,72 @@ describe('wasm production A/B wiring', () => {
         expect(getWasmProductionDiagnostics().lastFallbackReason, `collectThresholds=${collectThresholds}`).toBe('');
         expect(wasmSample, `collectThresholds=${collectThresholds}`).toEqual(jsSample);
       }
+    });
+
+    // 切片 14：首页单轮（full-result + 战斗日志 + 可视化）不再回退——打开开关后
+    // `tryRunWasmProductionRound` 直接跑通，且结果与 JS 引擎逐字段一致（时序数据
+    // 随 simResult 一次性返回，首页 store 从 `simResult.timeSeriesData` 兜底取）。
+    it('runs a full-result homepage round on wasm and matches the JS engine', async () => {
+      const seed = 12345;
+      // 1h：必须真的跨过 1000 事件边界（否则时序快照退化成空数组对账）。
+      const simulationTimeLimit = 3600 * 1e9;
+      const player = createEmptyPlayerConfig(1);
+      for (const key of Object.keys(player.levels)) player.levels[key] = 30;
+      player.abilities[0] = { abilityHrid: '/abilities/fireball', level: 1 };
+      const playerDtos = buildPlayersForSimulation([player]);
+
+      const buildPieces = () => {
+        const zone = new Zone('/actions/combat/fly', 0);
+        const players = playerDtos.map((dto) => {
+          const live = Player.createFromDTO(structuredClone(dto));
+          live.zoneBuffs = zone.buffs || [];
+          live.extraBuffs = [];
+          return live;
+        });
+        return { zone, players };
+      };
+
+      const { zone: jsZone, players: jsPlayers } = buildPieces();
+      const originalRandom = Math.random;
+      Math.random = createSeededRandom(seed);
+      let jsSample;
+      try {
+        const simulator = new CombatSimulator(jsPlayers, jsZone, null, {
+          minimalResult: false,
+          logCombatEvents: true,
+          enableHpMpVisualization: true,
+          combatScrollsEnabled: false,
+          isGuildTrial: false,
+        });
+        jsSample = await simulator.simulate(simulationTimeLimit);
+      } finally {
+        Math.random = originalRandom;
+      }
+
+      const { zone, players } = buildPieces();
+      const wasmSample = await tryRunWasmProductionRound({
+        useWasmEngine: true,
+        players,
+        zone,
+        seed,
+        simulationTimeLimit,
+        options: {
+          minimalResult: false,
+          logCombatEvents: true,
+          enableHpMpVisualization: true,
+          combatScrollsEnabled: false,
+          isGuildTrial: false,
+        },
+      });
+
+      expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('');
+      expect(wasmSample).not.toBeNull();
+      // 防退化：完整字段面必须真的有数据。
+      expect(wasmSample.simResult.encounters).toBeGreaterThan(0);
+      expect(Object.keys(wasmSample.simResult.experienceGained).length).toBeGreaterThan(0);
+      expect(jsSample.timeSeriesData.timestamps.length).toBeGreaterThan(0);
+      expect(wasmSample.simResult.timeSeriesData.timestamps).toHaveLength(jsSample.timeSeriesData.timestamps.length);
+      expect(wasmSample.simResult).toEqual(jsSample);
     });
   });
 });

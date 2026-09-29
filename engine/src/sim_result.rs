@@ -617,6 +617,35 @@ impl SimResultState {
         }
     }
 
+    /// 切片 14：JS `addExperienceGainValues(unit, gains)` 的定向变体——模拟器把
+    /// pending 收益按玩家提交时逐技能累加（键必须已存在于该玩家的 7 技能模板，
+    /// 与 JS `hasOwnProperty` 语义一致；模板外的键静默丢弃）。玩家首次出现时
+    /// 先建零值模板（等价 `ensureExperienceGainEntry`）。
+    pub fn add_experience_gain_value(&mut self, hrid: &str, skill: &str, value: f64) {
+        if self.minimal {
+            return;
+        }
+        self.ensure_experience_gain_entry(hrid);
+        let entry = self.experience_gained.get_mut_str(hrid).expect("上面已确保存在");
+        if let Some(target) = entry.get_mut_str(skill) {
+            *target += value;
+        }
+    }
+
+    /// 切片 14：JS `ensureExperienceGainEntry(unit)`——按需建 7 技能零值模板。
+    /// `CombatSimulator.commitPendingExperience` 对每个挂起玩家先调用一次，
+    /// 因此「本轮增益为空对象」的玩家同样会得到零值条目（JS 语义）。
+    pub fn ensure_experience_gain_entry(&mut self, hrid: &str) {
+        if self.minimal || self.experience_gained.contains_key_str(hrid) {
+            return;
+        }
+        let mut entry = OrderedMap::new();
+        for skill in EXPERIENCE_SKILLS {
+            entry.set(skill.to_string(), 0.0);
+        }
+        self.experience_gained.set_str(hrid, entry);
+    }
+
     /// JS `addTimeSeriesSnapshot(time, players)`：按 `players` 顺序 push（同一玩家重复出现会 push 两次）。
     pub fn add_time_series_snapshot(&mut self, time: f64, players: &[(String, f64, f64, f64, f64)]) {
         if self.minimal {
@@ -807,6 +836,18 @@ impl SimResultState {
     /// JS `this.simResult.maxEnrageStack = Math.max(...)`（取 max 由调用方完成）。
     pub fn set_max_enrage_stack(&mut self, value: f64) {
         self.max_enrage_stack = value;
+    }
+
+    /// 切片 14：JS `this.simResult.maxEnrageStack = Math.max(this.simResult.maxEnrageStack, nowStack)`
+    /// ——保留 `Math.max` 的 NaN 传播（任一操作数为 NaN 时结果即 NaN）。
+    pub fn bump_max_enrage_stack(&mut self, value: f64) {
+        self.max_enrage_stack = if self.max_enrage_stack.is_nan() || value.is_nan() {
+            f64::NAN
+        } else if value > self.max_enrage_stack {
+            value
+        } else {
+            self.max_enrage_stack
+        };
     }
 
     /// JS `this.simResult.lastDungeonFinishTime = this.simulationTime`。

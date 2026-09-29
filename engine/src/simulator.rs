@@ -255,10 +255,12 @@ impl SimResultTally {
         debuff_on_level_gap: f64,
     ) {
         if let Some(real) = self.real.as_mut() {
+            // 倍率的 `1 + stat` 由 `SimResultState::set_drop_rate_multipliers` 施加（JS 语义），
+            // 这里必须传原始面板值——重复加 1 会让 minimal 路径外的结果静默翻倍。
             real.set_drop_rate_multipliers(
                 hrid,
-                1.0 + combat_drop_rate,
-                1.0 + combat_rare_find,
+                combat_drop_rate,
+                combat_rare_find,
                 combat_drop_quantity,
                 debuff_on_level_gap,
             );
@@ -396,6 +398,10 @@ pub struct UnitSpec {
     pub enrage_time: f64,
     #[serde(default)]
     pub experience: f64,
+    /// JS 玩家 DTO 顶层 `debuffOnLevelGap`（怪物缺省 0）：影响经验收益与掉落
+    /// 上下文桶。切片 14 前桥不序列化（默认 0 恰好等于怪物/普通玩家值）。
+    #[serde(default)]
+    pub debuff_on_level_gap: f64,
     #[serde(default)]
     pub house_rooms: Vec<BuffList>,
     #[serde(default)]
@@ -456,6 +462,7 @@ pub fn build_unit_from_spec(spec: &UnitSpec) -> Result<CombatUnit, UnitError> {
 
     unit.enrage_time = spec.enrage_time;
     unit.experience = spec.experience;
+    unit.debuff_on_level_gap = spec.debuff_on_level_gap;
     unit.two_hand_hrid = spec.two_hand_hrid.clone();
     unit.house_rooms = spec.house_rooms.clone();
     unit.guild_buffs = spec.guild_buffs.clone();
@@ -567,10 +574,11 @@ pub struct SimulatorOptions {
     /// `combatStyleDetailMap[styleHrid].skillExpMap` 的键序快照（经验计算用）。
     #[serde(default)]
     pub combat_style_skill_exp_map: Vec<(String, Vec<String>)>,
-    /// JS `logCombatEvents`（当前生产路径要求 false，否则回退 JS）。
+    /// JS `logCombatEvents`（切片 14 起不再限制：仅控制台输出，不产生结果数据）。
     #[serde(default)]
     pub log_combat_events: bool,
-    /// JS `enableHpMpVisualization`（当前生产路径要求 false）。
+    /// JS `enableHpMpVisualization`（切片 14 起支持：每 1000 个事件采集一次时序快照，
+    /// 随 simResult 的 `timeSeriesData` 一次性返回）。
     #[serde(default)]
     pub enable_hp_mp_visualization: bool,
     /// JS `combatScrollsEnabled`（当前生产路径要求 false）。
@@ -789,10 +797,18 @@ pub struct CombatSimulator {
     labyrinth_name: Option<String>,
     labyrinth_room_level: f64,
     combat_style_skill_exp_map: Vec<(String, Vec<String>)>,
+    /// JS `logCombatEvents`：切片 14 起不再参与支持判定。它只控制 JS 控制台输出
+    /// （wipe 日志等），不产生结果数据，因此在 wasm 侧接受但不消费。
+    #[allow(dead_code)]
     log_combat_events: bool,
     enable_hp_mp_visualization: bool,
     combat_scrolls_enabled: bool,
     player_count: usize,
+    // 切片 14 full-result 经验簿记（JS pendingExperienceGains / enemyDeathSnapshots /
+    // experienceAwardedEnemies 的按 UnitId 版本；WeakSet/WeakMap 语义 = id 存活期内去重）。
+    pending_experience_gains: Vec<(UnitId, Vec<(String, f64)>)>,
+    enemy_death_snapshots: Vec<(UnitId, f64, Vec<(UnitId, Vec<(String, f64)>)>)>,
+    experience_awarded: Vec<UnitId>,
     is_guild_trial: bool,
     /// 切片 12：提前停止谓词参数（`None` = 无提前停止）。
     early_stop: Option<EarlyStopSpec>,
@@ -875,6 +891,9 @@ impl CombatSimulator {
             enable_hp_mp_visualization: options.enable_hp_mp_visualization,
             combat_scrolls_enabled: options.combat_scrolls_enabled,
             player_count: 0,
+            pending_experience_gains: Vec::new(),
+            enemy_death_snapshots: Vec::new(),
+            experience_awarded: Vec::new(),
             is_guild_trial: options.is_guild_trial,
             early_stop: options.early_stop,
             observer_spec: options.observers,
@@ -899,12 +918,12 @@ impl CombatSimulator {
     }
 
     /// 生产模式支持边界（其余情形由 JS 侧回退）。
+    ///
+    /// 切片 14：full-result 全量覆盖（经验记账 / 掉落上下文桶 / 1000-tick 时序快照 /
+    /// 激怒层数），因此 `minimalResult`、`logCombatEvents`（仅控制台输出，无数据）
+    /// 与 `enableHpMpVisualization`（时序随 simResult 一次性返回）三条闸门已解除；
+    /// 仍留 JS 的是副本 / 迷宫 / 卷轴 / 公会试炼与无区域。
     fn validate_production_support(&self) -> Result<(), UnitError> {
-        if !self.minimal_result {
-            return Err(UnitError::error(
-                "wasm production path currently supports only minimalResult simulations",
-            ));
-        }
         if self.zone.is_none() {
             return Err(UnitError::error("wasm production path requires a zone"));
         }
@@ -917,14 +936,21 @@ impl CombatSimulator {
         if self.combat_scrolls_enabled {
             return Err(UnitError::error("wasm production path does not support combat scrolls yet"));
         }
-        if self.log_combat_events {
-            return Err(UnitError::error("wasm production path does not support logCombatEvents yet"));
-        }
-        if self.enable_hp_mp_visualization {
-            return Err(UnitError::error("wasm production path does not support hp/mp visualization yet"));
-        }
         if self.encounter_templates.is_empty() {
             return Err(UnitError::error("wasm production path requires encounter templates"));
+        }
+        // full-result 经验记账要读 `combatStyleDetailMap[style].skillExpMap`（JS 在首次击杀时
+        // 解引用，缺失/为 null 会抛 TypeError）。这里提前失败 → 调用方回退 JS，避免 wasm
+        // 静默产出「0 经验」的错误结果。minimal 结果不参与经验记账，故不检查。
+        if !self.minimal_result {
+            for player in &self.players {
+                let style_hrid = self.arena.get(*player).combat_details.combat_stats.combat_style_hrid.clone();
+                if !self.combat_style_skill_exp_map.iter().any(|(hrid, _)| *hrid == style_hrid) {
+                    return Err(UnitError::error(format!(
+                        "wasm production path is missing the combat style skill exp map for {style_hrid}"
+                    )));
+                }
+            }
         }
         Ok(())
     }
@@ -952,7 +978,179 @@ impl CombatSimulator {
     fn record_unit_death(&mut self, unit: UnitId) {
         let hrid = self.unit_hrid(unit);
         self.tally.add_death(&hrid);
-        // minimal 结果：跳过经验快照与掉落记账（JS `if (this.minimalResult) return;`）。
+        // 切片 14 full-result：JS `recordUnitDeath` 的 minimal 之后分支——只有
+        // 遭遇战成员的经验快照 + 每玩家掉落上下文桶。real 分支以外（探针流水）跳过。
+        if !self.real_result || self.minimal_result {
+            return;
+        }
+        if !self.arena.get(unit).is_player {
+            if self.enemies.as_ref().is_some_and(|ids| ids.contains(&unit)) {
+                self.capture_enemy_death_snapshot(unit, self.simulation_time);
+            }
+            for player in self.players.clone() {
+                self.record_monster_death_from_unit(player, unit);
+            }
+        }
+    }
+
+    /// JS `captureEnemyDeathSnapshot(enemy, deathTime)`（full-result）：
+    /// 按 enrage 比率算总经验、按存活玩家平分并逐个 `calculateExperienceGain`；
+    /// 同一敌人只快照一次（JS WeakMap 语义 → 按 UnitId 去重）。
+    fn capture_enemy_death_snapshot(&mut self, enemy: UnitId, death_time: f64) {
+        if self.enemy_death_snapshots.iter().any(|(id, _, _)| *id == enemy)
+            || self.experience_awarded.contains(&enemy)
+        {
+            return;
+        }
+        let experience_rate = self.calculate_enemy_experience_rate_at(enemy, death_time);
+        let total_experience = self.arena.get(enemy).experience * experience_rate;
+        let mut gains_by_player: Vec<(UnitId, Vec<(String, f64)>)> = Vec::new();
+        if total_experience.is_finite() && total_experience > 0.0 {
+            let experience_per_player = total_experience / js_math_max(1.0, self.players.len() as f64);
+            for player in self.players.clone() {
+                if let Some(gains) = self.calculate_experience_gain_for(player, experience_per_player) {
+                    gains_by_player.push((player, gains));
+                }
+            }
+        }
+        self.enemy_death_snapshots.push((enemy, death_time, gains_by_player));
+    }
+
+    /// JS `SimResult.calculateExperienceGain(unit, experience)` 的参数投影：
+    /// 从结算面板与单位字段取 primaryTraining/focusTraining/combatStyle 等。
+    fn calculate_experience_gain_for(&mut self, player: UnitId, experience: f64) -> Option<Vec<(String, f64)>> {
+        let unit = self.arena.get(player);
+        if !unit.is_player {
+            return None;
+        }
+        let stats = &unit.combat_details.combat_stats;
+        let skill_experience = vec![
+            ("stamina".to_string(), stats.stamina_experience),
+            ("intelligence".to_string(), stats.intelligence_experience),
+            ("attack".to_string(), stats.attack_experience),
+            ("melee".to_string(), stats.melee_experience),
+            ("defense".to_string(), stats.defense_experience),
+            ("ranged".to_string(), stats.ranged_experience),
+            ("magic".to_string(), stats.magic_experience),
+        ];
+        let params = crate::sim_result::ExperienceGainParams {
+            hrid: unit.hrid.clone(),
+            experience,
+            primary_training: Some(stats.primary_training.clone()),
+            focus_training: Some(stats.focus_training.clone()),
+            combat_style_hrid: Some(stats.combat_style_hrid.clone()),
+            combat_experience: stats.combat_experience,
+            skill_experience,
+            debuff_on_level_gap: unit.debuff_on_level_gap,
+        };
+        let Some(real) = self.tally.real.as_ref() else {
+            return None;
+        };
+        real.calculate_experience_gain(&params)
+    }
+
+    /// JS `recordMonsterDeathFromUnit(player, monster, 1)`：读玩家结算面板的
+    /// 掉落三倍率 + `debuffOnLevelGap`，怪物难度档取实例自身的 `difficultyTier`。
+    fn record_monster_death_from_unit(&mut self, player: UnitId, monster: UnitId) {
+        let player_hrid = self.unit_hrid(player);
+        let monster_hrid = self.unit_hrid(monster);
+        let monster_tier = self.monster_difficulty_tier_of(monster);
+        let stats = &self.arena.get(player).combat_details.combat_stats;
+        let drop_rate = 1.0 + stats.combat_drop_rate;
+        let rare_find = 1.0 + stats.combat_rare_find;
+        let drop_quantity = stats.combat_drop_quantity;
+        let debuff_on_level_gap = self.arena.get(player).debuff_on_level_gap;
+        let Some(real) = self.tally.real.as_mut() else {
+            return;
+        };
+        let _ = real.record_monster_death_from_context(
+            &player_hrid,
+            &monster_hrid,
+            1.0,
+            monster_tier,
+            drop_rate,
+            rare_find,
+            drop_quantity,
+            debuff_on_level_gap,
+        );
+    }
+
+    /// JS `calculateEnemyExperienceRateAt(enemy, deathTime)`：enrage 比率
+    /// `1 + min(aliveDuration, enrageTime) / enrageTime`；非正 enrageTime/非有限 → 1.0。
+    fn calculate_enemy_experience_rate_at(&self, enemy: UnitId, death_time: f64) -> f64 {
+        let enrage_time = self.arena.get(enemy).enrage_time;
+        let mut alive_duration = death_time - self.enrage_begin_time;
+        let mut experience_rate = f64::NAN;
+        if alive_duration.is_finite() && enrage_time > 0.0 {
+            alive_duration = js_math_min(alive_duration, enrage_time);
+            experience_rate = 1.0 + alive_duration / enrage_time;
+        }
+        if !(experience_rate > 0.0 && experience_rate.is_finite()) {
+            return 1.0;
+        }
+        experience_rate
+    }
+
+    /// 该怪物实例的有效难度档（JS `monster.difficultyTier`，掉落上下文桶用）。
+    /// 刷怪 / 升变时按实例写入，因此同一 hrid 的多档共存不会串味。
+    fn monster_difficulty_tier_of(&self, monster: UnitId) -> Option<f64> {
+        self.arena.get(monster).difficulty_tier
+    }
+
+    /// JS `finalizeEnemyExperience(enemy)`（checkEncounterEnd 兜底）：
+    /// 无快照则现快照（用当前时间），再把快照收益并入 pending。
+    fn finalize_enemy_experience(&mut self, enemy: UnitId) {
+        if self.experience_awarded.contains(&enemy) {
+            return;
+        }
+        if !self.enemy_death_snapshots.iter().any(|(id, _, _)| *id == enemy) {
+            self.capture_enemy_death_snapshot(enemy, self.simulation_time);
+        }
+        let Some(index) = self.enemy_death_snapshots.iter().position(|(id, _, _)| *id == enemy) else {
+            return;
+        };
+        let (_, _, gains_by_player) = self.enemy_death_snapshots[index].clone();
+        self.append_pending_experience_gains(gains_by_player);
+        self.experience_awarded.push(enemy);
+    }
+
+    /// JS `appendPendingExperienceGains(gains)`：按玩家把 `[(技能, 值)]` 累加进 pending 表。
+    fn append_pending_experience_gains(&mut self, gains_by_player: Vec<(UnitId, Vec<(String, f64)>)>) {
+        for (player, gains) in gains_by_player {
+            if let Some(entry) = self.pending_experience_gains.iter_mut().find(|(id, _)| *id == player) {
+                for (skill, value) in gains {
+                    if let Some(target) = entry.1.iter_mut().find(|(name, _)| *name == skill) {
+                        target.1 += value;
+                    } else {
+                        entry.1.push((skill, value));
+                    }
+                }
+            } else {
+                self.pending_experience_gains.push((player, gains));
+            }
+        }
+    }
+
+    /// JS `commitPendingExperience()`：把 pending 收益写进 simResult 的
+    /// experienceGained（addExperienceGainValues 语义），随后清空。
+    fn commit_pending_experience(&mut self) {
+        if self.minimal_result {
+            self.pending_experience_gains.clear();
+            return;
+        }
+        let pending = std::mem::take(&mut self.pending_experience_gains);
+        for (player, gains) in pending {
+            let hrid = self.unit_hrid(player);
+            let Some(real) = self.tally.real.as_mut() else {
+                continue;
+            };
+            // JS `addExperienceGainValues` → `ensureExperienceGainEntry`：空增益也建零值模板。
+            real.ensure_experience_gain_entry(&hrid);
+            // 只对已有模板键累加（calculate 产出的键恒在模板内；模板外键静默丢弃）。
+            for (skill, value) in gains {
+                let _ = real.add_experience_gain_value(&hrid, &skill, value);
+            }
+        }
     }
 
     /// 切片 12：提前停止谓词（等价食物优化器候选轮的 JS `shouldStop`）。
@@ -1022,6 +1220,25 @@ impl CombatSimulator {
             ticks += 1;
             if ticks == 1000 {
                 ticks = 0;
+                // 切片 14：JS 每 1000 个事件采集一次 HP/MP 时序快照（开启可视化时）。
+                // 进度派发是 UI 流式通知，wasm 侧不复制（结果一次性返回）。
+                if self.enable_hp_mp_visualization {
+                    let snapshot: Vec<(String, f64, f64, f64, f64)> = self
+                        .players
+                        .iter()
+                        .map(|id| {
+                            let unit = self.arena.get(*id);
+                            (
+                                unit.hrid.clone(),
+                                unit.combat_details.current_hitpoints,
+                                unit.combat_details.current_manapoints,
+                                unit.combat_details.max_hitpoints,
+                                unit.combat_details.max_manapoints,
+                            )
+                        })
+                        .collect();
+                    self.tally.add_time_series_snapshot(self.simulation_time, &snapshot);
+                }
             }
         }
         drop(prof_total);
@@ -1029,7 +1246,9 @@ impl CombatSimulator {
         let prof_finalize = crate::prof::start("simulate(finalize)");
         // JS：`stoppedEarly ? this.simulationTime : normalizedSimulationTimeLimit`。
         let effective_simulation_time = if stopped_early { self.simulation_time } else { limit };
-        // finalizeScrollUsage / discardPendingExperience：切片 4 无卷轴与挂起经验。
+        // JS：`finalizeScrollUsage(effectiveSimulationTime)`（切片 4 无卷轴）后紧跟
+        // `discardPendingExperience()`——模拟可能停在遭遇战中途，挂起收益不得泄漏到下一轮。
+        self.pending_experience_gains.clear();
         self.tally.simulated_time = effective_simulation_time;
         self.tally.stopped_early = stopped_early;
         if let Some(real) = self.tally.real.as_mut() {
@@ -1052,9 +1271,10 @@ impl CombatSimulator {
                 .iter()
                 .map(|(key, value)| (key.clone(), *value))
                 .collect();
-            // JS `setDropRateMultipliers(unit)` 会读 `unit.debuffOnLevelGap`；当前生产路径只支持
-            // minimal 结果（该方法在 FoodOptimizerSimResult 里是空操作），故此处传 0。
-            self.tally.set_drop_rate_multipliers(&hrid, drop_rate, rare_find, drop_quantity, 0.0);
+            // 切片 14：JS `setDropRateMultipliers(unit)` 读 `unit.debuffOnLevelGap`
+            //（下拉难度的等级差惩罚；怪物恒 0，仅玩家有值）。
+            let debuff_on_level_gap = self.arena.get(player).debuff_on_level_gap;
+            self.tally.set_drop_rate_multipliers(&hrid, drop_rate, rare_find, drop_quantity, debuff_on_level_gap);
             self.tally.set_mana_used(&hrid, &mana_entries);
         }
         drop(prof_finalize);
@@ -1068,6 +1288,10 @@ impl CombatSimulator {
         self.queue.clear();
         self.tally.reset_like_js();
         self.tally.real = None;
+        // JS `reset()` 重建 WeakSet/WeakMap/Map：经验挂起表、死亡快照与颁奖集合一律清空。
+        self.pending_experience_gains.clear();
+        self.enemy_death_snapshots.clear();
+        self.experience_awarded.clear();
         if self.real_result {
             // JS `reset()` 里 `this.simResult = this.createSimResult()`：每次重置都换新结果对象。
             let zone_hrid = self.zone.as_ref().map(|zone| zone.hrid.clone());
@@ -1401,7 +1625,9 @@ impl CombatSimulator {
                 })?;
             // 免克隆：`build_unit_from_spec` 只读 spec 且返回的 unit 不借用它，原实现每次刷怪
             // 都深拷贝一份 UnitSpec（遭遇生成的主要开销之一）。
-            let unit = build_unit_from_spec(&self.encounter_templates[index].spec)?;
+            let mut unit = build_unit_from_spec(&self.encounter_templates[index].spec)?;
+            // 掉落上下文桶按怪物实例的难度档记账（JS `new Monster(hrid, finalTier)`）。
+            unit.difficulty_tier = Some(*tier);
             ids.push(self.arena.push(unit));
         }
         Ok(ids)
@@ -1797,6 +2023,20 @@ impl CombatSimulator {
     // -----------------------------------------------------------------------
 
     fn check_encounter_end(&mut self) -> Result<bool, UnitError> {
+        // 切片 14：JS 先给「已死但未颁奖」的敌人补发经验（正常事件路径已记录精确时间戳，
+        // 只有直接改血量的调用才走这里的兜底现快照）。minimal 结果不参与经验记账。
+        if !self.minimal_result {
+            if let Some(enemies) = self.enemies.clone() {
+                for enemy in enemies {
+                    if self.arena.get(enemy).combat_details.current_hitpoints <= 0.0
+                        && !self.experience_awarded.contains(&enemy)
+                    {
+                        self.finalize_enemy_experience(enemy);
+                    }
+                }
+            }
+        }
+
         let mut encounter_ended = false;
 
         if let Some(enemies) = self.enemies.clone() {
@@ -1809,7 +2049,9 @@ impl CombatSimulator {
                 let id = self.take_event_id();
                 self.queue.add_event(SimEvent::EnemyRespawn { time, id });
 
-                // minimal 结果：跳过经验告警/提交（JS minimalResult 分支）。
+                // 切片 14：只有在遭遇战中所有怪物都已死亡后才提交击杀快照
+                // （JS `commitPendingExperience()`；之后的副本团灭不得保留它们）。
+                self.commit_pending_experience();
                 self.enemies = None;
                 self.tally.add_encounter_end();
                 // JS：`this.simResult.lastEncounterFinishTime = this.simulationTime;`（普通与 minimal 都写）。
@@ -2070,6 +2312,11 @@ impl CombatSimulator {
             let time = self.simulation_time;
             self.arena.get_mut(enemy).add_buff(&damage_buff, time, None, None)?;
             self.arena.get_mut(enemy).add_buff(&accuracy_buff, time, None, None)?;
+            // 切片 14：JS `this.simResult.maxEnrageStack = Math.max(this.simResult.maxEnrageStack, nowStack)`
+            //（minimal 结果同样记录该字段——FoodOptimizerSimResult 继承它）。
+            if let Some(real) = self.tally.real.as_mut() {
+                real.bump_max_enrage_stack(now_stack);
+            }
         }
 
         let time = self.simulation_time + ENRAGE_TICK_INTERVAL;
@@ -2453,7 +2700,7 @@ impl CombatSimulator {
                     }
                     "/ability_effect_types/promote" => {
                         self.clear_events_for_unit(current_source);
-                        let promoted = self.process_ability_promote_effect()?;
+                        let promoted = self.process_ability_promote_effect(current_source)?;
                         current_source = promoted;
                         self.add_next_attack_event(promoted)?;
                     }
@@ -3103,7 +3350,8 @@ impl CombatSimulator {
     }
 
     /// 等价 JS `processAbilityPromoteEffect(source, ability, abilityEffect)`。
-    fn process_ability_promote_effect(&mut self) -> Result<UnitId, UnitError> {
+    /// 新怪物的难度档继承升变来源（JS `new Monster(hrid, source.difficultyTier)`）。
+    fn process_ability_promote_effect(&mut self, source: UnitId) -> Result<UnitId, UnitError> {
         const PROMOTION_HRIDS: [&str; 3] = [
             "/monsters/enchanted_rook",
             "/monsters/enchanted_knight",
@@ -3116,7 +3364,8 @@ impl CombatSimulator {
                 "promote effect requires a scenario spec for {hrid}"
             )));
         };
-        let unit = build_unit_from_spec(&spec)?;
+        let mut unit = build_unit_from_spec(&spec)?;
+        unit.difficulty_tier = self.arena.get(source).difficulty_tier;
         Ok(self.arena.push(unit))
     }
 
@@ -3445,5 +3694,158 @@ mod tests {
         simulator.add_player(&player).expect("player builds");
         simulator.simulate().expect("simulate succeeds");
         assert!(simulator.observers_output().is_null());
+    }
+
+    // -----------------------------------------------------------------------
+    // 切片 14：full-result 生产路径（经验记账 / 掉落上下文桶 / 时序快照 / 激怒层数）
+    // -----------------------------------------------------------------------
+
+    /// full-result 生产场景：`minimal_result=false`，并刻意把战斗日志与可视化两条
+    /// 旧闸门打开（切片 14 已解除，必须能直接跑通）。玩家带经验/掉落面板与等级差惩罚。
+    fn full_result_production_options() -> (SimulatorOptions, UnitSpec) {
+        let player = UnitSpec {
+            hrid: "player1".to_string(),
+            is_player: true,
+            levels: Some(LevelsSpec { stamina_level: Some(100.0), ..Default::default() }),
+            combat_stats: vec![
+                ("attackInterval".to_string(), 1_000_000.0),
+                ("combatDropRate".to_string(), 0.5),
+                ("combatRareFind".to_string(), 0.25),
+                ("combatDropQuantity".to_string(), 2.0),
+            ],
+            combat_stats_strings: vec![
+                ("primaryTraining".to_string(), "/skills/melee".to_string()),
+                ("focusTraining".to_string(), "/skills/melee".to_string()),
+                ("combatStyleHrid".to_string(), "/combat_styles/smash".to_string()),
+            ],
+            debuff_on_level_gap: -0.25,
+            ..Default::default()
+        };
+        let enemy = UnitSpec {
+            hrid: "/monsters/dummy".to_string(),
+            is_player: false,
+            levels: Some(LevelsSpec { defense_level: Some(1.0), ..Default::default() }),
+            experience: 1_000.0,
+            ..Default::default()
+        };
+        let options = SimulatorOptions {
+            seed: 11,
+            simulation_time_limit: 30.0 * ONE_SECOND,
+            zone_present: true,
+            real_result: true,
+            minimal_result: false,
+            zone_hrid: Some("/actions/combat/full_result_test".to_string()),
+            zone_monster_spawn_info: Some(serde_json::json!({
+                "randomSpawnInfo": {
+                    "maxSpawnCount": 1,
+                    "maxTotalStrength": 1,
+                    "spawns": [
+                        { "combatMonsterHrid": "/monsters/dummy", "difficultyTier": 0, "rate": 1, "strength": 1 }
+                    ]
+                },
+                "bossSpawns": null,
+                "battlesPerBoss": 0
+            })),
+            encounter_templates: vec![TemplateSpec {
+                hrid: "/monsters/dummy".to_string(),
+                difficulty_tier: 0.0,
+                spec: enemy,
+            }],
+            combat_style_skill_exp_map: vec![(
+                "/combat_styles/smash".to_string(),
+                vec!["/skills/melee".to_string()],
+            )],
+            log_combat_events: true,
+            enable_hp_mp_visualization: true,
+            ..Default::default()
+        };
+        (options, player)
+    }
+
+    #[test]
+    fn full_result_records_experience_and_drop_context_buckets() {
+        let (options, player) = full_result_production_options();
+        let mut simulator = CombatSimulator::new(options.clone());
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+        let result = simulator.tally.real.as_ref().expect("real result").to_value();
+
+        let kills = result["deaths"]["/monsters/dummy"]
+            .as_f64()
+            .expect("场景必须真的产生怪物死亡");
+        assert!(kills > 0.0);
+        assert!(result["encounters"].as_f64().expect("encounters") > 0.0);
+
+        // 经验：total = 1000（enrageTime=0 → 倍率 1.0），focus 命中风格表 → melee 独占 1.0 倍率；
+        // debuffOnLevelGap=-0.25 → 每次提交 1000 * 1 * (1 - 0.25) = 750。
+        let gains = &result["experienceGained"]["player1"];
+        assert_eq!(gains["melee"].as_f64(), Some(750.0 * kills), "逐次提交的 melee 经验累加");
+        for skill in ["stamina", "intelligence", "attack", "defense", "ranged", "magic"] {
+            assert_eq!(gains[skill].as_f64(), Some(0.0), "零倍率技能 {skill} 保持 0");
+        }
+
+        // 掉落桶：倍率取玩家结算面板，档位取模板 finalTier（0），等级差惩罚随桶记录。
+        let bucket = &result["dropContextBuckets"]["player1"]["/monsters/dummy"][0];
+        assert_eq!(bucket["killCount"].as_f64(), Some(kills));
+        assert_eq!(bucket["difficultyTier"].as_f64(), Some(0.0));
+        assert_eq!(bucket["dropRateMultiplier"].as_f64(), Some(1.5));
+        assert_eq!(bucket["rareFindMultiplier"].as_f64(), Some(1.25));
+        assert_eq!(bucket["combatDropQuantity"].as_f64(), Some(2.0));
+        assert_eq!(bucket["debuffOnLevelGap"].as_f64(), Some(-0.25));
+
+        // 收尾快照：等级差惩罚写入 debuffOnLevelGap 表；无激怒怪 → 层数 0。
+        assert_eq!(result["debuffOnLevelGap"]["player1"].as_f64(), Some(-0.25));
+        assert_eq!(result["maxEnrageStack"].as_f64(), Some(0.0));
+    }
+
+    #[test]
+    fn full_result_tracks_max_enrage_stack_for_surviving_enemies() {
+        let (mut options, player) = full_result_production_options();
+        options.simulation_time_limit = 250.0 * ONE_SECOND;
+        // 高血量 + 60s 激怒时间：敌人打不死，遭遇战持续到 240s 的第 4 次激怒 tick
+        //（nowStack = min(10, floor(encounterTime / enrageTime))，encounterTime 从 60s 起）。
+        options.encounter_templates[0].spec.combat_stats = vec![("maxHitpoints".to_string(), 1e18)];
+        options.encounter_templates[0].spec.enrage_time = 60.0 * ONE_SECOND;
+
+        let mut simulator = CombatSimulator::new(options.clone());
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+        let result = simulator.tally.real.as_ref().expect("real result").to_value();
+
+        assert_eq!(result["maxEnrageStack"].as_f64(), Some(4.0));
+        assert!(result["deaths"].get("/monsters/dummy").is_none(), "敌人必须存活到时限");
+    }
+
+    #[test]
+    fn full_result_time_series_follows_visualization_flag() {
+        let (mut options, player) = full_result_production_options();
+        // 20s / attackInterval=1ms → 约 2 万个事件，必然跨过 20 次 1000 事件边界。
+        options.simulation_time_limit = 20.0 * ONE_SECOND;
+        options.encounter_templates[0].spec.combat_stats = vec![("maxHitpoints".to_string(), 1e18)];
+
+        let mut simulator = CombatSimulator::new(options.clone());
+        simulator.add_player(&player).expect("player builds");
+        simulator.simulate().expect("simulate succeeds");
+        let series = simulator.tally.real.as_ref().expect("real result").to_value()["timeSeriesData"].clone();
+        let timestamps = series["timestamps"].as_array().expect("timestamps").clone();
+        assert!(timestamps.len() >= 10, "20s 内应采集多次（实际 {}）", timestamps.len());
+        let player_series = &series["players"]["player1"];
+        for key in ["hp", "mp", "maxHp", "maxMp"] {
+            let values = player_series[key].as_array().expect(key);
+            assert_eq!(values.len(), timestamps.len(), "{key} 与时间戳一一对应");
+            assert!(values.iter().all(|value| value.is_number() || value.is_null()));
+        }
+        for window in timestamps.windows(2) {
+            assert!(window[0].as_f64().unwrap() < window[1].as_f64().unwrap(), "时间戳严格递增");
+        }
+
+        // 关闭可视化后同一场景不再采集（闸门只影响采集，不影响事件流）。
+        options.enable_hp_mp_visualization = false;
+        let mut plain = CombatSimulator::new(options.clone());
+        plain.add_player(&player).expect("player builds");
+        plain.simulate().expect("simulate succeeds");
+        let plain_result = plain.tally.real.as_ref().expect("real result").to_value();
+        assert_eq!(plain_result["timeSeriesData"]["timestamps"].as_array().expect("timestamps").len(), 0);
+        assert_eq!(simulator.event_count, plain.event_count, "开关不改变事件流");
     }
 }
