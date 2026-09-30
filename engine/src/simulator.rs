@@ -2498,13 +2498,16 @@ impl CombatSimulator {
             self.labyrinth_encounter_start_time = self.simulation_time;
         }
 
-        if let Some(enemies) = self.enemies.clone() {
-            for enemy in enemies {
-                let time = self.simulation_time;
-                let hrid = self.unit_hrid(enemy);
-                self.arena.get_mut(enemy).reset(time, &mut self.rng);
-                with_hrid(hrid, |name| self.tally.update_time_spent_alive(name, true, time));
-            }
+        // 切片 28：免克隆——按下标遍历（循环体只读 enemies，写 arena/tally）。
+        let enemies_len = self.enemies.as_ref().map_or(0, |enemies| enemies.len());
+        for index in 0..enemies_len {
+            let Some(enemy) = self.enemies.as_ref().and_then(|enemies| enemies.get(index)).copied() else {
+                break;
+            };
+            let time = self.simulation_time;
+            let hrid = self.unit_hrid(enemy);
+            self.arena.get_mut(enemy).reset(time, &mut self.rng);
+            with_hrid(hrid, |name| self.tally.update_time_spent_alive(name, true, time));
         }
 
         self.queue.clear_events_of_type(Hrid::EVENT_ENRAGE_TICK);
@@ -2932,20 +2935,25 @@ impl CombatSimulator {
 
     fn process_auto_attack_event(&mut self, event_source: UnitId) -> Result<(), UnitError> {
         let is_player = self.arena.get(event_source).is_player;
-        let targets: Vec<UnitId> = if is_player {
-            match &self.enemies {
-                Some(enemies) => enemies.clone(),
-                None => return Ok(()),
-            }
+        // 切片 28：免克隆——原先克隆整个对侧列表再过滤出存活表（每次调用两次分配），
+        // 现在按下标直读源列表一次成形。`check_parry` 的候选过滤（存活 ∧ parry>0）对
+        // 「全集」与「存活子集」结果恒等（已死者不可能成为候选），故直接传存活表。
+        let alive_targets: Vec<UnitId> = if is_player {
+            let Some(enemies) = self.enemies.as_deref() else {
+                return Ok(());
+            };
+            enemies
+                .iter()
+                .copied()
+                .filter(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0)
+                .collect()
         } else {
-            self.players.clone()
+            self.players
+                .iter()
+                .copied()
+                .filter(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0)
+                .collect()
         };
-
-        let alive_targets: Vec<UnitId> = targets
-            .iter()
-            .copied()
-            .filter(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0)
-            .collect();
 
         for index in 0..alive_targets.len() {
             let mut target = alive_targets[index];
@@ -2954,7 +2962,7 @@ impl CombatSimulator {
             }
 
             let mut current_source = event_source;
-            let parry_target = self.check_parry(&targets);
+            let parry_target = self.check_parry(&alive_targets);
             if let Some(parry) = parry_target {
                 target = current_source;
                 current_source = parry;
@@ -4191,12 +4199,28 @@ impl CombatSimulator {
         let _prof = crate::prof::start("ability.damage");
         let prof_setup = crate::prof::start("ability.damage.setup");
         let is_player = self.arena.get(source).is_player;
-        let targets_option: Option<Vec<UnitId>> = match effect.target_type {
+        // 切片 28：免克隆——原先把对侧全集克隆成 `targets`，它只被三处消费：
+        // ① 存活表构造；② `check_parry`（候选过滤「存活 ∧ parry>0」对全集与存活子集
+        // 恒等）；③ 逐轮候选重过滤（存活 ∧ 未被 avoid——死单位只减不增、avoid 单调增长，
+        // 故其当前态与「存活表重过滤」恒等）。现在直接构造存活表，候选表由 retain 原地
+        // 维护（省掉整表克隆与逐轮重分配）。
+        let alive_targets: Vec<UnitId> = match effect.target_type {
             Hrid::TARGET_ENEMY | Hrid::TARGET_ALL_ENEMIES => {
                 if is_player {
-                    self.enemies.clone()
+                    let Some(enemies) = self.enemies.as_deref() else {
+                        return Ok(());
+                    };
+                    enemies
+                        .iter()
+                        .copied()
+                        .filter(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0)
+                        .collect()
                 } else {
-                    Some(self.players.clone())
+                    self.players
+                        .iter()
+                        .copied()
+                        .filter(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0)
+                        .collect()
                 }
             }
             _ => {
@@ -4207,18 +4231,10 @@ impl CombatSimulator {
             }
         };
 
-        let Some(mut targets) = targets_option else {
-            return Ok(());
-        };
-
         let mut avoid_target: Vec<Hrid> = Vec::new();
         let mut is_skip_parry = false;
-
-        let alive_targets: Vec<UnitId> = targets
-            .iter()
-            .copied()
-            .filter(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0)
-            .collect();
+        // 候选表（等价原 `targets` 的逐轮重过滤结果）：初始 = 存活表，随后单调收缩。
+        let mut candidates: Vec<UnitId> = alive_targets.clone();
 
         drop(prof_setup);
 
@@ -4227,7 +4243,7 @@ impl CombatSimulator {
             let mut parry_target: Option<UnitId> = None;
             if !is_skip_parry {
                 let _prof = crate::prof::start("ability.damage.parry");
-                parry_target = self.check_parry(&targets);
+                parry_target = self.check_parry(&alive_targets);
                 is_skip_parry = true;
             }
 
@@ -4301,21 +4317,18 @@ impl CombatSimulator {
                     }
                 }
             } else {
-                targets = targets
-                    .iter()
-                    .copied()
-                    .filter(|id| {
-                        let unit = self.arena.get(*id);
-                        !avoid_target.contains(&unit.hrid) && unit.combat_details.current_hitpoints > 0.0
-                    })
-                    .collect();
+                // 候选表原地收缩（单调），等价原实现对全集的逐轮重过滤。
+                candidates.retain(|id| {
+                    let unit = self.arena.get(*id);
+                    !avoid_target.contains(&unit.hrid) && unit.combat_details.current_hitpoints > 0.0
+                });
 
-                if !is_player && !targets.is_empty() && effect.target_type == Hrid::TARGET_ENEMY {
-                    target = self.pick_threat_target(&targets)?;
+                if !is_player && !candidates.is_empty() && effect.target_type == Hrid::TARGET_ENEMY {
+                    target = self.pick_threat_target(&candidates)?;
                     let hrid = self.unit_hrid(target);
                     avoid_target.push(hrid);
                 }
-                if targets.is_empty() {
+                if candidates.is_empty() {
                     break;
                 }
 

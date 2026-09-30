@@ -44,6 +44,8 @@ use crate::ordered_map::OrderedMap;
 use crate::simulator::AttackOutcome;
 use crate::unit::UnitError;
 use serde_json::{json, Number, Value};
+use std::collections::HashMap;
+use std::hash::BuildHasherDefault;
 
 /// JS `experienceGainedRate` / `experienceGained[hrid]` 的技能顺序（7 技能表的键序）。
 const EXPERIENCE_SKILLS: [&str; 7] = ["stamina", "intelligence", "attack", "melee", "defense", "ranged", "magic"];
@@ -55,8 +57,103 @@ const JS_EXPONENTIAL_UPPER: f64 = 1e21;
 /// JS `Number.prototype.toString` 的指数写法下界：`|v| < 1e-6` 起用指数。
 const JS_EXPONENTIAL_LOWER: f64 = 1e-6;
 
+/// 命中键 → 次数（攻击表最内层，切片 28）。
+///
+/// 键数随「不同伤害值」增长（实测 golden：1h 满结果 36 表 / 2521 键、单表最大 267；
+/// 24h 最大 1068），而线性扫描在每次 `add_attack` 上是 O(n)（调用加权平均扫描长度：
+/// 1h ≈ 35、24h ≈ 208）。本表小规模保留线性扫描，超过 [`HIT_LINEAR_SCAN_LIMIT`] 后
+/// 切到 FNV-1a 哈希旁路；语义与 `OrderedMap<String, f64>` 的「键在 → 原位累加；
+/// 键缺 → 追加」完全一致（键序 = 插入序）。索引只在追加缺失键时写入——本表只增不减，
+/// 下标恒有效。
+#[derive(Clone, Debug, Default)]
+struct HitCountMap {
+    entries: Vec<(String, f64)>,
+    /// 键哈希 → entries 下标候选（哈希碰撞时按插入序逐个比较键）。
+    buckets: HashMap<u64, Vec<u32>, BuildHasherDefault<U64Hasher>>,
+}
+
+/// 线性扫描的规模上限：小表直接扫描（短数字键比较约 2–4 ns）快于哈希（约 20–30 ns）。
+const HIT_LINEAR_SCAN_LIMIT: usize = 12;
+
+impl HitCountMap {
+    #[inline]
+    fn add_value(&mut self, key: &str, delta: f64) {
+        if self.entries.len() <= HIT_LINEAR_SCAN_LIMIT {
+            if let Some((_, value)) = self.entries.iter_mut().find(|(candidate, _)| candidate.as_str() == key) {
+                *value += delta;
+                return;
+            }
+        } else {
+            let hash = hash_key_fnv1a(key);
+            let found = {
+                let entries = &self.entries;
+                self.buckets.get(&hash).and_then(|candidates| {
+                    candidates
+                        .iter()
+                        .find(|index| entries[**index as usize].0.as_str() == key)
+                        .copied()
+                })
+            };
+            if let Some(index) = found {
+                self.entries[index as usize].1 += delta;
+                return;
+            }
+            self.push_new(key, delta, hash);
+            return;
+        }
+        self.push_new(key, delta, hash_key_fnv1a(key));
+    }
+
+    /// 追加缺失键 + 同步哈希索引（任何路径都不得绕过这里）。
+    fn push_new(&mut self, key: &str, delta: f64, hash: u64) {
+        self.entries.push((key.to_string(), delta));
+        let index = (self.entries.len() - 1) as u32;
+        self.buckets.entry(hash).or_default().push(index);
+    }
+
+    fn iter(&self) -> impl Iterator<Item = (&str, f64)> {
+        self.entries.iter().map(|(key, value)| (key.as_str(), *value))
+    }
+}
+
+/// FNV-1a 64（内部键、无 DoS 面，不需要随机种子）。
+#[inline]
+fn hash_key_fnv1a(key: &str) -> u64 {
+    let mut hash: u64 = 0xcbf2_9ce4_8422_2325;
+    for byte in key.as_bytes() {
+        hash ^= u64::from(*byte);
+        hash = hash.wrapping_mul(0x0000_0100_0000_01b3);
+    }
+    hash
+}
+
+/// `u64` 直通哈希（键已是内容哈希；避免 SipHash 的二次哈希与随机源）。
+#[derive(Default)]
+struct U64Hasher(u64);
+
+impl std::hash::Hasher for U64Hasher {
+    #[inline]
+    fn finish(&self) -> u64 {
+        self.0
+    }
+
+    #[inline]
+    fn write(&mut self, bytes: &[u8]) {
+        let mut buffer = [0u8; 8];
+        let length = bytes.len().min(8);
+        buffer[..length].copy_from_slice(&bytes[..length]);
+        self.0 = u64::from_le_bytes(buffer);
+    }
+
+    #[inline]
+    fn write_u64(&mut self, value: u64) {
+        self.0 = value;
+    }
+}
+
 /// 攻击表：源 hrid → 目标 hrid → 能力 hrid → 命中键（数字串 / `"miss"`，保持 String）→ 次数。
-type AttackTable = OrderedMap<Hrid, OrderedMap<Hrid, OrderedMap<Hrid, OrderedMap<String, f64>>>>;
+/// 最内层用 [`HitCountMap`]（切片 28：命中键数可达数百，线性扫描曾是热路径主要成本）。
+type AttackTable = OrderedMap<Hrid, OrderedMap<Hrid, OrderedMap<Hrid, HitCountMap>>>;
 /// 两层记账表（血/蓝获得、消耗、消耗品、空蓝计时、蓝耗），键为 hrid 句柄，键序按插入序。
 type TwoLevelTable = OrderedMap<Hrid, OrderedMap<Hrid, f64>>;
 /// 经验增益表：玩家 hrid → 技能名（`"stamina"` 等普通字符串，非 hrid）→ 累计增益。
@@ -500,7 +597,7 @@ impl SimResultState {
         let targets = ensure_child(&mut self.attacks, &source_hrid);
         let abilities = ensure_child(targets, &target_hrid);
         let hits = ensure_child(abilities, &ability);
-        hits.add_value_str(hit_key, 1.0);
+        hits.add_value(hit_key, 1.0);
         self.hit_key_scratch = scratch;
     }
 
@@ -1065,9 +1162,14 @@ fn ensure_scroll_entry<'a>(usage: &'a mut ScrollUsage, player_hrid: Hrid, item_h
     Some(ensure_child(ensure_child(&mut usage.by_player, &player_hrid), &item_hrid))
 }
 
-/// `OrderedMap<String, f64>` → JS 数字对象（攻击表的命中键仍是普通字符串）。
+/// `OrderedMap<String, f64>` → JS 数字对象（经验表的技能名层仍是普通字符串）。
 fn number_map_to_value(map: &OrderedMap<String, f64>) -> Value {
     Value::Object(map.iter().map(|(key, value)| (key.clone(), js_number_value(*value))).collect())
+}
+
+/// [`HitCountMap`] → JS 数字对象（攻击表命中层；键序 = 插入序）。
+fn hit_map_to_value(map: &HitCountMap) -> Value {
+    Value::Object(map.iter().map(|(key, value)| (key.to_string(), js_number_value(value))).collect())
 }
 
 /// `OrderedMap<Hrid, f64>` → JS 数字对象（句柄经注册表映射回原字符串）。
@@ -1213,7 +1315,7 @@ fn attacks_to_value(map: &AttackTable) -> Value {
                 .map(|(target_key, by_ability)| {
                     let abilities = by_ability
                         .iter()
-                        .map(|(ability_key, by_hit)| (hrid_to_string(*ability_key), number_map_to_value(by_hit)))
+                        .map(|(ability_key, by_hit)| (hrid_to_string(*ability_key), hit_map_to_value(by_hit)))
                         .collect();
                     (hrid_to_string(*target_key), Value::Object(abilities))
                 })
@@ -1906,6 +2008,31 @@ mod tests {
         for (value, text) in values.iter().zip(texts.iter()) {
             assert_eq!(&js_number_key(*value), text, "js_number_key({value})");
         }
+    }
+
+    #[test]
+    fn hit_count_map_matches_ordered_map_semantics_across_scan_modes() {
+        // 线性段（≤ HIT_LINEAR_SCAN_LIMIT）与哈希段（> 上限）的键序 / 累加语义一致：
+        // 键在 → 原位累加（不挪到末尾）；键缺 → 追加到末尾。
+        let mut map = HitCountMap::default();
+        for index in 0..64 {
+            map.add_value(&index.to_string(), 1.0);
+        }
+        map.add_value("3", 2.0); // 线性段插入的键，须由哈希索引命中（索引完整性）
+        map.add_value("63", 1.0);
+        let entries: Vec<(&str, f64)> = map.iter().collect();
+        assert_eq!(entries.len(), 64);
+        assert_eq!(entries[0], ("0", 1.0));
+        assert_eq!(entries[3], ("3", 3.0));
+        assert_eq!(entries[63], ("63", 2.0));
+
+        let mut small = HitCountMap::default();
+        small.add_value("a", 1.0);
+        small.add_value("b", 1.0);
+        small.add_value("c", 1.0);
+        small.add_value("b", 1.0);
+        let entries: Vec<(&str, f64)> = small.iter().collect();
+        assert_eq!(entries, vec![("a", 1.0), ("b", 2.0), ("c", 1.0)]);
     }
 
     #[test]
