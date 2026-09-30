@@ -275,20 +275,20 @@
       "value": null
     },
     {
-      "hrid": "/items/blueberry_cake",
-      "source": "/parity/fuzz/player/0",
-      "target": null,
-      "time": 10000000000,
-      "type": "consumableTick",
-      "value": 2
-    },
-    {
       "hrid": null,
       "source": null,
       "target": null,
       "time": 10000000000,
       "type": "regenTick",
       "value": null
+    },
+    {
+      "hrid": "/items/blueberry_cake",
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 10000000000,
+      "type": "consumableTick",
+      "value": 2
     },
     {
       "hrid": null,
@@ -563,20 +563,20 @@
       "value": null
     },
     {
-      "hrid": "/items/blueberry_cake",
-      "source": "/parity/fuzz/player/0",
-      "target": null,
-      "time": 20000000000,
-      "type": "consumableTick",
-      "value": 4
-    },
-    {
       "hrid": null,
       "source": null,
       "target": null,
       "time": 20000000000,
       "type": "regenTick",
       "value": null
+    },
+    {
+      "hrid": "/items/blueberry_cake",
+      "source": "/parity/fuzz/player/0",
+      "target": null,
+      "time": 20000000000,
+      "type": "consumableTick",
+      "value": 4
     },
     {
       "hrid": null,
@@ -1874,16 +1874,8 @@
     {
       "args": [
         "/parity/fuzz/player/0",
-        "/items/blueberry_cake",
-        17
-      ],
-      "method": "addHitpointsGained"
-    },
-    {
-      "args": [
-        "/parity/fuzz/player/0",
         "regen",
-        65
+        82
       ],
       "method": "addHitpointsGained"
     },
@@ -1894,6 +1886,14 @@
         42
       ],
       "method": "addManapointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/items/blueberry_cake",
+        0
+      ],
+      "method": "addHitpointsGained"
     },
     {
       "args": [
@@ -2876,16 +2876,8 @@
     {
       "args": [
         "/parity/fuzz/player/0",
-        "/items/blueberry_cake",
-        16
-      ],
-      "method": "addHitpointsGained"
-    },
-    {
-      "args": [
-        "/parity/fuzz/player/0",
         "regen",
-        77
+        93
       ],
       "method": "addHitpointsGained"
     },
@@ -2896,6 +2888,14 @@
         42
       ],
       "method": "addManapointsGained"
+    },
+    {
+      "args": [
+        "/parity/fuzz/player/0",
+        "/items/blueberry_cake",
+        0
+      ],
+      "method": "addHitpointsGained"
     },
     {
       "args": [

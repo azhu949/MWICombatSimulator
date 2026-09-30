@@ -1,7 +1,7 @@
 // 切片 2 parity → 切片 21B（定案 D2）：mulberry32 / hashSeed / deriveSeedSet 仍是
 // 双实现精确对账（JS `seededRandom.js` 保留——worker 种子派生在生产使用）；
 // 事件队列操作脚本（含 tie 顺序、身份移除、按类型/单位清除）改为与 golden 快照
-// 对账（JS EventQueue 已随 A 层删除，堆序语义由 Rust 单测与 golden 承载）。
+// 对账（JS EventQueue 已随 A 层删除；(time, seq) 全序语义由 Rust 单测与 golden 承载）。
 //
 // 注意：该测试同时锁定 wasm 引擎的队列行为。升级 wasm-bindgen / Rust 编译器导致
 // 事件顺序变化时本测试会失败——这是刻意的：引擎对同时间事件顺序敏感，升级必须
