@@ -1,0 +1,18 @@
+{
+  "seed": 1,
+  "deaths": 0,
+  "ranOutOfMana": true,
+  "foodUsed": {},
+  "costPerHour": 0,
+  "equivalentThresholds": [],
+  "unusedFoodThresholds": {
+    "hp": 16,
+    "mp": 261
+  },
+  "inactiveFoodThresholds": {
+    "hp": 16,
+    "mp": 261
+  },
+  "stoppedEarly": false,
+  "simulatedTime": 86400000000000
+}

@@ -10,7 +10,7 @@
 // - `combatStats` 取 `unit.baseCombatStats ?? unit.combatDetails.combatStats`：
 //   前者是 JS 构造期捕获的基准面板，正是 Rust `build_unit_from_spec` 期望的输入；
 //   数字键进 `combatStats`，字符串键（战斗风格 / 伤害类型 / 训练方向）进 `combatStatsStrings`；
-// - 非有限数（NaN/±Infinity）无法经 JSON 传输，遇到即抛错（调用方回退 JS 引擎）；
+// - 非有限数（NaN/±Infinity）无法经 JSON 传输，遇到即抛错（调用方按失败处置，无 JS 回退）；
 // - 调用方必须传入**未初始化**的玩家（`permanentBuffs` 为空，等价 JS t=0 之前）：
 //   房屋 / 公会 / 成就 / 区域 / 额外增益的合并由引擎在 t=0 自行完成，桥接重复合并会翻倍；
 // - 怪物模板按 `(zoneHrid, difficultyTier)` 缓存：模板只读，可跨模拟复用。
@@ -372,7 +372,7 @@ function buildCostBoundSpec(costBound, players, simulationTimeLimit) {
   };
 }
 
-/// 生产路径支持判定：不满足时调用方必须回退 JS 引擎（返回原因供日志/UI 使用）。
+/// 生产路径支持判定：不满足时本轮 wasm 不可用（返回原因供日志/UI 使用；生产调用方硬失败，无 JS 回退）。
 ///
 /// 切片 14：`minimalResult` / `logCombatEvents` / `enableHpMpVisualization` 三条闸门已解除
 /// ——full-result 全量覆盖（经验记账、掉落上下文桶、1000-tick 时序快照、激怒层数），
@@ -462,9 +462,9 @@ export function buildProductionRequest({ players, zone, labyrinth = null, seed, 
   };
 }
 
-/// 调用 wasm 生产出口；`error` 非空时抛错（调用方捕获后回退 JS）。
-/// 返回 `{ simResult, observers, costBound }`：simResult 与 JS 引擎逐字段一致（parity
-/// 对账对象）；observers 在未开启时为 null，开启时为 `{ thresholdRanges, inactiveMinimum }`；
+/// 调用 wasm 生产出口；`error` 非空时抛错（调用方按失败处置，无 JS 回退）。
+/// 返回 `{ simResult, observers, costBound }`：simResult 形状由 golden 快照锁定
+/// （切片 21B 起 parity 对 golden，JS 引擎已删除）；observers 在未开启时为 null，开启时为 `{ thresholdRanges, inactiveMinimum }`；
 /// costBound（切片 20）在未激活时为 null，激活时为 `{ stoppedForCost, costLowerBound }`
 ///（独立输出字段，保证 simResult 逐字节不变）。
 export function runWasmProductionSimulation(engine, request) {

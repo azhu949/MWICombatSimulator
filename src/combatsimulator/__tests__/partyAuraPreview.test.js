@@ -1,7 +1,5 @@
 import { describe, expect, it, vi } from 'vitest';
-import CombatSimulator from '../combatSimulator.js';
 import Player from '../player.js';
-import Zone from '../zone.js';
 import {
   buildPlayersForSimulation,
   buildCombatPreviewData,
@@ -19,18 +17,6 @@ function withAura(config, abilityHrid, level = 1) {
     ...config,
     abilities: [{ abilityHrid, level }, ...config.abilities.slice(1)],
   };
-}
-
-async function runSimulation(players, durationNs = MINUTE) {
-  const zone = new Zone('/actions/combat/sorcerers_tower', 0);
-  const simulator = new CombatSimulator(players, zone, null, { enableHpMpVisualization: false });
-  for (const player of players) {
-    player.zoneBuffs = [];
-    player.extraBuffs = [];
-    player.generatePermanentBuffs();
-  }
-  await simulator.simulate(durationNs);
-  return simulator;
 }
 
 describe('Party aura combat preview', () => {
@@ -191,13 +177,8 @@ describe('Party aura combat preview', () => {
       .filter((source) => source.sourceKey?.startsWith('teammate-aura-player2-'))
       .map((source) => source.sourceHrid);
     expect(auraSourceHrids).toEqual(['/abilities/speed_aura']);
-
-    // 端到端一致性：使用相同配置，真实引擎的一分钟
-    // 也拥有足够施放速度光环的魔法值，但不够施放暴击光环。
-    const simulationPlayers = buildPlayersForSimulation([heroConfig, teammateConfig]);
-    await runSimulation(simulationPlayers);
-    expect(simulationPlayers[0].combatBuffs['/buff_uniques/speed_aura_attack_speed']).toBeTruthy();
-    expect(simulationPlayers[0].combatBuffs['/buff_uniques/critical_aura_rate']).toBeFalsy();
+    // 切片 21B：JS 引擎已删除——「真实引擎一分钟也有足够魔法」的端到端对照由
+    // golden 快照（wasmEngineProductionParity）承载；预览侧断言保持不变。
   });
 
   it("replays multiple party auras when the teammate's opening MP covers their costs", () => {

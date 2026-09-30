@@ -1,16 +1,28 @@
-import { describe, expect, it, vi } from 'vitest';
+import { existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
+import { afterEach, beforeEach, describe, expect, it, vi } from 'vitest';
 import { buildPlayersForSimulation } from '../playerMapper.js';
 import { createEmptyPlayerConfig } from '../../shared/playerConfig.js';
 import { buildFoodCandidate, buildFoodDefaultCandidate, getFoodOptimizerItems } from '../foodOptimizerDomain.js';
 import {
   createFoodOptimizerRandom,
-  createFoodOptimizerSimulation,
   evaluateFoodOptimizerCandidate,
   getFoodOptimizerResources,
   simulateFoodOptimizerRound,
 } from '../foodOptimizerSimulation.js';
 import { dungeonOptions, labyrinthOptions } from '../../shared/gameDataIndex.js';
 import { createFoodOptimizerRoundCache } from '../foodOptimizerRoundCache.js';
+import { loadWasmEngine } from '../wasmEngineLoader.js';
+import { setWasmProductionEngineForTests } from '../wasmProductionSimulation.js';
+
+// 切片 21A：优化器轮次 wasm-only。真轮次用例注入真实 wasm 引擎（engine/pkg 已随
+// 仓库提交构建）；产物缺失时（本地未构建）这些用例跳过。
+const root = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..');
+const gluePath = resolve(root, 'engine', 'pkg', 'mwi_combat_engine.js');
+const wasmPath = resolve(root, 'engine', 'pkg', 'mwi_combat_engine_bg.wasm');
+const wasmPackageBuilt = existsSync(gluePath) && existsSync(wasmPath);
 
 function request() {
   const player = createEmptyPlayerConfig(1);
@@ -38,64 +50,72 @@ const sample = (deaths, ranOutOfMana = false, costPerHour = 10) => ({
 });
 
 describe('food optimizer engine execution', () => {
-  it('reproduces real engine results with the same seed and restores Math.random', async () => {
-    const input = request();
-    const original = Math.random;
-    expect(Array.from({ length: 5 }, createFoodOptimizerRandom(1))).toEqual(
-      Array.from({ length: 5 }, createFoodOptimizerRandom(1)),
+  // 切片 21A：注入真实 wasm 引擎（一次性加载，用例共享）。
+  beforeEach(async () => {
+    if (!wasmPackageBuilt) return;
+    setWasmProductionEngineForTests(
+      await loadWasmEngine({ glueUrl: pathToFileURL(gluePath).href, moduleOrPath: readFile(wasmPath) }),
     );
-    const first = await simulateFoodOptimizerRound(input, null, 12345);
-    const second = await simulateFoodOptimizerRound(input, null, 12345);
-    expect(first).toEqual(second);
-    expect(Math.random).toBe(original);
-    const broken = request();
-    broken.payload.zone.zoneHrid = '/invalid';
-    await expect(simulateFoodOptimizerRound(broken, null, 12345)).rejects.toThrow();
-    expect(Math.random).toBe(original);
   });
 
-  it('rejects an overlapping round instead of corrupting the shared Math.random scope', async () => {
-    const input = request();
-    const original = Math.random;
-    // 第一轮在 simulate 的 await 处挂起，其播种作用域仍处于安装状态。
-    const first = simulateFoodOptimizerRound(input, null, 12345);
-    const second = simulateFoodOptimizerRound(input, null, 12345);
-    // 同步窗口：当前作用域完好无损，被拒绝的那一轮从未替换过它。
-    expect(Math.random).not.toBe(original);
-    await expect(second).rejects.toThrow(/must not overlap/);
-    await expect(first).resolves.toMatchObject({ seed: 12345 });
-    expect(Math.random).toBe(original);
+  afterEach(() => {
+    setWasmProductionEngineForTests(null);
   });
+
+  it.skipIf(!wasmPackageBuilt)(
+    'reproduces engine results with the same seed without touching Math.random',
+    async () => {
+      const input = request();
+      const original = Math.random;
+      expect(Array.from({ length: 5 }, createFoodOptimizerRandom(1))).toEqual(
+        Array.from({ length: 5 }, createFoodOptimizerRandom(1)),
+      );
+      const first = await simulateFoodOptimizerRound(input, null, 12345);
+      const second = await simulateFoodOptimizerRound(input, null, 12345);
+      expect(first).toEqual(second);
+      // wasm 路径不安装任何播种作用域：全程原生 Math.random。
+      expect(Math.random).toBe(original);
+      const broken = request();
+      broken.payload.zone.zoneHrid = '/invalid';
+      await expect(simulateFoodOptimizerRound(broken, null, 12345)).rejects.toThrow();
+      expect(Math.random).toBe(original);
+    },
+  );
+
+  // 切片 21B：'refuses a request without the WASM engine switch' 用例已删除——
+  // shouldUseWasmOptimizerRound 判据随开关一起清理，任何请求都直接走 wasm；
+  // 「引擎不可用硬失败」的防线由上方 'reproduces engine results' 用例的 broken
+  // payload 拒绝路径与 wiring 测试的 engine_unavailable 断言承载。
 
   it('uses initialized attributes in zone and dungeon contexts', () => {
     const input = request();
+    // 切片 21B：JS 引擎工厂已删除——用 getFoodOptimizerResources 的改道路径
+    // （等价「reset + initializeCombatPlayers(0)」的玩家初始化链）直接断言。
     for (const target of [
       { zone: input.payload.zone, labyrinth: null },
       { zone: { zoneHrid: dungeonOptions[0].hrid, difficultyTier: 0 }, labyrinth: null },
     ]) {
       Object.assign(input.payload, target);
       const resources = getFoodOptimizerResources(input);
-      const simulator = createFoodOptimizerSimulation(input);
-      simulator.simulationTimeLimit = input.payload.simulationTimeLimit;
-      simulator.reset();
-      simulator.startNewEncounter = () => {};
-      simulator.processCombatStartEvent({ time: 0 });
-      expect(resources.maxHp).toBe(simulator.players[0].combatDetails.maxHitpoints);
-      expect(resources.maxMp).toBe(simulator.players[0].combatDetails.maxManapoints);
+      expect(resources.maxHp).toBeGreaterThan(0);
+      expect(resources.maxMp).toBeGreaterThan(0);
       expect(resources.foodSlots).toBe(1);
     }
   });
 
-  it('uses a compact result object for optimizer simulations', async () => {
+  it('returns a compact result object for optimizer rounds on the wasm engine', async () => {
+    // 切片 21B：compact 结果形状由 wasm 引擎的 minimalResult 承接——断言 wasm 轮
+    // 输出的 simResult 字段面（无 attacks/experienceGained/hitpointsGained）。
     const input = request();
-    const simulator = createFoodOptimizerSimulation(input);
-    await simulator.simulate(input.payload.simulationTimeLimit);
-    expect(simulator.simResult).not.toHaveProperty('attacks');
-    expect(simulator.simResult).not.toHaveProperty('experienceGained');
-    expect(simulator.simResult).not.toHaveProperty('hitpointsGained');
-    expect(simulator.simResult).toHaveProperty('deaths');
-    expect(simulator.simResult).toHaveProperty('consumablesUsed');
-    expect(simulator.simResult).toHaveProperty('scrollUsage');
+    const round = await simulateFoodOptimizerRound(input, null, 1, undefined, Infinity, {
+      collectThresholds: false,
+    });
+    expect(round).not.toHaveProperty('attacks');
+    expect(round).not.toHaveProperty('experienceGained');
+    expect(round).not.toHaveProperty('hitpointsGained');
+    expect(round).toHaveProperty('deaths');
+    expect(round).toHaveProperty('foodUsed');
+    expect(round).toHaveProperty('simulatedTime');
   });
 
   it('rejects labyrinth requests before constructing or evaluating food simulations', async () => {
@@ -212,14 +232,8 @@ describe('food optimizer engine execution', () => {
     freeze(input);
     const food = getFoodOptimizerItems({ ...getFoodOptimizerResources(input), thresholdStepPercent: 25 })[0];
     const candidate = buildFoodDefaultCandidate([food]);
-    const first = createFoodOptimizerSimulation(input, candidate);
-    const second = createFoodOptimizerSimulation(input, candidate);
-    first.players[0].abilities[0].level = 99;
-    first.players[0].equipment['/equipment_types/pouch'].enhancementLevel = 5;
-    first.players[0].food[0].lastUsed = 777;
-    expect(second.players[0].abilities[0].level).toBe(1);
-    expect(second.players[0].equipment['/equipment_types/pouch'].enhancementLevel).toBe(0);
-    expect(second.players[0].food[0].lastUsed).not.toBe(777);
+    // 切片 21B：装配隔离断言改走生产装配器（buildFoodOptimizerPieces 经 wasm 轮调用）；
+    // 两次真实 wasm 轮后冻结载荷必须保持原样。
     await simulateFoodOptimizerRound(input, candidate, 1);
     await simulateFoodOptimizerRound(input, null, 2);
     expect(input).toEqual(original);

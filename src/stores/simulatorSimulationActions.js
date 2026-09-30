@@ -346,8 +346,6 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
             parallelWorkerLimit,
             simulationTimeLimit,
             extra,
-            // 切片 18：批量迷宫扫描默认走 wasm（multiWorker 透传给每个子 worker）。
-            useWasmEngine: true,
           },
           {
             onProgress,
@@ -386,8 +384,6 @@ export function createSimulationActions({ loadPlayerMapperModule, workerClient }
           parallelWorkerLimit,
           simulationTimeLimit,
           extra,
-          // 切片 18：批量区域扫描默认走 wasm（multiWorker 透传给每个子 worker）。
-          useWasmEngine: true,
         },
         {
           onProgress,

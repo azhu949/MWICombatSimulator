@@ -1542,6 +1542,17 @@ impl CombatUnit {
     }
 
     /// 等价 JS `clearCCs`。
+    ///
+    /// JS 语义：只清 CC 标志 + live 面板 `damageTaken = 0`，再捕获基准；**live 面板
+    /// 保留最近一次结算的派生值**（threat 等），直到下次 `updateCombatDetails` 从基准
+    /// 重算。此前实现把 live 整体回滚到构造期快照（派生前的 threat=0）——玩家复活
+    /// （`clearBuffs` → 结算 → `clearCCs`）后 threat 归零，单玩家威胁选靶 `rng*0=0`
+    /// 不满足 `>= 0 && < 0`，复刻出 JS 的 `.player` TypeError（切片 21A 修复）。
+    ///
+    /// JS 里 `Player` / `Monster` 覆写总在下次 `updateCombatDetails` 开头重写类自有
+    /// 字段、`refreshBaseCombatStats` 因此捕获干净基准；Rust 无类覆写，故改为把
+    /// 构造期快照恢复进**基准**（等价 JS 下次 update 的输入），live 不回滚。
+    /// 合成单位（探针）无类自有快照，维持与 JS 逐字等价的「从 live 捕获基准」。
     pub fn clear_ccs(&mut self) {
         self.is_stunned = false;
         self.stun_expire_time = None;
@@ -1550,15 +1561,13 @@ impl CombatUnit {
         self.is_blinded = false;
         self.blind_expire_time = None;
         self.combat_details.combat_stats.damage_taken = 0.0;
-        // JS 的 `Player` / `Monster` 覆写会在紧随其后的 `updateCombatDetails` 里把
-        // 「类自有」面板字段重写回装备 / 怪物数据（`refreshBaseCombatStats` 因此总是
-        // 捕获干净基准）；合成单位（探针）没有该覆写，基准会带上派生值。
-        // Rust 无类覆写，故仅在 spec 标记类自有面板时把字段恢复为构造期快照。
         if let Some(class_base) = &self.class_base_combat_stats {
-            self.combat_details.combat_stats = class_base.clone();
-            self.combat_details.combat_stats.damage_taken = 0.0;
+            let mut base = class_base.clone();
+            base.damage_taken = 0.0;
+            self.base_combat_stats = Some(base);
+        } else {
+            self.refresh_base_combat_stats();
         }
-        self.refresh_base_combat_stats();
     }
 
     /// 等价 JS `getBuffBoosts(type)`（无快照路径：按 combatBuffs 遍历序投影）。
@@ -1672,6 +1681,34 @@ mod tests {
         // base = 200 → 100 + 200*0.25 + 5 = 155
         assert_eq!(unit.combat_details.total_threat, 200.0);
         assert_eq!(unit.combat_details.combat_stats.threat, 155.0);
+    }
+
+    /// 切片 21A 回归：`clearCCs` 不得回滚 live 面板（JS 语义：保留派生值）。
+    /// 生产快照路径的玩家 spec 面板 threat=0（Player.updateCombatDetails 的装备合计
+    /// 覆写了默认 100），构造期 class_base 捕获 threat=0、结算后 live threat=100。
+    /// 旧实现把 live 回滚到 class_base（threat=0）→ 玩家复活后单玩家威胁选靶
+    /// `rng*0=0` 不满足 `>=0 && <0`，pick_threat_target 复刻出 JS 的 `.player` TypeError。
+    #[test]
+    fn clear_ccs_keeps_live_derived_threat_for_class_owned_units() {
+        let mut unit = CombatUnit::default();
+        unit.combat_details.combat_stats.threat = 0.0;
+        unit.class_base_combat_stats = Some(unit.combat_details.combat_stats.clone());
+        unit.refresh_base_combat_stats();
+        unit.update_combat_details();
+        assert_eq!(unit.combat_details.combat_stats.threat, 100.0);
+
+        // JS clearCCs：live 保留派生值（damageTaken 置 0），基准恢复为构造期快照。
+        unit.combat_details.combat_stats.damage_taken = 0.3;
+        unit.clear_ccs();
+        assert_eq!(unit.combat_details.combat_stats.threat, 100.0);
+        assert_eq!(unit.combat_details.combat_stats.damage_taken, 0.0);
+        let base = unit.base_combat_stats.as_ref().expect("base captured");
+        assert_eq!(base.threat, 0.0);
+        assert_eq!(base.damage_taken, 0.0);
+
+        // 下次结算从构造期基准重算，threat 仍为 100（不累积）。
+        unit.update_combat_details();
+        assert_eq!(unit.combat_details.combat_stats.threat, 100.0);
     }
 
     #[test]

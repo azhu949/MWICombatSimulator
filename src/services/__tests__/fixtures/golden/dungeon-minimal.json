@@ -1,0 +1,75 @@
+{
+  "bossSpawns": [
+    "#5,/monsters/butterjerry",
+    "#10,/monsters/jackalope",
+    "#15,/monsters/jackalope,/monsters/butterjerry",
+    "#20,/monsters/dodocamel",
+    "#25,/monsters/dodocamel,/monsters/butterjerry",
+    "#30,/monsters/jackalope,/monsters/dodocamel",
+    "#35,/monsters/manticore",
+    "#40,/monsters/jackalope,/monsters/manticore",
+    "#45,/monsters/manticore,/monsters/dodocamel",
+    "#50,/monsters/griffin"
+  ],
+  "consumablesUsed": {
+    "player1": {
+      "/items/channeling_coffee": 13,
+      "/items/dragon_fruit_yogurt": 41,
+      "/items/marsberry_cake": 58,
+      "/items/star_fruit_gummy": 51,
+      "/items/super_magic_coffee": 13,
+      "/items/wisdom_coffee": 13
+    }
+  },
+  "deaths": {
+    "/monsters/alligator": 23,
+    "/monsters/aquahorse": 19,
+    "/monsters/crab": 17,
+    "/monsters/frog": 26,
+    "/monsters/jungle_sprite": 26,
+    "/monsters/myconid": 23,
+    "/monsters/porcupine": 22,
+    "/monsters/rat": 30,
+    "/monsters/sea_snail": 25,
+    "/monsters/skunk": 27,
+    "/monsters/slimy": 24,
+    "/monsters/snake": 26,
+    "/monsters/swampy": 25,
+    "player1": 77
+  },
+  "difficultyTier": 1,
+  "dungeonsCompleted": 0,
+  "dungeonsFailed": 76,
+  "isDungeon": true,
+  "isLabyrinth": false,
+  "lastDungeonFinishTime": 0,
+  "lastEncounterFinishTime": 3570122649688.722,
+  "maxEnrageStack": 0,
+  "maxWaveReached": 0,
+  "minDungenonTime": 0,
+  "numberOfPlayers": 1,
+  "playerRanOutOfMana": {
+    "player1": false,
+    "player2": false,
+    "player3": false,
+    "player4": false,
+    "player5": false
+  },
+  "playerRanOutOfManaTime": {
+    "player1": {
+      "isOutOfMana": false,
+      "startTimeForOutOfMana": 0,
+      "totalTimeForOutOfMana": 0
+    }
+  },
+  "scrollUsage": {
+    "allowed": true,
+    "byPlayer": {},
+    "disabled": true,
+    "ignoredReason": ""
+  },
+  "simulatedTime": 3600000000000,
+  "stoppedEarly": false,
+  "timeSpentAlive": [],
+  "zoneName": "/actions/combat/chimerical_den"
+}

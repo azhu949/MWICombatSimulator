@@ -161,8 +161,7 @@ describe('advisorDomain', () => {
       extra: {
         mooPass: true,
       },
-      // 切片 18：生产 payload 默认点亮 wasm 引擎（worker 侧不可用时静默回退 JS）。
-      useWasmEngine: true,
+      // 切片 21B：useWasmEngine 已从生产载荷删除（引擎 wasm-only，无回退分支）。
     });
   });
 

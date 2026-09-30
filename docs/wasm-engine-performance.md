@@ -37,6 +37,19 @@
 > （`observeFoodOptimizerCostBound`）由 Rust 观察器承接，`shouldUseWasmOptimizerRound`
 > 判据放宽为 `useWasmEngine === true`（见第 19 节）。真实路径缺口清零：仍留 JS 的只剩
 > 公会试炼 / 无区域（生产不可达的预留语义）。
+>
+> 切片 21A（2026-09-30）：**A 层（JS 模拟执行层）零生产消费**——playerMapper 三处预览
+> 换轻量 `CombatPreviewContext`、`getFoodOptimizerResources` 脱离模拟执行层、worker.js
+> wasm 不可用改硬失败（审计定案 D1）、优化器轮次 wasm-only（JS 分支删除）；顺带修复
+> Rust `clear_ccs` 误回滚 live 面板的 threat 归零 bug（玩家复活后单玩家威胁选靶
+> TypeError）。见第 20 节。
+>
+> 切片 21B（2026-09-30）：**JS 引擎物理删除**——A 层 6 个生产文件 + 8 个连带测试删净
+> （B 层 events/combatUnit/player/zone 与 `CombatActionsCore` 预览基类保留）；parity
+> oracle 改 **golden 快照**（定案 D2：固定输入 → 固定期望 JSON，`fixtures/golden/`
+> 29 件 3.56MB；行为语义防线由 cargo 128 用例承载）；`useWasmEngine` 开关清理（唯一
+> 例外：`foodOptimizerSnapshot.js` 的字段进输入签名，删除会让存量缓存签名复活）；JS
+> 基准/研究脚本处置（6 脚本删除，保留 `benchmark:wasm-engine`）。见第 21 节。
 
 ## 1. 测量方法
 
@@ -596,7 +609,8 @@ WASM 覆盖为 0（第 11 节勘误）。本切片把两个 JS 阈值观察器 W
 ### 12.4 任务级 A/B（本切片的核心收益数字）
 
 新增 `npm run benchmark:wasm-optimizer`
-（`scripts/benchmark-food-optimizer-wasm.mjs`）：同一条优化器搜索任务（同一
+（`scripts/benchmark-food-optimizer-wasm.mjs`；该脚本与 npm script 已在切片 21B 随 JS
+引擎删除，下述数字为当时实测）：同一条优化器搜索任务（同一
 request / seeds / 自适应 worker 池，仅 `useWasmEngine` 不同）背靠背配对交替跑，
 JS 侧与 WASM 侧各计完整任务 wall time（含 worker 启动 / 协调 / 终止）。
 WASM 由 worker 内 bridge 注入（esbuild splitting 保证与模拟器同 chunk 图），
@@ -1171,3 +1185,226 @@ top-10 搜索的任务级提速吃不到成本剪枝轮。本切片把该观察�
 1. 公会试炼与无区域：**生产不可达的预留语义**（同 §17.5），接入时再评估。
 2. 真实路径缺口清零——「删 JS 引擎」的删除动作本身待用户启动
    （下一候选：JS 引擎审计与删除）。
+
+## 20. 切片 21A：A 层零生产消费 + Rust clear_ccs threat bug 修复（2026-09-30）
+
+### 20.1 背景与范围
+
+切片 21 审计（2026-09-29 用户已批）定案：删除 JS 引擎分两片。**21A 范围**是让
+A 层（模拟执行层：combatSimulator.js + events/ + simResult/foodOptimizerSimResult +
+drops + dataBuffValidation）达到**零生产消费**：
+
+1. playerMapper 三处预览（createCombatPreviewSimulationState / buildDrinkPreviewCard /
+   buildPartyAuraPreviewResult）不再 `new CombatSimulator`，改用轻量
+   `CombatPreviewContext`（extends 新抽出的 `CombatActionsCore` 单步动作基类 +
+   数组版 `PreviewEventQueue` + 全 no-op `NoopPreviewSimResult`）；
+   `CombatActionsCore` 同时是 `CombatSimulator` 的基类（单步动作方法逐字搬移，
+   引擎行为零变化）。
+2. `getFoodOptimizerResources` 改道：主线程直接复刻「reset() + initializeCombatPlayers(0)」
+   的玩家初始化链（`generatePermanentBuffs()` → `reset(0)` → 等价
+   `activateInitialScrolls`），读取 maxHp/maxMp/foodSlots，不再构造模拟器。
+3. worker.js：wasm 输出 null 时按审计定案 **D1 硬失败**——`console.error`（含
+   lastFallbackReason）+ postMessage `simulation_error`。JS 回退分支
+   （installSeedScope / CombatSimulator）删除；无条件 `useWasmEngine: true` 兜底
+   （覆盖 HomeExperimentalModal 批处理等不带开关的手写载荷）。
+4. foodOptimizerSimulation：`simulateFoodOptimizerRound` **wasm-only**——不带开关
+   或 wasm 运行失败均 throw（JS 分支含 Math.random 播种作用域、观察器
+   monkey-patch 安装整体删除）；`shouldUseWasmOptimizerRound` 判据为
+   `useWasmEngine === true`。`createFoodOptimizerSimulation` 保留（测试 oracle 用，
+   21B 处置）。
+
+**21B（已完成，见第 21 节）**：物理删除 A 层文件 + parity oracle 改 golden 快照
+（定案 D2）+ scripts 处置 + useWasmEngine 开关清理 + 文档 §21。
+
+### 20.2 Rust clear_ccs bug（21A 暴露的既有 bug，非引入）
+
+复现：sorcerers_tower tier4 + 单玩家（fly 同载荷正常）。现象：wasm 引擎抛
+`TypeError: Cannot read properties of undefined (reading 'player')`（复刻 JS
+`pickThreatTarget` 的 `.player` 访问）。
+
+根因链：JS `clearCCs` 只清 CC 标志 + live 面板 `damageTaken = 0` + 刷新基准快照，
+**live 面板保留最近一次结算的派生值**（threat 基准 0 + 100 = 100）；而 Rust
+`clear_ccs` 误把 live combatStats 整体回滚到构造期快照（class_base，threat=0 未
+派生）。玩家死亡→复活路径（clearBuffs→结算→clearCCs）后 live threat=0 → 单玩家
+威胁选靶 `rng*0=0` 不满足 `>= 0 && < 0` → find miss → TypeError。fly 区玩家不死
+不复活，所以从未触发；旧测试用例在 JS 引擎下通过（JS 侧 threat 恒 100）。
+
+修复（unit.rs `clear_ccs`）：类自有单位把**基准快照**恢复为构造期 class_base
+（damageTaken 归零），live 不回滚——等价 JS 语义（下次 update 从基准重算，类覆写
+重写装备字段）；合成单位（探针，无 class_base）维持「从 live 捕获基准」逐字等价。
+回归测试 `clear_ccs_keeps_live_derived_threat_for_class_owned_units` 锚定。
+
+### 20.3 测试面连带修复
+
+- `foodOptimizerTestSupport.js`：fixture 请求统一带 `useWasmEngine: true` + 模块
+  加载时一次性注入真实 wasm 引擎（roundCache / sharedRounds / inactive 等真轮次
+  用例零改动走 wasm）；新增 `simulateFoodOptimizerRoundOnJsEngine`——逐字复刻删除前
+  JS 分支（git HEAD @ simulateFoodOptimizerRound 的种子播种 + CombatSimulator +
+  观察器 + shouldStop 路径），作为 parity/wiring 对账的 JS oracle（定案 D2 的
+  golden 快照在 21B 落地前的过渡）。
+- `foodOptimizerSimulation.js`：`buildRoundSample` / `shouldInstallCostBoundObserver`
+  导出（wasm 路径与 JS oracle 共用单一形状/判定来源，防镜像漂移）。
+- `wasmProductionWiring.test.js`：「回退 JS 成功」两处断言改为「拒绝（throw）」；
+  JS-vs-wasm 样本对照的 JS 侧换 oracle。
+- `wasmEngineProductionParity.test.js`：三个优化器用例的 JS 侧（24h 轮次、costBound
+  剪枝轮、安装守卫拒绝轮）换 oracle。
+- `foodOptimizerCostPruning.test.js`：spyOn CombatSimulator 的事件/RNG 前缀对照用例
+  改写为 wasm 轮行为断言（两侧一致性由 parity oracle 对账覆盖）。
+- worker.js 动态 import 改静态具名 import。
+
+### 20.4 验收
+
+- `cargo test` **128 passed**（+1 clear_ccs 回归）；`build:wasm`
+  （wasm-opt -O4：940154 → 821690 bytes，-12.6%）。
+- A 层零生产消费审计（grep 全仓生产文件）：生产代码对 combatSimulator 的 import 仅剩
+  `foodOptimizerSimulation.js` 的 `createFoodOptimizerSimulation`（无生产调用方，测试
+  oracle 专用，21B 处置）。
+- `npm test` 192 文件 / **2655 passed + 5 skipped** + prettier 全绿；`npm run build` →
+  `verify-pages-build` 全过。
+
+### 20.5 仍留 JS 的部分（截至切片 21A）
+
+1. A 层文件本体（combatSimulator.js / combatActions.js / combatPreviewContext.js /
+   events/ / simResult / foodOptimizerSimResult / drops / dataBuffValidation）：
+   供测试 oracle（`simulateFoodOptimizerRoundOnJsEngine` / parity 对账 /
+   `createFoodOptimizerSimulation`）与 `CombatPreviewContext` 基类使用——**物理删除
+   与 oracle 改 golden 快照在 21B**。
+2. 公会试炼与无区域：**生产不可达的预留语义**（同 §17.5），接入时再评估。
+
+## 21. 切片 21B：JS 引擎物理删除 + golden 快照 + 开关清理（2026-09-30）
+
+21A 证明 A 层零生产消费后，本片完成审计定案的剩余三步：**物理删除** A 层、parity
+oracle 改 **golden 快照**（定案 D2）、`useWasmEngine` 开关与 JS 基准脚本处置。
+
+### 21.1 物理删除清单
+
+生产文件（6 个，B 层全部保留）：
+
+- `combatSimulator.js` / `simResult.js` / `foodOptimizerSimResult.js` /
+  `dataBuffValidation.js` / `events/eventQueue.js` / `events/scrollRenewalEvent.js`。
+- **不能删**的连带件：`events/` 其余 18 个事件类（`combatActions.js` 的
+  `CombatActionsCore`——预览基类——import 它们；`drops.js` 被 B 层 `monster.js`
+  引用）、`combatUnit.js` / `player.js` / `zone.js` 等 B 层本体。
+
+引擎测试（8 个删除）：
+
+- `combatSimulator.test.js` / `combatSimulatorLogging.test.js` /
+  `combatSimulatorMinimalResult.test.js` / `eventQueueQueries.test.js` /
+  `dataBuffValidation.test.js` / `combatEngineParityHarness.test.js` /
+  `combatScrollRuntime.test.js`（整体依赖卷轴运行时）/
+  `support/syntheticCombatScenario.js`。
+- `simulatorRealmReuseParity.test.js`（§54 JS realm 复用防线，前提消失）。
+
+生产引用清零：`foodOptimizerSimulation.js` 删 `createFoodOptimizerSimulation` 与
+CombatSimulator import；wiring / playerRoundtripParity / wasmEngineBenchmark 的
+import 一并清理。历史注释（combatActions / combatPreviewContext / seededRandom
+提及 CombatSimulator）按架构沿革保留，不清洗。
+
+### 21.2 golden 快照设施（定案 D2）
+
+JS 引擎删除后，「JS vs Rust 双引擎对账」的 parity 测试改为**固定输入 → 固定期望
+JSON**：期望值以当前 wasm 引擎输出生成并提交进仓库，之后任何输出漂移（引擎行为 /
+游戏数据表 / 桥序列化变化）都会翻红。行为语义的回归防线在 cargo test（128+ 用例），
+本套只锁「wasm 输出字节不漂移」。
+
+- 助手：`src/services/__tests__/support/goldenSnapshot.js` 的
+  `expectMatchesGolden(name, actual)`——`GOLDEN_UPDATE=1` 时写文件否则比较；
+  JSON 往返归一（undefined 自有属性消失，对齐 Rust `to_value` 的「键不存在」语义，
+  **不能用于含 undefined 语义的断言**）。
+- 再生成：`node scripts/generate-wasm-golden.mjs`（内部以 `GOLDEN_UPDATE=1` 跑
+  3 个 parity 套件）。**再生成后提交前必须人工 diff——golden 变化必须能归因到
+  有意的行为/数据变更**（golden diff review 义务）。
+- 产物：`src/services/__tests__/fixtures/golden/` 共 29 件 3.56MB（21 个 production
+  轮 + simulator-targeted-a/b + simulator-fuzz-5/17/33 + eventqueue-targeted +
+  eventqueue-fuzz-1/7；最大单件 `dungeon-1h-logs.json` 1.12MB）。已加入
+  `.prettierignore`（脚本生成物，prettier 重排会与再生成器的
+  `JSON.stringify(2)` 输出冲突；比较按 parse 后对象进行，重排无语义价值）。
+
+改 golden 的测试：
+
+- `wasmEngineProductionParity.test.js` 全量重写：删全部 JS runner（5 个 runJs* 与
+  firstDiff / jsonProjection），保留全部 payload 构造器与防退化断言，19 用例对
+  `production-*.json`。
+- `wasmEngineSimulatorParity.test.js`：runRustScenario + `simulator-*.json`，
+  断言 `rustResult.error` 为 null。
+- `wasmEngineParity.test.js`：队列 2 用例改 `eventqueue-*.json`；mulberry32 /
+  hashSeed / deriveSeedSet 纯函数对账保留（seededRandom.js 生产在用）。
+- `wasmSimulatorParitySupport.js` 手术：删 ParitySimResult / describeEvent /
+  ParityCombatSimulator / runJsScenario / findSimulationDivergence 等约 360 行，
+  保留序列化 + 场景构造；`wasmEngineParitySupport.js` 删 driveJsEventQueue，
+  保留 findTraceDivergence（unitParity 用）+ op 构造器。
+
+### 21.3 oracle 消费方改写
+
+- `foodOptimizerTestSupport.js` 重写：删 JS oracle（referenceFoodOptimizerRound /
+  simulateFoodOptimizerRoundOnJsEngine / installLegacy* / createReferenceSimulation），
+  保留 fixture（**不再带 useWasmEngine 字段**）/ referenceDeathBudget /
+  physicalFoodOptimizerResult + 模块级一次性 wasm 引擎注入（真轮次用例零改动走 wasm）。
+- **TopTen / Pruning 集成 harness**：参照臂改「逐轮直调
+  `simulateFoodOptimizerRound`（预算 Infinity 跑满、含不可行候选）后自行聚合」——
+  不走生产 evaluator、不用轮次缓存、无成本剪枝；Pruning harness 参照臂走生产
+  evaluator（同引擎同种子，确定性保证逐候选一致）。describe 名去误导性的
+  "native-engine oracle"。
+- `foodOptimizerRoundCache.test.js`：缓存命中 vs wasm 重跑等价（阈值观测字段
+  equivalentThresholds / unusedFoodThresholds / inactiveFoodThresholds 属轮次缓存
+  簿记，比较前两边剥离）。
+- `foodOptimizerSharedRounds` / `foodOptimizerInactive.integration`：reference 改
+  `evaluateFoodOptimizerCandidate(request, target, Infinity)` 独立 evaluator 真跑。
+- 引擎 B 层测试改写：residualNonCombatDrink（映射守卫 + wasm 快照断言）/
+  partyAuraPreview（删端到端对照）/ combatUnitBuffSources（preview 等价断言）/
+  buffSourcePolicy / profitEstimator.scrollBuckets / playerRoundtripParity（改
+  wasm 动态注入）/ wasmEngineBenchmark（对照臂改 wasm-A/wasm-B）。
+
+### 21.4 useWasmEngine 开关清理
+
+- 删 5 处生产构造：`simulationDomain.js` / `advisorDomain.js` /
+  `advisorRunExecution.js` / `simulatorSimulationActions.js`（两处）。
+- `shouldUseWasmOptimizerRound` 函数 + 调用 + 判据用例全删（判据无意义，
+  `tryRunWasmProductionRound` 调用处硬编码 true）。
+- **保留的例外**：
+  - `foodOptimizerSnapshot.js` 的 `useWasmEngine: true`——该字段进输入签名，删除
+    会让存量缓存签名复活 = 隐性行为变化（注释已说明）。
+  - `multiWorker.js` 透传与 `worker.js` 无条件兜底——worker 消息形状兼容。
+  - `wasmProductionSimulation.js` 的 `useWasmEngine` 参数——API 形状（显式 true
+    才尝试），wiring 测试用它构造拒绝路径（disabled / no_zone / engine_unavailable
+    等诊断码断言）。
+
+### 21.5 scripts 处置
+
+删除 6 个 JS 基准/研究脚本：`benchmark-food-optimizer.mjs` /
+`benchmark-food-optimizer-top-ten.mjs` / `benchmark-combat-engine.mjs` /
+`trigger-optimizer-racing-study.mjs` / `trigger-optimizer-racing-study.engine.mjs` /
+`benchmark-food-optimizer-wasm.mjs`（js/wasm 双臂 A/B，js 臂前提已死——引擎
+wasm-only 后无 JS 路径可跑）；连带孤儿 `wasmOptimizerBenchmarkBridge.js` 与
+`tmp/wasm-optimizer-benchmark/`。`package.json` 删 `benchmark:combat-engine` 与
+`benchmark:wasm-optimizer` 两条 scripts。保留 `benchmark:wasm-engine`
+（`run-wasm-benchmark.mjs`，wasm-only 有意义）。
+
+### 21.6 验收
+
+- `npx vitest run`：**184 文件 / 2570 passed + 5 skipped 全绿**（13 个失败文件
+  修复：TopTen×4 / Pruning×2 / advisorDomain / simulationDomain / roundCache /
+  combatUnitBuffSources / partyAuraPreview 等）。
+- `cargo test` **128 passed**（本片无 Rust 改动）。
+- `npx prettier --check .` 全绿（`.prettierignore` 增 golden 目录）。
+- `npm run build` → `npm run verify-pages-build` 全过。
+- grep 审计：生产代码对已删 A 层模块的 import 清零。
+
+### 21.7 仍留 JS 的部分（截至切片 21B，终态）
+
+1. B 层（events 18 事件类 / combatUnit / player / zone / drops / combatActions 的
+   `CombatActionsCore` / combatPreviewContext）：预览与光环语义的生产消费仍在，
+   **不是**待删项。
+2. 公会试炼与无区域：**生产不可达的预留语义**（同 §17.5），接入时再评估——wasm
+   桥对二者返回 null，worker 硬失败路径只在生产不可达组合上成立。
+
+### 21.8 残留清扫（同日补刀）
+
+- 死产物清理：`tmp/combat-engine-benchmark/`、`tmp/food-optimizer-benchmark/`（已删脚本的输出目录）。
+- `engine/README.md`：slice 表 4/5/6 置 done（6 = 本切片闭环）、parity 探针节改为 golden 快照口径（再生成需显式 `GOLDEN_UPDATE=1`）、基准命令改 `benchmark:wasm-engine`（原 `benchmark:combat-engine` 已删，连带删去对已删 `syntheticCombatScenario.js` / `combatEngineParityHarness.test.js` 的引用）。`engine/pkg/README.md` 是 wasm-pack 生成物，不手改。
+- 悬空注释指针重定向：`triggerOptimizerCandidates.js`（4 处）/ `triggerOptimizerDomain.js` / `buffSourcePolicy.test.js` 中指向已删 `combatSimulator.js`（含行号）的引用，改指 `combatActions.js`（21A 方法体逐字搬移地）。
+- 过时契约注释更新：`wasmProductionSimulation.js` 头部与 `wasmProductionBridge.js`（3 处）的「静默回退 JS 引擎」措辞改为「worker 硬失败、无 JS 回退」（审计定案 D1 终态）；「与 JS 引擎逐字段一致（parity 对账）」改 golden 快照口径。
+- 死导出收回：`foodOptimizerSimulation.js` 的 `buildRoundSample` / `shouldInstallCostBoundObserver` 去 export（21A 为 JS oracle 增设的出口，消费方已随 oracle 删除，grep 确认仅剩模块内调用）。
+- 复验：全量 vitest **184 文件 / 2570 passed + 5 skipped**、prettier 全绿（engine/README.md 格式化后）。
+- 基准冒烟（`WASM_BENCH=1`，全量测试不覆盖该套件）：改臂后首次真实运行 **5/5 绿**，wasm-A/wasm-B 双臂 deaths 逐字段一致（顺带验证引擎确定性）；`run-wasm-benchmark.mjs` 头注释更新为双臂口径。
+- golden 确定性往返：`node scripts/generate-wasm-golden.mjs` 再生成全部 29 件 → SHA256 **零变化**（快照设施自洽：同一输入两次生成字节稳定，再生成入口可用）；§12.4 的 `benchmark:wasm-optimizer` 历史数字段加删除注记。

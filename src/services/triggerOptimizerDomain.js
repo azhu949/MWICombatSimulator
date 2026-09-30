@@ -900,8 +900,8 @@ function computeDeathPenalty(deathsPerHour, baselineDeathsPerHour, weightDeathSa
 //
 // 为什么需要它（2026-09-18）：旧口径只惩罚增加，用户目标里的「死亡更低」完全
 // 不得分——基线死 5/h、候选死 1/h 时贡献为 0，优化器无从区分「利润相当但更安全」
-// 的候选。注意重叠：引擎里死亡有真实成本（复活停摆 + 清增益 + 清控制，见
-// combatSimulator.js），dps/xp 已部分反映死亡代价，所以本项是偏好性加权，
+// 注意重叠：引擎里死亡有真实成本（复活停摆 + 清增益 + 清控制，语义自 21A 起
+// 保留在 combatActions.js），dps/xp 已部分反映死亡代价，所以本项是偏好性加权，
 // 量级刻意低于四大指标，不构成「送死换分」的逆向激励（增加死亡仍被惩罚）。
 function computeDeathReductionCredit(deathsPerHour, baselineDeathsPerHour, weightDeathSafety) {
   const current = Math.max(0, toFiniteNumber(deathsPerHour));

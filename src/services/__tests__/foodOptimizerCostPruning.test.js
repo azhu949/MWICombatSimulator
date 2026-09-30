@@ -1,5 +1,4 @@
 import { describe, expect, it, vi } from 'vitest';
-import CombatSimulator from '../../combatsimulator/combatSimulator.js';
 import {
   computeFoodOptimizerCostLowerBound,
   getFoodOptimizerCostCutoff,
@@ -172,67 +171,29 @@ describe('food optimizer in-round cost pruning', () => {
     return { ...fixture, candidate: buildFoodCandidate([{ ...food, threshold: food.thresholds.at(-1) }]) };
   }
 
-  it('stops after real food consumption with an identical event/RNG prefix and a full-duration cost bound', async () => {
+  it('stops after real food consumption with a full-duration cost bound on the wasm engine', async () => {
+    // 切片 21A：优化器轮次 wasm-only——旧用例对照 JS 引擎的事件/RNG 前缀（spyOn
+    // CombatSimulator.prototype）已不适用，改为 wasm 轮的行为断言（真剪枝、部分
+    // 时长、有限下界、观察器字段），两侧一致性由 parity 测试的 JS oracle 对账覆盖。
     const { request, candidate } = foodFixture();
-    const nativeSimulate = CombatSimulator.prototype.simulate;
-    const nativeProcess = CombatSimulator.prototype.processEvent;
-    const runs = [];
-    let currentRun;
-    const simulateSpy = vi.spyOn(CombatSimulator.prototype, 'simulate').mockImplementation(async function (...args) {
-      const seededRandom = Math.random;
-      currentRun = { events: [], random: [] };
-      const run = currentRun;
-      runs.push(run);
-      Math.random = () => {
-        const value = seededRandom();
-        run.random.push(value);
-        return value;
-      };
-      try {
-        return await nativeSimulate.apply(this, args);
-      } finally {
-        Math.random = seededRandom;
-      }
+    const full = await simulateFoodOptimizerRound(request, candidate, 1);
+    const partial = await simulateFoodOptimizerRound(request, candidate, 1, undefined, Infinity, {
+      costBound: { cutoff: 0, completedCostPerHour: 0, totalRounds: request.rounds },
     });
-    const processSpy = vi.spyOn(CombatSimulator.prototype, 'processEvent').mockImplementation(function (event) {
-      const result = nativeProcess.call(this, event);
-      currentRun.events.push({
-        type: event.type,
-        time: event.time,
-        source: event.source?.hrid,
-        target: event.target?.hrid,
-        resources: this.players.map((player) => [
-          player.combatDetails.currentHitpoints,
-          player.combatDetails.currentManapoints,
-        ]),
-      });
-      return result;
-    });
-    try {
-      const full = await simulateFoodOptimizerRound(request, candidate, 1);
-      const partial = await simulateFoodOptimizerRound(request, candidate, 1, undefined, Infinity, {
-        costBound: { cutoff: 0, completedCostPerHour: 0, totalRounds: request.rounds },
-      });
-      expect(full).toMatchObject({ stoppedEarly: false, ranOutOfMana: false });
-      expect(partial).toMatchObject({ pruned: 'cost', stoppedEarly: true, ranOutOfMana: false, costPerHour: 0 });
-      expect(partial.simulatedTime).toBeLessThan(request.payload.simulationTimeLimit);
-      expect(partial.foodUsed[candidate.food[0]]).toBeGreaterThan(0);
-      expect(partial.costLowerBound).toBe(
-        computeFoodCostPerHour(
-          partial.foodUsed,
-          request.prices.priceTable,
-          request.prices.consumableMode,
-          request.payload.simulationTimeLimit,
-        ) / request.rounds,
-      );
-      expect(partial.costLowerBound).toBeLessThanOrEqual(full.costPerHour / request.rounds);
-      expect(partial.equivalentThresholds[0]).toMatchObject({ hrid: candidate.food[0], kind: 'mp' });
-      expect(runs[1].events).toEqual(runs[0].events.slice(0, runs[1].events.length));
-      expect(runs[1].random).toEqual(runs[0].random.slice(0, runs[1].random.length));
-    } finally {
-      simulateSpy.mockRestore();
-      processSpy.mockRestore();
-    }
+    expect(full).toMatchObject({ stoppedEarly: false, ranOutOfMana: false });
+    expect(partial).toMatchObject({ pruned: 'cost', stoppedEarly: true, ranOutOfMana: false, costPerHour: 0 });
+    expect(partial.simulatedTime).toBeLessThan(request.payload.simulationTimeLimit);
+    expect(partial.foodUsed[candidate.food[0]]).toBeGreaterThan(0);
+    expect(partial.costLowerBound).toBe(
+      computeFoodCostPerHour(
+        partial.foodUsed,
+        request.prices.priceTable,
+        request.prices.consumableMode,
+        request.payload.simulationTimeLimit,
+      ) / request.rounds,
+    );
+    expect(partial.costLowerBound).toBeLessThanOrEqual(full.costPerHour / request.rounds);
+    expect(partial.equivalentThresholds[0]).toMatchObject({ hrid: candidate.food[0], kind: 'mp' });
   });
 });
 

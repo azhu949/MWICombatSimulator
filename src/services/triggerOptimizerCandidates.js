@@ -274,9 +274,9 @@ function classifyAbilityDefinition(definition) {
 //   · targeted_enemy → target.combatBuffs（当前目标；target 为空时直接返回 false）
 // 而 buff 挂在谁身上由技能定义的 abilityEffects[].targetType 决定：
 //   · self / allAllies   → 施法者身上一定有这份 buff（allAllies 的增益施加给
-//     this.players，其中含施法者自己，combatSimulator.js 1882-1902）
-//   · enemy / allEnemies → buff 只挂在被命中的敌人身上（combatSimulator.js
-//     2038-2043 把伤害类效果的 buff 加给 target）；施法者身上永远没有
+//     this.players，其中含施法者自己，combatActions.js 21A 自 combatSimulator 逐字搬移）
+//   · enemy / allEnemies → buff 只挂在被命中的敌人身上（combatActions.js 21A 同源
+//     搬移：伤害类效果的 buff 加给 target）；施法者身上永远没有
 // ⇒ 「条件配哪个依赖」不是风格问题：把敌人减益配到 self 上恒假（§13 的教训），
 //   每轮白跑一场模拟，精细档还占名额。分类只看 targetType，不靠 buff 名字猜。
 const CONDITION_SIDE_SELF = 'self';
@@ -340,9 +340,10 @@ function firstOwnCondition(definition, side) {
 // 写法，但旧生成器只会用**本技能自己**的 buff 条件（resolveOwnBuffConditions），
 // 跨技能的一条都不产。引擎侧是支持的：trigger.js 88-140 读的是施法者
 // `source.combatBuffs` 里的同名字段，**不区分这个增益是谁挂的**；而 allAllies 类光环
-// 的增益会施加到 `this.players`（= 含施法者自己，combatSimulator.js 1882-1902）——
-// 所以「自身吃到队友/光环技能的增益」在 self 依赖下可读、可写、有意义。
-// 目标侧同理：伤害类技能的减益挂在被命中的敌人身上（combatSimulator.js 2038-2043），
+// 的增益会施加到 `this.players`（= 含施法者自己，combatActions.js 21A 自
+// combatSimulator 逐字搬移）——所以「自身吃到队友/光环技能的增益」在 self 依赖下
+// 可读、可写、有意义。
+// 目标侧同理：伤害类技能的减益挂在被命中的敌人身上（同源搬移），
 // `targeted_enemy + is_active` 读的正是 target.combatBuffs（trigger.js 31-35）。
 //
 // 候选只从**其他已佩戴技能**的 buff 条件里取：

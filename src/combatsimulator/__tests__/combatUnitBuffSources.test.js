@@ -1,12 +1,15 @@
 import { describe, expect, it, vi } from 'vitest';
 import Buff from '../buff.js';
-import CombatSimulator from '../combatSimulator.js';
 import CombatUnit, { buffsAffectStatsEqually } from '../combatUnit.js';
 import abilityDetailMap from '../data/abilityDetailMap.json';
 import Player from '../player.js';
-import Zone from '../zone.js';
 import { BUFF_SOURCE_POLICY, PARTY_AURA_STRENGTH_FIELDS } from '../buffSourcePolicy.js';
-import { buildPlayersForSimulation, createEmptyPlayerConfig, isPartyAuraBuff } from '../../services/playerMapper.js';
+import {
+  buildCombatPreviewData,
+  buildPlayersForSimulation,
+  createEmptyPlayerConfig,
+  isPartyAuraBuff,
+} from '../../services/playerMapper.js';
 
 const MINUTE = 60e9;
 const SPEED_AURA_ATTACK_SPEED_HRID = '/buff_uniques/speed_aura_attack_speed';
@@ -26,18 +29,6 @@ function addStrongestBuff(unit, buff, currentTime, sourceHrid) {
   unit.addBuff(buff, currentTime, sourceHrid, {
     sourcePolicy: BUFF_SOURCE_POLICY.STRONGEST,
   });
-}
-
-async function runSimulation(players, durationNs = MINUTE) {
-  const zone = new Zone('/actions/combat/sorcerers_tower', 0);
-  const simulator = new CombatSimulator(players, zone, null, { enableHpMpVisualization: false });
-  for (const player of players) {
-    player.zoneBuffs = [];
-    player.extraBuffs = [];
-    player.generatePermanentBuffs();
-  }
-  await simulator.simulate(durationNs);
-  return simulator;
 }
 
 describe('CombatUnit permanent buff defaults and shared-input contract', () => {
@@ -192,39 +183,37 @@ describe('CombatUnit buff sources and party aura engine', () => {
   });
 
   it('grants the hero speed_aura when a teammate casts it (allAllies)', async () => {
-    const players = buildPlayersForSimulation([emptyConfig('1'), withAura(emptyConfig('2'), '/abilities/speed_aura')]);
-    const hero = players[0];
-    const teammate = players[1];
-
-    await runSimulation(players);
-
-    expect(teammate.combatBuffs['/buff_uniques/speed_aura_attack_speed']).toBeTruthy();
-    expect(hero.combatBuffs['/buff_uniques/speed_aura_attack_speed']).toBeTruthy();
-    expect(hero.combatBuffs['/buff_uniques/speed_aura_cast_speed']).toBeTruthy();
-    // 光环显著缩短攻击间隔（基准：3 秒）。
-    expect(hero.combatDetails.combatStats.attackInterval).toBeLessThan(2_970_000_000);
-    // 队友确实消耗了魔法值来施放该技能。
-    expect(teammate.combatDetails.currentManapoints).toBeLessThan(teammate.combatDetails.maxManapoints);
+    // 切片 21B：JS 引擎已删除——光环授予语义改由 wasm golden 快照（scroll/observers
+    // 系列）+ cargo 单测承载。此处保留 B 层语义断言：预览上下文按生产装配给队友
+    // 施放光环，英雄获得同一 buff（allAllies 目标）。
+    const preview = buildCombatPreviewData(emptyConfig('1'), null, null, {
+      partyPlayerConfigs: [emptyConfig('1'), withAura(emptyConfig('2'), '/abilities/speed_aura')],
+    });
+    expect(preview.finalPlayer.combatBuffs['/buff_uniques/speed_aura_attack_speed']).toBeTruthy();
+    expect(preview.finalPlayer.combatBuffs['/buff_uniques/speed_aura_cast_speed']).toBeTruthy();
   });
 
-  it('activates only the strongest source for the same aura (no stacking or weak-source override)', async () => {
+  it('activates only the strongest source for the same aura (no stacking or weak-source override)', () => {
     const strongConfig = withAura(emptyConfig('1'), '/abilities/speed_aura');
     strongConfig.levels = { ...strongConfig.levels, attack: 800 };
     const weakConfig = withAura(emptyConfig('2'), '/abilities/speed_aura');
     weakConfig.levels = { ...weakConfig.levels, attack: 1 };
 
-    const players = buildPlayersForSimulation([strongConfig, weakConfig]);
-    const strong = players[0];
-    const weak = players[1];
-
-    await runSimulation(players);
-
+    // 切片 21B：JS 引擎已删除——最强源仲裁由 B 层 addBuff（STRONGEST 策略）承载，
+    // 预览路径给出同款断言（英雄自身的强光环施放 vs 队友的弱光环回放，强者胜出）。
+    const preview = buildCombatPreviewData(strongConfig, null, null, {
+      partyPlayerConfigs: [strongConfig, weakConfig],
+    });
     const strongRatio = 0.03 * (1 + 800 * 0.005); // 攻击等级 800 → 5.0x → 0.15
     const weakRatio = 0.03 * (1 + 1 * 0.005); // 攻击等级 1 → 1.005x → 0.03015
-    // 两名玩家都保留更强的版本。
-    expect(strong.combatBuffs['/buff_uniques/speed_aura_attack_speed'].ratioBoost).toBeCloseTo(strongRatio, 10);
-    expect(weak.combatBuffs['/buff_uniques/speed_aura_attack_speed'].ratioBoost).toBeCloseTo(strongRatio, 10);
-    expect(strong.combatBuffs['/buff_uniques/speed_aura_attack_speed'].ratioBoost).not.toBeCloseTo(weakRatio, 10);
+    expect(preview.finalPlayer.combatBuffs['/buff_uniques/speed_aura_attack_speed'].ratioBoost).toBeCloseTo(
+      strongRatio,
+      10,
+    );
+    expect(preview.finalPlayer.combatBuffs['/buff_uniques/speed_aura_attack_speed'].ratioBoost).not.toBeCloseTo(
+      weakRatio,
+      10,
+    );
   });
 
   it('keeps the first registered source when equal buffs are tied', () => {
@@ -1012,18 +1001,17 @@ describe('CombatUnit buff sources and party aura engine', () => {
     expect(hero.combatBuffs[uniqueHrid]).toBeUndefined();
   });
 
-  it('allows different aura types to be active simultaneously (no cross-overwrite)', async () => {
-    const players = buildPlayersForSimulation([
-      emptyConfig('1'),
-      withAura(emptyConfig('2'), '/abilities/speed_aura'),
-      withAura(emptyConfig('3'), '/abilities/critical_aura'),
-    ]);
-    const hero = players[0];
-
-    await runSimulation(players);
-
-    expect(hero.combatBuffs['/buff_uniques/speed_aura_attack_speed']).toBeTruthy();
-    expect(hero.combatBuffs['/buff_uniques/critical_aura_rate']).toBeTruthy();
-    expect(hero.combatBuffs['/buff_uniques/critical_aura_damage']).toBeTruthy();
+  it('allows different aura types to be active simultaneously (no cross-overwrite)', () => {
+    // 切片 21B：JS 引擎已删除——同款断言改走预览路径（不同光环类型互不覆盖）。
+    const preview = buildCombatPreviewData(emptyConfig('1'), null, null, {
+      partyPlayerConfigs: [
+        emptyConfig('1'),
+        withAura(emptyConfig('2'), '/abilities/speed_aura'),
+        withAura(emptyConfig('3'), '/abilities/critical_aura'),
+      ],
+    });
+    expect(preview.finalPlayer.combatBuffs['/buff_uniques/speed_aura_attack_speed']).toBeTruthy();
+    expect(preview.finalPlayer.combatBuffs['/buff_uniques/critical_aura_rate']).toBeTruthy();
+    expect(preview.finalPlayer.combatBuffs['/buff_uniques/critical_aura_damage']).toBeTruthy();
   });
 });

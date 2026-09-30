@@ -1,0 +1,3631 @@
+[
+  {
+    "id": 1,
+    "op": "peek"
+  },
+  {
+    "op": "clear"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 8,
+    "op": "pop"
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 16,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "clear"
+  },
+  {
+    "id": null,
+    "op": "getMatchingByType"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": null,
+    "op": "pop"
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 23,
+    "op": "pop"
+  },
+  {
+    "id": 25,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 22,
+    "op": "pop"
+  },
+  {
+    "id": 26,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "id": 30,
+    "op": "pop"
+  },
+  {
+    "id": 29,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "id": 24,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 32,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "id": 28,
+    "op": "pop"
+  },
+  {
+    "id": 34,
+    "op": "pop"
+  },
+  {
+    "id": 33,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "id": 38,
+    "op": "getMatchingByType"
+  },
+  {
+    "id": 37,
+    "op": "pop"
+  },
+  {
+    "id": 43,
+    "op": "peek"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 40,
+    "op": "getMatchingByType"
+  },
+  {
+    "id": 38,
+    "op": "getMatchingByType"
+  },
+  {
+    "id": 43,
+    "op": "peek"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "id": 42,
+    "op": "getMatchingByType"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 43,
+    "op": "peek"
+  },
+  {
+    "id": 43,
+    "op": "pop"
+  },
+  {
+    "id": 38,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": true
+  },
+  {
+    "id": 55,
+    "op": "getMatchingByType"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 55,
+    "op": "pop"
+  },
+  {
+    "id": 53,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "id": 59,
+    "op": "pop"
+  },
+  {
+    "id": 36,
+    "op": "pop"
+  },
+  {
+    "id": 50,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": true
+  },
+  {
+    "id": 64,
+    "op": "pop"
+  },
+  {
+    "id": 67,
+    "op": "pop"
+  },
+  {
+    "id": 70,
+    "op": "pop"
+  },
+  {
+    "id": 35,
+    "op": "peek"
+  },
+  {
+    "id": 35,
+    "op": "pop"
+  },
+  {
+    "id": 52,
+    "op": "getMatchingByType"
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "id": 72,
+    "op": "pop"
+  },
+  {
+    "id": 42,
+    "op": "pop"
+  },
+  {
+    "id": 57,
+    "op": "pop"
+  },
+  {
+    "id": 62,
+    "op": "pop"
+  },
+  {
+    "id": 52,
+    "op": "pop"
+  },
+  {
+    "id": 46,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 58,
+    "op": "pop"
+  },
+  {
+    "id": 85,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 88,
+    "op": "pop"
+  },
+  {
+    "id": 86,
+    "op": "getMatchingByType"
+  },
+  {
+    "id": 86,
+    "op": "peek"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 91,
+    "op": "peek"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 91,
+    "op": "pop"
+  },
+  {
+    "id": 93,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "id": 89,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 92,
+    "op": "peek"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 97,
+    "op": "peek"
+  },
+  {
+    "id": 99,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 97,
+    "op": "pop"
+  },
+  {
+    "id": 101,
+    "op": "peek"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 101,
+    "op": "getMatchingByType"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": true
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 106,
+    "op": "pop"
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 107,
+    "op": "pop"
+  },
+  {
+    "id": 104,
+    "op": "pop"
+  },
+  {
+    "id": 113,
+    "op": "pop"
+  },
+  {
+    "op": "clear"
+  },
+  {
+    "id": null,
+    "op": "pop"
+  },
+  {
+    "id": null,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 122,
+    "op": "peek"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 122,
+    "op": "peek"
+  },
+  {
+    "id": 122,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 127,
+    "op": "pop"
+  },
+  {
+    "id": 130,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 134,
+    "op": "pop"
+  },
+  {
+    "id": 133,
+    "op": "pop"
+  },
+  {
+    "id": 124,
+    "op": "pop"
+  },
+  {
+    "id": 136,
+    "op": "pop"
+  },
+  {
+    "id": 137,
+    "op": "peek"
+  },
+  {
+    "id": 137,
+    "op": "pop"
+  },
+  {
+    "id": 138,
+    "op": "pop"
+  },
+  {
+    "id": 131,
+    "op": "peek"
+  },
+  {
+    "id": 128,
+    "op": "getMatchingByType"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 139,
+    "op": "pop"
+  },
+  {
+    "id": 142,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 144,
+    "op": "peek"
+  },
+  {
+    "id": 148,
+    "op": "pop"
+  },
+  {
+    "id": 150,
+    "op": "pop"
+  },
+  {
+    "id": 144,
+    "op": "pop"
+  },
+  {
+    "id": 152,
+    "op": "pop"
+  },
+  {
+    "id": 146,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "id": 155,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 154,
+    "op": "pop"
+  },
+  {
+    "id": 156,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "id": 161,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 163,
+    "op": "pop"
+  },
+  {
+    "id": 167,
+    "op": "pop"
+  },
+  {
+    "id": 168,
+    "op": "pop"
+  },
+  {
+    "id": 166,
+    "op": "peek"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": true
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 172,
+    "op": "peek"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 180,
+    "op": "pop"
+  },
+  {
+    "id": 178,
+    "op": "peek"
+  },
+  {
+    "id": 182,
+    "op": "pop"
+  },
+  {
+    "id": 184,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 186,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 179,
+    "op": "getMatchingByType"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 195,
+    "op": "pop"
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "op": "clear"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "id": 208,
+    "op": "pop"
+  },
+  {
+    "id": null,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 211,
+    "op": "pop"
+  },
+  {
+    "id": 213,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 214,
+    "op": "peek"
+  },
+  {
+    "id": 214,
+    "op": "peek"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 221,
+    "op": "peek"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 221,
+    "op": "pop"
+  },
+  {
+    "id": 214,
+    "op": "pop"
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "id": 212,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 233,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 235,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 240,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 242,
+    "op": "pop"
+  },
+  {
+    "id": 241,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 232,
+    "op": "pop"
+  },
+  {
+    "id": 243,
+    "op": "pop"
+  },
+  {
+    "id": 245,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 249,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "id": 250,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 252,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "id": 247,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "id": 256,
+    "op": "pop"
+  },
+  {
+    "id": 234,
+    "op": "pop"
+  },
+  {
+    "id": 251,
+    "op": "peek"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 258,
+    "op": "pop"
+  },
+  {
+    "id": 260,
+    "op": "peek"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 260,
+    "op": "pop"
+  },
+  {
+    "id": 266,
+    "op": "pop"
+  },
+  {
+    "id": 261,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 269,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 264,
+    "op": "pop"
+  },
+  {
+    "id": 262,
+    "op": "pop"
+  },
+  {
+    "id": 273,
+    "op": "pop"
+  },
+  {
+    "id": 259,
+    "op": "pop"
+  },
+  {
+    "id": 275,
+    "op": "peek"
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 278,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "id": 265,
+    "op": "pop"
+  },
+  {
+    "id": 280,
+    "op": "pop"
+  },
+  {
+    "id": 282,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 288,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 286,
+    "op": "pop"
+  },
+  {
+    "id": 284,
+    "op": "pop"
+  },
+  {
+    "id": 285,
+    "op": "pop"
+  },
+  {
+    "id": 291,
+    "op": "pop"
+  },
+  {
+    "id": 283,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 287,
+    "op": "pop"
+  },
+  {
+    "id": 289,
+    "op": "peek"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 296,
+    "op": "peek"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 296,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "id": 267,
+    "op": "peek"
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "id": 267,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 300,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 299,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "id": 309,
+    "op": "peek"
+  },
+  {
+    "id": 309,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 315,
+    "op": "peek"
+  },
+  {
+    "id": 302,
+    "op": "getMatchingByType"
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 321,
+    "op": "peek"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 321,
+    "op": "pop"
+  },
+  {
+    "id": 324,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 315,
+    "op": "peek"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "op": "clear"
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "id": null,
+    "op": "pop"
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "id": 350,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "id": 351,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "id": 355,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "id": 363,
+    "op": "pop"
+  },
+  {
+    "id": 354,
+    "op": "pop"
+  },
+  {
+    "id": 362,
+    "op": "getMatchingByType"
+  },
+  {
+    "id": 370,
+    "op": "pop"
+  },
+  {
+    "id": 375,
+    "op": "pop"
+  },
+  {
+    "id": 374,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 369,
+    "op": "peek"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "id": 381,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 385,
+    "op": "peek"
+  },
+  {
+    "id": 357,
+    "op": "getMatchingByType"
+  },
+  {
+    "id": 385,
+    "op": "peek"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "id": 385,
+    "op": "getMatchingByType"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 385,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 391,
+    "op": "pop"
+  },
+  {
+    "id": 390,
+    "op": "pop"
+  },
+  {
+    "id": 387,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 394,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 395,
+    "op": "peek"
+  },
+  {
+    "id": 395,
+    "op": "peek"
+  },
+  {
+    "id": 395,
+    "op": "pop"
+  },
+  {
+    "id": 397,
+    "op": "pop"
+  },
+  {
+    "id": 357,
+    "op": "pop"
+  },
+  {
+    "id": 401,
+    "op": "pop"
+  },
+  {
+    "id": 399,
+    "op": "pop"
+  },
+  {
+    "id": 403,
+    "op": "pop"
+  },
+  {
+    "id": 400,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": true
+  },
+  {
+    "id": 405,
+    "op": "pop"
+  },
+  {
+    "id": 372,
+    "op": "pop"
+  },
+  {
+    "id": 396,
+    "op": "pop"
+  },
+  {
+    "id": 402,
+    "op": "peek"
+  },
+  {
+    "id": 402,
+    "op": "peek"
+  },
+  {
+    "id": 407,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 408,
+    "op": "peek"
+  },
+  {
+    "id": 409,
+    "op": "pop"
+  },
+  {
+    "id": 411,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 417,
+    "op": "peek"
+  },
+  {
+    "id": 417,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 398,
+    "op": "getMatchingByType"
+  },
+  {
+    "id": 419,
+    "op": "pop"
+  },
+  {
+    "id": 420,
+    "op": "pop"
+  },
+  {
+    "op": "clear"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 424,
+    "op": "pop"
+  },
+  {
+    "id": 428,
+    "op": "peek"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 428,
+    "op": "getMatchingByType"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 428,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 432,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "id": 440,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "id": 442,
+    "op": "peek"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": true
+  },
+  {
+    "id": 452,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "id": 442,
+    "op": "peek"
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 463,
+    "op": "pop"
+  },
+  {
+    "id": 441,
+    "op": "pop"
+  },
+  {
+    "id": null,
+    "op": "getMatchingByType"
+  },
+  {
+    "id": 467,
+    "op": "pop"
+  },
+  {
+    "id": 466,
+    "op": "pop"
+  },
+  {
+    "id": 465,
+    "op": "pop"
+  },
+  {
+    "id": 469,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 477,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "op": "clear"
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "id": 484,
+    "op": "pop"
+  },
+  {
+    "id": null,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 492,
+    "op": "pop"
+  },
+  {
+    "id": 489,
+    "op": "pop"
+  },
+  {
+    "id": 485,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 486,
+    "op": "pop"
+  },
+  {
+    "id": 496,
+    "op": "pop"
+  },
+  {
+    "id": 488,
+    "op": "getMatchingByType"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 490,
+    "op": "pop"
+  },
+  {
+    "id": 488,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": true
+  },
+  {
+    "id": 497,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 493,
+    "op": "pop"
+  },
+  {
+    "id": 500,
+    "op": "peek"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 500,
+    "op": "peek"
+  },
+  {
+    "id": 500,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "id": 499,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 498,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 508,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 510,
+    "op": "pop"
+  },
+  {
+    "id": 506,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 511,
+    "op": "pop"
+  },
+  {
+    "id": 513,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 514,
+    "op": "peek"
+  },
+  {
+    "op": "clear"
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": true
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 526,
+    "op": "pop"
+  },
+  {
+    "id": 516,
+    "op": "pop"
+  },
+  {
+    "id": 522,
+    "op": "pop"
+  },
+  {
+    "id": 518,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 527,
+    "op": "peek"
+  },
+  {
+    "id": 527,
+    "op": "peek"
+  },
+  {
+    "id": 527,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 515,
+    "op": "getMatchingByType"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "id": 524,
+    "op": "pop"
+  },
+  {
+    "id": 535,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 534,
+    "op": "pop"
+  },
+  {
+    "id": 538,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 536,
+    "op": "peek"
+  },
+  {
+    "id": 536,
+    "op": "peek"
+  },
+  {
+    "id": 536,
+    "op": "peek"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 546,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 547,
+    "op": "getMatchingByType"
+  },
+  {
+    "id": 548,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 553,
+    "op": "pop"
+  },
+  {
+    "id": 566,
+    "op": "pop"
+  },
+  {
+    "id": 547,
+    "op": "pop"
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "id": 562,
+    "op": "peek"
+  },
+  {
+    "id": 571,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "id": 573,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "id": 574,
+    "op": "peek"
+  },
+  {
+    "id": 574,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "op": "clear"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": null,
+    "op": "getMatchingByType"
+  },
+  {
+    "op": "clear"
+  },
+  {
+    "id": null,
+    "op": "pop"
+  },
+  {
+    "id": 598,
+    "op": "peek"
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 600,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 605,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 603,
+    "op": "peek"
+  },
+  {
+    "id": 603,
+    "op": "pop"
+  },
+  {
+    "id": 611,
+    "op": "getMatchingByType"
+  },
+  {
+    "id": 611,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 612,
+    "op": "peek"
+  },
+  {
+    "id": 612,
+    "op": "peek"
+  },
+  {
+    "id": 612,
+    "op": "peek"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 612,
+    "op": "pop"
+  },
+  {
+    "id": 621,
+    "op": "pop"
+  },
+  {
+    "id": 615,
+    "op": "pop"
+  },
+  {
+    "id": 622,
+    "op": "pop"
+  },
+  {
+    "id": 632,
+    "op": "pop"
+  },
+  {
+    "id": 633,
+    "op": "pop"
+  },
+  {
+    "id": 627,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 641,
+    "op": "pop"
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "id": 645,
+    "op": "peek"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 645,
+    "op": "pop"
+  },
+  {
+    "id": 623,
+    "op": "pop"
+  },
+  {
+    "id": 647,
+    "op": "pop"
+  },
+  {
+    "id": 650,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "id": 648,
+    "op": "pop"
+  },
+  {
+    "id": 642,
+    "op": "peek"
+  },
+  {
+    "id": 642,
+    "op": "peek"
+  },
+  {
+    "id": 642,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 655,
+    "op": "peek"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": true
+  },
+  {
+    "op": "clear"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 675,
+    "op": "pop"
+  },
+  {
+    "id": 676,
+    "op": "pop"
+  },
+  {
+    "id": 677,
+    "op": "pop"
+  },
+  {
+    "id": 678,
+    "op": "pop"
+  },
+  {
+    "id": 672,
+    "op": "pop"
+  },
+  {
+    "id": 679,
+    "op": "peek"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "id": 679,
+    "op": "pop"
+  },
+  {
+    "id": 681,
+    "op": "pop"
+  },
+  {
+    "id": 683,
+    "op": "pop"
+  },
+  {
+    "id": 684,
+    "op": "peek"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "id": null,
+    "op": "getMatchingByType"
+  },
+  {
+    "id": 689,
+    "op": "pop"
+  },
+  {
+    "id": 690,
+    "op": "getMatchingByType"
+  },
+  {
+    "id": 696,
+    "op": "pop"
+  },
+  {
+    "id": 692,
+    "op": "pop"
+  },
+  {
+    "op": "clear"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "clear"
+  },
+  {
+    "id": null,
+    "op": "peek"
+  },
+  {
+    "id": 709,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 712,
+    "op": "peek"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 714,
+    "op": "peek"
+  },
+  {
+    "op": "clear"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 718,
+    "op": "peek"
+  },
+  {
+    "id": 718,
+    "op": "pop"
+  },
+  {
+    "id": 719,
+    "op": "pop"
+  },
+  {
+    "id": 723,
+    "op": "peek"
+  },
+  {
+    "id": 723,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 726,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 729,
+    "op": "pop"
+  },
+  {
+    "id": null,
+    "op": "getMatchingByType"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 732,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": null,
+    "op": "pop"
+  },
+  {
+    "id": null,
+    "op": "peek"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": null,
+    "op": "pop"
+  },
+  {
+    "id": 737,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 736,
+    "op": "pop"
+  },
+  {
+    "id": 735,
+    "op": "pop"
+  },
+  {
+    "id": null,
+    "op": "getMatchingByType"
+  },
+  {
+    "id": 740,
+    "op": "peek"
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "id": 744,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 738,
+    "op": "getMatchingByType"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 748,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "id": 738,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": true
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "id": 755,
+    "op": "getMatchingByType"
+  },
+  {
+    "id": 758,
+    "op": "pop"
+  },
+  {
+    "id": 754,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "id": 770,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 772,
+    "op": "pop"
+  },
+  {
+    "id": 777,
+    "op": "peek"
+  },
+  {
+    "id": 777,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 782,
+    "op": "pop"
+  },
+  {
+    "id": 776,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "id": 783,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 789,
+    "op": "peek"
+  },
+  {
+    "id": 789,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "id": 793,
+    "op": "peek"
+  },
+  {
+    "id": 793,
+    "op": "pop"
+  },
+  {
+    "id": 766,
+    "op": "pop"
+  },
+  {
+    "id": 769,
+    "op": "pop"
+  },
+  {
+    "id": 795,
+    "op": "pop"
+  },
+  {
+    "id": 778,
+    "op": "peek"
+  },
+  {
+    "id": 794,
+    "op": "getMatchingByType"
+  },
+  {
+    "id": 781,
+    "op": "getMatchingByType"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 784,
+    "op": "peek"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": true
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": true
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": true
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 805,
+    "op": "pop"
+  },
+  {
+    "id": 807,
+    "op": "pop"
+  },
+  {
+    "id": 809,
+    "op": "pop"
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "op": "clear"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 818,
+    "op": "pop"
+  },
+  {
+    "id": 821,
+    "op": "pop"
+  },
+  {
+    "id": 819,
+    "op": "peek"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 826,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "clear"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 835,
+    "op": "pop"
+  },
+  {
+    "id": 840,
+    "op": "peek"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "id": 840,
+    "op": "peek"
+  },
+  {
+    "id": 840,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 841,
+    "op": "pop"
+  },
+  {
+    "id": 842,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 834,
+    "op": "pop"
+  },
+  {
+    "id": 843,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 845,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "id": 846,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 849,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "id": 854,
+    "op": "pop"
+  },
+  {
+    "id": 862,
+    "op": "pop"
+  },
+  {
+    "id": 853,
+    "op": "pop"
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "id": 856,
+    "op": "pop"
+  },
+  {
+    "id": 864,
+    "op": "pop"
+  },
+  {
+    "id": 861,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "id": 860,
+    "op": "peek"
+  },
+  {
+    "id": 871,
+    "op": "pop"
+  },
+  {
+    "id": 869,
+    "op": "pop"
+  },
+  {
+    "id": 878,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 872,
+    "op": "getMatchingByType"
+  },
+  {
+    "id": 880,
+    "op": "peek"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 880,
+    "op": "peek"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 880,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "id": 882,
+    "op": "pop"
+  },
+  {
+    "id": 889,
+    "op": "peek"
+  },
+  {
+    "id": 889,
+    "op": "pop"
+  },
+  {
+    "id": 881,
+    "op": "getMatchingByType"
+  },
+  {
+    "id": 881,
+    "op": "peek"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": true
+  },
+  {
+    "id": 881,
+    "op": "pop"
+  },
+  {
+    "id": 892,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 906,
+    "op": "pop"
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 904,
+    "op": "pop"
+  },
+  {
+    "id": 908,
+    "op": "peek"
+  },
+  {
+    "id": 908,
+    "op": "peek"
+  },
+  {
+    "id": 908,
+    "op": "pop"
+  },
+  {
+    "id": 919,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 914,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 917,
+    "op": "pop"
+  },
+  {
+    "id": 926,
+    "op": "peek"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 930,
+    "op": "peek"
+  },
+  {
+    "id": 929,
+    "op": "getMatchingByType"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 930,
+    "op": "peek"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 930,
+    "op": "peek"
+  },
+  {
+    "id": 930,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "id": 929,
+    "op": "pop"
+  },
+  {
+    "id": 940,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 936,
+    "op": "peek"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 936,
+    "op": "pop"
+  },
+  {
+    "id": 932,
+    "op": "peek"
+  },
+  {
+    "id": 932,
+    "op": "getMatchingByType"
+  },
+  {
+    "id": 932,
+    "op": "pop"
+  },
+  {
+    "id": 938,
+    "op": "pop"
+  },
+  {
+    "id": 943,
+    "op": "pop"
+  },
+  {
+    "id": 941,
+    "op": "pop"
+  },
+  {
+    "id": 953,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 957,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": true
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "id": 931,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 961,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 963,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 955,
+    "op": "pop"
+  },
+  {
+    "id": 933,
+    "op": "pop"
+  },
+  {
+    "id": 967,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 907,
+    "op": "pop"
+  },
+  {
+    "id": 971,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 960,
+    "op": "peek"
+  },
+  {
+    "id": 973,
+    "op": "pop"
+  },
+  {
+    "id": 960,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 979,
+    "op": "pop"
+  },
+  {
+    "id": 985,
+    "op": "pop"
+  },
+  {
+    "id": 977,
+    "op": "pop"
+  },
+  {
+    "id": 987,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": true
+  },
+  {
+    "id": 990,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 999,
+    "op": "pop"
+  },
+  {
+    "id": 997,
+    "op": "peek"
+  },
+  {
+    "id": 997,
+    "op": "pop"
+  },
+  {
+    "id": 991,
+    "op": "peek"
+  },
+  {
+    "id": 1004,
+    "op": "peek"
+  },
+  {
+    "id": 1004,
+    "op": "pop"
+  },
+  {
+    "id": 998,
+    "op": "getMatchingByType"
+  },
+  {
+    "id": 909,
+    "op": "getMatchingByType"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "clear"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 1018,
+    "op": "getMatchingByType"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 1020,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 1025,
+    "op": "peek"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 1030,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 1036,
+    "op": "peek"
+  },
+  {
+    "id": 1036,
+    "op": "peek"
+  },
+  {
+    "op": "clear"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 1043,
+    "op": "pop"
+  },
+  {
+    "id": null,
+    "op": "getMatchingByType"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 1045,
+    "op": "peek"
+  },
+  {
+    "id": 1045,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  },
+  {
+    "id": 1058,
+    "op": "pop"
+  },
+  {
+    "id": 1044,
+    "op": "peek"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "id": 1061,
+    "op": "pop"
+  },
+  {
+    "id": 1044,
+    "op": "pop"
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "id": 1071,
+    "op": "pop"
+  },
+  {
+    "id": 1070,
+    "op": "pop"
+  },
+  {
+    "id": 1076,
+    "op": "pop"
+  },
+  {
+    "id": 1084,
+    "op": "pop"
+  },
+  {
+    "id": 1075,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "id": 1066,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "id": 1078,
+    "op": "peek"
+  },
+  {
+    "id": 1078,
+    "op": "peek"
+  },
+  {
+    "id": 1078,
+    "op": "pop"
+  },
+  {
+    "id": 1074,
+    "op": "pop"
+  },
+  {
+    "op": "clear"
+  }
+]

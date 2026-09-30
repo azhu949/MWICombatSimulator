@@ -1,0 +1,710 @@
+{
+  "error": null,
+  "eventCount": 29,
+  "eventTrace": [
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 0,
+      "type": "combatStart",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/brute/0",
+      "target": null,
+      "time": 661157024.7933884,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/frail/0",
+      "target": null,
+      "time": 990074503.106359,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/brute/0",
+      "target": null,
+      "time": 1322314049.5867767,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 10000000000,
+      "type": "regenTick",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 20000000000,
+      "type": "regenTick",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 30000000000,
+      "type": "regenTick",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 40000000000,
+      "type": "regenTick",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 50000000000,
+      "type": "regenTick",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 60000000000,
+      "type": "enrageTick",
+      "value": 60000000000
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 60000000000,
+      "type": "regenTick",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 60000000000,
+      "type": "cooldownReady",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 70000000000,
+      "type": "regenTick",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 80000000000,
+      "type": "regenTick",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 90000000000,
+      "type": "regenTick",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 100000000000,
+      "type": "regenTick",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 110000000000,
+      "type": "regenTick",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 120000000000,
+      "type": "enrageTick",
+      "value": 120000000000
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 120000000000,
+      "type": "regenTick",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 130000000000,
+      "type": "regenTick",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 140000000000,
+      "type": "regenTick",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 150000000000,
+      "type": "regenTick",
+      "value": null
+    },
+    {
+      "hrid": "/parity/frail/0",
+      "source": null,
+      "target": null,
+      "time": 151322314049.5868,
+      "type": "playerRespawn",
+      "value": null
+    },
+    {
+      "hrid": "/abilities/stunning_blow",
+      "source": "/parity/brute/0",
+      "target": null,
+      "time": 151572314049.5868,
+      "type": "abilityCastEndEvent",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": "/parity/brute/0",
+      "target": null,
+      "time": 152233471074.3802,
+      "type": "autoAttack",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 160000000000,
+      "type": "regenTick",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 170000000000,
+      "type": "regenTick",
+      "value": null
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 180000000000,
+      "type": "enrageTick",
+      "value": 180000000000
+    },
+    {
+      "hrid": null,
+      "source": null,
+      "target": null,
+      "time": 180000000000,
+      "type": "regenTick",
+      "value": null
+    }
+  ],
+  "resultCallCount": 19,
+  "resultCalls": [
+    {
+      "args": [
+        true,
+        ""
+      ],
+      "method": "setScrollUsageContext"
+    },
+    {
+      "args": [
+        true
+      ],
+      "method": "setScrollUsageDisabled"
+    },
+    {
+      "args": [
+        "/parity/brute/0",
+        true,
+        0
+      ],
+      "method": "updateTimeSpentAlive"
+    },
+    {
+      "args": [
+        "/parity/frail/0",
+        "/items/donut"
+      ],
+      "method": "addConsumableUse"
+    },
+    {
+      "args": [
+        "/parity/frail/0",
+        "/items/donut",
+        0
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/brute/0",
+        "/parity/frail/0",
+        "autoAttack",
+        160
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/frail/0",
+        "/parity/brute/0",
+        "autoAttack",
+        "miss"
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/frail/0",
+        false,
+        990074503.106359
+      ],
+      "method": "addRanOutOfManaCount"
+    },
+    {
+      "args": [
+        "/parity/brute/0",
+        "/parity/frail/0",
+        "autoAttack",
+        40
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/frail/0"
+      ],
+      "method": "addDeath"
+    },
+    {
+      "args": [
+        "/parity/frail/0",
+        false,
+        1322314049.5867767
+      ],
+      "method": "addRanOutOfManaCount"
+    },
+    {
+      "args": [
+        "/parity/frail/0",
+        "/items/donut"
+      ],
+      "method": "addConsumableUse"
+    },
+    {
+      "args": [
+        "/parity/frail/0",
+        "/items/donut",
+        0
+      ],
+      "method": "addHitpointsGained"
+    },
+    {
+      "args": [
+        "/parity/brute/0",
+        "/parity/frail/0",
+        "/abilities/stunning_blow",
+        108
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/brute/0",
+        "/parity/frail/0",
+        "autoAttack",
+        92
+      ],
+      "method": "addAttack"
+    },
+    {
+      "args": [
+        "/parity/frail/0"
+      ],
+      "method": "addDeath"
+    },
+    {
+      "args": [
+        "/parity/frail/0",
+        false,
+        152233471074.3802
+      ],
+      "method": "addRanOutOfManaCount"
+    },
+    {
+      "args": [
+        "/parity/frail/0"
+      ],
+      "method": "setDropRateMultipliers"
+    },
+    {
+      "args": [
+        "/parity/frail/0"
+      ],
+      "method": "setManaUsed"
+    }
+  ],
+  "simulatedTime": 190000000000,
+  "stoppedEarly": false,
+  "units": [
+    {
+      "abilities": [
+        {
+          "hrid": "/abilities/minor_heal",
+          "lastUsed": -9007199254740991
+        },
+        null,
+        null,
+        null
+      ],
+      "abilityManaCosts": [],
+      "blindExpireTime": null,
+      "combatBuffKeys": [],
+      "combatBuffs": {},
+      "combatDetails": {
+        "abilityHaste": 0,
+        "attackLevel": 10,
+        "combatStats": {
+          "abilityDamage": 0,
+          "armor": 0,
+          "armorDamageRatio": 0,
+          "armorPenetration": 0,
+          "attackExperience": 0,
+          "attackInterval": 990074503.106359,
+          "attackSpeed": 0,
+          "autoAttackDamage": 0,
+          "blaze": 0,
+          "bloom": 0,
+          "castSpeed": 0.01,
+          "combatDropQuantity": 0,
+          "combatDropRate": 0,
+          "combatExperience": 0,
+          "combatRareFind": 0,
+          "combatStyleHrid": "/combat_styles/smash",
+          "criticalDamage": 0,
+          "criticalRate": 0,
+          "curse": 0,
+          "damageTaken": 0,
+          "damageType": "/damage_types/physical",
+          "defenseExperience": 0,
+          "defensiveDamage": 0,
+          "drinkConcentration": 0,
+          "drinkSlots": 1,
+          "elementalThorns": 0,
+          "fireAmplify": 0,
+          "firePenetration": 0,
+          "fireResistance": 0,
+          "focusTraining": "",
+          "foodHaste": 0,
+          "foodSlots": 1,
+          "fury": 0,
+          "healingAmplify": 0,
+          "hpDrainRatio": 0,
+          "hpRegenPer10": 0.02,
+          "intelligenceExperience": 0,
+          "lifeSteal": 0,
+          "magicAccuracy": 0,
+          "magicDamage": 0,
+          "magicEvasion": 0,
+          "magicExperience": 0,
+          "manaLeech": 0,
+          "maxHitpoints": 0,
+          "maxHitpointsRatio": 0,
+          "maxManapoints": 0,
+          "maxManapointsRatio": 0,
+          "mayhem": 0,
+          "meleeExperience": 0,
+          "mpRegenPer10": 0.02,
+          "natureAmplify": 0,
+          "naturePenetration": 0,
+          "natureResistance": 0,
+          "parry": 0,
+          "physicalAmplify": 0,
+          "physicalThorns": 0,
+          "pierce": 0,
+          "primaryTraining": "",
+          "rangedAccuracy": 0,
+          "rangedDamage": 0,
+          "rangedEvasion": 0,
+          "rangedExperience": 0,
+          "retaliation": 0,
+          "ripple": 0,
+          "slashAccuracy": 0,
+          "slashDamage": 0,
+          "slashEvasion": 0,
+          "smashAccuracy": 0,
+          "smashDamage": 0,
+          "smashEvasion": 0,
+          "stabAccuracy": 0,
+          "stabDamage": 0,
+          "stabEvasion": 0,
+          "staminaExperience": 0,
+          "taskDamage": 0,
+          "tenacity": null,
+          "threat": 300,
+          "waterAmplify": 0,
+          "waterPenetration": 0,
+          "waterResistance": 0,
+          "weaken": 0
+        },
+        "currentHitpoints": 0,
+        "currentManapoints": 300,
+        "defenseLevel": 1,
+        "defensiveMaxDamage": 11,
+        "intelligenceLevel": 20,
+        "magicAccuracyRating": 20,
+        "magicEvasionRating": 11,
+        "magicLevel": 10,
+        "magicMaxDamage": 20,
+        "maxHitpoints": 200,
+        "maxManapoints": 300,
+        "meleeLevel": 10,
+        "rangedAccuracyRating": 20,
+        "rangedEvasionRating": 11,
+        "rangedLevel": 1,
+        "rangedMaxDamage": 11,
+        "slashAccuracyRating": 20,
+        "slashEvasionRating": 11,
+        "slashMaxDamage": 20,
+        "smashAccuracyRating": 20,
+        "smashEvasionRating": 11,
+        "smashMaxDamage": 20,
+        "stabAccuracyRating": 20,
+        "stabEvasionRating": 11,
+        "stabMaxDamage": 20,
+        "staminaLevel": 10,
+        "tenacity": 0,
+        "totalArmor": 0.2,
+        "totalFireResistance": 0.2,
+        "totalNatureResistance": 0.2,
+        "totalThreat": 300,
+        "totalWaterResistance": 0.2
+      },
+      "currentHitpoints": 0,
+      "currentManapoints": 300,
+      "drinks": [
+        null,
+        null,
+        null
+      ],
+      "enrageTime": 0,
+      "experience": 0,
+      "food": [
+        {
+          "hrid": "/items/donut",
+          "lastUsed": 151322314049.5868
+        },
+        null,
+        null
+      ],
+      "hrid": "/parity/frail/0",
+      "isBlinded": false,
+      "isOutOfMana": false,
+      "isPlayer": true,
+      "isSilenced": false,
+      "isStunned": false,
+      "maxHitpoints": 200,
+      "maxManapoints": 300,
+      "silenceExpireTime": null,
+      "stunExpireTime": null,
+      "weakenExpireTime": null
+    },
+    {
+      "abilities": [
+        {
+          "hrid": "/abilities/stunning_blow",
+          "lastUsed": 151572314049.5868
+        },
+        null,
+        null,
+        null
+      ],
+      "abilityManaCosts": [],
+      "blindExpireTime": null,
+      "combatBuffKeys": [],
+      "combatBuffs": {},
+      "combatDetails": {
+        "abilityHaste": 0,
+        "attackLevel": 200,
+        "combatStats": {
+          "abilityDamage": 0,
+          "armor": 0,
+          "armorDamageRatio": 0,
+          "armorPenetration": 0,
+          "attackExperience": 0,
+          "attackInterval": 661157024.7933884,
+          "attackSpeed": 0,
+          "autoAttackDamage": 0,
+          "blaze": 0,
+          "bloom": 0,
+          "castSpeed": 0.2,
+          "combatDropQuantity": 0,
+          "combatDropRate": 0,
+          "combatExperience": 0,
+          "combatRareFind": 0,
+          "combatStyleHrid": "/combat_styles/smash",
+          "criticalDamage": 0,
+          "criticalRate": 0,
+          "curse": 0,
+          "damageTaken": 0,
+          "damageType": "/damage_types/physical",
+          "defenseExperience": 0,
+          "defensiveDamage": 0,
+          "drinkConcentration": 0,
+          "drinkSlots": 1,
+          "elementalThorns": 0,
+          "fireAmplify": 0,
+          "firePenetration": 0,
+          "fireResistance": 0,
+          "focusTraining": "",
+          "foodHaste": 0,
+          "foodSlots": 1,
+          "fury": 0,
+          "healingAmplify": 0,
+          "hpDrainRatio": 0,
+          "hpRegenPer10": 0.01,
+          "intelligenceExperience": 0,
+          "lifeSteal": 0,
+          "magicAccuracy": 0,
+          "magicDamage": 0,
+          "magicEvasion": 0,
+          "magicExperience": 0,
+          "manaLeech": 0,
+          "maxHitpoints": 0,
+          "maxHitpointsRatio": 0,
+          "maxManapoints": 0,
+          "maxManapointsRatio": 0,
+          "mayhem": 0,
+          "meleeExperience": 0,
+          "mpRegenPer10": 0.01,
+          "natureAmplify": 0,
+          "naturePenetration": 0,
+          "natureResistance": 0,
+          "parry": 0,
+          "physicalAmplify": 0,
+          "physicalThorns": 0,
+          "pierce": 0,
+          "primaryTraining": "",
+          "rangedAccuracy": 0,
+          "rangedDamage": 0,
+          "rangedEvasion": 0,
+          "rangedExperience": 0,
+          "retaliation": 0,
+          "ripple": 0,
+          "slashAccuracy": 0,
+          "slashDamage": 0,
+          "slashEvasion": 0,
+          "smashAccuracy": 0,
+          "smashDamage": 0.5,
+          "smashEvasion": 0,
+          "stabAccuracy": 0,
+          "stabDamage": 0,
+          "stabEvasion": 0,
+          "staminaExperience": 0,
+          "taskDamage": 0,
+          "tenacity": null,
+          "threat": 300,
+          "waterAmplify": 0,
+          "waterPenetration": 0,
+          "waterResistance": 0,
+          "weaken": 0
+        },
+        "currentHitpoints": 600,
+        "currentManapoints": 60,
+        "defenseLevel": 20,
+        "defensiveMaxDamage": 30,
+        "intelligenceLevel": 1,
+        "magicAccuracyRating": 210,
+        "magicEvasionRating": 30,
+        "magicLevel": 1,
+        "magicMaxDamage": 11,
+        "maxHitpoints": 600,
+        "maxManapoints": 110,
+        "meleeLevel": 200,
+        "rangedAccuracyRating": 210,
+        "rangedEvasionRating": 30,
+        "rangedLevel": 1,
+        "rangedMaxDamage": 11,
+        "slashAccuracyRating": 210,
+        "slashEvasionRating": 30,
+        "slashMaxDamage": 210,
+        "smashAccuracyRating": 210,
+        "smashEvasionRating": 30,
+        "smashMaxDamage": 315,
+        "stabAccuracyRating": 210,
+        "stabEvasionRating": 30,
+        "stabMaxDamage": 210,
+        "staminaLevel": 50,
+        "tenacity": 0,
+        "totalArmor": 4,
+        "totalFireResistance": 4,
+        "totalNatureResistance": 4,
+        "totalThreat": 300,
+        "totalWaterResistance": 4
+      },
+      "currentHitpoints": 600,
+      "currentManapoints": 60,
+      "drinks": [
+        null,
+        null,
+        null
+      ],
+      "enrageTime": 0,
+      "experience": 0,
+      "food": [
+        null,
+        null,
+        null
+      ],
+      "hrid": "/parity/brute/0",
+      "isBlinded": false,
+      "isOutOfMana": false,
+      "isPlayer": false,
+      "isSilenced": false,
+      "isStunned": false,
+      "maxHitpoints": 600,
+      "maxManapoints": 110,
+      "silenceExpireTime": null,
+      "stunExpireTime": null,
+      "weakenExpireTime": null
+    }
+  ]
+}

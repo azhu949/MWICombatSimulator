@@ -343,10 +343,6 @@ export function buildSingleSimulationPayload(
     labyrinth,
     simulationTimeLimit,
     extra,
-    // 切片 18：默认点亮 wasm 引擎（worker.js 读该标志；引擎缺失/配置不支持/出错时
-    // 由 tryRunWasmProductionRound 静默回退 JS，页面行为不受影响）。首页单轮、队列
-    // 场景/基线轮与触发器优化器候选轮都经由本函数构造 payload。
-    useWasmEngine: true,
   };
 
   if (simulationContext) {

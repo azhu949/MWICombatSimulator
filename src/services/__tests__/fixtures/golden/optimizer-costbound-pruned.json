@@ -1,0 +1,26 @@
+{
+  "seed": 1,
+  "deaths": 0,
+  "ranOutOfMana": false,
+  "foodUsed": {
+    "/items/star_fruit_yogurt": 1
+  },
+  "costPerHour": 0,
+  "equivalentThresholds": [
+    {
+      "hrid": "/items/star_fruit_yogurt",
+      "kind": "mp",
+      "max": 30,
+      "min": 21
+    }
+  ],
+  "unusedFoodThresholds": null,
+  "inactiveFoodThresholds": {
+    "hp": 1,
+    "mp": 31
+  },
+  "stoppedEarly": true,
+  "simulatedTime": 8866995073.891626,
+  "pruned": "cost",
+  "costLowerBound": 40
+}

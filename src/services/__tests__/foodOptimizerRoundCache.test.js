@@ -1,8 +1,8 @@
 import { describe, expect, it } from 'vitest';
 import { buildFoodCandidate } from '../foodOptimizerDomain.js';
 import { createFoodOptimizerRoundCache } from '../foodOptimizerRoundCache.js';
-import { evaluateFoodOptimizerCandidate, simulateFoodOptimizerRound } from '../foodOptimizerSimulation.js';
-import { createFoodOptimizerFixture, referenceFoodOptimizerRound } from './support/foodOptimizerTestSupport.js';
+import { simulateFoodOptimizerRound } from '../foodOptimizerSimulation.js';
+import { createFoodOptimizerFixture } from './support/foodOptimizerTestSupport.js';
 
 const item = (hrid = '/items/gummy', threshold = 50, kind = 'mp') => ({
   hrid,
@@ -120,9 +120,13 @@ describe('food optimizer complete-round cache', () => {
     cache.record(request.seeds[0], candidate, sample);
     const equivalent = buildFoodCandidate([{ ...food, threshold: 2 }]);
     const cached = cache.match(request.seeds[0], equivalent);
-    const reference = await referenceFoodOptimizerRound(request, equivalent, request.seeds[0]);
-    const { equivalentThresholds, unusedFoodThresholds, inactiveFoodThresholds, ...physical } = cached;
-    expect(physical).toEqual(reference);
+    expect(cached).not.toBeNull();
+    // 等价阈值复用必须给出与重新模拟完全一致的物理结果（切片 21B：JS 引擎已删除，
+    // 参照改为同一 wasm 引擎重跑同一轮次——确定性下两者必须逐字段相等；阈值观测
+    // 字段属于轮次缓存簿记，比较前两边剥离）。
+    const resimulated = await simulateFoodOptimizerRound(request, equivalent, request.seeds[0]);
+    const physical = ({ equivalentThresholds, unusedFoodThresholds, inactiveFoodThresholds, ...rest }) => rest;
+    expect(physical(cached)).toEqual(physical(resimulated));
   });
 
   it.each([{ seed: 2 }, { stoppedEarly: true }, { ranOutOfMana: true }, { simulatedTime: 0 }, { costPerHour: -1 }])(

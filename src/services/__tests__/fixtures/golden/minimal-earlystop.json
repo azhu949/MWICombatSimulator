@@ -1,0 +1,55 @@
+{
+  "bossSpawns": [],
+  "consumablesUsed": {
+    "player1": {
+      "/items/channeling_coffee": 7,
+      "/items/dragon_fruit_yogurt": 26,
+      "/items/marsberry_cake": 3,
+      "/items/star_fruit_gummy": 27,
+      "/items/super_magic_coffee": 7,
+      "/items/wisdom_coffee": 7
+    }
+  },
+  "deaths": {
+    "/monsters/centaur_archer": 74,
+    "/monsters/jungle_sprite": 84,
+    "/monsters/luna_empress": 11,
+    "/monsters/myconid": 69,
+    "/monsters/treant": 80
+  },
+  "difficultyTier": 1,
+  "dungeonsCompleted": 0,
+  "dungeonsFailed": 0,
+  "isDungeon": false,
+  "isLabyrinth": false,
+  "lastDungeonFinishTime": 0,
+  "lastEncounterFinishTime": 1623096867930.0823,
+  "maxEnrageStack": 0,
+  "maxWaveReached": 0,
+  "minDungenonTime": 0,
+  "numberOfPlayers": 1,
+  "playerRanOutOfMana": {
+    "player1": false,
+    "player2": false,
+    "player3": false,
+    "player4": false,
+    "player5": false
+  },
+  "playerRanOutOfManaTime": {
+    "player1": {
+      "isOutOfMana": false,
+      "startTimeForOutOfMana": 0,
+      "totalTimeForOutOfMana": 0
+    }
+  },
+  "scrollUsage": {
+    "allowed": true,
+    "byPlayer": {},
+    "disabled": true,
+    "ignoredReason": ""
+  },
+  "simulatedTime": 1623096867930.0823,
+  "stoppedEarly": true,
+  "timeSpentAlive": [],
+  "zoneName": "/actions/combat/jungle_planet"
+}

@@ -5,12 +5,9 @@ import { dirname, resolve } from 'node:path';
 import { fileURLToPath, pathToFileURL } from 'node:url';
 import { afterEach, beforeEach, describe, expect, it } from 'vitest';
 import { createEmptyPlayerConfig } from '../../shared/playerConfig.js';
-import CombatSimulator from '../../combatsimulator/combatSimulator.js';
 import Player from '../../combatsimulator/player.js';
 import Zone from '../../combatsimulator/zone.js';
 import { buildPlayersForSimulation } from '../playerMapper.js';
-import { createSeededRandom } from '../seededRandom.js';
-import { shouldUseWasmOptimizerRound, simulateFoodOptimizerRound } from '../foodOptimizerSimulation.js';
 import { loadWasmEngine } from '../wasmEngineLoader.js';
 import {
   getWasmProductionDiagnostics,
@@ -55,7 +52,7 @@ describe('wasm production A/B wiring', () => {
     setWasmProductionEngineForTests(null);
   });
 
-  it('keeps the switch off by default and falls back to the JS engine', async () => {
+  it('keeps the switch off by default and rejects optimizer rounds without it', async () => {
     expect(
       await tryRunWasmProductionRound({
         useWasmEngine: false,
@@ -67,16 +64,6 @@ describe('wasm production A/B wiring', () => {
       }),
     ).toBeNull();
     expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('disabled');
-
-    // 优化器轮次：开关未开时连尝试都不发生（判据直接落到 JS 引擎）。
-    const request = buildRequest();
-    const sample = await simulateFoodOptimizerRound(request, null, 12345, () => {}, Infinity, {
-      collectThresholds: false,
-    });
-    expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('disabled');
-    expect(sample.simulatedTime).toBeGreaterThan(0);
-    expect(sample).toHaveProperty('deaths');
-    expect(sample.equivalentThresholds).toBeNull();
   });
 
   it('reports unsupported configurations instead of running wasm', async () => {
@@ -175,103 +162,52 @@ describe('wasm production A/B wiring', () => {
     expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('engine_unavailable');
   });
 
-  it('falls back to the JS engine when the wasm package cannot be loaded', async () => {
-    const request = buildRequest();
-    request.useWasmEngine = true;
-    const sample = await simulateFoodOptimizerRound(request, null, 12345, () => {}, Infinity, {
-      collectThresholds: false,
-    });
+  it('fails hard when the wasm engine cannot be loaded (no JS fallback)', async () => {
+    // 切片 21A（审计定案 D1）：wasm 产物随仓库提交，引擎不可达 = 构建事故——
+    // 生产轮次硬失败，不再静默回退 JS 引擎。tryRunWasmProductionRound 返回 null
+    // 由调用方（worker.js / simulateFoodOptimizerRound）上报 simulation_error / throw。
+    expect(
+      await tryRunWasmProductionRound({
+        useWasmEngine: true,
+        players: [],
+        zone: { hrid: '/actions/combat/fly', difficultyTier: 0, isDungeon: false },
+        seed: 1,
+        simulationTimeLimit: 1e9,
+        options: { minimalResult: true, logCombatEvents: false },
+      }),
+    ).toBeNull();
     expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('engine_unavailable');
-    expect(sample.simulatedTime).toBeGreaterThan(0);
   });
 
-  it('gates optimizer rounds onto wasm by the explicit engine switch', () => {
-    const request = { useWasmEngine: true };
-    const candidate = { food: [] };
-    expect(shouldUseWasmOptimizerRound({}, null, false, null)).toBe(false);
-    // 切片 12：候选轮（shouldStop 由 Rust earlyStop 承接）已放行。
-    expect(shouldUseWasmOptimizerRound(request, candidate, false, null)).toBe(true);
-    // 切片 13：阈值/闲置观察由 Rust observers 承接，collectThresholds 不再阻止 wasm 轮次。
-    expect(shouldUseWasmOptimizerRound(request, null, true, null)).toBe(true);
-    expect(shouldUseWasmOptimizerRound(request, candidate, true, null)).toBe(true);
-    // 切片 20：成本上界观察由 Rust costBound 承接，costBound 轮同样放行。
-    expect(shouldUseWasmOptimizerRound(request, null, false, { cutoff: 1 })).toBe(true);
-    expect(shouldUseWasmOptimizerRound(request, null, true, { cutoff: 1 })).toBe(true);
-    expect(shouldUseWasmOptimizerRound(request, null, false, null)).toBe(true);
-  });
+  // 切片 21B：shouldUseWasmOptimizerRound 判据用例已删除——函数与开关一起清理
+  //（生产载荷不再携带 useWasmEngine，优化器轮次 wasm-only）。
 
   describe.runIf(wasmPackageBuilt)('with the built wasm package', () => {
     beforeEach(async () => {
       setWasmProductionEngineForTests(await loadRealEngine());
     });
 
-    it('produces the same optimizer round sample on both engines', async () => {
-      // 切片 13：collectThresholds 两种取值都逐字段对照（true 时阈值/闲置观察由两侧
-      // 各自的观察器承接：JS 观察器 vs Rust observers 映射，样本必须一致）。
-      for (const collectThresholds of [false, true]) {
-        const jsRequest = buildRequest();
-        const wasmRequest = buildRequest();
-        wasmRequest.useWasmEngine = true;
-
-        const jsSample = await simulateFoodOptimizerRound(jsRequest, null, 12345, () => {}, Infinity, {
-          collectThresholds,
-        });
-        const wasmSample = await simulateFoodOptimizerRound(wasmRequest, null, 12345, () => {}, Infinity, {
-          collectThresholds,
-        });
-
-        expect(getWasmProductionDiagnostics().lastFallbackReason, `collectThresholds=${collectThresholds}`).toBe('');
-        expect(wasmSample, `collectThresholds=${collectThresholds}`).toEqual(jsSample);
-      }
-    });
-
-    // 切片 14：首页单轮（full-result + 战斗日志 + 可视化）不再回退——打开开关后
-    // `tryRunWasmProductionRound` 直接跑通，且结果与 JS 引擎逐字段一致（时序数据
-    // 随 simResult 一次性返回，首页 store 从 `simResult.timeSeriesData` 兜底取）。
-    it('runs a full-result homepage round on wasm and matches the JS engine', async () => {
-      const seed = 12345;
-      // 1h：必须真的跨过 1000 事件边界（否则时序快照退化成空数组对账）。
-      const simulationTimeLimit = 3600 * 1e9;
+    // 切片 14：首页单轮（full-result + 战斗日志 + 可视化）在 wasm 上直接跑通——
+    // 结果期望由 golden 快照承载（wasmEngineProductionParity.test.js 的 full-1h-viz），
+    // 此处只做接线冒烟（真实区域 + full-result 路径畅通 + 完整字段面有数据）。
+    it('runs a full-result homepage round on wasm', async () => {
       const player = createEmptyPlayerConfig(1);
       for (const key of Object.keys(player.levels)) player.levels[key] = 30;
       player.abilities[0] = { abilityHrid: '/abilities/fireball', level: 1 };
-      const playerDtos = buildPlayersForSimulation([player]);
+      const zone = new Zone('/actions/combat/fly', 0);
+      const players = buildPlayersForSimulation([player]).map((dto) => {
+        const live = Player.createFromDTO(structuredClone(dto));
+        live.zoneBuffs = zone.buffs || [];
+        live.extraBuffs = [];
+        return live;
+      });
 
-      const buildPieces = () => {
-        const zone = new Zone('/actions/combat/fly', 0);
-        const players = playerDtos.map((dto) => {
-          const live = Player.createFromDTO(structuredClone(dto));
-          live.zoneBuffs = zone.buffs || [];
-          live.extraBuffs = [];
-          return live;
-        });
-        return { zone, players };
-      };
-
-      const { zone: jsZone, players: jsPlayers } = buildPieces();
-      const originalRandom = Math.random;
-      Math.random = createSeededRandom(seed);
-      let jsSample;
-      try {
-        const simulator = new CombatSimulator(jsPlayers, jsZone, null, {
-          minimalResult: false,
-          logCombatEvents: true,
-          enableHpMpVisualization: true,
-          combatScrollsEnabled: false,
-          isGuildTrial: false,
-        });
-        jsSample = await simulator.simulate(simulationTimeLimit);
-      } finally {
-        Math.random = originalRandom;
-      }
-
-      const { zone, players } = buildPieces();
       const wasmSample = await tryRunWasmProductionRound({
         useWasmEngine: true,
         players,
         zone,
-        seed,
-        simulationTimeLimit,
+        seed: 12345,
+        simulationTimeLimit: 3600 * 1e9,
         options: {
           minimalResult: false,
           logCombatEvents: true,
@@ -283,12 +219,10 @@ describe('wasm production A/B wiring', () => {
 
       expect(getWasmProductionDiagnostics().lastFallbackReason).toBe('');
       expect(wasmSample).not.toBeNull();
-      // 防退化：完整字段面必须真的有数据。
+      // 防退化：完整字段面必须真的有数据（时序快照随 simResult 一次性返回）。
       expect(wasmSample.simResult.encounters).toBeGreaterThan(0);
       expect(Object.keys(wasmSample.simResult.experienceGained).length).toBeGreaterThan(0);
-      expect(jsSample.timeSeriesData.timestamps.length).toBeGreaterThan(0);
-      expect(wasmSample.simResult.timeSeriesData.timestamps).toHaveLength(jsSample.timeSeriesData.timestamps.length);
-      expect(wasmSample.simResult).toEqual(jsSample);
+      expect(wasmSample.simResult.timeSeriesData.timestamps.length).toBeGreaterThan(0);
     });
   });
 });

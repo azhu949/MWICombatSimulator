@@ -1,0 +1,73 @@
+[
+  {
+    "id": 5,
+    "op": "peek"
+  },
+  {
+    "id": 5,
+    "op": "pop"
+  },
+  {
+    "op": "containsType",
+    "value": true
+  },
+  {
+    "op": "containsType",
+    "value": false
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": true
+  },
+  {
+    "op": "containsTypeAndHrid",
+    "value": false
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": true
+  },
+  {
+    "id": 2,
+    "op": "getMatchingByType"
+  },
+  {
+    "op": "clearEventsForUnit",
+    "value": null
+  },
+  {
+    "id": 8,
+    "op": "pop"
+  },
+  {
+    "id": 2,
+    "op": "pop"
+  },
+  {
+    "op": "clearByType",
+    "value": null
+  },
+  {
+    "id": 3,
+    "op": "pop"
+  },
+  {
+    "id": 7,
+    "op": "pop"
+  },
+  {
+    "op": "clear"
+  },
+  {
+    "id": null,
+    "op": "peek"
+  },
+  {
+    "id": null,
+    "op": "pop"
+  },
+  {
+    "op": "containsTypesAndSource",
+    "value": false
+  }
+]

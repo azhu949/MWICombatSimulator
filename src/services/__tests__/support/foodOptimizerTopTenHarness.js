@@ -9,22 +9,21 @@ import {
 } from '../../foodOptimizerDomain.js';
 import { materializeFoodOptimizerOutcome } from '../../foodOptimizerPruning.js';
 import { createFoodOptimizerSearch } from '../../foodOptimizerSearch.js';
-import { createFoodOptimizerEvaluator } from '../../foodOptimizerSimulation.js';
+import { createFoodOptimizerEvaluator, simulateFoodOptimizerRound } from '../../foodOptimizerSimulation.js';
 import {
   createFoodOptimizerFixture,
   physicalFoodOptimizerResult,
   referenceDeathBudget,
-  referenceFoodOptimizerRound,
 } from './foodOptimizerTestSupport.js';
 
-// Deliberately do not call the production evaluator or its aggregation helpers.
-// Every oracle seed runs to the full time limit, including infeasible candidates.
-// The death budget follows the slot-aware rule (fewer slots than the equipped
-// baseline must die strictly less), so this oracle does not share the production
-// helper that decides it.
+// 切片 21B：独立 JS 引擎 oracle 已随引擎删除。参照臂逐轮直调生产模拟轮
+// （simulateFoodOptimizerRound，wasm）后自行聚合：不走生产 evaluator、不用轮次
+// 缓存、无成本剪枝，预算 Infinity 强制每个种子跑满（含不可行候选）。死亡预算
+// 沿用 slot-aware 独立实现（少带食物必须严格更少死），不共享生产 helper。
 async function referenceResult(request, candidate, baselineDeaths = Infinity) {
   const samples = [];
-  for (const seed of request.seeds) samples.push(await referenceFoodOptimizerRound(request, candidate, seed));
+  for (const seed of request.seeds)
+    samples.push(await simulateFoodOptimizerRound(request, candidate, seed, undefined, Infinity));
   const deaths = samples.reduce((sum, sample) => sum + sample.deaths, 0);
   const ranOutOfMana = samples.some((sample) => sample.ranOutOfMana);
   const foodUsed = {};
@@ -75,8 +74,8 @@ async function runSearch(fixture, searchMode) {
       return evaluate(message.candidate, message.deathBudget, progress, message.reusableSamples, message.costCutoff);
     },
   };
-  // The in-process engine temporarily installs a seeded Math.random. Keep this
-  // independent comparison serial; the benchmark uses isolated real workers.
+  // workerLimit 1 保持 oracle 对照串行（覆盖率记账免于并发竞态）；轮次种子本身
+  // 确定，真 worker 池的并发分发由 pool 相关测试覆盖。
   const report = await createFoodOptimizerSearch({
     ...fixture,
     request,

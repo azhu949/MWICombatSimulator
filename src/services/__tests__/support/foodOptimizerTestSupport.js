@@ -1,14 +1,30 @@
+import { existsSync } from 'node:fs';
+import { readFile } from 'node:fs/promises';
+import { dirname, resolve } from 'node:path';
+import { fileURLToPath, pathToFileURL } from 'node:url';
 import { createEmptyPlayerConfig } from '../../../shared/playerConfig.js';
-import CombatSimulator from '../../../combatsimulator/combatSimulator.js';
-import CombatUnit from '../../../combatsimulator/combatUnit.js';
-import Consumable from '../../../combatsimulator/consumable.js';
 import Player from '../../../combatsimulator/player.js';
 import Zone from '../../../combatsimulator/zone.js';
 import { dungeonOptions, labyrinthOptions } from '../../../shared/gameDataIndex.js';
 import { buildSimulationExtraBuffs } from '../../../shared/simulationExtraBuffs.js';
 import { buildPlayersForSimulation } from '../../playerMapper.js';
 import { buildFoodCandidate, computeFoodCostPerHour, getFoodOptimizerItems } from '../../foodOptimizerDomain.js';
-import { createFoodOptimizerRandom, getFoodOptimizerResources } from '../../foodOptimizerSimulation.js';
+import { getFoodOptimizerResources } from '../../foodOptimizerSimulation.js';
+import { loadWasmEngine } from '../../wasmEngineLoader.js';
+import { setWasmProductionEngineForTests } from '../../wasmProductionSimulation.js';
+
+// 切片 21B：JS 引擎（CombatSimulator）已物理删除——本文件不再提供 JS 引擎 oracle
+// （referenceFoodOptimizerRound / simulateFoodOptimizerRoundOnJsEngine）。等价性
+// 断言改用生产 wasm 轮（simulateFoodOptimizerRound 本身）；引擎输出漂移防线在
+// fixtures/golden 快照 + cargo test。真轮次用例统一由这里注入真实 wasm 引擎。
+const supportRoot = resolve(dirname(fileURLToPath(import.meta.url)), '..', '..', '..', '..');
+const supportGluePath = resolve(supportRoot, 'engine', 'pkg', 'mwi_combat_engine.js');
+const supportWasmPath = resolve(supportRoot, 'engine', 'pkg', 'mwi_combat_engine_bg.wasm');
+if (existsSync(supportGluePath) && existsSync(supportWasmPath)) {
+  setWasmProductionEngineForTests(
+    await loadWasmEngine({ glueUrl: pathToFileURL(supportGluePath).href, moduleOrPath: readFile(supportWasmPath) }),
+  );
+}
 
 export function createFoodOptimizerFixture({
   target = 'zone',
@@ -84,115 +100,6 @@ export function createFoodOptimizerFixture({
     );
   }
   return { request, items, foodSlots };
-}
-
-function createReferenceSimulation(request, candidate) {
-  const payload = structuredClone(request.payload);
-  if (candidate) {
-    const player = payload.players.find((entry) => entry.hrid === `player${request.activePlayerId}`);
-    player.food = Array.from({ length: 3 }, (_, slot) =>
-      candidate.food[slot]
-        ? { hrid: candidate.food[slot], triggers: structuredClone(candidate.triggerMap[candidate.food[slot]]) }
-        : null,
-    );
-  }
-  const zone = new Zone(payload.zone.zoneHrid, payload.zone.difficultyTier);
-  const extraBuffs = buildSimulationExtraBuffs(payload.extra);
-  const players = payload.players.map((dto) => {
-    const player = Player.createFromDTO(dto);
-    player.zoneBuffs = zone.buffs || [];
-    player.extraBuffs = extraBuffs;
-    return player;
-  });
-  // Construct the ordinary engine directly so changes to the optimizer factory
-  // cannot silently enable compact results in the reference as well.
-  return new CombatSimulator(players, zone, null, {
-    enableHpMpVisualization: false,
-    logCombatEvents: false,
-    combatScrollsEnabled: Boolean(payload.extra?.combatScrollsEnabled),
-    isGuildTrial: Boolean(payload.simulationContext?.isGuildTrial),
-  });
-}
-
-// Keep the pre-optimization trigger dispatch independent of the production
-// shortcut. As with the buff reference below, this is scoped to one oracle run.
-function installLegacyConsumableTriggers() {
-  const original = Consumable.prototype.shouldTrigger;
-  Consumable.prototype.shouldTrigger = function (currentTime, source, target, friendlies, enemies) {
-    if (source.isStunned) return false;
-    const consumableHaste = this.catagoryHrid.includes('food')
-      ? source.combatDetails.combatStats.foodHaste
-      : source.combatDetails.combatStats.drinkConcentration;
-    let cooldownDuration = this.cooldownDuration;
-    if (consumableHaste > 0) cooldownDuration /= 1 + consumableHaste;
-    if (this.lastUsed + cooldownDuration > currentTime) return false;
-    if (this.triggers.length == 0) return true;
-    let shouldTrigger = true;
-    for (const trigger of this.triggers)
-      if (!trigger.isActive(source, target, friendlies, enemies, currentTime)) shouldTrigger = false;
-    return shouldTrigger;
-  };
-  return () => {
-    Consumable.prototype.shouldTrigger = original;
-  };
-}
-
-// The oracle runs a fresh, deeply copied native engine with full results and
-// generic consumable triggers to the time limit. It installs neither early-stop
-// hooks nor equivalence observers/caches.
-export async function referenceFoodOptimizerRound(request, candidate, seed) {
-  const originalRandom = Math.random;
-  const restoreBuffLookup = installLegacyBuffLookup();
-  const restoreConsumableTriggers = installLegacyConsumableTriggers();
-  Math.random = createFoodOptimizerRandom(seed);
-  try {
-    const simulator = createReferenceSimulation(request, candidate);
-    const result = await simulator.simulate(request.payload.simulationTimeLimit);
-    const hrid = `player${request.activePlayerId}`;
-    const player = simulator.players.find((entry) => entry.hrid === hrid);
-    const counts = result.consumablesUsed[hrid] || {};
-    const foodUsed = Object.fromEntries(
-      [...new Set(player.food.filter(Boolean).map((food) => food.hrid))].map((item) => [item, counts[item] || 0]),
-    );
-    return {
-      seed,
-      deaths: result.deaths[hrid] || 0,
-      ranOutOfMana: result.playerRanOutOfMana[hrid] === true,
-      foodUsed,
-      costPerHour: computeFoodCostPerHour(
-        foodUsed,
-        request.prices.priceTable,
-        request.prices.consumableMode,
-        result.simulatedTime,
-      ),
-      stoppedEarly: false,
-      simulatedTime: result.simulatedTime,
-    };
-  } finally {
-    restoreConsumableTriggers();
-    restoreBuffLookup();
-    Math.random = originalRandom;
-  }
-}
-
-export function installLegacyBuffLookup() {
-  const update = CombatUnit.prototype.updateCombatDetails;
-  const lookup = CombatUnit.prototype.getBuffBoosts;
-  const recalculate = CombatUnit.prototype.updateCombatDetailsFromBuffs;
-  // Ignore the optimized caller's fresh-base marker so the oracle always
-  // restores its baseline before deriving attributes.
-  CombatUnit.prototype.updateCombatDetails = function () {
-    return recalculate.call(this);
-  };
-  CombatUnit.prototype.getBuffBoosts = function (type) {
-    return Object.values(this.combatBuffs)
-      .filter((buff) => buff.typeHrid == type)
-      .map((buff) => ({ ratioBoost: buff.ratioBoost, flatBoost: buff.flatBoost }));
-  };
-  return () => {
-    CombatUnit.prototype.updateCombatDetails = update;
-    CombatUnit.prototype.getBuffBoosts = lookup;
-  };
 }
 
 // 死亡预算的独立实现（刻意不复用生产侧 helper，避免同一个错误在两边同时成立）：候选少带

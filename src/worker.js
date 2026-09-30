@@ -1,38 +1,33 @@
-import CombatSimulator from './combatsimulator/combatSimulator';
 import Player from './combatsimulator/player';
 import Zone from './combatsimulator/zone';
 import Labyrinth from './combatsimulator/labyrinth';
 import { buildSimulationExtraBuffs } from './shared/simulationExtraBuffs.js';
-import { createSeededRandom } from './services/seededRandom.js';
-import { tryRunWasmProductionRound } from './services/wasmProductionSimulation.js';
+import { getWasmProductionDiagnostics, tryRunWasmProductionRound } from './services/wasmProductionSimulation.js';
 
 // 确定性播种（公共随机数 / Common Random Numbers）
 // -------------------------------------------------
-// payload.seed 是**可选**字段。给定时，本次模拟全程运行在按种子生成的随机数发生器上，
-// 于是「同一 payload + 同一 seed」在任意时刻、任意机器上都产出完全相同的 simResult。
-// 这让优化器可以把同一组种子喂给基线与全部候选，把「候选 vs 基线」的差异变成
-// 配对差（同一随机流下的事件路径差异），大幅抑制随机噪声——技能优化精度的来源。
-//
-// 不传 seed 时行为与历史完全一致（原生 Math.random），其他调用方（首页模拟 / 队列 /
-// 推荐扫描）不受任何影响。每次 runSingleSimulationPayloadWithDedicatedWorker 都会
-// 新建一个 Worker（全新 realm），因此播种是 realm 私有的，不存在跨任务串扰。
-function installSeedScope(seed) {
-  if (!Number.isFinite(Number(seed))) return null;
-  const originalRandom = Math.random;
-  Math.random = createSeededRandom(Number(seed) >>> 0);
-  return () => {
-    Math.random = originalRandom;
-  };
+// payload.seed 是**可选**字段。给定时，wasm 引擎按该种子跑出完全确定的 simResult
+// （Rust RNG 自带确定性，不消耗 Math.random）。不传 seed 时（首页单轮 / 批量区域扫描）
+// 随机采一个，保持「每场独立随机流」的统计语义。
+// 切片 21A：JS 引擎回退分支已删除——wasm 产物随仓库提交（public/engine/pkg），
+// 引擎缺失/不支持/运行失败属于构建事故，直接上报 simulation_error 硬失败
+// （审计定案 D1），不再静默回退。
+function pickWasmSeed(seed) {
+  if (Number.isFinite(Number(seed))) {
+    return Number(seed) >>> 0;
+  }
+  // 采随机种子时 Math.random 仍是原生（此时还没进入任何播种作用域）。
+  return (Math.random() * 0x100000000) >>> 0;
 }
 
 onmessage = async function (event) {
   switch (event.data.type) {
-    case 'start_simulation':
+    case 'start_simulation': {
       let extra = event.data.extra || {};
       let extraBuffs = buildSimulationExtraBuffs(extra);
 
       // 在 DTO 中保留已配置的行，以便结果可以说明
-      // 卷轴效果已被暂停；CombatSimulator 会应用该
+      // 卷轴效果已被暂停；引擎会应用该
       // 开关，且不修改用户已保存的配置。
       let playersData = event.data.players;
       let players = [];
@@ -55,13 +50,11 @@ onmessage = async function (event) {
         // JSON 常量）：跨玩家安全依赖引擎侧 addPermanentBuff「首次写入必克隆」。
         // 禁止就地改写这些对象（会永久污染同一 worker realm 的下一次模拟），
         // 也不要绕过 addPermanentBuff 直接写 permanentBuffs。
-        // buff 按「labyrinth 非空即迷宫模式」显式选取（与 CombatSimulator 一致：
-        // scrollsAllowed、模式标签、遭遇取用都是 labyrinth 优先）。正常路径的
-        // zone / labyrinth 严格互斥（buildSingleSimulationPayload 的 if/else、
-        // multiWorker 单键消息、advisorDomain 的 labyrinth:null），此时与旧写法
-        // `zone?.buffs || labyrinth?.buffs` 等价；仅 HomeExperimentalModal 批处理
-        // 透传用户 JSON 可能双非空——旧写法在 zone.buffs 为空数组时被 truthy 的
-        // `[]` 短路、静默吞掉迷宫 buff，这里显式选取消除该边界。
+        // buff 按「labyrinth 非空即迷宫模式」显式选取（与引擎一致：scrollsAllowed、
+        // 模式标签、遭遇取用都是 labyrinth 优先）。正常路径的 zone / labyrinth
+        // 严格互斥，此时与旧写法 `zone?.buffs || labyrinth?.buffs` 等价；
+        // 仅 HomeExperimentalModal 批处理透传用户 JSON 可能双非空——显式选取
+        // 消除该边界。
         currentPlayer.zoneBuffs = (labyrinth ? labyrinth.buffs : zone?.buffs) || [];
         currentPlayer.extraBuffs = extraBuffs;
         players.push(currentPlayer);
@@ -69,13 +62,6 @@ onmessage = async function (event) {
       let simulationTimeLimit = event.data.simulationTimeLimit;
       let enableHpMpVisualization = Boolean(extra.enableHpMpVisualization);
 
-      // 切片 18：生产载荷默认带 `useWasmEngine: true`（首页单轮 / 队列场景与基线轮 /
-      // 食物优化器 / 触发器优化器 / 批量区域与迷宫扫描）。引擎缺失 / 配置不受支持
-      // （「副本 + full-result + 日志」组合、公会试炼、无区域）/ 运行出错时
-      // `tryRunWasmProductionRound` 返回 null，静默回退下面的 JS 引擎。
-      // 切片 14 起 full-result（经验/掉落桶/时序/激怒层数）与日志/可视化组合也走 wasm：
-      // 时序数据随 simResult 的 `timeSeriesData` 一次性返回，因此这里没有流式 progress
-      // （进度条 0→完成直跳；首页 store 在 onResult 里从 simResult 兜底取时序）。
       const options = {
         minimalResult: event.data.minimalResult === true,
         // 仅当调用方显式传 false 时关闭战斗事件日志（默认 true = 历史行为）。
@@ -85,54 +71,33 @@ onmessage = async function (event) {
         combatScrollsEnabled: Boolean(extra.combatScrollsEnabled),
         isGuildTrial: Boolean(event.data.simulationContext?.isGuildTrial),
       };
-      // wasm 引擎必须显式 seed（Rust RNG 自带确定性）：载荷未带 seed 时（首页单轮 /
-      // 批量区域扫描）随机采一个，保持「每场独立随机流」——与 JS 分支无 seed 时
-      // 原生 Math.random 的统计语义等价。此处置于 installSeedScope 之前，
-      // Math.random 仍是原生。
-      const wasmSeed = Number.isFinite(Number(event.data.seed))
-        ? Number(event.data.seed) >>> 0
-        : (Math.random() * 0x100000000) >>> 0;
+
+      // 切片 21A：无条件走 wasm 引擎（切片 18 起生产载荷默认带 useWasmEngine: true；
+      // 不带的入口——HomeExperimentalModal 批处理手写载荷——由这里的 true 兜底）。
+      // wasm 输出为 null（引擎缺失 / 配置不受支持 / 运行出错）时按审计定案 D1
+      // 上报 simulation_error 硬失败：产物已随仓库提交，不可达 = 构建事故。
       const wasmOutput = await tryRunWasmProductionRound({
-        useWasmEngine: event.data.useWasmEngine === true,
+        useWasmEngine: true,
         players,
         zone,
         labyrinth,
         simulationContext: event.data.simulationContext,
-        seed: wasmSeed,
+        seed: pickWasmSeed(event.data.seed),
         simulationTimeLimit,
         options,
       });
       if (wasmOutput) {
-        // wasm 路径自带确定性，不需要（也不消耗）播种后的 Math.random 作用域。
         this.postMessage({ type: 'simulation_result', simResult: wasmOutput.simResult });
         break;
       }
 
-      let combatSimulator = new CombatSimulator(players, zone, labyrinth, options);
-      combatSimulator.addEventListener('progress', (event) => {
-        this.postMessage({
-          type: 'simulation_progress',
-          progress: event.detail.progress,
-          zone: event.detail.zone,
-          difficultyTier: event.detail.difficultyTier,
-          labyrinth: event.detail.labyrinth,
-          roomLevel: event.detail.roomLevel,
-          timeSeriesData: event.detail.timeSeriesData,
-        });
+      const reason = getWasmProductionDiagnostics().lastFallbackReason || 'unknown';
+      console.error(`[worker] WASM engine unavailable (reason: ${reason}); no JS fallback exists (slice 21A).`);
+      this.postMessage({
+        type: 'simulation_error',
+        error: new Error(`WASM combat engine unavailable (${reason}); the JS engine fallback was removed.`),
       });
-
-      const restoreRandom = installSeedScope(event.data.seed);
-      try {
-        let simResult = await combatSimulator.simulate(simulationTimeLimit);
-        this.postMessage({ type: 'simulation_result', simResult: simResult });
-      } catch (e) {
-        console.log(e);
-        this.postMessage({ type: 'simulation_error', error: e });
-      } finally {
-        // 本 worker 一次只处理一条消息，恢复只是为了不把已播种的发生器留在
-        // realm 里（若将来复用 realm，这一步就是安全前提）。
-        if (restoreRandom) restoreRandom();
-      }
       break;
+    }
   }
 };
