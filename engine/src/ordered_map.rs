@@ -78,6 +78,20 @@ impl<K: PartialEq, V> OrderedMap<K, V> {
     }
 }
 
+impl<K: PartialEq + Clone, V: Default> OrderedMap<K, V> {
+    /// `map[key] ??= V::default()` 后返回其可变引用：单趟查找。
+    /// 与 `contains_key` + `set` + `get_mut` 等价，但只扫描一次（切片 27：
+    /// 结算结果表的热路径，原实现命中/缺失分别要 2/3 次线性扫描）。
+    pub fn entry_or_default_mut(&mut self, key: &K) -> &mut V {
+        if let Some(index) = self.entries.iter().position(|(candidate, _)| candidate == key) {
+            return &mut self.entries[index].1;
+        }
+        self.entries.push((key.clone(), V::default()));
+        let last = self.entries.len() - 1;
+        &mut self.entries[last].1
+    }
+}
+
 impl<V> OrderedMap<String, V> {
     /// `&str` 键查询：避免结算热路径为每次查找分配临时 `String`。
     pub fn get_str(&self, key: &str) -> Option<&V> {
@@ -111,6 +125,18 @@ impl<V> OrderedMap<String, V> {
         } else {
             self.entries.push((key.to_string(), value));
         }
+    }
+}
+
+impl OrderedMap<String, f64> {
+    /// `map[key] += delta`（键缺失时插入 `delta`）：单趟查找；键已存在零分配。
+    /// 切片 27：攻击命中计数热路径专用（原实现每次调用都构造新 `String` 并两趟扫描）。
+    pub fn add_value_str(&mut self, key: &str, delta: f64) {
+        if let Some((_, value)) = self.entries.iter_mut().find(|(candidate, _)| candidate.as_str() == key) {
+            *value += delta;
+            return;
+        }
+        self.entries.push((key.to_string(), delta));
     }
 }
 

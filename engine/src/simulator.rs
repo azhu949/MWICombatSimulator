@@ -3227,24 +3227,26 @@ impl CombatSimulator {
     // -----------------------------------------------------------------------
 
     fn check_encounter_end(&mut self) -> Result<bool, UnitError> {
-        // 切片 14：JS 先给「已死但未颁奖」的敌人补发经验（正常事件路径已记录精确时间戳，
-        // 只有直接改血量的调用才走这里的兜底现快照）。minimal 结果不参与经验记账。
-        if !self.minimal_result {
-            if let Some(enemies) = self.enemies.clone() {
-                for enemy in enemies {
-                    if self.arena.get(enemy).combat_details.current_hitpoints <= 0.0
-                        && !self.is_experience_awarded(enemy)
-                    {
-                        self.finalize_enemy_experience(enemy);
-                    }
-                }
-            }
-        }
-
+        let _prof = crate::prof::start("encounter.check_end");
+        // 切片 27：enemies 的两次 `clone()` 与 players 的一次 `clone()` 改为 take/restore
+        // 与下标遍历——本函数每轮约 3700 次调用，克隆开销在 prof 中显著。语义不变：
+        // 非清场路径把 enemies 原样放回；清场路径维持 None。
         let mut encounter_ended = false;
         let mut encounter_cleared = false;
 
-        if let Some(enemies) = self.enemies.clone() {
+        if let Some(enemies) = self.enemies.take() {
+            // 切片 14：JS 先给「已死但未颁奖」的敌人补发经验（正常事件路径已记录精确时间戳，
+            // 只有直接改血量的调用才走这里的兜底现快照）。minimal 结果不参与经验记账。
+            if !self.minimal_result {
+                for enemy in &enemies {
+                    if self.arena.get(*enemy).combat_details.current_hitpoints <= 0.0
+                        && !self.is_experience_awarded(*enemy)
+                    {
+                        self.finalize_enemy_experience(*enemy);
+                    }
+                }
+            }
+
             let all_dead = !enemies
                 .iter()
                 .any(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0);
@@ -3283,10 +3285,14 @@ impl CombatSimulator {
                 self.tally.set_last_encounter_finish_time(self.simulation_time);
                 encounter_cleared = true;
                 encounter_ended = true;
+            } else {
+                // 未清场：把 enemies 原样放回（切片 27 的 take/restore 配对）。
+                self.enemies = Some(enemies);
             }
         }
 
-        for player in self.players.clone() {
+        for index in 0..self.players.len() {
+            let player = self.players[index];
             let hp = self.arena.get(player).combat_details.current_hitpoints;
             if hp > 0.0 {
                 continue;
@@ -3328,7 +3334,7 @@ impl CombatSimulator {
                 self.queue.clear_events_of_type(Hrid::EVENT_SILENCE_EXPIRATION);
                 self.queue.clear_events_of_type(Hrid::EVENT_AWAIT_COOLDOWN);
                 self.pending_experience_gains.clear();
-                if let Some(enemies) = self.enemies.clone() {
+                if let Some(enemies) = self.enemies.take() {
                     // 切片 26：只收回已死敌人的槽位（活怪事件未清、复用会误伤下波单位）。
                     self.release_dead_enemy_slots(&enemies);
                 }
@@ -3921,6 +3927,7 @@ impl CombatSimulator {
 
     fn try_use_ability(&mut self, source: UnitId, slot: usize) -> Result<bool, UnitError> {
         let _prof = crate::prof::start("ability.try_use");
+        let prof_pre = crate::prof::start("try_use.pre");
         // 免深拷贝（第三批）：取还式（take → 处理 → restore）。原先每次施放都要深拷贝一份
         // `Ability`（效果数组 + 触发器 + 多个 String）；现在把槽内技能**移出**到局部 owned
         // 变量，效果循环结束后原样放回——零克隆。安全性：效果循环内的所有路径都只触
@@ -3968,7 +3975,10 @@ impl CombatSimulator {
             None
         };
 
+        drop(prof_pre);
+
         let mut current_source = source;
+        let prof_effects = crate::prof::start("try_use.effects");
         for todo_ability in std::iter::once(&ability).chain(blaze_ability.iter()).chain(bloom_ability.iter()) {
             for effect in &todo_ability.ability_effects {
                 match effect.effect_type {
@@ -4006,6 +4016,9 @@ impl CombatSimulator {
                 }
             }
         }
+        drop(prof_effects);
+
+        let _prof_post = crate::prof::start("try_use.post");
 
         // restore：把（已写好 last_used 的）owned 副本放回槽位。放在 ripple 段**之前**——
         // ripple 冷却回溯会遍历技能槽写 last_used，必须看到完整槽位；效果循环内也无任何
@@ -4176,6 +4189,7 @@ impl CombatSimulator {
         effect: &AbilityEffect,
     ) -> Result<(), UnitError> {
         let _prof = crate::prof::start("ability.damage");
+        let prof_setup = crate::prof::start("ability.damage.setup");
         let is_player = self.arena.get(source).is_player;
         let targets_option: Option<Vec<UnitId>> = match effect.target_type {
             Hrid::TARGET_ENEMY | Hrid::TARGET_ALL_ENEMIES => {
@@ -4206,15 +4220,19 @@ impl CombatSimulator {
             .filter(|id| self.arena.get(*id).combat_details.current_hitpoints > 0.0)
             .collect();
 
+        drop(prof_setup);
+
         for alive_index in 0..alive_targets.len() {
             let mut target = alive_targets[alive_index];
             let mut parry_target: Option<UnitId> = None;
             if !is_skip_parry {
+                let _prof = crate::prof::start("ability.damage.parry");
                 parry_target = self.check_parry(&targets);
                 is_skip_parry = true;
             }
 
             if let Some(parry) = parry_target {
+                let _prof = crate::prof::start("ability.damage.parry_body");
                 let temp_target = source;
                 let temp_source = parry;
                 let attack_result = {
@@ -4301,6 +4319,7 @@ impl CombatSimulator {
                     break;
                 }
 
+                let prof_attack = crate::prof::start("ability.damage.attack");
                 let attack_result = {
                     let (source_unit, target_unit) = self.arena.two_mut(source, target);
                     process_attack(source_unit, target_unit, Some(effect), &mut self.rng)
@@ -4308,6 +4327,9 @@ impl CombatSimulator {
 
                 let source_hrid = self.unit_hrid(source);
                 let target_hrid = self.unit_hrid(target);
+                drop(prof_attack);
+
+                let _prof_body = crate::prof::start("ability.damage.body");
 
                 // 切片 19：JS :2023-2032——副本日志（技能直击玩家且造成伤害）。
                 if self.wipe_logs.is_some()

@@ -66,10 +66,8 @@ type ExperienceTable = OrderedMap<Hrid, OrderedMap<String, f64>>;
 ///
 /// 切片 25：泛化到 `Hrid`（Copy）与 `String`（仅在插入缺失键时克隆）两种键。
 fn ensure_child<'a, K: PartialEq + Clone, V: Default>(map: &'a mut OrderedMap<K, V>, key: &K) -> &'a mut V {
-    if !map.contains_key(key) {
-        map.set(key.clone(), V::default());
-    }
-    map.get_mut(key).expect("刚刚插入的键必然存在")
+    // 切片 27：单趟查找（原实现 contains_key + get_mut 两次线性扫描；命中热路径每轮数千次）。
+    map.entry_or_default_mut(key)
 }
 
 /// JS `Math.max(0, value)`（NaN 传播：`Math.max(0, NaN)` 为 NaN）。
@@ -96,24 +94,40 @@ fn js_is_safe_integer(value: f64) -> bool {
 /// - 量级越过 JS 的定点输出范围（`|v| >= 1e21` 或 `|v| < 1e-6`）时改用指数写法并补 `+`，
 ///   与 JS 一致（`1e21` → `"1e+21"`、`1e-7` → `"1e-7"`、`1e-6` → `"0.000001"`）。
 fn js_number_key(value: f64) -> String {
+    let mut out = String::new();
+    write_js_number_key(&mut out, value);
+    out
+}
+
+/// 写入版 `js_number_key`（切片 27）：先清空 `out` 再写入结果，供 `add_attack` 的命中键
+/// 复用缓冲使用（每命中一次省一次 `String` 分配）；输出与 `js_number_key` 逐字一致。
+fn write_js_number_key(out: &mut String, value: f64) {
+    use std::fmt::Write;
+    out.clear();
     if value.is_nan() {
-        return "NaN".to_string();
+        out.push_str("NaN");
+        return;
     }
     if value.is_infinite() {
-        return if value > 0.0 { "Infinity" } else { "-Infinity" }.to_string();
+        out.push_str(if value > 0.0 { "Infinity" } else { "-Infinity" });
+        return;
     }
     if value == 0.0 {
         // JS 的 `(-0).toString()` 为 "0"。
-        return "0".to_string();
+        out.push_str("0");
+        return;
     }
     if value.abs() >= JS_EXPONENTIAL_UPPER || value.abs() < JS_EXPONENTIAL_LOWER {
-        let text = format!("{value:e}");
-        return match text.split_once('e') {
-            Some((mantissa, exponent)) if !exponent.starts_with('-') => format!("{mantissa}e+{exponent}"),
-            _ => text,
-        };
+        let _ = write!(out, "{value:e}");
+        // Rust 的 `{:e}` 指数不带正号；JS 的指数写法总是带符号（`1e+21`）。
+        if let Some(index) = out.rfind('e') {
+            if !out[index + 1..].starts_with('-') {
+                out.insert(index + 1, '+');
+            }
+        }
+        return;
     }
-    format!("{value}")
+    let _ = write!(out, "{value}");
 }
 
 /// JS `JSON.stringify` 的数字表示：整数值不带小数点、非有限值写成 `null`。
@@ -276,6 +290,8 @@ pub struct SimResultState {
     experience_gained: ExperienceTable,
     encounters: f64,
     attacks: AttackTable,
+    /// 切片 27：`add_attack` 数字键复用缓冲（不参与序列化）。
+    hit_key_scratch: String,
     hitpoints_gained: TwoLevelTable,
     manapoints_gained: TwoLevelTable,
     debuff_on_level_gap: OrderedMap<Hrid, f64>,
@@ -345,6 +361,7 @@ impl SimResultState {
             experience_gained: OrderedMap::new(),
             encounters: 0.0,
             attacks: OrderedMap::new(),
+            hit_key_scratch: String::new(),
             hitpoints_gained: OrderedMap::new(),
             manapoints_gained: OrderedMap::new(),
             debuff_on_level_gap: OrderedMap::new(),
@@ -465,17 +482,26 @@ impl SimResultState {
     /// JS `addAttack(source, target, ability, hit)`：`hit` 作为对象键被字符串化
     /// （数字走 `js_number_key`，未命中为字面量 `"miss"`）。
     pub fn add_attack(&mut self, source_hrid: Hrid, target_hrid: Hrid, ability: Hrid, outcome: &AttackOutcome) {
+        let _prof = crate::prof::start("result.add_attack");
         if self.minimal {
             return;
         }
-        let hit_key = match outcome {
-            AttackOutcome::Miss => "miss".to_string(),
-            AttackOutcome::Damage(damage) => js_number_key(*damage),
+        // 切片 27：命中键改为「复用缓冲 + 单趟查表」——原实现每次命中都 `format!` 一个新
+        // String，且每层 ensure_child 要两趟线性扫描（命中层键为数字串，可达数十项）。
+        // 键内容、插入序与聚合语义逐位不变。
+        let mut scratch = std::mem::take(&mut self.hit_key_scratch);
+        let hit_key: &str = match outcome {
+            AttackOutcome::Miss => "miss",
+            AttackOutcome::Damage(damage) => {
+                write_js_number_key(&mut scratch, *damage);
+                scratch.as_str()
+            }
         };
         let targets = ensure_child(&mut self.attacks, &source_hrid);
         let abilities = ensure_child(targets, &target_hrid);
         let hits = ensure_child(abilities, &ability);
-        *ensure_child(hits, &hit_key) += 1.0;
+        hits.add_value_str(hit_key, 1.0);
+        self.hit_key_scratch = scratch;
     }
 
     /// JS `addConsumableUse(unit, consumable)`（minimal 分支仍记账）。

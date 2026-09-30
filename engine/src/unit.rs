@@ -1377,6 +1377,7 @@ impl CombatUnit {
         unique_hrid: Hrid,
         selector: BuffSourceSelector,
     ) -> Result<(), UnitError> {
+        let _prof = crate::prof::start("unit.remove_buff");
         let sources_snapshot = self.buff_sources.get(&unique_hrid).cloned();
 
         let mut source_key: Option<Hrid> = None;
@@ -1601,6 +1602,7 @@ impl CombatUnit {
 
     /// 等价 JS `clearBuffs`：combatBuffs 重置为 permanentBuffs 的深拷贝，源注册表清空。
     pub fn clear_buffs(&mut self) {
+        let _prof = crate::prof::start("unit.clear_buffs");
         // JS 对「非玩家 + 空 permanentBuffs」用全新 {}（与 structuredClone 内容一致），此处统一克隆。
         self.combat_buffs = self.permanent_buffs.clone();
         self.buff_sources = OrderedMap::new();
